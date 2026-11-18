@@ -101,6 +101,7 @@ export function buildEditorView(slices: {
     viewPreview: collaborationSlice.viewPreview,
     canToggleRole: collaborationSlice.canToggleRole,
     toggleViewPreview: collaborationSlice.toggleViewPreview,
+    setViewPreview: collaborationSlice.setViewPreview,
     // The id the dot-vote knows us by (docs/specs/012-collaboration/collab-race-hardening.md): every vote reader compares
     // against this, never the owner id.
     voteSelfId: projectSlice.voteSelfId,

@@ -1,9 +1,8 @@
-import { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { AccessLevel } from '@livediagram/api-schema';
 import { participantTabChange, type Tab } from '@livediagram/document';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
-import { onRoomSuggestOnly, roomSuggestOnly } from '@liveworkspace/suggestions/room-signal';
 
 // A Participant's session in the editor (docs/specs/013-workspace/share-roles.md; blueprint "Editor state"):
 // its adder key, handed over with its room ticket; what it may do (`can`); and the one guard every element
@@ -22,21 +21,13 @@ export function useParticipantSession(
 ) {
   const [roomAdderKey, setAdderKey] = useState<string | null>(null);
   const adderKey = roomAdderKey ?? previewKey;
-  // On Suggest Only (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only"), the room's word:
-  // every change it makes to the canvas is a suggestion, so its gestures open as an Editor's and its commits are
-  // gathered as suggestions (useEditorSuggestions) rather than held back.
-  const roomSays = useSyncExternalStore(onRoomSuggestOnly, roomSuggestOnly, () => false);
-  const suggestOnly = level === 'participate' && roomSays;
-  const can = useMemo(
-    () => resolveEditorCapabilities({ level: suggestOnly ? 'edit' : level, adderKey }),
-    [level, adderKey, suggestOnly],
-  );
+  const can = useMemo(() => resolveEditorCapabilities({ level, adderKey }), [level, adderKey]);
   const participating = level === 'participate';
   const lastNoticeRef = useRef(0);
   // The tab a commit would make, or null to drop it. Stamps the adder on what a Participant adds.
   const guardCommit = useCallback(
     (before: Tab, after: Tab): Tab | null => {
-      if (!participating || suggestOnly) return after;
+      if (!participating) return after;
       const allowed = participantTabChange(before, after, adderKey);
       if (!allowed) {
         debugLog('[participant] change held back', before.id);
@@ -48,7 +39,7 @@ export function useParticipantSession(
       }
       return allowed;
     },
-    [participating, suggestOnly, adderKey, notify],
+    [participating, adderKey, notify],
   );
-  return { can, participating, suggestOnly, adderKey, setAdderKey, guardCommit };
+  return { can, participating, adderKey, setAdderKey, guardCommit };
 }

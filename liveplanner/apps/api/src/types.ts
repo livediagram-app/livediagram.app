@@ -23,6 +23,7 @@ export type {
 import type { PlanAutomations } from './plan-room/automations/automation-queue';
 import type { PlanRoom } from './plan-room/plan-room';
 import type { RemovalGuard } from './plan-room/removal-guard-store';
+import type { RoadmapMemo } from './roadmap/roadmap-memo';
 
 // Worker bindings injected by Cloudflare at runtime. Not part of the
 // wire format (purely a server-side capability handle).
@@ -193,4 +194,7 @@ export type PlanEnv = Env & {
   // A snapshot's revert landed (docs/specs/013-workspace/snapshots.md): the room forgets its ledger and closes every
   // socket with SNAPSHOT_REVERTED_CLOSE.
   SNAPSHOT_REVERTED?: (generation: number) => void;
+  // The public roadmap pages the room built, kept until the plan's next write (roadmap/roadmap-memo.ts). Absent
+  // outside the room.
+  ROADMAP_MEMO?: RoadmapMemo;
 };

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   furnitureFrame,
+  GARDEN_TONES,
+  SOCIAL_TONES,
+  VENUE_TONES,
+  WORKPLACE_TONES,
   OFFICE_ART,
   type FurniturePart,
   type GridOfficeKind,
@@ -29,7 +33,7 @@ const IS: Partial<Record<MomentKind, (i: number, p: FurniturePart) => boolean>> 
   bookshelf: (_, p) =>
     p.tag === 'rect' && p.role === 'panel' && p.y > 47 && fillOf(p) !== undefined,
   // The glasses: the pale panels standing on the bar top.
-  bar: (_, p) => p.tag === 'rect' && fillOf(p) === '#e2e8f0',
+  bar: (_, p) => p.tag === 'rect' && fillOf(p) === GARDEN_TONES.glass,
   // The cue ball, and the six balls of the rack.
   'pool-table': (i, p) => p.tag === 'ellipse' && (i === 17 ? fillOf(p) === '#f8fafc' : p.cx > 130),
   'foosball-table': (i, p) =>
@@ -38,17 +42,20 @@ const IS: Partial<Record<MomentKind, (i: number, p: FurniturePart) => boolean>> 
       : p.tag === 'path' && p.role === 'mark',
   printer: (i, p) =>
     i === 12 ? p.tag === 'ellipse' : fillOf(p) === '#ffffff' || p.role === 'rail',
-  copier: (_, p) => fillOf(p) === '#38bdf8',
+  copier: (_, p) => fillOf(p) === WORKPLACE_TONES.lit,
   'kitchen-counter': (_, p) => p.tag === 'rect' && p.y >= 43,
   'bike-rack': (_, p) => p.tag === 'path' && p.role === 'rail',
   'umbrella-stand': (_, p) => p.tag === 'path' && (p.role === 'panel' || p.role === 'line'),
   'coat-rack': (i, p) => (i >= 10 ? fillOf(p) === '#57534e' : p.tag === 'path'),
   podium: (i, p) =>
-    p.tag === 'ellipse' && (i === 11 ? fillOf(p) === '#1f2937' : fillOf(p) === '#ef4444'),
+    p.tag === 'ellipse' &&
+    (i === 11 ? fillOf(p) === VENUE_TONES.mic : fillOf(p) === VENUE_TONES.live),
   // The ropes and the spreader bars (lines), the sling and its band (the striped panels).
   hammock: (i, p) =>
     p.tag === 'path' &&
-    (i === 3 || i === 6 ? p.role === 'line' : fillOf(p) === '#38bdf8' || fillOf(p) === '#fb923c'),
+    (i === 3 || i === 6
+      ? p.role === 'line'
+      : fillOf(p) === SOCIAL_TONES.hammock || fillOf(p) === SOCIAL_TONES.hammockBand),
   // The note in the slot, and the writing on it.
   'suggestion-box': (i, p) =>
     p.tag === 'path' &&

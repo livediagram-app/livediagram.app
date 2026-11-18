@@ -12,7 +12,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import type { Env } from './env';
 import { testDb, type TestDb } from './test-sqlite-d1';
-import { sweepPendingWalkthroughs } from './walkthroughs';
+import { parseRange, sweepPendingWalkthroughs } from './walkthroughs';
 
 let db: TestDb;
 beforeEach(() => {
@@ -56,7 +56,13 @@ const events = (over: Partial<WalkthroughEvents> = {}): WalkthroughEvents => ({
 });
 
 const startOne = (
-  over: { item?: string; mediaBytes?: number; mediaType?: string; owner?: string } = {},
+  over: {
+    item?: string;
+    mediaBytes?: number;
+    mediaType?: string;
+    owner?: string;
+    screen?: boolean;
+  } = {},
   calls = client(),
 ) =>
   calls.start(over.owner ?? 'user_1', {
@@ -65,7 +71,7 @@ const startOne = (
     author: 'Ada',
     mediaType: (over.mediaType ?? 'video/webm') as 'video/webm',
     mediaBytes: over.mediaBytes ?? WEBM.byteLength,
-    events: events(),
+    events: over.screen ? events({ screen: true, events: [], hidden: [] }) : events(),
   });
 
 const ready = async (over: Parameters<typeof startOne>[0] = {}, bytes = WEBM, calls = client()) => {
@@ -122,6 +128,19 @@ describe('starting and storing one', () => {
     expect(new Uint8Array(await new Response(media!.body).arrayBuffer())).toEqual(WEBM);
     // On another item it is not there.
     expect(await client().media(id, 'doc-2')).toBeNull();
+  });
+
+  it("lists a person's own ready ones across the app, newest first, for the Explorer's library", async () => {
+    const first = await ready({ item: 'doc-1' });
+    const second = await ready({ item: 'doc-2' });
+    await ready({ item: 'doc-1', owner: 'user_2' });
+    await startOne({ item: 'doc-3' }); // never uploaded: not ready, so not listed
+    const listed = await client().listOwned('user_1');
+    const ids = listed.ok ? listed.value.walkthroughs.map((w) => w.walkthrough.id) : [];
+    expect(new Set(ids)).toEqual(new Set([first, second]));
+    expect(listed.ok && listed.value.walkthroughs.every((w) => w.owner === 'user_1')).toBe(true);
+    const other = await client('livedesign.app').listOwned('user_1');
+    expect(other.ok && other.value.walkthroughs).toEqual([]);
   });
 
   it('takes Safari MP4 too', async () => {
@@ -398,5 +417,104 @@ describe('routes that are not there', () => {
     db.objects.delete(`walkthroughs/${id}/events.json`);
     expect(await client().media(id, 'doc-1')).toBeNull();
     expect(await client().read(id)).toBeNull();
+  });
+});
+
+describe('renaming', () => {
+  it('lets its owner rename it, and the app for its item, and nobody else', async () => {
+    const id = await ready();
+    const renamed = await client().rename(id, { owner: 'user_1' }, '  Launch   plan ');
+    expect(renamed.ok && renamed.value.walkthrough.title).toBe('Launch plan');
+    const byItem = await client().rename(id, { item: 'doc-1' }, 'From the item');
+    expect(byItem.ok && byItem.value.walkthrough.title).toBe('From the item');
+    const stranger = await client().rename(id, { owner: 'user_2' }, 'Mine now');
+    expect(stranger.ok ? 0 : stranger.status).toBe(403);
+    const otherItem = await client().rename(id, { item: 'doc-2' }, 'Elsewhere');
+    expect(otherItem.ok ? 0 : otherItem.status).toBe(403);
+    const blank = await client().rename(id, { owner: 'user_1' }, '   ');
+    expect(blank.ok ? 0 : blank.status).toBe(400);
+    const listed = await client().list('doc-1');
+    expect(listed.ok && listed.value.walkthroughs[0]!.walkthrough.title).toBe('From the item');
+  });
+});
+
+describe('sharing a screen recording', () => {
+  const shared = (path: string, init?: RequestInit) =>
+    worker.fetch(
+      new Request(`https://liveworkspace.app/api/media/walkthroughs/shared/${path}`, init),
+      db.env,
+    );
+
+  it('turns a public link on and off, as its owner or for its item, for a screen recording only', async () => {
+    const replay = await ready();
+    const notScreen = await client().share(replay, { owner: 'user_1' }, true);
+    expect(notScreen.ok ? 0 : notScreen.status).toBe(409);
+    const id = await ready({ screen: true });
+    const stranger = await client().share(id, { owner: 'user_2' }, true);
+    expect(stranger.ok ? 0 : stranger.status).toBe(403);
+    const on = await client().share(id, { owner: 'user_1' }, true);
+    const code = on.ok ? on.value.walkthrough.shareCode : null;
+    expect(code).toMatch(/^[A-Za-z0-9_-]{22}$/);
+    // On again keeps the same link, so one already sent goes on working.
+    const again = await client().share(id, { item: 'doc-1' }, true);
+    expect(again.ok && again.value.walkthrough.shareCode).toBe(code);
+    expect((await shared(code!)).status).toBe(200);
+    const off = await client().share(id, { owner: 'user_1' }, false);
+    expect(off.ok && off.value.walkthrough.shareCode).toBeNull();
+    expect((await shared(code!)).status).toBe(404);
+  });
+
+  it('answers the public page with what it shows, privately, and nothing else', async () => {
+    const id = await ready({ screen: true });
+    const on = await client().share(id, { owner: 'user_1' }, true);
+    const code = on.ok ? on.value.walkthrough.shareCode! : '';
+    const res = await shared(code);
+    expect(res.headers.get('Cache-Control')).toBe('private, no-store');
+    const body = (await res.json()) as Record<string, unknown>;
+    expect(body).toMatchObject({
+      title: 'Tour of the canvas',
+      author: 'Ada',
+      app: 'livediagram.app',
+      mediaType: 'video/webm',
+    });
+    // Never its owner, item, id or events.
+    expect(Object.keys(body).sort()).toEqual([
+      'app',
+      'author',
+      'createdAt',
+      'durationMs',
+      'mediaType',
+      'title',
+    ]);
+    expect((await shared(`${code}/events`)).status).toBe(404);
+    expect((await shared('not-a-code')).status).toBe(404);
+    expect((await shared(code, { method: 'POST' })).status).toBe(404);
+  });
+
+  it('streams the film whole, or the range a video element asks for', async () => {
+    const id = await ready({ screen: true });
+    const on = await client().share(id, { owner: 'user_1' }, true);
+    const code = on.ok ? on.value.walkthrough.shareCode! : '';
+    const whole = await shared(`${code}/media`);
+    expect(whole.status).toBe(200);
+    expect(whole.headers.get('Accept-Ranges')).toBe('bytes');
+    expect(whole.headers.get('Content-Length')).toBe(String(WEBM.byteLength));
+    expect(new Uint8Array(await whole.arrayBuffer())).toEqual(WEBM);
+    const part = await shared(`${code}/media`, { headers: { Range: 'bytes=2-5' } });
+    expect(part.status).toBe(206);
+    expect(part.headers.get('Content-Range')).toBe(`bytes 2-5/${WEBM.byteLength}`);
+    expect(new Uint8Array(await part.arrayBuffer())).toEqual(WEBM.slice(2, 6));
+    const rest = await shared(`${code}/media`, { headers: { Range: 'bytes=10-' } });
+    expect(rest.headers.get('Content-Range')).toBe(
+      `bytes 10-${WEBM.byteLength - 1}/${WEBM.byteLength}`,
+    );
+  });
+
+  it('reads a range header as a video element sends one, and nothing else', () => {
+    expect(parseRange('bytes=0-')).toEqual({ offset: 0 });
+    expect(parseRange('bytes=5-9')).toEqual({ offset: 5, length: 5 });
+    expect(parseRange('bytes=9-5')).toBeNull();
+    expect(parseRange('bytes=0-1,4-5')).toBeNull();
+    expect(parseRange(null)).toBeNull();
   });
 });

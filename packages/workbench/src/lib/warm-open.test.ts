@@ -34,10 +34,7 @@ const copy = (over: Partial<LastSeenCopy<Item, unknown>> = {}): LastSeenCopy<Ite
   ...over,
 });
 
-function copies(
-  held: LastSeenCopy<Item, unknown> | null,
-  last: string | null = held?.reader ?? null,
-) {
+function copies(held: LastSeenCopy<Item, unknown> | null) {
   return {
     read: vi.fn(async (reader: string, itemId: string) =>
       held && held.reader === reader && held.itemId === itemId ? held : null,
@@ -45,25 +42,23 @@ function copies(
     readVia: vi.fn(async (reader: string, code: string) =>
       held && held.reader === reader && held.via === code ? held : null,
     ),
-    lastReader: vi.fn(async () => last),
   } satisfies WarmOpenCopies<Item>;
 }
 
 const own = { itemId: 'd1', shareCode: null, hash: '' };
-const signedIn = { signedIn: true, guestId: 'guest_1' };
+// Signed in: the account the session's first token answer named (the hint says whether, never who).
+const signedIn = { signedIn: true, accountId: 'user_a' } as const;
 
 describe('expectedReader', () => {
-  it("expects the guest token's id when the hint says signed out", async () => {
-    const c = copies(copy(), 'user_a');
-    expect(await expectedReader(c, { signedIn: false, guestId: 'guest_1' })).toBe('guest_1');
-    expect(await expectedReader(c, { signedIn: false, guestId: null })).toBeNull();
-    expect(c.lastReader).not.toHaveBeenCalled();
+  it("expects the guest token's id when the hint says signed out", () => {
+    expect(expectedReader({ signedIn: false, guestId: 'guest_1' })).toBe('guest_1');
+    expect(expectedReader({ signedIn: false, guestId: null })).toBeNull();
   });
 
-  it('expects the account the store holds copies for when signed in, and nobody when it holds a guest', async () => {
-    expect(await expectedReader(copies(null, 'user_a'), signedIn)).toBe('user_a');
-    expect(await expectedReader(copies(null, 'guest_1'), signedIn)).toBeNull();
-    expect(await expectedReader(copies(null, null), signedIn)).toBeNull();
+  it('expects the account the session named when signed in, and nobody for none or a guest id', () => {
+    expect(expectedReader(signedIn)).toBe('user_a');
+    expect(expectedReader({ signedIn: true, accountId: null })).toBeNull();
+    expect(expectedReader({ signedIn: true, accountId: 'guest_1' })).toBeNull();
   });
 });
 
@@ -80,6 +75,14 @@ describe('readWarmCopy', () => {
     );
   });
 
+  // Work Tracker 955: the session names the account, so one account never sees another's copy in this profile.
+  it("never shows one account's copy to another account", async () => {
+    const c = copies(copy());
+    expect(await readWarmCopy(c, own, { signedIn: true, accountId: 'user_b' })).toBeNull();
+    expect(await readWarmCopy(c, own, { signedIn: true, accountId: null })).toBeNull();
+    expect(c.read).not.toHaveBeenCalledWith('user_a', 'd1');
+  });
+
   it("never shows an account's copy to a signed-out browser or another guest", async () => {
     const c = copies(copy());
     expect(await readWarmCopy(c, own, { signedIn: false, guestId: 'guest_1' })).toBeNull();
@@ -90,7 +93,7 @@ describe('readWarmCopy', () => {
   it('reads nothing for an address that names no document and carries no link', async () => {
     const c = copies(copy());
     expect(await readWarmCopy(c, { ...own, itemId: null }, signedIn)).toBeNull();
-    expect(c.lastReader).not.toHaveBeenCalled();
+    expect(c.read).not.toHaveBeenCalled();
   });
 
   // The Share dialog's links are `/<route>/shared?s=<code>`: a Viewer or Participant reloading theirs warm-opens.
@@ -156,14 +159,13 @@ describe('readWarmCopy', () => {
         throw new Error('gone');
       }),
       readVia: vi.fn(async () => null),
-      lastReader: vi.fn(async () => 'user_a'),
     };
     expect(await readWarmCopy(broken, own, signedIn)).toBeNull();
   });
 
   // The warm paint must not add work to a cold open: with no copy, the check is a store read and nothing else.
   it('adds next to nothing to a cold open (10,000 checks with no copy within budget)', async () => {
-    const empty = copies(null, 'user_a');
+    const empty = copies(null);
     const ms = await cpuMsOfAsync(async () => {
       for (let i = 0; i < 10_000; i += 1) await readWarmCopy(empty, own, signedIn);
     });

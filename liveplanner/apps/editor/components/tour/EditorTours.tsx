@@ -2,14 +2,12 @@
 
 import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { PlanTourHost } from '@/lib/editor-deferred-code';
 import { PendingFormStart } from '@/components/forms/PendingFormStart';
 import { useEverTrue } from '@liveworkspace/workbench/hooks/ui/useEverTrue';
 
-// The Plan tour (docs/specs/026-plan/plan-tour.md), its chunk out of the editor's first load.
-const PlanTourHost = dynamic(
-  () => import('@/components/tour/PlanTourHost').then((m) => m.PlanTourHost),
-  { ssr: false },
-);
+// The Plan tour (docs/specs/026-plan/plan-tour.md), its chunk out of the editor's first load: a lazy panel
+// (lib/editor-deferred-code.ts), so a warm paint, which has its code in first, mounts it in the paint's own commit.
 // The Forms tour (docs/specs/030-forms/forms.md "The Forms tour"): the first time an Editor opens a Form tab.
 const FormTourHost = dynamic(
   () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),

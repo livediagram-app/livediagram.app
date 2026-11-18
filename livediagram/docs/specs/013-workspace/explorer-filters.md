@@ -63,7 +63,9 @@ Every list view shows one row of chips under its page header and breadcrumb:
 
 - One chip per dimension, in dimension order (Opens in while every app shows, Mode, Template, Made by AI, Edited, People), then **Space** on aggregate views
   only. Template shows only when the host names template families (`lensTemplates`), and Mode only when it names
-  editor modes (`lensModes`): livediagram does, with Diagram, Draw and Workshop.
+  editor modes (`lensModes`). livediagram names neither, in its editor or on liveworkspace.app: a canvas can hold
+  Diagram, Draw and Workshop tabs at once, so one mode per canvas is no filter, and its one template family was too
+  thin to be worth a chip. liveplanner names its template families.
 - **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
 - A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape, Tab,
   a click outside or the chip again closes it, focus returning to the chip.
@@ -73,29 +75,25 @@ Every list view shows one row of chips under its page header and breadcrumb:
 
 ## Dimensions
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                  | Index filter |
-| --------- | ---------- | ----------- | -------------------------------------------------------------------------------------------------------- | ------------ |
-| Text      | (none)     | (the field) | Free words                                                                                               | `q`          |
-| Opens in  | `opens-in` | Opens in    | `canvas` livediagram, `document` liveplanner, `document` livedocuments, `design` livedesign: its app     | `apps`       |
-| Mode      | `mode`     | Mode        | `diagram` Diagram, `draw` Draw, `workshop` Workshop: the mode the canvas opens in (its summary's `mode`) | `modes`      |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the last word of the canvas's creation intent            | `intent`     |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)            | `source=ai`  |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year         | `since`      |
-| People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                               | `owner`      |
-| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only               | `space`      |
+| Dimension | Key        | Chip label  | Values and their labels                                                                                   | Index filter |
+| --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------- | ------------ |
+| Text      | (none)     | (the field) | Free words                                                                                                | `q`          |
+| Opens in  | `opens-in` | Opens in    | `canvas` livediagram, `document` liveplanner, `document` livedocuments, `design` livedesign: its app      | `apps`       |
+| Mode      | `mode`     | Mode        | The host's editor modes, matched against the mode the item opens in (its summary's `mode`). None today    | `modes`      |
+| Template  | `template` | Template    | The host's template families (liveplanner's `kanban` Kanban): the last word of the item's creation intent | `intent`     |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the item's `source` is `ai`, an AI tool through the MCP server (not the CLI)             | `source=ai`  |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year          | `since`      |
+| People    | `people`   | People      | `me` Me, `others` Others: the item's owner                                                                | `owner`      |
+| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                | `space`      |
 
-- **Mode** is the editor mode a canvas opens in, the one its room last reported to the index (`summary.mode`, the
-  mode of the tab written last, `diagram` when none says otherwise), so a canvas switched to Draw is found by
-  `mode:draw` once it is saved. The values are the host's (`lensModes`); livediagram's are its `EDITOR_MODES`.
-  A canvas that has never been saved has no mode yet and matches no Mode value. The old Explorer wrote the mode as
-  `opens-in:draw`: that spelling still reads, as the Mode token (`mode:draw`), so an old link or habit lands on the
-  same list; written back, it is `mode:draw`. A list mixing apps and modes (`opens-in:plan,draw`) is not an old
-  spelling and reads as before.
-- **Template** is the template family a canvas was made from, read from the creation intent the index keeps
-  (`template:retrospective`): livediagram's one family, labelled Retrospective
-  (`CANVAS_TEMPLATE_FAMILIES`, `apps/editor/lib/canvas-template-families.ts`; liveworkspace.app's Explorer names the
-  same families for livediagram). A template picked after creation does not change it
-  ([Default folders](default-folders.md#a-template-picked-after-creation)).
+- **Mode** is the editor mode an item opens in, the one its room last reported to the index (`summary.mode`). The
+  values are the host's (`lensModes`) and no host names any today: livediagram dropped its Mode chip because a canvas
+  holds tabs in several modes. The dimension stays in the grammar for a host that opens each item in one mode. The
+  old Explorer's `opens-in:draw` spelling still reads as a Mode token, which with no modes named matches nothing and
+  says so with Clear Filters.
+- **Template** is the template family an item was made from, read from the creation intent the index keeps
+  (`template:kanban`), from the host's `lensTemplates`. livediagram names none. A template picked after creation does
+  not change it ([Default folders](default-folders.md#a-template-picked-after-creation)).
 - **Made by AI is a filter, not a place.** AI-made items live at the root of their space or in a folder like any
   other, and `made-by:ai` finds them anywhere. Every row, card and details row of an AI-made item carries a **Made by
   AI** pill (a sparkle and the words), so what the filter reads is visible.

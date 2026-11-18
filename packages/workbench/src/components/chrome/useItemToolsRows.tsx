@@ -7,6 +7,10 @@
 // "Opening a tool inside Tools"). Both rows always show where signing in or syncing would make them work
 // (footer-tools-menu.md "Always there"), badged Sign In and Sync <Item>, and a press opens that gate first: Sign In
 // leaves for the sign-in page; Sync <Item> saves the item to the server and goes on to the tool.
+import { useDeferredAuth } from '../providers/deferred-auth';
+import { useSavedLook } from './AuthControls';
+import { accountAvatarFill, accountInitials } from '../../lib/account-avatar';
+import { explorerAccounts } from '../../lib/explorer-accounts';
 import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from 'react';
 import {
   ButtonContent,
@@ -21,13 +25,20 @@ import {
 import { Dialog } from '../dialogs/Dialog';
 import { DialogFooter } from '../dialogs/DialogFooter';
 import { APP_ITEMS, type AppName } from '@liveworkspace/sites';
+import { toolGateCopy } from '../../lib/tool-gate-copy';
 import { useAuthHrefs } from './auth-routes';
 import { ItemHistoryDialog, useOpenItem, type HistoryExtras } from '@liveworkspace/explorer';
 import type { IndexClient } from '@liveworkspace/index-client';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { lucideHistory, lucideWebhook } from '@liveworkspace/icons/lucide';
 import type { ChromeToolsItem } from './ChromeToolsMenu';
-import { useItemVersions, usePublishToolsItems } from './tools-door';
+import {
+  requestToolsView,
+  useItemVersions,
+  usePublishToolGate,
+  usePublishToolsItems,
+  type ToolGate,
+} from './tools-door';
 
 const WebhookIcon = lucideGlyph(lucideWebhook, 16);
 const HistoryIcon = lucideGlyph(lucideHistory, 16);
@@ -47,26 +58,11 @@ export type ItemHistoryHost = {
   useTeams: (signedIn: boolean) => Teams;
 };
 
-// What each says before it works, in the words and shape of Automations' gate (liveplanner AutomationsSyncGate).
+// Each gated tool's name; what its gate says is the shared plain copy (toolGateCopy).
 const SIGN_IN = {
-  history: {
-    title: 'History',
-    promptTitle: 'History Is Kept With Your Account',
-    body: (noun: string) =>
-      `Every change to this ${noun}, who made it and when, is kept with your account across devices, so it needs you signed in.`,
-    syncTitle: 'History Is Kept on Our Servers',
-    syncBody: (noun: string) =>
-      `Every change to this ${noun}, who made it and when, is kept on our servers, so it needs saving to your account first.`,
-  },
-  webhooks: {
-    title: 'Webhooks',
-    promptTitle: 'Webhooks Run on Our Servers',
-    body: (noun: string) =>
-      `A webhook tells Slack, a chat or your own service each time this ${noun} changes, even when nobody has it open, so it needs you signed in.`,
-    syncTitle: 'Webhooks Run on Our Servers',
-    syncBody: (noun: string) =>
-      `A webhook tells Slack, a chat or your own service each time this ${noun} changes, from our servers, so it needs saving to your account first.`,
-  },
+  history: { title: 'History' },
+  webhooks: { title: 'Webhooks' },
+  walkthroughs: { title: 'Walkthroughs' },
 } as const;
 type SignInFor = keyof typeof SIGN_IN;
 
@@ -131,6 +127,12 @@ export function useItemToolsRows({
     [guest, offline, noun],
   );
   const gated = guest || !!offline;
+  // The gate, for tools published elsewhere (Walkthroughs): badged the same, and a press opens this gate for them.
+  const toolGate = useMemo<ToolGate | null>(
+    () => (gated ? { badges, open: (tool) => setGate(tool) } : null),
+    [gated, badges],
+  );
+  usePublishToolGate(toolGate);
   const mode = historyMode({
     timeline: !!history && !gated,
     snapshots: !!snapshots,
@@ -200,7 +202,7 @@ export function useItemToolsRows({
   usePublishToolsItems('item', rows);
   const versionsLink = (close: () => void) =>
     versions ? <VersionsLink open={versions} onLeave={close} /> : null;
-  if (gate && gated && (gate === 'webhooks' || mode === 'gate'))
+  if (gate && gated && (gate !== 'history' || mode === 'gate'))
     return (
       <SignInDialog
         for={gate}
@@ -208,7 +210,9 @@ export function useItemToolsRows({
         sync={guest ? null : offline}
         after={gate === 'history' ? versionsLink(() => setGate(null)) : null}
         onSynced={() => {
-          setPending(gate);
+          // Walkthroughs' own row arrives once the synced item lets it record: Tools opens at it then (FM7).
+          if (gate === 'walkthroughs') requestToolsView('walkthroughs');
+          else setPending(gate);
           setGate(null);
         }}
         onClose={() => setGate(null)}
@@ -253,30 +257,59 @@ function OpenItemHistoryWithSnapshots({
   onClose: () => void;
 }) {
   const extras = snapshots.useExtras();
-  const top = (
-    <div className="flex flex-col gap-2">
-      {extras.top}
-      {versionsLink}
-    </div>
+  const top =
+    extras.top || versionsLink ? (
+      <div className="flex flex-col gap-2">
+        {extras.top}
+        {versionsLink}
+      </div>
+    ) : undefined;
+  return (
+    <OpenItemHistory
+      host={host}
+      top={top}
+      action={extras.action}
+      pins={extras.pins}
+      onClose={onClose}
+    />
   );
-  return <OpenItemHistory host={host} top={top} pins={extras.pins} onClose={onClose} />;
 }
 
 // The History dialog for the open item, its reads made as it opens.
 function OpenItemHistory({
   host,
   top,
+  action,
   pins,
   onClose,
 }: {
   host: ItemHistoryHost;
   top?: ReactNode;
+  // Snapshots' Snapshot button, at History's foot.
+  action?: ReactNode;
   pins?: HistoryExtras['pins'];
   onClose: () => void;
 }) {
   const item = useOpenItem(host.client, host.itemId, host.shareCode, host.sharePassword);
   const teams = host.useTeams(true);
-  const extras = useMemo<HistoryExtras>(() => ({ top, pins: pins ?? [] }), [top, pins]);
+  // Your own face as your account menu draws it (owner, 2026-11-17: History showed a blank person for you).
+  const { user } = useDeferredAuth();
+  const saved = useSavedLook();
+  const viewerLook = useMemo(
+    () =>
+      user
+        ? {
+            fill: accountAvatarFill(user, saved),
+            initials: accountInitials(user),
+            picture: user.picture ?? null,
+          }
+        : null,
+    [user, saved],
+  );
+  const extras = useMemo<HistoryExtras>(
+    () => ({ top, action, pins: pins ?? [] }),
+    [top, action, pins],
+  );
   if (!item || item.sharedVia) return null;
   return (
     <ItemHistoryDialog
@@ -287,6 +320,8 @@ function OpenItemHistory({
       teams={teams}
       item={item}
       extras={extras}
+      accounts={explorerAccounts}
+      viewerLook={viewerLook}
       onClose={onClose}
     />
   );
@@ -355,6 +390,7 @@ function SignInDialog({
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const word = noun.toLowerCase();
+  const said = toolGateCopy(sync ? 'sync' : 'sign_in', copy.title, noun);
   const doSync = async () => {
     if (!sync) return;
     setBusy(true);
@@ -373,10 +409,7 @@ function SignInDialog({
   };
   return (
     <Dialog open onClose={onClose} ariaLabel={copy.title} size="md">
-      <DialogHeader
-        title={copy.title}
-        subtitle={sync ? 'Saved only in this browser.' : 'You are not signed in.'}
-      >
+      <DialogHeader title={copy.title}>
         <DialogCloseButton onClick={onClose} />
       </DialogHeader>
       <div
@@ -403,11 +436,9 @@ function SignInDialog({
           </Glyph>
         </span>
         <div className="flex flex-col gap-1.5">
-          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-            {sync ? copy.syncTitle : copy.promptTitle}
-          </p>
+          <p className="text-sm font-medium text-slate-800 dark:text-slate-100">{said.title}</p>
           <p className="mx-auto max-w-sm text-balance text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            {sync ? copy.syncBody(word) : copy.body(word)}
+            {said.body}
           </p>
           {failed ? (
             <p role="alert" className="text-xs text-red-600 dark:text-red-400">

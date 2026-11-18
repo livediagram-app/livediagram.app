@@ -10,10 +10,12 @@ import {
   readCardDisplay,
   sameCardLayout,
   typeCardDisplay,
+  typeShowsVotes,
+  withVotesShown,
   typeOffersCardField,
   typeDefaultCardLayout,
 } from './card-display';
-import { ITEM_TYPES } from './item-types';
+import { ITEM_TYPES, type ItemTypeDef } from './item-types';
 import { validateItemTypeCatalogue } from './type-catalogue';
 
 // docs/specs/026-plan/item-types.md "Card display".
@@ -227,5 +229,64 @@ describe('a new type’s Minimal card', () => {
 
   it('leaves a built-in type’s Minimal card bare', () => {
     expect(typeCardLayout({ ...own, id: 'task' }, 'minimal')).toEqual({});
+  });
+});
+
+// Publish as Roadmap's Add Votes (docs/specs/026-plan/public-roadmap.md "The settings").
+describe('typeShowsVotes and withVotesShown', () => {
+  const base: Omit<ItemTypeDef, 'fields'> = {
+    id: 'mine',
+    label: 'Mine',
+    newTitle: 'New',
+    glyph: 'task',
+    color: '#000',
+  };
+
+  it('shows Votes on a type that has the field and places it', () => {
+    expect(typeShowsVotes({ ...base, fields: ['title', 'votes'] })).toBe(true);
+    expect(typeShowsVotes({ ...base, fields: ['title'] })).toBe(false);
+  });
+
+  it('adds the field to a type whose default layout then places it', () => {
+    const next = withVotesShown({ ...base, fields: ['title', 'status'] });
+    expect(next.fields).toEqual(['title', 'status', 'votes']);
+    expect(next.display).toBeUndefined();
+    expect(typeShowsVotes(next)).toBe(true);
+  });
+
+  it('places it last in the Footer of a layout that leaves it out, keeping the rest', () => {
+    const task: ItemTypeDef = ITEM_TYPES.find((t) => t.id === 'task')!;
+    const next = withVotesShown(task);
+    expect(next.fields).toContain('votes');
+    const foot = next.display?.detailed?.foot ?? [];
+    expect(foot[foot.length - 1]).toBe('votes');
+    expect(typeShowsVotes(next)).toBe(true);
+    expect(typeCardDisplay(next, 'detailed').filter((f) => f !== 'votes')).toEqual(
+      typeCardDisplay(task, 'detailed'),
+    );
+    const own = withVotesShown({
+      ...base,
+      fields: ['title', 'votes', 'due'],
+      display: { detailed: { foot: ['due'] }, minimal: { lead: ['key'] } },
+    });
+    expect(own.fields).toEqual(['title', 'votes', 'due']);
+    expect(own.display).toEqual({
+      detailed: { foot: ['due', 'votes'] },
+      minimal: { lead: ['key'] },
+    });
+  });
+
+  it('starts a Footer for a layout that has none', () => {
+    const next = withVotesShown({
+      ...base,
+      fields: ['title', 'description'],
+      display: { detailed: { body: ['description'] } },
+    });
+    expect(next.display?.detailed).toEqual({ body: ['description'], foot: ['votes'] });
+  });
+
+  it('leaves a type that shows Votes as it is', () => {
+    const idea = ITEM_TYPES.find((t) => t.id === 'idea')!;
+    expect(withVotesShown(idea)).toBe(idea);
   });
 });

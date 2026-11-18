@@ -1,6 +1,14 @@
 'use client';
 
-import { Fragment, useEffect, useRef, useState, type KeyboardEvent, type RefObject } from 'react';
+import {
+  Fragment,
+  useEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+  type RefObject,
+} from 'react';
 import { STRIP_RAIL_SCROLL } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
 import { track } from '@/lib/telemetry';
 import type { PendingDraw } from '@/lib/draw-mode';
@@ -178,6 +186,7 @@ export function CategoryBarButtons({
   labels,
   shown = null,
   scrollable = false,
+  trailing = null,
 }: {
   bar: CategoryBarState;
   categories: readonly BarCategory[];
@@ -185,6 +194,8 @@ export function CategoryBarButtons({
   labels: boolean;
   // How many categories show, the rest behind More (useBarFold); null shows them all.
   shown?: number | null;
+  // After the last category, in the same row (a phone's strip puts the Library here, so it swipes with the bar).
+  trailing?: ReactNode;
   // A phone's strip: the bar is the part that gives way and swipes sideways, so the
   // selection mode and Search beside it stay in reach (docs/specs/007-editor/toolbar-layout.md "On a phone").
   scrollable?: boolean;
@@ -302,6 +313,7 @@ export function CategoryBarButtons({
           onKeyDown={(e) => onKeyDown(e, visible.length)}
         />
       ) : null}
+      {trailing}
     </div>
   );
 }

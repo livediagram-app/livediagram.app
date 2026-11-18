@@ -28,6 +28,8 @@ import {
   SCREEN_CONSTRAINTS,
   type CallSignal,
 } from './proximity-call';
+import { closeMiniView, openMiniView } from '@/lib/mini-view/mini-view-window';
+import { fakePipWindow, installPip, removePip } from '@/test/fake-pip-window';
 import { LocalPreview } from './local-preview';
 import { callStages } from './stage';
 import { roomZones } from './zones';
@@ -144,6 +146,7 @@ function makeCall(
     getUserMedia?: (c: MediaStreamConstraints) => Promise<MediaStream>;
     getDisplayMedia?: () => Promise<MediaStream>;
     visible?: () => boolean;
+    miniView?: () => boolean;
     preview?: LocalPreview;
     onShareStopped?: (by: string) => void;
   } = {},
@@ -169,6 +172,7 @@ function makeCall(
     getUserMedia,
     getDisplayMedia,
     ...(opts.visible ? { pageVisible: opts.visible } : {}),
+    ...(opts.miniView ? { miniViewOpen: opts.miniView } : {}),
     ...(opts.preview ? { preview: opts.preview } : {}),
   });
   return { call, sent, proved, mic, camera, display, getUserMedia, getDisplayMedia };
@@ -935,6 +939,63 @@ describe('ProximityCall video and screens', () => {
     visible = true;
     document.dispatchEvent(new Event('visibilitychange'));
     expect(sfu.instances[0]!.want).toHaveBeenLastCalledWith([at('p1', 'mic'), at('p1', 'cam')]);
+    call.stop();
+  });
+
+  // Work Tracker 984: video-and-screen-bubbles.md "Who sees what", the mini view's tiles.
+  it('a hidden page with the mini view open receives the heard cameras small, for every level', async () => {
+    for (const level of [{ canShare: true }, { canSpeak: true }, { canSpeak: false }]) {
+      let visible = false;
+      let mini = true;
+      const { call } = makeCall({ ...level, visible: () => visible, miniView: () => mini });
+      await call.start();
+      receiveCallOp('p1', {
+        kind: 'call-track',
+        tabId: 't1',
+        track: at('p1', 'mic'),
+        video: at('p1', 'cam'),
+        screen: at('p1', 'screen'),
+      });
+      setCallMaximised({ id: 'p1', media: 'video' });
+      call.update(scene([['p1', 50]]));
+      const s = sfu.instances.at(-1)!;
+      // The small layer even for the maximised camera, and no screen.
+      expect(s.want).toHaveBeenLastCalledWith([at('p1', 'mic'), at('p1', 'cam')]);
+      // Closing the mini view returns to voices only.
+      mini = false;
+      call.update(scene([['p1', 50]]));
+      expect(s.want).toHaveBeenLastCalledWith([at('p1', 'mic')]);
+      // Showing the tab returns to the canvas's rules, the maximised camera large.
+      visible = true;
+      document.dispatchEvent(new Event('visibilitychange'));
+      expect(s.want).toHaveBeenLastCalledWith([
+        at('p1', 'mic'),
+        { ...at('p1', 'cam'), layer: 'f' },
+        at('p1', 'screen'),
+      ]);
+      call.stop();
+      setCallMaximised(null);
+    }
+  });
+
+  it('opening or closing the mini view re-decides at once (its window store)', async () => {
+    const { call } = makeCall({ visible: () => false });
+    await call.start();
+    receiveCallOp('p1', {
+      kind: 'call-track',
+      tabId: 't1',
+      track: at('p1', 'mic'),
+      video: at('p1', 'cam'),
+    });
+    call.update(scene([['p1', 50]]));
+    const s = sfu.instances.at(-1)!;
+    expect(s.want).toHaveBeenLastCalledWith([at('p1', 'mic')]);
+    installPip(fakePipWindow());
+    await openMiniView();
+    expect(s.want).toHaveBeenLastCalledWith([at('p1', 'mic'), at('p1', 'cam')]);
+    closeMiniView();
+    expect(s.want).toHaveBeenLastCalledWith([at('p1', 'mic')]);
+    removePip();
     call.stop();
   });
 

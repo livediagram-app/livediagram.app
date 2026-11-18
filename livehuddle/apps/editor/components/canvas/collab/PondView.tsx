@@ -1,6 +1,6 @@
 'use client';
 
-import { FurniturePartView } from './FurnitureView';
+import { LitParts } from './furniture-paint';
 import { PondMoment } from './PieceMoments';
 import { pondParts, type ShapeElement } from '@livehuddle/document';
 
@@ -27,9 +27,7 @@ export function PondView({
         role="img"
         aria-label="Pond"
       >
-        {pondParts(w, h).map((p, i) => (
-          <FurniturePartView key={i} part={p} seat={floor} stroke={stroke} />
-        ))}
+        <LitParts parts={pondParts(w, h)} seat={floor} stroke={stroke} />
         <path
           d={`M${w * 0.42} ${h * 0.3}q${w * 0.06} ${h * -0.04} ${w * 0.12} 0M${w * 0.5} ${h * 0.78}q${w * 0.05} ${h * -0.03} ${w * 0.1} 0`}
           fill="none"

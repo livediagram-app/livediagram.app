@@ -191,6 +191,26 @@ apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spre
   `pointer-events-none` SVG over the track, `axisPx` wide, x from `ganttAt(view, day) * axisPx`, the dragged row's
   preview dates and lift applied; stroke `palette.muted` at 1.25 px, done at 40% opacity. The index is
   `planBlocking(plan)`. The export (`ganttArt`) draws the same pairs among the rows it fits.
+- Gantt dependency clashes (spec "Dependency clashes", "Moving the cards that follow"): `dependency-clash.ts` (items).
+  `cardSpan(item, dates)` is a card's `{ from, to }` days as the chart draws it (`roleDay` start and due, the earlier
+  first; one alone is both). `ganttClashDays(from, to)` answers, for an arrow's blocker and blocked rows (as shown,
+  preview applied), how many days the blocked mark starts before the blocker's right end (`from.to - to.from`, 0 for
+  the same day), or null when it does not clash, the blocker or the blocked card is done, or either lacks a mark.
+  `clashText(days, blocker)` is "Starts 3 days before #4 Design is due" ("1 day"; "Starts the day #4 Design is due"
+  at 0). `clashesOf(item, index, isDone, dates)` lists an item's clashes `{ blocker, days }`, worst (largest) first.
+  `followingShifts(items, index, isDone, seeds, dates)` is the walk: the cards reachable from `seeds` through
+  `BlockingIndex.blocks` (seeds never move), in-degrees counted among them, a queue of those at 0 (Kahn), each card's
+  need the day after the latest `span.to` of its open blockers (moved spans used); a card that is not done, not a
+  seed, has a span and starts before its need shifts by `need - from` days, written by `roleDays` for each role it
+  holds; a card in a loop never reaches 0 and is left. O(cards + links). Each shift is `{ item, days, set }`.
+  Editor: `GanttArrows` draws a clashing arrow in `CLASH_AMBER` (`#d97706`, view-frame.tsx) at full opacity;
+  `GanttView` keeps each blocked row's clash texts (from the arrows, preview applied) and `Mark` draws `GanttClashMark`
+  (gantt-clash.tsx: a 12 px amber disc with "!", `role="img"`, its label the texts joined by "; ", in a `Tooltip`) at
+  the mark's left end. After a date drag or draw commits, `useGanttMoveFollowing` (gantt-clash.tsx) works the shifts
+  out over the plan's items with the patch applied; with any, `toast.offer` says "{n} card(s) that follow #3 Design now
+  start before it is due." (Move {n} Card(s) / Leave Them). Confirm reads the latest items again (a ref), works the
+  shifts out afresh from the moved card and sends them as one `plan.patchItems` (one undo step), tracking `('Plan',
+'Changed', 'GanttMoveFollowing')`. Only an editable chart (`plan.canEdit` drags) reaches it.
 - Gantt row order: `planView.rowOrder` (card ids), validated by `isPlanViewSettings` (an array of `isValidItemId`
   strings, none repeated, at most `GANTT_ROW_ORDER_MAX` (5000, `ITEMS_MAX`)). `ganttOrderRows(rows, order)` (gantt-row-order.ts)
   puts named rows first in the order's sequence and the rest after in their date order (stable). `ganttReorder(
@@ -259,10 +279,13 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
   - Read: `fetchFlow(scope, days)` (`apps/editor/lib/api/flow.ts`; `'offline'` for a This Browser plan, `tabId` for a
     tab-scoped session, no `types`: every type is read and each chart filters with its own `viewShownTypes`).
     `createFlowStore` (`hooks/plan/plan-flow-store.ts`) keys an entry by `projectId|tabId|shareCode|days`; an entry
-    lives while a chart subscribes and is dropped with its last. `want(key, scope, days, version)` (`version`: the
-    `plan.items` map) reads at once the first time, else after `FLOW_REFETCH_MS` (2000) from the last change, one timer
-    per entry; an older read's answer is dropped (`seq`); a failed refresh keeps the last answer, a failed first read
-    is `error`. `usePlanFlow(scope, days, version)` (`useSyncExternalStore`) answers `{ status: 'none' | 'loading' |
+    lives while a chart subscribes and is dropped with its last. `want(key, scope, days, version)` (`version`:
+    `flowVersionOf(plan.items)`, the card count and an order-free hash of each card's id, type and status, kept per
+    items map in a `WeakMap` so the charts of a tab work it out once per write; a title or field edit leaves it
+    unchanged) reads at once the first time, else at the later of `FLOW_REFETCH_MS` (2000) after the last change and
+    `FLOW_MIN_INTERVAL_MS` (30,000) after the last read, never later than `FLOW_MIN_INTERVAL_MS` after the first
+    change still waiting (so steady moves still read); one timer per entry; an older read's answer is dropped
+    (`seq`); a failed refresh keeps the last answer, a failed first read is `error`. `usePlanFlow(scope, days, version)` (`useSyncExternalStore`) answers `{ status: 'none' | 'loading' |
 'ready' | 'error' | 'offline', data, retry }`.
   - Frame (`apps/editor/components/plan/views/flow-frame.tsx`): `useFlowChart` (range, read, types), `FlowFrame` over `ViewFrame` (title
     `flowTitle`: "Cycle Time · Last 30 Days"; `loadingText` "Loading flow…"; `empty` a `CompactEmptyState` for

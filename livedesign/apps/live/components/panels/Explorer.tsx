@@ -1,5 +1,6 @@
 'use client';
 
+import { leaveArchivedItem } from '@liveworkspace/workbench/lib/archived';
 import { explorerHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { memo, useCallback, useEffect, useMemo } from 'react';
 import {
@@ -11,6 +12,7 @@ import {
   type RenderAppLogo,
 } from '@liveworkspace/explorer';
 import { trackOrganise } from '@/lib/explorer-organise';
+import { track } from '@/lib/telemetry';
 import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { BrandMark, ProductNavLinks } from '@livedesign/ui';
@@ -128,6 +130,11 @@ function ExplorerImpl({
   }, [shown]);
 
   const trashCurrent = useCallback((item: Item) => trashOpenDesign(item.id, item.title), []);
+  // Archived is closed: the item open here, once archived from the panel, leaves for the Explorer, which says so.
+  const archivedCurrent = useCallback(
+    (item: { id: string; title: string | null }) => leaveArchivedItem('livedesign', item),
+    [],
+  );
 
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
@@ -182,7 +189,16 @@ function ExplorerImpl({
           currentOffline={offline}
           // The open design stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
-          onRenameCurrent={onRenameCurrent}
+          onArchivedCurrent={archivedCurrent}
+          // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
+          onRenameCurrent={
+            onRenameCurrent
+              ? (name: string) => {
+                  track('Document', 'Renamed');
+                  onRenameCurrent(name);
+                }
+              : undefined
+          }
           onCreate={(placement) =>
             onNewDesign && !placement.folderId && !placement.teamId
               ? onNewDesign()
@@ -218,7 +234,7 @@ function ExplorerImpl({
           footer={
             <ProductNavLinks
               current="editor"
-              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-evenly' : ''}`}
             />
           }
         />

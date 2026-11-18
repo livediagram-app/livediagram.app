@@ -5,6 +5,7 @@
 // component for every Home section, so a card looks and behaves the same wherever Home shows it; only its line
 // differs (when it was opened, or when it was made).
 
+import { SIDEBAR_LABELS } from '../views';
 import {
   createContext,
   memo,
@@ -28,12 +29,7 @@ import { ItemMenu } from './menus';
 import { useItemBits } from './rows';
 import { CARD_NAME, CARD_SURFACE, THUMB_EDGE } from './HomeSection';
 import type { ThisBrowserItem } from '../this-browser';
-import {
-  LocalPreview,
-  ThisBrowserItemMenu,
-  ThisBrowserPill,
-  useThisBrowserItems,
-} from './ThisBrowser';
+import { LocalPreview, ThisBrowserItemMenu, useThisBrowserItems } from './ThisBrowser';
 
 // A card's line: when it was opened (Most Used, Recent, Shared With You Recently) or when it was made (New).
 export type CardLine = 'opened' | 'made';
@@ -327,11 +323,14 @@ const LocalCard = memo(function LocalCard({
       attrs={{ 'data-this-browser-card': '' }}
       large={large}
       app={showApp ? app : null}
-      // The pill on the picture's corner, as the editors' panel has it, so the line keeps its width.
+      // The picture says where it lives (a crossed cloud), with no pill on it (owner, 2026-11-17).
       thumb={
-        <Pinned pill={<ThisBrowserPill inLink />}>
+        <>
           <LocalPreview app={app} iconSize={large ? 28 : 18} className="h-full w-full" />
-        </Pinned>
+          <span className="sr-only" data-this-browser="">
+            {SIDEBAR_LABELS.thisBrowser}
+          </span>
+        </>
       }
       name={<span className={`${CARD_NAME} ${nameSize(large)}`}>{title}</span>}
       line={

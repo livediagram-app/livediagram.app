@@ -15,7 +15,6 @@ import {
   openThisBrowserItem,
   THIS_BROWSER_EMPTY,
   ThisBrowserItemMenu,
-  ThisBrowserPill,
   thenReload,
   useThisBrowserItems,
 } from '../explorer/ThisBrowser';
@@ -112,12 +111,13 @@ export const PanelLocalCard = memo(function PanelLocalCard({ item }: { item: Thi
       // The pill sits on the picture's corner, so the line below has the card's width for when it was
       // opened (side by side, a three-across card cut the time short).
       preview={
-        <span className="relative block h-full w-full">
+        // The picture says where it lives, with no pill on it (owner, 2026-11-17).
+        <>
           <LocalPreview app={app} iconSize={28} className="h-full w-full" />
-          <span className="absolute left-1.5 top-1.5">
-            <ThisBrowserPill inLink />
+          <span className="sr-only" data-this-browser="">
+            {SIDEBAR_LABELS.thisBrowser}
           </span>
-        </span>
+        </>
       }
       title={name}
       label={name}

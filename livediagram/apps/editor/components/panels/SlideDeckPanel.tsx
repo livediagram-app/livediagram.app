@@ -18,6 +18,9 @@
 // An empty deck stays empty. No seeded slides, no "one per tab" starter: a
 // generated deck is one you have to read and prune before you can trust it.
 
+import { ToolFooter, ToolFooterButton } from '@liveworkspace/ui';
+import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
+import { slideDeckArt } from '@liveworkspace/ui/tool-explainer-art';
 import { useSelectionOf } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import {
   sameMembers,
@@ -30,7 +33,6 @@ import { slideName } from '@livediagram/document';
 
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { SlideRowMenu } from '@/components/panels/SlideRowMenu';
-import { SlideDeckSettingsPopover } from '@/components/panels/SlideDeckSettingsPopover';
 import { SlideDeckRow } from '@/components/panels/SlideDeckRow';
 import { PlayIcon } from '@liveworkspace/workbench/components/primitives/PlayIcon';
 import { ConfirmPopover } from '@liveworkspace/workbench/components/primitives/ConfirmPopover';
@@ -42,7 +44,6 @@ import {
 } from '@liveworkspace/workbench/hooks/ui/useRowReorderDrag';
 import { DropCaret } from '@liveworkspace/workbench/components/primitives/DropCaret';
 import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
-import { SlideDeckIcon } from '@/components/palette/palette-icons';
 
 const selectionSetOf = (s: Selection) => selectionIds(s.selectedId, s.multiSelectedIds);
 
@@ -51,6 +52,7 @@ export function SlideDeckPanel({
   tabs,
   activeTabId,
   isReadOnly,
+  inTools = false,
   ...placement
 }: {
   state: SlideDeckState;
@@ -59,7 +61,9 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
-} & ModePanelProps) {
+  /** Drawn inside the footer's Tools (owner, 2026-11-17), under its back bar: no panel frame, no position. */
+  inTools?: boolean;
+} & Partial<ModePanelProps>) {
   const {
     deck,
     openSlideId,
@@ -123,51 +127,44 @@ export function SlideDeckPanel({
 
   // The talk's planned length: every shown slide's minutes.
   const totalMinutes = deck.slides.reduce((n, sl) => n + (sl.hidden ? 0 : (sl.minutes ?? 0)), 0);
-  return (
-    <ModePanel
-      title="Slide Deck"
-      helpArticle="slideDeck"
-      // The SAME presenter settings the HUD's cog carries, reachable BEFORE
-      // you start. Discovering "Actual size" or "Auto-advance" mid-talk means
-      // changing it while a room watches; the point of a rehearsal is
-      // arriving with it already set. One state, one localStorage key, two
-      // doors — so whichever you find, the other agrees.
-      headerActions={
-        <>
-          {deck.slides.length > 0 ? (
-            <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-              {deck.slides.length === 1 ? '1 slide' : `${deck.slides.length} slides`}
-              {totalMinutes > 0 ? ` · ${totalMinutes} min` : ''}
-            </span>
-          ) : null}
-          {isReadOnly ? null : (
-            <SlideDeckSettingsPopover
-              config={state.config}
-              onChange={state.updateConfig}
-              onResetPosition={placement.onReset ?? (() => {})}
-              resettable={placement.position !== null}
-            />
-          )}
-        </>
-      }
-      {...placement}
-    >
-      <div className="flex max-h-[26rem] flex-col gap-2 px-2 pb-2">
+  const headerActions = (
+    <>
+      {deck.slides.length > 0 ? (
+        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+          {deck.slides.length === 1 ? '1 slide' : `${deck.slides.length} slides`}
+          {totalMinutes > 0 ? ` · ${totalMinutes} min` : ''}
+        </span>
+      ) : null}
+    </>
+  );
+  const content = (
+    <>
+      <div
+        // Inside Tools it grows with Tools and scrolls only at the screen's height (owner, 2026-11-17); as its own
+        // panel it keeps its caps.
+        className={`flex flex-col gap-2 px-2 ${inTools ? 'min-h-0 flex-1' : 'max-h-[26rem] pb-2'}`}
+      >
         {deck.slides.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 px-2 py-5 text-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-brand-50 text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
-              <SlideDeckIcon />
-            </span>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">
-              Build your deck
-            </p>
-            <p className="max-w-[18rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
-              Select what you want on the first slide, then press{' '}
-              <span className="font-medium text-slate-700 dark:text-slate-200">New slide</span>.
-            </p>
+          // The tool's explainer (footer-tools-menu.md "Explainers"): no slides yet.
+          <div className={`px-1 py-2 ${inTools ? 'min-h-0 flex-1 overflow-y-auto' : ''}`}>
+            <ToolExplainer
+              art={slideDeckArt}
+              title="Build Your Deck"
+              description="Turn parts of the canvas into slides, then present them full screen."
+              steps={[
+                'Select what you want on the first slide.',
+                'Press New Slide; Slide Deck stays open while you pick.',
+                'Add the rest, then press Start to present.',
+              ]}
+              data="slide-deck"
+            />
           </div>
         ) : (
-          <div className="flex max-h-52 flex-col gap-1 overflow-y-auto overflow-x-hidden py-px">
+          <div
+            className={`flex flex-col gap-1 overflow-y-auto overflow-x-hidden py-px ${
+              inTools ? 'min-h-0 flex-1' : 'max-h-52'
+            }`}
+          >
             {deck.slides.map((slide, i) => (
               <div key={slide.id} className="flex flex-col gap-1">
                 {caretBefore(i) ? <DropCaret /> : null}
@@ -276,34 +273,35 @@ export function SlideDeckPanel({
           </label>
         ) : null}
 
-        {!isReadOnly ? (
-          <button
-            type="button"
-            onClick={newSlideFromSelection}
-            disabled={selectionCount === 0}
-            className="w-full cursor-pointer rounded-md border border-slate-200 bg-white px-2 py-1.5 text-[11px] font-medium text-slate-600 transition hover:border-brand-300 hover:text-brand-700 disabled:cursor-default disabled:opacity-40 disabled:hover:border-slate-200 disabled:hover:text-slate-600 dark:border-slate-700 dark:bg-slate-800/60 dark:text-slate-300"
-          >
-            {selectionCount === 0
-              ? 'Select elements to make a slide'
-              : `New slide from ${selectionCount === 1 ? '1 element' : `${selectionCount} elements`}`}
-          </button>
-        ) : null}
-
-        <button
-          type="button"
-          onClick={() => void start()}
-          disabled={runnable.length === 0 || startingDeck}
-          data-presentation-start="panel"
-          className={`flex w-full cursor-pointer items-center justify-center gap-1.5 rounded-md bg-brand-700 px-2 py-2 text-[11px] font-semibold text-white transition hover:bg-brand-800 disabled:cursor-default disabled:opacity-40 ${SOLID_BRAND_DARK_CONTROL}`}
-        >
-          <PlayIcon />
-          {startingDeck ? 'Loading…' : 'Present'}
-          {runnable.length > 0 && !startingDeck ? (
-            <span className="inline-flex h-[17px] items-center rounded-full bg-white/25 px-1.5 text-[10px] font-semibold tabular-nums">
-              <span className="text-optical-centre">{runnable.length}</span>
-            </span>
+        {/* New Slide and Present stay pinned at the bottom, in the tools' one footer look (owner, 2026-11-17); edge to edge past the content's own padding. */}
+        <ToolFooter className="-mx-2">
+          {!isReadOnly ? (
+            <ToolFooterButton
+              variant="secondary"
+              onClick={newSlideFromSelection}
+              disabled={selectionCount === 0}
+            >
+              {selectionCount === 0
+                ? 'Select elements to make a slide'
+                : `New slide from ${selectionCount === 1 ? '1 element' : `${selectionCount} elements`}`}
+            </ToolFooterButton>
           ) : null}
-        </button>
+
+          <ToolFooterButton
+            onClick={() => void start()}
+            disabled={runnable.length === 0 || startingDeck}
+            data-presentation-start="panel"
+            className={SOLID_BRAND_DARK_CONTROL}
+          >
+            <PlayIcon />
+            {startingDeck ? 'Loading…' : 'Present'}
+            {runnable.length > 0 && !startingDeck ? (
+              <span className="inline-flex h-[17px] items-center rounded-full bg-white/25 px-1.5 text-[10px] font-semibold tabular-nums">
+                <span className="text-optical-centre">{runnable.length}</span>
+              </span>
+            ) : null}
+          </ToolFooterButton>
+        </ToolFooter>
       </div>
       {confirmDelete && deleting ? (
         <ConfirmPopover
@@ -321,6 +319,23 @@ export function SlideDeckPanel({
           onCancel={() => setConfirmDelete(null)}
         />
       ) : null}
+    </>
+  );
+  if (inTools)
+    return (
+      <div data-slide-deck-tools="" className="flex min-h-0 flex-1 flex-col">
+        {/* No slide count here (owner, 2026-11-17): the list says it, and the row was room lost. */}
+        {content}
+      </div>
+    );
+  return (
+    <ModePanel
+      title="Slide Deck"
+      helpArticle="slideDeck"
+      headerActions={headerActions}
+      {...(placement as ModePanelProps)}
+    >
+      {content}
     </ModePanel>
   );
 }

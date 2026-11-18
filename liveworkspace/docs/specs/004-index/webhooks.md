@@ -54,7 +54,7 @@ alone. A webhook picks any of its document's app's events (at least one); an eve
 (it has no webhooks yet), and an @-mention is not a webhook event: it is about a person, not the document, and the
 Inbox and phone notifications carry it.
 
-**Who Did It.** Each webhook also says whose actions it reports: **Anyone** (the default) or **Only Me**, which sends
+**Who Did It.** Each webhook also says whose actions it reports: **Anyone** (the default) or **Only Me** (two tiles, their names alone, no line under them: owner, 2026-11-17), which sends
 only what its creator did (the event's actor is the creator's account). An event with no account behind it never
 goes to an Only Me webhook: a form response (from whoever filled the form in), or a card move by a guest. Whoever
 resumes a paused webhook, or sets one to Only Me, becomes its creator, so Only Me then means them.
@@ -219,11 +219,13 @@ webhook, with the same address, secret, retries, pausing and Recent Deliveries; 
 From the document's own ⋯ menu wherever it is listed (the Explorer in every app and on liveworkspace.app, and the
 Explorer panel inside each editor), and, for the open document in each editor, from the footer's **Tools** ([footer-tools-menu.md](./footer-tools-menu.md)): **Webhooks**, offered to anyone signed in who can edit the whole document (an editor also
 leaves it off for a Viewer, a Participant or a one-tab link, which it knows). It opens a
-dialog titled "Webhooks for “<document>”" whose line says that what is set here applies to this document
-only. It wears the dialog hero header ([dialog-hero-header.md](./dialog-hero-header.md)): a payload leaving the
-document along a send line to an endpoint, the title its name, the line the app's mark with "<Kind> · These apply to
-this <kind> only". In it: the document's webhooks, each with Send Test, Pause or Resume, Delete, Edit Events and its Recent
-Deliveries, and **Add Webhook**: where it posts (Slack, Microsoft Teams, Your Own Service), the address with how to
+dialog titled "Webhooks for “<document>”", the title alone naming whose they are (no line under it). It wears the
+dialog hero header ([dialog-hero-header.md](./dialog-hero-header.md)): a payload leaving the document along a send
+line to an endpoint, the title its name. In it: the document's webhooks, each with Send Test, Pause or Resume, Delete, Edit Events and its Recent
+Deliveries, and **Add Webhook**, pinned at the dialog's foot under the list (owner, 2026-11-17: a tool's main button never scrolls
+away; when the document has the most webhooks it may, the foot says so instead), which opens beside the dialog as a popover (`ResponsivePopover` `placement="side"`,
+440px; a drawer from the bottom on a phone), so the list stays in view and the dialog never grows. Its form is headed
+**Add a Webhook** alone (no line under it): where it posts (Slack, Microsoft Teams, Your Own Service), each a full-width row with its mark at the left, the address with how to
 get it, a name, **What Should It Send?** (the document's app's events in groups, none chosen at first, with Select
 All and Clear) and **Who Did It** (Anyone or Only Me). A plain webhook's signing secret shows once. Edit Events'
 Save waits for a change: the same events in another order is none. A refusal of the address (`webhook_url_invalid`,

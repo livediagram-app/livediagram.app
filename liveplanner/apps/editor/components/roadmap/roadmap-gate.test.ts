@@ -56,10 +56,10 @@ const BOARD: RoadmapBoard = {
   tabName: 'Board',
   tabId: 't1',
   columns: [
-    { status: 'new', name: 'Inbox' },
-    { status: 'todo', name: 'Planned' },
+    { status: 'new', name: 'Inbox', color: null },
+    { status: 'todo', name: 'Planned', color: null },
   ],
-  types: [{ id: 'task', name: 'Task' }],
+  types: [{ id: 'task', name: 'Task', glyph: 'sparkles', color: 'violet' }],
   publishable: true,
 };
 
@@ -79,8 +79,8 @@ describe('defaults', () => {
       ...BOARD,
       tabName: '',
       columns: [
-        { status: 'a', name: ' Under Review ' },
-        { status: 'b', name: 'BACKLOG' },
+        { status: 'a', name: ' Under Review ', color: null },
+        { status: 'b', name: 'BACKLOG', color: null },
       ],
     };
     expect(defaultRoadmapSettings(triage)).toMatchObject({ title: 'Roadmap', columns: ['a', 'b'] });
@@ -104,7 +104,10 @@ describe('the rules', () => {
       columns: ['new', 'todo'],
       formCode: null,
     });
-    const two = { ...BOARD, columns: [...BOARD.columns, { status: 'done', name: 'Done' }] };
+    const two = {
+      ...BOARD,
+      columns: [...BOARD.columns, { status: 'done', name: 'Done', color: null }],
+    };
     expect(withColumnToggled(s, 'done', two, [form])).toMatchObject({
       columns: ['todo', 'done'],
       formCode: 'f',

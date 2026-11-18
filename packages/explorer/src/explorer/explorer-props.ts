@@ -101,6 +101,9 @@ export type ExplorerProps = {
   /** An item the host trashed just before landing here (the plan open in its editor): the Explorer says so, once,
    *  with an Undo that restores it and re-reads the lists. */
   trashedOnArrival?: { id: string; title: string | null } | null;
+  /** An item the host archived just before landing here (the item open in its editor, closed once archived): the
+   *  Explorer says so, once, with no Undo (one-explorer.md "Archiving the open item"). */
+  archivedOnArrival?: { id: string; title: string | null } | null;
   /** The item an editor's door came from (`?item=`), once the host has opened the place that holds it: its row or
    *  card is scrolled into view and marked (one-explorer.md "Opening from an open item"). */
   arrivedItem?: string | null;

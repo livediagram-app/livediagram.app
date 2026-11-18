@@ -257,7 +257,7 @@ describe('buildRemoteAvatarRows', () => {
     const peer = p('peer', { name: 'Ada', color: '#ff0000' });
     const rows = buildRemoteAvatarRows(new Map([['peer', entry('t1')]]), byId(peer), 'me', 't1');
     expect(rows).toEqual([
-      { id: 'peer', name: 'Ada', color: '#ff0000', avatar: walker, glideMs: 0 },
+      { id: 'peer', name: 'Ada', color: '#ff0000', avatar: walker, glideMs: 33 },
     ]);
   });
 
@@ -268,11 +268,22 @@ describe('buildRemoteAvatarRows', () => {
     expect(rows[0]?.role).toBe('participate');
   });
 
-  // docs/specs/008-canvas/avatar-mode.md "A busy room"
-  it('glides a busy room’s characters over one step, and nobody else’s', () => {
+  // docs/specs/008-canvas/avatar-mode.md "A peer's steps glide, in every room"
+  it('glides a busy room’s characters over its slower step', () => {
     const crowd = Array.from({ length: 11 }, (_, i) => p(`p${i}`));
     const rows = buildRemoteAvatarRows(new Map([['p1', entry('t1')]]), byId(...crowd), 'me', 't1');
     expect(rows[0]?.glideMs).toBe(50);
+  });
+
+  it('glides a small room’s character over the gap its last two moves arrived apart', () => {
+    const peer = p('peer');
+    const rows = buildRemoteAvatarRows(
+      new Map([['peer', { ...entry('t1'), gapMs: 69 }]]),
+      byId(peer),
+      'me',
+      't1',
+    );
+    expect(rows[0]?.glideMs).toBe(69);
   });
 
   // A peer who travelled (avatar-mode.md "Changing tab") leaves their last packet here; their tab-focus moved on.

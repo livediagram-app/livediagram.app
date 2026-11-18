@@ -14,20 +14,24 @@ import { useExplorer } from '../explorer/context';
 import { Dialog } from '../ui/Dialog';
 import { HistoryIcon } from '../ui/library-icons';
 import { FOCUS_RING } from '../ui/classes';
-import { CATEGORY_LABELS, type EventCategory } from './history-model';
 import { isAbort } from '../data/errors';
 import { useNamedEvents } from '../data/names';
 import {
   HISTORY_PAGE,
   buildHistory,
-  filterHistory,
-  historyCategories,
   pinHistory,
   summariseHistory,
   type HistoryPinAt,
 } from './history';
 import { HistoryEntry, type RenderCtx } from './HistoryEntry';
-import { Chip, HistoryHeader, HistorySkeleton, MUTED, SummaryStrip } from './HistoryParts';
+import {
+  HistoryHeader,
+  HistorySkeleton,
+  MUTED,
+  SummarySkeleton,
+  SummaryStrip,
+} from './HistoryParts';
+import { ToolFooter } from '@liveworkspace/ui';
 
 export { HISTORY_PAGE };
 
@@ -38,7 +42,9 @@ const BUTTON = `inline-flex items-center gap-1.5 rounded-lg border border-slate-
 /** What another tool adds to History (Snapshots, owner 2026-11-17): a block over the timeline, and entries laid on its
  *  rail by time, each drawing its own list item (`last` ends the rail). */
 export type HistoryPin = HistoryPinAt & { render: (last: boolean) => ReactNode };
-export type HistoryExtras = { top?: ReactNode; pins: readonly HistoryPin[] };
+/** What the host lays on History: `action`, full width at its foot (Snapshots' Snapshot button); `top`, a block under
+ *  the filter (Snapshots' notices); `pins`, entries on the timeline. */
+export type HistoryExtras = { action?: ReactNode; top?: ReactNode; pins: readonly HistoryPin[] };
 
 const NO_PINS: readonly HistoryPin[] = [];
 
@@ -90,17 +96,9 @@ export function HistoryDialog({
   const events = useNamedEvents(state.events);
   // One clock for the dialog, so the day headings and "2 hours ago" agree and never shift while it is read.
   const [now] = useState(() => Date.now());
-  const [category, setCategory] = useState<EventCategory | null>(null);
-  const chips = useMemo(() => historyCategories(events), [events]);
   const summary = useMemo(() => summariseHistory(events), [events]);
-  // A chip whose kind has gone (never, with paging only adding) would leave the list empty: fall back to All.
-  const active = category && chips.some((c) => c.category === category) ? category : null;
-  // Pins show under All alone: a chip narrows to one kind of event.
-  const pins = active ? NO_PINS : (extras?.pins ?? NO_PINS);
-  const days = useMemo(
-    () => pinHistory(buildHistory(filterHistory(events, active), now), pins, now),
-    [events, active, now, pins],
-  );
+  const pins = extras?.pins ?? NO_PINS;
+  const days = useMemo(() => pinHistory(buildHistory(events, now), pins, now), [events, now, pins]);
 
   const { teamName } = ctx;
   const renderCtx: RenderCtx = useMemo(() => ({ viewerId, teamName }), [viewerId, teamName]);
@@ -138,47 +136,31 @@ export function HistoryDialog({
   else
     body = (
       <>
-        {days.length === 0 ? (
-          <p className={`px-5 py-10 text-center text-sm sm:px-6 ${MUTED}`} data-history-none="">
-            No {CATEGORY_LABELS[active!].toLowerCase()} in the {state.events.length} events loaded.{' '}
-            <button
-              type="button"
-              onClick={() => setCategory(null)}
-              className={`font-medium text-brand-700 underline-offset-2 transition duration-micro hover:underline dark:text-brand-300 ${FOCUS_RING}`}
-            >
-              Show all
-            </button>
-          </p>
-        ) : (
-          <ol aria-label="Events, newest first" className="pb-2">
-            {days.map((day) => (
-              <li key={day.key} aria-labelledby={`${titleId}-${day.key}`}>
-                <h3
-                  id={`${titleId}-${day.key}`}
-                  className="sticky top-0 z-10 flex items-baseline justify-between gap-2 border-b border-slate-100 bg-white/90 px-5 py-2 text-xs font-semibold text-slate-700 backdrop-blur sm:px-6 dark:border-slate-800 dark:bg-slate-900/90 dark:text-slate-200"
-                >
-                  <time dateTime={day.key}>{day.label}</time>
-                  <span className={`font-normal ${MUTED}`}>{dayCount(day.count, day.pinned)}</span>
-                </h3>
-                <ol className="relative px-5 pb-1 pt-3 sm:px-6">
-                  {day.entries.map((entry, i) => {
-                    const last = i === day.entries.length - 1;
-                    return entry.pin ? (
-                      <Fragment key={entry.pin.key}>{entry.pin.render(last)}</Fragment>
-                    ) : (
-                      <HistoryEntry
-                        key={entry.run.key}
-                        run={entry.run}
-                        ctx={renderCtx}
-                        last={last}
-                      />
-                    );
-                  })}
-                </ol>
-              </li>
-            ))}
-          </ol>
-        )}
+        <ol aria-label="Events, newest first" className="pb-2">
+          {days.map((day) => (
+            <li key={day.key} aria-labelledby={`${titleId}-${day.key}`}>
+              <h3
+                id={`${titleId}-${day.key}`}
+                className="sticky top-0 z-10 flex items-baseline justify-between gap-2 bg-white/90 px-5 pb-1.5 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 backdrop-blur sm:px-6 dark:bg-slate-900/90 dark:text-slate-400"
+              >
+                <time dateTime={day.key}>{day.label}</time>
+                <span className={`font-normal normal-case tracking-normal ${MUTED}`}>
+                  {dayCount(day.count, day.pinned)}
+                </span>
+              </h3>
+              <ol className="relative px-5 pb-1 pt-2 sm:px-6">
+                {day.entries.map((entry, i) => {
+                  const last = i === day.entries.length - 1;
+                  return entry.pin ? (
+                    <Fragment key={entry.pin.key}>{entry.pin.render(last)}</Fragment>
+                  ) : (
+                    <HistoryEntry key={entry.run.key} run={entry.run} ctx={renderCtx} last={last} />
+                  );
+                })}
+              </ol>
+            </li>
+          ))}
+        </ol>
         {more || state.failed ? (
           <div className="flex flex-col items-center gap-2 px-5 pb-6 pt-2">
             {state.failed ? (
@@ -214,13 +196,11 @@ export function HistoryDialog({
       className="sm:max-h-[min(46rem,calc(100dvh-4rem))]"
     >
       <HistoryHeader item={item} titleId={titleId} onClose={onClose} />
-      {extras?.top ? (
-        <div className="shrink-0 border-b border-slate-100 px-5 py-3 sm:px-6 dark:border-slate-800">
-          {extras.top}
-        </div>
-      ) : null}
-      {first ? null : (
+      {first && state.loading ? (
+        <SummarySkeleton />
+      ) : first ? null : (
         <SummaryStrip
+          events={events}
           item={item}
           now={now}
           count={summary.count}
@@ -229,27 +209,9 @@ export function HistoryDialog({
           viewerId={viewerId}
         />
       )}
-      {chips.length > 1 ? (
-        <div
-          role="group"
-          aria-label="Filter by kind"
-          className="flex shrink-0 gap-1.5 overflow-x-auto border-b border-slate-100 px-5 py-2.5 sm:flex-wrap sm:px-6 dark:border-slate-800"
-        >
-          <Chip
-            label="All"
-            count={state.events.length}
-            on={active === null}
-            onClick={() => setCategory(null)}
-          />
-          {chips.map((c) => (
-            <Chip
-              key={c.category}
-              label={CATEGORY_LABELS[c.category]}
-              count={c.count}
-              on={active === c.category}
-              onClick={() => setCategory(active === c.category ? null : c.category)}
-            />
-          ))}
+      {extras?.top ? (
+        <div className="shrink-0 border-b border-slate-100 px-5 py-3 sm:px-6 dark:border-slate-800">
+          {extras.top}
         </div>
       ) : null}
       <div
@@ -259,6 +221,14 @@ export function HistoryDialog({
       >
         {body}
       </div>
+      {/* The host's action, full width at the foot, always in reach whatever the list holds (owner, 2026-11-17). */}
+      {extras?.action ? (
+        <ToolFooter className="[&>*]:w-full">
+          <div data-history-action="" className="flex [&>*]:flex-1">
+            {extras.action}
+          </div>
+        </ToolFooter>
+      ) : null}
     </Dialog>
   );
 }

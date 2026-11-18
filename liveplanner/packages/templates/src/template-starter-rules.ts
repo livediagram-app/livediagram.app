@@ -31,7 +31,13 @@ import { TEMPLATE_CARD_TYPES } from '@liveplanner/items/template-card-types';
 // types a template makes"). A subpath, kept out of the editor's first load.
 provideTemplateCardTypes(TEMPLATE_CARD_TYPES);
 
-type Starter = { id: AutomationTemplateId; on: boolean };
+// `narrow` fits a gallery rule to the template's own columns, where the plan's first done column is another board's
+// (a Trip Planner's Packing items finish in Packed, not in Bookings' Paid).
+type Starter = {
+  id: AutomationTemplateId;
+  on: boolean;
+  narrow?: (body: AutomationRuleBody, plan: AutomationTemplatePlan) => AutomationRuleBody;
+};
 
 const STAMP: Starter = { id: 'stamp-finish', on: true };
 const CLOSE: Starter = { id: 'close-parent', on: true };
@@ -41,6 +47,25 @@ const BLOCKED: Starter = { id: 'flag-blocked', on: true };
 const REOPEN: Starter = { id: 'reopen-on-comment', on: true };
 const TRIAGE: Starter = { id: 'triage-bugs', on: false };
 const REVIEWS: Starter = { id: 'route-reviews', on: false };
+const DUE_SOON: Starter = { id: 'flag-due-soon', on: true };
+
+// Done When the Checklist Is Complete, on a trip: a packing item whose checklist is ticked is Packed. Other cards'
+// checklists (a booking's) leave it alone.
+export const PACKED: Starter = {
+  id: 'done-on-checklist',
+  on: true,
+  narrow(body, plan) {
+    const column = (name: string) => plan.statuses.find((s) => s.name === name)?.status;
+    const toPack = column('To Pack');
+    const packed = column('Packed');
+    if (!toPack || !packed) return body;
+    return {
+      ...body,
+      conditions: [{ kind: 'column', statuses: [toPack] }],
+      steps: [{ kind: 'move', status: packed }],
+    };
+  },
+};
 const FORM: Starter = { id: 'form-responses', on: false };
 
 // Which rules each template starts with, from the Templates gallery: the ones its work needs, on when they only move,
@@ -65,7 +90,7 @@ export const TEMPLATE_STARTER_RULES: Readonly<Record<StarterRuleKind, readonly S
   'sprint-board': [STAMP, CLOSE, START, BLOCKED, TRIAGE, REVIEWS],
   'client-onboarding': [START, BLOCKED, CLOSE],
   'editorial-pipeline': [START, DUE, BLOCKED],
-  'trip-planner': [BLOCKED],
+  'trip-planner': [DUE_SOON, PACKED],
 };
 
 // The steps a starter rule may take: a move, a field, a label, a flag, an assignee, a comment. Never an email, a
@@ -118,7 +143,10 @@ export function templateStarterRules(kind: string, timeZone: string): StarterRul
   if (!hasStarterRules(kind)) return [];
   const plan = templatePlanOf(kind, timeZone);
   return TEMPLATE_STARTER_RULES[kind]
-    .map(({ id, on }) => starterOf(automationTemplate(id)!.build(plan), on))
+    .map(({ id, on, narrow }) => {
+      const fill = automationTemplate(id)!.build(plan);
+      return starterOf(narrow ? { ...fill, body: narrow(fill.body, plan) } : fill, on);
+    })
     .filter((r): r is StarterRule => r !== null);
 }
 

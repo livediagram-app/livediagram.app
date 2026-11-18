@@ -4,10 +4,10 @@
 // every role, it plays the tab from the screen in view. A full-height header action like Share and Copy.
 import { Glyph, HoverCard } from '@livedesign/ui';
 import {
-  HEADER_ACTION_BTN,
-  HEADER_ACTION_TONE,
-  HeaderGlyph,
-} from '@liveworkspace/workbench/components/chrome/header-action';
+  CORNER_BTN,
+  CORNER_TONE,
+} from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { HeaderGlyph } from '@liveworkspace/workbench/components/chrome/header-action';
 import { pagesOf, type Tab } from '@livedesign/design';
 import { currentPageIdNow } from '@/lib/current-page-kind';
 import type { EditorCapabilities } from '@/lib/editor-capabilities';
@@ -33,12 +33,12 @@ export function PrototypeHeaderButton() {
         type="button"
         data-tour-id="prototype"
         onClick={() => openPrototype(currentPageIdNow())}
-        className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
+        className={`${CORNER_BTN} ${CORNER_TONE}`}
       >
         <HeaderGlyph>
           <PrototypeIcon />
         </HeaderGlyph>
-        <span>Prototype</span>
+        <span className="phone:sr-only [[data-compact]_&]:sr-only">Prototype</span>
       </button>
     </HoverCard>
   );

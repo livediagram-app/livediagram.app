@@ -42,8 +42,8 @@ export const CHAPTERS: readonly Chapter[] = [
   },
   {
     id: 'style',
-    name: 'Style',
-    shortName: 'Style',
+    name: 'Appearance',
+    shortName: 'Appearance',
     ms: 6000,
     say: 'Right-click anything for its colours and options.',
     sayTouch: 'Long-press anything for its colours and options.',
@@ -171,7 +171,8 @@ export const basics: Topic<BasicsLayout> = {
       );
     }
     // Style.
-    const path = ms >= STYLE.presets ? ['Style', 'Presets'] : ms >= STYLE.flyout ? ['Style'] : [];
+    const path =
+      ms >= STYLE.presets ? ['Appearance', 'Presets'] : ms >= STYLE.flyout ? ['Appearance'] : [];
     return frameOf([...base, ms >= STYLE.pick ? styled : labelled], {
       selectedId: ms >= STYLE.menu ? b.id : null,
       menu: ms >= STYLE.menu && ms < STYLE.close ? { on: b.id, path } : null,
@@ -195,7 +196,7 @@ export const basics: Topic<BasicsLayout> = {
       case 'style':
         return [
           { at: STYLE.menu, to: { kind: 'element', id: B }, press: true },
-          { at: STYLE.flyout, to: { kind: 'menu', name: 'Style' }, press: true },
+          { at: STYLE.flyout, to: { kind: 'menu', name: 'Appearance' }, press: true },
           { at: STYLE.presets, to: { kind: 'menu', name: 'Presets' }, press: true },
           { at: STYLE.pick, to: { kind: 'menu', name: 'Success' }, press: true },
           { at: STYLE.close + 800, to: { kind: 'element', id: B } },

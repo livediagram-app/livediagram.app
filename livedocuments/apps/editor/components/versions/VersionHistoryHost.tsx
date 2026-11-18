@@ -6,7 +6,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo } from 'react';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
-import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
+import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import { sameTabsForBar } from '@/app/document/[id]/editor-view-bars';
 import {
   closeVersionHistory,
@@ -43,19 +43,15 @@ function OpenHost({
   // A link confined to one tab never makes a tab (tab-scoped-share-links.md).
   const tabScoped = useEditorChrome((s) => s.sessionTabScope !== null);
 
-  const chrome = useEditorChromeStore();
   const allTabs = useEditorChrome((s) => s.tabs, sameTabsForBar);
-  // `isOutOfScope` answers from the session's tab scope: read when the scope changes, as the tab bar does.
-  const scope = useEditorChrome((s) => s.sessionTabScope);
+  // `isOutOfScope` answers from the session's tab scope and changes with it (useTabScope): subscribed, as the tab bar
+  // does, since a `chrome.get()` in this memo was kept at its first value by the React Compiler (Work Tracker 946).
+  const isOutOfScope = useEditorChrome((s) => s.isOutOfScope);
   const loaded = useEditorChrome((s) => s.loadedTabIds.has(tabId));
   const nowTab = useEditorChrome((s) => s.tabs.find((t) => t.id === tabId) ?? null);
   const tabs = useMemo(
-    () => {
-      const isOutOfScope = chrome.get().isOutOfScope;
-      return allTabs.filter((t) => !isOutOfScope(t.id)).map((t) => ({ id: t.id, name: t.name }));
-    },
-    // oxlint-disable-next-line react/exhaustive-deps -- the scope decides what isOutOfScope answers
-    [allTabs, chrome, scope],
+    () => allTabs.filter((t) => !isOutOfScope(t.id)).map((t) => ({ id: t.id, name: t.name })),
+    [allTabs, isOutOfScope],
   );
   const who = useMemo(() => ({ ownerId, shareCode }), [ownerId, shareCode]);
   // The tab went (deleted by someone): the panel closes with it.

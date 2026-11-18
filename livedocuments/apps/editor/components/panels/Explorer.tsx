@@ -13,6 +13,7 @@ import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { BrandMark, ProductNavLinks } from '@livedocuments/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { leaveArchivedItem } from '@liveworkspace/workbench/lib/archived';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
@@ -33,6 +34,7 @@ import { explorerCommunity } from '@/lib/explorer-community-host';
 import { useCommunityEnabled } from '@liveworkspace/community-ui';
 import { explorerInboxActions, explorerInboxHost } from '@/lib/explorer-inbox-host';
 import { trackOrganise } from '@/lib/explorer-organise';
+import { track } from '@/lib/telemetry';
 import { renderDocumentThumbnail } from '@/lib/explorer-thumbnail';
 import { trashOpenDocument } from '@/lib/document-delete-undo';
 import { cloudSyncHost } from '@/components/dialogs/settings/settings-panel-host';
@@ -129,6 +131,11 @@ function ExplorerImpl({
   }, [shown]);
 
   const trashCurrent = useCallback((item: Item) => trashOpenDocument(item.id, item.title), []);
+  // Archived is closed: the item open here, once archived from the panel, leaves for the Explorer, which says so.
+  const archivedCurrent = useCallback(
+    (item: { id: string; title: string | null }) => leaveArchivedItem('livedocuments', item),
+    [],
+  );
 
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
@@ -184,7 +191,16 @@ function ExplorerImpl({
           currentOffline={offline}
           // The open document stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
-          onRenameCurrent={onRenameCurrent}
+          onArchivedCurrent={archivedCurrent}
+          // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
+          onRenameCurrent={
+            onRenameCurrent
+              ? (name: string) => {
+                  track('Document', 'Renamed');
+                  onRenameCurrent(name);
+                }
+              : undefined
+          }
           onCreate={(placement) =>
             onNewDocument && !placement.folderId && !placement.teamId
               ? onNewDocument()
@@ -215,7 +231,7 @@ function ExplorerImpl({
           footer={
             <ProductNavLinks
               current="editor"
-              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-evenly' : ''}`}
             />
           }
         />

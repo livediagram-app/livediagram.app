@@ -152,7 +152,8 @@ export function ActionRowItem({
         <HoverCard title={row.assigneeName} description="Assignee">
           <GlyphDisc
             size={20}
-            className="mt-px bg-slate-200 text-[8px] font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-200"
+            className={`mt-px ${IDENTITY_FILL} text-[8px] font-semibold`}
+            style={identityVars(row.assigneeColor)}
           >
             {initialsOf(row.assigneeName)}
           </GlyphDisc>

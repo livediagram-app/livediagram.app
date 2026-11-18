@@ -19,50 +19,8 @@ Participant level is the middle: edit the text and comment, never reshape the do
 | **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; edit the text of what is already on the pages and write in an article (see [What a Participant changes](#what-a-participant-changes)).                                |
 | **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                        |
 
-- **Suggest Only on the canvas.** An Editor may set a Participant link, or a person, to **Suggest Only** in the
-  Share dialog's Suggestions section ([Canvas suggestions](../012-collaboration/canvas-suggestions.md)). Such a
-  Participant's changes to a tab's elements are always suggestions an Editor accepts or rejects; the room refuses
-  any element change it makes straight in, but for comments, reactions and votes. The setting is the item's own
-  (its room), never the index's: the link's level stays `participate`. Any Participant or Editor sees a tab's
-  suggestions; a Viewer sees none and makes none.
-- **The levels are a ladder**: every level holds everything below it.
-- **A Viewer only looks.** A comment and a reaction are both taking
-  part, which is a Participant's. A Viewer's selection shows its badge and holds nothing: it never stops anyone
-  editing the element it looks at.
-- **Approving is a Viewer's one write** ([Approvals](approvals.md), the owner's choice, 2026-11-15): a Viewer, a
-  Participant or an Editor named as an approver may **Approve** or **Request Changes** on the document's open
-  approval request. It writes the decision and nothing else, and only for someone named; asking for approval and
-  cancelling are an Editor's of the whole document.
-- **A checklist tick is editing**: it is one shared value, not a person's answer.
-
-## What a Participant changes
-
-A Participant edits **text**, and nothing else.
-
-| May                                                                                                                                               | Never                                                                                                                                                                                                                                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Change the words of an element already on the page: a label, a text box, a sticky, a table's cells                                                | Add any element; delete, duplicate or paste one                                                                                                                                                                                                                          |
-| Change an image's description (alt text) and caption                                                                                              | Swap an image's picture                                                                                                                                                                                                                                                  |
-| Write in an article already on the tab: add, change and remove its paragraphs, lists and code, and write in its tables' cells                     | Change an article's style (its header and footer included), insert or move its zones, dividers, page breaks, tables and contents, add or remove a table's rows or columns, add a margin note, add or remove an article ([Article pages](../007-editor/article-pages.md)) |
-| Write on a flashcard already on the tab, as in an article; flip through the cards                                                                 | Add, duplicate, split, move or delete a card, or set its style ([Flashcards](../007-editor/flashcards.md))                                                                                                                                                               |
-| Find and replace in the text it may write: an article's writing and elements' text fields ([Find and replace](../007-editor/find-and-replace.md)) | Replace in any other text (a checklist's items), or in anything locked                                                                                                                                                                                                   |
-| Undo and redo its own writing (the room puts back any part it may not make)                                                                       | Move, resize, rotate, restyle, recolour, lock, group or reorder anything; a table's rows and columns                                                                                                                                                                     |
-| Nothing about tabs or pages                                                                                                                       | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; tidy a page ([Tidy Up](../007-editor/pages-mode.md#tidy-up)); rename the document                                                      |
-
-- **Text is an allow-list.** Each element kind names the fields that are its words (`PARTICIPANT_TEXT_FIELDS`); any
-  other field, or a kind with none, is an Editor's. A new field is an Editor's until someone decides it is text.
-- **A text box that sizes to its words follows them**: writing on it resizes it, since its size is the words', never
-  a choice. Every other element keeps its size whatever its text.
-- **A table's cells change words, never shape**: the same rows and columns, every cell plain text.
-- **Locked means locked.** Nothing on a locked tab, a locked layer or a locked page, and no locked element, takes a
-  Participant's writing.
 - **A Participant never grows the pages.** When its writing needs another page, an Editor's screen lays the article
   out and adds it, as it does for an agent's writing.
-- **Suggest Only.** An Editor may set a Participant link, or a person, to **Suggest Only** in the Share dialog's
-  Suggestions section ([Suggestions](../007-editor/suggestions.md#suggest-only)). Such a Participant's writing in an
-  article is always suggestions an Editor accepts or rejects, never writing straight in, and it may put a comment on
-  selected text. The setting is the document's own (its room), never the index's: the link's level stays
-  `participate`.
 - **A Participant holds what it writes**, as an Editor does: the paragraph or cell it types in is held for it until
   it lets go, and others' holds hold it back ([Article pages](../007-editor/article-pages.md#holding-a-paragraph)).
   A Viewer holds nothing.
@@ -144,12 +102,6 @@ once a document is open.
   article writing is relayed block by block, marked for an Editor's screen to grow the pages.
 - **A held-back gesture says so.** When the editor holds back a change a Participant may not make, it shows one
   short notice for the burst ("As a participant you can edit text and comment.") rather than failing silently.
-- **Suggest Only is the room's rule too.** For a Participant on a Suggest Only link or set Suggest Only by person,
-  the room checks each article frame against the suggestion rule (the rejected view unchanged, only its own
-  suggestions added, everyone else's left as they were) and refuses the frame whole otherwise
-  ([Suggestions](../007-editor/suggestions.md#the-server-is-the-rule)). Its one element change is adding a margin
-  note's comment marker. The room tells each Participant session whether it suggests (a system `review` op) when it joins
-  and whenever the setting changes.
 - **A link to one tab stays on it**: writing for any other tab is dropped.
 - **Placing images is an Editor's.** An image someone else owns is granted to a document only when its owner is a
   team member or an Editor there; a Participant's access places no image.

@@ -1,6 +1,18 @@
 import { MAX_TAB_ID_LEN } from './project-room-rules';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PROJECT_FORMAT, ROOM_MAX_CONNECTIONS, ROOM_FULL_CLOSE } from '@liveplanner/api-schema';
+import {
+  PROJECT_FORMAT,
+  ROOM_FRAME_MAX_BYTES,
+  ROOM_MAX_CONNECTIONS,
+  ROOM_FULL_CLOSE,
+  type ItemsRoomOp,
+} from '@liveplanner/api-schema';
+import {
+  ITEM_FIELDS_BYTES,
+  mergeItemChanges,
+  type Item,
+  type ItemStoreState,
+} from '@liveplanner/items';
 import type { ParticipantPresence, RoomIncoming } from '@liveplanner/api-schema';
 import {
   MUTATION_OP_KINDS,
@@ -247,6 +259,87 @@ describe('PlanRoom /broadcast endpoint', () => {
     seedSession(state, b, presence('p-b', 'view'));
     room.webSocketMessage(b as never, JSON.stringify({ kind: 'sync', epoch: null, lastSeq: 0 }));
     expect(receivedOf(b, 'catchup')[0]?.ops).toEqual([{ from: 'system', seq: 1, op }]);
+  });
+
+  // docs/specs/026-plan/blueprints/item-store.md "Live: room op" (Work Tracker 986): 200 full cards are about 12.5 MiB.
+  it('relays 200 full 64 KiB cards in ordered frames under 1 MiB, and every client converges', async () => {
+    const { room, state } = newRoom();
+    const clients = [makeSocket(), makeSocket(), makeSocket()];
+    clients.forEach((c, n) => seedSession(state, c, presence(`p-${n}`, n === 0 ? 'edit' : 'view')));
+    const big = (n: number) =>
+      ({
+        id: `id${n}`,
+        type: 'task',
+        key: n,
+        rank: `a${n}`,
+        fields: { title: `Card ${n}`, description: 'é'.repeat(ITEM_FIELDS_BYTES / 2 - 64) },
+        rev: 2,
+        createdAt: 1,
+        updatedAt: 2,
+      }) as unknown as Item;
+    const upserts = Array.from({ length: 200 }, (_, n) => big(n + 1));
+    const op = { kind: 'items', upserts, removed: ['gone'], rev: 7 };
+    expect(new TextEncoder().encode(JSON.stringify(op)).length).toBeGreaterThan(12 * 1024 * 1024);
+    await room.fetch(
+      new Request('https://room/broadcast', {
+        method: 'POST',
+        body: JSON.stringify({ ordered: true, op }),
+      }),
+    );
+    const start: ItemStoreState = { items: [{ ...big(999), id: 'gone' }], rev: 6, nextKey: 1 };
+    for (const c of clients) {
+      for (const raw of c.sent)
+        expect(new TextEncoder().encode(raw).length).toBeLessThanOrEqual(ROOM_FRAME_MAX_BYTES);
+      const frames = receivedOf(c, 'op') as unknown as { seq: number; op: ItemsRoomOp }[];
+      expect(frames.length).toBeGreaterThan(1);
+      // In order, one seq after another, each at the write's rev and never empty; the removal comes last.
+      expect(frames.map((f) => f.seq)).toEqual(frames.map((_, n) => n + 1));
+      for (const f of frames) {
+        expect(f.op.rev).toBe(7);
+        expect(f.op.upserts.length + f.op.removed.length).toBeGreaterThan(0);
+      }
+      expect(frames.flatMap((f) => f.op.upserts.map((i) => i.id))).toEqual(
+        upserts.map((i) => i.id),
+      );
+      expect(frames.at(-1)!.op.removed).toEqual(['gone']);
+      const end = frames.reduce(
+        (store, f) => mergeItemChanges(store, f.op.upserts, f.op.removed, f.op.rev),
+        start,
+      );
+      expect(end.rev).toBe(7);
+      expect(end.items.map((i) => i.id).sort()).toEqual(upserts.map((i) => i.id).sort());
+    }
+    // A client back from a blip catches up in order; one that missed all of it is told to re-fetch.
+    const parts = room.seq;
+    const near = makeSocket();
+    seedSession(state, near, presence('p-near', 'view'));
+    room.webSocketMessage(
+      asWs(near),
+      JSON.stringify({ kind: 'sync', epoch: room.epoch, lastSeq: parts - 1 }),
+    );
+    expect(receivedOf(near, 'catchup')[0]).toMatchObject({ resync: false, seq: parts });
+    expect(receivedOf(near, 'catchup')[0]!.ops.map((o) => o.seq)).toEqual([parts]);
+    const far = makeSocket();
+    seedSession(state, far, presence('p-far', 'view'));
+    room.webSocketMessage(
+      asWs(far),
+      JSON.stringify({ kind: 'sync', epoch: room.epoch, lastSeq: 0 }),
+    );
+    expect(receivedOf(far, 'catchup')[0]).toMatchObject({ resync: true, ops: [], seq: parts });
+  });
+
+  it('relays an items op that fits as one frame, as before', async () => {
+    const { room, state } = newRoom();
+    const a = makeSocket();
+    seedSession(state, a, presence('p-a', 'view'));
+    const op = { kind: 'items', upserts: [], removed: ['x'], rev: 3 };
+    await room.fetch(
+      new Request('https://room/broadcast', {
+        method: 'POST',
+        body: JSON.stringify({ ordered: true, op }),
+      }),
+    );
+    expect(receivedOf(a, 'op').map((f) => f.op)).toEqual([op]);
   });
 
   it('returns 400 when the body is not valid JSON', async () => {

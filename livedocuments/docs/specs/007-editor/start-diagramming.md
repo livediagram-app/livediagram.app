@@ -13,7 +13,7 @@ are, the panel draws them.
 - **Header:** over the app's own band ([The header band](#the-header-band)), a title mark, then the title ("Start Making Pages"), one line under it, the search box, and in the top right corner the
   **Help** link. There is no **Close** (see [A choice first](#a-choice-first)). On a phone the search takes its own
   row under the title, the help staying beside the title, and the sheet has no grab handle to drag it away.
-- **Rail:** **Blank Pages**, then the groups, each with its glyph and count, Blank Pages chosen as the start opens.
+- **Rail:** led by the page type switch over a hairline ([Page type](#page-type)), then **Blank Pages**, then the groups, each with its glyph and count, Blank Pages chosen as the start opens.
   Group names are a word each (the catalogue's short labels), so each sits on one line. The chosen group's count sits on a pill tinted with the accent, in the panel's ink: the accent on its
   own tint read 3.6:1 in light, under WCAG AA's 4.5:1.
 - **Connect File** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md#connecting)):
@@ -74,6 +74,27 @@ Infographic is the same empty page, already chosen.
 picks swapped for blanks of a page kind). Retired 2026-11-04: each of its picks already sat in Blank Pages or in its
 own group, so it was a second place to look rather than a quicker start. The marketing gallery's Popular shelf
 (`POPULAR_TEMPLATE_KINDS`) is its own and stays.
+
+### Page type
+
+The rail is led by a **page type** switch (owner, 2026-11-17), where livediagram's start has its mode switch and drawn
+the same way: a field inset in the rail's top, on its own paper with a border and a small shadow, its glyph and name
+in the brand ink and a chevron (the shared `StartKindFilter`,
+`../packages/workbench/src/components/start/StartKindFilter.tsx`). It opens a menu of `menuitemradio` rows, each
+a glyph on a soft plate, the name, a line under it and a check on the chosen one: **All Pages** first, then
+**Slide Deck**, **Article**, **Infographic** and **Flashcards** (`components/start/start-page-types.ts`). On a phone the menu spans the row it opens from.
+
+- **All Pages** is chosen each time the start opens: nothing is hidden until asked.
+- **A page type** narrows the whole start to the templates that open on that kind of page (`templatePageKind`, in the
+  templates package, checked against the pages each template really makes): Blank Pages keeps only that kind's blank; the groups
+  keep only that kind's templates, a group left empty leaves
+  the rail, and each count is what the group shows. The chosen group stays chosen while it still holds something,
+  else the rail's first group is, and it is chosen again once the type brings it back.
+- **The search** looks only within the chosen page type.
+- **Community tiles** show only under All Pages: a post's page type is not known to the start.
+- It changes only what the start shows: choosing a template still lands it as before.
+- Each page type's start is built the first time it is chosen and kept (`templateStartFor`), so switching back and
+  forth rebuilds nothing.
 
 ### From the Community
 
@@ -243,7 +264,13 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A
 - `../packages/explorer/src/hero/hero-theme.test.ts`: every app its own backdrop, none the All Apps dots; only the
   Typesetter in serif.
 - `components/start/start-template-items.test.ts`: Blank Pages first, groups and search, and every listed template
-  reachable from the start.
+  reachable from the start; each page type's start holds only that kind's templates, every
+  template under exactly one type.
+- `../packages/templates/src/template-page-kinds.test.ts`: every listed template's page type is the kind of the pages it makes.
+- `components/start/StartFromTemplates.test.tsx` "by page type": the switch leads the rail, All Pages on every open,
+  every group and the search narrowed.
+- `../packages/workbench/src/components/start/StartKindFilter.test.tsx`: the chip, the menu's rows and check,
+  choosing, the keyboard and an outside press.
 - `components/start/StartPanel.test.tsx`: Down from the search, Best Match leading, the arrow keys among the cards.
 - `../packages/workbench/src/components/start/best-match.test.ts`: which names lead, exact first, lifted out of their groups once.
 - `../packages/workbench/src/components/start/start-card-keys.test.ts`: where each arrow, Home and End go in a grid of cards.

@@ -3,7 +3,7 @@
 // A top-docked Draw dock keeps 8px clear of the menu card, measured, since the card now holds the editor mode switch
 // too (docs/specs/023-draw-mode/draw-mode.md "Where the dock sits").
 import { useRef } from 'react';
-import { cleanup, render } from '@testing-library/react';
+import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { menuCardClearance, useMenuCardClearance } from './useMenuCardClearance';
 
@@ -70,6 +70,37 @@ describe('useMenuCardClearance', () => {
     expect(values.at(-1)).toBe(220);
     unmount();
     expect(disconnect).toHaveBeenCalled();
+  });
+
+  it('follows the card as the logo before it changes width, or the window resizes', () => {
+    const row = document.createElement('div');
+    const logo = document.createElement('div');
+    logo.setAttribute('data-logo-card', '');
+    const card = document.createElement('div');
+    card.setAttribute('data-toolbar-menu', '');
+    card.getBoundingClientRect = () => rect(170, 100);
+    row.append(logo, card);
+    document.body.append(row);
+    const observe = vi.fn();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe = observe;
+        disconnect = vi.fn();
+      },
+    );
+    const values: (number | null)[] = [];
+    const { rerender } = render(<Probe active onValue={(v) => values.push(v)} />);
+    expect(observe).toHaveBeenCalledWith(logo);
+    expect(values.at(-1)).toBe(278);
+    // The logo's wordmark goes below lg: the card moves left.
+    card.getBoundingClientRect = () => rect(66, 100);
+    act(() => {
+      fireEvent(window, new Event('resize'));
+    });
+    rerender(<Probe active onValue={(v) => values.push(v)} />);
+    expect(values.at(-1)).toBe(174);
+    row.remove();
   });
 
   it('measures once where there is no ResizeObserver', () => {

@@ -104,12 +104,42 @@ export type ItemMenuVerb = {
 
 export type ItemMenuHost = (item: Item) => readonly ItemMenuVerb[];
 
+/** One of the person's walkthroughs on the Library's Walkthroughs page. */
+export type WalkthroughEntry = {
+  id: string;
+  // The item it was recorded on.
+  item: string;
+  title: string;
+  author: string | null;
+  durationMs: number;
+  mediaType: string;
+  mediaBytes: number;
+  camera: boolean;
+  // A video of the screen (shareable by a public link), and its link's code while it is on.
+  screen?: boolean;
+  shareCode?: string | null;
+  createdAt: number;
+};
+
+/** The person's walkthroughs in the app (liveworkspace/docs/specs/006-media/walkthroughs.md "The Explorer's
+ *  Walkthroughs"): listed, played from a blob read with their token, and deleted for good. */
+export type WalkthroughsHost = {
+  list: (signal?: AbortSignal) => Promise<WalkthroughEntry[]>;
+  media: (entry: WalkthroughEntry, signal?: AbortSignal) => Promise<Blob>;
+  remove: (entry: WalkthroughEntry) => Promise<void>;
+  /** A screen recording's public link on or off: the entry as it now is, or null when it couldn't be. */
+  share?: (entry: WalkthroughEntry, on: boolean) => Promise<WalkthroughEntry | null>;
+  helpHref?: string;
+};
+
 /** Everything above, as the Explorer and the panel take it. */
 export type LibraryHostProps = {
   /** The Image Gallery: a Library row and its view, `/explorer/images`. */
   gallery?: GalleryHost;
   /** Shape Libraries: a Library row and its view, `/explorer/shape-libraries`. */
   shapeLibraries?: ShapeLibrariesHost;
+  /** Walkthroughs: a Library row and its view, `/explorer/walkthroughs`. */
+  walkthroughs?: WalkthroughsHost;
   /** Import from: a toolbar wherever New files an item, and on Shape Libraries for the sources that bring libraries. */
   imports?: ImportHost;
   /** The host's own verbs on an item's menu. */

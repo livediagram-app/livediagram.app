@@ -6,3 +6,6 @@ export const PHASE_COLOURS = {
   done: '#16a34a',
 } as const;
 export const OVERDUE_RED = '#dc2626';
+// A dependency arrow whose card starts before its open blocker is due (docs/specs/026-plan/plan-views.md "Dependency
+// clashes"): amber-600, at least 3:1 on the light and dark surfaces.
+export const CLASH_AMBER = '#d97706';

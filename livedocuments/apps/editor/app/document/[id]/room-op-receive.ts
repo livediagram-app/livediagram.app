@@ -1,5 +1,4 @@
 import { setRemoteBesideTab } from '@liveworkspace/workbench/lib/split-presence';
-import { setRoomSuggestOnly, takeSuggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
 import { parseArticleCaret, parseArticleHold } from '@livedocuments/api-schema';
 import type { RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
@@ -13,7 +12,6 @@ import { shareLinkOpEffect } from '@liveworkspace/workbench/lib/share-link-ops';
 import { endPeerDragPreview, receivePeerDragPreview } from '@/hooks/collab/peer-drag-previews';
 import { receiveArticleCaret } from '@/lib/article/article-carets-store';
 import { receiveArticleHold } from '@/lib/article/article-holds-store';
-import { announceSuggested, setSuggestOnly } from '@/lib/article/article-suggest-store';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 import { remoteSelectionOf } from '@/lib/presence-rows';
 
@@ -99,9 +97,6 @@ export function receiveRoomOp(
         : remoteRoomOp(incoming),
     );
     foldRemoteOpIntoBaseline(saveBaseline, incoming);
-    // An assistant's write as suggestions (docs/specs/024-agents/pages-for-agents.md "Suggestions"): its toast.
-    if (incoming.kind === 'article' && 'suggested' in incoming && incoming.suggested)
-      announceSuggested({ tabId: incoming.tabId, flow: incoming.flow, ...incoming.suggested });
     // In the same batch as the tabs update, so the render that shows the op also counts it.
     countAppliedOp();
   } else if (op.kind === 'select') {
@@ -185,20 +180,9 @@ export function receiveRoomOp(
     // An agent's changeset, applied, outlined and toasted by useChangesetFeed. System-only, like
     // the share ops: the room refuses one from a client socket.
     if (from === 'system') receiveChangeset(op);
-  } else if (op.kind === 'review') {
-    // The room's word on whether this session suggests (docs/specs/007-editor/suggestions.md "Suggest Only"). System-only:
-    // the room refuses one from a client socket.
-    if (from === 'system') {
-      setSuggestOnly(op.suggestOnly);
-      setRoomSuggestOnly(op.suggestOnly);
-    }
   } else if (op.kind === 'document-trashed') {
     // The document went to the Trash. System-only, like the share ops:
     // the room refuses it from a client socket.
     if (from === 'system') receiveDocumentTrashed();
-  } else if (op.kind === 'suggestions') {
-    // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
-    // System-only: the room refuses one from a client socket.
-    if (from === 'system') takeSuggestionsRoomOp(op);
   }
 }

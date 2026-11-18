@@ -12,6 +12,7 @@ import { walkthroughTelemetry } from './telemetry';
 import { useHidden } from './useHidden';
 import { usePlayer } from './usePlayer';
 import { useRecorder } from './useRecorder';
+import { requestToolsView } from '@liveworkspace/workbench/components/chrome/tools-door';
 
 export type Walkthroughs = ReturnType<typeof useWalkthroughs>;
 
@@ -25,6 +26,9 @@ export type WalkthroughsMenu = {
   record: () => void;
   play: (id: string) => void;
   remove: (id: string) => Promise<boolean>;
+  rename: (id: string, title: string) => Promise<boolean>;
+  // Its public link on or off: the walkthrough as it now is, or null when it couldn't be.
+  share: (id: string, on: boolean) => Promise<WalkthroughSummary | null>;
 };
 
 const NONE: readonly WalkthroughSummary[] = [];
@@ -62,12 +66,16 @@ export function useWalkthroughs(host: WalkthroughHost) {
   }, [api, refresh]);
 
   const [recorderOpen, setRecorderOpen] = useState(false);
+  // Filming the tab (the count and the recording): what is hidden goes from the screen, so the video never holds it.
+  const [filming, setFilming] = useState(false);
   // What can be hidden besides canvas elements, and whether the tab showing has anything (host.ts).
   const hiding = useHidden(
     canvasRoot,
     recorderOpen,
     host.hideable?.marks,
     host.hideable ? host.hideable.canHide() : true,
+    host.elements,
+    filming,
   );
   const onSaved = useCallback(
     (saved: WalkthroughSummary) => {
@@ -75,6 +83,8 @@ export function useWalkthroughs(host: WalkthroughHost) {
       setNotice(`Saved “${saved.title}”.`);
       hiding.clear();
       void refresh();
+      // Back in the Walkthroughs list inside Tools, the new one at its top (walkthroughs.md "In Tools").
+      requestToolsView('walkthroughs');
     },
     [refresh, hiding],
   );
@@ -86,6 +96,7 @@ export function useWalkthroughs(host: WalkthroughHost) {
     setRecorderOpen(
       recording === 'setup' || recording === 'countdown' || recording === 'recording',
     );
+    setFilming(recording === 'countdown' || recording === 'recording');
   }, [recording]);
 
   const remove = useCallback(
@@ -99,6 +110,27 @@ export function useWalkthroughs(host: WalkthroughHost) {
       return done;
     },
     [api],
+  );
+
+  // The list's row as the service now has it.
+  const replace = useCallback((next: WalkthroughSummary) => {
+    setList((prev) => prev?.map((w) => (w.id === next.id ? next : w)) ?? null);
+  }, []);
+  const rename = useCallback(
+    async (id: string, title: string) => {
+      const next = api ? await api.rename(id, title) : null;
+      if (next) replace(next);
+      return next !== null;
+    },
+    [api, replace],
+  );
+  const share = useCallback(
+    async (id: string, on: boolean) => {
+      const next = api ? await api.share(id, on) : null;
+      if (next) replace(next);
+      return next;
+    },
+    [api, replace],
   );
 
   // The panel reads these through the latest recorder and player, so the menu's value holds still while a recording
@@ -127,8 +159,18 @@ export function useWalkthroughs(host: WalkthroughHost) {
   const available = api !== null && list !== null && (list.length > 0 || canRecord);
   const loading = player.phase.kind === 'loading' ? player.phase.id : null;
   const menu = useMemo<WalkthroughsMenu>(
-    () => ({ available, list: list ?? NONE, canRecord, loading, record, play, remove }),
-    [available, list, canRecord, loading, record, play, remove],
+    () => ({
+      available,
+      list: list ?? NONE,
+      canRecord,
+      loading,
+      record,
+      play,
+      remove,
+      rename,
+      share,
+    }),
+    [available, list, canRecord, loading, record, play, remove, rename, share],
   );
 
   return {

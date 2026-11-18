@@ -10,7 +10,6 @@ import {
   articlesOf,
   pagesOf,
   resolveArticleStyle,
-  withArticlesRejected,
   type LaidOutPage,
   type Tab,
 } from '@livedocuments/document';
@@ -18,7 +17,6 @@ import { articleHandleOf } from './article-editor-store';
 import { estimatedBars, estimatedPageOps } from './article-estimate-cache';
 import { bandDocumentName, pageBandLayout, type PageBandLayout } from './article-band-layout';
 import type { ArticleDrawOp } from './article-snapshot';
-import { docHasSuggestions } from './article-suggest-describe';
 
 export type PageWriting = { ops: ArticleDrawOp[]; fonts: string[] };
 
@@ -35,11 +33,8 @@ export function pageWriting(tab: Tab, page: LaidOutPage): PageWriting | null {
   if (!page.flow) return null;
   const doc = articlesOf(tab)[page.flow];
   // A card whose writing is not mounted (a long stack's, flashcards.md "Long stacks stay quick") is set as the
-  // headless estimate sets it. So is writing that shows suggestions on screen: an export is its rejected view
-  // (docs/specs/007-editor/suggestions.md "Everywhere a page goes"), set from the rejected writing.
-  const handle = articleHandleOf(page.flow);
-  const onScreen = handle && !docHasSuggestions(handle.state().doc) ? handle.snapshot() : null;
-  const snap = onScreen ?? estimatedPageOps(withArticlesRejected(tab), page);
+  // headless estimate sets it.
+  const snap = articleHandleOf(page.flow)?.snapshot() ?? estimatedPageOps(tab, page);
   if (!doc || !snap) return null;
   const r = page.rect;
   const on = (x: number, y: number) =>

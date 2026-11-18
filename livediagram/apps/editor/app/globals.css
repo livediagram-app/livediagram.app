@@ -3,6 +3,7 @@
 /* The shared Explorer's classes (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md). */
 @import '@liveworkspace/explorer/explorer.css';
 @import '@liveworkspace/workbench/styles/image-backing.css';
+@import '@liveworkspace/workbench/styles/corner-actions.css';
 @import '@livediagram/template-previews/preview-art-tile.css';
 @import '@livediagram/template-previews/preview-motion.css';
 @import './qa-board.css';
@@ -59,7 +60,6 @@
 @source '../../../../packages/brand/src';
 /* The Community's cards and Share tab, every app's (@liveworkspace/community-ui). */
 @source '../../../../packages/community-ui/src';
-@source '../../../../packages/suggestions/src';
 /* The shared template-browse art (PreviewFan, @liveworkspace/template-previews) carries its own utility classes. */
 @source '../../../../packages/template-previews/src/PreviewFan.tsx';
 /* The shared Settings view (@liveworkspace/settings-ui) carries its own utility classes. */

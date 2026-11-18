@@ -19,6 +19,7 @@ import { announce } from '@liveworkspace/workbench/lib/announcer';
 import { createTab } from '../editor-page-helpers';
 import { useCardAddress } from '../useCardAddress';
 import { cardLink } from '@/lib/card-address';
+import { warmRightsOf } from '@/lib/last-seen-plan';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import type { EditorEnvSlice } from './useEditorEnv';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -57,6 +58,7 @@ export function useEditorPlan(
     selfParticipant,
     tabs,
     tickTabs,
+    warmPlan,
   } = projectSlice;
   const {
     canEdit,
@@ -200,7 +202,11 @@ export function useEditorPlan(
     createTab,
     markTabLoaded,
   });
+  // A warm paint keeps room for the strips its reader's kept role shows (offline-mode.md "The board holds its place").
+  const warmRole = !hydrated ? (warmPlan?.role ?? null) : null;
+  const warmRights = useMemo(() => (warmRole ? warmRightsOf(warmRole) : undefined), [warmRole]);
   const plan = usePlanSlice({
+    warmRights,
     planItems,
     pullRequests,
     itemTypes,

@@ -25,7 +25,9 @@ export const CORS_HEADERS = corsHeaders({
     // My Shares passes the page's community key on (docs/specs/025-community/community.md "My Shares").
     COMMUNITY_KEY_HEADER,
   ],
-  exposeHeaders: [PROJECT_FORMAT_HEADER, BUILD_ID_HEADER, 'ETag'],
+  // Retry-After: a public roadmap's busy page waits out the limit's window (docs/specs/026-plan/public-roadmap.md
+  // "States").
+  exposeHeaders: [PROJECT_FORMAT_HEADER, BUILD_ID_HEADER, 'ETag', 'Retry-After'],
 });
 
 export const {

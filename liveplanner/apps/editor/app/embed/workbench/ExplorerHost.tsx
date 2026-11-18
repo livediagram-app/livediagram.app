@@ -9,6 +9,7 @@
 // account's teams from its token, or a guest's identity from liveworkspace, which the first visit fetches before the
 // Explorer asks for anything.
 
+import { explorerLibrary } from '@/lib/explorer-library-host';
 import Link from 'next/link';
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
@@ -21,6 +22,7 @@ import { PLAN_TEMPLATE_FAMILIES } from '@/lib/plan-template-families';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useSignedGuestId } from '@/hooks/persistence/useSignedGuestId';
+import { arrivedArchived } from '@liveworkspace/workbench/lib/archived';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { explorerShareHost } from '@/lib/explorer-share-host';
@@ -96,6 +98,8 @@ export function ExplorerHost({
   const chrome: ExplorerChrome = { prefs, ownerId: viewerId ?? null, signedIn: !!accountUserId };
   // The open plan deleted from the editor lands here with its Undo (lib/project-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);
+  // The open item archived from the editor lands here too, said once (lib/archived).
+  const [archivedOnArrival] = useState(() => arrivedArchived('liveplanner'));
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
   // every device the person signs in on opens Home without it. Settings > Explorer turns it back on.
   const hideHero = useCallback(() => {
@@ -120,6 +124,7 @@ export function ExplorerHost({
         app="liveplanner"
         client={indexClient}
         view={view}
+        walkthroughs={explorerLibrary.walkthroughs}
         // The filter field's writes replace the entry, so typing leaves one history entry, not one per pause.
         onNavigate={(_view, href, options) =>
           options?.replace ? router.replace(href) : router.push(href)
@@ -138,6 +143,7 @@ export function ExplorerHost({
         helpHref={explorerHelpHref}
         renderThumbnail={renderPlanThumbnail}
         trashedOnArrival={trashedOnArrival}
+        archivedOnArrival={archivedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
         onHome={trackHome}

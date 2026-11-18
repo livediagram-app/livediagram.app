@@ -16,7 +16,7 @@ import {
   type ClientCredentials,
   type Profile,
 } from '@liveworkspace/auth-client';
-import { automaticPresenceColour } from '@liveworkspace/settings/presence';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 import { profilePictureOf } from '@liveworkspace/sites/picture';
 import { accountCredentials } from '../auth/accounts';
 import type { Env, ParticipantDTO } from '../types';
@@ -52,7 +52,7 @@ function toParticipant(ownerId: string, profile: Profile | null): ParticipantDTO
   return {
     id: ownerId,
     name: profile.name,
-    color: profile.color ?? automaticPresenceColour(profile.name).value,
+    color: presenceColourOf(profile.name, profile.color),
     createdAt: profile.createdAt ?? profile.updatedAt ?? 0,
   };
 }

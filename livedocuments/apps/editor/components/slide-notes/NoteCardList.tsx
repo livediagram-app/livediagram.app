@@ -18,7 +18,7 @@ import {
   NOTE_CARDS_MAX,
   isBlankNoteCard,
   noteCardSpeakingSeconds,
-  speakingTimeLabel,
+  cardsSummary,
   type NoteCard,
 } from '@livedocuments/document';
 import { Button, CompactEmptyState, lucideGlyph, Tooltip } from '@livedocuments/ui';
@@ -44,9 +44,7 @@ export function noteCardsSummary(cards: readonly NoteCard[]): string | null {
   const spoken = cards.filter((c) => !isBlankNoteCard(c));
   if (spoken.length === 0) return null;
   const seconds = spoken.reduce((sum, c) => sum + noteCardSpeakingSeconds(c.text), 0);
-  const time = speakingTimeLabel(seconds);
-  const count = spoken.length === 1 ? '1 card' : `${spoken.length} cards`;
-  return time ? `${count} · ${time}` : count;
+  return cardsSummary(spoken.length, seconds);
 }
 
 export function NoteCardList({

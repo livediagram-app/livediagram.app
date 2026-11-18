@@ -47,6 +47,35 @@ export function automaticPresenceColour(name: string): PresenceColour {
   return PRESENCE_COLOURS[hash % PRESENCE_COLOURS.length]!;
 }
 
+/** The longest colour kept, as a profile keeps it (liveworkspace/apps/accounts/src/profiles.ts PROFILE_COLOR_MAX). */
+export const PROFILE_COLOUR_MAX = 64;
+
+// What no colour contains: a way out of a CSS value (a quote, a semicolon, a brace, an escape), or a function that
+// loads something (the accounts Worker's and the apps' check, profiles.ts "What no colour contains"). Every colour CSS
+// has (hex, a name, rgb(), hsl(), oklch(), color-mix(), var()) passes.
+const NOT_A_COLOUR = /[\\;{}<>"'`]|url|image|src\s*\(|element\s*\(|cross-fade|paint\s*\(/i;
+// oxlint-disable-next-line no-control-regex -- matching control characters is the point
+const CONTROL = /[\u0000-\u001f\u007f]/;
+
+/** Whether a colour is safe to paint into CSS: a non-empty string of at most 64 characters that can neither load
+ *  anything nor break out of the value. */
+export function isSafeColourValue(value: unknown): value is string {
+  return (
+    typeof value === 'string' &&
+    value.length > 0 &&
+    value.length <= PROFILE_COLOUR_MAX &&
+    !NOT_A_COLOUR.test(value) &&
+    !CONTROL.test(value)
+  );
+}
+
+// A person's colour where a chosen one may ride along (a profile's, a team member's `color`, an action's
+// `assignee.color`): that colour, as their cursor wears it, else the Automatic one picked from the name. A colour that
+// is not safe to paint (a stray value in a document blob) falls back, so it never reaches a style.
+export function presenceColourOf(name: string, color: string | null | undefined): string {
+  return isSafeColourValue(color) ? color : automaticPresenceColour(name).value;
+}
+
 // The display name's limit, as the accounts Worker keeps it (liveworkspace/apps/accounts src/profiles.ts
 // PROFILE_NAME_MAX), for the Settings panel's Profile field.
 export const PROFILE_NAME_MAX = 120;

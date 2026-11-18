@@ -11,7 +11,12 @@ import type { ReadableStore } from '@liveworkspace/workbench/lib/state-store';
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { AvatarPose } from '@livehuddle/avatar/pose';
 import type { Element } from '@livehuddle/document';
-import { spaceWalls, wallFrame, type SpaceWall } from '@/lib/space-3d/space-3d-walls';
+import {
+  SPACE_DOOR_HEIGHT,
+  spaceWalls,
+  wallFrame,
+  type SpaceWall,
+} from '@/lib/space-3d/space-3d-walls';
 import {
   areaMovedFar,
   cutAwayIds,
@@ -19,6 +24,7 @@ import {
   wallsInArea,
   type SpaceArea,
 } from '@/lib/space-3d/space-3d-cutaway';
+import { useStandingPieces } from './useStandingPieces';
 
 export function Space3DWalls({
   elements,
@@ -42,6 +48,9 @@ export function Space3DWalls({
     return viewport.subscribe(check);
   }, [viewport, size]);
   const drawn = useMemo(() => wallsInArea(walls, area), [walls, area]);
+  // The pieces in the same area stand up (3d-view.md "Pieces stand up"), marked on their own boxes.
+  const layer = useRef<HTMLDivElement>(null);
+  useStandingPieces(layer, elements, area, walls);
   // The cut-away, from every pose, outside React: each wall's node by id, and the ids cut now.
   const nodes = useRef(new Map<string, HTMLElement>());
   const cut = useRef(new Set<string>());
@@ -60,7 +69,12 @@ export function Space3DWalls({
     return poseStore.subscribe(apply);
   }, [drawn, poseStore]);
   return (
-    <div aria-hidden data-space-walls="" className="pointer-events-none absolute left-0 top-0">
+    <div
+      ref={layer}
+      aria-hidden
+      data-space-walls=""
+      className="pointer-events-none absolute left-0 top-0"
+    >
       {drawn.map((wall) => (
         <Wall
           key={wall.id}
@@ -86,9 +100,16 @@ function Wall({ wall, nodeRef }: { wall: SpaceWall; nodeRef: (node: HTMLElement 
         transform: `translate(${x}px, ${y}px) rotate(${angle}deg)`,
         ['--wall-h' as string]: `${wall.height}px`,
         ['--wall-shade' as string]: `${Math.round(wall.shade * 100)}%`,
+        ['--door-h' as string]: `${SPACE_DOOR_HEIGHT}px`,
       }}
     >
-      <div data-space-wall-face="">
+      <div data-space-wall-face="" data-shut={wall.shut ? '' : undefined}>
+        {wall.kind === 'window' ? <span data-space-window-pane="" /> : null}
+        {wall.kind === 'doorway' ? (
+          <span data-space-door-frame="">
+            {wall.shut ? <span data-space-door-leaf="" /> : null}
+          </span>
+        ) : null}
         {wall.label ? <span data-space-wall-label="">{wall.label}</span> : null}
       </div>
     </div>

@@ -9,7 +9,8 @@ import type { Participant } from '@/lib/identity';
 /** A peer's cursor in canvas coordinates on a tab; null once it left the canvas. */
 export type CursorPos = { tabId: string; x: number; y: number } | null;
 /** A peer's walking character as last seen (docs/specs/008-canvas/avatar-mode.md), costume filled back in. */
-export type PeerAvatar = { tabId: string; avatar: AvatarPresence };
+// `gapMs`: how long since this peer's previous move reached us, which their glide runs over (avatarGlideMs).
+export type PeerAvatar = { tabId: string; avatar: AvatarPresence; gapMs?: number };
 
 export type PeerMotion = {
   cursors: StateStore<Map<string, CursorPos>>;

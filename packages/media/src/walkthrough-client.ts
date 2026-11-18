@@ -60,6 +60,10 @@ export function walkthroughCalls(call: WalkthroughCall) {
     list: async (item: string) =>
       json<WalkthroughListResponse>(await call(WALKTHROUGHS_PATH, {}, { item })),
 
+    /** A person's own ready walkthroughs in this app, newest first (the Explorer's Walkthroughs library). */
+    listOwned: async (owner: string) =>
+      json<WalkthroughListResponse>(await call(WALKTHROUGHS_PATH, {}, { owner })),
+
     /** Start one: its events are stored at once; it is ready once its media arrives. */
     start: async (owner: string, start: WalkthroughStart) =>
       json<{ walkthrough: Walkthrough }>(
@@ -115,6 +119,26 @@ export function walkthroughCalls(call: WalkthroughCall) {
     /** Delete one: as its owner, or for an Editor of its item (the app has checked). */
     remove: async (id: string, by: { owner: string } | { item: string }) =>
       json<{ ok: true }>(await call(at(id), { method: 'DELETE' }, by)),
+
+    /** Rename one: as its owner, or for an Editor of its item (the app has checked). */
+    rename: async (id: string, by: { owner: string } | { item: string }, title: string) =>
+      json<{ walkthrough: Walkthrough }>(
+        await call(
+          at(id),
+          {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title }),
+          },
+          by,
+        ),
+      ),
+
+    /** Turn its public link on (a new code) or off, as its owner or for an Editor of its item. */
+    share: async (id: string, by: { owner: string } | { item: string }, on: boolean) =>
+      json<{ walkthrough: Walkthrough }>(
+        await call(at(id, '/share'), { method: on ? 'PUT' : 'DELETE' }, by),
+      ),
 
     /** An item purged: every walkthrough on it goes. */
     purge: async (item: string) =>

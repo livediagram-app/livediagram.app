@@ -197,6 +197,14 @@ Previous, **Card 3 of 10** and Next ("Getting around a stack"), then, when the c
 - Small muted type in the card's body font, in the card's ink (dark on a light card, light on a dark one), as an
   article's page number is. Never an element: exports leave it out. Only its Previous and Next take presses.
 - **Contents** says each card's speaking time in its row's line ("Flashcard · Opening · 1 min").
+- **The whole talk**: Contents' header says how long the stack runs, beside its name: **10 cards · about 6 min**
+  (as a slide's speaker note cards sum theirs, [Speaker note cards](../012-collaboration/speaker-note-cards.md)). It
+  counts every card in the stack, and every card's words at the same pace, added up first and rounded once, so it
+  can read a little under the rows' times added together ("about 45 sec" under a minute, then the nearest minute). A
+  stack with no words on any card shows no total, only the header's name. It is worked out from the writing as
+  written to the tab (each commit), never each keystroke. The popover's header and a phone's sheet carry it beside
+  **Contents**; the docked sidebar, which has no header, heads its list with it. Nothing else says it: a card's
+  footer keeps its own time only.
 
 ## Contents
 

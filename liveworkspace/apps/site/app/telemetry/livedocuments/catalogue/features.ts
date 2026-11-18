@@ -166,6 +166,16 @@ export const FLASHCARD_FLIPS = chart(
   { types: ['FlashcardFlip'], rising: 'neutral' },
 );
 
+// The Word Count line picked to select the article's next long sentence (docs/specs/007-editor/article-pages.md
+// "Word Count").
+export const LONG_SENTENCES = chart(
+  'UI',
+  'Used',
+  'Long Sentences Selected',
+  "The Word Count line in an article's More Formatting picked to select the next sentence over 30 words, to split it.",
+  { types: ['LongSentenceSelected'], rising: 'neutral' },
+);
+
 // A stack's Previous or Next pressed under its page in front (docs/specs/007-editor/flashcards.md "Getting around a
 // stack").
 export const STACK_NAV = chart(
@@ -253,15 +263,6 @@ export const ARTICLE_FORMATTING = chart(
   },
 );
 
-// Suggestions (docs/specs/007-editor/suggestions.md): Suggesting or Editing chosen in the page toolbar's mode menu.
-export const ARTICLE_SUGGEST_MODE = chart(
-  'UI',
-  'Changed',
-  'Suggesting Mode',
-  "An article's page toolbar switched to Suggesting (changes become suggestions to accept or reject), or back to Editing.",
-  { types: ['SuggestingMode', 'EditingMode'], rising: 'neutral' },
-);
-
 export const ARTICLE_LOOKS = chart(
   'Tab',
   'Changed',
@@ -296,7 +297,7 @@ export const PAGE_WORK: MetricStack = {
     PRINTS,
     ARTICLE_INSERTS,
     ARTICLE_FORMATTING,
-    ARTICLE_SUGGEST_MODE,
+    LONG_SENTENCES,
     ARTICLE_LOOKS,
   ],
   headline: PAGES,

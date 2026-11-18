@@ -26,6 +26,7 @@ import {
   type CollaborateKind,
   type CollaborateSide,
 } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
+import { presenceColourOf } from '@liveworkspace/settings/presence';
 
 // The floating COLLABORATE panel (docs/specs/012-collaboration/assigned-actions.md §5): the Comments and Actions
 // panels merged into one surface, in the refreshed Collaborate look. An Open /
@@ -72,6 +73,8 @@ export type ActionRow = {
   actionName: string;
   status: ElementActionStatus;
   assigneeName: string;
+  // The assignee's colour (presenceColourOf): their row avatar wears it.
+  assigneeColor: string;
   // Whether the action is assigned to the CURRENT user — sorts first
   // and renders as "You" (docs/specs/012-collaboration/assigned-actions.md §5: the panel's first job is "what's
   // mine here").
@@ -246,6 +249,10 @@ export function actionRowsFromElements(
         actionName: action.name,
         status: action.status,
         assigneeName: action.assignee.name?.trim() || 'Teammate',
+        assigneeColor: presenceColourOf(
+          action.assignee.name?.trim() || 'Teammate',
+          action.assignee.color,
+        ),
         mine: selfUserId !== null && action.assignee.userId === selfUserId,
         createdAt: action.createdAt,
       });

@@ -346,6 +346,14 @@ touching cards people add by hand.
   deleted reads "A board no longer here" and the rule **Needs Attention** ("A board is gone"); until it is changed,
   the rule hears nothing, never every board. Only boards whose address is turned on ever make an email card; the
   panel says so ("Only boards with Email to Board turned on get email.").
+- **Boards without an address are marked.** When the Email Received panel first opens in a builder, it reads the
+  plan's addresses once ([Managing an address](email-to-board.md#managing-an-address-signed-in-routes)), and the Board picker then
+  marks each board with none ("Leads · No Address"). Picking one, the note says so ("Leads has no email address yet,
+  so no email reaches this rule.") with **Turn On Email to Board**, which opens [Email to Board](email-to-board.md)
+  over the builder on that board; with **Any Board** and no address anywhere, the note reads "No board has an email
+  address yet." and the button opens on every board. Closing it reads the addresses again. Only an Editor of the
+  whole plan may read them: for anyone else, a server that takes no mail, or a read that fails, the picker marks
+  nothing and the note stays as above. The marks are presentation only; the rule saves the same either way.
 - **From** (optional): one value, an exact address (`ana@example.com`) or a whole domain (`@example.com`, or
   `example.com`), compared with the sender after trimming, any case. A domain matches only that domain
   (`ana@example.com`, not `ana@mail.example.com`). The rule keeps it trimmed and lower case, a domain as
@@ -360,7 +368,9 @@ touching cards people add by hand.
 - **Nobody of the plan behind it.** An email card is made by its sender, who is no Editor, Participant or agent of
   the plan: **Who Did It** conditions, **Assign whoever triggered**, **Send Email to whoever triggered** and **Mention
   whoever triggered** are refused on an Email Received rule (`automation_condition_unsupported`), as for an Incoming
-  Webhook, and the builder leaves them out. `{{person}}` reads the sender's address, as the card's Created by does.
+  Webhook, and the builder leaves them out. `{{person}}` reads the sender's address, as the card's Created by does,
+  but **Insert a Value** does not offer it (**Who Did It**) here: **From Email** is the sender, and a rule that
+  already holds `{{person}}` keeps working.
 - **Once per email card.** One email makes one card and one event on the plan's queue (the same one Card Created
   hears), so each rule runs at most once for it: an Email Received rule once and a Card Created rule once. A rule has
   one trigger, so no rule runs twice.
@@ -909,6 +919,9 @@ hands focus back to the field, the caret after the value:
 - Text whose values fill it past its limit (a comment's or a message's 2,000 characters, an email subject's 200, a
   card title's 500, a checklist item's 200) is cut to that limit, never through an emoji: a cut that would split one
   stops a character short.
+- **Who Did It** (`{{person}}`) is left out of **Insert a Value** in an Email Received or Incoming Webhook rule, which
+  have nobody of the plan behind them (From Email and Webhook Field… say who sent it). Typed in, or already in a
+  rule, it is still known and reads as above.
 - `{{webhook.<path>}}` is known only in an Incoming Webhook rule's text (elsewhere `automation_value_unknown`), and
   **Insert a Value** offers **Webhook Field…** (a path typed in, as `order.id`) only there. A path is 1 to 5 names
   joined by dots, each 1 to 64 letters, digits, `_` or `-` (a list's place is its number: `items.0.name`). It reads the
@@ -1028,36 +1041,38 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
   hidden from screen readers. With reduced motion, or on a touch screen, it shows the moment after, still. The tile
   lifts a little on hover:
 
-  | Template                          | Does                                                                                        | Category       |
-  | --------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
-  | Stamp the Finish Date             | When a card moves to a done column, set Completed On to today and clear its flag.           | Status         |
-  | Assign on Start                   | When a card moves to In Progress with no assignee, assign whoever moved it.                 | Assigning      |
-  | Overdue Nudge                     | Every weekday at 9:00, flag overdue cards and email their assignee.                         | Due Dates      |
-  | Share Out Form Responses          | When a form response lands, assign people in turn and thank the sender in a comment.        | Forms          |
-  | Post Shipped Work to Slack        | When a card with a chosen label moves to Done, post its title and link to a channel.        | Telling People |
-  | Triage New Bugs                   | When a Bug card is added, label it triage and assign the people on triage in turn.          | Assigning      |
-  | Unblock the Next Card             | When a card is done, comment on every card it was blocking that it can start.               | Status         |
-  | Due Soon Reminder                 | Two days before a card is due, email its assignee with a link to the card.                  | Due Dates      |
-  | Clean Up Done                     | Every Monday at 9:00, archive cards that have been done for more than 14 days.              | Status         |
-  | Escalate Urgent Work              | When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.       | Telling People |
-  | Reopen on New Comment             | When someone comments on a done card, move it back to In Progress and flag it.              | Status         |
-  | Route Reviews                     | When a card moves to Review, assign reviewers in turn and say it is ready for them.         | Assigning      |
-  | Give It a Due Date                | When a card moves to In Progress with no due date, set it due a week from today.            | Due Dates      |
-  | Flag Blocked Cards                | When a card gets the blocked label, flag it and ask in a comment what it waits on.          | Status         |
-  | Verify the Fix                    | When a Bug card is done, add a Verify Fix card to its first column to check it.             | Status         |
-  | Back to the Backlog               | When a card moves back to a to-do column, unassign it and clear its due date.               | Assigning      |
-  | Sort Incoming Cards               | When a card is added, AI suggests its card type and sets its priority and labels.           | AI             |
-  | Summarise Form Requests           | When a form response lands, AI summarises it in a comment and sets its priority and labels. | AI             |
-  | Close the Parent                  | When the last of a card’s children is done, move the card to Done too.                      | Status         |
-  | Tell Them It’s Unblocked          | When the last card blocking a card is done, mention its assignee so they can start.         | Telling People |
-  | Nudge Stuck Cards                 | Each morning, flag cards that have not changed for 5 days and ask for an update.            | Telling People |
-  | Done When Feedback Is Resolved    | When the last comment thread on a card in Review is resolved, move it to Done.              | Status         |
-  | Review When a Pull Request Opens  | When a linked pull request opens, move its card to Review.                                  | GitHub         |
-  | Done When the Pull Request Merges | When a linked pull request merges, move its card to Done and set Completed On to today.     | GitHub         |
-  | Flag Failing Checks               | When a linked pull request's checks fail, flag its card and say so in a comment.            | GitHub         |
-  | Tell Them the Checks Pass         | When a linked pull request's checks pass, clear the flag and mention the assignee.          | GitHub         |
-  | Back to In Progress When Closed   | When a linked pull request closes without merging, move its card back to In Progress.       | GitHub         |
-  | Post Merged Work to Slack         | When a linked pull request merges, post its card's title and link to a Slack channel.       | GitHub         |
+  | Template                            | Does                                                                                        | Category       |
+  | ----------------------------------- | ------------------------------------------------------------------------------------------- | -------------- |
+  | Stamp the Finish Date               | When a card moves to a done column, set Completed On to today and clear its flag.           | Status         |
+  | Assign on Start                     | When a card moves to In Progress with no assignee, assign whoever moved it.                 | Assigning      |
+  | Overdue Nudge                       | Every weekday at 9:00, flag overdue cards and email their assignee.                         | Due Dates      |
+  | Share Out Form Responses            | When a form response lands, assign people in turn and thank the sender in a comment.        | Forms          |
+  | Post Shipped Work to Slack          | When a card with a chosen label moves to Done, post its title and link to a channel.        | Telling People |
+  | Triage New Bugs                     | When a Bug card is added, label it triage and assign the people on triage in turn.          | Assigning      |
+  | Unblock the Next Card               | When a card is done, comment on every card it was blocking that it can start.               | Status         |
+  | Due Soon Reminder                   | Two days before a card is due, email its assignee with a link to the card.                  | Due Dates      |
+  | Clean Up Done                       | Every Monday at 9:00, archive cards that have been done for more than 14 days.              | Status         |
+  | Escalate Urgent Work                | When a card's priority becomes Urgent, flag it, email its assignee and post to Slack.       | Telling People |
+  | Reopen on New Comment               | When someone comments on a done card, move it back to In Progress and flag it.              | Status         |
+  | Route Reviews                       | When a card moves to Review, assign reviewers in turn and say it is ready for them.         | Assigning      |
+  | Give It a Due Date                  | When a card moves to In Progress with no due date, set it due a week from today.            | Due Dates      |
+  | Flag Blocked Cards                  | When a card gets the blocked label, flag it and ask in a comment what it waits on.          | Status         |
+  | Verify the Fix                      | When a Bug card is done, add a Verify Fix card to its first column to check it.             | Status         |
+  | Back to the Backlog                 | When a card moves back to a to-do column, unassign it and clear its due date.               | Assigning      |
+  | Sort Incoming Cards                 | When a card is added, AI suggests its card type and sets its priority and labels.           | AI             |
+  | Summarise Form Requests             | When a form response lands, AI summarises it in a comment and sets its priority and labels. | AI             |
+  | Close the Parent                    | When the last of a card’s children is done, move the card to Done too.                      | Status         |
+  | Tell Them It’s Unblocked            | When the last card blocking a card is done, mention its assignee so they can start.         | Telling People |
+  | Nudge Stuck Cards                   | Each morning, flag cards that have not changed for 5 days and ask for an update.            | Telling People |
+  | Done When Feedback Is Resolved      | When the last comment thread on a card in Review is resolved, move it to Done.              | Status         |
+  | Flag Cards Due Soon                 | Three days before a card is due, flag it and ask in a comment if it is sorted.              | Due Dates      |
+  | Done When the Checklist Is Complete | When the last item on a card's checklist is ticked, move it to Done.                        | Status         |
+  | Review When a Pull Request Opens    | When a linked pull request opens, move its card to Review.                                  | GitHub         |
+  | Done When the Pull Request Merges   | When a linked pull request merges, move its card to Done and set Completed On to today.     | GitHub         |
+  | Flag Failing Checks                 | When a linked pull request's checks fail, flag its card and say so in a comment.            | GitHub         |
+  | Tell Them the Checks Pass           | When a linked pull request's checks pass, clear the flag and mention the assignee.          | GitHub         |
+  | Back to In Progress When Closed     | When a linked pull request closes without merging, move its card back to In Progress.       | GitHub         |
+  | Post Merged Work to Slack           | When a linked pull request merges, post its card's title and link to a Slack channel.       | GitHub         |
 
   Picking one opens the builder filled in, unsaved and off, named after it (made unique). What the plan has is
   filled in by its role (its done columns, its In Progress column, a column named like Review, a date field named like

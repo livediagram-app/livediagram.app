@@ -4,11 +4,15 @@
 // so the four doors can't drift.
 //
 //   GET    /api/walkthroughs?d=              the item's walkthroughs
+//   GET    /api/walkthroughs?mine=1          the caller's own, on every item (the Explorer's library)
 //   POST   /api/walkthroughs?d=              start one (an Editor)
 //   PUT    /api/walkthroughs/:id/media?d=    its media, streamed (the Editor who started it)
 //   GET    /api/walkthroughs/:id?d=          one, with its events
 //   GET    /api/walkthroughs/:id/media?d=    its media
 //   DELETE /api/walkthroughs/:id?d=          delete (its recorder, or an Editor)
+//   PATCH  /api/walkthroughs/:id?d=          rename: { title } (its recorder, or an Editor)
+//   PUT    /api/walkthroughs/:id/share?d=    its public link on (its recorder, or an Editor)
+//   DELETE /api/walkthroughs/:id/share?d=    and off
 
 import {
   parseWalkthroughStart,
@@ -16,6 +20,7 @@ import {
   WALKTHROUGH_START_MAX_BYTES,
   walkthroughMediaType,
   type Walkthrough,
+  type WalkthroughLibraryEntry,
   type WalkthroughSummary,
 } from './walkthrough';
 import type { WalkthroughCalls, WalkthroughResult } from './walkthrough-client';
@@ -82,17 +87,36 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
         ? 'one'
         : path.length === 2 && path[1] === 'media'
           ? 'media'
-          : null;
+          : path.length === 2 && path[1] === 'share'
+            ? 'share'
+            : null;
   if (!route || (route !== 'list' && !id)) return refuse('not_found', 404);
   const allowed: Record<typeof route, readonly string[]> = {
     list: ['GET', 'POST'],
-    one: ['GET', 'DELETE'],
+    one: ['GET', 'DELETE', 'PATCH'],
     media: ['GET', 'PUT'],
+    share: ['PUT', 'DELETE'],
   };
   if (!allowed[route].includes(method)) return refuse('not_found', 404);
   // Only a route that is one gets this far, so a path the door doesn't serve answers 404 whether or not the
   // service is there.
   if (!calls) return json({ error: UNAVAILABLE }, { status: 503 });
+  // The caller's own, across the app (the Explorer's Walkthroughs library): theirs to watch and delete, so no grant
+  // is read; an item they can no longer open still lists, and its media answers 404 as the door's media route does.
+  if (
+    route === 'list' &&
+    method === 'GET' &&
+    !itemId &&
+    new URL(request.url).searchParams.get('mine') === '1'
+  ) {
+    if (owner === null || !input.person) return refuse('forbidden', 403);
+    return passOn(await calls.listOwned(owner), 200, (value) => ({
+      walkthroughs: value.walkthroughs.map(({ walkthrough }): WalkthroughLibraryEntry => ({
+        ...walkthroughSummary(walkthrough, true, true),
+        item: walkthrough.item,
+      })),
+    }));
+  }
   if (!itemId) return refuse('missing_item', 400);
 
   const access = await input.access(itemId);
@@ -178,8 +202,17 @@ export async function handleWalkthroughDoor(input: WalkthroughDoorInput): Promis
     });
   }
 
-  // DELETE: an Editor deletes any on the item; anyone else only their own, which the service checks.
-  if (editor) return passOn(await calls.remove(id!, { item: itemId }));
-  if (owner === null) return refuse('forbidden', 403);
-  return passOn(await calls.remove(id!, { owner }));
+  // Rename, share and delete: an Editor on any on the item; anyone else only their own, which the service checks.
+  const by = editor ? { item: itemId } : owner !== null ? { owner } : null;
+  if (!by) return refuse('forbidden', 403);
+  const shaped = (value: { walkthrough: Walkthrough }) => ({
+    walkthrough: walkthroughSummary(value.walkthrough, 'owner' in by, true),
+  });
+  if (route === 'share') return passOn(await calls.share(id!, by, method === 'PUT'), 200, shaped);
+  if (method === 'PATCH') {
+    const body = (await request.json().catch(() => null)) as { title?: unknown } | null;
+    if (typeof body?.title !== 'string' || !body.title.trim()) return refuse('invalid_title', 400);
+    return passOn(await calls.rename(id!, by, body.title), 200, shaped);
+  }
+  return passOn(await calls.remove(id!, by));
 }

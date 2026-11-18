@@ -142,8 +142,12 @@ export const OPENABLES: Record<string, Openable> = {
   palette: byTour('palette-category', () => findTour('palette-category-menu')),
   // The Tab Style dialog (components/dialogs/CanvasThemeDialog.tsx), opened by the footer's Style
   // (LayersThemeStrip.tsx `canvas-theme`) and closed by its own Close.
+  // Open as soon as Style says so (aria-expanded), not only once the dialog is drawn: its code may still be arriving,
+  // and a press on each frame until then toggled it shut again, the pointer hanging on the button for seconds.
   'tab-style': {
-    isOpen: () => !!document.querySelector(TAB_STYLE),
+    isOpen: () =>
+      !!document.querySelector(TAB_STYLE) ||
+      findTour('canvas-theme')?.getAttribute('aria-expanded') === 'true',
     toggle: () => {
       if (document.querySelector(TAB_STYLE)) press(`${TAB_STYLE} button[aria-label="Close"]`);
       else clickTour('canvas-theme');

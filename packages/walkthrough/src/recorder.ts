@@ -2,6 +2,7 @@
 // when it is on, through the browser's MediaRecorder at the walkthrough bit rates, so ten minutes stays under the size
 // limit. The bytes gather in memory in one-second pieces; a recording that reaches the limit stops itself.
 
+import { steadyAudio, type SteadyAudio } from '@liveworkspace/capture/steady-audio';
 import {
   WALKTHROUGH_AUDIO_BPS,
   WALKTHROUGH_MEDIA_MAX_BYTES,
@@ -51,6 +52,8 @@ export type RecordingOptions = {
   /** Told when the bytes reach the size limit, after which nothing more is kept. */
   onFull?: () => void;
   Recorder?: RecorderClass | undefined;
+  /** Puts the sound on the browser's audio clock first (steadyAudio): some USB microphones read straight record slow. */
+  steady?: (stream: MediaStream) => SteadyAudio;
 };
 
 export function startRecording({
@@ -58,10 +61,12 @@ export function startRecording({
   camera,
   onFull,
   Recorder = recorderClass(),
+  steady = steadyAudio,
 }: RecordingOptions): Recording {
   const type = recordingType(camera, Recorder);
   if (!Recorder || !type) throw new Error('recording_unsupported');
-  const recorder = new Recorder(stream, {
+  const routed = steady(stream);
+  const recorder = new Recorder(routed.stream, {
     mimeType: type,
     audioBitsPerSecond: WALKTHROUGH_AUDIO_BPS,
     ...(camera ? { videoBitsPerSecond: WALKTHROUGH_VIDEO_BPS } : {}),
@@ -85,14 +90,17 @@ export function startRecording({
   return {
     stop: () =>
       new Promise<Recorded>((resolve) => {
-        recorder.onstop = () =>
+        recorder.onstop = () => {
+          routed.close();
           resolve({ blob: new Blob(pieces, { type: blobType() }), type: blobType() });
+        };
         if (recorder.state === 'inactive') recorder.onstop(new Event('stop'));
         else recorder.stop();
       }),
     cancel: () => {
       recorder.ondataavailable = null;
       if (recorder.state !== 'inactive') recorder.stop();
+      routed.close();
       pieces.length = 0;
     },
   };

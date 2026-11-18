@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BUBBLE_VIEW_MARGIN_PX,
+  MAX_MINI_VIEW_VIDEOS,
   MAX_SCREEN_BUBBLES,
   MAX_VIDEO_BUBBLES,
   onView,
@@ -105,5 +106,63 @@ describe('pickSeen', () => {
       }),
     );
     expect(seen.video).toEqual(['a', 'b']);
+  });
+
+  // Work Tracker 984: a hidden tab with the mini view open keeps its tiles' cameras.
+  describe('a hidden tab with the mini view open', () => {
+    it('receives the nearest cameras heard, small, capped, and no screen', () => {
+      const seen = pickSeen(crowd({ visible: false, miniView: true }));
+      expect(seen).toEqual({ video: ['p0', 'p1', 'p2', 'p3'], screen: [], small: true });
+      expect(seen.video).toHaveLength(MAX_MINI_VIEW_VIDEOS);
+    });
+
+    it('wherever they stand, the maximised one no different, only those heard and on camera', () => {
+      const view = { x: 5000, y: 5000, width: 10, height: 10 };
+      const seen = pickSeen(
+        crowd({
+          visible: false,
+          miniView: true,
+          view,
+          maximised: { id: 'p9', media: 'video' },
+          heard: new Set(['p9', 'p1', 'p0', 'gone']),
+          peers: new Map([
+            ['p0', { video: null, screen }],
+            ['p1', { video: cam }],
+            ['p9', { video: cam }],
+            ['gone', { video: cam }],
+          ]),
+        }),
+      );
+      expect(seen).toEqual({ video: ['p1', 'p9'], screen: [], small: true });
+    });
+
+    it('nothing the kill switch pauses, nothing before you walk', () => {
+      expect(pickSeen(crowd({ visible: false, miniView: true, allowVideo: false }))).toEqual({
+        video: [],
+        screen: [],
+      });
+      expect(pickSeen(crowd({ visible: false, miniView: true, self: null }))).toEqual({
+        video: [],
+        screen: [],
+      });
+    });
+
+    it('a tie in distance goes by id', () => {
+      const ids = ['c', 'a', 'd', 'b'];
+      const seen = pickSeen(
+        crowd({
+          visible: false,
+          miniView: true,
+          heard: new Set(ids),
+          walkers: new Map(ids.map((id) => [id, { x: 10, y: 0 }])),
+          peers: new Map(ids.map((id) => [id, { video: cam }])),
+        }),
+      );
+      expect(seen.video).toEqual(['a', 'b', 'c', 'd']);
+    });
+
+    it('a visible tab ignores it: the canvas rules as before', () => {
+      expect(pickSeen(crowd({ miniView: true }))).toEqual(pickSeen(crowd()));
+    });
   });
 });

@@ -11,22 +11,22 @@ import { allSides, ellipse, path, rect } from './furniture-parts';
 export const WORKPLACE_TONES = {
   paper: '#ffffff',
   screen: '#0f172a',
-  lit: '#38bdf8',
-  ready: '#22c55e',
+  lit: '#50b4e0',
+  ready: '#29be60',
   handle: '#334155',
-  lockerA: '#60a5fa',
-  lockerB: '#3b82f6',
+  lockerA: '#74a7e6',
+  lockerB: '#5187e0',
   plate: '#f8fafc',
   wood: '#c2894b',
-  woodDeep: '#92400e',
-  navy: '#1e3a8a',
+  woodDeep: '#86431a',
+  navy: '#1f3b89',
   camel: '#c8924f',
-  scarf: '#dc2626',
-  stripe: '#fde68a',
+  scarf: '#d23030',
+  stripe: '#eedd99',
   hat: '#57534e',
-  umbrellaRed: '#ef4444',
-  umbrellaNavy: '#1d4ed8',
-  umbrellaYellow: '#facc15',
+  umbrellaRed: '#de5555',
+  umbrellaNavy: '#2a54cb',
+  umbrellaYellow: '#dcba33',
 } as const;
 
 const T = WORKPLACE_TONES;
@@ -55,7 +55,6 @@ const PRINTER_VIEW: FurnitureDrawing = {
     path('glint', 'M10 32V26'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 70, rx: 30, ry: 7 },
 };
 
 // Its back to you: the sheet rising beyond, the printer's plain back with its vents and power socket, and the cabinet's
@@ -75,7 +74,6 @@ const PRINTER_BACK: FurnitureDrawing = {
     path('glint', 'M62 26V40'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 70, rx: 30, ry: 7 },
 };
 
 // Facing left: the printer's top from above with the printed sheet in its tray, its front a strip down the left with
@@ -101,7 +99,6 @@ const PRINTER_SIDE: FurnitureDrawing = {
     path('glint', 'M36 18V30'),
   ],
   seats: [],
-  ring: { cx: 32, cy: 88, rx: 26, ry: 8 },
 };
 
 // A floor-standing copier: originals on the lid, a control panel with a lit touch screen, a stack of copies in the
@@ -132,7 +129,6 @@ const COPIER_VIEW: FurnitureDrawing = {
     ellipse('mark', 92, 31, 1.6, 1.6, T.ready),
   ],
   seats: [],
-  ring: { cx: 52, cy: 112, rx: 46, ry: 9 },
 };
 
 // Its back to you: the lid and the document feeder beyond, the copier's plain back with a vent grille and a socket, and
@@ -153,7 +149,6 @@ const COPIER_BACK: FurnitureDrawing = {
     path('glint', 'M90 38V58'),
   ],
   seats: [],
-  ring: { cx: 52, cy: 112, rx: 46, ry: 9 },
 };
 
 // Facing left: the lid from above with the originals on it, the control panel cheated toward you at its front, the
@@ -188,7 +183,6 @@ const COPIER_SIDE: FurnitureDrawing = {
     ellipse('mark', 11.5, 41, 1.6, 1.6, T.ready),
   ],
   seats: [],
-  ring: { cx: 42, cy: 140, rx: 36, ry: 10 },
 };
 
 // --- By the door --------------------------------------------------------------------------------------------------
@@ -211,7 +205,6 @@ const LOCKERS_VIEW: FurnitureDrawing = {
     rect('face', 4, 113, 128, 9, 2),
   ],
   seats: [],
-  ring: { cx: 68, cy: 118, rx: 64, ry: 8 },
 };
 
 // Its back to you: the bank's plain back panel, the seams between the four lockers, two stiffening rails and the plinth.
@@ -227,7 +220,6 @@ const LOCKERS_BACK: FurnitureDrawing = {
     rect('face', 4, 113, 128, 9, 2),
   ],
   seats: [],
-  ring: { cx: 68, cy: 118, rx: 64, ry: 8 },
 };
 
 // The side drawing's four doors, down its length: each door's top, its height, and the strip they stand in.
@@ -259,7 +251,6 @@ const LOCKERS_SIDE: FurnitureDrawing = {
     rect('face', 4, 188, 48, 9, 2),
   ],
   seats: [],
-  ring: { cx: 30, cy: 192, rx: 26, ry: 8 },
 };
 
 // A wooden coat stand on a cross foot: a navy coat and a camel coat on its hooks, a striped scarf over the pole and a
@@ -290,7 +281,6 @@ const COAT_RACK_VIEW: FurnitureDrawing = {
     ellipse('panel', 28, 12, 13, 2.5, T.hat),
   ],
   seats: [],
-  ring: { cx: 28, cy: 118, rx: 20, ry: 6 },
 };
 
 // One furled umbrella: its canopy from the stand up to its tip, its shaft and a hooked handle.
@@ -318,7 +308,6 @@ const UMBRELLA_STAND_VIEW: FurnitureDrawing = {
     path('glint', 'M12 37V48'),
   ],
   seats: [],
-  ring: { cx: 20, cy: 56, rx: 15, ry: 5 },
 };
 
 /** The grid pieces this module draws, for OFFICE_ART. */

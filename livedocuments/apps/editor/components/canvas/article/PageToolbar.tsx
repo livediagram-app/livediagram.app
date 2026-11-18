@@ -57,6 +57,7 @@ import {
 } from '@/lib/article/article-commands';
 import { articleSchema } from '@/lib/article/article-schema';
 import { articleCountsOf } from '@/lib/article/article-word-count';
+import { selectNextLongSentence } from '@/lib/article/article-long-sentences';
 import { track } from '@/lib/telemetry';
 import { ARTICLE_BLOCK_INSERT_EVENT } from '@/lib/article/article-telemetry';
 import { insertFootnote } from '@/lib/article/article-footnotes';
@@ -67,15 +68,6 @@ import {
   type TableCommandName,
 } from '@/lib/article/article-table-commands';
 import { Button, Divider, LinkField, ToolbarPopover } from './page-toolbar-menus';
-import { SuggestModeButton, SuggestPanel } from './page-toolbar-suggest';
-import { waitingCopy } from './useSuggestionCard';
-import { listSuggestions, resolveSuggestionsTr } from '@/lib/article/article-suggest-resolve';
-import {
-  sayToReviewer,
-  setSuggestMode,
-  useSuggestMode,
-  type SuggestMode,
-} from '@/lib/article/article-suggest-store';
 import { TablePanel } from './page-toolbar-table';
 import { usePageToolbarPlacement } from './page-toolbar-placement';
 import { useShownArticle } from './page-toolbar-presence';
@@ -116,8 +108,7 @@ const FORMAT_EVENT = {
   link: 'ArticleLink',
 } as const;
 
-type Open =
-  'mode' | 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'table' | 'more' | null;
+type Open = 'style' | 'list' | 'align' | 'colour' | 'link' | 'insert' | 'table' | 'more' | null;
 
 export function PageToolbar({
   accent,
@@ -176,7 +167,6 @@ export function PageToolbar({
   if (open === 'table' && !shown?.selection.inTable) setOpen(null);
 
   const phone = useIsMobileViewport();
-  const mode = useSuggestMode();
   const bar = usePageToolbarPlacement({
     pageId: dock ? null : (shown?.pageId ?? null),
     phone,
@@ -228,31 +218,6 @@ export function PageToolbar({
       );
     track('Element', 'Added', ARTICLE_BLOCK_INSERT_EVENT[what]);
   };
-  // Suggesting or Editing, for every article on the tab (docs/specs/007-editor/suggestions.md "Suggesting").
-  const chooseMode = (next: SuggestMode) => {
-    if (next !== mode)
-      track('UI', 'Changed', next === 'suggesting' ? 'SuggestingMode' : 'EditingMode');
-    setSuggestMode(next);
-    close();
-  };
-  // Accept All or Reject All: every suggestion in the article, as one edit; held paragraphs wait and are counted.
-  const decideAll = (decision: 'accept' | 'reject') => {
-    let waiting = 0;
-    handle.run((state, dispatch) => {
-      const r = resolveSuggestionsTr(state, () => decision);
-      waiting = r.waiting;
-      if (r.decided === 0) return false;
-      dispatch?.(r.tr);
-      return true;
-    });
-    if (waiting > 0) sayToReviewer(waitingCopy(waiting));
-    track(
-      'Element',
-      'Changed',
-      decision === 'accept' ? 'SuggestionsAcceptedAll' : 'SuggestionsRejectedAll',
-    );
-    close();
-  };
   const reshapeTable = (name: TableCommandName) => {
     if (handle.run(tableCommand(name))) track('Element', 'Changed', 'ArticleTableShape');
   };
@@ -292,17 +257,6 @@ export function PageToolbar({
       }
       style={dock ? undefined : { visibility: 'hidden' }}
     >
-      {card ? null : (
-        <>
-          <SuggestModeButton
-            mode={mode}
-            phone={phone}
-            expanded={open === 'mode'}
-            onPress={() => toggleOpen('mode')}
-          />
-          <Divider />
-        </>
-      )}
       <button
         data-anchor="style"
         type="button"
@@ -447,17 +401,6 @@ export function PageToolbar({
   return (
     <>
       {dock ? createPortal(controls, dock) : <Portal>{controls}</Portal>}
-      {open === 'mode' ? (
-        <ToolbarPopover anchor="mode" menu onClose={close} label="Mode" width={288}>
-          <SuggestPanel
-            mode={mode}
-            // Read only while the menu is open: never on the typing path.
-            count={listSuggestions(handle.state()).length}
-            onMode={chooseMode}
-            onAll={decideAll}
-          />
-        </ToolbarPopover>
-      ) : null}
       {open === 'style' ? (
         <ToolbarPopover anchor="style" menu onClose={close} label="Text Style" width={210}>
           <StylePanel
@@ -538,6 +481,11 @@ export function PageToolbar({
             // Read only while the menu is open, from the writing as typed: never on the typing path.
             counts={articleCountsOf(handle.state())}
             onAction={(a) => choose(() => more(a))}
+            // The next long sentence selected, the menu shut and the writing in focus, so it can be split.
+            onNextLong={() => {
+              if (handle.run(selectNextLongSentence)) track('UI', 'Used', 'LongSentenceSelected');
+              close();
+            }}
           />
         </ToolbarPopover>
       ) : null}

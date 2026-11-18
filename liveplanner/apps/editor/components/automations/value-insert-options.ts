@@ -33,6 +33,12 @@ const THIS_CARD: ValueGroup = {
     name,
   })),
 };
+// This Card without Who Did It: an Email Received or Incoming Webhook rule has nobody of the plan behind it (From Email
+// and Webhook Field… say who sent it), so it is not offered there.
+const THIS_CARD_PERSONLESS: ValueGroup = {
+  ...THIS_CARD,
+  options: THIS_CARD.options.filter((o) => o.kind !== 'value' || o.name !== 'person'),
+};
 const TRIGGERING_CARD: ValueGroup = {
   id: 'trigger',
   label: 'The Triggering Card',
@@ -71,7 +77,7 @@ const WEBHOOK: ValueGroup = {
 
 /** The groups for a field: inside a branch or not, the card's fields, whether the rule is an Incoming Webhook's,
  *  whether a GitHub trigger's (the Pull Request group, after This Card) and whether an Email Received's (the Email
- *  group, after This Card). */
+ *  group, after This Card). An Incoming Webhook or Email Received rule's This Card leaves out Who Did It. */
 export function valueInsertGroups(
   branch: boolean,
   fields: readonly { id: string; name: string }[],
@@ -79,7 +85,7 @@ export function valueInsertGroups(
   github = false,
   email = false,
 ): ValueGroup[] {
-  const groups: ValueGroup[] = [THIS_CARD];
+  const groups: ValueGroup[] = [incoming || email ? THIS_CARD_PERSONLESS : THIS_CARD];
   if (github) groups.push(PULL_REQUEST);
   if (email) groups.push(EMAIL);
   if (branch) groups.push(TRIGGERING_CARD);

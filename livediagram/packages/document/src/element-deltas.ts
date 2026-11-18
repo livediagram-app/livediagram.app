@@ -24,6 +24,7 @@
 
 import type { Element, ShapeElement } from './index';
 import type { Comment, CommentThread } from './comments';
+import type { ElementAction, ElementActionStatus } from './element-action';
 import {
   threadResolved,
   threadWithComment,
@@ -80,6 +81,9 @@ export type ElementDelta =
   | { kind: 'comment-resolve'; resolved: boolean }
   // Its author changed a comment's text (docs/specs/024-agents/agent-presence.md "Edit and delete own").
   | { kind: 'comment-edit'; commentId: string; text: string; editedAt: number }
+  // An assigned action's status changed from outside the editor (docs/specs/012-collaboration/assigned-actions.md
+  // "From the Inbox"): the action named by its id, on the element's one action or in an Action panel's list.
+  | { kind: 'action-status'; actionId: string; status: ElementActionStatus; at: number }
   // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
   // their collab key, `name` the name they react under (the room stamps both from the sender's presence).
   | {
@@ -92,6 +96,30 @@ export type ElementDelta =
       person?: string;
       on: boolean;
     };
+
+const ACTION_STATUS_SET: ReadonlySet<string> = new Set(['open', 'done', 'wont-do']);
+
+// The element with the action `actionId` set to `status` (stamped `at`), on its one action or in its list; the SAME
+// element when there is no such action, the status is unknown or already set.
+export function withActionStatus(
+  el: Element,
+  actionId: string,
+  status: ElementActionStatus,
+  at: number,
+): Element {
+  if (typeof actionId !== 'string' || !ACTION_STATUS_SET.has(status) || typeof at !== 'number') {
+    return el;
+  }
+  const e = el as { action?: ElementAction; actions?: ElementAction[] };
+  const set = (a: ElementAction): ElementAction => ({ ...a, status, updatedAt: at });
+  if (e.action?.id === actionId) {
+    return e.action.status === status ? el : ({ ...el, action: set(e.action) } as Element);
+  }
+  const i = e.actions?.findIndex((a) => a.id === actionId) ?? -1;
+  if (i < 0 || e.actions![i]!.status === status) return el;
+  const actions = e.actions!.map((a, j) => (j === i ? set(a) : a));
+  return { ...el, actions } as Element;
+}
 
 function sameRound(el: ShapeElement, round: string | undefined): boolean {
   return (el.collabRound ?? undefined) === (round ?? undefined);
@@ -134,6 +162,8 @@ const holdsComment = (el: Element, commentId: string): boolean =>
 // here because a delta is the one element write that skips `validate.ts`.
 export function applyElementDelta(el: Element, delta: ElementDelta): Element {
   switch (delta.kind) {
+    case 'action-status':
+      return withActionStatus(el, delta.actionId, delta.status, delta.at);
     case 'response': {
       if (el.type !== 'shape' || !sameRound(el, delta.round)) return el;
       if (typeof delta.participantId !== 'string') return el;

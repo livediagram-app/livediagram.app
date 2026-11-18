@@ -13,6 +13,7 @@ import {
 import { useAutomationsToolsItem } from '@/components/automations/automations-tools-item';
 import { useCalendarFeedToolsItem } from '@/components/calendar-feed/calendar-feed-tools-item';
 import { useEmailIntakeToolsItem } from '@/components/email-intake/email-intake-tools-item';
+import { useRoadmapToolsItem } from '@/components/roadmap/roadmap-tools-item';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, settings, and the
@@ -25,6 +26,7 @@ export function ChromeControls({
   settingsLabel = 'Settings',
   labelled = false,
   appearance = true,
+  extraTools = [],
 }: {
   onOpenSearch?: () => void;
   onOpenSettings?: () => void;
@@ -36,17 +38,21 @@ export function ChromeControls({
   // The Appearance control; withheld where the host sets the scheme itself (a workbench frame,
   // docs/specs/013-workspace/blueprints/workbench-embeds.md, WB15).
   appearance?: boolean;
+  // More rows for Tools (the editor's Editing Mode tool).
+  extraTools?: readonly (ChromeToolsItem | null)[];
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   const automations = useAutomationsToolsItem();
   const emailIntake = useEmailIntakeToolsItem();
   const calendarFeed = useCalendarFeedToolsItem();
+  const roadmap = useRoadmapToolsItem();
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
     ? {
         id: 'search',
         group: 'find',
-        label: 'Search',
+        // The ellipsis: it opens outside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+        label: 'Search…',
         description: 'Find plans, tabs and elements.',
         icon: <SearchGlyph />,
         onSelect: () => onOpenSearch(),
@@ -62,7 +68,7 @@ export function ChromeControls({
           whole item, in one menu, drawn only while it holds one. */}
       <ChromeToolsMenu
         labelled={labelled}
-        items={[search, automations, emailIntake, calendarFeed]}
+        items={[search, automations, emailIntake, calendarFeed, roadmap, ...extraTools]}
       />
       {onOpenSettings ? (
         <button type="button" onClick={onOpenSettings} aria-label={settingsLabel} className={BTN}>

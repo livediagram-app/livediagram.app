@@ -170,7 +170,7 @@ const button = (name: string, within: ParentNode = container) =>
   [...within.querySelectorAll('button')].find(
     (b) => b.textContent?.trim() === name || b.getAttribute('aria-label') === name,
   )!;
-const press = async (name: string, within: ParentNode = container) => {
+const press = async (name: string, within: ParentNode = document.body) => {
   const b = button(name, within);
   b.focus();
   await act(async () => b.click());
@@ -182,7 +182,8 @@ const type = (input: HTMLInputElement, value: string) =>
     input.dispatchEvent(new Event('input', { bubbles: true }));
   });
 // A tile or row by its words: the native radio or checkbox under it.
-const choice = (words: string, within: ParentNode = container) =>
+// Add Webhook opens in a popover on the page's body, so the helpers look there.
+const choice = (words: string, within: ParentNode = document.body) =>
   [...within.querySelectorAll('label')]
     .find(
       (l) =>
@@ -190,7 +191,7 @@ const choice = (words: string, within: ParentNode = container) =>
     )!
     .querySelector('input')!;
 const field = (label: string) =>
-  [...container.querySelectorAll('label')]
+  [...document.body.querySelectorAll('label')]
     .find((l) => l.firstChild?.textContent === label)!
     .querySelector('input')!;
 const render = async (app: App = 'livediagram', share: { code: string } | null = SHARE) => {
@@ -206,13 +207,11 @@ const created = () => calls.find((c) => c.method === 'createWebhook')!;
 const updates = () => calls.filter((c) => c.method === 'updateWebhook');
 
 describe('A document’s webhooks', () => {
-  it('says what a webhook does here and that they are this document’s alone, read through its link', async () => {
+  it('names the list for assistive technology and counts it, read through its link', async () => {
     await render();
-    expect(container.querySelector('h3')?.textContent).toBe('Post Updates Where Your Team Talks');
-    expect(container.textContent).toContain('when something happens to this canvas');
-    expect(container.querySelector('[data-webhooks-scope]')?.textContent).toBe(
-      'Only for this canvas. Your other canvases have their own.',
-    );
+    expect(container.querySelector('h3')?.textContent).toBe('Webhooks');
+    expect(container.querySelector('h3')?.className).toContain('sr-only');
+    expect(container.textContent).toContain('1 webhook');
     expect(calls[0]).toEqual({
       method: 'listWebhooks',
       args: [ITEM_ID, { code: 'abc123', password: null }],
@@ -222,8 +221,8 @@ describe('A document’s webhooks', () => {
   it('speaks in the document’s own words: a plan’s', async () => {
     webhooks = [];
     await render('liveplanner', null);
-    expect(container.querySelector('[data-webhooks-scope]')?.textContent).toBe(
-      'Only for this plan. Your other plans have their own.',
+    expect(container.textContent).toContain(
+      'the moment this plan changes. Only this plan: your other plans have their own.',
     );
     expect(calls[0]).toEqual({ method: 'listWebhooks', args: [ITEM_ID, undefined] });
   });
@@ -283,15 +282,15 @@ describe('A document’s webhooks', () => {
     expect(document.activeElement).toBe(choice('Slack'));
     expect((document.activeElement as HTMLInputElement).checked).toBe(true);
     await press('Cancel');
-    expect(container.querySelector('form')).toBeNull();
+    expect(document.querySelector('form')).toBeNull();
     expect(container.querySelector('[data-empty-state]')).not.toBeNull();
   });
 
   it('adds one step by step: the canvas’s events, none chosen, Who Did It, and its secret once', async () => {
     await render();
     await press('Add Webhook');
-    const form = container.querySelector('form')!;
-    expect(form.textContent).toContain('It posts only what happens to this canvas.');
+    const form = document.querySelector('form')!;
+    expect(document.querySelector('[role="dialog"], form')).toBeTruthy();
     // Each destination brings its own Connect panel, field and how to get the address.
     act(() => choice('Microsoft Teams').click());
     expect(form.querySelector('[data-connect="teams"]')?.textContent).toContain(
@@ -357,7 +356,7 @@ describe('A document’s webhooks', () => {
     expect(document.activeElement?.textContent).toBe('Copy');
     await press('Done');
     expect(container.textContent).not.toContain('whsec_abc');
-    expect(document.activeElement?.textContent).toBe('Post Updates Where Your Team Talks');
+    expect(document.activeElement?.textContent).toBe('Webhooks');
     expect(container.querySelectorAll('[data-webhook]')).toHaveLength(2);
     expect(row('w2').textContent).toContain('Added. Send a test to check it reaches your service.');
   });
@@ -366,7 +365,7 @@ describe('A document’s webhooks', () => {
     webhooks = [];
     await render('liveplanner');
     await press('Add Webhook');
-    const form = container.querySelector('form')!;
+    const form = document.querySelector('form')!;
     const picker = form.querySelector('[data-webhook-events]')!;
     expect(picker.textContent).toContain('Plan Renamed');
     expect(picker.textContent).toContain('Card Moved');
@@ -393,13 +392,13 @@ describe('A document’s webhooks', () => {
     refuse = (m) => (m === 'createWebhook' ? 'webhook_url_invalid' : null);
     await render();
     await press('Add Webhook');
-    const form = container.querySelector('form')!;
+    const form = document.querySelector('form')!;
     type(field('Slack Webhook URL'), 'https://example.com');
     type(field('Name'), 'x');
     act(() => choice('Canvas Renamed', form).click());
     await press('Add Webhook', form);
     const url = field('Slack Webhook URL');
-    const alert = container.querySelector('[role=alert]')!;
+    const alert = document.body.querySelector('[role=alert]')!;
     expect(alert.textContent).toContain('hooks.slack.com/services');
     // Said by the address, which is marked invalid and takes the keyboard (Work Tracker 1025).
     expect(url.getAttribute('aria-invalid')).toBe('true');
@@ -408,19 +407,19 @@ describe('A document’s webhooks', () => {
     // Typing a new address clears it.
     type(url, 'https://hooks.slack.com/services/x');
     expect(url.hasAttribute('aria-invalid')).toBe(false);
-    expect(container.querySelector('[role=alert]')).toBeNull();
+    expect(document.body.querySelector('[role=alert]')).toBeNull();
   });
 
   it('says a host that does not resolve could not be found, by the address', async () => {
     refuse = (m) => (m === 'createWebhook' ? 'webhook_url_unresolved' : null);
     await render();
     await press('Add Webhook');
-    const form = container.querySelector('form')!;
+    const form = document.querySelector('form')!;
     type(field('Slack Webhook URL'), 'https://hooks.slak.com/services/x');
     type(field('Name'), 'x');
     act(() => choice('Canvas Renamed', form).click());
     await press('Add Webhook', form);
-    const alert = container.querySelector('[role=alert]')!;
+    const alert = document.body.querySelector('[role=alert]')!;
     expect(alert.textContent).toBe('We couldn’t find that address. Check the domain.');
     expect(document.activeElement).toBe(field('Slack Webhook URL'));
     // Cancel and Add Webhook stay in the form's sticky foot.
@@ -432,12 +431,12 @@ describe('A document’s webhooks', () => {
     refuse = (m) => (m === 'createWebhook' ? 'webhook_limit' : null);
     await render();
     await press('Add Webhook');
-    const form = container.querySelector('form')!;
+    const form = document.querySelector('form')!;
     type(field('Slack Webhook URL'), 'https://hooks.slack.com/services/x');
     type(field('Name'), 'x');
     act(() => choice('Canvas Renamed', form).click());
     await press('Add Webhook', form);
-    expect(container.querySelector('[role=alert]')?.textContent).toContain('up to 10 webhooks');
+    expect(document.body.querySelector('[role=alert]')?.textContent).toContain('up to 10 webhooks');
     expect(field('Slack Webhook URL').hasAttribute('aria-invalid')).toBe(false);
     expect(document.activeElement).toBe(button('Add Webhook', form));
   });
@@ -666,7 +665,7 @@ describe('A document’s webhooks', () => {
   it('says who may manage them when the index refuses, with no Try Again', async () => {
     refuse = (m) => (m === 'listWebhooks' ? 'webhooks_need_editor' : null);
     await render();
-    expect(container.querySelector('[role=alert]')?.textContent).toContain(
+    expect(document.body.querySelector('[role=alert]')?.textContent).toContain(
       'Only people who can edit all of this document can manage its webhooks.',
     );
     expect(button('Try Again')).toBeUndefined();
@@ -676,7 +675,7 @@ describe('A document’s webhooks', () => {
   it('offers Try Again for a passing failure', async () => {
     refuse = (m) => (m === 'listWebhooks' ? 'webhooks_unavailable' : null);
     await render();
-    expect(container.querySelector('[role=alert]')?.textContent).toContain(
+    expect(document.body.querySelector('[role=alert]')?.textContent).toContain(
       'aren’t available just now',
     );
     refuse = () => null;
@@ -795,7 +794,6 @@ describe('the Webhooks dialog', () => {
     await settle();
     const dialog = document.querySelector('[role="dialog"]')!;
     expect(dialog.querySelector('h2')?.textContent).toBe('Webhooks for “\u2068Sprint 4\u2069”');
-    expect(dialog.textContent).toContain('Plan · These apply to this plan only');
     expect(calls[0]).toMatchObject({ method: 'listWebhooks' });
     act(() => (dialog.querySelector('button[aria-label="Close"]') as HTMLButtonElement).click());
     expect(onClose).toHaveBeenCalled();

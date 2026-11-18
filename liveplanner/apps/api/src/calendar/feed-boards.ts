@@ -1,13 +1,20 @@
-// The boards a calendar feed's Board option may name (docs/specs/026-plan/calendar-feed.md "The options"; blueprint
-// calendar-feed.md "Part 2"): every Plan board on the plan's tabs, in tab order, by its element id, its title and its
-// tab's name. Read from the board tabs alone, a batch at a time (plan-route.ts planTabs).
+// What a calendar feed's Card Types option may name (docs/specs/026-plan/calendar-feed.md "The options"; blueprint
+// calendar-feed.md "Card types in place of a board"): the plan's card types, in its catalogue's order.
 
-import type { CalendarFeedBoard } from '@liveplanner/api-schema';
-import { planOutline } from '@liveplanner/items';
-import { planTabs } from '../routes/plan-route';
+import type { CalendarFeedType } from '@liveplanner/api-schema';
+import { typesOf } from '@liveplanner/items';
+import { parseTypes } from '../plan-room/plan-cards-push';
 import type { PlanEnv } from '../types';
 
-export async function feedBoardsOf(env: PlanEnv, planId: string): Promise<CalendarFeedBoard[]> {
-  const { boards } = planOutline(await planTabs({ env }, planId, null), null);
-  return boards.map((b) => ({ id: b.elementId, title: b.title, tabName: b.tabName }));
+/** The card types the Card Types option may name (calendar-feed.md "The options"): the plan's catalogue, in order. */
+export async function feedTypesOf(env: PlanEnv, planId: string): Promise<CalendarFeedType[]> {
+  const row = await env.PLAN_DB.prepare('SELECT item_types FROM plan WHERE id = ?')
+    .bind(planId)
+    .first<{ item_types: string | null }>();
+  return typesOf(parseTypes(row?.item_types ?? null)).map((t) => ({
+    id: t.id,
+    name: t.label,
+    glyph: t.glyph,
+    color: t.color,
+  }));
 }

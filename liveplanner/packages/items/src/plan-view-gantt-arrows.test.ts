@@ -57,6 +57,8 @@ describe('Gantt dependency arrows', () => {
     ];
     const arrows = ganttArrows(entries, index, phases);
     expect(arrows.map((x) => x.done)).toEqual([true, false]);
+    // The rows overlap: an open blocker's arrow clashes, a done one's never (plan-views.md "Dependency clashes").
+    expect(arrows.map((x) => x.clash)).toEqual([false, true]);
     expect(arrows.map((x) => [x.from.row.item.id, x.to.row.item.id, x.from.top])).toEqual([
       [a.id, b.id, 30],
       [b.id, c.id, 70],

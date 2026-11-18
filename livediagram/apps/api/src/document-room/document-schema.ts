@@ -18,7 +18,6 @@ import {
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
-import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -307,7 +306,18 @@ const V6 = (exec: Exec) => {
   );
 };
 
-// Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the item"): their
+// The canvas_suggestions table this step made, frozen here so the migration no longer needs the retired package.
+const CANVAS_SUGGESTIONS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS canvas_suggestions (
+  id         TEXT PRIMARY KEY,
+  tab_id     TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  body       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS canvas_suggestions_tab ON canvas_suggestions (tab_id, created_at);
+`;
+
+// Canvas suggestions, since retired (owner, 2026-11-17), kept as written: a migration is history. Their
 // table, beside the tabs; and the document's review settings ("Suggest Only"), JSON or NULL, on its row. Asks before
 // the ALTER, so it is safe however far a room got.
 const V7 = (exec: Exec) => {

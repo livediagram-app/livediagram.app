@@ -61,15 +61,43 @@ export function flashcardWordCount(flow: ArticleFlow): number {
 // Each writing's count, kept while the writing is the same object (a commit makes a new one).
 const counted = new WeakMap<ArticleFlow, number>();
 
-/** How long a card's words take to say aloud, in seconds (0 for none): at
- *  FLASHCARD_WORDS_PER_MINUTE, rounded up. Cached per writing object. */
-export function flashcardSpeakingSeconds(flow: ArticleFlow): number {
+/** A card's words (flashcardWordCount), cached per writing object. */
+export function flashcardWords(flow: ArticleFlow): number {
   let words = counted.get(flow);
   if (words === undefined) {
     words = flashcardWordCount(flow);
     counted.set(flow, words);
   }
-  return speakingSecondsFor(words);
+  return words;
+}
+
+/** How long a card's words take to say aloud, in seconds (0 for none): at
+ *  FLASHCARD_WORDS_PER_MINUTE, rounded up. Cached per writing object. */
+export function flashcardSpeakingSeconds(flow: ArticleFlow): number {
+  return speakingSecondsFor(flashcardWords(flow));
+}
+
+/** "3 cards · 2 min" (a slide's note cards), or with `about` "10 cards · about 6 min" (a stack's whole talk): how
+ *  many cards, and how long they take to say; null for no cards. A count with no time says the count alone. */
+export function cardsSummary(
+  count: number,
+  seconds: number,
+  { about = false }: { about?: boolean } = {},
+): string | null {
+  if (count <= 0) return null;
+  const cards = count === 1 ? '1 card' : `${count} cards`;
+  const time = speakingTimeLabel(seconds);
+  return time ? `${cards} · ${about ? 'about ' : ''}${time}` : cards;
+}
+
+/** A stack's whole talk (docs/specs/007-editor/flashcards.md "The whole talk"): how many cards, and every card's
+ *  words added up first, then said at FLASHCARD_WORDS_PER_MINUTE and rounded once ("10 cards · about 6 min"). Null
+ *  for a stack with no words on any card. Each card's count is cached per writing object, so this is O(cards). */
+export function flashcardStackSummary(flows: readonly (ArticleFlow | undefined)[]): string | null {
+  let words = 0;
+  for (const flow of flows) if (flow) words += flashcardWords(flow);
+  if (words === 0) return null;
+  return cardsSummary(flows.length, speakingSecondsFor(words), { about: true });
 }
 
 /** A speaking time as the card's footer says it: "25 sec" under a minute (to the next 5 s), then

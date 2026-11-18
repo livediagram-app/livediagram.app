@@ -143,7 +143,6 @@ describe('an article write', () => {
           look: 'report',
           accent: '#ff0066',
           pageNumbers: true,
-          as: 'suggestions',
         },
       }),
     ).toEqual({
@@ -156,7 +155,6 @@ describe('an article write', () => {
         look: 'report',
         accent: '#ff0066',
         pageNumbers: true,
-        as: 'suggestions',
       },
     });
     expect(parsePagesRequest({ article: { markdown: '', new: true } })).toEqual({
@@ -174,7 +172,6 @@ describe('an article write', () => {
     expect(at({ markdown: 'x', new: true, article: 'a' }).message).toContain('not both');
     expect(at({ markdown: 'x', accent: 'pink' }).message).toContain('hex');
     expect(at({ markdown: 'x', look: 'fancy' }).message).toContain('"look"');
-    expect(at({ markdown: 'x', as: 'quietly' }).message).toContain('"as"');
     expect(at({ markdown: 'x', title: 'T' }).message).toContain('takes no "title"');
   });
 

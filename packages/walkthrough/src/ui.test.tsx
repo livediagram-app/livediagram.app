@@ -29,6 +29,8 @@ const W: WalkthroughSummary = {
   mediaType: 'audio/webm',
   mediaBytes: 3,
   camera: false,
+  screen: false,
+  shareCode: null,
   createdAt: Date.now() - 2 * 86_400_000,
   mine: false,
   canDelete: true,
@@ -51,6 +53,8 @@ type Server = {
   requests: { url: string; init?: RequestInit }[];
   // The api's refusal of a save's first step, as its body says.
   refuse?: { status: number; error: string };
+  // The media part, held by the test: told how to report its bytes sent, it answers when the test says.
+  upload?: (report: (sent: number, total: number) => void) => Promise<Response>;
 };
 
 // What the editor's `track` was handed (the workbench binding), for the telemetry the walkthroughs count.
@@ -58,27 +62,34 @@ const track = vi.fn<WorkbenchTrack>();
 const counted = () => track.mock.calls.map(([category, action, type]) => [category, action, type]);
 
 function fakeFetch(server: Server) {
-  return vi.fn(async (url: string, init?: RequestInit) => {
-    server.requests.push({ url, init });
-    const method = init?.method ?? 'GET';
-    if (method === 'DELETE') {
-      server.list = server.list.filter((w) => !url.includes(`/${w.id}?`));
-      return Response.json({ ok: true });
-    }
-    if (method === 'POST' && server.refuse) {
-      return Response.json({ error: server.refuse.error }, { status: server.refuse.status });
-    }
-    if (method === 'POST')
-      return Response.json({ walkthrough: { ...W, id: 'new' } }, { status: 201 });
-    if (method === 'PUT') {
-      const saved = { ...W, id: 'new', title: 'Mine', mine: true };
-      server.list = [saved, ...server.list];
-      return Response.json({ walkthrough: saved });
-    }
-    if (url.includes('/media')) return new Response(new Uint8Array([1, 2, 3]));
-    if (url.includes('/w1?')) return Response.json({ walkthrough: W, events: EVENTS });
-    return Response.json({ walkthroughs: server.list, canRecord: server.canRecord });
-  });
+  return vi.fn(
+    async (
+      url: string,
+      init?: RequestInit,
+      opts?: { uploadProgress?: (sent: number, total: number) => void },
+    ) => {
+      server.requests.push({ url, init });
+      const method = init?.method ?? 'GET';
+      if (method === 'DELETE') {
+        server.list = server.list.filter((w) => !url.includes(`/${w.id}?`));
+        return Response.json({ ok: true });
+      }
+      if (method === 'POST' && server.refuse) {
+        return Response.json({ error: server.refuse.error }, { status: server.refuse.status });
+      }
+      if (method === 'POST')
+        return Response.json({ walkthrough: { ...W, id: 'new' } }, { status: 201 });
+      if (method === 'PUT' && server.upload) return server.upload(opts!.uploadProgress!);
+      if (method === 'PUT') {
+        const saved = { ...W, id: 'new', title: 'Mine', mine: true };
+        server.list = [saved, ...server.list];
+        return Response.json({ walkthrough: saved });
+      }
+      if (url.includes('/media')) return new Response(new Uint8Array([1, 2, 3]));
+      if (url.includes('/w1?')) return Response.json({ walkthrough: W, events: EVENTS });
+      return Response.json({ walkthroughs: server.list, canRecord: server.canRecord });
+    },
+  );
 }
 
 let view: CanvasView;
@@ -118,7 +129,7 @@ function Harness({
     <>
       <span data-testid="tab">{tab}</span>
       <ChromeToolsMenu items={[]} />
-      <WalkthroughsTools menu={walkthroughs.menu} />
+      <WalkthroughsTools walkthroughs={walkthroughs} />
       <div id="canvas-root" style={{ position: 'relative' }}>
         <div data-canvas-content="">
           <div data-element-id="e1" />
@@ -199,7 +210,7 @@ describe('the Walkthroughs row in Tools', () => {
     expect(screen.queryByText('Record Walkthrough')).toBeNull();
   });
 
-  it('shows an Editor the empty state and Record Walkthrough, which opens the dock and closes the panel', async () => {
+  it('shows an Editor the empty state and Record Walkthrough, whose set-up opens in Tools', async () => {
     render(<Harness server={{ list: [], canRecord: true, requests: [] }} />);
     fireEvent.click(await screen.findByRole('button', { name: /^Tools/ }));
     expect(document.querySelector('[data-tools-item="walkthroughs"]')?.textContent).toContain(
@@ -208,7 +219,13 @@ describe('the Walkthroughs row in Tools', () => {
     fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="walkthroughs"]')!);
     expect(screen.getByText('No Walkthroughs Yet')).toBeTruthy();
     fireEvent.click(screen.getByText('Record Walkthrough'));
-    expect(screen.queryByRole('dialog', { name: /^Tools/ })).toBeNull();
+    expect(await screen.findByRole('region', { name: 'Record a Walkthrough' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: /^Tools/ })).toBeTruthy();
+    // Leaving the page lets the set-up go.
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() =>
+      expect(screen.queryByRole('region', { name: 'Record a Walkthrough' })).toBeNull(),
+    );
   });
 
   it('steps back to the Tools list on Escape, then closes', async () => {
@@ -224,8 +241,10 @@ describe('the Walkthroughs row in Tools', () => {
     const server: Server = { list: [W], canRecord: true, requests: [] };
     render(<Harness server={server} />);
     await openWalkthroughs();
-    fireEvent.click(screen.getByRole('button', { name: 'Delete Tour' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    // The ⋯ inside the row opens its menu: Rename, then Delete, which asks first.
+    fireEvent.click(screen.getByRole('button', { name: 'Menu for Tour' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Delete' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(screen.queryByText('Tour')).toBeNull());
     expect(server.requests.at(-1)).toMatchObject({ url: '/api/walkthroughs/w1?d=doc' });
     expect(counted()).toEqual([['Walkthrough', 'Deleted', undefined]]);
@@ -277,9 +296,35 @@ describe('playing', () => {
   });
 });
 
+// The stream filmed: the shared tab's video beside the microphone (jsdom has no MediaStream).
+class FakeMediaStream {
+  readonly tracks: unknown[];
+  constructor(tracks: unknown[]) {
+    this.tracks = tracks;
+  }
+  getTracks() {
+    return this.tracks;
+  }
+}
+beforeEach(() => vi.stubGlobal('MediaStream', FakeMediaStream));
+
+// The tab the browser shares: a video track that can end (the browser's own Stop Sharing).
+function displayStream() {
+  const listeners: (() => void)[] = [];
+  const track = {
+    stop: vi.fn(),
+    addEventListener: (_: string, fn: () => void) => listeners.push(fn),
+    end: () => listeners.forEach((fn) => fn()),
+  };
+  return {
+    track,
+    stream: { getTracks: () => [track], getVideoTracks: () => [track], getAudioTracks: () => [] },
+  };
+}
+
 describe('recording', () => {
   class FakeRecorder {
-    static isTypeSupported = (t: string) => t === 'audio/webm';
+    static isTypeSupported = (t: string) => t === 'audio/webm' || t.startsWith('video/webm');
     state = 'inactive';
     mimeType = 'audio/webm';
     ondataavailable: ((e: { data: Blob }) => void) | null = null;
@@ -294,8 +339,9 @@ describe('recording', () => {
     }
   }
 
-  it('sets up, counts down, records, keeps hidden elements out and saves', async () => {
+  it('sets up, asks to share the tab, counts down, records and saves itself', async () => {
     const stop = vi.fn();
+    const display = displayStream();
     const stream = {
       getTracks: () => [{ stop }],
       getAudioTracks: () => [{}],
@@ -320,6 +366,7 @@ describe('recording', () => {
       configurable: true,
       value: {
         getUserMedia: vi.fn(async () => stream),
+        getDisplayMedia: vi.fn(async () => display.stream),
         enumerateDevices: async () => [],
       },
     });
@@ -341,7 +388,13 @@ describe('recording', () => {
     ).toContain('"sel2"');
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'] });
-    fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+    // The browser's share prompt is asked inside the press; the count starts once the tab is shared.
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+    });
+    expect(navigator.mediaDevices.getDisplayMedia).toHaveBeenCalledWith(
+      expect.objectContaining({ preferCurrentTab: true, video: expect.anything() }),
+    );
     expect(screen.getByText('Recording starts in 3')).toBeTruthy();
     for (let i = 0; i < 3; i++) {
       await act(async () => {
@@ -355,23 +408,21 @@ describe('recording', () => {
       vi.advanceTimersByTime(600);
     });
     vi.useRealTimers();
+    // Finish saves it at once under its default name: no naming step (owner, 2026-11-17).
     fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
-    const title = (await screen.findByRole('textbox')) as HTMLInputElement;
-    expect(title.value).toBe('Walkthrough of Tab t1');
+    // Tools closed for the count, so the save shows as its requests: the start, then the media.
+    await waitFor(() => expect(server.requests.some((r) => r.init?.method === 'PUT')).toBe(true));
     expect(stop).toHaveBeenCalled();
-    fireEvent.change(title, { target: { value: 'Mine' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await screen.findByText('Saved “Mine”.');
+    expect(display.track.stop).toHaveBeenCalled();
     const start = server.requests.find((r) => r.init?.method === 'POST')!;
     const body = JSON.parse(String(start.init!.body)) as {
       title: string;
       author: string;
       events: WalkthroughEvents;
     };
-    expect(body).toMatchObject({ title: 'Mine', author: 'Grace' });
-    expect(body.events.hidden.sort()).toEqual(['e1', 'sel1', 'sel2']);
-    expect(body.events.events.some((e) => e.k === 'point')).toBe(false);
-    expect(body.events.fingerprints).toEqual({ t1: 'same' });
+    expect(body).toMatchObject({ title: 'Walkthrough of Tab t1', author: 'Grace' });
+    // A film of the tab: nothing to replay, and the hidden were never on screen while it filmed.
+    expect(body.events).toMatchObject({ screen: true, hidden: [], events: [], fingerprints: {} });
     expect(document.head.querySelector('[data-walkthrough-hidden]')).toBeNull();
     // Started once recording began, Created once saved: no title, id or length with either.
     expect(counted()).toEqual([
@@ -466,7 +517,7 @@ describe('recording', () => {
 
 describe('recording, beyond the canvas', () => {
   class FakeRecorder {
-    static isTypeSupported = (t: string) => t === 'audio/webm';
+    static isTypeSupported = (t: string) => t === 'audio/webm' || t.startsWith('video/webm');
     state = 'inactive';
     mimeType = 'audio/webm';
     ondataavailable: ((e: { data: Blob }) => void) | null = null;
@@ -505,7 +556,11 @@ describe('recording, beyond the canvas', () => {
     );
     Object.defineProperty(navigator, 'mediaDevices', {
       configurable: true,
-      value: { getUserMedia, enumerateDevices: async () => [] },
+      value: {
+        getUserMedia,
+        getDisplayMedia: vi.fn(async () => displayStream().stream),
+        enumerateDevices: async () => [],
+      },
     });
     return getUserMedia;
   }
@@ -530,7 +585,7 @@ describe('recording, beyond the canvas', () => {
 
   beforeEach(() => localStorage.clear());
 
-  it('hides a board card and a dashboard widget, picked or selected, and keeps them out of the events', async () => {
+  it('hides a board card and a dashboard widget, picked or selected, on screen while it films', async () => {
     stubDevices();
     const server = await openDock({ hideable: board() });
     fireEvent.click(screen.getByRole('button', { name: /Hide From Recording/ }));
@@ -549,29 +604,26 @@ describe('recording, beyond the canvas', () => {
     expect(presenterCss()).toContain('[data-plan-card="card2"]');
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'] });
-    fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+    });
     for (let i = 0; i < 3; i++) {
       await act(async () => {
         vi.advanceTimersByTime(1000);
       });
     }
-    // A press on a hidden card is dropped; one on a canvas element that is not hidden is kept.
-    fireEvent.pointerDown(screen.getByTestId('card1-face'));
-    fireEvent.pointerDown(document.querySelector('[data-element-id="e1"]')!);
-    await act(async () => {
-      vi.advanceTimersByTime(400);
-    });
+    // While it films, the picked card and widget are hidden from the tab itself, so the film never shows them.
+    expect(screen.getByRole('region', { name: 'Recording' })).toBeTruthy();
+    const filmingCss = document.head.querySelector('[data-walkthrough-hidden]')?.textContent ?? '';
+    expect(filmingCss).toContain('card1');
+    expect(filmingCss).toContain('slot1');
     vi.useRealTimers();
     fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
-    await screen.findByRole('textbox');
-    fireEvent.click(screen.getByRole('button', { name: 'Save' }));
-    await screen.findByText(/^Saved/);
+    await waitFor(() => expect(server.requests.some((r) => r.init?.method === 'PUT')).toBe(true));
     const start = server.requests.find((r) => r.init?.method === 'POST')!;
     const { events } = JSON.parse(String(start.init!.body)) as { events: WalkthroughEvents };
-    expect(events.hidden.sort()).toEqual(['card1', 'card2', 'sel1', 'sel2', 'slot1']);
-    const points = events.events.flatMap((e) => (e.k === 'point' ? [e.id] : []));
-    expect(points).toEqual(['e1']);
-    expect(JSON.stringify(events.events)).not.toContain('card1');
+    expect(events).toMatchObject({ screen: true, hidden: [], events: [] });
+    expect(presenterCss()).toBe('');
   });
 
   it('leaves Hide From Recording out on a tab with nothing to hide, and the mode with it', async () => {
@@ -695,10 +747,96 @@ describe('recording, beyond the canvas', () => {
     });
   });
 
+  // Saving shows the media's upload as it goes (Work Tracker 1175): the share sent, the megabytes and the time left.
+  describe('the upload', () => {
+    const MB = 1024 * 1024;
+    // Records a moment and finishes, which saves at once on the save card, with the media part held until the test answers it.
+    async function toSaveCard() {
+      stubDevices();
+      const server = await openDock();
+      let report: ((sent: number, total: number) => void) | null = null;
+      let answer: (res: Response) => void = () => undefined;
+      server.upload = (r) => {
+        report = r;
+        return new Promise<Response>((resolve) => {
+          answer = resolve;
+        });
+      };
+      vi.useFakeTimers({ toFake: ['setTimeout', 'setInterval', 'clearTimeout', 'clearInterval'] });
+      // The share prompt is asked inside the press; the count starts once the tab is shared.
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      });
+      for (let i = 0; i < 3; i++) {
+        await act(async () => {
+          vi.advanceTimersByTime(1000);
+        });
+      }
+      vi.useRealTimers();
+      // The clock the estimate reads, moved by hand from here. Finish saves at once, onto the save card.
+      vi.useFakeTimers({ toFake: ['performance'] });
+      fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
+      await screen.findByRole('region', { name: 'Save Walkthrough' });
+      await waitFor(() => expect(report).not.toBeNull());
+      return {
+        server,
+        send: (sent: number, total: number) => act(() => report!(sent, total)),
+        answer: (res: Response) => act(async () => answer(res)),
+      };
+    }
+    const bar = () => screen.getByRole('progressbar', { name: 'Upload' });
+
+    it('shows the share sent, the megabytes and the time left, then finishing, then saved', async () => {
+      const upload = await toSaveCard();
+      // Before any byte is reported: the bytes to go, no bar yet.
+      expect(screen.getByRole('status').textContent).toMatch(/^Uploading \d+\.\d MB$/);
+      await upload.send(10 * MB, 40 * MB);
+      expect(bar().getAttribute('aria-valuenow')).toBe('25');
+      expect(screen.getByText('25%')).toBeTruthy();
+      expect(screen.getByText('· 10.0 of 40.0 MB')).toBeTruthy();
+      expect(screen.getByText('Working out the time left')).toBeTruthy();
+      // 20 MB in 20 s: 20 more at that speed is 20 s.
+      vi.advanceTimersByTime(20_000);
+      await upload.send(20 * MB, 40 * MB);
+      expect(bar().getAttribute('aria-valuenow')).toBe('50');
+      expect(screen.getByText('About 20 seconds left')).toBeTruthy();
+      expect(bar().getAttribute('aria-valuetext')).toBe(
+        '50%, 20.0 of 40.0 MB, About 20 seconds left',
+      );
+      // A report inside the same percentage, soon after, doesn't draw the card again.
+      await upload.send(20 * MB + 1, 40 * MB);
+      expect(bar().getAttribute('aria-valuetext')).toContain('20.0 of 40.0 MB');
+      await upload.send(40 * MB, 40 * MB);
+      expect(screen.getByRole('status').textContent).toBe('Finishing');
+      expect(screen.getByText('Almost done')).toBeTruthy();
+      expect(document.querySelector('[data-walkthrough-upload="finishing"]')).not.toBeNull();
+      vi.useRealTimers();
+      await upload.answer(
+        Response.json({ walkthrough: { ...W, id: 'new', title: 'Mine', mine: true } }),
+      );
+      await screen.findByText('Saved “Mine”.');
+      expect(screen.queryByRole('progressbar')).toBeNull();
+    });
+
+    it('drops the bar on a failure, says why and still offers Download a Copy', async () => {
+      const upload = await toSaveCard();
+      await upload.send(10 * MB, 40 * MB);
+      expect(bar()).toBeTruthy();
+      vi.useRealTimers();
+      await upload.answer(Response.json({ error: 'too_large' }, { status: 413 }));
+      await screen.findByRole('alert');
+      expect(screen.queryByRole('progressbar')).toBeNull();
+      expect(screen.getByRole('button', { name: /Download a Copy/ })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Try Again' })).toBeTruthy();
+    });
+  });
+
   // Telemetry (walkthroughs.md "Telemetry"): which of these happened, never what was said or shown.
   describe('telemetry', () => {
     async function countDown() {
-      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      });
       for (let i = 0; i < 3; i++) {
         await act(async () => {
           vi.advanceTimersByTime(1000);
@@ -742,12 +880,14 @@ describe('recording, beyond the canvas', () => {
 
     it('counts a finished recording thrown away on the save card as abandoned', async () => {
       stubDevices();
-      await openDock();
+      const server = await openDock();
       fakeTimers();
       await countDown();
       vi.useRealTimers();
+      // A save that is refused keeps the card, with Discard on it.
+      server.refuse = { status: 403, error: 'forbidden' };
       fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
-      await screen.findByRole('region', { name: 'Save Walkthrough' });
+      await screen.findByText('Walkthrough Not Saved');
       await discardRecording();
       await waitFor(() =>
         expect(screen.queryByRole('region', { name: 'Save Walkthrough' })).toBeNull(),
@@ -767,11 +907,14 @@ describe('recording, beyond the canvas', () => {
         vi.advanceTimersByTime(10 * 60 * 1000 + 1000);
       });
       vi.useRealTimers();
-      await screen.findByRole('region', { name: 'Save Walkthrough' });
-      expect(counted()).toEqual([
-        ['Walkthrough', 'Started', undefined],
-        ['Walkthrough', 'Refused', 'TooLong'],
-      ]);
+      // Stopped at the limit, it saves itself as any finished one does.
+      await waitFor(() =>
+        expect(counted()).toEqual([
+          ['Walkthrough', 'Started', undefined],
+          ['Walkthrough', 'Refused', 'TooLong'],
+          ['Walkthrough', 'Created', undefined],
+        ]),
+      );
       // Ten minutes of the dock's 200ms clock is three thousand ticks, each a render: well past the default budget.
     }, 60_000);
 
@@ -790,18 +933,22 @@ describe('recording, beyond the canvas', () => {
       vi.stubGlobal('MediaRecorder', FullRecorder);
       await openDock();
       fakeTimers();
-      fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Start Recording/ }));
+      });
       for (let i = 0; i < 3; i++) {
         await act(async () => {
           vi.advanceTimersByTime(1000);
         });
       }
       vi.useRealTimers();
-      await screen.findByRole('region', { name: 'Save Walkthrough' });
-      expect(counted()).toEqual([
-        ['Walkthrough', 'Started', undefined],
-        ['Walkthrough', 'Refused', 'TooLarge'],
-      ]);
+      await waitFor(() =>
+        expect(counted()).toEqual([
+          ['Walkthrough', 'Started', undefined],
+          ['Walkthrough', 'Refused', 'TooLarge'],
+          ['Walkthrough', 'Created', undefined],
+        ]),
+      );
     });
 
     it('counts a save an api limit refused, and not one it refused for another reason', async () => {
@@ -810,13 +957,11 @@ describe('recording, beyond the canvas', () => {
       fakeTimers();
       await countDown();
       vi.useRealTimers();
-      fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
-      await screen.findByRole('region', { name: 'Save Walkthrough' });
       server.refuse = { status: 403, error: 'item_full' };
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: /Finish/ }));
       await screen.findByText(/already has 50 walkthroughs/);
       server.refuse = { status: 403, error: 'forbidden' };
-      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
       await screen.findByText('Only an Editor can save a walkthrough here.');
       expect(counted()).toEqual([
         ['Walkthrough', 'Started', undefined],

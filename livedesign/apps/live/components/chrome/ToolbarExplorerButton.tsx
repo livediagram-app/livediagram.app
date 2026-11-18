@@ -1,10 +1,9 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { Glyph } from '@livedesign/ui';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
-import { NAME_MAX_LENGTH } from '@livedesign/design';
+import { Brand, Glyph } from '@livedesign/ui';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
+import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -31,7 +30,8 @@ export function ToolbarExplorerButton({
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
 }) {
-  const phone = useIsMobileViewport();
+  // The open design: the logo opens the Explorer on the place that holds it (at its root with no editor around it).
+  const itemId = useOptionalEditorContext()?.designId ?? null;
   const button = (
     <button
       type="button"
@@ -58,11 +58,18 @@ export function ToolbarExplorerButton({
       dockButton
       tourId="dock-explorer"
       {...(joinedWidth === undefined ? {} : { joinedWidth })}
+      logo={
+        <Brand
+          href={explorerItemHref(itemId)}
+          size="sm"
+          // Heading the Contents sidebar the wordmark stays, the sidebar being as wide as ever.
+          wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline"
+          className="relative touch-target"
+        />
+      }
     >
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
-      {/* The open tab's name (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
     </ToolbarMenuCard>
   );
 }

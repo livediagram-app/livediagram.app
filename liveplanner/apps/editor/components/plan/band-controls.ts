@@ -12,7 +12,10 @@ export const BAND_CONTROLS_CLASS =
 // The header's own right padding in a band: a hairline, so the last control stands as far in from the element's right
 // edge as the menu box's first does from its left (the box's 4 px inset and hairline, from a 12 px canvas inset that is
 // also the element's).
-export const BAND_HEADER_END = '[[data-header-band]_&]:pr-px';
+// Experiment (no header bar): and short of the top-right corner card (EditorCornerActions, --corner-card-room), which
+// stands on the band's right end as the menu box does on its left.
+export const BAND_HEADER_END =
+  '[[data-header-band]_&]:pr-[calc(var(--corner-card-room,0px)+12px)] [[data-shared-row]_&]:pr-[calc(var(--corner-card-room,0px)+8px)]';
 
 // The menu box's height (TOOLBAR_CARD: 36 px controls, a 4 px inset and a hairline), which the controls and the
 // Sheet's toolbar in a header band match (a board's widgets ride in the menu box itself).

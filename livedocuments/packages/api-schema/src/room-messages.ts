@@ -1,10 +1,8 @@
-import type { SuggestionsRoomOp } from '@liveworkspace/suggestions/room-signal';
 import type { TabConnectionWire } from '@liveworkspace/api-schema/tab-connection';
 import type { TabSavedOp } from '@liveworkspace/api-schema/tab-delta';
 import type { AgentPresence } from '@liveworkspace/api-schema/agent-presence';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { CollabKeyMessage } from '@liveworkspace/api-schema/collab-key';
-import type { ReviewOp } from './review';
 import type { IdListStep } from '@liveworkspace/model-core/id-list-steps';
 import type { ArticleOp, ElementDelta, RoomElementOp, Tab } from '@livedocuments/document';
 import type { ParticipantPresence } from './index';
@@ -115,10 +113,6 @@ export const SYSTEM_OP_KINDS = [
   'share-rescoped',
   'document-trashed',
   'changeset',
-  // The room's word on whether this session suggests (docs/specs/007-editor/suggestions.md "Suggest Only").
-  'review',
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live").
-  'suggestions',
 ] as const;
 
 // The whole vocabulary. Every op the editor sends or handles is one of these
@@ -267,10 +261,6 @@ export type ClientMessage =
 // kinds grow this union (and matching handlers in the editor) —
 // nothing in the api worker changes.
 export type RoomOp =
-  // Whether this Participant session suggests (docs/specs/007-editor/suggestions.md "Suggest Only"): from the room
-  // ('system') to its socket alone, when it joins and whenever the document's review settings change. A peer's is
-  // never believed.
-  | ReviewOp
   // The sender just switched to (or initially focused) a tab. Drives
   // the per-tab avatar dots in the TabBar so collaborators can see at
   // a glance which tab each peer is working on.
@@ -328,9 +318,6 @@ export type RoomOp =
       ops: ArticleOp[];
       created?: true;
       grow?: true;
-      // An assistant's write as suggestions (docs/specs/024-agents/pages-for-agents.md "Suggestions"): its name, how
-      // many suggestions it made and its change id, for the editor's "<name> suggested N edits · Review" toast.
-      suggested?: { n: string; count: number; g: string };
     }
   | { kind: 'article'; tabId: string; flow: string; removed: true }
   // Document-level metadata changed: rename, tab reorder, tab add /
@@ -459,10 +446,6 @@ export type RoomOp =
   // One changeset the api applied (docs/specs/024-agents/agent-changesets.md "What the room does").
   // Worker-originated through /mutation.
   | ChangesetRoomOp
-  // A tab's canvas suggestions changed (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Live"): from
-  // the room ('system') to every Participant and Editor socket, never a Viewer's, carrying no content; an editor that
-  // shows the tab reads them again.
-  | SuggestionsRoomOp
   // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.

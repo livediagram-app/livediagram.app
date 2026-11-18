@@ -207,7 +207,7 @@ export type RemoteAvatarRow = {
 };
 
 export function buildRemoteAvatarRows(
-  remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence }>,
+  remoteAvatars: Map<string, { tabId: string; avatar: AvatarPresence; gapMs?: number }>,
   livePresenceById: Map<string, Participant>,
   selfId: string,
   activeId: string,
@@ -216,9 +216,9 @@ export function buildRemoteAvatarRows(
   tabFocus?: ReadonlyMap<string, string>,
 ): RemoteAvatarRow[] {
   const rows: RemoteAvatarRow[] = [];
-  // A busy room sends fewer steps, so a peer glides between them (docs/specs/008-canvas/avatar-mode.md
-  // "A busy room"). The roster holds the peers; the room holds us too.
-  const glideMs = avatarGlideMs(livePresenceById.size + 1);
+  // A peer glides to each move over the time since their last one arrived (docs/specs/008-canvas/avatar-mode.md
+  // "A peer's steps glide, in every room"). The roster holds the peers; the room holds us too.
+  const roomSize = livePresenceById.size + 1;
   for (const [id, entry] of remoteAvatars) {
     if (id === selfId) continue;
     if (entry.tabId !== activeId) continue;
@@ -231,7 +231,7 @@ export function buildRemoteAvatarRows(
       name: p.name,
       color: p.color,
       avatar: entry.avatar,
-      glideMs,
+      glideMs: avatarGlideMs(roomSize, entry.gapMs),
     };
     // Their share role, from the room's stamp: a game piece seats only an Editor or a Participant as a player
     // (docs/specs/009-elements/social-pieces.md "A game").

@@ -4,7 +4,10 @@ import dynamic from 'next/dynamic';
 import { useEffect, useState, type ReactNode } from 'react';
 import { setSessionSharePassword } from '@/lib/api-client';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
-import { useBrowserTabTitle } from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
+import {
+  editorTabTitle,
+  useBrowserTabTitle,
+} from '@liveworkspace/workbench/hooks/editor/useBrowserTabTitle';
 import { EDITOR_SURFACE_CODE } from '@/lib/editor-deferred-code';
 import { prefetchWhenIdle } from '@liveworkspace/workbench/lib/idle-prefetch';
 import { track } from '@/lib/telemetry';
@@ -85,9 +88,15 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     'livehuddle',
     documentIdFromPath,
   );
-  // Tab title reflects the document: "<name> | livehuddle" (falls back to
+  // Tab title reflects the document and its open tab: "<name> | <tab> | livehuddle" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
-  useBrowserTabTitle(`${state.documentName?.trim() || 'Untitled Space'} | livehuddle`);
+  useBrowserTabTitle(
+    editorTabTitle(
+      state.documentName?.trim() || 'Untitled Space',
+      state.activeTab?.name,
+      'livehuddle',
+    ),
+  );
   const {
     documentNotFound,
     loadError,

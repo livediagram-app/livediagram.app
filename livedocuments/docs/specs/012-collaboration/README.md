@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./blueprints/README.md - when implementing a collaboration spec from its blueprint
-- ./canvas-suggestions.md - when working on Canvas suggestions: Suggesting on the canvas, ghosts in the author's colour, an Editor's Accept, Reject and Accept All as one changeset, stale suggestions flagged, Suggest Only on the canvas; the rule is liveworkspace's (015-suggestions)
+- ./canvas-suggestions.md - retired: why livedocuments has no canvas suggestions, and what was removed
 - ./presentation-mode.md - when working on Presentation mode: Full-screen slide deck of author-picked element sets, built from the pages in Contents (the Slide Deck panel is retired), run from the header's Present
 - ./speaker-note-cards.md - when working on a slide's speaker notes: note cards (a smaller form of flashcards) written in the title bar, flipped through in the presenter view, exported and imported with PowerPoint notes
 - ./assigned-actions.md - when working on Assigned actions: Implemented: Assign Action tile attaches a named/described action on an element to a teammate (any joined team), optional opt-out email notification, on-element badge + popover (complete/edit/delete), a merged Collaborate Panel listing open/resolved actions + comment threads, and the menu's collaboration band split into Collaborate (actions/comments) + Resources (link/note)

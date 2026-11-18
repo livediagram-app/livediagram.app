@@ -110,37 +110,48 @@ export const SCREEN_IDLE_TEXT = 'No one is sharing';
 
 export type RoomSignStatus = 'free' | 'in-use' | 'dnd';
 
-/** The status dot's colour, per status, the same on light and dark paper. */
+/** The status lamp's colour, per status, the same on light and dark paper: natural tones, as every piece's palette. */
 export const ROOM_SIGN_TONES: Readonly<Record<RoomSignStatus, string>> = {
-  free: '#22c55e',
-  'in-use': '#f59e0b',
-  dnd: '#ef4444',
+  free: '#3f9d5a',
+  'in-use': '#d4932f',
+  dnd: '#c8503c',
 };
 
 /**
- * The Room Sign's drawing on its 136 × 72 design box: a plaque with a status stripe down its left edge, two screws,
- * the name on the first line, the status dot and line on the second, and the Knock button at the lower right. Shared
- * by the canvas and the export. The plaque is light on light paper and slate on dark.
+ * The Room Sign's drawing on its 136 × 72 design box (screen-and-room-sign.md "Room Sign"; furniture-art-style.md): a
+ * walnut frame with a brass screw in each corner round a cream nameplate, an enamel strip in the status's colour down
+ * the nameplate's left edge, the name on the first line, the status lamp and line on the second, and the brass Knock
+ * button at the lower right. Shared by the canvas and the export; one sign on every paper, as a real one is.
  */
 export const ROOM_SIGN_ART = {
-  plaque: { w: 136, h: 72, rx: 8 },
-  stripe: 5,
+  plaque: { w: 136, h: 72, rx: 9 },
+  // The nameplate inside the frame.
+  plate: { x: 6, y: 6, w: 124, h: 60, rx: 5 },
+  // The enamel strip down the nameplate's left edge.
+  stripe: { x: 6, w: 5 },
   screws: [
-    { cx: 128, cy: 8 },
-    { cx: 128, cy: 64 },
+    { cx: 3.5, cy: 3.5 },
+    { cx: 132.5, cy: 3.5 },
+    { cx: 3.5, cy: 68.5 },
+    { cx: 132.5, cy: 68.5 },
   ],
-  name: { x: 16, y: 25, size: 14 },
-  status: { dotX: 20, y: 44, size: 11 },
-  knock: { x: 74, y: 50, w: 50, h: 16 },
+  name: { x: 18, y: 27, size: 14 },
+  status: { dotX: 22, y: 46, size: 11 },
+  knock: { x: 74, y: 49, w: 50, h: 14 },
   tones: {
-    light: {
-      plaque: '#ffffff',
-      edge: '#cbd5e1',
-      ink: '#0f172a',
-      soft: '#475569',
-      screw: '#cbd5e1',
-    },
-    dark: { plaque: '#1e293b', edge: '#475569', ink: '#f1f5f9', soft: '#cbd5e1', screw: '#64748b' },
+    frame: '#7c4f2c',
+    frameLit: '#9a6a3f',
+    frameEdge: '#4d2f18',
+    plate: '#f4efe4',
+    plateShade: '#e6dccb',
+    plateEdge: '#b9a88e',
+    ink: '#2f241b',
+    soft: '#6b5a48',
+    screw: '#d9b56a',
+    screwEdge: '#8a6a2a',
+    brass: '#d9b56a',
+    brassLit: '#f0d79a',
+    brassEdge: '#8a6a2a',
   },
 } as const;
 

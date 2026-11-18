@@ -52,6 +52,9 @@ export type TeamMember = {
   // a pending invite or a member with no profile yet; the client then
   // falls back to the invite email's local part.
   name: string | null;
+  // A joined member's presence colour (Settings › Profile), null or absent for Automatic or a pending invite: the
+  // assignee picker and the dots on assigned work paint them in it (presenceColourOf), as their cursor is.
+  color?: string | null;
   createdAt: number;
   updatedAt: number;
 };

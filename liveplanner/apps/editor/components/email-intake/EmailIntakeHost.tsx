@@ -81,10 +81,6 @@ export function EmailIntakeHost({
         <ToolGateDialog
           gate={gate}
           title="Email to Board"
-          promptTitle="Mail Arrives at Our Servers"
-          signInPromptTitle="An Address Belongs to an Account"
-          syncCopy="A board's address takes mail on our servers and makes its cards even when nobody has the plan open, so the plan needs saving to your account."
-          signInCopy="A board's address outlives this visit, so it belongs to an account and needs you signed in. You come back here with Email to Board open."
           param={EMAIL_INTAKE_PARAM}
           onClose={() => setOpenOn(null)}
         />

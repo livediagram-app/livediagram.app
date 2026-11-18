@@ -3,8 +3,8 @@
 // A Dashboard's name in the menu box (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), beside the mode menu, as a
 // maximised or tab-filling board's or Sheet's rides there (menu-name-slot.tsx): the tab's name alone, no glyph.
 // Someone who may edit renames the tab from the name, a button (a click, or Enter or Space on it; Enter or leaving
-// saves the trimmed name, Escape puts it back, and focus returns to the name), and the tab bar follows. Nothing is
-// drawn while the box has no slot (a phone).
+// saves the trimmed name, Escape puts it back, and focus returns to the name), and the tab bar follows. It shows at
+// every width, a phone's too; nothing is drawn while the box has no slot (the strip's inline menu).
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
 import type { Tab } from '@liveplanner/project';

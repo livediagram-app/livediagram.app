@@ -62,3 +62,21 @@ export function screenPointOf(
   const w = perspective / (perspective - fy * Math.sin(t));
   return { x: cx + fx * w, y: cy + fy * Math.cos(t) * w };
 }
+
+/**
+ * Where something standing upright at a floor point shows in the tilted view, from where the flat view shows that
+ * point (`flat`, relative to the canvas's box): how far it moves on the screen and how much it scales about the point.
+ * An upright card facing the camera lies at one depth, so the perspective scales it evenly (3d-view.md "The overlay").
+ */
+export function standingShift(
+  flat: Point,
+  size: { width: number; height: number },
+  tiltDeg: number,
+  perspective = SPACE_3D_PERSPECTIVE_PX,
+): { dx: number; dy: number; scale: number } {
+  const fx = flat.x - size.width / 2;
+  const fy = flat.y - size.height / 2;
+  const t = (tiltDeg * Math.PI) / 180;
+  const w = perspective / (perspective - fy * Math.sin(t));
+  return { dx: fx * (w - 1), dy: fy * (Math.cos(t) * w - 1), scale: w };
+}

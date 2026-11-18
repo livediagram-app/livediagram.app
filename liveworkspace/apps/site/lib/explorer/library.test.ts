@@ -6,10 +6,14 @@ import { libraryHosts } from './library';
 
 describe('the Library on liveworkspace.app', () => {
   it('offers a page only where the app keeps one, the same host each time', () => {
-    expect(Object.keys(libraryHosts('livediagram')).sort()).toEqual(['gallery', 'shapeLibraries']);
-    expect(Object.keys(libraryHosts('livedesign'))).toEqual(['gallery']);
-    expect(Object.keys(libraryHosts('livedocuments'))).toEqual(['gallery']);
-    expect(libraryHosts('liveplanner')).toEqual({});
+    expect(Object.keys(libraryHosts('livediagram')).sort()).toEqual([
+      'gallery',
+      'shapeLibraries',
+      'walkthroughs',
+    ]);
+    expect(Object.keys(libraryHosts('livedesign')).sort()).toEqual(['gallery', 'walkthroughs']);
+    expect(Object.keys(libraryHosts('livedocuments')).sort()).toEqual(['gallery', 'walkthroughs']);
+    expect(Object.keys(libraryHosts('liveplanner'))).toEqual(['walkthroughs']);
     expect(libraryHosts('livediagram').gallery).toBe(libraryHosts('livediagram').gallery);
   });
 

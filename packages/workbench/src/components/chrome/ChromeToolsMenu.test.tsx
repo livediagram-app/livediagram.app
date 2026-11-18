@@ -16,7 +16,6 @@ import { Dialog } from '../dialogs/Dialog';
 
 import { ChromeToolsMenu, TOOLS_WIDTH_PX, type ChromeToolsItem } from './ChromeToolsMenu';
 import { requestToolsView } from './tools-door';
-import { useExampleContentToolsItem } from './useExampleContentToolsItem';
 
 afterEach(() => {
   cleanup();
@@ -57,7 +56,6 @@ function DialogTool({
     label: 'Walk',
     description: 'A view of its own.',
     icon: glyph,
-    wide: true,
     view: ({ back }) => (
       <button type="button" onClick={back}>
         Done Walking
@@ -121,7 +119,8 @@ describe('a tool inside Tools', () => {
     const back = document.querySelector('[data-tools-back]')!;
     expect(back.textContent).toContain('Tools');
     expect(back.textContent).toContain('Notes');
-    expect(screen.getByText('What was said.')).toBeTruthy();
+    // Its one line goes too: the tool explains itself below.
+    expect(screen.queryByText('What was said.')).toBeNull();
     expect(live()).toBe('Notes');
   });
 
@@ -193,13 +192,15 @@ describe('a tool inside Tools', () => {
   it('closes Tools from any level with its close', async () => {
     render(<DialogTool />);
     await openNotes();
+    // No close beside the back bar: the band's corner close is the one close.
     const bar = document.querySelector<HTMLElement>('[data-tools-back]')!;
-    fireEvent.click(within(bar).getByRole('button', { name: /close/i }));
+    expect(within(bar).queryByRole('button', { name: /close/i })).toBeNull();
+    fireEvent.click(within(popover()!).getByRole('button', { name: /close/i }));
     await waitFor(() => expect(popover()).toBeNull());
     expect(screen.queryByText('Note body')).toBeNull();
   });
 
-  it('keeps 480px for a medium dialog and widens for a larger one', async () => {
+  it('keeps 480px for every dialog, so the popover sides never move', async () => {
     const { unmount } = render(<DialogTool />);
     await openNotes();
     expect(popover()!.style.width).toContain(String(TOOLS_WIDTH_PX));
@@ -207,7 +208,7 @@ describe('a tool inside Tools', () => {
     resetDialogSlot();
     render(<DialogTool size="lg" />);
     await openNotes();
-    expect(popover()!.style.width).toContain('544');
+    expect(popover()!.style.width).toContain(String(TOOLS_WIDTH_PX));
   });
 
   it('closes Tools with a tool that leaves for the whole window', async () => {
@@ -219,12 +220,12 @@ describe('a tool inside Tools', () => {
     await waitFor(() => expect(popover()).toBeNull());
   });
 
-  it('draws a tool with a view of its own, wide, and its own way back', async () => {
+  it('draws a tool with a view of its own, at the same width, and its own way back', async () => {
     render(<DialogTool />);
     fireEvent.click(tools());
     fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="walk"]')!);
     expect(popover()!.getAttribute('aria-label')).toBe('Tools, Walk');
-    expect(popover()!.style.width).toContain('760');
+    expect(popover()!.style.width).toContain(String(TOOLS_WIDTH_PX));
     fireEvent.click(screen.getByRole('button', { name: 'Done Walking' }));
     expect(popover()!.getAttribute('aria-label')).toBe('Tools');
   });
@@ -277,42 +278,5 @@ describe('a tool inside Tools', () => {
     } finally {
       vi.useRealTimers();
     }
-  });
-});
-
-describe('Clear Example Content', () => {
-  function Tray({ shown, onClear }: { shown: boolean; onClear: () => void }) {
-    const confirm = useExampleContentToolsItem({ shown, onClear });
-    return (
-      <>
-        <ChromeToolsMenu items={[]} />
-        {confirm}
-      </>
-    );
-  }
-
-  it('shows only while examples are there, and asks inside Tools before clearing', async () => {
-    const onClear = vi.fn();
-    const { rerender } = render(<Tray shown={false} onClear={onClear} />);
-    expect(screen.queryByRole('button', { name: /^Tools/ })).toBeNull();
-    rerender(<Tray shown onClear={onClear} />);
-    fireEvent.click(tools());
-    expect(document.querySelector('[data-tools-group="content"]')).toBeTruthy();
-    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="example-content"]')!);
-    expect(await screen.findByText('Clear the Examples?')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Keep Them' }));
-    await waitFor(() => expect(popover()!.getAttribute('aria-label')).toBe('Tools'));
-    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="example-content"]')!);
-    fireEvent.click(await screen.findByRole('button', { name: 'Clear Example Content' }));
-    expect(onClear).toHaveBeenCalledOnce();
-  });
-
-  it('drops the question when the examples go another way', async () => {
-    const { rerender } = render(<Tray shown onClear={vi.fn()} />);
-    fireEvent.click(tools());
-    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="example-content"]')!);
-    await screen.findByText('Clear the Examples?');
-    rerender(<Tray shown={false} onClear={vi.fn()} />);
-    await waitFor(() => expect(screen.queryByText('Clear the Examples?')).toBeNull());
   });
 });

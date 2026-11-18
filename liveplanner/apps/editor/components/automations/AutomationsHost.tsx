@@ -11,7 +11,6 @@
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { track } from '@/lib/telemetry';
-import { requestToolsView } from '@liveworkspace/workbench/components/chrome/tools-door';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import type { AutomationsScope } from './automations-client';
 import {
@@ -73,12 +72,13 @@ export function AutomationsHost({
   signedIn?: boolean;
   children: ReactNode;
 }) {
-  // Back from a guest's sign-in: Tools opens at Automations, on the rules (footer-tools-menu.md "From elsewhere"), then
-  // the ask is dropped so a refresh doesn't reopen it.
+  // Back from a guest's sign-in: the Automations screen opens on the rules (its own modal, as from Tools), then the
+  // ask is dropped so a refresh doesn't reopen it.
   const [target, setTarget] = useState<AutomationsTarget | null>(null);
   useEffect(() => {
     if (!askedOpen()) return;
-    requestToolsView('automations');
+    // oxlint-disable-next-line react/set-state-in-effect -- a one-shot arrival, read from the address once
+    setTarget({ view: 'rules' });
     const url = new URL(window.location.href);
     url.searchParams.delete(AUTOMATIONS_PARAM);
     window.history.replaceState(null, '', url.pathname + url.search + url.hash);

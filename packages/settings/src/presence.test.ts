@@ -6,6 +6,7 @@ import {
   PRESENCE_COLOURS,
   PROFILE_NAME_MAX,
   presenceColour,
+  presenceColourOf,
 } from './index';
 
 // WCAG 2 contrast between two #rrggbb colours.
@@ -67,6 +68,22 @@ describe('the Automatic colour', () => {
       Array.from({ length: 60 }, (_, i) => automaticPresenceColour(`Person ${i}`)),
     );
     expect(picked.size).toBeGreaterThan(6);
+  });
+});
+
+describe('a person’s colour', () => {
+  it('is their own when they chose one, the Automatic one from their name otherwise', () => {
+    expect(presenceColourOf('Ada', '#ef4444')).toBe('#ef4444');
+    // A custom colour is theirs as much as a swatch: the cursor wears it as it is.
+    expect(presenceColourOf('Ada', 'hsl(200 80% 40%)')).toBe('hsl(200 80% 40%)');
+    expect(presenceColourOf('Ada', null)).toBe(automaticPresenceColour('Ada').value);
+    expect(presenceColourOf('Ada', undefined)).toBe(automaticPresenceColour('Ada').value);
+  });
+
+  it('never passes on a value that is not safe to paint', () => {
+    for (const stray of ['', 'url(x)', '#ef4444;color:red', 'a\u0000', `#${'0'.repeat(64)}`]) {
+      expect(presenceColourOf('Ada', stray)).toBe(automaticPresenceColour('Ada').value);
+    }
   });
 });
 

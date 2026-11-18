@@ -5,6 +5,7 @@ import type { CommunityStartPost } from '@livedesign/api-schema';
 import { resetCommunityEnabledForTests } from '@liveworkspace/community-ui';
 import { resetCommunityStartForTests } from '@liveworkspace/community-ui/start';
 import { track } from '@/lib/telemetry';
+import { templatePageKind, type TemplateKind } from '@livedesign/templates';
 import { StartFromTemplates } from './StartFromTemplates';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -230,5 +231,48 @@ describe('the start header band', () => {
     // The title in the hero's face: serif for the Typesetter alone.
     const title = document.querySelector('header h2')!;
     expect(title.className.includes('font-serif')).toBe(false);
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "Page type"
+describe('StartFromTemplates, by page type', () => {
+  const chip = () => screen.getByRole('button', { name: /^Page type: / });
+  const choose = (name: string) => {
+    fireEvent.click(chip());
+    fireEvent.click(screen.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }));
+  };
+  const shownKinds = () =>
+    [...document.querySelectorAll('[data-start-card]')].map(
+      (c) => c.getAttribute('data-start-card') as TemplateKind,
+    );
+
+  it('leads the rail with the page type, All Pages each time it opens', () => {
+    mount();
+    expect(chip().getAttribute('aria-label')).toBe('Page type: All Pages');
+    choose('Wireframe');
+    expect(chip().getAttribute('aria-label')).toBe('Page type: Wireframe');
+    cleanup();
+    mount();
+    expect(chip().getAttribute('aria-label')).toBe('Page type: All Pages');
+  });
+
+  it('narrows every group and the search to that kind of page', () => {
+    mount();
+    choose('Wireframe');
+    const rail = [...document.querySelectorAll<HTMLElement>('[data-rail]')]
+      .map((r) => r.getAttribute('data-rail')!)
+      .filter((id) => id !== 'connect');
+    expect(rail.length).toBeGreaterThan(0);
+    for (const id of rail) {
+      fireEvent.click(document.querySelector(`[data-rail="${id}"]`)!);
+      const kinds = shownKinds();
+      expect(kinds.length, id).toBeGreaterThan(0);
+      for (const k of kinds) expect(templatePageKind(k), k).toBe('wireframe');
+    }
+    fireEvent.change(screen.getByRole('textbox', { name: 'Find a template' }), {
+      target: { value: 'logo design' },
+    });
+    expect(shownKinds()).not.toContain('logo-design');
+    for (const k of shownKinds()) expect(templatePageKind(k), k).toBe('wireframe');
   });
 });

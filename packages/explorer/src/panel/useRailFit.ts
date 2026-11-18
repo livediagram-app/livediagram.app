@@ -12,26 +12,37 @@ import { createContext, useEffect, useLayoutEffect, useRef, useState, type RefOb
 
 const useIsoLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-/** True inside a rail that has dropped the card's picture: the card reads it to leave the picture out. */
-export const RailTight = createContext(false);
+/** The card's picture height in the rail: null at its full size, a smaller height when only that fits, 0 when it is
+ *  dropped. The card reads it to size or leave out the picture. */
+export const RailPicture = createContext<number | null>(null);
 
-/** Whether the rail goes without the card's picture: the content with the picture (put back when it is hidden) is
- *  taller than the room. Half a pixel of slack for subpixel layout. Exported for the tests. */
-export function railTight({
-  tight,
+/** The picture's full height (the card's h-24) and the least it shrinks to before it drops. */
+export const RAIL_PICTURE_FULL = 96;
+export const RAIL_PICTURE_MIN = 48;
+
+/** The picture's height for the room there is: the rail's content without the picture (`content` less `shown`, the
+ *  picture and its gap as drawn now) against the room. Full when it fits, shrunk to what is left down to the minimum,
+ *  else dropped (0). Half a pixel of slack for subpixel layout. Exported for the tests. */
+export function railPicture({
   content,
   room,
-  picture,
+  shown,
+  gap,
 }: {
-  tight: boolean;
   // The rail's content now, padding included.
   content: number;
   // The rail's inner height (clientHeight).
   room: number;
-  // The picture's height plus the gap it brings, measured while it showed (0 before).
-  picture: number;
-}): boolean {
-  return content + (tight ? picture : 0) > room + 0.5;
+  // The picture's height plus its gap as drawn now (0 when dropped).
+  shown: number;
+  // The card's gap that comes with the picture.
+  gap: number;
+}): number | null {
+  const spare = room + 0.5 - (content - shown) - gap;
+  if (spare >= RAIL_PICTURE_FULL) return null;
+  // A shrunk picture keeps a pixel spare: subpixel rounding otherwise left the rail 1 px over, and scrolling.
+  const fit = Math.floor(spare - 1.5);
+  return fit >= RAIL_PICTURE_MIN ? fit : 0;
 }
 
 /** The rail's content height: its first child's top to its last child's bottom, plus its own padding. */
@@ -49,30 +60,31 @@ export function railContent(nav: HTMLElement): number {
   );
 }
 
-/** True while the rail should drop the card's picture. `layoutKey` changes when the rail's entries do. */
+/** The card's picture height for the rail (railPicture): null at full size. `layoutKey` changes when the rail's
+ *  entries do. */
 export function useRailFit(
   navRef: RefObject<HTMLElement | null>,
   enabled: boolean,
   layoutKey: string,
-): boolean {
-  const [tight, setTight] = useState(false);
-  const picture = useRef(0);
+): number | null {
+  const [picture, setPicture] = useState<number | null>(null);
+  const gap = useRef(6);
   useIsoLayoutEffect(() => {
     const nav = navRef.current;
     if (!enabled || !nav || typeof ResizeObserver === 'undefined') {
-      setTight(false);
+      setPicture(null);
       return;
     }
     const measure = () => {
       const pic = nav.querySelector<HTMLElement>('[data-current-picture]');
+      let shown = 0;
       if (pic && pic.getClientRects().length > 0) {
         // The card's gap under the picture goes with it (the picture always sits in the card).
-        const gap = parseFloat(getComputedStyle(pic.parentElement ?? pic).rowGap) || 0;
-        picture.current = pic.getBoundingClientRect().height + gap;
+        gap.current = parseFloat(getComputedStyle(pic.parentElement ?? pic).rowGap) || 0;
+        shown = pic.getBoundingClientRect().height + gap.current;
       }
-      const content = railContent(nav);
-      setTight((was) =>
-        railTight({ tight: was, content, room: nav.clientHeight, picture: picture.current }),
+      setPicture(
+        railPicture({ content: railContent(nav), room: nav.clientHeight, shown, gap: gap.current }),
       );
     };
     const observer = new ResizeObserver(measure);
@@ -81,5 +93,5 @@ export function useRailFit(
     measure();
     return () => observer.disconnect();
   }, [navRef, enabled, layoutKey]);
-  return enabled && tight;
+  return enabled ? picture : null;
 }

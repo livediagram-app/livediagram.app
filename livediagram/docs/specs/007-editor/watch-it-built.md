@@ -31,7 +31,7 @@ multiplayer canvas, so the tour also previews working together.
 | **The replay**     | One run of a topic, from the pick to its end                                                                   |
 | **Example**        | The replay's cursor and its name chip                                                                          |
 | **Demo elements**  | What the replay builds: drawn on the canvas, never part of the document                                        |
-| **A chapter**      | One named part of a topic's replay (The Basics: **Add**, **Connect**, **Label**, **Style**)                    |
+| **A chapter**      | One named part of a topic's replay (The Basics: **Add**, **Connect**, **Label**, **Appearance**)               |
 | **The player**     | The bar the replay shows under the canvas: pause or play, the chapters, **Your Turn**                          |
 | **welcome tour**   | Kept only in code identifiers and telemetry tokens, as before                                                  |
 
@@ -70,13 +70,13 @@ view. Lines name clicks on a computer and taps on a touch screen.
 
 ### Diagram
 
-| Topic             | Line on the start panel                            | Chapters: what Example does with the real chrome                                                                                                                                                                                                                                                                                                                                                        |
-| ----------------- | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **The Basics**    | Add shapes, join them, name them and colour one.   | Add, Connect, Label, Style, as [The replay](#the-replay) below                                                                                                                                                                                                                                                                                                                                          |
-| **Look and Feel** | Give the whole tab a new look and background.      | **Open Style**: presses the footer's Style; the real Tab Style dialog opens and the player moves to the top. **Pick a Look**: presses two looks on its first page in turn (Spectrum, then Whiteboard, or the next ones when the tab already wears one); the canvas, the demo and the dialog restyle as a press would. **Canvas**: opens Fine-tune's Canvas and picks a new background (Graph, or Lines) |
-| **Style a Shape** | Border, shadow and font for one shape.             | **Border**: right-clicks the shape, opens Style, then Border, and picks Thick, then Dashed. **Shadow**: opens Shadow and picks Lifted. **Font**: opens Text, then Font, and picks Kalam (handwriting); the menu closes. (Colours are The Basics' Style chapter)                                                                                                                                         |
-| **Find Anything** | Search every shape by name or use, and drop it in. | **Search**: presses Search on the strip and types "database". **Drop**: drags the Database result onto the canvas (a cylinder). **Again**: searches "decision" and drags the Decision result (a diamond) beside it                                                                                                                                                                                      |
-| **Tidy**          | Lay a messy flow out neatly in one press.          | **The Mess**: five joined steps land one by one, each a little off. **Tidy**: opens the footer's Tidy Up and picks Auto Layout; the shapes glide to exactly where that press puts them (lib/tab-cleanup.ts)                                                                                                                                                                                             |
+| Topic             | Line on the start panel                            | Chapters: what Example does with the real chrome                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| ----------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **The Basics**    | Add shapes, join them, name them and colour one.   | Add, Connect, Label, Appearance, as [The replay](#the-replay) below                                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Look and Feel** | Give the whole tab a new look and background.      | **Open Style**: presses the footer's Style; the real Tab Style dialog opens at once (its code is loaded as the topic starts, `warm`, so the pointer never waits on the button) and the player moves to the top. **Pick a Look**: presses two looks on its first page in turn (Spectrum, then Whiteboard, or the next ones when the tab already wears one); the canvas, the demo and the dialog restyle as a press would. **Canvas**: opens Fine-tune's Canvas and picks a new background (Graph, or Lines) |
+| **Style a Shape** | Border, shadow and font for one shape.             | **Border**: right-clicks the shape, opens Appearance, then Border, and picks Thick, then Dashed. **Shadow**: opens Shadow and picks Lifted. **Font**: opens Text, then Font, and picks Kalam (handwriting); the menu closes. (Colours are The Basics' Appearance chapter)                                                                                                                                                                                                                                  |
+| **Find Anything** | Search every shape by name or use, and drop it in. | **Search**: presses Search on the strip and types "database". **Drop**: drags the Database result onto the canvas (a cylinder). **Again**: searches "decision" and drags the Decision result (a diamond) beside it                                                                                                                                                                                                                                                                                         |
+| **Tidy**          | Lay a messy flow out neatly in one press.          | **The Mess**: five joined steps land one by one, each a little off. **Tidy**: opens the footer's Tidy Up and picks Auto Layout; the shapes glide to exactly where that press puts them (lib/tab-cleanup.ts)                                                                                                                                                                                                                                                                                                |
 
 ### Draw
 
@@ -117,12 +117,12 @@ The replay is the same for every topic; The Basics is described here as the exam
 - **The chapters** (The Basics), each a few seconds, in order. Each chapter's one short line sits in the player, after
   **Example**:
 
-  | Chapter | What Example does, with the real chrome                                                                                                               | Example's line                                                |
-  | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
-  | Add     | Opens the palette's **Shapes** (the real flyout), drags a shape onto the canvas: "Order received" (a start). Then a second step                       | "Pick a shape from the palette and drop it on the canvas."    |
-  | Connect | Selects the first shape: its handles and the **selection toolbar** show. Drags from the quick-connect ring onto the second shape: an arrow joins them | "Drag from the ring round a shape onto another to join them." |
-  | Label   | Double-clicks the second shape: its label opens for editing and "Check stock" is typed, letter by letter                                              | "Double-click a shape to name it."                            |
-  | Style   | Right-clicks it: the real **element menu** opens beside it, Example opens **Style**, then **Presets**, and picks **Success**: the shape turns green   | "Right-click anything for its colours and options."           |
+  | Chapter    | What Example does, with the real chrome                                                                                                                  | Example's line                                                |
+  | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+  | Add        | Opens the palette's **Shapes** (the real flyout), drags a shape onto the canvas: "Order received" (a start). Then a second step                          | "Pick a shape from the palette and drop it on the canvas."    |
+  | Connect    | Selects the first shape: its handles and the **selection toolbar** show. Drags from the quick-connect ring onto the second shape: an arrow joins them    | "Drag from the ring round a shape onto another to join them." |
+  | Label      | Double-clicks the second shape: its label opens for editing and "Check stock" is typed, letter by letter                                                 | "Double-click a shape to name it."                            |
+  | Appearance | Right-clicks it: the real **element menu** opens beside it, Example opens **Appearance**, then **Presets**, and picks **Success**: the shape turns green | "Right-click anything for its colours and options."           |
 
   On a touch screen the words name taps and long-presses ("Tap a shape, then drag from its ring…", "Long-press
   anything…").
@@ -133,8 +133,8 @@ The replay is the same for every topic; The Basics is described here as the exam
   shield), except the player and Escape. Escape ends the replay as skipped.
 - **It ends**:
   - **Your Turn** (in the player, and after the last chapter, where the player holds on the finished diagram):
-    the demo goes, the canvas comes back to full strength exactly as it was, and the tour is finished. **More Topics**
-    beside it does the same and opens the start panel.
+    the demo goes, the canvas comes back to full strength exactly as it was, the tour is finished and the Get Started
+    panel opens again, to pick the next topic (owner, 2026-11-17). **More Topics** beside it does the same.
   - **Escape**, a change of tab or mode, or leaving the page: the same, recorded as skipped.
 
 ## The player
@@ -179,7 +179,7 @@ The replay never changes the document:
   player steps from chapter to chapter (the play button reads **Next**, then **Done** on the last chapter, which
   finishes the tour as Your Turn does).
 - **On a phone** Example is a touch dot (a soft ring) instead of an arrow, and the player is narrower, chapter names
-  shortened to fit (Add, Join, Label, Style). While the element menu is open (a sheet up from the bottom on a phone) the
+  shortened to fit (Add, Join, Label, Appearance). While the element menu is open (a sheet up from the bottom on a phone) the
   player moves to the top of the canvas, so the sheet's presets stay in view.
 - **Example never presses what you cannot see.** A control Example goes to that sits scrolled out of its panel or
   sheet (the Tab Style sheet's **Canvas** under its looks on a phone) is scrolled into view first, as a tour's step

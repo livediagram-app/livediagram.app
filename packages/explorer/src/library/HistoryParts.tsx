@@ -1,11 +1,12 @@
 'use client';
 
 // The History dialog's parts (HistoryDialog.tsx; livediagram/docs/specs/013-workspace/history.md "The dialog"): its
-// header, the summary strip, a filter chip, a person's disc and the loading skeleton.
+// header, the overview card with its activity bars, a person's disc and the loading skeletons.
 
 import type { Item, ItemEvent } from '@liveworkspace/index-client';
 import { PictureDisc } from '@liveworkspace/ui';
-import { DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
+import { createContext, useContext, useMemo } from 'react';
+import { DAY_MONTH, DAY_MONTH_YEAR } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../data/usePeople';
 import { useExtras } from '../explorer/extras';
 import { AppMark } from '../explorer/badges';
@@ -14,13 +15,17 @@ import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { historyHeroArt } from '@liveworkspace/ui/dialog-hero-art/history';
 import { Glyph } from '../ui/icons';
 import { avatarFill } from '../ui/avatar-fill';
-import { FOCUS_RING } from '../ui/classes';
 import { initials, personName } from './person-name';
 import { relativeSince } from '../time';
 import { kindWords } from '../words';
-import { eventCountLabel, personColour } from './history';
+import { activityByDay, eventCountLabel, personColour, type ActivityDay } from './history';
 
 export const MUTED = 'text-slate-500 dark:text-slate-400';
+
+/** The reader's own avatar as their account menu draws it (its fill, initials and picture), so History shows the
+ *  same face (owner, 2026-11-17). Null where the host has none: their name's initials on the brand. */
+export type ViewerLook = { fill: string; initials: string; picture: string | null };
+export const ViewerLookContext = createContext<ViewerLook | null>(null);
 
 const fullDate = (at: number) => DAY_MONTH_YEAR.format(at);
 export const iso = (at: number) => new Date(at).toISOString();
@@ -69,6 +74,7 @@ export function SummaryStrip({
   more,
   people,
   viewerId,
+  events,
 }: {
   item: Item;
   now: number;
@@ -76,82 +82,145 @@ export function SummaryStrip({
   more: boolean;
   people: ItemEvent[];
   viewerId: string | null;
+  events: readonly ItemEvent[];
 }) {
-  const stat = 'flex min-w-0 flex-col gap-0.5';
-  const term = `text-[10px] font-semibold uppercase tracking-wider ${MUTED}`;
-  const value = 'truncate text-sm font-medium text-slate-800 dark:text-slate-100';
+  // One card (history.md "At a glance", owner 2026-11-17: the four tiles read poorly): when it last changed with the
+  // faces beside it, when it was made and how much has happened, then its last two weeks as a bar a day.
+  const days = useMemo(() => activityByDay(events, now), [events, now]);
   return (
-    <dl
-      data-history-summary=""
-      className="grid shrink-0 grid-cols-2 gap-x-4 gap-y-3 border-b border-slate-100 bg-slate-50/70 px-5 py-3 sm:grid-cols-4 sm:px-6 dark:border-slate-800 dark:bg-slate-800/40"
-    >
-      <div className={stat}>
-        <dt className={term}>Created</dt>
-        <dd className={value}>
-          <time dateTime={iso(item.createdAt)} title={fullDate(item.createdAt)}>
-            {fullDate(item.createdAt)}
-          </time>
-        </dd>
-      </div>
-      <div className={stat}>
-        <dt className={term}>Last changed</dt>
-        <dd className={value}>
-          <time dateTime={iso(item.updatedAt)} title={fullDate(item.updatedAt)}>
-            {relativeSince(item.updatedAt, now)}
-          </time>
-        </dd>
-      </div>
-      <div className={stat}>
-        <dt className={term}>People</dt>
-        <dd className={`flex items-center gap-1.5 ${value}`}>
-          <span className="flex -space-x-1" aria-hidden>
-            {people.slice(0, 3).map((e) => (
-              <PersonAvatar key={e.actorId} event={e} viewerId={viewerId} size={22} ring />
-            ))}
-          </span>
-          <span>
-            {people.length}
-            {more ? '+' : ''}
-          </span>
-        </dd>
-      </div>
-      <div className={stat}>
-        <dt className={term}>Events</dt>
-        <dd className={value}>{eventCountLabel(count, more)}</dd>
-      </div>
-    </dl>
+    <div className="shrink-0 border-b border-slate-100 px-3 py-3 dark:border-slate-800">
+      <section
+        data-history-summary=""
+        aria-label="At a glance"
+        className={`flex flex-col gap-3 rounded-xl p-3 ${CARD}`}
+      >
+        <div className="flex min-w-0 items-start gap-3">
+          <dl className="flex min-w-0 flex-1 flex-col-reverse gap-0.5">
+            <div className={`flex min-w-0 flex-wrap items-center gap-x-1.5 text-[11px] ${MUTED}`}>
+              <dt className="sr-only">Created</dt>
+              <dd>
+                Created{' '}
+                <time dateTime={iso(item.createdAt)} title={fullDate(item.createdAt)}>
+                  {fullDate(item.createdAt)}
+                </time>
+              </dd>
+              <span aria-hidden>·</span>
+              <dt className="sr-only">Events</dt>
+              <dd className="tabular-nums">{eventCountLabel(count, more)}</dd>
+            </div>
+            <div className="min-w-0">
+              <dt className="sr-only">Last changed</dt>
+              <dd className="truncate text-[15px] font-semibold tracking-tight text-slate-900 dark:text-slate-50">
+                Changed{' '}
+                <time dateTime={iso(item.updatedAt)} title={fullDate(item.updatedAt)}>
+                  {relativeSince(item.updatedAt, now)}
+                </time>
+              </dd>
+            </div>
+          </dl>
+          {/* Who took part, as their faces (owner, 2026-11-17): up to five, then +N; names on hover. */}
+          {people.length ? (
+            <div data-history-people="" className="flex shrink-0 items-center pt-0.5">
+              <span className="sr-only">People: </span>
+              <span className="flex -space-x-1.5">
+                {people.slice(0, PEOPLE_SHOWN).map((e) => {
+                  const name = viewerId && e.actorId === viewerId ? 'You' : personName(e);
+                  return (
+                    <span key={e.actorId} title={name} className="relative flex hover:z-10">
+                      <PersonAvatar event={e} viewerId={viewerId} size={26} ring />
+                      <span className="sr-only">{name}</span>
+                    </span>
+                  );
+                })}
+              </span>
+              {people.length > PEOPLE_SHOWN || more ? (
+                <span className="ml-1 shrink-0 rounded-full bg-slate-100 px-1.5 py-0.5 text-[11px] font-semibold tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  +{Math.max(people.length - PEOPLE_SHOWN, 0)}
+                  {more ? '…' : ''}
+                </span>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+        <ActivityBars days={days} />
+      </section>
+    </div>
   );
 }
 
-export function Chip({
-  label,
-  count,
-  on,
-  onClick,
-}: {
-  label: string;
-  count: number;
-  on: boolean;
-  onClick: () => void;
-}) {
+const CARD =
+  'border border-slate-200/80 bg-gradient-to-b from-brand-50/60 to-white shadow-[0_1px_2px_rgb(15_23_42/0.04)] dark:border-slate-700/70 dark:from-brand-500/[0.07] dark:to-slate-900';
+
+// The last two weeks, a bar a day (history.md "At a glance"): heights against the busiest day, an empty day a short
+// stub so the run of days still reads, today's bar in the accent.
+function ActivityBars({ days }: { days: readonly ActivityDay[] }) {
+  const max = Math.max(1, ...days.map((d) => d.count));
+  const total = days.reduce((n, d) => n + d.count, 0);
+  const last = days.length - 1;
   return (
-    <button
-      type="button"
-      aria-pressed={on}
-      onClick={onClick}
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition duration-micro ${FOCUS_RING} ${
-        on
-          ? 'border-brand-700 bg-brand-700 text-white dark:border-brand-600 dark:bg-brand-600'
-          : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600 dark:hover:text-white'
-      }`}
-    >
-      {label}
-      <span className={`tabular-nums ${on ? 'text-white/80' : MUTED}`}>{count}</span>
-    </button>
+    <figure data-history-activity="" className="flex flex-col gap-1">
+      <ol
+        aria-label={`Activity over the last ${days.length} days: ${total === 1 ? '1 event' : `${total} events`}`}
+        className="flex h-9 items-end gap-[3px]"
+      >
+        {days.map((d, i) => {
+          const words = `${i === last ? 'Today' : DAY_MONTH.format(d.at)}: ${d.count === 1 ? '1 event' : `${d.count} events`}`;
+          return (
+            <li key={d.key} title={words} className="flex h-full flex-1 items-end">
+              <span className="sr-only">{words}</span>
+              <span
+                aria-hidden
+                className={`block w-full rounded-[3px] transition-[height] duration-short ${
+                  d.count === 0
+                    ? 'bg-slate-200/80 dark:bg-slate-700/70'
+                    : i === last
+                      ? 'bg-brand-600 dark:bg-brand-400'
+                      : 'bg-brand-300 dark:bg-brand-500/60'
+                }`}
+                style={{ height: d.count === 0 ? 3 : `${Math.max(18, (d.count / max) * 100)}%` }}
+              />
+            </li>
+          );
+        })}
+      </ol>
+      <figcaption aria-hidden className={`flex justify-between text-[10px] ${MUTED}`}>
+        <span>2 weeks ago</span>
+        <span>Today</span>
+      </figcaption>
+    </figure>
   );
 }
 
-/** A person's initials on a disc in their colour; the reader is "You", and someone unnamed wears the person glyph. */
+// Faces shown before +N.
+const PEOPLE_SHOWN = 5;
+
+/** The overview card's skeleton, in its shape, while the first page loads. */
+export function SummarySkeleton() {
+  const bar = 'rounded bg-slate-200/80 motion-safe:animate-pulse dark:bg-slate-700/70';
+  return (
+    <div aria-hidden className="shrink-0 border-b border-slate-100 px-3 py-3 dark:border-slate-800">
+      <div className={`flex flex-col gap-3 rounded-xl p-3 ${CARD}`}>
+        <div className="flex items-start gap-3">
+          <span className="flex flex-1 flex-col gap-1.5 pt-0.5">
+            <span className={`h-4 w-40 ${bar}`} />
+            <span className={`h-3 w-32 ${bar}`} />
+          </span>
+          <span className={`size-[26px] rounded-full ${bar}`} />
+        </div>
+        <span className="flex h-9 items-end gap-[3px]">
+          {Array.from({ length: 14 }, (_, i) => (
+            <span key={i} className={`h-[3px] flex-1 rounded-[3px] ${bar}`} />
+          ))}
+        </span>
+        <span className="-mt-2 h-[13px]" />
+      </div>
+    </div>
+  );
+}
+
+/** A person's avatar: their picture where they have one, else their initials on a disc in their colour. The reader
+ *  wears their own too (owner, 2026-11-17: it was a brand disc with the person glyph), their initials on the brand;
+ *  someone unnamed wears the person glyph. */
 export function PersonAvatar({
   event,
   viewerId,
@@ -164,16 +233,30 @@ export function PersonAvatar({
   ring?: boolean;
 }) {
   const mine = Boolean(viewerId && event.actorId === viewerId);
-  const letters = mine ? null : initials(personName(event));
-  // The reader wears the brand; someone unnamed or a closed account stays grey. Anyone else with a Google picture
-  // shows it over their disc (the one people store, which names them too).
+  const letters = initials(personName(event));
+  // The reader wears the brand; someone unnamed or a closed account stays grey. Anyone with a picture (their own
+  // included) shows it over their disc (the one people store, which names them too).
   const fill =
     !mine && letters && event.actorId ? avatarFill(personColour(personName(event))) : null;
   const { people } = useExtras();
   const picture = usePersonPicture(
     people,
-    !mine && event.actorId && event.actorId !== 'deleted' ? event.actorId : null,
+    event.actorId && event.actorId !== 'deleted' ? event.actorId : null,
   );
+  const look = useContext(ViewerLookContext);
+  if (mine && look)
+    return (
+      <PictureDisc
+        aria-hidden
+        pictureUrl={look.picture ?? picture}
+        name={personName(event)}
+        size={size}
+        className={`font-semibold text-white ${ring ? 'ring-2 ring-white dark:ring-slate-900' : ''}`}
+        style={{ fontSize: Math.round(size * 0.42), backgroundColor: look.fill }}
+      >
+        {look.initials}
+      </PictureDisc>
+    );
   return (
     <PictureDisc
       aria-hidden

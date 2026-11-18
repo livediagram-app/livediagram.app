@@ -9,7 +9,12 @@ import {
   type AccessLevel,
   type RoomTicketResponse,
 } from '@livediagram/api-schema';
-import { openRoomTicket, roomTicketLevel, sealRoomTicket } from '@liveworkspace/index-app';
+import {
+  openRoomTicket,
+  requestedRoomCap,
+  roomTicketLevel,
+  sealRoomTicket,
+} from '@liveworkspace/index-app';
 import { adderKeyFor } from '../adder-key';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { documentRoom } from '../document-client';
@@ -50,15 +55,6 @@ async function adderKeyOf(
   return role === 'participate' && person ? adderKeyFor(documentId, person) : null;
 }
 
-// `?cap=view` on the mint (docs/specs/015-api/api.md): a view-only ticket, the MCP view's (mcp-server.md "Live
-// updates"). The only cap a caller may ask for; null when it asks for none.
-export const VIEW_ONLY_CAP = 'view';
-function requestedCap(url: URL): typeof VIEW_ONLY_CAP | null | 'invalid' {
-  const cap = url.searchParams.get('cap');
-  if (cap === null) return null;
-  return cap === VIEW_ONLY_CAP ? cap : 'invalid';
-}
-
 // Returns null when the request isn't a room route.
 export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, env, url, segments } = ctx;
@@ -67,7 +63,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
   // editor knows which stickies are theirs to delete. It says nothing about anybody else.
   if (segments.length === 4 && segments[3] === 'room-ticket' && request.method === 'POST') {
     const id = segments[2]!;
-    const cap = requestedCap(url);
+    // `?cap=view` (api.md): a view-only ticket, the MCP view's (mcp-server.md "Live updates").
+    const cap = requestedRoomCap(url);
     if (cap === 'invalid') return badRequest('invalid_cap');
     const grant = await resolveDocumentGrant(ctx, id);
     if (grant instanceof Response) return grant;
@@ -136,8 +133,7 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     const person = linkCode ? null : claims.sub;
     // The share code a session came in by, from the grant the index signed (its `link` claim, set for a person who
     // opened a link as for a link visitor), never from the upgrade URL, which is the client's to change. Revoking
-    // the link closes exactly its sockets, and the room holds a Suggest Only link's people to it
-    // (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Suggest Only").
+    // the link closes exactly its sockets.
     const shareCode = claims.link?.slice(0, 64) || linkCode;
     if (linkCode && (await isCommunityCode(env, id, linkCode))) return forbidden('community_link');
     const forwarded = new Request(request);

@@ -47,13 +47,14 @@ describe('the Inbox’s verbs here', () => {
     expect(JSON.parse(init.body as string)).toEqual({ elementId: 'e1', text: 'Yes' });
   });
 
-  it('on an app’s own address, acts on that app’s threads only, and marks nothing done', () => {
+  it('on an app’s own address, acts on that app’s threads only, and marks its actions done', () => {
     const actions = inboxActionsFor('livediagram');
     expect(actions.offers(thread('livediagram'))).toEqual(['reply', 'resolve']);
     expect(actions.offers(thread('liveplanner'))).toEqual([]);
-    expect(actions.offers({ ...thread('livediagram'), kind: 'Action', actionId: 'a1' })).toEqual(
-      [],
-    );
+    // Through the action route (livediagram assigned-actions.md "From the Inbox").
+    expect(actions.offers({ ...thread('livediagram'), kind: 'Action', actionId: 'a1' })).toEqual([
+      'done',
+    ]);
     expect(actions.offers({ ...thread('livediagram'), local: true })).toEqual([]);
   });
 });

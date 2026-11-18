@@ -10,8 +10,10 @@ import { API_PATH, PREVIEWS_PATH, UNUSED_IMAGE_AGE_MS } from './config';
 import { mediaEnabled, type Env } from './env';
 import { json, notFound } from './http';
 import { sweepUnusedImages } from './retention';
-import { sweepPendingWalkthroughs } from './walkthroughs';
+import { handleSharedWalkthrough, sweepPendingWalkthroughs } from './walkthroughs';
 import { sweepDeletedTeams } from './library/deleted-teams';
+
+const SHARED_WALKTHROUGHS_PATH = '/walkthroughs/shared';
 import { handlePreviews } from './previews/routes';
 import { handleApp } from './routes';
 import { under } from '@liveworkspace/index-app/worker-http';
@@ -39,6 +41,8 @@ const routeLabel = createApiRouteLabel(
     'delete',
     'walkthroughs',
     'media',
+    'share',
+    'shared',
   ]),
 );
 
@@ -51,6 +55,20 @@ async function serve(request: Request, env: Env, ctx?: ExecutionContext): Promis
   }
   if (!under(url.pathname, API_PATH)) return new Response('Not found', { status: 404 });
   const path = url.pathname.slice(API_PATH.length);
+  // A walkthrough's public link (no app key): the liveworkspace site's /walkthrough/<code> page reads it.
+  if (mediaEnabled(env) && env.MEDIA && under(path, SHARED_WALKTHROUGHS_PATH)) {
+    let segments: string[];
+    try {
+      segments = path
+        .slice(SHARED_WALKTHROUGHS_PATH.length)
+        .split('/')
+        .filter(Boolean)
+        .map(decodeURIComponent);
+    } catch {
+      return notFound();
+    }
+    return handleSharedWalkthrough(request, env, env.MEDIA, segments);
+  }
   if (!mediaEnabled(env) || !under(path, '/app')) return notFound();
   return handleApp(request, env, url, path.slice('/app'.length));
 }

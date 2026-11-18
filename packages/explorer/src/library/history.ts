@@ -118,9 +118,10 @@ export function historyCategories(
 
 export function filterHistory(
   events: readonly ItemEvent[],
-  category: EventCategory | null,
+  categories: readonly EventCategory[],
 ): readonly ItemEvent[] {
-  return category ? events.filter((e) => eventCategory(e.type) === category) : events;
+  if (categories.length === 0) return events;
+  return events.filter((e) => categories.includes(eventCategory(e.type)));
 }
 
 export type HistorySummary = {
@@ -147,4 +148,32 @@ export function eventCountLabel(count: number, more: boolean): string {
  *  profile colours, so this is picked rather than asked for. */
 export function personColour(name: string): string {
   return automaticPresenceColour(name).value;
+}
+
+/** The days the overview's activity chart covers, today last. */
+export const ACTIVITY_DAYS = 14;
+
+export type ActivityDay = { key: string; at: number; count: number };
+
+/** The loaded events a day over the last `days` days, oldest first, today last (the reader's local days). Events
+ *  older than the window are left out; one pass over the events. */
+export function activityByDay(
+  events: readonly ItemEvent[],
+  now: number,
+  days = ACTIVITY_DAYS,
+): ActivityDay[] {
+  const out: ActivityDay[] = [];
+  const at = new Map<string, ActivityDay>();
+  const today = new Date(now);
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i, 12);
+    const day = { key: dateKey(d.getTime()), at: d.getTime(), count: 0 };
+    out.push(day);
+    at.set(day.key, day);
+  }
+  for (const event of events) {
+    const day = at.get(dateKey(event.occurredAt));
+    if (day) day.count += 1;
+  }
+  return out;
 }

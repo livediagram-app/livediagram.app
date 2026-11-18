@@ -19,11 +19,11 @@ import {
   type LensTelemetryType,
   type HomeTelemetry,
 } from '@liveworkspace/explorer';
-import { DEFAULT_FOLDER_OPTIONS, LENS_MODES } from '@livediagram/api-schema';
-import { CANVAS_TEMPLATE_FAMILIES } from '@/lib/canvas-template-families';
+import { DEFAULT_FOLDER_OPTIONS } from '@livediagram/api-schema';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
 import { useGuestId } from '@/hooks/persistence/useGuestId';
+import { arrivedArchived } from '@liveworkspace/workbench/lib/archived';
 import { useAppNavigation } from '@liveworkspace/workbench/hooks/navigation/useAppNavigation';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { useCommunityEnabled } from '@livediagram/ui';
@@ -103,6 +103,8 @@ export function ExplorerHost({
   const chrome: ExplorerChrome = { prefs, ownerId: viewerId ?? null, signedIn: !!accountUserId };
   // The open canvas deleted from the editor lands here with its Undo (lib/document-delete-undo.ts), taken once.
   const [trashedOnArrival] = useState(arrivedTrashed);
+  // The open item archived from the editor lands here too, said once (lib/archived).
+  const [archivedOnArrival] = useState(() => arrivedArchived('livediagram'));
   // The hero's close (docs/specs/013-workspace/explorer-home.md "Hiding the banner"): reported, then written, so
   // every device the person signs in on opens Home without it. Settings > Explorer turns it back on.
   const hideHero = useCallback(() => {
@@ -145,16 +147,16 @@ export function ExplorerHost({
         helpHref={explorerHelpHref}
         renderThumbnail={renderDocumentThumbnail}
         trashedOnArrival={trashedOnArrival}
+        archivedOnArrival={archivedOnArrival}
         heroHidden={prefs.homeBanner === false}
         onHideHero={hideHero}
         onHome={trackHome}
         onOrganise={trackOrganise}
-        lensTemplates={CANVAS_TEMPLATE_FAMILIES}
-        lensModes={LENS_MODES}
         defaultFolderOptions={DEFAULT_FOLDER_OPTIONS}
         onFolderShown={onFolderShown}
         gallery={library.gallery}
         shapeLibraries={library.shapeLibraries}
+        walkthroughs={library.walkthroughs}
         imports={explorerImports}
         onLensSelected={trackLens}
         header={header ? ({ search }) => header(search, chrome) : undefined}

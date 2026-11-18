@@ -497,6 +497,14 @@ liveworkspace.app.
   through a link. It moves at once, the card leaves where it was, and a toast says "Moved “<title>” to Archived."
   with no Undo: what archiving deleted (its links, everyone's Recent rows) can't come back, and Change Folder is the way
   out. Change Folder offers the same as a space of its own.
+- **Archiving the open item.** Archived is closed, so archiving the item open in an editor (from the Explorer panel's
+  menus, its Current card, or Change Folder's Archived; an account's or one kept in This Browser) leaves the editor
+  for the Explorer, as deleting it does (owner, 2026-11-17, Work Tracker 1240). The panel hands the item to its host
+  (`onArchivedCurrent`) once the archive is taken, and says nothing itself; the editor leaves for
+  `/explorer?archived=<id>&title=<name>` (`leaveArchivedItem`, `@liveworkspace/workbench/lib/archived`), and the
+  Explorer says "Moved “<title>” to Archived." once on arrival (`archivedOnArrival`), with no Undo, then drops both
+  from the address. A workbench frame's Explorer takes the same item from sessionStorage, kept for one page load and
+  30 seconds (`arrivedArchived`). Archiving any other item keeps the person where they are, with the usual toast.
 - **Gone from everywhere else.** Home (Most Used, Recent, the hero's count), Recent, Shared With
   Me, the Inbox, every folder and team, and the panel's lists leave it out. Archiving deletes its
   Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not in Recent until it is opened
@@ -722,9 +730,10 @@ open item is left out there, as the index's is.
 inside the window, and up to **45rem** (720 px) tall, kept on the canvas below its button and 24 px short of the
 canvas's bottom edge; the rail and pane fill what the card and footer leave, never shorter than 18rem. The rail is
 **15rem** (240 px) wide, so the current item's card fits at its top (owner, 2026-11-16: the picture across the card, the name with its ⋯ menu, "Updated …" and where it lives; no "Current" label) and its names sit with room either side, and the pane keeps a 1rem margin. The rail scrolls only when its entries are
-really taller than it: on a short window (the popover under about 34rem of rail, an 800 px tall window) the card
-first drops its picture, its "where it lives" pill moving to the start of the "Updated …" line, and takes the picture
-back as soon as the whole card fits again (measured, so a person with several teams sees the same rule). Below that
+really taller than it: on a short window the card's picture first shrinks to the room left (its 96 px down to 48 px;
+owner, 2026-11-17, after a canvas in Browser Storage, whose extra sidebar row cost 5 px, lost its picture entirely),
+then, with under 48 px to spare, the card drops it, its "where it lives" pill moving to the start of the "Updated …"
+line, and takes it back as soon as 48 px fit again (measured, so a person with several teams sees the same rule). Below that
 the rail scrolls, as it must (owner, 2026-11-17: no scrollbar the rail doesn't need). The pane's preview
 cards (Most Used, Recent, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
 wide (a tablet, a wide phone's sheet and the desktop popover, whose pane is about 40rem), four once it is 44rem (the

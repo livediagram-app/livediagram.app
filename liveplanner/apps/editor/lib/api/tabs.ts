@@ -28,6 +28,7 @@ import {
 } from '../offline/offline-store';
 import { offlineRecordOpen } from '../offline/offline-opens';
 import { heldPlanGrant } from './plan-grants';
+import { isWorkbenchConfined } from './workbench-confinement';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import {
   API_BASE,
@@ -88,8 +89,10 @@ const calls = createTabCalls<Tab, typeof NO_GRANT_WAIT, TabSummary>({
     saveMeta: (id, patch, now) => offlineSaveProjectMeta(id, patch, now),
     recordOpen: (id, now) => offlineRecordOpen(id, now),
   },
-  // An open of the plan is the index's to record, beside the tab read.
+  // An open of the plan is the index's to record, beside the tab read; never a workbench frame's, whose session the
+  // index refuses.
   onOpen: (id, shareCode) => {
+    if (isWorkbenchConfined()) return;
     const share = shareCode ? { code: shareCode, password: getSessionSharePassword() } : null;
     void indexClient.recordOpen(id, share).catch((err: unknown) => {
       console.warn('[index] open not recorded', err);

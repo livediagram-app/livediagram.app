@@ -10,6 +10,7 @@ import {
   approachProgress,
   clampRightWidth,
   companionTabId,
+  handoffAnchor,
   dropZoneWidth,
   fractionFor,
   inDropZone,
@@ -153,5 +154,16 @@ describe('split view rules', () => {
     expect(readStoredFraction()).toBe(0.37);
     window.localStorage.setItem('liveplanner:v2:split-view-fraction', 'nonsense');
     expect(readStoredFraction()).toBe(SPLIT_DEFAULT_FRACTION);
+  });
+});
+
+describe('handoffAnchor', () => {
+  it('hands the editor view over from an open canvas', () => {
+    expect(handoffAnchor(false, () => ({ x: 1, y: 2, k: 1 }))).toEqual({ x: 1, y: 2, k: 1 });
+  });
+  it('opens the pane fitted when a Sheet, board, Dashboard or Form covered the canvas', () => {
+    let read = 0;
+    expect(handoffAnchor(true, () => (read++, { x: 1, y: 2, k: 1 }))).toBeNull();
+    expect(read).toBe(0);
   });
 });

@@ -6,14 +6,14 @@
 // the tab bar, the welcome flow. Plain functions that return elements, called in EditorView's render, so the tree is
 // the one EditorView drew inline.
 import type { ReactNode } from 'react';
-import { truncateName } from '@liveplanner/project';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
-import { EditorHeader } from '@/components/chrome/EditorHeader';
+import { PlanCornerActions } from '@/components/chrome/EditorHeader';
+import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
-import { RolePill } from '@/components/chrome/RoleIndicator';
+import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
 import { WorkbenchBackButton, WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import type { useEditorContext } from './EditorContext';
@@ -28,82 +28,44 @@ const workbenchProjectHref = (projectId: string, shareCode: string | null) =>
 // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
 // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
 // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-export function renderEditorHeader(
-  ctx: EditorContextValue,
-  {
-    isOffline,
-    headerCommunity,
-    role,
-    barsShown,
-  }: {
-    isOffline: boolean;
-    headerCommunity: boolean;
-    role: ReturnType<typeof useRoleIndicator>;
-    barsShown: boolean;
-  },
-): ReactNode {
+export function renderEditorHeader(ctx: EditorContextValue): ReactNode {
   const {
     zenMode,
     appChrome,
-    projectName,
     anyWelcomeOpen,
     canShareProject,
     hydrated,
     projectShareable,
-    projectTeamId,
     projectId,
     sessionCommunity,
     makeCopy,
     copying,
-    isStructureReadOnly,
-    renameProjectNonce,
     openSettingsOn,
     setShareDialogOpen,
-    nameProject,
   } = ctx;
+  // Experiment (no header bar): no bar across the top. Share (or Share Form) and the account float in a card at the
+  // canvas's top right (EditorCornerActions); the plan's name and badges go, the logo leads the menu box
+  // (ToolbarExplorerButton) and switching the role is the Editing Mode tool in Tools (RoleTool).
   return zenMode || !appChrome ? null : (
-    <LandscapeBarFold shown={barsShown}>
-      <AreaErrorBoundary area="Header" fallback="panel">
-        <EditorHeader
-          itemId={projectId}
-          projectName={projectName}
-          hideTitle={anyWelcomeOpen}
-          showShare={canShareProject && hydrated && !anyWelcomeOpen}
-          shareable={projectShareable}
-          teamProject={!!projectTeamId}
-          offline={isOffline}
-          community={headerCommunity}
-          // Visitors see "Make a copy" instead of "Share": same slot (a joined
-          // team member is no visitor: the team's projects are theirs to share),
-          // different action. Hidden during the welcome flow so the
-          // first-paint chrome stays minimal, and during hydration so
-          // we don't render the button before we know whether the user
-          // is the owner. A Community visitor gets it from the Community bar instead.
-          onMakeCopy={
-            !canShareProject && hydrated && !anyWelcomeOpen && projectId && !sessionCommunity
-              ? () => void makeCopy()
-              : undefined
-          }
-          copying={copying}
-          readOnly={isStructureReadOnly}
-          renameNonce={renameProjectNonce}
-          rolePill={<RolePill {...role} />}
-          onOpenAccount={() => openSettingsOn('account')}
-          onOpenShare={() => {
-            setShareDialogOpen(true);
-            track('UI', 'Opened', 'Share');
-          }}
-          onRename={(next) => {
-            const prev = projectName.trim();
-            // docs/specs/006-project/name-length.md: capped here so the header rename can't outrun the
-            // limit the auto-namer and the Explorer renames both respect.
-            const nextTrim = truncateName(next);
-            nameProject(nextTrim);
-            if (nextTrim && nextTrim !== prev) track('Project', 'Renamed');
-          }}
-        />
-      </AreaErrorBoundary>
-    </LandscapeBarFold>
+    <AreaErrorBoundary area="Header" fallback="panel">
+      <PlanCornerActions
+        showShare={canShareProject && hydrated && !anyWelcomeOpen}
+        shareable={projectShareable}
+        // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden through the
+        // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
+        onMakeCopy={
+          !canShareProject && hydrated && !anyWelcomeOpen && projectId && !sessionCommunity
+            ? () => void makeCopy()
+            : undefined
+        }
+        copying={copying}
+        onOpenAccount={() => openSettingsOn('account')}
+        onOpenShare={() => {
+          setShareDialogOpen(true);
+          track('UI', 'Opened', 'Share');
+        }}
+      />
+    </AreaErrorBoundary>
   );
 }
 
@@ -114,9 +76,11 @@ export function renderEditorTabBar(
   {
     selectTab,
     barsShown,
+    role,
   }: {
     selectTab: (id: string) => void;
     barsShown: boolean;
+    role: ReturnType<typeof useRoleIndicator>;
   },
 ): ReactNode {
   const {
@@ -184,6 +148,16 @@ export function renderEditorTabBar(
                 )
               : undefined
           }
+          // The role pill's switch, as the Editing Mode tool (RoleTool).
+          extraTools={[
+            roleToolsItem({
+              role: role.role,
+              owner: roleOwnerLabel(role.ownerName, role.isSelf),
+              noun: 'plan',
+              canSwitch: !!role.onToggle,
+              onPick: ctx.setViewPreview,
+            }),
+          ]}
           tabs={tabs}
           activeId={activeId}
           // Clicking an avatar in a presence stack opens the Collaborators

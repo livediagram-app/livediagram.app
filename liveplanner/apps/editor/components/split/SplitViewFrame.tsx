@@ -14,6 +14,8 @@ import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
+import { isCanvasCovered } from '@/hooks/plan/plan-cover-store';
+import { handoffAnchor } from '@/lib/split-view';
 import { useBodyEndAnchor } from '@liveworkspace/workbench/hooks/ui/useBodyEndAnchor';
 import { useViewportWidth } from '@liveworkspace/workbench/hooks/ui/useViewportWidth';
 import {
@@ -144,7 +146,10 @@ export function SplitViewFrame({
     const main = canvasMainRef.current?.getBoundingClientRect();
     if (main) {
       // The view the editor leaves on its tab becomes that pane's view.
-      setHandoff({ tabId: activeId, anchor: anchorFromEditorView(viewport.get(), main) });
+      const anchor = handoffAnchor(isCanvasCovered(), () =>
+        anchorFromEditorView(viewport.get(), main),
+      );
+      setHandoff(anchor ? { tabId: activeId, anchor } : null);
       // And the pane's view becomes the editor's, measured where the canvas will be once the
       // editor's box has moved: same height and top, the other pane's span.
       const paneAnchor = staticHandle.current?.anchor();

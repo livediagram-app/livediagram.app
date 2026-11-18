@@ -37,4 +37,17 @@ describe('the Explorer landing', () => {
     window.history.replaceState(null, '', '/explorer');
     expect(landingNow()).toMatchObject({ notice: null });
   });
+
+  // An editor that archived its open item leaves for here (one-explorer.md "Archiving the open item").
+  it('takes the item an editor archived on its way here, and asks to drop it', () => {
+    window.history.replaceState(null, '', '/explorer?archived=d1&title=Roadmap');
+    const landed = landingNow();
+    if (landed.leave !== null) throw new Error('expected to stay');
+    expect(landed.archived).toEqual({ id: 'd1', title: 'Roadmap' });
+    expect(landed.trashed).toBeNull();
+    expect(landed.strip).toBe(true);
+    forgetLanding();
+    window.history.replaceState(null, '', '/explorer');
+    expect(landingNow()).toMatchObject({ archived: null });
+  });
 });

@@ -10,7 +10,6 @@ import { announcePageLocked } from '@/lib/page-lock-guard';
 import { setTextOnlyToast } from '@/lib/flashcard-guard';
 import { setArticleCapsToast } from '@/lib/article/article-caps-notice';
 import { setArticleHeldToast } from '@/lib/article/article-hold-notice';
-import { setSuggestToast } from '@/lib/article/article-suggest-store';
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
 import { activeElementsCommit } from '../active-elements-commit';
 import type { EditorDocument } from './useEditorDocument';
@@ -116,9 +115,7 @@ export function useEditorPages({
     setTextOnlyToast(toast.info);
     setArticleCapsToast(toast.info);
     setArticleHeldToast(toast.info);
-    setSuggestToast(toast.info);
     return () => {
-      setSuggestToast(null);
       setTextOnlyToast(null);
       setArticleCapsToast(null);
       setArticleHeldToast(null);

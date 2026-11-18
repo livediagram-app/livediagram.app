@@ -71,6 +71,7 @@ import { historyTagOf, itemHistory } from './item-history-route';
 import { appendItemHistory } from '../db/item-history';
 import { planTabs } from './plan-route';
 import { tally } from './item-tally-route';
+import { importPeople } from './item-import-people';
 import { importItems } from './item-import-route';
 import { pullRequestsFor } from './item-pull-requests';
 import { trackTime } from './item-time-route';
@@ -361,6 +362,9 @@ export async function handleItemRoutes(ctx: PlanRouteContext): Promise<Response 
   // A whole import, in parts (docs/specs/026-plan/blueprints/tracker-import.md "A whole import").
   if (segments.length === 5 && segments[4] === 'import')
     return method === 'POST' ? importItems(ctx, projectId) : methodNotAllowed();
+  // An agent's import matching its people to the plan's team by email (blueprint tracker-import.md).
+  if (segments.length === 6 && segments[4] === 'import' && segments[5] === 'people')
+    return method === 'POST' ? importPeople(ctx, projectId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'patches')
     return method === 'POST' ? patches(ctx, projectId) : methodNotAllowed();
   // Many moves as one write (docs/specs/026-plan/items.md "Move many").

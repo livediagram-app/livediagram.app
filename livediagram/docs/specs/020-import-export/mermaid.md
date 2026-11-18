@@ -101,7 +101,7 @@ only the sweep direction differs).
   the frame takes a fresh one (`a_subgraph`): neither is lost under the other's element id.
   Nested subgraphs fold into their top-level ancestor (frames import one
   level deep); through the MCP the reply says so (`notes`: "2 nested subgraphs folded into their outer group:
-  groups draw one level deep"), rather than dropping the nesting silently. An edge naming a folded subgraph's id
+  groups draw one level deep"), and the editor's import report does too, rather than dropping the nesting silently. An edge naming a folded subgraph's id
   points at the frame it folded into, rather than a stray box of the id (a node written out under that id stays a
   node, as does the box when the outer subgraph holds nothing else). On export, each frame becomes a `subgraph` block containing
   the boxed nodes whose centre sits inside it (a node inside several frames
@@ -118,6 +118,15 @@ only the sweep direction differs).
   written against the edge or not (`a:::hot-->b`, `a:::my-class-.->b`): the edge after it still lands. So are the
   accessibility lines, `accTitle: …`, `accDescr: …` and the multi-line `accDescr { … }` block: they describe the
   diagram for a screen reader and are never boxes.
+- **Unreadable lines are said, not lost.** A flowchart statement the parser could not read to its end (an
+  unclosed bracket, `A[Start -->`, or text that opens with no node id, `((( broken`) is still skipped, not fatal,
+  but it is counted: the parser returns it (`unread`, the cleaned statement text), the editor's Import dialog shows
+  the shared import report ("2 · Lines Mermaid could not read, skipped: “B --> C[unclosed”, “((( x”": the first 5
+  quoted, each cut to 40 characters, then "and N more"; `unreadMermaidLines`, `mermaidImportOutcome` in the editor's
+  `lib/text-import-report.ts`) instead of closing, and the MCP reply carries the same line as a `notes` entry. The known decoration above stays
+  silent. A flowchart where no statement was read in full (every line past the header unread) is refused with
+  "None of this flowchart could be read", naming the first unread line, rather than drawn as the stray box a
+  half-read line left. The editor's report also says the nested subgraphs that folded, as the MCP's `notes` do.
 - **Keywords are case-sensitive**, as in Mermaid: `class`, `style`, `end` and the other diagram types' headers
   (`journey`, `pie`, `timeline`, ...) are keywords only in lowercase, so `Class --> Student`, `Journey --> Checkout`
   and a node called `End` (Mermaid's own advice for naming a node end) import as nodes.

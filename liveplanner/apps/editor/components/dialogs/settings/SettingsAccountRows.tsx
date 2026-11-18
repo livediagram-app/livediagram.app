@@ -5,14 +5,13 @@ import { useState } from 'react';
 import { Button } from '@liveplanner/ui';
 import { resetSettingsBlob } from '@liveworkspace/settings';
 import {
-  ProfileHeaderCard,
   resetAccountSettings,
   resetBrowserSettings,
   ResetSettingsRow,
   SettingsRowShell,
   type SettingsRequest,
 } from '@liveworkspace/settings-ui';
-import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { SettingsIdentityRow as SharedSettingsIdentityRow } from '@liveworkspace/workbench/components/dialogs/settings/SettingsIdentityRow';
 import { SettingsSignInLink } from '@liveworkspace/workbench/components/dialogs/settings/SettingsSignInLink';
 import { useDeferredAuth } from '@liveworkspace/workbench/components/providers/deferred-auth';
 import type { UserPreferences } from '@/lib/user-preferences';
@@ -32,29 +31,10 @@ const DeleteAccountDialog = dynamic(
   { ssr: false },
 );
 
-// Identity, read from the account. Never written here: names and emails are managed
-// on the liveworkspace accounts site, so this is a card, not a form. The card is the shared Profile's header
-// (@liveworkspace/settings-ui ProfileHeaderCard; liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): the avatar,
-// name, email and when they joined; a guest gets the guest card and the way in.
+// Identity: the shared card (@liveworkspace/workbench SettingsIdentityRow), its avatar the session's own Google picture,
+// as the header's account control draws it.
 export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
-  const { authLoaded, isSignedIn, user } = useDeferredAuth();
-  const { signInHref, signUpHref } = useAuthHrefs();
-  const signedIn = Boolean(authLoaded && isSignedIn && user);
-  return (
-    <div data-settings-cell={row.key} className="rounded-[inherit]">
-      {signedIn && user ? (
-        <ProfileHeaderCard
-          identity={{
-            name: user.fullName ?? user.username ?? user.email ?? 'Your account',
-            email: user.email,
-            joined: user.createdAt,
-          }}
-        />
-      ) : (
-        <ProfileHeaderCard guest={{ signInHref, signUpHref, things: 'plans' }} />
-      )}
-    </div>
-  );
+  return <SharedSettingsIdentityRow row={row} things="plans" />;
 }
 
 // Reset All Settings, directly above Delete Account (docs/specs/007-editor/user-preferences.md; the row is the shared

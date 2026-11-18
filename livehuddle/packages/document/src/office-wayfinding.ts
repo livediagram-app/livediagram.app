@@ -9,14 +9,14 @@ import { allSides, ellipse, path, rect } from './furniture-parts';
 // Fixed colours, as OFFICE_TONES: the sign's blue, the room dots, the elevator's steel and its display. Outlines
 // stay the theme's stroke, so both pieces sit in the same drawing style on light and dark paper.
 export const WAYFINDING_TONES = {
-  sign: '#2563eb',
-  dots: ['#f59e0b', '#10b981', '#8b5cf6', '#ef4444'],
+  sign: '#386ad8',
+  dots: ['#d89728', '#21a87b', '#926ee4', '#de5555'],
   white: '#ffffff',
   steel: '#cbd5e1',
   steelDeep: '#94a3b8',
   steelDark: '#64748b',
   display: '#1e293b',
-  lamp: '#fbbf24',
+  lamp: '#deb241',
   // The Stairs' stone: a tread's top lit, a riser's front in shade.
   tread: '#f5f5f4',
   riser: '#c7c2bd',
@@ -47,7 +47,6 @@ const DIRECTORY_VIEW: FurnitureDrawing = {
     path('rail', 'M10 82h52'),
   ],
   seats: [],
-  ring: { cx: 36, cy: 114, rx: 30, ry: 7 },
 };
 
 // The Elevator: a lift set into a wall, seen from the front: its surround, a floor display with an up arrow over
@@ -72,7 +71,6 @@ const ELEVATOR_VIEW: FurnitureDrawing = {
     rect('panel', 12, 130, 76, 5, 1.5, T.steelDeep),
   ],
   seats: [],
-  ring: { cx: 56, cy: 128, rx: 50, ry: 8 },
 };
 
 // The Stairs (docs/specs/009-elements/stairs.md): a flight of seven steps rising away from you, narrowing as it goes,
@@ -114,7 +112,6 @@ const STAIRS_VIEW: FurnitureDrawing = {
     path('mark', 'M49.5 5.5l4.5 6.5 4.5-6.5z', T.white),
   ],
   seats: [],
-  ring: { cx: 48, cy: 118, rx: 42, ry: 7 },
 };
 
 /** Where a character climbing the Stairs ends up: its feet on the flight's second step from the top, as a share of
@@ -149,7 +146,6 @@ const STAIRS_BACK: FurnitureDrawing = {
     path('mark', 'M49.5 93.5l4.5 6.5 4.5-6.5z', T.white),
   ],
   seats: [],
-  ring: { cx: 48, cy: 118, rx: 42, ry: 7 },
 };
 
 // Facing left (the flight climbing to the right): its foot on the left, each step a lit tread a rise higher than the
@@ -203,7 +199,6 @@ const STAIRS_SIDE: FurnitureDrawing = {
     path('mark', 'M115.5 11l3.5 5 3.5-5z', T.white),
   ],
   seats: [],
-  ring: { cx: 68, cy: 116, rx: 64, ry: 8 },
 };
 
 /**

@@ -4,6 +4,7 @@
 import type { BlockingIndex } from './blocked-by';
 import type { GanttRow } from './plan-view-gantt';
 import { phaseOf, type StatusPhase } from './plan-views';
+import { ganttClashDays } from './dependency-clash';
 
 // How far an arrow steps out of the blocker's mark before it turns, and its head's length.
 export const GANTT_ARROW_STEP = 8;
@@ -20,6 +21,8 @@ export interface GanttArrow {
   to: RowAt;
   // The blocker is done: drawn fainter.
   done: boolean;
+  // The blocked mark starts on or before the open blocker ends (dependency-clash.ts): drawn in the clash amber.
+  clash: boolean;
 }
 
 const marked = (r: GanttRow) => r.mark !== 'none' && r.from !== undefined && r.to !== undefined;
@@ -37,7 +40,10 @@ export function ganttArrows(
   for (const to of at.values())
     for (const b of index.blockers.get(to.row.item.id) ?? []) {
       const from = at.get(b.id);
-      if (from) out.push({ from, to, done: phaseOf(b, phases) === 'done' });
+      if (!from) continue;
+      const done = phaseOf(b, phases) === 'done';
+      const clash = ganttClashDays({ ...from.row, isDone: done }, to.row) !== null;
+      out.push({ from, to, done, clash });
     }
   return out;
 }

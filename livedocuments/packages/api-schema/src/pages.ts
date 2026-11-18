@@ -85,12 +85,7 @@ export type ArticleWrite = {
   look?: ArticleLookId;
   accent?: string;
   pageNumbers?: boolean;
-  // `suggestions`: an assistant's changes to the words arrive as suggestions to accept or reject
-  // (docs/specs/024-agents/pages-for-agents.md "Suggestions"); `direct` (absent) writes straight in.
-  as?: ArticleWriteAs;
 };
-
-export type ArticleWriteAs = 'suggestions' | 'direct';
 
 export type PagesRequest = { pages: PageChange[] } | { article: ArticleWrite };
 
@@ -121,7 +116,21 @@ export type ArticleSummary = {
   words: number;
   // About how many pages its writing reaches once laid out (an estimate, article-layout-estimate.ts).
   estimatedPages: number;
+  // How easily it reads, as the editor's Word Count says it (docs/specs/007-editor/article-pages.md "Word Count").
+  readability: ArticleReadabilitySummary;
   look: ArticleLookId | null;
+};
+
+export type ArticleReadabilitySummary = {
+  readingMinutes: number;
+  sentences: number;
+  wordsPerSentence: number;
+  // Sentences over 30 words.
+  longSentences: number;
+  // Flesch Reading Ease, or null when the writing isn't English or has no sentence.
+  ease: number | null;
+  // The level in the Word Count line's words ("Easy to read" … "Hard to read"), or null.
+  level: string | null;
 };
 
 export type PagesAnswer = {

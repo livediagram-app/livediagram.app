@@ -29,18 +29,6 @@ const PARAGRAPH_TAG: Record<ArticleParagraphStyle, string> = {
 
 const alignAttr = (align: ArticleAlign) => (align === 'left' ? {} : { 'data-align': align });
 
-// A suggested paragraph break on a text block (docs/specs/007-editor/suggestions.md "What a suggestion is"): drawn by
-// the writing's stylesheet as a small ¶ in its author's colour, struck when taken out.
-const breakAttr = (sg: unknown): Record<string, string> => {
-  const s = sg as { k?: unknown; c?: unknown; id?: unknown } | null;
-  if (!s || (s.k !== 'ins' && s.k !== 'del')) return {};
-  return {
-    'data-sg-break': s.k,
-    'data-sg-id': typeof s.id === 'string' ? s.id : '',
-    ...(isArticleHex(s.c) ? { style: `--sg-c: ${s.c}` } : {}),
-  };
-};
-
 const readAlign = (el: HTMLElement): ArticleAlign => {
   const raw = el.getAttribute('data-align') ?? el.style.textAlign;
   return ARTICLE_ALIGNS.includes(raw as ArticleAlign) ? (raw as ArticleAlign) : 'left';
@@ -124,13 +112,7 @@ export const articleSchema = new Schema({
     paragraph: {
       group: 'block',
       content: 'inline*',
-      attrs: {
-        id: { default: '' },
-        style: { default: 'body' },
-        align: { default: 'left' },
-        // The break before it, suggested (ArticleSuggestion), or null.
-        sg: { default: null },
-      },
+      attrs: { id: { default: '' }, style: { default: 'body' }, align: { default: 'left' } },
       // Its own nodes win over the generic paragraph rule for pasted headings and quotes.
       parseDOM: [
         {
@@ -171,7 +153,6 @@ export const articleSchema = new Schema({
             'data-article-style': style,
             'data-block-id': textAttr(node.attrs, 'id'),
             ...alignAttr(node.attrs.align as ArticleAlign),
-            ...breakAttr(node.attrs.sg),
           },
           0,
         ];
@@ -186,7 +167,6 @@ export const articleSchema = new Schema({
         level: { default: 0 },
         checked: { default: false },
         align: { default: 'left' },
-        sg: { default: null },
       },
       parseDOM: [
         {
@@ -263,9 +243,8 @@ export const articleSchema = new Schema({
             'data-article-list': list,
             'data-level': String(level),
             'data-checked': String(checked),
+            style: `--article-level: ${level}`,
             ...alignAttr(node.attrs.align as ArticleAlign),
-            ...breakAttr(node.attrs.sg),
-            style: `--article-level: ${level}${isArticleHex((node.attrs.sg as { c?: unknown } | null)?.c) ? `; --sg-c: ${(node.attrs.sg as { c: string }).c}` : ''}`,
           },
           0,
         ];
@@ -496,37 +475,6 @@ export const articleSchema = new Schema({
         { class: 'article-highlight', style: `--article-highlight: ${mark.attrs.color}` },
         0,
       ],
-    },
-    // A suggestion on text (docs/specs/007-editor/suggestions.md): an insertion, a deletion or a format change, its
-    // fields the stored ArticleSuggestion's. Never taken from a paste; typing beside it never extends it on its own
-    // (the suggesting transaction joins an author's own typing to its insertion).
-    suggestion: {
-      attrs: {
-        id: {},
-        k: {},
-        by: {},
-        n: { default: '' },
-        c: { default: null },
-        at: { default: 0 },
-        ai: { default: false },
-        g: { default: null },
-        was: { default: null },
-      },
-      inclusive: false,
-      parseDOM: [],
-      toDOM: (mark: Mark): DOMOutputSpec => {
-        const k = mark.attrs.k === 'del' ? 'del' : mark.attrs.k === 'fmt' ? 'fmt' : 'ins';
-        const c = safeMarkColor(mark.attrs.c);
-        return [
-          k === 'del' ? 'del' : k === 'ins' ? 'ins' : 'span',
-          {
-            class: `article-sg article-sg-${k}`,
-            'data-sg-id': textAttr(mark.attrs, 'id') ?? '',
-            ...(c ? { style: `--sg-c: ${c}` } : {}),
-          },
-          0,
-        ];
-      },
     },
   },
 });

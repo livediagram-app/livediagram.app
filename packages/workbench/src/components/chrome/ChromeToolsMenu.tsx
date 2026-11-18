@@ -25,7 +25,6 @@ import {
   openDialogSlot,
   setDialogSlotNode,
   useDialogSlot,
-  type DialogProps,
 } from '@liveworkspace/ui';
 import { HERO_TOKEN_STYLE, HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { toolsHeroArt } from '@liveworkspace/ui/dialog-hero-art/tools';
@@ -39,6 +38,7 @@ import {
   useToolsViewRequest,
 } from './tools-door';
 import { ToolsView } from './ToolsView';
+import { AnimatedHeightBox } from '../primitives/AnimatedHeightBox';
 
 /** The popover's sections, in the order they show; a section with no tool in it is left out. */
 export const TOOL_GROUPS = [
@@ -46,7 +46,6 @@ export const TOOL_GROUPS = [
   { id: 'automate', title: 'Automate' },
   { id: 'collaborate', title: 'Collaborate' },
   { id: 'versions', title: 'Versioning' },
-  { id: 'content', title: 'Content' },
 ] as const;
 export type ChromeToolsGroup = (typeof TOOL_GROUPS)[number]['id'];
 
@@ -64,10 +63,11 @@ export type ChromeToolsItem = {
   onSelect: (anchor: HTMLElement | null) => void;
   /** `onSelect` opens a dialog, which renders inside Tools in place of a modal (the dialog slot). */
   inPlace?: boolean;
+  // A tool used alongside the canvas (livediagram's Slide Deck: picking elements for a slide): a press outside leaves
+  // Tools open, and only its close button or Escape shuts it (owner, 2026-11-17).
+  keepOpen?: boolean;
   /** The tool's own view, drawn inside Tools (pressing the row calls this, not `onSelect`). */
   view?: (ctx: ToolViewContext) => ReactNode;
-  /** A `view` that wants the wide popover. */
-  wide?: boolean;
   /** What it needs before it works, as badges beside its name in order: "Sign In" for a tool that needs an account,
    *  "Sync Plan" (the app's own noun) for one that needs the item saved to the server. A press opens that tool's gate. */
   badges?: readonly string[];
@@ -79,19 +79,9 @@ export type ChromeToolsItem = {
   attentionLabel?: string;
 };
 
-// Wide enough for the header's line to sit clear of its art, which stands 108px in from the right edge.
+// Wide enough for the header's line to sit clear of its art, which stands 108px in from the right edge. The list and
+// every tool inside it share it.
 export const TOOLS_WIDTH_PX = 480;
-// The widest a tool makes it: Automations' screen.
-export const TOOLS_WIDE_PX = 760;
-// A tool's dialog keeps the width it was drawn at, Tools' own at the least and TOOLS_WIDE_PX at the most.
-const DIALOG_WIDTHS: Record<NonNullable<DialogProps['size']>, number> = {
-  sm: TOOLS_WIDTH_PX,
-  md: TOOLS_WIDTH_PX,
-  lg: 544,
-  xl: 576,
-  '2xl': 640,
-  '3xl': TOOLS_WIDE_PX,
-};
 // How long a tool's dialog may take to arrive (its code loading) before Tools gives up and goes back to the list.
 export const TOOL_ARRIVAL_MS = 10_000;
 // A press in these (a dialog or menu a tool opened, drawn outside the popover) is not a press outside it.
@@ -167,6 +157,9 @@ export function ChromeToolsMenu({
   // The close was pressed while a tool's dialog was open: once it lets go, Tools closes too.
   const closing = useRef(false);
   const grid = useRef<HTMLDivElement>(null);
+  // The list's height as it last showed, so a tool opened from it starts at least that tall: going into a tool only
+  // ever grows Tools, never shrinks it (owner, 2026-11-17); the tools' footers keep their buttons at the bottom.
+  const [listPx, setListPx] = useState<number | null>(null);
   const titleId = useId();
   const door = useToolsDoorItems();
   const shown = [...items, ...door].filter((i): i is ChromeToolsItem => i !== null);
@@ -175,8 +168,11 @@ export function ChromeToolsMenu({
   const ours = view?.slot != null && slot?.seq === view.slot ? slot : null;
   const claimed = ours?.claimed ?? null;
 
+  // How the view on screen arrived: a fade as Tools opens, then forward into a tool and back out to the list.
+  const [nav, setNav] = useState<'fade' | 'forward' | 'back'>('fade');
   const toList = useCallback(() => {
     if (view?.slot != null) closeDialogSlot(view.slot);
+    setNav('back');
     closing.current = false;
     setView(null);
     setReturnTo(view?.id ?? null);
@@ -202,13 +198,29 @@ export function ChromeToolsMenu({
     }
     finish();
   };
-  // The close beside the back bar, and a tool closing Tools (a walkthrough starting): focus back on the button.
+  // Each opening starts on the fade (set as it renders, not in an effect, so the first frame already has it).
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) setNav('fade');
+  }
+  // The room under the band: the popover's own ceiling less the band, past which a view scrolls.
+  const [bodyMax, setBodyMax] = useState<number | null>(null);
+  // Measured from the list as it shows: the room under the band (bodyMax).
+  const measureList = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const ceiling = parseFloat(getComputedStyle(node).maxHeight);
+    const band = node.querySelector<HTMLElement>('[data-dialog-hero]')?.offsetHeight ?? 0;
+    setBodyMax(Number.isFinite(ceiling) ? Math.max(0, Math.round(ceiling - band)) : null);
+  }, []);
+  // The corner close, and a tool closing Tools (a walkthrough starting): focus back on the button.
   const shut = () => {
     closeAll();
     if (!claimed) anchor?.focus({ preventScroll: true });
   };
   const openTool = (item: ChromeToolsItem, at: HTMLElement | null) => {
     setReturnTo(null);
+    setNav('forward');
     if (item.view) setView({ id: item.id, slot: null });
     else {
       setView({ id: item.id, slot: openDialogSlot() });
@@ -219,6 +231,19 @@ export function ChromeToolsMenu({
   // The tool's dialog closed itself (its Cancel, Done or Escape): back to the list, or out, after the close.
   const released = !!ours?.released && !ours.held;
   const leaving = !!ours?.leaving;
+  // Measured while the list shows (it changes as rows come and go), kept while a tool is open.
+  const listShowing = !view;
+  useEffect(() => {
+    const node = grid.current;
+    if (!listShowing || !node || typeof ResizeObserver === 'undefined') return;
+    const measure = () => {
+      if (node.offsetHeight > 0) setListPx(node.offsetHeight);
+    };
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    measure();
+    return () => observer.disconnect();
+  }, [listShowing, open]);
   useEffect(() => {
     if (!released) return;
     if (closing.current || leaving) {
@@ -306,13 +331,8 @@ export function ChromeToolsMenu({
     e.preventDefault();
     cards[to]?.focus();
   };
-  const width = active?.view
-    ? active.wide
-      ? TOOLS_WIDE_PX
-      : TOOLS_WIDTH_PX
-    : claimed
-      ? DIALOG_WIDTHS[claimed.size]
-      : TOOLS_WIDTH_PX;
+  // One width for the list and every tool inside it, so stepping in and out never moves the popover's sides.
+  const width = TOOLS_WIDTH_PX;
   // Escape steps back a level (the tool's dialog asked first), then closes from the list.
   const onEscape = () => {
     if (!view) return false;
@@ -358,127 +378,140 @@ export function ChromeToolsMenu({
                   onEscape,
                   passEscape: modalOpen,
                   layer: 'modal',
-                  keepOpenWithin: TOOL_SURFACES,
+                  // Every press is "within" for a keep-open tool.
+                  keepOpenWithin: active?.keepOpen ? '*' : TOOL_SURFACES,
                 }
               : undefined
           }
         >
           {(sheet) => (
             <div
+              ref={view ? undefined : measureList}
               data-tools-popover=""
-              className="relative flex max-h-[inherit] min-h-0 flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
+              // Never under 300 px, list or tool (owner, 2026-11-17), unless the screen is shorter.
+              className="relative flex max-h-[inherit] min-h-[min(500px,calc(100dvh-2rem))] flex-1 flex-col [border-radius:inherit] [color-scheme:light] dark:[color-scheme:dark]"
               style={HERO_TOKEN_STYLE}
             >
               <p aria-live="polite" data-tools-live="" className="sr-only">
                 {said}
               </p>
-              {view && active ? (
-                <ToolsView
-                  key={`${view.id}:${view.slot ?? 'view'}`}
-                  id={view.id}
-                  label={active.label}
-                  onBack={back}
-                  onClose={shut}
-                  sheet={sheet}
-                  tall={claimed?.size === '3xl'}
-                  waiting={waiting}
-                  slotRef={view.slot != null ? slotRef : undefined}
-                >
-                  {active.view?.({ back: toList, close: shut, sheet })}
-                </ToolsView>
-              ) : (
-                <>
-                  <HeroDialogHeader
-                    art={toolsHeroArt}
-                    titleId={titleId}
-                    title="Tools"
-                    subtitle="Powerful tools to enhance your experience."
-                    // The title and its line stop short of the art in the bottom right (96px, 12px in) and the close above it.
-                    className="sm:pr-[7.5rem]"
-                    // A phone's drawer: the band runs up under its grab handle.
-                    underHandle={sheet}
-                  />
-                  <div
-                    ref={grid}
-                    onKeyDown={onKeyDown}
-                    // Group headings read as sections, so the list ends on more room than a plain menu; a drawer scrolls it.
-                    className={`flex flex-col gap-2 px-2 pb-3.5 pt-2 ${sheet ? 'min-h-0 overflow-y-auto overscroll-contain' : ''}`}
+              {/* The band heads every view of Tools, the list and each tool (above its breadcrumb), so moving between
+              them never changes the popover's top. */}
+              <HeroDialogHeader
+                art={toolsHeroArt}
+                titleId={titleId}
+                title="Tools"
+                subtitle="Powerful tools to enhance your experience."
+                // The title and its line stop short of the art in the bottom right (96px, 12px in) and the close above it.
+                className="sm:pr-[7.5rem]"
+                // A phone's drawer: the band runs up under its grab handle.
+                underHandle={sheet}
+              />
+              {/* Going into a tool slides it in from the right, as a phone opens a menu; back slides the list in from the
+              left. The height eases between them (never under the list's floor), and scrolls past the room there is. */}
+              <AnimatedHeightBox
+                viewKey={view && active ? `${view.id}:${view.slot ?? 'view'}` : 'list'}
+                enter={nav}
+                maxPx={bodyMax ?? undefined}
+                // A tool loading in steps never shrinks and grows back (owner, 2026-11-17, asked three times).
+                settle
+                // A phone's drawer fills what it is dragged to (owner, 2026-11-17), the tool growing with it.
+                fill={sheet}
+                className={`flex min-h-0 flex-col ${sheet ? 'flex-1' : ''}`}
+              >
+                {view && active ? (
+                  <ToolsView
+                    key={`${view.id}:${view.slot ?? 'view'}`}
+                    id={view.id}
+                    label={active.label}
+                    onBack={back}
+                    sheet={sheet}
+                    tall={claimed?.size === '3xl'}
+                    floorPx={listPx}
+                    waiting={waiting}
+                    slotRef={view.slot != null ? slotRef : undefined}
                   >
-                    {TOOL_GROUPS.map((g) => {
-                      const items = shown.filter((i) => i.group === g.id);
-                      if (!items.length) return null;
-                      const headingId = `${titleId}-${g.id}`;
-                      return (
-                        <div
-                          key={g.id}
-                          role="group"
-                          aria-labelledby={headingId}
-                          data-tools-group={g.id}
-                        >
-                          <h3
-                            id={headingId}
-                            className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                    {active.view?.({ back: toList, close: shut, sheet })}
+                  </ToolsView>
+                ) : (
+                  <>
+                    <div
+                      ref={grid}
+                      onKeyDown={onKeyDown}
+                      // Group headings read as sections, so the list ends on more room than a plain menu; a drawer scrolls it.
+                      className={`flex flex-col gap-2 px-2 pb-3.5 pt-2 ${sheet ? 'min-h-0 overflow-y-auto overscroll-contain' : ''}`}
+                    >
+                      {TOOL_GROUPS.map((g) => {
+                        const items = shown.filter((i) => i.group === g.id);
+                        if (!items.length) return null;
+                        const headingId = `${titleId}-${g.id}`;
+                        return (
+                          <div
+                            key={g.id}
+                            role="group"
+                            aria-labelledby={headingId}
+                            data-tools-group={g.id}
                           >
-                            {g.title}
-                          </h3>
-                          <div className="flex flex-col gap-0.5">
-                            {items.map((item) => (
-                              <button
-                                key={item.id}
-                                type="button"
-                                data-tools-item={item.id}
-                                className={ROW}
-                                onClick={() => {
-                                  if (item.inPlace || item.view) {
-                                    openTool(item, anchor);
-                                    return;
-                                  }
-                                  setOpen(false);
-                                  item.onSelect(anchor);
-                                }}
-                              >
-                                <span aria-hidden className={PLATE}>
-                                  {item.icon}
-                                </span>
-                                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-                                  <span className="flex min-w-0 items-center gap-2">
-                                    <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
-                                      {item.label}
-                                    </span>
-                                    {item.badges?.map((badge) => (
-                                      <span key={badge} data-tools-badge="" className={BADGE}>
-                                        {badge}
+                            <h3
+                              id={headingId}
+                              className="px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                            >
+                              {g.title}
+                            </h3>
+                            <div className="flex flex-col gap-0.5">
+                              {items.map((item) => (
+                                <button
+                                  key={item.id}
+                                  type="button"
+                                  data-tools-item={item.id}
+                                  className={ROW}
+                                  onClick={() => {
+                                    if (item.inPlace || item.view) {
+                                      openTool(item, anchor);
+                                      return;
+                                    }
+                                    setOpen(false);
+                                    item.onSelect(anchor);
+                                  }}
+                                >
+                                  <span aria-hidden className={PLATE}>
+                                    {item.icon}
+                                  </span>
+                                  <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                                    <span className="flex min-w-0 items-center gap-2">
+                                      <span className="truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+                                        {item.label}
                                       </span>
-                                    ))}
+                                      {item.badges?.map((badge) => (
+                                        <span key={badge} data-tools-badge="" className={BADGE}>
+                                          {badge}
+                                        </span>
+                                      ))}
+                                    </span>
+                                    <span className="truncate text-xs leading-snug text-slate-500 dark:text-slate-400">
+                                      {item.description}
+                                    </span>
                                   </span>
-                                  <span className="truncate text-xs leading-snug text-slate-500 dark:text-slate-400">
-                                    {item.description}
-                                  </span>
-                                </span>
-                                {item.aside ? (
-                                  <span className="flex shrink-0 items-center">{item.aside}</span>
-                                ) : null}
-                                <Chevron />
-                              </button>
-                            ))}
+                                  {item.aside ? (
+                                    <span className="flex shrink-0 items-center">{item.aside}</span>
+                                  ) : null}
+                                  <Chevron />
+                                </button>
+                              ))}
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  {/* The close in the top right corner, as a popover's is, not centred down the band's row. Last in the DOM, so
-              opening focuses the first tool, not the close. */}
-                  <div className="absolute right-3 top-3">
-                    <DialogCloseButton
-                      compact
-                      onClick={() => {
-                        setOpen(false);
-                        anchor.focus();
-                      }}
-                    />
-                  </div>
-                </>
-              )}
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+              </AnimatedHeightBox>
+              {/* The close in the top right corner, as a popover's is, not centred down the band's row: on the list and
+              on a tool alike, the band staying above the breadcrumb. Last in the DOM, so opening focuses the first
+              tool (or the back bar), not the close. */}
+              <div className="absolute right-3 top-3">
+                <DialogCloseButton compact onClick={shut} />
+              </div>
             </div>
           )}
         </PopoverOrSheet>

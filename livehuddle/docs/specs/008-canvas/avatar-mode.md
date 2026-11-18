@@ -32,7 +32,8 @@ Narrating the canvas on a call today means waving a cursor around, or reaching f
 - **Four facings** (down / up / left / right; right mirrors left), picked from the direction of travel and held when it stops.
 - **Customisable** via the [avatar palette](#the-avatar-palette) (below): gender, clothing, hair and hair colour (no size in livehuddle: see Size below), all costumes on the SAME skeleton so the walk / hop / flag animations are shared across every combination. **Right-clicking the character toggles gender**: the one choice reachable without the palette (a right-click anywhere else on the canvas does nothing; the context menu stays shut in this mode). None of it carries meaning beyond which sprite is drawn.
 - **The shirt is the participant's presence colour**: the same colour as your cursor, your name chip, and your tab-bar dot, so on a shared document you can tell at a glance which character is whose. Falls back to the brand cyan when there is no participant colour. **The shirt colour is deliberately not customisable**: it is the one thing on the character that carries information. Hair colour is a look like any other ([Hair Colour](#the-avatar-palette)) and says nothing about who is who.
-- **Walk animation**: a two-frame leg swing plus a one-pixel body bob, advanced by **distance travelled** rather than wall-clock, so the step cadence matches the speed at any zoom.
+- **Walk animation**: a four-frame walk cycle (a step, the legs passing, the other step, the legs passing), each frame 14 canvas px of travel, so a full cycle is one body height and the legs never flicker; the arms swing through the middle on the passing frames, and the body rises half a sprite pixel as the legs pass, eased over 70 ms rather than jumping (the owner, 2026-11-17: "less janky and more smooth"). Advanced by **distance travelled** rather than wall-clock, so the step cadence matches the speed at any zoom. A receiver of an older two-frame peer shows its frames as they come.
+- **The figure** keeps its 16 × 24 pixel grid and silhouette, with finer half-pixel marks inside it: brows, eyes with a catchlight, a touch of blush, a mouth with a lip shade, ears, and a sheen on the hair; and a soft one-pixel ink outline round the whole figure so it reads crisply on any floor (the owner, 2026-11-17: "more detailed").
 - **Stands upright in the [3D view](3d-view.md)**: turned to face the camera about its feet, with its name and status chips.
 - Renders **above the element layer** (it is standing in front of what's on the canvas, not behind it) and below the palette / chrome, which stay clickable so you can leave the mode.
 - **Where it appears on entry**: on the tab's [Avatar Pad](../009-elements/avatar-pad.md) when it has one (the nearest to the view's centre when it has several), arriving in a beam of light; otherwise just below the button that was pressed ([Entering from a button](#entering-from-a-button)), or, opening walking, below the tab's first Avatar button ([Opening walking](#opening-walking)); otherwise where it was left, while that is still on screen (a quick detour to another tool, the canvas staying mounted); otherwise the **centre of the current viewport**. It resets on the next entry after a tab change: it is transient view state that belongs to nobody.
@@ -306,10 +307,19 @@ desktop apps of Zoom, Teams and Gather do.
   card in the window (it would draw in the Space's tab); each keeps its name and its card's line for a screen reader.
 - **Back to the Space.** Pressing **Back to Space**, a row or the header brings the Space's tab to the front. Let In
   and Not Now only answer.
+- **Camera tiles** (Work Tracker 984). Above the people, the cameras of the people you hear: at most 4, two to a
+  row (one alone fills the row), each a rounded 16:9 tile ringed in the person's colour, their face filling it, their
+  name on a small dark chip at its foot. The tiles follow **Near You**'s order (by name), so a tile moves only when
+  someone walks into or out of earshot or turns their camera on or off; past 4, the rest show as rows only. A tile
+  tints in the person's colour until its first frame, never black, and a stalled camera keeps its last frame. Your
+  own camera has no tile (your Camera button says it is on). Pressing a tile brings the Space's tab to the front, as
+  a row does. With nobody heard on camera there is no tile area at all.
 - **Live in a hidden tab.** The mini view draws from what the room connection keeps up to date, which it does in a
-  hidden tab: arrivals, the people heard, levels, hands and knocks. The hidden-tab video rule stays
-  ([Who sees what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)): no camera or screen is received
-  while the tab is hidden, and the mini view shows no video. Video tiles in it are a later step.
+  hidden tab: arrivals, the people heard, levels, hands and knocks. Its tiles keep their cameras while the tab is
+  hidden: an open mini view lets a hidden tab receive the 4 nearest cameras you hear, on the small layer, and no
+  screen ([Who sees what](../012-collaboration/video-and-screen-bubbles.md#who-sees-what)). Closing it, or showing
+  the tab, returns to the canvas's own rules; with the tab on show, the tiles draw whichever of those cameras the
+  canvas receives.
 - **Closing**: its own close button, pressing **Popped Out**, or leaving the Space (closing the document or the
   browser tab). It outlives the dock: leaving Avatar mode, or the chrome hiding, keeps it open, since the people it
   shows are drawn whether or not you walk. One mini view a tab; it is never reopened by itself.
@@ -322,7 +332,9 @@ desktop apps of Zoom, Teams and Gather do.
 - **Cost**: nothing until it opens. Open, it renders only when a fact it shows changes (who is here, a name, a
   costume, a status, who you hear, a level, a hand, a knock), never per frame; the people are worked out at most as
   often as the canvas's coarse copy changes (ten times a second while someone walks), as one string compare when
-  nothing it shows moved.
+  nothing it shows moved. A tile re-renders only when its camera arrives or goes; the frames go straight to the
+  video element. In a hidden tab the 4 small cameras are the whole video cost (measured in the blueprint's
+  "Performance and limits").
 - Telemetry: `Canvas · Used · SpaceMiniView` when it opens. Never who is in it.
 
 ## Not over a start
@@ -673,9 +685,13 @@ fan-out"), shared by every product with Avatar mode:
 - **The send rate steps down with the room**: every 33 ms in a room of up to 10, 50 ms up to 32, 66 ms above that
   (`presenceStepMs` in `@liveworkspace/api-schema/presence-fanout`, read through `avatarSendIntervalMs` in
   `@livehuddle/avatar/relay`). A room of up to 10, every room most people are in, walks exactly as before.
-- **A peer's slower steps still glide**: above 10, a peer's character slides to each new position over one step
-  (`avatarGlideMs`) while it walks, instead of hopping 13 to 17 canvas px at a time; standing, sitting and a portal's
-  jump still land at once.
+- **A peer's steps glide, in every room**: a peer's character slides to each new position while it walks, instead of
+  hopping to where each packet lands; standing, sitting and a portal's jump still land at once. It slides over the
+  time since that peer's last move arrived (`avatarGlideMs`), at least one step and at most three, so it keeps
+  moving while the next one is on its way. Packets do not arrive as evenly as they leave: measured on livehuddle.app
+  (2026-11-17, two people in a Space), a walker sent every 34 ms and the other side received them two at a time
+  every 69 ms, so drawing each where it landed moved the character 14 times a second, two steps at a time. Gliding
+  over the gap draws that as one steady walk, a step or two behind the walker.
 - **The room relays a character only to the sockets on its tab, and coalesces each socket's samples per step** into
   one frame.
 - **The costume rides only when it is needed** (`createAvatarPacker` in `@livehuddle/avatar/relay`, with

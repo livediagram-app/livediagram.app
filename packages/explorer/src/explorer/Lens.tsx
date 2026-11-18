@@ -21,6 +21,7 @@ import {
   LENS_TELEMETRY_TYPES,
   lensChips,
   type LensChip,
+  type LensChipOption,
   type LensDimension,
   type LensIssue,
   type ParsedLens,
@@ -116,10 +117,42 @@ function MultipleChip({
   chip: LensChip;
   onChoose: (dimension: LensDimension, value: string | null) => void;
 }) {
+  return (
+    <FilterChip
+      label={chip.label}
+      name={chip.name}
+      valueLabels={chip.valueLabels}
+      options={chip.options}
+      onChoose={(value) => onChoose(chip.dimension, value)}
+      data={chip.dimension}
+    />
+  );
+}
+
+/** A filter that takes several values (the lens's chips, History's kinds): a chip naming what is chosen, opening a
+ *  listbox under it whose first option clears ("Any", "All") and whose others each toggle, the list staying open. */
+export function FilterChip({
+  label,
+  name,
+  valueLabels,
+  options,
+  onChoose,
+  data,
+}: {
+  label: string;
+  /** Its accessible name, saying what is chosen. */
+  name: string;
+  valueLabels: readonly string[];
+  options: readonly LensChipOption[];
+  /** A value toggled, or null for the first option (clear). */
+  onChoose: (value: string | null) => void;
+  /** Its `data-lens-chip`. */
+  data?: string;
+}) {
   const [open, setOpen] = useState(false);
   // In state, so the listbox anchors to the chip on the render that opens it.
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
-  const set = chip.values.length > 0;
+  const set = valueLabels.length > 0;
   const close = useCallback(
     (refocus: boolean) => {
       setOpen(false);
@@ -134,24 +167,22 @@ function MultipleChip({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        aria-label={chip.name}
+        aria-label={name}
         onClick={() => setOpen((o) => !o)}
-        data-lens-chip={chip.dimension}
+        data-lens-chip={data}
         className={`${CHIP} ${set ? CHIP_SET : CHIP_UNSET}`}
       >
-        <span>{chip.label}</span>
+        <span>{label}</span>
         {set ? (
-          <span className="max-w-[12rem] truncate font-semibold">
-            {chip.valueLabels.join(', ')}
-          </span>
+          <span className="max-w-[12rem] truncate font-semibold">{valueLabels.join(', ')}</span>
         ) : null}
         <ChevronDownIcon size={10} />
       </button>
       {open ? (
         <ChipListbox
-          chip={chip}
+          chip={{ label, options }}
           anchor={button}
-          onChoose={(value) => onChoose(chip.dimension, value)}
+          onChoose={onChoose}
           onClose={close}
         />
       ) : null}
@@ -165,7 +196,7 @@ function ChipListbox({
   onChoose,
   onClose,
 }: {
-  chip: LensChip;
+  chip: { label: string; options: readonly LensChipOption[] };
   anchor: HTMLElement | null;
   onChoose: (value: string | null) => void;
   onClose: (refocus: boolean) => void;

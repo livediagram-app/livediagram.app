@@ -3,10 +3,13 @@
 // The open card's blockers in the item panel (docs/specs/026-plan/item-types.md "Blocked By"): a section per Blocked
 // By field the type offers that holds a live blocker, on the type's first tab before its Comments (the Linked as
 // sections are on the Linked Cards tab). Each row is the blocker's glyph, number, title and state, a tick when it is
-// done; pressed, it opens. Read-only: the field's own control is where a link is set.
+// done; pressed, it opens. Under an open blocker the card starts before, an amber line says so (docs/specs/026-plan/
+// plan-views.md "Dependency clashes"). Read-only: the field's own control is where a link is set.
 import { useId } from 'react';
 import {
   blocksFieldsOf,
+  clashText,
+  clashesOf,
   donePhase,
   isArchived,
   isTrashed,
@@ -23,6 +26,8 @@ import { CheckIcon, ChevronRightIcon } from '@liveplanner/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from './plan-palette';
 import { usePlan } from './PlanContext';
+import { planBlocking } from './blocking';
+import { ClashGlyph } from './views/clash-glyph';
 
 const CHIP =
   'shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium leading-4 ring-1 ring-inset whitespace-nowrap';
@@ -59,6 +64,14 @@ export function BlockedBySections({
   const groups = blockedByGroups(item, type, plan.items);
   if (!groups.length) return null;
   const isDone = donePhase(plan.statusPhases);
+  const doneCard = (c: Item) => isDone(namedStatus(c, plan.statusNames));
+  // What each clashing open blocker's row says, by its id.
+  const clashes = new Map(
+    clashesOf(item, planBlocking(plan), doneCard).map((c) => [
+      c.blocker.id,
+      clashText(c.days, c.blocker),
+    ]),
+  );
   return (
     <>
       {groups.map((g) => (
@@ -66,7 +79,8 @@ export function BlockedBySections({
           key={g.field.id}
           label={g.field.label}
           cards={g.cards}
-          isDone={(c) => isDone(namedStatus(c, plan.statusNames))}
+          clashes={clashes}
+          isDone={doneCard}
           types={plan.types}
           statusNames={plan.statusNames}
           onOpen={onOpen}
@@ -79,6 +93,7 @@ export function BlockedBySections({
 function BlockedByGroup({
   label,
   cards,
+  clashes,
   isDone,
   types,
   statusNames,
@@ -86,6 +101,7 @@ function BlockedByGroup({
 }: {
   label: string;
   cards: readonly Item[];
+  clashes: ReadonlyMap<string, string>;
   isDone: (card: Item) => boolean;
   types: readonly ItemTypeDef[];
   statusNames: ReadonlyMap<string, string>;
@@ -118,11 +134,12 @@ function BlockedByGroup({
           const statusName = status ? (statusNames.get(status) ?? status) : 'No status';
           const done = isDone(card);
           const title = itemTitle(card) || 'Untitled';
+          const clash = clashes.get(card.id);
           return (
             <li key={card.id}>
               <button
                 type="button"
-                aria-label={`Open #${card.key} ${title}, ${statusName}${done ? ', done' : ''}`}
+                aria-label={`Open #${card.key} ${title}, ${statusName}${done ? ', done' : ''}${clash ? `. ${clash}` : ''}`}
                 onClick={() => onOpen(card.id)}
                 className="group flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left transition hover:bg-slate-50 focus-visible:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400 pointer-coarse:py-3 dark:hover:bg-slate-800/60 dark:focus-visible:bg-slate-800/60"
               >
@@ -154,6 +171,16 @@ function BlockedByGroup({
                   <ChevronRightIcon size={12} />
                 </span>
               </button>
+              {clash ? (
+                <p
+                  aria-hidden
+                  data-blocker-clash=""
+                  className="-mt-1 flex items-center gap-1.5 px-3 pb-2 pl-[2.6rem] text-[12px] font-medium text-amber-700 dark:text-amber-400"
+                >
+                  <ClashGlyph />
+                  {clash}
+                </p>
+              ) : null}
             </li>
           );
         })}

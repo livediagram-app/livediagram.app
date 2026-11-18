@@ -328,12 +328,15 @@ export * from '@livehuddle/avatar/pad-art';
 export * from './avatar-pad-art';
 // Seating (docs/specs/009-elements/chair.md): the chair, desk and sofa drawings and every seat's feet point.
 export * from './seating';
+export * from './piece-material';
 export * from './furniture-facing';
 export * from './office';
 export * from './room-builder';
 export * from './room-snap';
 export * from './room-outline-field';
 export * from './office-garden';
+export * from './garden-ground';
+export * from './focus-button-art';
 export * from './office-social';
 export * from './office-recreation';
 export * from './office-workplace';

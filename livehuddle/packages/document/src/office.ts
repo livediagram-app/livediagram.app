@@ -283,13 +283,51 @@ export const ROOM_DOOR_LABELS: Record<RoomDoor, string> = {
 };
 // The floor's wash when the room has no fill of its own.
 export const ROOM_FLOOR = '#f5f0e6';
-export const RUG_FILL = '#fde68a';
+export const RUG_FILL = '#eedd99';
 
 /**
  * A room's drawing, in its own px (0..width, 0..height): floor, walls and doorway mat. `backDoors` are the Doors
  * standing on its back wall (back-wall-doors.ts): the band breaks, top to floor, where an open one stands, and a shut
  * one is drawn in the face.
  */
+// A room's build (furniture-art-style.md "Rooms"): plaster walls, their face toward the room in shade, a wooden
+// skirting along its foot, and a hardwood floor's seams laid faintly over the floor's own colour.
+export const ROOM_TONES = {
+  wallTop: '#f2ede5',
+  wallFace: '#ddd3c3',
+  skirting: '#a87548',
+  // A wall drawn as a run (a Room Builder room, a Corridor): its edge, a deeper shade of the plaster.
+  wallEdge: '#a99f91',
+} as const;
+/** How much wider a wall run's edge is than the wall, in px: a fine line either side. */
+export const WALL_EDGE = 2.5;
+/** How far apart a floor's boards are, in px. */
+export const FLOOR_BOARD = 24;
+/** How long a floor board is, in px. */
+export const BOARD_LENGTH = 120;
+
+/**
+ * The seams of a hardwood floor across a box: a faint line between each row of boards and the boards' ends,
+ * staggered by half a board from one row to the next. One path, so a big floor is still one node to draw.
+ */
+export function floorBoards(x: number, y: number, w: number, h: number): FurniturePart[] {
+  if (w <= 0 || h <= 0) return [];
+  const r = (v: number) => Math.round(v * 10) / 10;
+  let d = '';
+  for (let row = 0; row * FLOOR_BOARD < h; row += 1) {
+    const top = y + row * FLOOR_BOARD;
+    if (row > 0) d += `M${r(x)} ${r(top)}h${r(w)}v1h${r(-w)}Z`;
+    const tall = Math.min(FLOOR_BOARD, h - row * FLOOR_BOARD);
+    for (
+      let at = x + (row % 2 ? BOARD_LENGTH / 2 : BOARD_LENGTH);
+      at < x + w - 4;
+      at += BOARD_LENGTH
+    )
+      d += `M${r(at)} ${r(top)}h1v${r(tall)}h-1Z`;
+  }
+  return d ? [path('tint', d)] : [];
+}
+
 export function roomParts(
   width: number,
   height: number,
@@ -298,15 +336,21 @@ export function roomParts(
 ): FurniturePart[] {
   const W = ROOM_WALL;
   const F = ROOM_BACK_FACE;
-  const parts: FurniturePart[] = [rect('floor', 0, F - W, width, height - F + W, 3)];
+  const parts: FurniturePart[] = [
+    rect('floor', 0, F - W, width, height - F + W, 3),
+    ...floorBoards(W, F, width - 2 * W, height - F - W),
+    // The back wall's shadow on the floor at its foot.
+    rect('tint', W, F, Math.max(0, width - 2 * W), 5, 0),
+  ];
   // The back wall: its top, then its face standing up from the floor, broken at an open doorway.
   for (const [a, b] of backWallRuns(
     width,
     backDoors,
     door === 'n' ? roomDoorSpan(width, 'n') : null,
   )) {
-    parts.push(rect('panel', a, 0, b - a, W, 2));
-    parts.push(rect('face', a, W - 1, b - a, F - W + 1, 1));
+    parts.push(rect('panel', a, 0, b - a, W, 2, ROOM_TONES.wallTop));
+    parts.push(rect('face', a, W - 1, b - a, F - W + 1, 1, ROOM_TONES.wallFace));
+    parts.push(rect('mark', a, F - 4, b - a, 4, 0, ROOM_TONES.skirting));
   }
   // A shut Door on the back wall: its leaf in the face, dyed in the stroke so it reads shut at a glance however far out
   // the view is, with a knob in the floor's colour.
@@ -319,11 +363,11 @@ export function roomParts(
   }
   // The side walls and the front wall, which you see the top of.
   for (const [a, b] of brokenRun(height, door === 'w' ? roomDoorSpan(height, 'w') : null))
-    parts.push(rect('panel', 0, a, W, b - a, 2));
+    parts.push(rect('panel', 0, a, W, b - a, 2, ROOM_TONES.wallTop));
   for (const [a, b] of brokenRun(height, door === 'e' ? roomDoorSpan(height, 'e') : null))
-    parts.push(rect('panel', width - W, a, W, b - a, 2));
+    parts.push(rect('panel', width - W, a, W, b - a, 2, ROOM_TONES.wallTop));
   for (const [a, b] of brokenRun(width, door === 's' ? roomDoorSpan(width, 's') : null))
-    parts.push(rect('panel', a, height - W, b - a, W, 2));
+    parts.push(rect('panel', a, height - W, b - a, W, 2, ROOM_TONES.wallTop));
   // A mat across the doorway.
   const span = door === 'n' || door === 's' ? roomDoorSpan(width, door) : null;
   const side = door === 'e' || door === 'w' ? roomDoorSpan(height, door) : null;
@@ -358,13 +402,13 @@ export function isStageSpeakers(v: unknown): v is StageSpeakers {
 export const STAGE_FRONT = 24;
 // The stage's top when it has no fill of its own: honey boards on light paper, a deep brown on dark
 // (docs/specs/009-elements/venue-pieces.md "The stronger Stage").
-export const STAGE_FLOOR = '#ecc98f';
+export const STAGE_FLOOR = '#e8c893';
 export const STAGE_FLOOR_DARK = '#4a3628';
 // The fixed woods: the nosing along the top's front lip and the front edge's stained skirt; and the footlights.
 export const STAGE_TONES = {
   nosing: '#9a6a35',
   skirt: '#7c4a2a',
-  lamp: '#fcd34d',
+  lamp: '#e4c665',
   lampGlow: '#fffbeb',
 } as const;
 // The plate on the front edge: 40% of the stage's width, between these.

@@ -4,8 +4,9 @@ import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   templateCategory,
+  templatePageKind,
 } from '@livedocuments/templates';
-import { TEMPLATE_START } from './start-template-items';
+import { TEMPLATE_START, templateStartFor } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md
 describe('the Pages template start', () => {
@@ -56,5 +57,47 @@ describe('Start Making Pages', () => {
       expect.arrayContaining(['blank-infographic', 'blank-article', 'blank-slide-deck']),
     );
     for (const g of rest) for (const k of g.kinds) expect(templateCategory(k), k).toBe(g.id);
+  });
+});
+
+// docs/specs/007-editor/start-diagramming.md "Page type"
+describe('the start by page type', () => {
+  const listed = TEMPLATES.filter(
+    (t) => !t.hidden && t.kind !== 'blank-illustration' && t.kind !== 'blank',
+  ).map((t) => t.kind);
+  const TYPES = ['slide', 'article', 'infographic', 'flashcard'] as const;
+
+  it('is the whole start under All Pages', () => {
+    expect(templateStartFor('all')).toBe(TEMPLATE_START);
+  });
+
+  it('holds only that kind of page, Blank Pages its one blank, every group holding something, built once', () => {
+    for (const type of TYPES) {
+      const start = templateStartFor(type);
+      expect(templateStartFor(type)).toBe(start);
+      expect(start.groups[0]!.id).toBe('blank-pages');
+      expect(start.groups[0]!.kinds, type).toHaveLength(1);
+      for (const g of start.groups) {
+        expect(g.kinds.length, `${type} ${g.id}`).toBeGreaterThan(0);
+        for (const k of g.kinds) expect(templatePageKind(k), `${type} ${k}`).toBe(type);
+      }
+    }
+  });
+
+  it('files every listed template under exactly one page type', () => {
+    for (const k of listed) {
+      const homes = TYPES.filter((type) =>
+        templateStartFor(type).groups.some((g) => g.kinds.includes(k)),
+      );
+      expect(homes, k).toEqual([templatePageKind(k)]);
+    }
+  });
+
+  it('searches only within the page type', () => {
+    const kinds = templateStartFor('slide')
+      .search('article')
+      .flatMap((g) => g.kinds);
+    expect(kinds).not.toContain('article');
+    for (const k of kinds) expect(templatePageKind(k), k).toBe('slide');
   });
 });

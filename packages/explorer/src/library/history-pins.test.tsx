@@ -1,6 +1,6 @@
 // History with Snapshots in it (owner, 2026-11-17; liveworkspace/docs/specs/014-snapshots/snapshots.md "In History"):
 // another tool's entries laid on the rail by time among the item's own events, and a block over the timeline.
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { createFakeIndex, makeEvent, makeItem } from '../test/fakeClient';
@@ -104,9 +104,6 @@ describe('History with pins', () => {
     await waitFor(() => expect(dialog.querySelector('[data-pin="s1"]')).toBeTruthy());
     expect(dialog.querySelector('[data-pin="s1"]')!.getAttribute('data-last')).toBe('no');
     expect(within(dialog).getByText('2 events · 1 snapshot')).toBeTruthy();
-    // A chip narrows to one kind of event, and pins with it.
-    fireEvent.click(within(dialog).getByRole('button', { name: /^Renames/ }));
-    await waitFor(() => expect(dialog.querySelector('[data-pin]')).toBeNull());
   });
 
   it('shows pins where the item has no events yet, in place of the empty state', async () => {

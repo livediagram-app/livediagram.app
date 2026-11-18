@@ -2,6 +2,7 @@
 // SQLite: every part of `POST /items/import` but the last is kept here, read and checked, until the last lands them
 // all in one transaction (routes/item-import-route.ts). Nothing here is a card: no read of the store sees it.
 
+import type { ItemDb } from '@liveworkspace/index-app';
 import { chunksOf } from '../plan-room/plan-content';
 import type { PlanEnv } from '../types';
 
@@ -12,8 +13,8 @@ import type { PlanEnv } from '../types';
 export const ITEM_IMPORT_HOLD_MS = 60 * 60 * 1000;
 
 // The most JSON (in characters) one import may hold, its last part counted: the landing reads it all into the plan's
-// Durable Object and peaks at about 2.2 times it (measured 57 MB at this cap), under the 64 MB budget (half the
-// object's 128 MB). Above the 23.3 MB a 20 MB file's cards come to at most (blueprint tracker-import.md "Performance
+// Durable Object, a part at a time, and writes it a statement at a time (blueprint tracker-import.md "Performance and
+// limits"), peaking under the 48 MB its test holds it to (the object has 128 MB). Above the 23.3 MB a 20 MB file's cards come to at most (blueprint tracker-import.md "Performance
 // and limits"), so only a hand-made request meets it.
 export const ITEM_IMPORT_JSON_MAX = 26 * 1024 * 1024;
 
@@ -63,15 +64,34 @@ export async function heldParts(
   return res.results ?? [];
 }
 
-/** Every held card of an import, as it was read, in part and card order. */
-export async function heldReads<T>(env: PlanEnv, planId: string, importId: string): Promise<T[]> {
-  const res = await env.PLAN_DB.prepare(
-    `SELECT body FROM item_import_parts WHERE plan_id = ? AND import_id = ? ORDER BY part, seq`,
-  )
-    .bind(planId, importId)
-    .all<{ body: string }>();
-  return (res.results ?? []).map((row) => JSON.parse(row.body) as T);
+/** Every held card of an import, as it was read, in part and card order: a part's rows at a time, so the stored text
+ * of every part is never in memory at once beside what it parses to. */
+export async function heldReads<T>(
+  env: PlanEnv,
+  planId: string,
+  importId: string,
+  parts: readonly HeldPart[],
+): Promise<T[]> {
+  const out: T[] = [];
+  const page = env.PLAN_DB.prepare(
+    `SELECT body FROM item_import_parts WHERE plan_id = ? AND import_id = ? AND part = ? ORDER BY seq`,
+  );
+  for (const { part } of parts) {
+    const res = await page.bind(planId, importId, part).all<{ body: string }>();
+    for (const row of res.results ?? []) out.push(JSON.parse(row.body) as T);
+  }
+  return out;
 }
+
+/** Statements run as one transaction as `statements` makes them (`ItemDb.batchEach`): the plan's db is its Durable
+ * Object's SQLite through ItemDb (plan-room.ts, and test-sqlite-d1.ts in tests), never a D1 database. */
+export const streamPlanBatch = (
+  env: Pick<PlanEnv, 'PLAN_DB'>,
+  statements: Iterable<D1PreparedStatement>,
+): Promise<D1Result[]> =>
+  (env.PLAN_DB as unknown as ItemDb).batchEach(
+    statements as Iterable<Parameters<ItemDb['execute']>[0]>,
+  ) as Promise<D1Result[]>;
 
 /** An import's held parts gone: when it lands (inside its batch), or when it is refused. */
 export function clearImportStatement(

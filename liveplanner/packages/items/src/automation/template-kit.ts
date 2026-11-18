@@ -88,6 +88,8 @@ export const AUTOMATION_TEMPLATE_IDS = [
   'done-when-resolved',
   'sort-incoming',
   'summarise-requests',
+  'flag-due-soon',
+  'done-on-checklist',
   'review-on-open',
   'done-on-merge',
   'flag-failing-checks',

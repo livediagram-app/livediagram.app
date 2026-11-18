@@ -37,6 +37,14 @@ const ANSWER: PagesAnswer = {
       blocks: 2,
       words: 4,
       estimatedPages: 1,
+      readability: {
+        readingMinutes: 1,
+        sentences: 2,
+        wordsPerSentence: 2,
+        longSentences: 0,
+        ease: 77.9,
+        level: 'Fairly easy to read',
+      },
       look: null,
     },
   ],
@@ -47,6 +55,14 @@ const ANSWER: PagesAnswer = {
     blocks: 2,
     words: 4,
     estimatedPages: 1,
+    readability: {
+      readingMinutes: 1,
+      sentences: 2,
+      wordsPerSentence: 2,
+      longSentences: 0,
+      ease: 77.9,
+      level: 'Fairly easy to read',
+    },
     look: null,
     created: true,
   },
@@ -361,7 +377,6 @@ describe('article get and article set', () => {
         pageNumbers: true,
         size: 'letter',
         orientation: 'portrait',
-        as: 'suggestions',
       }),
     );
     expect(sent).toEqual([
@@ -375,7 +390,6 @@ describe('article get and article set', () => {
           look: 'report',
           accent: '#ff0066',
           pageNumbers: true,
-          as: 'suggestions',
         },
       },
     ]);

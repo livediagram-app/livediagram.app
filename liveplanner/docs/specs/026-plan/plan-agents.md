@@ -63,7 +63,12 @@ never told a change worked when it shows on no board.
 - A **Blocked By** field (a Card field with Blocks on, [Blocked By](item-types.md#blocked-by)) is listed with
   `blocks: true` on its card type, and its value reads as any Card field's (`"#3 Website, #5 Launch"`). A card that
   is blocked carries `blocked`, its count of open blockers (outside the plan-wide done columns; trashed and archived
-  blockers ignored), and a card that blocks others carries `blocks`, the live cards it blocks (`["#7 Copy"]`).
+  blockers ignored), and a card that blocks others carries `blocks`, the live cards it blocks (`["#7 Copy"]`). A
+  blocked card that starts on or before an open blocker is due carries `clashes` (`["Starts 3 days before #4 Design is
+due"]`, worst first; [Dependency clashes](plan-views.md#gantt-chart)), and a `set` that changes a card's Start or
+  Due takes `moveFollowing: true` to move the cards that follow it just after their blockers, as the Gantt's offer
+  does, a line each ("~ #7 Launch moved 3 days later, after #3 Design"). Each move is its own write through the item
+  route, so a Viewer's token is refused at the first and the answer says what moved before it.
   `change_items` sets blockers by card number as any Card field (`"Blocked By": "#3, #5"`), and a change that would
   make a loop (A blocks B blocks A) is refused before the write with the chain it would close
   (`blocks_cycle`: "#5 Launch already waits on #3 Website, so it can't block it."), as the api refuses it too.
@@ -102,8 +107,11 @@ never told a change worked when it shows on no board.
   characters as its text is sent (`LIST_ITEMS_BUDGET`): when cards remain, the answer stops before the card that
   would pass it and gives `nextCursor`; the same call with `cursor` set to it answers the next page, and paging to
   the end lists every matching card exactly once, none lost or repeated, even while cards are added. `total` is how
-  many cards match on every page together, `count` how many this page lists. Every page lists the boards and card
-  types, so any page names everything a write takes. A page lists at least one card when any remains, so paging
+  many cards match on every page together, `count` how many this page lists. Every page lists the boards, their
+  columns and the card types by name, so any page names everything a write takes; each column's card refs (`cards`)
+  and `notOnBoard` come on the first page only (the page read without `cursor`), so later pages leave their room to
+  cards (Work Tracker 981: at 5,000 cards the refs were about 110,000 of a page's 200,000 characters). An agent that
+  needs a column's cards reads them from the first page, or from the items' `column`. A page lists at least one card when any remains, so paging
   always ends (one card is bounded by the item store's limits). A cursor `list_items` did not give is refused
   (`cursor_invalid`).
 - The CLI's `item ls` keeps listing every card, as before, unpaged: its output is a line a card, not one answer an

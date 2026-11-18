@@ -42,6 +42,8 @@ const TONE: Readonly<Record<AutomationTemplateId, SceneTone>> = {
   'tell-unblocked': 'blue',
   'nudge-stuck': 'orange',
   'done-when-resolved': 'violet',
+  'flag-due-soon': 'red',
+  'done-on-checklist': 'emerald',
   'review-on-open': 'emerald',
   'done-on-merge': 'violet',
   'flag-failing-checks': 'red',

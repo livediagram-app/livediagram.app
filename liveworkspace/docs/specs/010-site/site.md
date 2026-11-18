@@ -935,7 +935,9 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     says what an account adds, rather than empty rows.
   - **Show My Google Picture**, in Name and Colour, for an account with a Google picture: on by default; off, others
     see the initials ([accounts.md](../003-accounts/accounts.md#profile-pictures)). The header card's avatar is the picture
-    (`PictureDisc`), over the initials it falls back to.
+    (`PictureDisc`), over the initials it falls back to, in every editor's Settings too: one card,
+    `SettingsIdentityRow` in `@liveworkspace/workbench`, given the person's own picture by the header's rule (always
+    theirs on their own screen, whatever the switch says).
   - Not here, on purpose: uploading a picture (the picture is Google's or none); an email change, passwords and passkeys (accounts sign in with an emailed code or Google only, and the accounts
     Worker has no change-email flow); deleting the account from liveworkspace.app (closing an account goes through
     an app's server, `/api/auth/delete-account`, so its data goes with it; the site has no such door).

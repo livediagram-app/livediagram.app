@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
 import { SyncGateDialog } from '@/components/dialogs/SyncGateDialog';
+import { toolGateCopy } from '@liveworkspace/workbench/lib/tool-gate-copy';
 
 export type ToolGateKind = 'sync' | 'sign_in';
 // `badges`: everything it still needs, in order (Sign In, Sync Plan), the gate opening on the first.
@@ -73,30 +74,21 @@ export function useAskedOpen(param: string): boolean {
 export function ToolGateDialog({
   gate,
   title,
-  promptTitle,
-  signInPromptTitle = promptTitle,
-  syncCopy,
-  signInCopy,
   param,
   onClose,
 }: {
   gate: ToolGate;
+  // The tool's name, which heads the dialog and names it in the shared copy (toolGateCopy).
   title: string;
-  promptTitle: string;
-  // The heading over the sign-in copy, where it says something else.
-  signInPromptTitle?: string;
-  // Why it needs the plan on the server, and why it needs an account.
-  syncCopy: string;
-  signInCopy: string;
   param: string;
   onClose: () => void;
 }) {
+  const said = toolGateCopy(gate.kind, title, 'Plan');
   return (
     <SyncGateDialog
       title={title}
-      subtitle={gate.kind === 'sync' ? 'Saved only in this browser.' : 'You are not signed in.'}
-      promptTitle={gate.kind === 'sync' ? promptTitle : signInPromptTitle}
-      message={gate.kind === 'sync' ? syncCopy : signInCopy}
+      promptTitle={said.title}
+      message={said.body}
       onSyncToCloud={gate.kind === 'sync' ? gate.sync : async () => {}}
       ready={gate.kind === 'sync' ? gate.ready : true}
       signInHref={gate.kind === 'sign_in' ? toolSignInHref(param, window.location) : undefined}

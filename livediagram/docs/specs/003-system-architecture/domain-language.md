@@ -194,6 +194,12 @@ editor's badge on such a canvas (the pill at the top of an open canvas, and the 
 Explorer a canvas is **in Browser Storage**, never "This Browser", "Local Only" or "Local Browser", and never
 "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline` and `thisBrowser`.
 
+Wherever a canvas in Browser Storage shows a picture (the editors' Current card, Home's cards and tile, the panel's
+cards, rows' squares), the picture is the **offline art** (`LocalPreview`), never a pill laid over it (owner,
+2026-11-17): a browser window holding the item, a crossed-out cloud on its corner, in the app's accent; a row's small
+square draws the same as one glyph. Screen readers still hear "Browser Storage" with it. Rows and lines that carry no
+picture keep the pill.
+
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a field, a note, a template, a chart type, an element type in

@@ -14,6 +14,7 @@ import {
   PLAN_VISUALISATION_LABELS,
 } from '@liveplanner/items';
 import { usePlanFlow, type PlanFlow } from '@/hooks/plan/usePlanFlow';
+import { flowVersionOf } from '@/hooks/plan/plan-flow-store';
 import type { PlanContextValue } from '../PlanContext';
 import type { PlanPalette } from '../plan-palette';
 import { ViewFrame } from './view-frame';
@@ -39,7 +40,8 @@ const BORDER_PX = 2;
 // here (each chart filters the shared answer).
 export function useFlowChart({ plan, settings }: Pick<PlanViewProps, 'plan' | 'settings'>) {
   const days = flowRangeOf(settings);
-  const flow = usePlanFlow(plan?.itemsScope, days, plan?.items);
+  // Read again only when what the charts draw changed (a status, a type, a card coming or going), not on a title edit.
+  const flow = usePlanFlow(plan?.itemsScope, days, flowVersionOf(plan?.items));
   const allTypes = plan?.types;
   const view = settings.view;
   const types = useMemo(() => {

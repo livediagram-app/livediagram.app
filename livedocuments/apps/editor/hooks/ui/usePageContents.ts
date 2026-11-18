@@ -22,7 +22,12 @@ import {
 import { usePageThumbnails, type PageThumbTab } from '@/hooks/ui/usePageThumbnails';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import type { ArticlesView } from '@/hooks/editor/useArticles';
-import { contentsDropUnit, contentsRows, type ContentsRow } from '@/lib/page-contents';
+import {
+  contentsDropUnit,
+  contentsRows,
+  contentsSummary,
+  type ContentsRow,
+} from '@/lib/page-contents';
 import { elementsByPage } from '@/lib/elements-by-page';
 import { pageTitleOf } from '@/lib/page-title';
 import { useSettledElements } from '@/hooks/canvas/useSettledElements';
@@ -94,6 +99,8 @@ export function usePageContents({
       }),
     [pages, deck, articles, titles, builds],
   );
+  // A stack's whole talk for the header ("10 cards · about 6 min"): per commit (new writing objects), never per key.
+  const summary = useMemo(() => contentsSummary(pages, articles?.flows), [pages, articles]);
   const contents = useSharedPageContents({
     view,
     rows,
@@ -108,7 +115,10 @@ export function usePageContents({
     onWent,
   });
   const thumbs = usePageThumbnails(tab, contents.drawnIds, settleMs);
-  return { ...contents, thumbs };
+  return { ...contents, thumbs, summary };
 }
 
-export type PageContents = SharedPageContents<ContentsRow, LaidOutPage, [kind: PageKind]>;
+export type PageContents = SharedPageContents<ContentsRow, LaidOutPage, [kind: PageKind]> & {
+  // What the header says of the whole tab (a stack's talk), or null.
+  summary: string | null;
+};

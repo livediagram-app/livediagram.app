@@ -7,17 +7,18 @@ vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index
 
 import { hasLiveLink, usePlanShareState } from './usePlanShareState';
 
-type Props = { open: boolean; code: string | null };
+type Props = { open: boolean; code: string | null; confined?: boolean };
 
 function hook(initial: Props) {
   const setShareable = vi.fn();
   const view = renderHook(
-    ({ open, code }: Props) =>
+    ({ open, code, confined = false }: Props) =>
       usePlanShareState({
         projectId: 'p1',
         serverStored: true,
         sessionShareCode: code,
         shareDialogOpen: open,
+        confined,
         setShareable,
       }),
     { initialProps: initial },
@@ -59,6 +60,13 @@ describe('usePlanShareState', () => {
     index.listShareLinks.mockRejectedValueOnce(new Error('forbidden'));
     const { setShareable } = hook({ open: false, code: null });
     await waitFor(() => expect(index.listShareLinks).toHaveBeenCalled());
+    expect(setShareable).not.toHaveBeenCalled();
+  });
+
+  // Work Tracker 1138: a workbench frame (a live embed's) presents a session the index refuses with a 401.
+  it('asks a workbench frame’s index nothing', () => {
+    const { setShareable } = hook({ open: false, code: null, confined: true });
+    expect(index.listShareLinks).not.toHaveBeenCalled();
     expect(setShareable).not.toHaveBeenCalled();
   });
 });

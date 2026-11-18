@@ -36,6 +36,7 @@
 @source inline("dark:from-emerald-500/10");
 @source inline("dark:hover:bg-slate-800/40");
 @source inline("dark:hover:bg-slate-800/70");
+@source inline("dark:hover:text-slate-50");
 @source inline("dark:placeholder:text-slate-500");
 @source inline("dark:ring-amber-400/30");
 @source inline("dark:ring-brand-500/40");
@@ -44,4 +45,4 @@
 @source inline("dark:text-brand-300/80");
 @source inline("dark:text-red-400");
 @source inline("dark:text-slate-950");
-@source inline("dark:to-slate-900");
+@source inline("dark:to-slate-950/50");

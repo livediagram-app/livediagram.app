@@ -135,7 +135,8 @@ test.describe('menus by keyboard', () => {
     pageErrors,
   }) => {
     await startBlankDesign(page);
-    const header = page.locator('header[data-region="header"]');
+    // No header bar (experiment): the logo has a card of its own beside the menu card (MenuCardLogo).
+    const header = page.locator('[data-toolbar-menu]').locator('..');
     const logo = header.getByRole('link', { name: 'livedesign' });
     await untilHydrated(logo);
     await logo.hover();

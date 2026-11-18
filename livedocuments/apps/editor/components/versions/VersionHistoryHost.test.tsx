@@ -85,6 +85,17 @@ describe('VersionHistoryHost', () => {
     expect(seen.props!.nowTab).toBeNull();
   });
 
+  // Work Tracker 946: a tab-scoped link's scope is set after mount, and the panel's tabs follow it.
+  it('narrows its tabs when the scope is set after it opened', () => {
+    const { store } = host(view());
+    act(() => openVersionHistory('t2'));
+    expect(screen.getByTestId('panel').textContent).toBe('Pitch,Notes');
+    act(() =>
+      store.set(view({ sessionTabScope: 't2', isOutOfScope: (id: string) => id !== 't2' })),
+    );
+    expect(screen.getByTestId('panel').textContent).toBe('Notes');
+  });
+
   it('switches the editor and the panel to the tab picked', () => {
     const { onSelectTab } = host(view());
     act(() => openVersionHistory('t1'));

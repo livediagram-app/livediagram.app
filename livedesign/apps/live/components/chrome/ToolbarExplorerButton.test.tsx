@@ -92,9 +92,9 @@ describe('the menu box joined to the Contents sidebar', () => {
     expect(card().className.split(' ')).toContain('border-transparent!');
     expect(card().className.split(' ')).toContain('bg-transparent!');
     expect(card().style.width).toBe('216px');
-    // The button and the name are as ever.
+    // The button is as ever; the logo leads the band.
     expect(screen.getByRole('button', { name: 'Explorer' }).className).toContain('h-9 w-9');
-    expect(document.querySelector('[data-tab-name-in-box]')?.textContent).toBe('Chapter One');
+    expect(document.querySelector('[data-logo-in-band]')).not.toBeNull();
   });
 
   it('never joins inline in the strip’s row', () => {
@@ -112,15 +112,11 @@ describe("the open tab's name in the menu box", () => {
   }
   const shownName = () => document.querySelector('[data-tab-name-in-box]')?.textContent ?? null;
 
-  it('shows the name the editor publishes, follows a rename, and clears as the editor goes', () => {
+  it('leaves out the name the editor publishes on a desktop too (experiment: no header bar)', () => {
     render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
-    expect(shownName()).toBeNull();
     const editor = render(<Editor tabName="Logo" />);
-    expect(shownName()).toBe('Logo');
-    editor.rerender(<Editor tabName="Logo Final" />);
-    expect(shownName()).toBe('Logo Final');
-    editor.unmount();
     expect(shownName()).toBeNull();
+    editor.unmount();
   });
 
   it('shows no name inline in the strip’s row (a phone)', () => {

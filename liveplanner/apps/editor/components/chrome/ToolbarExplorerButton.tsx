@@ -1,11 +1,18 @@
 'use client';
 
 import { track } from '@/lib/telemetry';
-import { Glyph } from '@liveplanner/ui';
+import { Brand, Glyph } from '@liveplanner/ui';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
+import {
+  MENU_CARD_IN_ROW,
+  MenuCardLogo,
+  PHONE_EDGE_LEFT,
+} from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
+import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { MenuNameSlot, TabNameInBox } from '@/components/plan/menu-name-slot';
+import { MenuNameSlot } from '@/components/plan/menu-name-slot';
 import { BAND_BLEND, BAND_FLUSH, BAND_TINT } from './toolbar-surface';
 import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 
@@ -36,6 +43,10 @@ export function ToolbarExplorerButton({
   const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
   const phone = useIsMobileViewport();
+  // Experiment (no header bar): the logo in a card of its own left of this one (MenuCardLogo), opening the Explorer on
+  // the plan's place. Not on a phone, whose top row has no room for it, nor inline.
+  const projectId = useOptionalEditorContext()?.projectId ?? null;
+  const withLogo = !inline && !phone;
   const button = (
     <button
       type="button"
@@ -56,7 +67,7 @@ export function ToolbarExplorerButton({
       </Glyph>
     </button>
   );
-  return (
+  const card = (
     <div
       data-dock-button=""
       // Chrome, not canvas: the canvas's capture-phase gestures skip a press inside a floating
@@ -65,14 +76,14 @@ export function ToolbarExplorerButton({
       data-tour-id="dock-explorer"
       data-toolbar-menu=""
       style={
-        scaled
+        scaled && !withLogo
           ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
           : undefined
       }
       className={
         inline
           ? 'flex items-center gap-1'
-          : `pointer-events-auto absolute left-3 top-3 z-[var(--z-toolbar)] flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS}`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : `absolute left-3 top-3 phone:left-0 ${PHONE_EDGE_LEFT} z-[var(--z-toolbar)]`} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} ${PHONE_TOOLBAR_ITEMS}`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {
@@ -82,10 +93,29 @@ export function ToolbarExplorerButton({
     >
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
-      {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot). */}
-      {phone || inline ? null : <MenuNameSlot />}
-      {/* Else the open tab's name, in every mode (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox />}
+      {/* A maximised or tab-filling element's name, while its header holds the top row (menu-name-slot), and a
+          Dashboard's name: beside the menu at every width, a phone's too (owner, 2026-11-17). */}
+      {inline ? null : <MenuNameSlot />}
     </div>
+  );
+  return withLogo ? (
+    <MenuCardLogo
+      scale={scale}
+      card={card}
+      // On a maximised board's header band it sits flush on the header, as this card does, so with no frames to set
+      // the two apart, the gap and its right inset give way: the hamburger stands as near the logo as one control to the
+      // next.
+      logoClassName={`${BAND_TINT} ${BAND_BLEND} ${BAND_FLUSH} [[data-band-blend]_&]:-mr-2 [[data-band-blend]_&]:pr-0`}
+      logo={
+        <Brand
+          href={explorerItemHref(projectId)}
+          size="sm"
+          wordmarkClassName="hidden lg:inline"
+          className="relative touch-target"
+        />
+      }
+    />
+  ) : (
+    card
   );
 }

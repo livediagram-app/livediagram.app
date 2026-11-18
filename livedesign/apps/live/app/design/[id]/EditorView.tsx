@@ -17,7 +17,6 @@ import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canva
 import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { SketchFilterDefs } from '@/components/canvas/SketchFilterDefs';
 import { ChangesetRevealContext } from '@/components/canvas/ChangesetRevealOverlay';
-import { SuggestionsContext } from '@liveworkspace/suggestions/react/suggestions-store';
 import { AgentFocusContext } from '@/components/canvas/AgentFocusOverlay';
 import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
 import { SheetLinksHost } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
@@ -26,11 +25,7 @@ import type { SheetLinkEvent } from '@liveworkspace/workbench/components/sheet-l
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
-import { useCommunityEnabled } from '@liveworkspace/community-ui';
-import { API_BASE } from '@/lib/api-client';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
-import { designIsPublic } from '@/lib/community-public';
-import { useCommunityState } from '@/lib/community-state-store';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 
@@ -188,11 +183,6 @@ export function EditorView() {
     userPreferences,
     sessionCommunity,
   } = ctx;
-  // The header badge follows the design's Community post (docs/specs/025-community/community.md "Publishing").
-  const communityState = useCommunityState(designId);
-  // The badge goes too while the Community is switched off. Asked only while there is a listed post to badge, and
-  // never in an embed, so other opens make no request.
-  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
   // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md "Viewing a post's design").
   useAutoCopyParam({
     hydrated,
@@ -200,12 +190,6 @@ export function EditorView() {
     // The author's own post copies nothing: their bar offers Edit Your Design instead.
     community: sessionCommunity !== null && !sessionCommunity.ownDesignId,
     makeCopy,
-  });
-  // Whether the design shows as public on the Community, for the header's share state.
-  const headerCommunity = designIsPublic({
-    communityOn,
-    ownPostState: communityState,
-    communitySession: sessionCommunity !== null,
   });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
@@ -288,16 +272,12 @@ export function EditorView() {
     selectTab,
     selectionStore: ctx.selectionStore,
   });
-  const header = editorViewHeader(ctx, {
-    isOffline,
-    headerCommunity,
-    role,
-    landscapeShown: landscapeBars.shown,
-  });
+  const header = editorViewHeader(ctx);
   const footer = editorViewFooter(ctx, {
     isOffline,
     selectTab,
     landscapeShown: landscapeBars.shown,
+    role,
   });
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
@@ -393,28 +373,26 @@ export function EditorView() {
                                   fallbackClassName="flex-1"
                                 >
                                   {/* The outlines relayed changesets draw (docs/specs/024-agents/agent-changesets.md). */}
-                                  <SuggestionsContext.Provider value={ctx.canvasSuggestions.store}>
-                                    <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
-                                      {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
-                                      <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
-                                        {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
-                                        {/* Nor for a Community visitor (docs/specs/025-community/community.md). */}
-                                        <CommentBadgesContext.Provider
-                                          value={!(embedMode && isReadOnly) && !sessionCommunity}
-                                        >
-                                          {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
-                                          {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
-                                          {ctx.activeTabConnected && !anyWelcomeOpen ? (
-                                            <ConnectedTabHost />
-                                          ) : (
-                                            <SuppressElementIndicators when={embedMode}>
-                                              <EditorCanvasHost />
-                                            </SuppressElementIndicators>
-                                          )}
-                                        </CommentBadgesContext.Provider>
-                                      </AgentFocusContext.Provider>
-                                    </ChangesetRevealContext.Provider>
-                                  </SuggestionsContext.Provider>
+                                  <ChangesetRevealContext.Provider value={ctx.changesetReveals}>
+                                    {/* The focus rings of the agents present (docs/specs/024-agents/agent-presence.md). */}
+                                    <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
+                                      {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
+                                      {/* Nor for a Community visitor (docs/specs/025-community/community.md). */}
+                                      <CommentBadgesContext.Provider
+                                        value={!(embedMode && isReadOnly) && !sessionCommunity}
+                                      >
+                                        {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
+                                        {/* A connected tab's page stands in the canvas's place (connected-tabs.md), once a visitor's name prompt (drawn by the canvas host) is answered. */}
+                                        {ctx.activeTabConnected && !anyWelcomeOpen ? (
+                                          <ConnectedTabHost />
+                                        ) : (
+                                          <SuppressElementIndicators when={embedMode}>
+                                            <EditorCanvasHost />
+                                          </SuppressElementIndicators>
+                                        )}
+                                      </CommentBadgesContext.Provider>
+                                    </AgentFocusContext.Provider>
+                                  </ChangesetRevealContext.Provider>
                                 </AreaErrorBoundary>
                                 {embedMode ? (
                                   // Embed chrome (docs/specs/013-workspace/embeds.md): the link-out badge + a minimal tab
@@ -517,7 +495,7 @@ export function EditorView() {
                 </CanvasPatternContext.Provider>
               </CanvasSurfaceProvider>
               <WalkthroughsLayer walkthroughs={walkthroughs} />
-              <WalkthroughsTools menu={walkthroughs.menu} />
+              <WalkthroughsTools walkthroughs={walkthroughs} />
             </ViewportStoreProvider>
           </SheetLinksHost>
         </SelectionStoreProvider>

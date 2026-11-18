@@ -14,9 +14,14 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("the Library's hosts over an app's API", () => {
   it('offers a page only where the app keeps one, the same host each time', () => {
-    expect(Object.keys(libraryHosts('livediagram')).sort()).toEqual(['gallery', 'shapeLibraries']);
-    expect(Object.keys(libraryHosts('livedesign'))).toEqual(['gallery']);
-    expect(libraryHosts('liveplanner')).toEqual({});
+    expect(Object.keys(libraryHosts('livediagram')).sort()).toEqual([
+      'gallery',
+      'shapeLibraries',
+      'walkthroughs',
+    ]);
+    expect(Object.keys(libraryHosts('livedesign')).sort()).toEqual(['gallery', 'walkthroughs']);
+    expect(Object.keys(libraryHosts('liveplanner'))).toEqual(['walkthroughs']);
+    expect(libraryHosts('livehuddle').walkthroughs).toBeUndefined();
     expect(libraryHosts('livediagram').gallery).toBe(libraryHosts('livediagram').gallery);
   });
 

@@ -19,7 +19,12 @@ import { createItemOverlay, type ItemOverlay } from '../data/overlay';
 import { useFolderStore, type FolderStore } from '../data/useFolders';
 import { DragProvider } from '../drag/store';
 import type { ThisBrowserItem } from '../this-browser';
-import { useItemActions, type HostTrash, type ItemActions } from '../data/useItemActions';
+import {
+  useItemActions,
+  type HostArchived,
+  type HostTrash,
+  type ItemActions,
+} from '../data/useItemActions';
 import { useInbox, type InboxState } from '../data/useInbox';
 import { appHasInbox } from '../inbox-apps';
 import { defaultEntries, type DefaultEntry, type DefaultFolderOption } from '../defaults/entries';
@@ -173,6 +178,8 @@ export type ExplorerContextValue = {
   expansion: Expansion;
   // The folder on screen, once its list is in (FolderShown), for the host.
   onFolderShown?: (shown: FolderShown) => void;
+  // The host's take on an item just archived (HostArchived): This Browser's archive asks it too.
+  hostArchived?: HostArchived;
 };
 
 /** The folder a view shows, once its list is in: its name (null while the folders load), and how many of the host's
@@ -270,6 +277,8 @@ export type ExplorerProviderProps = {
   onOrganise?: OrganiseTelemetry;
   // Trashes an item the host handles itself (see HostTrash); stable, or the actions are rebuilt.
   hostTrash?: HostTrash;
+  // Takes an item just archived when it is the one the host has open (see HostArchived); stable.
+  hostArchived?: HostArchived;
   // After an item took a new title (the host follows it for the item it has open); stable.
   onItemRenamed?: (item: Item, title: string) => void;
   onFolderShown?: (shown: FolderShown) => void;
@@ -310,6 +319,7 @@ export function ExplorerProvider({
   onLensSelected,
   onOrganise,
   hostTrash,
+  hostArchived,
   onItemRenamed,
   onFolderShown,
   children,
@@ -343,6 +353,7 @@ export function ExplorerProvider({
     toast,
     reloadLists,
     hostTrash,
+    hostArchived,
     onPlaced,
     onRenamed: onItemRenamed,
     placeName,
@@ -475,6 +486,7 @@ export function ExplorerProvider({
       lensSubjects,
       expansion,
       onFolderShown,
+      hostArchived,
     }),
     [
       app,
@@ -519,6 +531,7 @@ export function ExplorerProvider({
       onLensSelected,
       expansion,
       onFolderShown,
+      hostArchived,
     ],
   );
   return (

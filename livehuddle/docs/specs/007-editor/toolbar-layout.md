@@ -64,6 +64,10 @@ walk is jarring, no animation to soften the transition and size change on the pa
 - **The toggle stays the toggle.** The Edit | Walk toggle and the divider after it do not fade or re-enter: they ride
   the bar's start edge (on a phone that edge does not move, so they hold still), and the brand pill glides from the
   side that was on to the side now on.
+- **It starts where the strip lands.** The incoming strip settles its place a frame or two after its size (it
+  measures its room between the menu card and the top-right corner card, and may shift). Until its left edge holds
+  still for a frame (at most ten frames), it waits unseen behind a still copy of the outgoing strip, and the morph
+  then starts from there, so the toggle never jumps (`playStripMorph` in `apps/editor/components/palette/strip-morph-dom.ts`).
 - **A flyout closes first.** A category's flyout, More or Search open at the switch goes with its strip and is not
   there when that strip comes back.
 - **Timing.** 240 ms (just inside the chrome ceiling, [Motion](../004-interface-design/motion.md)), a soft ease-out

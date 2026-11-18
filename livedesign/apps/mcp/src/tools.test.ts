@@ -82,6 +82,7 @@ function okResponse(request: Request): Response {
   }
   if (path === '/designs' && request.method === 'GET') return json({ designs: [] });
   if (path === '/teams') return json({ teams: [] });
+  if (path.endsWith('/room-ticket')) return json({ ticket: 'rt2~sealed', expiresAt: 1 });
   if (path === '/trash') return json({ trash: [] });
   if (path.endsWith('/restore')) return json({ design: LIVE_DOC });
   if (path.endsWith('/archive') || path.endsWith('/unarchive')) return json({ design: LIVE_DOC });
@@ -210,6 +211,7 @@ describe('registerTools', () => {
       'unarchive_design',
       'update_design',
       'upload_image',
+      'view_live',
       'view_tab',
     ]);
     // The description is what the calling model reads to pick a tool, so an
@@ -304,6 +306,8 @@ describe('tool annotations', () => {
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
     // docs/specs/015-api/mcp-server.md "Interactive view (MCP Apps)": the view's own read.
     view_tab: 'read',
+    // "Live updates": the view's view-only room ticket, a read a read-only token may make.
+    view_live: 'read',
     // docs/specs/015-api/mcp-server.md "Comment threads": change_threads deletes the agent's own comments.
     list_threads: 'read',
     change_threads: 'destructive',
@@ -387,6 +391,7 @@ describe('tool annotations', () => {
       'list_trash',
       'read_design',
       'search_icons',
+      'view_live',
       'view_tab',
     ]);
 

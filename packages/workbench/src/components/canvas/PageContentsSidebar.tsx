@@ -16,6 +16,10 @@ import { useViewportStoreIfAny } from '../../hooks/canvas/useViewportStore';
 import { pageInView, type ContentsPageRect, type ContentsRowBase } from '../../lib/page-contents';
 import { CONTENTS_SIDEBAR_WIDTH, restingRect, sideInsetsOf } from '../../lib/contents-sidebar';
 import { ContentsList, type ContentsBadges, type ContentsListState } from './PageContentsList';
+import { ContentsSummary } from './ContentsSummary';
+
+// How long after the sidebar opens a window resize still reframes the page (a fullscreen exit animates for up to a second).
+const REFRAME_SETTLE_MS = 1500;
 
 // The pictures redraw once the tab rests this long (the editor's usePageThumbnails): never on every
 // frame of a drag or every key typed, while the sidebar stays on screen beside the work.
@@ -33,6 +37,7 @@ export function ContentsSidebar<R extends ContentsRowBase>({
   onMinimise,
   stack,
   joined = false,
+  summary = null,
 }: {
   // Built with the page at the tab's start as here (the sidebar then follows the view).
   contents: ContentsListState<R> & { setCurrent: (id: string | undefined) => void };
@@ -52,6 +57,8 @@ export function ContentsSidebar<R extends ContentsRowBase>({
   // Joined to the menu box above it (docs/specs/007-editor/pages-mode.md "Joined to the menu box"): it rises to the
   // canvas's top and its first `top` px are the menu box's row, so the list starts where it would.
   joined?: boolean;
+  // What heads the list of the whole tab (a stack's talk), or null for no head.
+  summary?: string | null | undefined;
 }) {
   const scale = useUiScale('panels');
   const px = (v: number) => toSurfacePx(v, scale);
@@ -94,9 +101,21 @@ export function ContentsSidebar<R extends ContentsRowBase>({
     const id = readHere();
     if (id) focusPage(id);
   });
+  // Again for a moment after, as the window settles: back from a presentation the sidebar comes back while the browser
+  // is still leaving fullscreen, so the first frame fits the page to a canvas about to shrink.
   useEffect(() => {
-    const frame = requestAnimationFrame(reframe);
-    return () => cancelAnimationFrame(frame);
+    let frame = requestAnimationFrame(reframe);
+    const again = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(reframe);
+    };
+    window.addEventListener('resize', again);
+    const stop = setTimeout(() => window.removeEventListener('resize', again), REFRAME_SETTLE_MS);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(stop);
+      window.removeEventListener('resize', again);
+    };
   }, []);
 
   // Contents Options (ContentsOptions): Collapse Contents, and the tab's Stack Pages where the editor offers it.
@@ -135,6 +154,11 @@ export function ContentsSidebar<R extends ContentsRowBase>({
       className="pointer-events-auto absolute bottom-0 z-[var(--z-panel)] flex cursor-default flex-col overflow-hidden rounded-tr-2xl border-r border-t border-slate-200 bg-white shadow-[4px_0_16px_-8px_rgb(15_23_42/0.12)] motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       {joined ? <MenuJoinBand height={px(top)} /> : null}
+      {summary ? (
+        <p className="flex min-w-0 px-3 pt-2.5">
+          <ContentsSummary summary={summary} />
+        </p>
+      ) : null}
       <ContentsList
         contents={contents}
         variant="film"

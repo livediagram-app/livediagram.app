@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHmac } from 'node:crypto';
 import type { AutomationRule, AutomationRun } from '@liveplanner/items';
-import type { AutomationSecretResponse } from '@liveplanner/api-schema';
+import { PROJECT_TRASHED_CLOSE, type AutomationSecretResponse } from '@liveplanner/api-schema';
 import { endRepeatWorld } from './test-repeat-world';
 import { automationWorld, type AutomationWorld } from './automations/test-automation-world';
 import { STANDING_KEY, WAIT_PUT_AWAY } from './plan-standing';
@@ -128,6 +128,78 @@ describe('the standing door', () => {
     // A damaged key is no standing: the plan runs.
     room().standing.restore({ putAway: 'yes' });
     expect(room().standing.putAway).toBe(false);
+  });
+});
+
+// A trash made anywhere reaches the room through this door (docs/specs/013-workspace/trash.md "Open editors"; Work
+// Tracker 1141): the REST API's DELETE /api/projects/:id and MCP delete_project (which calls it) trash at the index,
+// as the Explorer does, and the index pushes the standing here.
+describe('a trashed plan’s open sessions', () => {
+  type Socket = { sent: string[]; closed: [number, string] | null };
+  // An open session as the hibernation runtime hands it to the room: an editor's, or an MCP live view's.
+  const open = (role: 'edit' | 'view'): Socket => {
+    const socket: Socket = { sent: [], closed: null };
+    const ws = {
+      send: (data: string) => void socket.sent.push(data),
+      close: (code: number, reason: string) => void (socket.closed = [code, reason]),
+      serializeAttachment: () => {},
+      deserializeAttachment: () => ({
+        presenceId: `p-${role}`,
+        verifiedRole: role,
+        presence: null,
+      }),
+    };
+    (room().state as unknown as { sockets: unknown[] }).sockets.push(ws);
+    return socket;
+  };
+  const ops = (s: Socket) =>
+    s.sent
+      .map((raw) => JSON.parse(raw) as { kind: string; from?: string; op?: { kind: string } })
+      .filter((m) => m.kind === 'op');
+  const sockets = () => (room().state as unknown as { sockets: unknown[] }).sockets;
+
+  it('tells every session it was trashed and closes each with 4004', async () => {
+    const editor = open('edit');
+    const view = open('view');
+    expect((await tell(false, true)).status).toBe(200);
+    for (const s of [editor, view]) {
+      expect(ops(s)).toEqual([{ kind: 'op', from: 'system', op: { kind: 'project-trashed' } }]);
+      expect(s.closed).toEqual([PROJECT_TRASHED_CLOSE, 'project-trashed']);
+    }
+  });
+
+  it('closes nothing on an archive, or on a trash older than the last word', async () => {
+    const editor = open('edit');
+    const at = Date.now();
+    await tell(true, false, at);
+    await tell(false, true, at - 1);
+    await tell(false, true, at);
+    expect(ops(editor)).toEqual([]);
+    expect(editor.closed).toBeNull();
+  });
+
+  it('opens again after a restore: a later session hears the plan as before', async () => {
+    open('edit');
+    await tell(false, true);
+    await tell(false, false);
+    sockets().length = 0;
+    const back = open('edit');
+    expect(room().standing.putAway).toBe(false);
+    room().broadcastSystemOp({ kind: 'project-meta', name: 'Back' });
+    expect(ops(back).map((m) => m.op?.kind)).toEqual(['project-meta']);
+    expect(back.closed).toBeNull();
+  });
+
+  it('closes every session when the worker broadcasts project-trashed itself', async () => {
+    const editor = open('edit');
+    const res = await room().fetch(
+      new Request('https://room/broadcast', {
+        method: 'POST',
+        body: JSON.stringify({ op: { kind: 'project-trashed' } }),
+      }),
+    );
+    expect(res.status).toBe(204);
+    expect(editor.closed).toEqual([PROJECT_TRASHED_CLOSE, 'project-trashed']);
   });
 });
 

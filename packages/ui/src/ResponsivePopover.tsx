@@ -6,6 +6,7 @@ import { Portal } from './Portal';
 import { POPOVER_VIEWPORT_MARGIN as EDGE, clampIntoRange } from './popover';
 import { usePopoverLayer } from './popover-stack';
 import { useClickOutside } from './useClickOutside';
+import { DialogInlineContext } from './dialog/dialog-slot';
 import { useFocusTrap } from './useFocusTrap';
 import { useMediaQuery } from './useMediaQuery';
 
@@ -34,6 +35,11 @@ export type ResponsivePopoverProps = {
   width?: number;
   /** Which edge lines up with the anchor's: its right (`end`, for a control at a row's right end) or left. */
   align?: 'start' | 'end';
+  /** `side`: beside the anchor (its right, or its left without room), level with its top; a panel opened from a
+   *  dialog sits beside the dialog. `below` (the default): under it, or above with more room there. */
+  placement?: 'below' | 'side';
+  /** No padding of its own: the content draws its own edges (a form with a sticky foot). */
+  bare?: boolean;
   /** Asked before closing by a press outside, Escape or a swipe: false keeps it open. */
   beforeClose?: () => boolean;
   children: ReactNode;
@@ -57,13 +63,33 @@ export function placeResponsivePopover(
     : { left, bottom: viewport.height - anchor.top + GAP, maxHeight: above, width: w };
 }
 
+/** Beside the anchor: its right when the panel fits there, else its left, else held inside the window's right edge;
+ *  level with its top, lifted so at least half the window's height is left to it. */
+export function placeSidePopover(
+  anchor: { left: number; right: number; top: number; bottom: number },
+  width: number,
+  viewport: { width: number; height: number },
+): Place {
+  const w = Math.min(width, viewport.width - EDGE * 2);
+  const right = anchor.right + GAP;
+  const leftSide = anchor.left - GAP - w;
+  const left =
+    right + w <= viewport.width - EDGE
+      ? right
+      : leftSide >= EDGE
+        ? leftSide
+        : viewport.width - w - EDGE;
+  const top = clampIntoRange(anchor.top, EDGE, Math.max(EDGE, viewport.height / 2));
+  return { left, top, maxHeight: viewport.height - top - EDGE, width: w };
+}
+
 export function ResponsivePopover(props: ResponsivePopoverProps) {
   const desktop = useMediaQuery(SM);
   if (!props.open) return null;
   return desktop ? <AnchoredPanel {...props} /> : <PhoneDrawer {...props} />;
 }
 
-function PhoneDrawer({ onClose, titleId, beforeClose, children }: ResponsivePopoverProps) {
+function PhoneDrawer({ onClose, titleId, beforeClose, bare, children }: ResponsivePopoverProps) {
   return (
     <Dialog
       open
@@ -74,7 +100,7 @@ function PhoneDrawer({ onClose, titleId, beforeClose, children }: ResponsivePopo
       closeOnBack
       {...(beforeClose ? { beforeClose } : {})}
     >
-      <div className="px-4 pb-4 pt-1">{children}</div>
+      {bare ? children : <div className="px-4 pb-4 pt-1">{children}</div>}
     </Dialog>
   );
 }
@@ -85,6 +111,8 @@ function AnchoredPanel({
   titleId,
   width = 512,
   align = 'end',
+  placement = 'below',
+  bare = false,
   beforeClose,
   children,
 }: ResponsivePopoverProps) {
@@ -99,7 +127,12 @@ function AnchoredPanel({
     const measure = () => {
       if (!anchor) return;
       const viewport = { width: window.innerWidth, height: window.innerHeight };
-      setPlace(placeResponsivePopover(anchor.getBoundingClientRect(), width, viewport, align));
+      const at = anchor.getBoundingClientRect();
+      setPlace(
+        placement === 'side'
+          ? placeSidePopover(at, width, viewport)
+          : placeResponsivePopover(at, width, viewport, align),
+      );
     };
     const schedule = () => {
       cancelAnimationFrame(frame);
@@ -113,7 +146,7 @@ function AnchoredPanel({
       window.removeEventListener('resize', schedule);
       window.removeEventListener('scroll', schedule, true);
     };
-  }, [anchor, width, align]);
+  }, [anchor, width, align, placement]);
 
   useFocusTrap(ref, true);
   const { withinAbove } = usePopoverLayer(ref, (e) => {
@@ -134,7 +167,7 @@ function AnchoredPanel({
         role="dialog"
         aria-labelledby={titleId}
         data-responsive-popover=""
-        className="fixed z-[var(--z-modal)] animate-fade-in overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900"
+        className={`fixed z-[var(--z-modal)] animate-fade-in overflow-y-auto rounded-2xl border border-slate-200 bg-white ${bare ? '' : 'p-5'} shadow-xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900`}
         style={{
           left: place?.left ?? -9999,
           top: place?.top,
@@ -144,7 +177,8 @@ function AnchoredPanel({
           visibility: place ? 'visible' : 'hidden',
         }}
       >
-        {children}
+        {/* Its own surface even when opened from a dialog drawn inside Tools: its headers draw in full. */}
+        <DialogInlineContext value={false}>{children}</DialogInlineContext>
       </div>
     </Portal>
   );

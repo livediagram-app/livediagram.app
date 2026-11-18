@@ -695,6 +695,9 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     number, title and state (pressed, it opens), done ones with a tick, with "2 open" (or "All done") beside the
     count. The field's own control (its chips, Add and remove buttons) stays where the type places it, the one
     place a link is set.
+    Under an open blocker the card starts on or before (its Start, else its Due, on or before the blocker's Due,
+    read from the built-in Start and Due), an amber line says "Starts 3 days before #4 Design is due" ("Starts the
+    day #4 Design is due"), and the blocker's row names it too ([Dependency clashes](plan-views.md#gantt-chart)).
   - **No loops**: a write that would make a card block itself, directly or through other cards (A blocks B blocks
     A), is refused (`blocks_cycle`), wherever it comes from: the card panel, an offline plan's own checks, the api
     and agents. The editor never sends it: picking such a card in a Blocked By field leaves the field as it was and
@@ -706,8 +709,14 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     already link both ways never rewrites a card: those cards show as blocked by each other until someone removes a
     link, and any write adding to the loop is refused. Two people closing a loop at the same moment (each write
     checked against what was there) leaves it in place the same way.
-  - **Gantt Chart**: the chart draws an arrow from each blocker's row to each row it blocks
+  - **Gantt Chart**: the chart draws an arrow from each blocker's row to each row it blocks, in amber where the
+    card starts before its open blocker is due, and offers to move the cards that follow after a drag
     ([Gantt Chart](plan-views.md#gantt-chart)).
+  - **Agents**: list_items lists a card's clashes (`clashes`, one sentence per clashing open blocker, as the panel
+    says it), and change_items' `set` takes `moveFollowing: true` with a date change: after the card is written, the
+    cards that follow it move as the chart's Move does (the same walk, read from the built-in Start and Due), each
+    written through the same item route, so the api's edit rights apply to every one; the answer lists each moved
+    card ("~ #7 Launch moved 3 days later, after #3 Design").
   - **Agents**: `list_items` marks a Blocked By field `blocks: true` and reads a card's blockers as any Card field
     ("#3 Website, #5 Launch"), with `blocked` (its count of open blockers) and `blocks` (the cards it blocks) on the
     card; `change_items` sets them by card number as any Card field, and `change_card_types` sets the switch
@@ -1281,7 +1290,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
   | Type                                        | Minimal    | Detailed                                                                                          |
   | ------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------- |
-  | Project                                     | title only | Number, Type, Assignee, Priority, Labels, Start, Due, Checklist, Comments, Description            |
+  | Project                                     | title only | Number, Type, Assignee, Priority, Labels, Start, Due, Checklist, Comments, Votes, Description     |
   | Task                                        | title only | Number, Type, Assignee, Priority, Labels, Estimate, Due, Checklist, Comments, Description, Parent |
   | Note                                        | title only | Type, Votes, Comments, Description                                                                |
   | Idea                                        | title only | Type, Labels, Votes, Comments, Description                                                        |

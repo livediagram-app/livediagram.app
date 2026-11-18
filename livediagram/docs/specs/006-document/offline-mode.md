@@ -154,6 +154,12 @@ auth has settled, the path names a document registered in the local index
   creating This Browser, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewDocument` in `app/new/page.tsx`).
+- **Except a first visit's guest token.** A browser with no guest token yet (or one near its end) fetches one before
+  the create: the handoff ([Auth + guest access → Guest identity](../014-identity/auth-and-guest-access.md#guest-identity)) leaves
+  the page and comes back to the same `/new` address, so a create begun first would run again on the way back and
+  make the canvas twice, the first left behind in Browser Storage. `commitNewDocument` awaits `ensureGuestToken` first; a
+  returning guest's token is already in `localStorage`, so it answers at once and nothing waits. With no accounts
+  site the handoff comes straight back failed, and the create goes ahead.
 - The editor reads back the record `/new` has just written rather than taking
   the tabs across in memory: the read is one IndexedDB get, small beside the
   waits removed, and keeps one load path.
@@ -188,10 +194,11 @@ server.
 
 - **Per reader.** A copy is keyed by who read it: the account id, or the guest's id. It is
   read back only for that reader, and every load drops the copies any other reader left,
-  so a browser holds one reader's copies at most (a sign-out in another app, or a second
-  account, empties the rest on the next load).
+  so a browser holds one reader's copies at most (a second account empties the rest on the next load).
 - **Cleared on sign-out.** Signing out, and deleting the account, empties the store before
-  the sign-out hop.
+  the sign-out hop. A sign-out in another app, which cannot reach this store, empties it at
+  this app's next load, the moment its first token answer finds the signed-in hint outlived
+  its session (liveworkspace's accounts.md "A hint that outlived its session").
 - **Lost access forgets.** A load that ends on not found, on the deleted card or behind a
   share password removes that document's copy. A load that cannot reach the server keeps
   it.
@@ -210,11 +217,16 @@ server.
   than 30 days is never read. Embeds, Community posts, workbenches and This Browser
   documents keep none.
 
-**The warm open.** Before auth settles, an address naming a cloud document with a copy for
-the reader this browser expects paints that copy under the `'self'` placeholder, read-only.
-The reader expected is the guest token's id, or, when the signed-in hint says this browser
-is signed in, the account whose copies the store holds (it holds one reader's at most). A
-signed-out browser, or one whose guest is someone else, never reads an account's copy. A
+**The warm open.** An address naming a cloud document with a copy for the reader paints that
+copy under the `'self'` placeholder, read-only, before the ordinary load lands. Signed out by
+the signed-in hint, the reader is the guest token's id, and the copy is read at once, before
+auth settles. When the hint says this browser is signed in, the warm open waits for the
+session's first token answer and reads only the copies of the account that answer names: the
+hint says whether, never who, so no account's copy paints before the session has said that
+account is reading. A stale hint (a sign-out in another app) paints nothing, and its answer
+empties the store. Signed in, the warm open gives up the token round trip of its head start
+and keeps the rest (the participant, the document and its first tab). A signed-out browser, or
+one whose guest is someone else, never reads an account's copy. A
 share link warm-opens only when its share code is the one the copy was kept under: by an address that names the document, or by the link's own address (`/document/shared?s=<code>`, as the Share dialog gives it), which names no document and finds the reader's newest copy kept under that code, for the same reader rules. The address is left as it is. Embeds, workbenches and This Browser documents never
 warm-open, and a copy whose first tab is not the tab this open would show first (no first
 tab kept, or the address's `#t=` names another tab) is not painted: the document opens as it
@@ -234,7 +246,7 @@ always did.
   can edit. A first tab whose revision is the one the copy holds keeps the painted tab as it
   is, so an unchanged canvas is not drawn again.
 - **Someone else after all.** When the reader resolves to someone other than the copy's
-  (a hint that outlived its session), the copy goes from the screen at once for the opening
+  (a guest token that changed since the read), the copy goes from the screen at once for the opening
   screen, and the load opens the document for whoever is reading.
 - **Lost access on catch-up** swaps the copy for the screen the load ends on (not found,
   the deleted card, the password gate) and forgets the copy; a share link's copies go by its code

@@ -230,7 +230,6 @@ function articleWrite(v: unknown): ArticleWrite {
     ...(v.look === undefined ? {} : { look: oneOf(ARTICLE_LOOK_IDS, v.look, 'look') }),
     ...(v.accent === undefined ? {} : { accent: hex(v.accent, 'accent') }),
     ...(v.pageNumbers === undefined ? {} : { pageNumbers: v.pageNumbers as boolean }),
-    ...(v.as === undefined ? {} : { as: oneOf(['suggestions', 'direct'] as const, v.as, 'as') }),
   };
 }
 

@@ -7,7 +7,6 @@ import {
   pagesOf,
   type Appearance,
   type Tab,
-  withArticlesRejected,
 } from '@livedocuments/document';
 import { getResolvedAppearance } from '@livedocuments/ui';
 import { resolveTabBackdrop, themeViewMap } from './themes';
@@ -24,6 +23,5 @@ export function tabAsSeen(tab: Tab, appearance: Appearance = getResolvedAppearan
     dark: themeViewMap(tab.theme, 'dark'),
   });
   const elements = tab.elements.map((el) => elementAsSeen(el, surface, themeMap, pageView));
-  // Every article in its rejected view (docs/specs/007-editor/suggestions.md "Everywhere a page goes").
-  return withArticlesRejected({ ...tab, ...backdrop, elements });
+  return { ...tab, ...backdrop, elements };
 }

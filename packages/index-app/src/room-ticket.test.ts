@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { GrantClaims } from '@liveworkspace/index-client';
 import {
   earliestRoomGrantDue,
+  isViewOnlyRoomTicketMint,
   openRoomSockets,
   openRoomTicket,
   renewRoomGrant,
+  requestedRoomCap,
   roomGrantDueAt,
   roomGrantStep,
   roomTicketLevel,
@@ -315,5 +317,30 @@ describe("a session's grant in the room", () => {
     expect(await renewRoomGrant(service, env, 'x'.repeat(9000), 'd1', held)).toEqual({
       kind: 'invalid',
     });
+  });
+});
+
+// one-explorer-contracts.md "A view-only ticket": the mint's cap, read the same way by every product's api.
+describe("the mint's view-only cap", () => {
+  const url = (query: string) => new URL(`https://api.test/api/documents/d1/room-ticket${query}`);
+  const segments = ['api', 'documents', 'd1', 'room-ticket'];
+
+  it('reads none, view, or anything else as invalid', () => {
+    expect(requestedRoomCap(url(''))).toBeNull();
+    expect(requestedRoomCap(url('?cap=view'))).toBe('view');
+    for (const query of ['?cap=edit', '?cap=participate', '?cap=', '?cap=VIEW'])
+      expect(requestedRoomCap(url(query)), query).toBe('invalid');
+  });
+
+  it('names only a POST view-only mint on the collection', () => {
+    expect(isViewOnlyRoomTicketMint('POST', segments, url('?cap=view'), 'documents')).toBe(true);
+    expect(isViewOnlyRoomTicketMint('POST', segments, url(''), 'documents')).toBe(false);
+    expect(isViewOnlyRoomTicketMint('POST', segments, url('?cap=edit'), 'documents')).toBe(false);
+    expect(isViewOnlyRoomTicketMint('GET', segments, url('?cap=view'), 'documents')).toBe(false);
+    expect(isViewOnlyRoomTicketMint('POST', segments, url('?cap=view'), 'designs')).toBe(false);
+    const share = ['api', 'documents', 'd1', 'share'];
+    expect(isViewOnlyRoomTicketMint('POST', share, url('?cap=view'), 'documents')).toBe(false);
+    const deeper = [...segments, 'x'];
+    expect(isViewOnlyRoomTicketMint('POST', deeper, url('?cap=view'), 'documents')).toBe(false);
   });
 });

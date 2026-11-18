@@ -24,7 +24,6 @@ import {
 import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@livedesign/design-views';
 import type { BodySchema } from '@liveworkspace/api-kit/openapi-types';
 import { TAB_DELTA_OPENAPI } from '@liveworkspace/api-kit/tab-delta-door';
-import { SUGGESTIONS_OPENAPI } from '@liveworkspace/suggestions/openapi';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
  *  - `public`: no identity required.
@@ -571,78 +570,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/designs/{id}/tabs/{tabId}/suggestions',
-    segment: 'designs',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.list.summary,
-    auth: 'guest-or-account',
-    tokenUsable: true,
-    responseSchema: SUGGESTIONS_OPENAPI.list.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.list.statuses,
-  },
-  {
-    method: 'POST',
-    path: '/designs/{id}/tabs/{tabId}/suggestions',
-    segment: 'designs',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.submit.summary,
-    auth: 'guest-or-account',
-    tokenUsable: true,
-    requestSchema: SUGGESTIONS_OPENAPI.submit.requestSchema,
-    responseSchema: SUGGESTIONS_OPENAPI.submit.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.submit.statuses,
-  },
-  {
-    method: 'POST',
-    path: '/designs/{id}/tabs/{tabId}/suggestions/accept',
-    segment: 'designs',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.accept.summary,
-    auth: 'guest-or-account',
-    tokenUsable: true,
-    requestSchema: SUGGESTIONS_OPENAPI.accept.requestSchema,
-    responseSchema: SUGGESTIONS_OPENAPI.accept.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.accept.statuses,
-  },
-  {
-    method: 'POST',
-    path: '/designs/{id}/tabs/{tabId}/suggestions/reject',
-    segment: 'designs',
-    tag: 'Suggestions',
-    summary: SUGGESTIONS_OPENAPI.reject.summary,
-    auth: 'guest-or-account',
-    tokenUsable: true,
-    requestSchema: SUGGESTIONS_OPENAPI.reject.requestSchema,
-    responseSchema: SUGGESTIONS_OPENAPI.reject.responseSchema,
-    statuses: SUGGESTIONS_OPENAPI.reject.statuses,
-  },
-  {
-    method: 'GET',
-    path: '/designs/{id}/review',
-    segment: 'designs',
-    tag: 'Suggestions',
-    summary:
-      "The design's review settings: the Participant share links and people whose changes are always suggestions, whether an assistant's are, and the people seen joining as Participants. An Editor's only.",
-    auth: 'guest-or-account',
-    tokenUsable: true,
-    responseSchema: 'ReviewResponse',
-    statuses: [200, 401, 403, 404, 410],
-  },
-  {
-    method: 'PUT',
-    path: '/designs/{id}/review',
-    segment: 'designs',
-    tag: 'Suggestions',
-    summary:
-      "Set the review settings: Suggest Only links (share codes) and people (collab keys), and Assistants Suggest. Reaches every Participant with the design open. An Editor's only.",
-    auth: 'guest-or-account',
-    tokenUsable: true,
-    requestSchema: ref('ReviewSettings'),
-    responseSchema: 'ReviewResponse',
-    statuses: [200, 400, 401, 403, 404, 410],
-  },
-  {
-    method: 'GET',
     path: '/designs/{id}/components',
     segment: 'designs',
     tag: 'Components',
@@ -1040,12 +967,32 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     summary:
       'Mint a one-time ticket for opening the realtime room: pass it to the WebSocket upgrade as `?t=`. Same access policy as a read, share password included. Exempt from the write rate limit.',
     auth: 'guest-or-account',
+    query: [
+      {
+        name: 'cap',
+        required: false,
+        description:
+          '`view` for a view-only ticket: it admits at view whatever your level, and a read-only token may mint it.',
+      },
+    ],
     responseSchema: {
       type: 'object',
-      properties: { ticket: { type: 'string' } },
+      properties: {
+        ticket: { type: 'string' },
+        expiresAt: {
+          type: 'integer',
+          description: 'A view-only ticket: when it lapses, epoch milliseconds.',
+        },
+        level: {
+          type: 'string',
+          enum: ['view', 'participate', 'edit'],
+          description:
+            'A view-only ticket: your own level on the design (always view for a read-only token). The ticket still admits at view.',
+        },
+      },
       required: ['ticket'],
     },
-    statuses: [200, 404, 410],
+    statuses: [200, 400, 404, 410],
   },
   {
     method: 'GET',

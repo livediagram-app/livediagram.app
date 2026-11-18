@@ -12,6 +12,11 @@ import {
   toolUiMeta,
 } from '@liveworkspace/mcp-kit/app-view';
 import { canvasViewResult, clickableBoxes, viewBoxOf } from '@liveworkspace/mcp-kit/app-view-tab';
+import {
+  roomSocketUrl as sharedRoomSocketUrl,
+  viewLiveResult,
+  viewTicketPath,
+} from '@liveworkspace/mcp-kit/app-view-live';
 import type {
   ChangesetResponse,
   LiveDoc,
@@ -116,11 +121,11 @@ async function drawTab(
 
 // The room's socket for a document, on this deployment's editor host, as the view opens it with `?t=`.
 export const roomSocketUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, documentId: string) =>
-  `${socketOriginOf(appBase(env))}/api/documents/${encodeURIComponent(documentId)}/ws`;
+  sharedRoomSocketUrl(appBase(env), 'documents', documentId);
 
 // view_live: a view-only ticket minted for the token's owner (`?cap=view`), so the view never holds the owner's
-// grant and a read-only token may follow too. The ticket rides structured content only: the text line, the logs and
-// the telemetry never carry it.
+// grant and a read-only token may follow too. Edits in the view are offered at edit only, by the level the api
+// answers: a read-only token's is view. The shared answer keeps the ticket out of the text line and the logs.
 export async function viewLive(
   env: Env,
   token: string,
@@ -129,26 +134,16 @@ export async function viewLive(
   const answer = await apiJson<RoomTicketResponse>(
     env,
     token,
-    `/documents/${encodeURIComponent(args.documentId)}/room-ticket?cap=view`,
+    viewTicketPath('documents', args.documentId),
     { method: 'POST' },
   );
-  if (typeof answer.expiresAt !== 'number') return errorResult('Live updates are unavailable.');
-  // Edits in the view are offered at edit only, by the level the api answers: a read-only token's is view.
-  const canEdit = answer.level === 'edit';
-  console.info('[mcp] view_live', {
-    lapsesInS: Math.round((answer.expiresAt - Date.now()) / 1000),
-    canEdit,
+  return viewLiveResult({
+    idKey: 'documentId',
+    id: args.documentId,
+    url: roomSocketUrl(env, args.documentId),
+    answer,
+    edits: true,
   });
-  return {
-    content: [{ type: 'text', text: 'Opened live updates for the interactive view.' }],
-    structuredContent: {
-      documentId: args.documentId,
-      url: roomSocketUrl(env, args.documentId),
-      ticket: answer.ticket,
-      expiresAt: answer.expiresAt,
-      canEdit,
-    },
-  };
 }
 
 type ViewEditArgs = {

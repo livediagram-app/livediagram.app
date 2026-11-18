@@ -31,11 +31,13 @@ function Sidebar({
   focusPage = () => {},
   onMinimise = () => {},
   stack,
+  summary,
 }: {
   pages?: typeof PAGES;
   focusPage?: (id: string) => void;
   onMinimise?: () => void;
   stack?: { on: boolean; onToggle: () => void };
+  summary?: string | null;
 }) {
   const contents = usePageContents({
     view: { pages, focusPage },
@@ -63,6 +65,7 @@ function Sidebar({
       top={64}
       onMinimise={onMinimise}
       stack={stack}
+      summary={summary}
     />
   );
 }
@@ -110,6 +113,37 @@ describe('ContentsSidebar', () => {
     );
     frames.shift()!(0);
     expect(focusPage).toHaveBeenCalledWith('p3');
+  });
+
+  it('frames the page again as the window settles after docking, then stops listening', () => {
+    inCanvas();
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    const frames: FrameRequestCallback[] = [];
+    vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => {
+      frames.push(cb);
+      return frames.length;
+    });
+    const cancel = vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+    const store = createViewportStore(1);
+    store.setView({ zoom: 1, offset: { x: 418 - 350, y: 200 - 50 } });
+    const focusPage = vi.fn();
+    const { unmount } = render(
+      <ViewportStoreProvider store={store}>
+        <Sidebar focusPage={focusPage} />
+      </ViewportStoreProvider>,
+    );
+    // Back from fullscreen: a resize while it settles drops the pending frame for a fresh one.
+    window.dispatchEvent(new Event('resize'));
+    expect(cancel).toHaveBeenCalled();
+    frames.at(-1)!(0);
+    expect(focusPage).toHaveBeenCalledWith('p3');
+    // Once settled, a resize no longer reframes.
+    vi.advanceTimersByTime(1500);
+    const count = frames.length;
+    window.dispatchEvent(new Event('resize'));
+    expect(frames.length).toBe(count);
+    unmount();
+    vi.useRealTimers();
   });
 
   it('stops following the view once it is gone', () => {
@@ -186,5 +220,19 @@ describe('ContentsSidebar', () => {
     expect(contentsClusterLeft(true, scale)).toBe(onScreen + 16);
     expect(contentsClusterLeft(true, scale)!).toBeGreaterThan(contentsClusterLeft(true, 1)!);
     expect(contentsClusterLeft(false, scale)).toBeNull();
+  });
+});
+
+// livedocuments' flashcards.md "The whole talk": the sidebar has no header, so the summary heads its list.
+describe('the sidebar summary', () => {
+  it('heads the list with the summary, and has no head without one', () => {
+    const { unmount } = render(<Sidebar summary="3 cards · about 2 min" />);
+    const head = document.querySelector('[data-contents-summary]');
+    expect(head?.textContent).toBe('3 cards · about 2 min');
+    const list = screen.getAllByRole('list')[0]!;
+    expect(head!.compareDocumentPosition(list) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    unmount();
+    render(<Sidebar />);
+    expect(document.querySelector('[data-contents-summary]')).toBeNull();
   });
 });

@@ -7,16 +7,11 @@
 // for the screen, as Share goes on to sharing. Loads with its own chunk the first time.
 
 import { authHrefWithReturn } from '@/components/chrome/auth-shared';
+import { toolGateCopy } from '@liveworkspace/workbench/lib/tool-gate-copy';
 import { SyncGateDialog } from '@/components/dialogs/SyncGateDialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { AUTOMATIONS_PARAM } from './automations-gate';
 import type { AutomationsGate } from './AutomationsHost';
-
-export const OFFLINE_RULES_TITLE = 'Rules Run on Our Servers';
-export const OFFLINE_RULES_COPY =
-  'Rules, schedules and due-date reminders run even when nobody has this plan open, so they need it saved to your account.';
-export const GUEST_RULES_COPY =
-  'Rules act for an Editor of this plan, even when nobody has it open, so they need you signed in. You come back here with Automations open.';
 
 /** Where a guest signs in: back to this very page (its share code and tab kept), the screen asked open. */
 export function automationsSignInHref(
@@ -37,13 +32,13 @@ export function AutomationsSyncGate({
   gate: AutomationsGate;
   onClose: () => void;
 }) {
+  const said = toolGateCopy(gate.kind, 'Automations', 'Plan');
   return (
     <SyncGateDialog
       title="Automations"
-      subtitle={gate.kind === 'sync' ? 'Saved only in this browser.' : 'You are not signed in.'}
       help={<HelpArticleLink article="planAutomations" size="md" />}
-      promptTitle={OFFLINE_RULES_TITLE}
-      message={gate.kind === 'sync' ? OFFLINE_RULES_COPY : GUEST_RULES_COPY}
+      promptTitle={said.title}
+      message={said.body}
       onSyncToCloud={gate.kind === 'sync' ? gate.sync : async () => {}}
       ready={gate.kind === 'sync' ? gate.ready : true}
       signInHref={gate.kind === 'sign_in' ? automationsSignInHref(window.location) : undefined}

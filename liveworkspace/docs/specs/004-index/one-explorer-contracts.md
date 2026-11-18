@@ -532,7 +532,10 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   it (10 minutes) and is never renewed in place: the client mints a fresh one, through its own credential, which
   asks the index again. The room stamps such a session as no owner, whoever the grant's person is. Revoking the
   person's access closes it (`person`, 4005) and its next mint is refused; revoking the credential closes it at
-  once (below).
+  once (below). Every product's api answers it (livediagram, livedocuments, livedesign, liveplanner), each through
+  the same two helpers in `@liveworkspace/index-app` (`room-ticket.ts`): `requestedRoomCap` reads `?cap=` (none,
+  `view`, or anything else refused with 400 `invalid_cap`), and `isViewOnlyRoomTicketMint` is the one write a
+  read-only API token may make besides revoking itself, since the mint writes nothing and admits only a watcher.
 - **A token's ticket**: a ticket minted through an API token (a view-only one, or one with no cap at all) is sealed
   with the token's id too (`rt2~`, the sealed facts' `k`), and the room keeps it on the socket. The app notes the room
   at accounts against the token until the ticket lapses (`POST /api/account/internal/workbench/token-rooms`,
@@ -540,7 +543,9 @@ How an app takes the grant is its own business; liveplanner's is the first, and 
   same index door: `POST /api/index/internal/workbench-close {app, tokenId, itemIds}`, and the app's
   `POST <app>/api/internal/items/:id/workbench-close {tokenId}` (`tokenClose` in `@liveworkspace/index-app`),
   which closes exactly the sockets that token's tickets opened (`{match: 'token'}`, 4005). The body names a pairing
-  or a token, never both. An app that seals no token answers 404 for `{tokenId}`.
+  or a token, never both. An app that seals no token answers 404 for `{tokenId}`. Today that is livediagram's alone:
+  livedocuments, livedesign and liveplanner seal no token, so revoking it stops their views at the next mint, within
+  the ticket's 10 minutes.
 - **Renewal**: the room sends `{kind: "grant-renew", expiresAt}` 30 seconds before a socket's grant runs out; the
   editor answers `{kind: "grant", grant}` with a fresh one (a paired tool's session answers with a fresh sealed
   ticket). A fresh grant saying the same moves the lapse on; one with another level, tab or pairing (a paired
@@ -916,9 +921,11 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
     app's threads (the workspace token's audience is every app's api); on an app's own address and in its editor's
     panel that app's threads only (their token is their own api's). `Activity·Added` (`Reply`) and
     `Activity·Resolved` (`Thread`).
-  - **Mark Done** (e) on an action, only in an editor's panel and only for an action on the tab it has open: the
-    canvas's own Mark Done (an action's status has no route; it is the people's to change, in the editor).
-    `Activity·Resolved` (`Action`).
+  - **Mark Done** (e) on a livediagram action, wherever the Inbox shows it: in an editor's panel for an action on
+    the tab it has open, the canvas's own Mark Done; anywhere else through livediagram's action route,
+    `POST /api/documents/:id/tabs/:tabId/actions/:actionId/status` with `{ elementId, status: 'done' }`, an Editor's
+    (403 for anyone less), which the canvas's open editors hear live. On liveworkspace.app and on livediagram's
+    address alike (the same token rules as Reply). `Activity·Resolved` (`Action`).
   - Nothing on a This Browser row (no page here reaches the offline store but the editor, which has no verbs for it
     yet), on another app's row where the token can't write, or on a Plan card (done is its board's column).
     A row whose work is done here leaves the list at once, and the sidebar's badge and the rail's count drop with

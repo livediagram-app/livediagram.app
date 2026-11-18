@@ -11,9 +11,6 @@ import {
   ChromeToolsMenu,
   type ChromeToolsItem,
 } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
-import { useSuggestionsToolsItem } from '@liveworkspace/suggestions/react/SuggestionsBar';
-import type { CanvasSuggestions } from '@liveworkspace/suggestions/react/useCanvasSuggestions';
-import type { Element as SuggestionCanvasElement } from '@livediagram/document';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/editor-app.md): search, the open-source GitHub
@@ -23,7 +20,7 @@ import type { Element as SuggestionCanvasElement } from '@livediagram/document';
 // so each host drops it straight into its own bar flex row.
 export function ChromeControls({
   onOpenSearch,
-  suggestions,
+  extraTools = [],
   onOpenSettings,
   settingsLabel = 'Settings',
   labelled = false,
@@ -31,8 +28,8 @@ export function ChromeControls({
   appearance = true,
 }: {
   onOpenSearch?: () => void;
-  // The canvas's suggestions (the editor's; the Explorer's bar has none): Suggest's row and the panel it opens.
-  suggestions?: CanvasSuggestions<SuggestionCanvasElement>;
+  // More rows for Tools (the editor's Editing Mode tool).
+  extraTools?: readonly (ChromeToolsItem | null)[];
   onOpenSettings?: () => void;
   // The editor's settings are per-document; the Explorer's read the same
   // synced preferences. Let the host phrase the hover card.
@@ -47,13 +44,13 @@ export function ChromeControls({
   appearance?: boolean;
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
-  const suggest = useSuggestionsToolsItem(suggestions);
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
   const search: ChromeToolsItem | null = onOpenSearch
     ? {
         id: 'search',
         group: 'find',
-        label: 'Search',
+        // The ellipsis: it opens outside Tools (footer-tools-menu.md "Opening a tool inside Tools").
+        label: 'Search…',
         description: 'Find canvases, tabs and elements.',
         icon: <SearchGlyph />,
         onSelect: () => onOpenSearch(),
@@ -67,7 +64,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, suggest]} />
+      <ChromeToolsMenu labelled={labelled} items={[search, ...extraTools]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

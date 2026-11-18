@@ -3,9 +3,9 @@
 import { track } from '@/lib/telemetry';
 import { Glyph } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
-import { TabNameInBox } from '@liveworkspace/workbench/components/chrome/TabNameInBox';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
 import { ToolbarMenuCard } from './ToolbarMenuCard';
+import { Brand } from '@livediagram/ui';
+import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -27,8 +27,11 @@ export function ToolbarExplorerButton({
   open,
   onToggle,
   inline = false,
+  itemId = null,
 }: {
   open: boolean;
+  // The open canvas, for the logo's link to the Explorer on the place that holds it.
+  itemId?: string | null;
   inline?: boolean;
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
@@ -55,12 +58,23 @@ export function ToolbarExplorerButton({
     </button>
   );
   return (
-    <ToolbarMenuCard inline={inline} dockButton tourId="dock-explorer">
+    <ToolbarMenuCard
+      inline={inline}
+      dockButton
+      tourId="dock-explorer"
+      logo={
+        <Brand
+          href={explorerItemHref(itemId)}
+          size="sm"
+          wordmarkClassName="hidden lg:inline"
+          className="relative touch-target"
+        />
+      }
+    >
       {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
       {button}
       <EditorModeSwitch iconOnly={phone || inline} />
-      {/* The open tab's name, in every mode (not on a phone). */}
-      {phone || inline ? null : <TabNameInBox maxLength={NAME_MAX_LENGTH} />}
+      {/* No tab name here (owner, 2026-11-17): the tab bar names the tab. */}
     </ToolbarMenuCard>
   );
 }

@@ -1,27 +1,31 @@
 'use client';
 
-// The recording dock (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording"), at the bottom centre of the
-// canvas: the set-up card, the count, the compact recording bar and the save card, one at a time.
+// The recording dock (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording"): the count, the compact recording
+// bar and the save card, one at a time (the set-up is a page inside Tools, RecordSetup.tsx). The count and the bar sit
+// under the palette strip where the palette tray goes (owner, 2026-11-17, as "Click to drop" does); without a strip,
+// and for the save card, at the bottom centre of the canvas.
 
-import { DevicePicker, NO_CAMERA } from '@liveworkspace/capture';
+import { WALKTHROUGH_MAX_MS } from '@liveworkspace/media/walkthrough';
+import { Button, ConfirmPopover } from '@liveworkspace/ui';
+import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
-  WALKTHROUGH_CORNERS,
-  WALKTHROUGH_MAX_MS,
-  type WalkthroughCorner,
-} from '@liveworkspace/media/walkthrough';
-import {
-  Button,
-  CloseIcon,
-  ConfirmPopover,
-  CountBadge,
-  HoverCard,
-  TextInput,
-} from '@liveworkspace/ui';
-import { useState, type ReactNode } from 'react';
+  PALETTE_TRAY_GAP_PX,
+  trayHost,
+  traySlot,
+  usePaletteStripBox,
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import { formatClock } from '../timeline';
+import {
+  formatTimeLeft,
+  megabytes,
+  uploadPercent,
+  type WalkthroughUpload,
+} from '../upload-progress';
 import type { Walkthroughs } from '../useWalkthroughs';
 import { LevelBar } from './Bubble';
-import { DownloadIcon, HideIcon, RecordIcon, StopIcon, WarningIcon } from './icons';
+import { Problem } from './record-parts';
+import { DownloadIcon, StopIcon } from './icons';
 
 const CARD =
   'pointer-events-auto rounded-2xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/40';
@@ -30,13 +34,42 @@ const LAST_MINUTE_MS = WALKTHROUGH_MAX_MS - 60_000;
 export function RecordDock({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   const { recorder } = walkthroughs;
   const phase = recorder.phase;
+  const slim = phase.kind === 'countdown' || phase.kind === 'recording';
+  const strip = usePaletteStripBox(slim);
   if (phase.kind === 'off') return null;
+  if (slim && strip && typeof document !== 'undefined') {
+    const host = trayHost();
+    const slot = traySlot(strip, window.innerWidth);
+    return createPortal(
+      <div
+        data-walkthrough-dock={phase.kind}
+        data-walkthrough-dock-at="palette"
+        // Over the palette tray's slot: its hints step aside while recording (they are not recorded anyway).
+        className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center"
+        style={{
+          left: slot.left - host.dx,
+          width: slot.width,
+          top: strip.bottom + PALETTE_TRAY_GAP_PX - host.dy,
+        }}
+      >
+        {phase.kind === 'countdown' ? (
+          <div
+            className={`${CARD} rounded-xl px-3 py-1.5 text-[13px] font-medium text-slate-700 dark:text-slate-200`}
+          >
+            Recording starts in {phase.n}
+          </div>
+        ) : (
+          <RecordingBar walkthroughs={walkthroughs} elapsed={phase.elapsed} />
+        )}
+      </div>,
+      host.node,
+    );
+  }
   return (
     <div
       data-walkthrough-dock={phase.kind}
       className="pointer-events-none absolute inset-x-0 bottom-16 z-40 flex justify-center px-4"
     >
-      {phase.kind === 'setup' ? <SetupCard walkthroughs={walkthroughs} /> : null}
       {phase.kind === 'countdown' ? (
         <div
           className={`${CARD} px-4 py-2.5 text-[13px] font-medium text-slate-700 dark:text-slate-200`}
@@ -64,189 +97,6 @@ export function Countdown({ n }: { n: number }) {
         {n}
       </span>
     </div>
-  );
-}
-
-function HideControls({
-  walkthroughs,
-  compact,
-}: {
-  walkthroughs: Walkthroughs;
-  compact?: boolean;
-}) {
-  const { hiding, host } = walkthroughs;
-  const count = hiding.hidden.size;
-  // Nothing on this tab can be hidden (a Sheet, a Form, an empty canvas): no control rather than a dead one.
-  if (!hiding.canHide) return null;
-  if (hiding.picking) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <span className="text-[12px] text-slate-600 dark:text-slate-300">
-          {compact ? 'Press to hide' : 'Press elements to hide them'}
-        </span>
-        <Button
-          variant="secondary"
-          size="xs"
-          onClick={() =>
-            // The canvas's selection, then what the app picks elsewhere (a board's cards).
-            hiding.hideAll([...host.selection(), ...(host.hideable?.selection?.() ?? [])])
-          }
-        >
-          Hide Selection
-        </Button>
-        <Button variant="primary" size="xs" onClick={() => hiding.setPicking(false)}>
-          Done
-        </Button>
-      </div>
-    );
-  }
-  return (
-    <HoverCard
-      title="Hide From Recording"
-      description="Pick elements viewers of this walkthrough won't see."
-    >
-      <button
-        type="button"
-        aria-pressed={false}
-        onClick={() => hiding.setPicking(true)}
-        className="inline-flex cursor-pointer items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
-      >
-        <HideIcon size={14} />
-        {compact ? 'Hide' : 'Hide From Recording'}
-        {count > 0 ? <CountBadge count={count} label={`${count} hidden`} /> : null}
-      </button>
-    </HoverCard>
-  );
-}
-
-function CornerPicker({
-  corner,
-  onCorner,
-}: {
-  corner: WalkthroughCorner;
-  onCorner: (c: WalkthroughCorner) => void;
-}) {
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Bubble corner"
-      className="grid h-8 w-11 shrink-0 grid-cols-2 gap-0.5 rounded-md border border-slate-200 p-0.5 dark:border-slate-700"
-    >
-      {(['top-left', 'top-right', 'bottom-left', 'bottom-right'] as const)
-        .filter((c) => WALKTHROUGH_CORNERS.includes(c))
-        .map((c) => (
-          <button
-            key={c}
-            type="button"
-            role="radio"
-            aria-checked={corner === c}
-            aria-label={c.replace('-', ' ')}
-            onClick={() => onCorner(c)}
-            className={`cursor-pointer rounded-sm transition ${
-              corner === c
-                ? 'bg-brand-600'
-                : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700'
-            }`}
-          />
-        ))}
-    </div>
-  );
-}
-
-function SetupCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
-  const { recorder, discard } = walkthroughs;
-  const ready = recorder.stream !== null;
-  const cameraOn =
-    recorder.cameraOn &&
-    recorder.camera !== NO_CAMERA &&
-    (recorder.stream?.getVideoTracks().length ?? 0) > 0;
-  return (
-    <section
-      aria-label="Record a Walkthrough"
-      className={`${CARD} flex w-[min(25rem,100%)] flex-col gap-3 p-4`}
-    >
-      <header className="flex items-start justify-between gap-3">
-        <div>
-          <h2 className="text-[14px] font-semibold text-slate-900 dark:text-slate-50">
-            Record a Walkthrough
-          </h2>
-          <p className="mt-0.5 text-[12px] leading-snug text-slate-500 dark:text-slate-400">
-            Your voice, your camera if you turn it on, and how you move around the canvas, for
-            anyone who opens it.
-          </p>
-        </div>
-        <HoverCard title="Close">
-          <button
-            type="button"
-            aria-label="Close"
-            onClick={discard}
-            className="-mr-1 -mt-1 flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          >
-            <CloseIcon size={12} />
-          </button>
-        </HoverCard>
-      </header>
-      <DevicePicker
-        devices={recorder.devices}
-        microphone={recorder.microphone}
-        camera={recorder.camera}
-        onMicrophone={recorder.setMicrophone}
-        onCamera={recorder.setCamera}
-        cameraOn={recorder.cameraOn}
-        onCameraOn={recorder.setCameraOn}
-        onAllow={recorder.allow}
-      />
-      <div className="flex items-center gap-3">
-        <span className="w-[4.6rem] shrink-0 text-xs font-medium text-slate-600 dark:text-slate-300">
-          Level
-        </span>
-        <LevelBar meter={recorder.meter} className="flex-1" />
-        {cameraOn ? (
-          <HoverCard
-            title="Bubble Corner"
-            description="Where your camera shows, recorded and played back."
-          >
-            <span>
-              <CornerPicker corner={recorder.corner} onCorner={recorder.setCorner} />
-            </span>
-          </HoverCard>
-        ) : null}
-      </div>
-      {recorder.deviceProblem ? <Problem>{recorder.deviceProblem}</Problem> : null}
-      <footer className="flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
-        <HideControls walkthroughs={walkthroughs} />
-        {walkthroughs.hiding.picking ? null : (
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={!ready}
-            onClick={recorder.start}
-            className="ml-auto"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <RecordIcon size={10} className="text-rose-300" />
-              Start Recording
-            </span>
-          </Button>
-        )}
-      </footer>
-    </section>
-  );
-}
-
-function Problem({ children, tone = 'amber' }: { children: ReactNode; tone?: 'amber' | 'rose' }) {
-  return (
-    <p
-      role="alert"
-      className={`flex items-start gap-1.5 rounded-lg px-2.5 py-2 text-[12px] leading-snug ${
-        tone === 'rose'
-          ? 'bg-rose-50 text-rose-900 dark:bg-rose-500/10 dark:text-rose-100'
-          : 'bg-amber-50 text-amber-900 dark:bg-amber-500/10 dark:text-amber-100'
-      }`}
-    >
-      <WarningIcon aria-hidden className="mt-px shrink-0" />
-      {children}
-    </p>
   );
 }
 
@@ -279,7 +129,8 @@ function RecordingBar({ walkthroughs, elapsed }: { walkthroughs: Walkthroughs; e
   return (
     <section
       aria-label="Recording"
-      className={`${CARD} flex items-center gap-3 rounded-full py-1.5 pl-4 pr-1.5`}
+      // The palette tray's shape: a 12 px card whose controls sit 4 px in, their 8 px corners nesting in its own.
+      className={`${CARD} flex items-center gap-3 !rounded-xl py-1 pl-3 pr-1`}
     >
       <span className="relative flex h-2.5 w-2.5 shrink-0">
         <span className="absolute inset-0 animate-ping rounded-full bg-rose-500/70 motion-reduce:animate-none" />
@@ -295,23 +146,19 @@ function RecordingBar({ walkthroughs, elapsed }: { walkthroughs: Walkthroughs; e
       </span>
       <LevelBar meter={recorder.meter} className="hidden w-14 md:block" />
       <span className="h-5 w-px bg-slate-200 dark:bg-slate-700" />
-      <HideControls walkthroughs={walkthroughs} compact />
-      {walkthroughs.hiding.picking ? null : (
-        <>
-          <DiscardButton onDiscard={discard} size="xs" />
-          <Button
-            variant="primary"
-            size="xs"
-            onClick={() => void recorder.finish()}
-            className="rounded-full"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <StopIcon size={10} />
-              Finish
-            </span>
-          </Button>
-        </>
-      )}
+      {/* No Hide here (owner, 2026-11-17): what is hidden is chosen in the set-up, before the recording starts. */}
+      <DiscardButton onDiscard={discard} size="xs" />
+      <Button
+        variant="primary"
+        size="xs"
+        onClick={() => void recorder.finish()}
+        className="!rounded-lg"
+      >
+        <span className="inline-flex items-center gap-1.5">
+          <StopIcon size={10} />
+          Finish
+        </span>
+      </Button>
     </section>
   );
 }
@@ -322,44 +169,22 @@ function SaveCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   if (phase.kind !== 'review') return null;
   const saving = phase.saving !== null;
   const stoppedAtLimit = phase.events.durationMs >= WALKTHROUGH_MAX_MS - 1000;
-  const megabytes = (phase.recorded.blob.size / (1024 * 1024)).toFixed(1);
   return (
     <section
       aria-label="Save Walkthrough"
       className={`${CARD} flex w-[min(25rem,100%)] flex-col gap-3 p-4`}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' && !saving && e.target instanceof HTMLInputElement)
-          void recorder.save();
-      }}
     >
       <header>
         <h2 className="text-[14px] font-semibold text-slate-900 dark:text-slate-50">
-          Save Walkthrough
+          {phase.error ? 'Walkthrough Not Saved' : 'Saving Walkthrough'}
         </h2>
         <p className="mt-0.5 text-[12px] tabular-nums text-slate-500 dark:text-slate-400">
-          {formatClock(phase.events.durationMs)} · {megabytes} MB
+          {formatClock(phase.events.durationMs)} · {megabytes(phase.recorded.blob.size)} MB
           {stoppedAtLimit ? ' · Stopped at 10 minutes, the longest a walkthrough may be.' : ''}
         </p>
       </header>
-      <label className="flex flex-col gap-1">
-        <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Title</span>
-        <TextInput
-          value={phase.title}
-          maxLength={120}
-          disabled={saving}
-          onChange={(e) => recorder.setTitle(e.target.value)}
-          autoFocus
-        />
-      </label>
       {saving ? (
-        <div className="flex flex-col gap-1.5" role="status">
-          <span className="text-[12px] text-slate-600 dark:text-slate-300">
-            {phase.saving === 'events' ? 'Starting the upload' : `Uploading ${megabytes} MB`}
-          </span>
-          <span className="relative block h-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
-            <span className="absolute inset-y-0 left-0 w-1/3 animate-[walkthrough-upload_1.2s_ease-in-out_infinite] rounded-full bg-brand-600 motion-reduce:animate-none" />
-          </span>
-        </div>
+        <UploadStatus stage={phase.saving} upload={phase.upload} bytes={phase.recorded.blob.size} />
       ) : null}
       {phase.error ? <Problem tone="rose">{phase.error}</Problem> : null}
       <footer className="flex items-center justify-between gap-2 border-t border-slate-100 pt-3 dark:border-slate-800">
@@ -382,10 +207,76 @@ function SaveCard({ walkthroughs }: { walkthroughs: Walkthroughs }) {
             disabled={!walkthroughs.canRecord}
             onClick={() => void recorder.save()}
           >
-            {saving ? 'Saving' : 'Save'}
+            {saving ? 'Saving' : 'Try Again'}
           </Button>
         </span>
       </footer>
     </section>
+  );
+}
+
+const TRACK = 'relative block h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700';
+
+// The save's progress (each app's walkthroughs.md "Save"): starting, then a bar of the media's bytes sent with the
+// percentage, the megabytes and about how long is left, then finishing while the server stores it. Only the stage
+// is announced (role="status"); the numbers move too often to read out, and the bar carries them for a screen reader.
+function UploadStatus({
+  stage,
+  upload,
+  bytes,
+}: {
+  stage: 'events' | 'media' | null;
+  upload: WalkthroughUpload | null;
+  bytes: number;
+}) {
+  if (stage !== 'media' || !upload) {
+    return (
+      <div data-walkthrough-upload="starting" className="flex flex-col gap-1.5">
+        <span role="status" className="text-[12px] text-slate-600 dark:text-slate-300">
+          {stage === 'events' ? 'Starting the upload' : `Uploading ${megabytes(bytes)} MB`}
+        </span>
+        <span className={TRACK}>
+          <span className="absolute inset-y-0 left-0 w-1/3 animate-[walkthrough-upload_1.2s_ease-in-out_infinite] rounded-full bg-brand-600 motion-reduce:animate-none" />
+        </span>
+      </div>
+    );
+  }
+  const percent = uploadPercent(upload);
+  const done = percent >= 100;
+  const amount = `${megabytes(upload.sent)} of ${megabytes(upload.total)} MB`;
+  const left = done
+    ? 'Almost done'
+    : upload.leftMs === null
+      ? 'Working out the time left'
+      : formatTimeLeft(upload.leftMs);
+  return (
+    <div data-walkthrough-upload={done ? 'finishing' : 'sending'} className="flex flex-col gap-1.5">
+      <div className="flex items-baseline justify-between gap-3 text-[12px]">
+        <span className="min-w-0 truncate text-slate-600 dark:text-slate-300">
+          <span role="status" className="font-medium text-slate-800 dark:text-slate-100">
+            {done ? 'Finishing' : 'Uploading'}
+          </span>
+          <span className="tabular-nums"> · {amount}</span>
+        </span>
+        <span className="shrink-0 font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+          {percent}%
+        </span>
+      </div>
+      <span
+        role="progressbar"
+        aria-label="Upload"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={percent}
+        aria-valuetext={`${percent}%, ${amount}, ${left}`}
+        className={TRACK}
+      >
+        <span
+          className="absolute inset-y-0 left-0 rounded-full bg-brand-600 transition-[width] duration-500 ease-out motion-reduce:transition-none"
+          style={{ width: `${percent}%` }}
+        />
+      </span>
+      <span className="text-[12px] tabular-nums text-slate-500 dark:text-slate-400">{left}</span>
+    </div>
   );
 }

@@ -5,7 +5,6 @@ import { followerIdsOf, followTargetOf } from '@liveworkspace/api-kit/room-follo
 import { admitFrame, helloPresence, MAX_TAB_ID_LEN, resolveCatchup } from '../document-room-rules';
 import { opForScope, scopedTabOp } from '../room-scope';
 import { gateClientOp } from '../room-op-gate';
-import { reviewJoined, suggestsOnly } from './room-review';
 import { selectionFromOp } from '../room-selections';
 import type { SessionAttachment } from '../room-session';
 import type { ClientMessage, ParticipantPresence, ServerMessage } from '../types';
@@ -99,8 +98,6 @@ export function roomMessage(
       room.noteMultiplayer();
     }
     room.baton.welcome(ws, session, presence.id, msg.facilitatorToken);
-    // A Participant is noted for the Share dialog and told whether it suggests (Suggest Only).
-    reviewJoined(room, ws, hello);
     return;
   }
   if (msg.kind === 'facilitator') {
@@ -132,7 +129,6 @@ export function roomMessage(
           presenceId: sender.id,
           documentId: session.documentId ?? null,
           adderKey: session.adderKey ?? null,
-          suggestOnly: suggestsOnly(room, session),
         },
         msg.op,
         msg.ref,

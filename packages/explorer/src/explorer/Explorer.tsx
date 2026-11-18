@@ -30,6 +30,7 @@ import {
   InvitesPane,
   preloadExplorerPanesWhenIdle,
   ShapeLibrariesView,
+  WalkthroughsView,
 } from './lazy-panes';
 import { ItemsPane } from './ItemsPane';
 import { SearchField } from './SearchField';
@@ -54,6 +55,7 @@ export { type ExplorerProps } from './explorer-props';
 export function Explorer({
   gallery,
   shapeLibraries,
+  walkthroughs,
   imports,
   itemMenu,
   history,
@@ -65,6 +67,7 @@ export function Explorer({
       <LibraryHostProvider
         gallery={gallery}
         shapeLibraries={shapeLibraries}
+        walkthroughs={walkthroughs}
         imports={imports}
         itemMenu={itemMenu}
         history={history}
@@ -112,6 +115,7 @@ function ExplorerInner({
   onHideHero,
   helpHref,
   trashedOnArrival,
+  archivedOnArrival,
   arrivedItem,
   onHome,
   onOrganise,
@@ -271,7 +275,13 @@ function ExplorerInner({
           <SyncPlaces />
         </HostExtrasProvider>
         {trashedOnArrival ? <ArrivalUndo trashed={trashedOnArrival} /> : null}
-        {arrivalNotice ? <ArrivalNotice text={arrivalNotice} /> : null}
+        {archivedOnArrival ? (
+          <ArrivalNotice
+            text={`Moved ${quoted(archivedOnArrival.title || 'Untitled')} to Archived.`}
+            tone="success"
+          />
+        ) : null}
+        {arrivalNotice ? <ArrivalNotice text={arrivalNotice} tone="warning" /> : null}
       </ExtrasProvider>
     </ExplorerProvider>
   );
@@ -308,16 +318,16 @@ function ArrivalUndo({ trashed }: { trashed: { id: string; title: string | null 
   return null;
 }
 
-/** The host's word on arrival, said once. */
-function ArrivalNotice({ text }: { text: string }) {
+/** The host's word on arrival, said once: a warning (a revoked link), or the item it archived on the way here. */
+function ArrivalNotice({ text, tone }: { text: string; tone: 'warning' | 'success' }) {
   const { toast } = useExplorerContext();
   const said = useRef<string | null>(null);
   useEffect(() => {
     if (said.current === text) return;
     said.current = text;
-    // A warning: the person lost access to something (a revoked link), which is news, not their mistake.
-    toast.show(text, { tone: 'warning' });
-  }, [text, toast]);
+    // A revoked link is a warning: the person lost access to something, which is news, not their mistake.
+    toast.show(text, { tone });
+  }, [text, tone, toast]);
   return null;
 }
 
@@ -370,6 +380,8 @@ function Pane({ view, hero }: { view: ExplorerView; hero: boolean }) {
       return <GalleryView />;
     case 'shape-libraries':
       return <ShapeLibrariesView />;
+    case 'walkthroughs':
+      return <WalkthroughsView />;
     case 'offline':
       return <ThisBrowserPane />;
     default:

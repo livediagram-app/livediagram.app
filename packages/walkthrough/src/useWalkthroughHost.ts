@@ -46,8 +46,9 @@ export type WalkthroughHostInput = {
   // The open item; null wherever walkthroughs don't fit (the editor says where).
   itemId: string | null;
   apiBase: string;
-  // The app's api funnel (it adds the item's grant), and the caller's identity headers.
-  apiFetch: (url: string, init?: RequestInit) => Promise<Response>;
+  // The app's api funnel (it adds the item's grant; `uploadProgress` sends by XMLHttpRequest to report bytes sent),
+  // and the caller's identity headers.
+  apiFetch: WalkthroughApiDeps['fetch'];
   apiHeaders: () => Promise<HeadersInit>;
   viewport: WalkthroughViewport;
   tabs: readonly EditorTab[];
@@ -73,10 +74,10 @@ export function useWalkthroughHost(input: WalkthroughHostInput): WalkthroughHost
   const api = useMemo<WalkthroughApiDeps>(
     () => ({
       base: apiBase,
-      fetch: async (url, init) => {
+      fetch: async (url, init, opts) => {
         const headers = new Headers(await latest.current.apiHeaders());
         new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
-        return latest.current.apiFetch(url, { ...init, headers });
+        return latest.current.apiFetch(url, { ...init, headers }, opts);
       },
     }),
     [apiBase],
@@ -97,6 +98,10 @@ export function useWalkthroughHost(input: WalkthroughHostInput): WalkthroughHost
     return found.elements && found.elements.length > 0 ? fingerprintOf(found.elements) : undefined;
   }, []);
   const selection = useCallback(() => [...latest.current.selection()], []);
+  const elements = useCallback(
+    () => latest.current.tabs.find((t) => t.id === latest.current.activeTab)?.elements ?? [],
+    [],
+  );
   return {
     itemId: input.itemId,
     api,
@@ -110,5 +115,6 @@ export function useWalkthroughHost(input: WalkthroughHostInput): WalkthroughHost
     selection,
     author: input.author,
     hideable: input.hideable,
+    elements,
   };
 }

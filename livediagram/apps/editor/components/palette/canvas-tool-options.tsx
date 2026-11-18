@@ -5,7 +5,6 @@ import {
   LaserIcon,
   PanIcon,
   SelectIcon,
-  SlideDeckIcon,
   SpotlightIcon,
   ZenIcon,
 } from '@/components/palette/palette-icons';
@@ -82,22 +81,7 @@ function buildAll(
             disabled: canvasEmpty,
           },
         ]),
-    // Slide Deck (docs/specs/012-collaboration/presentation-mode.md). In the Present band with the Laser and Spotlight:
-    // like them it is a tool for showing a document to somebody rather than
-    // for changing it. Needs content for the same reason they do — there is
-    // nothing to put on a slide on an empty canvas. Desktop-only like
-    // Spotlight: the deck workbench has no room beside the canvas on a phone.
-    ...(isMobile
-      ? []
-      : [
-          {
-            id: 'slide-deck',
-            label: 'Slide Deck',
-            icon: <SlideDeckIcon />,
-            group: 1,
-            disabled: canvasEmpty,
-          },
-        ]),
+    // Slide Deck lives in the footer's Tools now (presentation-mode.md "Where it lives"), not here.
     {
       id: 'isometric',
       label: 'Isometric',

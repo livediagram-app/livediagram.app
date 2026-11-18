@@ -32,18 +32,28 @@ the public read and vote, the vote field and its sort, the editor's Publish as R
 - `apps/api/src/roadmap/roadmap-view.ts` (pure): `onRoadmap(roadmap, setup, item, types)`, `publicRoadmapOf(input)`.
 - `apps/api/src/roadmap/roadmap-public.ts` (in the room): `answerRoadmap(ctx, planId, code, rest)`: the read and the
   vote.
+- `apps/api/src/roadmap/roadmap-memo.ts`: `RoadmapMemo` (the room's kept pages, `ROADMAP_MEMO_MAX`), `BuiltRoadmap`
+  `{ page, shown }`, `pageFor(built, voter)`, `shownOf(page, items)`. The room makes one per instance as
+  `PlanEnv.ROADMAP_MEMO`, stamped by `SELECT total_changes()` on its SQLite (`plan-room.ts`).
 - `apps/api/src/routes/roadmap-routes.ts`: `handleRoadmapRoutes(ctx)`, dispatched from
   `project-subresource-routes.ts` after the calendar feed's.
 - `apps/api/src/routes/roadmap-public-route.ts`: `handleRoadmaps(ctx)`, the worker's `roadmaps` case: the path's
   shape (plain `404 not_found`) and method (`405`), so the OpenAPI probe and a bad path never wake a room, then the room's `roadmap(planId, request)` RPC (`plan-room.ts` handing it to `roadmap/roadmap-room.ts`, `plan-client.ts`), which answers null-plan
   ids `404` without making a schema (`bindStoredPlan`).
 - `apps/api/src/index.ts`: `/api/roadmaps` limited per network on `FORM_RATE_LIMITER` (`roadmap:` for votes,
-  `roadmap-read:` for reads) and kept out of the per-owner write limit, as `/api/forms` is.
+  `roadmap-read:` for reads) and kept out of the per-owner write limit, as `/api/forms` is; its `429 rate_limited`
+  carries `Retry-After: 60` (`roadmapRateLimited`), exposed to the page by `responses.ts`'s CORS list.
 - `plan-schema.ts`: V32, `ROADMAPS_SCHEMA`.
 - Editor `components/roadmap/`: `roadmap-client.ts` (the three managing calls), `roadmap-gate.ts`
   (`roadmapScopeFor`), `roadmap-defaults.ts` (`defaultRoadmapSettings`, `TRIAGE_NAMES`), `RoadmapContext.tsx`,
   `RoadmapHost.tsx` (the door; the dialog loads on first open), `RoadmapDialog.tsx`, `RoadmapSettingsForm.tsx`,
-  `RoadmapMenuRow.tsx`.
+  `roadmap-tools-item.tsx` (the Tools row, `useRoadmapToolsItem`). `RoadmapHost` takes the plan's `itemTypes`
+  (`ItemTypesSlice`, from `ctx.plan.context`) and hands it to the dialog as `cardTypes` for Add Votes; `namesOf` joins
+  type names.
+- `packages/items/src/card-display.ts`: `typeShowsVotes(type)` (the built-in Votes in its fields and its Detailed
+  layout), `withVotesShown(type)` (the field added, then placed last in the Detailed Footer when the layout leaves it
+  out). The built-in Project type carries `votes` (`item-types.ts`) and its Detailed default places it after
+  Comments.
 - Editor public page: `app/roadmap/[...slug]/page.tsx` (one placeholder; a catch-all, so `next dev` serves both parts),
   `lib/roadmap-path.ts` (`ROADMAP_PLACEHOLDER_PATH`, `isRoadmapPath`, `roadmapFromPath`), `lib/api/roadmaps-public.ts`,
   `components/roadmap/public/RoadmapPage.tsx`, `RoadmapColumn.tsx`, `RoadmapCard.tsx`, `lib/public-browser-id.ts`
@@ -90,6 +100,14 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
   `GET` for the read, `POST` for `/votes` (else 405); the room: `bindStoredPlan` (false: 404 `no_plan`), the plan row
   and not trashed (`getProject`; trashed or none: 404); `roadmapByCode` (404 `unknown_code`); the board on its tab
   (`boardOnTab`, publishable; else 404 `no_board`); then the view.
+- The kept page (`read`): the browser's voter id first; `ROADMAP_MEMO.get(code)` answers while the stamp it was kept
+  with equals `total_changes()` now; else the stamp is read, the page built for no voter (`build`: board, types,
+  items, suggestion form, `publicRoadmapOf` with `voter: null`, `shownOf`), kept under the code with that stamp, and
+  answered. `pageFor` marks `voted` from the kept cards for this browser. Every write in the room, through any path
+  (items, tabs, the type catalogue, form links, the roadmaps row and its vote hour, the KV storage), moves
+  `total_changes()`, so the next read builds again; a write landing during a build leaves the kept page's stamp
+  behind it. Unpublish deletes the row, so `roadmapByCode` misses before the memo is asked; a board gone misses
+  in `build` and nothing is kept. In memory only: a room woken again starts empty.
 - `publicRoadmapOf`: for each chosen column in the board's order, the live cards (`!isArchived`, status not
   `trash`) with that status whose type is chosen and the board shows (`boardShowsType`), sorted by the board's
   `sortBy` (`sortCards`) else rank; `count` all of them, `cards` the first `ROADMAP_COLUMN_CARDS_MAX`. Each card is
@@ -146,9 +164,13 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
 
 ## Performance and limits
 
-- A read: the room's plan row, one roadmap row (indexed), one tab, the catalogue and the plan's items
+- A read that builds: the room's plan row, one roadmap row (indexed), one tab, the catalogue and the plan's items
   (`listItems`, as the calendar feed and Inbox push read them, bounded by the plan's item cap), then linear work over
   the cards. Body at the caps: 200 cards a column × at most `PLAN_COLUMNS_MAX` columns × about 1.3 KB.
+- A read from the kept page: the plan row, the roadmap row, one `total_changes()` and, with a browser, a copy of the
+  page's cards with `voted` set. Measured on a 3,000-card plan (600 cards on the page, a 285 KB body): about 25 to
+  40 ms CPU to build, about 1 to 1.5 ms from the kept page. `ROADMAP_MEMO_MAX` (8) pages a room, the shown items
+  held by reference.
 - A vote: one row update for the cap, one item read and one guarded write.
 - The editor's dialog and the public page's code each load on their own (`next/dynamic`, its own route bundle).
 
@@ -180,7 +202,15 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
 - Public page: the form page's look (`formLookProps`, `FormCanvasLayer`); a header card (title, Suggest an Idea in
   the accent), columns at 300px on a row that scrolls sideways at `sm` and up, stacked below; each card a box with
   number, title, chips, dates, description clamped to three lines with Show More, and the vote button (▲ and the
-  count, `aria-pressed`, the accent when voted). Skeleton, Not available, Error and empty column copy as the spec.
+  count, `aria-pressed`, the accent when voted). Skeleton, Not available, Error, Busy and empty column copy as the
+  spec. Busy (`loadPublicRoadmap` answering `{ kind: 'busy', retryAfterMs }` from `retryAfterMs(Retry-After)`, 5 s to
+  300 s, else `ROADMAP_RETRY_DEFAULT_S` 60): the Notice with Try Again, and a `setTimeout(load, retryAfterMs)` armed
+  per busy answer and cleared when the state changes; `waitPhrase` words the wait.
+- Add Votes: under the Voting toggle in `RoadmapSettingsForm` (`votes` prop, `RoadmapVotesNote`): a slate inset
+  callout ("{names} cards don't show votes yet." and a secondary `xs` **Add Votes**), stacked on a phone; after it,
+  a polite status "{names} cards now show their votes." with a check. The dialog computes the chosen types lacking
+  `typeShowsVotes` from `cardTypes.types` and saves `withInheritance(types.map(withVotesShown))` through
+  `saveCatalogue` (one change, one undo step).
 
 ## Accessibility
 
@@ -200,14 +230,23 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
 - `routes/roadmap-routes.test.ts`: owner and team member publish, change (code kept), unpublish; editor, participant,
   viewer and tab links, tokens, workbench and community refused on every route with nothing changed; invalid bodies;
   a suggestion form landing in a shown column refused; 405.
+- `roadmap/roadmap-memo.test.ts` (the stamp, a stale stamp, `pageFor`, eviction) and
+  `routes/roadmap-memo-route.test.ts`: a second read skips the build (`listItems` counted); a new card, a card
+  changed straight in SQL, a vote, a settings change, a card type change, Unpublish and a deleted board each clear
+  it; each browser's `voted` on a kept page.
 - `routes/roadmap-public-route.test.ts`: the read (200, headers, `voted` by browser), unpublish revokes at once (the
   next read 404), republish makes a new code, unknown code and malformed paths 404, a trashed plan 404, a deleted
   board 404, the vote (add, take back, idempotent, card not on the roadmap 404, voting off 404, hidden field
-  dropped, full 409, the hourly cap 429), 405, the per-network limit (index.ts).
+  dropped, full 409, the hourly cap 429), 405, the per-network limit (index.ts) with `Retry-After: 60` on a
+  roadmap's 429 and none on a form's.
 - Editor: `roadmap-gate.test.ts` (the gate, the tab's boards, the defaults and rules), `roadmap-client.test.ts`,
-  `RoadmapDialog.test.tsx` (with the host and the menu row), `roadmap-path.test.ts`, `RoadmapPage.test.tsx` (through
-  `roadmaps-public.ts`), `src/worker.test.ts` (the rewrite).
+  `RoadmapDialog.test.tsx` (with the host and the menu row; Add Votes: the types named, one catalogue change, the
+  note gone, nothing offered with Voting off or without the card types), `roadmap-path.test.ts`,
+  `RoadmapPage.test.tsx` (through `roadmaps-public.ts`; Busy: the words, the read after the window, again while
+  busy, Try Again, `retryAfterMs` bounds), `src/worker.test.ts` (the rewrite).
+- `packages/items` `brought-types.test.ts` (the Roadmap preset brings a type with Votes on its face) and
+  `card-display.test.ts` (`typeShowsVotes`, `withVotesShown`).
 
 ## Defaults ledger
 
-D127 to D130 in [DEFAULTS.md](DEFAULTS.md).
+D127 to D130 and D137 to D139 in [DEFAULTS.md](DEFAULTS.md).

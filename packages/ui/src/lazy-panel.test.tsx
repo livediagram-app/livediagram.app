@@ -77,4 +77,17 @@ describe('lazyPanel', () => {
     expect(await screen.findByText('Boundary caught it')).toBeTruthy();
     error.mockRestore();
   });
+
+  it('draws its fallback while its code loads, and none once preloaded', async () => {
+    const Loading = () => <p>Loading</p>;
+    const Panel = lazyPanel('hello', () => Promise.resolve(Hello), { fallback: Loading });
+    render(<Panel name="Sam" />);
+    expect(screen.getByText('Loading')).toBeTruthy();
+    expect(await screen.findByText('Hello Sam')).toBeTruthy();
+    expect(screen.queryByText('Loading')).toBeNull();
+    cleanup();
+    render(<Panel name="Ana" />);
+    expect(screen.getByText('Hello Ana')).toBeTruthy();
+    expect(screen.queryByText('Loading')).toBeNull();
+  });
 });

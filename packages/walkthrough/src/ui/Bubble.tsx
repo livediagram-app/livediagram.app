@@ -184,11 +184,14 @@ export function LevelBar({
   return (
     <span
       role="presentation"
-      className={`relative block h-1.5 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700 ${className}`}
+      className={`relative block h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700 ${className}`}
     >
+      {/* Empty to start through the same `transform` the meter writes: Tailwind's scale-x-0 sets the separate `scale`
+          property, which multiplied every reading back to nothing (owner, 2026-11-17: the bar never moved). */}
       <span
         ref={fill}
-        className="absolute inset-0 origin-left scale-x-0 rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
+        style={{ transform: 'scaleX(0)' }}
+        className="absolute inset-0 origin-left rounded-full bg-gradient-to-r from-emerald-400 to-emerald-500"
       />
     </span>
   );

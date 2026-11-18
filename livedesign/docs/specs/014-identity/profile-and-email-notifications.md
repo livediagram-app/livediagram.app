@@ -46,8 +46,8 @@ picture or it fails to load. The rules are liveworkspace's, the same in every ap
 - **Source.** The picture is the one Google gave the account at its last Google sign-in; an account made with an
   email code has none, and so does every guest.
 - **Show My Google Picture.** A switch in liveworkspace.app's Settings › Profile, on by default. Off, other people see the initials;
-  the person's own chrome (the header's account button, their own presence avatar, the composer beside their
-  comments) still shows their picture, since it is their own screen.
+  the person's own chrome (the header's account button, Settings › Profile's large avatar, their own presence
+  avatar, the composer beside their comments) still shows their picture, since it is their own screen.
 - **Across tabs.** Each session reads the switch from its ID token's `picture_hidden`. Within the accounts Worker's
   30-second refresh-token reuse window, a second tab's refresh can replay the first tab's earlier response, minted
   before a save, which would briefly show a just-hidden picture. So a save notes its time in this browser

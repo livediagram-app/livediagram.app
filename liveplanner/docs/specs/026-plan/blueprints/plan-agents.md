@@ -47,7 +47,9 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   frame (every part but the items, measured with `count = total`, the largest `nextCursor` and the rich note) plus 4,
   plus each listed card's `JSON.stringify(card, null, 2).length + 4 × its lines + 2` (its indent under `items` and
   the comma) stays at or under `LIST_ITEMS_BUDGET`; the first card of a page is listed whatever its size. A card left
-  over gives `nextCursor: after-<last listed key>`. `listedBoards(…, { closedOut })` empties a done column's `cards`
+  over gives `nextCursor: after-<last listed key>`. A page read with a cursor (`after > 0`) lists its boards through
+  `withoutCardRefs` (each column without `cards`, `closed` kept) and has no `notOnBoard`, measured in the frame, so the
+  room the refs took goes to cards (`PagedBoard`; Work Tracker 981). `listedBoards(…, { closedOut })` empties a done column's `cards`
   and sets its `closed` count when closed cards are left out. `omitted` is `{ closed?, rich?, note }` when anything
   was left out (`omittedNote` writes the words), else absent.
 - Blocked By ([item-types.md "Blocked By"](../item-types.md#blocked-by)): `listedType` lists `custom[].blocks`;

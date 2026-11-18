@@ -20,10 +20,15 @@ Derived from [Video and screen share bubbles](../video-and-screen-bubbles.md). B
 ## Behaviour and state
 
 **Choosing bubbles** (`lib/calls/bubbles.ts`, pure): `pickSeen({ self, heard, walkers, peers, view, visible,
-maximised })` returns the presence ids whose camera and whose screen to receive: peers in `heard` with that locator,
-inside `view` grown by `BUBBLE_VIEW_MARGIN_PX`, sorted by distance, the first `MAX_VIDEO_BUBBLES` cameras and
-`MAX_SCREEN_BUBBLES` screens; nothing while `visible` is false; the maximised one always kept while it is heard and
-the tab is visible.
+miniView, maximised })` returns the presence ids whose camera and whose screen to receive: peers in `heard` with that
+locator, inside `view` grown by `BUBBLE_VIEW_MARGIN_PX`, sorted by distance, the first `MAX_VIDEO_BUBBLES` cameras and
+`MAX_SCREEN_BUBBLES` screens; the maximised one always kept while it is heard and the tab is visible. While `visible`
+is false: nothing, unless `miniView` (the mini view's window is open, Work Tracker 984), when it returns the
+`MAX_MINI_VIEW_VIDEOS` nearest cameras in `heard`, ignoring `view` and `maximised`, and no screen, with `small: true`.
+`chooseSubscriptions` asks the large layer for the maximised camera only when the answer is not `small`, so a hidden
+tab never receives the 1.5 Mbps layer. `ProximityCall` reads `miniView` from `input.miniViewOpen` (default
+`miniViewWindow() !== null`) and calls `hear()` on `onMiniViewWindow`, as it does on `visibilitychange`, so opening
+or closing the window, or showing the tab, re-decides at once.
 
 **The view** (`components/calls/useCanvasCall.ts`, `useViewRect`): the canvas's transform is
 `scale(zoom) translate(offset)` about the wrapper's centre (`origin-center`), so the visible canvas rect is
@@ -121,6 +126,9 @@ Nothing is stored. Streams live in memory for the call's life and are stopped on
   budget by a test of 1,000 layouts of the worst case.
 - A `<video>` per received bubble, at most 6 + 2 + your own two. Bubbles re-render on a walker's step only for their
   own position (one style change), never the video element.
+- A hidden tab with the mini view open receives at most `MAX_MINI_VIEW_VIDEOS` (4) cameras on the `h` layer (half
+  size, 300 kbps, 24 fps) and nothing else; its decode cost is measured in the space mini view blueprint's
+  "Performance and limits".
 - Off-screen and hidden-tab rules close subscriptions, so the SFU stops sending; the bubble code adds nothing to the
   canvas chunk until a call starts except the bubble layer, the media store and the local preview (about a hundred
   lines, constraints included). A preview captures only on a press and adds no per-frame work beyond its own bubble.
@@ -176,24 +184,25 @@ restores, focus moves to Restore on open and back to the bubble on close. The Sc
 
 ## Testing
 
-| Rule                                                       | Test                                                   |
-| ---------------------------------------------------------- | ------------------------------------------------------ |
-| Locators held to their slot; video and screen fields       | `../packages/api-schema/src/call-voice.test.ts`        |
-| Track kinds for `cam` and `screen`                         | `../packages/api-schema/src/calls-mode.test.ts`        |
-| Publish by name and role; layer route; audio-only refusals | `apps/api/src/routes/calls.test.ts`                    |
-| Simulcast subscribe and `tracks/update` shapes             | `apps/api/src/calls/realtime-api.test.ts`              |
-| Room drops a non-Editor's screen locator                   | `apps/api/src/room-op-gate.test.ts`                    |
-| Earshot, viewport, hidden tab, caps, maximised kept        | `apps/editor/lib/calls/bubbles.test.ts`                |
-| Rows, nudge, swap hysteresis, layout CPU budget            | `apps/editor/lib/calls/bubble-layout.test.ts`          |
-| Speech lift past bubbles                                   | `packages/avatar/src/speech.test.ts`                   |
-| Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`            |
-| Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`         |
-| Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallStripGroup.test.tsx` |
-| Preview: captures, sends nothing, stops, cancels, releases | `apps/editor/lib/calls/local-preview.test.ts`          |
-| Join adopts a preview without a second prompt; roles; mode | `apps/editor/lib/calls/proximity-call.test.ts`         |
-| Buttons offered without a room; routing; mode and tab stop | `apps/editor/lib/calls/useProximityCall.test.tsx`      |
-| Preview role per level                                     | `apps/editor/lib/share-roles.test.ts`                  |
-| Bubble, maximise, restore, Escape, Screen Share group      | `apps/editor/components/calls/*.test.tsx`              |
+| Rule                                                       | Test                                                              |
+| ---------------------------------------------------------- | ----------------------------------------------------------------- |
+| Locators held to their slot; video and screen fields       | `../packages/api-schema/src/call-voice.test.ts`                   |
+| Track kinds for `cam` and `screen`                         | `../packages/api-schema/src/calls-mode.test.ts`                   |
+| Publish by name and role; layer route; audio-only refusals | `apps/api/src/routes/calls.test.ts`                               |
+| Simulcast subscribe and `tracks/update` shapes             | `apps/api/src/calls/realtime-api.test.ts`                         |
+| Room drops a non-Editor's screen locator                   | `apps/api/src/room-op-gate.test.ts`                               |
+| Earshot, viewport, hidden tab, caps, maximised kept        | `apps/editor/lib/calls/bubbles.test.ts`                           |
+| Hidden tab with the mini view: 4 nearest small cameras     | `apps/editor/lib/calls/bubbles.test.ts`, `proximity-call.test.ts` |
+| Rows, nudge, swap hysteresis, layout CPU budget            | `apps/editor/lib/calls/bubble-layout.test.ts`                     |
+| Speech lift past bubbles                                   | `packages/avatar/src/speech.test.ts`                              |
+| Keys per track, layer change, publish by name              | `apps/editor/lib/calls/sfu-session.test.ts`                       |
+| Camera and share on and off, ended, audio-only stops them  | `apps/editor/lib/calls/proximity-call.test.ts`                    |
+| Strip segments per role, Video Paused                      | `apps/editor/components/calls/CallStripGroup.test.tsx`            |
+| Preview: captures, sends nothing, stops, cancels, releases | `apps/editor/lib/calls/local-preview.test.ts`                     |
+| Join adopts a preview without a second prompt; roles; mode | `apps/editor/lib/calls/proximity-call.test.ts`                    |
+| Buttons offered without a room; routing; mode and tab stop | `apps/editor/lib/calls/useProximityCall.test.tsx`                 |
+| Preview role per level                                     | `apps/editor/lib/share-roles.test.ts`                             |
+| Bubble, maximise, restore, Escape, Screen Share group      | `apps/editor/components/calls/*.test.tsx`                         |
 
 ## Constants and configuration
 
@@ -201,6 +210,7 @@ restores, focus moves to Restore on open and back to the bubble on close. The Sc
 | ----------------------- | ----------------------------------- | ------------------------------------------ |
 | `MAX_VIDEO_BUBBLES`     | 6                                   | The card's cap: the nearest six            |
 | `MAX_SCREEN_BUBBLES`    | 2                                   | A screen is about three bubbles of traffic |
+| `MAX_MINI_VIEW_VIDEOS`  | 4                                   | A hidden tab's mini view tiles (D142)      |
 | `BUBBLE_VIEW_MARGIN_PX` | 120                                 | An edge bubble does not flicker            |
 | `BUBBLE_WIDTH_PX`       | 180                                 | A face and a screen readable at 100%       |
 | `BUBBLE_GAP_PX`         | 8                                   | Between bubbles, and a person's two        |

@@ -207,8 +207,9 @@ export function PlanBoardHeader({
       data-board-header
       // Maximised with a header band (MaximisedPlanLayer's --plan-band-*), it is as tall as the top row and starts
       // after the menu; elsewhere 52 px and 16 px in.
-      className={`relative flex h-[var(--plan-band-h,52px)] shrink-0 items-center gap-3 pl-[var(--plan-band-left,1rem)] pr-4 ${BAND_HEADER_END} [[data-header-band]_&]:border-b`}
-      // In a header band, a hairline under it as a Sheet's and a view's headers have.
+      className={`relative flex h-[var(--plan-band-h,52px)] shrink-0 items-center gap-3 pl-[var(--plan-band-left,1rem)] pr-4 ${BAND_HEADER_END} phone:border-b [[data-header-band]_&]:border-b`}
+      // In a header band, and on a phone (where the board's own header is its top row), a hairline under it as a
+      // Sheet's and a view's headers have.
       style={{ color: palette.text, borderColor: palette.border }}
       onDoubleClick={(e) => {
         if (!canRename || renaming) return;
@@ -256,7 +257,7 @@ export function PlanBoardHeader({
       {/* In a header band it holds the chips alone, never narrower than they are and with no cap of its own (they pick
           their own width, short of the palette strip: use-chips-fit.ts); on the canvas it holds the title, chips and
           widgets and may shrink. */}
-      <div className={`flex flex-1 items-center gap-3 ${inBox ? '' : 'min-w-0'}`}>
+      <div className={`flex items-center gap-3 ${inBox ? 'flex-none' : 'min-w-0 flex-1'}`}>
         {inBox ? (
           chips
         ) : (
@@ -285,7 +286,8 @@ export function PlanBoardHeader({
       {/* In a header band, a card like the menu box (band-controls.ts). */}
       <div
         {...bandControlsProps()}
-        className={`ml-auto flex min-w-0 shrink items-center gap-3 ${BAND_CONTROLS_CLASS}`}
+        // Experiment (no header bar): in a header band, centred between the card types and the top-right corner card.
+        className={`${inBox ? 'mx-auto' : 'ml-auto'} flex min-w-0 shrink items-center gap-3 ${BAND_CONTROLS_CLASS}`}
       >
         {inBox && showWidgets && (widgets.length > 0 || canEdit) ? (
           // In a header band the widgets ride here, before the cog, behind a hairline: the top row's right is one card.

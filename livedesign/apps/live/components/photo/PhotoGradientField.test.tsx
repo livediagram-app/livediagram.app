@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Gradient } from '@livedesign/photo-engine';
+import { photoTools } from '@/lib/photo-editor/tool-state';
 import { GradientEditor, PhotoGradientField } from './PhotoGradientField';
 
 // docs/specs/031-photo/photo-tools.md "Fills and gradients": the gradient editor's presets, stops and the
@@ -29,6 +30,18 @@ describe('the gradient editor', () => {
       '#1fa2ff',
       '#a6ffcb',
     ]);
+  });
+
+  // Work Tracker 946: the presets follow the colours changed while the editor is open (a subscription, not a read the
+  // React Compiler would keep at its first value).
+  it('follows the colours as they change while it is open', () => {
+    photoTools.resetColours();
+    const onChange = vi.fn<(g: Gradient) => void>();
+    render(<GradientEditor value={bw} onChange={onChange} />);
+    act(() => photoTools.set({ foreground: '#ff0000', background: '#00ff00' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Foreground to Background' }));
+    expect(onChange.mock.calls[0]![0].colours.map((s) => s.colour)).toEqual(['#ff0000', '#00ff00']);
+    photoTools.resetColours();
   });
 
   it('adds a colour stop on a press beside the strip', () => {

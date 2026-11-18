@@ -5,6 +5,8 @@ import {
 } from 'react';
 import { pointerToCanvas } from '@/lib/canvas';
 import { floorPointAt } from '@/lib/space-3d/space-3d-camera';
+import { standingPiecePointAt } from '@/lib/space-3d/space-3d-pieces';
+import { standingPiecesOnScreen } from '@/lib/space-3d/standing-pieces-on-screen';
 import { space3DTiltNow } from '@/lib/space-3d/space-3d-preference';
 import { isDoubleTapZoomPointer } from '@liveworkspace/workbench/lib/double-tap-zoom';
 import { peerPushTarget } from '@livehuddle/avatar/walk';
@@ -155,14 +157,21 @@ export function useCanvasSurfaceGestures({
     const tilt = space3DTiltNow();
     const main = mainRef && 'current' in mainRef ? mainRef.current : null;
     if (tilt !== 0 && main)
-      return floorPointAt(
-        { x: clientX, y: clientY },
-        main.getBoundingClientRect(),
-        {
-          zoom: viewportZoom,
-          offset: readViewportOffset(),
-        },
-        tilt,
+      // A press over a standing piece is a press on that piece (3d-view.md "Pieces stand up"), else the floor.
+      return (
+        standingPiecePointAt(standingPiecesOnScreen(main, elements ?? []), {
+          x: clientX,
+          y: clientY,
+        }) ??
+        floorPointAt(
+          { x: clientX, y: clientY },
+          main.getBoundingClientRect(),
+          {
+            zoom: viewportZoom,
+            offset: readViewportOffset(),
+          },
+          tilt,
+        )
       );
     const rect = wrapperRef.current?.getBoundingClientRect();
     return rect ? pointerToCanvas(clientX, clientY, rect, viewportZoom) : null;

@@ -36,9 +36,12 @@ the fields listed under [What a visitor sees](#what-a-visitor-sees) and nothing 
 
 ### Where it lives
 
-**Publish as Roadmap…** in the **tab menu** (the tab's ⋯ and the canvas's right-click menu, one menu), beside
-Subscribe to Calendar, on a tab holding at least one Plan board, for someone who may publish. It opens the Publish as
-Roadmap dialog on the tab's first board (a board picker at the top when the tab holds several).
+**Publish as Roadmap** in the footer's **Tools** menu, in Collaborate beside Subscribe to Calendar (owner, 2026-11-17;
+no longer in the tab menu), for someone who may publish, on a plan with at least one Plan board on any tab. It opens
+inside Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md). At the top, **Tab** lists the plan's tabs holding
+a Plan board as pills (a board glyph, the tab's name, a green dot where a board on it is published), starting on the
+tab in view when it holds one (else the first); **Board** pills under it show when the chosen tab holds several.
+Changing the tab starts on its first board. The Card Types offered are the chosen board's own (the types it shows).
 
 ### The dialog
 
@@ -59,16 +62,32 @@ write fails, the dialog stays as it was and says "Couldn't save. Try again."
 ### The settings
 
 - **Title**: the page's heading, the board's title to begin with (1 to 80 characters).
-- **Columns**: the board's columns, each a checkbox. To begin with every column is ticked except those whose name
+  Columns, Card Types and Fields are each a collapsed section (owner, 2026-11-17), and only one opens at a time, so
+  the page stays short. Closed, a section's head shows its name, what is on as a line of names ("Needs Info, Confirmed,
+  Won't Fix +1") and a count ("4/5"); open, a hint, **All** and **None**, and a card of rows, each a glyph, its name and
+  a switch. Past eight rows the card gains a filter field and scrolls inside itself. The last one on cannot be switched
+  off (its tooltip says why).
+
+- **Columns**: the board's columns, each with its colour dot. To begin with every column is on except those whose name
   reads like triage (Under Review, Inbox, Backlog, Triage, Ideas, To Review, New, Suggestions), so suggestions stay
   hidden until the team moves them. At least one.
-- **Card Types**: the types the board shows, each a checkbox, all ticked to begin with. At least one.
-- **Fields**: the allowlist below, each a checkbox; **Title** always shows (no checkbox). To begin with only
-  **Description** is ticked.
-- **Voting**: on to begin with: visitors may upvote.
+- **Card Types**: the types the board shows, each with its glyph, all on to begin with. At least one. Hidden when the
+  board shows one type.
+- **Fields**: the allowlist below, each with its glyph and a line saying what it shows; **Title** always shows (no
+  row). To begin with only **Description** is on.
+- **Voting**: on to begin with: visitors may upvote. While it is on and a chosen card type has no **Votes** field,
+  or has it but not on its card face, the dialog says so under the toggle ("Project cards don't show votes yet.",
+  naming the types) with **Add Votes**, which gives each of them the built-in Votes field and puts it in its
+  Detailed card's Footer, as one change to the plan's card types (one undo step), so the team sees each card's count
+  and can sort by it. The note goes once every chosen type carries Votes. The board's own Roadmap preset needs no
+  offer: its Project type carries Votes from the start ([items.md](items.md) "Item types").
 - **Suggest an Idea**: **None**, or one of the plan's published forms whose responses become cards in a column the
   roadmap does not show. A form whose responses would land in a shown column is listed but cannot be picked, with
   "Its cards would show on the roadmap at once."; a form with no live link or one sending to a Sheet is not listed.
+  Its last option, **＋ Create a Suggestion Form**, shown while a column is hidden, makes a "Suggest an Idea" Form
+  tab after the board's tab (its cards land in the first hidden column as the first type shown), publishes its link
+  and picks it, without leaving the page. On a roadmap not yet out it is made when **Publish Roadmap** is pressed (the
+  line under it says so); on one already out, at once.
 
 An **All Cards** board or an archive board has no columns to choose, so it cannot be published (the dialog says "This
 board has no columns to publish.").
@@ -77,7 +96,7 @@ board has no columns to publish.").
 
 Counts only, never a plan, a board, a column or a link: the dialog opened (UI·Opened·Roadmap), a roadmap published
 (Plan·Created·Roadmap), its settings changed (Plan·Changed·Roadmap), its link copied (Plan·Copied·Roadmap) and
-unpublished (Plan·Ended·Roadmap).
+unpublished (Plan·Ended·Roadmap), and a suggestion form made by Create a Suggestion Form (Form·Created·Roadmap).
 
 ## What a visitor sees
 
@@ -143,14 +162,21 @@ link is gone or suspended, or once a later change sends its cards to a shown col
 - **Not available** (unknown code, unpublished, a plan archived, in the Trash or gone, a board deleted): "This roadmap isn't
   available" and "It may have been unpublished, or the link may be wrong."
 - **Error**: "We couldn't load this roadmap" with **Try Again**.
+- **Busy** (the read answered `429`, the per-network read limit): "This roadmap is busy" and "Lots of people are
+  looking right now. It tries again in a minute.", with **Try Again**. The page waits out the limit's window (the
+  answer's `Retry-After` when it can read it, else 60 seconds, the limiter's window, held to 5 to 300) and reads
+  again on its own, once a window while it stays busy, so it never adds to the limit; Try Again reads at once. Never "Check your connection", which is not the reason.
 - **An empty column**: "Nothing here yet."
 - Footer: Made with liveplanner. The page is kept out of search engines, as every editor page is.
 
 ## How it answers
 
 - `GET /api/roadmaps/<plan id>/<code>` (optionally `?browser=<key>`, to mark this browser's votes): the roadmap as
-  JSON, built fresh on every read from the plan's own tables, `Cache-Control: no-store`, so an edit, a column change
-  or an Unpublish shows on the next read.
+  JSON, `Cache-Control: no-store`. The plan's room builds the page once and keeps it in memory for the next reads
+  (a busy roadmap is read far more often than it changes); any write to the plan's storage after it was built
+  (a card, a vote, a column, a card type, a form link, the roadmap's settings, Publish or Unpublish) clears it, so an
+  edit, a column change or an Unpublish still shows on the next read. Only `voted` is worked out per read, for the
+  browser asking.
 - `POST /api/roadmaps/<plan id>/<code>/votes` with `{ card, browser, up, website }`: a vote given (`up: true`) or
   taken back; answers the card's new count and whether this browser now votes for it.
 - **One answer for every miss**: an unknown or unpublished code, a plan that was never stored, is archived, in the
@@ -159,6 +185,7 @@ roadmap_not_found`. A path no roadmap could have (no code, a malformed plan id, 
   turned away by the worker before any plan wakes, with the api's plain `404 not_found`, and a wrong method with
   `405`. A vote for a card not on the roadmap (another column, an unchosen type, archived, trashed) is
   `404 card_not_found`, as if it did not exist.
+- The per-network limit's `429` (`rate_limited`) carries `Retry-After: 60`, the limiter's window.
 - Every answer carries `X-Robots-Tag: noindex` and `Referrer-Policy: no-referrer`.
 
 ## Managing a roadmap (signed-in routes)

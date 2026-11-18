@@ -10,7 +10,6 @@ import {
   isArticleHex,
   isSafeArticleHref,
   normaliseRuns,
-  parseArticleSuggestion,
   parseArticleTable,
   sameArticleValue,
   type ArticleAlign,
@@ -18,7 +17,6 @@ import {
   type ArticleListKind,
   type ArticleParagraphStyle,
   type ArticleRun,
-  type ArticleSuggestion,
   type ArticleTableBlock,
   type ArticleTableColumn,
   type ArticleZoneAlign,
@@ -40,54 +38,14 @@ const RUN_MARKS: [keyof ArticleRun, string][] = [
   ['sub', 'sub'],
 ];
 
-export function marksOf(run: ArticleRun): Mark[] {
+function marksOf(run: ArticleRun): Mark[] {
   const marks: Mark[] = [];
   if (run.href && isSafeArticleHref(run.href)) marks.push(S.marks.link.create({ href: run.href }));
   for (const [flag, name] of RUN_MARKS) if (run[flag]) marks.push(S.marks[name]!.create());
   if (run.color && isArticleHex(run.color)) marks.push(S.marks.color.create({ color: run.color }));
   if (run.hl && isArticleHex(run.hl)) marks.push(S.marks.highlight.create({ color: run.hl }));
   if (run.note) marks.push(S.marks.note.create({ id: run.note, kind: run.nk ?? 'comment' }));
-  if (run.sg) marks.push(S.marks.suggestion.create(suggestionAttrs(run.sg)));
   return marks;
-}
-
-/** A stored suggestion as its mark's (or a block's `sg`) attributes. */
-export function suggestionAttrs(sg: ArticleSuggestion): Record<string, unknown> {
-  return {
-    id: sg.id,
-    k: sg.k,
-    by: sg.by,
-    n: sg.n,
-    c: sg.c ?? null,
-    at: sg.at,
-    ai: sg.ai === true,
-    g: sg.g ?? null,
-    was: sg.was ?? null,
-  };
-}
-
-/** A suggestion mark's (or a block's `sg`) attributes as the stored suggestion, read through the stored form's own
- *  parse, so what is committed is what every reader keeps. */
-export function suggestionOf(
-  attrs: unknown,
-  place: 'run' | 'block',
-): ArticleSuggestion | undefined {
-  const a = attrs as Record<string, unknown> | null;
-  if (!a) return undefined;
-  return parseArticleSuggestion(
-    {
-      id: a.id,
-      k: a.k,
-      by: a.by,
-      n: a.n,
-      at: a.at,
-      ...(a.c ? { c: a.c } : {}),
-      ...(a.ai ? { ai: true } : {}),
-      ...(a.g ? { g: a.g } : {}),
-      ...(a.was ? { was: a.was } : {}),
-    },
-    place,
-  );
 }
 
 function inlineOf(runs: readonly ArticleRun[]): PMNode[] {
@@ -114,12 +72,7 @@ function blockToNode(b: ArticleBlock): PMNode {
   switch (b.type) {
     case 'paragraph':
       return S.nodes.paragraph.create(
-        {
-          id: b.id,
-          style: b.style ?? 'body',
-          align: b.align ?? 'left',
-          sg: b.sg ? suggestionAttrs(b.sg) : null,
-        },
+        { id: b.id, style: b.style ?? 'body', align: b.align ?? 'left' },
         inlineOf(b.runs),
       );
     case 'list':
@@ -130,7 +83,6 @@ function blockToNode(b: ArticleBlock): PMNode {
           level: b.level ?? 0,
           checked: b.checked === true,
           align: b.align ?? 'left',
-          sg: b.sg ? suggestionAttrs(b.sg) : null,
         },
         inlineOf(b.runs),
       );
@@ -204,9 +156,6 @@ function runsOf(node: PMNode, limit?: number, maxRuns?: number): ArticleRun[] {
       else if (name === 'note') {
         run.note = mark.attrs.id as string;
         if (mark.attrs.kind === 'action') run.nk = 'action';
-      } else if (name === 'suggestion') {
-        const sg = suggestionOf(mark.attrs, 'run');
-        if (sg) run.sg = sg;
       } else {
         const flag = RUN_MARKS.find(([, n]) => n === name)?.[0];
         if (flag) (run as Record<string, unknown>)[flag] = true;
@@ -235,11 +184,6 @@ function tableToBlock(node: PMNode, id: string): ArticleTableBlock | undefined {
   return parseArticleTable({ header, cols, rows }, id);
 }
 
-const blockSuggestion = (node: PMNode): { sg?: ArticleSuggestion } => {
-  const sg = node.attrs.sg ? suggestionOf(node.attrs.sg, 'block') : undefined;
-  return sg ? { sg } : {};
-};
-
 /** One editor node as its block (undefined for a node with no id yet). */
 function nodeToBlock(node: PMNode): ArticleBlock | undefined {
   const id = node.attrs.id as string;
@@ -255,7 +199,6 @@ function nodeToBlock(node: PMNode): ArticleBlock | undefined {
         ...(style !== 'body' ? { style } : {}),
         ...aligned,
         runs: runsOf(node),
-        ...blockSuggestion(node),
       };
     }
     case 'list_item': {
@@ -269,7 +212,6 @@ function nodeToBlock(node: PMNode): ArticleBlock | undefined {
         ...(list === 'todo' && node.attrs.checked ? { checked: true as const } : {}),
         ...aligned,
         runs: runsOf(node),
-        ...blockSuggestion(node),
       };
     }
     case 'code_block':

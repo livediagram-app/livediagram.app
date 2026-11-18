@@ -36,7 +36,7 @@ import {
   automationsV19,
 } from './automations/automation-schema';
 import { GITHUB_PULLS_SCHEMA, GITHUB_SCHEMA } from './github/github-schema';
-import { CALENDAR_FEEDS_SCHEMA } from '../calendar/feed-store';
+import { addCalendarFeedTypes, CALENDAR_FEEDS_SCHEMA } from '../calendar/feed-store';
 import { ROADMAPS_SCHEMA } from '../roadmap/roadmap-store';
 import { EMAIL_INTAKES_SCHEMA } from '../email-intake/intake-store';
 
@@ -572,6 +572,9 @@ const V34 = EMAIL_INTAKES_SCHEMA;
 // (image-release.ts; docs/specs/026-plan/items.md "Removed pictures"): the list and the triggers on `items` that fill it.
 const V35 = IMAGE_RELEASES_SCHEMA;
 
+// Calendar feeds by card type (../calendar/feed-store.ts; docs/specs/026-plan/calendar-feed.md "What it shows").
+const V36 = addCalendarFeedTypes;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -608,6 +611,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V33,
   V34,
   V35,
+  V36,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

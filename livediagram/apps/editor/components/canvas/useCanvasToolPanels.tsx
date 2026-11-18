@@ -1,6 +1,11 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { ToolSkeleton } from '@liveworkspace/ui/tool-explainer';
+import { useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react';
+import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
+import { usePublishToolsItems } from '@liveworkspace/workbench/components/chrome/tools-door';
+import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { SlideDeckIcon } from '@/components/palette/palette-icons';
 import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import dynamic from 'next/dynamic';
 import { loadToolPanels } from '@/lib/editor-deferred-code';
@@ -16,6 +21,8 @@ const EraserPanel = dynamic(() => loadToolPanels().then((m) => m.EraserPanel), {
 const FormatPanel = dynamic(() => loadToolPanels().then((m) => m.FormatPanel), { ssr: false });
 const SlideDeckPanel = dynamic(() => loadToolPanels().then((m) => m.SlideDeckPanel), {
   ssr: false,
+  // Its empty shape while its code loads, so Tools never shows a blank (owner, 2026-11-17).
+  loading: () => <ToolSkeleton label="Loading Slide Deck" />,
 });
 
 // The five tool-config panels (docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md,
@@ -71,9 +78,6 @@ export function useCanvasToolPanels({
     onMoveFormatPanel,
     onResetFormatPanel,
     slideDeck,
-    slideDeckPanelPosition,
-    onMoveSlideDeckPanel,
-    onResetSlideDeckPanel,
     tabSummaries,
     activeTabId,
     readOnly,
@@ -93,9 +97,6 @@ export function useCanvasToolPanels({
   );
   const formatWiring = panelWiringFor('format', formatPanelPosition ?? null, () =>
     onResetFormatPanel?.(),
-  );
-  const slideDeckWiring = panelWiringFor('slide-deck', slideDeckPanelPosition ?? null, () =>
-    onResetSlideDeckPanel?.(),
   );
 
   // Laser Panel (docs/specs/008-canvas/laser-panel.md): the pen's settings, mounted only while the Laser
@@ -159,23 +160,89 @@ export function useCanvasToolPanels({
       />
     ) : null;
 
-  // Slide Deck panel (docs/specs/012-collaboration/presentation-mode.md): where a deck is built, ordered, checked and
-  // started, mounted only while its tool is picked. The sixth, and the one
-  // whose tool does not itself change the canvas — picking it opens the
-  // workbench, and Start is a deliberate second act.
-  const slideDeckEl =
-    !chromeHidden && slideDeck && canvasTool === 'slide-deck' ? (
-      <SlideDeckPanel
-        state={slideDeck}
-        tabs={tabSummaries}
-        activeTabId={activeTabId ?? ''}
-        isReadOnly={readOnly}
-        position={slideDeckWiring.position}
-        onMoveTo={(x, y) => onMoveSlideDeckPanel?.(x, y)}
-        onReset={slideDeckWiring.onReset}
-        dock={slideDeckWiring.dock}
-      />
-    ) : null;
+  // Slide Deck in the footer's Tools (docs/specs/012-collaboration/presentation-mode.md "Where it lives"; owner,
+  // 2026-11-17): no longer a selection mode, its panel is a Tools page under the back bar. Desktop only, and not on a
+  // tab-scoped link (no deck there).
+  const isMobile = useIsMobileViewport();
+  // The deck as it changes, for the page: the row is memoised on whether it is offered, so it never republishes.
+  const [latestDeck] = useState(() =>
+    deckStore({ slideDeck, tabSummaries, activeTabId, readOnly }),
+  );
+  useEffect(() => {
+    latestDeck.set({ slideDeck, tabSummaries, activeTabId, readOnly });
+  }, [latestDeck, slideDeck, tabSummaries, activeTabId, readOnly]);
+  const deckOffered = !!slideDeck && !isMobile;
+  const deckRows = useMemo<ChromeToolsItem[]>(
+    () =>
+      deckOffered
+        ? [
+            {
+              id: 'slide-deck',
+              group: 'collaborate',
+              // Stays open while elements are picked on the canvas; closed by hand.
+              keepOpen: true,
+              label: 'Slide Deck',
+              description: 'Build slides from the canvas and present them.',
+              icon: <SlideDeckIcon />,
+              onSelect: () => {},
+              view: () => <SlideDeckToolsView latest={latestDeck} />,
+            },
+          ]
+        : [],
+    [deckOffered, latestDeck],
+  );
+  usePublishToolsItems('slide-deck', deckRows);
+  const slideDeckEl = null;
 
   return { laserEl, spotlightEl, eraserEl, formatEl, slideDeckEl };
+}
+
+type DeckInputs = {
+  slideDeck: CanvasChromeProps['slideDeck'];
+  tabSummaries: CanvasChromeProps['tabSummaries'];
+  activeTabId: CanvasChromeProps['activeTabId'];
+  readOnly: CanvasChromeProps['readOnly'];
+};
+
+// A tiny store of the deck's inputs: the page reads it as it changes.
+type DeckStore = {
+  get: () => DeckInputs;
+  set: (next: DeckInputs) => void;
+  subscribe: (listener: () => void) => () => void;
+};
+function deckStore(initial: DeckInputs): DeckStore {
+  let current = initial;
+  const listeners = new Set<() => void>();
+  return {
+    get: () => current,
+    set: (next) => {
+      current = next;
+      for (const l of listeners) l();
+    },
+    subscribe: (l) => {
+      listeners.add(l);
+      return () => {
+        listeners.delete(l);
+      };
+    },
+  };
+}
+
+// The deck's page inside Tools.
+function SlideDeckToolsView({ latest }: { latest: DeckStore }) {
+  const { slideDeck, tabSummaries, activeTabId, readOnly } = useSyncExternalStore(
+    latest.subscribe,
+    latest.get,
+    latest.get,
+  );
+  if (!slideDeck) return null;
+  return (
+    <SlideDeckPanel
+      inTools
+      state={slideDeck}
+      tabs={tabSummaries ?? []}
+      activeTabId={activeTabId ?? ''}
+      isReadOnly={!!readOnly}
+    />
+  );
 }

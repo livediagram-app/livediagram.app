@@ -8,7 +8,7 @@
 // and an outgoing action's Add a Webhook…. Where the deployment has liveplanner's GitHub App, a GitHub button in the
 // header opens the GitHub view in the tab's place (automations.md "The GitHub view"), as a GitHub trigger's panel does.
 
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from 'react';
 import type { AutomationListedRule } from '@liveplanner/api-schema';
 import {
   AUTOMATION_RULES_MAX,
@@ -23,6 +23,7 @@ import { ConfirmDialog } from '@liveworkspace/workbench/components/dialogs/Confi
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { ItemWebhooksDialog } from '@liveworkspace/workbench/components/dialogs/ItemWebhooksDialog';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { ToolFooter, useDialogInline } from '@liveworkspace/ui';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';
@@ -71,6 +72,11 @@ export function templateStart(
     timeZone,
   });
   return { body: { ...body, name: freeRuleName(body.name, rules) }, picks };
+}
+
+// Inside Tools or not, read where it counts: the Dialog sets it for what it draws.
+function WhenInline({ children, not = false }: { children: ReactNode; not?: boolean }) {
+  return useDialogInline() !== not ? children : null;
 }
 
 export function AutomationsDialog({
@@ -417,7 +423,7 @@ export function AutomationsDialog({
         title="Automations"
         subtitle="Rules that act on this plan’s cards for you when something happens."
         actions={
-          <>
+          <WhenInline not>
             {githubEnabled ? <GithubButton phone={phone} onOpen={openGithub} /> : null}
             <NewRuleMenu
               disabled={!api.data || full}
@@ -425,7 +431,7 @@ export function AutomationsDialog({
               onTemplates={() => onTarget({ view: 'templates' })}
               onDescribe={describe}
             />
-          </>
+          </WhenInline>
         }
         onClose={close}
         // The art's centre clears the wider actions when GitHub's button stands beside New Rule.
@@ -460,6 +466,19 @@ export function AutomationsDialog({
       {phone && meter ? (
         <div className="border-t border-slate-100 px-4 py-3 dark:border-slate-800">{meter}</div>
       ) : null}
+      {/* Inside Tools, New Rule (and GitHub) sit in the tools' one footer, pinned at the foot (owner, 2026-11-17). */}
+      <WhenInline>
+        <ToolFooter>
+          {githubEnabled ? <GithubButton footer phone={phone} onOpen={openGithub} /> : null}
+          <NewRuleMenu
+            footer
+            disabled={!api.data || full}
+            onBlank={newRule}
+            onTemplates={() => onTarget({ view: 'templates' })}
+            onDescribe={describe}
+          />
+        </ToolFooter>
+      </WhenInline>
     </>
   );
 

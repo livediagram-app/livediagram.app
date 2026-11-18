@@ -526,7 +526,7 @@ itemId })` is `<origin>/project/<id>[?s=<code>]` plus `cardHash`, keeping only t
 - **Team people** (`useTeamPeople(ownerId, enabled, signedIn, teams, projectTeamId)`, `useEditorState`): the
   token's team whose id is `projectTeamId` (`editor-realtime.ts`, the plan's `team_id`), else none, so a personal,
   This Browser, shared-from-My-Work or guest plan asks for nobody. One `apiTeamMembers` request for that team,
-  joined members only (`teamMemberPerson`). The mention list (`useCommentMentions`) picks the same team.
+  joined members only (`teamMemberPerson`), each in their chosen presence colour, else Automatic (`presenceColourOf`). The mention list (`useCommentMentions`) picks the same team.
 - **Assignable people** (`usePlanSlice` `people`): `planPeople(self, teamPeople, assigned)` from
   `@liveplanner/items` (`plan-people.ts`): self, then team members, then every assignee a card holds
   (`assignedPeople`), once each by id (the first source wins), sorted by name. The assigned list is recomputed when

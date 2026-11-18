@@ -11,6 +11,8 @@ vi.mock('./ToolbarPalette', () => ({ CARD_CLASS: 'card-surface' }));
 type Rect = { left: number; top: number; width: number; height: number };
 const rects = new Map<Element, Rect>();
 let observers: { cb: ResizeObserverCallback; disconnected: boolean }[] = [];
+// Queued animation frames, run by `frame()`.
+let frames: FrameRequestCallback[] = [];
 let animations: {
   el: Element;
   keyframes: Keyframe[];
@@ -33,6 +35,11 @@ function rectOf(el: Element): DOMRect {
 beforeEach(() => {
   rects.clear();
   observers = [];
+  frames = [];
+  vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => frames.push(cb));
+  vi.stubGlobal('cancelAnimationFrame', (id: number) => {
+    frames[id - 1] = () => {};
+  });
   animations = [];
   document.documentElement.classList.remove('reduce-motion');
   window.matchMedia = (() => ({ matches: false })) as unknown as typeof window.matchMedia;
@@ -105,8 +112,20 @@ function strip({ shown, box }: { shown: boolean; box: Rect }) {
   return { root, card, toggle, pill, divider, a, b };
 }
 
-const fire = () => {
+// The incoming strip's first resize report: it is then held, unseen, a frame for its place to settle.
+const report = () => {
   for (const o of observers) if (!o.disconnected) o.cb([], {} as ResizeObserver);
+};
+// The frames queued so far, run in order.
+const frame = () => {
+  const due = frames;
+  frames = [];
+  due.forEach((cb) => cb(0));
+};
+// Reported and settled: the morph has started.
+const fire = () => {
+  report();
+  frame();
 };
 
 describe('visibleStripCard', () => {
@@ -230,6 +249,50 @@ describe('playStripMorph', () => {
     expect(next.card.style.position).toBe('');
     expect(next.card.style.animation).toBe('none');
     for (const a of animations) expect(a.cancel).toHaveBeenCalled();
+  });
+
+  it('holds the incoming strip unseen behind a still copy of the outgoing one while its place settles', () => {
+    const { next, snap } = play('walk');
+    report();
+    expect(animations).toHaveLength(0);
+    expect(next.card.style.opacity).toBe('0');
+    const hold = snap.hold!;
+    expect(document.body.contains(hold)).toBe(true);
+    expect(hold.getAttribute('aria-hidden')).toBe('true');
+    expect(hold.inert).toBe(true);
+    expect(hold.style).toMatchObject({ position: 'fixed', left: '300px', width: '400px' });
+    // Its place moves (it shifts beside the menu box): it waits another frame, measured where it lands.
+    rects.set(next.card, { left: 200, top: 12, width: 500, height: 44 });
+    frame();
+    expect(animations).toHaveLength(0);
+    frame();
+    expect(document.body.contains(hold)).toBe(false);
+    expect(next.card.style.opacity).toBe('');
+    const bar = animations.find((a) => a.el.hasAttribute('data-strip-morph-surface'))!;
+    expect(bar.keyframes[1]).toMatchObject({ left: '200px' });
+  });
+
+  it('starts anyway once its place has moved for ten frames', () => {
+    const { next } = play('walk');
+    report();
+    for (let i = 0; i < 10; i++) {
+      rects.set(next.card, { left: 250 - i - 1, top: 12, width: 500, height: 44 });
+      frame();
+      expect(animations).toHaveLength(0);
+    }
+    rects.set(next.card, { left: 100, top: 12, width: 500, height: 44 });
+    frame();
+    expect(animations.length).toBeGreaterThan(0);
+  });
+
+  it('shows the strip again and drops the copy when stopped while it settles', () => {
+    const { next, stop, snap } = play('walk');
+    report();
+    stop();
+    frame();
+    expect(animations).toHaveLength(0);
+    expect(document.body.contains(snap.hold!)).toBe(false);
+    expect(next.card.style.opacity).toBe('');
   });
 
   it('plays nothing when stopped before the strip settled', () => {

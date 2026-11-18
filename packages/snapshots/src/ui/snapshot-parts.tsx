@@ -3,8 +3,11 @@
 // The parts of Snapshots that History draws too (liveworkspace/docs/specs/014-snapshots/snapshots.md "In History"):
 // Take Snapshot with its optional name, and the notices over the list (a refusal, Reverted).
 
-import { useState, type FormEvent } from 'react';
-import { Button, TextInput } from '@liveworkspace/ui';
+import { useId, useState, type FormEvent } from 'react';
+import { Button, ResponsivePopover, TextInput, ToolFooterButton } from '@liveworkspace/ui';
+import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
+import { historyHeroArt } from '@liveworkspace/ui/dialog-hero-art/history';
+import { SnapshotGlyph } from './glyphs';
 import { SNAPSHOT_NAME_MAX } from '../limits';
 import type { SnapshotSummary } from '../wire';
 import { snapshotTitle } from './snapshot-words';
@@ -13,9 +16,12 @@ import type { SnapshotsState } from './useSnapshots';
 export function TakeSnapshotForm({
   state,
   className,
+  onTaken,
 }: {
   state: SnapshotsState;
   className: string;
+  /** The snapshot was taken (the popover closes). */
+  onTaken?: () => void;
 }) {
   const [name, setName] = useState('');
   const list = state.snapshots;
@@ -25,12 +31,16 @@ export function TakeSnapshotForm({
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     if (working) return;
-    if (await state.take(name)) setName('');
+    if (await state.take(name)) {
+      setName('');
+      onTaken?.();
+    }
   };
   return (
     <form onSubmit={submit} data-take-snapshot="" className={`flex flex-col gap-2 ${className}`}>
       <div className="flex flex-col gap-2 sm:flex-row">
         <TextInput
+          autoFocus
           aria-label="Snapshot name"
           placeholder="Name this snapshot (optional)"
           value={name}
@@ -83,6 +93,49 @@ export function SnapshotNotices({
           Reverted. Reloading…
         </p>
       ) : null}
+    </>
+  );
+}
+
+/** The Snapshot button (snapshots.md "In History"): Take a Snapshot is not always on show; the button opens its form
+ *  beside the list as a popover (a drawer from the bottom on a phone), which closes once the snapshot is taken. */
+export function SnapshotButton({ state }: { state: SnapshotsState }) {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const titleId = useId();
+  const close = () => setAnchor(null);
+  return (
+    <>
+      {/* The tools' main footer button (owner, 2026-11-17: one look across every tool). */}
+      <ToolFooterButton
+        data-snapshot-button=""
+        aria-haspopup="dialog"
+        aria-expanded={anchor !== null}
+        disabled={state.reverted}
+        onClick={(e) =>
+          // Beside the surface it is in (Tools, or the Snapshots dialog), else the button.
+          setAnchor(e.currentTarget.closest<HTMLElement>('[role="dialog"]') ?? e.currentTarget)
+        }
+      >
+        <SnapshotGlyph size={14} />
+        Take Snapshot
+      </ToolFooterButton>
+      <ResponsivePopover
+        open={anchor !== null}
+        onClose={close}
+        anchor={anchor}
+        titleId={titleId}
+        width={400}
+        placement="side"
+        bare
+      >
+        <HeroDialogHeader
+          art={historyHeroArt}
+          titleId={titleId}
+          title="Take a Snapshot"
+          onClose={close}
+        />
+        <TakeSnapshotForm state={state} className="px-5 py-4" onTaken={close} />
+      </ResponsivePopover>
     </>
   );
 }

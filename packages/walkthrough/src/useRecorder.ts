@@ -1,8 +1,9 @@
 'use client';
 
-// Recording a walkthrough (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording"): set up (microphone,
-// camera, corner, what to hide), a three-second count, the recording (sound and camera through the recorder, the
-// canvas through the event log), then the save card. One state at a time; leaving any of them releases the devices.
+// Recording a walkthrough (liveworkspace/docs/specs/006-media/walkthroughs.md "Screen recordings"): set up (microphone,
+// camera, corner, what to hide), the browser's share-this-tab prompt on Start, a three-second count, the recording (a
+// video of the tab with the microphone's sound; the camera is the bubble on screen, filmed with it), then it saves
+// itself. One state at a time; leaving any of them releases the devices and the tab.
 
 import {
   CAMERA_CONSTRAINTS,
@@ -30,6 +31,12 @@ import type { WalkthroughHost } from './host';
 import { startRecording, stopStream, type Recorded, type Recording } from './recorder';
 import { limitOfRefusal, walkthroughTelemetry, type WalkthroughLimit } from './telemetry';
 import { recordView } from './timeline';
+import {
+  uploadEstimate,
+  uploadMoved,
+  uploadPercent,
+  type WalkthroughUpload,
+} from './upload-progress';
 
 export const COUNTDOWN_FROM = 3;
 // How often the recording's clock (and its waiting samples) is read.
@@ -46,6 +53,8 @@ export type RecorderPhase =
       events: WalkthroughEvents;
       title: string;
       saving: 'events' | 'media' | null;
+      // The media upload so far, while it goes (upload-progress.ts); null before it starts and after it ends.
+      upload: WalkthroughUpload | null;
       error: string | null;
     };
 
@@ -151,6 +160,12 @@ export function useRecorder(
     walkthroughTelemetry.refused(limit);
   }, []);
   const streamRef = useRef<MediaStream | null>(null);
+  // The tab, shared for filming from Start until the recording ends.
+  const displayRef = useRef<MediaStream | null>(null);
+  // A recording that ended saves itself once (no naming step: owner, 2026-11-17).
+  const autoSave = useRef(false);
+  // Whether the camera's bubble was on screen while filming.
+  const streamCamera = useRef(false);
   const recordingRef = useRef<Recording | null>(null);
   const logRef = useRef<EventLog | null>(null);
   const startRef = useRef<{ at: number; tab: string; last: string; tabs: Set<string> } | null>(
@@ -241,6 +256,8 @@ export function useRecorder(
     startRef.current = null;
     stopStream(streamRef.current);
     streamRef.current = null;
+    stopStream(displayRef.current);
+    displayRef.current = null;
     setStream(null);
   }, []);
 
@@ -263,12 +280,15 @@ export function useRecorder(
 
   const begin = useCallback(() => {
     const s = streamRef.current;
-    if (!s) return;
-    const camOn = s.getVideoTracks().length > 0;
+    const display = displayRef.current;
+    if (!s || !display) return;
+    // The tab's picture with the microphone's sound; the camera is the bubble on screen, filmed with the rest.
+    const filmed = new MediaStream([...display.getVideoTracks(), ...s.getAudioTracks()]);
+    streamCamera.current = s.getVideoTracks().length > 0;
     try {
       recordingRef.current = startRecording({
-        stream: s,
-        camera: camOn,
+        stream: filmed,
+        camera: true,
         onFull: () => {
           refuse('TooLarge');
           void finishRef.current();
@@ -298,9 +318,43 @@ export function useRecorder(
     setPhase({ kind: 'recording', elapsed: 0 });
   }, [refuse]);
 
+  // Start: the browser's own prompt to share this tab, asked inside the press, then the count.
   const start = useCallback(() => {
     if (!streamRef.current) return;
-    setPhase({ kind: 'countdown', n: COUNTDOWN_FROM });
+    const media = navigator.mediaDevices as MediaDevices & {
+      getDisplayMedia?: (options: object) => Promise<MediaStream>;
+    };
+    if (!media?.getDisplayMedia) {
+      setDeviceProblem(
+        "This browser can't film its tab. Try Chrome, Edge, Brave or Firefox on a computer.",
+      );
+      return;
+    }
+    setDeviceProblem(null);
+    void media
+      .getDisplayMedia({
+        video: { displaySurface: 'browser', frameRate: 30 },
+        audio: false,
+        preferCurrentTab: true,
+        selfBrowserSurface: 'include',
+        surfaceSwitching: 'exclude',
+      })
+      .then((display) => {
+        if (phaseKind.current !== 'setup' || !streamRef.current) return stopStream(display);
+        displayRef.current = display;
+        // Stopping the share from the browser's own bar is Finish (or, before it began, a cancel).
+        display.getVideoTracks()[0]?.addEventListener('ended', () => {
+          if (phaseKind.current === 'recording') void finishRef.current();
+          else if (phaseKind.current === 'countdown') {
+            displayRef.current = null;
+            setPhase({ kind: 'setup' });
+          }
+        });
+        setPhase({ kind: 'countdown', n: COUNTDOWN_FROM });
+      })
+      .catch(() =>
+        setDeviceProblem("Your browser didn't share this tab, so nothing was recorded."),
+      );
   }, []);
 
   // The count: 3, 2, 1, then recording.
@@ -325,6 +379,8 @@ export function useRecorder(
     const recorded = await recording.stop();
     stopStream(streamRef.current);
     streamRef.current = null;
+    stopStream(displayRef.current);
+    displayRef.current = null;
     setStream(null);
     const h = hostRef.current;
     const fingerprints: Record<string, string> = {};
@@ -332,22 +388,28 @@ export function useRecorder(
       const print = h.fingerprint(tab);
       if (typeof print === 'string') fingerprints[tab] = print;
     }
+    void events;
+    void fingerprints;
+    // A screen recording: its length and nothing to replay (the hidden were never on screen while it filmed).
     const sealed = sealWalkthroughEvents({
       v: 1,
+      screen: true,
       durationMs,
-      camera: recorded.type.startsWith('video/'),
+      camera: streamCamera.current,
       corner,
       startTab: started.tab,
-      hidden: [...hiddenRef.current],
-      fingerprints,
-      events,
+      hidden: [],
+      fingerprints: {},
+      events: [],
     });
+    autoSave.current = true;
     setPhase({
       kind: 'review',
       recorded,
       events: sealed,
       title: `Walkthrough of ${h.tabName(started.tab)}`,
       saving: null,
+      upload: null,
       error: walkthroughMediaType(recorded.type)
         ? null
         : "This browser recorded in a format that can't be kept. Download a copy instead.",
@@ -432,7 +494,19 @@ export function useRecorder(
     if (phase.kind !== 'review' || !api || phase.saving) return;
     const mediaType = walkthroughMediaType(phase.recorded.type);
     if (!mediaType) return;
-    setPhase({ ...phase, saving: 'events', error: null });
+    setPhase({ ...phase, saving: 'events', upload: null, error: null });
+    // The media's bytes sent, drawn when the whole percentage moves or every PROGRESS_EVERY_MS, so a fast uplink's
+    // stream of progress events doesn't draw the card more than it needs.
+    let began = 0;
+    let drawn: { percent: number; at: number } | null = null;
+    const onProgress = (sent: number, total: number) => {
+      const at = now();
+      const percent = uploadPercent({ sent, total });
+      if (!uploadMoved(drawn, percent, at)) return;
+      drawn = { percent, at };
+      const upload = uploadEstimate(sent, total, at - began);
+      setPhase((p) => (p.kind === 'review' && p.saving === 'media' ? { ...p, upload } : p));
+    };
     const result = await api.save(
       {
         title: phase.title,
@@ -441,7 +515,11 @@ export function useRecorder(
         mediaType,
         events: phase.events,
       },
-      (stage) => setPhase((p) => (p.kind === 'review' ? { ...p, saving: stage } : p)),
+      (stage) => {
+        if (stage === 'media') began = now();
+        setPhase((p) => (p.kind === 'review' ? { ...p, saving: stage } : p));
+      },
+      onProgress,
     );
     if (result.ok) {
       walkthroughTelemetry.saved();
@@ -450,9 +528,19 @@ export function useRecorder(
     } else {
       const limit = limitOfRefusal(result.error);
       if (limit) walkthroughTelemetry.refused(limit);
-      setPhase((p) => (p.kind === 'review' ? { ...p, saving: null, error: result.message } : p));
+      setPhase((p) =>
+        p.kind === 'review' ? { ...p, saving: null, upload: null, error: result.message } : p,
+      );
     }
   }, [phase, api, onSaved]);
+
+  // Finished: it saves itself at once, under its default name (renamed later in the list).
+  const reviewing = phase.kind === 'review' && phase.saving === null && phase.error === null;
+  useEffect(() => {
+    if (!reviewing || !autoSave.current) return;
+    autoSave.current = false;
+    void save();
+  }, [reviewing, save]);
 
   const download = useCallback(() => {
     if (phase.kind !== 'review') return;

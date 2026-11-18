@@ -328,6 +328,10 @@ template and a blank plan have no cards for a rule to act on, and start with non
   matters carry ([Card types a template makes](#card-types-a-template-makes)). A card of a type without it is
   skipped, never failed. Close the Parent ships only where a type has a Parent, and Triage New Bugs only where a type
   is named Bug.
+- **Fitted to the template.** A starter may be narrowed to the template's own columns where the plan's first done
+  column belongs to another board. Trip Planner's **Done When the Checklist Is Complete** acts only on a card in To
+  Pack and moves it to Packed (a booking's checklist leaves it alone); **Flag Cards Due Soon** flags a booking three
+  days before it is due, unless it is Paid, and asks in a comment if it is sorted. Both are safe steps only.
 
 | Template           | On                                                                           | Off                                                      |
 | ------------------ | ---------------------------------------------------------------------------- | -------------------------------------------------------- |
@@ -350,7 +354,7 @@ template and a blank plan have no cards for a rule to act on, and start with non
 | Sprint Board       | Stamp the Finish Date, Close the Parent, Assign on Start, Flag Blocked Cards | Triage New Bugs, Route Reviews                           |
 | Client Onboarding  | Assign on Start, Flag Blocked Cards, Close the Parent                        |                                                          |
 | Editorial Pipeline | Assign on Start, Give It a Due Date, Flag Blocked Cards                      |                                                          |
-| Trip Planner       | Flag Blocked Cards                                                           |                                                          |
+| Trip Planner       | Flag Cards Due Soon, Done When the Checklist Is Complete                     |                                                          |
 
 The rules are built from the template's own boards (a few milliseconds), in the server's create or, for Start
 Planning, in a chunk the editor loads only then; each Start Planning rule is one Automations request.

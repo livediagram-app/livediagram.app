@@ -26,6 +26,7 @@ export function sectionOfView(
   switch (v.kind) {
     case 'gallery':
     case 'shape-libraries':
+    case 'walkthroughs':
       return { section: { kind: 'library' }, folderId: null, libraryTab: v.kind };
     case 'home':
     case 'inbox':

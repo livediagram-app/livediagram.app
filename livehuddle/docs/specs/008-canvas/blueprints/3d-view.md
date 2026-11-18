@@ -1,6 +1,6 @@
 # 3D view blueprint
 
-Derived from [3D view](../3d-view.md). Defaults applied: D136 to D141 ([DEFAULTS.md](DEFAULTS.md)).
+Derived from [3D view](../3d-view.md). Defaults applied: D136 to D141, D143, D144 ([DEFAULTS.md](DEFAULTS.md)).
 
 ## Files
 
@@ -9,6 +9,11 @@ Derived from [3D view](../3d-view.md). Defaults applied: D136 to D141 ([DEFAULTS
 | `apps/editor/lib/space-3d/space-3d-camera.ts`                            | Pure: the camera's constants, `stageTransform`, `floorPointAt` (screen to canvas), `screenPointOf` |
 | `apps/editor/lib/space-3d/space-3d-walls.ts`                             | Pure: `spaceWalls(elements)`, the standing walls with their doorways, labels and shade             |
 | `apps/editor/lib/space-3d/space-3d-cutaway.ts`                           | Pure: `cutAwayIds(walls, feet)`, `viewArea`, `wallsInArea`, `areaMovedFar`                         |
+| `apps/editor/lib/space-3d/space-3d-pieces.ts`                            | Pure: `standsIn3D`, `standAttr`, `standingIdsInArea`, `seatLift`, `standingPiecePointAt`           |
+| `apps/editor/lib/space-3d/standing-pieces-on-screen.ts`                  | Reads the near standing pieces' boxes and screen rects for a press                                 |
+| `apps/editor/components/canvas/space-3d/useStandingPieces.ts`            | Marks the standing pieces in the view area `data-space-near`, outside React                        |
+| `apps/editor/lib/space-3d/space-3d-zoom.ts`                              | Pure: `SPACE_3D_ZOOM`, `space3DZoomIn`, `space3DZoomOut`                                           |
+| `apps/editor/components/canvas/space-3d/useSpace3DZoom.ts`               | Zooms in as the view stands up and back out as it lies down                                        |
 | `apps/editor/lib/space-3d/space-3d-preference.ts`                        | The remembered choice: `space3DPreference` (a state store over Browser Storage), `toggleSpace3D`   |
 | `apps/editor/lib/space-3d/space-3d-phase.ts`                             | Pure: the view's phases and `nextSpace3DPhase`                                                     |
 | `apps/editor/lib/space-3d/space-3d-key.ts`                               | Pure: `isSpace3DKey(e)`, Shift+3 by its code                                                       |
@@ -30,16 +35,19 @@ Derived from [3D view](../3d-view.md). Defaults applied: D136 to D141 ([DEFAULTS
 
 ## Domain and naming
 
-| Term          | Identifier             | Meaning                                                                                    |
-| ------------- | ---------------------- | ------------------------------------------------------------------------------------------ |
-| 3D view       | `Space3D`              | The tilted view of a Space while walking                                                   |
-| Stage         | `data-space-stage`     | The element round the world layer that carries the camera's tilt and perspective           |
-| Phase         | `Space3DPhase`         | `flat`, `rising`, `tilted` or `falling`                                                    |
-| Standing wall | `SpaceWall`            | `{ id, a, b, kind, height, label?, shade }`, a wall face on the floor line from `a` to `b` |
-| Wall kind     | `SpaceWallKind`        | `wall` (Room, Corridor, Office Pod), `glass`, `fence`, `door` (a shut Door's panel)        |
-| Billboard     | `data-space-billboard` | An element turned to face the camera about its character's feet                            |
-| Cut away      | `data-cut`             | A wall faded because it stands in front of your feet                                       |
-| View area     | `SpaceArea`            | The canvas rectangle whose walls are drawn                                                 |
+| Term           | Identifier             | Meaning                                                                                                                                             |
+| -------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3D view        | `Space3D`              | The tilted view of a Space while walking                                                                                                            |
+| Stage          | `data-space-stage`     | The element round the world layer that carries the camera's tilt and perspective                                                                    |
+| Phase          | `Space3DPhase`         | `flat`, `rising`, `tilted` or `falling`                                                                                                             |
+| Standing wall  | `SpaceWall`            | `{ id, a, b, kind, height, label?, shade }`, a wall face on the floor line from `a` to `b`                                                          |
+| Wall kind      | `SpaceWallKind`        | `wall` (Room, Corridor, Office Pod), `glass`, `fence`, `picket` (a Garden Fence), `door` (a shut Door's panel), `grass` (a row of blades on a lawn) |
+| Standing piece | `data-space-stands`    | A Space piece's box that stands up in 3D: `base` (about its front edge) or `centre` (turned)                                                        |
+| Near           | `data-space-near`      | Set on the standing pieces in the view area; only these turn up                                                                                     |
+| Seat lift      | `--space-seat-lift`    | A sitter's nudge towards the camera, canvas px along the floor                                                                                      |
+| Billboard      | `data-space-billboard` | An element turned to face the camera about its character's feet                                                                                     |
+| Cut away       | `data-cut`             | A wall faded because it stands in front of your feet                                                                                                |
+| View area      | `SpaceArea`            | The canvas rectangle whose walls are drawn                                                                                                          |
 
 Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a view, not a mode).
 
@@ -67,19 +75,35 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
    screen or the zoom or size changed, it sets the area, and draws `wallsInArea(walls, area)`. It subscribes to your
    pose store: on each pose it works out `cutAwayIds(drawn, feet)` and toggles `data-cut` on the walls whose state
    changed, outside React.
-5. Shift+3 (`isSpace3DKey`) toggles the preference while walking, unless typing, a menu or a dialog holds the
+5. Standing pieces: BoxedElementView sets `data-space-stands={standAttr(el)}` on every element's box (absent for
+   what lies flat). `Space3DWalls` calls `useStandingPieces(layer, elements, area)`, which, whenever the area or the
+   board changes, sets `data-space-near` on the boxes in `standingIdsInArea` and clears it from the rest, and clears
+   every one when the layer unmounts. Under `[data-space-view]` the element plane is `preserve-3d`, and a near
+   `base` box turns `rotate: x -tilt` about `50% 100%` (a `centre` box about its own origin), on the tilt's transition.
+6. `useSpace3DZoom(walking, zoom, setZoom)` (in Canvas): when the preference turns on while walking it sets the zoom
+   to `space3DZoomIn(zoom)` (× `SPACE_3D_ZOOM` 1.4, clamped) and remembers `{ from, to }`; off while walking, it sets
+   `space3DZoomOut(zoom, entered)`: `from` when the zoom is still `to`, else ÷ 1.4, clamped. A walk's start is
+   `useAvatarCamera`'s `centreAvatar`, which lands at `SPACE_3D_ZOOM` while the preference is on, else 1.
+7. Sitters: CanvasCharactersLayer passes `seatLift={seatLift(piece, feet)}` to each seated walker (yours and every
+   peer's; the piece looked up among the standing pieces by `seatedOn`). AvatarWalker writes it as
+   `--space-seat-lift` on its box and its chip box; the stand's 3D rule appends
+   `translateZ(var(--space-seat-lift) * sin(tilt))`, which is 0 while flat.
+8. A walking press in 3D first asks `standingPiecePointAt(standingPiecesOnScreen(main, elements), client)`: of the
+   near boxes whose screen rect holds the press, the one with the lowest front edge, the press mapped back into its
+   box (a turned one: its middle). Only when none holds it does the press go to `floorPointAt`.
+9. Shift+3 (`isSpace3DKey`) toggles the preference while walking, unless typing, a menu or a dialog holds the
    keyboard (the same guards as the avatar action keys).
-6. The 3D View switch is drawn while walking, `aria-pressed` from the preference, and toggles it.
-7. A walking press, while `space3DTiltNow()` is not 0, maps the client point through `floorPointAt` with `<main>`'s
-   rect and the view; a null (above the horizon) walks nowhere.
-8. The overlay: in every phase but `flat` the canvas draws `Space3DOverlayStage` after the stage and the fog, a
-   second stage with the same style and a world layer moved by `useViewportTransform` as the canvas's is. Its node
-   goes to `Space3DOverlayProvider` round the characters layer; `InSpace3DOverlay` draws the speech layer, talking
-   bars, raised hands, call bubbles and the Receptionist's card into it (in place while flat). Being a separate 3D
-   context painted after the world, nothing in it is ever sorted behind a wall; inside it each billboard stands about
-   its feet under the same camera, so it lands over the same head. Each draws into a host of its own (`display: contents`) that moves between a slot in place and the overlay, never unmounted, so a half-typed message keeps its text, focus and caret and a bubble keeps floating.
-   `ReceptionistBubble` reads `useInSpace3D()`: while true it never flips under his feet, and it places itself again
-   when it changes.
+10. The 3D View switch is drawn while walking, `aria-pressed` from the preference, and toggles it.
+11. A walking press, while `space3DTiltNow()` is not 0, maps the client point through `floorPointAt` with `<main>`'s
+    rect and the view; a null (above the horizon) walks nowhere.
+12. The overlay: in every phase but `flat` the canvas draws `Space3DOverlayStage` after the stage and the fog, a
+    second stage with the same style and a world layer moved by `useViewportTransform` as the canvas's is. Its node
+    goes to `Space3DOverlayProvider` round the characters layer; `InSpace3DOverlay` draws the speech layer, talking
+    bars, raised hands, call bubbles and the Receptionist's card into it (in place while flat). Being a separate 3D
+    context painted after the world, nothing in it is ever sorted behind a wall; inside it each billboard stands about
+    its feet under the same camera, so it lands over the same head. Each draws into a host of its own (`display: contents`) that moves between a slot in place and the overlay, never unmounted, so a half-typed message keeps its text, focus and caret and a bubble keeps floating.
+    `ReceptionistBubble` reads `useInSpace3D()`: while true it never flips under his feet, and it places itself again
+    when it changes.
 
 ## Interfaces and contracts
 
@@ -93,10 +117,14 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
   - Doors: every `door` shape's `doorLine`, shut (`doorClosed === true`) or open.
   - A `room`: `roomWalls(el)` cut by every door (`cutByDoors`), kind `glass` when `isGlassRoom`, else `wall`.
   - A `corridor`: `corridorWalls(el)` cut by every door, kind `wall`. An `office-pod`: `podWalls(el)`, kind `wall`.
-  - A `fence` or `garden-fence`: `fenceLine(el)`, kind `fence`.
+  - A `fence`: `fenceLine(el)`, kind `fence`; a `garden-fence`: `fenceLine(el)`, kind `picket`.
+  - A `grass`: level rows from `x + 10` to `x + width − 10`, every `SPACE_GRASS_ROW` (22) from `y + 10` while
+    `≤ y + height − 10`, kind `grass`, `SPACE_GRASS_HEIGHT` (7), each row less the x spans of every covering piece
+    (`COVERS_GRASS`: room, corridor, office-pod, garden-path, rug, stage, pond, swimming-pool, car-park, stairs,
+    avatar-pad) whose box holds its y. `cutAwayIds` never cuts a `grass` row.
   - A shut door whose line stands on one of those walls (`doorSpanOnWall` not null): its line, kind `door`.
   - Each wall runs left to right (`a.x ≤ b.x`, or top to bottom when vertical), so its face fronts the camera.
-  - `height`: `wall` and `glass` `SPACE_WALL_HEIGHT` (56), `fence` `SPACE_FENCE_HEIGHT` (22), `door`
+  - `height`: `wall` and `glass` `SPACE_WALL_HEIGHT` (56), `fence` and `picket` `SPACE_FENCE_HEIGHT` (22), `door`
     `SPACE_DOOR_HEIGHT` (50). `shade`: `|sin angle|`, 0 facing the camera, 1 running away from it.
   - `label`: a Room's plain label on its back wall: of its walls running within 30 degrees of level, the longest of
     those nearest the top, after the doorway is cut.
@@ -138,10 +166,12 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
 
 - The switch: `ClusterPopoverButton` with `toggle`, label and hover title "3D View", description "Tilt the Space back
   and stand its walls up. Shift+3.", name "3D", the `Space3DGlyph` icon (a floor in perspective with two walls).
-- The walls: face colour `--space-wall` (light canvas `#e7e5e4`, dark `#475569`), shaded towards
-  `--space-wall-shade` by `shade`; top edge 3 px `--space-wall-top` (light `#ffffff`, dark `#94a3b8`); a soft darker
-  foot. Glass: `rgb(186 230 253 / 0.28)` with a `rgb(224 242 254 / 0.9)` top edge. Fence: `FENCE_WOOD` rails and posts.
-  Door: wood `#a16207` (dark `#ca8a04`) with a lighter top edge. A label: 12 px, semibold, `--space-wall-ink`.
+- The walls: plaster face `--space-wall` (light canvas `#ddd3c3`, dark `#b7ad9e`), shaded towards
+  `--space-wall-shade` by `shade`; top edge 3 px `--space-wall-top` (light `#f2ede5`, dark `#d9d1c4`); a soft darker
+  foot and a 4 px `--space-skirting` (`#a87548`) at the bottom. Glass: `rgb(186 230 253 / 0.28)` with a `rgb(224 242 254 / 0.9)` top edge. Fence: `FENCE_WOOD` rails and posts. Picket: white pickets (`--space-picket`, light `#ffffff`, dark `#e2e8f0`) every
+  10 px on two rails. A Fence's and a Garden Fence's box carries `data-space-walled`, and `app/space-3d.css` hides it
+  under `[data-space-view]`, so only the standing fence shows.
+  Door: wood `#9a6a3f` (dark `#8a5d36`) with a lighter top edge. A label: 12 px, semibold, `--space-wall-ink`.
 - A Room's flat label: BoxedElementView wraps it in `data-room-floor-label` (`display: contents`), and
   `app/space-3d.css` hides it under `[data-space-view]`, so only the back-wall sign shows.
 - The fog: the top 36% of the canvas in its own background colour, masked from opaque to clear, faded in with the tilt.
@@ -158,28 +188,33 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
 
 ## Testing
 
-| Rule                                                   | Test                                                         |
-| ------------------------------------------------------ | ------------------------------------------------------------ |
-| The projection and its inverse; tilt 0 is the flat map | `lib/space-3d/space-3d-camera.test.ts`                       |
-| Walls of rooms, corridors, pods, fences; doors cut     | `lib/space-3d/space-3d-walls.test.ts`                        |
-| The cut-away rule, the view area and culling           | `lib/space-3d/space-3d-cutaway.test.ts`                      |
-| Phases, reduced motion, Shift+3, the stored choice     | `lib/space-3d/space-3d-state.test.ts`                        |
-| The switch, the stage, the walls layer draws and cuts  | `components/canvas/space-3d/space-3d.test.tsx`               |
-| The stand wraps the figure                             | `packages/avatar/src/components/AvatarWalker.stand.test.tsx` |
-| The overlay draws bubbles over walls                   | `components/canvas/space-3d/space-3d.test.tsx`               |
-| The Receptionist's card re-placed when 3D turns on     | `components/canvas/receptionist/ReceptionistBubble.test.tsx` |
+| Rule                                                                        | Test                                                         |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| The projection and its inverse; tilt 0 is the flat map                      | `lib/space-3d/space-3d-camera.test.ts`                       |
+| Walls of rooms, corridors, pods, fences; doors cut                          | `lib/space-3d/space-3d-walls.test.ts`                        |
+| The cut-away rule, the view area and culling                                | `lib/space-3d/space-3d-cutaway.test.ts`                      |
+| Phases, reduced motion, Shift+3, the stored choice                          | `lib/space-3d/space-3d-state.test.ts`                        |
+| The switch, the stage, the walls layer draws and cuts                       | `components/canvas/space-3d/space-3d.test.tsx`               |
+| The stand wraps the figure                                                  | `packages/avatar/src/components/AvatarWalker.stand.test.tsx` |
+| Which kinds stand, the near set, the seat lift, a press on a standing piece | `lib/space-3d/space-3d-pieces.test.ts`                       |
+| The near set toggled and cleared; the press reads rects                     | `components/canvas/space-3d/space-3d.test.tsx`               |
+| Upright pieces' boxes marked, floor and stickies not                        | `components/canvas/BoxedElementView.space-stands.test.tsx`   |
+| A sitter's lift on its box and chip                                         | `packages/avatar/src/components/AvatarWalker.stand.test.tsx` |
+| The overlay draws bubbles over walls                                        | `components/canvas/space-3d/space-3d.test.tsx`               |
+| The Receptionist's card re-placed when 3D turns on                          | `components/canvas/receptionist/ReceptionistBubble.test.tsx` |
 
 ## Constants and configuration
 
-| Constant                  | Value       | Why                                                                      |
-| ------------------------- | ----------- | ------------------------------------------------------------------------ |
-| `SPACE_3D_TILT_DEG`       | 52          | A map tilted back: steep enough to stand walls, flat enough to see rooms |
-| `SPACE_3D_PERSPECTIVE_PX` | 1100        | A gentle vanishing point on a laptop; a phone looks a little deeper      |
-| `SPACE_3D_TILT_MS`        | 520         | The tilt's duration (the motion spec's long transition)                  |
-| `SPACE_WALL_HEIGHT`       | 56          | A character's height (`AVATAR_HEIGHT`)                                   |
-| `SPACE_FENCE_HEIGHT`      | 22          | Knee high on a character                                                 |
-| `SPACE_DOOR_HEIGHT`       | 50          | A shut Door reads below its wall                                         |
-| `SPACE_CUT_HALF_WIDTH`    | 72          | Wider than a character and its chip                                      |
-| `SPACE_CUT_DEPTH`         | 150         | A wall's height seen at the tilt, with the character's own height        |
-| `SPACE_CUT_OPACITY`       | 0.18        | A ghost you can still place                                              |
-| `SPACE_AREA_*`            | 1.5, 3, 1.5 | Covers the tilted view's floor with room to walk before a re-cull        |
+| Constant                  | Value       | Why                                                                                      |
+| ------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| `SPACE_3D_TILT_DEG`       | 52          | A map tilted back: steep enough to stand walls, flat enough to see rooms                 |
+| `SPACE_3D_PERSPECTIVE_PX` | 1100        | A gentle vanishing point on a laptop; a phone looks a little deeper                      |
+| `SPACE_3D_TILT_MS`        | 520         | The tilt's duration (the motion spec's long transition)                                  |
+| `SPACE_WALL_HEIGHT`       | 56          | A character's height (`AVATAR_HEIGHT`)                                                   |
+| `SPACE_FENCE_HEIGHT`      | 22          | Knee high on a character                                                                 |
+| `SPACE_DOOR_HEIGHT`       | 50          | A shut Door reads below its wall                                                         |
+| `SPACE_SEAT_LIFT_SHARE`   | 0.6         | A chair's, a sofa's and a table's near seats; not a desk's or a chair's back view (D144) |
+| `SPACE_CUT_HALF_WIDTH`    | 72          | Wider than a character and its chip                                                      |
+| `SPACE_CUT_DEPTH`         | 150         | A wall's height seen at the tilt, with the character's own height                        |
+| `SPACE_CUT_OPACITY`       | 0.18        | A ghost you can still place                                                              |
+| `SPACE_AREA_*`            | 1.5, 3, 1.5 | Covers the tilted view's floor with room to walk before a re-cull                        |

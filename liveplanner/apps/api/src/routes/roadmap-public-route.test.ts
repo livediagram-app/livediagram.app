@@ -324,8 +324,23 @@ describe('the worker limits a roadmap per network, as forms', () => {
       },
     });
     expect((await w.read(r.code)).status).toBe(200);
-    expect((await w.vote(r.code, { card: card.id, browser: BROWSER, up: true })).status).toBe(429);
+    const limited = await w.vote(r.code, { card: card.id, browser: BROWSER, up: true });
+    expect(limited.status).toBe(429);
     expect(keys.map((k) => k.split(':')[0])).toEqual(['roadmap-read', 'roadmap']);
     expect(write).toEqual([]);
+    // The page waits out the limiter's window before reading again (public-roadmap.md "States").
+    expect(limited.headers.get('Retry-After')).toBe('60');
+    expect(await limited.json()).toEqual({ error: 'rate_limited' });
+  });
+
+  it('names the window on a limited read, and a form keeps its bare answer', async () => {
+    const r = await w.publish();
+    Reflect.set(w.env, 'FORM_RATE_LIMITER', { limit: async () => ({ success: false }) });
+    const read = await w.read(r.code);
+    expect(read.status).toBe(429);
+    expect(read.headers.get('Retry-After')).toBe('60');
+    const form = await w.raw(new Request(`https://api.test/api/forms/${w.formCode}`));
+    expect(form.status).toBe(429);
+    expect(form.headers.get('Retry-After')).toBeNull();
   });
 });

@@ -105,6 +105,11 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   ),
   mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
   mcpTool('ViewTab', 'View Tab', 'The interactive view in a chat host drawing a page.'),
+  mcpTool(
+    'ViewLive',
+    'View Live',
+    'The interactive view in a chat host following a document live, with a view-only ticket.',
+  ),
 ];
 
 export const MCP_TOOL_CALLS: MetricStack = {
@@ -160,8 +165,8 @@ export const AGENT_TOAST_SHOW = chart(
   'Agent',
   'Opened',
   'Agent Changes Shown',
-  "Somebody pressed Show on an agent's toast to see what it changed, or Review on the toast its article suggestions raise.",
-  { types: ['Toast', 'SuggestionsToast'] },
+  "Somebody pressed Show on an agent's toast to see what it changed.",
+  { types: ['Toast'] },
 );
 
 // Document views (docs/specs/024-agents/document-views.md): which views agents read a document through.

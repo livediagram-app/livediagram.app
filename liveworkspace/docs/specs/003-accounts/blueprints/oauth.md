@@ -127,7 +127,10 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
   again in its next-task timer) navigates nowhere and never resolves, and the editors' accounts bridges and the site's
   `appAccountAnswer` never settle when `retrySilentSignIn()` answered true (Work Tracker 1007: the guest hand-off's
   navigation had replaced the bounce's). A refused refresh (`refresh_failed`) clears the refresh cookie, hint and name
-  only, never the signed-out mark.
+  only, never the signed-out mark. Before calling `retrySilentSignIn`, each editor's accounts bridge (`initialSession`,
+  on a hinted first answer of signed out) awaits `forgetAccount()`: its recent items snapshot and
+  `lastSeenCopies.forgetAll()`, the same pair `endSession` clears. No cookie carries the account id: an editor's warm open
+  under a `1` hint waits for the bridge's session and reads for its `user.id` (`@liveworkspace/workbench/lib/warm-open`).
 - Signing out: `endAccountsSession` (`POST /api/auth/end-session` with the client secret and the refresh token, so it
   runs in the app's Worker) answers the ticket, or null on any failure or after 5 s; `endSessionUrl` builds the browser's hop
   (`client_id`, `post_logout_redirect_uri`, `ticket`) ([sessions-and-guests.md](sessions-and-guests.md#ending-a-session-end-sessionts)).

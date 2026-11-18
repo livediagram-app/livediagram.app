@@ -20,6 +20,7 @@ export function ShareOfflineGate({
   return (
     <SyncGateDialog
       title="Share This Plan"
+      subtitle="Saved only in this browser."
       help={<HelpArticleLink article="offlineMode" size="md" />}
       message="It is saved only in this browser, so there is nothing to share yet. Sync it to liveplanner to share it: share links, real-time collaboration and the live image all need it on our servers. You can take it offline again any time."
       onSyncToCloud={onSyncToCloud}

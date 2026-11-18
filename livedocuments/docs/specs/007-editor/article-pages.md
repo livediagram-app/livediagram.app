@@ -255,13 +255,39 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **Comment** (⌘⌥M) and **Assign Action**, usable while text is selected outside a table (see
     "Comments and actions"; a margin note never sits in a cell, the buttons' tooltips saying so).
 - No undo or redo (the canvas controls have them).
-- **Word Count**: the foot of More Formatting reads the length of the article the caret is in, as
-  "840 words", and while text is selected, the selection's count beside the total, as "12 of 840
-  words". It counts as agents' page summaries do (one count, `articleWordCount`): the writing, code,
-  table cells and footnote text count, a footnote's marker does not. It is read only while the menu
-  is open (as it opens, and again as the selection moves), so typing with the menu shut never counts
-  and a long article types as fast with it as without. It is a line to read, not a choice: picking it does nothing and the menu stays
-  open. A flashcard's menu has it too (a card's length is its speaking time's).
+- **Word Count**: the foot of More Formatting reads the length of the article the caret is in, how
+  long it takes to read and how easily it reads, as "840 words · 4 min read · Easy to read", and
+  while text is selected, the selection's figures, its count beside the total, as "12 of 840 words ·
+  1 min read · Plain English". No new button or panel: the line says more.
+  - **Words**: it counts as agents' page summaries do (one count, `articleWordCount`): the writing,
+    code, table cells and footnote text count, a footnote's marker does not.
+  - **Reading time**: the words at **238 a minute** (`READING_WORDS_PER_MINUTE`, an adult's silent
+    reading pace for non-fiction), to the nearest minute and at least one ("1 min read"); none with
+    no words.
+  - **How easily it reads**: the Flesch Reading Ease of the writing (its average sentence length and
+    syllables a word), said in words, never as a score: **Easy to read** (80 and over), **Fairly easy
+    to read** (70 to 80), **Plain English** (60 to 70), **Fairly hard to read** (50 to 60), **Hard to
+    read** (under 50). It reads as guidance on the writing, never a grade on the writer. Only the
+    prose counts: paragraphs, headings, lists and quotes; code, tables and footnote notes are not
+    sentences. A sentence ends at a full stop, "!", "?" or "…" (closing quotes and brackets after it
+    included) before a space or the block's end, and every block ends one; a full stop after a known
+    abbreviation ("Dr.", "e.g.", "Mr."), after an initial ("J.") or before a word that starts in
+    lower case ends none, and one inside a number ("3.5") is no full stop.
+  - **English first**: the formula is English's, so the level shows only when the writing reads as
+    English (at least 15% of its words among the commonest English words, which other languages do
+    not share). Otherwise the line says the words and the reading time, and its hover the sentence
+    figures, without a level.
+  - **The numbers** show on hovering the line: "14 words a sentence on average · 3 sentences over 30
+    words · Flesch Reading Ease 72" (no long sentences: "none over 30 words"; no level: no ease).
+  - **Long sentences**: a sentence of more than **30 words** (`LONG_SENTENCE_WORDS`) is long. When
+    the article has one, the line is a choice, **Select the Next Long Sentence**: picking it selects
+    the next long sentence after the caret (after the last, the first again), closes the menu and
+    puts the caret back in the writing, so the writer can split it; opening the menu again and
+    picking it again steps on to the next. With none, it stays a line to read: picking it does
+    nothing and the menu stays open. It steps through the whole article whatever is selected.
+  - It is read only while the menu is open (as it opens, and again as the selection moves), so
+    typing with the menu shut never counts and a long article types as fast with it as without. A
+    flashcard's menu has it too (a card's length is its speaking time's).
 - **Narrow**: when the toolbar is wider than the canvas, it scrolls sideways.
 - **On a phone** the toolbar is a bar fixed along the top of the canvas, across it (its controls
   scroll sideways), in the Toolbar strip's place: the strip (its menu and palette) stands aside
@@ -270,7 +296,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   open down from it.
 - **A finger on a page** (a phone or any touch screen): a finger that travels more than a few px
   (`TOUCH_PAN_SLOP`) on an article page's writing or paper pans the view, as a thumb scrolls a
-  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there;
+  document, whatever the tool; one that lifts where it landed is a tap, which puts the caret there, in the
+  paragraph tapped, and what is typed next lands there, even just after Add Article put the caret in the new
+  article's Title;
   one held still for a long press (`LONG_PRESS_MS`) is the browser's, selecting text, so a slide
   after it stretches the selection rather than panning. Selected writing keeps the phone's Copy
   and Paste callout.
@@ -541,9 +569,6 @@ due dates, Activity, email), because it lives on an element: a **margin note**.
   brings both back).
 - **Never printed or presented**: exports (PDF, PNG, SVG) leave the markers out and the text
   untinted, and while a deck is presented the markers hide and the tint goes.
-- **On a suggestion**: a margin note sits beside suggested text like any text, so a suggestion and its talk sit
-  together; a Participant on Suggest Only may put a comment (never an action) on selected text
-  ([Suggestions](suggestions.md#comments-on-selected-text)).
 - A tint is never taken from a paste.
 
 ## Article style
@@ -650,8 +675,8 @@ ink").
   each link in the text to its address. **Word** writes the article as an editable `.docx`, its
   headings as Word styles, its tables as Word tables, its contents as a Word table of contents,
   its header and footer as Word's, its footnotes as Word footnotes, and its zones as images
-  ([PowerPoint and Word export](../020-import-export/office-export.md)). An article holding suggestions exports
-  its rejected view, set from the writing rather than read off the screen ([Suggestions](suggestions.md#everywhere-a-page-goes)). **Markdown** (an agent's
+  ([PowerPoint and Word export](../020-import-export/office-export.md)).
+  **Markdown** (an agent's
   read) writes a table as a pipe table and a contents block as `[TOC]`
   ([Pages for agents](../024-agents/pages-for-agents.md)).
 - **The Map** shows each page's text as soft grey lines.
@@ -666,11 +691,11 @@ ink").
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything on this page: writes, formats, inserts (tables, contents and footnotes included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
-| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, the text of a table's cells, and the text of the footnotes already there (removing one with its reference). Never formats the article's style (its header and footer included), inserts (a table, contents or a footnote included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. On a Suggest Only link or as a Suggest Only person it suggests instead of writing, and may put a comment on selected text ([Suggestions](suggestions.md#share-roles)). |
-| **Viewer**      | Reads the writing (in its rejected view: no suggestion shows), its footnotes and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything on this page: writes, formats, inserts (tables, contents and footnotes included), shapes tables (rows, columns, header row, widths), moves zones, sets the style (header and footer included), puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed, the text of a table's cells, and the text of the footnotes already there (removing one with its reference). Never formats the article's style (its header and footer included), inserts (a table, contents or a footnote included), adds or removes a table's rows or columns, sets its header row or widths, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
+| **Viewer**      | Reads the writing, its footnotes and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 ## Collaboration
 
@@ -709,8 +734,6 @@ ink").
 - **Agents** read an article as Markdown and write it from Markdown
   ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's, and
   never over a paragraph someone holds.
-- **Suggestions** ([Suggestions](suggestions.md)) are marks on the runs and on a block, so they sync, hold, undo and
-  merge block by block like any writing.
 
 ### Holding a paragraph
 
@@ -747,6 +770,13 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   Every hold not said again within 12 s (`ARTICLE_HOLD_EXPIRE_MS`) is gone, in the room and on every
   screen, so a lost release, a laptop closed mid-word or a frozen tab never holds a paragraph for
   longer.
+- **Undo and redo.** An undo or redo of this person's own steps never writes over a paragraph or cell someone else
+  holds: a held block keeps the words its writer has (as last committed), and the rest of the step undoes as usual,
+  so undoing a change made before they started writing, or a paragraph added before they took it, leaves their
+  words. The block (a held cell's whole table) comes back to their words even where the step would take it away, in
+  its place after the block before it. Their typing not yet committed is theirs already and stays on their screen.
+  An undo that takes the whole article away (undoing its adding) is not held back. There is no restore of an
+  earlier version in the editor; a copy from Version History makes a new document and changes no held writing.
 - **Who holds.** Editors and Participants hold the blocks they write (a Participant writes text,
   so holds what it writes); a Viewer writes nothing and holds nothing. Holding takes nothing a role
   lacks: the role's rights over the writing are unchanged.
@@ -775,6 +805,7 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   `ArticleZoneFloat`, `ArticleZoneResized`, `ArticleZoneMoved`, `ArticleZoneRemoved`,
   `ArticleTableShape` (a table's rows, columns, header row or widths changed from its menu, Tab or a
   resize grip), `ArticleTablePaste` (a table pasted as a table block).
+- `UI · Used · LongSentenceSelected` each time the Word Count line selected a long sentence.
 - Never text.
 
 ## Non-goals
@@ -783,6 +814,7 @@ types in it until they let go. Nothing about what is stored changes, and no lett
   note running on onto the next page on screen.
 - Merged cells, cell colours, per-cell alignment and nested tables; a header column.
 - A first-page header or footer with text of its own, and different odd and even pages.
-- Columns. (Suggestions and tracked changes are their own feature: [Suggestions](suggestions.md). Find and replace across a tab's pages, the writing included, is its own
-  feature: [Find and replace](find-and-replace.md).)
+- Columns. (Find and replace across a tab's pages, the writing included, is its own feature:
+  [Find and replace](find-and-replace.md).)
+- Suggestions and tracked changes: retired ([Suggestions](suggestions.md)).
 - Character-level merging of two people typing in the same paragraph at the same moment.

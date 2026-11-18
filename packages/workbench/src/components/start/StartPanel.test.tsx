@@ -185,6 +185,16 @@ describe('the start panel', () => {
     expect(screen.getByRole('heading', { name: 'Whole' })).toBeTruthy();
   });
 
+  it('chooses the rail’s first group while a filter takes the chosen one away, and the chosen one again after', () => {
+    const { rerender } = render(<Sheet {...base()} />);
+    fireEvent.click(rail('More'));
+    rerender(<Sheet {...base({ categories: CATEGORIES.filter((c) => c.id !== 'more') })} />);
+    expect(screen.getByRole('heading', { name: 'Basic' })).toBeTruthy();
+    expect(rail('Basic').getAttribute('aria-current')).toBe('true');
+    rerender(<Sheet {...base()} />);
+    expect(screen.getByRole('heading', { name: 'More' })).toBeTruthy();
+  });
+
   it('leads a search with its Best Match, names a group the rail does not show, and clears', () => {
     render(
       <Sheet

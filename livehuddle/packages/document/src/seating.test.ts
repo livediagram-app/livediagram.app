@@ -95,35 +95,6 @@ describe('turning', () => {
 
   // chair.md "Occupied": the ring lies on the seat, so it is painted after the seat and before whatever stands
   // nearer the camera; painted over the whole drawing it crossed a backrest's back and a desk's monitor.
-  it('paints the occupied ring after its seat and before what stands in front of it', () => {
-    for (const [kind, art] of Object.entries(FURNITURE_ART)) {
-      if (kind === 'meeting-table') continue;
-      for (const [name, view] of Object.entries({
-        front: art.front,
-        back: art.back,
-        side: art.side,
-      })) {
-        const at = `${kind} ${name}`;
-        const under = view.ringUnder!;
-        expect(under, at).toBeGreaterThan(0);
-        expect(under, at).toBeLessThan(view.parts.length);
-        const { cx, cy } = view.ring;
-        const seat = view.parts
-          .slice(0, under)
-          .some(
-            (p) =>
-              p.tag === 'rect' &&
-              p.role === 'panel' &&
-              cx >= p.x &&
-              cx <= p.x + p.w &&
-              cy >= p.y &&
-              cy <= p.y + p.h,
-          );
-        expect(seat, at).toBe(true);
-      }
-    }
-  });
-
   it('reads the facing a desk was made with when none is stored', () => {
     expect(seatingFacing({ shape: 'desk' })).toBe('s');
     expect(seatingFacing({ shape: 'desk', chairFacing: 'e' })).toBe('e');

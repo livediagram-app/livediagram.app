@@ -23,7 +23,7 @@ import {
 } from './calendar-feed-client';
 
 const SCOPE = { ownerId: 'user_1', projectId: 'p 1' };
-const OPTIONS = { boardId: 'b1', mine: true, includeDone: false };
+const OPTIONS = { typeIds: ['bug'], mine: true, includeDone: false };
 const URL = 'https://api.test/api/projects/p%201/calendar-feed';
 
 afterEach(() => vi.clearAllMocks());

@@ -3,6 +3,7 @@ import { Workbook, sheetFromJson, type Sheet } from '@liveplanner/sheets';
 import type { DashboardLayout, Tab } from '@liveplanner/project';
 import {
   sheetContentsFor,
+  sheetDrawingFor,
   sheetMetricsFor,
   sheetModelsFor,
   sheetTabsToLoad,
@@ -104,5 +105,31 @@ describe('the Sheets an image reads', () => {
     expect(
       sheetTabsToLoad({ ...image, elements: [] }, metricLayout('sheet-one'), [sheetTab]),
     ).toEqual(['sheet-tab']);
+  });
+
+  // docs/specs/007-editor/split-view.md "The other pane": a tab drawn beside the editor shows its Sheets' cells.
+  it('draws a Sheet tab grown to its cells, and any other tab as it is, each Sheet with its cells', () => {
+    const small = { ...sheetEl, width: 120, height: 90 };
+    const drawn = sheetDrawingFor({ ...sheetTab, elements: [small] }, store);
+    const grown = drawn.tab.elements[0] as { width: number; height: number };
+    expect(grown.width).toBeGreaterThanOrEqual(120);
+    expect(grown.height).toBeGreaterThan(90);
+    expect(drawn.sheets.get('sheet-one')!.cells.map((c) => c.text)).toContain('1200');
+    // Headers off: the Sheet grows by its cells alone.
+    const bare = {
+      ...store,
+      sheet: (id: string) =>
+        id === budget.id
+          ? ({ ...budget, layout: { ...budget.layout, showHeaders: false } } as Sheet)
+          : undefined,
+    };
+    const noHeads = sheetDrawingFor({ ...sheetTab, elements: [small] }, bare).tab.elements[0] as {
+      width: number;
+    };
+    expect(noHeads.width).toBeLessThan(grown.width);
+    const canvas: Tab = { id: 'c', name: 'Canvas', elements: [sheetEl] };
+    const plainDrawn = sheetDrawingFor(canvas, store);
+    expect(plainDrawn.tab).toBe(canvas);
+    expect([...plainDrawn.sheets.keys()]).toEqual(['sheet-one']);
   });
 });

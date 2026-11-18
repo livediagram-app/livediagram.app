@@ -30,6 +30,9 @@ export function useViewportTransform(
   backgroundRef: Ref<HTMLElement>,
   backgroundPosition: (view: View) => string | undefined,
 ): View {
+  // Uncompiled: the view returned is read from the store on each render (the caller renders on a zoom only, and every
+  // pan is written by the subscription), which the React Compiler would keep at its first value (Work Tracker 946).
+  'use no memo';
   const store = useViewportStore();
   const positionRef = useLatest(backgroundPosition);
   const write = useCallback(() => {

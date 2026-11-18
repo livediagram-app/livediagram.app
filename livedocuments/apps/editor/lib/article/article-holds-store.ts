@@ -5,8 +5,7 @@
 // leaves it, after ARTICLE_HOLD_IDLE_MS without typing, or when the writing loses the caret. Collaborators': each
 // one's hold from their `article-hold` ops, named and coloured from the room's presence list, dropped when they let
 // go, leave, or say nothing for ARTICLE_HOLD_EXPIRE_MS. Read per article by the writing, which outlines what others
-// hold and refuses typing in it, so the canvas never re-renders for a hold. Kept apart from the writing so a later
-// feature that holds a paragraph (suggestions) takes the same holds.
+// hold and refuses typing in it, so the canvas never re-renders for a hold.
 import { useSyncExternalStore } from 'react';
 import {
   ARTICLE_HOLD_EXPIRE_MS,
@@ -260,6 +259,19 @@ export function articleHoldsOf(flow: string): readonly ArticlePeerHold[] {
   const list = out.length ? out : NONE;
   snapshots.set(flow, list);
   return list;
+}
+
+const NO_BLOCKS: ReadonlySet<string> = new Set();
+
+/** The blocks collaborators hold in `flow`'s writing on tab `tabId` (a held cell's table), on any tab and from anyone
+ *  in the room: what an undo or redo leaves as their writers have it (article-hold-undo). */
+export function peerHeldBlocks(tabId: string, flow: string): ReadonlySet<string> {
+  let out: Set<string> | null = null;
+  for (const h of holds.values()) {
+    if (h.tabId !== tabId || h.flow !== flow) continue;
+    (out ??= new Set()).add(h.spot.blockId);
+  }
+  return out ?? NO_BLOCKS;
 }
 
 function subscribePeers(l: () => void): () => void {

@@ -10,7 +10,6 @@
 // Made on first use, never on construction (design-db.ts `ensureSchema`): a Durable Object a stray id wakes
 // stores nothing. Versioned by `_design_schema`; a later change adds a step to STEPS, never edits one.
 
-import { CANVAS_SUGGESTIONS_SCHEMA } from '@liveworkspace/suggestions/store';
 import { COMMUNITY_POST_TABLE } from '@liveworkspace/community/app';
 import {
   TAB_CONNECTION_SCHEMA,
@@ -300,7 +299,18 @@ const V6 = outboxRetrySchema();
 // tab already there reads as not connected.
 const V7 = TAB_CONNECTION_SCHEMA;
 
-// Canvas suggestions (liveworkspace/docs/specs/015-suggestions/canvas-suggestions.md "Stored on the item"): their
+// The canvas_suggestions table this step made, frozen here so the migration no longer needs the retired package.
+const CANVAS_SUGGESTIONS_SCHEMA = `
+CREATE TABLE IF NOT EXISTS canvas_suggestions (
+  id         TEXT PRIMARY KEY,
+  tab_id     TEXT NOT NULL,
+  created_at INTEGER NOT NULL,
+  body       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS canvas_suggestions_tab ON canvas_suggestions (tab_id, created_at);
+`;
+
+// Canvas suggestions, since retired (owner, 2026-11-17), kept as written: a migration is history. Their
 // table, beside the tabs; and the design's review settings ("Suggest Only"), JSON or NULL, on its row.
 const V8 = `${CANVAS_SUGGESTIONS_SCHEMA}
 ALTER TABLE design ADD COLUMN review TEXT NULL;

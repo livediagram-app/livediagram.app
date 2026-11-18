@@ -296,7 +296,7 @@ Signing in never moves a document in This Browser by itself ([Offline Mode → A
 A Google sign-in's picture travels with the person data this app already reads, never by a request of its own:
 
 - **Own chrome.** The token answer's `user.picture` (the ID token's `picture`) and the `lh_account_picture`
-  cookie draw the header avatar and the person's own presence row, whatever **Show My Google Picture** says.
+  cookie draw the header avatar, Settings › Profile's large avatar and the person's own presence row, whatever **Show My Google Picture** says.
   `user.pictureHidden` (the `picture_hidden` claim) keeps it out of everything others see.
 - **Presence.** The editor says `hello` with its picture unless hidden. The api stamps `X-Verified-Account`
   on the room upgrade (a `user_…` grant subject only, never a guest, a link visitor or a spoofed header);

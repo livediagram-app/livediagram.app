@@ -79,6 +79,8 @@ media_mismatch`. No body: the same.
 `saving → idle` (stored) or `review` (refused, with its message), any of `setup`, `recording`, `review` `→ idle`
 (Discard, confirmed past setup). `idle → playing` (a row), `playing → idle` (close).
 
+Saving sends the media part (`PUT …/media`) through the app's own api funnel with its `uploadProgress` option (`apiFetch(url, init, { uploadProgress })`, which sends that one request by XMLHttpRequest, `xhrFetch` in `@liveworkspace/workbench/lib/api/xhr-fetch`, with the same headers, grant, fence and failure report, since fetch cannot report bytes sent). The events part stays a plain fetch. `review.upload` holds `{ sent, total, leftMs }` while the media goes: `uploadEstimate` (`upload-progress.ts`) works `leftMs` out from the average speed since the media began, null until `ESTIMATE_AFTER_MS` (1 s) and some bytes have passed; the state moves only when the whole percentage changes or `PROGRESS_EVERY_MS` (500 ms) has passed. The save card draws a `role="progressbar"` bar with the percentage, `<sent> of <total> MB` and the time left (`formatTimeLeft`: "About N seconds left" in fives under a minute, "About N minutes left" above, "Less than 5 seconds left"), "Finishing" at 100% while the server stores it. A failure clears `upload`, says why and keeps Download a Copy.
+
 The recorder samples the viewport store on its change, at most every `SAMPLE_MS` (100 ms) per kind, with a trailing
 sample so the view at rest is always the last one; the pointer likewise from `pointermove` on the canvas root. A
 pointer over `[data-element-id]` in the hidden set, or off `[data-canvas-content]`, is `cursor-out` (once). A
@@ -198,14 +200,15 @@ site charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.
 
 ## Testing
 
-| Test                                                        | Pins                                                                                               |
-| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `packages/media/src/walkthrough.test.ts`                    | parse and seal, every refusal, hidden ids stripped, sniffing, titles                               |
-| `packages/media/src/walkthrough-door.test.ts`               | every door route and role, Community and tab-scoped visits, the service's refusals passed on       |
-| `liveworkspace/apps/media/src/walkthroughs.test.ts`         | start, media, list, read, delete by owner and item, purge, caps, per-item cap, sniff, sweep, merge |
-| `packages/capture/src/*.test.ts`                            | constraints with a device, capture support, device lists and labels, the level meter               |
-| `packages/walkthrough/src/*.test.ts(x)`                     | the timeline, `fitView`, the recorder's sampling and stop, the client, the UI's states and roles   |
-| `packages/walkthrough/src/telemetry.test.ts`, `ui.test.tsx` | each event once, the limits, set-up closed counts nothing, a refused save by its code              |
+| Test                                                                            | Pins                                                                                                                                                            |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/media/src/walkthrough.test.ts`                                        | parse and seal, every refusal, hidden ids stripped, sniffing, titles                                                                                            |
+| `packages/media/src/walkthrough-door.test.ts`                                   | every door route and role, Community and tab-scoped visits, the service's refusals passed on                                                                    |
+| `liveworkspace/apps/media/src/walkthroughs.test.ts`                             | start, media, list, read, delete by owner and item, purge, caps, per-item cap, sniff, sweep, merge                                                              |
+| `packages/capture/src/*.test.ts`                                                | constraints with a device, capture support, device lists and labels, the level meter                                                                            |
+| `packages/walkthrough/src/*.test.ts(x)`                                         | the timeline, `fitView`, the recorder's sampling and stop, the client, the UI's states and roles                                                                |
+| `packages/walkthrough/src/telemetry.test.ts`, `ui.test.tsx`                     | each event once, the limits, set-up closed counts nothing, a refused save by its code                                                                           |
+| `packages/walkthrough/src/upload-progress.test.ts`, `ui.test.tsx`, `io.test.ts` | the estimate and its wording, the save card's bar while the media goes, at the finish and after a failure (Download a Copy), the funnel handed `uploadProgress` |
 
 ## Constants and configuration
 
@@ -227,6 +230,8 @@ site charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.
 | `WALKTHROUGH_MAX_BYTES_PER_OWNER` | `"1073741824"`     | the service's `[vars]` |
 | `SAMPLE_MS`                       | `100`              | `packages/walkthrough` |
 | `COUNTDOWN_MS`                    | `3_000`            | `packages/walkthrough` |
+| `ESTIMATE_AFTER_MS`               | `1_000`            | `packages/walkthrough` |
+| `PROGRESS_EVERY_MS`               | `500`              | `packages/walkthrough` |
 | `SKIP_MS`                         | `5_000`            | `packages/walkthrough` |
 
 ## Defaults ledger

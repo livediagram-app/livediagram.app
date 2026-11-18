@@ -14,6 +14,7 @@ import {
   isItemPerson,
   itemStatus,
   itemSummary,
+  itemTitle,
   resolveFields,
   calculatedWritten,
   isFormulaField,
@@ -28,7 +29,10 @@ import {
   requiredFieldsMessage,
   typeIn,
   blockingCycleOf,
+  blockingIndexOf,
   blockingLoopMessage,
+  doneStatusesOf,
+  followingShifts,
   withTypeChangeFields,
   type BlockingChange,
   type CardTemplate,
@@ -67,6 +71,9 @@ export type ItemChange =
       fields?: Readonly<Record<string, unknown>>;
       clear?: readonly string[];
       type?: string;
+      // Then move the cards that follow it that its new dates leave clashing (docs/specs/026-plan/plan-views.md
+      // "Moving the cards that follow").
+      moveFollowing?: boolean;
     }
   | { op: 'move'; item: string; status: string; before?: string }
   | { op: 'delete'; item: string };
@@ -278,6 +285,24 @@ export async function applyItemChanges(
     }
     return { set, clear };
   };
+  // The cards that follow `moved` that its dates leave clashing, each moved just after its open blockers, in the walk's
+  // order, a line each; written through the item route, so the api's edit rights apply to every one.
+  const moveFollowing = async (moved: Item) => {
+    const isDone = doneStatusesOf(state.plan.boards);
+    const index = blockingIndexOf(items, types, isDone);
+    const shifts = followingShifts(index, (i) => isDone(itemStatus(i)), [moved.id]);
+    const after = `#${moved.key} ${itemTitle(moved)}`;
+    for (const s of shifts) {
+      writing = typeIn(types, s.item.type);
+      const { item } = await post(`${base}/${encodeURIComponent(s.item.id)}`, { set: s.set });
+      keep(item);
+      applied.push(
+        line('~', item, state, [
+          `moved ${s.days} ${s.days === 1 ? 'day' : 'days'} later, after ${after}`,
+        ]),
+      );
+    }
+  };
   // The card type a change writes, when it can be read before any change is made.
   const typeBefore = (c: Extract<ItemChange, { op: 'add' | 'set' }>): ItemTypeDef | null => {
     if (c.op === 'add') {
@@ -397,6 +422,7 @@ export async function applyItemChanges(
         const notes = [...setNote(set, clear, type, items), ...personNote(set, items)];
         keep(item);
         applied.push(line('~', item, state, notes));
+        if (c.moveFollowing) await moveFollowing(item);
       } else if (c.op === 'move') {
         const target = must(resolveItem(c.item, items)).item;
         const status = must(resolveStatus(c.status, state.plan.statuses)).status;

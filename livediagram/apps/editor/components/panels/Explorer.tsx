@@ -2,6 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo } from 'react';
 import { trackOrganise } from '@/lib/explorer-organise';
+import { track } from '@/lib/telemetry';
 import {
   EXPLORER_POPOVER_HEIGHT,
   EXPLORER_POPOVER_WIDTH,
@@ -14,6 +15,7 @@ import type { Item } from '@liveworkspace/index-client';
 import Link from 'next/link';
 import { BrandMark, ProductNavLinks, useCommunityEnabled } from '@livediagram/ui';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { leaveArchivedItem } from '@liveworkspace/workbench/lib/archived';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { SignInPrompt } from '@/components/chrome/SignInPrompt';
@@ -135,6 +137,11 @@ function ExplorerImpl({
   }, [shown]);
 
   const trashCurrent = useCallback((item: Item) => trashOpenDocument(item.id, item.title), []);
+  // Archived is closed: the item open here, once archived from the panel, leaves for the Explorer, which says so.
+  const archivedCurrent = useCallback(
+    (item: { id: string; title: string | null }) => leaveArchivedItem('livediagram', item),
+    [],
+  );
 
   const go = (href: string) =>
     href.startsWith('/') ? router.push(href) : window.location.assign(href);
@@ -189,7 +196,16 @@ function ExplorerImpl({
           currentOffline={offline}
           // The open canvas stops saving before it goes, then the editor leaves for the Explorer and its Undo.
           onTrashCurrent={trashCurrent}
-          onRenameCurrent={onRenameCurrent}
+          onArchivedCurrent={archivedCurrent}
+          // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
+          onRenameCurrent={
+            onRenameCurrent
+              ? (name: string) => {
+                  track('Document', 'Renamed');
+                  onRenameCurrent(name);
+                }
+              : undefined
+          }
           onCreate={(placement) =>
             onNewDocument && !placement.folderId && !placement.teamId
               ? onNewDocument()
@@ -214,6 +230,7 @@ function ExplorerImpl({
           itemMenu={itemMenu}
           gallery={library.gallery}
           shapeLibraries={library.shapeLibraries}
+          walkthroughs={library.walkthroughs}
           imports={explorerImports}
           // Side by side in a desktop popover; a phone's sheet stacks the chips over the pane.
           layout={sheet ? 'sheet' : 'side'}
@@ -224,7 +241,7 @@ function ExplorerImpl({
           footer={
             <ProductNavLinks
               current="editor"
-              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-between' : ''}`}
+              className={`overflow-x-auto border-t border-slate-200 px-1.5 py-1 [scrollbar-width:none] dark:border-slate-700/70 ${sheet ? 'justify-evenly' : ''}`}
             />
           }
         />
