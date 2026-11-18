@@ -60,7 +60,7 @@ export function RenamingTab() {
   );
 }
 
-/** A tab folder opening in place: its header always holds a count; shut, only the tab you are on stays
+/** A tab folder opening in place: its header's folder glyph stacks for its tabs; shut, only the tab you are on stays
  *  beside it; a click opens its tabs after the header on the bar, the neighbours sliding along. */
 export function TabFolderStates() {
   const shutY = 40;
@@ -79,8 +79,8 @@ export function TabFolderStates() {
         count={3}
         tabs={[{ label: 'Q1 plan', w: 84, active: true }]}
       />
-      <TabPill x={252} y={shutY + 8} w={60} label="Notes" />
-      <AddTabButton x={314} y={shutY + 8} />
+      <TabPill x={242} y={shutY + 8} w={60} label="Notes" />
+      <AddTabButton x={304} y={shutY + 8} />
       <Label x={14} y={openY - 14} size={10} tone="muted">
         Open: a click lays every tab out after the chip
       </Label>
@@ -97,7 +97,7 @@ export function TabFolderStates() {
           { label: 'Q3 plan', w: 60 },
         ]}
       />
-      <TabPill x={370} y={openY + 8} w={58} label="Notes" />
+      <TabPill x={360} y={openY + 8} w={58} label="Notes" />
     </Scene>
   );
 }

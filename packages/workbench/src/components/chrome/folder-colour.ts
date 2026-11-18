@@ -1,7 +1,7 @@
 // A tab folder's colour (docs/specs/006-document/tab-folders.md "Tab bar rendering"): a stable pick from eight hues,
 // made from the folder's name, so a folder keeps its colour from visit to visit and every collaborator sees the same
 // one, with nothing stored. Each hue is a light-mode ink (Tailwind's 600) and a dark-mode ink (its 300), set as CSS
-// variables on the folder so its chip, badge and shelf colour themselves in either appearance (folderStyle).
+// variables on the folder so its chip and shelf colour themselves in either appearance (folderStyle).
 
 import type { CSSProperties } from 'react';
 
@@ -41,12 +41,8 @@ export function folderStyle(name: string): CSSProperties {
 export const FOLDER_SHELF_CLASS =
   'relative before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:rounded-t-[10px] before:bg-[color-mix(in_srgb,var(--tf)_10%,transparent)] dark:before:bg-[color-mix(in_srgb,var(--tfd)_8%,transparent)]';
 
-// The chip, the folder's header: the shelf's first cell, the tabs' own height and padding, its folder glyph, name and
-// count in the folder's ink (AA on the shelf in both appearances), with the tabs' inset wash, in the folder's tint,
+// The chip, the folder's header: the shelf's first cell, the tabs' own height and padding, its stacked folder glyph and
+// name in the folder's ink (AA on the shelf in both appearances), with the tabs' inset wash, in the folder's tint,
 // on hover. No box of its own: the shelf is its container.
 export const FOLDER_CHIP_CLASS =
   'relative isolate flex h-10 shrink-0 cursor-pointer items-center gap-1.5 rounded-t-[10px] pr-2.5 pl-3 text-[13px] font-semibold whitespace-nowrap touch-target-y text-[color-mix(in_srgb,var(--tf)_72%,black)] dark:text-[var(--tfd)] after:pointer-events-none after:absolute after:inset-x-1 after:inset-y-1.5 after:-z-10 after:rounded-lg after:bg-[color-mix(in_srgb,var(--tf)_14%,transparent)] after:opacity-0 after:transition-opacity after:duration-150 hover:after:opacity-100 dark:after:bg-[color-mix(in_srgb,var(--tfd)_12%,transparent)] focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-500 motion-reduce:after:transition-none';
-
-// The count badge, open or shut: the folder's colour, the count in white (slate-950 in dark).
-export const FOLDER_BADGE_CLASS =
-  'inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-[6px] px-1 text-[11px] font-semibold leading-none tabular-nums bg-[color-mix(in_srgb,var(--tf)_88%,black)] text-white dark:bg-[var(--tfd)] dark:text-slate-950';
