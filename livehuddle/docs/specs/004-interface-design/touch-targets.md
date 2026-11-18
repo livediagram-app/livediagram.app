@@ -20,7 +20,9 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
   fails a class list that names either utility without a position.
 - **`touch-target-y` for packed rows.** Where neighbours sit closer than 44px apart (the palette
   strip's tiles, 2px apart) the pad reaches vertically only, so two pads never compete for one tap.
-  The menu card and the bottom-right cluster apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`).
+  The menu card and the bottom-right cluster apply it to their 36px items (`PHONE_TOOLBAR_ITEMS`). On a phone the menu
+  card sits in the strip's row inside a packed card of its own (below), its button row `isolate` so the gap between
+  its buttons still picks one.
 - **`touch-target-packed` where a packed row must still give 44 x 44.** The pad reaches 44px both ways, as
   `touch-target` does, but sits behind the controls (`z-index: -1`, inside a row that makes its own stacking context
   with `isolate`). Where two pads overlap, the drawn tile always wins its own box, and the gap and the pad's edges go

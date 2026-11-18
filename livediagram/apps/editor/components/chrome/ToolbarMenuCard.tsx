@@ -17,7 +17,9 @@ import {
 // strip makes room for it.
 //
 // `inline` drops the corner positioning so the strip's row can hold it in its own card at the far left, beside the
-// strip, which is where a phone puts it.
+// strip, which is where a phone puts it. That card packs its buttons' touch pads behind them (PACKED_TOOLBAR_ITEMS), and
+// this row spans the 4px gap between them, so it is a stacking context of its own (`isolate`): otherwise the row, not a
+// pad, takes a tap in the gap (docs/specs/004-interface-design/touch-targets.md "touch-target-packed").
 export function ToolbarMenuCard({
   inline,
   children,
@@ -66,7 +68,7 @@ export function ToolbarMenuCard({
       }}
       className={
         inline
-          ? 'flex items-center gap-1'
+          ? 'isolate flex items-center gap-1'
           : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0`
       }
       onPointerDown={(e) => e.stopPropagation()}
