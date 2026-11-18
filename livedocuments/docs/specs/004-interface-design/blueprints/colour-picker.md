@@ -188,6 +188,103 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | laser and colour wells                                    | `LaserColourRow.test.tsx`, `../packages/workbench/src/lib/laser-config.test.ts`, `components/palette/colour-wells.test.tsx`      |
 | rows fit, e2e                                             | `e2e/quick-style-swatch-rows.spec.ts`, `quick-style-panel.spec.ts`, `quick-style-mixed.spec.ts`                                  |
 
+## Reading on its ground
+
+Derived from the spec's "Reading on its ground". The judge, its probes, the hint and the swatch it judges are one copy
+for every product.
+
+### This model
+
+- `packages/document/src/text-contrast.ts`: `textGroundOf(el, tab, surface)` is `textGroundIn` over
+  `layerBands(tab.elements, tab.layers)` (hidden layers out), `below` the box's page's `pageGroundUnder` tones
+  (`on: 'page'`); `null` off every page or on a picture page.
+
+### Shared (`@liveworkspace/element-model`, `@liveworkspace/workbench`)
+
+- `../packages/element-model/src/text-contrast.ts` ("Reading on its ground", one copy for every product), built on the
+  shared re-inking maths (`worstContrast`, `inkToward`, `boxFill`, `keptCover`, `tableHeaderColours`):
+  - `TEXT_CONTRAST = 4.5`, `LARGE_TEXT_CONTRAST = 3`, `LARGE_TEXT_PX = 24`, `LARGE_BOLD_TEXT_PX = 18.66`,
+    `ZEBRA_TINT = 0x11 / 0xff` (TableCellView's banded row).
+  - `isLargeText(px, bold)`; `labelDrawnPx(el)` = `labelFontPx(textSize, sticky)` times `textScale` on a text or a
+    shape; `labelIsBold(el)` = `fontWeight >= 700`, else `textBold`.
+  - `TextGround = { tones: string[]; on: 'page' | 'canvas' | 'shape' | 'card' | 'cell' }`. `textGroundIn(el,
+painted, surface, below)`: the element's own opaque fill (a `box` kind, a sticky or link card); else the topmost
+    earlier element of `painted` under its centre that covers it (an opaque box fill, a kept cover's tone; `null` for
+    a picture or widget); else `below(box)`.
+  - `cellTextGround(table, r, c, surface, under)`: the cell's own opaque `bg`; else, in a header cell, the opaque
+    `tableHeaderColours` band; else the table's opaque `fillColor`, a zebra body row `mixHex(fill, grid, ZEBRA_TINT)`;
+    else `under` (its tones tinted the same way on a zebra row). `cellTextSize(table, r, c)`: `tableCellFontPx` of
+    the cell's or table's size at the mean row height; bold from the cell, else a header, else `textBold`.
+  - `textContrast(colour, tones, large): { ratio, needed, passes, tone, suggestion } | null`: `worstContrast`,
+    the tone it is worst on, the target, and when it falls short `inkToward(colour, tones, needed, needed)` if that
+    reaches it, else null. `null` for a colour it can't read.
+- `../packages/element-model/src/text-contrast-probe.ts`: `TextContrastProbe = { ground; large; exported; current:
+string | null; colourOf: (id) => string | null; count?: number }`. `textContrastProbesFor<T, B>({ groundOf,
+defaultTextColor, exported })` gives `textContrastProbe(el, tab, surface, groundOf?)`, `textContrastProbes(els,
+tab, surface, memo?)` (a table among `els` gives `cellContrastProbes` of `tableTextCells`, its body cells with no
+  `textColor` of their own) and `cellContrastProbes(table, cells, tab, surface)` (one probe per distinct ground,
+  colour and size, `count` the cells it stands for). `colourOf` reads a stock name in its version for the ground's
+  paper (`canvasSurface(tones[0])`), a hex lower-cased.
+- `../packages/element-model/src/text-ground-memo.ts`: `textGroundMemo(compute)`: `batch()` gives a `GroundOf` that
+  reuses the ground worked out for the same element id in the batch before while the surface, `tab.pages`,
+  `tab.pageOrientation`, `tab.layers`, `tab.backgroundColor`, the element's index, the element but for
+  `textColor`/`penTextColour`, and the boxed elements holding its centre (by identity, in tab order) are unchanged. It
+  keeps only the latest batch.
+- `../packages/element-model/src/text-contrast-judge.ts`: `judgeText(probes, id)`: `textContrast` of `id` (null:
+  each probe's `current`) on each ground; the worst is the least `ratio / needed`; `failing` and `of` count the texts
+  (a probe's `count`, else 1); `suggestion` is the worst colour's `textContrast` suggestion on the union of every
+  ground's tones, as large text only when all are.
+- `../packages/workbench/src/components/colour/ContrastHint.tsx`: `ContrastHint({ probes, judged, onUse, onArrive })`
+  renders a row `CONTRAST_ROW_PX` (60) tall (three 15px lines in 6px padding and a 1px border): a `role="status"`
+  region holding only a shortfall, and in the same grid cell a quiet "Easy to read …" line while the colour passes.
+  Words: one ground `GROUND_WORDS[on]` ("on this page", "on the canvas", "on its fill", "on the shape behind", "on
+  its cell"); when `exported`, "on the exported page", or on a canvas "on the light canvas" / "on the dark canvas"
+  (`canvasSurface(tone)`); several, "for N of M" (short) or "for all M" (reads), with "Worst" / "At least" before
+  the ratio. The mouse entering the row calls `onArrive`.
+- `../packages/workbench/src/components/colour/useJudgedSwatch.ts`: `useJudgedSwatch(on, now = performance.now)` gives
+  `{ judged, keyed, hover(id), focus(id): boolean, arrive(): { id } | undefined, end }`. `hover` judges the swatch at
+  once and, when the swatch before it was held at least `SWATCH_REST_MS` (150), records that one as rested on;
+  `focus` counts (judges, and returns true so the picker previews) only after `keyed`, and always rests; `arrive`,
+  while the swatch judged was held under `SWATCH_REST_MS`, judges the one rested on before (null: the colour in
+  force) and returns it; `end` forgets both. With `on` false `judged` stays null and nothing re-renders.
+
+### `apps/editor`
+
+- `lib/text-contrast-probe.ts` binds `textContrastProbesFor` to this model's `textGroundOf`, `defaultTextColor` and
+  `exported`; `lib/text-ground-memo.ts` binds `textGroundMemo(compute = textGroundOf)`.
+- `useTextContrast(els, open)` (`hooks/ui/useTextContrast.ts`): the probes only while `open`, memoised on the tab,
+  `els` and surface, with one `textGroundMemo` per hook. `useCellTextContrast(table, cells, open)`: the stored
+  table's `cellContrastProbes` only while `open`.
+- `exported`: a page ground on a dark canvas (judged as the page exports).
+- `ColourPicker` keeps `useJudgedSwatch(contrast !== undefined)`: swatch `onPointerEnter` (mouse) previews and
+  `hover`s, `onFocus` previews only when `focus` counts, the root's `onKeyDown` calls `keyed`, the pointer or focus
+  leaving the root calls `onPreviewEnd` and `end`. Under the groups it renders `ContrastHint({ probes: contrast,
+judged, onUse: onPick, onArrive })`; `onArrive` previews the swatch `arrive` returns (`onPreviewEnd` for null).
+- `ColourRow` (`components/palette/context-menu-input-rows.tsx`) and `ColourSwatchButton` pass `contrast` to the
+  picker. Surfaces: the element menu's Text row (`ElementColourBorderSections.tsx`, `useTextContrast([target],
+open)`; several: `MultiStyleSections.tsx` with `textSel`), Quick Style More colours on the Text colour row
+  (`QuickMoreColours.tsx`, `judgeIds` = `view.targetIds`), the rich-text toolbar (`RichTextToolbar.tsx`, `element`;
+  `current` is the words' own colour) and the table cell menu's Text row (`TableCellMenu.tsx`,
+  `useCellTextContrast`). Use calls the picker's `onPick`, so one undoable edit through the surface's own path.
+
+### Performance and limits
+
+- A text ground is worked out only while its picker is open, and on a hover only looked up again
+  (`textGroundMemo`: one pass over the elements for the boxes under the text, 2 ms CPU at 5,000 in
+  `lib/text-ground-memo.test.ts`). A table's cells are judged in one pass, alike cells sharing a probe: a whole 100
+  by 100 table selected is two probes (`text-contrast-probe.test.ts`, under 100 ms CPU).
+
+### Testing
+
+| Rule                                                                      | Test                                                                                                                              |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| ratios, large text, shade keeps hue and passes, cells, the judge          | `../packages/element-model/src/text-contrast.test.ts`, `text-contrast-judge.test.ts`, `text-contrast-probe.test.ts`               |
+| this model's grounds                                                      | `packages/document/src/text-contrast.test.ts`, `apps/editor/lib/text-contrast-probe.test.ts`, `hooks/ui/useTextContrast.test.tsx` |
+| row height kept, reads line, wording, several grounds, the row arrived at | `../packages/workbench/src/components/colour/ContrastHint.test.tsx`                                                               |
+| hover judges, crossed swatches give way, focus once keyed, Use applies    | `useJudgedSwatch.test.ts`, `apps/editor/components/colour/ColourPicker.contrast.test.tsx`                                         |
+| Quick Style, rich-text, table cell and several-element Text colours judge | `components/colour/text-colour-surfaces.test.tsx`, `components/palette/MultiSelectionContextMenu.contrast.test.tsx`               |
+| ground reused across a hover, CPU budget                                  | `lib/text-ground-memo.test.ts`                                                                                                    |
+
 ## Constants and configuration
 
 | Constant            | Value                 | Safe range           | Provenance                             |
