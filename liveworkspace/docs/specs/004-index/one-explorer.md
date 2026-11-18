@@ -881,7 +881,10 @@ The journeys, one way each:
    name and an optional organisation, and **Create Team** makes it with you as its admin and opens its view, where
    you invite people. In the editor's panel the same **New Team** sits under the rail's Spaces. The Move dialog
    keeps its **New Team** tile, a shortcut for filing the item being moved into a team made on the spot (name
-   only); it is the same team and the same request.
+   only); it is the same team and the same request. When accounts doesn't answer in time the team may still have
+   been made, so either place says "The team may have been made. Refresh to check." with **Refresh**, which opens
+   the team if it was made and otherwise says none was, never a bare "try again" that could make a second one
+   ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
 2. **Run a team.** Choose the team (sidebar or panel rail). Its view opens on the team's card, above its library:
    the organisation, how many have joined and how many are invited; every member with their role, on a disc of
    their Google picture over their initials, painted as their account button in the header is
