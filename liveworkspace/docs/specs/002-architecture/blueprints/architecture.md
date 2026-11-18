@@ -185,8 +185,11 @@ parts of 0 to 255, no leading zeros), an IPv6 address (eight hextets, one `::`, 
 answers `{ host, kind: 'address' | 'name', private }`. An address is private when `isPrivateAddress` holds; a name
 when `isInternalHostName` does (single label, `localhost`, `INTERNAL_HOST_SUFFIXES`, or a numeric last label); a host
 that has a colon or bracket yet no IPv6 address is private. `parsePublicHttpsUrl` refuses every `address` as well,
-`fetchPublicBytes` lets a public `address` through without a lookup and resolves a public `name`, and `isBlockedHost`
-is `classifyHost(hostname).private`. `@liveworkspace/api-kit/public-address` re-exports `isPrivateAddress` for its
+`checkPublicHop(raw, resolve, schemes)` (`@liveworkspace/api-kit/public-fetch`) lets a public `address` through
+without a lookup and resolves a public `name` (`resolvesPublic`), refusing a private answer, credentials in the URL,
+and a scheme outside `schemes` (`'https'`: https on 443; `'http'`: http or https on any port). `fetchPublicBytes` runs
+it with `'https'` and `unfurl` with `'http'`, each on every hop, following redirects with `redirect: 'manual'`.
+`isBlockedHost` is `classifyHost(hostname).private`, the unfurl route's check before any lookup. `@liveworkspace/api-kit/public-address` re-exports `isPrivateAddress` for its
 callers. One parity test (`packages/api-kit/src/private-host-parity.test.ts`) runs every private, internal and metadata
 host through all three, and a CPU-time test holds the parser linear on 50,000-character hosts.
 
