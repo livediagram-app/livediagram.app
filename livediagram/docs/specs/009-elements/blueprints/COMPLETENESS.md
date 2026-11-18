@@ -597,3 +597,19 @@ Parts 2 to 4 of Work Tracker 932 cover the unchecked categories as the room, the
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## bpmn
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Security and trust
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger

@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import JSON, Mermaid, Markdown, Excalidraw or draw.io diagrams into a tab, or draw a wrangler.toml or Compose file, by pasting text or picking a file.',
+    'Import JSON, Mermaid, Markdown, Excalidraw, draw.io or BPMN diagrams into a tab, or draw a wrangler.toml or Compose file, by pasting text or picking a file.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, an Excalidraw scene, or a draw.io diagram, images included, into the active tab, or draw your infrastructure from a wrangler.toml or docker-compose file."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, an Excalidraw scene, a draw.io diagram, images included, or a BPMN process into the active tab, or draw your infrastructure from a wrangler.toml or docker-compose file."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -27,6 +27,7 @@ Open the tab's menu (the **⋯** button on the active tab, or right-click the ta
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
 - **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. In [Draw mode](/help/canvas/draw-mode/) it comes in as pen marks; in any other mode as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
 - **draw.io** reads a diagram from [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins): a `.drawio` or `.xml` file, compressed or not, or a PNG or SVG exported with **Include a copy of my diagram** ticked. See [Importing from draw.io](#importing-from-draw-io) below.
+- **BPMN** reads a `.bpmn` file from a process modeler (Camunda, bpmn.io, Signavio or any BPMN 2.0 tool) and draws every event, task, gateway, pool and flow where the modeler drew it. See [Importing a BPMN file](#importing-a-bpmn-file) below.
 - **Infrastructure** draws an architecture diagram from a Cloudflare `wrangler.toml` or a Docker Compose file (`docker-compose.yml`, `compose.yaml`). See [Drawing your infrastructure](#drawing-your-infrastructure) below.
 
 <Figure caption="The tab menu holds Import, beside Export and Clear.">
@@ -69,6 +70,7 @@ What carries over:
 - **Text** keeps its formatting: bold, italic, underline, colours, links, headings and lists in rich labels, plus font size and alignment.
 - **Connections** follow the route draw.io itself draws: the same corners, curves and shared trunks, attached to the shapes (or other connections) they join at the nearest connection point, with their arrowheads, line style and labels where draw.io puts them.
 - **Swimlanes** become lanes, with an upright title down the side where draw.io writes it upright, **UML classes and ER entities** become records with one row per field, **tables** become tables, and draw.io **layers** become the tab's layers, hidden and locked ones included.
+- **BPMN shapes** (events, tasks, gateways, data objects and data stores) become livediagram's [BPMN elements](/help/palette/bpmn/), markers included, with an event's or gateway's name as text under it.
 - **Cloud and network icons** (AWS, Azure, Kubernetes, servers, users and more) become the matching livediagram icon where there is a clear match. A stencil with no match comes in as a labelled box, so nothing disappears.
 - **Colours left at draw.io's default** take on your tab's theme, like anything drawn in livediagram, and so do near-black text and near-white panels, which draw.io's own dark mode turns too. Other colours you picked in draw.io stay as they were.
 - **Text keeps its room.** livediagram's text is a little larger than draw.io's, so the whole page is scaled up to match, and every label fits its shape as it did in draw.io.
@@ -76,6 +78,18 @@ What carries over:
 Pictures embedded in the diagram come across like any imported board's [images](#images-in-an-imported-file): resized and saved to your gallery. Pictures linked from the web, or from draw.io's own icon library, are never fetched; they come in as placeholders.
 
 When anything could not come across exactly, the dialog shows one summary before closing, the same one every import uses: how the images came across, then one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), arrowheads livediagram draws differently, labels shortened to fit their shapes, hidden items left out, and so on.
+
+## Importing a BPMN file
+
+The **BPMN** card reads BPMN 2.0 XML, the `.bpmn` file Camunda Modeler, bpmn.io, Signavio and most process tools save. Paste the XML or pick the file (`.bpmn` or `.xml`). It replaces the tab in one undo step, like every import.
+
+- **Every shape lands where the modeler drew it**, at its size, as a [BPMN element](/help/palette/bpmn/): start, intermediate and end events with their message, timer, error and terminate markers, tasks with their user, service, script, manual, send, receive and business rule markers, collapsed sub-processes, gateways, data objects and data stores.
+- **Pools and lanes** become lanes, their titles upright down the left side.
+- **Flows** stay attached to the shapes they join and bend where the modeler bent them: sequence flows as arrows with their names, message flows dashed with an open circle and an open arrowhead, associations dotted.
+- **Names** of events, gateways and data sit under the symbol as their own text, where the modeler put them; a task's name is inside it. Text annotations become text, and groups become dashed frames.
+- **Colours** set in the modeler (BPMN in Color) carry over.
+
+Only the file's first diagram is drawn. Anything livediagram has no symbol for yet (a signal or escalation event, a choreography) comes in as the nearest symbol or a labelled box, and the dialog's summary says what changed. A file over 5 MB, or with no diagram layout saved in it, is refused with a message saying why.
 
 ## Drawing your infrastructure
 
