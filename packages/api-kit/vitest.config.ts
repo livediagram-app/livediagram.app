@@ -14,7 +14,7 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // And the ledger store: a gap there cuts an entry a save still needs, or hands a save less than it merges.
 // And the tab order: a gap there lands a new tab on a place another holds.
 // And the delta door: a gap there stores a rebuilt tab no digest proved.
-// And the public fetch and its address checks: a gap there lets a typed URL reach a private network.
+// And the public fetch, its address checks and the unfurl's host guard: a gap there lets a typed URL reach a private network.
 // And the room client: a gap there drops a relay, or fails a save the room could not answer. And the access
 // closer: a gap there leaves an ended pairing's sockets open.
 export default defineProject({
@@ -38,6 +38,7 @@ export default defineProject({
         'src/preferences-route.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/public-address.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/public-fetch.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
+        'src/unfurl.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/redact-item.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/request-failure.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },
         'src/room-access-client.ts': { statements: 100, branches: 100, functions: 100, lines: 100 },

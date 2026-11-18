@@ -178,6 +178,18 @@ with no secret set trusts the named address as before, so the code deploys safel
 the routers first, then on the receivers (on a receiver first, every app's visitors would count as their router's one
 address until the routers have it too).
 
+A server request to a URL someone gave (webhooks, live status, `upload_image` by URL, link unfurls) holds its host
+to `@liveworkspace/model-core/private-host` (architecture.md "Fetching a URL someone gave"): `classifyHost(hostname)`
+lower-cases it, drops IPv6 brackets and one trailing dot, reads it left to right as an IPv4 address (four decimal
+parts of 0 to 255, no leading zeros), an IPv6 address (eight hextets, one `::`, an optional IPv4 tail) or a name, and
+answers `{ host, kind: 'address' | 'name', private }`. An address is private when `isPrivateAddress` holds; a name
+when `isInternalHostName` does (single label, `localhost`, `INTERNAL_HOST_SUFFIXES`, or a numeric last label); a host
+that has a colon or bracket yet no IPv6 address is private. `parsePublicHttpsUrl` refuses every `address` as well,
+`fetchPublicBytes` lets a public `address` through without a lookup and resolves a public `name`, and `isBlockedHost`
+is `classifyHost(hostname).private`. `@liveworkspace/api-kit/public-address` re-exports `isPrivateAddress` for its
+callers. One parity test (`packages/api-kit/src/private-host-parity.test.ts`) runs every private, internal and metadata
+host through all three, and a CPU-time test holds the parser linear on 50,000-character hosts.
+
 ## Performance and limits
 
 One origin means no CORS preflight for the site's own calls. Each service's blueprint holds its budgets.
