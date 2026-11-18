@@ -23,6 +23,7 @@ import { CARD_THREADS_SCHEMA } from './card-thread-schema';
 import { IMAGE_REFS_SCHEMA } from './image-refs';
 import { IMAGE_RELEASES_SCHEMA } from './image-release';
 import { COPY_IMAGE_CLAIMS_SCHEMA } from './copy-image-claims';
+import { KNOWN_ASSISTANTS_SCHEMA } from './known-assistants';
 import { FLOW_COUNTS_SCHEMA } from './flow-counts-schema';
 import { itemsBytesStep } from './items-bytes-schema';
 import { ITEM_HISTORY_SCHEMA } from './item-history-schema';
@@ -580,6 +581,10 @@ const V36 = addCalendarFeedTypes;
 // (copy-image-claims.ts; docs/specs/026-plan/items.md "Images in use").
 const V37 = COPY_IMAGE_CLAIMS_SCHEMA;
 
+// The AI assistants the plan remembers for its Assignee picker (known-assistants.ts; docs/specs/026-plan/items.md "Who it
+// can be handed to").
+const V38 = KNOWN_ASSISTANTS_SCHEMA;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -618,6 +623,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V35,
   V36,
   V37,
+  V38,
 ];
 
 export const PLAN_SCHEMA_VERSION = STEPS.length;

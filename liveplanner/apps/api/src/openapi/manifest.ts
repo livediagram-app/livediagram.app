@@ -1375,6 +1375,18 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
+    method: 'GET',
+    path: '/projects/{id}/items/assistants',
+    segment: 'projects',
+    tag: 'Items',
+    summary:
+      'The AI assistants this plan remembers, newest first: each a token’s tool and the person it works for, as a card’s Assignee holds one ("Claude (Thomas)"), never the token. A token reaching the plan’s cards as an Editor or a Participant is remembered. None for a tab-scoped link.',
+    auth: 'guest-or-clerk',
+    tokenUsable: true,
+    responseSchema: 'ItemAssistantsResponse',
+    statuses: [200, 401, 403, 404, 410],
+  },
+  {
     method: 'POST',
     path: '/projects/{id}/items/patches',
     segment: 'projects',

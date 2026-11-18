@@ -13,6 +13,7 @@ import {
 } from '@liveworkspace/index-app';
 import { itemPersonId } from '@liveplanner/items';
 import { ANONYMISED_ITEM_PERSON } from '../db/items';
+import { FORGET_ASSISTANTS_SQL } from './known-assistants';
 import type { PlanEnv } from '../types';
 
 // A closed account as a card, its history and a sheet name them.
@@ -271,6 +272,8 @@ export async function anonymisePlan(
         'UPDATE agent_changesets SET author_id = ?, author_name = ? WHERE plan_id = ? AND author_id = ?',
       )
       .bind(ANONYMISED_PERSON, ANONYMISED_NAME, planId, personId),
+    // Their AI assistants the plan remembered (docs/specs/026-plan/items.md "Who it can be handed to").
+    db.prepare(FORGET_ASSISTANTS_SQL).bind(hashed),
     // Their calendar feed on the plan (docs/specs/026-plan/calendar-feed.md "The feed link").
     db
       .prepare('DELETE FROM calendar_feeds WHERE plan_id = ? AND person_id = ?')

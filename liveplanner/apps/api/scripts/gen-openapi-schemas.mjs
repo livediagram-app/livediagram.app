@@ -50,6 +50,7 @@ export const ROOT_TYPES = [
   'SheetWriteResponse',
   'ItemResponse',
   'ItemHistoryResponse',
+  'ItemAssistantsResponse',
   'FlowResponse',
   'CardThreadsResponse',
   'CardThreadWriteResponse',
