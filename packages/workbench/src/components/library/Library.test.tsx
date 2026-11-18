@@ -434,6 +434,22 @@ describe('Save to Library', () => {
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
   });
 
+  it('asks for the list again on each opening, so a team joined since offers itself', async () => {
+    let teams = LIST.teams;
+    const api = fakeApi({ list: vi.fn(async () => ({ ...LIST, teams })) });
+    render(<Editor api={api} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Save selected elements to Library' }));
+    await screen.findByRole('radio', { name: /Brand/ });
+    expect(screen.queryByRole('radio', { name: /Design/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    const asked = vi.mocked(api.list).mock.calls.length;
+    teams = [...LIST.teams, { id: 't3', name: 'Design', role: 'member' }];
+    fireEvent.click(screen.getByRole('button', { name: 'Save selected elements to Library' }));
+    await screen.findByRole('radio', { name: /Design/ });
+    expect(api.list).toHaveBeenCalledTimes(asked + 1);
+  });
+
   it('keeps the dialog open with the refusal in words', async () => {
     const api = fakeApi({
       save: vi.fn(async () => Promise.reject(new LibraryError('library_full', 409))),

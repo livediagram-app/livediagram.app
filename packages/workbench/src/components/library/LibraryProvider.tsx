@@ -2,7 +2,7 @@
 
 // The Library every editor shares (liveworkspace/docs/specs/006-media/libraries.md): one provider per editor holding
 // the person's Personal and team items, loaded the first time something needs them (the palette's Library opening, or
-// Save to Library) and again after each change, the Save to Library dialog, and the calls the palette's Library makes.
+// Save to Library), again on each Save to Library opening and after each change, the Save to Library dialog, and the calls the palette's Library makes.
 // Nothing is fetched for an editor session that never opens either. An app without the Library (no api) mounts none, and
 // every consumer reads null.
 
@@ -176,8 +176,10 @@ function LoadedLibraryProvider({
         reload,
         ensureLoaded,
         requestSave: (next) => {
-          // The dialog's team list and folder suggestions come from the list.
-          ensureLoaded();
+          // The dialog's team list and folder suggestions come from the list, asked afresh on each opening so a team
+          // joined since the palette first loaded is offered (one ask per opening, never a poll).
+          askedFor.current = api;
+          reload();
           setNotice(null);
           setDraft(next);
         },
