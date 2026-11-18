@@ -318,7 +318,8 @@ caretOf(state))` (editable only), and `setActiveArticle({ handle, pageId, select
   (`.article-empty`), except on a list item, whose `::before` is its marker: there it is the
   `::after`, set at the start of the text column (`left` = the item's indent), so the marker stays
   and the word is whole (`article-list-placeholder.test.ts`). Held by `article-plugins.test.ts`
-  ("keeps the markers and placeholders a fresh build gives"). `todoTogglePlugin`: a mousedown in a to-do's left padding toggles
+  ("keeps the markers and placeholders a fresh build gives", and "list markers after the writing is replaced from
+  outside": 1,500 seeded replaces through `replaceContentTr`, editable flipped in a third, each equal to a fresh build). `todoTogglePlugin`: a mousedown in a to-do's left padding toggles
   `checked` (one transaction, so one commit).
 - `slashPlugin`: opens on a typed `/` at offset 1 or after whitespace (never by paste or remote);
   closes on a selection, the caret leaving the `/`, a leading space, a newline, past
