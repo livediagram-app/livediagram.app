@@ -659,7 +659,7 @@ ItemPerson, tag?, changes }`; `ItemHistoryEntry = { at, by: { name, color }, min
   cut to `ITEM_HISTORY_VALUE_MAX` characters (an ellipsis); a list of scalars keeps its first `ITEM_HISTORY_LIST_MAX`,
   each string cut to 40; numbers and booleans as they are.
 - `groupHistory(entries)` (newest first in, newest first out): an entry joins the group before it when the author id
-  and tag match and it is within `ITEM_HISTORY_GROUP_MS` of the group's oldest entry. Changes merge by key (`created`,
+  and tag match (for Automation, whose id every rule shares, the author's name, the rule's, matches too) and it is within `ITEM_HISTORY_GROUP_MS` of the group's oldest entry. Changes merge by key (`created`,
   status, `archive`, `flag`, `type`, each field): a `moved` keeps the oldest `from` and the newest `to` and drops out
   when they meet; an on and off pair (flag, archive, trash) cancels; a field keeps its newest change; `created` stays
   first. A group left with no changes is dropped. The group's `at` is its newest.
