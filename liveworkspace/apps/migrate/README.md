@@ -62,7 +62,7 @@ left alone. A catch-up run (a new snapshot planned with `--ledger`) writes only 
 the ledger's last apply, and rewrites a row only while it still holds the value the last run wrote
 (`ON CONFLICT … DO UPDATE … WHERE <table>.updated_at = <ledger value>`). A row someone has changed on the new side
 since is left alone; the report's `tables` counts say how many of each. Nothing is ever deleted. A row with no time
-of its own (a favourite, a refs row) is only ever inserted; a change to one is counted as `changedNotWritten`.
+of its own (a refs row) is only ever inserted; a change to one is counted as `changedNotWritten`.
 
 Rooms work the same way at the door: each app's door replaces a tab only while it still holds the revision it last
 wrote, and `apply` prints the parts whose tabs were edited on the new side and left alone.

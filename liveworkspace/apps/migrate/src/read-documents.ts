@@ -84,7 +84,6 @@ export class DocumentReader {
       `SELECT user_id AS id FROM team_members WHERE team_id = ?2 AND user_id IS NOT NULL
        UNION SELECT owner_id FROM shared_with WHERE document_id = ?1
        UNION SELECT owner_id FROM document_opens WHERE document_id = ?1
-       UNION SELECT owner_id FROM favourites WHERE document_id = ?1
        UNION SELECT author_id FROM agent_changesets WHERE document_id = ?1`,
     );
   }

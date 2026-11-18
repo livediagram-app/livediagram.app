@@ -22,7 +22,6 @@ export const TABLE_ORDER = {
   index: [
     'folders',
     'items',
-    'favourites',
     'opens',
     'use_days',
     'share_links',

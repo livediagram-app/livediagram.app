@@ -137,9 +137,12 @@ describe('plan, first run', async () => {
       'user_cy',
       'user_newbo',
     ]);
-    expect(all(dbs.index, 'SELECT person_id FROM favourites')).toEqual([
-      { person_id: 'user_newbo' },
-    ]);
+    expect(
+      all(
+        dbs.index,
+        "SELECT person_id FROM opens WHERE item_id = 'doc-diagram' AND last_opened_at > 0 ORDER BY person_id",
+      ),
+    ).toEqual([{ person_id: 'user_ali' }, { person_id: 'user_newbo' }]);
     expect(all(dbs.accounts, "SELECT userId FROM team_member WHERE id = 'm2'")).toEqual([
       { userId: 'user_newbo' },
     ]);
@@ -579,8 +582,11 @@ describe('plan, catch-up run', () => {
       'doc-new',
     ]);
     const report = JSON.parse(readFileSync(join(second.outDir, 'report.json'), 'utf8')) as {
-      tables: { index: { favourites?: { unchanged: number } } };
+      tables: { index: Record<string, unknown>; media: { refs?: { unchanged: number } } };
     };
-    expect(report.tables.index.favourites?.unchanged).toBe(1);
+    // A row with no time of its own (a refs row) is only ever inserted, so a second run leaves it unchanged.
+    expect(report.tables.media.refs?.unchanged).toBe(4);
+    // Old favourites are not carried: the index has no favourites table since Favourites were removed.
+    expect(report.tables.index).not.toHaveProperty('favourites');
   });
 });
