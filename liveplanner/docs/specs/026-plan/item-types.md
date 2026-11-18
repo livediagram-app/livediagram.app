@@ -1069,7 +1069,8 @@ card 100 reads **WI-100**, a Task's T-7. The number itself is unchanged: one cou
   (`wi` saves as `WI`); left empty, the type goes back to the one made from its name. A prefix another type of the
   plan has (its own or made, ignoring case) is refused with "{PREFIX} is already {Type}'s prefix. Pick another."
   and nothing is saved; the api refuses a catalogue whose stored prefixes clash (`item_types_invalid`,
-  `types[n].prefix`).
+  `types[n].prefix`). Under the field a hint shows how the next card will read, with the plan's real next number
+  ("Cards read WI-101"), or the reason Save is stopped.
 - **Where it shows.** Everywhere a card's number shows, the number reads `{PREFIX}-{number}`: a board card's number
   tag, the card panel's header and its menu, linked cards and Card fields, Blocked By, the Cards and Search
   panels, card pickers, the Trash, the calendar and Gantt chart, automation runs and their notes, comment threads'

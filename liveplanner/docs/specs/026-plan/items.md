@@ -106,6 +106,11 @@ they are the same family: filled in automatically, never typed.
   identity the panel's foot has always shown. A rule's stamp (Automation, with the rule's name) also says where its
   run came from when that was GitHub (`via: "github"`, [Automations](automations.md#on-cards)), so the foot draws
   GitHub's mark; a stamp without it, every other one and every card from before it, reads as it always has.
+- **One person, one colour on a card**: a Last Edited By stamp by the person the card already names (its Created By
+  or its last Last Edited By, matched by hashed id) takes the colour the card holds for them, so an account edited
+  in another session, or after its Automatic colour moved with a renamed profile, never shows two colours on one
+  card. Its name is the one signed in now. The plan applies this one rule (`heldStampPerson`, in
+  `@liveplanner/items`) as it stamps a write, in the editor, the api and agents alike.
 - **A closed account** reads **Deleted account** in Created By and Last Edited By on every card it made or last
   edited, in grey, never its old name. The anonymising matches the card's person by their hashed id (the column holds
   the person, not their account id) and writes the Deleted account person (id `deleted`) in its place; a card from

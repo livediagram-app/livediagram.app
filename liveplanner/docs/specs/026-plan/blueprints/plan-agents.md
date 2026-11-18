@@ -10,7 +10,7 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 | the plan          | `PlanOutline` (`packages/items/src/plan-outline.ts`), on the wire `PlanResponse`                                                                                                  |
 | board (outline)   | `PlanBoardOutline { tabId, tabName, elementId, title, kind, types, columns, sortBy?, widgets? }`                                                                                  |
 | column name       | `PlanColumnOutline.name`; a project's statuses `PlanStatusName { status, name }`                                                                                                  |
-| naming            | `resolveStatus`, `resolveType`, `resolveItem`, `fieldKeyOf`, `resolveFields`, `personNamed` (`plan-names.ts`)                                                                     |
+| naming            | `resolveStatus`, `resolveType`, `resolveItem`, `fieldKeyOf`, `resolveFields`, `personByName`, `personNamed` (`plan-names.ts`)                                                     |
 | card type change  | `CardTypeChange`, `applyCardTypeChanges` (`packages/items/src/type-changes.ts`)                                                                                                   |
 | board request     | `BoardRequest`, `placeBoard` (`packages/items/src/board-place.ts`)                                                                                                                |
 | the Plan engine   | `packages/agent-verbs/src/plan/` (`readPlanState`, `planListing`, `applyItemChanges`, `changeCardTypes`, `addBoard`, `apiRefusalOf`)                                              |
@@ -68,7 +68,8 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   `"false"`, `"no"`, `"off"`, `"0"` go in `clear` (an `add` drops them); anything else is `value_invalid`.
   `planListing` lists it among `fields` as stored (`flagged: true`); the CLI's `item ls` text appends `  flagged` to
   a flagged card's line. Values: `status` by column name, `assignee`
-  string by `personNamed`, Card fields (Parent among them) by item ref, `priority` lowercased when it is one of
+  string by `personByName` (the one plan member, `planMembers`, of that name; two refused `value_invalid` naming each;
+  else `personNamed`), Card fields (Parent among them) by item ref, `priority` lowercased when it is one of
   `PRIORITIES`, `labels` string split on commas, Choice by option name; others as given (the api validates).
   It answers `{ fields, clear }`: a custom field that holds several (`holdsSeveral`, or `multichoice`) given a blank
   value (`blankSeveral`: `null`, `undefined`, a string of only commas and spaces, a list of only those) goes in

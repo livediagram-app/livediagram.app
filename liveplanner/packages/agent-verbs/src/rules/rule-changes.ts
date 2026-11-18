@@ -8,9 +8,15 @@ import type {
   AutomationRunResponse,
   ItemsResponse,
 } from '@liveplanner/api-schema';
-import { resolveItem, type AutomationRuleBody, type Item } from '@liveplanner/items';
+import { cardRefOrKey, resolveItem, type AutomationRuleBody, type Item } from '@liveplanner/items';
 import { itemsPath } from '../verbs/shared';
-import { listedRun, resolveRule, runResultWords, type ListedRun } from './rule-listing';
+import {
+  listedRun,
+  resolveRule,
+  runCardRefs,
+  runResultWords,
+  type ListedRun,
+} from './rule-listing';
 import { namedRuleBody } from './rule-names';
 import { ruleRefusalOf, type RuleRefusal } from './rule-refusals';
 import { rulesPath, type RulesState } from './rule-state';
@@ -109,8 +115,9 @@ export async function applyRuleChanges(
     return found.ok ? found.item : stop(found.code, found.message);
   };
   const tried = (verb: string, name: string, c: Item, run: AutomationRunResponse['run']) => {
-    runs.push(listedRun(run));
-    applied.push(`${verb} "${name}" on #${c.key}: ${runResultWords(run)}`);
+    const types = state.plan.types;
+    runs.push(listedRun(run, runCardRefs([c], types)));
+    applied.push(`${verb} "${name}" on ${cardRefOrKey(c, types)}: ${runResultWords(run)}`);
   };
   for (const change of changes) {
     try {

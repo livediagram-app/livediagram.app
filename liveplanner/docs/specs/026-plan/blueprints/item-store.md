@@ -253,7 +253,9 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 - `makeItem(create, ctx: { id, key, now, by, items })` places at `place` (default: end of `status`'s column, or
   end of all), ranks from neighbours with `rankBetween`.
 - `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At` when the write is an
-  edit (`isItemEdit(before, fields, type, touched)`, item-edit.ts; spec items.md "Created and Last Edited"): it is not
+  edit, `updatedBy` as `heldStampPerson(ctx.by, [item])` (card-stamps.ts: the writer in the colour the card's Created By
+  or Last Edited By already holds for that hashed id, `heldPerson`; spec items.md "One person, one colour on a card";
+  `applyMove` the same) (`isItemEdit(before, fields, type, touched)`, item-edit.ts; spec items.md "Created and Last Edited"): it is not
   when it touches a link field (`LINKED_FIELDS`, linked-fields.ts: the linked board's heal, a link left, a restore by
   the heal), or when it changes no field and not the type (a move within its column, a value set to what it was;
   `statusSince` alone is not a change). `applyMove` follows the same rule.

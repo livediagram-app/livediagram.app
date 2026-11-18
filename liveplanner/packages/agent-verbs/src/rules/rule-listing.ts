@@ -3,12 +3,15 @@
 // with its step lines. A rule is named by its id or its exact name (case aside). Pure.
 import type { AutomationListedRule, AutomationRun } from '@liveplanner/api-schema';
 import {
+  cardRefOrKey,
   isTimeTrigger,
   ruleSentence,
   type AutomationRule,
   type AutomationStamp,
   type AutomationStepLine,
   type AutomationTriggerKind,
+  type Item,
+  type ItemTypeDef,
   type RuleSentenceOutline,
   type RuleSentencePart,
 } from '@liveplanner/items';
@@ -99,11 +102,23 @@ function stepLine(line: AutomationStepLine): string {
   return `${mark} ${line.text}${line.kind === 'action' && line.already ? ' (Already so)' : ''}`;
 }
 
-export function listedRun(run: AutomationRun): ListedRun {
+// A run's card as people say it (docs/specs/026-plan/item-types.md "Card number prefixes"): "WI-12" from the card's
+// type in `items`, "#12" for a card no longer there (its type unknown).
+export type RunCardRef = (card: { id: string; key: number }) => string;
+export function runCardRefs(items: readonly Item[], types: readonly ItemTypeDef[]): RunCardRef {
+  const byId = new Map(items.map((i) => [i.id, i]));
+  return (card) => {
+    const item = byId.get(card.id);
+    return item ? cardRefOrKey(item, types) : `#${card.key}`;
+  };
+}
+const bareRef: RunCardRef = (card) => `#${card.key}`;
+
+export function listedRun(run: AutomationRun, refOf: RunCardRef = bareRef): ListedRun {
   return {
     id: run.id,
     rule: run.ruleName,
-    card: run.card ? `#${run.card.key} ${run.card.title}` : null,
+    card: run.card ? `${refOf(run.card)} ${run.card.title}` : null,
     at: iso(run.at),
     result: run.result,
     ...(run.reason ? { reason: run.reason } : {}),

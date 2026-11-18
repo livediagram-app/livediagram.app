@@ -305,7 +305,7 @@ card-type-chips.ts       pure: `chipsShown({ interactive, canEditCards, phone, s
                          role and place gate) and `chipClickCell(setup, projection, type, statusNames)` (the column
                          of the type's `newCardStatus` when the board has it, else the first; the first row; the
                          status `cellStatus`; the row's `laneMove` set; after the cell's last card)
-phone-board.ts           boardLook (a phone's Minimal cards, no widgets, one column a screen, body touch-action, `swipe`) + shownQuick
+phone-board.ts           boardLook (a phone's Minimal cards with `numberFrom` the board's own size, no widgets, one column a screen, body touch-action, `swipe`) + shownQuick
 phone-swipe.ts           pure: a phone board's sideways swipe (plan-board.md "A column changes only on a swipe meant
                          for it"): `swipeAxis(dx, dy)` settles a touch across or down once past SWIPE_AXIS_SLOP_PX
                          (a diagonal is down), `swipeStep(dx, dy, vx, width)` (one column on past SWIPE_COMMIT_SHARE
@@ -486,7 +486,9 @@ the items too.
 - `PlanCardFace` lays out the parts in `plan-card-parts.tsx`: frame `rounded-xl` with a hairline border, rest shadow
   `0 1px 2px / 0 1px 3px` slate at 6 % / 4 %, hover `shadow-md` and `-translate-y-px` (150 ms; none under reduced
   motion); no stripe: the type colour fills `KeyTag` (the #key, text white or `#18181b`, whichever
-  `contrastRatio` favours: `keyTextOn`), and Minimal draws `TypeDot` before the title. Minimal: title 13 px semibold, two lines.
+  `contrastRatio` favours: `keyTextOn`), and Minimal draws `TypeDot` before the title. Minimal: title 13 px semibold, two lines. On a phone
+  (`numberFrom`, threaded boardLook → usePlanCellBase → PlanBoardCard and PlanDragGhost) a Minimal card whose own
+  Display leaves the number off leads with `KeyTag` when `typeCardDisplay(type, numberFrom)` shows it.
   Detailed: header (`TypeChip`, `KeyTag`, `ColourDot` when the item has its own colour,
   `PrioritySignal` with its name at the end), title 14 px three lines, parent, description two lines, custom
   fields as a name/value grid, `LabelChips` (≤ 4, `labelColour` tints, "+n"), then a footer of `MetaPill`s

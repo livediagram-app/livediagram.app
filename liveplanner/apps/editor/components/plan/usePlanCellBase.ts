@@ -8,6 +8,7 @@ import type { CellCardsBase } from './PlanBoardCellCards';
 export function usePlanCellBase({
   palette,
   cardSize,
+  numberFrom,
   slotBoard,
   cardTouch,
   interactive,
@@ -23,6 +24,7 @@ export function usePlanCellBase({
 }: {
   palette: CellCardsBase['palette'];
   cardSize: CellCardsBase['cardSize'];
+  numberFrom: CellCardsBase['numberFrom'];
   slotBoard: boolean;
   cardTouch: CellCardsBase['touch'];
   interactive: boolean;
@@ -44,6 +46,7 @@ export function usePlanCellBase({
       // What a card shows is its type's Display (docs/specs/026-plan/item-types.md "Card display").
       setupFields: CARD_FIELDS,
       cardSize,
+      numberFrom,
       stacked: slotBoard,
       touch: cardTouch,
       interactive,
@@ -64,6 +67,7 @@ export function usePlanCellBase({
     [
       palette,
       cardSize,
+      numberFrom,
       slotBoard,
       cardTouch,
       interactive,

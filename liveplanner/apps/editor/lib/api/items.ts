@@ -6,6 +6,7 @@ import type { ItemResponse, ItemsImportStaged, ItemsResponse } from '@liveplanne
 import {
   createBatches,
   importParts,
+  nextCardNumber,
   readFieldLimit,
   type FieldLimit,
   type Item,
@@ -98,11 +99,10 @@ export async function fetchCloudItems(scope: ItemsScope): Promise<FetchedItems> 
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
   });
   const body = await expectOk<ItemsResponse>(res, 'items');
-  const maxKey = Math.max(0, ...body.items.map((i) => i.key));
   return {
     items: body.items,
     rev: body.rev,
-    nextKey: maxKey + 1,
+    nextKey: nextCardNumber(body.items),
     ...(body.pullRequests ? { pullRequests: body.pullRequests } : {}),
   };
 }

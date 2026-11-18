@@ -253,8 +253,8 @@ describe('change_items hands cards over and back', () => {
     const w = await world();
     const state = await readPlanState(w.api, D);
     for (const [item, whose] of [
-      ['#2', "#2 is Sam Lee's"],
-      ['#3', "#3 is Claude (Sam)'s"],
+      ['#2', "T-2 is Sam Lee's"],
+      ['#3', "T-3 is Claude (Sam)'s"],
     ] as const) {
       const r = await applyItemChanges(w.api, D, [{ op: 'hand_back', item }], state);
       expect(r.refusal?.code).toBe('not_handed_to_you');
@@ -262,7 +262,7 @@ describe('change_items hands cards over and back', () => {
     }
     expect(w.writes).toEqual([]);
     const free = { ...w.items[1]!, fields: { title: 'Free' } } as Item;
-    expect(handBackRefusal(free, w.claude).message).toContain('handed to no one');
+    expect(handBackRefusal(free, w.claude, []).message).toContain('handed to no one');
   });
 
   it('refuses "me" and hand_back to a caller that is no assistant, before any write', async () => {

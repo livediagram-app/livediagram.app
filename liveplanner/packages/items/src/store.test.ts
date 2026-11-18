@@ -6,6 +6,7 @@ import {
   inverseItemWrites,
   itemIdsOfWrite,
   mergeItemChanges,
+  nextCardNumber,
   refetchedItemStore,
   storeAsCreates,
   withCreateIds,
@@ -533,5 +534,13 @@ describe('a tally write', () => {
     const votes = more.items[0]!.fields['votes'] as Record<string, number>;
     expect(votes['late']).toBeUndefined();
     expect(votes['p']).toBe(3);
+  });
+});
+
+// docs/specs/026-plan/item-types.md "Card number prefixes": the number the next card takes, as the Prefix hint shows it.
+describe('nextCardNumber', () => {
+  it('is one past the highest number a card holds, 1 for none', () => {
+    expect(nextCardNumber([])).toBe(1);
+    expect(nextCardNumber([{ key: 3 }, { key: 100 }, { key: 0 }])).toBe(101);
   });
 });

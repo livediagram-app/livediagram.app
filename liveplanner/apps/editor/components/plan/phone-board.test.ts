@@ -23,6 +23,7 @@ describe('boardLook', () => {
     expect(boardLook(place({}), 'detailed')).toEqual({
       columns: 'canvas',
       cardSize: 'detailed',
+      numberFrom: undefined,
       widgets: true,
       container: false,
       touch: 'touch-none',
@@ -73,9 +74,13 @@ describe('boardLook', () => {
     expect(boardLook(place({ phone: true }), 'detailed')).toMatchObject({
       columns: 'canvas',
       cardSize: 'minimal',
+      numberFrom: 'detailed',
       widgets: true,
       touch: 'touch-none',
     });
+    // Its cards keep the number the board's own size shows (plan-board.md "On a phone"); Detailed when it sets none.
+    expect(boardLook(place({ phone: true }), undefined).numberFrom).toBe('detailed');
+    expect(boardLook(place({ phone: true }), 'minimal').numberFrom).toBe('minimal');
   });
 
   it('shows one column a screen, snapping, on a phone board that scrolls on its own', () => {
