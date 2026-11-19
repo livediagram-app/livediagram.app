@@ -407,7 +407,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
   // the load named by its error.
-  'apps/editor/app/document/[id]/useIdentityBootstrap.ts Error·Warning': {
+  'packages/workbench/src/hooks/persistence/useIdentityBootstrapCore.ts Error·Warning': {
     values: [
       'DocumentLoad.TimedOut.Identity',
       'DocumentLoad.TimedOut.Participant',
@@ -418,7 +418,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'DocumentLoad.Late',
     ],
   },
-  'apps/editor/app/document/[id]/useIdentityBootstrap.ts Error·Client': {
+  'packages/workbench/src/hooks/persistence/useIdentityBootstrapCore.ts Error·Client': {
     values: ['DocumentLoad.TypeError', 'DocumentLoad.Error'],
     open: 'DocumentLoad.<ErrorName>',
   },

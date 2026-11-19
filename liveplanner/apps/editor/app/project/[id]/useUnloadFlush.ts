@@ -1,29 +1,44 @@
 'use client';
 
 // The edits still inside the autosave's debounce when the editor goes (docs/specs/006-project/per-tab-storage.md
-// "Saving"): flushed on `beforeunload`, on `pagehide` (which fires where beforeunload does not: iOS, a discarded
-// tab, the back-forward cache), and when the editor unmounts for another page of the app (the account link in
-// the header), where neither event fires. The writes go through flushProjectSavesBeacon, which keeps them
-// alive past the page while they fit the browser's keepalive budget. One flush per distinct content: the
-// events can fire in pairs on the way out.
-import { useEffect, useRef, type MutableRefObject, type RefObject } from 'react';
-import { flushSync } from 'react-dom';
+// "Saving"), flushed on the way out: the editors' one copy in @liveworkspace/workbench/hooks/persistence/useUnloadFlushCore,
+// bound here to this editor's project, its beacon (flushProjectSavesBeacon) and a Participant's room relay.
+import type { MutableRefObject, RefObject } from 'react';
 import type { Tab } from '@liveplanner/project';
 import { flushProjectSavesBeacon, type connectRoom } from '@/lib/api-client';
 import { isProjectDeleted } from '@/lib/project-tombstones';
-import { commitOpenEdit } from '@liveworkspace/workbench/lib/open-edit';
-import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import {
+  useUnloadFlushCore,
+  type UnloadFlushDeps,
+} from '@liveworkspace/workbench/hooks/persistence/useUnloadFlushCore';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { relayParticipantChanges } from './tab-save-flow';
-import { isSaveFailing, isTabTooLarge } from '@liveworkspace/workbench/lib/save-health';
 
-/** Whether leaving now asks first: changes the server has not taken, while the last save failed or was refused, or the
- *  browser is offline. */
-export const shouldWarnOnLeave = (
-  unsaved: boolean,
-  saveFailing: boolean,
-  online: boolean,
-): boolean => unsaved && (saveFailing || !online);
+export { shouldWarnOnLeave } from '@liveworkspace/workbench/hooks/persistence/useUnloadFlushCore';
+
+type Room = ReturnType<typeof connectRoom>;
+
+const DEPS: UnloadFlushDeps<Tab, Room> = {
+  isItemDeleted: (id) => isProjectDeleted(id),
+  computeTabSaveDiff: (...args) => computeTabSaveDiff(...args),
+  relayParticipantTab: (o, _itemId, before, t) => {
+    void relayParticipantChanges(before, t, () => o.roomRef.current).catch(() => {});
+  },
+  sendBeacon: (o, itemId, { changedTabs, deletedIds, orderChanged, nameChanged }) =>
+    flushProjectSavesBeacon({
+      ownerId: o.selfId,
+      projectId: itemId,
+      shareCode: o.sessionShareCode,
+      changedTabs,
+      deletedIds,
+      loadedTabIds: o.loadedTabIdsRef.current,
+      orderChanged,
+      nameChanged,
+      name: o.itemName,
+      tabs: o.tabs,
+      changesetSeen: o.changesetSeen,
+    }),
+};
 
 export function useUnloadFlush(opts: {
   hydrated: boolean;
@@ -41,93 +56,8 @@ export function useUnloadFlush(opts: {
   changesetSeen: ReadonlyMap<string, number>;
   // Set once the server has refused a write to this project: nothing sent can be accepted.
   writesForbiddenRef: MutableRefObject<boolean>;
-  roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
+  roomRef: RefObject<Room | null>;
 }): void {
-  const latest = useLatest(opts);
-  // The content last flushed, so a second event on the same way out sends nothing again.
-  const flushedRef = useRef<{ tabs: Tab[]; name: string } | null>(null);
-
-  useEffect(() => {
-    // What the server has not taken yet, or null where there is nothing of this person's to keep.
-    const pending = () => {
-      const o = latest.current;
-      if (!o.hydrated || !o.projectId || o.isReadOnly) return null;
-      // The user just deleted this project (navigating to /explorer fires beforeunload): don't send its
-      // tabs back and re-create it.
-      if (isProjectDeleted(o.projectId)) return null;
-      const diff = computeTabSaveDiff(
-        o.lastSavedTabsRef.current,
-        o.tabs,
-        o.lastSavedNameRef.current,
-        o.projectName,
-        o.loadedTabIdsRef.current,
-      );
-      return diff.hasChanges ? diff : null;
-    };
-    // What may still be sent: nothing once the server has refused a write to this item.
-    const unsaved = () => (latest.current.writesForbiddenRef.current ? null : pending());
-    const flush = () => {
-      const o = latest.current;
-      const flushed = flushedRef.current;
-      if (flushed && flushed.tabs === o.tabs && flushed.name === o.projectName) return;
-      const diff = unsaved();
-      if (!diff || !o.projectId) return;
-      const { changedTabs, deletedIds, orderChanged, nameChanged } = diff;
-      flushedRef.current = { tabs: o.tabs, name: o.projectName };
-      // A Participant's changes go to the open room at once; it has no beacon to send.
-      if (o.participant) {
-        for (const t of changedTabs) {
-          const before = o.lastSavedTabsRef.current.find((s) => s.id === t.id);
-          void relayParticipantChanges(before, t, () => o.roomRef.current).catch(() => {});
-        }
-        return;
-      }
-      flushProjectSavesBeacon({
-        ownerId: o.selfId,
-        projectId: o.projectId,
-        shareCode: o.sessionShareCode,
-        changedTabs,
-        deletedIds,
-        loadedTabIds: o.loadedTabIdsRef.current,
-        orderChanged,
-        nameChanged,
-        name: o.projectName,
-        tabs: o.tabs,
-        changesetSeen: o.changesetSeen,
-      });
-    };
-    // The page going: a label still being typed commits on blur, which this never fires, so commit it first, and
-    // synchronously, so the tabs the flush reads hold it (@liveworkspace/workbench/lib/open-edit.ts). Not on unmount below: that runs inside
-    // React's commit, where flushSync cannot, and a click away from the editor has already blurred it.
-    const leave = () => {
-      flushSync(() => commitOpenEdit());
-      flush();
-    };
-    // Closing while saves fail or the browser is offline: the browser's own "Leave site?" first
-    // (docs/specs/007-editor/load-recovery.md "Leaving with unsaved changes asks first"). Never in the healthy
-    // case, a save in flight on a working connection, or people learn to click through it.
-    const beforeUnload = (e: BeforeUnloadEvent) => {
-      leave();
-      if (
-        shouldWarnOnLeave(
-          pending() !== null,
-          // A refused save keeps its changes on screen, never sent: leaving would lose them, so it asks too.
-          latest.current.writesForbiddenRef.current || isSaveFailing() || isTabTooLarge(),
-          navigator.onLine,
-        )
-      ) {
-        e.preventDefault();
-        // Older browsers ask only when returnValue is set.
-        e.returnValue = '';
-      }
-    };
-    window.addEventListener('beforeunload', beforeUnload);
-    window.addEventListener('pagehide', leave);
-    return () => {
-      window.removeEventListener('beforeunload', beforeUnload);
-      window.removeEventListener('pagehide', leave);
-      // Unmounted (another page of the app): what the debounce still held goes now.
-      flush();
-    };
-  }, [latest]);
+  const { projectId, projectName, ...rest } = opts;
+  useUnloadFlushCore(DEPS, { ...rest, itemId: projectId, itemName: projectName });
 }
