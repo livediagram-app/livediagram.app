@@ -374,14 +374,16 @@ export function connectRoom(
         handlers.onAccessChanged?.();
         return;
       }
-      // A snapshot's revert replaced the content in place (docs/specs/013-workspace/snapshots.md): stop, and reload
-      // onto the reverted content.
+      // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): stop for good, and
+      // the caller leaves for the Explorer.
       if (event?.code === ITEM_ARCHIVED_CLOSE) {
         closed = true;
         settleTimings(false);
         handlers.onItemArchived?.();
         return;
       }
+      // A snapshot's revert replaced the content in place (docs/specs/013-workspace/snapshots.md): stop, and reload
+      // onto the reverted content.
       if (event?.code === SNAPSHOT_REVERTED_CLOSE) {
         closed = true;
         settleTimings(false);

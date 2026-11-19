@@ -167,7 +167,7 @@ as for any `design-trashed` op. Open editors and MCP views show the trashed stat
 room that cannot be reached is logged, and its sessions end at their next grant renewal), and the room keeps nothing
 of it, so a restore reopens as before.
 
-An archive made anywhere else while the design is open (another tab, the Explorer, MCP `archive_document`, the CLI) ends its
+An archive made anywhere else while the design is open (another tab, the Explorer, MCP `archive_design`, the CLI) ends its
 sessions the same way (Work Tracker 1242; [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived)
 "Archived from elsewhere while open"). On `archived: true` (and not trashed) the api closes every socket in the room
 with `4010` (`ITEM_ARCHIVED_CLOSE`, reason `item-archived`) through its `/close-sessions` door (`{match: 'archived'}`),

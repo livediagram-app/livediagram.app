@@ -513,8 +513,9 @@ liveworkspace.app.
   reconnect) and leaves for the Explorer (`leaveArchivedElsewhere`, `@liveworkspace/workbench/lib/archived`): the
   owner's tab the way archiving it in place does, with "Moved “<title>” to Archived."; anyone else's with
   `?ended=archived`, which says "That <noun> was archived by its owner, so it is no longer open to you." An MCP live
-  view says "This <noun> was archived." and the CLI's room stream ends. A move between folders, a move out of
-  Archived and a restore close nothing.
+  view says "This <noun> was archived." and the CLI's room stream ends. Its links are revoked only once the standing
+  push has been answered, so a visitor who came in by a link hears it was archived, not that the link was revoked. A
+  move between folders, a move out of Archived and a restore close nothing.
 - **Gone from everywhere else.** Home (Most Used, Recent, the hero's count), Recent, Shared With
   Me, the Inbox, every folder and team, and the panel's lists leave it out. Archiving deletes its
   Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not in Recent until it is opened
