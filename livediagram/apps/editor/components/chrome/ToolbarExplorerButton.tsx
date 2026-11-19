@@ -1,5 +1,7 @@
 'use client';
 
+import type { Ref } from 'react';
+
 import { track } from '@/lib/telemetry';
 import { Glyph } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
@@ -26,6 +28,7 @@ import { EditorModeSwitch } from './editor-mode/EditorModeSwitch';
 export function ToolbarExplorerButton({
   open,
   onToggle,
+  buttonRef,
   inline = false,
   itemId = null,
 }: {
@@ -35,10 +38,13 @@ export function ToolbarExplorerButton({
   inline?: boolean;
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
+  // The button itself: the Rename command opens the panel from it (useRenameCurrentRequest).
+  buttonRef?: Ref<HTMLButtonElement>;
 }) {
   const phone = useIsMobileViewport();
   const button = (
     <button
+      ref={buttonRef}
       type="button"
       aria-label="Explorer"
       aria-expanded={open}

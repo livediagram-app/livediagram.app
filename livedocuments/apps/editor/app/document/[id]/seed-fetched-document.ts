@@ -36,8 +36,6 @@ export type SeedDeps = {
   setDocumentName: SetState<string>;
   // The stored slide deck (docs/specs/012-collaboration/presentation-mode.md), handed on for useSlideDeck to parse.
   setDocumentPresentation: SetState<string | null>;
-  setDocumentOwnerColor: SetState<string | null>;
-  setDocumentOwnerId: SetState<string | null>;
   setDocumentOwnerName: SetState<string | null>;
   setDocumentShareable: SetState<boolean>;
   setDocumentShareCode: SetState<string | null>;
@@ -67,8 +65,6 @@ function showDocument(
     setActiveId,
     setDocumentName,
     setDocumentPresentation,
-    setDocumentOwnerColor,
-    setDocumentOwnerId,
     setDocumentOwnerName,
     setDocumentShareable,
     setDocumentShareCode,
@@ -95,9 +91,7 @@ function showDocument(
   setCommunityState(fetched.id, fetched.communityState ?? null);
   setDocumentTeamId(fetched.teamId ?? null);
   setDocumentShareCode(fetched.shareCode);
-  setDocumentOwnerId(fetched.ownerId);
   setDocumentOwnerName(fetched.ownerName ?? null);
-  setDocumentOwnerColor(fetched.ownerColor ?? null);
 }
 
 /** The warm open's paint (offline-mode.md "Warm open of a cloud document"): the last seen copy shown as the seed shows

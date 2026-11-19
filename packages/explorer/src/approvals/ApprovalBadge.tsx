@@ -1,7 +1,7 @@
 'use client';
 
 // The approval's badge (approvals.md "In the editor"), first in the editor's corner card (`corner`, EditorCornerActions)
-// or as a pill after the role pill where a header bar has pills: Awaiting n of m
+// or as a pill after the visibility pill where a header bar has pills: Awaiting n of m
 // (amber, a clock), Changes Requested (rose, a flag), Approved (green, a checked page), Changed Since Approval (amber
 // outline, a pencil). Its hover card names the requester, the due day (and Overdue) and who has and hasn't answered.
 // For an Editor of the whole item it opens the Share dialog on its Approval tab; for anyone else it is focusable
@@ -12,7 +12,7 @@ import { ApprovalGlyph, STATUS_GLYPH } from './glyphs';
 import { badgeSummary, statusWords, type StatusTone } from './approval-words';
 import { useApprovalDoor } from './door';
 
-// The role pill's shape (19px, 10px semibold, a ring), so the two read as one row.
+// The visibility pill's shape (19px, 10px semibold, a ring), so the two read as one row.
 const PILL =
   'inline-flex h-[19px] items-center gap-1 rounded-full px-2 text-[10px] font-semibold ring-1 whitespace-nowrap';
 export const BADGE_TONE: Record<StatusTone, string> = {

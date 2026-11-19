@@ -23,8 +23,9 @@ import { sessionStripTools } from '@/components/canvas/SessionClusterStrip';
 import type { CanvasChromeProps } from './CanvasChrome.types';
 import { CanvasCornerCluster } from './CanvasCornerCluster';
 import { CanvasDockedLayer } from './CanvasDockedLayer';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
+import { useRenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import {
@@ -163,6 +164,18 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // strip, and nor does a whiteboard, so it keeps the corner there.
   const menuInStrip = isMobile && paletteShown;
   // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
+  // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
+  // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
+  const explorerButtonRef = useRef<HTMLButtonElement>(null);
+  const renameCurrent = useRenameCurrentRequest({
+    nonce: props.renameCurrentNonce ?? 0,
+    explorerOpen: activeDockPanel === 'explorer',
+    available: !zenMode && !props.explorerHidden && !props.workbenchBack,
+    openExplorer: () => {
+      const button = explorerButtonRef.current;
+      if (button) handleDockButtonClick('explorer', button);
+    },
+  });
   const { workbenchBack } = props;
   const explorerMenuButton = workbenchBack ? (
     <WorkbenchBackButton
@@ -174,6 +187,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
+      buttonRef={explorerButtonRef}
       inline={menuInStrip}
       itemId={props.imageContext?.documentId ?? null}
     />
@@ -191,6 +205,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     paletteTint,
   } = useCanvasChromePanels({
     props,
+    renameCurrent,
     stripTools,
     chromeHidden,
     isMobile,

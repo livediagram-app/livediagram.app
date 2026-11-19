@@ -128,7 +128,6 @@ and moves stay with the owner and joined team members. No level grants any of th
   zooms. Can't comment, vote or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
   glyph and a colour that meets WCAG 2.2 AA against its word ([Editor app](../007-editor/editor-app.md#share-dialog)).
 - `POST /api/documents/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
-- The editor's role pill reads Editing, Participating or Viewing.
 - **A visit is through one link.** Opening a document through a share link records that link with the visit
   (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the document through
   that same link only while it is live. **Revoking a link** (or deleting the tab it is scoped to) ends every visit it

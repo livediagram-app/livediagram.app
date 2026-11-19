@@ -109,7 +109,6 @@ any of them. Who owns an item and who may reach it is liveworkspace's index's
   reshape it.") and **Viewer** ("Watches along. Can't comment or change a thing."), a new pass starting as an
   Editor's ([Live app](../007-editor/live-app.md#share-dialog)).
 - The api reads the level off the index's grant on every request and room socket (`X-Index-Grant`).
-- The editor's role pill reads Editing, Participating or Viewing.
 - **A visit is through one link.** The index records which link a visit came through; Shared With Me and Home open
   the design through that same link only while it is live. **Revoking a link** (or rescoping it) ends every visit it
   granted: the index asks the design's room to close those sockets (`revokeCodes`), and those people lose the design

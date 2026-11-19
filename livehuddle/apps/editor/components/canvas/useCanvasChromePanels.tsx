@@ -8,6 +8,7 @@ import type { PanelId } from '@/lib/panel-layout';
 import { ItemToolsHost } from '@/components/panels/ItemToolsHost';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
+import type { RenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
@@ -24,11 +25,14 @@ import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/c
 
 export function useCanvasChromePanels({
   props,
+  renameCurrent,
   chromeHidden,
   isMobile,
   panelWiringFor,
 }: {
   props: CanvasChromeProps;
+  // The Rename command's request for the Explorer's Current card (useRenameCurrentRequest).
+  renameCurrent: RenameCurrentRequest;
   chromeHidden: boolean;
   isMobile: boolean;
   panelWiringFor: ReturnType<typeof useCornerDocking>['panelWiringFor'];
@@ -124,6 +128,8 @@ export function useCanvasChromePanels({
           currentTitle={props.documentName}
           currentShareCode={currentShareCode ?? null}
           onRenameCurrent={onRenameCurrentDocument}
+          renameCurrentRequest={renameCurrent.request}
+          onRenameCurrentHandled={renameCurrent.onHandled}
           onNewDocument={explorerHandlers.onNewDocument}
           menuActions={explorerMenu}
           popoverOpen={explorerOpen}

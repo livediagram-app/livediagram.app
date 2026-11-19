@@ -58,14 +58,12 @@ export function useEditorRealtime() {
   // in the room their full Participant row is in `livePresence` and we
   // can show avatar + name; otherwise the badge shows just the role
   // strip (Viewing / Editing) and skips the owner row entirely.
-  const [designOwnerId, setDesignOwnerId] = useState<string | null>(null);
   // Owner display info from the design fetch (api worker joins
   // participants on design.ownerId). Lets the top-middle Owner badge
   // render for visitors even when the owner isn't currently in the
   // realtime room — livePresence would otherwise be empty, and the
   // badge would hide.
   const [designOwnerName, setDesignOwnerName] = useState<string | null>(null);
-  const [designOwnerColor, setDesignOwnerColor] = useState<string | null>(null);
   // Visitor-side "Make a copy" loading flag. Header button disables
   // itself while the api round-trips so a frantic double-click can't
   // produce two copies under the user's account.
@@ -127,12 +125,8 @@ export function useEditorRealtime() {
     setDesignShareCode,
     isOwner,
     setIsOwner,
-    designOwnerId,
-    setDesignOwnerId,
     designOwnerName,
     setDesignOwnerName,
-    designOwnerColor,
-    setDesignOwnerColor,
     copying,
     setCopying,
     passwordRetry,

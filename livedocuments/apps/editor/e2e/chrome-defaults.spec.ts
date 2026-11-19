@@ -1,31 +1,14 @@
 import type { Page } from '@playwright/test';
 import { dismissQuickTour, expect, expectNoPageErrors, test } from './fixtures';
 
-// Previewing a role (docs/specs/007-editor/editor-app.md#role-pill): with no header bar (experiment) the role pill is the Editing Mode tool in
-// Tools. And the chrome everyone gets now Power user mode is retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
+// The chrome everyone gets: no header bar (experiment) and no Editing Mode tool in Tools, now Power user mode is retired (docs/specs/007-editor/power-user-mode.md), in a real browser, dark mode.
 test.use({ colorScheme: 'dark' });
 
-const PREFS_KEY = 'livediagram:user-preferences:v1';
+const PREFS_KEY = 'livedocuments:user-preferences:v1';
 
 const dialog = (page: Page) => page.getByRole('dialog', { name: 'Settings' });
 const tabBar = (page: Page) => page.locator('[data-editor-tabbar]');
 const tools = (page: Page) => tabBar(page).getByRole('button', { name: /^Tools/ });
-const roleOption = (page: Page, role: string) => page.locator(`[data-role-option="${role}"]`);
-
-// Tools, then Editing Mode, then the role: the tool closes on the pick. Opened again, the pick is the checked one.
-async function pickRole(page: Page, role: 'edit' | 'participate' | 'view') {
-  await tools(page).click();
-  await page.locator('[data-tools-item="role"]').click();
-  await roleOption(page, role).click();
-  await expect(roleOption(page, role)).toHaveCount(0);
-  await tools(page).click();
-  await page.locator('[data-tools-item="role"]').click();
-  await expect(roleOption(page, role)).toHaveAttribute('aria-checked', 'true');
-  // Back to the list, then closed.
-  await page.keyboard.press('Escape');
-  await page.keyboard.press('Escape');
-  await expect(page.locator('[data-tools-item="role"]')).toHaveCount(0);
-}
 
 async function openEditor(page: Page) {
   await page.setViewportSize({ width: 1280, height: 800 });
@@ -35,20 +18,48 @@ async function openEditor(page: Page) {
   await dismissQuickTour(page);
 }
 
-test.describe('Editing Mode', () => {
-  test('previews another role from Tools for the owner, and goes back to editing', async ({
+test.describe('Tools', () => {
+  test('offers no Editing Mode: an owner edits, with no role to preview', async ({
     page,
     pageErrors,
   }) => {
     await openEditor(page);
-    // No header bar, so no pill in one.
+    // No header bar, so no role pill in one.
     await expect(page.locator('header[data-region="header"]')).toHaveCount(0);
-    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toBeVisible();
-    await pickRole(page, 'view');
-    // Read-only for a Viewer, walking for a Participant: the building categories are gone.
-    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toHaveCount(0);
-    await pickRole(page, 'edit');
-    await expect(page.locator('[data-category-bar-button][aria-label="Shapes"]')).toBeVisible();
+    await tools(page).click();
+    await expect(page.locator('[data-tools-item]').first()).toBeVisible();
+    await expect(page.locator('[data-tools-item="role"]')).toHaveCount(0);
+    await expect(page.getByText('Editing Mode', { exact: true })).toHaveCount(0);
+    await page.keyboard.press('Escape');
+    expectNoPageErrors(pageErrors);
+  });
+});
+
+// The search's Rename opens the Explorer panel on the open item's name, focused with the name selected
+// (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search"): there is no header bar to rename in.
+test.describe('Rename from the search', () => {
+  test('Rename Document opens the Explorer on its name field, focused', async ({
+    page,
+    pageErrors,
+  }) => {
+    await openEditor(page);
+    await page.keyboard.press('ControlOrMeta+k');
+    // Type only once the search holds focus: keys sent before it does reach the canvas as tool shortcuts.
+    const search = page.getByRole('combobox', { name: 'Search' });
+    await expect(search).toBeFocused();
+    await search.fill('Rename Document');
+    await expect(page.getByRole('option', { name: /^Rename Document/ })).toBeVisible();
+    await page.keyboard.press('Enter');
+    const field = page.getByRole('textbox', { name: /^Rename / });
+    await expect(field).toBeFocused();
+    await expect(page.getByRole('button', { name: 'Explorer' })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    );
+    const selected = await field.evaluate(
+      (el: HTMLInputElement) => el.selectionEnd! - el.selectionStart! === el.value.length,
+    );
+    expect(selected).toBe(true);
     expectNoPageErrors(pageErrors);
   });
 });
@@ -77,7 +88,7 @@ test.describe('Retired power user keys', () => {
           },
           alignmentGuides: true,
           autoRebindArrows: false,
-          tourSeen: true,
+          pagesTourSeen: true,
           elementToursSeen: true,
         }),
       );

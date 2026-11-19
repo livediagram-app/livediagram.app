@@ -241,7 +241,7 @@ export const articles: Article[] = [
     description:
       'Get Started, Tools (with Search), Settings and the appearance switch at the end of the bottom bar.',
     keywords:
-      'corner buttons actions tools search settings get started tour bottom bar cluster appearance light dark editing mode slide deck history webhooks walkthroughs',
+      'corner buttons actions tools search settings get started tour bottom bar cluster appearance light dark slide deck history webhooks walkthroughs',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -261,7 +261,7 @@ export const articles: Article[] = [
     description:
       'The logo, the Explorer menu and the editor mode at the top left; Present, Share or Copy and your account at the top right.',
     keywords:
-      'title bar header top bar corner card menu button explorer logo editor mode switch present share copy make a copy account sign in sign out editing mode preview participating viewing role pill canvas name rename',
+      'title bar header top bar corner card menu button explorer logo editor mode switch present share copy make a copy account sign in sign out canvas name rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

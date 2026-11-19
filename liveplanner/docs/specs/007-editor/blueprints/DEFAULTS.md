@@ -11,7 +11,6 @@ feature is gone (Power user mode, [Power user mode](../power-user-mode.md)); it 
 | D4  | retired         | What counts as "a keyboard shortcut used"                     | A keydown the editor's global shortcut listener newly claims (`defaultPrevented` false before, true after)   |
 | D5  | retired         | Whether counting stops after the offer                        | It continues; the latch alone stops the offer                                                                |
 | D6  | retired         | Shape of a palette tile without its caption                   | The existing icon-only tile (`hideCaption`), named by a Tooltip                                              |
-| D7  | role-pill       | Selection when switching to the view preview                  | Cleared, so no edit toolbar lingers into viewing                                                             |
 | D8  | retired         | Look of the role status icon                                  | The status bar control box, in the role's emerald or amber rather than the bar's slate                       |
 | D9  | retired         | Malformed offer counters                                      | Reset to zero with a `[power-user-offer]` warning                                                            |
 | D10 | retired         | Where Help sits in the Explorer's menu                        | First row of the app band, above Search                                                                      |

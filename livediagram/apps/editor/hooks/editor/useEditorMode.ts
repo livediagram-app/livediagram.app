@@ -3,7 +3,7 @@
 //
 // Contract:
 // - `useEditorMode(tab, { canEdit, commitTabs, toastInfo })` returns `{ mode, setMode, canSwitch,
-//   canEdit }` for the active tab, the same object while those four hold. `canEdit` comes from the editor's one answer (useViewPreview)
+//   canEdit }` for the active tab, the same object while those four hold. `canEdit` comes from the editor's one answer (the collaboration slice)
 //   and is handed back, so the switch reads the very value the editor resolved with.
 // - `mode` is the tab's own mode (resolveEditorMode), the same for everyone on it.
 // - `canSwitch` is true only for an Editor on a general, unlocked tab, empty or not; the mode switch (beside the

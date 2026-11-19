@@ -72,7 +72,7 @@ function Glyph({ kind, x, y, tone }: { kind: Pill['glyph']; x: number; y: number
   );
 }
 
-/** The four badge states, as the header's pills show them after the role pill. */
+/** The four badge states, as the header's pills show them after the visibility pill. */
 export function ApprovalBadges() {
   return (
     <Scene w={420} h={150} bg="plain">

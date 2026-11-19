@@ -246,7 +246,7 @@ export const articles: Article[] = [
     description:
       'The always-available Tools (Search, History and more), Settings and appearance controls at the end of the bottom bar.',
     keywords:
-      'corner buttons actions settings search tools history webhooks walkthroughs editing mode get started github bottom bar cluster appearance light dark',
+      'corner buttons actions settings search tools history webhooks walkthroughs get started github bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -266,7 +266,7 @@ export const articles: Article[] = [
     description:
       "Where the title bar's controls went: the logo top left, and Copy, Present, Share and your account in a card top right.",
     keywords:
-      'header top bar title bar logo corner card share copy make a copy present account sign in editing mode preview participant viewer',
+      'header top bar title bar logo corner card share copy make a copy present account sign in',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

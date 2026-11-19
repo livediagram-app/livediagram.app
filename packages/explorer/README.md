@@ -222,7 +222,9 @@ host trashes the item open in its editor itself, from any of the panel's menus o
 `onArchivedCurrent?(item)` (the item open in its editor went to Archived, from any of the panel's menus or Change
 Folder's Archived: the panel says nothing and the host leaves for the Explorer, which says it with `archivedOnArrival`),
 `onRenameCurrent?(title)` (the open item was renamed, from its pencil or any menu's Rename, so the editor's title
-follows), and the same optional props as `<Explorer>`.
+follows), `renameCurrentRequest?` with `onRenameCurrentHandled?()` (a number above 0 opens the current card's name
+field once, for the editors' Rename command; the host clears it when told it was taken, one-explorer.md "Rename from
+the search"), and the same optional props as `<Explorer>`.
 
 Its size: `EXPLORER_POPOVER_WIDTH` (`w-[56rem]`) and `EXPLORER_POPOVER_HEIGHT` (`45rem`) are the editors' popover,
 passed to each editor's movable panel so the size lives once. In it the rail is 15rem, headed by the current item's compact card, and the pane's preview cards

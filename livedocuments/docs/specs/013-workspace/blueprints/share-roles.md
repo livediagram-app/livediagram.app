@@ -32,10 +32,9 @@ socket) are not derived here.
 | `apps/api/src/db/image-grants.ts`                                                                                                                               | Image grants from edit collaborators only                                                                                                   |
 | `packages/agent-verbs/src/mcp/*`                                                                                                                                | `share_document.role` takes three levels, default `participate`                                                                             |
 | `apps/editor/lib/editor-capabilities.ts`                                                                                                                        | `resolveEditorCapabilities`, `EditorCapabilities`                                                                                           |
-| `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `useParticipantSession`, `tab-save-flow`, `editor-page-helpers`)                         | `sessionRole: AccessLevel`; `can`; the participant save flow                                                                                |
+| `apps/editor/app/document/[id]/*` (`useEditorState`, `useParticipantSession`, `tab-save-flow`, `editor-page-helpers`)                                           | `sessionRole: AccessLevel`; `can`; the participant save flow                                                                                |
 | `apps/editor/hooks/editor/useArticles.ts`                                                                                                                       | `canWrite` (a Participant's writing) beside `canEdit`; `reshape` for an Editor                                                              |
 | [`ShareComposer.tsx`](../../../../../packages/explorer/src/dialogs/share/ShareComposer.tsx), `parts.tsx` (the shared Share dialog in `@liveworkspace/explorer`) | Three cards                                                                                                                                 |
-| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/editor-view-bars.tsx`                                                                     | Participating pill                                                                                                                          |
 | `apps/editor/lib/collaborator-roster.ts`                                                                                                                        | Participant badge; Participate chip                                                                                                         |
 
 ## Domain and naming
@@ -152,14 +151,12 @@ The ticket mint and the upgrade carry the effective level and the document id (`
 
 Editor state:
 
-| Flag            | Value                                                                         |
-| --------------- | ----------------------------------------------------------------------------- |
-| `sessionRole`   | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`     |
-| `canEdit`       | `sessionRole === 'edit' && !viewPreview` (unchanged)                          |
-| `isReadOnly`    | `!canEdit` (unchanged): every structural gate stays shut for a Participant    |
-| `can`           | `resolveEditorCapabilities(level)`, in `useParticipantSession(level, notify)` |
-| Pill level      | `viewPreview ? 'view' : sessionRole`                                          |
-| `canToggleRole` | `sessionRole === 'edit'` (unchanged)                                          |
+| Flag          | Value                                                                         |
+| ------------- | ----------------------------------------------------------------------------- |
+| `sessionRole` | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`     |
+| `canEdit`     | `sessionRole === 'edit'` (unchanged)                                          |
+| `isReadOnly`  | `!canEdit` (unchanged): every structural gate stays shut for a Participant    |
+| `can`         | `resolveEditorCapabilities(level)`, in `useParticipantSession(level, notify)` |
 
 `EditorCapabilities` is `{ level, takePart, writeText(el), writeArticle }`:
 
@@ -463,7 +460,6 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Held-back notice                                                                 | `apps/editor/app/document/[id]/useParticipantSession.test.ts`                                                            |
 | Participant save branch: element ops and article frames                          | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                                                                    |
 | Three cards and keys                                                             | [`ShareDialog.test.tsx`](../../../../../packages/explorer/src/dialogs/ShareDialog.test.tsx) in `@liveworkspace/explorer` |
-| Pill per level                                                                   | `apps/editor/components/chrome/RoleIndicator.test.tsx`                                                                   |
 | MCP default and enum                                                             | `packages/agent-verbs` MCP schema tests                                                                                  |
 
 ## Constants and configuration

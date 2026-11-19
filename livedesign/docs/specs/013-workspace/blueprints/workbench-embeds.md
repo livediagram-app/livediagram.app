@@ -378,7 +378,7 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 
 | Gate                                                                                | File                                     | In a workbench                                            |
 | ----------------------------------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------- |
-| `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)        | `editor-view-bars.tsx`                   | Not rendered                                              |
+| `EditorHeader` (and with it the account menu, Share, Make a copy)                   | `editor-view-bars.tsx`                   | Not rendered                                              |
 | TabBar, palette, toolbars, Quick style, panels, search                              | `EditorView.tsx`, `editor-view-bars.tsx` | Rendered as in the app                                    |
 | `EmbedChrome`                                                                       | `EditorView.tsx`                         | Not rendered; `WorkbenchChrome` instead                   |
 | Explorer (popover)                                                                  | `useCanvasChromePanels.tsx`              | Not rendered; status screens use `EmbedShell`             |

@@ -1,5 +1,5 @@
 // The Stage's settings in the element menu (docs/specs/012-collaboration/meeting-rooms-and-stage.md "The stage's way
-// in"): Who Can Speak, as two tiles wearing the role pill's own glyphs, and Show Cameras, as a switch. Only an
+// in"): Who Can Speak, as two tiles wearing a pencil and a ballot, and Show Cameras, as a switch. Only an
 // Editor's menu renders it (EditorContextMenuHost hands a Participant or a Viewer its own short menu).
 import { useId } from 'react';
 import {
@@ -18,7 +18,7 @@ import { MenuToggleRow } from '@/components/palette/context-menu-input-rows';
 
 export type StagePatch = { stageSpeakers?: StageSpeakers; stageCameras?: boolean };
 
-// Editing's pencil and Participating's ballot, as the title bar's role pill draws them (RoleIndicator).
+// Editing's pencil and Participating's ballot.
 const VoteIcon = lucideGlyph(lucideVote, 14);
 const SPEAKER_GLYPH: Record<StageSpeakers, React.ReactNode> = {
   edit: <PencilIcon size={14} />,

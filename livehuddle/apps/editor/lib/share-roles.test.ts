@@ -18,7 +18,7 @@ import { avatarPressOutcome } from '@/lib/avatar-click-intent';
 
 // docs/specs/013-workspace/share-roles.md "Feature by feature (v1)", as the editor renders it: one block per row of
 // the table, one case per level. The room's half is apps/api/src/share-roles.test.ts. Each level's session is what
-// useParticipantSession and useViewPreview give it: `can` for its level, and `isReadOnly` (`!canEdit`) true below an
+// useParticipantSession and the collaboration slice give it: `can` for its level, and `isReadOnly` (`!canEdit`) true below an
 // Editor. A Participant holds the adder key its room ticket carries.
 
 type Level = 'edit' | 'participate' | 'view';

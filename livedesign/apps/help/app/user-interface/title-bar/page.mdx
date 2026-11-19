@@ -1,21 +1,26 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
   title: 'Share, Copy and Your Account',
   description:
-    'The top-right card of the editor: Share or Copy, Prototype on a wireframe tab and your account, plus Editing Mode, to see a design as a Participant or Viewer.',
+    'The top-right card of the editor: Share or Copy, Prototype on a wireframe tab and your account.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
   title="Share, Copy and Your Account"
-  description="The card at the top right of the canvas, and Editing Mode for previewing what each kind of link gets."
+  description="The card at the top right of the canvas: Prototype, Share or Copy, and your account."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
 livedesign has no title bar: the canvas runs all the way to the top of the window. The design's main actions float in a small card at the **top right** of the canvas, level with the palette strip and the menu button at the top left. Reading from left to right, it holds **Prototype** on a wireframe tab, then **Share** if the design is yours or **Copy** if it is someone else's, and your account at the end.
+
+<Figure caption="The top of a shared design, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
+  <TitleBarParts product="livedesign" />
+</Figure>
 
 On a computer each button shows its name beside its icon. On a phone, or when the top row is too crowded for names, the card shows its icons alone. The card hides in [Zen mode](/help/tools/zen-mode/) and inside an [embed](/help/collaboration/sharing/embeds/).
 
@@ -42,18 +47,6 @@ Your copy starts **Private**: no share links come with it, and nothing you do to
 ## Your account
 
 At the end of the card is your account. Signed in, it shows your picture (or your initials) and first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the design) and **Sign Out**. Not signed in, it shows **Sign In** instead (see [Signing In](/help/account-and-data/signing-in/)).
-
-## Editing Mode
-
-**Editing Mode** in **Tools**, in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, shows how you are working right now: **Editing**, **Participating** or **Viewing**. It is there only if your role lets you edit (the owner, a team member, or anyone on an Editor link), so you can check what each kind of link will get before you send it:
-
-- **Editing**: change anything.
-- **Participating**: you work the design as someone on a Participant link does, with their palette and their limits. You can comment, add stickies, text and pictures, write on any element, and move stickies and pictures, but not move or restyle anything else, and you can delete only what you added.
-- **Viewing**: the design becomes read-only, exactly as someone on a Viewer link sees it.
-
-The row names the mode in force and, under the options, who owns the design (**Owned by you**, or **Owned by** and the owner's name). The preview only changes what you can do, in this browser tab: nobody else sees your mode change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the design.
-
-On a Participant or Viewer link there is no Editing Mode, because the link does not allow editing.
 
 ## The design's name and who can see it
 

@@ -300,16 +300,7 @@ function StatusShell({
   useBrowserTabTitle(`${title} | liveplanner`, { status: true });
   return (
     <div className="flex h-dvh flex-col">
-      {showHeader ? (
-        <EditorHeader
-          projectName={title}
-          hideTitle
-          showShare={false}
-          shareable={false}
-          onOpenShare={() => {}}
-          onRename={() => {}}
-        />
-      ) : null}
+      {showHeader ? <EditorHeader /> : null}
       <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">{children}</main>
     </div>
   );
