@@ -307,13 +307,80 @@ describe('signing out everywhere', () => {
 });
 
 describe('accountsFetch', () => {
-  it('hands the binding a Request by its URL, and is the fallback itself with no binding', async () => {
-    const via = { fetch: vi.fn(async (_input: string, _init?: RequestInit) => new Response('ok')) };
+  it('is the fallback itself with no binding', () => {
     const fallback = vi.fn<typeof fetch>();
-    await accountsFetch(via, fallback)(new Request('https://accounts.example/x'));
-    expect(via.fetch.mock.calls[0]?.[0]).toBe('https://accounts.example/x');
-    expect(fallback).not.toHaveBeenCalled();
     expect(accountsFetch(undefined, fallback)).toBe(fallback);
+  });
+
+  // Work Tracker 1070: a Request went to the binding as its URL alone, so a forward's method and body were lost.
+  it('hands the binding a POST Request whole: its method, headers and body', async () => {
+    const via = { fetch: vi.fn(async (_input: string | Request) => new Response('ok')) };
+    const fallback = vi.fn<typeof fetch>();
+    const controller = new AbortController();
+    const response = await accountsFetch(via, fallback)(
+      new Request('https://accounts.example/api/account/workbench/tickets?x=1', {
+        method: 'POST',
+        headers: { authorization: 'Bearer lw_token', 'content-type': 'application/json' },
+        body: '{"documentId":"d1"}',
+      }),
+      { signal: controller.signal },
+    );
+    expect(await response.text()).toBe('ok');
+    const sent = via.fetch.mock.calls[0]![0] as Request;
+    expect(sent).toBeInstanceOf(Request);
+    expect(sent.url).toBe('https://accounts.example/api/account/workbench/tickets?x=1');
+    expect(sent.method).toBe('POST');
+    expect(sent.headers.get('authorization')).toBe('Bearer lw_token');
+    expect(sent.headers.get('content-type')).toBe('application/json');
+    expect(await sent.text()).toBe('{"documentId":"d1"}');
+    // The caller's deadline rides along.
+    controller.abort();
+    expect(sent.signal.aborted).toBe(true);
+    expect(fallback).not.toHaveBeenCalled();
+  });
+
+  it("sends a Request's body to the public route when local dev's accounts Worker isn't running", async () => {
+    const via = {
+      fetch: vi.fn(async (input: string | Request) => {
+        await (input as Request).text();
+        return new Response('Worker "liveworkspace-accounts" not found.', { status: 503 });
+      }),
+    };
+    const fallback = vi.fn<typeof fetch>(async () => new Response('public'));
+    const response = await accountsFetch(
+      via,
+      fallback,
+    )(new Request('https://accounts.example/x', { method: 'PUT', body: 'payload' }));
+    expect(await response.text()).toBe('public');
+    const retried = fallback.mock.calls[0]![0] as Request;
+    expect(retried.method).toBe('PUT');
+    expect(await retried.text()).toBe('payload');
+    // A Request with no body is sent on as it is.
+    await accountsFetch(via, fallback)(new Request('https://accounts.example/y'));
+    expect((fallback.mock.calls[1]![0] as Request).url).toBe('https://accounts.example/y');
+  });
+
+  it('never retries a Request with a body after the binding throws, but does one without', async () => {
+    const thrower = { fetch: vi.fn(async () => Promise.reject(new Error('no binding'))) };
+    const fallback = vi.fn<typeof fetch>(async () => new Response('public'));
+    await expect(
+      accountsFetch(
+        thrower,
+        fallback,
+      )(new Request('https://a.example/', { method: 'POST', body: '{}' })),
+    ).rejects.toThrow('no binding');
+    expect(fallback).not.toHaveBeenCalled();
+    const read = await accountsFetch(thrower, fallback)(new Request('https://a.example/r'));
+    expect(await read.text()).toBe('public');
+    const controller = new AbortController();
+    controller.abort();
+    await expect(
+      accountsFetch(
+        thrower,
+        fallback,
+      )(new Request('https://a.example/', { signal: controller.signal })),
+    ).rejects.toThrow('no binding');
+    expect(fallback).toHaveBeenCalledTimes(1);
   });
 
   it("falls back to the public route on local dev's 503 for a bound Worker that isn't running", async () => {

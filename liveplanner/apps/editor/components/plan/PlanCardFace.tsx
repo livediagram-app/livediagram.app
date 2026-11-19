@@ -86,6 +86,9 @@ type PlanCardFaceProps = {
   fields: readonly CardField[];
   // The board's card size (docs/specs/026-plan/plan-board.md "The board set-up"); a Plan card is Detailed.
   size?: CardSize;
+  // On a phone, the board's own size (plan-board.md "On a phone"): a Minimal card keeps its number before the title
+  // when its type shows the number at that size, as a wider screen draws it.
+  numberFrom?: CardSize | undefined;
   faceDown?: boolean;
   muted?: boolean;
   presence?: PlanCardPresence;
@@ -143,6 +146,7 @@ export function PlanCardFace({
   palette,
   fields,
   size = 'detailed',
+  numberFrom,
   faceDown,
   muted,
   presence,
@@ -426,9 +430,22 @@ export function PlanCardFace({
     </span>
   );
 
+  // On a phone (`numberFrom`, plan-board.md "On a phone"): the number its type shows at the board's own size leads a
+  // Minimal card whose own Display leaves it off, so the phone never hides which card is which.
+  const phoneKey =
+    size === 'minimal' &&
+    numberFrom !== undefined &&
+    numberFrom !== 'minimal' &&
+    !edit &&
+    !show('key') &&
+    fields.includes('key') &&
+    typeCardDisplay(type, numberFrom).includes('key')
+      ? pill('key')
+      : null;
+  const leadBits = phoneKey ? [phoneKey, ...slotBits('lead')] : slotBits('lead');
   // Minimal: one line, the title between its Before and After slots; stacked, the title first and its bits under it.
   if (size === 'minimal' && stacked) {
-    const bits = [...slotBits('lead'), ...slotBits('trail'), ...(running ? [running] : [])];
+    const bits = [...leadBits, ...slotBits('trail'), ...(running ? [running] : [])];
     return (
       <div
         className={`${FRAME} ${LIFT} flex-col gap-1.5 px-2.5 py-2`}
@@ -464,7 +481,7 @@ export function PlanCardFace({
       >
         {presenceTag}
         <TypeDot accent={accent} />
-        {zone('lead', slotBits('lead'))}
+        {zone('lead', leadBits)}
         {cardHeading(titleText(2, 13))}
         {flag}
         <span

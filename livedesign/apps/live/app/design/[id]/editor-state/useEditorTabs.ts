@@ -25,6 +25,7 @@ import type { EditorSession } from './useEditorSession';
 import type { EditorCollaboration } from './useEditorCollaboration';
 import type { EditorViewport } from './useEditorViewport';
 import type { EditorPages } from './useEditorPages';
+import type { EditorHistory } from './useEditorUndoState';
 
 // Tabs and the document around them: the tab actions, connected tabs, the active tab's name in the menu box, tab
 // folders, document actions, naming and the template / identity flow, and the tab canvas actions.
@@ -38,6 +39,7 @@ export function useEditorTabs({
   collaborationSlice,
   viewportSlice,
   pagesSlice,
+  historySlice,
 }: {
   designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
@@ -45,6 +47,7 @@ export function useEditorTabs({
   collaborationSlice: EditorCollaboration;
   viewportSlice: EditorViewport;
   pagesSlice: EditorPages;
+  historySlice: EditorHistory;
 }) {
   const { tabs, tickTabs, commitTabs, markCheckpoint, nameConfirmed, setNameConfirmed } =
     designSlice;
@@ -114,6 +117,7 @@ export function useEditorTabs({
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport: historySlice.importUndoView.noteImport,
     refreshDesignList: () => refreshDesignList(),
     confirm,
     toast,

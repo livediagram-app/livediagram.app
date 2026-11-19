@@ -17,9 +17,13 @@ import type { EditOperation } from './types';
 const FRAMES = 10;
 const GROWTH = 4;
 const RATIO_CEILING = cpuRatioCeiling(8);
-// The smaller tab of the per-element growth checks: 1,200 against 4,800, not 2,400 against 9,600, so the larger keeps
-// the collector out of the timing (docs/ci.md "Speed budgets"); measured at 4.3 to 5.1 for four times the tab.
-const SMALL_TAB = 1200;
+// The container order check's smaller tab and the orderings a sample times: 600 against 2,400, ten a sample. Each
+// ordering builds a few maps of the tab, and at 1,200 against 4,800 the larger's maps outgrew a small young
+// generation: a CI runner, which sizes it by its memory, read 8.04 to 8.9 against 8 (Work Tracker 1127), as this
+// machine did run with `--max-semi-space-size=1` (5.0 to 7.6). At 600 against 2,400 that run reads 4.6 to 5.2, and a
+// plain one 3.7 to 4.8.
+const ORDER_TAB = 600;
+const ORDERINGS = 10;
 // The noteTarget check's smaller tab and the fresh states a sample fills, one at a time: 600 against 2,400, 40
 // states, a millisecond or more a sample. Twenty states of 4,800 held at once outgrew a CI runner's cache, and four
 // times the tab read 8.52 (liveplanner) and 9.43 (livedocuments) against 8 on CI (2026-11-11) for work that is one Set
@@ -146,14 +150,14 @@ describe('performance', () => {
     'orders containers behind their members in time linear in the tab',
     { timeout: TIMEOUT_MS },
     () => {
-      // Five orderings a sample, both tabs warmed and then timed in turns (cpuGrowthRatio): one ordering of the
-      // smaller tab takes under a millisecond, and timed one tab after the other the growth read 1.3 to 8.3.
+      // ORDERINGS orderings a sample, both tabs warmed and then timed in turns (cpuGrowthRatio): one ordering of the
+      // smaller tab takes a fraction of a millisecond, and timed one tab after the other the growth read 1.3 to 8.3.
       const sample = (tab: Tab) =>
         cpuMsOf(() => {
-          for (let k = 0; k < 5; k++) containersBehindMembers(tab.elements);
+          for (let k = 0; k < ORDERINGS; k++) containersBehindMembers(tab.elements);
         });
-      const smallTab = frameOf(SMALL_TAB);
-      const largeTab = frameOf(SMALL_TAB * GROWTH);
+      const smallTab = frameOf(ORDER_TAB);
+      const largeTab = frameOf(ORDER_TAB * GROWTH);
       expectLinear(
         () => sample(smallTab),
         () => sample(largeTab),

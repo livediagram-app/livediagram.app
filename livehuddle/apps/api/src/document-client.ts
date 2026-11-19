@@ -65,8 +65,12 @@ export type DocumentRoomClient = {
   // Someone opened the canvas through a share link for the first time (the index's notice): the owner's email.
   joined(personId: string): Promise<void>;
   // A closed account's name off the canvas (document-anonymise.ts), and the guests it signed in from off its
-  // Attendance (`guestKeys`, their collab keys): answers the rows changed.
-  anonymise(personId: string, guestKeys?: readonly string[]): Promise<number>;
+  // Attendance (`guestKeys`, their collab keys) and as its own (`guestIds`, the index's): answers the rows changed.
+  anonymise(
+    personId: string,
+    guestKeys?: readonly string[],
+    guestIds?: readonly string[],
+  ): Promise<number>;
   // The index's reverse write of a connected tab (document-room/connected-tab.ts).
   addConnectedTab(write: ConnectedTabWrite): Promise<ConnectedTabOutcome>;
   // A tab shared between documents (document-room/tab-shares.ts): the tab and its holders for one joining, the
@@ -105,7 +109,8 @@ export function documentRoom(
     communityPostTitle: (code) => room.communityPostTitle(documentId, code),
     communityListing: (code) => room.communityListing(documentId, code),
     joined: (personId) => room.joined(documentId, personId),
-    anonymise: (personId, guestKeys = []) => room.anonymise(documentId, personId, guestKeys),
+    anonymise: (personId, guestKeys = [], guestIds = []) =>
+      room.anonymise(documentId, personId, guestKeys, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(documentId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(documentId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(documentId, from, messages),
@@ -144,7 +149,12 @@ export type DocumentRoomRpc = {
     code: string,
   ): Promise<{ postId: string; author: CommunityAuthor } | null>;
   joined(documentId: string, personId: string): Promise<void>;
-  anonymise(documentId: string, personId: string, guestKeys: readonly string[]): Promise<number>;
+  anonymise(
+    documentId: string,
+    personId: string,
+    guestKeys: readonly string[],
+    guestIds: readonly string[],
+  ): Promise<number>;
   sharedTabCopy(documentId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(
     documentId: string,

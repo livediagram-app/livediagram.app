@@ -1,0 +1,17 @@
+# The workflow the help article "Repositories" shows (apps/help/app/developers/repositories/page.mdx); a test keeps
+# the two the same, and CI lints this file with actionlint.
+name: Diagram changes
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed] # closed removes the pull request's pictures
+permissions:
+  contents: write # the pictures go on a livediagram-previews branch
+  pull-requests: write # the comment
+jobs:
+  diagrams:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: livediagram-app/livediagram.app/livediagram/apps/cli/github-action@main

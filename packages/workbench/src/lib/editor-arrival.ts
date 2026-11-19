@@ -65,6 +65,9 @@ export type ArrivalProduct<
   // The person's grant on the item: edit on it without a link is the owner's chrome. `link` (the code a link's access
   // came through) and `tabId` say who a visitor reopening the item by its own address is.
   grant: (id: string) => Promise<{ level: string; tabId?: string | null; link?: string } | null>;
+  // The link a person reopening the item by its own address must enter the password of: the code the index's
+  // `password_required` refusal named (liveworkspace one-explorer-contracts.md "Reopened without the code"), or null.
+  passwordLink: (id: string) => Promise<string | null>;
   // The local sentinel an Offline Mode item is owned by.
   offlineOwnerId: string;
   // A link's own address names no item: the address to put in the bar for the one it opened, or null to keep it.
@@ -290,6 +293,65 @@ export async function openShareLink<
   return true;
 }
 
+// The link to open a protected item through when its own address could not load it, or null; a failure to ask is null.
+async function passwordLinkOf(
+  product: { passwordLink: (id: string) => Promise<string | null> },
+  id: string,
+): Promise<string | null> {
+  try {
+    return await product.passwordLink(id);
+  } catch {
+    return null;
+  }
+}
+
+// The link a reopen by the item's own address went through while its password gate is up, by reader and item: the
+// gate's retries (each re-runs the load) go straight to the link instead of repeating the own-address load the index
+// already refused. Forgotten once the reopen ends any other way (opened, not found, an error). Bounded, oldest out.
+const gatedReopens = new Map<string, string>();
+export const GATED_REOPENS_MAX = 32;
+
+/** Forgets every gated reopen (tests). */
+export function resetGatedReopensForTests(): void {
+  gatedReopens.clear();
+}
+
+// Opens the item through the link a password refusal named, remembering it while the gate is up.
+async function openThroughLink<
+  Item extends ArrivalItem,
+  Role,
+  Post,
+  Community,
+  OwnStep extends string,
+>(
+  product: ArrivalProduct<Item, Role, Post, Community, OwnStep>,
+  run: ArrivalRun<Item, Role, Community>,
+  id: string,
+  code: string,
+): Promise<boolean> {
+  const key = `${run.self.id}|${id}`;
+  let gated = false;
+  const watched: ArrivalRun<Item, Role, Community> = {
+    ...run,
+    set: {
+      ...run.set,
+      setSharePasswordGate: (gate) => {
+        gated = true;
+        run.set.setSharePasswordGate(gate);
+      },
+    },
+  };
+  const reached = await openShareLink(product, watched, { shareCodeParam: code, id, embed: false });
+  gatedReopens.delete(key);
+  if (gated) {
+    gatedReopens.set(key, code);
+    while (gatedReopens.size > GATED_REOPENS_MAX) {
+      gatedReopens.delete(gatedReopens.keys().next().value as string);
+    }
+  }
+  return reached;
+}
+
 /** Who the person reading an item by its own address is, from their grant. */
 type OwnReader = {
   isOwner: boolean;
@@ -343,6 +405,9 @@ export async function openOwnAddress<
 ): Promise<boolean> {
   const { id, early, accountUserId } = own;
   const { self, seed, set } = run;
+  // A retry behind the password gate: through the link it found, not the refused own address again.
+  const gated = gatedReopens.get(`${self.id}|${id}`);
+  if (gated) return openThroughLink(product, run, id, gated);
   product.setLoadStep(product.ownStep);
   let fetched;
   try {
@@ -360,10 +425,20 @@ export async function openOwnAddress<
       // index's `409 archived`, which only the owner hears. Not a connection problem: the item ends on not found,
       // which the editor shows as its archived card (the held grant's refusal says archived).
       set.setNotFound(true);
-    } else set.setLoadError(true);
+    } else {
+      // The api relays the index's `401 password_required`: a link visitor reopening a protected item with no code
+      // (one-explorer-contracts.md "Reopened without the code"). They open it through the link the refusal names,
+      // with its remembered password or the gate, never an error screen.
+      const link = await passwordLinkOf(product, id);
+      if (link) return openThroughLink(product, run, id, link);
+      set.setLoadError(true);
+    }
     return endShort(product, set);
   }
   if (!fetched) {
+    // A protected item the person opened through its link before: through that link, as above, never Not Found.
+    const link = await passwordLinkOf(product, id);
+    if (link) return openThroughLink(product, run, id, link);
     // The address named an item the api returned nothing for: it doesn't exist or isn't ours. A NotFound page
     // instead of the new-item welcome flow. An item in the Trash has no grant, so the api cannot tell it from a
     // missing one; the index can (its item outlives the trashing), and then it gets the deleted card.

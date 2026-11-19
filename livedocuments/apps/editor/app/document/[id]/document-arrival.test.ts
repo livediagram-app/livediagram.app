@@ -19,6 +19,7 @@ vi.mock('@/lib/api-client', () => ({
 const documentGrant = vi.fn<(id: string) => Promise<GrantResponse | null>>();
 vi.mock('@/lib/api/document-grants', () => ({
   documentGrant: (id: string) => documentGrant(id),
+  documentPasswordLink: async () => null,
 }));
 vi.mock('@/lib/last-seen', () => ({
   lastSeenCopies: { remember: async () => {}, forget: async () => {} },

@@ -25,6 +25,8 @@ export type TypePrefixDraft = {
   made: string;
   // What its cards read with, as the hint under the field shows it.
   shown: string;
+  // The number the plan's next card takes, so the hint reads as that card will ("Cards read WI-101").
+  next: number;
   // Why Save is stopped, or null: said in full beside Save, and in short under the field (`short`).
   problem: string | null;
   short: string | null;
@@ -38,6 +40,7 @@ export function useTypePrefixDraft(
   type: ItemTypeDef | null | undefined,
   types: readonly ItemTypeDef[],
   label: string,
+  next: number,
 ): TypePrefixDraft {
   const [value, onChange] = useState(() =>
     type ? (prefixOf(types, type.id) ?? '') : (start.prefix ?? ''),
@@ -59,6 +62,7 @@ export function useTypePrefixDraft(
     onChange,
     made,
     shown: valid ?? made,
+    next,
     problem,
     short,
     stored: valid ?? (type ? undefined : made),
@@ -95,7 +99,8 @@ export function ItemTypePrefixField({ id, draft }: { id: string; draft: TypePref
       >
         {draft.short ?? (
           <>
-            Cards read <span className="font-mono tabular-nums">{draft.shown}-12</span>
+            Cards read{' '}
+            <span className="font-mono tabular-nums">{`${draft.shown}-${draft.next}`}</span>
           </>
         )}
       </p>

@@ -320,7 +320,30 @@ describe('the person door', () => {
     );
     expect(await res.json()).toEqual({ ok: true, anonymised: 2, unreached: [] });
     expect(personClosed).toHaveBeenCalledWith('user_a');
-    expect(anonymise).toHaveBeenCalledWith('B', 'user_a');
+    expect(anonymise).toHaveBeenCalledWith('B', 'user_a', []);
+  });
+
+  it('hands each item the guests merged into the account, once each and never the person (Work Tracker 1241)', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const anonymise = vi.fn(async () => {});
+    const res = await send(
+      'POST',
+      '/api/internal/people/guest_a/purge',
+      { items: ['A'], guests: ['guest_g1', 'guest_g2', 'guest_g1', 'guest_a'] },
+      { anonymise },
+    );
+    expect(res.status).toBe(200);
+    expect(anonymise).toHaveBeenCalledWith('A', 'guest_a', ['guest_g1', 'guest_g2']);
+    for (const guests of [
+      'guest_g1',
+      ['user_b'],
+      ['guest_g1', 5],
+      Array.from({ length: 33 }, (_, i) => `guest_g${i}`),
+    ]) {
+      expect(
+        (await send('POST', '/api/internal/people/user_a/purge', { items: [], guests }, {})).status,
+      ).toBe(400);
+    }
   });
 
   it('answers 503 while an item was not reached, and refuses a bad person or list', async () => {

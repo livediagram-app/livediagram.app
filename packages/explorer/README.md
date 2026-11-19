@@ -153,7 +153,7 @@ the Explorer's reads key on stable objects.
 
 An item's share links, each drawn as a pass: `client`, `item` (with `teamId?`), `tabs?` or `loadTabs?`, `shareUrl`,
 `onClose`, and the host's extras: `handOver?` (`embedUrl`, `liveImageUrl`, `liveImageAlt`), `helpHref?` (`sharing`,
-`shareLinkExpiry`, `sharePasswords`), `onTelemetry?`, `notify?` (its toasts) and, for a guest, `identity?`.
+`shareLinkExpiry`, `sharePasswords`, `requestApproval`), `onTelemetry?`, `notify?` (its toasts) and, for a guest, `identity?`.
 
 - A status line says who can open the item now: only you, the team, or anyone holding a pass, with the password.
 - A new pass starts as an Editor's. It can be a Participant's or a Viewer's instead, open every tab or one, and last

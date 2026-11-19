@@ -336,9 +336,10 @@ now), [id]).ids)` per landed file; "N images added" announced at the end. The ca
   `cardRefIn(types)` (one namer per catalogue, WeakMap-cached, "#12" with no catalogue), `useCardRef()` (the plan's)
   and `useCardRefById()` (a run's or a thread's card by id, "#12" once it is gone); every place a card's number shows
   (board card `KeyTag`, the card panel's `ItemKeyTag` and menu, lists, search, pickers, views, automations, the Trash)
-  reads it. `components/plan/ItemTypePrefix.tsx`: `useTypePrefixDraft(start, type, types, label)` (the field's value,
+  reads it. `components/plan/ItemTypePrefix.tsx`: `useTypePrefixDraft(start, type, types, label, next)` (the field's value,
   the made prefix as placeholder, `problem` beside Save and `short` under the field, `stored`) and
-  `ItemTypePrefixField` (`w-32`, mono upper case, `maxLength` 6, the "Cards read WI-12" hint, rose when refused),
+  `ItemTypePrefixField` (`w-32`, mono upper case, `maxLength` 6, the "Cards read WI-{next}" hint with the plan's next number, `nextCardNumber(items)` from store.ts passed by
+  PlanSheetsHost as `ItemTypeEditor`'s `nextNumber`, rose when refused),
   passed to `ItemTypeConfiguration` as `prefixField` and laid beside Name. A prefix problem stops Save and flags
   Configuration. An offline save pins prefixes as the PUT does (`saveItemTypes(..., before)`).
 - `editor-persistence`: `projectItemTypes` state, the catalogue as stored with its revision (`SavedItemTypes

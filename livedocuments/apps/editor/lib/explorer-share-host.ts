@@ -30,6 +30,7 @@ const SHARE_HELP: Record<ShareHelpArticle, HelpArticleKey> = {
   sharing: 'sharing',
   shareLinkExpiry: 'shareLinkExpiry',
   sharePasswords: 'sharePasswords',
+  requestApproval: 'requestApproval',
 };
 
 export const shareHelpHref: ShareHelpHref = (article) => helpArticleHref(SHARE_HELP[article]);

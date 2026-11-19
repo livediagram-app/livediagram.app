@@ -21,7 +21,7 @@ import type { Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { setLoadStep } from '@/lib/load-progress';
 import { isDocumentTrashedError } from '@/lib/document-trashed';
-import { documentGrant } from '@/lib/api/document-grants';
+import { documentGrant, documentPasswordLink } from '@/lib/api/document-grants';
 import { resolveDocumentSession } from './editor-page-helpers';
 import type { CommunitySession } from './editor-realtime';
 
@@ -89,6 +89,8 @@ export const DOCUMENT_ARRIVAL: ArrivalProduct<
     resolveDocumentSession({ documentOwnerId: ownerId, ...rest }),
   communitySession: (post, ownDocumentId) => ({ ...post, ownDocumentId }),
   grant: documentGrant,
+  // A protected document reopened with no code opens through its link (share-password.md).
+  passwordLink: documentPasswordLink,
   offlineOwnerId: OFFLINE_OWNER_ID,
   // The last seen copy a later open warm-opens from (offline-mode.md "Warm open of a cloud document").
   lastSeen: lastSeenCopies,

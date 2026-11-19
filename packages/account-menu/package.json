@@ -8,6 +8,7 @@
     ".": "./src/index.ts",
     "./initials": "./src/initials.ts",
     "./placeholder": "./src/placeholder.tsx",
+    "./signed-out-notice": "./src/signed-out-notice.tsx",
     "./site-account": "./src/site-account.tsx"
   },
   "scripts": {

@@ -20,7 +20,7 @@ import type { Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { setLoadStep } from '@/lib/load-progress';
 import { isDesignTrashedError } from '@/lib/design-trashed';
-import { designGrant } from '@/lib/api/design-grants';
+import { designGrant, designPasswordLink } from '@/lib/api/design-grants';
 import { resolveDesignSession } from './editor-page-helpers';
 import type { CommunitySession } from './editor-realtime';
 
@@ -87,6 +87,8 @@ export const DESIGN_ARRIVAL: ArrivalProduct<
     resolveDesignSession({ designOwnerId: ownerId, ...rest }),
   communitySession: (post, ownDesignId) => ({ ...post, ownDesignId }),
   grant: designGrant,
+  // A protected design reopened with no code opens through its link (share-password.md).
+  passwordLink: designPasswordLink,
   offlineOwnerId: OFFLINE_OWNER_ID,
   // The last seen copy a later open warm-opens from (offline-mode.md "Warm open of a cloud design").
   lastSeen: lastSeenCopies,

@@ -158,6 +158,13 @@ Worker sees) is the target on `WORKSPACE_ORIGIN` or the service's origin, with t
 deadline applies to both. A binding that throws is answered `502`, never retried over the public route (a request's
 body can be read once, and a write must not go twice).
 
+An app API's workbench forward (`/api/workbench/*` in livediagram's, liveplanner's, livedocuments' and livedesign's
+`src/index.ts`) passes `routeToWorkspace` `fetch: accountsFetch(env.ACCOUNTS)` (`@liveworkspace/auth-client`), so it
+reaches accounts over the API's own binding. `accountsFetch` hands the binding the `Request` itself (its method,
+headers, body and signal, never only its URL), and keeps a clone of a request with a body for the public-route
+fallback when local dev answers that the accounts Worker isn't running; a binding that throws on a request with a
+body is rethrown (`forwardOr502` answers it `502`), never retried, as above.
+
 ## Interfaces and contracts
 
 The tables below are read from each `wrangler.toml`, the root `package.json`, `apps/site/next.config.ts` and
@@ -185,8 +192,11 @@ parts of 0 to 255, no leading zeros), an IPv6 address (eight hextets, one `::`, 
 answers `{ host, kind: 'address' | 'name', private }`. An address is private when `isPrivateAddress` holds; a name
 when `isInternalHostName` does (single label, `localhost`, `INTERNAL_HOST_SUFFIXES`, or a numeric last label); a host
 that has a colon or bracket yet no IPv6 address is private. `parsePublicHttpsUrl` refuses every `address` as well,
-`fetchPublicBytes` lets a public `address` through without a lookup and resolves a public `name`, and `isBlockedHost`
-is `classifyHost(hostname).private`. `@liveworkspace/api-kit/public-address` re-exports `isPrivateAddress` for its
+`checkPublicHop(raw, resolve, schemes)` (`@liveworkspace/api-kit/public-fetch`) lets a public `address` through
+without a lookup and resolves a public `name` (`resolvesPublic`), refusing a private answer, credentials in the URL,
+and a scheme outside `schemes` (`'https'`: https on 443; `'http'`: http or https on any port). `fetchPublicBytes` runs
+it with `'https'` and `unfurl` with `'http'`, each on every hop, following redirects with `redirect: 'manual'`.
+`isBlockedHost` is `classifyHost(hostname).private`, the unfurl route's check before any lookup. `@liveworkspace/api-kit/public-address` re-exports `isPrivateAddress` for its
 callers. One parity test (`packages/api-kit/src/private-host-parity.test.ts`) runs every private, internal and metadata
 host through all three, and a CPU-time test holds the parser linear on 50,000-character hosts.
 

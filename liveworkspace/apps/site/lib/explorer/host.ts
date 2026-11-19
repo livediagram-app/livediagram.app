@@ -24,7 +24,8 @@ import {
   siteOfApp,
   type AppName,
 } from '@liveworkspace/sites';
-import { appOrigin } from './page-app';
+import { explorerViewArticlePath } from '@/lib/help/platform-help';
+import { appOrigin, workspaceHref } from './page-app';
 
 // ---------- Which app the person came from -------------------------------------------------------------------
 
@@ -149,6 +150,13 @@ export function helpHrefFor(app: App): HelpHref {
     return slug ? `${appUrl(app)}/help/${slug}/` : undefined;
   };
 }
+
+/** The Explorer in no app, where it mixes every app's work: Help is liveworkspace.app's own articles (lib/help), a
+ *  folder's and a team's, else a section of the overview. The Invites view has none. */
+export const platformHelpHref: HelpHref = (view) => {
+  const path = explorerViewArticlePath(view.kind);
+  return path ? workspaceHref(path) : undefined;
+};
 
 // ---------- The filter lens's Template chip ----------------------------------------------------------------------
 

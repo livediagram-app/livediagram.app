@@ -21,5 +21,7 @@ export const seedDesignGrant = grants.seed;
 export const designGrant = grants.grant;
 export const heldDesignGrant = grants.held;
 export const designGrantRefusal = grants.refusal;
+/** The link to ask for the password through when the design, reopened with no code, needs one, or null. */
+export const designPasswordLink = grants.passwordLink;
 export const keepDesignGrantFresh = grants.keepFresh;
 export const withDesignGrant = grants.withGrant;

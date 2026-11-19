@@ -63,6 +63,20 @@ large move rides as one layer").
 - **A still canvas does nothing.** Chrome that positions itself re-measures on a real change (a
   resize, a move, a layout event), and an observer never re-arms in a way that notifies itself
   again.
+- <a id="a-still-space-does-nothing"></a>**A still Space does nothing either** (Work Tracker 1257). A Space walked in
+  is still when nobody moves: then nothing asks for an animation frame. Your character's walk loop runs only while it
+  has something to do (an arrow held, a walk, a hop, a wave, a reaction) and one frame more to write the stop, then
+  sleeps until the next one. The 3D view's overlay re-places its cards only while the view or a card moves (the
+  camera tilting or turning, a pan or zoom, a speaker's feet moving, a card added or the canvas resized), and stops on
+  the first pass that moves nothing. What loops for ever on a still board runs on the compositor, never on the page:
+  an opacity or transform animation on a box of its own (an HTML element, not a part inside an SVG), smooth rather
+  than stepped (a stepped animation is restyled on the page at each step), with many swings to one iteration so the
+  page seldom handles an iteration's end; the Avatar Pad's lights are drawn that way. The pieces' own motion ends: the
+  office dog trots along its route as one compositor animation, its steps, bob and wag on boxes of their own while it
+  trots, a few wags as it stops and through a pat, a few breaths as it lies down, and no render as it sets off, turns
+  or comes to a spot. What still costs work on a still Space is only what really moves: the dog setting off and
+  arriving once a leg (`PET_LEG_MS`, 9 s), the Receptionist strolling. The Virtual Office is measured against the idle
+  budget at fit and at 100% (`E2E_PERF_BOARD=virtual-office`, "Measuring").
 - <a id="chrome-after-a-gesture"></a>**Chrome after a gesture reads no layout in the gesture's task.** The selection's toolbar
   and popover place themselves in the next frame, before that frame is painted, never in the commit that drew them
   (a press that selects, a drop that ends a drag), and a box that rounds its width to whole pixels measures on its

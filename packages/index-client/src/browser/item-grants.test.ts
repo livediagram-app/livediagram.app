@@ -86,6 +86,44 @@ describe('grant', () => {
     expect((await grants.grant('d1', { code: 'C' }))?.grant).toBe('with-pw');
   });
 
+  // Work Tracker 1244: a person reopening a protected item with no code learns the link to enter its password for.
+  it('answers the link a password refusal names for an item asked with no code, and nothing else', async () => {
+    index.grant.mockRejectedValueOnce(new IndexError(401, 'password_required', null, 'CODE'));
+    expect(await grants.passwordLink('d1')).toBe('CODE');
+    // Held: asked again, it answers from the refusal without a request.
+    expect(await grants.passwordLink('d1')).toBe('CODE');
+    expect(index.grant).toHaveBeenCalledOnce();
+    expect(index.grant).toHaveBeenCalledWith('d1', null);
+
+    // A refusal naming no link, another refusal, a grant or a network failure: no link.
+    index.grant.mockRejectedValueOnce(new IndexError(401, 'password_required'));
+    expect(await grants.passwordLink('d2')).toBeNull();
+    index.grant.mockRejectedValueOnce(new IndexError(404, 'not_found', null, 'CODE'));
+    expect(await grants.passwordLink('d3')).toBeNull();
+    index.grant.mockResolvedValueOnce(grantOf('g'));
+    expect(await grants.passwordLink('d4')).toBeNull();
+    index.grant.mockRejectedValueOnce(new TypeError('offline'));
+    expect(await grants.passwordLink('d5')).toBeNull();
+  });
+
+  it('forgets the named link once the item is granted, and on a later refusal naming none', async () => {
+    index.grant.mockRejectedValueOnce(new IndexError(401, 'password_required', null, 'CODE'));
+    expect(await grants.passwordLink('d1')).toBe('CODE');
+    index.grant.mockRejectedValueOnce(new IndexError(401, 'password_required'));
+    expect(await grants.grant('d1', null, { fresh: true })).toBeNull();
+    expect(await grants.passwordLink('d1')).toBeNull();
+    index.grant.mockRejectedValueOnce(new IndexError(401, 'password_required', null, 'CODE'));
+    await grants.grant('d1', null, { fresh: true });
+    index.grant.mockResolvedValueOnce(grantOf('g'));
+    await grants.grant('d1', null, { fresh: true });
+    expect(grants.refusal('d1')).toBeNull();
+    grants.resetForTests();
+    index.grant.mockRejectedValueOnce(new IndexError(401, 'password_required', null, 'CODE'));
+    await grants.grant('d1');
+    grants.resetForTests();
+    expect(grants.refusal('d1')).toBeNull();
+  });
+
   it('asks again after a network failure', async () => {
     index.grant.mockRejectedValueOnce(new TypeError('offline'));
     index.grant.mockResolvedValueOnce(grantOf('g'));

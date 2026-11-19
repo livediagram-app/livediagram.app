@@ -53,7 +53,8 @@ import { BrandMark } from '@livediagram/ui';
 import { APP_NAMES, PLATFORM_SITE, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { signInHref, signUpHref } from '@/lib/accounts';
 import { useSession } from '@/lib/session';
-import { pageApp } from '@/lib/explorer/page-app';
+import { pageApp, workspaceHref } from '@/lib/explorer/page-app';
+import { SIGN_IN_ARTICLE_PATH } from '@/lib/help/platform-help';
 import { explorerDrive } from '@/lib/drive/client';
 import { appSignInHref, appSignUpHref } from '@/lib/explorer/app-session';
 import {
@@ -63,6 +64,7 @@ import {
   defaultFolderOptionsFor,
   lensTemplatesFor,
   newItemHref,
+  platformHelpHref,
   templateHref,
   rememberApp,
   shareUrl,
@@ -242,10 +244,10 @@ export function ExplorerShell() {
     [app],
   );
   const teams = useMemo(() => teamsOfToken(identity?.token ?? null), [identity]);
-  // In no app the Explorer mixes every app's work, and liveworkspace.app has no Explorer articles of its own: no Help
-  // button sends the reader to one app's help (the last app's) as if it were the platform's.
+  // In no app the Explorer mixes every app's work: Help is liveworkspace.app's own Explorer articles, never one app's
+  // (the last app's) as if it were the platform's.
   const helpHref = useMemo(
-    () => (arrived.app ? helpHrefFor(arrived.app) : undefined),
+    () => (arrived.app ? helpHrefFor(arrived.app) : platformHelpHref),
     [arrived.app],
   );
   // The app's Image Gallery and Shape Libraries, where it keeps them (stable per app).
@@ -323,7 +325,7 @@ export function ExplorerShell() {
     () => ({
       helpHref: arrived.app
         ? `${siteOfApp(arrived.app).url}/help/getting-started/guest-vs-account/`
-        : undefined,
+        : workspaceHref(SIGN_IN_ARTICLE_PATH),
       onTelemetry: trackSignInBanner,
     }),
     [arrived.app],

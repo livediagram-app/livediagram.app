@@ -572,7 +572,7 @@ rule-outline.ts    sentenceOutlineOf(state) → RuleSentenceOutline (types, stat
 rule-names.ts      namedRuleBody(body, state) → AutomationRuleBody-shaped JSON with columns, card types, fields,
                    people and Form tabs given by name turned into their ids (an id, or a name the plan lacks, kept)
 rule-ref.ts        resolveRule(ref, rules) → Found<AutomationListedRule>: id, then exact name (case aside)
-rule-listing.ts    listedRule(rule, outline) (the list line), listedRun(run), sentenceText(parts), ruleLine(listed)
+rule-listing.ts    listedRule(rule, outline) (the list line), listedRun(run, refOf) (the run's card by `runCardRefs(items, types)`: its type's prefix, `#N` for one gone; rule-read reads the cards only when a run names one), sentenceText(parts), ruleLine(listed)
 rule-refusals.ts   ruleRefusalOf(err) → { code, message } | null: the api's code, its `path`, and the words
 rule-changes.ts    applyRuleChanges(api, projectId, changes, state) → { applied, runs, refusal? }; RuleChange
 index.ts           re-exports, from packages/agent-verbs/src/index.ts

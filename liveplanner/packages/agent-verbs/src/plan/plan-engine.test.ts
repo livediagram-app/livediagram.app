@@ -1736,3 +1736,84 @@ describe('a Long Text field written as Markdown', () => {
     });
   });
 });
+
+// docs/specs/026-plan/plan-agents.md "An assignee": a name matches the plan's member first, never minting a twin.
+describe('assigning by name', () => {
+  // Accounts, as itemPersonId hashes them (24 hex characters).
+  const ADA = { id: 'a1a1a1a1a1a1a1a1a1a1a1a1', name: 'Ada Lovelace', color: '#f97316' };
+  const ADA_TOO = { id: 'b2b2b2b2b2b2b2b2b2b2b2b2', name: 'ada lovelace', color: '#16a34a' };
+  const madeBy = (who: typeof ADA, id: string, key: number): Item => ({
+    ...item(key, id, { title: `Card ${key}`, status: 'todo~x' }),
+    createdBy: who,
+    updatedBy: who,
+  });
+  async function assign(cards: Item[], assignee: string) {
+    const { api: a, seen } = api({
+      [`/projects/${D}/items`]: (r: Request) =>
+        r.method === 'GET' ? Response.json({ items: cards, rev: 1 }) : Response.json({}),
+    });
+    const result = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { assignee } }],
+      await readPlanState(a, D),
+    );
+    const sent = seen.filter((c) => c.method === 'POST').map((c) => c.body);
+    return { result, sent };
+  }
+  const first = (id: string) => ({ ...item(1, id, { title: 'B', status: 'todo~x' }) });
+
+  it('assigns the one member with that name, case aside, never a named twin', async () => {
+    const { result, sent } = await assign([first('aaa111'), madeBy(ADA, 'm1', 2)], 'ADA LOVELACE');
+    expect(result.refusal).toBeUndefined();
+    expect(sent[0]).toEqual({ set: { assignee: ADA } });
+  });
+
+  it('keeps making a named person when no member has the name', async () => {
+    const { sent } = await assign([first('aaa111')], 'Ada Lovelace');
+    expect(sent[0]).toMatchObject({
+      set: { assignee: { id: 'n-ada-lovelace', name: 'Ada Lovelace' } },
+    });
+  });
+
+  it('refuses a name two members share, naming each, and writes nothing', async () => {
+    const { result, sent } = await assign(
+      [first('aaa111'), madeBy(ADA, 'm1', 2), madeBy(ADA_TOO, 'm2', 3)],
+      'Ada Lovelace',
+    );
+    expect(result.refusal?.code).toBe('value_invalid');
+    expect(result.refusal?.message).toContain(ADA.id);
+    expect(result.refusal?.message).toContain(ADA_TOO.id);
+    expect(sent).toEqual([]);
+  });
+
+  it('matches a member in a field that holds several, alongside a new name', async () => {
+    const TEAM = {
+      ...BUG,
+      id: 'team',
+      label: 'Team',
+      fields: ['title', 'status', 'f-who'],
+      custom: [{ id: 'f-who', label: 'Reviewers', kind: 'person' as const, multiple: true }],
+    };
+    const cards = [
+      { ...item(1, 'aaa111', { title: 'B', status: 'todo~x' }, 'team') },
+      madeBy(ADA, 'm1', 2),
+    ];
+    const { api: a, seen } = api(
+      {
+        [`/projects/${D}/items`]: (r: Request) =>
+          r.method === 'GET' ? Response.json({ items: cards, rev: 1 }) : Response.json({}),
+      },
+      { boards: [BOARD()], statuses: STATUSES, types: [...ITEM_TYPES, TEAM] },
+    );
+    const result = await applyItemChanges(
+      a,
+      D,
+      [{ op: 'set', item: '#1', fields: { Reviewers: 'ada lovelace, Sam' } }],
+      await readPlanState(a, D),
+    );
+    expect(result.refusal).toBeUndefined();
+    const body = seen.find((c) => c.method === 'POST')!.body as { set: Record<string, unknown> };
+    expect(body.set['f-who']).toEqual([ADA, expect.objectContaining({ id: 'n-sam', name: 'Sam' })]);
+  });
+});

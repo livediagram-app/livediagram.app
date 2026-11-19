@@ -510,8 +510,8 @@ export class PlanRoom extends DurableObject<Env> {
     return takeGrantStanding(this, grant);
   }
 
-  anonymise(planId: string, personId: string): Promise<number> {
-    return anonymise(this, planId, personId);
+  anonymise(planId: string, personId: string, guestIds: readonly string[] = []): Promise<number> {
+    return anonymise(this, planId, personId, guestIds);
   }
 
   // Take the owner and team a grant names as the plan's own copy. A failure is logged, never the caller's: the

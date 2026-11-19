@@ -172,6 +172,24 @@ describe('createIndexClient', () => {
     expect(err).toMatchObject({ status: 401, code: 'password_required' });
   });
 
+  it('reads the link a password refusal names, and only a code-sized string', async () => {
+    const answers = [
+      { error: 'password_required', link: 'ABCDEFGHJKMNPQ' },
+      { error: 'password_required', link: 7 },
+      { error: 'password_required', link: '' },
+      { error: 'password_required', link: 'x'.repeat(65) },
+      { error: 'password_required' },
+    ];
+    let i = 0;
+    const { doFetch } = fakeFetch(() => Response.json(answers[i++], { status: 401 }));
+    const client = createIndexClient({ getToken: () => null, fetch: doFetch });
+    const links = [];
+    for (let n = 0; n < answers.length; n++) {
+      links.push(((await client.grant('i1').catch((e: unknown) => e)) as IndexError).link);
+    }
+    expect(links).toEqual(['ABCDEFGHJKMNPQ', null, null, null, null]);
+  });
+
   it('answers a non-JSON failure as unknown', async () => {
     const { doFetch } = fakeFetch(() => new Response('bad gateway', { status: 502 }));
     const client = createIndexClient({ getToken: () => 't', fetch: doFetch });

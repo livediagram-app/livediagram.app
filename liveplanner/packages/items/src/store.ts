@@ -25,6 +25,13 @@ export type ItemStoreState = { items: Item[]; rev: number; nextKey: number };
 
 export const EMPTY_ITEM_STORE: ItemStoreState = { items: [], rev: 0, nextKey: 1 };
 
+// The number the next card takes: one past the highest a card holds (a Trashed or Archived one included), 1 for none.
+export function nextCardNumber(items: Iterable<Pick<Item, 'key'>>): number {
+  let max = 0;
+  for (const i of items) if (i.key > max) max = i.key;
+  return max + 1;
+}
+
 // `undo`: the write is an undo or redo, putting back a change already made, so a card type's left-out statuses do
 // not refuse it (docs/specs/026-plan/item-types.md "An item type"). Sent to the api as `undo: true` in the body.
 export type ItemWrite =

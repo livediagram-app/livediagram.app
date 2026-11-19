@@ -253,7 +253,9 @@ never end in `0`, so a key between always exists. Ties (equal ranks after concur
 - `makeItem(create, ctx: { id, key, now, by, items })` places at `place` (default: end of `status`'s column, or
   end of all), ranks from neighbours with `rankBetween`.
 - `applyPatch(item, patch, ctx)` merges `set`, deletes `clear`, `rev + 1`, stamps `updatedBy/At` when the write is an
-  edit (`isItemEdit(before, fields, type, touched)`, item-edit.ts; spec items.md "Created and Last Edited"): it is not
+  edit, `updatedBy` as `heldStampPerson(ctx.by, [item])` (card-stamps.ts: the writer in the colour the card's Created By
+  or Last Edited By already holds for that hashed id, `heldPerson`; spec items.md "One person, one colour on a card";
+  `applyMove` the same) (`isItemEdit(before, fields, type, touched)`, item-edit.ts; spec items.md "Created and Last Edited"): it is not
   when it touches a link field (`LINKED_FIELDS`, linked-fields.ts: the linked board's heal, a link left, a restore by
   the heal), or when it changes no field and not the type (a move within its column, a value set to what it was;
   `statusSince` alone is not a change). `applyMove` follows the same rule.
@@ -789,6 +791,10 @@ history.retention` with the count.
   the hash, or whose `resolved_by_id` is the hash; it sets `resolved_by` to Deleted account and `resolved_by_id` to
   `deleted`, and each reaction whose `person` is the hash to name Deleted account, `person` `deleted`. Older rows
   without the id are left as they are.
+- Every match above is over the person's ids, not one: the account's and those of the guests merged into it (the
+  purge door's `guests`, at most 32; Work Tracker 1241), each raw id and its `itemPersonId` hash. The raw ids and the
+  hashes go to SQL as one JSON list each (`IN (SELECT value FROM json_each(?))`, and `instr` over `json_each` to
+  narrow), so the bound parameters stay a handful whatever the count.
 - Copies (`exportPlanCopy`), project files and offline records carry no history: none of them reads the table.
 
 ### REST
@@ -957,7 +963,17 @@ one after another, so the catch-up log replays the parts in order and a client a
 `mergeItemChanges` keeps the higher per-card `rev`, a part at the `rev` it already holds is no gap, and the removals
 come last as in the whole op. An op that fits goes out whole, as before; a card larger than a part alone goes in a
 part of its own. A reconnect's catch-up frame bundles the ops it missed: one that would pass `ROOM_FRAME_MAX_BYTES`
-answers `resync: true` with no ops instead (`sendCatchup`, `plan-room-frames.ts`), and the client re-fetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
+answers `resync: true` with no ops instead (`sendCatchup`, `plan-room-frames.ts`), and the client re-fetches.
+
+Catch-up log cap (Work Tracker 1231): the room's in-memory catch-up log (`plan-room/op-log.ts`) is capped twice, at
+256 ops (`OP_LOG_LIMIT`) and at 4 MiB (`OP_LOG_MAX_BYTES`, four times `ROOM_FRAME_MAX_BYTES`), dropping its oldest
+ops first. An op's size is the length of the op frame's JSON text the room relays, measured from the one
+serialisation the relay already makes (a floor on its UTF-8 bytes, so nothing is encoded twice). By count alone, a
+burst of split parts (each up to 1 MiB) could hold about 256 MiB in the object's memory; the byte cap holds it to
+4 MiB of JSON. A client whose `lastSeq` falls behind the trimmed log gets `resync: true` (`resolveCatchup`) and
+re-fetches. The cap sends no extra client to a resync: a dropped op means the ops after it pass 4 MiB, so a catch-up
+reaching it would already pass the 1 MiB frame and resync; the room keeps four frames' worth so a tab-scoped
+session, whose catch-up holds only its own tab's ops, can still replay past other tabs' big writes. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tabId, itemId | null, state }`), in
 `PRESENCE_OP_KINDS`.
 
 ## Editor slice

@@ -22,6 +22,7 @@ import {
 } from '@liveplanner/api-schema';
 import { PlanRoom } from './plan-room/plan-room';
 import { PURGED_KEY } from './plan-room/plan-room-purged';
+import { OP_LOG_MAX_BYTES } from './plan-room/op-log';
 import type { Env } from './types';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
@@ -326,6 +327,90 @@ describe('PlanRoom /broadcast endpoint', () => {
       JSON.stringify({ kind: 'sync', epoch: room.epoch, lastSeq: 0 }),
     );
     expect(receivedOf(far, 'catchup')[0]).toMatchObject({ resync: true, ops: [], seq: parts });
+  });
+
+  // docs/specs/026-plan/blueprints/item-store.md "Catch-up log cap" (Work Tracker 1231): by count alone, 256 split
+  // parts of about 1 MiB each would sit in the room's memory.
+  it('holds a burst of large writes under the catch-up log byte cap, and clients still converge', async () => {
+    const { room, state } = newRoom();
+    const live = makeSocket();
+    seedSession(state, live, presence('p-live', 'view'));
+    const card = (n: number, rev: number) =>
+      ({
+        id: `id${n}`,
+        type: 'task',
+        key: n,
+        rank: `a${n}`,
+        fields: { title: `Card ${n} v${rev}`, description: 'é'.repeat(ITEM_FIELDS_BYTES / 2 - 64) },
+        rev,
+        createdAt: 1,
+        updatedAt: rev,
+      }) as unknown as Item;
+    // Four writes of 100 full cards each, the same cards each time at a higher rev: about 25 MiB of UTF-8 (13 Mi characters).
+    const revs = [2, 3, 4, 5];
+    for (const rev of revs) {
+      const upserts = Array.from({ length: 100 }, (_, n) => card(n + 1, rev));
+      await room.fetch(
+        new Request('https://room/broadcast', {
+          method: 'POST',
+          body: JSON.stringify({ ordered: true, op: { kind: 'items', upserts, removed: [], rev } }),
+        }),
+      );
+    }
+    const frames = receivedOf(live, 'op') as unknown as { seq: number; op: ItemsRoomOp }[];
+    const relayed = live.sent.reduce((sum, raw) => sum + raw.length, 0);
+    expect(relayed).toBeGreaterThan(3 * OP_LOG_MAX_BYTES);
+    // The log keeps the newest parts only, within the cap, by the same measure as the frames it relayed.
+    const logged = room.opLog.reduce(
+      (sum, e) =>
+        sum +
+        JSON.stringify({ kind: 'op', from: e.from, op: e.op, seq: e.seq, epoch: room.epoch })
+          .length,
+      0,
+    );
+    expect(logged).toBeLessThanOrEqual(OP_LOG_MAX_BYTES);
+    expect(room.opLog.length).toBeGreaterThan(0);
+    expect(room.opLog.length).toBeLessThan(frames.length);
+    expect(room.opLog.at(-1)!.seq).toBe(room.seq);
+    const start: ItemStoreState = { items: [], rev: 1, nextKey: 1 };
+    const apply = (store: ItemStoreState, ops: ItemsRoomOp[]) =>
+      ops.reduce((s, op) => mergeItemChanges(s, op.upserts, op.removed, op.rev), store);
+    // The live client converges on the last write.
+    const end = apply(
+      start,
+      frames.map((f) => f.op),
+    );
+    expect(end.rev).toBe(5);
+    expect(end.items).toHaveLength(100);
+    expect(end.items.every((i) => i.rev === 5)).toBe(true);
+    // A client back from a blip one part short replays it and lands on the same state.
+    const near = makeSocket();
+    seedSession(state, near, presence('p-near', 'view'));
+    room.webSocketMessage(
+      asWs(near),
+      JSON.stringify({ kind: 'sync', epoch: room.epoch, lastSeq: room.seq - 1 }),
+    );
+    const catchup = receivedOf(near, 'catchup')[0]!;
+    expect(catchup.resync).toBe(false);
+    const replayed = catchup.ops.map((o) => o.op as ItemsRoomOp);
+    expect(
+      apply(
+        apply(
+          start,
+          frames.slice(0, -1).map((f) => f.op),
+        ),
+        replayed,
+      ),
+    ).toEqual(end);
+    // One that fell behind the trimmed log is told to re-fetch.
+    const far = makeSocket();
+    seedSession(state, far, presence('p-far', 'view'));
+    const behind = room.opLog[0]!.seq - 2;
+    room.webSocketMessage(
+      asWs(far),
+      JSON.stringify({ kind: 'sync', epoch: room.epoch, lastSeq: behind }),
+    );
+    expect(receivedOf(far, 'catchup')[0]).toMatchObject({ resync: true, ops: [] });
   });
 
   it('relays an items op that fits as one frame, as before', async () => {

@@ -117,9 +117,10 @@ export function handleInternalItems(
       // id (the media owner of a guest is its hash, `mediaOwner`).
       personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
       // Their name off each canvas of someone else's that names them, and their visits as the guests they signed in
-      // from (docs/specs/012-collaboration/tab-attendance.md "Closing an account").
-      anonymise: async (id, personId) =>
-        documentRoom(env, id).anonymise(personId, await guestKeysOf(personId)),
+      // from (docs/specs/012-collaboration/tab-attendance.md "Closing an account"): the keys this app kept, and the
+      // guests the index names (Work Tracker 1241), whose ids and reactions go as the account's do.
+      anonymise: async (id, personId, guestIds) =>
+        documentRoom(env, id).anonymise(personId, await guestKeysOf(personId), guestIds),
       // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for the
       // Drive mirror (`exportFile`).
       export: (id, query) =>

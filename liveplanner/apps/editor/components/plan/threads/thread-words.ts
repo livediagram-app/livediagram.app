@@ -1,8 +1,8 @@
 // The words a card's comment threads say (docs/specs/026-plan/items.md "Where it shows"): counts, the shared chip,
-// the cards a thread is on, the delete confirmation, the cross-plan warning and what is announced. Pure, so every
+// whether a thread reaches another plan, the delete confirmation, the cross-plan warning and what is announced. Pure, so every
 // line of copy is tested once.
 
-import type { CardRef, CardThread } from '@liveplanner/project';
+import type { CardThread } from '@liveplanner/project';
 
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -14,20 +14,6 @@ export const openTally = (open: number): string => (open ? `${open} Open` : '');
 
 /** The shared chip: "On 3 cards" (only for a thread on more than one). */
 export const sharedLabel = (cards: number) => `On ${cards} cards`;
-
-/** A card a thread is on, as its chip lists it: "#12 Basket" here, "#4 in Sprint 12" in another plan. */
-export function cardLabel(
-  card: CardRef,
-  here: string,
-  titleOf: (itemId: string) => string | null,
-): string {
-  const num = card.key !== null ? `#${card.key}` : 'A card';
-  if (card.projectId === here) {
-    const title = titleOf(card.itemId);
-    return title ? `${num} ${title}` : num;
-  }
-  return `${num} in ${card.projectName || 'another plan'}`;
-}
 
 /** Whether the thread is on a card in a plan other than `here`. */
 export const sharedBeyond = (thread: Pick<CardThread, 'cards'>, here: string) =>

@@ -102,8 +102,9 @@ export type PlanRoomClient = {
   // Someone opened the plan through a share link for the first time (the index's notice): the owner's
   // "someone joined" email, sent from the room, which keeps its once-per-window claim.
   joined(personId: string): Promise<void>;
-  // A closed account's name off the plan (plan-anonymise.ts): answers the rows changed.
-  anonymise(personId: string): Promise<number>;
+  // A closed account's name off the plan (plan-anonymise.ts), and the guests merged into it (`guestIds`) as its own:
+  // answers the rows changed.
+  anonymise(personId: string, guestIds?: readonly string[]): Promise<number>;
   // A tab shared between plans (plan-room/tab-shares.ts): the tab and its holders for one joining, the join
   // recorded, and what another holder (`from`) sends.
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
@@ -167,7 +168,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     communityPostTitle: (code) => room.communityPostTitle(planId, code),
     communityListing: (code) => room.communityListing(planId, code),
     joined: (personId) => room.joined(planId, personId),
-    anonymise: (personId) => room.anonymise(planId, personId),
+    anonymise: (personId, guestIds = []) => room.anonymise(planId, personId, guestIds),
     sharedTabCopy: (tabId) => room.sharedTabCopy(planId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(planId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(planId, from, messages),
@@ -223,7 +224,7 @@ export type PlanRoomRpc = {
   communityPostTitle(planId: string, code: string): Promise<string | null>;
   communityListing(planId: string, code: string): Promise<CommunityListing | null>;
   joined(planId: string, personId: string): Promise<void>;
-  anonymise(planId: string, personId: string): Promise<number>;
+  anonymise(planId: string, personId: string, guestIds: readonly string[]): Promise<number>;
   sharedTabCopy(planId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(
     planId: string,

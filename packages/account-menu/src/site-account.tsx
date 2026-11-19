@@ -1,5 +1,6 @@
 import { lazy, Suspense, useSyncExternalStore, type ComponentType } from 'react';
 import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
+import { SignedOutHereNotice } from './signed-out-notice';
 
 // A product's site header account menu (`/site-account`; docs/specs/019-marketing/marketing-site.md "Header" in
 // each product), at the bar's right end: liveworkspace.app's account menu for someone signed in, and the same
@@ -7,16 +8,20 @@ import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } f
 // avatar's disc holds the place for everyone. The menu's code is its own chunk (the product's SiteAccountMenu,
 // bound to its hint cookie): loaded at once when the hint says signed in, and for a visitor only when the
 // pointer or focus reaches the Guest button (DeferredAccountMenu), so a visitor's page carries none of it and
-// makes no request. Each product binds it once (its SiteAccount).
+// makes no request. Each product binds it once (its SiteAccount). Under the control hangs the "Signed out of <app>
+// only" notice, after a sign-out of this app alone (signed-out-notice.tsx): an editor's Sign Out lands here.
 
 const noSubscription = () => () => {};
 const hydratedNow = () => true;
 const notHydrated = () => false;
 
 export function createSiteAccount({
+  app,
   load,
   useSignedInHint,
 }: {
+  // The product's name as the notice says it: "livediagram".
+  app: string;
   // The product's menu chunk: `() => import('./SiteAccountMenu')`.
   load: () => Promise<{ default: ComponentType<DeferredMenuProps> }>;
   // Whether the product's hint cookie says someone is signed in (false until hydrated).
@@ -24,7 +29,7 @@ export function createSiteAccount({
 }) {
   const SiteAccountMenu = lazy(load);
 
-  return function SiteAccount() {
+  function Control() {
     const hydrated = useSyncExternalStore(noSubscription, hydratedNow, notHydrated);
     const signedIn = useSignedInHint();
     if (!hydrated) return <AccountMenuPlaceholder />;
@@ -33,6 +38,15 @@ export function createSiteAccount({
       <Suspense fallback={<AccountMenuPlaceholder />}>
         <SiteAccountMenu />
       </Suspense>
+    );
+  }
+
+  return function SiteAccount() {
+    return (
+      <div className="relative flex shrink-0 items-center">
+        <Control />
+        <SignedOutHereNotice app={app} />
+      </div>
     );
   };
 }
