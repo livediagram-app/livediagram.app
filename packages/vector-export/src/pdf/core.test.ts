@@ -413,6 +413,15 @@ describe('the text layer', () => {
       'ET',
     ]);
   });
+  it('hands an empty tagged line (an empty cell) to declare, writing nothing for it', () => {
+    const file = new PdfFile();
+    const fonts = new InvisibleFonts(file, new PdfResources(file));
+    const empty = { ...item('', 0, 0), tag: 'TD', block: '3' };
+    const declared: number[] = [];
+    expect(textLayerOps([empty], fonts, undefined, (_l, i) => declared.push(i))).toBe('');
+    expect(declared).toEqual([0]);
+    expect(textLayerOps([empty], fonts)).toBe('');
+  });
 });
 
 describe('tags', () => {
@@ -437,9 +446,11 @@ describe('tags', () => {
       close: 'EMC',
     });
     expect(tree.mark(line('2', 'BLOCKQUOTE'), 'b').open).toBe('/P << /MCID 1 >> BDC');
+    tree.endPage();
     expect(tree.beginPage(p2)).toBe(1);
     expect(tree.mark(line('2'), 'c').open).toBe('/P << /MCID 0 >> BDC');
     expect(tree.mark(line(undefined), 'p1-0').open).toBe('/P << /MCID 1 >> BDC');
+    tree.endPage();
     tree.write();
     const pdf = readPdf(await file.toBytes(tree.root));
     const elems = pdf.find('/Type /StructElem');
