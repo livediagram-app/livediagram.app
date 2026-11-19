@@ -111,13 +111,14 @@ describe('DoorPlacementPreview', () => {
   });
 
   const move = (
-    type: 'pointermove' | 'dragover',
+    type: 'pointermove' | 'pointerdown' | 'dragover',
     x: number,
     y: number,
     target: EventTarget = wrapper,
+    buttons = 0,
   ) =>
     act(() => {
-      const e = new MouseEvent(type, { bubbles: true, clientX: x, clientY: y });
+      const e = new MouseEvent(type, { bubbles: true, clientX: x, clientY: y, buttons });
       target.dispatchEvent(e);
       vi.advanceTimersToNextFrame();
     });
@@ -140,6 +141,26 @@ describe('DoorPlacementPreview', () => {
     move('pointermove', 900, 900);
     expect(preview()).not.toBeNull();
     expect(preview()?.hasAttribute('data-on-wall')).toBe(false);
+  });
+
+  it('holds where the press began while an armed tile is pressed and dragged, where the piece lands', () => {
+    render(
+      <PlacementPreview
+        pendingDraw={DOOR}
+        elements={[room]}
+        wrapperRef={{ current: wrapper }}
+        zoom={1}
+      />,
+      { container: wrapper },
+    );
+    move('pointermove', 900, 900);
+    const atPress = (preview() as HTMLElement).getAttribute('style');
+    move('pointerdown', 900, 900, wrapper, 1);
+    move('pointermove', 1200, 1100, wrapper, 1);
+    expect((preview() as HTMLElement).getAttribute('style')).toBe(atPress);
+    // Released, it follows the pointer again.
+    move('pointermove', 1200, 1100);
+    expect((preview() as HTMLElement).getAttribute('style')).not.toBe(atPress);
   });
 
   it('previews a Window on the wall it would snap to, facing in (room-builder.md "Window")', () => {
