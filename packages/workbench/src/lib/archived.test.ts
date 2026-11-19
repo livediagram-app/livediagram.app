@@ -8,6 +8,7 @@ import {
   arrivedArchived,
   forgetArchivedArrival,
   isArchivedLoadError,
+  leaveArchivedElsewhere,
   leaveArchivedItem,
   takeArchivedHandoff,
 } from './archived';
@@ -88,6 +89,26 @@ describe('leaving an archived open file for the Explorer', () => {
     vi.spyOn(window, 'location', 'get').mockReturnValue({ assign } as unknown as Location);
     leaveArchivedItem('livedocuments', { id: 'x', title: 'X' });
     expect(assign).toHaveBeenCalledWith('/explorer?archived=x&title=X');
+  });
+
+  // one-explorer.md "Archived from elsewhere while open": the room closed every session with 4010.
+  it('takes the owner of a file archived elsewhere to the archived arrival toast', () => {
+    const leave = vi.fn();
+    leaveArchivedElsewhere('livediagram', { id: 'd1', title: 'Roadmap' }, true, leave, 1_000);
+    expect(leave).toHaveBeenCalledWith('/explorer?archived=d1&title=Roadmap');
+    expect(takeArchivedHandoff('livediagram', 2_000)).toEqual({ id: 'd1', title: 'Roadmap' });
+  });
+
+  it('takes anyone else to the Explorer saying its owner archived it, naming nothing', () => {
+    const leave = vi.fn();
+    leaveArchivedElsewhere('liveplanner', { id: 'p1', title: 'Secret plan' }, false, leave, 1_000);
+    expect(leave).toHaveBeenCalledWith('/explorer?ended=archived');
+    // No handoff: Archived is the owner's alone.
+    expect(takeArchivedHandoff('liveplanner', 2_000)).toBeNull();
+    const assign = vi.fn();
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ assign } as unknown as Location);
+    leaveArchivedElsewhere('livedesign', { id: 'x', title: 'X' }, false);
+    expect(assign).toHaveBeenCalledWith('/explorer?ended=archived');
   });
 
   it('still leaves when storage is off', () => {

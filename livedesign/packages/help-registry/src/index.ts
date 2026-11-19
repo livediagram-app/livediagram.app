@@ -239,9 +239,9 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description:
-      'Get Started, Tools (Search, Editing Mode, Walkthroughs, Webhooks, History), Settings and the appearance switch at the end of the bottom bar.',
+      'Get Started, Tools (Search, Walkthroughs, Webhooks, History), Settings and the appearance switch at the end of the bottom bar.',
     keywords:
-      'corner buttons actions tools search settings get started tour history snapshots webhooks walkthroughs editing mode bottom bar cluster appearance light dark',
+      'corner buttons actions tools search settings get started tour history snapshots webhooks walkthroughs bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -259,9 +259,9 @@ export const articles: Article[] = [
     slug: 'title-bar',
     title: 'Share, Copy and Your Account',
     description:
-      'The card at the top right of the editor: Share or Copy, Prototype, your account, and Editing Mode for previewing a link.',
+      'The card at the top right of the editor: Share or Copy, Prototype and your account.',
     keywords:
-      'title bar header top bar corner card share copy make a copy prototype account sign in sign out editing mode role pill editing viewing participating owner preview read only design name rename visibility',
+      'title bar header top bar corner card share copy make a copy prototype account sign in sign out design name rename visibility',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

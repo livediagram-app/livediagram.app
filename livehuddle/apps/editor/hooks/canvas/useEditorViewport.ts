@@ -273,8 +273,10 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // The view the last fit landed on, and what it fitted: the Map showing up later fits again only while the view is
   // still this one and the tab still holds what it did (a Map that shows as the fourth element lands moves nothing).
   const lastFitRef = useRef<{ view: ViewPose; tabId: string; count: number } | null>(null);
-  // The glide to a fit still on its way (Walk to Edit's), and when it lands: a Map that shows meanwhile fits again.
-  const fitGlideRef = useRef<{ to: ViewPose; until: number; cancel: () => void } | null>(null);
+  // The glide to a fit still on its way (Walk to Edit's), and when its clock runs out: a Map that shows meanwhile fits
+  // again. Held until its last frame has drawn, not until its clock says so: on a busy machine the frames trail the
+  // clock, and a glide whose time is up can still have a frame to draw (which would land the view under the Map).
+  const fitGlideRef = useRef<{ until: number; cancel: () => void } | null>(null);
   const fitToScreen = useCallback(() => {
     const { activeTab } = depsRef.current;
     const view = tabFitView(canvasMainRef.current, activeTab.elements);
@@ -295,13 +297,22 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
       if (!view) return;
       lastFitRef.current = { view, tabId: activeTab.id, count: activeTab.elements.length };
       fitGlideRef.current?.cancel();
-      const cancel = glideViewport(
+      // In flight from here until its last frame lands (at once for a glide of no time, or under reduced motion).
+      const glide = { until: performance.now() + ms, cancel: () => {} };
+      fitGlideRef.current = glide;
+      glide.cancel = glideViewport(
         { zoom: zoomRef.current, offset: viewportOffsetRef.current },
         view,
-        { zoom: setViewportZoom, offset: setViewportOffset },
+        {
+          zoom: setViewportZoom,
+          offset: setViewportOffset,
+          // A glide that is stopped never lands, and every new fit stops the one before it: this is the current one.
+          landed: () => {
+            fitGlideRef.current = null;
+          },
+        },
         ms,
       );
-      fitGlideRef.current = { to: view, until: performance.now() + ms, cancel };
     },
     [depsRef, setViewportOffset, setViewportZoom, viewportOffsetRef, zoomRef],
   );
@@ -318,8 +329,10 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
           if (!last || last.tabId !== activeTab.id || last.count !== activeTab.elements.length)
             return;
           const glide = fitGlideRef.current;
-          const left = glide && sameView(glide.to, last.view) ? glide.until - performance.now() : 0;
-          if (left > 0) glideToFit(left);
+          // Still gliding to that fit (a glide in flight is always to the last fit): on to the new one in the time
+          // it has left, or at once when its clock is up and only a trailing frame is still to come (that frame would
+          // put the view back under the Map).
+          if (glide) glideToFit(Math.max(0, glide.until - performance.now()));
           else if (sameView(last.view, now)) fitToScreen();
         });
       }),

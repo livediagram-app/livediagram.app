@@ -24,6 +24,7 @@ import type { EditorPlanDataSlice } from './useEditorPlanData';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorPlanSlice } from './useEditorPlan';
 import type { EditorTabsSlice } from './useEditorTabs';
+import { sendOrHold } from '@liveworkspace/workbench/lib/pre-room-outbox';
 
 // A slice of the editor's state, composed by useEditorState in a fixed order (docs/development/architecture.md
 // "The editor's shape"). It takes the slices composed before it and returns what the slices after it, and the
@@ -54,8 +55,15 @@ export function useEditorTabTools(
     voteSelfId,
   } = projectSlice;
   const { setCanvasTool } = dialogsSlice;
-  const { applyElementDelta, confirm, isStructureReadOnly, livePresence, roomRef, toast } =
-    collaborationSlice;
+  const {
+    applyElementDelta,
+    confirm,
+    isStructureReadOnly,
+    livePresence,
+    realtime,
+    roomRef,
+    toast,
+  } = collaborationSlice;
   const { tabsRef } = persistenceSlice;
   const { activeTab, itemTypes, loadAllTabs, planItems, sheets } = planDataSlice;
   const { commit, createBlocked, editsBlocked, runsBlocked, structureBlocked, styleMemory } =
@@ -140,11 +148,11 @@ export function useEditorTabTools(
     // owner id is a guest's credential, and a dot op broadcasts its voter to
     // every socket in the room (docs/specs/012-collaboration/collab-race-hardening.md, docs/specs/012-collaboration/participant-responses.md).
     selfId: voteSelfId,
-    // Straight down the socket, ahead of the autosave (docs/specs/012-collaboration/session-tools.md). A no-op
-    // before the room is open, exactly like every other presence-speed send —
-    // a solo vote still works, it just has nobody to tell.
+    // Straight down the socket, ahead of the autosave (docs/specs/012-collaboration/session-tools.md). Cast before
+    // the room client exists (the first moment after the page opens), it is held and sent as the room is made
+    // (pre-room-outbox), so the room still hears it; a solo vote has nobody to tell.
     emitVote: (tabId, elementId, delta, round) =>
-      roomRef.current?.send({
+      sendOrHold(realtime.preRoomOutbox, roomRef.current, {
         kind: 'op',
         op: {
           kind: 'vote',

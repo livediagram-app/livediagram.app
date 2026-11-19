@@ -197,11 +197,13 @@ Exclude), **Wordmark**, **Logo Kit**.
     `category-flyout-groups` names its group **Fill** (`logo:fill`). `tileActions.beginFill` is
     the hook's `begin` (`beginDraw` plus `Draw` · `Toggled` · `Fill`) wrapped in `armed`, so a
     pick-up closes the flyout as any tool's does; `tileHandler`'s `fill` case calls it with the
-    tile's colour (a no-op without it). `opensSide` counts the `fill` tile, so a rest or focus
-    opens `CategoryFlyoutSide`, which for `fill` holds `FillColourPicker` (tagline "Pick a colour to
-    pick the bucket up in it.") whose pick calls `beginFill`. `CategoryBar`'s `onSide` runs
-    `tileHandler` for a `fill` tile on a desktop (a press picks up, or puts down while held) and
-    opens the panel on a phone (`isMobile`). The tile is not draggable (side tiles never are).
+    tile's colour (a no-op without it). `opensSide` (`category-flyout-kit.tsx`) counts the `fill`
+    tile, so a rest or focus opens the shared `CategoryFlyoutSide` (`@liveworkspace/workbench`),
+    which for `fill` holds what `CategoryBar`'s `sideExtra` gives it: `FillColourPicker` (tagline
+    "Pick a colour to pick the bucket up in it.") whose pick calls `beginFill`. `CategoryBar`'s
+    `pressSide` runs `tileHandler` for a `fill` tile on a desktop (a press picks up, or puts down
+    while held) and leaves a phone (`isMobile`) to open the panel. The tile is not draggable (side
+    tiles never are).
 - The Fill tool's press: `useCanvasDrawTools` runs `useFillPress` (`@liveworkspace/workbench`)
   after the off-page guard and before the Path tool; its release calls `useEditorPaintBucket`
   (`hooks/canvas/`), which binds `usePaintBucket` to `useOptionalEditorContext()` (blocked unless

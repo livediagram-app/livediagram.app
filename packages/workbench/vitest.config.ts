@@ -35,6 +35,8 @@ const HELD_AT_100 = [
   'src/lib/editor-path.ts',
   'src/lib/guard-run.ts',
   'src/lib/room-presence.ts',
+  // Sends held before the room client exists (each product's collab-race-hardening.md, Work Tracker 1263).
+  'src/lib/pre-room-outbox.ts',
   'src/hooks/ui/usePageContents.ts',
   'src/components/canvas/arrow-view-parts.tsx',
   'src/lib/editor-search/build-search-results.ts',
@@ -90,6 +92,13 @@ const HELD_AT_100 = [
   'src/components/canvas/VoteStepper.tsx',
   'src/components/canvas/VoteDot.tsx',
   'src/components/canvas/vote-badge.ts',
+  // The assigned-action pieces the four editors kept as near-copies (assigned-actions.md, Work Tracker 1250).
+  'src/components/dialogs/AssignActionAssigneePicker.tsx',
+  'src/hooks/collab/team-member-rows.ts',
+  'src/hooks/collab/useAssigneeOptions.ts',
+  'src/components/panels/ActionPopover.tsx',
+  'src/components/panels/collaborate/CollaborateRows.tsx',
+  'src/lib/identity-fill.ts',
   // The new version prompt all five editors bind (docs/specs/016-platform/new-version-prompt.md).
   'src/components/chrome/NewVersionPrompt.tsx',
   'src/hooks/ui/useNewerEditorLive.ts',
@@ -100,9 +109,6 @@ const HELD_AT_100 = [
   'src/hooks/collab/useFollowMe.ts',
   // The header, its visibility pill and the Settings host every editor carried a copy of.
   'src/components/chrome/EditorHeader.tsx',
-  'src/components/chrome/SharedBadge.tsx',
-  'src/components/chrome/share-states.tsx',
-  'src/components/chrome/VisibilityLegend.tsx',
   'src/components/dialogs/EditorSettingsDialog.tsx',
   'src/lib/preferences-local-only.ts',
   // The account control and the Settings panel host, the last of the header's five copies.
@@ -135,6 +141,13 @@ const HELD_AT_100 = [
   'src/components/chrome/ModifierHintBanner.tsx',
   'src/components/start/StartAgainTray.tsx',
   'src/components/palette/CategoryBar.tsx',
+  // The category flyout, its side panel and their keyboard, every editor's one copy (Work Tracker 1261).
+  'src/components/palette/CategoryBarFlyout.tsx',
+  'src/components/palette/CategoryFlyout.tsx',
+  'src/components/palette/CategoryFlyoutSide.tsx',
+  'src/components/palette/category-flyout-items.tsx',
+  'src/components/palette/category-flyout-keys.ts',
+  'src/components/palette/category-flyout-kit.ts',
   // The view across an import's undo and redo, every editor's one copy (each editor's 008-canvas
   // canvas-and-palette.md "Undoing an import brings its view back", Work Tracker 1247).
   'src/lib/import-undo-view.ts',

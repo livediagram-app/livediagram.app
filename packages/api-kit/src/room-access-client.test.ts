@@ -32,6 +32,20 @@ describe('closeWorkbenchSessions', () => {
     );
   });
 
+  // one-explorer.md "Archived from elsewhere while open": every socket, through the room's /close-sessions.
+  it("asks the item's room to close every socket when it was archived", async () => {
+    const roomFetch = vi.fn(async () => new Response(null, { status: 204 }));
+    const { closeArchivedSessions } = createRoomAccessClient(roomFetch);
+    expect(await closeArchivedSessions({ env: 1 }, 'd1')).toBe(true);
+    expect(roomFetch).toHaveBeenCalledWith(
+      { env: 1 },
+      'd1',
+      '/close-sessions',
+      expect.objectContaining({ body: JSON.stringify({ match: 'archived' }) }),
+      ROOM_ACCESS_CLOSE_TIMEOUT_MS,
+    );
+  });
+
   // trash.md "Open editors": the product's trashed op, through the room's own /broadcast.
   it("tells the item's room it was trashed, and answers false when it can't", async () => {
     const roomFetch = vi.fn(async () => new Response(null, { status: 204 }));

@@ -2,7 +2,7 @@
 
 import { track } from '@/lib/telemetry';
 import { Brand, Glyph } from '@livedocuments/ui';
-import { useContext, useSyncExternalStore } from 'react';
+import { useContext, useSyncExternalStore, type Ref } from 'react';
 import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/ToolbarMenuCard';
@@ -21,6 +21,7 @@ import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/Tool
 export function ToolbarExplorerButton({
   open,
   onToggle,
+  buttonRef,
   inline = false,
   joinedWidth,
 }: {
@@ -30,6 +31,8 @@ export function ToolbarExplorerButton({
   joinedWidth?: number;
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
+  // The button itself: the Rename command opens the panel from it (useRenameCurrentRequest).
+  buttonRef?: Ref<HTMLButtonElement>;
 }) {
   // The open document: the logo opens the Explorer on the place that holds it.
   // Read without requiring the editor's store, so the button renders on its own (its tests, a workbench) with the
@@ -42,6 +45,7 @@ export function ToolbarExplorerButton({
   );
   const button = (
     <button
+      ref={buttonRef}
       type="button"
       aria-label="Explorer"
       aria-expanded={open}

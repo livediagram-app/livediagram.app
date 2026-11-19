@@ -3,6 +3,8 @@ import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { drawioFileDates, drawioFileTitle, drawioLibraryTitle, readDrawioFiles } from './files';
 import { fixtureBytes } from './test-support';
+import { onePage, shape } from '@/lib/visio/test-support';
+import { visioRefusalMessage } from '@/lib/visio/refusals';
 
 // docs/specs/020-import-export/drawio-import.md "Import as new documents": names, dates, kinds.
 
@@ -109,5 +111,18 @@ describe('readDrawioFiles', () => {
     });
     const read = await readDrawioFiles([file('export.json', json)]);
     expect(read.diagrams.map((d) => [d.name, d.pages.length])).toEqual([['export', 1]]);
+  });
+
+  // docs/specs/020-import-export/visio-import.md "UI": a .vsdx among the files lands like a diagram.
+  it('reads a Visio drawing as a diagram, named after the file and dated by it', async () => {
+    const vsdx = onePage(shape(1, { x: 1, y: 1, w: 1, h: 1 }, { text: 'Hello' }));
+    const read = await readDrawioFiles([
+      file('Network.vsdx', vsdx),
+      file('Old.vsd', new Uint8Array([0xd0, 0xcf, 0x11, 0xe0])),
+    ]);
+    expect(read.diagrams.map((d) => [d.name, d.pages.map((p) => p.name), d.modifiedAt])).toEqual([
+      ['Network', ['Page-1'], new Date(Date.UTC(2026, 2, 12)).toISOString()],
+    ]);
+    expect(read.failures).toEqual([{ title: 'Old.vsd', message: visioRefusalMessage('vsd') }]);
   });
 });

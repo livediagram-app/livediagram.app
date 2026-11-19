@@ -1,5 +1,7 @@
 'use client';
 
+import type { Ref } from 'react';
+
 import { track } from '@/lib/telemetry';
 import { Brand, Glyph } from '@liveplanner/ui';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
@@ -31,12 +33,15 @@ import { PHONE_TOOLBAR_ITEMS } from './phone-toolbar-items';
 export function ToolbarExplorerButton({
   open,
   onToggle,
+  buttonRef,
   inline = false,
 }: {
   open: boolean;
   inline?: boolean;
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
+  // The button itself: the Rename command opens the panel from it (useRenameCurrentRequest).
+  buttonRef?: Ref<HTMLButtonElement>;
 }) {
   // Drawn at the UI scale (docs/specs/007-editor/ui-scale.md), still 12px from
   // the corner. Inline it sits in the strip, which is scaled already.
@@ -49,6 +54,7 @@ export function ToolbarExplorerButton({
   const withLogo = !inline && !phone;
   const button = (
     <button
+      ref={buttonRef}
       type="button"
       aria-label="Explorer"
       aria-expanded={open}

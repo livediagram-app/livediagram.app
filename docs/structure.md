@@ -570,6 +570,15 @@ Each step is its own PR, and both products build and pass their tests after ever
      (`lib/api/tab-calls`, `createTabCalls`: each `lib/api/tabs.ts` hands in its path, id key, grant, open marker
      and save headers). Still per editor: the selection editing, the boxed drag and the clipboard, which read the
      element union on the pointer path.
+   - Tenth slice (Work Tracker 1250), the assigned-action pieces the four editors kept as near-copies, one copy each
+     with each editor's words and wiring handed in. The assignee picker (`components/dialogs/AssignActionAssigneePicker`:
+     `AssigneePicker` and `PickableMember`, the editor's noun for its nudges), its dataset
+     (`hooks/collab/useAssigneeOptions`, handed the editor's team-members read) and the team's people as rows
+     (`hooks/collab/team-member-rows`), the action popover (`components/panels/ActionPopover`, liveplanner adding View
+     on Board), and the Collaborate Panel's rows (`components/panels/collaborate/CollaborateRows`; liveplanner's
+     `CollaborateRows.tsx` keeps only its Sheet-cell row names). Their discs paint through `lib/identity-fill`, the
+     identity fill on the colour maths every editor's own `identity-fill.ts` binds. The compact relative time
+     (`formatRelativeTimeCompact`) moved to `@liveworkspace/ui/relative-time` beside the other ladders.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

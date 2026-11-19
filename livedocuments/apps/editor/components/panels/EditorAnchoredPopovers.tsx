@@ -13,7 +13,8 @@ const CommentThreadPopover = dynamic(
   { ssr: false },
 );
 const ActionPopover = dynamic(
-  () => import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
+  () =>
+    import('@liveworkspace/workbench/components/panels/ActionPopover').then((m) => m.ActionPopover),
   { ssr: false },
 );
 const AssignActionDialog = dynamic(
@@ -178,7 +179,6 @@ function OpenEditorAnchoredPopovers() {
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
                 selfColor={selfParticipant.color}
-                documentId={documentId}
                 documentTeamId={documentTeamId}
                 emailEnabled={emailEnabled}
                 // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document

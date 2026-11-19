@@ -112,6 +112,10 @@ export type ExplorerPanelProps = {
   onArchivedCurrent?: (item: { id: string; title: string | null }) => void;
   // The item open in the editor took a new title, from its card or any menu: the editor's title follows.
   onRenameCurrent?: (title: string) => void;
+  // The editor's Rename <Kind> command (one-explorer.md "Rename from the search"): above 0, the Current card opens its
+  // name field once and calls onRenameCurrentHandled, and the host sets it back to 0.
+  renameCurrentRequest?: number;
+  onRenameCurrentHandled?: () => void;
   // Opens the full Explorer at a view (See all, a view only the page shows).
   onOpenExplorer?: (view: ExplorerView) => void;
   renderThumbnail?: RenderThumbnail;
@@ -210,6 +214,8 @@ function PanelInner({
   onTrashCurrent,
   onArchivedCurrent,
   onRenameCurrent,
+  renameCurrentRequest = 0,
+  onRenameCurrentHandled,
   onOpenExplorer,
   renderThumbnail,
   renderItemMark: hostItemMark,
@@ -258,9 +264,17 @@ function PanelInner({
       title={currentTitle}
       onRename={onRenameCurrent}
       compact={!stacked}
+      renameRequest={renameCurrentRequest}
+      onRenameRequestHandled={onRenameCurrentHandled}
     />
   ) : current ? (
-    <CurrentItem item={current} title={currentTitle} compact={!stacked} />
+    <CurrentItem
+      item={current}
+      title={currentTitle}
+      compact={!stacked}
+      renameRequest={renameCurrentRequest}
+      onRenameRequestHandled={onRenameCurrentHandled}
+    />
   ) : null;
   const groups = useMemo(
     () =>

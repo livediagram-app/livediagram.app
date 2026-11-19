@@ -1,6 +1,8 @@
 import { useCallback, type RefObject } from 'react';
 import type { ElementDelta, Tab } from '@liveplanner/project';
 import type { connectRoom } from '@/lib/api-client';
+import type { RoomOutgoing } from '@liveplanner/api-schema';
+import { sendOrHold, type PreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import { applyDeltaToTabs } from '@/app/project/[id]/room-op-apply';
 
 // Send ONE answer / checklist tick / comment change (docs/specs/012-collaboration/collab-race-hardening.md).
@@ -21,15 +23,20 @@ export function useElementDeltas(deps: {
   activeId: string;
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
+  // Holds a delta sent before the room client exists, for the room about to open (pre-room-outbox).
+  preRoomOutbox: PreRoomOutbox<RoomOutgoing>;
 }): ApplyElementDelta {
-  const { activeId, tickTabs, roomRef } = deps;
+  const { activeId, tickTabs, roomRef, preRoomOutbox } = deps;
   return useCallback(
     (elementId, delta, tabId = activeId) => {
       tickTabs((ts) => applyDeltaToTabs(ts, tabId, elementId, delta));
-      // A no-op before the room is open, like every other send: a solo session
-      // has nobody to tell, and the autosave persists the change either way.
-      roomRef.current?.send({ kind: 'op', op: { kind: 'el-delta', tabId, elementId, delta } });
+      // Before the room client exists (the page just opened) it is held and sent as the room is made, so peers
+      // already in the room still see it; a solo session has nobody to tell, and the autosave persists it either way.
+      sendOrHold(preRoomOutbox, roomRef.current, {
+        kind: 'op',
+        op: { kind: 'el-delta', tabId, elementId, delta },
+      });
     },
-    [activeId, tickTabs, roomRef],
+    [activeId, tickTabs, roomRef, preRoomOutbox],
   );
 }

@@ -14,7 +14,7 @@ Derived from [BPMN](../bpmn.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 | `apps/editor/components/canvas/ShapeContentRouter.tsx`, `shape-svg-overlay.tsx`          | Mounts the layer; the geometry override for the data object          |
 | `apps/editor/components/palette/tile-defs/bpmn-tiles.tsx`                                | The 14 tiles, section `bpmn`                                         |
 | `apps/editor/components/palette/palette-layouts.ts`, `category-flyout-groups.ts`         | Diagram's Shapes gains the group; its name, tagline, optional entry  |
-| `apps/editor/components/palette/OptionalFlyoutGroup.tsx`, `CategoryFlyout.tsx`           | The closed-by-default BPMN header row and its remembered state       |
+| `apps/editor/components/palette/OptionalFlyoutGroup.tsx`, `category-flyout-kit.tsx`      | The closed-by-default BPMN header row and its remembered state       |
 | `../packages/workbench/src/hooks/ui/useStoredOpen.ts`                                    | The remembered open state (`@liveworkspace/workbench`)               |
 | `../packages/workbench/src/components/primitives/AccordionSection.tsx`                   | The accordion it drives; `aria-controls`, `headerProps`              |
 | `apps/editor/components/palette/BpmnMenuSection.tsx`                                     | Tools > BPMN                                                         |
@@ -56,8 +56,9 @@ Banned: "BPMN shape kind" (there is none), "swimlane" for a pool in code.
   gateway markers centred at about half the width. Paints: `line`, `solid` (the face), `ink` (the line colour as a
   fill), `knock` (a stroke in the face colour). The face is the fill, white when transparent (`bpmnMarkFace`).
 - **The section.** `flyoutGroups` sets `optional: { storageKey, telemetryType }` on a group whose first tile is in
-  `OPTIONAL_GROUPS` (`'bpmn:start-event'` → `livediagram:v2:palette-group-open:bpmn`, `BpmnGroup`); `CategoryFlyout`
-  renders such a group as `OptionalFlyoutGroup` (an `AccordionSection` whose header carries `data-flyout-item` and
+  `OPTIONAL_GROUPS` (`'bpmn:start-event'` → `livediagram:v2:palette-group-open:bpmn`, `BpmnGroup`); the flyout kit
+  (`category-flyout-kit.tsx`) gives such a group a `frame`, so workbench's shared `CategoryFlyout` draws it as
+  `OptionalFlyoutGroup` (an `AccordionSection` whose header carries `data-flyout-item` and
   `data-optional-group`). States: closed (the default: nothing stored, or anything but `'open'`) and open; a press
   flips it through `useStoredOpen`, writing `'open'` or `'closed'` via `writeLocalStorageValue`. `onFlyoutArrowKey`
   drops items inside an `[inert]` body, so a closed section's header is the arrows' stop.

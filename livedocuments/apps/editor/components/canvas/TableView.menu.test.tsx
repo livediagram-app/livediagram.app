@@ -2,6 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { TABLE_MARK_TEXT, type TableElement, type TablePatch } from '@livedocuments/document';
+import { LONG_PRESS_MS, useLongPress } from '@liveworkspace/workbench/hooks/ui/useLongPress';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { TableView } from './TableView';
 
@@ -155,6 +156,50 @@ describe('TableView comparison tables', () => {
         ['c', 'd'],
       ],
     });
+    vi.unstubAllGlobals();
+  });
+
+  // Work Tracker 1285: on a phone a held cell opens the cell menu, and the table's own hold (its element's, wrapped
+  // round it as BoxedElementView does) stands aside rather than opening the table's menu over it.
+  it('a held cell on touch opens the cell menu, not the table menu around it', () => {
+    vi.useFakeTimers();
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    const tableMenu = vi.fn();
+    function Element() {
+      const hold = useLongPress(tableMenu);
+      return (
+        <div onPointerDown={hold.onPointerDown}>
+          <TableView
+            element={table}
+            isSelected
+            readOnly={false}
+            tabSummaries={[]}
+            onCommitTable={vi.fn()}
+          />
+        </div>
+      );
+    }
+    render(
+      <EditorContext.Provider value={{ tabs: [], activeTab: { theme: 'ocean' } } as never}>
+        <Element />
+      </EditorContext.Provider>,
+    );
+    act(() => {
+      fireEvent.pointerDown(screen.getAllByRole('cell')[3]!, { pointerType: 'touch' });
+    });
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(screen.getByRole('button', { name: 'Tick (Yes)' })).toBeTruthy();
+    expect(tableMenu).not.toHaveBeenCalled();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 

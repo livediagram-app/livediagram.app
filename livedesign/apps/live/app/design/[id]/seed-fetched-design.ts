@@ -34,8 +34,6 @@ export type SeedDeps = {
   noteChangesetSeen: (tabId: string, rev: number) => void;
   setActiveId: SetState<string>;
   setDesignName: SetState<string>;
-  setDesignOwnerColor: SetState<string | null>;
-  setDesignOwnerId: SetState<string | null>;
   setDesignOwnerName: SetState<string | null>;
   setDesignShareable: SetState<boolean>;
   setDesignShareCode: SetState<string | null>;
@@ -64,8 +62,6 @@ function showDesign(
     resetTabs,
     setActiveId,
     setDesignName,
-    setDesignOwnerColor,
-    setDesignOwnerId,
     setDesignOwnerName,
     setDesignShareable,
     setDesignShareCode,
@@ -91,9 +87,7 @@ function showDesign(
   setCommunityState(fetched.id, fetched.communityState ?? null);
   setDesignTeamId(fetched.teamId ?? null);
   setDesignShareCode(fetched.shareCode);
-  setDesignOwnerId(fetched.ownerId);
   setDesignOwnerName(fetched.ownerName ?? null);
-  setDesignOwnerColor(fetched.ownerColor ?? null);
 }
 
 /** The warm open's paint (offline-mode.md "Warm open of a cloud design"): the last seen copy shown as the seed shows

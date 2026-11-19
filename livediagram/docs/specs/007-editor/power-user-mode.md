@@ -9,7 +9,7 @@ recommended settings once (alignment guides, auto-attach arrows, every tour mark
 settings for someone who no longer needed the interface explained:
 
 - **Minimal chrome**, which hid captions, panel titles, help buttons, onboarding hints and the desktop bin, and moved
-  the [role pill](editor-app.md#role-pill) to an icon in the status bar.
+  the role pill to an icon in the status bar.
 - **The quick appearance switch**: the status bar's Appearance control flipped Light and Dark on a click, with System
   on a right-click.
 - **No More button on desktop**: the selection toolbars dropped `⋯`, leaving right-click as the way to the element menu.

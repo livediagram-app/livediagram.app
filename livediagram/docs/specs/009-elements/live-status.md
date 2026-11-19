@@ -84,6 +84,12 @@ headers) still works.
   (`STATUS_CHECKS_AT_ONCE`): a Worker holds six connections open at once and a check holds two while it resolves its
   host, so no check's 5 s deadline runs while it waits in the platform's queue. A round of answering URLs takes well
   under a second; one where every URL hangs takes at most nine timeouts, about 45 s.
+- **Less often for a URL that keeps timing out.** A check that times out holds the room for its whole 5 s deadline,
+  so a document with 25 hanging URLs kept its room busy about 45 s of every minute. Each timeout in a row doubles the
+  wait before that URL's next check: 2 minutes after the first, 4 after the second, then 8
+  (`STATUS_BACKOFF_MAX_MS`), never longer. The first check that ends any other way (an answer, a refusal, a host that
+  doesn't resolve) puts the URL back on the minute. The count is kept with the stored state, so a hibernation wake
+  keeps it. With every URL hanging, the room is busy about 45 s every 8 minutes, under 6 s a minute.
 - **Each check** is a `GET` through the shared SSRF-safe fetch (`fetchPublicBytes`,
   `@liveworkspace/api-kit/public-fetch`): the host resolved (DNS over HTTPS, A and AAAA) right before the request and
   refused when any answer is private, loopback, link-local, carrier NAT, multicast, documentation or reserved;
@@ -137,8 +143,10 @@ A state carries `checkedAt` (ms) and, for anything but Up, a `reason`: `http_sta
 - It scales with the canvas like the other on-element adornments and hides below their overview zoom
   (`ADORNMENT_MIN_ZOOM`, 40%), where it would be too small to read.
 - **Stale is Unknown.** A state older than three rounds (3 minutes) reads Unknown ("Not checked recently"), so a
-  room that stopped checking never leaves a green dot behind. The badge's clock moves every 15 seconds while any
-  state is held, so a stale state turns Unknown without a new message.
+  room that stopped checking never leaves a green dot behind. A timed-out state, which the room checks less often
+  (above), reads Unknown only two rounds past the slowest re-check (`STATUS_TIMEOUT_STALE_MS`, 10 minutes), so the
+  badge keeps saying Down between checks rather than falling to Unknown and back. The badge's clock moves every 15
+  seconds while any state is held, so a stale state turns Unknown without a new message.
 - **Tooltip:** the state, the reason in words ("Answered 503", "No answer in 5 seconds"), when it was checked
   ("Checked 40 seconds ago") and the URL's host.
 - Shown to every role, in the editor, on a share link and in Present, **read-only**. It never takes a click: a press

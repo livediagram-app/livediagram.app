@@ -159,10 +159,11 @@ sender, matching the fact that casting already requires edit rights.
 
 **A dot cast before the room opens** still reaches it. A shared board can be on screen a moment before its room
 exists (the document is still being confirmed as saved on the server), and a dot sent then once reached nobody: the
-voter saw it, nobody else did. Such a dot is held for the document it was cast on (`pre-room-outbox.ts`, at most 50)
-and handed to the room client the moment it is made, whose own outbox carries it over the socket's hello like any
-dot sent while the socket is down. The hold is emptied as it is handed over, so a dot is sent once whatever reopens
-the room, and leaving the document drops what it still holds.
+voter saw it, nobody else did. Such a dot is held for the document it was cast on, with every other early send
+([Collaboration race hardening](collab-race-hardening.md), "Sent before the room client exists"), and handed to the
+room client the moment it is made, whose own outbox carries it over the socket's hello like any dot sent while the
+socket is down. The hold is emptied as it is handed over, so a dot is sent once whatever reopens the room, and leaving
+the document drops what it still holds.
 
 `applyVoteDelta` deliberately does **not** check the budget. Whether somebody
 _may_ cast is a rule enforced where the press happens; a dot a peer has already

@@ -176,6 +176,13 @@ left out the same way (Work Tracker #717).
 - **Ops sent while the socket is down are held, not dropped.** The room client keeps an outbox of document ops
   (bounded at 500) and flushes it, in order, right after the reconnect's hello and sync. Cursors, selections and other
   presence ops are not held.
+- **Sent before the room client exists, held too.** A shared document can be on screen a moment before its room
+  client is made (the document is still being confirmed as saved on the server), and an element edit (a checklist tick, a comment change) sent then once reached
+  nobody. Such a send is held for the document it was made on (`@liveworkspace/workbench/lib/pre-room-outbox`, at most 100) and handed to the client the moment it is made, whose outbox carries it over the hello. The hold is emptied as
+  it is handed over, so each send reaches the room once whatever reopens it; leaving the document drops what it holds,
+  and so does age: a send more than 30 seconds old when the room is made is dropped, since the save has carried the
+  change to the server by then. It holds only what the outbox would: cursors, lasers, viewports, reactions and other
+  presence ops from that moment are dropped.
 
 ## Saves
 

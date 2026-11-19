@@ -25,6 +25,11 @@ import { prunePeerDragPreviews } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 import { receiveRoomOp } from './room-op-receive';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
+import {
+  aimPreRoomOutbox,
+  clearPreRoomOutbox,
+  flushPreRoomOutbox,
+} from '@liveworkspace/workbench/lib/pre-room-outbox';
 
 // Realtime room: one WebSocket per design, opened for every design saved on
 // the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal designs"). Lifted out of editor-page.tsx verbatim — the
@@ -42,6 +47,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     enabled = true,
     onWorkbenchEnded,
     onRoomFull,
+    onItemArchived,
     designTeamId,
     selfParticipant,
     sessionShareCode,
@@ -50,6 +56,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     selfParticipantRef,
     sessionShareCodeRef,
     roomRef,
+    preRoomOutbox,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
@@ -65,6 +72,12 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     onRoomJoined,
     onAdderKey,
   } = opts;
+
+  // What is sent before the room exists is held for this design; moving to another drops it (pre-room-outbox).
+  // Declared before the room's own effect, so the hold is aimed before a room made in the same pass flushes it.
+  useEffect(() => {
+    if (preRoomOutbox) aimPreRoomOutbox(preRoomOutbox, designId);
+  }, [preRoomOutbox, designId]);
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
@@ -159,6 +172,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
   });
   const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
   const roomFull = useEffectEvent(() => onRoomFull?.());
+  const roomItemArchived = useEffectEvent(() => onItemArchived?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
   // answer changes anything.
@@ -234,6 +248,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       onAccessChanged: () => roomAccessChanged(),
       onWorkbenchEnded: () => roomWorkbenchEnded(),
       onRoomFull: () => roomFull(),
+      onItemArchived: () => roomItemArchived(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };
@@ -266,11 +281,16 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       renewGrant: async () => (await designGrant(designId, share))?.grant ?? null,
     });
     roomRef.current = openedRoom;
+    // What was sent before this room existed goes to it now, once (pre-room-outbox): the connector holds it in its
+    // own outbox until the socket has said hello.
+    if (preRoomOutbox) flushPreRoomOutbox(preRoomOutbox, openedRoom, designId);
     return () => {
       stopGrant();
       presence.cancel();
       openedRoom.close();
       roomRef.current = null;
+      // The room closed: anything still held goes too (it was handed over as the room was made).
+      if (preRoomOutbox) clearPreRoomOutbox(preRoomOutbox);
     };
   }, [
     enabled,
@@ -279,6 +299,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     designServerStored,
     designTeamId,
     roomRef,
+    preRoomOutbox,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,

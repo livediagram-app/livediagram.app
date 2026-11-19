@@ -22,7 +22,6 @@ import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { NameEditor } from '@liveworkspace/workbench/components/primitives/NameEditor';
 import { useTabReorderDrag } from '@liveworkspace/workbench/components/chrome/useTabReorderDrag';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
-import type { ChromeToolsItem } from '@liveworkspace/workbench/components/chrome/ChromeToolsMenu';
 // Lazy: the tab context menu (and the 18 kB icon module it drags in)
 // only loads on the first right-click — it was the largest single
 // eager block left in the editor chunk after the dialogs went dynamic.
@@ -71,8 +70,6 @@ type TabBarProps = {
   workbenchLink?: (labelled: boolean) => ReactNode;
   // A workspace frame's Back (WB59), first in the bar.
   workbenchBack?: (labelled: boolean) => ReactNode;
-  // More rows for the footer's Tools menu (the Editing Mode tool).
-  extraTools?: readonly (ChromeToolsItem | null)[];
   tabs: Tab[];
   activeId: string;
   // Folder membership actions (docs/specs/006-project/tab-folders.md), menu-only. Move the active tab
@@ -177,7 +174,6 @@ export function TabBar({
   canvasActions,
   workbenchLink,
   workbenchBack,
-  extraTools,
 }: TabBarProps) {
   // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
   const labelled = useButtonLabelsSetting();
@@ -359,7 +355,6 @@ export function TabBar({
           // titled with its name.
           labelled={labelled}
           appearance={!workbenchLink}
-          extraTools={extraTools}
         />
         {workbenchLink?.(labelled)}
       </div>

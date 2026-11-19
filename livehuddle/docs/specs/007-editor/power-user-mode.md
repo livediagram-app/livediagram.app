@@ -9,7 +9,7 @@ recommended settings once (alignment guides, the Workshop tour, the Receptionist
 chrome) and unlocked settings for someone who no longer needed the interface explained:
 
 - **Minimal chrome**, which hid captions, panel titles, help buttons, onboarding hints, the Shift hint and the desktop
-  bin, drew the Explorer's Details rows at half height, and moved the [role pill](editor-app.md#role-pill) to an icon
+  bin, drew the Explorer's Details rows at half height, and moved the role pill to an icon
   in the status bar.
 - **The quick appearance switch**: the status bar's Appearance control flipped Light and Dark on a click, with System
   on a right-click.
@@ -23,7 +23,7 @@ readout nested beneath it, and a one-time offer (a toast after 20 editing days o
 
 The editor's interface has since been simplified for everyone, so a second, quieter version of it is no longer worth
 its weight: two ways for every chrome surface to look, a preset to keep in step with Settings, and an offer to make.
-Everyone now gets the same interface, today's default: labelled status bar controls, the role pill in the title bar,
+Everyone now gets the same interface, today's default: labelled status bar controls,
 the three-step Appearance control, and More plus the bin in the selection toolbars.
 
 ## What happens to stored preferences

@@ -64,6 +64,30 @@ function refusalOf(result: Exclude<AccountDeletion, 'deleted'>, appName: string)
   }
 }
 
+// The typed email's state, for the box's border. Neutral while it is empty or still a correct start of the address
+// (someone mid-typing is not wrong), a mismatch only once it can no longer become it, a match once it does. The
+// danger tone is never the box's resting colour: a correct entry must not read as an error.
+export type ConfirmEmailState = 'empty' | 'typing' | 'mismatch' | 'match';
+
+export function confirmEmailState(typed: string, expected: string): ConfirmEmailState {
+  const entry = typed.trim().toLowerCase();
+  if (entry.length === 0) return 'empty';
+  const want = expected.toLowerCase();
+  if (want.length > 0 && entry === want) return 'match';
+  return want.startsWith(entry) ? 'typing' : 'mismatch';
+}
+
+const NEUTRAL_EMAIL =
+  'border-slate-200 focus:border-slate-400 focus:ring-slate-200 dark:border-slate-700 dark:focus:border-slate-500 dark:focus:ring-slate-500/30';
+const EMAIL_TONE: Record<ConfirmEmailState, string> = {
+  empty: NEUTRAL_EMAIL,
+  typing: NEUTRAL_EMAIL,
+  mismatch:
+    'border-rose-400 focus:border-rose-400 focus:ring-rose-100 dark:border-rose-500/70 dark:focus:ring-rose-500/20',
+  match:
+    'border-emerald-500 focus:border-emerald-500 focus:ring-emerald-100 dark:border-emerald-500/70 dark:focus:ring-emerald-500/20',
+};
+
 const messageOf = (err: unknown) =>
   err instanceof Error && err.message ? err.message : 'unknown error';
 
@@ -127,6 +151,7 @@ export function DeleteAccountDialog({
 
   const emailsMatch =
     expectedEmail.length > 0 && typed.trim().toLowerCase() === expectedEmail.toLowerCase();
+  const emailState = confirmEmailState(typed, expectedEmail);
   const code = digits.join('');
   const working = busy !== null;
 
@@ -270,9 +295,22 @@ export function DeleteAccountDialog({
                     value={typed}
                     onChange={(e) => setTyped(e.target.value)}
                     disabled={working}
-                    className="mt-2 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:border-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-100 disabled:opacity-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:focus:ring-rose-500/20"
+                    aria-invalid={emailState === 'mismatch' || undefined}
+                    aria-describedby={
+                      emailState === 'mismatch' ? 'delete-confirm-email-hint' : undefined
+                    }
+                    data-state={emailState}
+                    className={`mt-2 w-full rounded-md border bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 transition focus:outline-none focus:ring-2 disabled:opacity-50 dark:bg-slate-900 dark:text-slate-100 ${EMAIL_TONE[emailState]}`}
                     placeholder="you@example.com"
                   />
+                  {emailState === 'mismatch' ? (
+                    <p
+                      id="delete-confirm-email-hint"
+                      className="mt-1.5 text-sm text-rose-700 dark:text-rose-300"
+                    >
+                      That isn’t your account’s email.
+                    </p>
+                  ) : null}
                 </>
               ) : (
                 <>

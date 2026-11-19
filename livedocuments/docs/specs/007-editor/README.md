@@ -22,4 +22,4 @@ Follow the references below only as needed; never upfront.
 - ./find-and-replace.md - when working on find and replace: the Find bar (Cmd/Ctrl+F, Cmd/Ctrl+Shift+H), what is searched across a tab's pages (writing and elements' words), Match Case and Whole Word, the count and stepping, highlights, Replace and Replace All as one edit, share roles and held matches
 - ./article-pages.md - when working on article pages: the writing and its blocks, flowing across linked pages, the page toolbar, zones (objects and drawings in the text, wrap), margin notes, article style and looks, export and collaboration of the writing (carets included)
 - ./suggestions.md - retired: why articles have no suggestions, and how writing stored with one reads
-- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, pages, article pages, find and replace, the role pill, UI scale, load recovery)
+- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, pages, article pages, find and replace, UI scale, load recovery)

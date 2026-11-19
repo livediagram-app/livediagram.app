@@ -1,7 +1,7 @@
 'use client';
 
 // The start screen's Import (docs/specs/007-editor/start-diagramming.md "Import"): the chooser (StartImportDialog),
-// then the picked tool's import INTO THE TAB the start screen is on, never a new canvas. Excalidraw and draw.io open the
+// then the picked tool's import INTO THE TAB the start screen is on, never a new canvas. Excalidraw, draw.io and Visio open the
 // tab's own Import dialog at that format (ImportTabDialog, `formats`); Microsoft Whiteboard opens its board picker and
 // lands the first chosen board on the tab (importSceneIntoActiveTab). Everything loads on first open.
 import dynamic from 'next/dynamic';
@@ -9,7 +9,7 @@ import { useCallback, useState, type ReactNode } from 'react';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import type { ImportScenes } from '@/hooks/persistence/useMsWhiteboardImport';
 import { track } from '@/lib/telemetry';
-import type { ImportSourceId } from '@/app/import/import-sources';
+import type { StartImportSourceId } from './StartImportDialog';
 
 const StartImportDialog = dynamic(
   () => import('./StartImportDialog').then((m) => m.StartImportDialog),
@@ -28,7 +28,7 @@ const MsWhiteboardImportDialog = dynamic(
 export const ONE_BOARD_PER_TAB =
   'Only one board goes into a tab. Import the others into tabs of their own.';
 
-type Open = 'choose' | ImportSourceId | null;
+type Open = 'choose' | StartImportSourceId | null;
 
 export function useStartImport(): { openImport: (() => void) | undefined; dialogs: ReactNode } {
   const ctx = useOptionalEditorContext();
@@ -64,7 +64,7 @@ export function useStartImport(): { openImport: (() => void) | undefined; dialog
         onClose={close}
         subtitle="The first board you choose goes into this tab."
       />
-    ) : open === 'excalidraw' || open === 'drawio' ? (
+    ) : open === 'excalidraw' || open === 'drawio' || open === 'visio' ? (
       <ImportTabDialog
         tabName={ctx.activeTab.name}
         formats={[open]}

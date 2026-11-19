@@ -182,6 +182,15 @@ export function fakeAccounts(fallback?: typeof fetch): FakeAccounts {
         if (!members) return json({ error: 'not_found' }, 404);
         return json({ team: { id: body.teamId, name: 'Team' }, members });
       }
+      // The teams an account has joined now, as an access token would carry them (readAccountTeams).
+      case 'teams/of': {
+        const teams = [...state.teamPeople].flatMap(([id, members]) =>
+          members.some((m) => m.userId === body.userId && m.status === 'joined')
+            ? [{ id, name: 'Team', role: 'member' }]
+            : [],
+        );
+        return json({ teams });
+      }
       case 'profiles/read': {
         const ids = body.ids as string[];
         return json({ profiles: ids.map(profileOf).filter(Boolean) });

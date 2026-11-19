@@ -35,8 +35,6 @@ export type BootstrapSet = {
   setLoadError: SetState<boolean>;
   // The design is in the Trash (docs/specs/013-workspace/trash.md).
   setDesignTrashed: (trashed: boolean) => void;
-  setDesignOwnerColor: SetState<string | null>;
-  setDesignOwnerId: SetState<string | null>;
   setDesignOwnerName: SetState<string | null>;
   setDesignShareable: SetState<boolean>;
   setDesignTeamId: SetState<string | null>;

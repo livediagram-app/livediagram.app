@@ -26,7 +26,12 @@ import { purgeDocumentPreviews } from '../db/documents';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { mediaClient, mediaOwner } from '../media';
 import { documentRoom } from '../document-client';
-import { closeTokenSessions, closeWorkbenchSessions, tellTrashed } from '../room-access-client';
+import {
+  closeArchivedSessions,
+  closeTokenSessions,
+  closeWorkbenchSessions,
+  tellTrashed,
+} from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import { documentFromTemplate } from './internal-template';
@@ -120,6 +125,9 @@ export function handleInternalItems(
       // closes. Nothing is kept, so a restore reopens as before.
       standing: async (id, standing) => {
         if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+        // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
+        // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.
+        else if (standing.archived) await closeArchivedSessions(env, id);
       },
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the document's tab bar.

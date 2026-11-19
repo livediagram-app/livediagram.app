@@ -20,7 +20,6 @@ import {
 // so each host drops it straight into its own bar flex row.
 export function ChromeControls({
   onOpenSearch,
-  extraTools = [],
   onOpenSettings,
   settingsLabel = 'Settings',
   labelled = false,
@@ -28,8 +27,6 @@ export function ChromeControls({
   appearance = true,
 }: {
   onOpenSearch?: () => void;
-  // More rows for Tools (the editor's Editing Mode tool).
-  extraTools?: readonly (ChromeToolsItem | null)[];
   onOpenSettings?: () => void;
   // The editor's settings are per-document; the Explorer's read the same
   // synced preferences. Let the host phrase the hover card.
@@ -64,7 +61,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, ...extraTools]} />
+      <ChromeToolsMenu labelled={labelled} items={[search]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An
