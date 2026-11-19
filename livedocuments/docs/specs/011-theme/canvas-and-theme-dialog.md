@@ -357,6 +357,10 @@ linking Tab Style Help as **Learn More**:
    ends, however it ends (Next, Back, Skip, Escape). Both changes are ordinary edits, in the history and seen by
    everyone on the tab.
 
+On a page whose surface hides Finish (an article or a card), steps 5 and 6 are left out: the tour goes from
+Fine-Tune Any Part to its closing card, never opening a panel the page does not offer
+([Tab Style](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md)).
+
 While it runs, Escape belongs to the tour. Telemetry: `UI · Started · TabStyleTour`, `UI · Ended ·
 TabStyleTourCompleted` / `TabStyleTourSkipped`.
 

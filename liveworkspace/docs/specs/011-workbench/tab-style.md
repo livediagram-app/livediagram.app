@@ -30,6 +30,9 @@ dialog shows by changing its profile, never by forking the dialog.
   header (title "Tab Style", the line for the view that is up, Show Me, the help link and the close), a popover
   anchored on what opened it on a screen 640 px wide and up, a bottom sheet on a phone. A product may wrap the views
   in a frame of its own instead (liveplanner's `ClusterPanel`, which it shares with a board's Configure).
+- **Show Me follows the surface.** The tour visits only what the surface shows: a step that opens a panel the surface
+  leaves out (the Finish steps, on livedocuments' `article` and `flashcard` pages, which hide Finish) is left out of
+  that run, so the tour never opens a hidden panel or points at nothing, and goes from Fine-tune to its last card.
 
 ## Surfaces
 
