@@ -720,6 +720,7 @@
     "./hooks/persistence/usePerTabLoad": "./src/hooks/persistence/usePerTabLoad.ts",
     "./hooks/persistence/useResolveSelf": "./src/hooks/persistence/useResolveSelf.ts",
     "./hooks/persistence/useAfterApiWrite": "./src/hooks/persistence/useAfterApiWrite.ts",
+    "./hooks/persistence/identity-bootstrap-deps": "./src/hooks/persistence/identity-bootstrap-deps.ts",
     "./hooks/persistence/useIdentityBootstrapCore": "./src/hooks/persistence/useIdentityBootstrapCore.ts",
     "./hooks/persistence/useUnloadFlushCore": "./src/hooks/persistence/useUnloadFlushCore.ts",
     "./lib/canvas-backgrounds": "./src/lib/canvas-backgrounds.ts",
