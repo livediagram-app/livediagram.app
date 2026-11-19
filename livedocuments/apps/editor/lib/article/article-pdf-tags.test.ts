@@ -121,6 +121,30 @@ describe('a long article', () => {
   });
 });
 
+describe('an empty table cell in an export', () => {
+  it('keeps its place in its row with a marker where it starts; a cell with words or no box gets none', () => {
+    const root = document.body.appendChild(document.createElement('div'));
+    root.innerHTML =
+      '<table class="article-table"><tbody><tr><th>Name</th><th id="blank"> </th></tr><tr><td id="nobox"></td></tr></tbody></table>';
+    const blank = root.querySelector<HTMLElement>('#blank')!;
+    blank.getClientRects = () =>
+      [
+        { left: 40, top: 5, right: 80, bottom: 25, width: 40, height: 20 },
+      ] as unknown as DOMRectList;
+    // jsdom lays no words out: the word "Name" is skipped where it has no box.
+    const rangeRects = Range.prototype.getClientRects;
+    Range.prototype.getClientRects = () => [] as unknown as DOMRectList;
+    try {
+      const ops = snapshotWriting(root, (x, y) => ({ x, y }), 1);
+      expect(ops.filter((o) => o.k === 'empty')).toEqual([
+        { k: 'empty', x: 40, y: 5, tag: 'Table#t0/TR#r1/TH', block: 1 },
+      ]);
+    } finally {
+      Range.prototype.getClientRects = rangeRects;
+    }
+  });
+});
+
 describe('a list’s markers in an export', () => {
   it('reads each marker as its item’s label, numbered in document order, after a heading above it', () => {
     const root = document.body.appendChild(document.createElement('div'));

@@ -119,6 +119,17 @@ export class StructTree {
 
   /** The marked-content operators around one line of the current page's text layer. */
   mark(line: TextItem, fallbackKey: string): { open: string; close: string } {
+    return this.mcid(this.elemOf(line, fallbackKey));
+  }
+
+  /** Makes sure a line's element is in the tree with no content of its own: an empty table cell, so every row
+   *  keeps its cells. */
+  declare(line: TextItem, fallbackKey: string): void {
+    this.elemOf(line, fallbackKey);
+  }
+
+  /** The leaf element of the line's tag path, made (with any container it lacks) when first met. */
+  private elemOf(line: TextItem, fallbackKey: string): Elem {
     const raw = line.tag ?? '';
     let segs = this.paths.get(raw);
     if (!segs) this.paths.set(raw, (segs = parseTagPath(line.tag)));
@@ -137,7 +148,7 @@ export class StructTree {
       }
       parent = elem;
     }
-    return this.mcid(parent!);
+    return parent!;
   }
 
   /** Opens a Figure on the current page, its alt texts read when the tree is written (more may join while it is

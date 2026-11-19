@@ -74,6 +74,8 @@ describe('the structure tree', () => {
     // The table and its last cell carry on; a new row starts.
     tree.mark(line('Table#t0/TR#r1/TD', 7, 800), 'unused');
     tree.mark(line('Table#t0/TR#r2/TD', 8, 780), 'unused');
+    // An empty cell keeps its place in the row, with nothing to read.
+    tree.declare(line('Table#t0/TR#r2/TD', 9, 780), 'unused');
     tree.mark(line(undefined, undefined, 760), 'p1-2');
     tree.endPage();
     expect(await dump(file, tree, [p1, p2])).toBe(
@@ -99,6 +101,7 @@ describe('the structure tree', () => {
         '      TD [0:9 1:0]',
         '    TR',
         '      TD [1:1]',
+        '      TD',
         '  P [1:2]',
       ].join('\n'),
     );

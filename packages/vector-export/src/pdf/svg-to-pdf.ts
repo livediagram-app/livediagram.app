@@ -173,6 +173,7 @@ export async function svgPagesToPdf(
           lines,
           fonts,
           tree ? (line, n) => tree.mark(line, `p${i}-${n}`) : undefined,
+          tree ? (line, n) => tree.declare(line, `p${i}-${n}`) : undefined,
         );
         content = tree ? `/Artifact BMC\n${drawing}\nEMC\n${layer}` : `${drawing}\n${layer}`;
         tree?.endPage();

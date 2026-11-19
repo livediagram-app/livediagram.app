@@ -94,7 +94,10 @@ tag is a path of segments `Tag#key` split by `/`, outermost first: `L#l0/LI#i4/L
 document (a segment with no key is keyed by its path); the last segment's key defaults to the block, so a container
 `LBody#4` is the same element as block 4's leaf `LBody` (a nested list sits in its item's body). Tags known: H1 to H6,
 P, BlockQuote, L, LI, Lbl, LBody, Table, TR, TH, TD; an unknown leaf reads as P, an unknown container is skipped.
-`data-pdf-alt` on any element makes it (and what it draws) a Figure with that `/Alt`.
+`data-pdf-alt` on any element makes it (and what it draws) a Figure with that `/Alt`. An element with `data-pdf-empty`
+(and a tag and block; livedocuments writes one per empty table cell, an `empty` draw op, at the cell's top left) draws
+nothing: it is a text-layer item with no text, read in its block's order, that `textLayerOps` hands to
+`StructTree.declare`, an element with no content.
 
 ## Errors and edge cases
 

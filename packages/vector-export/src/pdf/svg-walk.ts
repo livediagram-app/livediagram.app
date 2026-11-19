@@ -13,7 +13,7 @@ import { rasterElement } from './svg-raster';
 import { segmentBounds, shapeSegments, transformSegments } from './svg-shapes';
 import { knockoutClip } from './svg-mask';
 import { refId, styleOf } from './svg-style';
-import { addTextItems, drawOutlines, outlinesOf } from './svg-text';
+import { addEmptyItem, addTextItems, drawOutlines, outlinesOf } from './svg-text';
 import { parseTransform, parseViewBox, viewBoxMatrix, type Box } from './svg-transform';
 
 // Drawn by reference only, never where they stand.
@@ -199,6 +199,8 @@ async function asFigure(
 
 /** Writes `el` and everything in it. */
 export async function drawElement(ctx: SvgContext, el: Element): Promise<void> {
+  // An empty block's marker draws nothing; it only keeps its place in the structure.
+  if (el.hasAttribute('data-pdf-empty')) return addEmptyItem(ctx, el);
   const alt = ctx.tags || ctx.alts ? altOf(el) : '';
   if (!alt || styleOf(el)('display') === 'none') return drawBody(ctx, el);
   return asFigure(

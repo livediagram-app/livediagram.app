@@ -584,6 +584,10 @@ describe('figures', () => {
         ${t(10, 10, 'H1', 0, 'Title')}${t(30, 20, 'L#l0/LI#i1/LBody', 1, 'One')}${t(30, 30, 'L#l0/LI#i2/LBody', 2, 'Two')}
         ${t(10, 80, 'Table#t0/TR#r0/TH', 3, 'Name')}${t(60, 80, 'Table#t0/TR#r0/TH', 4, 'Age')}
         ${t(10, 90, 'Table#t0/TR#r1/TD', 5, 'Ada')}${t(60, 90, 'Table#t0/TR#r1/TD', 6, '36')}
+        <g data-pdf-empty="" data-pdf-tag="Table#t0/TR#r1/TD" data-pdf-block="7" transform="translate(110 90)"/>
+        <g data-pdf-empty="" data-pdf-tag="Table#t0/TR#r1/TD"/><g data-pdf-empty="" data-pdf-block="9"/>
+        <rect width="50" height="20" fill="url(#cells)"/>
+        <pattern id="cells" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="2" height="2"/><g data-pdf-empty="" data-pdf-tag="P" data-pdf-block="8"/></pattern>
         <rect y="40" width="10" height="10" data-pdf-alt="A map"/>`,
         undefined,
         faceCss('Body'),
@@ -608,6 +612,7 @@ describe('figures', () => {
         '    TR',
         '      TD [0:8]',
         '      TD [0:9]',
+        '      TD',
       ].join('\n'),
     );
   });

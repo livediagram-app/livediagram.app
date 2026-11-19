@@ -34,7 +34,7 @@ Word, Canva, Figma, Lucid and draw.io make.
 - **Tags** where the page knows its structure, so a screen reader reads it as it reads a web page:
   - **An article's writing** is tagged block by block: headings H1 to H6, paragraphs P, a quote BlockQuote, a list
     L of LI items, each holding its marker (Lbl) and its words (LBody), a deeper level's list inside its item's
-    LBody, and a table Table of TR rows of TD cells, a header row's cells TH (column headers, `/Scope /Column`). Each
+    LBody, and a table Table of TR rows of TD cells, a header row's cells TH (column headers, `/Scope /Column`), an empty cell an empty TD or TH, so every row keeps all its cells. Each
     line of the text layer is marked content of its block's element, a block running over two pages keeping one
     element.
   - **A picture with alt text** (an image's **Alt Text**, in any product) is a Figure

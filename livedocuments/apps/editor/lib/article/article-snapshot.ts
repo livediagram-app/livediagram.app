@@ -212,6 +212,15 @@ export function snapshotWriting(
       }
     }
     // A list item's marker (a number, a bullet) or a to-do's box, from its ::before.
+    // An empty cell still stands in its row in a PDF's tags: a marker where it starts.
+    if ((el.tagName === 'TD' || el.tagName === 'TH') && !el.textContent?.trim()) {
+      const cell = blockOf(el);
+      const first = rects[0];
+      if (cell && first) {
+        const p = toCanvas(first.left, first.top);
+        ops.push({ k: 'empty', x: p.x, y: p.y, ...cell });
+      }
+    }
     if (el.classList.contains('article-list')) {
       // The marker is its item's label, read before the item's words.
       const item = blockOf(el);
