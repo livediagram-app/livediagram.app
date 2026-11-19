@@ -12,13 +12,12 @@ import type {
   CalendarFeedOptions,
   CalendarFeedSettings,
 } from '@liveplanner/api-schema';
-import { Button, ConfirmPopover, lucideGlyph } from '@liveplanner/ui';
+import { Button, ConfirmPopover } from '@liveplanner/ui';
 import { SkeletonRows } from '@liveworkspace/ui';
 import { MEDIUM_DATE } from '@liveworkspace/ui/date-format';
 import { ToolExplainer } from '@liveworkspace/ui/tool-explainer';
 import { calendarFeedArt } from '@liveworkspace/ui/tool-explainer-art';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
-import { lucideLock } from '@liveworkspace/icons/lucide';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { API_BASE } from '@/lib/api/core';
@@ -37,8 +36,7 @@ import { feedUrlOf } from './calendar-feed-links';
 import { calendarFeedHeroArt } from './CalendarFeedHeroArt';
 import { CalendarFeedLink } from './CalendarFeedLink';
 import { CalendarFeedOptionsSection } from './CalendarFeedOptions';
-
-const LockIcon = lucideGlyph(lucideLock, 14);
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The Off state's line, per kind of feed.
 const PLAN_OFF_COPY =
@@ -258,19 +256,11 @@ export function CalendarFeedDialog({
                 onChange={(next) => void choose(next)}
               />
             )}
-            <p
-              className="flex gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-100 dark:ring-amber-900"
-              data-calendar-feed-privacy=""
-            >
-              <span className="mt-0.5 shrink-0" aria-hidden>
-                <LockIcon />
-              </span>
-              <span>
-                Anyone with this link can see the titles and dates of the cards in this feed. Don’t
-                share it or post it anywhere. If it leaks, press Reset Link: the old link stops at
-                once.
-              </span>
-            </p>
+            <Callout tone="warning">
+              Anyone with this link can see the titles and dates of the cards in this feed. Don’t
+              share it or post it anywhere. If it leaks, press Reset Link: the old link stops at
+              once.
+            </Callout>
             {saveFailed ? (
               <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">
                 Couldn’t save. Try again.

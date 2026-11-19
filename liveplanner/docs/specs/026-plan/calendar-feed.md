@@ -177,8 +177,9 @@ cards ([Inbox](../../../../liveworkspace/docs/specs/004-index/one-explorer-contr
   Trash, a team they left, a plan moved out of their team, or a card no longer assigned to them leaves the feed on the
   next fetch after the plan's next push (the push is seconds behind a change).
 - **Dates and events** as a plan's feed: the built-in Start Date and Due Date as days, each card one all-day event
-  (Start to Due, Due alone, or `Starts: …` for a Start alone); the card's number and title; its URL opening the card in
-  its plan. The description names the plan, the board and the column, then the link.
+  (Start to Due, Due alone, or `Starts: …` for a Start alone); the card's number with its type's prefix (`WI-100`, as
+  the plan's push carried it: [Card number prefixes](item-types.md#card-number-prefixes) "Across plans"; `#100` for a
+  card pushed before) and title; its URL opening the card in its plan. The description names the plan, the board and the column, then the link.
 - The calendar is named **My Work · liveplanner**.
 - No options: the feed is already only the person's cards, and the push holds no done cards.
 

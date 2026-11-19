@@ -63,7 +63,7 @@ describe('a time trigger', () => {
     expect(document.querySelector('[data-time-zone]')!.textContent).toBe(
       'Times are Europe/London.',
     );
-    expect(document.querySelector('[data-every-card]')!.textContent).toContain(
+    expect(document.querySelector('[data-callout="warning"]')!.textContent).toContain(
       'Runs on every card in the plan',
     );
     pick('At', '17:45');
@@ -107,7 +107,7 @@ describe('a time trigger', () => {
     expect(latest.trigger).toEqual({ kind: 'due_in', days: 2, at: '09:00' });
     pick('Days Before It’s Due', '30');
     expect(latest.trigger).toMatchObject({ days: 30 });
-    expect(document.querySelector('[data-every-card]')).toBeNull();
+    expect(document.querySelector('[data-callout="warning"]')).toBeNull();
     pickStep('overdue');
     expect(latest.trigger).toEqual({ kind: 'overdue', at: '09:00' });
     expect(document.querySelector('[data-time-zone]')!.textContent).toContain(

@@ -205,6 +205,13 @@ describe('bodyFor', () => {
       );
     });
 
+    // Card prefixes across plans (Work Tracker 1295): the card by the ref the plan sent, #N from a send before.
+    it('names the card by its prefixed ref when the send carries one', () => {
+      const content = JSON.parse(bodyFor('teams', sent({}, { card: { ...card, ref: 'WI-48' } })))
+        .attachments[0].content;
+      expect(content.body.map(textOf)[1]).toBe('WI-48 Publish <pricing> page');
+    });
+
     it('sends Teams the message, the card and the rule, with a button to the card', () => {
       const content = JSON.parse(bodyFor('teams', sent())).attachments[0].content;
       expect(content.body.map(textOf)).toEqual([

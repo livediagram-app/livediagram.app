@@ -59,7 +59,7 @@ export async function sendMessages(
     runId: string;
     rule: string;
     // Null for a run with no card (an Incoming Webhook call that named none).
-    card: { key: number; title: string; url: string } | null;
+    card: { key: number; ref?: string; title: string; url: string } | null;
     at: number;
     dry?: boolean;
   },

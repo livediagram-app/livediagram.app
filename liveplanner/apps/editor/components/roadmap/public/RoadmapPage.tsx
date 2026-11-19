@@ -16,6 +16,7 @@ import { loadPublicRoadmap, sendRoadmapVote, type VoteResult } from '@/lib/api/r
 import { publicBrowserId } from '@/lib/public-browser-id';
 import { roadmapFromPath } from '@/lib/roadmap-path';
 import { RoadmapColumn } from './RoadmapColumn';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The tab's canvas style behind the page, fetched only for a tab that has one (as a form's page does).
 const FormCanvasLayer = dynamic(
@@ -202,13 +203,13 @@ export function RoadmapPage() {
                 </a>
               ) : null}
             </header>
-            <p role="status" aria-live="polite" className="px-4 sm:px-6">
+            <div role="status" aria-live="polite" className="px-4 sm:px-6">
               {notice ? (
-                <span className="mt-4 inline-block rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/60 dark:text-amber-100 dark:ring-amber-900">
+                <Callout tone="warning" size="md" className="mt-4 w-fit">
                   {notice}
-                </span>
+                </Callout>
               ) : null}
-            </p>
+            </div>
             {/* Side by side from a small screen up, scrolling sideways when they outgrow it; stacked on a phone. */}
             <div className="mt-6 overflow-x-auto pb-2 pt-px">
               <div className="flex flex-col gap-4 px-4 sm:w-max sm:flex-row sm:items-start sm:px-6">

@@ -1233,7 +1233,7 @@ is while the rest of the tab is worked on.
   per design and tab (the latest 200 tabs), never in the design: a collaborator lands on their
   own page. The first time, or once that page is deleted, landing fits the first page. For everyone
   who can see the pages, whatever their role.
-- **A page is something in view**: the canvas's "Nothing's in view" nudge counts every page, an
+- **A page is something in view**: the canvas's "Nothing in view" callout counts every page, an
   empty one too, as content, so it never shows while a page is on screen.
 
 ## Export

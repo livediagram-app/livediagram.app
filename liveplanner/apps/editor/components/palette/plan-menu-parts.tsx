@@ -24,6 +24,7 @@ import { CardSizeArt } from '@/components/plan/plan-tile-art';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { ACCENT_TEXT, accentVars } from '@/components/plan/plan-palette';
 import { SWIMLANE_LABELS } from '@/components/plan/board-setup-edits';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The groupings that are a built-in field of the same id.
 const BUILT_IN_GROUPINGS: ReadonlySet<SwimlaneBy> = new Set(['assignee', 'priority', 'status']);
@@ -197,18 +198,9 @@ export function CardTypeOptions({
 // A small info block under a menu heading: what the choices below it do, in a line (an "i" in a circle, then the text).
 export function InfoNote({ children }: { children: ReactNode }) {
   return (
-    <p
-      role="note"
-      className="mx-3 mb-1 mt-1 flex gap-1.5 rounded-md bg-brand-50 px-2 py-1.5 text-[11px] leading-snug text-brand-800 dark:bg-brand-500/10 dark:text-brand-200"
-    >
-      <span
-        aria-hidden
-        className="mt-px flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-current text-[9px] font-bold"
-      >
-        <span className="text-optical-centre">i</span>
-      </span>
-      <span>{children}</span>
-    </p>
+    <Callout tone="info" role="note" className="mx-3 mb-1 mt-1">
+      {children}
+    </Callout>
   );
 }
 

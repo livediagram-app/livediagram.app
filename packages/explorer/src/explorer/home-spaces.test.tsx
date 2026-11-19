@@ -213,7 +213,7 @@ describe('Spaces on Home', () => {
     expect(s.getAttribute('aria-busy')).toBe('false');
   });
 
-  it('keeps every tile when the read fails, says so, and Try again reads again', async () => {
+  it('keeps every tile when the read fails, says so, and Try Again reads again', async () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     index.fail.set('spacePreviews', new IndexError(500, 'internal'));
     renderHome(index, { teams: [{ id: 't1', name: 'Design' }] });
@@ -226,10 +226,10 @@ describe('Spaces on Home', () => {
         .map((l) => l.getAttribute('aria-label')),
     ).toEqual(['My Work', 'Design']);
     index.fail.delete('spacePreviews');
-    // Held, so the re-read's placeholders are seen apart from its answer: the alert goes the moment Try again is
+    // Held, so the re-read's placeholders are seen apart from its answer: the alert goes the moment Try Again is
     // pressed, long before the tiles come back, so waiting on the alert alone raced the answer on a slow runner.
     index.hold.add('spacePreviews');
-    fireEvent.click(within(alert).getByRole('button', { name: 'Try again' }));
+    fireEvent.click(within(alert).getByRole('button', { name: 'Try Again' }));
     await waitFor(() => expect(index.count('spacePreviews')).toBe(2));
     expect(within(s).queryByRole('alert')).toBeNull();
     expect(s.getAttribute('aria-busy')).toBe('true');

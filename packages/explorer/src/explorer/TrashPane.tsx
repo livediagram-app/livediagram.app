@@ -11,13 +11,14 @@ import type { ShownItem } from '../data/overlay';
 import { Button, ConfirmDialog } from '@liveworkspace/ui';
 import { DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { LIST_CARD, MUTED } from '../ui/classes';
-import { InfoIcon, ItemIcon } from '../ui/icons';
+import { ItemIcon } from '../ui/icons';
 import type { Words } from '../words';
 import { useExplorer } from './context';
 import { EmptyPane } from './EmptyPane';
 import { ThisBrowserTrashGroup, useThisBrowserTrashed } from './ThisBrowser';
 import { quoted } from '../quoted';
 import { compareNames } from '../data/name-order';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export const TRASH_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -68,15 +69,10 @@ export function daysLeftLabel(trashedAt: number, now: number): string {
 
 export function TrashNote({ words }: { words: Words }) {
   return (
-    <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-[11px] leading-snug text-slate-500 dark:border-slate-800 dark:bg-slate-900/50 dark:text-slate-400">
-      <span className="mt-px shrink-0 text-slate-400">
-        <InfoIcon />
-      </span>
-      <span>
-        Deleted {words.lowerMany} wait here for {TRASH_DAYS} days, then they are removed for good.
-        Restoring one puts it back where it was.
-      </span>
-    </div>
+    <Callout tone="info" className="mb-5">
+      Deleted {words.lowerMany} wait here for {TRASH_DAYS} days, then they are removed for good.
+      Restoring one puts it back where it was.
+    </Callout>
   );
 }
 

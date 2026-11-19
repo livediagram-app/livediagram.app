@@ -66,7 +66,8 @@ Scope, by file:
 - Automation sends (`automation-sends.ts` `pushAutomationSends`, liveplanner only). Each send is checked whole or
   the push is `400 invalid_sends`: `key` and `webhookId` strings of 1 to 200, `rule` a string (trimmed, cut to
   `AUTOMATION_RULE_MAX` 60, empty `Untitled`), `text` a string not blank (cut to `AUTOMATION_TEXT_MAX` 2,000),
-  `card` null or `{key: integer, title: string, url: string}` (the title trimmed and cut to 200, empty `Untitled`),
+  `card` null or `{key: integer, ref?, title: string, url: string}` (the title trimmed and cut to 200, empty
+  `Untitled`; `ref` kept only as `cardRefFor` keeps a pushed card's, else dropped, never the send refused),
   `at` a time (at most now). The card's `url` is kept only on the app's own origin (`appOrigin`, the URL's `href`
   with `|` as `%7C`, which would end a Slack link), else null, so a chat's link can't point elsewhere. Each send's
   delivery id is `aut:<sha256 hex of item, webhook and key>`. Then `automationTargets` (`outbox.ts`): one batch of
@@ -77,14 +78,14 @@ Scope, by file:
   reason in words ("This webhook is paused: the address said it’s gone"); at the cap, counting the push's sends
   queued ahead on the same webhook, `webhook_full` ("Too many messages waiting for this webhook"). Then
   `automationSendStatement`: one `INSERT OR IGNORE … SELECT` from `json_each` of the queued ones, `type`
-  `automation`, no actor (`actor_name` `Automation`), the item's title, the detail `{rule, card: {key, title, url} |
+  `automation`, no actor (`actor_name` `Automation`), the item's title, the detail `{rule, card: {key, ref?, title, url} |
 null, text}`, `occurred_at` the send's `at`, `next_at` as `cardMovesStatement`'s. It joins the webhook again
   (`item_id`, `paused_at IS NULL`) and checks the cap with each row's `ahead`, so a pause or a burst landing between
   the read and the write writes no row past them (the result already said queued). The event filter, Who Did It and
   `WEBHOOK_FRESH_MS` are not applied: the send is addressed. An empty push answers `{results: []}` and writes
   nothing.
 - `messages.ts` for `automation`: the summary is the message itself. Slack: the message, then a line with the card
-  (`#48 Publish pricing page`) and `<url|Open in liveplanner>` (the card's link, else the plan's), and "Automation ·
+  (`WI-48 Publish pricing page`: `ref`, else `#48` for a detail written before refs) and `<url|Open in liveplanner>` (the card's link, else the plan's), and "Automation ·
   <rule>" in the context block, every text escaped, the escaped message cut so the section stays within Slack's
   3,000 characters (`SLACK_SECTION_MAX`; never inside an `&amp;`). Teams: the message, the card, "Automation ·
   <rule>", each a plain `TextRun` in a `RichTextBlock` (no Markdown, for every event), and the Open in liveplanner

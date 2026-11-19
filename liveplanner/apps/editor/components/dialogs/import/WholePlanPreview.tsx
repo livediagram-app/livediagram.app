@@ -8,9 +8,7 @@ import type { ProjectFileSummary } from '@liveplanner/project';
 import { BrandMark, Button, DialogFooter } from '@liveplanner/ui';
 import { ImportError } from './ImportError';
 import { PLAN_PICTURES, PLAN_RULES_OFF, planFileCounts } from './plan-file-copy';
-
-const NOTE =
-  'rounded-lg bg-slate-50 px-3 py-2 text-[12px] leading-relaxed text-slate-600 dark:bg-slate-800/60 dark:text-slate-300';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export function WholePlanPreview({
   head,
@@ -63,8 +61,8 @@ export function WholePlanPreview({
             </li>
           ))}
         </ul>
-        {summary.rules > 0 ? <p className={NOTE}>{PLAN_RULES_OFF}</p> : null}
-        {summary.pictures ? <p className={NOTE}>{PLAN_PICTURES}</p> : null}
+        {summary.rules > 0 ? <Callout tone="info">{PLAN_RULES_OFF}</Callout> : null}
+        {summary.pictures ? <Callout tone="info">{PLAN_PICTURES}</Callout> : null}
       </div>
       <DialogFooter>
         <Button

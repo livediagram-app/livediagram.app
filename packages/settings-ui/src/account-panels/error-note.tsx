@@ -1,14 +1,13 @@
 import type { ReactNode } from 'react';
+import { Callout, type CalloutAction } from '@liveworkspace/ui/callout';
 
 // The account panels' error note, in a module of its own so a row outside them (Reset All Settings, drawn in each
-// editor's own Settings) can say a refusal the same way without bringing the panels' other parts along.
-export function ErrorNote({ children }: { children: ReactNode }) {
+// editor's own Settings) can say a refusal the same way without bringing the panels' other parts along. It is the
+// shared callout (liveworkspace/docs/specs/016-notifications/callouts.md), with its Try Again as the callout's action.
+export function ErrorNote({ children, action }: { children: ReactNode; action?: CalloutAction }) {
   return (
-    <p
-      role="alert"
-      className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-    >
+    <Callout tone="error" role="alert" size="md" action={action} className="mt-3">
       {children}
-    </p>
+    </Callout>
   );
 }

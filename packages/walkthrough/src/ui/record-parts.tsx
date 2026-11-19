@@ -1,8 +1,9 @@
 'use client';
 
-// What the recording's set-up (RecordSetup, inside Tools) and its dock (RecordDock) share: a problem's note.
+// What the recording's set-up (RecordSetup, inside Tools) and its dock (RecordDock) share: a problem's note, the
+// shared callout (liveworkspace/docs/specs/016-notifications/callouts.md).
 import type { ReactNode } from 'react';
-import { WarningIcon } from './icons';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export function Problem({
   children,
@@ -12,16 +13,8 @@ export function Problem({
   tone?: 'amber' | 'rose';
 }) {
   return (
-    <p
-      role="alert"
-      className={`flex items-start gap-1.5 rounded-lg px-2.5 py-2 text-[12px] leading-snug ${
-        tone === 'rose'
-          ? 'bg-rose-50 text-rose-900 dark:bg-rose-500/10 dark:text-rose-100'
-          : 'bg-amber-50 text-amber-900 dark:bg-amber-500/10 dark:text-amber-100'
-      }`}
-    >
-      <WarningIcon aria-hidden className="mt-px shrink-0" />
+    <Callout tone={tone === 'rose' ? 'error' : 'warning'} role="alert">
       {children}
-    </p>
+    </Callout>
   );
 }

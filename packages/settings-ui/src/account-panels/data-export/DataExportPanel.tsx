@@ -10,12 +10,13 @@ import {
 } from '@liveworkspace/data-export';
 import { SettingsSharedGlyph } from '../../glyphs';
 import type { SettingsRequest } from '../../request';
-import { BUTTON, ErrorNote } from '../account-ui';
+import { ErrorNote } from '../account-ui';
 import { EveryAppName } from '../app-names';
 import { accountErrorMessage as errorMessage } from '../errors';
 import { useAccountPanelsHost } from '../host';
 import { REFUSALS, startError } from './data-export-copy';
 import { ExportRow } from './ExportRow';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type Load =
   | { state: 'loading' }
@@ -133,12 +134,9 @@ export function DataExportPanel() {
             <EveryAppName />
           </div>
           {refusal ? (
-            <p
-              role="status"
-              className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200"
-            >
+            <Callout tone="warning" size="md" role="status" className="mt-3">
               {refusal}
-            </p>
+            </Callout>
           ) : null}
         </div>
       </div>
@@ -157,21 +155,19 @@ export function DataExportPanel() {
 
       {load.state === 'error' ? (
         <div className="border-t border-slate-100 px-4 pb-4 sm:px-5 dark:border-slate-700/70">
-          <ErrorNote>
+          <ErrorNote
+            action={{
+              label: 'Try Again',
+              onSelect: () => {
+                setLoad({ state: 'loading' });
+                void refresh();
+              },
+            }}
+          >
             {load.error === 'export_unavailable'
               ? startError(load.error)
               : errorMessage(load.error)}
           </ErrorNote>
-          <button
-            type="button"
-            className={`${BUTTON.secondary} mt-3`}
-            onClick={() => {
-              setLoad({ state: 'loading' });
-              void refresh();
-            }}
-          >
-            Try Again
-          </button>
         </div>
       ) : null}
 

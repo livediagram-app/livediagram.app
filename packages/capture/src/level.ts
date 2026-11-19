@@ -36,8 +36,33 @@ type AudioContextLike = {
 // 2026-11-17); Chrome allows it.
 let primed: AudioContextLike | null = null;
 
+// sinkId is newer than TypeScript's DOM types (Chromium 110 onward; other browsers ignore it).
+type RecordingOptions = AudioContextOptions & { sinkId?: { type: 'none' } };
+type ContextClass = new (options?: RecordingOptions) => AudioContext;
+
+// What a recording's context asks for (liveworkspace/docs/specs/006-media/walkthroughs.md "On no speaker's clock"): no
+// output device, so the browser clocks it by wall time rather than by speakers or headphones that may run off true
+// (Work Tracker 1314), at 48 kHz, Opus's own rate, so a Bluetooth headset opening at 16 kHz never narrows it. Each is
+// dropped in turn for a browser that refuses it: a recording is never lost for want of either.
+const RECORDING_OPTIONS: readonly RecordingOptions[] = [
+  { sampleRate: 48000, sinkId: { type: 'none' } },
+  { sinkId: { type: 'none' } },
+];
+
+/** A context for a recording and its meter, which play nothing: on no speaker's clock, at 48 kHz, where allowed. */
+export function recordingContext(Context: ContextClass = AudioContext): AudioContext {
+  for (const options of RECORDING_OPTIONS) {
+    try {
+      return new Context(options);
+    } catch {
+      // Refused: ask with less.
+    }
+  }
+  return new Context();
+}
+
 /** Starts the audio a meter will read, inside the press that asks for it (Record Walkthrough). */
-export function primeAudio(createContext: () => AudioContextLike = () => new AudioContext()): void {
+export function primeAudio(createContext: () => AudioContextLike = () => recordingContext()): void {
   if (primed && primed.state !== 'closed') return void primed.resume?.().catch(() => {});
   try {
     primed = createContext();

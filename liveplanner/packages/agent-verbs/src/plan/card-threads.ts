@@ -81,7 +81,8 @@ export type ListedThread = {
 const iso = (ms: number) => new Date(ms).toISOString();
 
 // A card a thread is on, as people say it: "WI-12 Title" here (its type's prefix: docs/specs/026-plan/item-types.md "Card
-// number prefixes"), "#4 in Sprint 12" in another plan, whose card types are not read.
+// number prefixes"), "WI-4 in Sprint 12" in another plan by the ref the card carries ("Across plans"; its types are
+// not read), "#4 in Sprint 12" for one added before refs.
 function cardName(
   card: CardRef,
   projectId: string,
@@ -89,7 +90,8 @@ function cardName(
   types: readonly ItemTypeDef[],
 ): string {
   const num = card.key !== null ? `#${card.key}` : 'a card';
-  if (card.projectId !== projectId) return `${num} in ${card.projectName || 'another plan'}`;
+  if (card.projectId !== projectId)
+    return `${card.ref ?? num} in ${card.projectName || 'another plan'}`;
   const item = items.get(card.itemId);
   return item ? cardRefTitle(item, itemTitle(item) || 'Untitled', types) : num;
 }

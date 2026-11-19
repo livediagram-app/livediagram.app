@@ -7,6 +7,7 @@ import type { MouseEvent, ReactNode } from 'react';
 import { FOCUS_RING, SECTION_LINK } from '../ui/classes';
 import type { ExplorerView } from '../views';
 import { useExplorer } from './context';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
@@ -74,14 +75,8 @@ export function HomeSection({
 /** A Home read that failed: what couldn't load, and Try Again. */
 export function HomeFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <div
-      role="alert"
-      className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200"
-    >
-      {message}{' '}
-      <button type="button" className="font-semibold underline" onClick={onRetry}>
-        Try again
-      </button>
-    </div>
+    <Callout tone="error" size="md" role="alert" action={{ label: 'Try Again', onSelect: onRetry }}>
+      {message}
+    </Callout>
   );
 }

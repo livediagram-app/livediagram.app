@@ -508,7 +508,7 @@ on each card it is on by a link row in that card's plan.
 
 The shape, limits, ids, titles and checks are `card-thread-shape.ts`, which `card-threads.ts` re-exports.
 
-- **Types**: `CardRef = { projectId, itemId, key: number | null, projectName?: string }`; `ThreadPerson = { name,
+- **Types**: `CardRef = { projectId, itemId, key: number | null, ref?: string, projectName?: string }` (`ref` the card's prefixed number when it was added, set by Add Thread to Card, read by another plan as `ref ?? '#' + key`); `ThreadPerson = { name,
 color, authorId? }`; `CardThread = { id, title, resolved, resolvedBy?: string, resolvedById?: string, resolvedAt?: number, comments:
 Comment[], createdAt, createdBy: ThreadPerson, updatedAt, home, cards: CardRef[], field?: string, rev }`. `field`
   is the Comments field it belongs to (item-types.md "Comments and Votes fields"), set at start and never changed;

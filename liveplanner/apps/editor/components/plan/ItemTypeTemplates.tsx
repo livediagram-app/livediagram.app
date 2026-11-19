@@ -19,6 +19,7 @@ import {
   withTemplate,
   type TemplatesProblem,
 } from './card-template-draft';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const TemplateGlyph = lucideGlyph(lucideClipboardType, 14);
 const EmptyGlyph = lucideGlyph(lucideClipboardType, 18);
@@ -178,12 +179,9 @@ export function ItemTypeTemplates({
       </div>
       <div className="min-w-0">
         {problem ? (
-          <p
-            role="alert"
-            className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-          >
+          <Callout tone="error" size="md" role="alert" className="mb-4">
             {problem.message}
-          </p>
+          </Callout>
         ) : null}
         <CardTemplateEditor
           key={chosen.id}

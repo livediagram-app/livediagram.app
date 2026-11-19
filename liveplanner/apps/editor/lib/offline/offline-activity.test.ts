@@ -244,6 +244,25 @@ describe('offlineActivityFromRecords', () => {
     expect(cards[1]?.column).toBeNull();
   });
 
+  // Card prefixes across plans (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+  it('gives each card its prefixed ref from the plan’s types, none for a type the catalogue lacks', async () => {
+    const me = await itemPersonId('guest-1');
+    const mine = { id: me, name: 'Me', color: '#123' };
+    const rec = testRecord({
+      tabs: [testTab('t1', { name: 'Plan', elements: [sprint] })],
+      items: [
+        item('task', { status: 'todo', assignee: mine }, 30),
+        { ...item('loose', { status: 'todo', assignee: mine }, 20), type: 'gone', key: 2 },
+      ],
+    });
+    const { cards } = offlineActivityFromRecords([rec], await reader('guest-1'));
+    expect(cards.map((c) => [c.id, c.ref])).toEqual([
+      ['task', 'T-1'],
+      ['loose', undefined],
+    ]);
+    expect(cards[1]).not.toHaveProperty('ref');
+  });
+
   it('prefers a board holding the status, then an All Cards board; a project with no board has none', async () => {
     const mine = { id: await itemPersonId('guest-1'), name: 'Me', color: '#123' };
     const all = board('all', { title: 'Everything', allCards: true, columns: [] });

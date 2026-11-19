@@ -58,6 +58,19 @@ describe('myWorkEventsOf', () => {
     });
   });
 
+  // Card prefixes across plans (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+  it('titles a card by the prefixed ref its plan pushed, #N for one pushed before', () => {
+    const read = myWorkEventsOf(
+      [
+        row('wi', { key: 100, ref: 'WI-100', title: 'Fix login', due: iso(TODAY) }),
+        row('old', { key: 7, title: 'Old card', due: iso(TODAY + 1) }),
+      ],
+      'https://plan.test',
+      NOW,
+    );
+    expect(read.events.map((e) => e.summary)).toEqual(['WI-100 Fix login', '#7 Old card']);
+  });
+
   it('describes a card on a plan with no title by its link alone', () => {
     const read = myWorkEventsOf(
       [{ ...row('c', { due: iso(TODAY) }), itemTitle: '' }],

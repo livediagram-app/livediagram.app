@@ -64,7 +64,7 @@ describe('useOffscreenContent', () => {
   });
 
   // A Dashboard tab's page (or a board or Sheet filling its tab) hides the canvas, so its view says nothing about what
-  // is on screen: no "Nothing's in view" over a Dashboard's own slots.
+  // is on screen: no "Nothing in view" over a Dashboard's own slots.
   it('is false while something covers the canvas', () => {
     try {
       setPlanCover({ fillTabId: null, fillTabKind: null, planKind: 'dashboard' });

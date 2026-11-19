@@ -24,6 +24,7 @@ import { CardTypeTile } from '@/components/plan/CardTypeTile';
 import { CUSTOM_KIND_LABELS } from '@/components/plan/ItemTypeFieldForms';
 import { NameChips, ProblemText } from './NameChips';
 import { freshName, holdsOptions, withKind } from './draft-edits';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const LABEL = 'text-[12px] font-medium text-slate-500 dark:text-slate-400';
 const CHIP =
@@ -188,9 +189,9 @@ function KeptType({ type }: { type: ItemTypeDef }) {
   const own = (type.custom ?? []).map((f) => f.label);
   return (
     <div className="flex flex-col gap-2">
-      <p className="rounded-lg bg-slate-50 px-3 py-2 text-[13px] text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
+      <Callout tone="info" size="md">
         Already in this plan: yours is kept as it is.
-      </p>
+      </Callout>
       {own.length ? (
         <div className="flex flex-wrap gap-1.5">
           {own.map((label) => (

@@ -547,6 +547,36 @@ describe('Add Thread to Card', () => {
     expect((await add({ itemId: b.id }, { agent: true })).status).toBe(403);
   });
 
+  // Card prefixes across plans (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans"): the card
+  // added carries its ref, for another plan holding the thread, which has none of this plan's types.
+  it('gives the card it adds its prefixed ref, none while the plan has no card types', async () => {
+    const plain = await add({ itemId: b.id });
+    expect(plain.body.thread?.cards[1]).toEqual({ projectId: 'p1', itemId: b.id, key: b.key });
+    sql.sql.prepare(`UPDATE plan SET item_types = ? WHERE id = 'p1'`).run(
+      JSON.stringify({
+        version: 1,
+        types: [
+          {
+            id: 'task',
+            label: 'Work Item',
+            newTitle: 'New Work Item',
+            glyph: 'bug',
+            color: '#dc2626',
+            fields: ['title', 'status'],
+          },
+        ],
+      }),
+    );
+    const c = await card('p1', 'Receipt');
+    const res = await add({ itemId: c.id });
+    expect(res.body.thread?.cards[2]).toEqual({
+      projectId: 'p1',
+      itemId: c.id,
+      key: c.key,
+      ref: `WI-${c.key}`,
+    });
+  });
+
   it('refuses a card in another plan, whatever the caller may do there, and links nothing', async () => {
     const other = await card('p2', 'Over there', { owner: 'other' });
     for (const who of [{ targetCode: 'P2PART' }, { targetCode: 'P2LOOK' }, {}] as Who[]) {

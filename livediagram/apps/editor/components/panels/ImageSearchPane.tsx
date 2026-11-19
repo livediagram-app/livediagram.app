@@ -20,6 +20,7 @@ import {
   SkeletonTiles,
   skeletonClass,
 } from './ImageSearchLoader';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The image picker's Search tab (docs/specs/009-elements/image-search.md "The
 // Search tab"): openly licensed pictures from Openverse, searched from the
@@ -29,9 +30,6 @@ const SEARCH_ERROR_COPY = {
   'rate-limited': 'Too many searches for now. Wait a minute and try again.',
   failed: 'Couldn’t reach Openverse. Check your connection and try again.',
 } as const;
-
-const ERROR_BOX =
-  'rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/15 dark:text-rose-300';
 
 export function ImageSearchPane({
   ownerId,
@@ -84,7 +82,7 @@ export function ImageSearchPane({
         ) : search.loadingMore ? (
           <p>Loading more…</p>
         ) : search.status === 'error' && search.error ? (
-          <p className={ERROR_BOX}>{SEARCH_ERROR_COPY[search.error]}</p>
+          <Callout tone="error">{SEARCH_ERROR_COPY[search.error]}</Callout>
         ) : search.status === 'ready' && search.results.length === 0 ? (
           <NoMatches
             size="regular"
@@ -123,7 +121,7 @@ export function ImageSearchPane({
 
       {picking ? <PickStatus stage={search.pickStage} /> : null}
 
-      {search.pickError ? <p className={ERROR_BOX}>{search.pickError}</p> : null}
+      {search.pickError ? <Callout tone="error">{search.pickError}</Callout> : null}
 
       {search.hasMore && !searching ? (
         <Button

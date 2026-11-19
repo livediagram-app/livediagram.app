@@ -2,6 +2,7 @@ import { useRef, useState, type DragEvent, type ReactNode } from 'react';
 import { BackBar, Button, Glyph } from '@livedocuments/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { FileImportFormat, FileImportStage } from '@/hooks/persistence/useTabImport';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
@@ -166,12 +167,9 @@ export function FileImportPanel({
         />
       </div>
       {error ? (
-        <p
-          role="alert"
-          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="alert" className="mt-3">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-between gap-3">
         <p className="flex min-w-0 items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300">

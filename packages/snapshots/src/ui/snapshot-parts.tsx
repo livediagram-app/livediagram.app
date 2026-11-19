@@ -12,6 +12,7 @@ import { SNAPSHOT_NAME_MAX } from '../limits';
 import type { SnapshotSummary } from '../wire';
 import { snapshotTitle } from './snapshot-words';
 import type { SnapshotsState } from './useSnapshots';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export function TakeSnapshotForm({
   state,
@@ -78,20 +79,14 @@ export function SnapshotNotices({
   return (
     <>
       {state.error ? (
-        <p
-          role="alert"
-          className={`rounded-md bg-red-50 px-3 py-2 text-sm text-red-800 dark:bg-red-950/50 dark:text-red-200 ${className}`}
-        >
+        <Callout tone="error" role="alert" className={className}>
           {state.error}
-        </p>
+        </Callout>
       ) : null}
       {state.reverted ? (
-        <p
-          role="status"
-          className={`rounded-md bg-slate-100 px-3 py-2 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200 ${className}`}
-        >
+        <Callout tone="info" role="status" className={className}>
           Reverted. Reloading…
-        </p>
+        </Callout>
       ) : null}
     </>
   );

@@ -33,10 +33,11 @@ const cut = (text: string, max: number) =>
   text.length > max ? `${text.slice(0, max - 1)}…` : text;
 const quoted = (text: string) => `“${text || 'Untitled'}”`;
 
-/** An automation send's detail as the outbox wrote it: `{rule, card: {key, title, url} | null, text}`. */
+/** An automation send's detail as the outbox wrote it: `{rule, card: {key, ref?, title, url} | null, text}`. */
 export type AutomationDetail = {
   rule: string;
-  card: { key: number; title: string; url: string | null } | null;
+  // `ref`: its prefixed number ("WI-48"); absent from a send before refs, or for a type of no prefix.
+  card: { key: number; ref?: string; title: string; url: string | null } | null;
   text: string;
 };
 
@@ -48,6 +49,7 @@ function automationOf(event: DeliveryEvent): AutomationDetail {
     c && typeof c === 'object' && typeof c.title === 'string'
       ? {
           key: Number(c.key),
+          ...(typeof c.ref === 'string' ? { ref: c.ref } : {}),
           title: c.title,
           url: typeof c.url === 'string' ? c.url : null,
         }
@@ -59,9 +61,9 @@ function automationOf(event: DeliveryEvent): AutomationDetail {
   };
 }
 
-// A card as a chat names it: "#48 Publish pricing page".
+// A card as a chat names it: "WI-48 Publish pricing page", "#48 Publish pricing page" from a send before refs.
 const cardLabel = (card: NonNullable<AutomationDetail['card']>) =>
-  Number.isInteger(card.key) ? `#${card.key} ${card.title}` : card.title;
+  Number.isInteger(card.key) ? `${card.ref ?? `#${card.key}`} ${card.title}` : card.title;
 
 /** The one sentence a chat shows for an event: "Ada moved “Fix sign-in” from Doing to Done on “Sprint 4”". */
 export function summaryOf(event: DeliveryEvent): string {

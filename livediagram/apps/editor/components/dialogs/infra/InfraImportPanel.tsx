@@ -13,6 +13,7 @@ import { InfraEnvSelect } from './InfraEnvSelect';
 import { InfraFileRow } from './InfraFileRow';
 import { chooseInfraFiles, readDroppedInfraFiles, useInfraRun } from './infra-panel-io';
 import { envsOf, useInfraCode, useInfraFacts, useSettled } from './useInfraFacts';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
@@ -114,12 +115,9 @@ export function InfraImportPanel({
       </label>
       <InfraEnvSelect envs={envs} value={chosenEnv} onChange={setEnv} disabled={busy} />
       {error ? (
-        <p
-          role="alert"
-          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="alert" className="mt-3">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-between gap-3">
         <div className="min-w-0">{note}</div>

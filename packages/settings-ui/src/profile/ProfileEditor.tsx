@@ -25,6 +25,7 @@ import { settingsApiErrorMessage } from '../store';
 import { useSavedFlash } from '../useSavedFlash';
 import { colourLabel } from './ProfileHeader';
 import type { Profile, ProfileHost } from './profile-host';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // Settings › Profile › Name and Colour (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"), the one editor every host
 // draws in place: a preview of what collaborators see, the display name (saved once typing pauses, when the field is
@@ -53,12 +54,9 @@ type NameStatus = 'idle' | 'saving' | 'saved' | 'error';
 
 function ErrorNote({ children }: { children: ReactNode }) {
   return (
-    <p
-      role="alert"
-      className="mt-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-    >
+    <Callout tone="error" role="alert" size="md" className="mt-3">
       {children}
-    </p>
+    </Callout>
   );
 }
 

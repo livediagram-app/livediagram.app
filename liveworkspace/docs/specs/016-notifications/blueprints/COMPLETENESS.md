@@ -13,3 +13,17 @@
 - [x] Accessibility
 - [x] Motion
 - [x] Testing
+
+## callouts
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [ ] Data and persistence (none: a callout keeps nothing)
+- [x] Errors and edge cases
+- [ ] Security and trust (no input; messages are the page's own)
+- [ ] Performance and limits (a static element)
+- [x] Presentation and UX
+- [x] Accessibility
+- [ ] Motion (none)
+- [x] Testing

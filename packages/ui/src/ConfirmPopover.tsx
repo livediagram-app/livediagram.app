@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
-import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { Button } from './Button';
-import { lucideGlyph } from './icons/lucide-glyph';
+import { Callout } from './callout/Callout';
 import { Portal } from './Portal';
 import { POPOVER_VIEWPORT_MARGIN as EDGE, clampIntoRange } from './popover';
 import { usePopoverLayer } from './popover-stack';
@@ -24,7 +23,6 @@ import { isComposingKey } from './composing-key';
 // hands focus back to the anchor. Every editor's and the Explorer's.
 
 const WIDTH = 240;
-const WarningIcon = lucideGlyph(lucideTriangleAlert, 13);
 
 /** A confirmation's question and the rest: split after its first question mark, the whole as the title without one. */
 export function splitConfirmMessage(message: string): { title: string; detail: string } {
@@ -51,12 +49,7 @@ function ConfirmText({
       >
         {title}
       </p>
-      {warning ? (
-        <p className="flex items-start gap-1.5 rounded-md bg-amber-50 px-2 py-1.5 text-xs leading-snug text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
-          <WarningIcon aria-hidden className="mt-px shrink-0" />
-          {warning}
-        </p>
-      ) : null}
+      {warning ? <Callout tone="warning">{warning}</Callout> : null}
       {detail ? (
         <p
           id={`${id}-detail`}

@@ -47,6 +47,7 @@ import {
   type PlannedAi,
   type PlannedSegment,
   cardRefOrKey,
+  prefixedCardRef,
   type ItemTypeDef,
 } from '@liveplanner/items';
 import { getItemsRev, listItems, readItem } from '../../db/items';
@@ -313,7 +314,11 @@ export async function runRule(
       if (stop) return (dropRun(sql, id), null);
       return resume ? end('skipped', 'The card is gone') : end('no_match', 'The card is gone');
     }
-    if (!cardless) card = { id: item.id, key: item.key, title: itemTitle(item) };
+    if (!cardless) {
+      // Its prefixed ref as it ran, so the Audit Trail and an agent's run listing still name it once it is gone.
+      const ref = prefixedCardRef(item, plan.outline.types);
+      card = { id: item.id, key: item.key, ...(ref ? { ref } : {}), title: itemTitle(item) };
+    }
     const url = cardless
       ? `${appBaseUrl(deps.env)}/project/${encodeURIComponent(deps.planId)}`
       : cardUrl(deps.env, deps.planId, item.id);
@@ -388,7 +393,15 @@ export async function runRule(
       planId: deps.planId,
       runId: id,
       rule: rule.name,
-      card: cardless ? null : { key: item.key, title: itemTitle(item), url: ctx.url },
+      // Its prefixed ref, as the run keeps it, so a chat names the card "WI-48" too.
+      card: cardless
+        ? null
+        : {
+            key: item.key,
+            ...(card?.ref ? { ref: card.ref } : {}),
+            title: itemTitle(item),
+            url: ctx.url,
+          },
       at,
       dry: opts.dry === true,
     };

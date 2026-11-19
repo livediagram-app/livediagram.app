@@ -2,6 +2,7 @@ import { sanitizedHtml } from '@liveworkspace/trusted-types/sanitize';
 import { useMemo, useState, type ReactNode } from 'react';
 import { Button, htmlProps, Switch, BackBar } from '@livedesign/ui';
 import { track } from '@/lib/telemetry';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // A checkerboard under a preview, so see-through paper reads as see-through (a logo page's PNG and
 // SVG, docs/specs/007-editor/logo-pages.md "Export").
@@ -111,9 +112,9 @@ export function ImageExportPanel({
         </>
       )}
       {error ? (
-        <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <Callout tone="error" role="alert" className="mt-4">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
         <Button

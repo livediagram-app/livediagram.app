@@ -16,17 +16,18 @@ Scope, by file:
 | `liveworkspace/apps/index/scripts/livehuddle-inbox-cleanup.sql` | The one-off cleanup of livehuddle's Inbox rows from before it stopped pushing (Work Tracker 736)                                                                |
 | `packages/index-app/src/outbox.ts`                              | The item's outbox in its Durable Object: what it owes the index, drained on idle                                                                                |
 | `packages/index-app/src/cards.ts`, `forms.ts`                   | Cards and their threads under `~cards`; a form's code lookup, cached                                                                                            |
+| `packages/index-client/src/card-ref.ts`                         | `cardNumber(card)`: a card's number as every cross-item reader shows it, `ref` (`WI-100`), else `#key`, null for none                                           |
 | `packages/index-client/src/app-client.ts`                       | `createIndexAppClient`: `pushSummary`, `pushCollab`, `pushForm`, `pushFormSeen`, `formByCode`, `formSeen`, `pushEvents`, `pushPersonEvents`                     |
 
 ## Domain and naming
 
-| Term    | Identifier                                                          | Meaning                                                                    |
-| ------- | ------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Summary | `items.summary`, JSON ≤ 2,048 bytes                                 | What the item last said of its content (counts, mode, `hasContent`)        |
-| Thread  | `collab_threads (app, item, tab, element)`                          | A comment thread's facts; the comments stay in the item                    |
-| Action  | `collab_actions (app, item, tab, element, action)`                  | An element's action, or an open card assigned to someone                   |
-| Card    | `CollabCard { id?, key, type, typeLabel, title, board, column? }`   | A Plan card's facts, pushed under the tab `~cards`; `id` on a thread's row |
-| Form    | `collab_forms (item, tab)`; `collab_form_reads (person, item, tab)` | Responses taken and seen                                                   |
+| Term    | Identifier                                                              | Meaning                                                                                                                                                     |
+| ------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Summary | `items.summary`, JSON ≤ 2,048 bytes                                     | What the item last said of its content (counts, mode, `hasContent`)                                                                                         |
+| Thread  | `collab_threads (app, item, tab, element)`                              | A comment thread's facts; the comments stay in the item                                                                                                     |
+| Action  | `collab_actions (app, item, tab, element, action)`                      | An element's action, or an open card assigned to someone                                                                                                    |
+| Card    | `CollabCard { id?, key, ref?, type, typeLabel, title, board, column? }` | A Plan card's facts, pushed under the tab `~cards`; `id` on a thread's row; `ref` its prefixed number (`WI-100`), read as `ref ?? '#' + key` (`cardNumber`) |
+| Form    | `collab_forms (item, tab)`; `collab_form_reads (person, item, tab)`     | Responses taken and seen                                                                                                                                    |
 
 ## Behaviour and state
 
@@ -42,7 +43,8 @@ Scope, by file:
 | `GET /app/items/:id/forms/:tabId/seen/:person` |                                                                          | `{ seen }` (0 when none)                                                                                                                                                                                                                                                                                                |
 
 Parsing. A card's `start` and `due` are kept only as `YYYY-MM-DD` strings; anything else is dropped from the card,
-never the push refused. Shown text is cut, not refused: labels, names and titles to 200, texts to 500, colours to 32. Ids and times
+never the push refused. Its `ref` is kept only when it matches `^[A-Z][A-Z0-9]{0,5}-(\d+)$` with that number the card's
+`key` (`CARD_REF` in `collab-parse.ts`); anything else is dropped the same way, so the reader shows `#key`. Shown text is cut, not refused: labels, names and titles to 200, texts to 500, colours to 32. Ids and times
 must be well formed. A thread needs `elementId`, `elementLabel`, `resolved` (boolean), `commentCount`,
 `participantIds` and `mentionedIds` (≤ 100 ids), `latestText`, `latestAuthorName`, `firstAt`, `latestAt`, and may
 carry `latestAuthorColor`, `latestAuthorId`, `resolvedById`, `agentIds` (≤ 100 ids; they join `collab_thread_people`

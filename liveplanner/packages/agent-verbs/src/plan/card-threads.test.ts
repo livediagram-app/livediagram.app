@@ -172,6 +172,14 @@ describe('listing threads', () => {
     expect(listedThread(lone, P, new Map()).cards).toEqual(['#7', 'a card in another plan']);
   });
 
+  // Card prefixes across plans (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+  it('names a card in another plan by the ref it carries', () => {
+    const shared = thread('th-yyyy', {
+      cards: [{ projectId: 'other', itemId: 'x', key: 4, ref: 'WI-4', projectName: 'Sprint 12' }],
+    });
+    expect(listedThread(shared, P, new Map()).cards).toEqual(['WI-4 in Sprint 12']);
+  });
+
   // docs/specs/012-collaboration/comment-reactions.md: agents read reactions, per emoji with who.
   it("shows a comment's reactions, and none when it has none", () => {
     const reacted = thread('th-rrrr', {

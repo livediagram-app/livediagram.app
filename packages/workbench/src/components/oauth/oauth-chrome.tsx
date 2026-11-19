@@ -8,6 +8,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { Chip, Glyph, SOLID_BRAND_DARK_CONTROL, Switch, lucideGlyph } from '@liveworkspace/ui';
 import type { SignInGate } from '../../hooks/auth/useSignInGate';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // What an editor tells its OAuth pages, once, in its app/oauth/oauth-shell.tsx.
 export type OauthPagesConfig = {
@@ -109,15 +110,8 @@ export function UnverifiedAppBadge() {
 // A caution on an approval card: the warning glyph, a heading line, and what to check under it.
 export function OauthWarning({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div
-      role="note"
-      className="mt-4 flex gap-2.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2.5 text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-100"
-    >
-      <WarningGlyph aria-hidden className="mt-0.5 shrink-0" />
-      <div className="min-w-0 text-sm">
-        <p className="font-semibold">{title}</p>
-        <div className="mt-1 text-xs leading-relaxed">{children}</div>
-      </div>
-    </div>
+    <Callout tone="warning" role="note" title={title} className="mt-4">
+      {children}
+    </Callout>
   );
 }

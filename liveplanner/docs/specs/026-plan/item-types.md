@@ -1077,6 +1077,16 @@ card 100 reads **WI-100**, a Task's T-7. The number itself is unchanged: one cou
   card chips, a sheet's card columns, CSV and tab exports, the calendar feed's event titles, and the agents' card
   refs (`ref: "WI-100"`). A card whose type the catalogue lacks (it draws as "Item") and a plan with no card types
   read `#100` as before; a tour's practice card shows no number.
+- **Across plans.** Places that list cards from several plans have no plan's card types to read, so each card
+  carries its ref, worked out where its plan's types are known: the plan's Inbox push gives each card its `ref`
+  ([What an item pushes](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#what-an-item-pushes)),
+  so the platform Inbox and its notices, the My Work calendar feed and a card thread's row from another plan read
+  `WI-100`; an automation run keeps its card's ref as it ran, so its Audit Trail line and an agent's run listing
+  (`list_rules` with runs) still name a card since deleted `WI-100`; and a card added to a thread stored in another
+  plan carries its ref there, so that plan's thread chips and an agent's thread listing read `WI-100 in Sprint 12`.
+  The live card's ref wins where the card is in the plan read (a type changed since reads as now). Anything stored
+  before refs (an Inbox row, a run, a thread's card) has none and reads `#100` until it is written again; an Inbox
+  row is rewritten on the plan's next push, so it catches up within seconds of any change to the plan.
 - **Finding a card by any form.** `WI-100`, `wi-100`, `#100` and `100` all name card 100: in search (the Cards
   panel, Search, card pickers, Card fields), in links, and wherever agents and the CLI take a card (`item: "WI-100"`).
   The number decides: a prefix written with it is not checked, so a ref made before a prefix changed, or before a

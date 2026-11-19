@@ -80,7 +80,7 @@ describe('ImportTabDialog', () => {
       />,
     );
     pick('SVG');
-    expect(screen.getByTestId('import-adds-note').textContent).toBe(
+    expect(document.querySelector('[data-callout="info"]')!.textContent).toBe(
       'The shapes land on the page you are on, fitted to it.',
     );
     expect(screen.queryByText(/replaces everything/)).toBeNull();

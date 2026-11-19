@@ -7,6 +7,7 @@ import { BackBar, Button, Select } from '@livedocuments/ui';
 import { SegmentedRadio } from '@liveworkspace/workbench/components/primitives/SegmentedRadio';
 import { exportPageLabel } from '@/lib/export-pages';
 import type { PrintScope } from '@/lib/print-pages';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const SCOPES: readonly { id: PrintScope; label: string }[] = [
   { id: 'page', label: 'Current Page' },
@@ -77,9 +78,9 @@ export function PrintPanel({
         </p>
       </div>
       {error ? (
-        <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <Callout tone="error" role="alert" className="mt-4">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
         <Button variant="primary" size="md" onClick={onPrint} busy={busy}>

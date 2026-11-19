@@ -41,6 +41,7 @@ import { PaneHeader, type Crumb } from './PaneHeader';
 import { viewTitle } from './view-title';
 import { useViewMode } from './useViewMode';
 import type { RowOptions } from './rows';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export function ItemsPane({ view }: { view: ItemsView }) {
   const ctx = useExplorer();
@@ -172,12 +173,9 @@ export function ItemsPane({ view }: { view: ItemsView }) {
       {`This folder was deleted, or it is somewhere you can’t reach. Head back to your own ${words.lowerMany}.`}
     </NotFoundCard>
   ) : state.error ? (
-    <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-200">
-      Couldn’t load this list.{' '}
-      <button type="button" className="font-semibold underline" onClick={state.retry}>
-        Try again
-      </button>
-    </div>
+    <Callout tone="error" size="md" action={{ label: 'Try Again', onSelect: state.retry }}>
+      Couldn’t load this list.
+    </Callout>
   ) : state.loading && folderRows.length === 0 ? (
     <SkeletonRows />
   ) : archivedView && state.items.length === 0 && !empty ? null : view.kind === 'trash' ? (

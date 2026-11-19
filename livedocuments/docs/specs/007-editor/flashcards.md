@@ -78,9 +78,10 @@ alignment. Nothing else can be put on it.
 A card is one short piece of writing on its own. It never grows another card.
 
 - **Too long for this card**: when the writing runs past the card's foot, what fits shows and the rest is cut off at
-  the foot, kept in the writing (nothing is lost, it comes back as the writing above it shrinks). A marker sits at the
-  card's foot, centred over the cut: **Too long for this card**, in the amber of a notice, for everyone who can see the
-  card. For someone who may edit the card's pages (an Editor, the card unlocked) the marker carries a
+  the foot, kept in the writing (nothing is lost, it comes back as the writing above it shrinks). A marker sits just
+  below the card's foot, centred under the cut and never over the last line: **Too long for this card**, a warning
+  callout ([Callouts](../../../../liveworkspace/docs/specs/016-notifications/callouts.md) "Floating callouts"), for
+  everyone who can see the card. For someone who may edit the card's pages (an Editor, the card unlocked) the marker carries a
   **Split Onto a New Card** button.
 - **Split Onto a New Card** (the card's menu, its page panel's action row, while the card is too long; and the
   marker's button): the writing from the first block that does not fit whole moves onto a new card right after it,

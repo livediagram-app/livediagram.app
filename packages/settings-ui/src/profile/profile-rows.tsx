@@ -9,6 +9,7 @@ import { ProfileHeaderCard, type AccountGuest } from './ProfileHeader';
 import { ProfileSection } from './ProfileEditor';
 import { SessionsRows, SignInMethodsRows } from './SecurityRows';
 import { TIME_ZONE_DESCRIPTION, TIME_ZONE_LABEL, TimeZoneSection } from './TimeZonePicker';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The Profile category's rows (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"), grouped as the old livediagram
 // Profile page was: the header card, Name and Colour, Time Zone, Sign-in and Security, then Your Account. Name and Colour is
@@ -64,12 +65,9 @@ function SignOutRow({ onSignOut }: { onSignOut: NonNullable<AccountSection['onSi
       }
     >
       {state === 'failed' ? (
-        <p
-          role="alert"
-          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="alert">
           Couldn’t sign out just now. Try again in a moment.
-        </p>
+        </Callout>
       ) : null}
     </SettingsRowShell>
   );

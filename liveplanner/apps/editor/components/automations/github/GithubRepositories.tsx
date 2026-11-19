@@ -20,6 +20,7 @@ import {
   RepositoryWindow,
 } from './RepositoryWindow';
 import { loadGithub, setGithub } from './use-github-connection';
+import { Callout } from '@liveworkspace/ui/callout';
 
 /** The most repositories one plan hears (the api's REPOSITORIES_MAX). */
 export const GITHUB_REPOSITORIES_MAX = 20;
@@ -162,10 +163,10 @@ export function GithubRepositories({
         </div>
       ) : null}
       {listed.length === 0 ? (
-        <p className="rounded-lg bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
+        <Callout tone="info" size="md">
           The installation lists no repositories you can reach. Add some on GitHub with Change on
           GitHub.
-        </p>
+        </Callout>
       ) : !long ? (
         <ul className={`${REPOSITORY_BOX_CLASSES} ${REPOSITORY_LIST_CLASSES}`}>
           {listed.map((r) => (
@@ -200,10 +201,10 @@ export function GithubRepositories({
         </p>
       ) : null}
       {privatePicked ? (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-[12px] leading-5 text-amber-900 dark:bg-amber-500/10 dark:text-amber-200">
+        <Callout tone="warning">
           Anyone who can see this plan’s cards, share links included, sees these pull requests’
           titles and states.
-        </p>
+        </Callout>
       ) : null}
       {over ? (
         <p role="alert" className="text-[12px] font-medium text-red-700 dark:text-red-300">

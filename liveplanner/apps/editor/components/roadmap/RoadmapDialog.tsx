@@ -18,12 +18,7 @@ import {
 } from '@liveplanner/ui';
 import { ToolFooter, ToolFooterButton } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
-import {
-  lucideExternalLink,
-  lucideGlobe,
-  lucideLock,
-  lucideSquareKanban,
-} from '@liveworkspace/icons/lucide';
+import { lucideExternalLink, lucideGlobe, lucideSquareKanban } from '@liveworkspace/icons/lucide';
 import { hasUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { ChoicePills } from '@/components/primitives/ChoicePills';
@@ -37,8 +32,8 @@ import { defaultRoadmapSettings, settingsReady } from './roadmap-defaults';
 import type { RoadmapScope } from './roadmap-gate';
 import { roadmapHeroArt } from './RoadmapHeroArt';
 import { RoadmapSettingsForm } from './RoadmapSettingsForm';
+import { Callout } from '@liveworkspace/ui/callout';
 
-const LockIcon = lucideGlyph(lucideLock, 14);
 const GlobeIcon = lucideGlyph(lucideGlobe, 14);
 const ExternalIcon = lucideGlyph(lucideExternalLink, 14);
 
@@ -487,18 +482,10 @@ export function RoadmapDialog({
           />
         ) : null}
         {state === 'draft' || state === 'published' ? (
-          <p
-            className="flex gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-100 dark:ring-amber-900"
-            data-roadmap-privacy=""
-          >
-            <span className="mt-0.5 shrink-0" aria-hidden>
-              <LockIcon />
-            </span>
-            <span>
-              Anyone with the link can see the chosen columns, card types and fields. People,
-              comments and other fields are never shown.
-            </span>
-          </p>
+          <Callout tone="warning">
+            Anyone with the link can see the chosen columns, card types and fields. People, comments
+            and other fields are never shown.
+          </Callout>
         ) : null}
         {saveFailed ? (
           <p role="alert" className="text-xs text-rose-700 dark:text-rose-300">

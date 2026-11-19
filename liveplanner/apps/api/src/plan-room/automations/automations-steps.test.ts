@@ -215,8 +215,10 @@ describe('outgoing actions', () => {
         key: `${run!.id}:1`,
         webhookId: 'wh1',
         rule: 'Tell',
+        // Its prefixed ref too, so the chat names it T-1 (item-types.md "Card number prefixes" "Across plans").
         card: {
           key: c.key,
+          ref: `T-${c.key}`,
           title: 'Pricing',
           url: expect.stringContaining(`/project/A#item=${c.id}`),
         },

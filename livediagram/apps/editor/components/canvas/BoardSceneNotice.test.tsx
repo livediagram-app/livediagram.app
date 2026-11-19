@@ -59,8 +59,8 @@ describe('BoardSceneNotice', () => {
       />,
     );
     expect(screen.getByRole('status').textContent).toContain("Couldn't paste from Excalidraw");
-    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Close' }), { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Dismiss' }), { key: 'Escape' });
     expect(onClose).toHaveBeenCalledTimes(2);
   });
 });
