@@ -53,6 +53,32 @@ describe('useLongPress', () => {
     expect(fired).toHaveBeenCalledWith(50, 50);
   });
 
+  it('lets the innermost hold claim a press: an outer one it bubbles to stands aside', () => {
+    vi.useFakeTimers();
+    const inner = vi.fn();
+    const outer = vi.fn();
+    const hook = renderHook(() => ({ inner: useLongPress(inner), outer: useLongPress(outer) }));
+    const nativeEvent = new Event('pointerdown');
+    const e = { pointerType: 'touch', clientX: 5, clientY: 6, nativeEvent } as ReactPointerEvent;
+    act(() => {
+      hook.result.current.inner.onPointerDown(e);
+      hook.result.current.outer.onPointerDown(e);
+    });
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(inner).toHaveBeenCalledWith(5, 6);
+    expect(outer).not.toHaveBeenCalled();
+    // A new press is a new claim: the outer hold still fires for a press only it sees.
+    act(() =>
+      hook.result.current.outer.onPointerDown({ ...e, nativeEvent: new Event('pointerdown') }),
+    );
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(outer).toHaveBeenCalledTimes(1);
+  });
+
   it('takes its window listeners off when unmounted mid-hold', () => {
     const { fired, hook } = setup();
     const off = vi.spyOn(window, 'removeEventListener');
