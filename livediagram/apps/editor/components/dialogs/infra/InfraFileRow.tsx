@@ -86,8 +86,9 @@ export function InfraFileRow({
           {format ? (FORMAT_WORD[format] ?? format) : '…'}
         </span>
         <span
-          // A long path wraps rather than hiding its end, the part that tells two wrangler.toml files apart.
-          className={`min-w-0 flex-1 font-mono text-xs break-all ${removed ? 'text-slate-500 line-through dark:text-slate-400' : 'text-slate-800 dark:text-slate-100'}`}
+          // A long path wraps rather than hiding its end, the part that tells two wrangler.toml files apart. Its 8rem
+          // floor wraps what follows it instead, so "docker-compose.yml" never breaks a few letters at a time.
+          className={`min-w-[8rem] flex-1 font-mono text-xs break-all ${removed ? 'text-slate-500 line-through dark:text-slate-400' : 'text-slate-800 dark:text-slate-100'}`}
         >
           {entry.name}
         </span>
@@ -98,7 +99,11 @@ export function InfraFileRow({
             {state}
           </span>
         ) : null}
-        <span className="ml-auto flex shrink-0 items-center gap-0.5">
+        {/* On a phone the update panel's three actions take a line of their own under the name, every row alike,
+            rather than wrapping row by row as each state chip's width happens to allow. */}
+        <span
+          className={`ml-auto flex shrink-0 items-center justify-end gap-0.5 ${showState ? 'max-sm:basis-full' : ''}`}
+        >
           {onChoose && !removed ? (
             <Tooltip label={`Choose ${entry.name}`}>
               <Button

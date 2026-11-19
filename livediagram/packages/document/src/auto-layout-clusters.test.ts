@@ -116,6 +116,33 @@ describe('layoutClusteredGraph', () => {
     expect(right.x).toBeGreaterThanOrEqual(left.x + left.width);
   });
 
+  it('keeps groups no line joins apart from each other and from the connected content', () => {
+    const graph: DiagramGraph = {
+      nodes: ['a', 'b', 'c', 'd', 'x', 'y'].map((id) => ({ id, label: id })),
+      edges: [
+        { from: 'a', to: 'b' },
+        { from: 'c', to: 'd' },
+        { from: 'x', to: 'y' },
+      ],
+      clusters: [
+        { id: 'shop', members: ['a', 'b'] },
+        { id: 'monitoring', members: ['c', 'd'] },
+      ],
+    };
+    const els = boxes(layoutClusteredGraph(graph, { makeEdgeId: makeIds() }));
+    const overlaps = (p: BoxedElement, q: BoxedElement) =>
+      p.x < q.x + q.width && q.x < p.x + p.width && p.y < q.y + q.height && q.y < p.y + p.height;
+    const shop = byId(els, 'shop');
+    const monitoring = byId(els, 'monitoring');
+    expect(overlaps(shop, monitoring)).toBe(false);
+    for (const free of ['x', 'y']) {
+      expect(overlaps(shop, byId(els, free))).toBe(false);
+      expect(overlaps(monitoring, byId(els, free))).toBe(false);
+    }
+    for (const m of ['a', 'b']) expect(contains(shop, byId(els, m))).toBe(true);
+    for (const m of ['c', 'd']) expect(contains(monitoring, byId(els, m))).toBe(true);
+  });
+
   it('leaves room between a group and an outside node for the label of the line between them', () => {
     const graph: DiagramGraph = {
       nodes: ['client', 'api', 'db'].map((id) => ({ id, label: id })),

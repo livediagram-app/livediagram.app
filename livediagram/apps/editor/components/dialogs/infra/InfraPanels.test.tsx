@@ -282,6 +282,23 @@ describe('the From Its Files card and the update', () => {
     expect(screen.getByRole('region', { name: 'From its files' })).toBeTruthy();
   });
 
+  it("puts each update row's actions on a line of their own on a phone, and the import rows' Remove beside the name", () => {
+    open({ sources: SOURCES });
+    fireEvent.click(screen.getByRole('button', { name: 'Update From Files' }));
+    const actions = (b: HTMLElement) => b.closest('span.ml-auto')!.className;
+    expect(actions(screen.getByRole('button', { name: 'Remove wrangler.toml' }))).toContain(
+      'max-sm:basis-full',
+    );
+    fireEvent.click(screen.getByRole('button', { name: /All Formats/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Infrastructure/ }));
+    drop(dropZone(), [new File([COMPOSE], 'compose.yml')]);
+    return waitFor(() =>
+      expect(actions(screen.getByRole('button', { name: 'Remove compose.yml' }))).not.toContain(
+        'max-sm:basis-full',
+      ),
+    );
+  });
+
   it('shortens a long list of names', () => {
     expect(namesLine(['a', 'b', 'c'])).toBe('a, b, c');
     expect(namesLine(['a', 'b', 'c', 'd'])).toBe('a, b and 2 more');

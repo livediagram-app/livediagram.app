@@ -264,10 +264,15 @@ export function layoutClusteredGraph(
         : [written.get(el.id) ?? Infinity]),
     );
   const blocks = [...frames, ...freeNodes].sort((a, b) => at(a) - at(b));
-  const contracted = autoLayoutElements([...blocks, ...contractedArrows], {
-    direction,
-    fixedSizeIds: new Set([...frameIds, ...sized]),
-  });
+  // A group no line joins to the rest (two Kubernetes namespaces, two Mermaid subgraphs with no edge between them) is
+  // left where it started by the layout, at the origin over every other such group and the placed content: swept
+  // into rows below that content, as loose nodes are, before its members move in.
+  const contracted = sweepEdgelessNodes(
+    autoLayoutElements([...blocks, ...contractedArrows], {
+      direction,
+      fixedSizeIds: new Set([...frameIds, ...sized]),
+    }),
+  );
   const placedById = new Map(contracted.filter(isBoxed).map((el) => [el.id, el]));
 
   // 3. Expand: shift each cluster's members into its placed frame.
