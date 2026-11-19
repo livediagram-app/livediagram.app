@@ -275,6 +275,7 @@ export function PhotoToolCategories({ pinned }: { pinned: ReadonlySet<string> })
               data-photo-holds={holds ? '' : undefined}
               aria-haspopup="menu"
               aria-expanded={isOpen}
+              aria-label={c.name}
               onClick={(e) => {
                 if (isOpen) return close();
                 const r = e.currentTarget.getBoundingClientRect();
@@ -284,7 +285,9 @@ export function PhotoToolCategories({ pinned }: { pinned: ReadonlySet<string> })
                   top: r.bottom + 10,
                 });
               }}
-              className={`relative flex h-9 shrink-0 items-center gap-1.5 rounded-lg pl-2 pr-2.5 transition ${
+              // Glyphs alone, as the category bar's, while the strip has no room for the names (data-strip-glyphs, set by the
+              // palette strip around these).
+              className={`relative flex h-9 shrink-0 items-center gap-1.5 rounded-lg pl-2 pr-2.5 transition [[data-strip-glyphs]_&]:w-9 [[data-strip-glyphs]_&]:justify-center [[data-strip-glyphs]_&]:px-0 ${
                 isOpen || holds
                   ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
                   : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white'
@@ -293,7 +296,9 @@ export function PhotoToolCategories({ pinned }: { pinned: ReadonlySet<string> })
               <span aria-hidden className="flex h-[18px] w-[18px] items-center justify-center">
                 <Icon />
               </span>
-              <span className="text-[13px] font-medium leading-none">{c.name}</span>
+              <span className="text-[13px] font-medium leading-none [[data-strip-glyphs]_&]:hidden">
+                {c.name}
+              </span>
               <span
                 aria-hidden
                 className={`absolute inset-x-2.5 -bottom-0.5 h-0.5 rounded-full bg-brand-500 transition-opacity duration-micro ${isOpen ? 'opacity-100' : 'opacity-0'}`}

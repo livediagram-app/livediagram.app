@@ -135,7 +135,8 @@ Between them, at the strip's tile size:
   hand opens its options flyout, whose **Tool** section offers the group's other tools. No long press.
 - **The categories**, as the palette's category bar has them (a glyph and a name, a marker under the open
   one, tinted while it holds the tool in hand that no pinned button shows): **Select**, **Paint**, **Retouch** and
-  **Shapes**. A press opens the category's flyout in the category flyout's look: a header (glyph, name, line, how many
+  **Shapes**. Like the category bar's, the names go and the glyphs stay (each still named for a screen reader) while
+  the strip has no room for them, so it never runs under the top-right corner card. A press opens the category's flyout in the category flyout's look: a header (glyph, name, line, how many
   tools), a row per tool group (its glyph, name, line and key), and a footer saying what the pointed-at row is. A
   group of one tool takes it at a press; a group of several opens its tools in a panel beside the flyout (on its
   right where the window has room, else its left, level with the row), as a card tile's presets do, opening as the
