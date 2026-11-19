@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { dismissEmptyCard } from '@liveworkspace/workbench/components/canvas/empty-card-dismissed';
 import { ModeBanner } from '@liveworkspace/workbench/components/chrome/ModeBanner';
 import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
-import { StartAgainTray } from './StartAgainTray';
+import { StartAgainTray } from '@liveworkspace/workbench/components/start/StartAgainTray';
 
 // docs/specs/007-editor/start-diagramming.md "Bringing it back": an empty tab's Show Templates steps aside while a
 // mode's message (an armed tool's Cancel) is up, as both stand in the same place, under the strip or below the top
@@ -43,7 +43,7 @@ describe('Show Templates and a mode message', () => {
     dismissEmptyCard('t:pages');
     render(
       <>
-        <StartAgainTray mode="pages" tabId="t" tabName="Tab 2" />
+        <StartAgainTray closedKey="t:pages" tabName="Tab 2" />
         <ModeBanner icon={<span>✎</span>} message="Click to place text" onAction={() => {}} />
       </>,
     );
@@ -59,7 +59,7 @@ describe('Show Templates and a mode message', () => {
     dismissEmptyCard('t:pages');
     render(
       <>
-        <StartAgainTray mode="pages" tabId="t" tabName="Tab 2" />
+        <StartAgainTray closedKey="t:pages" tabName="Tab 2" />
         <TrayBanner />
       </>,
     );

@@ -639,7 +639,7 @@ Shift is the editor's "power modifier": it chains quick-connect arrows, forks a 
 
 The pill leads with a `⇧ Shift` key chip so the message reads as "while this key is down". It never shows while typing (a Shift press inside an input / contentEditable is just capitalisation), while another mode banner owns the top slot (format painter / draw), in read-only sessions, or on an empty canvas with nothing to act on. It renders from a shared `useShiftHeld` key-state subscription so holding Shift re-renders only the pill. That and `useModKeyHeld` are now the same store, `../packages/workbench/src/hooks/ui/held-key-store.ts` owns the one window listener, the subscriber set and the SSR-safe snapshot; each hook supplies only its key policy.
 
-The component is `ModifierHintBanner`: its job was always "name what a modifier does right now", and the old `ShiftHintBanner` name described its trigger rather than its work.
+The component is `ModifierHintBanner`, every editor's one copy in `@liveworkspace/workbench` (`../packages/workbench/src/components/chrome/ModifierHintBanner.tsx`, with its store-bound `ModifierHint`): its job was always "name what a modifier does right now", and the old `ShiftHintBanner` name described its trigger rather than its work.
 
 ## Keyboard shortcuts
 
