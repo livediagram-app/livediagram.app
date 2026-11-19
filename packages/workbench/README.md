@@ -114,9 +114,17 @@ message in place of the canvas's (`shiftMessage`, livehuddle's walk), and livede
 door. The start-again tray (`components/start/StartAgainTray`) takes the closed start's key and, where the editor has
 one, the dock its pill stands clear of (`dockSelector`, livediagram's Draw). The category bar's state and buttons
 (`components/palette/CategoryBar`: `useCategoryBar`, `CategoryBarButtons`, the flyout widths) are bound by each
-editor's `components/palette/CategoryBar.tsx` to its own flyout widths and strip divider; the flyout under the bar
-(`CategoryBarFlyout`) stays each editor's own, drawn from its tiles. The bar sends its `UI·Changed·ToolbarCategory`
-through the `track` binding.
+editor's `components/palette/CategoryBar.tsx` to its own flyout widths and strip divider. The bar sends its
+`UI·Changed·ToolbarCategory` through the `track` binding.
+
+The flyout under the bar is one copy too (Work Tracker 1261): `components/palette/CategoryBarFlyout` hangs it and its
+side panel and moves between them by hover and keyboard, `CategoryFlyout` and `CategoryFlyoutSide` draw them,
+`category-flyout-items` their tiles, cards and footer, and `category-flyout-keys` the arrow keys (by position across
+groups, ArrowRight into a side panel, ArrowLeft and Escape back out). Each editor binds its tiles once, in its
+`components/palette/category-flyout-kit.tsx`, as a `FlyoutKit` (`category-flyout-kit`): how a tile places, arms, drags
+and tints, which tiles open a side panel, and how its categories group and lay out. What a side panel holds for a tile
+without presets is the editor's (`sideExtra`: livedesign's opener and Fill colour), and so is a press it takes itself
+(`pressSide`: livedesign's Fill picks up on a desktop). livediagram and livehuddle still draw their own flyouts.
 
 Never by importing the product: a workbench module that needs `@<product>/…` is not ready to move.
 

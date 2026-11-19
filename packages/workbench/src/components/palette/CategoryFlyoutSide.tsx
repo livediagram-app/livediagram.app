@@ -6,31 +6,33 @@ import {
   useLayoutEffect,
   useRef,
   useState,
+  type PointerEvent,
   type ReactNode,
 } from 'react';
-import type { PendingDraw } from '@/lib/draw-mode';
-import { uiUnscaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
-import { tileDisplayName, type PaletteTileDef } from './palette-tile-defs';
-import { visibleTiles, tileHandler, type PaletteTileActions } from './PaletteTileGrid';
+import { uiUnscaleStyle } from '../../lib/ui-scale';
+import type { FlyoutKit, FlyoutTile } from './category-flyout-kit';
 import { CardList, InfoFooter } from './category-flyout-items';
-import { FlyoutHeader, onFlyoutArrowKey } from './CategoryFlyout';
-import { FillColourPicker } from './FillToolRow';
+import { firstStop, onFlyoutArrowKey } from './category-flyout-keys';
+import { FlyoutHeader } from './CategoryFlyout';
 
-// The category flyout's side panel (docs/specs/007-editor/toolbar-layout.md "The category bar"): what a tile
-// with presets (Card, Badge) or an opener holds, in a second popover beside the flyout, lined up with the tile that
-// opened it, so the flyout stays open behind it as a submenu's parent does. It opens on the side of the tile's own
+// The category flyout's side panel (each editor's docs/specs/007-editor/toolbar-layout.md "A tile's side panel"),
+// every editor's one copy: what a tile with presets (Card, Badge) holds, or what the editor puts there for another
+// kind (livedesign's opener and Fill tool, `extra`), in a second popover beside the flyout, lined up with the tile
+// that opened it, so the flyout stays open behind it as a submenu's parent does. It opens on the side of the tile's own
 // column (sidePlacement); on a phone it lies over the flyout. Its presets place and drag as any tile.
 
 const PRESETS_HINT = 'Start from a preset, then change any of it.';
-const FILL_HINT = 'Pick a colour to pick the bucket up in it.';
 // Its design width, and the gap it keeps from the flyout.
 export const SIDE_PX = 304;
 const SIDE_GAP_PX = 8;
 
-export type SideOpen = { def: PaletteTileDef; top: number; right: number };
+export type SideOpen<T> = { def: T; top: number; right: number };
+
+/** What a side panel holds for a tile without presets: its line under the name, and its body. */
+export type SideExtra = { tagline: string; body: ReactNode };
 
 /** Where the panel hangs for a tile, as offsets into the strip's root (screen px, as the flyout's `right` is). */
-export function sidePlacement(tile: HTMLElement, def: PaletteTileDef): SideOpen | null {
+export function sidePlacement<T>(tile: HTMLElement, def: T): SideOpen<T> | null {
   const root = tile.closest('[data-toolbar-palette]')?.getBoundingClientRect();
   const flyout = tile.closest('[data-category-flyout]')?.getBoundingClientRect();
   if (!root || !flyout) return null;
@@ -52,57 +54,49 @@ export function sidePlacement(tile: HTMLElement, def: PaletteTileDef): SideOpen 
   return { def, top, right };
 }
 
-/** The panel's first stop for the keyboard: its first card, or else the first control it holds (a colour, a search). */
-function firstStop(body: HTMLElement | null): HTMLElement | null {
-  return (
-    body?.querySelector<HTMLElement>('[data-flyout-item]') ??
-    body?.querySelector<HTMLElement>('button, input, [tabindex]:not([tabindex="-1"])') ??
-    null
-  );
-}
-
-export function CategoryFlyoutSide({
+export function CategoryFlyoutSide<T extends FlyoutTile<T>, A, P>({
   side,
+  kit,
   focusKey = 0,
   onBack,
   isMobile,
   scale,
   actions,
   pendingDraw,
-  openBody,
+  extra = null,
   seeThrough = false,
   hoverHandlers,
 }: {
-  side: SideOpen;
+  side: SideOpen<T>;
+  kit: FlyoutKit<T, A, P>;
   // Bumped when the keyboard enters the panel (ArrowRight on its tile): its first card takes the focus.
   focusKey?: number;
   // ArrowLeft on a card, or Escape anywhere in it: the panel closes and the focus goes back to its tile.
   onBack: () => void;
   isMobile: boolean;
   scale: number;
-  actions: PaletteTileActions;
-  pendingDraw: PendingDraw | null;
-  // An opener's body: the category it stands for, at its group.
-  openBody: (categoryId: string, group: string | null) => ReactNode;
+  actions: A;
+  pendingDraw: P;
+  // What it holds for a tile without presets (the editor's), else nothing but its header.
+  extra?: SideExtra | null;
   // A tile is being dragged out: faded, and a drop on it lands on the canvas beneath (`data-drop-through`).
   seeThrough?: boolean;
   hoverHandlers: {
-    onPointerEnter: (e: React.PointerEvent) => void;
-    onPointerLeave: (e: React.PointerEvent) => void;
+    onPointerEnter: (e: PointerEvent) => void;
+    onPointerLeave: (e: PointerEvent) => void;
     onDragStart: () => void;
     onDragEnd: () => void;
   };
 }) {
   const { def } = side;
-  const [hovered, setHovered] = useState<PaletteTileDef | null>(null);
+  const [hovered, setHovered] = useState<T | null>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   // Lined up with its tile, unless that runs it off the bottom of the window: then it rises just enough to fit
   // (8px clear), never above the strip's top. Measured once it has laid out, before it paints.
   const [lift, setLift] = useState(0);
   useLayoutEffect(() => {
-    const panel = panelRef.current;
-    if (!panel) return;
+    const panel = panelRef.current!;
     // Its laid-out height too, not only its box: it mounts scaled down for its opening animation,
     // which measures it short and left its foot below the window. The larger never lifts too little.
     // Its floor is the flyout's foot, which already stops above the bottom bar; else the window's.
@@ -131,8 +125,8 @@ export function CategoryFlyoutSide({
     window.addEventListener('keydown', onKey, true);
     return () => window.removeEventListener('keydown', onKey, true);
   }, []);
-  const a = def.action;
-  const variants = def.variants?.length ? visibleTiles([...def.variants], actions.hasImage) : null;
+  const variants = def.variants?.length ? kit.visible(def.variants, actions) : null;
+  const name = kit.displayName(def);
   return (
     <div
       data-category-flyout-side=""
@@ -140,7 +134,7 @@ export function CategoryFlyoutSide({
       data-floating-panel=""
       ref={panelRef}
       role="dialog"
-      aria-label={tileDisplayName(def)}
+      aria-label={name}
       {...hoverHandlers}
       style={
         isMobile
@@ -151,14 +145,8 @@ export function CategoryFlyoutSide({
     >
       <FlyoutHeader
         icon={def.icon}
-        title={tileDisplayName(def)}
-        tagline={
-          variants
-            ? (def.variantsHint ?? PRESETS_HINT)
-            : a.type === 'fill'
-              ? FILL_HINT
-              : `Browse ${def.label}.`
-        }
+        title={name}
+        tagline={variants ? (def.variantsHint ?? PRESETS_HINT) : (extra?.tagline ?? '')}
         count={variants?.length}
       />
       <div
@@ -176,22 +164,18 @@ export function CategoryFlyoutSide({
             <CardList
               tiles={variants}
               columns={1}
+              kit={kit}
               actions={actions}
               pendingDraw={pendingDraw}
-              onPress={(t) => tileHandler(t, actions, pendingDraw)()}
+              onPress={(t) => kit.press(t, actions, pendingDraw)}
               onHover={(t) => setHovered(t)}
             />
           </div>
-        ) : a.type === 'open' ? (
-          <div className="px-2 py-2.5">{openBody(a.category, a.group ?? null)}</div>
-        ) : a.type === 'fill' ? (
-          // The one colour picker; a pick picks the bucket up in it (closing the flyout as any tool does).
-          <div className="px-3 py-2.5">
-            <FillColourPicker onPick={(fill) => actions.beginFill?.(fill)} />
-          </div>
-        ) : null}
+        ) : (
+          extra?.body
+        )}
       </div>
-      {variants ? <InfoFooter def={hovered} /> : null}
+      {variants ? <InfoFooter def={hovered} kit={kit} /> : null}
     </div>
   );
 }

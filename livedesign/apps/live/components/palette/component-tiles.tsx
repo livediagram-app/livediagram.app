@@ -41,7 +41,7 @@ export function DesignComponentsBand({ variant = 'band' }: { variant?: 'band' | 
       data-design-components=""
     >
       {flyout ? (
-        // The category flyout's own group heading (CategoryFlyout), so the band reads as its first group.
+        // The category flyout's own group heading (workbench's CategoryFlyout), so the band reads as its first group.
         <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
           In This Design
           {count}

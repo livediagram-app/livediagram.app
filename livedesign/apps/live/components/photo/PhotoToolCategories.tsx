@@ -9,13 +9,13 @@
 // outside them and Escape.
 import { useEffect, useRef, useState } from 'react';
 import { ChevronRightIcon, Portal } from '@livedesign/ui';
-import { FlyoutHeader } from '@/components/palette/CategoryFlyout';
+import { FlyoutHeader } from '@liveworkspace/workbench/components/palette/CategoryFlyout';
 import {
   FLYOUT_CARD_PLATE,
   FlyoutFooter,
   flyoutCardClass,
   Kbd,
-} from '@/components/palette/category-flyout-items';
+} from '@liveworkspace/workbench/components/palette/category-flyout-items';
 import { TOOL_BLURBS } from '@/lib/photo-editor/option-guides';
 import {
   GROUP_BLURBS,
