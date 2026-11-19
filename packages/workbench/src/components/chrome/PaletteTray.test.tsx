@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import {
   PALETTE_TRAY_MIN_WIDTH_PX,
   PaletteTray,
@@ -285,6 +286,10 @@ describe('usePaletteTrayShown', () => {
     return <output data-testid="shown">{String(usePaletteTrayShown())}</output>;
   }
   const box = { left: 91, width: 208, top: 12, bottom: 58 };
+
+  it('is false in the server render, where no tray is on screen', () => {
+    expect(renderToString(<Probe />)).toContain('false');
+  });
 
   it('is true while any tray is on screen, and false once the last one goes', () => {
     const { rerender } = render(
