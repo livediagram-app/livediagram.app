@@ -131,6 +131,10 @@ const HELD_AT_100 = [
   // (docs/specs/004-interface-design/colour-picker.md "Reading on its ground", Work Tracker 1108).
   'src/components/colour/ContrastHint.tsx',
   'src/components/colour/useJudgedSwatch.ts',
+  // The modifier hint, the start-again tray and the category bar every editor carried a copy of (Work Tracker 1217).
+  'src/components/chrome/ModifierHintBanner.tsx',
+  'src/components/start/StartAgainTray.tsx',
+  'src/components/palette/CategoryBar.tsx',
 ];
 
 export default defineProject({
