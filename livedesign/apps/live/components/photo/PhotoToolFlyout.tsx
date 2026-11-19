@@ -8,8 +8,8 @@
 // Escape and putting the tool down. While a Free Transform or a crop box is open and the card is not, a small bar
 // hangs there instead (HeldBar): the tool's name, Options (the card), Cancel and Commit or Crop.
 import { useEffect, useState } from 'react';
-import { FlyoutHeader } from '@/components/palette/CategoryFlyout';
-import { FlyoutFooter } from '@/components/palette/category-flyout-items';
+import { FlyoutHeader } from '@liveworkspace/workbench/components/palette/CategoryFlyout';
+import { FlyoutFooter } from '@liveworkspace/workbench/components/palette/category-flyout-items';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { TOOL_BLURBS } from '@/lib/photo-editor/option-guides';
 import { toolFlyout, useToolFlyoutOpen } from '@/lib/photo-editor/tool-flyout';

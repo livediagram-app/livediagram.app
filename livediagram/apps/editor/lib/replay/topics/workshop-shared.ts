@@ -18,7 +18,7 @@ import {
 /** A category on the bar, by its own anchor (CategoryBar.tsx CategoryBarButtons: `bar-<category id>`). */
 export const bar = (id: string): CursorTarget => ({ kind: 'tour', id });
 
-/** A tile in the open flyout, by the label its button carries (category-flyout-items.tsx useFlyoutItem `aria-label`,
+/** A tile in the open flyout, by the label its button carries (workbench's category-flyout-items.tsx useFlyoutItem `aria-label`,
  *  StickerPickerTab.tsx StickerTile `aria-label`): a card's words also hold its glyph and blurb. */
 export const tile = (label: string): CursorTarget => ({
   kind: 'find',

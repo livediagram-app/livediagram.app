@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { renderToString } from 'react-dom/server';
 import {
   PALETTE_TRAY_MIN_WIDTH_PX,
   PaletteTray,
@@ -8,6 +9,7 @@ import {
   TemplateExampleTray,
   traySlot,
   usePaletteStripBox,
+  usePaletteTrayShown,
   useToolbarBox,
 } from './PaletteTray';
 
@@ -245,11 +247,85 @@ describe('traySlot', () => {
     });
   });
 
-  it("keeps the strip's width on a phone, where a long message wraps instead", () => {
-    expect(traySlot({ left: 72, width: 200, top: 12, bottom: 58 }, 390)).toEqual({
-      left: 72,
-      width: 200,
+  it('keeps its minimum width on a phone too, at most the window less 8 px each side, so its actions fit', () => {
+    // A phone's strip sits beside the menu button, narrower than a tray's actions ("Keep It" ran past its edge).
+    expect(traySlot({ left: 91, width: 208, top: 12, bottom: 58 }, 390)).toEqual({
+      left: 15,
+      width: PALETTE_TRAY_MIN_WIDTH_PX,
     });
+    expect(traySlot({ left: 91, width: 138, top: 12, bottom: 58 }, 320)).toEqual({
+      left: 8,
+      width: 304,
+    });
+  });
+});
+
+describe("the tray's card", () => {
+  it("centres under the strip's card when the slot is kept inside the window", () => {
+    // A 100 px strip at the window's left edge (centre 50): the 360 px slot is clamped to 8..368 (centre 188), so the
+    // spacer after the card starts twice the 138 px offset wide.
+    render(
+      <PaletteTray box={{ left: 0, width: 100, top: 12, bottom: 58 }} lead={<span />}>
+        Tab 1 is empty
+      </PaletteTray>,
+    );
+    const [before, after] = [
+      ...document.querySelectorAll<HTMLElement>(
+        '[data-palette-tray] ~ span, span:has(~ [data-palette-tray])',
+      ),
+    ];
+    expect(before!.style.flexBasis).toBe('0px');
+    expect(after!.style.flexBasis).toBe('276px');
+  });
+});
+
+// The top-centre stack starts below the tray while one is on screen (toolbar-layout.md "Layout details"), or an
+// empty tab's tray covers the Offline banner on a phone.
+describe('usePaletteTrayShown', () => {
+  function Probe() {
+    return <output data-testid="shown">{String(usePaletteTrayShown())}</output>;
+  }
+  const box = { left: 91, width: 208, top: 12, bottom: 58 };
+
+  it('is false in the server render, where no tray is on screen', () => {
+    expect(renderToString(<Probe />)).toContain('false');
+  });
+
+  it('is true while any tray is on screen, and false once the last one goes', () => {
+    const { rerender } = render(
+      <>
+        <Probe />
+      </>,
+    );
+    expect(screen.getByTestId('shown').textContent).toBe('false');
+    rerender(
+      <>
+        <Probe />
+        <PaletteTray box={box} standing lead={<span />}>
+          Tab 1 is empty
+        </PaletteTray>
+        <PaletteTray box={box} lead={<span />}>
+          Click to drop
+        </PaletteTray>
+      </>,
+    );
+    expect(screen.getByTestId('shown').textContent).toBe('true');
+    // The mode banner's tray goes; the standing one is still up.
+    rerender(
+      <>
+        <Probe />
+        <PaletteTray box={box} standing lead={<span />}>
+          Tab 1 is empty
+        </PaletteTray>
+      </>,
+    );
+    expect(screen.getByTestId('shown').textContent).toBe('true');
+    rerender(
+      <>
+        <Probe />
+      </>,
+    );
+    expect(screen.getByTestId('shown').textContent).toBe('false');
   });
 });
 
@@ -264,6 +340,10 @@ describe('the template example tray', () => {
     const tray = screen.getByRole('status');
     expect(tray.hasAttribute('data-yields-to-mode')).toBe(true);
     expect(tray.textContent).toContain('Example content shows how this works.');
+    // A phone's tray holds only the actions: the sentence leaves the row for screen readers, with no empty gap.
+    expect(screen.getByText('Example content shows how this works.').className).toContain(
+      'max-sm:sr-only',
+    );
     const [clear, keep] = screen.getAllByRole('button');
     expect(clear!.textContent).toBe('Clear Example Content');
     expect(keep!.textContent).toBe('Keep It');

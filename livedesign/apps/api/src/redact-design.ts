@@ -14,9 +14,8 @@
 // test surface of its own, as origin-check has.
 //
 // Every non-owner reader already behaved as though this value might be blank:
-// the client reads it only to compute `isOwner` (correctly false for a blank),
-// and `resolveOwnerBadge` in apps/live/lib/presence-rows.ts designs the
-// blank case and falls back to the owner's name + colour. So redacting on the
+// the client reads it only to compute `isOwner` (correctly false for a blank).
+// So redacting on the
 // second door changes what a non-owner RECEIVES, not what they can do.
 
 // `shareCode` is a credential too. It is the design's OLDEST share link, of

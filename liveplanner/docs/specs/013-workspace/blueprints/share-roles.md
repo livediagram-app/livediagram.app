@@ -36,8 +36,7 @@ The spec's [Later](../share-roles.md#later) items (token levels, ownership power
 | `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                                                | `cells` writes at participate                                                                 |
 | `packages/agent-verbs/src/mcp/*`                                                                                                | `share_project.role` takes three levels, default `participate`                                |
 | `apps/editor/lib/editor-capabilities.ts`                                                                                        | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
-| `apps/editor/app/project/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`)                   | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
-| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/project/[id]/useRoleIndicator.ts`                                       | Participating pill                                                                            |
+| `apps/editor/app/project/[id]/*` (`useEditorState`, `tab-save-flow`, `editor-page-helpers`)                                     | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
 
 ## Domain and naming
 
@@ -147,14 +146,12 @@ bundle's `?s=` upgrade, or a failed mint) may update but never add or remove (SR
 
 Editor state:
 
-| Flag            | Value                                                                        |
-| --------------- | ---------------------------------------------------------------------------- |
-| `sessionRole`   | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`    |
-| `canEdit`       | `sessionRole === 'edit' && !viewPreview` (unchanged)                         |
-| `isReadOnly`    | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
-| `can`           | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
-| Pill level      | `viewPreview ? 'view' : sessionRole`                                         |
-| `canToggleRole` | `sessionRole === 'edit'` (unchanged)                                         |
+| Flag          | Value                                                                        |
+| ------------- | ---------------------------------------------------------------------------- |
+| `sessionRole` | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`    |
+| `canEdit`     | `sessionRole === 'edit'` (unchanged)                                         |
+| `isReadOnly`  | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
+| `can`         | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
 
 `EditorCapabilities` for a session that is not an Editor; an Editor holds every flag:
 
@@ -429,7 +426,6 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Items and Sheets doors at participate                                            | `apps/api/src/routes/item-routes.test.ts`, `sheet-routes.test.ts`           |
 | Capabilities per level                                                           | `apps/editor/lib/editor-capabilities.test.ts`                               |
 | Participant save branch                                                          | `apps/editor/app/project/[id]/tab-save-flow.test.ts`                        |
-| Pill per level                                                                   | `apps/editor/components/chrome/RoleIndicator.test.tsx`                      |
 | MCP default and enum                                                             | `packages/agent-verbs` MCP schema tests                                     |
 
 ## Constants and configuration

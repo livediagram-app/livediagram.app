@@ -4,6 +4,8 @@
 
 export type ImportNoteKind =
   | 'shape-unmatched'
+  // Visio only (docs/specs/020-import-export/visio-import.md "The import report").
+  | 'shape-as-text'
   | 'shape-approximated'
   | 'icon-substituted'
   | 'image-unavailable'
@@ -23,6 +25,7 @@ export type ImportNoteKind =
 /** The summary's order: the spec table's. */
 export const IMPORT_NOTE_ORDER: readonly ImportNoteKind[] = [
   'shape-unmatched',
+  'shape-as-text',
   'shape-approximated',
   'icon-substituted',
   'image-unavailable',

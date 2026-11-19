@@ -175,12 +175,9 @@ const base = {
   slideDeck: { runnable: [], startingDeck: false },
   can: { level: 'edit' },
   isOwner: true,
-  canToggleRole: false,
   selfParticipant: self,
   livePresence: [],
-  documentOwnerId: 'me',
   documentOwnerName: null,
-  documentOwnerColor: null,
   // The tab bar.
   tabs: [tab],
   activeId: 't1',

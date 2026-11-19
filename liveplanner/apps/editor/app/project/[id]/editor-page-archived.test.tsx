@@ -17,7 +17,7 @@ vi.mock('./EditorView', () => ({ EditorView: () => <p>the editor</p> }));
 vi.mock('@/components/dialogs/LocalMovePrompt', () => ({ LocalMovePrompt: () => null }));
 vi.mock('@/components/dialogs/ConversionHandoff', () => ({ ConversionHandoff: () => null }));
 vi.mock('@/components/chrome/EditorHeader', () => ({
-  EditorHeader: ({ projectName }: { projectName: string }) => <h1>{projectName}</h1>,
+  EditorHeader: () => <header />,
 }));
 vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
 vi.mock('@liveworkspace/workbench/lib/icon-registry', () => ({
@@ -66,6 +66,7 @@ beforeEach(() => {
     commentReactions: null,
   };
   harness.refusal = null;
+  document.title = '';
   vi.stubGlobal('location', {
     ...window.location,
     pathname: '/project/p1',
@@ -83,7 +84,7 @@ describe('the editor at an archived plan', () => {
   it('shows the archived card for one this browser holds archived, and Change Folder asks to move it', () => {
     writeThisBrowser('liveplanner', [plan('p1', 5)]);
     render(<LivePage />);
-    expect(screen.getByRole('heading', { name: 'Plan Archived' })).toBeTruthy();
+    expect(document.title).toContain('Plan Archived');
     expect(screen.queryByText('the editor')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Change Folder' }));
     expect(assign).toHaveBeenCalledWith('https://liveplanner.app/explorer/archived?move=p1');
@@ -93,13 +94,13 @@ describe('the editor at an archived plan', () => {
     harness.state = { ...harness.state, projectNotFound: true };
     harness.refusal = 'archived';
     render(<LivePage />);
-    expect(screen.getByRole('heading', { name: 'Plan Archived' })).toBeTruthy();
+    expect(document.title).toContain('Plan Archived');
   });
 
   it('opens one that isn’t archived, here or at the index', () => {
     writeThisBrowser('liveplanner', [plan('p1', null), plan('p2', 5)]);
     render(<LivePage />);
     expect(screen.getByText('the editor')).toBeTruthy();
-    expect(screen.queryByRole('heading', { name: 'Plan Archived' })).toBeNull();
+    expect(document.title).not.toContain('Plan Archived');
   });
 });

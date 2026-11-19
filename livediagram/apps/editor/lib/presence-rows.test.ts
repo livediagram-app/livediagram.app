@@ -7,7 +7,6 @@ import {
   buildRemoteCursorRows,
   buildRemoteSelectionsByElement,
   remoteSelectionOf,
-  resolveOwnerBadge,
 } from './presence-rows';
 
 const p = (id: string, over: Partial<Participant> = {}): Participant => ({
@@ -289,57 +288,6 @@ describe('remoteSelectionOf', () => {
       tabId: undefined,
     });
     expect(remoteSelectionOf({ elementId: 'a', elementIds: 'a' })).not.toHaveProperty('elementIds');
-  });
-});
-
-describe('resolveOwnerBadge', () => {
-  const base = {
-    isOwner: false,
-    selfParticipant: p('me'),
-    livePresence: [] as Participant[],
-    documentOwnerId: null as string | null,
-    documentOwnerName: null as string | null,
-    documentOwnerColor: null as string | null,
-  };
-
-  it('returns self when the viewer IS the owner', () => {
-    expect(resolveOwnerBadge({ ...base, isOwner: true })).toEqual(p('me'));
-  });
-
-  it('matches the live presence row by id when the owner id is known', () => {
-    const owner = p('owner-1', { status: 'online' });
-    const out = resolveOwnerBadge({
-      ...base,
-      livePresence: [p('other'), owner],
-      documentOwnerId: 'owner-1',
-    });
-    expect(out).toBe(owner);
-  });
-
-  it('matches live presence by name + colour when the id is redacted', () => {
-    // Visitors get ownerId '' from the share endpoint, so the live row
-    // can only be matched on the joined name + colour pair.
-    const owner = p('anon', { name: 'Ada', color: '#abcdef' });
-    const out = resolveOwnerBadge({
-      ...base,
-      livePresence: [owner],
-      documentOwnerName: 'Ada',
-      documentOwnerColor: '#abcdef',
-    });
-    expect(out).toBe(owner);
-  });
-
-  it('falls back to a synthetic offline row keyed off the joined name', () => {
-    const out = resolveOwnerBadge({
-      ...base,
-      documentOwnerName: 'Ada',
-      documentOwnerColor: '#abcdef',
-    });
-    expect(out).toEqual({ id: 'owner', name: 'Ada', color: '#abcdef', status: 'offline' });
-  });
-
-  it('returns null when the owner has no participant record at all', () => {
-    expect(resolveOwnerBadge(base)).toBeNull();
   });
 });
 

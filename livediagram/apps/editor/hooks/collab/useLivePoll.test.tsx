@@ -2,6 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import type { LivePoll, RoomOutgoing } from '@livediagram/api-schema';
+import { createPreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 
 const trackMock = vi.fn<typeof import('@/lib/telemetry').track>();
 vi.mock('@/lib/telemetry', () => ({
@@ -29,7 +30,9 @@ const sentOps = (send: { mock: { calls: [RoomOutgoing][] } }) =>
 
 function setup() {
   const send = vi.fn();
-  return renderHook(() => useLivePoll({ roomRef: { current: { send } } }));
+  return renderHook(() =>
+    useLivePoll({ roomRef: { current: { send } }, preRoomOutbox: createPreRoomOutbox(() => true) }),
+  );
 }
 
 const answered = () =>
@@ -71,6 +74,7 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
     const { result } = renderHook(() =>
       useLivePoll({
         roomRef: { current: { send } },
+        preRoomOutbox: createPreRoomOutbox(() => true),
         collaboratorsRef: { current: collaborators },
       }),
     );
@@ -101,7 +105,11 @@ describe('starting a collaborators poll (docs/specs/012-collaboration/live-poll.
     const send = vi.fn<(msg: RoomOutgoing) => void>();
     const roster = { current: [{ id: '1', name: 'Ariel' }] };
     const { result } = renderHook(() =>
-      useLivePoll({ roomRef: { current: { send } }, collaboratorsRef: roster }),
+      useLivePoll({
+        roomRef: { current: { send } },
+        preRoomOutbox: createPreRoomOutbox(() => true),
+        collaboratorsRef: roster,
+      }),
     );
     roster.current = [
       { id: '1', name: 'Ariel' },
@@ -127,7 +135,11 @@ describe('surviving reconnects and refreshes (docs/specs/012-collaboration/colla
   function withKey(key: string) {
     const send = vi.fn<(msg: RoomOutgoing) => void>();
     const hook = renderHook(() =>
-      useLivePoll({ roomRef: { current: { send } }, selfKeyRef: { current: key } }),
+      useLivePoll({
+        roomRef: { current: { send } },
+        preRoomOutbox: createPreRoomOutbox(() => true),
+        selfKeyRef: { current: key },
+      }),
     );
     return { ...hook, send };
   }

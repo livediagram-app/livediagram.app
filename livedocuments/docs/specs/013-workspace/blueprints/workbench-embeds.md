@@ -161,7 +161,7 @@ The surface, where `workbenchMode` changes the editor:
 
 | Gate                                                    | File                                     | In a workbench                                            |
 | ------------------------------------------------------- | ---------------------------------------- | --------------------------------------------------------- |
-| App header, account menu, Share, Make a copy, role pill | `editor-view-bars.tsx` (`appChrome`)     | Not rendered                                              |
+| App header, account menu, Share, Make a copy            | `editor-view-bars.tsx` (`appChrome`)     | Not rendered                                              |
 | Tab bar, palette, toolbars, Quick style, panels, search | `EditorView.tsx`, `editor-view-bars.tsx` | As the app; Open in livedocuments at the tab bar's right  |
 | The Explorer menu button                                | `EditorCanvasHost.tsx`                   | Hidden (`explorerHidden`); a workspace frame's Back there |
 | Settings: documents, account and tokens rows; All apps  | `SettingsDialog.tsx`                     | Hidden; this app's settings only                          |

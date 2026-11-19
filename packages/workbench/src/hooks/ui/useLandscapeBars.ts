@@ -8,7 +8,7 @@ import { useState } from 'react';
 // flag changes nothing on screen.
 //
 // - `shown` starts false (folded) for each load and is never saved or synced.
-// - A change in any of `revealKeys` (the editor's Rename and Rename Tab nonces) shows the bars first, in
+// - A change in any of `revealKeys` (the editor's Rename Tab nonce) shows the bars first, in
 //   the same render, so the rename field is on screen when it takes the focus.
 // - A tour on screen keeps them shown: a tour's Tabs step points at the tab bar.
 // Each editor binds it once, at module scope in its `hooks/ui/useLandscapeBars.ts`, with the tour store its tours

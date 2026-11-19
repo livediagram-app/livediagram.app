@@ -35,8 +35,6 @@ export type BootstrapSet = {
   setLoadError: SetState<boolean>;
   // The document is in the Trash (docs/specs/013-workspace/trash.md).
   setDocumentTrashed: (trashed: boolean) => void;
-  setDocumentOwnerColor: SetState<string | null>;
-  setDocumentOwnerId: SetState<string | null>;
   setDocumentOwnerName: SetState<string | null>;
   setDocumentShareable: SetState<boolean>;
   setDocumentTeamId: SetState<string | null>;

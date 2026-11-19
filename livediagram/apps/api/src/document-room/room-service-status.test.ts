@@ -5,6 +5,7 @@ import {
   STATUS_BIND_DELAY_MS,
   STATUS_POLL_MS,
   STATUS_SOURCES_MAX,
+  STATUS_TIMEOUT_MS,
   type ServiceStatus,
 } from '@livediagram/api-schema';
 import type { PublicFetchResult } from '@liveworkspace/api-kit/public-fetch';
@@ -385,6 +386,121 @@ describe('RoomServiceStatus rounds', () => {
     // A later join finds nothing kept, so its URL is due again at once.
     h.connect('b');
     expect(h.status.at).toBe(T0 + 1_000);
+  });
+});
+
+describe('RoomServiceStatus back-off for a URL that keeps timing out', () => {
+  const timedOut = (u: string): PublicFetchResult => ({ ok: false, reason: 'timeout', url: u });
+  const MIN = STATUS_POLL_MS;
+
+  it('waits 2, 4, then at most 8 minutes, and is back on the minute once it answers', async () => {
+    const h = harness({ sources: sourcesOf({ t1: [url('slow'), url('fine')] }) });
+    let hanging = true;
+    h.answerWith(async (u) => (u === url('slow') && hanging ? timedOut(u) : ok()));
+    h.connect('a');
+    const checksOf = (u: string) => h.fetched.filter((f) => f === u).length;
+    // Every round fires at its due time; record when each check of the slow URL ran.
+    const slowAt: number[] = [];
+    const runUntil = async (end: number) => {
+      while (h.status.at !== null && h.status.at <= end) {
+        const at = h.status.at;
+        const before = checksOf(url('slow'));
+        await h.fire(at);
+        if (checksOf(url('slow')) > before) slowAt.push(at);
+      }
+    };
+    await runUntil(T0 + 30 * MIN);
+    const gaps = slowAt.slice(1).map((t, i) => (t - slowAt[i]!) / MIN);
+    expect(gaps).toEqual([2, 4, 8, 8, 8]);
+    // The answering URL kept to the minute all along.
+    expect(checksOf(url('fine'))).toBe(31);
+    // It answers again: its next check finds it, and from then on it is checked every minute.
+    hanging = false;
+    slowAt.length = 0;
+    await runUntil(T0 + 60 * MIN);
+    const after = slowAt.slice(1).map((t, i) => (t - slowAt[i]!) / MIN);
+    expect(after.length).toBeGreaterThan(10);
+    expect(after.every((g) => g === 1)).toBe(true);
+  });
+
+  it('keeps the count over a wake, and only a timeout counts', async () => {
+    const h = harness({ sources: sourcesOf({ t1: [url(1), url(2)] }) });
+    h.answerWith(async (u) =>
+      u === url(1) ? timedOut(u) : { ok: false, reason: 'unreachable', url: u },
+    );
+    h.connect('a');
+    await h.fire(T0);
+    await h.fire(T0 + 2 * MIN);
+    // url(1) timed out twice; url(2) failed fast twice and stays on the minute.
+    expect(h.store.get(SERVICE_STATUS_KEY)).toEqual({
+      [url(1)]: { state: 'down', checkedAt: T0 + 2 * MIN, reason: 'timeout', timeouts: 2 },
+      [url(2)]: { state: 'down', checkedAt: T0 + 2 * MIN, reason: 'unreachable' },
+    });
+    expect(h.status.at).toBe(T0 + 3 * MIN);
+    // What a session hears never carries the count.
+    const b = h.connect('b');
+    expect(statusesIn(b)[0]![url(1)]).toEqual({
+      state: 'down',
+      checkedAt: T0 + 2 * MIN,
+      reason: 'timeout',
+    });
+    // A fresh room over url(1)'s stored entry (a hibernation wake) waits 4 minutes for it.
+    const woke = harness({ sources: sourcesOf({ t1: [url(1)] }) });
+    const kept = h.store.get(SERVICE_STATUS_KEY) as Record<string, unknown>;
+    woke.store.set(SERVICE_STATUS_KEY, { [url(1)]: kept[url(1)] });
+    woke.connect('c');
+    await woke.status.restore();
+    expect(woke.status.at).toBe(T0 + 6 * MIN);
+    // A count that isn't a positive whole number is no count.
+    const odd = harness({ sources: sourcesOf({ t1: [url(1)] }) });
+    odd.store.set(SERVICE_STATUS_KEY, {
+      [url(1)]: { state: 'down', checkedAt: T0, reason: 'timeout', timeouts: 'x' },
+    });
+    odd.connect('d');
+    await odd.status.restore();
+    expect(odd.status.at).toBe(T0 + MIN);
+  });
+
+  it('forgets the count of a URL no shape is bound to any more, or on a purge', async () => {
+    const h = harness({ sources: sourcesOf({ t1: [url(1)] }) });
+    h.answerWith(async (u) => timedOut(u));
+    h.connect('a');
+    await h.fire(T0);
+    h.setSources(sourcesOf({}));
+    h.status.noteWrite();
+    await h.fire(T0 + 10_000);
+    // Bound again: a new binding, checked at once, then backed off from its first timeout only.
+    h.setSources(sourcesOf({ t1: [url(1)] }));
+    h.status.noteWrite();
+    await h.fire(T0 + 20_000);
+    expect(h.status.at).toBe(T0 + 20_000 + 2 * MIN);
+    await h.fire(T0 + 20_000 + 2 * MIN);
+    h.status.forget();
+    h.connect('b');
+    await h.fire(T0 + 30 * MIN);
+    expect(h.status.at).toBe(T0 + 32 * MIN);
+  });
+
+  it('keeps a document of 25 hanging URLs from holding its room most of each minute', async () => {
+    const urls = Array.from({ length: STATUS_SOURCES_MAX }, (_, i) => url(i));
+    const h = harness({ sources: sourcesOf({ t1: urls }) });
+    h.answerWith(async (u) => timedOut(u));
+    h.connect('a');
+    // An hour of rounds, each fired when due. A round holds the room one deadline per wave of checks.
+    const HOUR = 60 * MIN;
+    let busyMs = 0;
+    while (h.status.at !== null && h.status.at < T0 + HOUR) {
+      const before = h.fetched.length;
+      await h.fire(h.status.at);
+      busyMs += Math.ceil((h.fetched.length - before) / STATUS_CHECKS_AT_ONCE) * STATUS_TIMEOUT_MS;
+    }
+    const busySecondsPerMinute = busyMs / 1_000 / 60;
+    console.info('[perf] 25 hanging status URLs, an hour', {
+      checks: h.fetched.length,
+      busySecondsPerMinute,
+    });
+    // Without the back-off: 25 checks a minute in nine 5 s waves, 45 s of every minute.
+    expect(busySecondsPerMinute).toBeLessThan(8);
   });
 });
 

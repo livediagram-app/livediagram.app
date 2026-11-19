@@ -1,60 +1,26 @@
-import {
-  EditorHeader as SharedEditorHeader,
-  type EditorHeaderProps as SharedEditorHeaderProps,
-  type EditorHeaderWords,
-} from '@liveworkspace/workbench/components/chrome/EditorHeader';
+import { EditorHeader as SharedEditorHeader } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
 import { AuthControls } from '@liveworkspace/workbench/components/chrome/AuthControls';
 import { useOwnPicture } from '@/lib/own-picture';
 
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 
-const WORDS: EditorHeaderWords = {
-  nameLabel: 'Design name',
-  renameTitle: 'Rename design',
-  copyDescription: 'Duplicate this design into your own files.',
-};
-
-type EditorHeaderProps = Omit<
-  SharedEditorHeaderProps,
-  'app' | 'logoHref' | 'words' | 'name' | 'team' | 'account' | 'shareAction' | 'present'
-> & {
-  // The open design's id: the logo opens the Explorer on the place that holds it
-  // (liveworkspace/docs/specs/004-index/one-explorer.md "Opening from an open item").
-  itemId?: string | null;
-  designName: string;
-  // The design lives in a team's shared library (docs/specs/013-workspace/team-shared-designs.md).
-  teamDesign?: boolean;
-  // Opens the editor's Settings on its Account category (the account menu's Account item), so it doesn't navigate
-  // away from the design.
-  onOpenAccount?: () => void;
-};
-
-// livedesign's header: the shared EditorHeader (docs/specs/007-editor/live-app.md "Header actions") with this
-// app's logo, nouns and account control.
-export function EditorHeader({
-  itemId = null,
-  designName,
-  teamDesign = false,
-  onOpenAccount,
-  ...rest
-}: EditorHeaderProps) {
+// livedesign's bar over the pages that stand in for a design (loading, not found, a failed create): the shared
+// EditorHeader (docs/specs/007-editor/live-app.md "Header actions") with this app's logo, which goes to the Explorer, and
+// its account control. The open design has no header bar.
+export function EditorHeader() {
   return (
     <SharedEditorHeader
-      {...rest}
       app="livedesign"
-      logoHref={explorerItemHref(itemId)}
-      words={WORDS}
-      name={designName}
-      team={teamDesign}
-      account={<OwnAuthControls onOpenAccount={onOpenAccount} />}
+      logoHref={explorerItemHref(null)}
+      account={<OwnAuthControls />}
     />
   );
 }
 
 // The shared account control with your own Google picture, whatever Show My Google Picture says
 // (docs/specs/014-identity/profile-and-email-notifications.md "Avatars"): a component of its own, so a picture change re-renders only it.
-function OwnAuthControls({ onOpenAccount }: { onOpenAccount?: () => void }) {
+function OwnAuthControls() {
   const { picture } = useOwnPicture();
-  return <AuthControls onOpenAccount={onOpenAccount} picture={picture} />;
+  return <AuthControls picture={picture} />;
 }

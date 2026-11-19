@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./editor-app.md - when working on the editor app: the planner's routes (clean, no `/live` prefix), layout, role pill, selection lock, share dialog, mobile chrome
+- ./editor-app.md - when working on the editor app: the planner's routes (clean, no `/live` prefix), layout, selection lock, share dialog, mobile chrome
 - ./editor-modes.md - when working on the editor mode: Plan as the one mode, where the mode is still named, retired modes and their stored ids, the one look, text box sizing
 - ./start-panel.md - when working on the start panel an empty tab shows (StartPanel, drawing Start Planning): the panel, Best Match, its keyboard, when it shows, search handed over from /new, its look
 - ./new-project-route.md - when working on `/new`: creating a project and landing on Start Planning
@@ -20,4 +20,4 @@ Follow the references below only as needed; never upfront.
 - ./editor-tour.md - when working on the editor's tours: the shared engine (steps that open what they explain, the spotlight, motion, mechanics, look, share roles) and the retired Diagram tour
 - ./show-me.md - when working on Show Me: the on-demand guided tour of one surface (card type editor, Share dialog, Dashboard Settings), its button, telemetry tokens, and how to add one
 - ./element-tours.md - when a code comment cites element tours: removed with the diagram elements; what is left of the Sankey Show Me
-- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, the role pill, UI scale, load recovery)
+- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, UI scale, load recovery)

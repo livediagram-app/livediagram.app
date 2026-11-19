@@ -241,7 +241,7 @@ export const articles: Article[] = [
     description:
       'Get Started, Tools (with Search), Settings and the appearance switch at the end of the bottom bar.',
     keywords:
-      'corner buttons actions tools search settings get started tour bottom bar cluster appearance light dark editing mode slide deck history webhooks walkthroughs',
+      'corner buttons actions tools search settings get started tour bottom bar cluster appearance light dark slide deck history webhooks walkthroughs',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -261,7 +261,7 @@ export const articles: Article[] = [
     description:
       'The logo, the Explorer menu and the editor mode at the top left; Present, Share or Copy and your account at the top right.',
     keywords:
-      'title bar header top bar corner card menu button explorer logo editor mode switch present share copy make a copy account sign in sign out editing mode preview participating viewing role pill canvas name rename',
+      'title bar header top bar corner card menu button explorer logo editor mode switch present share copy make a copy account sign in sign out canvas name rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -1488,9 +1488,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, a draw.io diagram (a tab per page), or a wrangler.toml or docker-compose file drawn as an architecture diagram into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, a draw.io diagram (a tab per page), a Visio or Lucidchart diagram (.vsdx), or a wrangler.toml or docker-compose file drawn as an architecture diagram into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw drawio wrangler toml docker compose yaml infrastructure architecture cloudflare workers services draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
+      'import json mermaid markdown excalidraw drawio visio vsdx lucidchart lucid wrangler toml docker compose yaml infrastructure architecture cloudflare workers services draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1586,7 +1586,7 @@ export const articles: Article[] = [
     description:
       'Bring draw.io diagrams across: one into the tab you are on, or many at once from Shape Libraries, each its own canvas with a tab per page, libraries too.',
     keywords:
-      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop document',
+      'drawio draw.io diagrams.net diagrams net mxfile visio vsdx lucidchart lucid import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Assets and Imports',

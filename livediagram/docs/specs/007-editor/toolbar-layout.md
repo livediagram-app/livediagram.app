@@ -109,6 +109,10 @@ under the pointer as a category is switched.
 
 ### The flyout
 
+The flyout, its side panel and their keyboard are every editor's one copy, in `@liveworkspace/workbench`
+(`CategoryBarFlyout`, `CategoryFlyout`, `CategoryFlyoutSide`, `category-flyout-keys`; Work Tracker 1261): this editor
+keeps only its tiles, how its categories are arranged (the optional BPMN group among them) and its openers' bodies, bound once in `components/palette/category-flyout-kit.tsx`.
+
 Hung centred under its button (spanning the screen between the gutters on a phone), capped to the window and
 scrolling when long:
 
@@ -151,10 +155,16 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Char
 A tile with presets (Card, Badge: [Card presets](../009-elements/card.md)) or an opener opens a **side panel**: a
 second popover beside the flyout, lined up with the tile, so the flyout stays open behind it as a submenu's parent
 does. It opens on the side of the tile's own column (a right-column tile to the flyout's right, a left-column one
-to its left), against the tile itself over the other column where the window has no room, and rises to stay inside
-the window. Resting on the tile for 150 ms opens it, a press opens it at once, a second press closes it, and
+to its left), against the tile itself over the other column where the window has no room, and rises so its foot
+stays no lower than the flyout's (and inside the window), measured at its full height, not the smaller box of its
+opening animation. Resting on the tile for 150 ms opens it, a press opens it at once, a second press closes it, and
 resting on another tile closes it. On a phone it lies over the flyout. Its header names the tile and says what can
 change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
+
+The keyboard reaches it as it reaches a submenu: **ArrowRight** on the tile opens its panel at once (or enters the
+one a rest already opened) and focuses its first card, Up and Down walk the cards, and **ArrowLeft** on a card or
+**Escape** anywhere in the panel closes it and hands the focus back to the tile, the flyout staying open. ArrowRight
+on any other tile still steps to the next one.
 
 ### Icons, Technology and Session: two panes
 
@@ -467,9 +477,11 @@ their bottom-row buttons. What changes to fit the width:
   - One shared look, the **palette tray**: a card of the strip's own surface (white, hairline border all
     round, all four corners rounded and the strip's shadow, dark in dark mode), 6 px below the strip's bottom edge:
     close enough to read as the strip's, apart so the two don't look stuck together.
-  - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
-    menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
-    8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
+  - Centred under the strip's card and never wider than it, unless the strip is narrow. A strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
+    8 px inside the window, so a message is never cut to its first letter. A phone too, where the card sits beside
+    the menu button (at most the window's width less 8 px each side), and the tray's card stays centred under the
+    strip's: an empty tab's **Show Templates** and a template's **Clear Example Content** and **Keep It** sit inside
+    the tray on one line rather than running past its edge. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box). It also follows a move with no resize at all (the strip re-centring as the tab-name pill beside it changes
     width on a tab switch, a delete or a reload, or going crowded and back): one IntersectionObserver whose margin is
     the card's own box (`watchMove`, shared) hears a move of a pixel or more and costs nothing while the strip is still.
@@ -481,7 +493,9 @@ their bottom-row buttons. What changes to fit the width:
   - It also carries an empty tab's **Show Templates**: once a start's × has closed it, "Tab 1 is empty" with **Show
     Templates**, which opens the start again, until the first element lands
     ([Template starts](start-diagramming.md) "Bringing it back").
-  - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
+  - While anything sits in the tray (a mode banner, the modifier hint, an empty tab's Show Templates, a template's
+    example content), the top-centre stack starts below the tray instead, so the tray never covers the Offline
+    banner.
   - While one of the strip's popovers is open (a category's flyout, More, a catalogue group, Search) the tray steps aside, as it does
     for the Explorer: it would cover the popover's top.
   - Without a strip (Draw mode's dock, zen, read-only, the welcome flow) the messages stay the

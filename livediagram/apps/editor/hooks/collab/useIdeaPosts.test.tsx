@@ -6,7 +6,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { IDEA_MAX_CARDS, type ShapeElement, type Tab } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+import {
+  aimPreRoomOutbox,
+  createPreRoomOutbox,
+} from '@liveworkspace/workbench/lib/pre-room-outbox';
 import { applyRoomOpToTabs } from '@/app/document/[id]/room-op-apply';
 import { IDEA_BOX_FULL_MESSAGE, useIdeaPosts } from './useIdeaPosts';
 
@@ -45,6 +49,8 @@ function setup(start: ShapeElement, room: 'live' | 'none' = 'live') {
         : null,
   };
   const onRefused = vi.fn();
+  const preRoomOutbox = createPreRoomOutbox<RoomOutgoing>(() => true);
+  aimPreRoomOutbox(preRoomOutbox, 'doc');
   let tabs: Tab[] = [{ id: 't1', name: 'T', elements: [start] }];
   const hook = renderHook(
     ({ tabs: ts }: { tabs: Tab[] }) =>
@@ -55,6 +61,7 @@ function setup(start: ShapeElement, room: 'live' | 'none' = 'live') {
           hook.rerender({ tabs });
         },
         roomRef,
+        preRoomOutbox,
         onRefused,
       }),
     { initialProps: { tabs } },
@@ -65,7 +72,16 @@ function setup(start: ShapeElement, room: 'live' | 'none' = 'live') {
       hook.rerender({ tabs });
     });
   const el = () => tabs[0]!.elements[0] as ShapeElement;
-  return { hook, answers, sent, onRefused, peer, el, setTabs: (t: Tab[]) => (tabs = t) };
+  return {
+    hook,
+    answers,
+    sent,
+    onRefused,
+    peer,
+    el,
+    preRoomOutbox,
+    setTabs: (t: Tab[]) => (tabs = t),
+  };
 }
 
 describe('useIdeaPosts', () => {
@@ -124,6 +140,18 @@ describe('useIdeaPosts', () => {
     });
     expect(await landed).toBe(true);
     expect(s.el().ideaCards).toEqual(['Solo']);
+    // Held for the room about to open (pre-room-outbox), so peers already there still see the card.
+    expect(s.preRoomOutbox.held.map((h) => h.msg)).toEqual([
+      {
+        kind: 'op',
+        op: {
+          kind: 'el-delta',
+          tabId: 't1',
+          elementId: 'box',
+          delta: { kind: 'idea', text: 'Solo', id: s.el().ideaCardIds![0] },
+        },
+      },
+    ]);
   });
 
   it('says nothing when the box is emptied for a new round meanwhile', async () => {

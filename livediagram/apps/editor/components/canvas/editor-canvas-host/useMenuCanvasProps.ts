@@ -30,6 +30,7 @@ export function useMenuCanvasProps({
     canvasTool,
     documentId,
     nameDocument,
+    renameDocumentNonce,
     contextMenu,
     exitFormatTool,
     hydrated,
@@ -69,6 +70,7 @@ export function useMenuCanvasProps({
     currentDocumentId: documentId,
     currentShareCode: sessionShareCode,
     onRenameCurrentDocument: nameDocument,
+    renameCurrentNonce: renameDocumentNonce,
     onNewDocument: newDocument,
     explorerMenuActions: {
       // The header's Share gate: the owner, or a joined member of the document's team

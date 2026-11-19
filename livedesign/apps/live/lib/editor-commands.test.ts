@@ -94,13 +94,22 @@ describe('buildEditorCommands — design/tab commands', () => {
   });
 });
 
+// Rename renames in the Explorer panel (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the
+// search"), which Zen mode does not show.
+describe('buildEditorCommands: Rename and the Explorer panel', () => {
+  it('offers rename-design where the panel opens, and not in Zen mode', () => {
+    expect(ids(base)).toContain('rename-design');
+    expect(ids({ ...base, zenMode: true })).not.toContain('rename-design');
+  });
+});
+
 // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
 describe('buildEditorCommands — in a workbench', () => {
-  it('offers neither Share nor Delete design, and keeps the rest', () => {
+  it('offers neither Share, Delete design nor its Rename, and keeps the rest', () => {
     const inWorkbench = ids({ ...base, canShare: true, workbench: true });
     expect(inWorkbench).not.toContain('share');
     expect(inWorkbench).not.toContain('delete-design');
-    expect(inWorkbench).toContain('rename-design');
+    expect(inWorkbench).not.toContain('rename-design');
     expect(ids({ ...base, canShare: true })).toEqual(
       expect.arrayContaining(['share', 'delete-design']),
     );

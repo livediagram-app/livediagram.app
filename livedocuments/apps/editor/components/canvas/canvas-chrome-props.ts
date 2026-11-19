@@ -44,6 +44,7 @@ export const CANVAS_CHROME_PROP_KEYS = [
   'onOpenCommentsForElement',
   'onRedo',
   'onRenameCurrentDocument',
+  'renameCurrentNonce',
   'onResetCommentsPanel',
   'onResetMap',
   'onSetCanvasTool',
