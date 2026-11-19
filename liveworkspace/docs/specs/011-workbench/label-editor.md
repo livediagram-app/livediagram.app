@@ -4,11 +4,13 @@ Typing a label on the canvas (a shape's label, a text box, a sticky note, a mind
 in-place editor: a `contentEditable` over the element that paints the label's runs, takes typing, Enter, paste and
 the formatting shortcuts, and commits on a click away, Escape or the page going. What the editor does for a person is
 each product's spec (`<product>/docs/specs/008-canvas/canvas-and-palette.md` "Labels", and "Typing in a long label
-stays light" in its `canvas-performance.md`). This page is the part livediagram, livedesign and livedocuments share:
-one editor in `@liveworkspace/workbench`, and the small binding each product keeps.
+stays light" in its `canvas-performance.md`). This page is the part all five editors (livediagram, livedesign,
+livedocuments, liveplanner and livehuddle) share: one editor in `@liveworkspace/workbench`, and the small binding each
+product keeps.
 
-The three products held near-identical copies of the editor (Work Tracker 1188). A fix had to be made three times: the
-long-text typing fix of Work Tracker 1081 (PR #1896) was. The copies differed only in their imports, their comments
+The five products held near-identical copies of the editor (Work Tracker 1188). A fix had to be made in each copy: the
+long-text typing fix of Work Tracker 1081 (PR #1896) reached three of them, and liveplanner's and livehuddle's copies
+had fallen behind (no right-to-left lines, no character cap). The copies differed only in their imports, their comments
 and a few product bits; one copy now holds the behaviour, and each product hands in its bits.
 
 ## What is shared
@@ -31,17 +33,20 @@ Everything under `packages/workbench/src/components/label-editor/`:
 
 ## What each product keeps
 
-| Product       | Kept                                                                                                                                                                                                  |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| every one     | its `RichTextEditor`, a binding: its label toolbar (its colours, contrast reading and editor context), its telemetry for a format command (`Element / Changed / TextFormat`)                          |
-| livediagram   | a mind node's Tab and Enter, which commit and grow the next node, and Escape out of a placement leaving the selection too; the mind node's label measure                                              |
-| livedocuments | Text Effects: a run's highlight and gradient painted on its span and measured with it, and the toolbar's effects control                                                                              |
-| every one     | its `label-style` and `text-hug-measure` bindings at their old paths (livedocuments' carry the effects), the text box's geometry (`lib/text-hug`), and the note editor around the shared runs machine |
+| Product                 | Kept                                                                                                                                                                                                  |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| every one               | its `RichTextEditor`, a binding: its label toolbar (its colours, contrast reading and editor context), its telemetry for a format command (`Element / Changed / TextFormat`)                          |
+| livediagram             | a mind node's Tab and Enter, which commit and grow the next node, and Escape out of a placement leaving the selection too; the mind node's label measure                                              |
+| liveplanner, livehuddle | nothing past the binding: their toolbar reads nothing off the element, so the binding leaves it out                                                                                                   |
+| livedocuments           | Text Effects: a run's highlight and gradient painted on its span and measured with it, and the toolbar's effects control                                                                              |
+| every one               | its `label-style` and `text-hug-measure` bindings at their old paths (livedocuments' carry the effects), the text box's geometry (`lib/text-hug`), and the note editor around the shared runs machine |
 
 A run's highlight and gradient are read back from the editor in every product, as livedocuments' copy did. Only
-livedocuments draws them, so nothing changes in the other two.
+livedocuments draws them, so nothing changes in the others.
 
-liveplanner and livehuddle keep copies of their own for now. They bind the same editor when they next change it.
+liveplanner and livehuddle bind it like livedesign: their toolbar and telemetry, nothing more. Their labels gain what
+their older copies lacked: right-to-left text read line by line while editing, and the character cap and the
+uppercase look when a caller sets them.
 
 ## Right-to-left text over several lines
 

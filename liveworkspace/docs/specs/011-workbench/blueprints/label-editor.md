@@ -21,14 +21,14 @@ Scope, by file (all under `packages/workbench/src/components/label-editor/`):
 | `text-hug-font.ts`            | `TEXT_HUG_LEADING`, `textHugFontPx`, `MeasureTextBlock`: what the measurer and the geometry share   |
 | `text-hug-measure.ts`         | `createTextHugMeasure(runStyle)`, `labelRuns`, `drawnLabelFont`: the hug measurer                   |
 
-Each product's binding (`apps/editor/…`, `apps/live/…` in livedesign):
+Each product's binding, in all five editors (`apps/editor/…`, `apps/live/…` in livedesign):
 
-| File                                    | What it binds                                                                                   |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| `components/canvas/RichTextEditor.tsx`  | `<LabelEditor>` with its `RichTextToolbar`, its `track`, and livediagram's mind keys and Escape |
-| `components/canvas/label-style.ts`      | `export *` from the shared module; livedocuments overrides `effectiveRunStyle` with its effects |
-| `components/canvas/text-hug-measure.ts` | `createTextHugMeasure(effectiveRunStyle)`; livediagram adds `measureDrawnMindLabel`             |
-| `lib/text-hug.ts`                       | the text box's geometry, over `text-hug-font.ts`                                                |
+| File                                    | What it binds                                                                                                                                              |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `components/canvas/RichTextEditor.tsx`  | `<LabelEditor>` with its `RichTextToolbar`, its `track`, and livediagram's mind keys and Escape; liveplanner's and livehuddle's toolbars take no `element` |
+| `components/canvas/label-style.ts`      | `export *` from the shared module; livedocuments overrides `effectiveRunStyle` with its effects                                                            |
+| `components/canvas/text-hug-measure.ts` | `createTextHugMeasure(effectiveRunStyle)`; livediagram adds `measureDrawnMindLabel`                                                                        |
+| `lib/text-hug.ts`                       | the text box's geometry, over `text-hug-font.ts`                                                                                                           |
 
 Tests mock the bindings at their old paths (`vi.mock('@/components/canvas/text-hug-measure')`), so they keep them.
 

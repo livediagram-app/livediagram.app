@@ -20,17 +20,17 @@ Scope, by file:
 | apps/editor/components/notes/NoteFormatToolbar.tsx (deleted, Work Item 714)       | Docked toolbar and the inline link field                                         |
 | apps/editor/components/notes/NoteRichText.tsx (deleted, Work Item 714)            | The one read-only renderer; `runsToLines`, `noteRuns`                            |
 | apps/editor/components/notes/note-run-style.ts (deleted, Work Item 714)           | Note typography; `noteRunHref`, `noteRunStyle`                                   |
-| `apps/editor/components/rich-text/useRichTextDocument.ts`                         | Runs ⇄ DOM machine shared with the label editor; `liveText`                      |
-| `apps/editor/components/rich-text/useRichTextFormatActions.ts`                    | Command dispatch and the collapsed-caret scope rule                              |
-| `apps/editor/components/rich-text/rich-text-format.ts`                            | `ActiveFormat`, `computeActiveFormat`, `wordRangeAt`, `PLAIN_RUN_DEFAULTS`       |
-| `apps/editor/components/rich-text/rich-text-dom.ts`                               | DOM read-back, selection offsets, `insertTextAtCaret`                            |
-| `apps/editor/components/rich-text/block-type.ts`                                  | `BlockType`, `BLOCK_TYPES`, `blockTypeOf`, `blockTypeApplies`, `listStyleOfText` |
+| `../packages/workbench/src/components/label-editor/useRichTextRuns.ts`            | Runs ⇄ DOM machine shared with the label editor; `liveText`                      |
+| `../packages/workbench/src/components/label-editor/useRichTextFormatActions.ts`   | Command dispatch and the collapsed-caret scope rule                              |
+| `../packages/workbench/src/components/label-editor/rich-text-format.ts`           | `ActiveFormat`, `computeActiveFormat`, `wordRangeAt`, `PLAIN_RUN_DEFAULTS`       |
+| `../packages/workbench/src/components/label-editor/rich-text-dom.ts`              | DOM read-back, selection offsets, `insertTextAtCaret`                            |
+| `../packages/workbench/src/components/label-editor/block-type.ts`                 | `BlockType`, `BLOCK_TYPES`, `blockTypeOf`, `blockTypeApplies`, `listStyleOfText` |
 | `apps/editor/components/rich-text/BlockTypePicker.tsx`                            | The block control, rendered by both toolbars                                     |
 | `apps/editor/components/rich-text/ToolbarDropdown.tsx`                            | Shared inline menu; `noFocusSteal`                                               |
 | `apps/editor/components/rich-text/toolbar-chrome.tsx`                             | `toolbarButtonClass`, `TOOLBAR_DIVIDER`, `RUN_TOGGLES`, `runToggles`             |
 | `apps/editor/components/canvas/RichTextToolbar.tsx`                               | The label toolbar hosting the same picker                                        |
-| `apps/editor/components/canvas/useRichTextSession.ts`                             | Label session (`collapsedScope: 'all'`)                                          |
-| `apps/editor/components/canvas/label-style.ts`                                    | `effectiveRunStyle`: label headings in `em`                                      |
+| `../packages/workbench/src/components/label-editor/useRichTextSession.ts`         | Label session (`collapsedScope: 'all'`)                                          |
+| `../packages/workbench/src/components/label-editor/label-style.ts`                | `effectiveRunStyle`: label headings in `em`                                      |
 | `../packages/workbench/src/lib/url-safety.ts`                                     | `normaliseUrl` (store) and `isSafeFollowUrl` (follow)                            |
 
 ## Domain and naming
@@ -149,7 +149,7 @@ Derived from [The block-type picker](../block-type-picker.md) "Title and Caption
   the end); `BlockTypePicker` shows the entry below a separator only when `onApplyTitleCaption` is passed (the label
   toolbar), so the note toolbar never offers it. Telemetry rides the label editor's generic `TextFormat`.
 - Read-back: `data-rt-heading="3"` reads back as heading 3, so a character typed inside a Heading 3 keeps the level.
-- Tests: `packages/document/src/title-caption.test.ts`, `apps/editor/components/rich-text/rich-text-dom.test.ts`
+- Tests: `packages/document/src/title-caption.test.ts`, `../packages/workbench/src/components/label-editor/rich-text-dom.test.ts`
   ("round-trips a muted caption run and every heading level"), `apps/editor/components/rich-text/BlockTypePicker.test.tsx`.
 
 ## Interfaces and contracts
@@ -183,7 +183,7 @@ export type NoteFields = { note: string; noteRich?: TextRun[] };
 export function canonicalNote(plain: string, runs?: TextRun[]): NoteFields;
 export function noteFieldsEqual(a: NoteFields, b: NoteFields): boolean;
 
-// apps/editor/components/rich-text/block-type.ts
+// ../packages/workbench/src/components/label-editor/block-type.ts
 export type BlockType = 'paragraph' | 'h1' | 'h2' | 'h3' | 'bullet' | 'numbered';
 export function blockTypeOf(heading: RunHeading | null, list: ListStyle): BlockType;
 export function blockTypeApplies(type: BlockType): { heading: RunHeading | null; list: ListStyle };
@@ -326,9 +326,9 @@ Telemetry (not logs): `Note` / `Opened` / `Added` / `Changed` / `Deleted`; `Note
 | Renderer splits on `\n`; plain fallback                | `runsToLines`, `noteRuns`                            | apps/editor/components/notes/note-run-style.test.ts (deleted, Work Item 714)      |
 | Editor opens painted, focused, caret at the end (D79)  | opens painted, focused, with the caret at the end    | apps/editor/components/notes/NoteRichTextEditor.test.tsx (deleted, Work Item 714) |
 | A format apply repaints and reports up (E8)            | repaints and reports a format apply over a selection | apps/editor/components/notes/NoteRichTextEditor.test.tsx (deleted, Work Item 714) |
-| The plain text follows an edit                         | `useRichTextDocument` live text                      | `apps/editor/components/rich-text/useRichTextDocument.test.tsx`                   |
-| Closed vocabulary; both attributes applied             | `blockTypeApplies` round-trips through `blockTypeOf` | `apps/editor/components/rich-text/block-type.test.ts`                             |
-| List detection reads the prefix                        | `listStyleOfText`                                    | `apps/editor/components/rich-text/block-type.test.ts`                             |
+| The plain text follows an edit                         | `useRichTextRuns` live text                          | `../packages/workbench/src/components/label-editor/useRichTextRuns.test.tsx`      |
+| Closed vocabulary; both attributes applied             | `blockTypeApplies` round-trips through `blockTypeOf` | `../packages/workbench/src/components/label-editor/block-type.test.ts`            |
+| List detection reads the prefix                        | `listStyleOfText`                                    | `../packages/workbench/src/components/label-editor/block-type.test.ts`            |
 | Detection reads the selection's first line [QD6]       | none                                                 | (GD7)                                                                             |
 | Collapsed caret: word / line in a note, all in a label | none                                                 | (GD7)                                                                             |
 | `Cmd/Ctrl+B/I/U` drive run toggles                     | none                                                 | (GD7)                                                                             |

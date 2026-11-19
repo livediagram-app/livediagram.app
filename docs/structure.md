@@ -584,8 +584,7 @@ Each step is its own PR, and both products build and pass their tests after ever
      `CollaborateRows.tsx` keeps only its Sheet-cell row names). Their discs paint through `lib/identity-fill`, the
      identity fill on the colour maths every editor's own `identity-fill.ts` binds. The compact relative time
      (`formatRelativeTimeCompact`) moved to `@liveworkspace/ui/relative-time` beside the other ladders.
-   - Eleventh slice (Work Tracker 1188), the label editor livediagram, livedesign and livedocuments kept as
-     near-copies: one copy in `@liveworkspace/workbench/components/label-editor`
+   - Eleventh slice (Work Tracker 1188), the label editor all five editors kept as near-copies: one copy in `@liveworkspace/workbench/components/label-editor`
      ([label-editor.md](../liveworkspace/docs/specs/011-workbench/label-editor.md)). The editor (`LabelEditor`), its
      session, the runs machine the note editors also stand on (`useRichTextRuns`, which was each product's
      `useRichTextDocument` or livedesign's `useRichTextDesign`), the formatting commands, the DOM bridge, the block
@@ -593,11 +592,11 @@ Each step is its own PR, and both products build and pass their tests after ever
      `components/canvas/RichTextEditor.tsx` hands in its toolbar and its telemetry (livediagram its mind keys and
      Escape out of a placement), and `label-style.ts` and `text-hug-measure.ts` bind the run style (livedocuments'
      paints its Text Effects; livediagram adds the mind label's measure). The copies differed in comments and
-     imports, and livedocuments read a run's highlight and gradient back, which the shared copy does for all three.
+     imports, and livedocuments read a run's highlight and gradient back, which the shared copy does for all five (liveplanner's and livehuddle's older copies also gain the right-to-left
+     lines and the character cap).
      Right-to-left text over several lines is now painted a line at a time instead of with `plaintext`, so no long
-     line in it is slow to type. Still per product: the label toolbars, the note editors' surfaces, the text box's
-     geometry (`lib/text-hug`), and liveplanner's and livehuddle's own copies, which bind the shared editor when they
-     next change it.
+     line in it is slow to type. Still per product: the label toolbars, the note editors' surfaces, and the text box's
+     geometry (`lib/text-hug`).
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:
