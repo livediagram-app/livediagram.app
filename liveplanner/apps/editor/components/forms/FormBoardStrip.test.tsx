@@ -6,6 +6,7 @@ import type { Tab } from '@liveplanner/project';
 import { formsFeeding } from '@/hooks/forms/forms-feeding';
 import { FormBoardStrip } from './FormBoardStrip';
 import { FormBoardContext, type FormBoardValue } from './form-board-context';
+import { RoadmapBoardsContext } from '@/components/roadmap/RoadmapContext';
 
 // A board's Form strip (docs/specs/030-forms/forms.md "On the board").
 
@@ -159,5 +160,38 @@ describe('FormBoardStrip', () => {
     );
     await screen.findByRole('group', { name: 'Bug Report, 3 responses' });
     expect(screen.queryByRole('button', { name: 'Copy form link' })).toBeNull();
+  });
+
+  // Beside the board's Roadmap button on a phone (public-roadmap.md "On the board"), Copy Form Link is left to the Form
+  // tab, so the count and Open Form still fit; elsewhere it stays.
+  it('leaves Copy Form Link to the Form tab on a phone beside a published roadmap', async () => {
+    const roadmap = {
+      title: 'Bugs',
+      columns: ['todo'],
+      types: ['bug'],
+      fields: [],
+      voting: false,
+      formCode: null,
+      boardId: 'b1',
+      code: 'lpr_x',
+      path: '/roadmap/d1/lpr_x',
+      createdAt: 1,
+    };
+    const strip = (boardId: string) => (
+      <RoadmapBoardsContext.Provider
+        value={{ byBoard: new Map([['b1', roadmap]]), want: vi.fn(), manage: vi.fn() }}
+      >
+        <FormBoardContext.Provider value={value()}>
+          <FormBoardStrip palette={palette} boardId={boardId} />
+        </FormBoardContext.Provider>
+      </RoadmapBoardsContext.Provider>
+    );
+    const { rerender } = render(strip('b2'));
+    const copy = await screen.findByRole('button', { name: 'Copy form link' });
+    expect(copy.className).not.toContain('phone:hidden');
+    rerender(strip('b1'));
+    expect(screen.getByRole('button', { name: 'Copy form link' }).className).toContain(
+      'phone:hidden',
+    );
   });
 });

@@ -6,7 +6,8 @@
 // anything seen: only opening the Form tab does. Short of room it gives way inside the header's padding, never under the
 // top-right corner card (Work Tracker 1288): the name truncates first, and on a phone it leaves the name to the pill's
 // accessible name and Open's tooltip, and the count stands alone ("0", the pill named "Request Form, 0 responses"), so
-// the count and the buttons stay whole.
+// the count and the buttons stay whole. Beside the board's Roadmap button on a phone (public-roadmap.md "On the board"),
+// Copy Form Link is left to the Form tab's Share Form, so Open Form and the count still fit.
 import { CheckIcon, lucideGlyph, useCopiedFlash } from '@liveplanner/ui';
 import { lucideClipboardList, lucideCopy, lucideExternalLink } from '@liveworkspace/icons/lucide';
 import { useFormLink } from '@/hooks/forms/useFormLink';
@@ -18,19 +19,34 @@ import {
   BoardStripPill,
   STRIP_LIVE_DOT,
 } from '@/components/plan/widgets/BoardStripPill';
+import { useRoadmapOnBoard } from '@/components/roadmap/RoadmapContext';
 import { useFormBoard, type FormBoardValue, type FormFeedingBoard } from './form-board-context';
 
 const FormIcon = lucideGlyph(lucideClipboardList, 14);
 const CopyIcon = lucideGlyph(lucideCopy, 13);
 const OpenIcon = lucideGlyph(lucideExternalLink, 13);
 
-export function FormBoardStrip({ palette }: { palette: PlanPalette }) {
+export function FormBoardStrip({
+  palette,
+  boardId,
+}: {
+  palette: PlanPalette;
+  // The board's element id: a published roadmap on it takes room on a phone.
+  boardId?: string | undefined;
+}) {
   const board = useFormBoard();
+  const besideRoadmap = !!useRoadmapOnBoard(boardId);
   if (!board || board.forms.length === 0) return null;
   return (
     <span data-form-strip="" className="flex min-w-0 shrink items-center gap-1.5 pr-1.5">
       {board.forms.map((f) => (
-        <FormPill key={f.tabId} form={f} board={board} palette={palette} />
+        <FormPill
+          key={f.tabId}
+          form={f}
+          board={board}
+          palette={palette}
+          besideRoadmap={besideRoadmap}
+        />
       ))}
     </span>
   );
@@ -40,10 +56,12 @@ function FormPill({
   form,
   board,
   palette,
+  besideRoadmap,
 }: {
   form: FormFeedingBoard;
   board: FormBoardValue;
   palette: PlanPalette;
+  besideRoadmap: boolean;
 }) {
   const link = useFormLink({
     projectId: board.projectId,
@@ -82,6 +100,7 @@ function FormPill({
         <BoardStripButton
           tooltip={copied ? 'Copied' : 'Copy Form Link'}
           label="Copy form link"
+          className={besideRoadmap ? 'phone:hidden' : ''}
           onClick={() => {
             void navigator.clipboard?.writeText(url).then(
               () => flash(),

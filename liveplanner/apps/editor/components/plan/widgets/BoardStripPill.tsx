@@ -23,6 +23,7 @@ export function BoardStripPill({
   dot,
   state,
   palette,
+  className = '',
   children,
 }: {
   // Names its data attributes (`data-form-strip-name`, `data-roadmap-strip-name`).
@@ -35,6 +36,8 @@ export function BoardStripPill({
   dot: string;
   state: string;
   palette: PlanPalette;
+  // Adds to the shell (the Roadmap pill gives a phone its one-button form instead).
+  className?: string;
   // After the dot: what the pill adds (a count) and its buttons.
   children: ReactNode;
 }) {
@@ -43,7 +46,7 @@ export function BoardStripPill({
       role="group"
       aria-label={label}
       {...{ [`data-${kind}-pill`]: '' }}
-      className={`${WIDGET_PILL_SHRINKS} gap-1 pr-0.5`}
+      className={`${WIDGET_PILL_SHRINKS} gap-1 pr-0.5 ${className}`}
       style={{ borderColor: palette.border, background: palette.surface, color: palette.text }}
       onPointerDown={stop}
     >

@@ -58,7 +58,9 @@ the public read and vote, the vote field and its sort, the editor's Publish Road
   settings save, Unpublish), and its `startBoardId` opens it on the pill's board (the board's tab picked from the read).
   `RoadmapBoardPill.tsx` draws the pill in `PlanBoardHeader`'s widget zone after `FormBoardStrip`, both through
   `components/plan/widgets/BoardStripPill.tsx` (`BoardStripPill`, `BoardStripButton`: the shell, glyph, name, dot and
-  icon buttons the Form pill had).
+  icon buttons the Form pill had). The pill shows the word Roadmap (the title is its `aria-label`); on a phone the
+  shell is `phone:hidden` and a 28 px `data-roadmap-phone` button (megaphone, green dot) opens the dialog instead, and
+  `FormBoardStrip` (given `boardId`) hides its Copy Form Link there (`phone:hidden`) while the board has a roadmap.
 - `packages/items/src/card-display.ts`: `typeShowsVotes(type)` (the built-in Votes in its fields and its Detailed
   layout), `withVotesShown(type)` (the field added, then placed last in the Detailed Footer when the layout leaves it
   out). The built-in Project type carries `votes` (`item-types.ts`) and its Detailed default places it after

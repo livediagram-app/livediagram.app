@@ -144,7 +144,7 @@ export function PlanBoardHeader({
   // no one adding either.
   const widgetZone = (
     <>
-      <FormBoardStrip palette={palette} />
+      <FormBoardStrip palette={palette} boardId={boardId} />
       <RoadmapBoardPill boardId={boardId} palette={palette} />
       <BoardWidgetZone
         widgets={widgets}

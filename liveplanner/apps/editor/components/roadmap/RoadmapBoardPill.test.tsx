@@ -101,13 +101,15 @@ describe('the Roadmap pill', () => {
     expect(within(screen.getByTestId('b2')).queryByRole('group')).toBeNull();
     expect(client.readRoadmaps).toHaveBeenCalledTimes(1);
     expect(client.readRoadmaps).toHaveBeenCalledWith(SCOPE);
-    expect(shown.textContent).toContain('Product Roadmap');
+    expect(shown.textContent).toContain('Roadmap');
     expect(shown.textContent).toContain('Published.');
-    // On a phone the title stays its accessible name, and Copy is left to the dialog.
-    expect(shown.querySelector('[data-roadmap-strip-name]')!.className).toContain('phone:sr-only');
-    expect(screen.getByRole('button', { name: 'Copy roadmap link' }).className).toContain(
-      'phone:hidden',
-    );
+    // On a phone it is one button opening Roadmap Settings, named with the title; the pill is hidden there.
+    expect(shown.className).toContain('phone:hidden');
+    const phone = screen.getByRole('button', {
+      name: 'Product Roadmap, published roadmap. Roadmap settings',
+    });
+    expect(phone.className).toContain('phone:inline-flex');
+    expect(phone.className).toMatch(/(^| )hidden( |$)/);
   });
 
   it('shows nothing and reads nothing for anyone who may not publish (a share link at any level)', async () => {
@@ -145,6 +147,10 @@ describe('the Roadmap pill', () => {
       </RoadmapBoardsContext.Provider>,
     );
     fireEvent.pointerDown(pill()!);
+    expect(board).not.toHaveBeenCalled();
+    fireEvent.pointerDown(
+      screen.getByRole('button', { name: /published roadmap. Roadmap settings/ }),
+    );
     expect(board).not.toHaveBeenCalled();
   });
 
