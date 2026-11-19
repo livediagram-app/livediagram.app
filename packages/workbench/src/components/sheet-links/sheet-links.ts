@@ -24,6 +24,8 @@ export type SheetChartFields = {
   lineCategories?: string[];
   lineSeries?: LineSeries[];
   chartSheetSource?: ChartSheetSource;
+  // Meant to come from a sheet, not linked yet (pie-chart.md "Not linked yet"): its numbers are samples.
+  chartSheetPending?: boolean;
 };
 
 export type SheetChart = SheetLinkElement & SheetChartFields;

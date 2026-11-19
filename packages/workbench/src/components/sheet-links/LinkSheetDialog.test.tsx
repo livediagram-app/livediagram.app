@@ -281,6 +281,7 @@ describe('SheetLinkSection', () => {
     openLink: vi.fn(),
     update: vi.fn(),
     unlink: vi.fn(),
+    keepNumbers: vi.fn(),
     ...over,
   });
   const onClose = vi.fn();
@@ -349,6 +350,29 @@ describe('SheetLinkSection', () => {
     expect(screen.queryByRole('button', { name: 'Update' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Change…' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Unlink' })).toBeTruthy();
+  });
+
+  it('says a chart not linked yet holds sample numbers, with Link to Sheet and Use These Numbers for an Editor', () => {
+    const editor = links();
+    onClose.mockClear();
+    const chart = bar({ chartSheetPending: true });
+    show(editor, chart);
+    expect(screen.getByText('Not linked to a sheet yet')).toBeTruthy();
+    expect(screen.getByText('Sample numbers, meant to come from a sheet.')).toBeTruthy();
+    // The rows stay, editable as ever; the dashed Link to Sheet under them gives way to the note's.
+    expect(screen.getByText('rows')).toBeTruthy();
+    expect(screen.getAllByRole('button', { name: 'Link to Sheet…' })).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Link to Sheet…' }));
+    expect(editor.openLink).toHaveBeenCalledWith(chart.id);
+    expect(onClose).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Use These Numbers' }));
+    expect(editor.keepNumbers).toHaveBeenCalledWith(chart.id);
+    cleanup();
+    // A Participant or Viewer reads the note, with no actions.
+    show(links({ canEdit: false }), chart);
+    expect(screen.getByText('Not linked to a sheet yet')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Link to Sheet…' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Use These Numbers' })).toBeNull();
   });
 
   it('draws the rows alone outside an editor', () => {

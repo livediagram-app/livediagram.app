@@ -40,6 +40,45 @@ export function SheetLinkSection({
     links.openLink(chart.id);
     onClose();
   };
+  if (!source && chart.chartSheetPending === true) {
+    // Not linked yet (pie-chart.md "Not linked yet"): say the numbers are samples, then the rows; an Editor links a
+    // sheet or keeps the numbers as the chart's own.
+    return (
+      <>
+        <div className="flex flex-col gap-2 px-2 py-1.5" data-sheet-pending-section>
+          <div className="flex items-start gap-2.5 rounded-lg border border-dashed border-slate-300 bg-slate-50/70 px-2.5 py-2 dark:border-slate-600 dark:bg-slate-800/50">
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-white text-slate-600 shadow-sm ring-1 ring-slate-200 dark:bg-slate-900 dark:text-slate-300 dark:ring-slate-700">
+              <SheetLinkIcon size={15} />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-semibold text-slate-800 dark:text-slate-100">
+                Not linked to a sheet yet
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                Sample numbers, meant to come from a sheet.
+              </p>
+            </div>
+          </div>
+          {links.canEdit ? (
+            <div className="-mx-1.5 flex flex-wrap items-center gap-1">
+              <button type="button" className={ACTION} onClick={openLink}>
+                <SheetLinkIcon size={13} />
+                Link to Sheet…
+              </button>
+              <button
+                type="button"
+                className={`${ACTION} ml-auto`}
+                onClick={() => links.keepNumbers(chart.id)}
+              >
+                Use These Numbers
+              </button>
+            </div>
+          ) : null}
+        </div>
+        {rows}
+      </>
+    );
+  }
   if (!source) {
     return (
       <>

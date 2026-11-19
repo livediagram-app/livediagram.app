@@ -28,6 +28,12 @@ import { LINE_DEFAULT_CATEGORIES, LINE_DEFAULT_SERIES, type PieSlice } from './d
 import type { BoxedElement } from './element';
 import { legendFontPx } from '@liveworkspace/model-core/label-font';
 import { textAdvanceEm } from '@liveworkspace/model-core/text-advance';
+import {
+  SHEET_PENDING_CHIP,
+  SHEET_PENDING_FADE,
+  sheetPendingChipWidth,
+  sheetPendingWords,
+} from './chart-sheet-pending';
 import { EXPORT_DEFAULT_FONT } from './svg-render-labels';
 import { r2, xmlEscape } from './svg-render-primitives';
 
@@ -122,6 +128,40 @@ function svgChartLegend(
   return parts.join('');
 }
 
+// A chart meant to come from a sheet and not linked yet (each product's pie-chart.md "Not linked yet", Work Tracker
+// 1281): its sample marks faded under a chip that says so (chart-sheet-pending.ts), so no export passes them off as
+// real numbers. The chip, centred on the chart.
+export function svgSheetPendingChip(el: Chart, fontFamily?: string): string {
+  const words = sheetPendingWords(el.width, el.height);
+  if (!words) return '';
+  const { fontPx, height, glyph: g, lead, gap } = SHEET_PENDING_CHIP;
+  const w = sheetPendingChipWidth(words);
+  const x = el.x + el.width / 2 - w / 2;
+  const y = el.y + el.height / 2 - height / 2;
+  const gx = x + lead;
+  const gy = y + (height - g) / 2;
+  const font = ` font-family="${xmlEscape(fontFamily ?? EXPORT_DEFAULT_FONT)}"`;
+  // A sheet glyph: a small grid of two rows and two columns.
+  const glyph =
+    `<rect x="${r2(gx)}" y="${r2(gy)}" width="${g}" height="${g}" rx="2" fill="none" stroke="#64748b" stroke-width="1.2"/>` +
+    `<path d="M ${r2(gx)} ${r2(gy + g / 2)} H ${r2(gx + g)} M ${r2(gx + g / 2)} ${r2(gy)} V ${r2(gy + g)}" stroke="#64748b" stroke-width="1.2"/>`;
+  return (
+    `<g data-sheet-pending="">` +
+    `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(w)}" height="${height}" rx="${height / 2}" fill="#ffffff" fill-opacity="0.96" stroke="#cbd5e1" stroke-width="1"/>` +
+    glyph +
+    `<text x="${r2(gx + g + gap)}" y="${r2(y + height / 2)}"${font} font-size="${fontPx}" font-weight="500" fill="#334155" dominant-baseline="central">${xmlEscape(words)}</text>` +
+    `</g>`
+  );
+}
+
+// The chart's drawing as it stands: as drawn, or faded under the chip while it is not linked yet. A chart linked since
+// (an agent's write that kept both) is a linked chart.
+function asLinkedOrNot(el: Chart, svg: string, fontFamily?: string): string {
+  if (el.chartSheetPending !== true || (el as { chartSheetSource?: unknown }).chartSheetSource)
+    return svg;
+  return `<g opacity="${SHEET_PENDING_FADE}">${svg}</g>${svgSheetPendingChip(el, fontFamily)}`;
+}
+
 // Show Values (docs/specs/009-elements/pie-chart.md): each number as text, a wedge's in the ink that reads on it.
 function svgValueLabels(
   labels: readonly ChartValueLabel[],
@@ -173,7 +213,11 @@ export function svgPieChart(
         fontFamily,
       )
     : '';
-  return marks + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily);
+  return asLinkedOrNot(
+    el,
+    marks + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily),
+    fontFamily,
+  );
 }
 
 /** A column chart (or, horizontal, a bar chart): a baseline and one bar per value, plus the key. */
@@ -219,12 +263,10 @@ export function svgBarChart(
         fontFamily,
       )
     : '';
-  return (
-    axis +
-    baseline +
-    rects +
-    values +
-    svgChartLegend(el, data, colorAt, legend, textColor, fontFamily)
+  return asLinkedOrNot(
+    el,
+    axis + baseline + rects + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily),
+    fontFamily,
   );
 }
 
@@ -311,11 +353,9 @@ export function svgLineChart(
   const values = el.chartValues
     ? svgValueLabels(lineValueLabels(m, series), textColor, () => textColor, px, fontFamily)
     : '';
-  return (
-    axes +
-    marks +
-    values +
-    labels +
-    svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily)
+  return asLinkedOrNot(
+    el,
+    axes + marks + values + labels + svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily),
+    fontFamily,
   );
 }

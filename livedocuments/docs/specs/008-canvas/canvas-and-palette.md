@@ -661,7 +661,7 @@ moves with it. A written template with a chart does not open with it selected: t
 A figure kept in a spreadsheet comes from one (Work Tracker 1281): Status Report's spend by month is meant to be
 linked to a liveplanner sheet, so it lands **not linked yet** ([Data charts](../009-elements/pie-chart.md) "Not linked
 yet"): faded, saying so, with its sample numbers until a sheet is linked or an Editor keeps them. A template's chart
-says so with `sheetPending: true` in its `charts` entry.
+says so with `chartSheetPending: true` in its `charts` entry's fields.
 
 Design Doc and Status Report describe work a plan tracks, so they offer **Make a plan beside it**
 ([connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md) "A file made beside it"): the

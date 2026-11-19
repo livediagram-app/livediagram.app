@@ -5533,6 +5533,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "chartPalette": {
         "$ref": "#/components/schemas/ChartPaletteId"
       },
+      "chartSheetPending": {
+        "type": "boolean"
+      },
       "chartSheetSource": {
         "$ref": "#/components/schemas/ChartSheetSource"
       },

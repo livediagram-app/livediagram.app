@@ -378,6 +378,9 @@ export type ShapeElement = {
   // Linked to a liveplanner sheet (docs/specs/009-elements/pie-chart.md "Charts linked to a liveplanner sheet"): the
   // plan, Sheet and range the data fields are read from; the fields are the last read. Only meaningful on a chart.
   chartSheetSource?: ChartSheetSource;
+  // Meant to come from a liveplanner sheet, not linked yet (docs/specs/009-elements/pie-chart.md "Not linked yet"):
+  // drawn faded under a chip saying so until a sheet is linked or an Editor keeps the numbers. Only meaningful on a chart.
+  chartSheetPending?: boolean;
   // Legend (docs/specs/009-elements/pie-chart.md): the colour-coded rows. Only meaningful on the 'legend'
   // kind; bounded in validate.ts.
   legendItems?: LegendItem[];

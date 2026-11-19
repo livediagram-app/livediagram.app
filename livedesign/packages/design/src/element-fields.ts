@@ -78,6 +78,7 @@ export const ELEMENT_FIELD_NAMES = {
     ...DATA_SHAPE_FIELDS,
     // A chart linked to a liveplanner sheet (chart-sheet-source.ts); not liveplanner's own, so not shared.
     'chartSheetSource',
+    'chartSheetPending',
     ...CODE_FIELDS,
     ...CARD_FIELDS,
     'stepSequence',

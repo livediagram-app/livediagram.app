@@ -28,6 +28,7 @@ import {
   SheetLinkLine,
   useChartAsSeen,
 } from '@liveworkspace/workbench/components/sheet-links/SheetLinkedCharts';
+import { SheetPendingChart } from '@liveworkspace/workbench/components/sheet-links/SheetPendingChart';
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
@@ -215,25 +216,29 @@ export function ShapeContentRouter({
   ) : element.type === 'shape' && isPieShape(element.shape) ? (
     // Pie chart (docs/specs/009-elements/pie-chart.md): slices sized by value + a legend.
     <>
-      <PieChartView
-        element={element}
-        fontFamily={fontFamily}
-        textColor={chartText}
-        palette={chartPalette}
-        ground={chartGround}
-      />
+      <SheetPendingChart element={element}>
+        <PieChartView
+          element={element}
+          fontFamily={fontFamily}
+          textColor={chartText}
+          palette={chartPalette}
+          ground={chartGround}
+        />
+      </SheetPendingChart>
       <SheetLinkLine element={element} selected={!!isSelected} />
     </>
   ) : element.type === 'shape' && isBarShape(element.shape) ? (
     // Bar chart (docs/specs/009-elements/pie-chart.md): bars sized by value + a legend.
     <>
-      <BarChartView
-        element={element}
-        fontFamily={fontFamily}
-        textColor={chartText}
-        palette={chartPalette}
-        ground={chartGround}
-      />
+      <SheetPendingChart element={element}>
+        <BarChartView
+          element={element}
+          fontFamily={fontFamily}
+          textColor={chartText}
+          palette={chartPalette}
+          ground={chartGround}
+        />
+      </SheetPendingChart>
       <SheetLinkLine element={element} selected={!!isSelected} />
     </>
   ) : element.type === 'shape' && isCodeBlockShape(element.shape) ? (
@@ -277,13 +282,15 @@ export function ShapeContentRouter({
   ) : element.type === 'shape' && isLineShape(element.shape) ? (
     // Line chart (docs/specs/009-elements/pie-chart.md): multi-series lines + a legend.
     <>
-      <LineChartView
-        element={element}
-        fontFamily={fontFamily}
-        textColor={chartText}
-        palette={chartPalette}
-        ground={chartGround}
-      />
+      <SheetPendingChart element={element}>
+        <LineChartView
+          element={element}
+          fontFamily={fontFamily}
+          textColor={chartText}
+          palette={chartPalette}
+          ground={chartGround}
+        />
+      </SheetPendingChart>
       <SheetLinkLine element={element} selected={!!isSelected} />
     </>
   ) : element.type === 'shape' && isSvgRenderedShape(element.shape) && !isHandDrawn(finish) ? (
