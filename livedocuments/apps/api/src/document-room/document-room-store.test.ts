@@ -658,6 +658,22 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
          VALUES ('v_1', 't1', 1, 'manual', 'guest_was', 'Ada as a guest', '#000', 'Board', ?, 1, 1, 1, 1)`,
       )
       .run(data);
+    // A named version in the snapshots' store (Work Tracker 1097) holds them too.
+    document.db
+      .prepare(
+        `INSERT INTO snapshots (id, item_id, name, kind, author_id, author_name, author_color, bytes, chunks, created_at)
+         VALUES ('s_1', 'tab:t1', 'Named', 'manual', 'guest_was', 'Ada as a guest', '#000', 1, 1, 1)`,
+      )
+      .run();
+    document.db
+      .prepare("INSERT INTO snapshot_chunks (snapshot_id, seq, data) VALUES ('s_1', 0, ?)")
+      .run(data);
+    document.db
+      .prepare(
+        `INSERT INTO tab_named_versions (snapshot_id, tab_id, rev, tab_name, element_count, saved_at)
+         VALUES ('s_1', 't1', 2, 'Board', 1, 1)`,
+      )
+      .run();
     // The door refuses a guests list that is not guest ids.
     expect(
       (
@@ -704,6 +720,16 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     expect(version.data).not.toContain('guest_was');
     expect(version.data).not.toContain(await reactionPersonFor('guest_was'));
     expect(version.data).toContain(await reactionPersonFor('guest_other'));
+    const named = document.db
+      .prepare(
+        `SELECT s.author_id, s.author_name, c.data FROM snapshots s
+           JOIN snapshot_chunks c ON c.snapshot_id = s.id WHERE s.id = 's_1'`,
+      )
+      .get() as { author_id: string; author_name: string; data: string };
+    expect([named.author_id, named.author_name]).toEqual(['deleted', 'Deleted account']);
+    expect(named.data).not.toContain('guest_was');
+    expect(named.data).not.toContain(await reactionPersonFor('guest_was'));
+    expect(named.data).toContain(await reactionPersonFor('guest_other'));
   });
 
   it("takes a closed account's name off the documents that name them, and starts none", async () => {

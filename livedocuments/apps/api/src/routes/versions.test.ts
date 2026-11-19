@@ -4,6 +4,7 @@ import { clearTestProfiles, setTestProfile } from '../test-profiles';
 import { sentJson } from '@liveworkspace/vitest-config/sent-request';
 import { VERSION_NAMED_MAX } from '@livedocuments/api-schema';
 import type { Element } from '@livedocuments/document';
+import { deleteSnapshot, listSnapshots } from '@liveworkspace/snapshots/server';
 import { sqliteD1, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import { captureTelemetry, TELEMETRY_ON } from '@liveworkspace/telemetry/testing';
 import type { Env } from '../types';
@@ -114,6 +115,25 @@ const versionRows = (db: SqliteD1) =>
   db.sql
     .prepare('SELECT id, kind, name, rev FROM tab_versions WHERE tab_id = ? ORDER BY rev')
     .all('t1') as { id: string; kind: string; name: string | null; rev: number }[];
+
+type VersionRow = { id: string; name: string | null; rev: number; kind: string };
+
+// A version kept before Work Tracker 1097: a row of tab_versions holding `a` labelled `label`, as the old Name This
+// Version wrote it.
+function legacyVersion(
+  db: SqliteD1,
+  v: { id: string; rev: number; name: string | null; label: string },
+): string {
+  const data = JSON.stringify({ elements: [box('a', v.label), box('b', 'b', 200)] });
+  db.sql
+    .prepare(
+      `INSERT INTO tab_versions (id, tab_id, rev, kind, name, author_id, author_name, author_color, tab_name, data,
+                                 bytes, element_count, saved_at, created_at)
+       VALUES (?, 't1', ?, 'manual', ?, ?, 'Webber', '#123456', 'Board', ?, ?, 2, 1, 1)`,
+    )
+    .run(v.id, v.rev, v.name, OWNER, data, data.length);
+  return v.id;
+}
 
 // A named version of the tab as it is now, then the label of `a` changed after it.
 async function namedThenChanged(db: SqliteD1) {
@@ -346,14 +366,166 @@ describe('restoring', () => {
 });
 
 describe('a version that no longer reads', () => {
-  it('is not found to open, restore or copy', async () => {
+  it('is not found to open, restore or copy, in either store', async () => {
     quiet();
     const { db } = await setUp();
     const version = await namedThenChanged(db);
-    db.sql.prepare("UPDATE tab_versions SET data = '{' WHERE id = ?").run(version.id);
-    expect((await call(db, 'GET', `${base}/${version.id}`)).status).toBe(404);
-    expect((await call(db, 'POST', `${base}/${version.id}/restore`, {})).status).toBe(404);
-    expect((await call(db, 'POST', `${base}/${version.id}/copy`, {})).status).toBe(404);
+    // The snapshots' store: a chunk gone.
+    db.sql.prepare('DELETE FROM snapshot_chunks WHERE snapshot_id = ?').run(version.id);
+    // The old store: a body that no longer parses.
+    legacyVersion(db, { id: 'v_broken', rev: 900, name: 'Broken', label: 'x' });
+    db.sql.prepare("UPDATE tab_versions SET data = '{' WHERE id = 'v_broken'").run();
+    for (const id of [version.id, 'v_broken']) {
+      expect((await call(db, 'GET', `${base}/${id}`)).status).toBe(404);
+      expect((await call(db, 'POST', `${base}/${id}/restore`, {})).status).toBe(404);
+      expect((await call(db, 'POST', `${base}/${id}/copy`, {})).status).toBe(404);
+    }
+  });
+});
+
+// Work Tracker 1097: Name This Version keeps its version in the snapshots' store, and every version kept before stays in
+// tab_versions and keeps working (docs/specs/006-document/version-history.md "Where versions are kept").
+describe('the two stores', () => {
+  const list = async (db: SqliteD1, who: Who = {}) =>
+    (await (await call(db, 'GET', base, undefined, who)).json<{ versions: VersionRow[] }>())
+      .versions;
+
+  it('keeps Name This Version in the snapshots store, apart from the document snapshots', async () => {
+    quiet();
+    const { db } = await setUp();
+    const version = await namedThenChanged(db);
+    expect(version.id).toMatch(/^s_/);
+    expect(versionRows(db)).toEqual([]);
+    const scoped = db.sql
+      .prepare('SELECT item_id, kind, name FROM snapshots WHERE id = ?')
+      .get(version.id) as { item_id: string; kind: string; name: string };
+    expect(scoped).toEqual({ item_id: 'tab:t1', kind: 'manual', name: 'Before' });
+    // The document's own snapshots (item id the document's) never list or delete a tab's version.
+    expect(await listSnapshots(db.env.DOCUMENT_DB, 'D')).toEqual([]);
+    expect(await deleteSnapshot(db.env.DOCUMENT_DB, 'D', version.id)).toBe(false);
+    expect((await list(db)).map((v) => v.id)).toEqual([version.id]);
+  });
+
+  it('opens, restores, copies and renames a version kept before the change (old store only)', async () => {
+    quiet();
+    const { db } = await setUp();
+    const old = legacyVersion(db, { id: 'v_legacy', rev: 0, name: 'Legacy', label: 'old a' });
+    await change(db, [{ op: 'set', target: 'a', fields: { label: 'Now' } }]);
+    expect(await list(db)).toEqual([expect.objectContaining({ id: old, name: 'Legacy' })]);
+    const one = await call(db, 'GET', `${base}/${old}`);
+    expect(one.status).toBe(200);
+    const read = await one.json<{ tab: { elements: Element[] } }>();
+    expect(read.tab.elements.find((e) => e.id === 'a')).toMatchObject({ label: 'old a' });
+    const restored = await call(db, 'POST', `${base}/${old}/restore`, {});
+    expect(restored.status).toBe(200);
+    expect(stored(db).elements.find((e) => e.id === 'a')).toMatchObject({ label: 'old a' });
+    const { restored: done } = await restored.json<{ restored: { undoVersionId: string } }>();
+    expect((await call(db, 'POST', `${base}/${done.undoVersionId}/restore`, {})).status).toBe(200);
+    expect(stored(db).elements.find((e) => e.id === 'a')).toMatchObject({ label: 'Now' });
+    expect((await call(db, 'POST', `${base}/${old}/copy`, {})).status).toBe(201);
+    const renamed = await call(db, 'PUT', `${base}/${old}/name`, { name: 'Legacy 2' });
+    expect((await renamed.json<{ version: VersionRow }>()).version).toMatchObject({
+      id: old,
+      name: 'Legacy 2',
+    });
+    // It stayed where it was: nothing moved into the snapshots store.
+    expect(versionRows(db).find((v) => v.id === old)).toMatchObject({ name: 'Legacy 2' });
+    const moved = db.sql.prepare('SELECT COUNT(*) AS n FROM tab_named_versions').get() as {
+      n: number;
+    };
+    expect(moved.n).toBe(0);
+  });
+
+  it('lists both stores as one list, newest first, and restores from each', async () => {
+    quiet();
+    const { db } = await setUp();
+    const old = legacyVersion(db, { id: 'v_legacy', rev: 0, name: 'Legacy', label: 'old a' });
+    const fresh = await namedThenChanged(db);
+    const both = await list(db);
+    expect(both.map((v) => v.id)).toEqual([fresh.id, old]);
+    expect(Object.keys(both[0]!).sort()).toEqual(Object.keys(both[1]!).sort());
+    for (const [id, label] of [
+      [old, 'old a'],
+      [fresh.id, 'a'],
+    ] as const) {
+      expect((await call(db, 'POST', `${base}/${id}/restore`, {})).status).toBe(200);
+      expect(stored(db).elements.find((e) => e.id === 'a')).toMatchObject({ label });
+    }
+  });
+
+  it('counts names in both stores toward the cap', async () => {
+    quiet();
+    const { db } = await setUp();
+    for (let i = 0; i < VERSION_NAMED_MAX - 1; i += 1) {
+      legacyVersion(db, { id: `v_fill${i}`, rev: 1000 + i, name: `N${i}`, label: 'x' });
+    }
+    expect((await call(db, 'POST', base, { name: 'Last' })).status).toBe(201);
+    await change(db, [{ op: 'set', target: 'a', fields: { label: 'Later' } }]);
+    const over = await call(db, 'POST', base, { name: 'Too many' });
+    expect(over.status).toBe(409);
+  });
+
+  it('unnames a new-store version into an automatic one, and the editor sees its id kept', async () => {
+    quiet();
+    const { db } = await setUp();
+    const version = await namedThenChanged(db);
+    const res = await call(db, 'PUT', `${base}/${version.id}/name`, { name: null });
+    expect((await res.json<{ version: VersionRow }>()).version).toMatchObject({
+      id: version.id,
+      name: null,
+      kind: 'manual',
+    });
+    expect(versionRows(db)).toEqual([expect.objectContaining({ id: version.id, name: null })]);
+    expect((await call(db, 'GET', `${base}/${version.id}`)).status).toBe(200);
+  });
+
+  it('keeps Name This Version in tab_versions when the snapshots store cannot be written', async () => {
+    quiet();
+    const { db } = await setUp();
+    const old = legacyVersion(db, { id: 'v_legacy', rev: 0, name: 'Legacy', label: 'old a' });
+    db.sql.exec('DROP TABLE tab_named_versions');
+    const named = await call(db, 'POST', base, { name: 'Fallback' });
+    expect(named.status).toBe(201);
+    const { version } = await named.json<{ version: VersionRow }>();
+    expect(version.id).toMatch(/^v_/);
+    expect((await list(db)).map((v) => v.id)).toEqual([version.id, old]);
+    expect(console.warn).toHaveBeenCalledWith(
+      '[versions] refused',
+      expect.objectContaining({ reason: 'store' }),
+      expect.anything(),
+    );
+  });
+
+  it('lets every level look at both stores, and only an Editor name or restore', async () => {
+    quiet();
+    const { db } = await setUp();
+    const old = legacyVersion(db, { id: 'v_legacy', rev: 0, name: 'Legacy', label: 'old a' });
+    const fresh = await namedThenChanged(db);
+    testShareLink(db, 'D', 'VIEW', 'view');
+    testShareLink(db, 'D', 'PART', 'participate');
+    testShareLink(db, 'D', 'EDIT', 'edit');
+    const viewer = { owner: 'guest-v', headers: { 'X-Share-Code': 'VIEW' } };
+    const participant = { owner: 'guest-p', headers: { 'X-Share-Code': 'PART' } };
+    const editor = { owner: 'guest-e', headers: { 'X-Share-Code': 'EDIT' } };
+    for (const who of [viewer, participant, editor]) {
+      expect((await list(db, who)).map((v) => v.id)).toEqual([fresh.id, old]);
+      for (const id of [old, fresh.id]) {
+        expect((await call(db, 'GET', `${base}/${id}`, undefined, who)).status).toBe(200);
+      }
+    }
+    for (const who of [viewer, participant]) {
+      for (const id of [old, fresh.id]) {
+        expect((await call(db, 'POST', `${base}/${id}/restore`, {}, who)).status).toBe(403);
+        expect((await call(db, 'PUT', `${base}/${id}/name`, { name: 'X' }, who)).status).toBe(403);
+      }
+    }
+    for (const id of [old, fresh.id]) {
+      expect((await call(db, 'POST', `${base}/${id}/restore`, {}, editor)).status).toBe(200);
+      expect((await call(db, 'PUT', `${base}/${id}/name`, { name: 'E' }, editor)).status).toBe(200);
+    }
+    expect((await call(db, 'GET', base, undefined, { owner: 'g', community: true })).status).toBe(
+      404,
+    );
   });
 });
 
