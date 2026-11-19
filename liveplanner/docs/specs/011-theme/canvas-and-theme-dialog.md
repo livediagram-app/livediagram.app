@@ -46,70 +46,75 @@ changing it is tracked as `UI / Changed / LooksFinishFilter`.
 
 The table is in the order the carousel shows them after the Mashup card, six to a page:
 
-| Look            | Theme    | Finish       | Tab font      | Pattern      | Pattern strength |
-| --------------- | -------- | ------------ | ------------- | ------------ | ---------------- |
-| Everyday        | Default  | Flexible     | (none)        | Grid         | (kept)           |
-| Textbook        | Mono     | Professional | Oswald        | Graph        | 50%              |
-| Spectrum        | Rainbow  | Flexible     | Inter         | Grid         | 50%              |
-| Whiteboard      | Mono     | Marker       | (none)        | Blank        | (kept)           |
-| Boardroom       | Steel    | Professional | Inter         | Blank        | (kept)           |
-| Notebook        | Mocha    | Sketch       | (none)        | Lines        | (kept)           |
-| Seaside         | Ocean    | Flexible     | Nunito        | Waves        | (kept)           |
-| Doodle          | Rainbow  | Sketch       | Kalam         | Blank        | (kept)           |
-| Editorial       | Cream    | Professional | Lora          | Blank        | (kept)           |
-| Midnight        | Midnight | Flexible     | (none)        | Grid         | (kept)           |
-| Poster          | Tropical | Professional | Bodoni Moda   | Diagonal     | 40%              |
-| Workshop        | Sand     | Marker       | (none)        | Grid         | 60%              |
-| Graph Paper     | Indigo   | Professional | Roboto Mono   | Graph        | (kept)           |
-| Daydream        | Pastel   | Flexible     | Nunito        | Grid         | 60%              |
-| Engineer        | Sky      | Professional | Space Grotesk | Engineering  | (kept)           |
-| Lagoon          | Tropical | Flexible     | Space Grotesk | Ripple       | 50%              |
-| Studio          | Lavender | Professional | Roboto Slab   | Crosshatch   | (kept)           |
-| Garden          | Forest   | Flexible     | Poppins       | Hexagonal    | 40%              |
-| Billboard       | Sunset   | Professional | Oswald        | Stripes      | 40%              |
-| Patchwork       | Pastel   | Sketch       | Lora          | Checkerboard | 30%              |
-| Northern Lights | Abyss    | Flexible     | Poppins       | Aurora       | 60%              |
-| Coffeehouse     | Espresso | Sketch       | Kalam         | Bricks       | 40%              |
-| Schematic       | Mono     | Professional | Roboto Mono   | Crosshatch   | 40%              |
-| Flipchart       | Rainbow  | Marker       | (none)        | Lines        | 50%              |
-| Sketchbook      | Rose     | Sketch       | (none)        | Blank        | (kept)           |
-| Greenboard      | Pine     | Marker       | (none)        | Blank        | (kept)           |
-| Picnic          | Pastel   | Flexible     | Poppins       | Checkerboard | 25%              |
-| Mural           | Plum     | Marker       | (none)        | Grid         | 50%              |
-| Field Notes     | Olive    | Sketch       | (none)        | Lines        | 60%              |
+| Look            | Theme     | Finish       | Tab font      | Pattern | Pattern strength |
+| --------------- | --------- | ------------ | ------------- | ------- | ---------------- |
+| Everyday        | Default   | Flexible     | (none)        | Grid    | (kept)           |
+| Crown Jewels    | Gemstone  | Professional | Oswald        | Blank   | (kept)           |
+| Stand-up        | Office    | Flexible     | Inter         | Grid    | 50%              |
+| Whiteboard      | Mono      | Marker       | (none)        | Blank   | (kept)           |
+| Spectrum        | Rainbow   | Flexible     | Inter         | Grid    | 50%              |
+| Terracotta      | Earth     | Flexible     | Poppins       | Grid    | 40%              |
+| Boardroom       | Steel     | Professional | Inter         | Blank   | (kept)           |
+| Doodle          | Rainbow   | Sketch       | Kalam         | Blank   | (kept)           |
+| Quayside        | Harbour   | Flexible     | Nunito        | Lines   | 40%              |
+| Editorial       | Cream     | Professional | Lora          | Blank   | (kept)           |
+| Sweet Shop      | Sorbet    | Sketch       | Kalam         | Grid    | 40%              |
+| Northern Lights | Nightfall | Flexible     | Poppins       | Aurora  | 35%              |
+| Poster          | Tropical  | Professional | Bodoni Moda   | Blank   | (kept)           |
+| Notebook        | Mocha     | Sketch       | (none)        | Lines   | (kept)           |
+| Daydream        | Pastel    | Flexible     | Nunito        | Grid    | 60%              |
+| Graph Paper     | Indigo    | Professional | Roboto Mono   | Graph   | (kept)           |
+| Regatta         | Harbour   | Marker       | (none)        | Blank   | (kept)           |
+| Lagoon          | Tropical  | Flexible     | Space Grotesk | Grid    | 40%              |
+| Quarterly       | Office    | Professional | Roboto Slab   | Blank   | (kept)           |
+| Gallery         | Gemstone  | Sketch       | Lora          | Blank   | (kept)           |
+| Midnight        | Midnight  | Flexible     | (none)        | Grid    | (kept)           |
+| Flipchart       | Rainbow   | Marker       | (none)        | Lines   | 50%              |
+| Textbook        | Mono      | Professional | Oswald        | Graph   | 50%              |
+| Workshop        | Office    | Marker       | (none)        | Grid    | 60%              |
+| Allotment       | Earth     | Sketch       | Kalam         | Lines   | 50%              |
+| Gelato          | Sorbet    | Flexible     | Poppins       | Blank   | (kept)           |
+| Greenboard      | Pine      | Marker       | (none)        | Blank   | (kept)           |
+| Night Shift     | Nightfall | Professional | Space Grotesk | Grid    | 40%              |
+| Field Notes     | Olive     | Sketch       | (none)        | Lines   | 60%              |
 
-- **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
-  Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)). Each is a
-  different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on a
-  quiet dot grid), Doodle a bold hand-drawn rainbow, Daydream soft
-  pastels on dotted paper, Lagoon a fresh tropical spread on ripples, Poster a bold tropical display face on
-  diagonals, and Patchwork pastel branches sketched on soft
-  checks. A dark-mode viewer sees each in its theme's
-  dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
-- **Textbook and Schematic wear Mono.** Both wore UML, which this product retired (owner, 2026-11-12, Work Item
-  696, [Retired colour schemes](retired-schemes.md#uml)); each took Mono, the scheme nearest UML's colours, so
-  Textbook is a crisp single-ink notation in Oswald and Schematic the same ink in a monospace. Textbook moved to the
-  second slot on page one, before Spectrum, so it never sits beside Whiteboard, the other Mono look.
+- **Mostly multi-colour.** Nineteen of the twenty-nine looks use a theme whose boxes and board columns take
+  different colours: Rainbow, Pastel and Tropical, and the six board themes
+  ([Multi-colour themes](multicolour-themes.md) "Board themes"), each board theme on two or three looks. On a planner
+  that is usually the better look: each board column takes the next colour ([Plan board](../026-plan/plan-board.md#column-colours)),
+  so the columns read apart at a glance (owner, 2026-11-19). Each is a different feel: Stand-up crisp status colours
+  for everyday work, Quarterly the same muted set dressed for a report, Workshop it in marker; Terracotta and
+  Allotment warm earth pigments; Crown Jewels and Gallery bold jewel tones; Quayside and Regatta a cool seaside set;
+  Gelato and Sweet Shop soft fruit; Northern Lights and Night Shift bright hues on a dark night; Spectrum, Doodle and
+  Flipchart the rainbow; Daydream pastels; Lagoon and Poster the tropical spread. A dark-mode viewer sees each in its
+  theme's dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
+- **Ten single-colour looks stay**, each a strong look of its own: Everyday, Whiteboard, Boardroom, Editorial,
+  Notebook, Graph Paper, Midnight, Textbook, Greenboard and Field Notes.
+- **Calm canvases.** A planner's boards are 80% see-through and its sheets and dashboards sit on the canvas, so the
+  looks keep to quiet patterns: blank, a soft grid, lines, graph paper. Only Northern Lights moves (Aurora at 35%), and
+  no look uses a busy tile (waves, ripple, bricks, checks, stripes, hexagons, crosshatch, diagonal). The fonts are
+  ones that read well as headings, the only place a tab font reaches outside a form
+  ([Text panel](#text-panel)).
+- **Textbook wears Mono.** It wore UML, which this product retired (owner, 2026-11-12, Work Item 696,
+  [Retired colour schemes](retired-schemes.md#uml)); it took Mono, the scheme nearest UML's colours, a crisp
+  single-ink notation in Oswald.
 - **Order.** The **Mashup** card leads the carousel (below), then the looks; Everyday is always the first look (it
-  is what an untouched tab reads as). The rest follow a fixed, interleaved
-  order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds one or two of the eight multi-colour looks,
-  and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
-  rather than the colourful looks clumping on one page. `apps/editor/lib/tab-looks.test.ts` locks both rules.
-- **Retired looks.** Carnival (Rainbow, Flexible, Poppins, Confetti at 50%) was replaced by Spectrum: its confetti
-  backdrop fought the diagram, and the party feel was already covered by Doodle. Because a look is not stored, a tab
-  that once picked Carnival keeps its four settings and simply reads as its own mix (no card selected); nothing
-  migrates.
-- A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
+  is what an untouched tab reads as). The rest follow a fixed, interleaved order written into the catalogue
+  (`TAB_LOOKS`, never shuffled at runtime): page one holds three multi-colour looks (Mashup and Everyday take two of
+  its six places) and every other page four, with two single-colour looks between them; and no two neighbours on a
+  page share a theme or a finish, so each page reads as a spread of contrasting styles. `apps/editor/lib/tab-looks.test.ts`
+  locks the rules.
+- **Retired looks.** Because a look is not stored, a tab that once picked a retired look keeps its four settings and
+  simply reads as its own mix (no card selected); nothing migrates. Carnival (Rainbow, Flexible, Poppins, Confetti
+  at 50%) was replaced by Spectrum: its confetti backdrop fought the diagram. The 2026-11-19 rework retired Seaside
+  (waves), Engineer, Studio (crosshatch), Garden (hexagons), Billboard (stripes), Patchwork and Picnic (checks),
+  Coffeehouse (bricks), Schematic, Sketchbook and Mural for the board-theme looks, and moved Lagoon off ripples,
+  Poster off diagonals, Northern Lights from Abyss onto Nightfall and Workshop from Sand onto Office.
+- A look that sets a pattern strength sets it (a pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
   Mashup card and the twenty-nine looks fill five pages. Looks are added six at a time, so every page stays full.
-- **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each bring a theme or a
-  pattern no other look uses (Sunset, Abyss and Espresso; stripes, checks, aurora, bricks and crosshatch), so page
-  four is new ground rather than a reshuffle.
 - **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): Whiteboard (a whiteboard is drawn in marker),
-  Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
-  marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
-  with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
-  (Flipchart and Picnic) keep two on it.
+  Regatta, Flipchart, Workshop and Greenboard.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample board drawn in the look (three columns, To do, Doing and Done, each a heading
   over its cards), by the tab exporter, on the look's own canvas colour and pattern, in the viewer's half of its

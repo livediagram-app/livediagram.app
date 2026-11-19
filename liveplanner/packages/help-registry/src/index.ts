@@ -1163,7 +1163,7 @@ export const articles: Article[] = [
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog from Style and pick a look or a theme.',
     keywords:
-      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes',
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice stand-up quarterly workshop terracotta allotment crown jewels gallery quayside regatta gelato sweet shop northern lights night shift flipchart greenboard field notes aurora office earth gemstone harbour sorbet nightfall column colours seasonal holiday christmas halloween easter new year snowflakes',
     category: 'User Interface',
     categorySlug: 'user-interface/themes',
     parentSlug: 'themes',

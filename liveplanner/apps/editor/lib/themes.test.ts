@@ -54,13 +54,14 @@ describe('THEMES catalogue', () => {
   // accurate. The extras include the multicolour themes from docs/specs/011-theme/multicolour-themes.md.
   // Mirrors the equivalent assertions in templates.test.ts.
   // 24: Charcoal merged into Default, and Autumn and Jewel retired (docs/specs/011-theme/light-and-dark.md); 25 with
-  // Teal, brought over from liveplanner's board style presets.
+  // Teal, brought over from liveplanner's board style presets; 30 with the six board themes
+  // (docs/specs/011-theme/multicolour-themes.md "Board themes").
   // The seasonal themes (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks") are the seasonal looks'
   // own, never offered in a picker, so the catalogue's counts are of the year-round themes.
   const yearRound = THEMES.filter((t) => !t.seasonal);
 
-  it('lists exactly 24 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
-    expect(yearRound).toHaveLength(24);
+  it('lists exactly 30 year-round themes (matches docs/specs/019-marketing/marketing-site.md)', () => {
+    expect(yearRound).toHaveLength(30);
   });
 
   it('holds six seasonal themes, all listed after the year-round ones', () => {
@@ -75,11 +76,11 @@ describe('THEMES catalogue', () => {
     expect(THEMES.slice(0, yearRound.length)).toEqual(yearRound);
   });
 
-  it('splits cleanly into 12 default + 12 extra (retained as catalogue metadata)', () => {
+  it('splits cleanly into 12 default + 18 extra (retained as catalogue metadata)', () => {
     const defaults = yearRound.filter((t) => !t.extra);
     const extras = yearRound.filter((t) => t.extra);
     expect(defaults).toHaveLength(12);
-    expect(extras).toHaveLength(12);
+    expect(extras).toHaveLength(18);
   });
 
   it('leads with the brand theme (the un-themed default is the most common pick)', () => {
@@ -940,9 +941,23 @@ describe('deriveNewBoxedColours', () => {
 });
 
 describe('multi-colour (rainbow) themes', () => {
-  it('ships three year-round palette themes (all extra)', () => {
+  // Rainbow, Pastel and Tropical, then the six board themes straight after (docs/specs/011-theme/multicolour-themes.md
+  // "Board themes"), so the multi-colour themes sit together in the picker.
+  it('ships nine year-round palette themes (all extra), side by side', () => {
     const palettes = THEMES.filter((t) => !!t.palette && !t.seasonal);
-    expect(palettes).toHaveLength(3);
+    expect(palettes.map((t) => t.id)).toEqual([
+      'rainbow',
+      'pastel',
+      'tropical',
+      'office',
+      'earth',
+      'gemstone',
+      'harbour',
+      'sorbet',
+      'nightfall',
+    ]);
+    const first = THEMES.indexOf(palettes[0]!);
+    expect(THEMES.slice(first, first + palettes.length)).toEqual(palettes);
     for (const t of palettes) {
       expect(t.extra).toBe(true);
       expect(t.palette && t.palette.length).toBeGreaterThan(0);

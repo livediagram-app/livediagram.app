@@ -118,23 +118,23 @@ describe('CanvasThemeDialog home', () => {
     );
   const lookNames = [
     'Everyday',
-    'Textbook',
-    'Spectrum',
+    'Crown Jewels',
+    'Stand-up',
     'Whiteboard',
+    'Spectrum',
+    'Terracotta',
     'Boardroom',
-    'Notebook',
-    'Seaside',
     'Doodle',
+    'Quayside',
     'Editorial',
-    'Midnight',
-    'Workshop',
+    'Sweet Shop',
+    'Northern Lights',
     'Poster',
-    'Graph Paper',
+    'Notebook',
     'Daydream',
-    'Engineer',
+    'Graph Paper',
+    'Regatta',
     'Lagoon',
-    'Studio',
-    'Garden',
   ];
 
   it('offers the eighteen looks, each drawn as a preview', () => {
@@ -161,10 +161,10 @@ describe('CanvasThemeDialog home', () => {
     unmount();
     // A tab on a page-three look opens there (the Mashup card leads page one).
     home({
-      themeId: 'lavender',
+      themeId: 'indigo',
       finish: 'professional',
-      font: 'roboto-slab',
-      backgroundPattern: 'crosshatch',
+      font: 'roboto-mono',
+      backgroundPattern: 'graph',
     });
     expect(
       screen.getByRole('button', { name: 'Looks page 3 of 5' }).getAttribute('aria-current'),

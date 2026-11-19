@@ -15,13 +15,45 @@ Every palette entry and `rootColor` of a built-in theme keeps its `text` at a co
 
 A theme with no `palette` is a single-colour theme and behaves exactly as before. The backdrop half (background colour + pattern + pattern colour) is unchanged; multi-colour applies only to **element** colours.
 
-The catalogue ships three multi-colour themes, all extra:
+The catalogue ships nine multi-colour themes, all extra: the three shared with the other products, and six
+**board themes** of this product's own (below).
 
-| Theme    | Feel                                                   |
-| -------- | ------------------------------------------------------ |
-| Rainbow  | Saturated six-hue spectrum (red → orange → … → purple) |
-| Pastel   | Soft, low-saturation version of the same wheel         |
-| Tropical | Vivid teal / cyan / lime / orange / pink / violet      |
+| Theme     | Feel                                                                         |
+| --------- | ---------------------------------------------------------------------------- |
+| Rainbow   | Saturated six-hue spectrum (red → orange → … → purple)                       |
+| Pastel    | Soft, low-saturation version of the same wheel                               |
+| Tropical  | Vivid teal / cyan / lime / orange / pink / violet                            |
+| Office    | Muted work tones in a status order: blue, amber, violet, green, brick, teal  |
+| Earth     | Natural pigments on warm paper: clay, ochre, olive, moss, dusk blue, heather |
+| Gemstone  | Bold jewel tones: sapphire, emerald, amethyst, ruby, topaz, turquoise        |
+| Harbour   | A cool seaside set: navy, coral, sea glass, sand, dusk violet, slate         |
+| Sorbet    | Soft fruit on cream: raspberry, peach, lemon, pistachio, mint, blueberry     |
+| Nightfall | The dark one: bright blue, teal, amber, pink, violet, green on ink blue      |
+
+### Board themes
+
+A board on a multi-colour theme gives each column the next colour of the palette
+([Plan board](../026-plan/plan-board.md#column-colours) "Columns in the theme's colours"), so a multi-colour theme
+often suits a board better than a single colour: the columns read apart at a glance. The six board themes are made
+for that (owner, 2026-11-19):
+
+- **Distinct, nameable hues.** Every colour in a palette is one a person would name differently from the others
+  (blue, amber, violet, not two blues), and any two chromatic enough to name sit at least 25 degrees of hue apart
+  (OKLCH) in **both halves**. A dark half moves every outline to one lightness ([Light and dark halves](light-and-dark.md)),
+  so a palette that told two columns apart only by how deep they were would merge them for a dark-mode viewer.
+- **Order matters.** A board's first three or four columns are the ones most boards have (To do, Doing, Done), so
+  the first colours are the most distinct. Office runs in a status order: blue for what waits, amber for what moves,
+  violet for review, green for done.
+- **A neutral trunk.** Each sets a white or paper `rootColor`, like every built-in multi-colour theme.
+- **Readable.** The usual floors hold in both halves: every text on its fill at 4.5:1, every outline on the canvas at
+  3:1; a column's face keeps the board's text at 4.5:1 (the tint backs off where it would not).
+- **Written in one half.** Five are written light, Nightfall dark; the other half of each is derived like every
+  theme's ([Light and dark halves](light-and-dark.md)).
+- **This product's alone.** Their definitions sit in the shared theme data (`BOARD_THEMES` in
+  `@liveworkspace/element-model/themes-data`), outside the shared `THEMES`, so the theme engine resolves them
+  everywhere but no other product's picker, Mashup or agent schema offers them. This product's catalogue
+  (`packages/project/src/themes-data.ts`) puts them straight after Tropical, so the multi-colour themes sit together
+  in the picker.
 
 ## How a branch is decided
 
@@ -44,7 +76,7 @@ Multi-colour assignment needs the **whole element list** (to see the arrow graph
 - `switchThemeElements(elements, prev, next)`: the Theme accordion / welcome picker "apply a theme" path. Preserves a field the user hand-customised away from the previous theme, same per-field rule as the single-colour `switchThemeElement`; a board or sheet bound to a calm-hue style preset (`plan-*`) is the exception, cleared back to the tab style (`withoutPlanPreset`).
 - `resetThemeElementsToTheme(elements, theme)`: the "Reset elements to theme" button; force-repaints every branch from the palette, overwriting customs.
 
-Each computes the branch map once, then reuses the existing per-element transforms by handing them a **synthetic per-element theme** whose `elementFill / elementStroke / elementText` are that element's resolved branch colours. This keeps every existing rule (sticky notes keep their amber, `themeLockFill` fills survive, tables track the backdrop) working without a parallel code path. For a single-colour theme the wrappers fall straight through to the per-element helpers, so nothing changes for the other 21 single-colour themes. `resetArrowsToTheme` is the fourth wrapper: it repaints only arrows, each from its branch ([Canvas + Theme dialog](canvas-and-theme-dialog.md)).
+Each computes the branch map once, then reuses the existing per-element transforms by handing them a **synthetic per-element theme** whose `elementFill / elementStroke / elementText` are that element's resolved branch colours. This keeps every existing rule (sticky notes keep their amber, `themeLockFill` fills survive, tables track the backdrop) working without a parallel code path. For a single-colour theme the wrappers fall straight through to the per-element helpers, so nothing changes for the single-colour themes. `resetArrowsToTheme` is the fourth wrapper: it repaints only arrows, each from its branch ([Canvas + Theme dialog](canvas-and-theme-dialog.md)).
 
 The branch walk itself never logs; it runs inside every wrapper. Each wrapper logs once per call on a palette theme, naming the operation, the theme, and the element and branch counts, so a theme apply leaves a trace without the walk flooding the console.
 
@@ -56,8 +88,8 @@ A brand-new element dropped on a multi-colour-themed tab has no place in the arr
 
 Theme cards (the Theme accordion grid and the welcome / template picker grid) render through a shared `ThemeSwatch` component. The swatch is a miniature diagram in the theme's own colours: a titled node flowing into two others over the theme's backdrop. A single-colour theme draws all three nodes in its element colours; a multi-colour theme gives the three nodes its first three palette entries (cycling when the palette is shorter), so the card reads as "many colours" at a glance. The swatch is decorative (`aria-hidden`); the card's own text names the theme.
 
-Eight of the Tab Style dialog's one-click looks use these themes, so a multi-colour tab is one click away
-([Canvas + Theme dialog](canvas-and-theme-dialog.md) "Looks").
+Nineteen of the Tab Style dialog's twenty-nine one-click looks use these themes, every board theme on two or three
+of them, so a multi-colour tab is one click away ([Canvas + Theme dialog](canvas-and-theme-dialog.md) "Looks").
 
 ## Telemetry
 
@@ -65,4 +97,4 @@ Applying any theme already emits `track('Theme', 'Changed', <label>)` ([Telemetr
 
 ## Counts
 
-The catalogue ships **24 themes** (12 default + 12 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso), Teal (a calm teal brought over from liveplanner's board style presets, the light counterpart to Abyss) and three multicolour themes (Rainbow, Pastel, Tropical), plus six seasonal themes (`seasonal: true`) worn only by the seasonal looks and kept out of every picker. An id outside the catalogue draws as Default ([Retired colour schemes](retired-schemes.md)).
+The catalogue ships **30 themes** (12 default + 18 extra), the extras including the dark schemes (Pine, Plum, Abyss, Espresso), Teal (a calm teal brought over from liveplanner's board style presets, the light counterpart to Abyss), the three shared multicolour themes (Rainbow, Pastel, Tropical) and the six board themes (Office, Earth, Gemstone, Harbour, Sorbet, Nightfall), plus six seasonal themes (`seasonal: true`) worn only by the seasonal looks and kept out of every picker. An id outside the catalogue draws as Default ([Retired colour schemes](retired-schemes.md)).
