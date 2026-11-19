@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
+import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { onAnyPage } from '@liveworkspace/workbench/components/primitives/paged-carousel-testing';
 
 // jsdom has no ResizeObserver; the dialog's animated height measures itself with one.
@@ -91,7 +92,7 @@ describe('CanvasThemeDialog Finish tab', () => {
     );
   });
 
-  it('previews the chosen finish on a sample diagram', () => {
+  it('previews the chosen finish on a sample room', () => {
     const { rerender } = render(<CanvasThemeDialog {...props} tab="finish" />);
     const preview = screen.getByRole('img', { name: /Flexible finish/ });
     expect(preview.getAttribute('data-finish-preview')).toBe('flexible');
@@ -116,18 +117,18 @@ describe('CanvasThemeDialog home', () => {
     );
   const lookNames = [
     'Everyday',
-    'Textbook',
+    'Gallery',
     'Spectrum',
-    'Whiteboard',
+    'Meeting Room',
     'Boardroom',
-    'Notebook',
+    'Cabin',
     'Seaside',
-    'Doodle',
+    'Playroom',
     'Editorial',
     'Midnight',
     'Sandstone',
     'Poster',
-    'Graph Paper',
+    'Lab',
     'Daydream',
     'Engineer',
     'Lagoon',
@@ -139,6 +140,7 @@ describe('CanvasThemeDialog home', () => {
     home();
     for (const name of lookNames) {
       const card = lookCard(name);
+      expect(card, name).toBeTruthy();
       expect(card?.querySelector('svg'), name).not.toBeNull();
     }
   });
@@ -177,7 +179,7 @@ describe('CanvasThemeDialog home', () => {
   it('applies a look on click', () => {
     const onApplyLook = vi.fn();
     home({ onApplyLook });
-    fireEvent.click(screen.getByRole('button', { name: /^Whiteboard/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Meeting Room/ }));
     expect(onApplyLook).toHaveBeenCalledWith('whiteboard');
   });
 
@@ -205,7 +207,7 @@ describe('CanvasThemeDialog home', () => {
     expect(screen.getByRole('button', { name: 'Finish: Professional' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Text: Inter, large/ }));
     expect(onTabChange).toHaveBeenLastCalledWith('font');
-    fireEvent.click(screen.getByRole('button', { name: /^Canvas: / }));
+    fireEvent.click(screen.getByRole('button', { name: /^Room: / }));
     expect(onTabChange).toHaveBeenLastCalledWith('canvas');
     fireEvent.click(screen.getByRole('button', { name: /^Colours: / }));
     expect(onTabChange).toHaveBeenLastCalledWith('theme');
@@ -255,5 +257,50 @@ describe('CanvasThemeDialog Apply to All Tabs', () => {
       />,
     );
     expect(row()).toBeNull();
+  });
+});
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "Room panel": the Canvas panel is the Room, its floor and the walls
+// the 3D view stands up, read from and set on the editor's active tab; and the panels preview a small room.
+describe('CanvasThemeDialog Room panel', () => {
+  const inEditor = (activeTab: Record<string, unknown>, setWallColor = vi.fn()) =>
+    render(
+      <EditorContext.Provider value={{ tabs: [], activeTab, setWallColor } as never}>
+        <CanvasThemeDialog {...props} tab="canvas" />
+      </EditorContext.Provider>,
+    );
+
+  it('is named Room, with a Walls swatch on the plaster until a colour is set', () => {
+    const setWallColor = vi.fn();
+    inEditor({ id: 't', name: 'T', elements: [] }, setWallColor);
+    expect(
+      screen.getByText('The floor under the Space and the walls round its rooms.'),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Walls colour' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Plaster' })).toBeNull();
+  });
+
+  it('puts the plaster back from a painted wall', () => {
+    const setWallColor = vi.fn();
+    inEditor({ id: 't', name: 'T', elements: [], wallColor: '#d3e4d1' }, setWallColor);
+    fireEvent.click(screen.getByRole('button', { name: 'Plaster' }));
+    expect(setWallColor).toHaveBeenCalledWith(undefined);
+  });
+
+  it('leaves the walls out with no editor to set them', () => {
+    render(<CanvasThemeDialog {...props} tab="canvas" />);
+    expect(screen.queryByRole('button', { name: 'Walls colour' })).toBeNull();
+  });
+
+  it("previews a small room on the tab's floor", () => {
+    render(
+      <EditorContext.Provider
+        value={{ tabs: [], activeTab: { backgroundPattern: 'wood' } } as never}
+      >
+        <CanvasThemeDialog {...props} tab="finish" />
+      </EditorContext.Provider>,
+    );
+    const preview = screen.getByRole('img', { name: /sample room/ });
+    expect(preview.innerHTML).toContain('lvd-room-preview-bg');
   });
 });

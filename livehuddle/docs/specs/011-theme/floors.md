@@ -13,7 +13,7 @@ floor, and a dot grid or graph paper reads as a drawing board, not a place.
 
 ## The floors
 
-Fifteen choices, in the Canvas panel's order ([Tab Style dialog](canvas-and-theme-dialog.md#canvas-panel)): **None**,
+Fifteen choices, in the Room panel's order ([Tab Style dialog](canvas-and-theme-dialog.md#room-panel)): **None**,
 then the indoor floors, then the outdoor ones. Nine fill the first carousel page on a desktop (None and the eight
 indoor floors), so a page reads as indoors or outdoors.
 

@@ -242,6 +242,7 @@ export function useEditorTabs({
     setBackgroundOpacity,
     setPatternColor,
     setBackgroundPatternScale,
+    setWallColor,
   } = useTabCanvas({
     notify: (message) => toast.info(message),
     editsBlocked: structureBlocked,
@@ -297,6 +298,7 @@ export function useEditorTabs({
       setBackgroundColor,
       setBackgroundOpacity,
       setBackgroundPatternScale,
+      setWallColor,
       setBackgroundPattern,
       setTabFont,
       setTabDefaultTextSize,

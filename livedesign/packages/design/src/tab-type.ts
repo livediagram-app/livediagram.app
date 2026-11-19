@@ -3,7 +3,7 @@
 import type { TagColour } from './tag-colours';
 import type { TabKind } from './tab-kind';
 import type { EditorMode } from './editor-mode';
-import type { Page, PageOrientation } from './page';
+import type { Page, PageBackground, PageOrientation } from './page';
 import type { Photo } from '@livedesign/photo-engine';
 import type { Layer } from './layers';
 import type { Finish } from './finish';
@@ -60,6 +60,10 @@ export type Tab = {
   // keyframes; ignored by the static patterns. The canvas Speed slider
   // (shown only while an animated pattern is active) writes it.
   backgroundAnimationSpeed?: number;
+  // The background every new page starts on (docs/specs/007-editor/pages-mode.md "A new page's background", set in
+  // Tab Style's New Page Background): a fill and a pattern, never a picture (a logo page takes the fill alone). Absent,
+  // a new page carries over the page before it. Read via `newPageBackgroundOf`.
+  newPageBackground?: PageBackground;
   // Selected preset theme name (see apps/live/lib/themes.ts). Setting
   // a theme via the palette repaints every existing element on the tab
   // to match (sticky notes keep their amber palette). Newly added

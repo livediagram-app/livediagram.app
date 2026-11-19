@@ -19,7 +19,6 @@ describeTrustedTypesSinks({
     'apps/live/components/canvas/WireframeDeviceSheet.tsx',
     'apps/live/components/canvas/layout-render-thumb.tsx',
     'apps/live/components/canvas/wireframe/DeviceMiniature.tsx',
-    'apps/live/components/dialogs/LooksCarousel.tsx',
     'apps/live/components/dialogs/TabStylePreview.tsx',
     'apps/live/components/primitives/tech-icon-glyph.tsx',
     'apps/live/lib/stale-html-guard.ts',

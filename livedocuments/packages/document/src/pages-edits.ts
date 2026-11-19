@@ -40,6 +40,7 @@ import {
 } from './page-content';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 import { sameFill, withBackgroundPatch } from './page-paint';
+import { newPageBackgroundOf } from './tab-new-page-background';
 
 export type PageEditRefusal =
   | 'unknown_page'
@@ -54,6 +55,7 @@ type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
   pageOrientation?: unknown;
   articles?: unknown;
+  newPageBackground?: unknown;
 };
 
 export type PageEdit<T> = { tab: T } | { refused: PageEditRefusal };
@@ -215,8 +217,8 @@ const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PA
  * person's current page, docs/specs/007-editor/pages-mode.md "Adding a page"), else after the last: an infographic
  * page takes the last infographic page's size and orientation (else A4 portrait; A4 after a Fit to Content page); an
  * article the last page's paper size and orientation when it is a paper size, else A4 portrait, its writing a new
- * Title and paragraph (`flow` its id); a slide the last slide's size (else 16:9), landscape. It wears the background
- * of the page before it. Only ever of the tab's kind ("One kind a tab"): any other is refused.
+ * Title and paragraph (`flow` its id); a slide the last slide's size (else 16:9), landscape. It starts on the tab's
+ * new-page background, else wears the background of the page before it. Only ever of the tab's kind ("One kind a tab"): any other is refused.
  */
 export function pageAdded<T extends PagesTab>(
   tab: T,
@@ -240,8 +242,9 @@ function pageAppended<T extends PagesTab>(
   const pages = pagesOf(tab);
   if (pages.length > 0 && kind !== tabPageKind(pages)) return refused('kind_not_offered');
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
-  // The new page wears the background of the page before it (the last page of `after`'s unit, else the last).
-  const carried = pageBefore(pages, after)?.background;
+  // The new page starts on the tab's new-page background when it has one (the plain paper included), else wears the
+  // background of the page before it (the last page of `after`'s unit, else the last).
+  const carried = startingBackground(tab, pages, after);
   if (kind === 'flashcard') {
     const out = withFlashcardAdded(tab, { id, ...(carried ? { background: carried } : {}) }, flow);
     return out ? { tab: out } : refused('page_limit');
@@ -272,6 +275,18 @@ function pageAppended<T extends PagesTab>(
   }
   if (carried) page = { ...page, background: carried };
   return { tab: withPages(tab, [...pages, page]) };
+}
+
+/** The background a new page starts on: the tab's own new-page background (none for the plain paper), else the
+ *  page before's. */
+function startingBackground(
+  tab: PagesTab,
+  pages: readonly Page[],
+  after: string | undefined,
+): PageBackground | undefined {
+  const own = newPageBackgroundOf(tab);
+  if (!own) return pageBefore(pages, after)?.background;
+  return own.fill || own.pattern ? own : undefined;
 }
 
 /** The page a page added after `after` follows: the last page of `after`'s unit (its article's last page), else the

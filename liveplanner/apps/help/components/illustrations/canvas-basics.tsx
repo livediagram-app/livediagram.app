@@ -3,7 +3,7 @@
 // Font tiles, and the Colours, Text and Canvas panels of the Tab Style dialog.
 // Each draws the real surface with its real labels: ToolbarPalette.tsx, CanvasChrome.tsx,
 // MultiSelectionToolbar.tsx, TemplatePickerHeader.tsx / TemplatePickerBrowse.tsx,
-// TypographySections.tsx, CanvasThemeDialog.tsx, BackBar.tsx, ThemeBrowser.tsx, TextTab.tsx,
+// TypographySections.tsx, the shared Tab Style dialog (TabStyleDialog.tsx, TextPanel.tsx), BackBar.tsx, ThemeBrowser.tsx,
 // and CanvasStyleControls.tsx. Composed from the shared primitives so
 // the house style holds.
 
