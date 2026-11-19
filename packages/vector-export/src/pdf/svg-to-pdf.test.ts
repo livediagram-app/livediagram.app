@@ -4,7 +4,7 @@
 // (test-dom.ts); the real drawing is checked in a browser, rendered by pdf.js (the PR's screenshots).
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { FACE_DATA, faceCss, fakeFontkit, installDom, type Dom } from '../test-dom';
-import { readPdf, type ReadPdf } from '../test-pdf';
+import { readPdf, structDump, type ReadPdf } from '../test-pdf';
 import { svgPagesToPdf, type SvgPdfPage } from './svg-to-pdf';
 
 let dom: Dom;
@@ -495,5 +495,125 @@ describe('the fallback picture', () => {
       },
     ]);
     expect(images(pdf)).toHaveLength(1);
+  });
+});
+
+describe('figures', () => {
+  it('tags a described picture as a Figure with its alt text, an undescribed one an artifact', async () => {
+    const pdf = await write(
+      svg(`<rect width="10" height="10" fill="red"/>
+      <g data-pdf-alt=" A red square " clip-path="url(#c)"><rect x="0" y="40" width="20" height="20" fill="red"/></g>
+      <rect y="20" width="10" height="10" fill="blue" data-pdf-alt="A blue square" transform="translate(5 0)"/>
+      <rect y="60" width="10" height="10" data-pdf-alt="A low square"/>
+      <rect y="5" width="10" height="10" data-pdf-alt="A high square" data-no-bbox=""/>
+      <rect width="10" height="10" data-pdf-alt="Hidden" style="display: none"/>
+      <rect width="10" height="10" data-pdf-alt="  "/>
+      <clipPath id="c"><rect width="200" height="100"/></clipPath>`),
+    );
+    // Undescribed pictures and every other drawing stay in the artifact, closed around each figure.
+    const d = drawing(pdf);
+    expect(d).toMatch(/^\/Artifact BMC\nq\n0.75 0 0 -0.75 0 75 cm\n/);
+    expect(d).toContain('EMC\n/Figure << /MCID 0 >> BDC\nq\n');
+    expect(d).toContain('EMC\n/Figure << /MCID 1 >> BDC\nq\n1 0 0 1 5 0 cm');
+    expect(pdf.text).toContain('/MarkInfo << /Marked true >>');
+    // In reading order by their top edge: the blue square (y 20) before the low one (y 60); a group's box is its
+    // children's in a browser (test-dom stands it at 0 0); one with no box goes last.
+    expect(structDump(pdf)).toBe(
+      [
+        'Document',
+        '  Figure "A red square" [0:0]',
+        '  Figure "A blue square" [0:1]',
+        '  Figure "A low square" [0:2]',
+        '  Figure "A high square" [0:3]',
+      ].join('\n'),
+    );
+  });
+
+  it('makes a translucent group or a fallback picture the Figure of the described pictures inside it', async () => {
+    const pdf = await write(
+      svg(`<g opacity="0.5"><rect width="10" height="10" data-pdf-alt="Faded"/><g opacity="0.5"><rect width="5" height="5" data-pdf-alt="Fainter"/></g></g>
+      <g opacity="0.5"><rect width="10" height="10"/></g>
+      <g filter="url(#blur)" data-pdf-alt="Blurred"><rect y="50" width="10" height="10" data-pdf-alt="its square"/></g>
+      <g filter="url(#blur)"><rect y="60" width="10" height="10"/></g>
+      <rect width="50" height="20" fill="url(#dots)"/>
+      <filter id="blur"><feGaussianBlur stdDeviation="1"/></filter>
+      <pattern id="dots" patternUnits="userSpaceOnUse" width="10" height="10"><rect width="2" height="2" data-pdf-alt="A dot"/></pattern>`),
+    );
+    const d = drawing(pdf);
+    expect(d).toMatch(
+      /EMC\n\/Figure << \/MCID 0 >> BDC\n\/G\d+ gs\n\/X\d+ Do\nEMC\n\/Artifact BMC/,
+    );
+    // A pattern's tile is decoration, and so is a group or a picture with nothing described in it.
+    expect(structDump(pdf)).toBe(
+      ['Document', '  Figure "Faded. Fainter" [0:0]', '  Figure "Blurred. its square" [0:1]'].join(
+        '\n',
+      ),
+    );
+    expect(d.match(/\/Figure/g)).toHaveLength(2);
+  });
+
+  it('takes a page’s figures back when the page is drawn as a picture', async () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 2;
+    canvas.height = 1;
+    const getComputedStyle = window.getComputedStyle.bind(window);
+    vi.spyOn(window, 'getComputedStyle').mockImplementation((el, pseudo) => {
+      if (el.hasAttribute('data-boom')) throw new Error('boom');
+      return getComputedStyle(el, pseudo);
+    });
+    const pdf = await write([
+      {
+        svg: svg(
+          '<rect width="4" height="4" data-pdf-alt="Lost"/><rect data-boom="" width="4" height="4"/>',
+        ),
+        raster: async () => canvas,
+      },
+      { svg: svg('<rect width="4" height="4" data-pdf-alt="Kept"/>') },
+    ]);
+    expect(structDump(pdf)).toBe(['Document', '  Figure "Kept" [1:0]'].join('\n'));
+    expect(pdf.find('/Nums [')[0]!.dict).toMatch(/\/Nums \[0 \[\] 1 \[\d+ 0 R\]\]/);
+  });
+
+  it('reads an article’s list and table with a described picture in its place', async () => {
+    const t = (x: number, y: number, tag: string, block: number, words: string) =>
+      `<text x="${x}" y="${y}" font-family="Body" font-size="10" data-pdf-tag="${tag}" data-pdf-block="${block}">${words}</text>`;
+    const pdf = await write(
+      svg(
+        // The writing draws every marker first; each reads with its item, apart from its words.
+        `${t(10, 20, 'L#l0/LI#i1/Lbl#m1', 1, '1.')}${t(10, 30, 'L#l0/LI#i2/Lbl#m2', 2, '2.')}
+        ${t(10, 10, 'H1', 0, 'Title')}${t(30, 20, 'L#l0/LI#i1/LBody', 1, 'One')}${t(30, 30, 'L#l0/LI#i2/LBody', 2, 'Two')}
+        ${t(10, 80, 'Table#t0/TR#r0/TH', 3, 'Name')}${t(60, 80, 'Table#t0/TR#r0/TH', 4, 'Age')}
+        ${t(10, 90, 'Table#t0/TR#r1/TD', 5, 'Ada')}${t(60, 90, 'Table#t0/TR#r1/TD', 6, '36')}
+        <rect y="40" width="10" height="10" data-pdf-alt="A map"/>`,
+        undefined,
+        faceCss('Body'),
+      ),
+    );
+    expect(structDump(pdf)).toBe(
+      [
+        'Document',
+        '  H1 [0:1]',
+        '  L',
+        '    LI',
+        '      Lbl [0:2]',
+        '      LBody [0:3]',
+        '    LI',
+        '      Lbl [0:4]',
+        '      LBody [0:5]',
+        '  Figure "A map" [0:0]',
+        '  Table',
+        '    TR',
+        '      TH Column [0:6]',
+        '      TH Column [0:7]',
+        '    TR',
+        '      TD [0:8]',
+        '      TD [0:9]',
+      ].join('\n'),
+    );
+  });
+
+  it('leaves a PDF with no described picture and no tags untagged', async () => {
+    const pdf = await write(svg('<rect width="4" height="4"/>'));
+    expect(structDump(pdf)).toBe('(untagged)');
   });
 });

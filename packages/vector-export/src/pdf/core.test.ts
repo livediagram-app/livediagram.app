@@ -437,9 +437,11 @@ describe('tags', () => {
       close: 'EMC',
     });
     expect(tree.mark(line('2', 'BLOCKQUOTE'), 'b').open).toBe('/P << /MCID 1 >> BDC');
+    tree.endPage();
     expect(tree.beginPage(p2)).toBe(1);
     expect(tree.mark(line('2'), 'c').open).toBe('/P << /MCID 0 >> BDC');
     expect(tree.mark(line(undefined), 'p1-0').open).toBe('/P << /MCID 1 >> BDC');
+    tree.endPage();
     tree.write();
     const pdf = readPdf(await file.toBytes(tree.root));
     const elems = pdf.find('/Type /StructElem');

@@ -1,7 +1,8 @@
 // How a page is drawn (liveworkspace/docs/specs/013-export/vector-pdf.md "How a page is drawn"): the mounted SVG is walked in document order,
 // each element written as PDF operators inside its own saved graphics state: its transform, its clip, a translucent
 // group as a transparency group, then its shapes, pictures, text and children. An element with no PDF form is drawn
-// as a picture of itself (svg-raster.ts), the rest of the page staying vector.
+// as a picture of itself (svg-raster.ts), the rest of the page staying vector. On a tagged page an element with alt
+// text (`data-pdf-alt`) is drawn as a Figure, everything else as an artifact ("Tags").
 import { invert, isIdentity, mapRect, matrixOps, multiply, num, type Matrix } from './matrix';
 import { byId, type SvgContext } from './svg-context';
 import { drawImage } from './svg-image';
@@ -158,8 +159,57 @@ async function drawChildren(ctx: SvgContext, el: Element): Promise<void> {
   for (const child of el.children) await drawElement(ctx, child);
 }
 
+const altOf = (el: Element) => el.getAttribute('data-pdf-alt')?.trim() ?? '';
+const IDENTITY: Matrix = [1, 0, 0, 1, 0, 0];
+
+/** The top edge of `el` (in the current user space, then `local`) in PDF points, y up; -Infinity with no box. */
+function topOf(ctx: SvgContext, el: Element, local: Matrix): number {
+  const b = bboxOf(el);
+  if (!b) return -Infinity;
+  const r = mapRect(multiply(ctx.rootToPage, multiply(ctx.toRoot, local)), b);
+  return r.y + r.h;
+}
+
+/** Draws as a Figure of `alts` on a tagged page, the page's artifact closed around it; inside a figure or a group,
+ *  its alt texts join that one's. */
+async function asFigure(
+  ctx: SvgContext,
+  alts: string[],
+  top: () => number,
+  draw: () => Promise<void>,
+): Promise<void> {
+  const tags = ctx.tags;
+  if (!tags) {
+    ctx.alts?.push(...alts);
+    return draw();
+  }
+  const fig = tags.figure(alts, top());
+  const outer = ctx.alts;
+  ctx.out.push('EMC', fig.open);
+  ctx.tags = null;
+  ctx.alts = alts;
+  try {
+    await draw();
+  } finally {
+    ctx.tags = tags;
+    ctx.alts = outer;
+    ctx.out.push(fig.close, '/Artifact BMC');
+  }
+}
+
 /** Writes `el` and everything in it. */
 export async function drawElement(ctx: SvgContext, el: Element): Promise<void> {
+  const alt = ctx.tags || ctx.alts ? altOf(el) : '';
+  if (!alt || styleOf(el)('display') === 'none') return drawBody(ctx, el);
+  return asFigure(
+    ctx,
+    [alt],
+    () => topOf(ctx, el, transformOf(el)),
+    () => drawBody(ctx, el),
+  );
+}
+
+async function drawBody(ctx: SvgContext, el: Element): Promise<void> {
   if (el.namespaceURI !== SVG_NS || NOT_RENDERED.has(el.localName)) return;
   const style = styleOf(el);
   if (style('display') === 'none') return;
@@ -170,8 +220,17 @@ export async function drawElement(ctx: SvgContext, el: Element): Promise<void> {
   const text = name === 'text' ? (el as SVGTextContentElement) : null;
   const outlines = text && !reason ? outlinesOf(ctx, text) : null;
   if (reason || (text && !outlines)) {
-    if (style('visibility') !== 'hidden' || CONTAINERS.has(name)) await rasterElement(ctx, el);
-    textInside(ctx, el, multiply(ctx.toRoot, transformOf(el)));
+    const picture = async () => {
+      if (style('visibility') !== 'hidden' || CONTAINERS.has(name)) await rasterElement(ctx, el);
+      textInside(ctx, el, multiply(ctx.toRoot, transformOf(el)));
+    };
+    // The described pictures it draws: their words are the picture's.
+    const inner =
+      ctx.tags || ctx.alts
+        ? [...el.querySelectorAll('[data-pdf-alt]')].map(altOf).filter(Boolean)
+        : [];
+    if (inner.length) await asFigure(ctx, inner, () => topOf(ctx, el, transformOf(el)), picture);
+    else await picture();
     return;
   }
   const o = parseFloat(style('opacity'));
@@ -185,7 +244,13 @@ export async function drawElement(ctx: SvgContext, el: Element): Promise<void> {
     local = multiply(local, vp.matrix);
     viewportClip = vp.clip ? mapRect(invert(vp.matrix) ?? vp.matrix, vp.clip) : null;
   }
-  const saved = { toRoot: ctx.toRoot, out: ctx.out, baseToRoot: ctx.baseToRoot };
+  const saved = {
+    toRoot: ctx.toRoot,
+    out: ctx.out,
+    baseToRoot: ctx.baseToRoot,
+    tags: ctx.tags,
+    alts: ctx.alts,
+  };
   ctx.out.push('q');
   if (!isIdentity(local)) ctx.out.push(matrixOps(local));
   ctx.toRoot = multiply(ctx.toRoot, local);
@@ -211,9 +276,15 @@ export async function drawElement(ctx: SvgContext, el: Element): Promise<void> {
   const group = (opacity < 1 && (container || both || !!text)) || (container && blend !== 'Normal');
   const drawTile = (pattern: Element) => drawChildren(ctx, pattern);
   try {
+    // A group drawn on a tagged page gathers the alt texts inside it: its form is one Figure of them.
+    const groupAlts: string[] = [];
     if (group) {
       ctx.out = [];
       ctx.baseToRoot = ctx.toRoot;
+      if (saved.tags) {
+        ctx.tags = null;
+        ctx.alts = groupAlts;
+      }
     }
     const leafAlpha = group ? 1 : opacity;
     const leafBlend = group ? 'Normal' : blend;
@@ -245,15 +316,21 @@ export async function drawElement(ctx: SvgContext, el: Element): Promise<void> {
         `/Type /XObject /Subtype /Form /BBox [${[b.x, b.y, b.x + b.w, b.y + b.h].map(num).join(' ')}] /Group << /S /Transparency /I true /K false >> /Resources ${ctx.res.ref} 0 R`,
         inner.join('\n'),
       );
-      ctx.out.push(
+      const ops = [
         `/${ctx.res.state(opacity, opacity, blend)} gs`,
         `/${ctx.res.name('XObject', form)} Do`,
-      );
+      ];
+      if (saved.tags && groupAlts.length) {
+        const fig = saved.tags.figure(groupAlts, topOf(ctx, el, IDENTITY));
+        ctx.out.push('EMC', fig.open, ...ops, fig.close, '/Artifact BMC');
+      } else ctx.out.push(...ops);
     }
   } finally {
     ctx.out = saved.out;
     ctx.out.push('Q');
     ctx.toRoot = saved.toRoot;
     ctx.baseToRoot = saved.baseToRoot;
+    ctx.tags = saved.tags;
+    ctx.alts = saved.alts;
   }
 }
