@@ -14,6 +14,7 @@
     "./local-preview": "./src/explorer/LocalPreview.tsx",
     "./conversion-handoff": "./src/conversion-handoff.ts",
     "./offline-redirect": "./src/offline-redirect.tsx",
+    "./inbox-notices": "./src/inbox-notices/index.ts",
     "./imports": "./src/library/app-imports.tsx",
     "./search-panel": "./src/search/SearchPanel.tsx",
     "./item-search": "./src/search/item-search.ts",
