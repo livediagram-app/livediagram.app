@@ -189,3 +189,35 @@
 .dark [data-explorer] [data-item-card][data-arrived] {
   outline-color: var(--color-brand-400);
 }
+
+/* An Inbox notice arriving in the editor (src/inbox-notices/InboxNotice.tsx, inbox-notices.md "How a notice looks"):
+   down 8px and in over 160ms; under reduced motion (the system's, or the app's Reduce Motion) it only fades. */
+@keyframes lw-inbox-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes lw-inbox-notice-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.lw-inbox-notice {
+  animation: lw-inbox-notice-in 160ms cubic-bezier(0.2, 0, 0, 1) both;
+}
+:root.reduce-motion .lw-inbox-notice {
+  animation-name: lw-inbox-notice-fade;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lw-inbox-notice {
+    animation-name: lw-inbox-notice-fade;
+  }
+}

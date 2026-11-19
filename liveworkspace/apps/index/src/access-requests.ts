@@ -242,6 +242,10 @@ async function grantRoute(
   const request = await openRequest(env, id, requestId);
   if (!request) return notFound('access_request_not_found');
 
+  // The granter's name, read before the grant is written so its `shared` event keeps it: the requester's Inbox read
+  // says who shared the item from it (inbox-notices.md), and their email from it below.
+  const names = await accountsPeopleNames(env)([person.id]);
+  const granterName = names?.get(person.id) ?? null;
   const now = Date.now();
   const code = generateShareCode();
   const db = env.INDEX_DB;
@@ -272,6 +276,7 @@ async function grantRoute(
       itemId: id,
       type: 'shared',
       actorId: person.id,
+      actorName: granterName,
       detail: { level },
       at: now,
       when: { sql: linkMade, args: [code] },
@@ -283,13 +288,12 @@ async function grantRoute(
       ? conflict('share_link_limit')
       : notFound('access_request_not_found');
   }
-  const names = await accountsPeopleNames(env)([person.id]);
   tellApp(ctx.waitUntil, env, row, {
     type: 'access_granted',
     requestId,
     requesterId: request.requester_id,
     granterId: person.id,
-    granterName: names?.get(person.id) ?? null,
+    granterName,
     level,
     itemTitle: row.title,
   });

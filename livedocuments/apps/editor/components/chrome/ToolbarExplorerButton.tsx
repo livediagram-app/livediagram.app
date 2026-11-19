@@ -5,6 +5,7 @@ import { Brand, Glyph } from '@livedocuments/ui';
 import { useContext, useSyncExternalStore, type Ref } from 'react';
 import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
+import { useEditorInbox } from '@liveworkspace/workbench/components/chrome/useEditorInbox';
 import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/ToolbarMenuCard';
 
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md), top-left of the canvas where
@@ -18,6 +19,8 @@ import { ToolbarMenuCard } from '@liveworkspace/workbench/components/chrome/Tool
 // rather than closing it on pointer-down and reopening it on click.
 //
 // `inline`: in the strip's row, as a phone puts it (ToolbarMenuCard).
+// The Inbox's count rides the button, and a new Inbox row shows as a notice under the corner card while the
+// editor is open (liveworkspace/docs/specs/004-index/inbox-notices.md, docs/specs/013-workspace/inbox-notices.md).
 export function ToolbarExplorerButton({
   open,
   onToggle,
@@ -43,17 +46,18 @@ export function ToolbarExplorerButton({
     () => store?.get().documentId ?? null,
     () => null,
   );
+  const inbox = useEditorInbox('livedocuments');
   const button = (
     <button
       ref={buttonRef}
       type="button"
-      aria-label="Explorer"
+      aria-label={inbox.label('Explorer')}
       aria-expanded={open}
       onClick={(e) => {
         if (!open) track('UI', 'Opened', 'ToolbarExplorer');
         onToggle(e.currentTarget);
       }}
-      className={`flex h-9 w-9 items-center justify-center rounded-md transition ${
+      className={`relative flex h-9 w-9 items-center justify-center rounded-md transition ${
         open
           ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
           : 'text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
@@ -62,27 +66,31 @@ export function ToolbarExplorerButton({
       <Glyph size={18} units={20} strokeLinejoin="miter">
         <path d="M4 6h12M4 10h12M4 14h12" />
       </Glyph>
+      {inbox.badge}
     </button>
   );
   return (
-    <ToolbarMenuCard
-      inline={inline}
-      dockButton
-      tourId="dock-explorer"
-      {...(joinedWidth === undefined ? {} : { joinedWidth })}
-      logo={
-        <Brand
-          href={explorerItemHref(itemId)}
-          size="sm"
-          // Heading the Contents sidebar the wordmark stays, the sidebar being as wide as ever.
-          wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline"
-          className="relative touch-target"
-        />
-      }
-    >
-      {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
-      {button}
-    </ToolbarMenuCard>
+    <>
+      <ToolbarMenuCard
+        inline={inline}
+        dockButton
+        tourId="dock-explorer"
+        {...(joinedWidth === undefined ? {} : { joinedWidth })}
+        logo={
+          <Brand
+            href={explorerItemHref(itemId)}
+            size="sm"
+            // Heading the Contents sidebar the wordmark stays, the sidebar being as wide as ever.
+            wordmarkClassName="hidden lg:inline [[data-logo-in-band]_&]:inline"
+            className="relative touch-target"
+          />
+        }
+      >
+        {/* No hover card: it got in the way of switching apps, and the aria-label names it. */}
+        {button}
+      </ToolbarMenuCard>
+      {inbox.notices}
+    </>
   );
 }
 

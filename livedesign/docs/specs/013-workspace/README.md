@@ -28,4 +28,5 @@ Follow the references below only as needed; never upfront.
 - ./empty-design-cleanup.md - when working on Empty design clean-up: the index's daily sweep moves a design with no elements, unchanged for 30 days, to the Trash (marked `empty`); what livedesign reports (`hasContent`) and shows (`reason`)
 - ./snapshots.md - when working on Snapshots: manual save points of the whole design, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./approvals.md - when working on Approvals: asking named people to approve the design, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
+- ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livedesign supplies (the platform's `004-index/inbox-notices.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, local opens)

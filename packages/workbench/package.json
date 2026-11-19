@@ -101,6 +101,7 @@
     "./components/chrome/NewVersionPrompt": "./src/components/chrome/NewVersionPrompt.tsx",
     "./components/chrome/NotFound": "./src/components/chrome/NotFound.tsx",
     "./components/chrome/PaletteTray": "./src/components/chrome/PaletteTray.tsx",
+    "./components/chrome/useEditorInbox": "./src/components/chrome/useEditorInbox.tsx",
     "./components/chrome/ModifierHintBanner": "./src/components/chrome/ModifierHintBanner.tsx",
     "./components/chrome/useMenuCardRoom": "./src/components/chrome/useMenuCardRoom.ts",
     "./components/chrome/TabFolderGroup": "./src/components/chrome/TabFolderGroup.tsx",

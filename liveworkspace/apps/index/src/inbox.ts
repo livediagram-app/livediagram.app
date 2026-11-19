@@ -1,10 +1,12 @@
 // The Inbox (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Inbox"): across every app, open actions and cards
 // assigned to or by me, unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 // mentioned, forms with responses I haven't seen on items I own or reach through a team, limited to items I can
-// reach, and open access requests on items I manage. Four queries, each starting from an index on the person.
+// reach, open access requests on items I manage, and my own requests granted lately (`shares`, inbox-notices.md). Five
+// queries, each starting from an index on the person.
 
 import {
   COLLAB_CARDS_TAB,
+  INBOX_SHARES_MS,
   isApp,
   LIST_LIMIT_MAX,
   type ActionStatus,
@@ -14,6 +16,7 @@ import {
   type InboxAccessRequest,
   type InboxAction,
   type InboxForm,
+  type InboxShare,
   type InboxThread,
 } from '@liveworkspace/index-client';
 import { scopesOf } from './auth';
@@ -105,6 +108,17 @@ type AccessRequestRow = {
   asked_at: number;
 };
 
+type ShareRow = {
+  id: string;
+  app: App;
+  item_id: string;
+  item_title: string;
+  item_team_id: string | null;
+  shared_at: number;
+  shared_by_id: string | null;
+  shared_by_name: string | null;
+};
+
 export function inboxQueries(personId: string, scopes: string[], app: App | null, limit: number) {
   const now = Date.now();
   const reachArgs = [personId, JSON.stringify(scopes), personId, now];
@@ -184,7 +198,24 @@ export function inboxQueries(personId: string, scopes: string[], app: App | null
       ORDER BY r.asked_at DESC LIMIT ?`,
     args: [JSON.stringify(scopes), personId, ...(app ? [app] : []), now, limit],
   };
-  return { threads, actions, forms, accessRequests };
+  // My own requests granted in the last INBOX_SHARES_MS, while a live link still reaches the item for me (the grant's
+  // link, or another): from access_requests_person_item, a handful. Who granted it is the grant's `shared` event, at
+  // the grant's time (inbox-notices.md "shares in the Inbox read").
+  const shares = {
+    sql: `SELECT r.id, i.app, r.item_id, i.title AS item_title, i.team_id AS item_team_id, r.closed_at AS shared_at,
+        MAX(e.actor_id) AS shared_by_id, MAX(e.actor_name) AS shared_by_name
+      FROM access_requests r JOIN items i ON i.id = r.item_id
+      LEFT JOIN events e ON e.item_id = r.item_id AND e.type = 'shared' AND e.occurred_at = r.closed_at
+      WHERE r.requester_id = ? AND r.state = 'granted' AND r.closed_at >= ? AND i.trashed_at IS NULL
+        ${app ? 'AND i.app = ?' : ''}
+        AND EXISTS (
+          SELECT 1 FROM shared_with sw JOIN share_links sl ON sl.code = sw.share_code AND sl.item_id = sw.item_id
+          WHERE sw.person_id = r.requester_id AND sw.item_id = r.item_id AND ${LIVE_LINK('sl')})
+      GROUP BY r.id
+      ORDER BY r.closed_at DESC LIMIT ?`,
+    args: [personId, now - INBOX_SHARES_MS, ...(app ? [app] : []), now, limit],
+  };
+  return { threads, actions, forms, accessRequests, shares };
 }
 
 /** Who mentioned the reader, as the push said (checked when it was pushed); null when it said nothing. */
@@ -217,11 +248,12 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
   if (limit === null) return badRequest('invalid_query');
   const q = inboxQueries(person.id, scopesOf(person), app, limit);
   const db = env.INDEX_DB;
-  const [threadRes, actionRes, formRes, accessRes] = (await db.batch([
+  const [threadRes, actionRes, formRes, accessRes, shareRes] = (await db.batch([
     db.prepare(q.threads.sql).bind(...q.threads.args),
     db.prepare(q.actions.sql).bind(...q.actions.args),
     db.prepare(q.forms.sql).bind(...q.forms.args),
     db.prepare(q.accessRequests.sql).bind(...q.accessRequests.args),
+    db.prepare(q.shares.sql).bind(...q.shares.args),
   ])) as D1Result<Record<string, unknown>>[];
   const threads: InboxThread[] = (threadRes!.results as ThreadRow[]).map((r) => ({
     app: r.app,
@@ -292,5 +324,15 @@ export async function handleInbox(ctx: PersonContext): Promise<Response> {
       askedAt: r.asked_at,
     }),
   );
-  return json({ threads, actions, forms, accessRequests });
+  const shares: InboxShare[] = (shareRes!.results as ShareRow[]).map((r) => ({
+    id: r.id,
+    app: r.app,
+    itemId: r.item_id,
+    itemTitle: r.item_title,
+    itemTeamId: r.item_team_id,
+    sharedById: r.shared_by_id,
+    sharedByName: r.shared_by_name,
+    sharedAt: r.shared_at,
+  }));
+  return json({ threads, actions, forms, accessRequests, shares });
 }
