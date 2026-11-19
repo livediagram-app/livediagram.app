@@ -74,7 +74,7 @@ export type HeroDialogHeaderProps = {
   /** The <h2>'s id, for the dialog's `titleId` (aria-labelledby). */
   titleId: string;
   title: ReactNode;
-  /** One line under the title, truncated, never wrapping the band taller, at every width. */
+  /** The line under the title: one line from `sm`, up to two on a phone (as the title), never making the band taller. */
   subtitle?: ReactNode;
   /** The dialog's own controls, before the close. */
   actions?: ReactNode;
@@ -126,7 +126,7 @@ export function HeroDialogHeader({
         {subtitle ? (
           <p
             data-dialog-hero-subtitle=""
-            className={`truncate text-[13px] leading-[18px] text-[var(--hero-muted)] ${cap}`}
+            className={`sm:truncate max-sm:line-clamp-2 text-[13px] leading-[18px] text-[var(--hero-muted)] ${cap}`}
           >
             {subtitle}
           </p>

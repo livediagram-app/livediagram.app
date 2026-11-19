@@ -45,7 +45,7 @@ export function PrintPanel({
 }) {
   return (
     <div>
-      <BackBar label="All formats" current="Print" onClick={onBack} disabled={busy} />
+      <BackBar label="All Formats" current="Print" onClick={onBack} disabled={busy} />
       <div className="mt-3 flex flex-col gap-2.5 rounded-lg bg-slate-50 px-3 py-3 dark:bg-slate-800/60">
         <div className="flex flex-wrap items-center gap-3">
           <SegmentedRadio

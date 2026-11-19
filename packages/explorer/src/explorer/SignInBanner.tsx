@@ -44,7 +44,7 @@ export function SignInBanner({ href, host }: { href: string; host: SignInBannerH
             <SparkleIcon size={20} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold sm:text-base">Sign in to access Teams &amp; AI</p>
+            <p className="text-sm font-semibold sm:text-base">Sign In to Use Teams</p>
             <p className="mt-0.5 text-xs text-white/90 sm:text-sm">
               Share with your team, build with AI, and keep your {words.lowerMany} on every device.
             </p>

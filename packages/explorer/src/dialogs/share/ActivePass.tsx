@@ -74,6 +74,9 @@ export function ActivePass({
   const embedUrl = handOver.embedUrl?.(link);
   const imageUrl = handOver.liveImageUrl?.(link, imageTab);
   const alt = handOver.liveImageAlt ?? `${word} tab`;
+  // Each pass's buttons name their pass, so with two passes open a screen reader hears which one it copies or
+  // revokes (Work Tracker 1060), as the field already does.
+  const passName = `${LEVEL_PASS[link.level].title} pass link`;
   return (
     <PassTicket
       level={link.level}
@@ -88,14 +91,14 @@ export function ActivePass({
           readOnly
           value={url}
           onFocus={(e) => e.currentTarget.select()}
-          aria-label={`${LEVEL_PASS[link.level].title} pass link`}
+          aria-label={passName}
           className="min-w-0 flex-1 truncate rounded-lg border border-slate-200 bg-slate-50 py-1.5 pl-2.5 pr-10 font-mono text-[11px] text-slate-700 outline-none focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
         />
         <Tooltip label={copied ? 'Copied' : 'Copy link'}>
           <button
             type="button"
             onClick={onCopy}
-            aria-label={copied ? 'Copied' : 'Copy link'}
+            aria-label={copied ? 'Copied' : `Copy ${passName}`}
             className={`absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md transition duration-micro ${
               copied
                 ? 'text-emerald-600 dark:text-emerald-400'
@@ -249,7 +252,7 @@ export function ActivePass({
               // Busy while the row works: Revoke's popover hands the keyboard back here (busy-buttons.md).
               disabled={exit.leaving}
               busy={busy}
-              aria-label="Revoke link"
+              aria-label={`Revoke ${passName}`}
               aria-expanded={revokeAnchor !== null}
               className={PASS_BIN}
             >

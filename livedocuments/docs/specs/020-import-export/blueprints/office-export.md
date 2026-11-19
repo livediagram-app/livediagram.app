@@ -153,7 +153,7 @@ or the article's links (already `isSafeArticleHref`), written `TargetMode="Exter
 ## Presentation and UX
 
 - The cards: **PowerPoint** (a landscape slide chip in orange, `PPTX`), **Word** (a page chip in blue, `DOCX`).
-- The panel: `BackBar` ("All formats" › PowerPoint / Word); the preview box (h-48, the image formats' own); a
+- The panel: `BackBar` ("All Formats" › PowerPoint / Word); the preview box (h-48, the image formats' own); a
   slate-50 box with the summary line (semibold) and the "What stays editable" list, each line led by a brand
   `CheckIcon`; the error box; the footer row: the progress bar and **Cancel** while making, then the primary
   **Download PowerPoint** / **Download Word**, disabled until the preview's images are loaded.

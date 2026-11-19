@@ -91,6 +91,8 @@ export function useTabImport({
     // JSON is the one format: the dialog still names it, so a second can join without new wiring.
     _format: ImportFormat,
     text: string,
+    // The file path says so, so a refusal names a file; the paste editor's text is pasted text.
+    from: 'file' | 'paste' = 'paste',
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
@@ -98,7 +100,7 @@ export function useTabImport({
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');
-    const result = parseImportedTab(text);
+    const result = parseImportedTab(text, from);
     if (!result.ok) return { status: 'error', error: result.error };
     replaceActiveTabContent(remintTabElements(result.tab));
     track('Tab', 'Imported', 'JSON');
@@ -117,7 +119,7 @@ export function useTabImport({
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
-    return importTextIntoActiveTab(format, picked.text);
+    return importTextIntoActiveTab(format, picked.text, 'file');
   };
 
   return { replaceActiveTabContent, importIntoActiveTab, importTextIntoActiveTab };

@@ -151,7 +151,7 @@ describe('ExportTabDialog, Print', () => {
     vi.mocked(printInFrame).mockRejectedValueOnce('no');
     fireEvent.click(screen.getByRole('button', { name: 'Print' }));
     expect(await screen.findByText('Printing failed.')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    fireEvent.click(screen.getByRole('button', { name: /All Formats/ }));
     expect(card(/^Print/)).toBeTruthy();
   });
 });

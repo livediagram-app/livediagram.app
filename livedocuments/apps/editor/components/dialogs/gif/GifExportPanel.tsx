@@ -64,7 +64,7 @@ export default function GifExportPanel({
 
   return (
     <div>
-      <BackBar label="All formats" current="GIF" onClick={onBack} disabled={making} />
+      <BackBar label="All Formats" current="GIF" onClick={onBack} disabled={making} />
       <fieldset disabled={making} className="m-0 min-w-0 border-0 p-0">
         <div className="mt-3">
           <ExportPagePicker
