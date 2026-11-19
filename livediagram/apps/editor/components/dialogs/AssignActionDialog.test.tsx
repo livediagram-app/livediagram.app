@@ -37,7 +37,6 @@ function props(over: Partial<Props> = {}): Props {
     ownerId: null,
     selfUserId: 'me',
     selfName: 'Ada',
-    documentId: 'd1',
     documentTeamId: null,
     emailEnabled: false,
     onSubmit: vi.fn(),

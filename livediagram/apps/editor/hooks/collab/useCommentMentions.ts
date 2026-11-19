@@ -10,7 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { assignHandles, type CommentMention } from '@livediagram/document';
 import { apiNotifyMention, apiTeamMembers } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
-import { teamMemberRows } from './team-member-rows';
+import { teamMemberRows } from '@liveworkspace/workbench/hooks/collab/team-member-rows';
 
 export type MentionCandidate = CommentMention & { memberId: string; pending: boolean };
 

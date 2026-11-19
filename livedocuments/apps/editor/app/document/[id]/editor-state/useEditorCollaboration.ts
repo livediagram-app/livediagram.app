@@ -1,4 +1,5 @@
 import { useModeDefaultTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
+import { leaveArchivedElsewhere } from '@liveworkspace/workbench/lib/archived';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
 import { useEditorMode } from '@/hooks/editor/useEditorMode';
@@ -207,6 +208,16 @@ export function useEditorCollaboration({
     enabled: realtime.sessionCommunity === null && !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
+    // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): its owner leaves for
+    // the Explorer's archived toast, anyone else for the Explorer saying its owner archived it.
+    onItemArchived: () => {
+      if (documentId)
+        leaveArchivedElsewhere(
+          'livedocuments',
+          { id: documentId, title: lastSavedNameRef.current || null },
+          realtime.isOwner,
+        );
+    },
     documentTeamId,
     selfParticipant,
     sessionShareCode,

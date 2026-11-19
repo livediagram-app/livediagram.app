@@ -1,14 +1,13 @@
 import {
-  ACCESS_CHANGED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
   ROOM_FULL_CLOSE,
   SNAPSHOT_REVERTED_CLOSE,
   ROOM_FULL_REASON,
   roomIsFull,
   viewOnlyRoomIsFull,
-  WORKBENCH_ENDED_CLOSE,
 } from '@livediagram/api-schema';
 import {
+  accessCloseCode,
   sessionMatchesAccessClose,
   type AccessCloseMatch,
 } from '@liveworkspace/api-kit/room-access';
@@ -156,10 +155,8 @@ export function closeSockets(
 // Close every session an access change affects (room-access.ts). The editor reloads on the
 // close code, so the next join meets the gates again.
 export function closeSessionsForAccessChange(room: DocumentRoom, close: AccessCloseMatch): void {
-  const code: [number, string] =
-    close.match === 'workbench'
-      ? [WORKBENCH_ENDED_CLOSE, 'workbench-ended']
-      : [ACCESS_CHANGED_CLOSE, 'access-changed'];
+  // A workbench pairing's 4006, an archive's 4010 (every socket), any other change's 4005.
+  const code = accessCloseCode(close);
   const closed = closeSockets(room, (ws) =>
     sessionMatchesAccessClose(room.readSession(ws), close) ? code : null,
   );

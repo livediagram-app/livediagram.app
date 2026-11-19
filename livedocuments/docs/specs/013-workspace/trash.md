@@ -19,3 +19,12 @@ own path. On `trashed: true` the api posts `{op: {kind: 'document-trashed'}}` to
 as for any `document-trashed` op. Open editors and MCP views show the trashed state at once. The notice is fire-and-forget (a
 room that cannot be reached is logged, and its sessions end at their next grant renewal), and the room keeps nothing
 of it, so a restore reopens as before.
+
+An archive made anywhere else while the document is open (another tab, the Explorer, MCP `archive_document`, the CLI) ends its
+sessions the same way (Work Tracker 1242; [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived)
+"Archived from elsewhere while open"). On `archived: true` (and not trashed) the api closes every socket in the room
+with `4010` (`ITEM_ARCHIVED_CLOSE`, reason `item-archived`) through its `/close-sessions` door (`{match: 'archived'}`),
+sending nothing first: an archived document is its owner's alone. Each editor stops without reconnecting and leaves for
+the Explorer (`leaveArchivedElsewhere`): the owner's with "Moved “<name>” to Archived.", anyone else's with "That
+document was archived by its owner, so it is no longer open to you." An MCP live view says "This document was archived." and the CLI's room stream ends.
+A move between folders, a move out of Archived and a restore close nothing.

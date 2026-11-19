@@ -113,9 +113,21 @@ describe('archiving', () => {
     });
     expect(count('collab_threads', item.id)).toBe(1);
     h.appCalls = [];
+    // The standing call answers a moment late: the revoke must still wait for it.
+    let standingAnswered = false;
+    let revokedAfterStanding: boolean | null = null;
+    h.appAnswer = async (c) => {
+      if (c.url.endsWith(`/items/${item.id}/standing`)) {
+        await new Promise((r) => setTimeout(r, 20));
+        standingAnswered = true;
+      }
+      if (c.url.endsWith(`/items/${item.id}/revoke`)) revokedAfterStanding = standingAnswered;
+      return new Response(null, { status: 200 });
+    };
 
     expect((await archive(ada.auth, item.id)).status).toBe(200);
     await settle();
+    await new Promise((r) => setTimeout(r, 50));
     for (const table of [
       'share_links',
       'share_passwords',
@@ -131,6 +143,8 @@ describe('archiving', () => {
     // The app ends the sessions the link admitted.
     const revoke = h.appCalls.find((c) => c.url.endsWith(`/items/${item.id}/revoke`));
     expect(revoke?.body).toEqual({ codes: [link.code] });
+    // Only after the standing is answered, so the link's visitor is closed as archived (4010), not as revoked.
+    expect(revokedAfterStanding).toBe(true);
     // The link opens nothing, and Bob's Inbox no longer lists it.
     expect(
       (

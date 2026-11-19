@@ -21,6 +21,14 @@ vi.mock('../server-telemetry', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../server-telemetry')>()),
   reportServerEvent,
 }));
+// The rooms a standing push closed as archived (one-explorer.md "Archived from elsewhere while open").
+const { closeArchivedSessions } = vi.hoisted(() => ({
+  closeArchivedSessions: vi.fn(async (_env: unknown, _id: string) => true),
+}));
+vi.mock('../room-access-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../room-access-client')>()),
+  closeArchivedSessions,
+}));
 // The rooms a standing push told the canvas was trashed (docs/specs/013-workspace/trash.md "Open editors").
 const trashedRooms = vi.hoisted(() => [] as string[]);
 vi.mock('../document-client', async (importOriginal) => {
@@ -240,8 +248,9 @@ describe('POST /api/internal/items/:id/notices', () => {
 // docs/specs/013-workspace/trash.md "Open editors": the index pushes where an item stands after every trash, by the
 // api, MCP delete_document or the Explorer alike, and a trashed canvas's room closes its sessions.
 describe('POST /api/internal/items/:id/standing', () => {
-  it("tells a trashed canvas's room, and never an archived or restored one's", async () => {
+  it("tells a trashed canvas's room, and closes an archived one's sessions", async () => {
     trashedRooms.length = 0;
+    closeArchivedSessions.mockClear();
     const { send } = arrange();
     const stand = (id: string, archived: boolean, trashed: boolean) =>
       send('POST', `items/${id}/standing`, { archived, trashed, at: 1 });
@@ -249,6 +258,12 @@ describe('POST /api/internal/items/:id/standing', () => {
     expect((await stand('B', true, false)).status).toBe(200);
     expect((await stand('C', false, false)).status).toBe(200);
     expect(trashedRooms).toEqual(['A']);
+    // Archived from anywhere: B's room closes every session; the trashed and the restored one's never do.
+    expect(closeArchivedSessions.mock.calls.map(([, id]) => id)).toEqual(['B']);
+    // An archived canvas sent to the Trash is trashed: its room hears the trash, not the archive.
+    expect((await stand('D', true, true)).status).toBe(200);
+    expect(trashedRooms).toEqual(['A', 'D']);
+    expect(closeArchivedSessions).toHaveBeenCalledTimes(1);
   });
 });
 

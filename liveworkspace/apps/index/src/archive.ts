@@ -93,17 +93,24 @@ export async function archiveItem(ctx: RouteContext, id: string): Promise<Respon
   const now = Date.now();
   await env.INDEX_DB.batch(archiveStatements(env, row, person.id, now));
   // Its app stops what it runs on its own clock for it (one-explorer-contracts.md "Where an item stands").
-  tellStanding(env, ctx.waitUntil, row.app, id, { archived: true, trashed: false, at: now });
-  // The sessions its links admitted end now; an owner's or teammate's when their grant is next renewed.
+  const told = tellStanding(env, ctx.waitUntil, row.app, id, {
+    archived: true,
+    trashed: false,
+    at: now,
+  });
+  // Its links are revoked for good once the standing is answered: the standing closes every open session as archived
+  // (4010, one-explorer.md "Archived from elsewhere while open"), so a link's visitor hears that, not the revoke's close.
   const codes = links.map((l) => l.code);
   if (codes.length > 0) {
     ctx.waitUntil(
-      callApp(env, row.app, 'POST', `/items/${encodeURIComponent(id)}/revoke`, { codes }).then(
-        (res) => {
+      told
+        .then(() =>
+          callApp(env, row.app, 'POST', `/items/${encodeURIComponent(id)}/revoke`, { codes }),
+        )
+        .then((res) => {
           if (!res.ok)
             console.warn('[index] revoke not delivered', { app: row.app, error: res.error });
-        },
-      ),
+        }),
     );
   }
   // Its owner's mirror (a team item's leaves no personal mirror behind).

@@ -8447,6 +8447,9 @@ importers:
       '@liveworkspace/page-background':
         specifier: workspace:*
         version: link:../page-background
+      '@liveworkspace/settings':
+        specifier: workspace:^
+        version: link:../settings
       '@liveworkspace/settings-ui':
         specifier: workspace:^
         version: link:../settings-ui

@@ -1,14 +1,10 @@
 // Fanning frames out to the room's sockets (design-room.ts): one socket, one presence, or all of them (redacted per
 // tab scope), the ordered mutation stream, and closing the sessions a change ends. Each takes the room.
-import {
-  ACCESS_CHANGED_CLOSE,
-  WORKBENCH_ENDED_CLOSE,
-  DESIGN_TRASHED_CLOSE,
-  SNAPSHOT_REVERTED_CLOSE,
-} from '@livedesign/api-schema';
+import { DESIGN_TRASHED_CLOSE, SNAPSHOT_REVERTED_CLOSE } from '@livedesign/api-schema';
 import type { ServerMessage } from '../types';
 import { opForScope } from '../room-scope';
 import {
+  accessCloseCode,
   sessionMatchesAccessClose,
   type AccessCloseMatch,
 } from '@liveworkspace/api-kit/room-access';
@@ -142,10 +138,8 @@ export function closeSockets(
 // Close every session an access change affects (room-access.ts). The editor reloads on the
 // close code, so the next join meets the gates again.
 export function closeSessionsForAccessChange(room: DesignRoom, close: AccessCloseMatch): void {
-  const code: [number, string] =
-    close.match === 'workbench'
-      ? [WORKBENCH_ENDED_CLOSE, 'workbench-ended']
-      : [ACCESS_CHANGED_CLOSE, 'access-changed'];
+  // A workbench pairing's 4006, an archive's 4010 (every socket), any other change's 4005.
+  const code = accessCloseCode(close);
   const closed = closeSockets(room, (ws) =>
     sessionMatchesAccessClose(room.readSession(ws), close) ? code : null,
   );

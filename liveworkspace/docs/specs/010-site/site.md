@@ -515,7 +515,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
   app side opens as the guest's panel. `?settings=` is dropped from the address as the panel closes.
-  `?ended=revoked` says, once, in a warning toast, that the link a plan was open through was revoked. `?trashed=<id>&title=` offers Undo
+  `?ended=revoked` says, once, in a warning toast, that the link a plan was open through was revoked. `?ended=archived` says, once, that the item open there was archived by its owner, so it is no longer open to them (an editor whose item was archived elsewhere, one-explorer.md "Archived from elsewhere while open"). `?trashed=<id>&title=` offers Undo
   for an item just moved to the Trash. Each is dropped from the address once read. `?item=<id>` (an editor's door
   from an open item) opens the place that holds the item, with it marked, and the address becomes that place's
   ([one-explorer.md](../004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item").

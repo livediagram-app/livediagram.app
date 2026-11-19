@@ -12,9 +12,14 @@
 //                                for expiring share links (docs/specs/013-workspace/share-link-expiry.md).
 // The first two share their ladder, in @livedesign/ui (relative-time.ts).
 
-// The verbose and short ladders (and relativeSince) live in @livedesign/ui, so the landing page's
+// The verbose, short and compact ladders (and relativeSince) live in @livedesign/ui, so the landing page's
 // Welcome back tiles (docs/specs/019-marketing/returning-visitor.md) read exactly as the app's rows do.
-export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from '@livedesign/ui';
+export {
+  formatRelativeTime,
+  formatRelativeTimeCompact,
+  formatRelativeTimeShort,
+  relativeSince,
+} from '@livedesign/ui';
 
 // Forward-looking compact countdown ("6d left" / "3h left"), used by
 // the Share dialog's expiring-link rows (docs/specs/013-workspace/share-link-expiry.md). Zero or negative
@@ -28,21 +33,6 @@ export function formatTimeLeftCompact(deltaMs: number): string {
   if (hours < 24) return `${hours}h left`;
   const days = Math.ceil(hours / 24);
   return `${days}d left`;
-}
-
-// Ultra-compact ("2m ago" / "3h ago" / "5d ago"), used in the comment
-// thread where each row is tiny. Coarser than the others on purpose: no
-// seconds and no "yesterday", since comment timestamps are usually
-// minutes-to-days old and the row has no room to spare.
-export function formatRelativeTimeCompact(deltaMs: number): string {
-  const seconds = Math.floor(deltaMs / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
 }
 
 // The clock relative-time strings read (one shared 30 s tick, so every row on a page agrees): one copy for every
