@@ -1,6 +1,14 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { AppNote, AppNotesFold, findAppNotes, notedApps, noteApps, noteOpenIn, SameIn } from './AppNote';
+import {
+  AppNote,
+  AppNotesFold,
+  findAppNotes,
+  notedApps,
+  noteApps,
+  noteOpenIn,
+  SameIn,
+} from './AppNote';
 import { cardAppsLabel } from './CategoryCard';
 import { AppName, appliesToLine, Noun } from './ScopeWords';
 import { rowOrder } from './AppMarks';
@@ -64,10 +72,18 @@ describe('scope words', () => {
   });
 
   it('puts the current app first and says every app for all five', () => {
-    expect(rowOrder(['livediagram', 'livedesign'], 'livedesign')).toEqual(['livedesign', 'livediagram']);
-    expect(appliesToLine(['livediagram', 'livedesign'], 'livedesign')).toBe('livedesign and livediagram');
+    expect(rowOrder(['livediagram', 'livedesign'], 'livedesign')).toEqual([
+      'livedesign',
+      'livediagram',
+    ]);
+    expect(appliesToLine(['livediagram', 'livedesign'], 'livedesign')).toBe(
+      'livedesign and livediagram',
+    );
     expect(
-      appliesToLine(['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'], 'all'),
+      appliesToLine(
+        ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
+        'all',
+      ),
     ).toBe('Every liveworkspace app');
     expect(cardAppsLabel([1, 2])).toBe('2 apps');
     expect(cardAppsLabel([1, 2, 3, 4])).toBe('+1');

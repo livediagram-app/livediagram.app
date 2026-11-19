@@ -11,6 +11,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="selection-modes/slide-deck/presenter-controls"
   title="The Presenter's Controls"
   description="The strip in the corner of a running deck, its cog, and the presenter settings."
   categoryTitle="Selection Modes"
@@ -29,10 +30,16 @@ Top-right of a running deck sits a small strip of controls carrying, in order:
 - a **settings** cog,
 - and a close button.
 
-<Figure app="livediagram" caption="The presenter's strip: position, pacing, the step buttons, jump, notes, settings and close.">
+<Figure
+  app="livediagram"
+  caption="The presenter's strip: position, pacing, the step buttons, jump, notes, settings and close."
+>
   <PresenterHud />
 </Figure>
-<Figure app="livedocuments" caption="The presenter's strip: position, pacing, the step buttons, jump, notes, settings and close, with the notes button's cards open under it.">
+<Figure
+  app="livedocuments"
+  caption="The presenter's strip: position, pacing, the step buttons, jump, notes, settings and close, with the notes button's cards open under it."
+>
   <PresenterHud noteCards />
 </Figure>
 
@@ -47,11 +54,16 @@ The **jump** button (or `G`) opens the deck as a list, in running order, with th
 ## Presenter notes
 
 <AppNote app="livediagram">
-  The notes button opens your notes for this slide in a popover under it, sized so the slide stays readable behind. Press it again, press `Esc`, or advance the slide to close it.
+  The notes button opens your notes for this slide in a popover under it, sized so the slide stays
+  readable behind. Press it again, press `Esc`, or advance the slide to close it.
 </AppNote>
 
 <AppNote app="livedocuments">
-  The notes button opens this slide's note cards under it, one card at a time with the cards still to come stacked behind, sized so the slide stays readable. **Previous** and **Next** (or `↑` and `↓`) flip between cards, and a dot per card jumps straight to one. The cards stay open as you move through the deck, showing each slide's first card, so you can keep them up for the whole talk. Press the button again or `Esc` to close them.
+  The notes button opens this slide's note cards under it, one card at a time with the cards still
+  to come stacked behind, sized so the slide stays readable. **Previous** and **Next** (or `↑` and
+  `↓`) flip between cards, and a dot per card jumps straight to one. The cards stay open as you move
+  through the deck, showing each slide's first card, so you can keep them up for the whole talk.
+  Press the button again or `Esc` to close them.
 </AppNote>
 
 **The button is only there on slides that have notes.** Its presence is the signal: no button means nothing to read, which you can tell at a glance without opening anything.
@@ -69,11 +81,13 @@ Two optional readouts, both off by default, because a timer nobody asked for is 
 - **Budget** shows time-on-this-slide against the minutes the slide was given. It turns amber when you go over, and that is all it does: a deck that advanced itself because your four minutes were up would cut off the answer you were giving.
 
 <AppNote app="livediagram">
-  You give a slide its minutes when you write the deck (see [Building a Deck](/help/selection-modes/slide-deck/building-a-deck/)).
+  You give a slide its minutes when you write the deck (see [Building a
+  Deck](/help/selection-modes/slide-deck/building-a-deck/)).
 </AppNote>
 
 <AppNote app="livedocuments">
-  A budget can no longer be set: it only shows on a slide that kept one from the old Slide Deck panel.
+  A budget can no longer be set: it only shows on a slide that kept one from the old Slide Deck
+  panel.
 </AppNote>
 
 Slides with no budget simply show nothing, so turning it on doesn't clutter the deck with numbers for slides you never timed.
@@ -104,8 +118,8 @@ The presenter settings live in **Settings**, under **Presenting**, so you set th
 
 <Note>
   These settings are **yours**: they follow your account to every device you sign in on (a guest
-  keeps them in this browser). They are how you drive a deck, not part of the <Noun />, so a colleague
-  presenting the same deck gets their own.
+  keeps them in this browser). They are how you drive a deck, not part of the <Noun />, so a
+  colleague presenting the same deck gets their own.
 </Note>
 
 </ArticleLayout>

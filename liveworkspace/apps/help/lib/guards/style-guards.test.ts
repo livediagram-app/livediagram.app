@@ -1,6 +1,9 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkMotionBudget, formatViolations as formatMotion } from '@liveworkspace/style-guards/motion-budget';
+import {
+  checkMotionBudget,
+  formatViolations as formatMotion,
+} from '@liveworkspace/style-guards/motion-budget';
 import {
   checkOpticalAlignment,
   formatViolations as formatOptical,

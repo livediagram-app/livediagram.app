@@ -30,7 +30,10 @@ import { searchArticles } from '@/lib/articles';
 // repo-paths-in-docs and shortcut-coverage already take on: the help centre's
 // findability genuinely depends on the editor's vocabulary.
 const TILE_DEFS = fileURLToPath(
-  new URL('../../../../../../livediagram/apps/editor/components/palette/palette-tile-defs.tsx', import.meta.url),
+  new URL(
+    '../../../../../../livediagram/apps/editor/components/palette/palette-tile-defs.tsx',
+    import.meta.url,
+  ),
 );
 
 function paletteNames(): string[] {

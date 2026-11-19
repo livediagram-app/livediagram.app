@@ -14,7 +14,7 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/sharing/finding-community-documents/',
 });
 
-<ArticleLayout title="Finding Work in the Community" description="Search by words and tags, sort what you find, then make it your own." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "finding-community-documents")}>
+<ArticleLayout path="collaboration/sharing/finding-community-documents" title="Finding Work in the Community" description="Search by words and tags, sort what you find, then make it your own." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "finding-community-documents")}>
 
 The [Community](/community/) is a gallery of <Noun plural /> people have shared. You don't need an account to browse it, like a <Noun /> or make your own copy.
 
@@ -23,7 +23,8 @@ The [Community](/community/) is a gallery of <Noun plural /> people have shared.
 </AppNote>
 
 <AppNote app="livedesign">
-  The gallery holds logos, websites, app screens, photo edits and more, filed under the same categories as the templates.
+  The gallery holds logos, websites, app screens, photo edits and more, filed under the same
+  categories as the templates.
 </AppNote>
 
 <AppNote app="livedocuments">
@@ -35,7 +36,8 @@ The [Community](/community/) is a gallery of <Noun plural /> people have shared.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The gallery holds sprint boards, budgets, event plans, sign-up forms, hiring pipelines, retros and more.
+  The gallery holds sprint boards, budgets, event plans, sign-up forms, hiring pipelines, retros and
+  more.
 </AppNote>
 
 ## Searching
@@ -49,29 +51,36 @@ One search box holds everything you are looking for, written as words:
 - **`is:mine`** shows only the <Noun plural /> you have shared (see [Your own shares](#your-own-shares)).
 
 <AppNote app="livediagram">
-  For example `checkout flow`, `#aws #event-driven`, and `category:planning` for a subject such as Planning, Meetings or Software.
+  For example `checkout flow`, `#aws #event-driven`, and `category:planning` for a subject such as
+  Planning, Meetings or Software.
 </AppNote>
 
 <AppNote app="livedesign">
-  For example `cafe logo`, `#logo #minimal`, and `category:websites` for a kind of design such as Branding, Websites or Photos.
+  For example `cafe logo`, `#logo #minimal`, and `category:websites` for a kind of design such as
+  Branding, Websites or Photos.
 </AppNote>
 
 <AppNote app="livedocuments">
-  For example `quarterly report`, `#pitch #startup`, and `category:pitches` for a kind of document such as Pitches or Reports.
+  For example `quarterly report`, `#pitch #startup`, and `category:pitches` for a kind of document
+  such as Pitches or Reports.
 </AppNote>
 
 <AppNote app="livehuddle">
-  For example `team pod`, `#standup #remote`, and `category:office` for a kind of space such as Office, Campus or Recreation.
+  For example `team pod`, `#standup #remote`, and `category:office` for a kind of space such as
+  Office, Campus or Recreation.
 </AppNote>
 
 <AppNote app="liveplanner">
-  For example `sprint board`, `#scrum #retro`, and `category:finance`. The categories are the template categories under **Start With**, such as Projects and Teams, Finance, Events or Hiring and People, plus Something Else.
+  For example `sprint board`, `#scrum #retro`, and `category:finance`. The categories are the
+  template categories under **Start With**, such as Projects and Teams, Finance, Events or Hiring
+  and People, plus Something Else.
 </AppNote>
 
 You can type these yourself, or use the buttons inside the right of the search box, which write the same words for you:
 
 <Step n={1}>
-  Choose **Category** to keep to one kind of <Noun />, or **All Categories** to see everything again.
+  Choose **Category** to keep to one kind of <Noun />, or **All Categories** to see everything
+  again.
 </Step>
 <Step n={2}>
   Choose **Tags** to see the most used tags. Pick one to add its `#tag` to your search; pick it
@@ -138,9 +147,7 @@ Open a card to see the post's page: a live preview, the author's description and
   The preview can be scrolled and paged through. Comments are private.
 </AppNote>
 
-<AppNote app="livehuddle">
-  The preview can be panned, zoomed and paged through.
-</AppNote>
+<AppNote app="livehuddle">The preview can be panned, zoomed and paged through.</AppNote>
 
 <AppNote app="liveplanner">
   The preview can be looked through tab by tab. Comments, votes and assignees are private.
@@ -154,35 +161,24 @@ Choose the heart on a card or on a post's page to show the author you liked it. 
 
 Choose **Make a Copy** on a post's page, or in the bar across the top of an open <Noun />. A copy of the whole <Noun /> opens in the editor as your own <Noun />, named after the post you chose. Change anything you like; the original never changes. Each person who copies a <Noun /> counts once towards its copy count. You don't need an account: as a guest the copy belongs to this browser's guest identity, and it moves into your account if you [sign up](/help/getting-started/guest-vs-account/) later.
 
-<AppNote app="livediagram">
-  The copy has every tab.
-</AppNote>
+<AppNote app="livediagram,livehuddle">The copy has every tab.</AppNote>
 
-<AppNote app="livehuddle">
-  The copy has every tab.
-</AppNote>
-
-<AppNote app="livedesign">
-  The copy has every tab and page.
-</AppNote>
-
-<AppNote app="livedocuments">
-  The copy has every tab and page.
-</AppNote>
+<AppNote app="livedocuments,livedesign">The copy has every tab and page.</AppNote>
 
 A post's page also lists **More Like This**: other <Noun plural /> in the same category to look at next.
 
 <AppNote app="liveplanner">
-  You can also start from the Community without leaving the editor. On an empty tab, choose **Inspiration** in **Start Planning**: after the templates come the plans people liked most this month, up to three from each category, each marked **Community**. Searching Start Planning finds them by their titles too. Choosing one makes your own copy, just as **Make a Copy** does.
+  You can also start from the Community without leaving the editor. On an empty tab, choose
+  **Inspiration** in **Start Planning**: after the templates come the plans people liked most this
+  month, up to three from each category, each marked **Community**. Searching Start Planning finds
+  them by their titles too. Choosing one makes your own copy, just as **Make a Copy** does.
 </AppNote>
 
 ## Reporting a Post
 
 If a <Noun /> is spam, offensive, shows someone's personal information or isn't the author's to share, choose **Report** on its page. Pick a reason (**Spam**, **Offensive**, **Personal Information**, **Copyright** or **Something Else**), add a note of up to 300 characters if it helps, and send it with **Send Report**. A <Noun /> reported by three different people, on different networks, is hidden automatically, for good. Nobody reviews posts by hand: the reports decide.
 
-<AppNote app="livediagram">
-  The report dialog is titled **Report This Canvas**.
-</AppNote>
+<AppNote app="livediagram">The report dialog is titled **Report This Canvas**.</AppNote>
 
 ## Posting in the Forum
 

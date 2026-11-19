@@ -65,7 +65,9 @@ export function describeArticleLinks({
     });
 
     it('actually sees the cross-link corpus (guard against a regex gone blind)', () => {
-      expect(pages.reduce((n, p) => n + helpLinksIn(p.source).length, 0)).toBeGreaterThan(helpLinkFloor);
+      expect(pages.reduce((n, p) => n + helpLinksIn(p.source).length, 0)).toBeGreaterThan(
+        helpLinkFloor,
+      );
     });
   });
 
@@ -79,7 +81,9 @@ export function describeArticleLinks({
 
   describe('help centre links into the editor', () => {
     it('sees the corpus at all (guard against a regex gone blind)', () => {
-      expect(pages.reduce((n, p) => n + productLinksIn(p.source).length, 0)).toBeGreaterThan(productLinkFloor);
+      expect(pages.reduce((n, p) => n + productLinksIn(p.source).length, 0)).toBeGreaterThan(
+        productLinkFloor,
+      );
       // And the route tree must actually be readable from here.
       expect(existsSync(`${editorAppDir}/new/page.tsx`)).toBe(true);
     });

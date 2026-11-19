@@ -5,11 +5,11 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Edit Operations Reference',
   description:
-    'Every edit operation, selector, placement and flag: the changeset vocabulary of the API, with the lint findings, the CLI and the MCP server where the app has them.',
+    "Every edit operation, selector, placement and flag in the API's changeset vocabulary, with the lint findings, and the CLI and MCP server where offered.",
   path: '/help/developers/working-with-documents/edit-operations/',
 });
 
-<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags, results and, where the app has them, lint findings." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Files", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "edit-operations")}>
+<ArticleLayout path="developers/working-with-documents/edit-operations" title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags, results and, where the app has them, lint findings." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Files", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "edit-operations")}>
 
 <AppNote app="livediagram,livedocuments">
 
@@ -713,6 +713,5 @@ Boxes no arrow connects count as decoration and may overlap. Above 300 arrows th
 </Tip>
 
 </AppNote>
-
 
 </ArticleLayout>

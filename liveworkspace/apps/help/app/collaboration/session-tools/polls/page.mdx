@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { PollPromptSheet, PollResultsPanel } from '@/editions/livediagram/components/illustrations/polls';
+import {
+  PollPromptSheet,
+  PollResultsPanel,
+} from '@/editions/livediagram/components/illustrations/polls';
 
 export const metadata = helpMetadata({
   title: 'Polls',
@@ -10,7 +13,7 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/session-tools/polls/',
 });
 
-<ArticleLayout title="Polls" description="Ask a question, watch the answers land, then keep the result or let it vanish." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "polls")}>
+<ArticleLayout path="collaboration/session-tools/polls" title="Polls" description="Ask a question, watch the answers land, then keep the result or let it vanish." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Session Tools", slug: "session-tools" }} subArticles={getSubArticles("session-tools").filter((a) => a.slug !== "polls")}>
 
 A poll is a quick pulse-check on the people in the room: "does everyone approve of this design?", "how confident are we, 1 to 5?", "what would you change?". Unlike [dot voting](/help/collaboration/session-tools/voting/), a poll attaches to nothing on the canvas and leaves nothing behind unless you choose to keep its results.
 

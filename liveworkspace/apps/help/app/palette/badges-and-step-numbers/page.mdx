@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { BadgesAndSteps, AttachPoints } from '@liveworkspace/help-site/art/illustrations/palette-diagram-elements';
+import {
+  BadgesAndSteps,
+  AttachPoints,
+} from '@liveworkspace/help-site/art/illustrations/palette-diagram-elements';
 
 export const metadata = helpMetadata({
   title: 'Badges and Step Numbers',
@@ -11,6 +14,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="palette/badges-and-step-numbers"
   title="Badges and Step Numbers"
   description="Small marks that attach to a node's corner and travel with it."
   categoryTitle="Palette"
@@ -21,7 +25,8 @@ export const metadata = helpMetadata({
 A **Badge** is a small pill of text ("New", "v2.1", "PII", "3×"). A **Step Number** is a small numbered disc that walks a reader through the <Noun /> in order, the way annotated architecture diagrams mark a request's path.
 
 <AppNote app="livediagram">
-  Both sit in the palette's **Layout** category in Diagram and Workshop mode ([Build Elements](/help/palette/build/)).
+  Both sit in the palette's **Layout** category in Diagram and Workshop mode ([Build
+  Elements](/help/palette/build/)).
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
@@ -34,13 +39,9 @@ A **Badge** is a small pill of text ("New", "v2.1", "PII", "3×"). A **Step Numb
 
 The Badge tile opens a few ready-made badges: **New**, **Beta**, **Version**, **Count**, **Draft** and **Warning** (a rose "PII"). Each is an ordinary badge you can then retype or restyle.
 
-<AppNote app="livediagram,livedesign">
-  On the Toolbar strip, the Badge tile opens them.
-</AppNote>
+<AppNote app="livediagram,livedesign">On the Toolbar strip, the Badge tile opens them.</AppNote>
 
-<AppNote app="livedocuments">
-  In Components, the Badge tile opens them.
-</AppNote>
+<AppNote app="livedocuments">In Components, the Badge tile opens them.</AppNote>
 
 <Figure caption="Step numbers on a flow's corners, and a New badge on the last box.">
   <BadgesAndSteps />
@@ -62,13 +63,9 @@ Once attached, it follows the node everywhere:
 
 Drag it more than a short way off its point to detach it, or drop it on another point (on any element) to move it there. **Detach** in its right-click menu does the same without dragging. Frames don't take badges: their corners are too far from what they hold.
 
-<AppNote app="livediagram">
-  Lanes and boundaries don't take them either.
-</AppNote>
+<AppNote app="livediagram">Lanes and boundaries don't take them either.</AppNote>
 
-<AppNote app="livedocuments">
-  Stacks take none either, for the same reason.
-</AppNote>
+<AppNote app="livedocuments">Stacks take none either, for the same reason.</AppNote>
 
 A badge or step that isn't dropped on a point stands on its own, which suits a step sitting on an arrow.
 

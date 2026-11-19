@@ -4,11 +4,12 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Connecting AI Tools',
-  description: 'Step-by-step setup for connecting the app to Claude, Claude Desktop, Claude Code, Cursor, ChatGPT or any MCP client, by signing in or with an API token.',
+  description:
+    'Step-by-step setup for connecting the app to Claude, Claude Desktop, Claude Code, Cursor, ChatGPT or any MCP client, by signing in or with an API token.',
   path: '/help/account-and-data/connect-ai-mcp/ai-clients/',
 });
 
-<ArticleLayout title="Connecting AI Tools" description="Add the app to Claude, Claude Code, Cursor, ChatGPT or another MCP client, step by step." categoryTitle="Account and Data" categorySlug="account-and-data" parentArticle={{ title: "Connect an AI Tool (MCP)", slug: "connect-ai-mcp" }} subArticles={getSubArticles("connect-ai-mcp").filter((a) => a.slug !== "ai-clients")}>
+<ArticleLayout path="account-and-data/connect-ai-mcp/ai-clients" title="Connecting AI Tools" description="Add the app to Claude, Claude Code, Cursor, ChatGPT or another MCP client, step by step." categoryTitle="Account and Data" categorySlug="account-and-data" parentArticle={{ title: "Connect an AI Tool (MCP)", slug: "connect-ai-mcp" }} subArticles={getSubArticles("connect-ai-mcp").filter((a) => a.slug !== "ai-clients")}>
 
 Every AI tool connects to <AppName /> the same way: you give it one address, and the first time it uses it, you approve the connection on a <AppName /> page. This article walks through that for the tools people use most. For what the AI can do once it is connected, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/).
 
@@ -16,7 +17,8 @@ You need a <AppName /> account: connecting an AI tool is a signed-in-only featur
 
 ## The Address
 
-<AppName />'s MCP server lives at:
+<AppName />
+'s MCP server lives at:
 
 <AppNote app="livediagram">
 
@@ -56,14 +58,16 @@ It is a remote MCP server over HTTP (what some tools call "Streamable HTTP"), so
 
 The first time your tool connects, it opens a <AppName /> page in your browser:
 
-<Step n={1}>Sign in to <AppName />, if you aren't already.</Step>
+<Step n={1}>
+  Sign in to <AppName />, if you aren't already.
+</Step>
 <Step n={2}>
   Check the page. It is titled **Connect** followed by your tool's name, and it says which site the
   access will be sent to. Only continue if you recognise that site.
 </Step>
 <Step n={3}>
-  Switch on **Read-only access** if the tool should only find and read your <Noun plural />, never change
-  them.
+  Switch on **Read-only access** if the tool should only find and read your <Noun plural />, never
+  change them.
 </Step>
 <Step n={4}>
   Choose **Connect**. The browser hands you back to your tool, and the connection is ready.

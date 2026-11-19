@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
   path: '/help/palette/technology/',
 });
 
-<ArticleLayout title="Technology" description="Icons for the services people put on system-architecture diagrams, in their brand colours." categoryTitle="Palette" categorySlug="palette" subArticles={getSubArticles("technology")}>
+<ArticleLayout path="palette/technology" title="Technology" description="Icons for the services people put on system-architecture diagrams, in their brand colours." categoryTitle="Palette" categorySlug="palette" subArticles={getSubArticles("technology")}>
 
 The **Technology** catalogue holds full-colour icons for the infrastructure services that show up on system-architecture diagrams: AWS S3, Lambda, EC2, Azure Functions, Kubernetes, PostgreSQL and many more. They are deliberately separate from the regular icons, because they are coloured filled marks rather than the single-weight line art the [Icons](/help/palette/icons/) catalogue holds. An orange Lambda is only recognisable orange, so technology icons keep their fixed brand colours rather than tinting to your theme.
 
@@ -81,7 +81,8 @@ A few long names have a shorter caption (Virtual Machine shows as VM, Load Balan
 <AppNote app="livediagram">
   The Technology grid shows three icons across with a caption under each, since brand icons aren't always self-explanatory at thumbnail size.
 
-  You don't need the category to find one. The editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and the palette strip's [Search](/help/palette/toolbar-layout/#search) both find technology icons by name in any mode, so "database" turns up PostgreSQL, MySQL and the rest.
+You don't need the category to find one. The editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) and the palette strip's [Search](/help/palette/toolbar-layout/#search) both find technology icons by name in any mode, so "database" turns up PostgreSQL, MySQL and the rest.
+
 </AppNote>
 
 ## Working with them on the canvas
@@ -94,7 +95,8 @@ A few long names have a shorter caption (Virtual Machine shows as VM, Load Balan
 <Note>Brand tiles keep their colours even when you change the tab's theme.</Note>
 
 <AppNote app="livediagram">
-  The **Cloud Architecture** starter [template](/help/canvas/templates/) seeds some of these branded tiles, so a developer audience lands on a diagram that already speaks their stack.
+  The **Cloud Architecture** starter [template](/help/canvas/templates/) seeds some of these branded
+  tiles, so a developer audience lands on a diagram that already speaks their stack.
 </AppNote>
 
 </ArticleLayout>

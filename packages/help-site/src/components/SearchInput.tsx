@@ -1,13 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
 import { useClickOutside } from '@liveworkspace/ui';
 import type { HelpScope, SearchEntry } from '@liveworkspace/help-registry';
 import { articleHref, scopeHref, withQuery } from '@liveworkspace/help-registry/hrefs';
 import { useHelpClient, type HelpSearch } from '../client';
 import { groupResults } from '../lib/search-groups';
-import { locationWithQuery, queryFromLocation, setSearchQuery } from '../lib/search-query';
+import { arrivalQuery, locationWithQuery, setSearchQuery } from '../lib/search-query';
 import { reportHelpSearch, SEARCH_SETTLE_MS } from '../lib/search-telemetry';
 import { AppMarkRow } from './AppMarks';
 import { AppSwitch } from './AppSwitch';
@@ -44,15 +44,28 @@ function resultHref(article: SearchEntry, scope: HelpScope | undefined, here: bo
   return articleHref(article, article.apps.length === 1 ? article.apps[0]! : 'all');
 }
 
+const noSubscription = () => () => {};
+
 export function SearchInput({ large = false }: { large?: boolean }) {
   const client = useHelpClient();
   const scope = client.facts.scope;
   const siteHref = useSiteHref();
-  const [query, setQueryState] = useState('');
+  // A page opened with `?q=` (from the app switch or Search All Apps instead) shows that search at once in its main
+  // box: the large one where the page has one, else the header's. Until the reader types, the box holds it.
+  const arrived = useSyncExternalStore(
+    noSubscription,
+    () =>
+      scope && (large || !document.querySelector('[data-help-search="large"]'))
+        ? arrivalQuery()
+        : '',
+    () => '',
+  );
+  const [typed, setTyped] = useState<string | null>(null);
+  const query = typed ?? arrived;
   // The box's text is published for the app switch, whose links carry it (help-centre.md "A search survives the
   // move").
   const setQuery = (next: string) => {
-    setQueryState(next);
+    setTyped(next);
     if (scope) setSearchQuery(next);
   };
   // The dropdown is open whenever the query is long enough, unless the user
@@ -73,18 +86,12 @@ export function SearchInput({ large = false }: { large?: boolean }) {
     );
   };
 
-  // A page opened with `?q=` (from the app switch or Search All Apps instead) shows that search at once, then the
-  // address drops `q`. The page's
-  // main box takes it: the large one where the page has one, else the header's.
+  // Once it has arrived, the switch's links carry it on, its results load, and the address drops `q`
+  // (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The app switch"), so a reload or a link copied
+  // later opens the page itself.
   useEffect(() => {
-    if (!scope) return;
-    if (!large && document.querySelector('[data-help-search="large"]')) return;
-    const q = queryFromLocation(location.search);
-    if (!q) return;
-    setQueryState(q);
-    setSearchQuery(q);
-    // The query has arrived; the address drops it (.help-build/PLAN.md), so a reload or a link copied later opens
-    // the page itself.
+    if (!arrived) return;
+    setSearchQuery(arrived);
     try {
       window.history.replaceState(window.history.state, '', locationWithQuery(location.href, ''));
     } catch {
@@ -94,7 +101,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
       (fn) => setSearch(() => fn),
       (err: unknown) => console.warn('[help-search] search unavailable', err),
     );
-  }, [scope, large, client.loadSearch]);
+  }, [arrived, client.loadSearch]);
 
   const trimmed = query.trim();
   const hasQuery = trimmed.length >= MIN_QUERY;
@@ -120,7 +127,8 @@ export function SearchInput({ large = false }: { large?: boolean }) {
     let live = true;
     loadSearch(loadAll).then(
       (fn) => live && setSearchAll(() => fn),
-      (err: unknown) => console.warn('[help-search] other apps unavailable; retrying on next search', err),
+      (err: unknown) =>
+        console.warn('[help-search] other apps unavailable; retrying on next search', err),
     );
     return () => {
       live = false;
@@ -212,7 +220,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
           ref={inputRef}
           data-help-search={large ? 'large' : 'header'}
           type="text"
-          placeholder="Search help articles..."
+          placeholder={large ? 'Search help articles...' : 'Search help'}
           value={query}
           onChange={(e) => {
             prepareSearch();

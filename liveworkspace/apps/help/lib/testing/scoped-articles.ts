@@ -1,7 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { articlePath, type HelpScope } from '@liveworkspace/help-registry';
+import { articlePath, SCOPE_WORDS, scopeName, type HelpScope } from '@liveworkspace/help-registry';
 import { articlesFor, categoriesFor } from '@liveworkspace/help-registry/catalogue';
+import { figureShowsIn } from '@liveworkspace/help-site/components/Figure';
 import { SCOPE } from '@/lib/scope.generated';
 
 // What a suite reading the article tree sees of one scope (liveworkspace/docs/specs/016-help/help-centre.md "Articles
@@ -46,17 +47,27 @@ export function scopedLandingFiles(scope: HelpScope = SCOPE): string[] {
 
 /** Every page file `scope` shows: its articles, then its landings and fixed pages. */
 export function scopedPageFiles(scope: HelpScope = SCOPE): string[] {
-  return [...scopedArticleFiles(scope).filter((f) => existsSync(`${APP_DIR}/${f}`)), ...scopedLandingFiles(scope)];
+  return [
+    ...scopedArticleFiles(scope).filter((f) => existsSync(`${APP_DIR}/${f}`)),
+    ...scopedLandingFiles(scope),
+  ];
 }
 
 const NOTE = /<AppNote\b([^>]*)>([\s\S]*?)<\/AppNote>/g;
 const APP_IDS = /live(?:diagram|planner|documents|design|huddle)/g;
 
-/** `source` as `scope` reads it: every <AppNote> for other apps only removed (All Apps keeps them all). */
+const FIGURE = /<Figure\b[^>]*?\bapp="([^"]*)"[^>]*>[\s\S]*?<\/Figure>/g;
+
+/** `source` as `scope` reads it: every <AppNote> for other apps only removed (All Apps keeps them all), and every
+ *  <Figure app="..."> variant the scope does not show (figureShowsIn: an app's variant only in its help, `all` only
+ *  under All Apps). */
 export function forScope(source: string, scope: HelpScope = SCOPE): string {
-  if (scope === 'all') return source;
-  return source.replace(NOTE, (note, attrs: string) =>
-    (attrs.match(APP_IDS) ?? []).includes(scope) ? note : '',
+  const figures = source.replace(FIGURE, (figure, app: string) =>
+    figureShowsIn(app, scope) ? figure : '',
+  );
+  if (scope === 'all') return figures;
+  return figures.replace(NOTE, (note, attrs: string) =>
+    ((attrs.match(APP_IDS) ?? []) as string[]).includes(scope) ? note : '',
   );
 }
 
@@ -72,4 +83,18 @@ export function scopedArticleSources(
   return scopedArticleFiles(scope)
     .filter((file) => existsSync(`${APP_DIR}/${file}`))
     .map((file) => ({ file, path: `${APP_DIR}/${file}`, source: readScoped(file, scope) }));
+}
+
+const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
+
+/** `source` with its <Noun /> and <AppName /> written out as `scope`'s words (ScopeWords in @liveworkspace/help-site),
+ *  so a check against an editor's strings reads **Sync <Noun capital />** as the label the reader looks for. */
+export function inScopeWords(source: string, scope: HelpScope = SCOPE): string {
+  const words = SCOPE_WORDS[scope];
+  return source
+    .replace(/<Noun\b([^>]*?)\s*\/>/g, (_, attrs: string) => {
+      const word = /\bplural\b/.test(attrs) ? words.nouns : words.noun;
+      return /\bcapital\b/.test(attrs) ? capitalised(word) : word;
+    })
+    .replace(/<AppName\s*\/>/g, scopeName(scope));
 }

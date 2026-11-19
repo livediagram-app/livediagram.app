@@ -43,7 +43,11 @@ export function ExplorerLink(props: { always?: boolean; solid?: boolean }) {
 }
 
 /** The bar's primary: back to liveworkspace.app's home, where every app opens. */
-export function HeaderPrimaryCta(_props: { ctaSurface?: string; explorerWhenSignedIn?: boolean; quiet?: boolean }) {
+export function HeaderPrimaryCta(_props: {
+  ctaSurface?: string;
+  explorerWhenSignedIn?: boolean;
+  quiet?: boolean;
+}) {
   return (
     <a href="/" className={`${buttonClassName({ size: 'cta-sm' })} shrink-0 max-sm:hidden`}>
       <ButtonContent>Open liveworkspace</ButtonContent>

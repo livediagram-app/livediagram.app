@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { SharePasswordSwitch, ShareLifetimes } from '@/editions/livediagram/components/illustrations/sharing';
+import {
+  SharePasswordSwitch,
+  ShareLifetimes,
+} from '@/editions/livediagram/components/illustrations/sharing';
 
 export const metadata = helpMetadata({
   title: 'Share Link Security',
@@ -9,7 +12,7 @@ export const metadata = helpMetadata({
   path: '/help/privacy-and-security/share-link-security/',
 });
 
-<ArticleLayout title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared work and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout path="privacy-and-security/share-link-security" title="Share Link Security" description="Two self-serve controls, a share password and link expiry, that bound who can open a shared work and for how long." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
 A share link (the Share dialog calls each one a **pass**) is a capability: anyone holding the URL has its role. That is what makes sharing frictionless, but it also means a link left lying around keeps working. <AppName /> gives you two controls to tighten that up, a password on the <Noun /> and an expiry on each link, plus revoking a link outright. All three live in the **Share** dialog, and none of them ever stops you, the owner.
 
@@ -18,11 +21,13 @@ A share link (the Share dialog calls each one a **pass**) is a capability: anyon
 </AppNote>
 
 <AppNote app="livehuddle">
-  The roles are **Editor** or **Participant** (a new pass starts as Participant). A pass made before livehuddle stopped offering Viewer links still works as a **Viewer (Legacy)** pass.
+  The roles are **Editor** or **Participant** (a new pass starts as Participant). A pass made before
+  livehuddle stopped offering Viewer links still works as a **Viewer (Legacy)** pass.
 </AppNote>
 
 <AppNote app="liveplanner">
-  A link's level is **Viewer**, **Participant** or **Editor**, and a link has a lifetime rather than an expiry (the two mean the same here).
+  A link's level is **Viewer**, **Participant** or **Editor**, and a link has a lifetime rather than
+  an expiry (the two mean the same here).
 </AppNote>
 
 ## Share Password
@@ -42,7 +47,9 @@ The password is 6 to 256 characters (spaces at either end don't count). A <Noun 
 </AppNote>
 
 <AppNote app="liveplanner">
-  Changing the password reaches people already in the plan within a few minutes, not at once, and a live image of the plan shows nothing while a password is set. The guessing limit is not described for liveplanner.
+  Changing the password reaches people already in the plan within a few minutes, not at once, and a
+  live image of the plan shows nothing while a password is set. The guessing limit is not described
+  for liveplanner.
 </AppNote>
 
 <Figure caption="With a password saved, Password Protection shows Password Set with Replace and Remove.">
@@ -71,13 +78,14 @@ When a link expires it stops granting access everywhere at once: the share URL, 
 <AppNote app="livehuddle">
   **Link previews.** Paste a share link into Slack, Microsoft Teams, Discord, iMessage, WhatsApp, X or LinkedIn and its preview shows the Space's name and a picture of its tab: the link's own tab for a [link to one tab](/help/collaboration/sharing/one-tab/), otherwise the first. The picture is the same one a [live image](/help/collaboration/sharing/live-image/) shows, and it updates after the Space is saved.
 
-  A preview never gives away more than the link does. These show only the plain livehuddle card, with no name and no picture:
+A preview never gives away more than the link does. These show only the plain livehuddle card, with no name and no picture:
 
-  - A link to a Space with a **share password**.
-  - A link that is revoked or expired, or to a Space in the Trash.
-  - A Space's own address, which only its owner can open, so pasting it in a public channel tells the channel nothing.
+- A link to a Space with a **share password**.
+- A link that is revoked or expired, or to a Space in the Trash.
+- A Space's own address, which only its owner can open, so pasting it in a public channel tells the channel nothing.
 
-  So if a Space's name or first tab is sensitive, set a share password before you paste its link anywhere public.
+So if a Space's name or first tab is sensitive, set a share password before you paste its link anywhere public.
+
 </AppNote>
 
 <Note>
@@ -87,7 +95,9 @@ When a link expires it stops granting access everywhere at once: the share URL, 
 </Note>
 
 <AppNote app="liveplanner">
-  Access is checked with short-lived passes that are renewed every few minutes, so a change to the password or a team reaches people already in the plan within a few minutes. Revoking a link, or changing which tabs it opens, is faster: everyone using it is sent out or reloaded straight away.
+  Access is checked with short-lived passes that are renewed every few minutes, so a change to the
+  password or a team reaches people already in the plan within a few minutes. Revoking a link, or
+  changing which tabs it opens, is faster: everyone using it is sent out or reloaded straight away.
 </AppNote>
 
 <Tip>
@@ -97,23 +107,28 @@ When a link expires it stops granting access everywhere at once: the share URL, 
 </Tip>
 
 <AppNote app="livediagram">
-  Prefer a **Viewer** pass when people only need to look, or a **Participant** pass when they need to add stickies and vote without reshaping the board.
+  Prefer a **Viewer** pass when people only need to look, or a **Participant** pass when they need
+  to add stickies and vote without reshaping the board.
 </AppNote>
 
 <AppNote app="livedesign">
-  Prefer a **Viewer** pass when people only need to look, or a **Participant** pass when they need to add stickies, text and pictures without reshaping the pages.
+  Prefer a **Viewer** pass when people only need to look, or a **Participant** pass when they need
+  to add stickies, text and pictures without reshaping the pages.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Prefer a **Viewer** pass when people only need to look, or a **Participant** pass when they only need to edit the text and comment.
+  Prefer a **Viewer** pass when people only need to look, or a **Participant** pass when they only
+  need to edit the text and comment.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Keep to a **Participant** pass, the default, unless people need to build: Participants walk, talk and react without changing the Space.
+  Keep to a **Participant** pass, the default, unless people need to build: Participants walk, talk
+  and react without changing the Space.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Prefer a **Viewer** link when people only need to look, or a **Participant** link when they need to add and move cards, comment and vote without changing a board's columns or settings.
+  Prefer a **Viewer** link when people only need to look, or a **Participant** link when they need
+  to add and move cards, comment and vote without changing a board's columns or settings.
 </AppNote>
 
 </ArticleLayout>

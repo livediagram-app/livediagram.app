@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
   path: '/help/canvas/annotations/',
 });
 
-<ArticleLayout title="Annotations" description="A lightweight way to attach an explanatory note to a spot without cluttering it." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("annotations")}>
+<ArticleLayout path="canvas/annotations" title="Annotations" description="A lightweight way to attach an explanatory note to a spot without cluttering it." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("annotations")}>
 
 An annotation is a small themed circle holding a fixed note symbol, a way to pin a piece of explanation to a spot on the <Noun /> without adding a box of text that gets in the way. The note itself stays hidden until you want it: hover the marker to read it, double-click it to edit. It's perfect for footnotes, callouts, and reviewer comments that should be available but not in the foreground.
 
@@ -29,11 +29,17 @@ An annotation is a small themed circle holding a fixed note symbol, a way to pin
 A new annotation drops at the centre of the view, already selected, in one undoable step. It inherits the active theme's colours, so it matches your <Noun /> out of the box.
 
 <AppNote app="livediagram">
-  In Diagram mode, open the palette's **Write** category, where **Annotation** comes after Page, Text and Note, just before **Pointer Note**. Workshop's Write has no annotation, and Draw mode's dock has no palette, so switch the tab to Diagram first.
+  In Diagram mode, open the palette's **Write** category, where **Annotation** comes after Page,
+  Text and Note, just before **Pointer Note**. Workshop's Write has no annotation, and Draw mode's
+  dock has no palette, so switch the tab to Diagram first.
 </AppNote>
 
 <AppNote app="livedesign">
-  The palette has no Annotation tile, and the palette's own Search doesn't list one. To add one, open the [search panel](/help/search-panel/the-search-panel/), type **Annotation** and pick it under **Add to canvas**. For a note that points at a spot on a shape, the palette's Write category offers the [Pointer Note](/help/palette/pointer-notes/) on design and wireframe pages, and any element can carry a [note](/help/canvas/notes/) of its own.
+  The palette has no Annotation tile, and the palette's own Search doesn't list one. To add one,
+  open the [search panel](/help/search-panel/the-search-panel/), type **Annotation** and pick it
+  under **Add to canvas**. For a note that points at a spot on a shape, the palette's Write category
+  offers the [Pointer Note](/help/palette/pointer-notes/) on design and wireframe pages, and any
+  element can carry a [note](/help/canvas/notes/) of its own.
 </AppNote>
 
 ## Reading and Editing the Note

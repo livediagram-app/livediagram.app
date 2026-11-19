@@ -29,14 +29,14 @@ pnpm dev
 
 Turbo spins up all eight dev servers in parallel:
 
-| App              | Dev URL                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3200`: **everything on one port**, stitched like production                      |
-| `apps/marketing` | `http://localhost:3201`                                                                            |
-| `apps/editor`    | `http://localhost:3202` (clean routes: /new, /explorer, ...)                                       |
-| `liveworkspace/apps/help`      | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=liveplanner corepack pnpm --filter @liveworkspace/help dev`) |
-| `apps/api`       | `http://localhost:8887/api`                                                                        |
-| `apps/mcp`       | `http://localhost:8888` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+| App                       | Dev URL                                                                                                                     |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router`             | `http://localhost:3200`: **everything on one port**, stitched like production                                               |
+| `apps/marketing`          | `http://localhost:3201`                                                                                                     |
+| `apps/editor`             | `http://localhost:3202` (clean routes: /new, /explorer, ...)                                                                |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=liveplanner corepack pnpm --filter @liveworkspace/help dev`) |
+| `apps/api`                | `http://localhost:8887/api`                                                                                                 |
+| `apps/mcp`                | `http://localhost:8888` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only)                          |
 
 The `router` dev server (`wrangler dev --env local`, port 3200) gives you the production URL shape locally: `/` is marketing, `/new` and `/project/*` are the editor, plus `/telemetry`, `/help` and `/api`, so there is no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 

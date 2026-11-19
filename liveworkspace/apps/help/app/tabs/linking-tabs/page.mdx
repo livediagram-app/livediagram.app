@@ -4,11 +4,12 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Linking Across Tabs',
-  description: 'Link an element to another tab, so a piece of work with many tabs becomes navigable like a small site.',
+  description:
+    'Link an element to another tab, so a piece of work with many tabs becomes navigable like a small site.',
   path: '/help/tabs/linking-tabs/',
 });
 
-<ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, another file, or an external address." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout path="tabs/linking-tabs" title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, another file, or an external address." categoryTitle="Tabs" categorySlug="tabs">
 
 A <Noun /> spread across many tabs is far more useful when you can move between them from the <Noun /> itself. Any shape, sticky, text box or other boxed element (except a video or embed, whose link is its address) can carry a **link**, and that link can point at another tab in the same <Noun />. Follow it, and the editor jumps you there. It turns a multi-tab <Noun /> into something you navigate like a small site.
 
@@ -35,8 +36,10 @@ A linked element carries a small link badge (unless your [element indicators](/h
 
 <Step n={2}>
   In the **Link element** dialog, switch to **Tab** and pick the target tab. The tab you are on is
-  marked "current". The **<Noun capital />** list offers your eight most recent other <Noun plural />, and **External
-  URL** takes a web address.
+  marked "current". The **
+  <Noun capital />
+  ** list offers your eight most recent other <Noun plural />, and **External URL** takes a web
+  address.
 </Step>
 
 <Step n={3}>
@@ -65,7 +68,9 @@ Anyone who can open the <Noun /> can follow links, including on a view-only shar
 </Tip>
 
 <AppNote app="livedesign">
-  On a [wireframe](/help/pages/wireframe-pages/) tab the dialog offers a fourth choice first, **Screen**, which links the element to another screen of the tab for a clickable prototype. A Participant can set a Screen link on an element of their own; every other link needs edit access.
+  On a [wireframe](/help/pages/wireframe-pages/) tab the dialog offers a fourth choice first,
+  **Screen**, which links the element to another screen of the tab for a clickable prototype. A
+  Participant can set a Screen link on an element of their own; every other link needs edit access.
 </AppNote>
 
 </ArticleLayout>

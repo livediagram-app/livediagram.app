@@ -28,7 +28,11 @@ export const edition: Edition = {
   },
   art: ALL_APPS_ART,
   homeLayout: HOME,
-  heroLede: 'Guides and answers for livediagram, liveplanner, livedocuments, livedesign and livehuddle, in one place.',
+  heroLede:
+    'Guides and answers for livediagram, liveplanner, livedocuments, livedesign and livehuddle, in one place.',
 };
 
 export default edition;
+
+// The name the generated pick (current.generated.ts) exports, so a test can alias this file in its place.
+export { edition as EDITION };

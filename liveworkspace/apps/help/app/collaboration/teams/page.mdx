@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { TeamMembers, TeamSharedTree } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import {
+  TeamMembers,
+  TeamSharedTree,
+} from '@liveworkspace/help-site/art/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Teams',
@@ -10,7 +13,7 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/teams/',
 });
 
-<ArticleLayout title="Teams" description="Your liveworkspace teams: roles, members, and a shared library everyone can manage." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("teams")}>
+<ArticleLayout path="collaboration/teams" title="Teams" description="Your liveworkspace teams: roles, members, and a shared library everyone can manage." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("teams")}>
 
 A team is a named group of signed-in people. Teams belong to your liveworkspace account, so a team is the same in every liveworkspace app, and you make and run them in the Explorer, wherever it shows: the Explorer page and the editor's Explorer panel. Each member has a role, either Admin or Member, and every team gets a shared library that all members can open and edit. Teams are not a paid tier: <AppName /> is free and open source, so the roles are about who may manage the team, not about unlocking features.
 
@@ -45,39 +48,61 @@ Admins add people by email address at the foot of the team's card, or share a jo
 Every team has its own folder tree. Every joined member can open and edit everything in it, and create, rename, move, share and delete what is there.
 
 <AppNote app="livediagram">
-  Any joined member can create, rename, duplicate, move, and delete canvases there, so the work belongs to the whole team rather than to one person. Team canvases also turn up in your Recent list, marked **Team**. See [Team Shared Library](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+  Any joined member can create, rename, duplicate, move, and delete canvases there, so the work
+  belongs to the whole team rather than to one person. Team canvases also turn up in your Recent
+  list, marked **Team**. See [Team Shared Library](/help/collaboration/teams/team-shared-documents/)
+  for how placement and ownership work.
 </AppNote>
 
 <AppNote app="livedesign">
-  Any joined member can create, rename, duplicate, move, and delete designs there, so the work belongs to the whole team rather than to one person. Team designs also turn up in your Recent list, marked **Team**. See [Team Shared Designs](/help/collaboration/teams/team-shared-designs/) for how placement and ownership work.
+  Any joined member can create, rename, duplicate, move, and delete designs there, so the work
+  belongs to the whole team rather than to one person. Team designs also turn up in your Recent
+  list, marked **Team**. See [Team Shared Designs](/help/collaboration/teams/team-shared-designs/)
+  for how placement and ownership work.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Any joined member can create, rename, duplicate, move, and delete documents there, so the work belongs to the whole team rather than to one person. Team documents also turn up in your Recent list, marked **Team**. See [Team Shared Library](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+  Any joined member can create, rename, duplicate, move, and delete documents there, so the work
+  belongs to the whole team rather than to one person. Team documents also turn up in your Recent
+  list, marked **Team**. See [Team Shared Library](/help/collaboration/teams/team-shared-documents/)
+  for how placement and ownership work.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Any joined member can create, rename, duplicate, move, and delete spaces there, so the work belongs to the whole team rather than to one person. Team spaces also turn up in your Recent list, marked **Team**. See [Team Shared Library](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+  Any joined member can create, rename, duplicate, move, and delete spaces there, so the work
+  belongs to the whole team rather than to one person. Team spaces also turn up in your Recent list,
+  marked **Team**. See [Team Shared Library](/help/collaboration/teams/team-shared-documents/) for
+  how placement and ownership work.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The library holds items from every liveworkspace app. See [Team Shared Projects](/help/collaboration/teams/team-shared-projects/).
+  The library holds items from every liveworkspace app. See [Team Shared
+  Projects](/help/collaboration/teams/team-shared-projects/).
 </AppNote>
 
 <AppNote app="livediagram">
-  Inside a team canvas, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other. The team's library is listed on the team page below the team's card.
+  Inside a team canvas, members can [mention](/help/collaboration/comments/#mentioning-a-teammate)
+  each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
+  The team's library is listed on the team page below the team's card.
 </AppNote>
 
 <AppNote app="livedesign">
-  Inside a team design, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other. The library shows as a **Team Designs** card on the team page.
+  Inside a team design, members can [mention](/help/collaboration/comments/#mentioning-a-teammate)
+  each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
+  The library shows as a **Team Designs** card on the team page.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Inside a team document, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other. The library is listed on the team's page under its team card.
+  Inside a team document, members can [mention](/help/collaboration/comments/#mentioning-a-teammate)
+  each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
+  The library is listed on the team's page under its team card.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Inside a team's plans, its members are who you can [mention](/help/collaboration/comments/#mentioning-a-teammate) in a comment and assign an action or a card to. A mention or an assigned action emails them, unless they have turned that off in their [email notifications](/help/account-and-data/email-notifications/).
+  Inside a team's plans, its members are who you can
+  [mention](/help/collaboration/comments/#mentioning-a-teammate) in a comment and assign an action
+  or a card to. A mention or an assigned action emails them, unless they have turned that off in
+  their [email notifications](/help/account-and-data/email-notifications/).
 </AppNote>
 
 <AppNote app="livediagram">
@@ -112,25 +137,38 @@ Every team has its own folder tree. Every joined member can open and edit everyt
 Either way, you land back in My Work with a short message saying so.
 
 <AppNote app="livediagram">
-  Canvases you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its canvases open, you lose access straight away. When a team is deleted, nobody can open its canvases any more, and none of them move back to My Work, so move any you want to keep out of the team first.
+  Canvases you created in the team library stay with the team (another member, the longest-standing
+  Admin, takes them over), and if you have one of its canvases open, you lose access straight away.
+  When a team is deleted, nobody can open its canvases any more, and none of them move back to My
+  Work, so move any you want to keep out of the team first.
 </AppNote>
 
 <AppNote app="livedesign">
-  Designs you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its designs open, you lose access straight away. When a team is deleted, nobody can open its designs any more, and none of them move back to My Work, so move any you want to keep out of the team first.
+  Designs you created in the team library stay with the team (another member, the longest-standing
+  Admin, takes them over), and if you have one of its designs open, you lose access straight away.
+  When a team is deleted, nobody can open its designs any more, and none of them move back to My
+  Work, so move any you want to keep out of the team first.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Documents you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its documents open, you lose access straight away. When a team is deleted, nobody can open its documents any more, and none of them move back to My Work, so move any you want to keep out of the team first.
+  Documents you created in the team library stay with the team (another member, the longest-standing
+  Admin, takes them over), and if you have one of its documents open, you lose access straight away.
+  When a team is deleted, nobody can open its documents any more, and none of them move back to My
+  Work, so move any you want to keep out of the team first.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Spaces you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its spaces open, you lose access straight away. When a team is deleted, nobody can open its spaces any more, and none of them move back to My Work, so move any you want to keep out of the team first.
+  Spaces you created in the team library stay with the team (another member, the longest-standing
+  Admin, takes them over), and if you have one of its spaces open, you lose access straight away.
+  When a team is deleted, nobody can open its spaces any more, and none of them move back to My
+  Work, so move any you want to keep out of the team first.
 </AppNote>
 
 <AppNote app="liveplanner">
   When a team is deleted, nobody can open its plans any more, and none of them move back to My Work, so move any you want to keep out of the team first.
 
-  Once you have left, you lose access to the team's library within a few minutes, including any of its plans you have open.
+Once you have left, you lose access to the team's library within a few minutes, including any of its plans you have open.
+
 </AppNote>
 
 <Tip>

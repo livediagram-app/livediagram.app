@@ -1,15 +1,19 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
-import { SideBySideDrag, SideBySideOpen } from '@liveworkspace/help-site/art/illustrations/tabs-side-by-side';
+import {
+  SideBySideDrag,
+  SideBySideOpen,
+} from '@liveworkspace/help-site/art/illustrations/tabs-side-by-side';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Side by Side Tabs',
-  description: 'Open two tabs side by side: drag a tab to the right edge of the screen, keep both live, and work in whichever side you click.',
+  description:
+    'Open two tabs side by side: drag a tab to the right edge of the screen, keep both live, and work in whichever side you click.',
   path: '/help/tabs/side-by-side/',
 });
 
-<ArticleLayout title="Side by Side Tabs" description="Put two tabs on screen at once, and work on either without losing sight of the other." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("side-by-side")}>
+<ArticleLayout path="tabs/side-by-side" title="Side by Side Tabs" description="Put two tabs on screen at once, and work on either without losing sight of the other." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("side-by-side")}>
 
 Tabs keep related work together: the draft and the reference, the overview and the detail. Side by side puts two of them on screen at once, so you can compare them, copy an idea across, or keep one in view while you work on the other.
 
@@ -59,11 +63,14 @@ Side by side needs room for two working tabs, so it's offered on screens at leas
 It also steps aside in zen mode, and comes back when you leave it.
 
 <AppNote app="livediagram,livedocuments,livedesign">
-  See [Zen Mode](/help/tools/zen-mode/). To keep a reference tab from changing while you work beside it, [lock it](/help/tabs/locking-tabs/) first. You can still pan and zoom around a locked tab.
+  See [Zen Mode](/help/tools/zen-mode/). To keep a reference tab from changing while you work beside
+  it, [lock it](/help/tabs/locking-tabs/) first. You can still pan and zoom around a locked tab.
 </AppNote>
 
 <AppNote app="livediagram">
-  Tabs keep related boards together: the context diagram and the detail, the retro and its action plan. Side by side also steps aside while [presenting](/help/selection-modes/slide-deck/presenting/), and comes back when you leave it.
+  Tabs keep related boards together: the context diagram and the detail, the retro and its action
+  plan. Side by side also steps aside while
+  [presenting](/help/selection-modes/slide-deck/presenting/), and comes back when you leave it.
 </AppNote>
 
 <AppNote app="livedocuments">
@@ -71,15 +78,23 @@ It also steps aside in zen mode, and comes back when you leave it.
 </AppNote>
 
 <AppNote app="livedesign">
-  Tabs keep related work together: the logo and the screens that use it, the draft and the reference.
+  Tabs keep related work together: the logo and the screens that use it, the draft and the
+  reference.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Tabs keep related rooms together: the office floor and the meeting room, the stand-up corner and its notes, the plan and the reference. The pane you're not working in has a chip in its top-left corner that names its tab, marked **Live**.
+  Tabs keep related rooms together: the office floor and the meeting room, the stand-up corner and
+  its notes, the plan and the reference. The pane you're not working in has a chip in its top-left
+  corner that names its tab, marked **Live**.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Tabs keep related work together: the board and its dashboard, the form and the board its answers land on, the plan and the budget sheet behind it. Controls such as **Undo**, **Redo** and **Style** sit in the pane you're working in (rather than toolbars and panels), and **Side by Side** shows the tab on the right beside the tab you were on. A card you add on a board shows up on the dashboard beside it as soon as you add it. Keep a [Dashboard](/help/plan/dashboards/) open beside the board you're working on, and watch its counts and charts follow each card you move.
+  Tabs keep related work together: the board and its dashboard, the form and the board its answers
+  land on, the plan and the budget sheet behind it. Controls such as **Undo**, **Redo** and
+  **Style** sit in the pane you're working in (rather than toolbars and panels), and **Side by
+  Side** shows the tab on the right beside the tab you were on. A card you add on a board shows up
+  on the dashboard beside it as soon as you add it. Keep a [Dashboard](/help/plan/dashboards/) open
+  beside the board you're working on, and watch its counts and charts follow each card you move.
 </AppNote>
 
 </ArticleLayout>

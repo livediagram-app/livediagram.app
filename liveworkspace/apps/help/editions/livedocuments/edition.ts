@@ -48,3 +48,6 @@ export const edition: Edition = {
 };
 
 export default edition;
+
+// The name the generated pick (current.generated.ts) exports, so a test can alias this file in its place.
+export { edition as EDITION };

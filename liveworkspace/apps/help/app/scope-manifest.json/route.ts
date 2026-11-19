@@ -9,7 +9,9 @@ import { articlePath } from '@liveworkspace/help-registry/telemetry';
 export const dynamic = 'force-static';
 
 export function GET() {
-  const origins = Object.fromEntries(HELP_SCOPES.map((s) => [s, helpUrl(s).replace(/\/help$/, '')]));
+  const origins = Object.fromEntries(
+    HELP_SCOPES.map((s) => [s, helpUrl(s).replace(/\/help$/, '')]),
+  );
   return Response.json({
     articles: Object.fromEntries(allArticles.map((a) => [articlePath(a), [...a.apps]])),
     // A landing with no articles (Contact) is every app's, so it is left out and served in every scope.

@@ -50,7 +50,9 @@ export function PickAnApp({ counts }: { counts: Partial<Record<AppId, number>> }
                 <AppMark app={app} size={40} />
               </div>
               <div className="flex flex-1 flex-col p-5">
-                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">{app}</h3>
+                <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+                  {app}
+                </h3>
                 <p className="mt-1 flex-1 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
                   {pitchOf(app)}
                 </p>

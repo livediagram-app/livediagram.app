@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ContextualToolbar, MultiSelectToolbar } from '@/editions/livediagram/components/illustrations/user-interface';
+import {
+  ContextualToolbar,
+  MultiSelectToolbar,
+} from '@/editions/livediagram/components/illustrations/user-interface';
 import {
   ContextualToolbar as LivehuddleContextualToolbar,
   MultiSelectToolbar as LivehuddleMultiSelectToolbar,
@@ -14,6 +17,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="user-interface/toolbar"
   title="The Toolbar"
   description="The contextual toolbar that appears when you select one or more elements."
   categoryTitle="User Interface"
@@ -21,152 +25,180 @@ export const metadata = helpMetadata({
 >
 
 <AppNote app="livedesign,livediagram,livehuddle">
-  Select something on the canvas and a **toolbar** appears next to it, holding the quick actions for what you have selected. It is contextual: it shows up only when there is a selection, and its contents change to match. A small caption above it names the selection, for example "Selected Square".
+  Select something on the canvas and a **toolbar** appears next to it, holding the quick actions for
+  what you have selected. It is contextual: it shows up only when there is a selection, and its
+  contents change to match. A small caption above it names the selection, for example "Selected
+  Square".
 </AppNote>
 
 <AppNote app="livedocuments">
-  Select several elements on the canvas and a **toolbar** floats over them, holding the quick actions for the group. One selected element has no toolbar: it uses its right-click menu instead (see below).
+  Select several elements on the canvas and a **toolbar** floats over them, holding the quick
+  actions for the group. One selected element has no toolbar: it uses its right-click menu instead
+  (see below).
 </AppNote>
 
-<Figure app="livedesign,livediagram" caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, layer order, Lock and Delete.">
+<Figure
+  app="livedesign,livediagram"
+  caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, layer order, Lock and Delete."
+>
   <ContextualToolbar />
 </Figure>
-<Figure app="livehuddle" caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, Format Painter, stacking order and Delete.">
+<Figure
+  app="livehuddle"
+  caption="With one shape selected, the toolbar floats beside it with More, Add Text, Duplicate, Format Painter, stacking order and Delete."
+>
   <LivehuddleContextualToolbar />
 </Figure>
 
 ## One element selected
 
-<AppNote app="livedesign">
+<AppNote app="livediagram,livedesign,livehuddle">
   From left to right:
+</AppNote>
 
-  - **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
-  - **Add Text** (or **Edit Text** once the element has some), and **Edit Points** on a path (drawn with the Path tool, or made by Combine), to adjust its points and curves. On a pencil or marker drawing, **Edit Points** first tidies it into a path (as **Tidy** does), then opens its points.
-  - **Duplicate**, and beside it **Save to Library**, which keeps the element in your [Library](/help/palette/library/) (your own or a team's) to place again in any <Noun />, in any app that can draw it.
-  - **Bring to Front** and **Send to Back**.
-  - **Lock** (or **Unlock**) and **Delete**.
+<AppNote app="livedesign">
+- **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
+- **Add Text** (or **Edit Text** once the element has some), and **Edit Points** on a path (drawn with the Path tool, or made by Combine), to adjust its points and curves. On a pencil or marker drawing, **Edit Points** first tidies it into a path (as **Tidy** does), then opens its points.
+- **Duplicate**, and beside it **Save to Library**, which keeps the element in your [Library](/help/palette/library/) (your own or a team's) to place again in any <Noun />, in any app that can draw it.
+- **Bring to Front** and **Send to Back**.
+- **Lock** (or **Unlock**) and **Delete**.
 
-  Which buttons show depends on the element: an image has no text to add, a design kept only in [This Browser](/help/privacy-and-security/offline-mode/) has no Library to save to, and a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds show no comments).
+Which buttons show depends on the element: an image has no text to add, a design kept only [Offline](/help/privacy-and-security/offline-mode/) has no Library to save to, and a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds show no comments).
 </AppNote>
 
 <AppNote app="livediagram">
-  From left to right:
+- **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
+- **Add Text** (or **Edit Text** once the element has some), and **Edit Points** on a path (drawn with the Path tool), to adjust its points and curves.
+- **Duplicate**.
+- **Bring to Front** and **Send to Back**.
+- **Lock** (or **Unlock**) and **Delete**.
 
-  - **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
-  - **Add Text** (or **Edit Text** once the element has some), and **Edit Points** on a path (drawn with the Path tool), to adjust its points and curves.
-  - **Duplicate**.
-  - **Bring to Front** and **Send to Back**.
-  - **Lock** (or **Unlock**) and **Delete**.
-
-  Which buttons show depends on the element: an image has no text to add, a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. An element kind's own verbs, such as **Add Child** on a [mind map](/help/palette/mind-maps/) node or **Add Step** on a [flowchart](/help/palette/flowcharts/) step, and **Save to Library**, are in the row along the top of the **More** menu instead. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds and Community posts show no comments).
+Which buttons show depends on the element: an image has no text to add, a locked element hides **Edit Points**, and its **Delete** is greyed out until you **Unlock** it. An element kind's own verbs, such as **Add Child** on a [mind map](/help/palette/mind-maps/) node or **Add Step** on a [flowchart](/help/palette/flowcharts/) step, and **Save to Library**, are in the row along the top of the **More** menu instead. To comment on an element, open **More** and choose **Add Comment** under its **Resources**. On a link that can't edit, the toolbar holds just a comments button instead (and a right-click opens a [short element menu](/help/user-interface/context-menus/)): **Add Comment** on a Participant link, so you can still join a discussion, and **Show Comments** on a view-only link, only on an element that already has comments, to read them (embeds and Community posts show no comments).
 </AppNote>
 
 <AppNote app="livedocuments">
   A single selected element has **no toolbar** floating over it, so nothing covers the page you are writing about. Everything the toolbar used to hold is in the element's menu: right-click the element (a long press on a touch screen, or **Shift+F10** with the keyboard). Its top row holds **Save to Library**, with **Delete** at the right, and its last section, **Resources**, holds **Assign Action** and **Add Comment**; duplicate with **Cmd/Ctrl+D**, lock with **Cmd/Ctrl+Shift+L**, and reorder from its **Layer** section. See [Context Menus](/help/user-interface/context-menus/).
 
-  On a Participant or view-only link the same right-click opens a short menu with what that link may do, such as **Add Comment** or **Show Comments**.
+On a Participant or view-only link the same right-click opens a short menu with what that link may do, such as **Add Comment** or **Show Comments**.
 </AppNote>
 
 <AppNote app="livehuddle">
-  From left to right:
+- **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
+- **Add Text** (or **Edit Text** once the element has some).
+- **Rotate Left** and **Rotate Right**, on a piece of furniture that turns, such as a chair or a desk: a quarter turn each way.
+- **Duplicate**.
+- **Format Painter**: takes this element's style, ready to paint onto the next elements you press. See [Format Painter](/help/selection-modes/format-painter/).
+- **Bring to Front** and **Send to Back**.
+- **Delete**.
 
-  - **More** (**⋯**): opens the element's full menu, the same one a right-click opens, with its colours, borders, text styling and the rest. See [Context Menus](/help/user-interface/context-menus/).
-  - **Add Text** (or **Edit Text** once the element has some).
-  - **Rotate Left** and **Rotate Right**, on a piece of furniture that turns, such as a chair or a desk: a quarter turn each way.
-  - **Duplicate**.
-  - **Format Painter**: takes this element's style, ready to paint onto the next elements you press. See [Format Painter](/help/selection-modes/format-painter/).
-  - **Bring to Front** and **Send to Back**.
-  - **Delete**.
+Which buttons show depends on the element: an image has no text to add, and only furniture turns. An element from a feature <AppName /> no longer has keeps **Delete** alone.
 
-  Which buttons show depends on the element: an image has no text to add, and only furniture turns. An element from a feature <AppName /> no longer has keeps **Delete** alone.
-
-  The toolbar is an Editor's. On a Participant or Viewer link, selecting an element shows no toolbar, and a right-click opens a [short element menu](/help/user-interface/context-menus/#on-a-participant-or-view-only-link) instead.
+The toolbar is an Editor's. On a Participant or Viewer link, selecting an element shows no toolbar, and a right-click opens a [short element menu](/help/user-interface/context-menus/#on-a-participant-or-view-only-link) instead.
 </AppNote>
 
 ## Several elements selected
 
 <AppNote app="livedesign,livediagram,livehuddle">
-  Drag a marquee or Shift-click to select several, and the toolbar switches to the actions that make sense across a group:
+  Drag a marquee or Shift-click to select several, and the toolbar switches to the actions that make
+  sense across a group:
 </AppNote>
 
 <AppNote app="livedocuments">
-  Drag a marquee or Shift-click to select several, and a toolbar floats over them with the actions that make sense across a group:
+  Drag a marquee or Shift-click to select several, and a toolbar floats over them with the actions
+  that make sense across a group:
 </AppNote>
 
 <AppNote app="livedesign">
-  - **More** (**⋯**): the selection's menu, for styling everything at once.
-  - **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
-  - **Duplicate**, with the arrows between the selected elements included, and **Save to Library**, to keep the whole selection in your Library.
-  - **Combine** (on a [logo page](/help/pages/logo-pages/), when the shapes can be combined): unite, subtract, intersect or exclude them into one shape.
-  - **Export**: export just these elements.
-  - **Lock** (or **Unlock**) and **Delete**.
+  - **More** (**⋯**): the selection's menu, for styling everything at once. - **Filter Selection**
+  (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and
+  keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
+  - **Duplicate**, with the arrows between the selected elements included, and **Save to Library**,
+  to keep the whole selection in your Library. - **Combine** (on a [logo
+  page](/help/pages/logo-pages/), when the shapes can be combined): unite, subtract, intersect or
+  exclude them into one shape. - **Export**: export just these elements. - **Lock** (or **Unlock**)
+  and **Delete**.
 </AppNote>
 
 <AppNote app="livediagram">
-  - **More** (**⋯**): the selection's menu, for styling everything at once.
-  - **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
-  - **Duplicate**, with the arrows between the selected elements included.
-  - **Save to Library**: keep the selection as one item in a [shape library](/help/explorer/shape-libraries/).
-  - **Export**: export just these elements.
-  - **Lock** (**Unlock** when every selected element is locked) and **Delete**.
+  - **More** (**⋯**): the selection's menu, for styling everything at once. - **Filter Selection**
+  (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and
+  keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
+  - **Duplicate**, with the arrows between the selected elements included. - **Save to Library**:
+  keep the selection as one item in a [shape library](/help/explorer/shape-libraries/). -
+  **Export**: export just these elements. - **Lock** (**Unlock** when every selected element is
+  locked) and **Delete**.
 </AppNote>
 
 <AppNote app="livedocuments">
-  - **More** (**⋯**): the selection's menu, for styling everything at once.
-  - **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
-  - **Duplicate**, with the arrows between the selected elements included.
-  - **Save to Library**: keep the set to place again in any <Noun />, in every app, for you or your team. See [The Library](/help/palette/library/).
-  - **Export**: export just these elements.
-  - **Lock** (or **Unlock**) and **Delete**.
+  - **More** (**⋯**): the selection's menu, for styling everything at once. - **Filter Selection**
+  (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and
+  keep, say, just the arrows. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
+  - **Duplicate**, with the arrows between the selected elements included. - **Save to Library**:
+  keep the set to place again in any <Noun />, in every app, for you or your team. See [The
+  Library](/help/palette/library/). - **Export**: export just these elements. - **Lock** (or
+  **Unlock**) and **Delete**.
 </AppNote>
 
 <AppNote app="livehuddle">
-  - **More** (**⋯**): the selection's menu, for styling everything at once.
-  - **Filter Selection** (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and keep, say, just the sticky notes. See [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/).
-  - **Rotate Left** and **Rotate Right**, when the selection holds furniture that turns: each piece turns about its own centre.
-  - **Duplicate**.
-  - **Export**: export just these elements.
-  - **Delete**.
+  - **More** (**⋯**): the selection's menu, for styling everything at once. - **Filter Selection**
+  (only when the selection mixes kinds): narrows it by type, so you can marquee over a busy area and
+  keep, say, just the sticky notes. See
+  [Multi-Select](/help/canvas/selecting-and-grouping/multi-select/). - **Rotate Left** and **Rotate
+  Right**, when the selection holds furniture that turns: each piece turns about its own centre. -
+  **Duplicate**. - **Export**: export just these elements. - **Delete**.
 </AppNote>
 
 <AppNote app="livedesign,livediagram,livehuddle">
   The caption reads "Selected Elements" with a count.
 </AppNote>
 
-<Figure app="livedesign,livediagram,livedocuments" caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export, Lock and Delete.">
+<Figure
+  app="livedesign,livediagram,livedocuments"
+  caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export, Lock and Delete."
+>
   <MultiSelectToolbar />
 </Figure>
-<Figure app="livehuddle" caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export and Delete.">
+<Figure
+  app="livehuddle"
+  caption="Select a mix of elements and the toolbar switches to More, Filter Selection, Duplicate, Export and Delete."
+>
   <LivehuddleMultiSelectToolbar />
 </Figure>
 
 The toolbar follows your selection so the controls are always close to what they affect, and disappears the moment you deselect, handing the canvas back.
 
 <AppNote app="livedesign">
-  For a selected shape or arrow, the [Quick Style bar](/help/canvas/quick-style-panel/) beside the page's title bar offers the most-used colours and widths too.
+  For a selected shape or arrow, the [Quick Style bar](/help/canvas/quick-style-panel/) beside the
+  page's title bar offers the most-used colours and widths too.
 </AppNote>
 
 <AppNote app="livediagram">
-  Beside a selected shape or arrow, the [Quick Style panel](/help/canvas/quick-style-panel/) offers the most-used colours and widths too.
+  Beside a selected shape or arrow, the [Quick Style panel](/help/canvas/quick-style-panel/) offers
+  the most-used colours and widths too.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Above the page, the [Quick Style bar](/help/canvas/quick-style-panel/) offers the most-used colours and widths too.
+  Above the page, the [Quick Style bar](/help/canvas/quick-style-panel/) offers the most-used
+  colours and widths too.
 </AppNote>
 
 <AppNote app="livehuddle">
-  While you drag, resize or reshape the selection it steps aside, and comes back at the new place when you let go.
+  While you drag, resize or reshape the selection it steps aside, and comes back at the new place
+  when you let go.
 </AppNote>
 
 <AppNote app="livedesign,livediagram,livedocuments">
   <Tip>
-    To copy one element's look onto others, use the **Format** tool in the Palette's selection-mode dropdown (see [Format Painter](/help/selection-modes/format-painter/)).
+    To copy one element's look onto others, use the **Format** tool in the Palette's selection-mode
+    dropdown (see [Format Painter](/help/selection-modes/format-painter/)).
   </Tip>
 </AppNote>
 
 <AppNote app="livehuddle">
   <Tip>
-    To copy one element's look onto others, select it and press **Format Painter** on this toolbar, then press each element you want to paint (see [Format Painter](/help/selection-modes/format-painter/)).
+    To copy one element's look onto others, select it and press **Format Painter** on this toolbar,
+    then press each element you want to paint (see [Format
+    Painter](/help/selection-modes/format-painter/)).
   </Tip>
 </AppNote>
 

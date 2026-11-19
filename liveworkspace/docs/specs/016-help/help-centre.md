@@ -114,13 +114,13 @@ Every category in the catalogue for the scope appears in exactly one section (Co
 half), so a new category cannot be left off a home without a test failing, and a test checks every Popular chip and
 every Start Here step names a real article. Each app's popular chips and steps:
 
-| App           | Popular chips                                                                 | Start Here steps                                         |
-| ------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------- |
-| livediagram   | Your first diagram, Sharing, Keyboard shortcuts, Templates, Exporting, Editor modes | the first four Getting Started guides                    |
-| liveplanner   | Your First Plan, Sharing Your Plan, Keyboard Shortcuts, Templates, Exporting, Plan Mode | Your First Plan, Boards, Sheets, Sharing Your Plan       |
-| livedocuments | Your first document, Sharing, Keyboard shortcuts, Templates, Exporting, Slide pages | Your First Document, Working with Pages, Writing Articles, Sharing Your Document |
-| livedesign    | Your first design, Sharing, Keyboard shortcuts, Templates, Exporting, Logo pages | Your First Design, Logo Pages, Layers, Sharing Your Design |
-| livehuddle    | Your first Space, Sharing, Keyboard shortcuts, Templates, Exporting, Avatar mode | the first four Getting Started guides                    |
+| App           | Popular chips                                                                           | Start Here steps                                                                 |
+| ------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| livediagram   | Your first diagram, Sharing, Keyboard shortcuts, Templates, Exporting, Editor modes     | the first four Getting Started guides                                            |
+| liveplanner   | Your First Plan, Sharing Your Plan, Keyboard Shortcuts, Templates, Exporting, Plan Mode | Your First Plan, Boards, Sheets, Sharing Your Plan                               |
+| livedocuments | Your first document, Sharing, Keyboard shortcuts, Templates, Exporting, Slide pages     | Your First Document, Working with Pages, Writing Articles, Sharing Your Document |
+| livedesign    | Your first design, Sharing, Keyboard shortcuts, Templates, Exporting, Logo pages        | Your First Design, Logo Pages, Layers, Sharing Your Design                       |
+| livehuddle    | Your first Space, Sharing, Keyboard shortcuts, Templates, Exporting, Avatar mode        | the first four Getting Started guides                                            |
 
 livedocuments' Editor Guides are Pages, Canvas, Palette, Selection Modes, Tabs, Collaboration, Explorer, User
 Interface and Tools Panel; liveplanner's lead with Plan.
@@ -137,20 +137,20 @@ the page reads as a table of contents rather than a wall. A group is the article
 shows a sticky **jump list** of its groups beside the grids. Categories of twelve or fewer cards stay one grid. The
 groups, in order:
 
-| App           | Category | Groups                                                                      |
-| ------------- | -------- | --------------------------------------------------------------------------- |
-| livediagram   | Canvas   | Basics, Modes and Boards, Text and Notes, Styling Elements, Layers and Locking |
-| livediagram   | Palette  | Everyday Elements, Diagram Kits, Workshop Kits, Palette Settings            |
-| livediagram   | Explorer | Your Library, Activity, Assets and Imports                                  |
-| liveplanner   | Plan     | Getting Going, Boards and Cards, Sheets, Forms and Dashboards               |
-| livedocuments | Pages    | Basics, Kinds of Page                                                       |
-| livedocuments | Canvas   | Basics, Text and Notes, Styling Elements, Layers and Locking                |
-| livedocuments | Palette  | Everyday Elements, Page Blocks, Palette Settings                            |
-| livedocuments | Explorer | Your Library, Activity, Assets and Imports                                  |
-| livedesign    | Canvas, Palette, Explorer | as livedocuments, with Pages (Basics, Kinds of Page) first     |
-| livehuddle    | Canvas   | Basics, Text and Notes, Styling Elements                                    |
-| livehuddle    | Palette  | Everyday Elements, Layout Kits, Workshop Kits, Palette Settings             |
-| livehuddle    | Explorer | Your Library, Activity, Assets                                              |
+| App           | Category                  | Groups                                                                         |
+| ------------- | ------------------------- | ------------------------------------------------------------------------------ |
+| livediagram   | Canvas                    | Basics, Modes and Boards, Text and Notes, Styling Elements, Layers and Locking |
+| livediagram   | Palette                   | Everyday Elements, Diagram Kits, Workshop Kits, Palette Settings               |
+| livediagram   | Explorer                  | Your Library, Activity, Assets and Imports                                     |
+| liveplanner   | Plan                      | Getting Going, Boards and Cards, Sheets, Forms and Dashboards                  |
+| livedocuments | Pages                     | Basics, Kinds of Page                                                          |
+| livedocuments | Canvas                    | Basics, Text and Notes, Styling Elements, Layers and Locking                   |
+| livedocuments | Palette                   | Everyday Elements, Page Blocks, Palette Settings                               |
+| livedocuments | Explorer                  | Your Library, Activity, Assets and Imports                                     |
+| livedesign    | Canvas, Palette, Explorer | as livedocuments, with Pages (Basics, Kinds of Page) first                     |
+| livehuddle    | Canvas                    | Basics, Text and Notes, Styling Elements                                       |
+| livehuddle    | Palette                   | Everyday Elements, Layout Kits, Workshop Kits, Palette Settings                |
+| livehuddle    | Explorer                  | Your Library, Activity, Assets                                                 |
 
 A shared category shows only the groups its scope's articles fall in.
 
@@ -204,20 +204,20 @@ host, its formats, its work drawn on each screen. Under All Apps a shared catego
 slate. The Getting Started scene tells the app's own first three steps on three numbered cards. Tabs, Developers
 and Supported Devices are drawn once for livediagram and livehuddle. What the scenes show:
 
-| Scene                | Where                | Shows in each app                                                                                                                                  |
-| -------------------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Getting Started      | own                  | livediagram: a first diagram (a starting point, shapes and arrows, the share link); liveplanner: a board, a sheet, the share link; livedocuments: an article, slide or infographic page, writing, the share link; livedesign: a logo artboard and wireframe screens, layers, the share link; livehuddle: a first Space (a starting point, walk in, the share link) |
-| About                | own                  | three windows: livediagram a workshop's stickies, a diagram and a sketch; liveplanner Board, Sheet and Form; livedocuments a slide, an article and an infographic; livedesign a logo, a wireframe and a photo; livehuddle the day's stickies, a Team Pod and a timer |
-| Canvas, Palette, Selection Modes, Collaboration, Explorer, Tabs, User Interface | own | each app's own editor surface at work (Explorer: My Work and a grid of that app's work; Tabs: one file's tabs stacked behind the tab bar; User Interface: numbered callouts on the parts; livedocuments and livedesign also have Pages, a page of each kind labelled as the editor labels it; liveplanner has Plan, a board with its done count filling) |
-| Tools                | shared, with its own | beside the shared appearance switch and Zen mode: livediagram Auto Layout tidying a sign-up flow; liveplanner Zen mode leaving the board; livedocuments Markdown Import; livedesign and livehuddle Auto-align snapping |
-| Tips and Tricks      | shared, with its own | the command palette on the app's own commands and its own single-key shortcuts                                                                    |
-| Search Panel         | shared, with its own | "roadmap" finding the app's own work, a tab, an element or card, and a guide                                                                      |
-| Supported Devices    | shared, with its own | the app's work on a laptop, a tablet and a phone                                                                                                  |
-| Developers           | shared, with its own | the app's `POST /api/…` creating its own work (`documents`, `projects` with the `kanban` template, `designs` with `wireframe-mobile-app`, `documents` with `slide-deck`) |
-| Account and Data     | shared, with its own | a profile, synced work, and the app's export formats (liveplanner CSV, PNG, PDF, JSON; the others PNG, SVG, PDF, JSON, livedocuments leading with PDF) |
-| Troubleshooting      | shared, with its own | work that did not load and the checklist fixing it                                                                                                |
-| Privacy and Security | shared, with its own | the app's own share link with its safeguards                                                                                                      |
-| Policies             | shared, the same     | the terms and the privacy policy, sealed                                                                                                          |
+| Scene                                                                           | Where                | Shows in each app                                                                                                                                                                                                                                                                                                                                                  |
+| ------------------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Getting Started                                                                 | own                  | livediagram: a first diagram (a starting point, shapes and arrows, the share link); liveplanner: a board, a sheet, the share link; livedocuments: an article, slide or infographic page, writing, the share link; livedesign: a logo artboard and wireframe screens, layers, the share link; livehuddle: a first Space (a starting point, walk in, the share link) |
+| About                                                                           | own                  | three windows: livediagram a workshop's stickies, a diagram and a sketch; liveplanner Board, Sheet and Form; livedocuments a slide, an article and an infographic; livedesign a logo, a wireframe and a photo; livehuddle the day's stickies, a Team Pod and a timer                                                                                               |
+| Canvas, Palette, Selection Modes, Collaboration, Explorer, Tabs, User Interface | own                  | each app's own editor surface at work (Explorer: My Work and a grid of that app's work; Tabs: one file's tabs stacked behind the tab bar; User Interface: numbered callouts on the parts; livedocuments and livedesign also have Pages, a page of each kind labelled as the editor labels it; liveplanner has Plan, a board with its done count filling)           |
+| Tools                                                                           | shared, with its own | beside the shared appearance switch and Zen mode: livediagram Auto Layout tidying a sign-up flow; liveplanner Zen mode leaving the board; livedocuments Markdown Import; livedesign and livehuddle Auto-align snapping                                                                                                                                             |
+| Tips and Tricks                                                                 | shared, with its own | the command palette on the app's own commands and its own single-key shortcuts                                                                                                                                                                                                                                                                                     |
+| Search Panel                                                                    | shared, with its own | "roadmap" finding the app's own work, a tab, an element or card, and a guide                                                                                                                                                                                                                                                                                       |
+| Supported Devices                                                               | shared, with its own | the app's work on a laptop, a tablet and a phone                                                                                                                                                                                                                                                                                                                   |
+| Developers                                                                      | shared, with its own | the app's `POST /api/…` creating its own work (`documents`, `projects` with the `kanban` template, `designs` with `wireframe-mobile-app`, `documents` with `slide-deck`)                                                                                                                                                                                           |
+| Account and Data                                                                | shared, with its own | a profile, synced work, and the app's export formats (liveplanner CSV, PNG, PDF, JSON; the others PNG, SVG, PDF, JSON, livedocuments leading with PDF)                                                                                                                                                                                                             |
+| Troubleshooting                                                                 | shared, with its own | work that did not load and the checklist fixing it                                                                                                                                                                                                                                                                                                                 |
+| Privacy and Security                                                            | shared, with its own | the app's own share link with its safeguards                                                                                                                                                                                                                                                                                                                       |
+| Policies                                                                        | shared, the same     | the terms and the privacy policy, sealed                                                                                                                                                                                                                                                                                                                           |
 
 ## Figures and card icons
 

@@ -8,7 +8,8 @@ export const articles: Article[] = [
     slug: 'animations',
     title: 'Animating Elements',
     description: 'Animate shapes, text, notes, drawings, media, tables, arrows, and icons.',
-    keywords: 'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
+    keywords:
+      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -27,8 +28,10 @@ export const articles: Article[] = [
   {
     slug: 'colours-borders-opacity',
     title: 'Colours, Borders and Opacity',
-    description: 'Recolour text, background and border, style borders and corners, and fade elements.',
-    keywords: 'colour color fill background border outline stroke text ink reset to theme picker swatch custom hex eyedropper pipette strength thickness pattern dashed dotted radius corners rounded pill circle opacity transparency fade see-through',
+    description:
+      'Recolour text, background and border, style borders and corners, and fade elements.',
+    keywords:
+      'colour color fill background border outline stroke text ink reset to theme picker swatch custom hex eyedropper pipette strength thickness pattern dashed dotted radius corners rounded pill circle opacity transparency fade see-through',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -37,8 +40,10 @@ export const articles: Article[] = [
   {
     slug: 'element-indicators',
     title: 'Element Indicators',
-    description: 'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
-    keywords: 'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy settings editor color colour resources',
+    description:
+      'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
+    keywords:
+      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy settings editor color colour resources',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -47,8 +52,10 @@ export const articles: Article[] = [
   {
     slug: 'finish',
     title: 'Choosing a Finish',
-    description: 'Draw a tab or an element Flexible, Professional, hand-drawn Sketch or bold Marker.',
-    keywords: 'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing marker felt tip sharpie flip chart bold ink',
+    description:
+      'Draw a tab or an element Flexible, Professional, hand-drawn Sketch or bold Marker.',
+    keywords:
+      'finish sketch sketchy hand drawn handdrawn whiteboard rough wobbly hatching professional crisp print clean flexible look style drawing marker felt tip sharpie flip chart bold ink',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -57,8 +64,9 @@ export const articles: Article[] = [
   {
     slug: 'follow-along',
     title: 'Following Someone',
-    description: 'Pin your pan, zoom and tab to a collaborator\'s until you move the canvas.',
-    keywords: 'follow following me along presenter presentation present audience viewport view camera pan zoom tab sync synchronise synchronize mirror watch spectate lead guide tour walkthrough demo',
+    description: "Pin your pan, zoom and tab to a collaborator's until you move the canvas.",
+    keywords:
+      'follow following me along presenter presentation present audience viewport view camera pan zoom tab sync synchronise synchronize mirror watch spectate lead guide tour walkthrough demo',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -68,7 +76,8 @@ export const articles: Article[] = [
     slug: 'layer-order',
     title: 'Layer Order and Opacity',
     description: 'Send elements to the front or back layer, and fade them with opacity.',
-    keywords: 'transparency transparent translucent alpha fade see through bring to front send back stacking z index overlap behind above layer',
+    keywords:
+      'transparency transparent translucent alpha fade see through bring to front send back stacking z index overlap behind above layer',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Layers and Locking',
@@ -77,8 +86,10 @@ export const articles: Article[] = [
   {
     slug: 'layers',
     title: 'Layers',
-    description: 'How a tab stacks its elements in layers: Bring to Front and Send to Back make them, and some apps manage them from a Layers panel.',
-    keywords: 'photoshop stack hide lock organise organize panel z order layer front back hidden locked opacity',
+    description:
+      'How a tab stacks its elements in layers: Bring to Front and Send to Back make them, and some apps manage them from a Layers panel.',
+    keywords:
+      'photoshop stack hide lock organise organize panel z order layer front back hidden locked opacity',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Layers and Locking',
@@ -87,8 +98,10 @@ export const articles: Article[] = [
   {
     slug: 'links',
     title: 'Links',
-    description: 'Turn a shape, text, sticky note, image or table into a clickable link to another tab, another file, or the web.',
-    keywords: 'url hyperlink bookmark card website jump navigate external resources add link edit remove set change',
+    description:
+      'Turn a shape, text, sticky note, image or table into a clickable link to another tab, another file, or the web.',
+    keywords:
+      'url hyperlink bookmark card website jump navigate external resources add link edit remove set change',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -110,8 +123,10 @@ export const articles: Article[] = [
   {
     slug: 'notes',
     title: 'Notes',
-    description: 'Attach a longer written note to any element, formatted and out of sight until opened.',
-    keywords: 'note notes memo remark caveat detail context description rich text formatting bold italic underline heading bullet numbered list link popover badge resources',
+    description:
+      'Attach a longer written note to any element, formatted and out of sight until opened.',
+    keywords:
+      'note notes memo remark caveat detail context description rich text formatting bold italic underline heading bullet numbered list link popover badge resources',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Text and Notes',
@@ -120,8 +135,10 @@ export const articles: Article[] = [
   {
     slug: 'quick-style-panel',
     title: 'Quick Style',
-    description: 'Restyle selected shapes, arrows and text in a click or two from Quick Style: colours, width, line style and alignment, remembered.',
-    keywords: 'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker corners ink turn off disable settings',
+    description:
+      'The most-used style choices, within reach whenever shapes, arrows or text are selected, and remembered for the next one you draw.',
+    keywords:
+      'quick style panel colour color stroke background fill width thickness dashed dotted flowing animated arrow align alignment icon remember memory next shape clear styles reset format custom swatch override picker hex brand highlighter highlight marker corners ink turn off disable settings',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -145,7 +162,8 @@ export const articles: Article[] = [
   {
     slug: 'rotation',
     title: 'Rotating Elements',
-    description: 'Snap an element to a preset 45° angle from the right-click menu or search palette.',
+    description:
+      'Snap an element to a preset 45° angle from the right-click menu or search palette.',
     keywords: 'rotate turn angle spin degrees tilt flip orientation',
     category: 'Canvas',
     categorySlug: 'canvas',
@@ -166,7 +184,8 @@ export const articles: Article[] = [
     slug: 'multi-select',
     title: 'Marquee and Multi-Select',
     description: 'Select many elements at once and act on them together.',
-    keywords: 'lasso rubber band shift click select all several box save to library filter duplicate',
+    keywords:
+      'lasso rubber band shift click select all several box save to library filter duplicate',
     category: 'Canvas',
     categorySlug: 'canvas/selecting-and-grouping',
     parentSlug: 'selecting-and-grouping',
@@ -176,7 +195,8 @@ export const articles: Article[] = [
     slug: 'shadows',
     title: 'Element Shadows',
     description: 'Lift an element with a drop shadow: five presets plus offset/blur sliders.',
-    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video image picture appearance photo link',
+    keywords:
+      'shadow drop depth elevation blur offset lift float soft hard card 3d shade video image picture appearance photo link',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -186,7 +206,8 @@ export const articles: Article[] = [
     slug: 'size',
     title: 'Size',
     description: 'Type an exact width and height, lock the ratio, or reset a stretched shape.',
-    keywords: 'size width height dimensions exact pixels px resize scale bigger smaller aspect ratio lock proportion square stretch squash reset match',
+    keywords:
+      'size width height dimensions exact pixels px resize scale bigger smaller aspect ratio lock proportion square stretch squash reset match',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -195,8 +216,10 @@ export const articles: Article[] = [
   {
     slug: 'snapping',
     title: 'Alignment & Snapping',
-    description: 'Drag or resize to snap elements into line and match sizes; hold Cmd/Ctrl to place freely.',
-    keywords: 'snap align guides grid free placement override precise position resize size match equal spacing distribute alignment',
+    description:
+      'Drag or resize to snap elements into line and match sizes; hold Cmd/Ctrl to place freely.',
+    keywords:
+      'snap align guides grid free placement override precise position resize size match equal spacing distribute alignment',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -205,8 +228,10 @@ export const articles: Article[] = [
   {
     slug: 'templates',
     title: 'Templates',
-    description: 'Start from a ready-made template instead of a blank start, find the one you need, and restyle it with any theme.',
-    keywords: 'c4 model system context container diagram architecture decision record adr sprint planning capacity commitment interview synthesis user research themes how might we run sheet talk track wardley map value chain evolution threat modelling stride security trust boundary register service blueprint frontstage backstage line of visibility metric tree north star kpi driver what if proposition canvas jobs pains gains working backwards pr faq press release amazon family genealogy ancestry stream vsm lead time flow efficiency kaizen town hall pub quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter flowchart swot gantt sankey wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity standup stand-up new wizard mode filter draw workshop popular blank category categories meetings workshops timelines roadmaps search words slate eisenhower matrix urgent important pestle pestel macro environment kwl chart know want to learned 30 60 90 day plan onboarding concept propositions network lan vlan firewall router it brainstorming decisions goals metrics people teams processes workflows product ux software teaching learning classroom template templates slide deck article infographic tab illustration empty page group card storyboard floor project brief event poster year in review resume cv recipe data story works versus social carousel launch keynote quarterly team welcome kickoff conference wedding toast pitch school presentation class lesson meeting notes minutes business proposal design doc rfc status report cover letter careers events celebrations home hobbies lessons marketing pitches launches plans proposals reports speeches talks pages making recommended logo artboard phone tablet website laptop watch app photo edit editor picture branding shopping websites messaging travel music video fitness sign up work productivity store blog delivery ride lockup wordmark emblem badge virtual office rooms coworking cowork pod all hands auditorium space spaces',
+    description:
+      'Start from a ready-made template instead of a blank start, find the one you need, and restyle it with any theme.',
+    keywords:
+      'c4 model system context container diagram architecture decision record adr sprint planning capacity commitment interview synthesis user research themes how might we run sheet talk track wardley map value chain evolution threat modelling stride security trust boundary register service blueprint frontstage backstage line of visibility metric tree north star kpi driver what if proposition canvas jobs pains gains working backwards pr faq press release amazon family genealogy ancestry stream vsm lead time flow efficiency kaizen town hall pub quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter flowchart swot gantt sankey wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity standup stand-up new wizard mode filter draw workshop popular blank category categories meetings workshops timelines roadmaps search words slate eisenhower matrix urgent important pestle pestel macro environment kwl chart know want to learned 30 60 90 day plan onboarding concept propositions network lan vlan firewall router it brainstorming decisions goals metrics people teams processes workflows product ux software teaching learning classroom template templates slide deck article infographic tab illustration empty page group card storyboard floor project brief event poster year in review resume cv recipe data story works versus social carousel launch keynote quarterly team welcome kickoff conference wedding toast pitch school presentation class lesson meeting notes minutes business proposal design doc rfc status report cover letter careers events celebrations home hobbies lessons marketing pitches launches plans proposals reports speeches talks pages making recommended logo artboard phone tablet website laptop watch app photo edit editor picture branding shopping websites messaging travel music video fitness sign up work productivity store blog delivery ride lockup wordmark emblem badge virtual office rooms coworking cowork pod all hands auditorium space spaces',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -236,7 +261,8 @@ export const articles: Article[] = [
     slug: 'formatting-label-text',
     title: 'Formatting Label Text',
     description: 'Bold, headings, lists, alignment and per-word colour in a label, plus padding.',
-    keywords: 'bold italic underline strikethrough heading paragraph bullet numbered list block type alignment align vertical centre text colour word rich toolbar padding font size format label',
+    keywords:
+      'bold italic underline strikethrough heading paragraph bullet numbered list block type alignment align vertical centre text colour word rich toolbar padding font size format label',
     category: 'Canvas',
     categorySlug: 'canvas/text-and-fonts',
     parentSlug: 'text-and-fonts',
@@ -266,7 +292,8 @@ export const articles: Article[] = [
     slug: 'changing-the-background',
     title: 'Changing the Canvas Background',
     description: 'Pick a canvas pattern and colours in the Tab Style dialog.',
-    keywords: 'backdrop color colour pattern grid dots lines paper dark floor floors carpet tiles wood parquet marble terrazzo concrete decking paving cobbles grass sand mud strength',
+    keywords:
+      'backdrop color colour pattern grid dots lines paper dark floor floors carpet tiles wood parquet marble terrazzo concrete decking paving cobbles grass sand mud strength',
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
     parentSlug: 'the-canvas',
@@ -276,7 +303,8 @@ export const articles: Article[] = [
     slug: 'pan-and-zoom',
     title: 'Panning and Zooming',
     description: 'Move around the infinite canvas and fit the view.',
-    keywords: 'navigate move scroll magnify fit view wheel pinch hand trackpad middle mouse space zoom in out percent',
+    keywords:
+      'navigate move scroll magnify fit view wheel pinch hand trackpad middle mouse space zoom in out percent',
     category: 'Canvas',
     categorySlug: 'canvas/the-canvas',
     parentSlug: 'the-canvas',
@@ -296,7 +324,8 @@ export const articles: Article[] = [
     slug: 'changing-theme',
     title: 'Changing the Theme',
     description: 'Open the Tab Style dialog and browse themes by category.',
-    keywords: 'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes to all tabs every tab same style match consistent',
+    keywords:
+      'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes to all tabs every tab same style match consistent',
     category: 'Canvas',
     categorySlug: 'canvas/themes',
     parentSlug: 'themes',

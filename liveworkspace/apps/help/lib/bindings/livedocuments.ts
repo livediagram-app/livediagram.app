@@ -2,7 +2,10 @@
 // build"), re-exported for a livedocuments build by lib/bindings.generated.ts: its appearance key, viewport, page-view and
 // web-vitals boots, not-found card, social card and telemetry (sent as livedocuments.app, the origin the page is served on). One module per
 // scope, so a build bundles only its own app's.
-import { createHelpTelemetryIds, HELP_TELEMETRY_OVERRIDES } from '@liveworkspace/help-registry/telemetry';
+import {
+  createHelpTelemetryIds,
+  HELP_TELEMETRY_OVERRIDES,
+} from '@liveworkspace/help-registry/telemetry';
 
 export {
   APPEARANCE_BOOT_SCRIPT,
@@ -17,4 +20,6 @@ export {
   siteTrack as helpTrack,
 } from '@livedocuments/telemetry-client';
 
-export const { helpPathTelemetryId } = createHelpTelemetryIds(HELP_TELEMETRY_OVERRIDES.livedocuments);
+export const { helpPathTelemetryId } = createHelpTelemetryIds(
+  HELP_TELEMETRY_OVERRIDES.livedocuments,
+);

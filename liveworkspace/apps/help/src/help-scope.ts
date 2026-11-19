@@ -60,7 +60,7 @@ export function redirectOf(
   scope: Scope,
 ): HelpManifest['redirects'][number] | undefined {
   const holds = (r: HelpManifest['redirects'][number]) =>
-    !r.apps || scope === 'all' || r.apps.includes(scope as App);
+    !r.apps || scope === 'all' || r.apps.includes(scope);
   const exact = manifest.redirects.find((r) => r.from === route && holds(r));
   if (exact) return exact;
   return manifest.redirects.find(
@@ -84,9 +84,7 @@ export function movedLocation(to: string, prefix: string, search: string): strin
   return `${prefix}${path ? `/${path}/` : '/'}${search}${fragment ? `#${fragment}` : ''}`;
 }
 
-export type Answer =
-  | { kind: 'redirect'; location: string }
-  | { kind: 'asset'; path: string };
+export type Answer = { kind: 'redirect'; location: string } | { kind: 'asset'; path: string };
 
 /**
  * What the Worker answers for `pathname` in `scope`: a 308 for a moved path (on the same address, the router puts

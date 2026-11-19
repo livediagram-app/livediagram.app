@@ -118,6 +118,8 @@ function ReadItIn({ links }: { links: readonly ReadInLink[] }) {
 
 /** What every article's MDX passes its layout. */
 export interface ArticleLayoutProps {
+  /** The page's path under /help (`palette/build/sankey-diagram`): the registry entry it is, exactly. */
+  path?: string;
   title: string;
   description?: string;
   categoryTitle: string;

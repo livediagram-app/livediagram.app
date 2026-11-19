@@ -10,6 +10,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="developers/cli"
   title="The CLI"
   description="Read, build, edit and discuss your work from a terminal: install, sign in, the commands, and profiles."
   categoryTitle="Developers"
@@ -160,28 +161,32 @@ livedesign auth login
 
 The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect <AppName /> CLI**. Leave **Read-only access** off to let the CLI change <Noun plural />, or switch it on so it can find and view <Noun plural /> but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
 
-<Figure app="livediagram"
+<Figure
+  app="livediagram"
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
   width="narrow"
 >
   <CliConsent product="livediagram" noun="canvas" />
 </Figure>
 
-<Figure app="liveplanner"
+<Figure
+  app="liveplanner"
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
   width="narrow"
 >
   <CliConsent product="liveplanner" noun="plan" />
 </Figure>
 
-<Figure app="livedocuments"
+<Figure
+  app="livedocuments"
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
   width="narrow"
 >
   <CliConsent product="livedocuments" noun="document" />
 </Figure>
 
-<Figure app="livedesign"
+<Figure
+  app="livedesign"
   caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
   width="narrow"
 >
@@ -232,19 +237,31 @@ The terminal prints a page address, `https://www.livedesign.app/oauth/device`, a
 
 </AppNote>
 
-<Figure app="livediagram" caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
+<Figure
+  app="livediagram"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
   <CliDeviceSignIn product="livediagram" />
 </Figure>
 
-<Figure app="liveplanner" caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
+<Figure
+  app="liveplanner"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
   <CliDeviceSignIn product="liveplanner" />
 </Figure>
 
-<Figure app="livedocuments" caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
+<Figure
+  app="livedocuments"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
   <CliDeviceSignIn product="livedocuments" />
 </Figure>
 
-<Figure app="livedesign" caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device.">
+<Figure
+  app="livedesign"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
   <CliDeviceSignIn product="livedesign" />
 </Figure>
 
@@ -1080,7 +1097,7 @@ The CLI never prompts when its input or output is not a terminal, so it is safe 
 | `0`       | Done                                                       |
 | `1`       | Refused: the input was understood but not accepted         |
 | `2`       | Usage: the command line does not parse                     |
-| `3`       | Not found, or ambiguous: a <Noun />, tab or element          |
+| `3`       | Not found, or ambiguous: a <Noun />, tab or element        |
 | `4`       | Not signed in, or not allowed (a read-only token's writes) |
 | `5`       | Conflict: the tab changed since you read it; read, retry   |
 | `6`       | Rate limited                                               |
@@ -1212,8 +1229,8 @@ Once a day at most, the CLI asks npm in the background whether a newer version i
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
   token when it only needs to read, keep `LIVEDIAGRAM_TOKEN` out of source control and logs, and
-  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livediagram auth logout`) the moment you
-  no longer need it or think it may have leaked.
+  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livediagram auth logout`)
+  the moment you no longer need it or think it may have leaked.
 </Note>
 
 </AppNote>
@@ -1223,8 +1240,8 @@ Once a day at most, the CLI asks npm in the background whether a newer version i
 <Note>
   A full-access token can change and share everything you can. Give an agent a read-only token when
   it only needs to read, keep `LIVEPLANNER_TOKEN` out of source control and logs, and revoke a token
-  in **Settings**, **Developers**, **API Tokens** (or with `liveplanner auth logout`) the moment you no longer need
-  it or think it may have leaked.
+  in **Settings**, **Developers**, **API Tokens** (or with `liveplanner auth logout`) the moment you
+  no longer need it or think it may have leaked.
 </Note>
 
 </AppNote>
@@ -1234,8 +1251,8 @@ Once a day at most, the CLI asks npm in the background whether a newer version i
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
   token when it only needs to read, keep `LIVEDOCUMENTS_TOKEN` out of source control and logs, and
-  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livedocuments auth logout`) the moment
-  you no longer need it or think it may have leaked.
+  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livedocuments auth
+  logout`) the moment you no longer need it or think it may have leaked.
 </Note>
 
 </AppNote>
@@ -1245,11 +1262,10 @@ Once a day at most, the CLI asks npm in the background whether a newer version i
 <Note>
   A full-access token can change and share everything you can. Give an agent a **Read-only access**
   token when it only needs to read, keep `LIVEDESIGN_TOKEN` out of source control and logs, and
-  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livedesign auth logout`) the moment you
-  no longer need it or think it may have leaked.
+  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livedesign auth logout`)
+  the moment you no longer need it or think it may have leaked.
 </Note>
 
 </AppNote>
-
 
 </ArticleLayout>

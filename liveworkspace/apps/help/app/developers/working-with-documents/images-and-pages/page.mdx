@@ -9,7 +9,7 @@ export const metadata = helpMetadata({
   path: '/help/developers/working-with-documents/images-and-pages/',
 });
 
-<ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a document: images, pages and articles, pictures of a tab and copies." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-pages")}>
+<ArticleLayout path="developers/working-with-documents/images-and-pages" title="Images, Pages and More" description="Worked examples for the rest of a document: images, pages and articles, pictures of a tab and copies." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-pages")}>
 
 A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the images it shows, its pages and its articles. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://www.livedocuments.app/api`, and `/api/openapi.json` has every field.
 

@@ -17,7 +17,10 @@ export function useSiteHref(): (href: string) => string {
   return (href) => siteHref(href, host);
 }
 
-export function SiteLink({ href, ...props }: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
+export function SiteLink({
+  href,
+  ...props
+}: AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) {
   const to = useSiteHref();
   return <a href={to(href)} {...props} />;
 }

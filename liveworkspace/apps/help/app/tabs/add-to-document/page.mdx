@@ -6,25 +6,37 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Add a Tab to Another File',
-  description: 'Add the active tab to another piece of work you own, straight from the tab menu. Both share the same live tab, so an edit in one shows up in the other.',
+  description:
+    'Add the active tab to another piece of work you own, straight from the tab menu. Both share the same live tab, so an edit in one shows up in the other.',
   path: '/help/tabs/add-to-document/',
 });
 
-<ArticleLayout title="Add a Tab to Another File" description="Reuse a tab elsewhere: add the active tab to another of your works, and edits made in either place appear in both." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout path="tabs/add-to-document" title="Add a Tab to Another File" description="Reuse a tab elsewhere: add the active tab to another of your works, and edits made in either place appear in both." categoryTitle="Tabs" categorySlug="tabs">
 
-Sometimes a tab you built in one <Noun /> belongs in another too: a glossary, a shared timeline, an architecture board two projects both rely on. **Add to Another <Noun capital />** adds the active tab to another <Noun /> you own, without leaving the editor.
+Sometimes a tab you built in one <Noun /> belongs in another too: a glossary, a shared timeline, an architecture board two projects both rely on. The tab menu adds the active tab to another <Noun /> you own, without leaving the editor.
 
 ## Adding a Tab Elsewhere
 
 <Step n={1}>Open the tab's menu (the **⋯** button on the active tab, or right-click the tab).</Step>
-<Step n={2}>Choose **Add to Another <Noun capital />**.</Step>
+
+<AppNote app="livediagram,livehuddle">
+  <Step n={2}>
+    Choose **Add to Another <Noun capital />
+    **.
+  </Step>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Step n={2}>Choose **Add to Document**.</Step>
+</AppNote>
+
 <Step n={3}>
-  In the **Add to Another <Noun capital />** dialog, pick the destination. Each <Noun /> shows as a tile with a
-  preview of its <Noun />, and the filter box at the top narrows a long list. A message confirms when
-  the tab has been added.
+  In the dialog that opens, pick the destination. Each <Noun /> shows as a tile with a preview of
+  its <Noun />, and the filter box at the top narrows a long list. A message confirms when the tab
+  has been added.
 </Step>
 
-The option is greyed out when there is nowhere to add the tab to: if this is your only <Noun />, until you create another, and in a [<Noun /> in This Browser](/help/privacy-and-security/offline-mode/). It is greyed out too on a <Noun /> you don't own, such as one someone shared with you as an Editor, since a shared tab has to live in <Noun plural /> of your own. It isn't offered to Viewers or Participants, or on a link shared for [one tab](/help/collaboration/sharing/one-tab/). If the tab is already in 20 <Noun plural />, adding it to another fails with a message that it could not be added.
+The option is greyed out when there is nowhere to add the tab to: if this is your only <Noun />, until you create another, and in a [<Noun /> kept Offline](/help/privacy-and-security/offline-mode/). It is greyed out too on a <Noun /> you don't own, such as one someone shared with you as an Editor, since a shared tab has to live in <Noun plural /> of your own. It isn't offered to Viewers or Participants, or on a link shared for [one tab](/help/collaboration/sharing/one-tab/). If the tab is already in 20 <Noun plural />, adding it to another fails with a message that it could not be added.
 
 <AppNote app="livediagram">
   <Figure caption="Add to Another Canvas opens a dialog of your other canvases, each with a preview, and a filter box to narrow the list.">
@@ -46,7 +58,7 @@ The option is greyed out when there is nowhere to add the tab to: if this is you
 
 ## One Tab, Shared
 
-Add to Another <Noun capital /> doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either <Noun /> and the change lands in the other as well, a few seconds after you stop editing. If the other <Noun /> is already open in another window, reload it to see the latest edits. If the tab is edited in both <Noun plural /> at once, the later edit is the one both keep.
+Adding a tab this way doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either <Noun /> and the change lands in the other as well, a few seconds after you stop editing. If the other <Noun /> is already open in another window, reload it to see the latest edits. If the tab is edited in both <Noun plural /> at once, the later edit is the one both keep.
 
 Two things stay per-<Noun />, so each <Noun /> can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
 
@@ -58,7 +70,8 @@ Removing the tab from one <Noun /> doesn't touch the others; the tab and its con
 </Tip>
 
 <AppNote app="livedocuments">
-  In livedocuments the tab menu row and the dialog read **Add to Document**, and its example is a set of slides two projects both rely on.
+  In livedocuments the tab menu row and the dialog read **Add to Document**, and its example is a
+  set of slides two projects both rely on.
 </AppNote>
 
 <AppNote app="livedocuments,livehuddle">
@@ -66,11 +79,14 @@ Removing the tab from one <Noun /> doesn't touch the others; the tab and its con
 </AppNote>
 
 <AppNote app="livediagram">
-  It is greyed out too on a canvas you don't own, such as one someone shared with you as an Editor, since a shared tab has to live in canvases of your own. If the tab is already in 20 canvases, adding it to another fails with a message that it could not be added.
+  It is greyed out too on a canvas you don't own, such as one someone shared with you as an Editor,
+  since a shared tab has to live in canvases of your own. If the tab is already in 20 canvases,
+  adding it to another fails with a message that it could not be added.
 </AppNote>
 
 <AppNote app="livedocuments">
-  It is greyed out on a document someone else owns, even as its Editor, since a tab can only be added from a document of your own.
+  It is greyed out on a document someone else owns, even as its Editor, since a tab can only be
+  added from a document of your own.
 </AppNote>
 
 </ArticleLayout>

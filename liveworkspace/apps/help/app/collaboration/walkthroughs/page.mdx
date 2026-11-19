@@ -10,6 +10,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="collaboration/walkthroughs"
   title="Walkthroughs"
   description="A recorded tour: your voice, your camera and where you went, played back over the work as it is now."
   categoryTitle="Collaboration"
@@ -19,13 +20,7 @@ export const metadata = helpMetadata({
 
 A walkthrough is a recording of you talking someone through the <Noun />. It keeps your voice, your camera if you leave it on (shown as a round bubble in a corner), your pointer, and every pan, zoom and tab change you make. Whoever plays it watches it over the <Noun /> itself, not in a video, so they can pause, look around and resume.
 
-<AppNote app="livediagram">
-  It also keeps every slide step you make.
-</AppNote>
-
-<AppNote app="livedocuments">
-  It also keeps every slide step you make.
-</AppNote>
+<AppNote app="livediagram,livedocuments">It also keeps every slide step you make.</AppNote>
 
 ## Recording a Walkthrough
 
@@ -59,7 +54,10 @@ A walkthrough can run for up to ten minutes; the bar turns amber with a minute l
 Press **Hide From Recording** in the dock, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. You still see hidden elements, faded inside a dashed outline; people playing the walkthrough never do, and presses and pointer moves over them are left out of what is stored. They stay on the <Noun /> itself for anyone who opens it.
 
 <AppNote app="liveplanner">
-  What a press picks depends on the tab: an element on a plan tab (a card on a board drawn there is the card), a card on a **Board** tab, a widget on a **Dashboard** tab. **Hide Selection** also hides the cards you have selected on a board. A **Sheet** or **Form** tab has nothing to hide, so the dock leaves Hide From Recording out there.
+  What a press picks depends on the tab: an element on a plan tab (a card on a board drawn there is
+  the card), a card on a **Board** tab, a widget on a **Dashboard** tab. **Hide Selection** also
+  hides the cards you have selected on a board. A **Sheet** or **Form** tab has nothing to hide, so
+  the dock leaves Hide From Recording out there.
 </AppNote>
 
 ## Playing a Walkthrough
@@ -70,19 +68,17 @@ Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. 
 - **Keys.** `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes. The bar also has a scrubber and a speed of 1x, 1.5x or 2x.
 - **Edited since recording.** If the <Noun /> has changed since, a line says so and it still plays over the <Noun /> as it is now.
 
-<AppNote app="livediagram">
-  Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the presentation at the slide you were on, moves through the slides as you did, and leaves it when you left it.
-</AppNote>
-
-<AppNote app="livedocuments">
-  Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the presentation at the slide you were on, moves through the slides as you did, and leaves it when you left it.
+<AppNote app="livediagram,livedocuments">
+  Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the
+  presentation at the slide you were on, moves through the slides as you did, and leaves it when you
+  left it.
 </AppNote>
 
 Closing puts you back where you were.
 
 ## Who Can Record and Delete
 
-Editors record walkthroughs and can delete any of them. Everyone who can open the <Noun /> can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a <Noun /> kept in **This Browser**, or through a link to one tab.
+Editors record walkthroughs and can delete any of them. Everyone who can open the <Noun /> can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a <Noun /> kept **Offline**, or through a link to one tab.
 
 ## Privacy
 

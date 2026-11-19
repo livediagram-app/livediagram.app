@@ -10,9 +10,12 @@ export const metadata = helpMetadata({
   path: '/help/privacy-and-security/what-we-collect/',
 });
 
-<ArticleLayout title="What We Collect" description="Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out." categoryTitle="Privacy and Security" categorySlug="privacy-and-security" subArticles={getSubArticles("what-we-collect")}>
+<ArticleLayout path="privacy-and-security/what-we-collect" title="What We Collect" description="Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out." categoryTitle="Privacy and Security" categorySlug="privacy-and-security" subArticles={getSubArticles("what-we-collect")}>
 
-<AppName /> measures which features get used so the project knows what works, and it does this without creepy tracking. The analytics are anonymous and first-party. You can switch off what your browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold or shared beyond a dashboard anyone can read.
+<AppName /> measures which features get used so the project knows what works, and it does this
+without creepy tracking. The analytics are anonymous and first-party. You can switch off what your
+browser sends at any time. There are no third-party trackers, no ad pixels, and nothing is ever sold
+or shared beyond a dashboard anyone can read.
 
 ## What an Event Looks Like
 
@@ -22,9 +25,7 @@ When telemetry is enabled, the editor records small product events made of just 
   Another example is "a square element was added".
 </AppNote>
 
-<AppNote app="liveplanner">
-  Another example is "a dashboard tab was added".
-</AppNote>
+<AppNote app="liveplanner">Another example is "a dashboard tab was added".</AppNote>
 
 - **No identity.** Events carry no user id, no account, and no IP address.
 - **No content.** They never include a <Noun /> name, tab name, participant name, element text, share code, or <Noun /> id.
@@ -41,44 +42,31 @@ That second check is a backstop rather than the main protection. The protection 
 The same rules apply to error tracking. When something breaks, the event records only a short preset code naming the kind of failure and where in the app it happened, like "Http500.SaveTab" for a failed save or an "Uncaught" code for a browser-side exception. Never an error message, stack trace, URL, or anything about what you were working on. These show up on the dashboard's Exceptions view, like everything else.
 
 <AppNote app="livediagram,livehuddle">
-  The exception code reads "Uncaught.Canvas.TypeError", and the errors show on the dashboard's Health tab, in its Exceptions section.
+  The exception code reads "Uncaught.Canvas.TypeError", and the errors show on the dashboard's
+  Health tab, in its Exceptions section.
 </AppNote>
 
-<AppNote app="livedesign">
-  The exception code reads "Uncaught.Design.TypeError".
-</AppNote>
+<AppNote app="livedesign">The exception code reads "Uncaught.Design.TypeError".</AppNote>
 
-<AppNote app="livedocuments">
-  The exception code reads "Uncaught.Document.TypeError".
-</AppNote>
+<AppNote app="livedocuments">The exception code reads "Uncaught.Document.TypeError".</AppNote>
 
-<AppNote app="liveplanner">
-  The exception code reads "Uncaught.Project.TypeError".
-</AppNote>
+<AppNote app="liveplanner">The exception code reads "Uncaught.Project.TypeError".</AppNote>
 
 ## Page Views
 
 Every page on <AppName />'s site (the landing pages, the help centre, the Explorer and the editor) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
 
-<AppNote app="livediagram,livehuddle">
-  The Community is counted as a page too.
-</AppNote>
+<AppNote app="livediagram,livehuddle">The Community is counted as a page too.</AppNote>
 
 - **No query string or link fragment.** Anything after a `?` or `#`, which is where invite and share codes live, is dropped.
 - **No ids.** Every <Noun /> is counted as the same page. Any other part of the address that looks like an id is cut off the same way.
 - **Deny by default.** An address that doesn't reduce cleanly to a plain page name is not sent at all.
 
-<AppNote app="livediagram,livedocuments,livehuddle">
-  The page is `/document`.
-</AppNote>
+<AppNote app="livediagram,livedocuments,livehuddle">The page is `/document`.</AppNote>
 
-<AppNote app="livedesign">
-  The page is `/design`.
-</AppNote>
+<AppNote app="livedesign">The page is `/design`.</AppNote>
 
-<AppNote app="liveplanner">
-  The page is `/project`.
-</AppNote>
+<AppNote app="liveplanner">The page is `/project`.</AppNote>
 
 There is no referrer, no record of which pages one person visited in what order, and no cookie. The same Settings switch below turns page views off along with everything else.
 
@@ -87,16 +75,13 @@ There is no referrer, no record of which pages one person visited in what order,
 To learn whether <AppName /> feels fast, a few key moments are timed in your browser: a <Noun /> opening, switching to a tab, a save, joining a <Noun />'s live session, and how quickly each page loads and responds (its Core Web Vitals). Only the _range_ a timing fell in is sent, like "under one second", never the exact time, as the same three fields: for example `Timing`, `Measured`, `DocumentLoad.Under1000ms`.
 
 <AppNote app="livediagram,liveplanner">
-  The opening timing also covers, for one this browser opened before, how soon its last seen copy shows, and getting back into a live session after a drop is timed too.
+  The opening timing also covers, for one this browser opened before, how soon its last seen copy
+  shows, and getting back into a live session after a drop is timed too.
 </AppNote>
 
-<AppNote app="livedesign">
-  The page-load example reads `DesignLoad.Under1000ms`.
-</AppNote>
+<AppNote app="livedesign">The page-load example reads `DesignLoad.Under1000ms`.</AppNote>
 
-<AppNote app="liveplanner">
-  The page-load example reads `ProjectLoad.Under1000ms`.
-</AppNote>
+<AppNote app="liveplanner">The page-load example reads `ProjectLoad.Under1000ms`.</AppNote>
 
 A timing is thrown away if the page was in the background at any point while it was measured (a background tab is slowed down, so the number would be wrong), saves are timed at most once a minute, and the Settings switch below turns timings off along with everything else. The dashboard's Timings view shows the results.
 
@@ -109,19 +94,23 @@ A timing is thrown away if the page was in the background at any point while it 
 The buttons on our public pages that open the editor each carry a short label in their link naming _which button_ it is, like `Home.Header`. When the New <Noun capital /> page opens from one, it counts that arrival, removes the label from the address bar straight away, and counts once more if you go on to create a <Noun />. That is how we learn which buttons actually help people get started.
 
 <AppNote app="livediagram">
-  The buttons include the header's Choose Template, a template card in the landing page's gallery, and a feature page's Start drawing.
+  The buttons include the header's Choose Template, a template card in the landing page's gallery,
+  and a feature page's Start drawing.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
-  The buttons include the header's Choose Template, a template card in the landing page's gallery, and a feature page's Start creating.
+  The buttons include the header's Choose Template, a template card in the landing page's gallery,
+  and a feature page's Start creating.
 </AppNote>
 
 <AppNote app="livehuddle">
-  The buttons include the header's Choose Template, a template card in the landing page's gallery, and a feature page's Open a Space.
+  The buttons include the header's Choose Template, a template card in the landing page's gallery,
+  and a feature page's Open a Space.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The buttons include the header's button, a template card on the landing page, and a feature page's Start planning.
+  The buttons include the header's button, a template card on the landing page, and a feature page's
+  Start planning.
 </AppNote>
 
 The label comes from a fixed list of our own buttons and says nothing about you or where you were before our page. The two counts aren't linked to each other or to anything else, and the Settings switch below turns them off too.

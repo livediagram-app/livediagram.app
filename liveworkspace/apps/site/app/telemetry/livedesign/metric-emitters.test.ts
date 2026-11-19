@@ -4,7 +4,12 @@ import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { COMPUTED_EMITTERS } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from '../emitter-scan';
 import { isValidTelemetryEvent } from '@livedesign/api-schema';
-import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import {
+  platformEmitters,
+  sharedClientEmitters,
+  sharedSiteEmitters,
+  helpEditionEmitters,
+} from '../platform-emitters';
 import { RECOVERY_TYPES } from '../_shared/ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from '../_shared/LookAndFeelView';
 import * as CATALOGUE from './metric-catalogue';
@@ -67,6 +72,8 @@ const EMITS = [
   }),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
+  // This app's edition of the one help centre (Repair this Browser).
+  ...helpEditionEmitters('livedesign'),
 ];
 
 type Known = Emit & { category: string; action: string };

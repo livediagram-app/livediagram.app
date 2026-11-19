@@ -10,11 +10,14 @@ export const metadata = helpMetadata({
   path: '/help/canvas/snapping/',
 });
 
-<ArticleLayout title="Alignment & Snapping" description="Elements snap into line as you drag and resize them, with guides that show why, and a modifier to switch it off when you want a free hand." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("snapping")}>
+<ArticleLayout path="canvas/snapping" title="Alignment & Snapping" description="Elements snap into line as you drag and resize them, with guides that show why, and a modifier to switch it off when you want a free hand." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("snapping")}>
 
 When you drag an element around the canvas, <AppName /> quietly helps you line it up. As an edge or centre comes within a few pixels of a neighbour's, the element **snaps** into alignment and a faint **guide line** appears to show the match, so a tidy layout falls into place without nudging pixels by hand.
 
-<Figure app="livediagram,livedesign,livedocuments,livehuddle" caption="Dragging B next to A snaps their top edges together; the dashed guide shows the alignment.">
+<Figure
+  app="livediagram,livedesign,livedocuments,livehuddle"
+  caption="Dragging B next to A snaps their top edges together; the dashed guide shows the alignment."
+>
   <DiagramCanvas.SnappingGuides />
 </Figure>
 
@@ -29,12 +32,19 @@ While you drag, the element snaps to nearby elements':
 A guide line only appears once a match is actually in effect, so the canvas stays clean until alignment is doing something.
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  The same guides show when you drag a free **arrow endpoint** into line with a box's edge or centre, or with the arrow's other end. When the endpoint pins to a shape, its connection dots show instead of guides.
+  The same guides show when you drag a free **arrow endpoint** into line with a box's edge or
+  centre, or with the arrow's other end. When the endpoint pins to a shape, its connection dots show
+  instead of guides.
 </AppNote>
 
-
 <AppNote app="livehuddle">
-  **Rooms, doors and windows.** A few pieces snap in ways of their own, so a floor goes together without double walls or doors hanging in mid-air. **Rooms share walls:** drag or resize a room near another and it lands on the other room's wall line, so the two share one wall rather than standing two walls back to back. The guide runs along the shared wall. When a shared wall and an edge line up are both in reach, the nearer one wins. A custom room from the Room Builder snaps by its box only. **Doors and windows land on a wall:** move a Door or a Window near a room and it settles onto the nearest wall, turned to sit along it.
+  **Rooms, doors and windows.** A few pieces snap in ways of their own, so a floor goes together
+  without double walls or doors hanging in mid-air. **Rooms share walls:** drag or resize a room
+  near another and it lands on the other room's wall line, so the two share one wall rather than
+  standing two walls back to back. The guide runs along the shared wall. When a shared wall and an
+  edge line up are both in reach, the nearer one wins. A custom room from the Room Builder snaps by
+  its box only. **Doors and windows land on a wall:** move a Door or a Window near a room and it
+  settles onto the nearest wall, turned to sit along it.
 </AppNote>
 
 ## Snapping While You Resize and Draw
@@ -60,12 +70,14 @@ Sometimes you want a deliberately off-grid position and snapping gets in the way
 </Note>
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  On an arrow's endpoint the key turns off only the alignment guides; the endpoint still pins to a shape and still locks to 45°.
+  On an arrow's endpoint the key turns off only the alignment guides; the endpoint still pins to a
+  shape and still locks to 45°.
 </AppNote>
 
-
 <AppNote app="livediagram">
-  On an [event storming board](/help/canvas/event-storming-boards/#timeline-lanes), holding the key is also the one way to put a note **between two lanes**: without it, a note always lands on the nearest lane.
+  On an [event storming board](/help/canvas/event-storming-boards/#timeline-lanes), holding the key
+  is also the one way to put a note **between two lanes**: without it, a note always lands on the
+  nearest lane.
 </AppNote>
 
 ## Hiding the Guide Lines

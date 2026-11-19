@@ -9,6 +9,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="developers/errors-and-rate-limits"
   title="Errors and Rate Limits"
   description="Status codes, the error response shape, rate limits, and token expiry."
   categoryTitle="Developers"
@@ -31,22 +32,22 @@ Branch on the status code and the `error` token, not on `message`.
 
 ## Status codes
 
-| Code          | Meaning                                                                                                                                                                                                                                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `200` / `201` | Success. `201` is returned when a resource was created.                                                                                                                                                                                                                                                       |
-| `204`         | Success with no body (for example a delete).                                                                                                                                                                                                                                                                  |
-| `400`         | The request was malformed or failed validation. For a changeset in the line form, `parse_error` names the line and column. Also the answer when no credential was sent, or the bearer is not an API token: `bad_request`, with a message beginning `authentication required`.                                 |
-| `401`         | `invalid_token`: an `lwt_` token that is unknown, expired, or revoked. `sign_in_required`: an action that needs a signed-in session (for example changing a team), refused to a token.                                                                                                                        |
-| `403`         | Authenticated, but not allowed to touch this resource. A write with a read-only token answers `read_only_token`.                                                                                                                                                                                              |
-| `404`         | No such resource (or it is hidden from you, which reads the same).                                                                                                                                                                                                                                            |
-| `405`         | `use_changesets`: tokens change tabs with changesets, not a whole-tab `PUT`.                                                                                                                                                                                                                                  |
-| `409`         | A conflict, such as deleting a <Noun />'s only tab with a token (`last_tab`). For a changeset: `changeset_conflict` (an element changed since your `base`), `elements_held` (somebody has it selected) or `tab_busy` (the tab kept changing; read it again).                                                  |
-| `410`         | The <Noun /> is in the Trash. Restore it (`POST /trash/{id}/restore`) to use it again.                                                                                                                                                                                                                        |
-| `412`         | `stale_tab`: a changeset sent with `"strict": true` on a tab that moved since its `base`.                                                                                                                                                                                                                     |
-| `413`         | The request body is over the size cap.                                                                                                                                                                                                                                                                        |
-| `422`         | A changeset the edit operations refuse (an element nothing matches, a field the element does not have, a `test` that found another value); `text` says what and how to fix it.                                                                                                                               |
-| `429`         | Rate limited. Slow down and retry.                                                                                                                                                                                                                                                                            |
-| `5xx`         | A server-side error. Safe to retry idempotent reads after a pause.                                                                                                                                                                                                                                            |
+| Code          | Meaning                                                                                                                                                                                                                                                                       |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `200` / `201` | Success. `201` is returned when a resource was created.                                                                                                                                                                                                                       |
+| `204`         | Success with no body (for example a delete).                                                                                                                                                                                                                                  |
+| `400`         | The request was malformed or failed validation. For a changeset in the line form, `parse_error` names the line and column. Also the answer when no credential was sent, or the bearer is not an API token: `bad_request`, with a message beginning `authentication required`. |
+| `401`         | `invalid_token`: an `lwt_` token that is unknown, expired, or revoked. `sign_in_required`: an action that needs a signed-in session (for example changing a team), refused to a token.                                                                                        |
+| `403`         | Authenticated, but not allowed to touch this resource. A write with a read-only token answers `read_only_token`.                                                                                                                                                              |
+| `404`         | No such resource (or it is hidden from you, which reads the same).                                                                                                                                                                                                            |
+| `405`         | `use_changesets`: tokens change tabs with changesets, not a whole-tab `PUT`.                                                                                                                                                                                                  |
+| `409`         | A conflict, such as deleting a <Noun />'s only tab with a token (`last_tab`). For a changeset: `changeset_conflict` (an element changed since your `base`), `elements_held` (somebody has it selected) or `tab_busy` (the tab kept changing; read it again).                  |
+| `410`         | The <Noun /> is in the Trash. Restore it (`POST /trash/{id}/restore`) to use it again.                                                                                                                                                                                        |
+| `412`         | `stale_tab`: a changeset sent with `"strict": true` on a tab that moved since its `base`.                                                                                                                                                                                     |
+| `413`         | The request body is over the size cap.                                                                                                                                                                                                                                        |
+| `422`         | A changeset the edit operations refuse (an element nothing matches, a field the element does not have, a `test` that found another value); `text` says what and how to fix it.                                                                                                |
+| `429`         | Rate limited. Slow down and retry.                                                                                                                                                                                                                                            |
+| `5xx`         | A server-side error. Safe to retry idempotent reads after a pause.                                                                                                                                                                                                            |
 
 Where an app's answer differs, it is listed here:
 
@@ -58,12 +59,11 @@ Where an app's answer differs, it is listed here:
   **`409`**: a folder cycle is also a conflict.
 </AppNote>
 
-<AppNote app="liveplanner">
-  **`409`**: creating a 21st token answers `token_limit_reached`.
-</AppNote>
+<AppNote app="liveplanner">**`409`**: creating a 21st token answers `token_limit_reached`.</AppNote>
 
 <AppNote app="livedocuments">
-  **`409`**: for an article write, `paragraphs_held` (someone is typing in a paragraph it would change); for a comment, `thread_full`.
+  **`409`**: for an article write, `paragraphs_held` (someone is typing in a paragraph it would
+  change); for a comment, `thread_full`.
 </AppNote>
 
 <AppNote app="livedesign">
@@ -74,16 +74,13 @@ Where an app's answer differs, it is listed here:
   **`410`**: the code is `document_trashed`.
 </AppNote>
 
-<AppNote app="liveplanner">
-  **`410`**: the code is `project_trashed`.
-</AppNote>
+<AppNote app="liveplanner">**`410`**: the code is `project_trashed`.</AppNote>
 
-<AppNote app="livedesign">
-  **`410`**: the code is `design_trashed`.
-</AppNote>
+<AppNote app="livedesign">**`410`**: the code is `design_trashed`.</AppNote>
 
 <AppNote app="livediagram,livehuddle">
-  **`410`**: `tokens_moved` means API tokens are managed on liveworkspace.app; `manageAt` says where.
+  **`410`**: `tokens_moved` means API tokens are managed on liveworkspace.app; `manageAt` says
+  where.
 </AppNote>
 
 <AppNote app="livediagram,livedesign">
@@ -97,11 +94,13 @@ The API is rate limited to keep one client from starving others. Writes (`POST` 
 On the hosted service the budgets are **300 writes a minute** and **120 token reads a minute**, per token. A few endpoints carry their own tighter limit: 30 share-code attempts a minute (which is also the brute-force guard on a share password).
 
 <AppNote app="livediagram">
-  Two more tight limits: 60 link unfurls, and 20 AI requests, each counted per IP rather than per token.
+  Two more tight limits: 60 link unfurls, and 20 AI requests, each counted per IP rather than per
+  token.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Two more tight limits: 60 form reads and 60 form responses a minute on a form's public link, each counted per network rather than per token.
+  Two more tight limits: 60 form reads and 60 form responses a minute on a form's public link, each
+  counted per network rather than per token.
 </AppNote>
 
 <AppNote app="livedocuments,livedesign,livehuddle">
@@ -152,6 +151,5 @@ You can hold up to **20** live tokens at once, across every liveworkspace app. T
 </Note>
 
 </AppNote>
-
 
 </ArticleLayout>

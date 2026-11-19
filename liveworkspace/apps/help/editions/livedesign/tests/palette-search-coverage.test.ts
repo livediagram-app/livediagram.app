@@ -30,7 +30,10 @@ import { searchArticles } from '@/lib/articles';
 // repo-paths-in-docs and shortcut-coverage already take on: the help centre's
 // findability genuinely depends on the editor's vocabulary.
 const TILE_DEFS = fileURLToPath(
-  new URL('../../../../../../livedesign/apps/live/components/palette/palette-tile-defs.tsx', import.meta.url),
+  new URL(
+    '../../../../../../livedesign/apps/live/components/palette/palette-tile-defs.tsx',
+    import.meta.url,
+  ),
 );
 
 // The Behaviour tool group (the Collaborate kit, reactions, focus and mode buttons, pickers) is livediagram's: no

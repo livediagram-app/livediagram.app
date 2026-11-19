@@ -56,7 +56,7 @@ In order, the first match wins:
 | `/live/*` (the editor app's `_next` assets only)                                                                                                                             | editor app (`apps/editor`), stripped                                                                                                                                                                                                |
 | `/status`, `/status/*`                                                                                                                                                       | `301` to liveworkspace.app's status page at livedocuments's group (`statusRedirect`)                                                                                                                                                |
 | `/telemetry`, `/telemetry/*`                                                                                                                                                 | `301` to the central dashboard, `?app=livedocuments.app` (liveworkspace/docs/specs/008-telemetry/telemetry.md)                                                                                                                      |
-| `/help`, `/help/*`                                                                                                                                                           | liveworkspace's help centre (`liveworkspace-help`, with `x-help-app: livedocuments`), stripped |
+| `/help`, `/help/*`                                                                                                                                                           | liveworkspace's help centre (`liveworkspace-help`, with `x-help-app: livedocuments`), stripped                                                                                                                                      |
 | live page routes: `/auth/*`, `/document/*`, `/embed/*`, `/get-started`, `/join`, `/new`, `/oauth/*`, `/offline` (a redirect to `/explorer/offline`), `/sign-in`, `/icon.svg` | editor app (`apps/editor`), as-is                                                                                                                                                                                                   |
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                                             | 308 redirect to `/help/<path>`                                                                                                                                                                                                      |
 | everything else                                                                                                                                                              | marketing app (`apps/marketing`)                                                                                                                                                                                                    |
@@ -162,13 +162,13 @@ runs and forks keep the origins (liveworkspace/docs/specs/002-architecture/archi
 
 The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port: `http://localhost:3300` serves marketing at `/`, the editor at `/new` etc., `/help` and `/api` (and `/telemetry` redirects to the central dashboard, a local liveworkspace site on `:3000` in dev), with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
-| App       | Local URL                                                      |
-| --------- | -------------------------------------------------------------- |
-| router    | `http://localhost:3300/`: everything, stitched like production |
-| marketing | `http://localhost:3301/`                                       |
-| live      | `http://localhost:3302/new`, `/offline`, ... (clean routes)    |
+| App       | Local URL                                                                                             |
+| --------- | ----------------------------------------------------------------------------------------------------- |
+| router    | `http://localhost:3300/`: everything, stitched like production                                        |
+| marketing | `http://localhost:3301/`                                                                              |
+| live      | `http://localhost:3302/new`, `/offline`, ... (clean routes)                                           |
 | help      | `http://127.0.0.1:3020/help` (liveworkspace/apps/help, `HELP_SCOPE=livedocuments`; basePath baked in) |
-| api       | `http://localhost:8987/api/...` (wrangler dev)                 |
+| api       | `http://localhost:8987/api/...` (wrangler dev)                                                        |
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livedocuments/router dev` runs `wrangler dev --env local --port 3300`, and the root `pnpm dev` includes it. An origin that isn't running (a local stack started without that server) answers `502` (`no-store`), naming the origin, through `@liveworkspace/sites/workspace-proxy` `forwardOr502`, rather than a bare `500` "Network connection lost"; the index, Drive, liveworkspace and previews forwards answer the same way.
 

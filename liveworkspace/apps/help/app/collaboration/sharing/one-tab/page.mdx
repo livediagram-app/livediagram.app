@@ -14,19 +14,11 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/sharing/one-tab/',
 });
 
-<ArticleLayout title="Sharing One Tab" description="Scope a share link to one tab; the rest stays private." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "one-tab")}>
+<ArticleLayout path="collaboration/sharing/one-tab" title="Sharing One Tab" description="Scope a share link to one tab; the rest stays private." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "one-tab")}>
 
 A share link normally opens the whole <Noun />, every tab of it. Sometimes you only want to show one. A link scoped to one tab does exactly that, without copying the tab into a new <Noun />.
 
-<AppNote app="livediagram">
-  For example, the roadmap to a client, but not the pricing tab next to it.
-</AppNote>
-
-<AppNote app="livedesign">
-  For example, the roadmap to a client, but not the pricing tab next to it.
-</AppNote>
-
-<AppNote app="livedocuments">
+<AppNote app="livediagram,livedocuments,livedesign">
   For example, the roadmap to a client, but not the pricing tab next to it.
 </AppNote>
 
@@ -38,20 +30,14 @@ A share link normally opens the whole <Noun />, every tab of it. Sometimes you o
 
 When a <Noun /> has more than one tab, the **Share** dialog gains an **Opens** dropdown just above **Valid**. Leave it on **All tabs** for an ordinary link, or pick the tab you want to share, then **Create Pass**. The role still applies to a one-tab link.
 
-<AppNote app="livediagram">
-  Tabs are listed in tab bar order, and a one-tab link can be an **Editor**, **Participant** or **Viewer** pass.
-</AppNote>
-
-<AppNote app="livedesign">
-  Tabs are listed in tab bar order, and a one-tab link can be an **Editor**, **Participant** or **Viewer** pass.
-</AppNote>
-
-<AppNote app="livedocuments">
-  Tabs are listed in tab bar order, and a one-tab link can be an **Editor**, **Participant** or **Viewer** pass.
+<AppNote app="livediagram,livedocuments,livedesign">
+  Tabs are listed in tab bar order, and a one-tab link can be an **Editor**, **Participant** or
+  **Viewer** pass.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Tabs are listed in tab bar order, and a one-tab link can be an **Editor** or a **Participant** pass.
+  Tabs are listed in tab bar order, and a one-tab link can be an **Editor** or a **Participant**
+  pass.
 </AppNote>
 
 <AppNote app="liveplanner">
@@ -89,19 +75,27 @@ You can make as many links as you like, each scoped differently: one tab to one 
 Someone opening a one-tab link lands straight on that tab. The other tabs stay in their tab bar as **Not shared** tabs, so they know the <Noun /> has more, but without names, and nothing happens when they press one (hovering says "This tab isn't shared with you").
 
 <AppNote app="livediagram">
-  The visitor lands on that tab whichever tab the canvas was last left on, and the other tabs have no folders. An element link, search result or keyboard shortcut that points at another tab only shows the message "That tab isn't shared with you".
+  The visitor lands on that tab whichever tab the canvas was last left on, and the other tabs have
+  no folders. An element link, search result or keyboard shortcut that points at another tab only
+  shows the message "That tab isn't shared with you".
 </AppNote>
 
 <AppNote app="livedesign">
-  The visitor lands on that tab whichever tab the design was last left on, and the other tabs have no folders. An element link, search result or keyboard shortcut that points at another tab only shows the message "That tab isn't shared with you".
+  The visitor lands on that tab whichever tab the design was last left on, and the other tabs have
+  no folders. An element link, search result or keyboard shortcut that points at another tab only
+  shows the message "That tab isn't shared with you".
 </AppNote>
 
 <AppNote app="livedocuments">
-  The visitor lands on that tab whichever tab the document was last left on, and the other tabs have no folders. An element link, search result or keyboard shortcut that points at another tab only shows the message "That tab isn't shared with you".
+  The visitor lands on that tab whichever tab the document was last left on, and the other tabs have
+  no folders. An element link, search result or keyboard shortcut that points at another tab only
+  shows the message "That tab isn't shared with you".
 </AppNote>
 
 <AppNote app="livehuddle">
-  The visitor lands on that tab whichever tab the Space was last left on, the other tabs show as **Not shared** pills, and they have no folders. A portal, search result or keyboard shortcut that points at another tab only shows the message "That tab isn't shared with you".
+  The visitor lands on that tab whichever tab the Space was last left on, the other tabs show as
+  **Not shared** pills, and they have no folders. A portal, search result or keyboard shortcut that
+  points at another tab only shows the message "That tab isn't shared with you".
 </AppNote>
 
 <Figure caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest shown as Not shared tabs.">
@@ -110,37 +104,29 @@ Someone opening a one-tab link lands straight on that tab. The other tabs stay i
 
 The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their names, not their live edits. With an **Editor** pass the visitor can change their tab, but not rename, add, reorder or delete tabs, or rename the <Noun />.
 
-<AppNote app="livediagram">
-  Their shapes and comments never reach the browser either. The visitor also can't lock tabs, use tab folders, or open the slide deck (a deck spans tabs).
-</AppNote>
-
-<AppNote app="livedocuments">
-  Their shapes and comments never reach the browser either. The visitor also can't lock tabs, use tab folders, or open the slide deck (a deck spans tabs).
+<AppNote app="livediagram,livedocuments">
+  Their shapes and comments never reach the browser either. The visitor also can't lock tabs, use
+  tab folders, or open the slide deck (a deck spans tabs).
 </AppNote>
 
 <AppNote app="livedesign">
-  Their shapes and comments never reach the browser either. The visitor also can't lock tabs or use tab folders.
+  Their shapes and comments never reach the browser either. The visitor also can't lock tabs or use
+  tab folders.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Their pieces, and the people walking there, never reach the browser either. The visitor also can't use tab folders.
+  Their pieces, and the people walking there, never reach the browser either. The visitor also can't
+  use tab folders.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Their boards, Sheets, forms and comments never reach the browser either. The visitor also can't lock tabs.
+  Their boards, Sheets, forms and comments never reach the browser either. The visitor also can't
+  lock tabs.
 </AppNote>
 
 The scope follows the link everywhere it goes: an [embed](/help/collaboration/sharing/embeds/) of the link shows its tab only, and a [live image](/help/collaboration/sharing/live-image/) of the link always shows its tab, so its menu has no **Tab** picker.
 
-<AppNote app="livediagram">
-  The **Copy** button in the header makes the visitor a copy of their tab only.
-</AppNote>
-
-<AppNote app="livedocuments">
-  The **Copy** button in the header makes the visitor a copy of their tab only.
-</AppNote>
-
-<AppNote app="livehuddle">
+<AppNote app="livediagram,livedocuments,livehuddle">
   The **Copy** button in the header makes the visitor a copy of their tab only.
 </AppNote>
 
@@ -153,7 +139,8 @@ The scope follows the link everywhere it goes: an [embed](/help/collaboration/sh
 On a <Noun /> with more than one tab, every pass in the Share dialog shows which tabs it opens, beside **Opens**. Change it there at any time: widen a one-tab link to **All tabs**, narrow an All tabs link to one tab, or move it to another tab. The link's URL stays the same, and anyone using it right now reloads into the new choice.
 
 <AppNote app="liveplanner">
-  Every pass in the Share dialog's **Passes** list has a tab menu, and the change takes effect at once.
+  Every pass in the Share dialog's **Passes** list has a tab menu, and the change takes effect at
+  once.
 </AppNote>
 
 <Tip>

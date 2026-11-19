@@ -97,7 +97,9 @@ describe('the help Worker', () => {
   it('sets the security headers and varies on the app header', () => {
     const out = withHelpHeaders(new Response('ok', { headers: { Vary: 'Accept-Encoding' } }));
     expect(out.headers.get('x-frame-options')).toBe('DENY');
-    expect(out.headers.get('content-security-policy')).toContain("require-trusted-types-for 'script'");
+    expect(out.headers.get('content-security-policy')).toContain(
+      "require-trusted-types-for 'script'",
+    );
     expect(out.headers.get('vary')).toBe('Accept-Encoding, x-help-app');
   });
 });

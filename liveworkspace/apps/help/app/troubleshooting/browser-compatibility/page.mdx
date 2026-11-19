@@ -12,9 +12,12 @@ export const metadata = helpMetadata({
   path: '/help/troubleshooting/browser-compatibility/',
 });
 
-<ArticleLayout title="Browser Compatibility" description="Which browsers work best, and a checklist for fixing browser-related glitches." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout path="troubleshooting/browser-compatibility" title="Browser Compatibility" description="Which browsers work best, and a checklist for fixing browser-related glitches." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
-<AppName /> runs entirely in your browser, so the browser you use matters. It is built for modern, up-to-date browsers, and the great majority of display and behaviour problems come down to an out-of-date browser, an aggressive extension, or stale cached files. This checklist will sort out most of them.
+<AppName /> runs entirely in your browser, so the browser you use matters. It is built for modern,
+up-to-date browsers, and the great majority of display and behaviour problems come down to an
+out-of-date browser, an aggressive extension, or stale cached files. This checklist will sort out
+most of them.
 
 ## Supported Browsers
 
@@ -36,7 +39,7 @@ Use a current version of any mainstream evergreen browser.
 2. **Hard refresh the page.** Reload while bypassing the cache so you are running the latest files rather than a stale copy.
 3. **Try an incognito or private window.** This loads the site with extensions off and no cached data, which quickly tells you whether an extension is the cause.
 4. **Disable interfering extensions.** Privacy, ad-blocking, and script-blocking extensions can break parts of the editor, sign-in, or the live connection. Turn them off for the site and retry.
-5. **Clear the site's cached files** if a hard refresh did not help, then reload. Clear only cached images and files, not cookies and site data: site data holds your [guest identity](/help/account-and-data/guest-identity/) and any [<Noun plural /> in This Browser](/help/privacy-and-security/offline-mode/), and clearing it loses them.
+5. **Clear the site's cached files** if a hard refresh did not help, then reload. Clear only cached images and files, not cookies and site data: site data holds your [guest identity](/help/account-and-data/guest-identity/) and any [<Noun plural /> kept Offline](/help/privacy-and-security/offline-mode/), and clearing it loses them.
 
 <Figure caption="A stale render clipping and misaligning part of the page, cleared by an update or hard refresh.">
   <RenderGlitch />
@@ -51,8 +54,8 @@ Use a current version of any mainstream evergreen browser.
 - **Phones and tablets work too.** See [Supported Devices](/help/supported-devices/) for what each kind of device offers.
 
 <Tip>
-  For the smoothest experience, especially with large <Noun plural /> and live collaboration, use the
-  latest version of Chrome, Edge, Firefox, or Safari on a desktop.
+  For the smoothest experience, especially with large <Noun plural /> and live collaboration, use
+  the latest version of Chrome, Edge, Firefox, or Safari on a desktop.
 </Tip>
 
 If a problem persists across an up-to-date browser and an incognito window, [contact us](/help/contact/) with your browser name and version and a description of what you see.

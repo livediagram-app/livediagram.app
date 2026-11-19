@@ -30,7 +30,11 @@ export const HELP_REDIRECTS: readonly HelpRedirect[] = [
     apps: ['livediagram', 'livedesign', 'livehuddle'],
   },
   { from: 'user-interface/power-user-mode', to: 'user-interface/settings' },
-  { from: 'tabs/add-to-project', to: 'tabs/using-tabs#tabs-in-more-than-one-plan', apps: ['liveplanner'] },
+  {
+    from: 'tabs/add-to-project',
+    to: 'tabs/using-tabs#tabs-in-more-than-one-plan',
+    apps: ['liveplanner'],
+  },
   { from: 'policies/privacy-policy', to: 'https://www.liveworkspace.app/privacy' },
   { from: 'privacy-and-security/privacy-policy', to: 'https://www.liveworkspace.app/privacy' },
   { from: 'policies/terms', to: 'https://www.liveworkspace.app/terms' },

@@ -12,8 +12,9 @@ const pagePaths = allPageFiles()
   .map((f) => f.slice(0, -'/page.mdx'.length));
 
 const declaredPath = (dir: string): string | null =>
-  readFileSync(`${APP_DIR}/${dir}/page.mdx`, 'utf8').match(/helpMetadata\(\{[\s\S]*?path:\s*'([^']+)'/)?.[1] ??
-  null;
+  readFileSync(`${APP_DIR}/${dir}/page.mdx`, 'utf8').match(
+    /helpMetadata\(\{[\s\S]*?path:\s*'([^']+)'/,
+  )?.[1] ?? null;
 
 describe('help article canonical paths', () => {
   it('reads a path from every article (guard against this test going blind)', () => {

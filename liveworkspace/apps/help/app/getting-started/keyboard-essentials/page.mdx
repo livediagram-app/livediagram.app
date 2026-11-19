@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
   path: '/help/getting-started/keyboard-essentials/',
 });
 
-<ArticleLayout title="Keyboard Essentials" description="The small set of shortcuts worth learning first to work quickly." categoryTitle="Getting Started" categorySlug="getting-started">
+<ArticleLayout path="getting-started/keyboard-essentials" title="Keyboard Essentials" description="The small set of shortcuts worth learning first to work quickly." categoryTitle="Getting Started" categorySlug="getting-started">
 
 You can do everything in <AppName /> with the mouse or a finger, but a few keyboard shortcuts make working much faster. This is the short list worth committing to memory. For the complete reference, see [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/). On Windows and Linux, read **Cmd** as **Ctrl**.
 
@@ -27,45 +27,58 @@ A few shortcuts cover the actions you repeat most:
 <AppNote app="livediagram,livedesign,livedocuments,livehuddle">
   On the canvas:
 
-  - **`Cmd/Ctrl+C`**, **`X`** and **`V`** copy, cut and paste through your system clipboard, and **`Cmd/Ctrl+D`** duplicates the selection. See [Copy and Paste](/help/tips-and-tricks/copy-and-paste/).
-  - **Tab** (with the canvas focused) selects the next element, **Shift+Tab** the previous, so you can walk the canvas without the mouse, and Tab past the last element moves on out of the canvas. Selection changes are announced to screen readers.
-  - **`Escape`** also cancels an in-progress text edit.
-  - In a text or sticky label **`Enter`** starts a new line, and clicking away finishes the edit.
+- **`Cmd/Ctrl+C`**, **`X`** and **`V`** copy, cut and paste through your system clipboard, and **`Cmd/Ctrl+D`** duplicates the selection. See [Copy and Paste](/help/tips-and-tricks/copy-and-paste/).
+- **Tab** (with the canvas focused) selects the next element, **Shift+Tab** the previous, so you can walk the canvas without the mouse, and Tab past the last element moves on out of the canvas. Selection changes are announced to screen readers.
+- **`Escape`** also cancels an in-progress text edit.
+- In a text or sticky label **`Enter`** starts a new line, and clicking away finishes the edit.
 </AppNote>
 
 <AppNote app="livediagram">
-  **Double-click** a shape or arrow to edit its text label, or select it and press **Space**, or simply start typing to replace the label. In a shape label **`Enter`** starts a new line; on an arrow label **`Enter`** finishes and **`Shift+Enter`** starts a new line, and in a mind node's label **`Enter`** adds the next node while **`Shift+Enter`** starts a new line.
+  **Double-click** a shape or arrow to edit its text label, or select it and press **Space**, or
+  simply start typing to replace the label. In a shape label **`Enter`** starts a new line; on an
+  arrow label **`Enter`** finishes and **`Shift+Enter`** starts a new line, and in a mind node's
+  label **`Enter`** adds the next node while **`Shift+Enter`** starts a new line.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
-  **Double-click** a shape or arrow to edit its text label, or select it and press **Space**, or simply start typing to replace the label. In a shape label **`Enter`** starts a new line; on an arrow label **`Enter`** finishes and **`Shift+Enter`** starts a new line.
+  **Double-click** a shape or arrow to edit its text label, or select it and press **Space**, or
+  simply start typing to replace the label. In a shape label **`Enter`** starts a new line; on an
+  arrow label **`Enter`** finishes and **`Shift+Enter`** starts a new line.
 </AppNote>
 
 <AppNote app="livehuddle">
-  **Double-click** a sticky note or text to edit its label, or select it and press **Space**, or simply start typing to replace the label. **`F6`** jumps between the editor's regions (header, palette, canvas, controls and tabs), and **`Shift+F6`** goes back.
+  **Double-click** a sticky note or text to edit its label, or select it and press **Space**, or
+  simply start typing to replace the label. **`F6`** jumps between the editor's regions (header,
+  palette, canvas, controls and tabs), and **`Shift+F6`** goes back.
 </AppNote>
 
 <AppNote app="liveplanner">
-  - **`Cmd+K`** (or **`Cmd+.`**) also finds plans, tabs, cards, settings and help articles. Pick a card and it opens on the tab that shows it. See [Command Palette](/help/tips-and-tricks/command-palette/).
-  - Undo puts a moved card back and brings a trashed card back. See [Undo](/help/user-interface/undo/).
-  - **`Escape`** also closes an open menu or card, or leaves Zen mode.
-  - **`F6`** moves focus between the parts of the screen (the header, the tab's content, the bottom-right controls and the tab bar), and **`Shift+F6`** moves back.
+  - **`Cmd+K`** (or **`Cmd+.`**) also finds plans, tabs, cards, settings and help articles. Pick a
+  card and it opens on the tab that shows it. See [Command
+  Palette](/help/tips-and-tricks/command-palette/). - Undo puts a moved card back and brings a
+  trashed card back. See [Undo](/help/user-interface/undo/). - **`Escape`** also closes an open menu
+  or card, or leaves Zen mode. - **`F6`** moves focus between the parts of the screen (the header,
+  the tab's content, the bottom-right controls and the tab bar), and **`Shift+F6`** moves back.
 </AppNote>
 
 <AppNote app="livediagram,livedesign,livedocuments,liveplanner">
-  **`Z`** turns [Zen mode](/help/tools/zen-mode/) on and off, hiding all the toolbars and panels for distraction-free work.
+  **`Z`** turns [Zen mode](/help/tools/zen-mode/) on and off, hiding all the toolbars and panels for
+  distraction-free work.
 </AppNote>
 
 <AppNote app="livediagram,livedesign,livedocuments">
   **Switching tools.** The canvas tools each have a single-key shortcut, matching the conventions in tools like Figma and Excalidraw. They work while nothing that takes a label is selected; with one such element selected (a shape, a sticky, an arrow), a letter key starts typing its label instead.
 
-  - **`V`**: Select tool (click, shift-click, and marquee-select elements).
-  - **`S`**: Search the palette strip for any element to add.
-  - **`H`**: Hand tool (drag empty canvas to pan around).
-  - **`K`**: Laser pointer (a glowing trail your collaborators see).
+- **`V`**: Select tool (click, shift-click, and marquee-select elements).
+- **`S`**: Search the palette strip for any element to add.
+- **`H`**: Hand tool (drag empty canvas to pan around).
+- **`K`**: Laser pointer (a glowing trail your collaborators see).
 </AppNote>
 
-<Figure app="livediagram" caption="The essential single-key tool shortcuts, plus holding Space to pan from any tool.">
+<Figure
+  app="livediagram"
+  caption="The essential single-key tool shortcuts, plus holding Space to pan from any tool."
+>
   <DiagramKeyboardEssentials />
 </Figure>
 
@@ -74,79 +87,88 @@ A few shortcuts cover the actions you repeat most:
   - **`F`**: Frame (draw a section backdrop that carries its contents).
   - **`E`**: Eraser (press, or hold and drag, to delete elements).
 
-  The number row works too: **`1`** Select, **`2`** Square, **`5`** Arrow, **`7`** Pencil, **`8`** Text, **`0`** Eraser and more. [Draw mode](/help/canvas/draw-mode/) has its own keys, shown on each tool in its dock: there **`P`** picks the Path tool, **`F`** the Fill tool, **`1`** to **`3`** pick the pens, **`S`** opens Shapes, and **`K`** does nothing.
+The number row works too: **`1`** Select, **`2`** Square, **`5`** Arrow, **`7`** Pencil, **`8`** Text, **`0`** Eraser and more. [Draw mode](/help/canvas/draw-mode/) has its own keys, shown on each tool in its dock: there **`P`** picks the Path tool, **`F`** the Fill tool, **`1`** to **`3`** pick the pens, **`S`** opens Shapes, and **`K`** does nothing.
+
 </AppNote>
 
 <AppNote app="livedesign">
-  Letters add the common elements: **`T`** Text (a Paragraph), **`R`** Square, **`O`** Circle, **`D`** Diamond, **`N`** Sticky Note, **`F`** Frame and **`A`** Arrow, and **`P`** picks the Pencil. The number row works too: **`1`** Select, **`2`** Square, **`3`** Diamond, **`4`** Circle, **`5`** Arrow, **`8`** Text and **`9`** Image.
+  Letters add the common elements: **`T`** Text (a Paragraph), **`R`** Square, **`O`** Circle,
+  **`D`** Diamond, **`N`** Sticky Note, **`F`** Frame and **`A`** Arrow, and **`P`** picks the
+  Pencil. The number row works too: **`1`** Select, **`2`** Square, **`3`** Diamond, **`4`** Circle,
+  **`5`** Arrow, **`8`** Text and **`9`** Image.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Letters add the common elements: **`T`** Text, **`R`** Square, **`O`** Circle, **`D`** Diamond and **`A`** Arrow. The number row works too: **`1`** Select, **`2`** Square, **`3`** Diamond, **`4`** Circle, **`5`** Arrow, **`8`** Text and **`9`** Image.
+  Letters add the common elements: **`T`** Text, **`R`** Square, **`O`** Circle, **`D`** Diamond and
+  **`A`** Arrow. The number row works too: **`1`** Select, **`2`** Square, **`3`** Diamond, **`4`**
+  Circle, **`5`** Arrow, **`8`** Text and **`9`** Image.
 </AppNote>
 
 <AppNote app="livehuddle">
   **Edit and Walk.** The [Edit | Walk toggle](/help/selection-modes/select/) at the start of the palette has a key for each side. Like every single-key shortcut, they work while nothing with a label is selected; with one labelled element selected, a letter key starts typing its label instead.
 
-  <Figure caption="The essential single-key shortcuts, plus holding Space to pan from anywhere.">
-    <HuddleKeyboardEssentials />
-  </Figure>
+<Figure caption="The essential single-key shortcuts, plus holding Space to pan from anywhere.">
+  <HuddleKeyboardEssentials />
+</Figure>
 
-  - **`E`**: Edit (click, shift-click, and marquee-select elements). **`V`** does the same.
-  - **`W`**: Walk, as your character.
-  - **`S`**: Search the palette strip for any element to add.
+- **`E`**: Edit (click, shift-click, and marquee-select elements). **`V`** does the same.
+- **`W`**: Walk, as your character.
+- **`S`**: Search the palette strip for any element to add.
 
-  Some keys add an element: **`T`** Text and **`N`** a sticky note. **`8`** adds Text too.
+Some keys add an element: **`T`** Text and **`N`** a sticky note. **`8`** adds Text too.
+
 </AppNote>
 
 <AppNote app="livediagram,livedesign,livedocuments,livehuddle">
   **Moving the view.** You will pan and zoom constantly, and you do not need to leave your tool to do it:
 
-  - **Hold Space and drag** to pan from anywhere.
-  - **Middle-click and drag** to pan as well (switch this off with **Middle-Mouse Pan** in Settings if you need the button for something else).
-  - **`Cmd/Ctrl` + `+`** and **`Cmd/Ctrl` + `-`** zoom in and out, **`Cmd/Ctrl+0`** resets to 100%, and **`Shift+1`** zooms to fit everything on the tab.
-  - **Pinch** on a trackpad or touch screen to zoom; the on-screen zoom buttons sit in the bottom-right of the canvas.
+- **Hold Space and drag** to pan from anywhere.
+- **Middle-click and drag** to pan as well (switch this off with **Middle-Mouse Pan** in Settings if you need the button for something else).
+- **`Cmd/Ctrl` + `+`** and **`Cmd/Ctrl` + `-`** zoom in and out, **`Cmd/Ctrl+0`** resets to 100%, and **`Shift+1`** zooms to fit everything on the tab.
+- **Pinch** on a trackpad or touch screen to zoom; the on-screen zoom buttons sit in the bottom-right of the canvas.
 </AppNote>
 
 <AppNote app="livehuddle">
   **While walking.** In [Avatar mode](/help/selection-modes/avatar-mode/) a few keys belong to your character instead:
 
-  - **Arrow keys** walk, and **`Space`** hops and waves a flag.
-  - **`Enter`** opens a speech bubble over your head; **`Enter`** again sends it.
-  - **`W`** waves, and **`J`**, **`S`**, **`C`** and **`D`** play the other moves; **`1`** to **`5`** throw a reaction around you.
-  - **`Shift+3`** turns the 3D View on or off.
-  - **Undo** and **Redo** rest while you walk, so a stray key never changes the Space behind you.
-  - **`E`**, **`V`** or **`Escape`** stops walking.
+- **Arrow keys** walk, and **`Space`** hops and waves a flag.
+- **`Enter`** opens a speech bubble over your head; **`Enter`** again sends it.
+- **`W`** waves, and **`J`**, **`S`**, **`C`** and **`D`** play the other moves; **`1`** to **`5`** throw a reaction around you.
+- **`Shift+3`** turns the 3D View on or off.
+- **Undo** and **Redo** rest while you walk, so a stray key never changes the Space behind you.
+- **`E`**, **`V`** or **`Escape`** stops walking.
 </AppNote>
 
 <AppNote app="liveplanner">
   **On a board.** Press **Tab** until a card is focused, then:
 
-  - **Arrow keys** move between cards.
-  - **Enter** (or **Space**) opens the card.
-  - **Shift+Left** and **Shift+Right** move the card to the previous or next column; **Shift+Up** and **Shift+Down** move it within its column.
-  - **N** adds a card to the focused card's column.
-  - **Delete** moves the card to the Trash, where you can restore it (an Editor's).
-  - **Shift+Space** adds the card to a selection, or takes it out. With several selected, **Shift+Left** and **Shift+Right** move them all a column and an Editor's **Delete** trashes them all; **Escape** clears the selection.
+- **Arrow keys** move between cards.
+- **Enter** (or **Space**) opens the card.
+- **Shift+Left** and **Shift+Right** move the card to the previous or next column; **Shift+Up** and **Shift+Down** move it within its column.
+- **N** adds a card to the focused card's column.
+- **Delete** moves the card to the Trash, where you can restore it (an Editor's).
+- **Shift+Space** adds the card to a selection, or takes it out. With several selected, **Shift+Left** and **Shift+Right** move them all a column and an Editor's **Delete** trashes them all; **Escape** clears the selection.
 
-  More in [Boards](/help/plan/boards/).
+More in [Boards](/help/plan/boards/).
 
-  **On a sheet.** Sheets use the keys you know from other spreadsheets:
+**On a sheet.** Sheets use the keys you know from other spreadsheets:
 
-  - **Arrow keys** move between cells; hold **Shift** to select a range, and **Cmd** to jump to the edge of the data.
-  - **Tab** and **Enter** move right and down (with **Shift**, left and up). Start typing to replace a cell, or press **F2** to edit what's in it.
-  - **Delete** or **Backspace** clears the selected cells.
-  - **`Cmd+C`**, **`Cmd+X`** and **`Cmd+V`** copy, cut and paste, and **`Cmd+Shift+V`** pastes values only.
-  - **`Cmd+B`**, **`Cmd+I`** and **`Cmd+U`** set bold, italic and underline.
-  - **`Cmd+D`** and **`Cmd+R`** fill down and right, **`Cmd+F`** finds in the sheet and **`Cmd+Shift+H`** finds and replaces.
-  - **`Cmd+;`** enters today's date, and **`Cmd+Shift+;`** the time now.
-  - **`Cmd++`**, **`Cmd+-`** and **`Cmd+0`** zoom the sheet in, out and back to 100%.
+- **Arrow keys** move between cells; hold **Shift** to select a range, and **Cmd** to jump to the edge of the data.
+- **Tab** and **Enter** move right and down (with **Shift**, left and up). Start typing to replace a cell, or press **F2** to edit what's in it.
+- **Delete** or **Backspace** clears the selected cells.
+- **`Cmd+C`**, **`Cmd+X`** and **`Cmd+V`** copy, cut and paste, and **`Cmd+Shift+V`** pastes values only.
+- **`Cmd+B`**, **`Cmd+I`** and **`Cmd+U`** set bold, italic and underline.
+- **`Cmd+D`** and **`Cmd+R`** fill down and right, **`Cmd+F`** finds in the sheet and **`Cmd+Shift+H`** finds and replaces.
+- **`Cmd+;`** enters today's date, and **`Cmd+Shift+;`** the time now.
+- **`Cmd++`**, **`Cmd+-`** and **`Cmd+0`** zoom the sheet in, out and back to 100%.
 
-  More in [Sheets](/help/plan/sheets/).
+More in [Sheets](/help/plan/sheets/).
+
 </AppNote>
 
 <Tip>
-  The editor has a built-in shortcut reference: open **Settings** from the bottom-right and pick **Keyboard** to see the full list any time without leaving your work.
+  The editor has a built-in shortcut reference: open **Settings** from the bottom-right and pick
+  **Keyboard** to see the full list any time without leaving your work.
 </Tip>
 
 Settings is the sliders icon at the bottom-right.
@@ -156,7 +178,9 @@ Settings is the sliders icon at the bottom-right.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Settings is at the bottom-right of the tab bar. If you dictate into your browser, or something else needs the keys, you can turn the editor's shortcuts off: pick **Keyboard** and switch off **Keyboard Shortcuts**. It is saved on this device only. The same page lists **All Shortcuts**.
+  Settings is at the bottom-right of the tab bar. If you dictate into your browser, or something
+  else needs the keys, you can turn the editor's shortcuts off: pick **Keyboard** and switch off
+  **Keyboard Shortcuts**. It is saved on this device only. The same page lists **All Shortcuts**.
 </AppNote>
 
 </ArticleLayout>

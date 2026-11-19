@@ -4,13 +4,17 @@ import { GuestIdentity } from '@liveworkspace/help-site/art/illustrations/accoun
 
 export const metadata = helpMetadata({
   title: 'How Guest Identity Works',
-  description: 'How the app knows you as a guest: a liveworkspace guest identity, the same in every liveworkspace app, and what it means for your work.',
+  description:
+    'How the app knows you as a guest: a liveworkspace guest identity, the same in every liveworkspace app, and what it means for your work.',
   path: '/help/account-and-data/guest-identity/',
 });
 
-<ArticleLayout title="How Guest Identity Works" description="The editor works without signing in. Here is how the app knows which work is yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
+<ArticleLayout path="account-and-data/guest-identity" title="How Guest Identity Works" description="The editor works without signing in. Here is how the app knows which work is yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
 
-<AppName /> always works without signing in. You can land on [a new <Noun />](/new), build something real, and only later decide whether you want an account. To make that possible, <AppName /> gives every guest a quiet identity, kept per browser, that owns whatever you put on the server.
+<AppName /> always works without signing in. You can land on [a new <Noun />
+](/new), build something real, and only later decide whether you want an account. To make that
+possible, <AppName /> gives every guest a quiet identity, kept per browser, that owns whatever you
+put on the server.
 
 ## Your per-browser id
 
@@ -27,11 +31,15 @@ New <Noun plural /> you make as a guest start [offline](/help/privacy-and-securi
 </AppNote>
 
 <AppNote app="livedocuments">
-  New documents start in this browser ([This Browser](/help/privacy-and-security/offline-mode/)), listed under **Browser Storage** in the Explorer. Everything you put on livedocuments as a guest is owned by that identity: the documents you sync or make in a folder, your folders and your Shared With Me list.
+  New documents start in this browser ([Offline](/help/privacy-and-security/offline-mode/)), listed
+  under **Offline** in the Explorer. Everything you put on livedocuments as a guest is owned by that
+  identity: the documents you sync or make in a folder, your folders and your Shared With Me list.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Your new plans start in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). Everything you put on liveplanner as a guest is owned by that identity: the plans you sync or make in a folder, your folders and your Shared With Me list.
+  Your new plans start in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)).
+  Everything you put on liveplanner as a guest is owned by that identity: the plans you sync or make
+  in a folder, your folders and your Shared With Me list.
 </AppNote>
 
 <AppNote app="livediagram">
@@ -71,32 +79,39 @@ As a guest you still get the core of <AppName />: saving, share links and real-t
 
 ## What this means for your data
 
-Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, deletes your <Noun plural /> in This Browser and means the app can no longer recognise you as the owner of the ones on the server. Those are still there, until they are [deleted after 400 days](#how-long-guest-work-is-kept), but nothing in a fresh browser can claim them back. Treat your guest <Noun plural /> as living in that browser.
+Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, deletes your <Noun plural /> kept Offline and means the app can no longer recognise you as the owner of the ones on the server. Those are still there, until they are [deleted after 400 days](#how-long-guest-work-is-kept), but nothing in a fresh browser can claim them back. Treat your guest <Noun plural /> as living in that browser.
 
 <AppNote app="livedocuments,liveplanner">
-  Clearing this browser's data for liveworkspace.app and <code><AppName />.app</code> removes the identity.
+  Clearing this browser's data for liveworkspace.app and{' '}
+  <code>
+    <AppName />
+    .app
+  </code>{' '}
+  removes the identity.
 </AppNote>
 
 Share links are the exception: anyone holding one, including you in another browser, can still open that <Noun /> with the link's role. They just won't be its owner there.
 
 ## How long guest work is kept
 
-Your guest id stays alive for as long as you keep using any liveworkspace app in this browser. If 400 days (about 13 months) go by without a visit, the id can never be handed back to you, so everything it owns on the server is deleted for good: your <Noun plural />, your folders and your Trash. That includes <Noun plural /> you shared, so their links stop working too. <Noun plural capital /> in This Browser are not touched, because they were never on the server.
+Your guest id stays alive for as long as you keep using any liveworkspace app in this browser. If 400 days (about 13 months) go by without a visit, the id can never be handed back to you, so everything it owns on the server is deleted for good: your <Noun plural />, your folders and your Trash. That includes <Noun plural /> you shared, so their links stop working too. <Noun plural capital /> kept Offline are not touched, because they were never on the server.
 
 <AppNote app="liveplanner">
-  Plans kept in **Browser Storage** are not touched, because they were never on the server.
+  Plans kept **Offline** are not touched, because they were never on the server.
 </AppNote>
 
 To keep your work for longer, [sign in](/help/account-and-data/signing-in/). Your <Noun plural /> move into the account, and an account's <Noun plural /> are never deleted this way.
 
-If you want your <Noun plural /> to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you sign in, whether to a new account or an existing one, the <Noun plural /> of yours on the server move into it automatically, and we offer to move the ones in This Browser too, so you do not lose the work you have already done.
+If you want your <Noun plural /> to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you sign in, whether to a new account or an existing one, the <Noun plural /> of yours on the server move into it automatically, and we offer to move the ones kept Offline too, so you do not lose the work you have already done.
 
 <AppNote app="livedocuments,liveplanner">
-  Everything your guest identity owns in this browser moves into the account, in every liveworkspace app at once.
+  Everything your guest identity owns in this browser moves into the account, in every liveworkspace
+  app at once.
 </AppNote>
 
 <Tip>
-  Doing serious work as a guest? Create an account before clearing your browser data, and move your <Noun plural /> in This Browser across when we offer, so nothing is left behind.
+  Doing serious work as a guest? Create an account before clearing your browser data, and move your{' '}
+  <Noun plural /> kept Offline across when we offer, so nothing is left behind.
 </Tip>
 
 </ArticleLayout>

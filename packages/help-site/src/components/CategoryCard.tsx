@@ -21,7 +21,13 @@ export function cardAppsLabel(apps: readonly unknown[]): string {
 
 /** A category card's corner row (liveworkspace/docs/specs/016-help/help-centre.md "The logos"): the apps whose
  *  articles the category holds, small, the current app first and ringed, when it holds shared ones. */
-export function CardApps({ category, scope }: { category: Category; scope: HelpScope | undefined }) {
+export function CardApps({
+  category,
+  scope,
+}: {
+  category: Category;
+  scope: HelpScope | undefined;
+}) {
   const apps = category.apps ?? [];
   if (!scope || apps.length < 2) return null;
   const shown = rowOrder(apps, scope).slice(0, CARD_MARKS_MAX);

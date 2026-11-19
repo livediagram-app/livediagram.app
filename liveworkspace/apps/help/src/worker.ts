@@ -31,7 +31,9 @@ export default {
       staging: isStagingHost(url.host),
     });
     if (found.kind === 'redirect')
-      return withHelpHeaders(new Response(null, { status: 308, headers: { Location: found.location } }));
+      return withHelpHeaders(
+        new Response(null, { status: 308, headers: { Location: found.location } }),
+      );
     const asset = await env.ASSETS.fetch(new Request(new URL(found.path, url.origin), request));
     if (asset.status !== 404) return withHelpHeaders(asset);
     // The scope's own not-found page, with its status.

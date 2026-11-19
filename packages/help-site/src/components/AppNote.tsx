@@ -1,6 +1,17 @@
 import { isValidElement, type ReactElement, type ReactNode } from 'react';
-import { APP_ORDER, appList, isAppId, type AppId, type HelpScope } from '@liveworkspace/help-registry';
-import { appNoteStyle, NOTE_BOX_CLASS, NOTE_LABEL_CLASS, NOTE_TEXT_CLASS } from '../lib/app-palette';
+import {
+  APP_ORDER,
+  appList,
+  isAppId,
+  type AppId,
+  type HelpScope,
+} from '@liveworkspace/help-registry';
+import {
+  appNoteStyle,
+  NOTE_BOX_CLASS,
+  NOTE_LABEL_CLASS,
+  NOTE_TEXT_CLASS,
+} from '../lib/app-palette';
 import { AppMark, AppMarkRow } from './AppMarks';
 import { ChevronDownIcon } from './chrome-icons';
 
@@ -29,7 +40,7 @@ export function noteApps(props: { app?: unknown; apps?: unknown }): AppId[] {
   const names: unknown[] = [];
   if (typeof props.app === 'string') names.push(...props.app.split(',').map((n) => n.trim()));
   else if (props.app !== undefined) names.push(props.app);
-  if (Array.isArray(props.apps)) names.push(...props.apps);
+  if (Array.isArray(props.apps)) names.push(...(props.apps as readonly unknown[]));
   const apps: AppId[] = [];
   for (const name of names) {
     if (!isAppId(name)) throw new Error(`[help] <AppNote app="${String(name)}">: not an app id`);
@@ -118,7 +129,7 @@ export function findAppNotes(node: ReactNode): FoundNote[] {
   const found: FoundNote[] = [];
   const visit = (n: ReactNode): void => {
     if (Array.isArray(n)) {
-      for (const child of n) visit(child);
+      for (const child of n as readonly ReactNode[]) visit(child);
       return;
     }
     if (!isValidElement(n)) return;

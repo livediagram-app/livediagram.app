@@ -17,9 +17,15 @@ import { ArticleShell, type ArticleLayoutProps, type ReadInLink } from './Articl
 // places the other apps' notes in one closed row at the end (AppNote hides them in place), then the apps with no
 // note in one quiet line.
 
-/** The registry article an MDX page is. Titles are unique within one app's help; under All Apps two apps' own
- *  articles may share one, so the page's category (and parent) tell them apart. */
+/** The registry article an MDX page is: by its path when the page names it (every article does), else by title,
+ *  where two articles sharing one are told apart by the page's category (and parent). A path the scope's catalogue
+ *  does not hold is a page outside this scope (each app's build renders every page, then drops those): it gets no
+ *  entry, never another article that happens to share its title. */
 export function findArticle(site: HelpSite, props: ArticleLayoutProps): Article | undefined {
+  if (props.path) {
+    const path = props.path.replace(/^\/+|\/+$/g, '');
+    return site.catalogue.articles.find((a) => `${a.categorySlug}/${a.slug}` === path);
+  }
   const byTitle = site.catalogue.articles.filter((a) => a.title === props.title);
   if (byTitle.length <= 1) return byTitle[0] ?? site.articleByTitle(props.title);
   const top = topCategorySlug(props.categorySlug);
@@ -61,7 +67,11 @@ function appNotesAfter(site: HelpSite, article: Article, children: ReactNode): R
 /** The page's words in the site's scope (help-centre.md "Per-app wording"): where the scope's catalogue entry or
  *  its category carries the app's own wording, the title, description and category crumb follow it; otherwise the
  *  MDX's own props stand. */
-function wordedProps(site: HelpSite, article: Article, props: ArticleLayoutProps): ArticleLayoutProps {
+function wordedProps(
+  site: HelpSite,
+  article: Article,
+  props: ArticleLayoutProps,
+): ArticleLayoutProps {
   const scope = site.scope;
   if (!scope || scope === 'all') return props;
   const own = article.byApp?.[scope];

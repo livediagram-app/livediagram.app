@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { AddingElements, CanvasOverview } from '@/editions/livediagram/components/illustrations/canvas';
+import {
+  AddingElements,
+  CanvasOverview,
+} from '@/editions/livediagram/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Your First Diagram',
@@ -9,7 +12,7 @@ export const metadata = helpMetadata({
   path: '/help/getting-started/your-first-diagram/',
 });
 
-<ArticleLayout title="Your First Diagram" description="From a blank canvas to a connected flow in a couple of minutes, with no account required." categoryTitle="Getting Started" categorySlug="getting-started">
+<ArticleLayout path="getting-started/your-first-diagram" title="Your First Diagram" description="From a blank canvas to a connected flow in a couple of minutes, with no account required." categoryTitle="Getting Started" categorySlug="getting-started">
 
 The quickest way to learn livediagram is to build something. This walkthrough takes you from a blank canvas to a small connected diagram. You do not need to sign in, the [canvas always works as a guest](/help/getting-started/guest-vs-account/).
 

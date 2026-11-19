@@ -3,11 +3,12 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Explorer Panel',
-  description: 'The Explorer inside the editor: browse your library and open another piece of work without leaving the one you are in.',
+  description:
+    'The Explorer inside the editor: browse your library and open another piece of work without leaving the one you are in.',
   path: '/help/explorer/explorer-panel/',
 });
 
-<ArticleLayout title="Explorer Panel" description="The Explorer inside the editor: browse your library and open another piece of work without leaving the one you are in." categoryTitle="Explorer" categorySlug="explorer">
+<ArticleLayout path="explorer/explorer-panel" title="Explorer Panel" description="The Explorer inside the editor: browse your library and open another piece of work without leaving the one you are in." categoryTitle="Explorer" categorySlug="explorer">
 
 The **Explorer panel** is the Explorer inside the editor. Press the **menu button** (☰) in the top-left corner of the <Noun /> and it opens under the button; press the button again, click anywhere outside it or press Escape, and it closes. While it is open, the rest of the window dims so the panel stands out; on a computer or tablet it opens wide and tall, nearly the height of the window, and on a phone it fills the screen below the button. It reads the same library as the [full-page Explorer](/help/explorer/explorer-page/), so you can browse your library, catch up on what happened and open another <Noun /> without leaving the one you are on.
 
@@ -17,11 +18,11 @@ The **Explorer panel** is the Explorer inside the editor. Press the **menu butto
 
 ## What the panel shows
 
-- **The current <Noun />** at the top: its name, its visibility badge (**Private**, **Shared**, **Team**, **Public** or **Browser Storage**) and its **⋯** menu. **Click the name to rename it** in place: Enter saves, Escape keeps the old name. A <Noun /> saved only in this browser shows here too, with the **Browser Storage** badge; its **⋯** menu offers **Open**, **Sync <Noun capital />** (when you are signed in) and **Delete <Noun capital />**, which removes it for good.
-- **The rail** down the left lists every section, grouped as on the Explorer page: **Overview** (Home, Inbox, Shared With Me), **Spaces** (My Work, each of your teams, then Browser Storage while this browser keeps any <Noun plural />, and **New Team** last when you are signed in) and **More** (Library, Archived and Trash).
+- **The current <Noun />** at the top: its name, its visibility badge (**Private**, **Shared**, **Team**, **Public** or **Offline**) and its **⋯** menu. **Click the name to rename it** in place: Enter saves, Escape keeps the old name. A <Noun /> saved only in this browser shows here too, with the **Offline** badge; its **⋯** menu offers **Open**, **Sync <Noun capital />** (when you are signed in) and **Delete <Noun capital />**, which removes it for good.
+- **The rail** down the left lists every section, grouped as on the Explorer page: **Overview** (Home, Inbox, Shared With Me), **Spaces** (My Work, each of your teams, then Offline while this browser keeps any <Noun plural />, and **New Team** last when you are signed in) and **More** (Library, Archived and Trash).
 - **The pane** on the right shows the section you pick, a page at a time; **Show more** loads the next page. **Home** shows the <Noun plural /> you were last in, and the **Inbox**, the **Library** and the **Trash** open right there too. Choosing an Inbox row shows it in place of the list, with **Back** to return, so you can reply or resolve without leaving the <Noun />. **My Work** and each team list their folders and <Noun plural />; a folder opens right there in the pane, and picking a <Noun /> opens it in the editor, while an item from another liveworkspace app opens on that app's site. The pane's header holds the section's title and **New Folder** (**New Subfolder** inside a folder), which makes a folder in My Work or the team you are looking at, with a team's **Members** beside it.
 - The panel opens on **Home** and then remembers the section you last picked.
-- **Browser Storage**, last among the spaces, shows how many <Noun plural /> are saved only in this browser and opens their page ([Offline Mode](/help/privacy-and-security/offline-mode/)). It appears only while there is at least one (or one of its folders). It lists all of its <Noun plural />, whichever folder holds them.
+- **Offline**, last among the spaces, shows how many <Noun plural /> are saved only in this browser and opens their page ([Offline Mode](/help/privacy-and-security/offline-mode/)). It appears only while there is at least one (or one of its folders). It lists all of its <Noun plural />, whichever folder holds them.
 - Along the foot are <AppName />'s other places: **Home**, **Explorer**, **Community** (when it is on) and **Help**.
 
 <AppNote app="livediagram,liveplanner,livedocuments,livedesign">
@@ -29,57 +30,66 @@ The **Explorer panel** is the Explorer inside the editor. Press the **menu butto
 </AppNote>
 
 <AppNote app="livediagram">
-  The Library holds your [Image Gallery](/help/explorer/image-gallery/), your [Shape Libraries](/help/explorer/shape-libraries/) and your [Walkthroughs](/help/collaboration/walkthroughs/), each on a tab of its own.
+  The Library holds your [Image Gallery](/help/explorer/image-gallery/), your [Shape
+  Libraries](/help/explorer/shape-libraries/) and your
+  [Walkthroughs](/help/collaboration/walkthroughs/), each on a tab of its own.
 </AppNote>
 
 <AppNote app="livedesign">
-  The Library holds your [Image Gallery](/help/explorer/image-gallery/) (upload an image, see which designs use each one) and your [Walkthroughs](/help/collaboration/walkthroughs/). A design saved only in this browser has **Move to Folder** and **Move to Archived** in its menu too.
+  The Library holds your [Image Gallery](/help/explorer/image-gallery/) (upload an image, see which
+  designs use each one) and your [Walkthroughs](/help/collaboration/walkthroughs/). A design saved
+  only in this browser has **Move to Folder** and **Move to Archived** in its menu too.
 </AppNote>
 
 <AppNote app="livedocuments">
-  The Library holds your [Image Gallery](/help/explorer/image-gallery/) and your [Walkthroughs](/help/collaboration/walkthroughs/), each on a tab of its own.
+  The Library holds your [Image Gallery](/help/explorer/image-gallery/) and your
+  [Walkthroughs](/help/collaboration/walkthroughs/), each on a tab of its own.
 </AppNote>
 
 <AppNote app="livehuddle">
-  The rail has no Inbox: **Overview** is Home and Shared With Me, and the group of places is **Spaces**. The **Library**, **Archived** and **Trash** open in the pane, and the Library holds your [Image Gallery](/help/explorer/image-gallery/). The visibility badges are **Private**, **Shared**, **Team** and **Browser Storage**.
+  The rail has no Inbox: **Overview** is Home and Shared With Me, and the group of places is
+  **Spaces**. The **Library**, **Archived** and **Trash** open in the pane, and the Library holds
+  your [Image Gallery](/help/explorer/image-gallery/). The visibility badges are **Private**,
+  **Shared**, **Team** and **Offline**.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The rail's **Library** holds your [Walkthroughs](/help/collaboration/walkthroughs/) only. The visibility badges are **Private**, **Shared**, **Team** and **Browser Storage**.
+  The rail's **Library** holds your [Walkthroughs](/help/collaboration/walkthroughs/) only. The
+  visibility badges are **Private**, **Shared**, **Team** and **Offline**.
 </AppNote>
 
 It is the same data as the full page: a rename or a move shows in both at once. Each <Noun /> has the same menu as on the Explorer page, from its **⋯** button or a right-click, so **Change Folder**, **Share** and the rest work here too. **History** and **Webhooks** are left out of the panel's menus: for the <Noun /> you are in, find them under **Tools** in the footer. The panel's menu adds **Take Offline**, which moves a <Noun /> into this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)); **Sync <Noun capital />** moves one back to your account. Drag one of your own <Noun plural /> onto a folder in the pane, or onto **My Work** or a team in the rail, to file it there; rest it on a section in the rail for a moment and that section opens.
 
 In **Change Folder**, **New Team** makes a team on the spot and files the <Noun /> into it.
 
-<AppNote app="livedesign">
-  History and Webhooks sit in the editor's **Tools** menu.
-</AppNote>
+<AppNote app="livedesign">History and Webhooks sit in the editor's **Tools** menu.</AppNote>
 
 <AppNote app="livedocuments">
   History and Webhooks are under **Tools** in the bar at the foot of the editor.
 </AppNote>
 
 <AppNote app="livehuddle">
-  History and Webhooks are the exception: in the editor they sit in **Tools** at the foot of the screen, for the space you are in.
+  History and Webhooks are the exception: in the editor they sit in **Tools** at the foot of the
+  screen, for the space you are in.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The plan's menu also offers **History** (everything that happened to it in the last 30 days), and **Webhooks** sits in the panel's header menu (below) instead of Tools.
+  The plan's menu also offers **History** (everything that happened to it in the last 30 days), and
+  **Webhooks** sits in the panel's header menu (below) instead of Tools.
 </AppNote>
 
 The **⋯** button in the panel's header, beside the help button, opens a menu with **New <Noun capital />** and **Open Explorer** (the full-page library, opened where this <Noun /> lives), then **Share** and **Export** for the <Noun /> you are in, then **Search**, **GitHub** (the open-source code), **Licences** and **Settings**.
 
-<AppNote app="livedesign">
-  On a phone the panel has no header menu.
-</AppNote>
+<AppNote app="livedesign">On a phone the panel has no header menu.</AppNote>
 
 <AppNote app="livehuddle">
   On a phone the menu is left out, since everything in it is a tap away already.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The menu also holds **Webhooks** (shown when you are signed in and can edit the whole plan): it opens the plan's own webhooks, the same as **Webhooks** on its menu in the Explorer. It has no **GitHub** row.
+  The menu also holds **Webhooks** (shown when you are signed in and can edit the whole plan): it
+  opens the plan's own webhooks, the same as **Webhooks** on its menu in the Explorer. It has no
+  **GitHub** row.
 </AppNote>
 
 ## When you will see it

@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
   path: '/help/troubleshooting/missing-changes/',
 });
 
-<ArticleLayout title="My Changes Are Missing" description="What to check when work seems to have vanished, and how to recover it with autosave and undo." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout path="troubleshooting/missing-changes" title="My Changes Are Missing" description="What to check when work seems to have vanished, and how to recover it with autosave and undo." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
 Work in <AppName /> is saved automatically as you go, so missing changes are usually hiding rather than gone: you may be looking at a different tab, a different <Noun />, or a different identity than the one you edited under. This checklist walks through finding them and, where needed, recovering them with undo or the Trash.
 
@@ -23,19 +23,32 @@ Work in <AppName /> is saved automatically as you go, so missing changes are usu
 4. **Reload the page.** A refresh reloads your saved <Noun /> and clears any temporary display issue.
 
 <AppNote app="livediagram">
-  **Check whether the tab held boards or sheets.** Boards, cards, sheets, dashboards and forms belong to [liveplanner](https://www.liveplanner.app), livediagram's sister app for planning work. livediagram opens such a tab in Diagram with its ordinary elements and does not show those parts. See [Editor Modes](/help/canvas/editor-modes/).
+  **Check whether the tab held boards or sheets.** Boards, cards, sheets, dashboards and forms
+  belong to [liveplanner](https://www.liveplanner.app), livediagram's sister app for planning work.
+  livediagram opens such a tab in Diagram with its ordinary elements and does not show those parts.
+  See [Editor Modes](/help/canvas/editor-modes/).
 </AppNote>
 
 <AppNote app="livehuddle">
-  **Check whether the tab held boards or sheets.** Boards, cards, sheets, dashboards and forms belong to [liveplanner](https://www.liveplanner.app), livehuddle's sister app for planning work. livehuddle opens such a tab with its ordinary elements and does not show those parts.
+  **Check whether the tab held boards or sheets.** Boards, cards, sheets, dashboards and forms
+  belong to [liveplanner](https://www.liveplanner.app), livehuddle's sister app for planning work.
+  livehuddle opens such a tab with its ordinary elements and does not show those parts.
 </AppNote>
 
 <AppNote app="liveplanner">
-  **Check the tabs beside a Plan tab.** If a Plan tab's boards and sheets seem to have gone, or it split into several tabs, an older Plan tab was updated to the new layout: each board and sheet moved to a tab of its own, right after it, and the tab became a Dashboard showing them. Your cards are untouched. See [Plan Mode: Good to Know](/help/plan/planning-basics/#together).
+  **Check the tabs beside a Plan tab.** If a Plan tab's boards and sheets seem to have gone, or it
+  split into several tabs, an older Plan tab was updated to the new layout: each board and sheet
+  moved to a tab of its own, right after it, and the tab became a Dashboard showing them. Your cards
+  are untouched. See [Plan Mode: Good to Know](/help/plan/planning-basics/#together).
 </AppNote>
 
 <AppNote app="livehuddle">
-  **Look for a dashed card.** An element livehuddle no longer has shows as a dashed card with its name and **No longer supported in livehuddle**. Nothing it held is lost: the card keeps it and saves it unchanged. An Editor can move it, copy it or press its **Delete** button (it shows when you point at the card or select it) to clear it away. On a card too small for the button, such as on a phone, select the card and press **Delete** in the toolbar above it. Some, saved by an older version, can't be moved or edited; an Editor can only delete them.
+  **Look for a dashed card.** An element livehuddle no longer has shows as a dashed card with its
+  name and **No longer supported in livehuddle**. Nothing it held is lost: the card keeps it and
+  saves it unchanged. An Editor can move it, copy it or press its **Delete** button (it shows when
+  you point at the card or select it) to clear it away. On a card too small for the button, such as
+  on a phone, select the card and press **Delete** in the toolbar above it. Some, saved by an older
+  version, can't be moved or edited; an Editor can only delete them.
 </AppNote>
 
 ## How Saving Works
@@ -43,7 +56,8 @@ Work in <AppName /> is saved automatically as you go, so missing changes are usu
 Changes are saved automatically after you make them, per tab: to the server, not just to your browser. There is no manual "save" to forget. Because saving is per tab, editing one tab never disturbs another, and an empty, never-loaded tab is prevented from overwriting a tab that still has content.
 
 <AppNote app="livediagram,livehuddle">
-  A <Noun /> in [This Browser](/help/privacy-and-security/offline-mode/) is saved to this browser's storage rather than the server.
+  A <Noun /> kept [Offline](/help/privacy-and-security/offline-mode/) is saved to this browser's
+  storage rather than the server.
 </AppNote>
 
 There is no "saved" indicator to watch, because saving is the normal state. What you will see is a failure: if a save cannot reach the server, a message at the bottom of the screen says **Couldn't save your changes. Check your connection.** (If your browser is offline it says **You're offline. Keep this tab open to save when you reconnect.**) Autosave keeps trying, so reconnect and leave the tab open until your changes go through. Other messages mean retrying will not help on its own:
@@ -52,7 +66,8 @@ There is no "saved" indicator to watch, because saving is the normal state. What
 - **You can no longer edit this**: the share link was revoked or you were removed from the team, so autosave has stopped. Export a copy of the tab to keep your recent work.
 
 <AppNote app="livedocuments,livehuddle">
-  - **This tab is too big to save**: the connection is fine, but the tab holds more than one tab can store. Move some of it to another tab and it saves again.
+  - **This tab is too big to save**: the connection is fine, but the tab holds more than one tab can
+  store. Move some of it to another tab and it saves again.
 </AppNote>
 
 <AppNote app="livedocuments,liveplanner">
@@ -60,7 +75,15 @@ There is no "saved" indicator to watch, because saving is the normal state. What
 </AppNote>
 
 <AppNote app="liveplanner">
-  Changes to cards and Sheet cells made without a connection wait in this browser instead, even through a reload, and go as soon as you are back: the banner at the top counts them while they wait. If one of them can no longer be made (someone deleted that card meanwhile), it is undone with a message, and the rest still save. One kind is never undone: if deleting cards or moving them to the Trash would take too many cards off a board at once, or empty it, the server pauses it, the cards stay hidden on your screen, and a banner at the top says how many cards were about to be removed. Nothing is gone yet: open the list on the banner to see which cards, choose **Keep Cards** to bring them back, or choose the Remove button, which names the count (Remove 11 Cards), to go ahead.
+  Changes to cards and Sheet cells made without a connection wait in this browser instead, even
+  through a reload, and go as soon as you are back: the banner at the top counts them while they
+  wait. If one of them can no longer be made (someone deleted that card meanwhile), it is undone
+  with a message, and the rest still save. One kind is never undone: if deleting cards or moving
+  them to the Trash would take too many cards off a board at once, or empty it, the server pauses
+  it, the cards stay hidden on your screen, and a banner at the top says how many cards were about
+  to be removed. Nothing is gone yet: open the list on the banner to see which cards, choose **Keep
+  Cards** to bring them back, or choose the Remove button, which names the count (Remove 11 Cards),
+  to go ahead.
 </AppNote>
 
 <Figure caption="A save that did not reach the server shows a message at the bottom of the screen; autosave keeps retrying.">
@@ -72,7 +95,7 @@ There is no "saved" indicator to watch, because saving is the normal state. What
 <AppNote app="liveplanner">
   **"Made in a newer version of liveplanner".** A card field can look stuck: you can see its value, but nothing in it can be changed, and under it a line says **Made in a newer version of liveplanner. Reload to edit it.** In the type editor the same field wears a lock that says **Made in a newer version of liveplanner. Reload to change it.**: it can still move between tabs, but has no pencil and no way to remove it. This is the newer field lock. Someone (or an AI tool) added a kind of field that arrived in an update your open tab hasn't loaded yet, say after liveplanner was updated while you had the plan open, or when you open an offline plan or a Drive file in an older tab. Rather than lose the field or its values, this tab keeps it exactly as it is and leaves it alone, and saving the card type from here still writes it back untouched. Settings a newer version added to a card type, its tabs or its fields are kept the same way.
 
-  To clear the lock, **reload the page** (or press **Reload** on the "A new version of liveplanner is ready" notice, which waits for your changes to save first). The newer version loads, and the field works like any other. Nothing is lost while you wait: the rest of the card, and the plan, work as usual.
+To clear the lock, **reload the page** (or press **Reload** on the "A new version of liveplanner is ready" notice, which waits for your changes to save first). The newer version loads, and the field works like any other. Nothing is lost while you wait: the rest of the card, and the plan, work as usual.
 
   <Figure caption="A field from a newer version shows its value read-only until you reload; the notice offers the reload.">
     <PlanNewerFieldScene />
@@ -104,11 +127,16 @@ A deleted <Noun /> is not gone either: it waits in the [Trash](/help/account-and
 If an AI tool or a script changed the <Noun />, the note that appears with its change has an **Undo** that puts it back, separately from your own undo history.
 
 <AppNote app="livedesign">
-  For a bigger change that went wrong, such as a clean-up, an import or a teammate's reorganisation, open **Tools** in the bottom bar and press **History** (signed in, on a design saved to your account). It shows who changed what and when and, for an Editor of the whole design, its [snapshots](/help/collaboration/snapshots/): **Revert** to one to put the design back as it was then. Take a snapshot before a big change so there is one to go back to.
+  For a bigger change that went wrong, such as a clean-up, an import or a teammate's reorganisation,
+  open **Tools** in the bottom bar and press **History** (signed in, on a design saved to your
+  account). It shows who changed what and when and, for an Editor of the whole design, its
+  [snapshots](/help/collaboration/snapshots/): **Revert** to one to put the design back as it was
+  then. Take a snapshot before a big change so there is one to go back to.
 </AppNote>
 
 <AppNote app="livehuddle">
-  A script using the [API](/help/developers/api-overview/) can change the <Noun /> too, with its own undo note.
+  A script using the [API](/help/developers/api-overview/) can change the <Noun /> too, with its own
+  undo note.
 </AppNote>
 
 ## What Collaboration Does and Doesn't Protect

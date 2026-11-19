@@ -361,12 +361,12 @@ test('main deploys the group it is given, writes the summary, and fails when a W
   try {
     const good = fakeExec();
     assert.equal(main(base, good.exec), 0);
-    // Only the group's own Workers: the platform's site and accounts.
+    // Only the group's own Workers: the platform's site, accounts and help centre.
     assert.deepEqual(
       [...new Set(good.calls.map((c) => c.cwd))],
-      ['liveworkspace/apps/accounts', '.', 'liveworkspace/apps/site'],
+      ['liveworkspace/apps/accounts', '.', 'liveworkspace/apps/site', 'liveworkspace/apps/help'],
     );
-    assert.match(readFileSync(summary, 'utf8'), /All 2 Workers deployed\./);
+    assert.match(readFileSync(summary, 'utf8'), /All 3 Workers deployed\./);
 
     const bad = fakeExec({ failing: ['--filter=@liveworkspace/site'] });
     assert.equal(main(base, bad.exec), 1);

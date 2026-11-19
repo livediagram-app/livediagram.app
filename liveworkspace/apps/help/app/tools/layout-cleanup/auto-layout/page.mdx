@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
   path: '/help/tools/layout-cleanup/auto-layout/',
 });
 
-<ArticleLayout title="Auto Layout" description="Let <AppName /> compute the layout for you from the connections between shapes." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-layout")}>
+<ArticleLayout path="tools/layout-cleanup/auto-layout" title="Auto Layout" description="Let <AppName /> compute the layout for you from the connections between shapes." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-layout")}>
 
 Auto Layout is the structural tidier (the command palette calls it "Auto Layout (tidy up)"). Rather than nudging the positions you already have, it reads the arrow graph, works out how shapes connect, and computes brand-new positions, arranging connected shapes into clean layers. Unlike Auto-Align, it can legitimately move an element a long way to give your shapes a proper layout.
 
@@ -34,7 +34,10 @@ Auto Layout is the structural tidier (the command palette calls it "Auto Layout 
 - It lands every shape's **centre on the grid**, so shapes that share a line keep sharing it, and a second press changes nothing.
 
 <AppNote app="livediagram">
-  A panel, group card or lane that holds connected shapes moves as one block with everything inside it, the first shape stays put and the diagram grows from it, stepping clear of the title and key, and anything on a [locked layer](/help/canvas/layers-visibility-and-locking/) is not moved or resized either.
+  A panel, group card or lane that holds connected shapes moves as one block with everything inside
+  it, the first shape stays put and the diagram grows from it, stepping clear of the title and key,
+  and anything on a [locked layer](/help/canvas/layers-visibility-and-locking/) is not moved or
+  resized either.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
@@ -49,18 +52,20 @@ One arrangement doesn't fit every set of shapes, so alongside the smart default 
 - **Auto Layout: Tree**: an org-chart arrangement. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
 
 <AppNote app="livediagram,livedesign">
-  - **Auto Layout: Flowchart (down)** and **Auto Layout: Flowchart (right)**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
-  - **Auto Layout: Mindmap**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
+  - **Auto Layout: Flowchart (down)** and **Auto Layout: Flowchart (right)**: the same layered
+  arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current
+  positions suggest. - **Auto Layout: Mindmap**: a radial arrangement. The most-connected shape
+  becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
 </AppNote>
 
 <AppNote app="livedocuments">
-  - **Auto Layout: Layered (down)** and **Auto Layout: Layered (right)**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
-  - **Auto Layout: Radial**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
+  - **Auto Layout: Layered (down)** and **Auto Layout: Layered (right)**: the same layered
+  arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current
+  positions suggest. - **Auto Layout: Radial**: a radial arrangement. The most-connected shape
+  becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
 </AppNote>
 
-<AppNote app="livediagram">
-  Each style is also a picture on the **Tidy** panel.
-</AppNote>
+<AppNote app="livediagram">Each style is also a picture on the **Tidy** panel.</AppNote>
 
 If your shapes aren't a perfect tree (a shape with two parents), Tree still works: it lays out the main skeleton and reconnects the extra arrows across it. The radial style is for ideas that branch out from a centre, so it does nothing when your arrows loop back on themselves.
 
@@ -71,16 +76,18 @@ Every style is tried before it runs. If it wouldn't help, nothing moves and a sh
 <AppNote app="livediagram">
   On the **Tidy** panel a style that wouldn't help is greyed out, with the reason in place of its description:
 
-  - **Already tidy**: it would change nothing.
-  - **Would cover a shape**: it would put a shape on top of another one.
-  - **Would pull shapes out of their lanes** or **Would rearrange your lanes**: your shapes sit in lanes or panels that would come apart. A swimlane keeps the lanes you built, so only Auto-Align is offered there.
-  - **For ideas that branch, not loop**: Mindmap on a diagram with loops.
+- **Already tidy**: it would change nothing.
+- **Would cover a shape**: it would put a shape on top of another one.
+- **Would pull shapes out of their lanes** or **Would rearrange your lanes**: your shapes sit in lanes or panels that would come apart. A swimlane keeps the lanes you built, so only Auto-Align is offered there.
+- **For ideas that branch, not loop**: Mindmap on a diagram with loops.
 
-  Run a style that isn't offered from the command palette and nothing moves; a short notice says why instead.
+Run a style that isn't offered from the command palette and nothing moves; a short notice says why instead.
+
 </AppNote>
 
 <AppNote app="livedocuments">
-  A style also stays put when it would pull shapes out of the lanes or frames holding them, or rearrange a set of lanes (swimlane rows or columns keep their order).
+  A style also stays put when it would pull shapes out of the lanes or frames holding them, or
+  rearrange a set of lanes (swimlane rows or columns keep their order).
 </AppNote>
 
 ## Running It
@@ -95,7 +102,9 @@ Every style is tried before it runs. If it wouldn't help, nothing moves and a sh
 <Step n={3}>The whole tab is laid out anew in a single undoable step.</Step>
 
 <AppNote app="livediagram">
-  In Diagram mode you can instead press the **Tidy** button in the bottom-right corner, just left of Layers, and rest the mouse on a style to see the tab laid out that way before clicking the one you want.
+  In Diagram mode you can instead press the **Tidy** button in the bottom-right corner, just left of
+  Layers, and rest the mouse on a style to see the tab laid out that way before clicking the one you
+  want.
 </AppNote>
 
 <Figure caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">

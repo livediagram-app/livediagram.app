@@ -10,17 +10,23 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/comments/',
 });
 
-<ArticleLayout title="Comments" description="Start a conversation right where the work is, and resolve it once it has been handled." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("comments")}>
+<ArticleLayout path="collaboration/comments" title="Comments" description="Start a conversation right where the work is, and resolve it once it has been handled." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("comments")}>
 
 Comments let you have a conversation about the work without changing it. Leave a question or a piece of feedback where it belongs, and resolve it once it has been dealt with. They are the lightweight way to review work, agree on changes, and keep a record of why something is the way it is.
 
 <AppNote app="liveplanner">
-  There are two places a comment can live: on a **card**, and on a **cell** of a Sheet. Boards, Dashboards and Forms carry no comments of their own: the conversation lives on the cards they show.
+  There are two places a comment can live: on a **card**, and on a **cell** of a Sheet. Boards,
+  Dashboards and Forms carry no comments of their own: the conversation lives on the cards they
+  show.
 </AppNote>
 
 ## Leaving a comment
 
 A comment is attached to the thing it is about, so the reader sees exactly what you are talking about.
+
+<AppNote app="livediagram,livedocuments,livedesign">
+Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place.
+</AppNote>
 
 <AppNote app="livediagram">
   <Step n={1}>
@@ -30,21 +36,19 @@ A comment is attached to the thing it is about, so the reader sees exactly what 
     toolbar.
   </Step>
 
-  <Step n={2}>
-    Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
-    on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
-    edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
-    See [Element Indicators](/help/canvas/element-indicators/).
-  </Step>
+<Step n={2}>
+  Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
+  on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
+  edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
+  See [Element Indicators](/help/canvas/element-indicators/).
+</Step>
 
-  <Step n={3}>
-    Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
-    close button shuts the popover.
-  </Step>
+<Step n={3}>
+  Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
+  close button shuts the popover.
+</Step>
 
-  Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place.
-
-  To comment on a **place** rather than a shape, an empty patch of canvas or the gap between two clusters, use a [comment panel](/help/palette/collaborate/comment-panels/): the same thread as a card on the canvas, joined to whatever it is about by an ordinary arrow.
+To comment on a **place** rather than a shape, an empty patch of canvas or the gap between two clusters, use a [comment panel](/help/palette/collaborate/comment-panels/): the same thread as a card on the canvas, joined to whatever it is about by an ordinary arrow.
 
   <Figure caption="An element's comment icon opens its Comments popover, with the thread, the reactions under a comment, Resolve and the reply box.">
     <CommentThread />
@@ -60,19 +64,17 @@ A comment is attached to the thing it is about, so the reader sees exactly what 
     Comment** on its toolbar.
   </Step>
 
-  <Step n={2}>
-    Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
-    on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
-    edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
-    See [Element Indicators](/help/canvas/element-indicators/).
-  </Step>
+<Step n={2}>
+  Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
+  on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
+  edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
+  See [Element Indicators](/help/canvas/element-indicators/).
+</Step>
 
-  <Step n={3}>
-    Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
-    close button shuts the popover.
-  </Step>
-
-  Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place.
+<Step n={3}>
+  Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
+  close button shuts the popover.
+</Step>
 
   <Figure caption="An element's comment icon opens its Comments popover, with the thread, the reactions under a comment, Resolve and the reply box.">
     <CommentThread />
@@ -87,21 +89,19 @@ A comment is attached to the thing it is about, so the reader sees exactly what 
     Comments** when the element already has a thread).
   </Step>
 
-  <Step n={2}>
-    Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
-    on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
-    edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
-    See [Element Indicators](/help/canvas/element-indicators/).
-  </Step>
+<Step n={2}>
+  Type your note in the **Comments** popover and press **Comment** (or **Ctrl+Enter**, **Cmd+Enter**
+  on a Mac). The element shows a small comment icon with the count near its top (or along its bottom
+  edge, if you chose **Footer** for **Element Indicators** in Settings › Editor; **Off** hides it).
+  See [Element Indicators](/help/canvas/element-indicators/).
+</Step>
 
-  <Step n={3}>
-    Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
-    close button shuts the popover.
-  </Step>
+<Step n={3}>
+  Press that icon any time to reopen the thread and read or reply to what is there. **Esc** or the
+  close button shuts the popover.
+</Step>
 
-  On an [article page](/help/pages/articles/), you can comment on words: select them and press **Comment** in the article's toolbar (**Ctrl+Alt+M**, **Cmd+Option+M** on a Mac). The words are tinted and a marker in the margin opens the thread.
-
-  Because a thread lives on the element rather than inside its content, you can leave feedback on a draft without nudging anyone's shapes or arrows out of place.
+On an [article page](/help/pages/articles/), you can comment on words: select them and press **Comment** in the article's toolbar (**Ctrl+Alt+M**, **Cmd+Option+M** on a Mac). The words are tinted and a marker in the margin opens the thread.
 
   <Figure caption="An element's comment icon opens its Comments popover, with the thread, the reactions under a comment, Resolve and the reply box.">
     <CommentThread />
@@ -111,45 +111,35 @@ A comment is attached to the thing it is about, so the reader sees exactly what 
 <AppNote app="liveplanner">
   **Commenting on a card.** A card holds **comment threads** at the end of the **Overview** tab of its card panel, under **Comments**: as many separate conversations as it needs, each with its own title and replies.
 
-  <Step n={1}>
-    Click a card to open its panel. Scroll to **Comments** at the end of the **Overview** tab.
-  </Step>
+<Step n={1}>
+  Click a card to open its panel. Scroll to **Comments** at the end of the **Overview** tab.
+</Step>
 
-  <Step n={2}>
-    Press **New Thread**, type your comment and press **Start Thread** (or **Ctrl+Enter**,
-    **Cmd+Enter** on a Mac).
-  </Step>
+<Step n={2}>
+  Press **New Thread**, type your comment and press **Start Thread** (or **Ctrl+Enter**,
+  **Cmd+Enter** on a Mac).
+</Step>
 
-  <Step n={3}>
-    The thread appears with your name, colour and how long ago it was posted. Others reply in the box
-    at its foot and press **Reply**. On the board, the card shows how many comments its open threads
-    hold.
-  </Step>
+<Step n={3}>
+  The thread appears with your name, colour and how long ago it was posted. Others reply in the box
+  at its foot and press **Reply**. On the board, the card shows how many comments its open threads
+  hold.
+</Step>
 
-  See [Comment Threads](/help/plan/cards/#comment-threads) for renaming threads, putting one thread on several cards, and everything else.
+See [Comment Threads](/help/plan/cards/#comment-threads) for renaming threads, putting one thread on several cards, and everything else.
 
-  **Commenting on a Sheet cell.** On a Sheet, a comment is about a single cell. Right-click the cell and choose **Insert Comment** (or press Ctrl+Alt+M, ⌘⌥M on a Mac), type your note and press **Comment**. The cell shows a small amber triangle in its corner while the thread is open; rest the pointer on the cell to read the first comment, and press the triangle (or **Show Comments** in the cell menu) to open the whole thread. See [Comment on a Cell](/help/plan/sheets/#comment-on-a-cell).
+**Commenting on a Sheet cell.** On a Sheet, a comment is about a single cell. Right-click the cell and choose **Insert Comment** (or press Ctrl+Alt+M, ⌘⌥M on a Mac), type your note and press **Comment**. The cell shows a small amber triangle in its corner while the thread is open; rest the pointer on the cell to read the first comment, and press the triangle (or **Show Comments** in the cell menu) to open the whole thread. See [Comment on a Cell](/help/plan/sheets/#comment-on-a-cell).
 
-  While a tab has cell comments, a **Collaborate** button appears in the bottom-right cluster with a count of the threads still open. It lists every cell thread on the tab by its Sheet and cell, such as `Budget!B4`; switch to **Resolved** to see the ones that are settled, and press a row to go to its cell.
+While a tab has cell comments, a **Collaborate** button appears in the bottom-right cluster with a count of the threads still open. It lists every cell thread on the tab by its Sheet and cell, such as `Budget!B4`; switch to **Resolved** to see the ones that are settled, and press a row to go to its cell.
 </AppNote>
 
 Each comment shows its author's name, colour and how long ago it was posted. You can delete your own comments; people who can edit the <Noun /> can delete anyone's.
 
-<AppNote app="livediagram">
+<AppNote app="livediagram,livedocuments,livedesign">
   While a thread is open, the bin that appears when you hover a comment deletes it.
 </AppNote>
 
-<AppNote app="livedesign">
-  While a thread is open, the bin that appears when you hover a comment deletes it.
-</AppNote>
-
-<AppNote app="livedocuments">
-  While a thread is open, the bin that appears when you hover a comment deletes it.
-</AppNote>
-
-<AppNote app="liveplanner">
-  You can edit your own comments too.
-</AppNote>
+<AppNote app="liveplanner">You can edit your own comments too.</AppNote>
 
 ## Reacting to a comment
 
@@ -162,20 +152,22 @@ Sometimes a reply is too much: you agree, you love it, or you just want to say y
 Reactions appear for everyone on the <Noun /> as they are left, and stay with the comment. A resolved thread keeps its reactions but takes no new ones until it is reopened. Editors and Participants can react: someone on a **Viewer** link sees the reactions and who left them, but can't add any.
 
 <AppNote app="livediagram">
-  The six open in a small tray, and the arrow keys move along it; **Esc** closes it. A [comment panel](/help/palette/collaborate/comment-panels/) on the canvas shows each comment's reactions under it too.
+  The six open in a small tray, and the arrow keys move along it; **Esc** closes it. A [comment
+  panel](/help/palette/collaborate/comment-panels/) on the canvas shows each comment's reactions
+  under it too.
 </AppNote>
 
 <AppNote app="livedesign">
-  The six open in a small tray under the comment, and the arrow keys move along it; **Esc** closes it. Pick one and the tray closes.
+  The six open in a small tray under the comment, and the arrow keys move along it; **Esc** closes
+  it. Pick one and the tray closes.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Where comment bubbles show on the canvas, each shows its reactions on a quiet line under it: open the thread to react.
+  Where comment bubbles show on the canvas, each shows its reactions on a quiet line under it: open
+  the thread to react.
 </AppNote>
 
-<AppNote app="liveplanner">
-  Reactions work on card threads and on Sheet cell comments.
-</AppNote>
+<AppNote app="liveplanner">Reactions work on card threads and on Sheet cell comments.</AppNote>
 
 ## Mentioning a teammate
 
@@ -186,17 +178,9 @@ A mention does two things for the person you tag:
 - The thread appears on their [Inbox](/help/explorer/activity/), even if they never commented.
 - They get an email quoting your comment, unless they have turned off **Someone Mentions Me in a Comment** in their [email notifications](/help/account-and-data/email-notifications/).
 
-<AppNote app="livediagram">
-  The thread on their Inbox is marked **Mentioned you**.
-</AppNote>
+<AppNote app="livediagram,livedesign">The thread on their Inbox is marked **Mentioned you**.</AppNote>
 
-<AppNote app="livedesign">
-  The thread on their Inbox is marked **Mentioned you**.
-</AppNote>
-
-<AppNote app="liveplanner">
-  For a card, the email's button opens that card.
-</AppNote>
+<AppNote app="liveplanner">For a card, the email's button opens that card.</AppNote>
 
 You can mention the members of the team whose library holds the <Noun />, as long as you are a member of that team too, including people who have been invited but not joined yet. On a personal <Noun /> there is nobody to mention; move it into a team library first. You need to be signed in to mention anyone.
 
@@ -204,26 +188,28 @@ You can mention the members of the team whose library holds the <Noun />, as lon
 
 Once a comment has been actioned, resolve its thread to clear it from the working view while keeping the record. A resolved thread has no reply box, and **Reopen** brings it back.
 
+<AppNote app="livediagram,livedocuments,livedesign">
+Every open thread on a tab is also listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel), the **Collaborate** button in the bottom-right corner with a count of what is still open. Its **Resolved** view holds the threads you have resolved.
+</AppNote>
+
 <AppNote app="livediagram">
   Press **Resolve** at the top of the thread. It becomes a green **Resolved** badge, the reply box is hidden, and the element's comment icon goes away. To reopen the thread, find it under **Resolved** in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and press **Reopen** beside the badge. Resolving keeps the canvas focused on what still needs attention rather than on questions that are already settled.
-
-  Every open thread on a tab is also listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel), the **Collaborate** button in the bottom-right corner with a count of what is still open. Its **Resolved** view holds the threads you have resolved.
 </AppNote>
 
 <AppNote app="livedesign">
   Press **Resolve** at the top of the thread. It becomes a green **Resolved** badge, the reply box is hidden, and the element's comment icon goes away. To reopen the thread, find it under **Resolved** in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and press **Reopen** beside the badge. Resolving keeps the design focused on what still needs attention rather than on questions that are already settled.
-
-  Every open thread on a tab is also listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel), the **Collaborate** button in the bottom-right corner with a count of what is still open. Its **Resolved** view holds the threads you have resolved.
 </AppNote>
 
 <AppNote app="livedocuments">
   Press **Resolve** at the top of the thread. It becomes a green **Resolved** badge, the reply box is hidden, and the element's comment icon goes away. To reopen the thread, find it under **Resolved** in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel) and press **Reopen** beside the badge. Resolving keeps the document focused on what still needs attention rather than on questions that are already settled.
-
-  Every open thread on a tab is also listed in the [Collaborate panel](/help/collaboration/assigned-actions/#the-collaborate-panel), the **Collaborate** button in the bottom-right corner with a count of what is still open. Its **Resolved** view holds the threads you have resolved.
 </AppNote>
 
 <AppNote app="liveplanner">
-  On a card, **Resolve** sits beside **Reply** at the foot of the thread; with a reply typed it reads **Comment and Resolve**, posting your reply and resolving the thread in one press, and the thread moves under **Resolved** at the bottom of the list. On a Sheet cell, press **Resolve** at the top of the thread. A resolved thread is drawn quieter, with who resolved it; on a card its comments leave the card's count, and on a cell the amber triangle goes.
+  On a card, **Resolve** sits beside **Reply** at the foot of the thread; with a reply typed it
+  reads **Comment and Resolve**, posting your reply and resolving the thread in one press, and the
+  thread moves under **Resolved** at the bottom of the list. On a Sheet cell, press **Resolve** at
+  the top of the thread. A resolved thread is drawn quieter, with who resolved it; on a card its
+  comments leave the card's count, and on a cell the amber triangle goes.
 </AppNote>
 
 Use comments to:
@@ -238,10 +224,13 @@ An AI assistant you connect to your <Noun plural /> (see [Connect an AI tool](/h
 
 ## Comments and collaboration
 
-<AppName /> is multiplayer, so comments are part of how a group works together. New comments appear for everyone in the <Noun /> as they are posted. A collaborator can answer a question where it was asked, and a reviewer can leave feedback for the author to pick up later.
+<AppName /> is multiplayer, so comments are part of how a group works together. New comments appear
+for everyone in the <Noun /> as they are posted. A collaborator can answer a question where it was
+asked, and a reviewer can leave feedback for the author to pick up later.
 
 <AppNote app="liveplanner">
-  A reviewer leaves feedback for the owner to pick up later. Open threads you are part of are gathered on your [Inbox](/help/explorer/activity/), across every plan.
+  A reviewer leaves feedback for the owner to pick up later. Open threads you are part of are
+  gathered on your [Inbox](/help/explorer/activity/), across every plan.
 </AppNote>
 
 Because <AppName /> works without signing in, a guest you hand a share link to can read and join the conversation too. Commenting needs a **Participant** or **Editor** share link: someone on a **Viewer** link can read the threads and see their reactions, but not add to them, react, resolve them or delete anything.
@@ -253,7 +242,8 @@ A few things to know:
 - **Comments stay private in the Community.** A <Noun /> [shared to the Community](/help/collaboration/sharing/community/) never shows its comments to visitors, and a copy made from it leaves them out.
 
 <AppNote app="liveplanner">
-  **Comments stay with their card:** a card keeps its thread when it moves between columns or boards. A copy of a Sheet starts without its cell comments.
+  **Comments stay with their card:** a card keeps its thread when it moves between columns or
+  boards. A copy of a Sheet starts without its cell comments.
 </AppNote>
 
 <Tip>

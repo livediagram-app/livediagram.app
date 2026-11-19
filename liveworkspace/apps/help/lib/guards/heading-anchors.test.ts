@@ -22,13 +22,14 @@ function files(dir: string, ext: string[]): string[] {
 }
 
 // The anchors an article's page carries: its headings, slugged as the page slugs them. Headings in prose only
-// (`## ` at the start of a line, outside fenced code), with Markdown formatting read as its text.
+// (`## ` at the start of a line, or indented up to three spaces as inside an <AppNote>, outside fenced code), with
+// Markdown formatting read as its text.
 function anchorsOf(mdx: string): Set<string> {
   const out = new Set<string>();
   let fenced = false;
   for (const line of mdx.split('\n')) {
     if (line.startsWith('```')) fenced = !fenced;
-    const m = !fenced && /^#{2,3} (.+)$/.exec(line);
+    const m = !fenced && /^ {0,3}#{2,3} (.+)$/.exec(line);
     if (m) out.add(slugOf(m[1]!.replace(/[`*_]|\[([^\]]*)\]\([^)]*\)/g, '$1')));
   }
   return out;
@@ -49,7 +50,10 @@ describe('heading ids', () => {
   });
 
   it('every /help/...#anchor link names a heading of its article', () => {
-    const sources = [...files(APP_DIR, ['.mdx']), ...marketing.flatMap((dir) => files(dir, ['.tsx', '.ts', '.mdx']))];
+    const sources = [
+      ...files(APP_DIR, ['.mdx']),
+      ...marketing.flatMap((dir) => files(dir, ['.tsx', '.ts', '.mdx'])),
+    ];
     const missing: string[] = [];
     for (const file of sources) {
       const text = readFileSync(file, 'utf8');
@@ -60,7 +64,8 @@ describe('heading ids', () => {
         } catch {
           continue;
         }
-        if (!anchorsOf(mdx).has(m[2]!)) missing.push(`${file.replace(REPO, '')}: /help/${m[1]}/#${m[2]}`);
+        if (!anchorsOf(mdx).has(m[2]!))
+          missing.push(`${file.replace(REPO, '')}: /help/${m[1]}/#${m[2]}`);
       }
     }
     expect(missing).toEqual([]);

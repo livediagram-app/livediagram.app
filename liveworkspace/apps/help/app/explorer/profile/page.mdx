@@ -3,11 +3,12 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Your Account',
-  description: 'Your account in Settings: the identity card, the email-notification switches, and the Danger Zone for deleting your account.',
+  description:
+    'Your account in Settings: the identity card, the email-notification switches, and the Danger Zone for deleting your account.',
   path: '/help/explorer/profile/',
 });
 
-<ArticleLayout title="Your Account" description="Your account home in Settings: who you are signed in as, your email-notification switches, and account deletion." categoryTitle="Explorer" categorySlug="explorer">
+<ArticleLayout path="explorer/profile" title="Your Account" description="Your account home in Settings: who you are signed in as, your email-notification switches, and account deletion." categoryTitle="Explorer" categorySlug="explorer">
 
 Your account lives in [Settings](/help/user-interface/settings/), under **Profile**. When you are signed in, the account button at the top right of the Explorer and the editor (your initial, with your first name) opens a menu with your name, then **Explorer**, **Settings** and **Sign Out**. Pick **Settings**, then **Profile**. You can also open Settings from its sliders icon in the bottom bar and choose **Profile** in the list. Your profile lives in Settings alongside the rest of your preferences, so there is one place to look.
 
@@ -22,7 +23,9 @@ Your account lives in [Settings](/help/user-interface/settings/), under **Profil
 **Name and Colour**, under the card, sets your display name and presence colour, as collaborators see them on your cursor, comments and avatar in every liveworkspace app. Your email address comes from how you sign in.
 
 <AppNote app="livehuddle">
-  **Name and Colour** sets your **Display name** (leave it empty to show the name you signed up with) and the colour people see on your cursor and avatar in every app. When you sign in with Google, a switch chooses whether your Google picture shows. Each change saves as you make it.
+  **Name and Colour** sets your **Display name** (leave it empty to show the name you signed up
+  with) and the colour people see on your cursor and avatar in every app. When you sign in with
+  Google, a switch chooses whether your Google picture shows. Each change saves as you make it.
 </AppNote>
 
 **Time Zone**, under your name and colour, is the time zone your account keeps for the emails that can wait (tips, check-ins, reminders and expiry warnings): they arrive on weekdays between 09:00 and 21:00 in that zone. It starts on **Automatic**, which follows the time zone of the browser you use. To set it yourself, press the zone and search for your city, region or offset (such as GMT+1), then pick it; it is saved at once and stays until you choose **Automatic** again.
@@ -36,12 +39,12 @@ Below it:
 
 **API Tokens** is a category of its own in the list; see [API Tokens](/help/account-and-data/api-tokens/). Your deleted <Noun plural /> are in the Explorer's [Trash](/help/account-and-data/trash/).
 
-<AppNote app="livedesign">
-  **API Tokens** sits in its own list entry under Account.
-</AppNote>
+<AppNote app="livedesign">**API Tokens** sits in its own list entry under Account.</AppNote>
 
 <AppNote app="livehuddle,liveplanner">
-  **API Tokens** sits under **Developers**. In livehuddle **Notifications** sits beside Profile in the list; in liveplanner **Sign Out**, near the end, signs you out of every liveworkspace app in this browser.
+  **API Tokens** sits under **Developers**. In livehuddle **Notifications** sits beside Profile in
+  the list; in liveplanner **Sign Out**, near the end, signs you out of every liveworkspace app in
+  this browser.
 </AppNote>
 
 ## Email notifications
@@ -51,12 +54,11 @@ Below it:
 The email switches only appear when the deployment can send mail and you are signed in. A guest sees a note asking them to sign in to choose their emails, since without an address the switches could never apply. The same page also holds **In-Editor Notifications**, under **In the Editor**, which works for everyone, and, where it is offered, a **Phone** section to turn on phone notifications, with a switch for each kind.
 
 <AppNote app="livehuddle">
-  The comment, mention and action switches are your account's, for the liveworkspace apps that have them: livehuddle never sends those emails.
+  The comment, mention and action switches are your account's, for the liveworkspace apps that have
+  them: livehuddle never sends those emails.
 </AppNote>
 
-<AppNote app="liveplanner">
-  liveplanner's list also has **Someone Fills In My Form**.
-</AppNote>
+<AppNote app="liveplanner">liveplanner's list also has **Someone Fills In My Form**.</AppNote>
 
 ## Danger zone
 

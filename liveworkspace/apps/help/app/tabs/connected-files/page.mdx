@@ -3,19 +3,20 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Connected Files',
-  description: 'Connect a file from any liveworkspace app as a tab in your work: a diagram, a plan, a document, a design or another file, one tap away from the work it belongs to.',
+  description:
+    'Connect a file from any liveworkspace app as a tab in your work: a diagram, a plan, a design or another file, one tap away from the work it belongs to.',
   path: '/help/tabs/connected-files/',
 });
 
-<ArticleLayout title="Connected Files" description="Add a tab that opens a file from any liveworkspace app, so every part of a project is one tap away." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout path="tabs/connected-files" title="Connected Files" description="Add a tab that opens a file from any liveworkspace app, so every part of a project is one tap away." categoryTitle="Tabs" categorySlug="tabs">
 
-A project rarely lives in one file. The architecture may be a canvas in livediagram, the delivery plan in liveplanner, the brief a document in livedocuments and the screens in livedesign. A **connected file** is a tab in your <Noun />'s tab bar that stands for one of those files. It shows the file's app logo and its name, and pressing it shows a preview of the file with a button to open it.
+A project rarely lives in one file. The architecture may be a canvas in livediagram, the delivery plan in liveplanner, the brief in livedocuments and the screens in livedesign. A **connected file** is a tab in your <Noun />'s tab bar that stands for one of those files. It shows the file's app logo and its name, and pressing it shows a preview of the file with a button to open it.
 
 ## Connecting a file
 
 <Step n={1}>
-  Add a tab with the **+** at the end of the tab bar (or open a <Noun />'s empty tab). Its start
-  screen opens.
+  Add a tab with the **+** at the end of the tab bar (or open a <Noun />
+  's empty tab). Its start screen opens.
 </Step>
 
 <Step n={2}>
@@ -63,7 +64,7 @@ A small amber dot on the tab means it opens nothing just now. Its page says why:
 - **This file is no longer there.** The file was moved to the Trash or deleted. Remove the tab.
 - **This connection's link was removed.** The file's owner ended its link from its Share dialog. **Connect Again** makes a new one.
 - **Connect this copy.** The tab came with a copy of the <Noun /> or an import, so it does not open the file yet. **Connect Again** connects it here.
-- **Connected files open when you are online.** A <Noun /> saved only in this browser, or no network.
+- **Connected files open when you are online.** A <Noun /> saved only Offline, or no network.
 
 ## Who can do what
 
@@ -73,21 +74,32 @@ A small amber dot on the tab means it opens nothing just now. Its page says why:
 Connected tabs are made from the editor only. Agents and the CLI can see a connected tab's app and name, never where it leads, and cannot make one.
 
 <AppNote app="livehuddle">
-  A meeting rarely needs only its space: the agenda in livedocuments, the plan in liveplanner, the architecture in livediagram, the screens in livedesign. Another livehuddle space has no Viewer role, so with Viewer chosen a space in the list cannot be picked: connect it as an Editor or a Participant. livehuddle's share roles are **Editor** and **Participant**; **Participants** see connected tabs and open them, and so does anyone on an older Viewer link. A connected tab holds no room of its own: nothing is placed on it, and no one walks into it. API scripts (not agents and the CLI) can see a connected tab's app and name, never where it leads, and cannot make one.
+  A meeting rarely needs only its space: the agenda in livedocuments, the plan in liveplanner, the
+  architecture in livediagram, the screens in livedesign. Another livehuddle space has no Viewer
+  role, so with Viewer chosen a space in the list cannot be picked: connect it as an Editor or a
+  Participant. livehuddle's share roles are **Editor** and **Participant**; **Participants** see
+  connected tabs and open them, and so does anyone on an older Viewer link. A connected tab holds no
+  room of its own: nothing is placed on it, and no one walks into it. API scripts (not agents and
+  the CLI) can see a connected tab's app and name, never where it leads, and cannot make one.
 </AppNote>
 
 <AppNote app="livedocuments">
-  The empty tab's start screen is **Start Making Pages**. When the empty tab is the document's only tab, it stays, and the connected tab joins it. **Connect File** is offered only when you are signed in and can change the document's tabs: not to Viewers or Participants, on a link for one tab, in an embed, or in a document in This Browser. A connected tab holds no pages of its own.
+  The empty tab's start screen is **Start Making Pages**. When the empty tab is the document's only
+  tab, it stays, and the connected tab joins it. **Connect File** is offered only when you are
+  signed in and can change the document's tabs: not to Viewers or Participants, on a link for one
+  tab, in an embed, or in a document kept Offline. A connected tab holds no pages of its own.
 </AppNote>
 
 <AppNote app="livedesign">
-  A connected tab holds no pages of its own. Connected files in livedesign read as "a diagram, a plan, a document or another design".
+  A connected tab holds no pages of its own. Connected files in livedesign read as "a diagram, a
+  plan, a document or another design".
 </AppNote>
 
 <AppNote app="liveplanner">
   The start screen is **Start Planning**, and **Connect File** is at the very bottom of its sidebar (just below **Import**). A connected tab holds no boards, sheets or cards of its own.
 
-  **Start a Connected Project.** To start a whole project across the apps at once, open the [Explorer](/help/explorer/explorer-page/)'s **Home** with **All Apps** picked and press **Start a Project** beside **What you can make**. Pick a kit: **Software Project** (a plan, an architecture diagram, a design doc and a team Space), **Product Launch** (a launch plan, a keynote, a roadmap and a launch room), **Team Workshop** (a kick-off deck, an affinity map, a retro board and a workshop room) or **Website Build** (a build board, wireframes and a site brief). Give it a **Project Name**, pick the role the connections give (**Editor**, **Participant** or **Viewer**: anyone who can open one of the files can then edit, take part in or view the others), and press **Create Project**. One press makes a new folder in My Work holding every file, each started from its app's template (the plan with its card types and example cards), and connects each one to all the others as connected tabs. When it's done, **Open Folder** takes you there and **Start Another** begins again. If part of it couldn't be made, **Retry** finishes it, or **Remove What Was Made** takes it all away. Starting a project needs an account, so signed out you see **Sign In to Create**.
+**Start a Connected Project.** To start a whole project across the apps at once, open the [Explorer](/help/explorer/explorer-page/)'s **Home** with **All Apps** picked and press **Start a Project** beside **What you can make**. Pick a kit: **Software Project** (a plan, an architecture diagram, a design doc and a team Space), **Product Launch** (a launch plan, a keynote, a roadmap and a launch room), **Team Workshop** (a kick-off deck, an affinity map, a retro board and a workshop room) or **Website Build** (a build board, wireframes and a site brief). Give it a **Project Name**, pick the role the connections give (**Editor**, **Participant** or **Viewer**: anyone who can open one of the files can then edit, take part in or view the others), and press **Create Project**. One press makes a new folder in My Work holding every file, each started from its app's template (the plan with its card types and example cards), and connects each one to all the others as connected tabs. When it's done, **Open Folder** takes you there and **Start Another** begins again. If part of it couldn't be made, **Retry** finishes it, or **Remove What Was Made** takes it all away. Starting a project needs an account, so signed out you see **Sign In to Create**.
+
 </AppNote>
 
 </ArticleLayout>

@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
   path: '/help/canvas/rotation/',
 });
 
-<ArticleLayout title="Rotating Elements" description="Tilt a shape, label, or image to a preset 45° angle from the right-click menu or the search palette." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("rotation")}>
+<ArticleLayout path="canvas/rotation" title="Rotating Elements" description="Tilt a shape, label, or image to a preset 45° angle from the right-click menu or the search palette." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("rotation")}>
 
 Most elements sit upright, but sometimes a shape, label, or image reads better at an angle: a tilted callout, a diagonal banner. The **Rotation** controls turn an element to the angle you want.
 
@@ -19,10 +19,7 @@ Most elements sit upright, but sometimes a shape, label, or image reads better a
   Another is a label following a sloped arrow.
 </AppNote>
 
-<AppNote app="livehuddle">
-  Another is a sign hung at a jaunty angle.
-</AppNote>
-
+<AppNote app="livehuddle">Another is a sign hung at a jaunty angle.</AppNote>
 
 <Figure caption="An element rotated 45° over its upright outline.">
   <Rotation />
@@ -36,10 +33,7 @@ Right-click an element and open the **Rotation** category. It offers eight prese
   You can also press the **⋯** button on the element's selection toolbar.
 </AppNote>
 
-<AppNote app="livedocuments">
-  On a touch screen, use a long press.
-</AppNote>
-
+<AppNote app="livedocuments">On a touch screen, use a long press.</AppNote>
 
 <Figure caption="The Rotation category: eight 45° tiles, with 45° chosen.">
   <RotationCategory />
@@ -61,36 +55,49 @@ With a single element selected, open the search palette (**Cmd+K** or **Cmd+.**,
 - Rotation turns an element about its centre, and is a per-element property, so different elements on the same tab can sit at different angles. Copy, paste and duplicate keep the angle.
 - Text, sticky notes and images can be rotated.
 - A rotated element keeps its resize handles, turned with it. Dragging one grows the element along its own tilted sides while the opposite corner or edge stays put. It doesn't snap to other elements while it is tilted.
-<AppNote app="livediagram,livedesign,livedocuments">
-  Shapes, freehand strokes and tables can be rotated too. Arrows have no Rotation category: move their ends instead, and arrows attached to a rotated element stay on its outline as it turns.
-</AppNote>
+  <AppNote app="livediagram,livedesign,livedocuments">
+    Shapes, freehand strokes and tables can be rotated too. Arrows have no Rotation category: move
+    their ends instead, and arrows attached to a rotated element stay on its outline as it turns.
+  </AppNote>
 
-<AppNote app="livediagram,livedocuments">
-  Videos and link cards can be rotated as well.
-</AppNote>
+<AppNote app="livediagram,livedocuments">Videos and link cards can be rotated as well.</AppNote>
 
-<AppNote app="livediagram">
-  So can paths.
-</AppNote>
+<AppNote app="livediagram">So can paths.</AppNote>
 
 <AppNote app="livehuddle">
-  Rooms and the Space's other pieces can be rotated, apart from furniture. **Furniture turns a quarter at a time, if at all.** Chairs, desks, sofas, tables and the other pieces drawn from the room's camera always stand upright, so they have no Rotation category. A piece with a front to face (a chair, a desk, a sofa, a bookshelf, a coffee machine and the like) turns instead: select one and press **Rotate Left** or **Rotate Right** on its selection toolbar (the search palette has the same two actions) to turn it to face another way. Select several and the same buttons turn each piece about its own centre. A piece with no front, such as a plant, has no turn at all.
+  Rooms and the Space's other pieces can be rotated, apart from furniture. **Furniture turns a
+  quarter at a time, if at all.** Chairs, desks, sofas, tables and the other pieces drawn from the
+  room's camera always stand upright, so they have no Rotation category. A piece with a front to
+  face (a chair, a desk, a sofa, a bookshelf, a coffee machine and the like) turns instead: select
+  one and press **Rotate Left** or **Rotate Right** on its selection toolbar (the search palette has
+  the same two actions) to turn it to face another way. Select several and the same buttons turn
+  each piece about its own centre. A piece with no front, such as a plant, has no turn at all.
 </AppNote>
 
 <AppNote app="livediagram,livedesign">
-  [Annotation](/help/canvas/annotations/) markers don't rotate: they are round note markers of a fixed size, so they have no Rotation category or **Rotate** actions, and a multi-selection's Rotation leaves them upright. [Pointer notes](/help/palette/pointer-notes/) don't rotate either: their line is pinned to a point, and turning the note would swing it away. They stay upright in the same way.
+  [Annotation](/help/canvas/annotations/) markers don't rotate: they are round note markers of a
+  fixed size, so they have no Rotation category or **Rotate** actions, and a multi-selection's
+  Rotation leaves them upright. [Pointer notes](/help/palette/pointer-notes/) don't rotate either:
+  their line is pinned to a point, and turning the note would swing it away. They stay upright in
+  the same way.
 </AppNote>
 
 <AppNote app="livedocuments">
-  [Pointer notes](/help/palette/pointer-notes/) don't rotate: their line is pinned to a point, and turning the note would swing it away. Nor do an article's margin notes. They have no Rotation category or **Rotate** actions, and a multi-selection's Rotation leaves them upright.
+  [Pointer notes](/help/palette/pointer-notes/) don't rotate: their line is pinned to a point, and
+  turning the note would swing it away. Nor do an article's margin notes. They have no Rotation
+  category or **Rotate** actions, and a multi-selection's Rotation leaves them upright.
 </AppNote>
 
 <AppNote app="livediagram">
-  A piece that moved to livehuddle with Avatar mode (a chair, a fence, a virtual office piece) shows on an older board as a **Moved to livehuddle** card, and has no Rotation category. Notes on an [event storming board](/help/canvas/event-storming-boards/) have no Rotation category: their tilt is part of the notation.
+  A piece that moved to livehuddle with Avatar mode (a chair, a fence, a virtual office piece) shows
+  on an older board as a **Moved to livehuddle** card, and has no Rotation category. Notes on an
+  [event storming board](/help/canvas/event-storming-boards/) have no Rotation category: their tilt
+  is part of the notation.
 </AppNote>
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  The **Bounce** and **Wobble** [animations](/help/canvas/animations/) compose with an element's rotation, so a tilted shape still bobs or wiggles around its angle.
+  The **Bounce** and **Wobble** [animations](/help/canvas/animations/) compose with an element's
+  rotation, so a tilted shape still bobs or wiggles around its angle.
 </AppNote>
 
 <Tip>

@@ -18,7 +18,9 @@ type Manifest = {
 const root = JSON.parse(
   readFileSync(new URL('../../../../../../livediagram/package.json', import.meta.url), 'utf8'),
 ) as Manifest;
-const workspaces = workspaceManifests(new URL('../../../../../../livediagram/', import.meta.url)) as Manifest[];
+const workspaces = workspaceManifests(
+  new URL('../../../../../../livediagram/', import.meta.url),
+) as Manifest[];
 const specOf = (m: Manifest, dep: string) => m.devDependencies?.[dep] ?? m.dependencies?.[dep];
 const deps = (m: Manifest) => Object.entries({ ...m.dependencies, ...m.devDependencies });
 

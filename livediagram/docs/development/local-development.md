@@ -39,15 +39,15 @@ corepack pnpm dev:diagram
 
 Turbo spins up livediagram's seven dev servers in parallel, in its port block (3100 onward):
 
-| App              | Dev URL                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3100`: **everything on one port**, stitched like production                      |
-| `apps/marketing` | `http://localhost:3101`                                                                            |
-| `apps/editor`    | `http://localhost:3102` (clean routes: /new, /document/<id>, ...)                                  |
-| `liveworkspace/apps/help`      | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livediagram corepack pnpm --filter @liveworkspace/help dev`) |
-| `apps/community` | `http://localhost:3105/community`                                                                  |
-| `apps/api`       | `http://localhost:8687/api`                                                                        |
-| `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+| App                       | Dev URL                                                                                                                     |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router`             | `http://localhost:3100`: **everything on one port**, stitched like production                                               |
+| `apps/marketing`          | `http://localhost:3101`                                                                                                     |
+| `apps/editor`             | `http://localhost:3102` (clean routes: /new, /document/<id>, ...)                                                           |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livediagram corepack pnpm --filter @liveworkspace/help dev`) |
+| `apps/community`          | `http://localhost:3105/community`                                                                                           |
+| `apps/api`                | `http://localhost:8687/api`                                                                                                 |
+| `apps/mcp`                | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only)                          |
 
 Links the local workers hand out point at the local editor: the mcp's dev script passes `CONSENT_BASE_URL` and the
 api's passes `APP_BASE_URL`, both `http://localhost:3100`, so a tool's document link, the OAuth consent page and an

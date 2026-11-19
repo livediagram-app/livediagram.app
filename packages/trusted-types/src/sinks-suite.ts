@@ -11,8 +11,8 @@ export type TrustedTypesSinkOptions = {
   root: string;
   /** The Next.js apps whose pages must boot the default policy and send the header. */
   apps: readonly string[];
-  /** The app that is a client app end to end and sends its header from `src/worker.ts`. */
-  editorApp: string;
+  /** The app that is a client app end to end and sends its header from `src/worker.ts`, if there is one. */
+  editorApp?: string;
   /** The header the product's pages send. */
   csp: string;
   /** Files (by path suffix) that may call `new DOMParser()` themselves: the inert parse policy's own module. */
@@ -24,6 +24,9 @@ export type TrustedTypesSinkOptions = {
    * through `sanitizedHtml`.
    */
   builderMarkup?: readonly string[];
+  /** The folders under `root` whose sources the sink checks read: the product's `apps` and `packages` by default, or
+   *  one app's folder (`['apps/help']`) where the root holds other apps that are not this suite's. */
+  sources?: readonly string[];
 };
 
 const SKIPPED_DIRS = ['node_modules', 'out', 'dist', 'e2e', 'test-results', 'scripts'];
@@ -67,17 +70,23 @@ export function escapesUnlisted(
 }
 
 export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): void {
-  const { root, apps, editorApp, csp, domParserAllowed = [], builderMarkup = [] } = options;
+  const {
+    root,
+    apps,
+    editorApp,
+    csp,
+    domParserAllowed = [],
+    builderMarkup = [],
+    sources: folders = ['apps', 'packages'],
+  } = options;
   const cache = new Map<string, string>();
   const read = (path: string) => {
     let text = cache.get(path);
     if (text === undefined) cache.set(path, (text = readFileSync(`${root}${path}`, 'utf8')));
     return text;
   };
-  const editorPrefix = `apps/${editorApp}/`;
-  const files = ['apps', 'packages']
-    .flatMap((d) => sources(`${root}${d}`))
-    .map((f) => f.slice(root.length));
+  const isEditor = (f: string) => editorApp !== undefined && f.startsWith(`apps/${editorApp}/`);
+  const files = folders.flatMap((d) => sources(`${root}${d}`)).map((f) => f.slice(root.length));
 
   describe('Trusted Types sinks', () => {
     // The policy only proves markup went through it; the sanitiser is what makes people's markup safe. So the
@@ -99,13 +108,11 @@ export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): voi
     it('mint TrustedHTML in the browser, never in a server component', () => {
       const isClient = (f: string) => read(f).startsWith("'use client';");
       const isLayout = (f: string) => /^apps\/[^/]+\/app\/layout\.tsx$/.test(f);
-      const sinks = files.filter(
-        (f) => !f.startsWith(editorPrefix) && htmlExpressions(read(f)).length > 0,
-      );
+      const sinks = files.filter((f) => !isEditor(f) && htmlExpressions(read(f)).length > 0);
       // Who imports a module, by its path without extension (relative or `@/` specifiers).
       const importers = (target: string) =>
         files.filter((f) => {
-          if (f.startsWith(editorPrefix)) return false;
+          if (isEditor(f)) return false;
           const app = /^(apps|packages)\/[^/]+\//.exec(f)![0];
           const stem = target.replace(/\.tsx?$/, '');
           // Type-only imports carry no code onto the page.

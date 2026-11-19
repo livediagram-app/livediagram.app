@@ -9,22 +9,20 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/assigned-actions/',
 });
 
-<ArticleLayout title="Assigned Actions" description="Turn any element into a piece of work: assign it to a teammate, describe what needs doing, and track it until it is done." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("assigned-actions")}>
+<ArticleLayout path="collaboration/assigned-actions" title="Assigned Actions" description="Turn any element into a piece of work: assign it to a teammate, describe what needs doing, and track it until it is done." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("assigned-actions")}>
 
 An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the <Noun />.
 
 Anyone who can edit the <Noun /> can assign an action to **themselves**, signed in or not, so actions also work as personal to-dos on a <Noun />. Assigning to other people is built on teams. For a <Noun /> in a team's shared library, the picker offers that team's members: joined ones, and invited ones who haven't accepted yet. Those are marked with an **Invited** badge; they get access to the <Noun /> when they join, and the optional email goes to their invite address.
 
-<AppNote app="livediagram">
-  Read more about shared libraries in [Team Shared Library](/help/collaboration/teams/team-shared-documents/).
-</AppNote>
-
-<AppNote app="livedocuments">
-  Read more about shared libraries in [Team Shared Library](/help/collaboration/teams/team-shared-documents/).
+<AppNote app="livediagram,livedocuments">
+  Read more about shared libraries in [Team Shared
+  Library](/help/collaboration/teams/team-shared-documents/).
 </AppNote>
 
 <AppNote app="livedesign">
-  Read more about shared libraries in [Team Shared Designs](/help/collaboration/teams/team-shared-designs/).
+  Read more about shared libraries in [Team Shared
+  Designs](/help/collaboration/teams/team-shared-designs/).
 </AppNote>
 
 A personal <Noun /> is self-assign only, but the dialog offers the fix inline: under "Move this <Noun /> into a team library to assign teammates", pick one of your teams and the <Noun /> moves into its shared library on the spot, so its members become assignable without leaving the editor. As a guest, the dialog suggests signing in and joining a team instead.
@@ -39,21 +37,22 @@ A personal <Noun /> is self-assign only, but the dialog offers the fix inline: u
 
 <Step n={2}>
   In **Assign an Action**, give it an **Action name** (up to 200 characters), add a **Description**
-  if the work needs more context, and pick **Myself** or a member of the <Noun />'s team.
+  if the work needs more context, and pick **Myself** or a member of the <Noun />
+  's team.
 </Step>
 
-<AppNote app="livediagram">
-  The **Description** takes up to 2,000 characters.
-</AppNote>
+<AppNote app="livediagram">The **Description** takes up to 2,000 characters.</AppNote>
 
 <Step n={3}>
   When you pick a teammate, an **Email (their name) about this action** switch appears, already on.
-  Leave it on if you want them to get an email with a link back to the <Noun />, then confirm with the
-  dialog's "Assign action" button.
+  Leave it on if you want them to get an email with a link back to the <Noun />, then confirm with
+  the dialog's "Assign action" button.
 </Step>
 
 <AppNote app="livedocuments">
-  On an [article page](/help/pages/articles/), you can assign an action to words too: select them and press **Assign Action** in the article's toolbar. The words are tinted and a marker in the margin opens the action.
+  On an [article page](/help/pages/articles/), you can assign an action to words too: select them
+  and press **Assign Action** in the article's toolbar. The words are tinted and a marker in the
+  margin opens the action.
 </AppNote>
 
 The element gains a small clipboard badge while the action is open. Anyone on the <Noun /> can click the badge to read the action, including who it is assigned to and who assigned it; people who can edit the <Noun /> can also work with it from there.
@@ -69,7 +68,10 @@ The element gains a small clipboard badge while the action is open. Anyone on th
 As soon as a tab has any actions or comment threads, a **Collaborate** button appears in the bottom-right row (hidden in Zen), with a small count of what is still open. Press it to open the panel as a pop-over above the button, in every layout; press it again or click the canvas to close it. The button disappears when the tab has nothing to collaborate on. At the top, **Open** and **Resolved** switch between what still needs doing (open actions and unresolved comment threads) and what is finished (completed actions and resolved threads), each with its count. When a tab has both comments and actions, the **All**, **Comments** and **Actions** chips underneath narrow the list to one kind. Actions assigned to you lead the Open list under **For You**. Each action row starts with a round check: tap it to mark the action done right there (or, under Resolved, to reopen it). Each comment row shows the element it is on and the latest reply, with the author's name in their colour. Click a row to jump to the element and open its thread or action.
 
 <AppNote app="livediagram">
-  The **Collaborate** button sits just before the **Layers** button. When the thread or action lives on a [comment panel](/help/palette/collaborate/comment-panels/) or an [action panel](/help/palette/collaborate/action-panels/) on the canvas, the row simply selects that card and brings it into view, since the card already shows it.
+  The **Collaborate** button sits just before the **Layers** button. When the thread or action lives
+  on a [comment panel](/help/palette/collaborate/comment-panels/) or an [action
+  panel](/help/palette/collaborate/action-panels/) on the canvas, the row simply selects that card
+  and brings it into view, since the card already shows it.
 </AppNote>
 
 Completing an action (or resolving a thread) moves it to the Resolved filter and clears the element's badge, so Open only ever shows what still needs doing. Clearing the last action and comment removes the panel entirely. If you would rather not have the button at all, turn off **Enable Collaborate Panel** in Settings › Panels › Collaborate; comments and actions still work from the elements themselves.
@@ -84,7 +86,8 @@ Click an action's badge to open its popover:
 - The bin removes the action from the element entirely: press it, then **Confirm**.
 
 <AppNote app="livediagram">
-  The pencil opens **Edit Action**, where **Status** is **Open**, **Done** or **Won’t Do**. **Delete Action** in the edit dialog removes the action too, with **Confirm Delete**.
+  The pencil opens **Edit Action**, where **Status** is **Open**, **Done** or **Won’t Do**. **Delete
+  Action** in the edit dialog removes the action too, with **Confirm Delete**.
 </AppNote>
 
 <AppNote app="livedesign">

@@ -4,8 +4,8 @@ Implements [help-centre.md](../help-centre.md).
 
 ## The app and its Worker
 
-| Thing             | Value                                                                                                |
-| ----------------- | ---------------------------------------------------------------------------------------------------- |
+| Thing             | Value                                                                                               |
+| ----------------- | --------------------------------------------------------------------------------------------------- |
 | App               | `apps/help` (`@liveworkspace/help`), a Next.js static export built six times into `./dist/<scope>/` |
 | Worker            | `liveworkspace-help`, staging `liveworkspace-help-staging`, no `workers.dev` and no preview URLs    |
 | Production routes | `www.liveworkspace.app/help*`, `liveworkspace.app/help*`; staging `staging.liveworkspace.app/help*` |
@@ -64,14 +64,14 @@ interface Category {
 
 ## MDX components (`@liveworkspace/help-site/mdx-components`)
 
-| Component                      | Renders                                                                                        |
-| ------------------------------ | ---------------------------------------------------------------------------------------------- |
+| Component                      | Renders                                                                                                                                                                                                                                                        |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<AppNote app="…">…</AppNote>` | the accented note; open for the scope's app and under All Apps, folded for other apps. `app` may list several (`app="livediagram,liveplanner"`, or an `apps` array): each app's mark in the label, the scope's palette when it is listed, else the first app's |
-| `<AppNotesFold />`             | placed by the layout, not by authors: the "How this works in N other apps" row and its notes   |
-| `<SameIn />`                   | placed by the layout: "Works the same in …" for apps with no note                              |
-| `<Noun />`, `<AppName />`      | the scope's word for the work (`noun.ts`) and the app's name; "file" and "every app" for `all` |
-| `<Figure app="…" />`           | a figure for the listed apps' helps only (comma list); `app="all"` for All Apps' slate variant; no `app`, everywhere |
-| `<AppliesTo />`                | the header's logo row (`BrandGlyph`), current app first and ringed                             |
+| `<AppNotesFold />`             | placed by the layout, not by authors: the "How this works in N other apps" row and its notes                                                                                                                                                                   |
+| `<SameIn />`                   | placed by the layout: "Works the same in …" for apps with no note                                                                                                                                                                                              |
+| `<Noun />`, `<AppName />`      | the scope's word for the work (`noun.ts`) and the app's name; "file" and "every app" for `all`                                                                                                                                                                 |
+| `<Figure app="…" />`           | a figure for the listed apps' helps only (comma list); `app="all"` for All Apps' slate variant; no `app`, everywhere                                                                                                                                           |
+| `<AppliesTo />`                | the header's logo row (`BrandGlyph`), current app first and ringed                                                                                                                                                                                             |
 
 Note palettes come from each app's brand ramp (`@liveworkspace/brand` `BRAND_APPS`): background brand-50, border
 brand-200, label brand-700, text brand-900, dark mode the 950/800/300/100 steps.

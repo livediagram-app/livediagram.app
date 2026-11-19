@@ -4,25 +4,26 @@ import { NotificationSettings } from '@liveworkspace/help-site/art/illustrations
 
 export const metadata = helpMetadata({
   title: 'Email Notifications',
-  description: 'The emails the app can send to signed-in users, what they contain, and how to turn each kind off in Settings.',
+  description:
+    'The emails the app can send to signed-in users, what they contain, and how to turn each kind off in Settings.',
   path: '/help/account-and-data/email-notifications/',
 });
 
-<ArticleLayout title="Email Notifications" description="Optional emails for signed-in users, and how to control every kind of them in Settings." categoryTitle="Account and Data" categorySlug="account-and-data">
+<ArticleLayout path="account-and-data/email-notifications" title="Email Notifications" description="Optional emails for signed-in users, and how to control every kind of them in Settings." categoryTitle="Account and Data" categorySlug="account-and-data">
 
 Email is an optional capability of <AppName />. It only does anything when the deployment has been set up to send mail. Almost everything goes to signed-in users, because email needs an address and a [guest identity](/help/account-and-data/guest-identity/) has none. The editor itself never needs an account or an email, so this is purely additive.
 
 <AppNote app="livediagram,livedesign">
-  The exceptions are mail addressed to someone by email before they have an account: a team invite, and an action assigned to or a mention of a team member who has not signed up yet.
+  The exceptions are mail addressed to someone by email before they have an account: a team invite,
+  and an action assigned to or a mention of a team member who has not signed up yet.
 </AppNote>
 
 <AppNote app="livehuddle">
-  The exception is a team invite, which is addressed to someone by email before they have an account.
+  The exception is a team invite, which is addressed to someone by email before they have an
+  account.
 </AppNote>
 
-<AppNote app="liveplanner,livedocuments">
-  Email goes only to signed-in users.
-</AppNote>
+<AppNote app="liveplanner,livedocuments">Email goes only to signed-in users.</AppNote>
 
 ## What we might send
 
@@ -38,23 +39,33 @@ There are four groups:
 Tips and check-ins come from liveworkspace, your account across its apps, so you get one series of tips however many apps you use. Team invitations, the note telling a team's admins that someone accepted or declined one, and the heads-up in the last week before one of your [API tokens](/help/account-and-data/api-tokens/) expires come from liveworkspace rather than from <AppName /> too.
 
 <AppNote app="livediagram,liveplanner,livedocuments,livedesign">
-  Notifications about your work also cover someone else commenting on a <Noun /> you own (at most one email per <Noun /> every 15 minutes, however busy the thread), and a teammate who assigns you an action on an element or [@mentions you in a comment](/help/collaboration/comments/#mentioning-a-teammate).
+  Notifications about your work also cover someone else commenting on a <Noun /> you own (at most
+  one email per <Noun /> every 15 minutes, however busy the thread), and a teammate who assigns you
+  an action on an element or [@mentions you in a
+  comment](/help/collaboration/comments/#mentioning-a-teammate).
 </AppNote>
 
 <AppNote app="livedocuments,liveplanner">
-  An @mention or assignment emails you once, and only people in the <Noun />'s team can reach you this way.
+  An @mention or assignment emails you once, and only people in the <Noun />
+  's team can reach you this way.
 </AppNote>
 
 <AppNote app="livedocuments">
-  The link when a [download of your data](/help/account-and-data/exporting-documents/#downloading-everything-at-once) is ready comes from liveworkspace too. Want them on your phone instead, or as well? See [Phone Notifications](/help/account-and-data/phone-notifications/).
+  The link when a [download of your
+  data](/help/account-and-data/exporting-documents/#downloading-everything-at-once) is ready comes
+  from liveworkspace too. Want them on your phone instead, or as well? See [Phone
+  Notifications](/help/account-and-data/phone-notifications/).
 </AppNote>
 
 <AppNote app="livediagram">
-  To hear about comments, mentions and actions on your phone instead, see [Phone Notifications](/help/account-and-data/phone-notifications/).
+  To hear about comments, mentions and actions on your phone instead, see [Phone
+  Notifications](/help/account-and-data/phone-notifications/).
 </AppNote>
 
 <AppNote app="liveplanner">
-  Someone filling in one of your [forms](/help/plan/forms/) is a kind too (at most one email per form every 15 minutes). The account messages include a note if one of your forms is suspended after reports.
+  Someone filling in one of your [forms](/help/plan/forms/) is a kind too (at most one email per
+  form every 15 minutes). The account messages include a note if one of your forms is suspended
+  after reports.
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -68,15 +79,24 @@ Tips and check-ins come from liveworkspace, your account across its apps, so you
 Notification emails keep your work out of your inbox where they can. Nothing from the <Noun />, and never a picture of it, goes into an email beyond what is said here.
 
 <AppNote app="livehuddle">
-  A joined-<Noun /> email tells you who opened which <Noun />, with a link to open it.
+  A joined-
+  <Noun /> email tells you who opened which <Noun />, with a link to open it.
 </AppNote>
 
 <AppNote app="livediagram,livedesign">
-  A comment notification tells you who commented and on which <Noun />, with a link to open it, but not what the comment said. Two carry a little more, because the words are addressed to you: a **mention** email quotes the comment you were mentioned in (cut to about 280 characters), and an **assigned action** email names the action and includes the start of its description (up to 200 characters). Both link to the <Noun />. An assigned-action email sent to someone who can't open the <Noun /> yet leaves the <Noun /> out and links to <AppName /> instead.
+  A comment notification tells you who commented and on which <Noun />, with a link to open it, but
+  not what the comment said. Two carry a little more, because the words are addressed to you: a
+  **mention** email quotes the comment you were mentioned in (cut to about 280 characters), and an
+  **assigned action** email names the action and includes the start of its description (up to 200
+  characters). Both link to the <Noun />. An assigned-action email sent to someone who can't open
+  the <Noun /> yet leaves the <Noun /> out and links to <AppName /> instead.
 </AppNote>
 
 <AppNote app="livedocuments,liveplanner">
-  A comment notification tells you who commented and on which <Noun />, with a link to open it, but not what the comment said. A mention is the exception, because it was written to you: it quotes the comment (cut short if it is long). An assigned action carries its name and the start of its description, and names the <Noun /> only if you can open it.
+  A comment notification tells you who commented and on which <Noun />, with a link to open it, but
+  not what the comment said. A mention is the exception, because it was written to you: it quotes
+  the comment (cut short if it is long). An assigned action carries its name and the start of its
+  description, and names the <Noun /> only if you can open it.
 </AppNote>
 
 ## Turning them off
@@ -88,7 +108,9 @@ Open **Settings** and choose **Notifications**, under the **Account** heading (t
 </AppNote>
 
 <AppNote app="livehuddle">
-  **Someone Comments on My Work**, **Someone Mentions Me in a Comment** and **Someone Assigns Me an Action** also show here: they are your account's switches for the liveworkspace apps that have comments and actions, and livehuddle never sends them.
+  **Someone Comments on My Work**, **Someone Mentions Me in a Comment** and **Someone Assigns Me an
+  Action** also show here: they are your account's switches for the liveworkspace apps that have
+  comments and actions, and livehuddle never sends them.
 </AppNote>
 
 <AppNote app="livediagram">
@@ -157,7 +179,11 @@ The switches are saved to your account, so they apply wherever you are signed in
 As a guest, the same place shows a short note asking you to sign in instead of the switches (on a deployment that sends email). **In-Editor Notifications**, above them, is a different thing: it controls the brief confirmations inside the editor and never sends email.
 
 <AppNote app="livehuddle">
-  The **In the Editor** section above the switches never sends email: **In-Editor Notifications** controls the brief confirmations inside the editor, **Join and Leave Sounds** plays a soft chime when someone arrives in the space you have open (and a softer one when they leave), and **Desktop Notifications** shows a notification on your computer when someone nudges you while the tab is in the background (your browser asks first).
+  The **In the Editor** section above the switches never sends email: **In-Editor Notifications**
+  controls the brief confirmations inside the editor, **Join and Leave Sounds** plays a soft chime
+  when someone arrives in the space you have open (and a softer one when they leave), and **Desktop
+  Notifications** shows a notification on your computer when someone nudges you while the tab is in
+  the background (your browser asks first).
 </AppNote>
 
 </ArticleLayout>

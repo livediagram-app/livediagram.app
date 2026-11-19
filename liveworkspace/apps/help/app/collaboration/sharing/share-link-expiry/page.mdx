@@ -13,7 +13,7 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/sharing/share-link-expiry/',
 });
 
-<ArticleLayout title="Share Link Expiry" description="Set a share link to expire after a fixed time, then extend or delete it later." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "share-link-expiry")}>
+<ArticleLayout path="collaboration/sharing/share-link-expiry" title="Share Link Expiry" description="Set a share link to expire after a fixed time, then extend or delete it later." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "share-link-expiry")}>
 
 A share link is a standing invitation: anyone holding the URL keeps the link's role for as long as it lives. A lifetime bounds that, so a link stops working on its own without you having to remember to revoke it. It complements the [share password](/help/collaboration/sharing/share-passwords/) as a second self-serve control.
 
@@ -42,63 +42,54 @@ A link that has run out moves to the dialog's **Expired** list. Press **Extend**
 
 To get rid of an expired link for good, press its bin. A live pass is stopped with its bin (**Revoke link**).
 
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+A link's lifetime can't be changed once it is created, and a link set to **Forever** can't be given an expiry later. To change either, revoke the link and create a new one with the lifetime you want (the new pass has a new URL).
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+Expired links move into an **Expired** section below your live passes, greyed out with an **Expired** stamp beside the struck-through URL. **Delete** removes one straight away, without a confirmation. The Expired section only appears when there is something in it.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  The lifetimes are 7 days, 30 days and 183 days. With the **Valid** control focused, the arrow keys move between the choices. Passes with a deadline show a small countdown chip beside **Valid** (hours and minutes on the last day). Example spans: a week for a workshop group or a month for a project review.
+</AppNote>
+
+<AppNote app="livediagram,livedesign,livehuddle">
+No warning or email is sent before a link expires: the countdown chip in the Share dialog is where to see how long a link has left.
+</AppNote>
+
 <AppNote app="livediagram">
-  The lifetimes are 7 days, 30 days and 183 days. With the **Valid** control focused, the arrow keys move between the choices. Passes with a deadline show a small countdown chip beside **Valid** (hours and minutes on the last day). Example spans: a week for a workshop group or a month for a project review.
+<Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
+  <DiagramShareLifetimes />
+</Figure>
 
-  <Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
-    <DiagramShareLifetimes />
-  </Figure>
-
-  Visitors see the same not-found page as for a revoked link. People who already have the canvas open lose access the next time they load the page or their changes are saved.
-
-  No warning or email is sent before a link expires: the countdown chip in the Share dialog is where to see how long a link has left.
-
-  Expired links move into an **Expired** section below your live passes, greyed out with an **Expired** stamp beside the struck-through URL. **Delete** removes one straight away, without a confirmation. The Expired section only appears when there is something in it.
-
-  A link's lifetime can't be changed once it is created, and a link set to **Forever** can't be given an expiry later. To change either, revoke the link and create a new one with the lifetime you want (the new pass has a new URL).
+Visitors see the same not-found page as for a revoked link. People who already have the canvas open lose access the next time they load the page or their changes are saved.
 </AppNote>
+
 <AppNote app="livedesign">
-  The lifetimes are 7 days, 30 days and 183 days. With the **Valid** control focused, the arrow keys move between the choices. Passes with a deadline show a small countdown chip beside **Valid** (hours and minutes on the last day). Example spans: a week for a workshop group or a month for a project review.
+<Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
+  <DesignShareLifetimes />
+</Figure>
 
-  <Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
-    <DesignShareLifetimes />
-  </Figure>
-
-  Visitors see the same not-found page as for a revoked link. People who already have the design open lose access the next time they load the page or their changes are saved.
-
-  No warning or email is sent before a link expires: the countdown chip in the Share dialog is where to see how long a link has left.
-
-  Expired links move into an **Expired** section below your live passes, greyed out with an **Expired** stamp beside the struck-through URL. **Delete** removes one straight away, without a confirmation. The Expired section only appears when there is something in it.
-
-  A link's lifetime can't be changed once it is created, and a link set to **Forever** can't be given an expiry later. To change either, revoke the link and create a new one with the lifetime you want (the new pass has a new URL).
+Visitors see the same not-found page as for a revoked link. People who already have the design open lose access the next time they load the page or their changes are saved.
 </AppNote>
+
 <AppNote app="livedocuments">
-  The lifetimes are 7 days, 30 days and 183 days. With the **Valid** control focused, the arrow keys move between the choices. Passes with a deadline show a small countdown chip beside **Valid** (hours and minutes on the last day). Example spans: a week for a workshop group or a month for a project review.
+<Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
+  <DocumentsShareLifetimes />
+</Figure>
 
-  <Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
-    <DocumentsShareLifetimes />
-  </Figure>
-
-  Visitors see the same not-found page as for a revoked link. People who already have the document open lose access the next time they load the page or their changes are saved.
-
-  Expired links move into an **Expired** section below your live passes, greyed out with an **Expired** stamp beside the struck-through URL. **Delete** removes one straight away, without a confirmation. The Expired section only appears when there is something in it.
-
-  A link's lifetime can't be changed once it is created, and a link set to **Forever** can't be given an expiry later. To change either, revoke the link and create a new one with the lifetime you want (the new pass has a new URL).
+Visitors see the same not-found page as for a revoked link. People who already have the document open lose access the next time they load the page or their changes are saved.
 </AppNote>
+
 <AppNote app="livehuddle">
   The lifetimes are 7 days, 30 days and 183 days. With the **Valid** control focused, the arrow keys move between the choices. Passes with a deadline show a small countdown chip beside **Valid** (hours and minutes on the last day). Example spans: a week for a guest at one meeting or a month for a project team.
 
-  <Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
-    <HuddleShareLifetimes />
-  </Figure>
+<Figure caption="Valid sets a new pass's lifetime. An expiring pass counts down, and an expired one waits under Expired with Extend.">
+  <HuddleShareLifetimes />
+</Figure>
 
-  Visitors see the same not-found page as for a revoked link. People who already have the Space open lose access the next time they load the page or their changes are saved.
-
-  No warning or email is sent before a link expires: the countdown chip in the Share dialog is where to see how long a link has left.
-
-  Expired links move into an **Expired** section below your live passes, greyed out with an **Expired** stamp beside the struck-through URL. **Delete** removes one straight away, without a confirmation. The Expired section only appears when there is something in it.
-
-  A link's lifetime can't be changed once it is created, and a link set to **Forever** can't be given an expiry later. To change either, revoke the link and create a new one with the lifetime you want (the new pass has a new URL).
+Visitors see the same not-found page as for a revoked link. People who already have the Space open lose access the next time they load the page or their changes are saved.
 </AppNote>
 
 </ArticleLayout>

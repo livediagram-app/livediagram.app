@@ -11,29 +11,47 @@ export const metadata = helpMetadata({
   path: '/help/tools/layout-cleanup/',
 });
 
-<ArticleLayout title="Layout Cleanup" description="Tidiers for nudging things into alignment and for laying connected shapes out from scratch." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
+<ArticleLayout path="tools/layout-cleanup" title="Layout Cleanup" description="Tidiers for nudging things into alignment and for laying connected shapes out from scratch." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
 
 <AppNote app="livediagram">
-  When a diagram gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the layout never really happened and you want it computed for you. livediagram has a tool for each, both one press away on the **Tidy** button in Diagram mode, and in the [command palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how the diagram is wired together.
+  When a diagram gets messy, you usually want one of two things: either everything is nearly aligned
+  and you just want the drift gone, or the layout never really happened and you want it computed for
+  you. livediagram has a tool for each, both one press away on the **Tidy** button in Diagram mode,
+  and in the [command palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**.
+  They are complementary, not duplicates: one snaps the positions you already have, the other
+  recomputes positions from how the diagram is wired together.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
-  When a tab gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the shapes and arrows never really got a layout and you want it computed for you. <AppName /> has a tool for each, both in the [command palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how your shapes are wired together.
+  When a tab gets messy, you usually want one of two things: either everything is nearly aligned and
+  you just want the drift gone, or the shapes and arrows never really got a layout and you want it
+  computed for you. <AppName /> has a tool for each, both in the [command
+  palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**. They are
+  complementary, not duplicates: one snaps the positions you already have, the other recomputes
+  positions from how your shapes are wired together.
 </AppNote>
 
 <AppNote app="livehuddle">
-  A board fills up fast in a meeting: notes dropped in a hurry, rooms pulled to roughly the right size, pictures that almost share an edge. **Auto-align** puts that right in one step. It snaps what you already have onto the grid, so near-aligned notes become exactly aligned and nothing moves far.
+  A board fills up fast in a meeting: notes dropped in a hurry, rooms pulled to roughly the right
+  size, pictures that almost share an edge. **Auto-align** puts that right in one step. It snaps
+  what you already have onto the grid, so near-aligned notes become exactly aligned and nothing
+  moves far.
 </AppNote>
 
 <AppNote app="livedesign">
-  To tidy a drawing on a logo page instead, use the page's own **Tidy** button: see [Logo Pages](/help/pages/logo-pages/).
+  To tidy a drawing on a logo page instead, use the page's own **Tidy** button: see [Logo
+  Pages](/help/pages/logo-pages/).
 </AppNote>
 
 <AppNote app="livedocuments">
-  To straighten a single infographic or slide page instead, use the page's own **Tidy** button: see [Working with Pages](/help/pages/working-with-pages/).
+  To straighten a single infographic or slide page instead, use the page's own **Tidy** button: see
+  [Working with Pages](/help/pages/working-with-pages/).
 </AppNote>
 
-<Figure app="livediagram,livehuddle" caption="The Cleanup tools take a scattered, mis-sized jumble and turn it into a neat, aligned layout.">
+<Figure
+  app="livediagram,livehuddle"
+  caption="The Cleanup tools take a scattered, mis-sized jumble and turn it into a neat, aligned layout."
+>
   <CleanupBeforeAfter />
 </Figure>
 
@@ -42,12 +60,13 @@ export const metadata = helpMetadata({
 - **Auto-align** is a grid snap. It rounds every element's size to a 10 px grid and lines shapes up by the edges and centres they nearly share, so near-aligned shapes become exactly aligned, small drift collapses, and nothing moves far. See [Auto-Align](/help/tools/layout-cleanup/auto-align/).
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  - **Auto Layout** ("tidy up" in the command palette) reads the arrow graph and computes brand-new positions, laying out connected shapes into clean layers, or into a style you pick. It can legitimately move an element a long way. See [Auto Layout](/help/tools/layout-cleanup/auto-layout/).
+  - **Auto Layout** ("tidy up" in the command palette) reads the arrow graph and computes brand-new
+  positions, laying out connected shapes into clean layers, or into a style you pick. It can
+  legitimately move an element a long way. See [Auto
+  Layout](/help/tools/layout-cleanup/auto-layout/).
 </AppNote>
 
-<AppNote app="livediagram">
-  The styles are flowchart (down or right), tree, or mindmap.
-</AppNote>
+<AppNote app="livediagram">The styles are flowchart (down or right), tree, or mindmap.</AppNote>
 
 <AppNote app="livedesign,livedocuments">
   The styles are layered (down or right), tree, or radial.
@@ -74,13 +93,18 @@ export const metadata = helpMetadata({
 ## How to Run Them
 
 <AppNote app="livediagram">
-  In Diagram mode, press the **Tidy** button (the broom in the bottom-right corner, just left of Layers). It opens a panel with a picture of each Auto Layout style (**Smart**, **Flowchart Down**, **Flowchart Right**, **Tree** and **Mindmap**) and **Auto-align** below them. Rest the mouse on one and the tab is laid out that way behind the panel, so you can compare styles before you commit; move away and everything goes back. Click the one you want to keep it.
+  In Diagram mode, press the **Tidy** button (the broom in the bottom-right corner, just left of
+  Layers). It opens a panel with a picture of each Auto Layout style (**Smart**, **Flowchart Down**,
+  **Flowchart Right**, **Tree** and **Mindmap**) and **Auto-align** below them. Rest the mouse on
+  one and the tab is laid out that way behind the panel, so you can compare styles before you
+  commit; move away and everything goes back. Click the one you want to keep it.
 </AppNote>
 
 You can also open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto Layout** or **Auto-align**, and pick the tidier you want under **Actions**. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
 
 <AppNote app="livehuddle">
-  In livehuddle there is one tidier: type **Auto-align** and pick **Auto-align to Grid** under **Actions**.
+  In livehuddle there is one tidier: type **Auto-align** and pick **Auto-align to Grid** under
+  **Actions**.
 </AppNote>
 
 <Figure caption="Typing layout in the command palette lists the tidiers under Actions.">
@@ -90,19 +114,30 @@ You can also open the [command palette](/help/search-panel/the-search-panel/comm
 Tidying is for editors: it isn't offered to a participant or in a view-only session.
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  The tidiers also leave a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/) stays exactly where it is.
+  The tidiers also leave a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first.
+  Inside an unlocked tab, a [locked element](/help/canvas/locking/) stays exactly where it is.
 </AppNote>
 
 <AppNote app="livediagram">
-  Anything on a [locked layer](/help/canvas/layers-visibility-and-locking/) stays where it is too. Neither tool will trash your work. Each one is tried before it's offered, and one that would change nothing, cover a shape, or pull shapes out of their lanes is greyed out with the reason. Run one from the command palette and the same check applies: nothing moves, and a short notice says why. See [When a style isn't offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
+  Anything on a [locked layer](/help/canvas/layers-visibility-and-locking/) stays where it is too.
+  Neither tool will trash your work. Each one is tried before it's offered, and one that would
+  change nothing, cover a shape, or pull shapes out of their lanes is greyed out with the reason.
+  Run one from the command palette and the same check applies: nothing moves, and a short notice
+  says why. See [When a style isn't
+  offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
 </AppNote>
 
 <AppNote app="livedesign">
-  Neither tool will trash your work. Each one is tried before it runs, and one that would change nothing or cover a shape leaves everything where it is, with a short notice saying why. See [When a style isn't offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
+  Neither tool will trash your work. Each one is tried before it runs, and one that would change
+  nothing or cover a shape leaves everything where it is, with a short notice saying why. See [When
+  a style isn't offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
 </AppNote>
 
 <AppNote app="livedocuments">
-  Neither tool will trash your work. Each one is tried before it runs, and one that would change nothing, cover a shape, or pull shapes out of their lanes or frames leaves everything where it is, with a short notice saying why. See [When a style isn't offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
+  Neither tool will trash your work. Each one is tried before it runs, and one that would change
+  nothing, cover a shape, or pull shapes out of their lanes or frames leaves everything where it is,
+  with a short notice saying why. See [When a style isn't
+  offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
 </AppNote>
 
 <Note>

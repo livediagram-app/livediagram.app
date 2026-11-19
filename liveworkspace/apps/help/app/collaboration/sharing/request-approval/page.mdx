@@ -15,14 +15,15 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/sharing/request-approval/',
 });
 
-<ArticleLayout title="Request Approval" description="Ask named people to sign off, and see where their answers stand." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "request-approval")}>
+<ArticleLayout path="collaboration/sharing/request-approval" title="Request Approval" description="Ask named people to sign off, and see where their answers stand." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "request-approval")}>
 
 Some <Noun plural /> need a sign-off. **Request Approval** asks the people you name to approve a <Noun />, each answering **Approve** or **Request Changes**. The <Noun /> keeps saying where it stands after it is approved.
 
 Think of a decision record, a policy or a review. The <Noun /> wears a badge saying where it stands.
 
 <AppNote app="liveplanner">
-  Think of a project plan, a budget, a roadmap, before the work starts. A plan is approved as a whole: its boards, Sheets, Dashboards and Forms together.
+  Think of a project plan, a budget, a roadmap, before the work starts. A plan is approved as a
+  whole: its boards, Sheets, Dashboards and Forms together.
 </AppNote>
 
 ## Asking for Approval
@@ -32,9 +33,9 @@ Think of a decision record, a policy or a review. The <Noun /> wears a badge say
 </Step>
 <Step n={2}>
   Tick the people who should approve it under **Approvers**. The list holds your team's members,
-  then the <Noun />'s owner and anyone who came in through a share link that opens every tab; each
-  shows how they reach it (Team, Owner or Link). Once there are more than eight, a **Filter people**
-  field appears.
+  then the <Noun />
+  's owner and anyone who came in through a share link that opens every tab; each shows how they
+  reach it (Team, Owner or Link). Once there are more than eight, a **Filter people** field appears.
 </Step>
 <Step n={3}>
   Add a **Note** about what to look at, and a **Due** day if you hope for an answer by then. The due
@@ -47,15 +48,18 @@ Think of a decision record, a policy or a review. The <Noun /> wears a badge say
 </Step>
 
 <AppNote app="livediagram">
-  The **Approval** tab is the last tab after **Passes** (and **Community**, on a canvas outside a team). When the due day passes, the badge says **Overdue** too.
+  The **Approval** tab is the last tab after **Passes** (and **Community**, on a canvas outside a
+  team). When the due day passes, the badge says **Overdue** too.
 </AppNote>
 
 <AppNote app="livedesign">
-  The **Approval** tab is the last of the dialog's tabs. When the due day passes, the badge says **Overdue** too.
+  The **Approval** tab is the last of the dialog's tabs. When the due day passes, the badge says
+  **Overdue** too.
 </AppNote>
 
 <AppNote app="livedocuments,liveplanner">
-  The **Approval** tab sits beside **Passes**. When the due day passes, the badge says **Overdue** too.
+  The **Approval** tab sits beside **Passes**. When the due day passes, the badge says **Overdue**
+  too.
 </AppNote>
 
 <AppNote app="livediagram">
@@ -84,7 +88,7 @@ Think of a decision record, a policy or a review. The <Noun /> wears a badge say
 
 Each approver gets an email, "Ada asked you to approve Q3 Plan", with your note, the due day and a button that opens the <Noun />. It goes to people who have **Someone Assigns Me an Action** switched on in their [email notifications](/help/account-and-data/email-notifications/), since an approval asks something of them as an assigned action does. You can name up to 10 people, never yourself, and a request is limited to 10 a day on one <Noun />.
 
-Only an Editor of the whole <Noun /> can ask. The tab is not there for <Noun plural /> kept in **This Browser**, in an embed, or opened through a link that covers one tab.
+Only an Editor of the whole <Noun /> can ask. The tab is not there for <Noun plural /> kept **Offline**, in an embed, or opened through a link that covers one tab.
 
 ## Approving or Requesting Changes
 
@@ -136,9 +140,7 @@ The **Approval** tab shows the same state at its top, with who asked and when, a
 - **Approved**: everyone approved and the <Noun /> has not changed since.
 - **Changed Since Approval**: the <Noun /> was saved after it was approved. This can take **up to a minute** to show after the first save, because an edit reaches the badge when the editor next reports its changes, at most once a minute. A rename, a move or a share does not count as a change.
 
-<AppNote app="liveplanner">
-  A change here is a card moved or a cell typed in.
-</AppNote>
+<AppNote app="liveplanner">A change here is a card moved or a cell typed in.</AppNote>
 
 The page reads the approval when you open the <Noun />, again when you return to the browser tab (at most every 30 seconds) and after your own changes. Someone else's answer shows on the next read; nothing is pushed live.
 
@@ -159,7 +161,8 @@ Every step is written to the <Noun />'s **History**: Approval Requested, Approve
 </AppNote>
 
 <AppNote app="livedocuments">
-  Find them under the History's **Approvals** filter, opened from the document's menu in the Explorer.
+  Find them under the History's **Approvals** filter, opened from the document's menu in the
+  Explorer.
 </AppNote>
 
 <AppNote app="liveplanner">
@@ -174,7 +177,7 @@ Every step is written to the <Noun />'s **History**: Approval Requested, Approve
 
 - **Editors of the whole <Noun />** ask and cancel.
 - **Named approvers** approve or request changes, whatever their level: Editor, Participant or Viewer.
-- Guests, Community visitors, embeds, <Noun plural /> in This Browser, and AI assistants or scripts using an API token see no approval.
+- Guests, Community visitors, embeds, <Noun plural /> kept Offline, and AI assistants or scripts using an API token see no approval.
 
 Editors also see the badge, and everyone else who can open the <Noun /> sees the badge only.
 

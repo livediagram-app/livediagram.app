@@ -5,11 +5,12 @@ import { AgentChangeToast } from '@liveworkspace/help-site/art/illustrations/age
 export const metadata = helpMetadata({
   title: "Reviewing and Undoing an Agent's Changes",
   description:
-    'Every change an agent or a script makes is a changeset you can review and undo for 30 days: from the change toast in the editor or the API, and from the CLI where the app has one.',
+    "Every change an agent or a script makes is a changeset you can review and undo for 30 days, from the editor's change toast, the API, or the CLI where offered.",
   path: '/help/developers/agent-changes/',
 });
 
 <ArticleLayout
+  path="developers/agent-changes"
   title="Reviewing and Undoing an Agent's Changes"
   description="See what an agent or a script changed, and take it back."
   categoryTitle="Developers"
@@ -19,7 +20,9 @@ export const metadata = helpMetadata({
 When an agent or a script changes one of your tabs through the [API](/help/developers/api-overview/), the change lands as a **changeset**: one write to one tab, applied all or nothing, credited to the person whose [API token](/help/account-and-data/api-tokens/) made it, and undoable as one unit. This article covers how to see what a changeset did and how to take it back.
 
 <AppNote app="livediagram,liveplanner,livedocuments,livedesign">
-  An [AI tool](/help/account-and-data/connect-ai-mcp/) or the [CLI](/help/developers/cli/) changing a tab counts the same, and you can take its change back from the CLI as well as the editor and the API.
+  An [AI tool](/help/account-and-data/connect-ai-mcp/) or the [CLI](/help/developers/cli/) changing
+  a tab counts the same, and you can take its change back from the CLI as well as the editor and the
+  API.
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -27,7 +30,10 @@ When an agent or a script changes one of your tabs through the [API](/help/devel
 </AppNote>
 
 <AppNote app="liveplanner">
-  In liveplanner a changeset can be a change to a board's settings, a dashboard's charts or a new tab from a template. Cards, Sheet cells and card types change through their own calls rather than changesets. Those changes arrive live too, credited to the token's owner, but they have no change note and no changeset to revert: to put one back, change it again.
+  In liveplanner a changeset can be a change to a board's settings, a dashboard's charts or a new
+  tab from a template. Cards, Sheet cells and card types change through their own calls rather than
+  changesets. Those changes arrive live too, credited to the token's owner, but they have no change
+  note and no changeset to revert: to put one back, change it again.
 </AppNote>
 
 ## In the Editor
@@ -35,14 +41,19 @@ When an agent or a script changes one of your tabs through the [API](/help/devel
 If you have the <Noun /> open when a changeset lands, you see it happen.
 
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">
-  The change arrives on your canvas straight away, everything it touched is outlined in its author's colour for two seconds, and a note appears at the bottom of the screen:
+  The change arrives on your canvas straight away, everything it touched is outlined in its author's
+  colour for two seconds, and a note appears at the bottom of the screen:
 </AppNote>
 
 <AppNote app="liveplanner">
-  The change arrives on your tab straight away, everything it touched is outlined in its author's colour for two seconds, and a note appears at the bottom of the screen.
+  The change arrives on your tab straight away, everything it touched is outlined in its author's
+  colour for two seconds, and a note appears at the bottom of the screen.
 </AppNote>
 
-<Figure app="livediagram,livedocuments,livedesign,livehuddle" caption="The change toast: who changed how many elements and why, with Show and Undo.">
+<Figure
+  app="livediagram,livedocuments,livedesign,livehuddle"
+  caption="The change toast: who changed how many elements and why, with Show and Undo."
+>
   <AgentChangeToast />
 </Figure>
 
@@ -376,8 +387,8 @@ Three routes read and revert changesets, with the same [authentication](/help/de
 
 <AppNote app="livedesign">
 
-| Route                                                      | What it does                                                                                                 |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| Route                                                    | What it does                                                                                                 |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | `GET /api/designs/{id}/changesets`                       | The recent changesets, newest first. `?tab=` narrows it to one tab; `?limit=` from 1 to 100 (20 by default). |
 | `GET /api/designs/{id}/changesets/{changesetId}`         | One changeset, with its result lines.                                                                        |
 | `POST /api/designs/{id}/changesets/{changesetId}/revert` | Reverts it, as a new changeset.                                                                              |
@@ -537,6 +548,5 @@ Everything else goes back to how the changeset found it. Comments and other cont
 ## How Long You Can Undo
 
 A changeset can be reviewed and reverted for **30 days** after it lands, the same as the [Trash](/help/account-and-data/trash/) keeps a deleted <Noun />. After that its record is deleted: it no longer appears in the list, and showing or reverting it answers `404`. The change itself stays on the tab.
-
 
 </ArticleLayout>

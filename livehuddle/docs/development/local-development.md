@@ -39,14 +39,14 @@ corepack pnpm dev:huddle
 
 Turbo spins up livehuddle's seven dev servers in parallel, in its port block (3500 onward):
 
-| App              | Dev URL                                                                       |
-| ---------------- | ----------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3500`: **everything on one port**, stitched like production |
-| `apps/marketing` | `http://localhost:3501`                                                       |
-| `apps/editor`    | `http://localhost:3502` (clean routes: /new, /document/<id>, ...)             |
-| `liveworkspace/apps/help`      | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livehuddle corepack pnpm --filter @liveworkspace/help dev`) |
-| `apps/community` | `http://localhost:3505/community`                                             |
-| `apps/api`       | `http://localhost:9087/api`                                                   |
+| App                       | Dev URL                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router`             | `http://localhost:3500`: **everything on one port**, stitched like production                                              |
+| `apps/marketing`          | `http://localhost:3501`                                                                                                    |
+| `apps/editor`             | `http://localhost:3502` (clean routes: /new, /document/<id>, ...)                                                          |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livehuddle corepack pnpm --filter @liveworkspace/help dev`) |
+| `apps/community`          | `http://localhost:3505/community`                                                                                          |
+| `apps/api`                | `http://localhost:9087/api`                                                                                                |
 
 The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3500/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
 

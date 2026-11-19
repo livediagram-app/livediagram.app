@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
   path: '/help/canvas/animations/',
 });
 
-<ArticleLayout title="Animating Elements" description="Each kind of element has animations made for it: words that type themselves in, shapes that pulse, notes that flutter, drawings that draw on, photos that pan, and tables that cascade in." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("animations")}>
+<ArticleLayout path="canvas/animations" title="Animating Elements" description="Each kind of element has animations made for it: words that type themselves in, shapes that pulse, notes that flutter, drawings that draw on, photos that pan, and tables that cascade in." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("animations")}>
 
 An animation can convey flow, signal status, reveal content, or draw the room's eye. Each kind of element animates in ways that suit what it is, so the right-click menu's **Animation** row offers only the animations that fit what you've selected, grouped by kind: **Shape**, **Sticky**, **Drawing**, **Media**, **Table**, **Icon**, **Chart**, **Sankey**, **Progress**, **Rating**, **Concept**, **Text**, and **Arrow**.
 
@@ -19,11 +19,16 @@ An animation can convey flow, signal status, reveal content, or draw the room's 
 </AppNote>
 
 <AppNote app="livedesign">
-  **Text** sits straight after **Shape**, there is no **Sequence** section, and the animations draw the room's eye while you share your screen. Charts, Sankey diagrams, progress bars, ratings, and concept graphics each have their own set, chosen in their section like the rest.
+  **Text** sits straight after **Shape**, there is no **Sequence** section, and the animations draw
+  the room's eye while you share your screen. Charts, Sankey diagrams, progress bars, ratings, and
+  concept graphics each have their own set, chosen in their section like the rest.
 </AppNote>
 
 <AppNote app="livedocuments">
-  There is no **Sequence** section. On a slide, a **Build** section after them sets how the selection comes in when you present (see [Builds](/help/selection-modes/slide-deck/slide-builds/)). The animations draw the room's eye during a presentation.
+  There is no **Sequence** section. On a slide, a **Build** section after them sets how the
+  selection comes in when you present (see
+  [Builds](/help/selection-modes/slide-deck/slide-builds/)). The animations draw the room's eye
+  during a presentation.
 </AppNote>
 
 A labelled shape shows two sections under **Animation**, **Shape** for the box and **Text** for its words, so the box can pulse while its label types itself in. Select several different kinds of element together and you get one section per kind, each applying only to the elements it fits. When only one kind applies, such as a single text element, its animations show directly under **Animation**.
@@ -52,12 +57,11 @@ For shapes:
 <AppNote app="livediagram">
   Annotations and link cards take these too.
 
-  A [boundary](/help/palette/boundaries/) is offered only the six that light it up in place (Blink, Glow, Trace, Gradient, Shimmer and Highlight), never one that moves it, since a container drifting while its contents stay still looks broken.
+A [boundary](/help/palette/boundaries/) is offered only the six that light it up in place (Blink, Glow, Trace, Gradient, Shimmer and Highlight), never one that moves it, since a container drifting while its contents stay still looks broken.
+
 </AppNote>
 
-<AppNote app="livedesign">
-  Annotations take these too.
-</AppNote>
+<AppNote app="livedesign">Annotations take these too.</AppNote>
 
 Every effect follows the element's real outline, so a diamond pulses as a diamond, and the attention animations pause between beats so they read as deliberate rather than frantic. How far a shape travels scales with its size, so a tiny status light and a large box both look right.
 
@@ -68,7 +72,8 @@ The Shape animations that move or fade the whole element, **Blink**, **Heartbeat
 On a sticky note, drawing, image, video, or table, the element plays one body animation at a time: picking Bounce replaces a Ken Burns, and picking Ken Burns replaces the Bounce. On a chart, progress bar, rating, or concept graphic, the motion plays alongside the element's own animation, so a pie can bounce while its slices sweep in.
 
 <AppNote app="livediagram">
-  Sankey diagrams and sequence diagrams get a **Shape** section too, and their motion plays alongside their own animation.
+  Sankey diagrams and sequence diagrams get a **Shape** section too, and their motion plays
+  alongside their own animation.
 </AppNote>
 
 ## Text
@@ -98,14 +103,9 @@ The ones that bring words in (Typewriter, Words, Cascade, Focus, Scramble, Highl
 
 For freehand strokes and paths:
 
-<AppNote app="livediagram,livedesign">
-  These include pen strokes and freehand lines.
-</AppNote>
+<AppNote app="livediagram,livedesign">These include pen strokes and freehand lines.</AppNote>
 
-<AppNote app="livedocuments">
-  An AI assistant or the API can add them.
-</AppNote>
-
+<AppNote app="livedocuments">An AI assistant or the API can add them.</AppNote>
 
 - **Draw** draws the line on from its start to its end.
 - **Trace** runs a bright light with a tail along the line, and **Shimmer** glints along it now and then.
@@ -139,7 +139,8 @@ However many rows a table has, its cascade takes the same time.
 Right-click an arrow and pick a **flow** from the **Arrow** section under **Animation** to show direction along its path: **Dashes** march along the line, **Dots** and **Beads** travel it, **Pulse** breathes its opacity, **Grow** breathes its thickness, and **Glow** pulses a soft halo. There's also **Draw** (the line repeatedly draws itself on from start to end), **Comet** (a glowing dot trails a fading tail along the path), **Rainbow** (the colour cycles through the spectrum), **Strobe** (a hard on/off blink), and **Wind** (fast speed-line dashes). For quieter emphasis, **Heartbeat** double-pumps the line's thickness, **Breathe** swells it slowly, **Shimmer** glints occasionally, and **Signal** sends a single discrete packet along the path, one message at a time. Flow is ideal for data and process diagrams where you want to show which way things move.
 
 <AppNote app="livediagram">
-  With only arrows selected, the flows show directly under **Animation**; the **Arrow** section appears when other kinds are selected too.
+  With only arrows selected, the flows show directly under **Animation**; the **Arrow** section
+  appears when other kinds are selected too.
 </AppNote>
 
 ## Animating an Icon

@@ -8,50 +8,65 @@ export const metadata = helpMetadata({
   path: '/help/privacy-and-security/offline-mode/',
 });
 
-<ArticleLayout title="Offline Mode" description="Work saved only in this browser, where a guest's new work starts, and how to move it to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+<ArticleLayout path="privacy-and-security/offline-mode" title="Offline Mode" description="Work saved only in this browser, where a guest's new work starts, and how to move it to and from your account." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
 
 Most <Noun plural /> are saved to <AppName />'s servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a <Noun /> saved **only in the browser you made it in**, that is never stored on the server. It suits private, local-first work, simply trying <AppName /> out, or wanting a <Noun /> that physically never leaves your machine.
 
-## Creating in This Browser
+## Creating an offline <Noun />
 
-Offline Mode is chosen per <Noun />, so you can keep normal <Noun plural /> and ones in This Browser side by side.
+Offline Mode is chosen per <Noun />, so you can keep normal <Noun plural /> and ones kept Offline side by side.
 
-- **If you haven't signed in**, your new <Noun plural /> start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from [New <Noun capital />](/new), and from the links that create a <Noun /> straight away (a template from the home page, say), starts in This Browser. Use **Sync <Noun capital />** from its Share dialog if you would rather it went to the server now.
+- **If you haven't signed in**, your new <Noun plural /> start Offline. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from [New <Noun capital />](/new), and from the links that create a <Noun /> straight away (a template from the home page, say), starts Offline. Use **Sync <Noun capital />** from its Share dialog if you would rather it went to the server now.
 - **Once you've signed in**, new <Noun plural /> go to your account. To keep one only in this browser, choose **Take Offline** from its menu (see below).
 - **A <Noun /> made inside a folder or a team** goes to the server, whoever makes it, because that is where the folder or team lives.
-- The <Noun /> is written to your browser's own storage (IndexedDB) and opens like any other. In the Explorer, the place these live is called **Browser Storage**, and each one carries a **Browser Storage** pill, so you always know which <Noun plural /> live only in this browser. Hover or focus the pill to read that clearing this browser's site data deletes the <Noun />. The rest of the Explorer lists only <Noun plural /> on the server, so **Browser Storage**, a space of its own in the Explorer sidebar's **Spaces** group, is where you find them all.
+- The <Noun /> is written to your browser's own storage (IndexedDB) and opens like any other. In the Explorer each one carries an **Offline** pill, so you always know which <Noun plural /> live only in this browser. Hover or focus the pill to read that clearing this browser's site data deletes the <Noun />. The rest of the Explorer lists only <Noun plural /> on the server, so **Offline**, a space of its own in the Explorer sidebar's **Spaces** group, is where you find them all.
 
 <AppNote app="livediagram,livehuddle">
-  A new <Noun />'s start screen shows where it is kept with a **Sync <Noun capital /> to Server** switch: off for a guest ("Saved in this browser only"), on once you're signed in. Flip it to move the <Noun /> to the server or back into This Browser. A **This Browser** badge next to its name in the editor marks it; hover or focus it to read that clearing this browser's site data deletes it. They are not in your account's lists: **This Browser**, in the Explorer sidebar's group of its own, lists them all with how many there are, and so does their own page, [This Browser](/offline), where each has **Sync <Noun capital />** and **Delete**.
+  A new <Noun />
+  's start screen shows where it is kept with a **Sync <Noun capital /> to Server** switch: off for
+  a guest ("Saved in this browser only"), on once you're signed in. Flip it to move the <Noun /> to
+  the server or back Offline. An **Offline** badge next to its name in the editor marks it; hover or
+  focus it to read that clearing this browser's site data deletes it. They are not in your account's
+  lists: **Offline**, in the Explorer sidebar's group of its own, lists them all with how many there
+  are, and so does their own page, [Offline](/offline), where each has **Sync <Noun capital />
+  ** and **Delete**.
 </AppNote>
 
 <AppNote app="livehuddle">
-  A new Space opens on its start screen, **Start a Space**, whose switch shows where it went; flip it while the Space is still empty.
+  A new Space opens on its start screen, **Start a Space**, whose switch shows where it went; flip
+  it while the Space is still empty.
 </AppNote>
 
 <AppNote app="livedesign">
-  A **This Browser** badge next to its name in the editor, and the matching **This Browser** pill wherever it is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it. In the Explorer it shows a fixed This Browser picture instead of a thumbnail, because there is no server copy to draw one from.
+  An **Offline** badge next to its name in the editor, and the matching **Offline** pill wherever it
+  is listed (Explorer lists and cards, search results, the Explorer panel and the Trash), mark it.
+  In the Explorer it shows a fixed Offline picture instead of a thumbnail, because there is no
+  server copy to draw one from.
 </AppNote>
 
 <AppNote app="liveplanner">
-  While a new plan is still fresh (yours, one empty tab, not shared, not in a team and nobody else in it), its **Start Planning** screen has a **Sync Plan to Server** switch at the bottom. It says where the plan is saved now, and flipping it moves the plan to liveplanner or into This Browser, in place. The [Explorer](/help/explorer/explorer-page/) lists them under **Browser Storage** with how many there are, and the [Browser Storage](/offline) page opens that view.
+  While a new plan is still fresh (yours, one empty tab, not shared, not in a team and nobody else
+  in it), its **Start Planning** screen has a **Sync Plan to Server** switch at the bottom. It says
+  where the plan is saved now, and flipping it moves the plan to liveplanner or Offline, in place.
+  The [Explorer](/help/explorer/explorer-page/) lists them under **Offline** with how many there
+  are, and the [Offline](/offline) page opens that view.
 </AppNote>
 
 <Note>
-  A <Noun /> in This Browser is **not synced and not backed up**. It lives only in this browser:
+  A <Noun /> kept Offline is **not synced and not backed up**. It lives only in this browser:
   clearing your site data, or the browser reclaiming storage, will delete it. Keep anything
   important on the server, or export a copy.
 </Note>
 
 ## What's Different
 
-A <Noun /> in This Browser is a normal <Noun />: every editor feature works, including tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
+A <Noun /> kept Offline is a normal <Noun />: every editor feature works, including tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
-- **Sharing** needs a <Noun /> on the server. Opening **Share** on a <Noun /> in This Browser tells you so and offers **Sync <Noun capital />**: press it and the <Noun /> uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
-- **Live collaboration** and **teams** don't apply; a <Noun /> in This Browser is yours alone. Comments still work, but only you see them.
+- **Sharing** needs a <Noun /> on the server. Opening **Share** on a <Noun /> kept Offline tells you so and offers **Sync <Noun capital />**: press it and the <Noun /> uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
+- **Live collaboration** and **teams** don't apply; a <Noun /> kept Offline is yours alone. Comments still work, but only you see them.
 - Images you add are stored **inside the <Noun />**, so it stays fully local.
-- **Add a Tab to Another <Noun capital />** is unavailable for a <Noun /> in This Browser in either direction, and **Duplicate** makes another copy in This Browser rather than uploading one.
-- It is listed under **Browser Storage** in the Explorer sidebar's Spaces, in Home's Recent once you have opened it, and on the **Browser Storage** page ([/offline](/offline), also reached from the Explorer panel), not in My Work, Recent or search, because those list what is on the server.
+- **Add a Tab to Another <Noun capital />** is unavailable for a <Noun /> kept Offline in either direction, and **Duplicate** makes another copy kept Offline rather than uploading one.
+- It is listed under **Offline** in the Explorer sidebar's Spaces, in Home's Recent once you have opened it, and on the **Offline** page ([/offline](/offline), also reached from the Explorer panel), not in My Work, Recent or search, because those list what is on the server.
 
 <AppNote app="livediagram">
   Every editor feature works, including shapes, arrows, layers, tabs, themes, undo/redo, and export.
@@ -66,57 +81,64 @@ A <Noun /> in This Browser is a normal <Noun />: every editor feature works, inc
 </AppNote>
 
 <AppNote app="liveplanner">
-  Every editor feature works, including boards and cards, sheets, dashboards, forms, tabs, themes, undo and redo, and export.
+  Every editor feature works, including boards and cards, sheets, dashboards, forms, tabs, themes,
+  undo and redo, and export.
 </AppNote>
 
-## Folders in Browser Storage
+## Offline Folders
 
-**New Folder** on the Browser Storage page, or the **⋯** menu on its row in the sidebar, makes a folder that lives in this browser too, and folders can hold folders, as in My Work. **Move to Folder** on a <Noun />'s menu, or a drag onto a folder, files it. A folder's menu has **Rename**, **New Subfolder**, **Move Folder** and **Delete Folder**; deleting a folder never deletes what is in it, which moves up a level. The folders are kept in this browser alone, like the <Noun plural /> in them.
+**New Folder** on the Offline page, or the **⋯** menu on its row in the sidebar, makes a folder that lives in this browser too, and folders can hold folders, as in My Work. **Move to Folder** on a <Noun />'s menu, or a drag onto a folder, files it. A folder's menu has **Rename**, **New Subfolder**, **Move Folder** and **Delete Folder**; deleting a folder never deletes what is in it, which moves up a level. The folders are kept in this browser alone, like the <Noun plural /> in them.
 
-## Archiving in This Browser
+## Archiving an offline <Noun />
 
-**Move to Archived** works on a <Noun /> in This Browser too. It never leaves this browser: it moves out of the Browser Storage list into **Archived**, and it won't open until you move it out. Opening it shows a **<Noun capital /> Archived** card with **Change Folder**, which puts it back in This Browser (or, when you are signed in, moves it into your account). Clearing this browser's data removes it like any other <Noun /> kept here.
+**Move to Archived** works on a <Noun /> kept Offline too. It never leaves this browser: it moves out of the Offline list into **Archived**, and it won't open until you move it out. Opening it shows a **<Noun capital /> Archived** card with **Change Folder**, which puts it back Offline (or, when you are signed in, moves it into your account). Clearing this browser's data removes it like any other <Noun /> kept here.
 
 ## Moving to Your Account
 
 You can change your mind at any time, from the <Noun />'s **⋯** menu.
 
-- **When you sign in** with <Noun plural /> in This Browser, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
-- **Sync <Noun capital />** (in a <Noun />'s Share dialog, signed in or not, and on each <Noun /> under **Browser Storage**, in the Explorer and on the Browser Storage page, when you're signed in) uploads a <Noun /> in This Browser to the cloud. From the Explorer, the Browser Storage page opens and asks you to confirm. It becomes a normal <Noun />, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
+- **When you sign in** with <Noun plural /> kept Offline, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
+- **Sync <Noun capital />** (in a <Noun />'s Share dialog, signed in or not, and on each <Noun /> under **Offline**, in the Explorer and on the Offline page, when you're signed in) uploads a <Noun /> kept Offline to the cloud. From the Explorer, the Offline page opens and asks you to confirm. It becomes a normal <Noun />, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
 - **A <Noun /> in a folder keeps its place.** Sync <Noun capital /> offers the My Work folder with the same name (or My Work itself when there is none) and says where it will go. The folder in this browser stays, empty, until you delete it.
 - **Take Offline** (on a <Noun />'s menu in the Explorer and the Explorer panel) does the reverse: it downloads a cloud <Noun /> into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
 - **A tab it shares with other <Noun plural />** (see Add a Tab to Another <Noun capital />) stays in those <Noun plural />, and this browser keeps its own copy. From then on the two are separate: edits on one side no longer reach the other, and syncing the <Noun /> back brings your copy in as a new tab beside the original.
 
 <AppNote app="livediagram,livedocuments,livehuddle">
-  See [Add a Tab to Another <Noun capital />](/help/tabs/add-to-document/).
+  See [Add a Tab to Another <Noun capital />
+  ](/help/tabs/add-to-document/).
 </AppNote>
 
-<AppNote app="livedesign">
-  See [Add a Tab to Another Design](/help/tabs/add-to-design/).
-</AppNote>
+<AppNote app="livedesign">See [Add a Tab to Another Design](/help/tabs/add-to-design/).</AppNote>
 
 <AppNote app="liveplanner">
-  The dialog that offers the move on sign in is **Move Plans in This Browser to Your Account?**. See [Add a Tab to Another Plan](/help/tabs/add-to-project/). **Sync** on a plan's row in Browser Storage, in the Explorer, moves it into your account when you are signed in, and **Sync Plan** from the Share dialog uploads it to liveplanner, signed in or not; a guest's synced plans move to the account when they sign in, like the rest of their work. To go the other way, choose **Take Offline** on one of your own plans in the Explorer (one you can edit, not one reached through a share link). After you confirm, the plan is removed from your account and every other device and lives only in this browser, with no backup.
+  The dialog that offers the move on sign in is **Move Offline Plans to Your Account?**. See [Add a
+  Tab to Another Plan](/help/tabs/add-to-project/). **Sync** on a plan's row under Offline, in the
+  Explorer, moves it into your account when you are signed in, and **Sync Plan** from the Share
+  dialog uploads it to liveplanner, signed in or not; a guest's synced plans move to the account
+  when they sign in, like the rest of their work. To go the other way, choose **Take Offline** on
+  one of your own plans in the Explorer (one you can edit, not one reached through a share link).
+  After you confirm, the plan is removed from your account and every other device and lives only in
+  this browser, with no backup.
 </AppNote>
 
 <Note>
-  **Take Offline** is deliberate and irreversible on the server side: once a <Noun /> is in This
-  Browser it exists only in the browser you took it offline in. If it was shared, taking it offline
-  also revokes the share links, and a team <Noun /> leaves the team library. For the owner it is a
-  move, not a delete, so it skips the [Trash](/help/account-and-data/trash/); a teammate taking a
-  team <Noun /> offline sends the team's copy to the team Trash.
+  **Take Offline** is deliberate and irreversible on the server side: once a <Noun /> is Offline it
+  exists only in the browser you took it offline in. If it was shared, taking it offline also
+  revokes the share links, and a team <Noun /> leaves the team library. For the owner it is a move,
+  not a delete, so it skips the [Trash](/help/account-and-data/trash/); a teammate taking a team{' '}
+  <Noun /> offline sends the team's copy to the team Trash.
 </Note>
 
 <AppNote app="livediagram,livehuddle">
-  Deleting a <Noun /> in This Browser removes it for good: nothing else holds it, so it has no Trash.
+  Deleting a <Noun /> kept Offline removes it for good: nothing else holds it, so it has no Trash.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Deleting a document in This Browser removes it from this browser.
+  Deleting a document kept Offline removes it from this browser.
 </AppNote>
 
 <AppNote app="livedesign">
-  A design in This Browser you delete goes to this browser's own Trash.
+  A design kept Offline you delete goes to this browser's own Trash.
 </AppNote>
 
 </ArticleLayout>

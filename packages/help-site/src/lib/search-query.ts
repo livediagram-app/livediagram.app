@@ -44,3 +44,12 @@ export function resetSearchQueryForTests(): void {
   current = '';
   listeners.clear();
 }
+
+let arrival: { path: string; q: string } | undefined;
+
+/** The `?q=` this page was opened with, read once from the address it arrived at (the box then removes `q` from
+ *  the address): '' after a client navigation to another page, so a box mounted there opens empty. */
+export function arrivalQuery(): string {
+  arrival ??= { path: location.pathname, q: queryFromLocation(location.search) };
+  return location.pathname === arrival.path ? arrival.q : '';
+}

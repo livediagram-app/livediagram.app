@@ -10,12 +10,13 @@ export const metadata = helpMetadata({
   path: '/help/tools/layout-cleanup/auto-align/',
 });
 
-<ArticleLayout title="Auto-Align" description="A quick grid snap for when elements are nearly lined up but a few pixels off." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-align")}>
+<ArticleLayout path="tools/layout-cleanup/auto-align" title="Auto-Align" description="A quick grid snap for when elements are nearly lined up but a few pixels off." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-align")}>
 
 Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px grid and lines elements up on the grid by the edges and centres they already (nearly) share, so elements that were almost aligned become exactly aligned and tiny drift collapses, while elements that were already lined up stay lined up. The use case is "these things are a few pixels off", not "this tab has no layout".
 
 <AppNote app="livehuddle">
-  In livehuddle that means sticky notes and pictures that were almost aligned, on a board rather than a tab with no layout.
+  In livehuddle that means sticky notes and pictures that were almost aligned, on a board rather
+  than a tab with no layout.
 </AppNote>
 
 <Figure caption="Elements that sit a few pixels off the grid snap onto the nearest grid lines.">
@@ -33,20 +34,28 @@ Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px
 - **Running it again changes nothing.** Once a tab is tidy, running it moves nothing and a notice says the tab is already tidy.
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  - **Arrows follow their shapes.** An arrow attached to a shape stays attached as the shape snaps; only loose arrow ends snap on their own.
-  - **Locked elements stay put.** A [locked element](/help/canvas/locking/) is not snapped. A circle, diamond or actor drawn square stays square, so a flowchart's decision diamonds keep their shape.
+  - **Arrows follow their shapes.** An arrow attached to a shape stays attached as the shape snaps;
+  only loose arrow ends snap on their own. - **Locked elements stay put.** A [locked
+  element](/help/canvas/locking/) is not snapped. A circle, diamond or actor drawn square stays
+  square, so a flowchart's decision diamonds keep their shape.
 </AppNote>
 
 <AppNote app="livediagram">
-  A snap that would nudge a shape part-way out of the lane or frame it sits in is skipped too, anything on a [locked layer](/help/canvas/layers-visibility-and-locking/) is not snapped, and the **Tidy** panel shows Auto-align greyed out with "Already tidy" on a tidy tab. Rows of a key stay an equal step apart, and two shapes joined by a straight arrow line up from a little further apart.
+  A snap that would nudge a shape part-way out of the lane or frame it sits in is skipped too,
+  anything on a [locked layer](/help/canvas/layers-visibility-and-locking/) is not snapped, and the
+  **Tidy** panel shows Auto-align greyed out with "Already tidy" on a tidy tab. Rows of a key stay
+  an equal step apart, and two shapes joined by a straight arrow line up from a little further
+  apart.
 </AppNote>
 
 <AppNote app="livedocuments">
-  If the whole run would cover a shape, or pull a shape out of the box or frame holding it, nothing moves and a short notice says why.
+  If the whole run would cover a shape, or pull a shape out of the box or frame holding it, nothing
+  moves and a short notice says why.
 </AppNote>
 
 <AppNote app="livehuddle">
-  A column of notes of different widths stays centred, and a note stays square while a wide picture stays wide.
+  A column of notes of different widths stays centred, and a note stays square while a wide picture
+  stays wide.
 </AppNote>
 
 ## Running It
@@ -61,7 +70,8 @@ Auto-Align is the gentle tidier. It rounds every boxed element's size to a 10 px
 <Step n={3}>Everything on the tab snaps to the grid in a single undoable step.</Step>
 
 <AppNote app="livediagram">
-  In Diagram mode you can also press the **Tidy** button in the bottom-right corner and choose **Auto-align** at the bottom of the Tidy panel.
+  In Diagram mode you can also press the **Tidy** button in the bottom-right corner and choose
+  **Auto-align** at the bottom of the Tidy panel.
 </AppNote>
 
 If the result isn't what you wanted, one undo (⌘Z / Ctrl+Z) restores the previous positions exactly. Auto-Align needs edit access.
@@ -69,11 +79,15 @@ If the result isn't what you wanted, one undo (⌘Z / Ctrl+Z) restores the previ
 <AppNote app="livediagram,livedesign,livedocuments">
   It leaves a locked tab alone.
 
-  **When to use it instead of Auto Layout.** Reach for Auto-Align when the tab already looks right and you just want it crisp: rows that should share a baseline, columns that should share an edge, shapes that should be the same size. If instead your shapes have no real layout, or you want positions computed from how shapes are connected, use [Auto Layout](/help/tools/layout-cleanup/auto-layout/) instead. Auto Layout already lands every shape's centre on the grid, so its result needs no Auto-Align afterwards.
+**When to use it instead of Auto Layout.** Reach for Auto-Align when the tab already looks right and you just want it crisp: rows that should share a baseline, columns that should share an edge, shapes that should be the same size. If instead your shapes have no real layout, or you want positions computed from how shapes are connected, use [Auto Layout](/help/tools/layout-cleanup/auto-layout/) instead. Auto Layout already lands every shape's centre on the grid, so its result needs no Auto-Align afterwards.
+
 </AppNote>
 
 <AppNote app="livehuddle">
-  **When to use it.** Reach for Auto-Align when the board already looks right and you just want it crisp: rows of notes that should share a baseline, rooms that should share an edge, pictures that should be the same size. It tidies what is there; it never invents a layout, so a board that needs one is still yours to arrange.
+  **When to use it.** Reach for Auto-Align when the board already looks right and you just want it
+  crisp: rows of notes that should share a baseline, rooms that should share an edge, pictures that
+  should be the same size. It tidies what is there; it never invents a layout, so a board that needs
+  one is still yours to arrange.
 </AppNote>
 
 <Tip>

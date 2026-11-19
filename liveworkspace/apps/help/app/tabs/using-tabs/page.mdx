@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TabBarOverview, RenamingTab } from '@liveworkspace/help-site/art/illustrations/tabs-scenes';
+import {
+  TabBarOverview,
+  RenamingTab,
+} from '@liveworkspace/help-site/art/illustrations/tabs-scenes';
 import { TabMenu as LivediagramTabMenu } from '@/editions/livediagram/components/illustrations/tabs';
 import { TabMenu as LiveplannerTabMenu } from '@/editions/liveplanner/components/illustrations/tabs';
 import { TabMenu as LivedocumentsTabMenu } from '@/editions/livedocuments/components/illustrations/tabs';
@@ -9,11 +12,12 @@ import { TabMenu as LivehuddleTabMenu } from '@/editions/livehuddle/components/i
 
 export const metadata = helpMetadata({
   title: 'Using Tabs',
-  description: 'Split your work into tabs: add, name, reorder, delete and switch tabs on the tab bar, with every action in the tab menu.',
+  description:
+    'Split your work into tabs: add, name, reorder, delete and switch tabs on the tab bar, with every action in the tab menu.',
   path: '/help/tabs/using-tabs/',
 });
 
-<ArticleLayout title="Tabs" description="One piece of work, many tabs. Tabs let you split a project across several parts, each with its own content, theme, and background." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout path="tabs/using-tabs" title="Tabs" description="One piece of work, many tabs. Tabs let you split a project across several parts, each with its own content, theme, and background." categoryTitle="Tabs" categorySlug="tabs">
 
 A <Noun /> is a collection of **tabs**. A new <Noun /> usually starts with one tab, and you add more whenever a piece of work deserves its own space. The tab bar sits along the bottom of the editor, and the active tab fills the area above it.
 
@@ -26,7 +30,8 @@ A <Noun /> is a collection of **tabs**. A new <Noun /> usually starts with one t
 </AppNote>
 
 <AppNote app="liveplanner">
-  Each tab holds exactly one thing: a **Board** of cards in columns, a **Sheet** of cells and formulas, a **Dashboard** of metrics and charts, or a **Form** whose answers become cards.
+  Each tab holds exactly one thing: a **Board** of cards in columns, a **Sheet** of cells and
+  formulas, a **Dashboard** of metrics and charts, or a **Form** whose answers become cards.
 </AppNote>
 
 ## What a tab is
@@ -42,11 +47,18 @@ Each tab is a self-contained <Noun /> inside the <Noun />. A tab carries its own
 </AppNote>
 
 <AppNote app="liveplanner">
-  Common ways to split a plan across tabs: a **Board** for the day-to-day work and a **Dashboard** beside it that sums it up; a **Sheet** for the budget or the numbers behind the plan; a **Form** for requests, whose answers land as cards on a board. The cards on a plan's boards belong to the plan rather than to one tab, so two boards can show the same cards, and a Dashboard can chart them. See [Planning Basics](/help/plan/planning-basics/). The small icon at the start of a tab's name shows what it holds.
+  Common ways to split a plan across tabs: a **Board** for the day-to-day work and a **Dashboard**
+  beside it that sums it up; a **Sheet** for the budget or the numbers behind the plan; a **Form**
+  for requests, whose answers land as cards on a board. The cards on a plan's boards belong to the
+  plan rather than to one tab, so two boards can show the same cards, and a Dashboard can chart
+  them. See [Planning Basics](/help/plan/planning-basics/). The small icon at the start of a tab's
+  name shows what it holds.
 </AppNote>
 
 <AppNote app="livediagram">
-  Each tab also has its own [mode](/help/canvas/editor-modes/) (Diagram, Draw or Workshop), the same for everyone on it, chosen on its start while it is empty. The small icon at the start of a tab's name shows it.
+  Each tab also has its own [mode](/help/canvas/editor-modes/) (Diagram, Draw or Workshop), the same
+  for everyone on it, chosen on its start while it is empty. The small icon at the start of a tab's
+  name shows it.
 </AppNote>
 
 <Figure caption="The tab bar runs along the bottom of the editor: the active tab is raised with its ⋯ menu button, and the plus button adds another tab.">
@@ -62,19 +74,22 @@ Press the **+** button at the end of the tab bar, or run **Create New Tab** from
 - starts on its own start, so you can begin from a template or close it to keep the tab blank.
 
 <AppNote app="livediagram">
-  It opens in the same mode as the tab you were on: made from a Workshop tab it is a Workshop tab, and from a Draw tab a Draw tab. It starts on that mode's own start, such as **Start Drawing** or **Start a Workshop**.
+  It opens in the same mode as the tab you were on: made from a Workshop tab it is a Workshop tab,
+  and from a Draw tab a Draw tab. It starts on that mode's own start, such as **Start Drawing** or
+  **Start a Workshop**.
 </AppNote>
 
-<AppNote app="livedocuments,livedesign">
-  It starts on **Start Making Pages**.
-</AppNote>
+<AppNote app="livedocuments,livedesign">It starts on **Start Making Pages**.</AppNote>
 
 <AppNote app="livehuddle">
-  It starts on **Start a Space**, with an [Avatar Pad](/help/palette/avatar-pads/) where people arrive.
+  It starts on **Start a Space**, with an [Avatar Pad](/help/palette/avatar-pads/) where people
+  arrive.
 </AppNote>
 
 <AppNote app="liveplanner">
-  It takes the look of the tab you were on, and opens on **Start Planning**, where you pick what it holds: a board, sheet, form, visualisation or dashboard, from a template or blank. Picking one usually names the tab too, such as "Kanban" for a Kanban board.
+  It takes the look of the tab you were on, and opens on **Start Planning**, where you pick what it
+  holds: a board, sheet, form, visualisation or dashboard, from a template or blank. Picking one
+  usually names the tab too, such as "Kanban" for a Kanban board.
 </AppNote>
 
 **Duplicate** in the tab menu makes a copy instead: it is named after the original with "copy" on the end, sits right after it, and is a separate tab with its own content from then on.
@@ -87,7 +102,9 @@ Tabs start with default names like `Tab 1` and `Tab 2`, and you can rename any o
 - **Rename** in the tab menu (and **Rename Tab** in the command palette) opens the same editor.
 
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">
-  **Auto-rename on first edit:** while a tab still has its default name, editing the label of its first element renames the tab to match. This only happens once, so later edits leave a renamed tab alone.
+  **Auto-rename on first edit:** while a tab still has its default name, editing the label of its
+  first element renames the tab to match. This only happens once, so later edits leave a renamed tab
+  alone.
 </AppNote>
 
 Tab names are capped at **60 characters**. Runs of spaces and line breaks collapse to one, and anything longer is cut at the last whole word with an ellipsis, so a paragraph typed into a sticky can't turn into an unreadable tab.
@@ -105,7 +122,8 @@ Drag a tab up off the bar to the **right edge** of the screen instead, and it op
 Click the **⋯** button on the active tab, or right-click any tab (which switches to it first), to open its menu. On a phone it opens as a sheet from the bottom of the screen.
 
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">
-  Right-clicking an empty spot on the <Noun /> opens the same menu, with **Paste** moved to a row of its own at the top.
+  Right-clicking an empty spot on the <Noun /> opens the same menu, with **Paste** moved to a row of
+  its own at the top.
 </AppNote>
 
 Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** (greyed out until you have copied something), **Side by Side** (on a large enough window; **Close Side by Side** while two tabs are open), **Lock Tab** and **Delete**. Below them, everything else is a full-width row, in groups split by a line:
@@ -114,27 +132,41 @@ Along the top sits a row of quick actions: **Rename**, **Duplicate**, **Paste** 
 - **Import**, **Export**, and **Clear**, which removes every element from the tab after a confirmation (undo brings them back; it is greyed out on an empty tab).
 
 <AppNote app="livehuddle">
-  The quick actions have no **Lock Tab**, and the menu has an **[Attendance](/help/collaboration/live-presence/tab-attendance/)** row: who was in the tab, when they joined and left, and how long they stayed. It isn't offered in a space in [This Browser](/help/privacy-and-security/offline-mode/).
+  The quick actions have no **Lock Tab**, and the menu has an
+  **[Attendance](/help/collaboration/live-presence/tab-attendance/)** row: who was in the tab, when
+  they joined and left, and how long they stayed. It isn't offered in a space kept
+  [Offline](/help/privacy-and-security/offline-mode/).
 </AppNote>
 
 <AppNote app="livedocuments,livedesign">
-  **Side by Side** is offered once the <Noun /> has another tab to pair it with. The row reads **Add to <Noun capital />** rather than **Add to Another <Noun capital />**.
+  **Side by Side** is offered once the <Noun /> has another tab to pair it with. The row reads **Add
+  to <Noun capital />
+  ** rather than **Add to Another <Noun capital />
+  **.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The menu has no **Add to Another Plan** row: a tab belongs to one plan (see below). **Import…** opens the [Import dialog](/help/tabs/import-tabs/): a CSV into a Board or Sheet tab, a tab's JSON, or a board from Trello, Asana, Jira or Linear. **Clear** empties the tab after a confirmation (Undo brings it back).
+  There is no row for adding the tab to another plan: a tab belongs to one plan (see below).
+  **Import…** opens the [Import dialog](/help/tabs/import-tabs/): a CSV into a Board or Sheet tab, a
+  tab's JSON, or a board from Trello, Asana, Jira or Linear. **Clear** empties the tab after a
+  confirmation (Undo brings it back).
 </AppNote>
 
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">
-  To tidy a tab's layout, search for **Auto Layout** or **Auto-align** in the [command palette](/help/search-panel/the-search-panel/command-palette/). See [Cleaning Up a Tab](/help/tabs/tab-cleanup/).
+  To tidy a tab's layout, search for **Auto Layout** or **Auto-align** in the [command
+  palette](/help/search-panel/the-search-panel/command-palette/). See [Cleaning Up a
+  Tab](/help/tabs/tab-cleanup/).
 </AppNote>
 
 <AppNote app="livediagram">
-  In Diagram mode you can also press **Tidy** in the bottom-right corner. The [session tools](/help/collaboration/session-tools/) (timer, vote and poll) are not in this menu: they have their own buttons in the bottom bar.
+  In Diagram mode you can also press **Tidy** in the bottom-right corner. The [session
+  tools](/help/collaboration/session-tools/) (timer, vote and poll) are not in this menu: they have
+  their own buttons in the bottom bar.
 </AppNote>
 
 <AppNote app="livehuddle">
-  The [session tools](/help/collaboration/session-tools/) are not in this menu: a Timer or Stopwatch is a piece you place in a room.
+  The [session tools](/help/collaboration/session-tools/) are not in this menu: a Timer or Stopwatch
+  is a piece you place in a room.
 </AppNote>
 
 <AppNote app="livediagram">
@@ -180,11 +212,18 @@ Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brin
 </AppNote>
 
 <AppNote app="liveplanner">
-  Delete asks first only when it does something Undo can't take back: a [form](/help/plan/forms/)'s tab deletes the form's link with it, and a board or sheet that forms send their responses to stops them taking responses. Links on other tabs are not mentioned in liveplanner.
+  Delete asks first only when it does something Undo can't take back: a [form](/help/plan/forms/)'s
+  tab deletes the form's link with it, and a board or sheet that forms send their responses to stops
+  them taking responses. Links on other tabs are not mentioned in liveplanner.
 </AppNote>
 
 <AppNote app="liveplanner">
-  **Tabs in more than one plan.** A tab belongs to one plan. Tabs used to be addable to another plan from the tab menu, but a plan's tabs show its cards, and a card is kept in the plan it came from, so a tab carried into another plan couldn't take its cards with it. Tabs that were already shared between plans stay shared: an edit in either plan shows in both, and deleting the tab in one plan only removes it from that one. To reuse a tab's layout somewhere new, [export it](/help/tabs/export-tabs/) and [import it](/help/tabs/import-tabs/) into the other plan.
+  **Tabs in more than one plan.** A tab belongs to one plan. Tabs used to be addable to another plan
+  from the tab menu, but a plan's tabs show its cards, and a card is kept in the plan it came from,
+  so a tab carried into another plan couldn't take its cards with it. Tabs that were already shared
+  between plans stay shared: an edit in either plan shows in both, and deleting the tab in one plan
+  only removes it from that one. To reuse a tab's layout somewhere new, [export
+  it](/help/tabs/export-tabs/) and [import it](/help/tabs/import-tabs/) into the other plan.
 </AppNote>
 
 ## Share links
@@ -192,7 +231,9 @@ Choose **Delete** in the tab menu. The tab goes straight away, and **Undo** brin
 On a share link for a Viewer or a Participant, and on any link scoped to one tab, you can still click between tabs, but the **+** button, the tab menu, renaming and drag-to-reorder are all hidden. Only an Editor with a link to the whole <Noun /> changes its tabs.
 
 <AppNote app="livehuddle">
-  A Participant's tab menu (and that of anyone on a link scoped to one tab, other than a Viewer) holds **Attendance** alone; a Viewer gets no tab menu, and the **+** button, renaming and drag-to-reorder are hidden.
+  A Participant's tab menu (and that of anyone on a link scoped to one tab, other than a Viewer)
+  holds **Attendance** alone; a Viewer gets no tab menu, and the **+** button, renaming and
+  drag-to-reorder are hidden.
 </AppNote>
 
 ## More with tabs
@@ -209,15 +250,19 @@ Each tab also carries its own menu of actions, covered in their own guides:
 </AppNote>
 
 <AppNote app="livediagram,livedesign">
-  **[Linking Across Tabs](/help/tabs/linking-tabs/)** turns any element into a jump point to another tab.
+  **[Linking Across Tabs](/help/tabs/linking-tabs/)** turns any element into a jump point to another
+  tab.
 </AppNote>
 
 <AppNote app="livediagram,livedocuments,livehuddle">
-  **[Add a Tab to Another <Noun capital />](/help/tabs/add-to-document/)** shares a tab into a different <Noun />: it is the same tab in both places, not a copy, so edits appear everywhere it lives.
+  **[Add a Tab to Another <Noun capital />
+  ](/help/tabs/add-to-document/)** shares a tab into a different <Noun />: it is the same tab in
+  both places, not a copy, so edits appear everywhere it lives.
 </AppNote>
 
 <AppNote app="livedesign">
-  **[Add a Tab to Another Design](/help/tabs/add-to-design/)** shares a tab into a different design: it is the same tab in both places, not a copy, so edits appear everywhere it lives.
+  **[Add a Tab to Another Design](/help/tabs/add-to-design/)** shares a tab into a different design:
+  it is the same tab in both places, not a copy, so edits appear everywhere it lives.
 </AppNote>
 
 <AppNote app="livediagram,liveplanner,livedocuments,livedesign">
@@ -225,11 +270,14 @@ Each tab also carries its own menu of actions, covered in their own guides:
 </AppNote>
 
 <Tip>
-  A shared reference tab such as a glossary can live in more than one <Noun /> at once with Add to Another <Noun capital />. Editing it in one place updates it everywhere.
+  A shared reference tab such as a glossary can live in more than one <Noun /> at once with Add to
+  Another <Noun capital />. Editing it in one place updates it everywhere.
 </Tip>
 
 <AppNote app="liveplanner">
-  Lots of tabs? Press `⌘K` and type part of a tab's name to jump straight to it, or group them into [folders](/help/tabs/tab-folders/). In liveplanner a tab belongs to one plan, so a shared reference tab as above does not apply.
+  Lots of tabs? Press `⌘K` and type part of a tab's name to jump straight to it, or group them into
+  [folders](/help/tabs/tab-folders/). In liveplanner a tab belongs to one plan, so a shared
+  reference tab as above does not apply.
 </AppNote>
 
 </ArticleLayout>

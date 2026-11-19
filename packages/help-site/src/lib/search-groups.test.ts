@@ -43,7 +43,9 @@ describe('the query in the address', () => {
   it('reads, sets and clears q, capped', () => {
     expect(queryFromLocation('?q=share%20link')).toBe('share link');
     expect(queryFromLocation('?q=' + 'a'.repeat(300))).toHaveLength(200);
-    expect(locationWithQuery('https://x.test/help/a/?q=old', ' new ')).toBe('https://x.test/help/a/?q=new');
+    expect(locationWithQuery('https://x.test/help/a/?q=old', ' new ')).toBe(
+      'https://x.test/help/a/?q=new',
+    );
     expect(locationWithQuery('https://x.test/help/a/?q=old', '')).toBe('https://x.test/help/a/');
   });
 });

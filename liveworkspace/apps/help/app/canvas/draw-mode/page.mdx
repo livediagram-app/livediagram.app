@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ModeSwitchScene, DrawDockScene } from '@/editions/livediagram/components/illustrations/editor-mode-switch';
+import {
+  ModeSwitchScene,
+  DrawDockScene,
+} from '@/editions/livediagram/components/illustrations/editor-mode-switch';
 import { FillToolScene } from '@/editions/livediagram/components/illustrations/draw-fill-tool';
 
 export const metadata = helpMetadata({
@@ -11,6 +14,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="canvas/draw-mode"
   title="Draw Mode"
   description="Freehand whiteboarding on any tab: pick up a pen and draw."
   categoryTitle="Canvas"

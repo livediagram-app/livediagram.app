@@ -8,14 +8,14 @@ covers what they do for livedocuments. [Staging environment](staging-environment
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker         | Type                                                                          |
-| ---------------- | ------------------------- | ----------------------------------------------------------------------------- |
-| `apps/marketing` | `livedocuments-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`    | `livedocuments-editor`    | Static assets + a tiny path-rewrite worker.                                   |
+| App                       | Cloudflare Worker                      | Type                                                                                                                                                                 |
+| ------------------------- | -------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/marketing`          | `livedocuments-marketing`              | Static assets only (Next.js `output: 'export'`).                                                                                                                     |
+| `apps/editor`             | `livedocuments-editor`                 | Static assets + a tiny path-rewrite worker.                                                                                                                          |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `livedocuments` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)). |
-| `apps/api`       | `livedocuments-api`       | Worker (Durable Objects; no database, no bucket).                             |
-| `apps/mcp`       | `livedocuments-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `livedocuments-router`    | Worker (service bindings to marketing, editor, help and api).                 |
+| `apps/api`                | `livedocuments-api`                    | Worker (Durable Objects; no database, no bucket).                                                                                                                    |
+| `apps/mcp`                | `livedocuments-mcp`                    | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                        |
+| `apps/router`             | `livedocuments-router`                 | Worker (service bindings to marketing, editor, help and api).                                                                                                        |
 
 `apps/cli` is published to npm, not deployed ([CLI](../015-api/cli.md)). Publishing is a manual step outside CI, and the
 MCP Registry listing is manual too (by hand, or the root `mcp-registry.yml` workflow started by hand,

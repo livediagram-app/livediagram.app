@@ -13,7 +13,7 @@ export const metadata = helpMetadata({
   path: '/help/pages/photo-pages/make-sizes/',
 });
 
-<ArticleLayout title="Make Sizes" description="One photo in every size a post needs, each its own photo page, and all of them in one .zip." categoryTitle="Pages" categorySlug="pages" parentArticle={{ title: "Photo Pages", slug: "photo-pages" }} subArticles={getSubArticles("photo-pages").filter((a) => a.slug !== "make-sizes")}>
+<ArticleLayout path="pages/photo-pages/make-sizes" title="Make Sizes" description="One photo in every size a post needs, each its own photo page, and all of them in one .zip." categoryTitle="Pages" categorySlug="pages" parentArticle={{ title: "Photo Pages", slug: "photo-pages" }} subArticles={getSubArticles("photo-pages").filter((a) => a.slug !== "make-sizes")}>
 
 A post, a story, a cover and a thumbnail all want the same picture in different shapes. **Make Sizes** copies the photo page you are on into a new photo page for each format you tick, the picture scaled to fill the format and cropped about the centre. It works on [photo pages](/help/pages/photo-pages/) only.
 

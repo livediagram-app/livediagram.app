@@ -32,7 +32,9 @@ export function HelpHero({
         className={`relative mx-auto max-w-7xl px-4 md:px-8 ${
           home ? 'py-14 text-center md:py-20' : 'py-10 md:py-14'
         } ${art ? 'lg:grid lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center lg:gap-14' : ''} ${
-          aside && !art ? 'flex flex-col-reverse gap-6 md:flex-row md:items-start md:justify-between md:gap-10' : ''
+          aside && !art
+            ? 'flex flex-col-reverse gap-6 md:flex-row md:items-start md:justify-between md:gap-10'
+            : ''
         }`}
       >
         <div className={home ? 'mx-auto max-w-3xl' : 'max-w-3xl'}>

@@ -9,7 +9,7 @@ export const metadata = helpMetadata({
   path: '/help/developers/workbenches/building-a-workbench/',
 });
 
-<ArticleLayout title="Building a Workbench" description="Pair through the CLI, frame the editor, and speak its postMessage protocol." categoryTitle="Developers" categorySlug="developers" parentArticle={{ title: "Your Work in Your Developer Tools", slug: "workbenches" }} subArticles={getSubArticles("workbenches").filter((a) => a.slug !== "building-a-workbench")}>
+<ArticleLayout path="developers/workbenches/building-a-workbench" title="Building a Workbench" description="Pair through the CLI, frame the editor, and speak its postMessage protocol." categoryTitle="Developers" categorySlug="developers" parentArticle={{ title: "Your Work in Your Developer Tools", slug: "workbenches" }} subArticles={getSubArticles("workbenches").filter((a) => a.slug !== "building-a-workbench")}>
 
 <AppNote app="livediagram">
 
@@ -390,7 +390,7 @@ Every message is an object `{ type, v: 1, ... }`. The page sends only to your or
 | `livediagram:tab`       | Page to tool | `tabId`, `tabName`: the tab now shown, after each later tab change                                                                                                                          |
 | `livediagram:selection` | Page to tool | `documentId`, `documentName`, `tabId`, `rev`, `count` (`0` for nothing selected), `reference`: the selection reference                                                                      |
 | `livediagram:renew`     | Page to tool | Nothing: asks for a fresh ticket                                                                                                                                                            |
-| `livediagram:ticket`    | Tool to page | `ticket`: the whole ticket from a new `workbench open` link (22 characters, a dot, then 64 hex characters)                                                                                                                   |
+| `livediagram:ticket`    | Tool to page | `ticket`: the whole ticket from a new `workbench open` link (22 characters, a dot, then 64 hex characters)                                                                                  |
 | `livediagram:reveal`    | Tool to page | `refs`: 1 to 20 element refs, each 1 to 64 characters; brings them into view on the current tab and outlines them                                                                           |
 | `livediagram:theme`     | Tool to page | `colourScheme`: `light` or `dark`; until one arrives, the editor follows the system                                                                                                         |
 | `livediagram:ended`     | Page to tool | `reason`: `expired`, `revoked`, `trashed` or `refused`                                                                                                                                      |
@@ -447,7 +447,7 @@ Every message is an object `{ type, v: 1, ... }`. The page sends only to your or
 | `livedesign:tab`       | Page to tool | `tabId`, `tabName`: the tab now shown, after each later tab change                                                                                                                  |
 | `livedesign:selection` | Page to tool | `designId`, `designName`, `tabId`, `rev`, `count` (`0` for nothing selected), `reference`: the selection reference                                                                  |
 | `livedesign:renew`     | Page to tool | Nothing: asks for a fresh ticket                                                                                                                                                    |
-| `livedesign:ticket`    | Tool to page | `ticket`: the whole ticket from a new `workbench open` link (22 characters, a dot, then 64 hex characters)                                                                                                           |
+| `livedesign:ticket`    | Tool to page | `ticket`: the whole ticket from a new `workbench open` link (22 characters, a dot, then 64 hex characters)                                                                          |
 | `livedesign:reveal`    | Tool to page | `refs`: 1 to 20 element refs, each 1 to 64 characters; brings them into view on the current tab and outlines them                                                                   |
 | `livedesign:theme`     | Tool to page | `colourScheme`: `light` or `dark`; until one arrives, the editor follows the system                                                                                                 |
 | `livedesign:ended`     | Page to tool | `reason`: `expired`, `revoked`, `trashed` or `refused`                                                                                                                              |
@@ -721,6 +721,5 @@ A workbench session acts as the person on **one document**: loading it, saving i
 A workbench session acts as the person on **one design**: loading it, saving its tabs, its comments and live room, and uploading images into it. Every other design answers as if it did not exist. Ownership actions (sharing, passwords, moving, deleting, publishing, copying), the person's library, settings, tokens, teams and the AI assistant are refused, and the editor in a workbench does not offer them. An **Open in livedesign** button at the end of the tab bar opens the design in a full tab for those.
 
 </AppNote>
-
 
 </ArticleLayout>

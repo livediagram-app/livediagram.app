@@ -29,15 +29,15 @@ pnpm dev
 
 Turbo spins up all seven dev servers in parallel (the CLI has no dev server):
 
-| App              | Dev URL                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3400`: **everything on one port**, stitched like production                      |
-| `apps/marketing` | `http://localhost:3401`                                                                            |
-| `apps/live`      | `http://localhost:3402` (clean routes: /new, /explorer, ...)                                       |
-| `liveworkspace/apps/help`      | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livedesign corepack pnpm --filter @liveworkspace/help dev`) |
-| `apps/community` | `http://localhost:3405/community`                                                                  |
-| `apps/api`       | `http://localhost:8989/api`                                                                        |
-| `apps/mcp`       | `http://localhost:8990` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+| App                       | Dev URL                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router`             | `http://localhost:3400`: **everything on one port**, stitched like production                                              |
+| `apps/marketing`          | `http://localhost:3401`                                                                                                    |
+| `apps/live`               | `http://localhost:3402` (clean routes: /new, /explorer, ...)                                                               |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livedesign corepack pnpm --filter @liveworkspace/help dev`) |
+| `apps/community`          | `http://localhost:3405/community`                                                                                          |
+| `apps/api`                | `http://localhost:8989/api`                                                                                                |
+| `apps/mcp`                | `http://localhost:8990` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only)                         |
 
 The `router` dev server (`wrangler dev --env local`, port 3400) gives you the production URL shape locally: `/` is marketing, `/new` and `/design/*` are the editor, plus `/help` and `/api` (`/telemetry` redirects to liveworkspace's dashboard), with no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 

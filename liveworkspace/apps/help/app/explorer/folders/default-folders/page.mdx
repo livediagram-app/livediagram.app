@@ -4,11 +4,12 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Default Folders',
-  description: 'Send new work to a folder you choose instead of My Work, set from a folder menu or Settings.',
+  description:
+    'Send new work to a folder you choose instead of My Work, set from a folder menu or Settings.',
   path: '/help/explorer/folders/default-folders/',
 });
 
-<ArticleLayout title="Default Folders" description="Choose where new work lands when you create it without picking a place." categoryTitle="Explorer" categorySlug="explorer" parentArticle={{ title: 'Folders', slug: 'folders' }} subArticles={getSubArticles('folders').filter((a) => a.slug !== 'default-folders')}>
+<ArticleLayout path="explorer/folders/default-folders" title="Default Folders" description="Choose where new work lands when you create it without picking a place." categoryTitle="Explorer" categorySlug="explorer" parentArticle={{ title: 'Folders', slug: 'folders' }} subArticles={getSubArticles('folders').filter((a) => a.slug !== 'default-folders')}>
 
 A **default folder** is where your new <Noun plural /> go when you create one without choosing a place. With none set, they land in My Work. Your defaults are your own: teammates choose theirs. The liveworkspace index keeps them for your account or guest identity, so they follow you to any browser, and it files each new <Noun /> by them.
 
@@ -21,15 +22,20 @@ Open a folder's menu (its **⋯** button, or right-click the folder) and choose 
   - **Drawings**: new canvases that open in Draw mode.
   - **Workshops**: new canvases that open in Workshop mode.
 
-  That is the whole list: every new canvas goes by the mode it opens in, so an Event Storming board or a retrospective lands with the rest of that mode's canvases.
+That is the whole list: every new canvas goes by the mode it opens in, so an Event Storming board or a retrospective lands with the rest of that mode's canvases.
+
 </AppNote>
 
 <AppNote app="livedocuments,livedesign">
-  Tick **<Noun plural capital />**. There is one default, for every new <Noun />.
+  Tick **
+  <Noun plural capital />
+  **. There is one default, for every new <Noun />.
 </AppNote>
 
 <AppNote app="livehuddle">
-  The one entry is **<Noun plural capital />**: every new space.
+  The one entry is **
+  <Noun plural capital />
+  **: every new space.
 </AppNote>
 
 Each entry points at one folder, so ticking it here moves it from wherever it was; unticking it sends those <Noun plural /> back to My Work. One folder can hold several entries.
@@ -51,11 +57,14 @@ A default folder shows a small mark after its name, in the sidebar, the Explorer
 **New <Noun capital />** never asks where a <Noun /> goes: it is filed in your default folder, or in My Work when you have none.
 
 <AppNote app="livediagram">
-  It is filed in the default folder for the mode it opens in (**Diagrams**, **Drawings** or **Workshops**), or in My Work when that has none.
+  It is filed in the default folder for the mode it opens in (**Diagrams**, **Drawings** or
+  **Workshops**), or in My Work when that has none.
 </AppNote>
 
 <AppNote app="livehuddle">
-  It is filed in your **<Noun plural capital />** default folder, or in My Work when you have none.
+  It is filed in your **
+  <Noun plural capital />
+  ** default folder, or in My Work when you have none.
 </AppNote>
 
 - Starting from inside a folder or a team keeps you there: that folder wins over your defaults.
@@ -63,11 +72,15 @@ A default folder shows a small mark after its name, in the sidebar, the Explorer
 - As a guest it works the same way, and your folders and defaults move to your account when you sign in.
 
 <AppNote app="livediagram">
-  A template picked on a new canvas's start screen counts too: pick a Workshop template such as a Retrospective on a canvas you just made, and the canvas goes to your **Workshops** default folder, with a note saying where. A canvas you made inside a folder stays there.
+  A template picked on a new canvas's start screen counts too: pick a Workshop template such as a
+  Retrospective on a canvas you just made, and the canvas goes to your **Workshops** default folder,
+  with a note saying where. A canvas you made inside a folder stays there.
 </AppNote>
 
 <AppNote app="livedesign">
-  While you try things out as a guest, new designs are saved in this browser instead ([Offline Mode](/help/privacy-and-security/offline-mode/)), so they have no folder until you move them to your account.
+  While you try things out as a guest, new designs are saved in this browser instead ([Offline
+  Mode](/help/privacy-and-security/offline-mode/)), so they have no folder until you move them to
+  your account.
 </AppNote>
 
 ## In Settings

@@ -26,7 +26,7 @@ Scope, by file:
 | `apps/editor/lib/telemetry-manifest.ts`                                  | `Element·Searched` in the emitted-pairs manifest                                            |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/content.ts   | `IMAGE_SEARCHES`, `IMAGE_SEARCH_PICKS` in Element Editing                                   |
 | liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts  | Sentences for the two events                                                                |
-| `liveworkspace/apps/help/app/palette/tools/images/page.mdx`                            | "Searching for an image" section                                                            |
+| `liveworkspace/apps/help/app/palette/tools/images/page.mdx`              | "Searching for an image" section                                                            |
 | liveworkspace.app/privacy (the shared policy, in the liveworkspace site) | Openverse named under Service providers                                                     |
 
 ## Domain and naming

@@ -8,7 +8,8 @@ export function figureShowsIn(app: string | undefined, scope: HelpScope | undefi
   if (app === undefined || !scope) return true;
   const names = app.split(',').map((n) => n.trim());
   for (const name of names)
-    if (!isHelpScope(name)) throw new Error(`[help] <Figure app="${name}">: not an app id or "all"`);
+    if (!isHelpScope(name))
+      throw new Error(`[help] <Figure app="${name}">: not an app id or "all"`);
   return names.includes(scope);
 }
 

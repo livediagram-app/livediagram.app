@@ -10,7 +10,9 @@ import { APP_DIR } from '../testing/scoped-articles';
 // checks each target is a listed path; this checks the page is really there on disk, that a redirect limited to some
 // apps lands on a page those apps show, and that no path still live where the redirect holds is sent away from itself.
 const pageExists = (path: string) =>
-  ['page.mdx', 'page.tsx'].some((file) => existsSync(`${APP_DIR}/${path ? `${path}/` : ''}${file}`));
+  ['page.mdx', 'page.tsx'].some((file) =>
+    existsSync(`${APP_DIR}/${path ? `${path}/` : ''}${file}`),
+  );
 
 const byPath = new Map(allArticles.map((a) => [articlePath(a), a]));
 const apps = (r: { apps?: readonly (typeof APP_ORDER)[number][] }) => r.apps ?? APP_ORDER;
@@ -26,7 +28,8 @@ describe('retired help paths', () => {
       const to = r.to.split('#')[0]!;
       expect(pageExists(to), r.to).toBe(true);
       const article = byPath.get(to);
-      if (article) for (const app of apps(r)) expect(appliesTo(article, app), `${r.to} in ${app}`).toBe(true);
+      if (article)
+        for (const app of apps(r)) expect(appliesTo(article, app), `${r.to} in ${app}`).toBe(true);
     },
   );
 

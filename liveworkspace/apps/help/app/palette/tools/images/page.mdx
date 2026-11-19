@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
   path: '/help/palette/tools/images/',
 });
 
-<ArticleLayout title="Images" description="Add screenshots, photos, and mockups to a page. Upload a file once, then reuse it across your work from your personal gallery." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Tools", slug: "tools" }} subArticles={getSubArticles("images")}>
+<ArticleLayout path="palette/tools/images" title="Images" description="Add screenshots, photos, and mockups to a page. Upload a file once, then reuse it across your work from your personal gallery." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Tools", slug: "tools" }} subArticles={getSubArticles("images")}>
 
 Images bring screenshots, photos, logos, and mockups onto the canvas alongside your shapes and arrows. You drop an image element, attach a file, and it renders right there on the <Noun />. Anything you upload is kept in a personal gallery, so the second time you need the same picture you pick it instead of uploading it again.
 
@@ -20,8 +20,9 @@ Images bring screenshots, photos, logos, and mockups onto the canvas alongside y
 The Image tool drops an image element you then attach a file to.
 
 <Step n={1}>
-  Pick **Image** on the palette strip (in the **Layout** category, at its end, in livediagram; in the **Media** category in livedesign and livedocuments), or press `9`.
-  Tap the canvas to drop a default-size image, or drag to size it as you place it.
+  Pick **Image** on the palette strip (in the **Layout** category, at its end, in livediagram; in
+  the **Media** category in livedesign and livedocuments), or press `9`. Tap the canvas to drop a
+  default-size image, or drag to size it as you place it.
 </Step>
 
 <Step n={2}>
@@ -117,9 +118,7 @@ The **Avatar** tile, places a circular photo of a person: an image element that 
   The Avatar tile sits beside Image at the end of the **Layout** category.
 </AppNote>
 
-<AppNote app="livedesign">
-  The Avatar tile is in the **Media** category's **People** group.
-</AppNote>
+<AppNote app="livedesign">The Avatar tile is in the **Media** category's **People** group.</AppNote>
 
 <AppNote app="livedocuments">
   The Avatar tile is in the **Media** category after the embeds.
@@ -156,6 +155,7 @@ Under **Image** in the right-click menu, **Mask** clips a picture to a shape: **
 **Logo strips.**
 
 The **Logo Strip** tile, in **Media** beside Avatar, places five logo slots in a row, evenly spaced and the same height. Tap to drop it, or drag to size it, then double-click each slot to pick a logo. The logos are drawn in grey; turn **Greyscale Pictures** off in the strip's **Stack** section of the right-click menu to show their colours. As a [stack](/help/palette/stacks/), the strip keeps its spacing when you add, remove or reorder logos. Slide decks also have a **Logo Strip** layout under **Content**.
+
 </AppNote>
 
 ## Your image gallery
@@ -174,8 +174,9 @@ Every image you upload is indexed in a personal gallery, shared across all your 
 
 <AppNote app="livedesign">
   <Note>
-    Image uploads rely on storage on the server. When uploads are not available, the Image and Avatar
-    tiles are hidden, and an upload attempt explains that uploads are not available on that server.
+    Image uploads rely on storage on the server. When uploads are not available, the Image and
+    Avatar tiles are hidden, and an upload attempt explains that uploads are not available on that
+    server.
   </Note>
 </AppNote>
 
@@ -186,13 +187,11 @@ Every image you upload is indexed in a personal gallery, shared across all your 
   </Note>
 </AppNote>
 
-<AppNote app="livediagram,livedesign">
-  Images also layer like everything else.
-</AppNote>
+<AppNote app="livediagram,livedesign">Images also layer like everything else.</AppNote>
 
 <Tip>
-  Before deleting from the gallery, open the "Used in N <Noun plural />" badge to see exactly where an
-  image is referenced. It saves you from breaking a picture you forgot was in use.
+  Before deleting from the gallery, open the "Used in N <Noun plural />" badge to see exactly where
+  an image is referenced. It saves you from breaking a picture you forgot was in use.
 </Tip>
 
 </ArticleLayout>

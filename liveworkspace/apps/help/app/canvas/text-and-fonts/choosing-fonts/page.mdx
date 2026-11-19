@@ -12,6 +12,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="canvas/text-and-fonts/choosing-fonts"
   title="Choosing Fonts"
   description="Pick from eleven curated fonts on a single element or for a whole tab, and let elements inherit the tab default unless they override it."
   categoryTitle="Canvas"
@@ -20,7 +21,10 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles("text-and-fonts").filter((a) => a.slug !== "choosing-fonts")}
 >
 
-<AppName /> gives you a curated set of eleven typefaces so a <Noun /> can read as crisp, friendly, formal, or hand-drawn without becoming a font free-for-all. You can apply a font to one element or set it as the default for a whole tab, and the two levels work together so you only set what you actually want to override.
+<AppName /> gives you a curated set of eleven typefaces so a <Noun /> can read as crisp, friendly,
+formal, or hand-drawn without becoming a font free-for-all. You can apply a font to one element or
+set it as the default for a whole tab, and the two levels work together so you only set what you
+actually want to override.
 
 ## The Eleven Fonts
 
@@ -45,53 +49,65 @@ Both pickers show each name in its own typeface, so you can see the voice before
 Right-click the element, open **Appearance**, then **Text**, and expand **Font**. Click a tile to set that typeface on the element alone; with a mouse, hovering a tile previews it on the canvas first. The **Text** section only appears once the element has a label, so type something first. Select several elements and the multi-selection menu's **Text** row sets the font on all of them at once.
 
 <AppNote app="livediagram,livehuddle">
-  You can press the **More** button on the element's toolbar instead, which is the way in on a touch screen. In the multi-selection menu, Text is in the menu itself, not under Appearance.
+  You can press the **More** button on the element's toolbar instead, which is the way in on a touch
+  screen. In the multi-selection menu, Text is in the menu itself, not under Appearance.
 </AppNote>
 
 <AppNote app="livedesign">
-  You can press the **More** button on the element's toolbar instead, which is the way in on a touch screen. In the multi-selection menu, the **Text** row sits beside Appearance rather than inside it.
+  You can press the **More** button on the element's toolbar instead, which is the way in on a touch
+  screen. In the multi-selection menu, the **Text** row sits beside Appearance rather than inside
+  it.
 </AppNote>
 
-<AppNote app="livedocuments">
-  On a touch screen, use a long press.
-</AppNote>
+<AppNote app="livedocuments">On a touch screen, use a long press.</AppNote>
 
-
-<Figure app="livediagram,livedesign,livehuddle" caption="The element menu's Text section, with the Font tiles open and one typeface chosen for this element alone.">
+<Figure
+  app="livediagram,livedesign,livehuddle"
+  caption="The element menu's Text section, with the Font tiles open and one typeface chosen for this element alone."
+>
   <DiagramCanvasBasics.ElementFontMenu />
 </Figure>
 
-<Figure app="livedocuments" caption="The element menu's Text section, under Appearance, with the Font tiles open and one typeface chosen for this element alone.">
+<Figure
+  app="livedocuments"
+  caption="The element menu's Text section, under Appearance, with the Font tiles open and one typeface chosen for this element alone."
+>
   <DocumentsCanvasBasics.ElementFontMenu />
 </Figure>
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  Arrows are the exception: an arrow's **Caption** section covers bold, italic, underline, strikethrough, size and colour, but offers no font picker, so an arrow's caption follows the tab's font.
+  Arrows are the exception: an arrow's **Caption** section covers bold, italic, underline,
+  strikethrough, size and colour, but offers no font picker, so an arrow's caption follows the tab's
+  font.
 </AppNote>
 
 <AppNote app="livedesign">
-  **Display faces on a logo page.** A wordmark wants a display face. On a [logo page](/help/pages/logo-pages/), a text element's **Font** section adds a **Display Library** under the eleven tiles: 90 display faces in four categories, **Sans**, **Serif**, **Script** and **Decorative**, with a search and a chip per category. Each row shows the face's name set in that face; with a mouse, hovering a row previews it on the canvas, and a click sets it.
+  **Display faces on a logo page.** A wordmark wants a display face. On a [logo
+  page](/help/pages/logo-pages/), a text element's **Font** section adds a **Display Library** under
+  the eleven tiles: 90 display faces in four categories, **Sans**, **Serif**, **Script** and
+  **Decorative**, with a search and a chip per category. Each row shows the face's name set in that
+  face; with a mouse, hovering a row previews it on the canvas, and a click sets it.
 </AppNote>
-
 
 ## Setting a Tab Default
 
 To set the typeface for everything on a tab at once, open the **Tab Style** dialog, and press **Text** under **Fine-tune** to open its panel. The **Tab Style** bar across the panel's top returns you to the dialog's home.
 
 <AppNote app="livediagram,livehuddle">
-  Open it with the **Theme & canvas** button in the bottom-right corner of the editor (named **Style** on a wide screen).
+  Open it with the **Theme & canvas** button in the bottom-right corner of the editor (named
+  **Style** on a wide screen).
 </AppNote>
 
 <AppNote app="livedesign">
   Open it with the **Theme & canvas** button in the bottom-right corner of the editor.
 </AppNote>
 
-<AppNote app="livedocuments">
-  Open it with the **Style** button on a page's title bar.
-</AppNote>
+<AppNote app="livedocuments">Open it with the **Style** button on a page's title bar.</AppNote>
 
-
-<Figure app="livediagram,livedesign,livedocuments,livehuddle" caption="The Text panel of the Tab Style dialog: a preview, the typeface cards, and the four sizes of new text.">
+<Figure
+  app="livediagram,livedesign,livedocuments,livehuddle"
+  caption="The Text panel of the Tab Style dialog: a preview, the typeface cards, and the four sizes of new text."
+>
   <DiagramCanvasBasics.LookAndFeelFont />
 </Figure>
 
@@ -99,14 +115,9 @@ To set the typeface for everything on a tab at once, open the **Tab Style** dial
 - **Typeface** is a carousel of cards, six to a page, each showing its name in its own face. Picking one letters the whole tab in it at once: it becomes the tab's font, and any element that had its own font follows the tab again. **Editor default** clears the tab font, back to <AppName />'s built-in face.
 - **Size of New Text** has the **Text Size** slider with the **Scale** icon beside it. The preview follows the slider as you drag. Setting a size sets every label already on the tab to it, and each element you add from then on takes it too. A new <Noun /> starts at Small, and a tab you add takes the font and size of the tab you added it from.
 
-<AppNote app="livediagram,livedesign,livehuddle">
-  The slider runs from 6 to 48 pixels.
-</AppNote>
+<AppNote app="livediagram,livedesign,livehuddle">The slider runs from 6 to 48 pixels.</AppNote>
 
-<AppNote app="livedocuments">
-  The slider runs from 24 to 72 pixels.
-</AppNote>
-
+<AppNote app="livedocuments">The slider runs from 24 to 72 pixels.</AppNote>
 
 Every pick is an ordinary edit, so undo takes it back.
 
@@ -115,19 +126,21 @@ Every pick is an ordinary edit, so undo takes it back.
 Any piece of text resolves its font in order: an element's own font wins first, then the tab's default, then <AppName />'s built-in face. This means you can set one tab-wide typeface and only override the few labels you want to stand out.
 
 <AppNote app="livediagram">
-  Notes on an [event storming board](/help/canvas/event-storming-boards/) are the one twist: they are written in a marker face unless you give them a font of your own.
+  Notes on an [event storming board](/help/canvas/event-storming-boards/) are the one twist: they
+  are written in a marker face unless you give them a font of your own.
 </AppNote>
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  Arrows follow the same rules: there is no font picker for them, so they normally use the tab default, but a font applied another way (for example with the [format painter](/help/selection-modes/format-painter/)) sticks to the arrow like any other override.
+  Arrows follow the same rules: there is no font picker for them, so they normally use the tab
+  default, but a font applied another way (for example with the [format
+  painter](/help/selection-modes/format-painter/)) sticks to the arrow like any other override.
 </AppNote>
-
 
 Fonts travel with your work: exports to PNG, SVG and PDF carry the faces you used.
 
 <Tip>
-  Text stays visible in a fallback face while a font loads, so your <Noun /> is always readable, even
-  offline or where Google Fonts is blocked.
+  Text stays visible in a fallback face while a font loads, so your <Noun /> is always readable,
+  even offline or where Google Fonts is blocked.
 </Tip>
 
 </ArticleLayout>

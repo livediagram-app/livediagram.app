@@ -4,22 +4,17 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Images, Copies and Libraries',
-  description:
-    'API examples for image uploads, SVG renders, copies and shape libraries.',
+  description: 'API examples for image uploads, SVG renders, copies and shape libraries.',
   path: '/help/developers/working-with-documents/images-and-copies/',
 });
 
-<ArticleLayout title="Images, Copies and Libraries" description="Worked examples for the rest of a file: images, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Files", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-copies")}>
+<ArticleLayout path="developers/working-with-documents/images-and-copies" title="Images, Copies and Libraries" description="Worked examples for the rest of a file: images, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Files", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-copies")}>
 
 A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a <Noun /> holds more than elements: the images it shows, pictures of its tabs, copies of it. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a <Noun /> id in `$DOC`; `/api/openapi.json` has every field.
 
-<AppNote app="livediagram">
-  Paths are relative to `https://www.livediagram.app/api`.
-</AppNote>
+<AppNote app="livediagram">Paths are relative to `https://www.livediagram.app/api`.</AppNote>
 
-<AppNote app="livehuddle">
-  Paths are relative to `https://www.livehuddle.app/api`.
-</AppNote>
+<AppNote app="livehuddle">Paths are relative to `https://www.livehuddle.app/api`.</AppNote>
 
 Every write here reaches anyone with the <Noun /> open straight away, credited to you.
 
@@ -172,6 +167,5 @@ curl -X POST https://www.livediagram.app/api/shape-libraries \
 A library holds up to 1,000 items and you can keep 100; a name you already use gets a number added. `PUT /shape-libraries/{id}` renames one or replaces its items, and `DELETE` removes it (shapes already placed stay in their canvases). `GET /shape-libraries` lists yours.
 
 </AppNote>
-
 
 </ArticleLayout>

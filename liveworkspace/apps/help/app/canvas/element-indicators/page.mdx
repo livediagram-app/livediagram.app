@@ -17,18 +17,18 @@ import {
 export const metadata = helpMetadata({
   title: 'Element Indicators',
   description:
-    'Element indicators show when an element has an open action or comments (and, in some apps, a link or note). See what each icon does and set them to Top, Footer or Off.',
+    "Element indicators show an element's open action or comments (and in some apps a link or note). What each icon does, and setting them to Top, Footer or Off.",
   path: '/help/canvas/element-indicators/',
 });
 
-<ArticleLayout title="Element Indicators" description="The quiet marks that tell you an element carries something you can't otherwise see, and how to change or hide them." categoryTitle="Canvas" categorySlug="canvas">
+<ArticleLayout path="canvas/element-indicators" title="Element Indicators" description="The quiet marks that tell you an element carries something you can't otherwise see, and how to change or hide them." categoryTitle="Canvas" categorySlug="canvas">
 
 Some of what an element carries is invisible on the <Noun />: an [action](/help/collaboration/assigned-actions/) waiting on someone, a [comment](/help/collaboration/comments/) thread. **Element indicators** are the small icons that give these away. They read like metadata printed on a card: quiet until you look for them, and one click opens whatever they point to.
 
 <AppNote app="livediagram,livedesign">
-  An element can also carry a [link](/help/canvas/links/) it jumps to and a [note](/help/canvas/notes/) behind it, and these get indicators too.
+  An element can also carry a [link](/help/canvas/links/) it jumps to and a
+  [note](/help/canvas/notes/) behind it, and these get indicators too.
 </AppNote>
-
 
 ## What They Show
 
@@ -38,26 +38,36 @@ An element shows an indicator for each of these it has, always in this order, st
 - **Comments**: the element has unresolved comments, with the count beside the icon. Resolving the last thread clears it.
 
 <AppNote app="livediagram,livedesign">
-  The first two, **Link** and **Note**, come before Action. **Link**: the element links to another tab, another <Noun /> or a web address. Hovering it shows a card naming the destination. **Note**: the element has a note.
+  The first two, **Link** and **Note**, come before Action. **Link**: the element links to another
+  tab, another <Noun /> or a web address. Hovering it shows a card naming the destination. **Note**:
+  the element has a note.
 </AppNote>
 
 <AppNote app="livedesign">
-  On a wireframe, a link to another screen (or Back) shows a screen icon instead, with the word **Screen** in the Footer style; a screen link whose screen is gone shows in red as a **Broken link**.
+  On a wireframe, a link to another screen (or Back) shows a screen icon instead, with the word
+  **Screen** in the Footer style; a screen link whose screen is gone shows in red as a **Broken
+  link**.
 </AppNote>
-
 
 Comments come last because they are the most frequent and the most urgent, and the far end is the first place your eye lands.
 
 <AppNote app="livediagram">
-  A few elements show these things on their own face instead, so they carry no indicator for them: an [annotation](/help/canvas/annotations/)'s marker is its note, a link card is its link, a comment panel shows its own comments, and an action panel its own action. A **mind map root** can also carry two commands, **Edit Outline** and **Tidy Map**. They work a little differently; see [Mind Map Commands](#while-an-element-is-selected) below.
+  A few elements show these things on their own face instead, so they carry no indicator for them:
+  an [annotation](/help/canvas/annotations/)'s marker is its note, a link card is its link, a
+  comment panel shows its own comments, and an action panel its own action. A **mind map root** can
+  also carry two commands, **Edit Outline** and **Tidy Map**. They work a little differently; see
+  [Mind Map Commands](#while-an-element-is-selected) below.
 </AppNote>
 
 <AppNote app="livedesign">
-  A few elements show these things on their own face instead, so they carry no indicator for them: an [annotation](/help/canvas/annotations/)'s marker is its note, and a link card's link is its face.
+  A few elements show these things on their own face instead, so they carry no indicator for them:
+  an [annotation](/help/canvas/annotations/)'s marker is its note, and a link card's link is its
+  face.
 </AppNote>
 
 <AppNote app="livedocuments">
-  A margin note on an article page shows its comments or its action on its own face, so it carries no indicators at all.
+  A margin note on an article page shows its comments or its action on its own face, so it carries
+  no indicators at all.
 </AppNote>
 
 ## Choosing a Style
@@ -72,15 +82,24 @@ Open [Settings](/help/user-interface/settings/), go to **Editor** and pick an op
   In Footer, **Link** and **Note** each get a word beside their icon too.
 </AppNote>
 
-<Figure app="livediagram" caption="The same element with a link, a note and two comments, in Top, Footer and Off.">
+<Figure
+  app="livediagram"
+  caption="The same element with a link, a note and two comments, in Top, Footer and Off."
+>
   <IndicatorStylesScene />
 </Figure>
 
-<Figure app="livedesign" caption="The same element with a link, a note and two comments, in Top, Footer and Off.">
+<Figure
+  app="livedesign"
+  caption="The same element with a link, a note and two comments, in Top, Footer and Off."
+>
   <DesignIndicatorStylesScene />
 </Figure>
 
-<Figure app="livedocuments" caption="The same element with an open action and two comments, in Top, Footer and Off.">
+<Figure
+  app="livedocuments"
+  caption="The same element with an open action and two comments, in Top, Footer and Off."
+>
   <DocumentIndicatorStylesScene />
 </Figure>
 
@@ -92,23 +111,30 @@ Indicators always sit **inside** the element's outline, never across it:
 - On a round or pointed shape (a circle, diamond, hexagon, cloud, triangle, trapezoid, star or actor), Top is **centred** along the top, since there is no corner for it.
 - Footer starts at the bottom-left of a box, and is centred on the same round or pointed shapes.
 
-<AppNote app="livediagram">
-  A mind node counts as a box-like element too.
-</AppNote>
+<AppNote app="livediagram">A mind node counts as a box-like element too.</AppNote>
 
 They look for a spot clear of the element's label and icon first. When there isn't one, the label shifts just far enough to make room (down under Top, up over Footer), and a label set to scale to fit shrinks a little instead.
 
 On an element too small, thin or spiky to hold them (a small pill, a progress bar, a star, an actor, a small diamond), the icons gather in a small **chip on the element's edge** instead, half in and half out, drawn in the element's own fill.
 
-<Figure app="livediagram" caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it.">
+<Figure
+  app="livediagram"
+  caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it."
+>
   <IndicatorPlacementScene />
 </Figure>
 
-<Figure app="livedesign" caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it.">
+<Figure
+  app="livedesign"
+  caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it."
+>
   <DesignIndicatorPlacementScene />
 </Figure>
 
-<Figure app="livedocuments" caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it.">
+<Figure
+  app="livedocuments"
+  caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it."
+>
   <DocumentIndicatorPlacementScene />
 </Figure>
 
@@ -120,9 +146,9 @@ Each indicator is a button. Click it to:
 - **Comments**: open the comment thread.
 
 <AppNote app="livediagram,livedesign">
-  **Link** follows the link, to the other tab, the other <Noun />, or the web page in a new tab. **Note** opens the note.
+  **Link** follows the link, to the other tab, the other <Noun />, or the web page in a new tab.
+  **Note** opens the note.
 </AppNote>
-
 
 Hovering the element brings its indicators up a little, and the one under the pointer to full strength. From the keyboard, each indicator is reachable with **Tab** and shows a focus ring.
 
@@ -131,15 +157,26 @@ Hovering the element brings its indicators up a little, and the one under the po
 Selecting an element brings its own handles and **+** buttons onto the same edges, so its indicators **shrink and fade away** while it is selected and come back when you deselect it. Nothing else moves: the label stays exactly where it was. To reach the action or comments on a selected element, deselect it or use its menu.
 
 <AppNote app="livediagram,livedesign">
-  Its toolbar comes onto the same edges too, so a link or note is reachable only by deselecting or from the menu.
+  Its toolbar comes onto the same edges too, so a link or note is reachable only by deselecting or
+  from the menu.
 </AppNote>
-
 
 <AppNote app="livediagram">
-  **Mind Map Commands.** A mind map root with at least one child carries **Edit Outline** (edit the whole map as a list) and **Tidy Map** (lay the map out neatly again). These are things you **do**, not things the root **has**, so they stay hidden until you **hover** the root. Their space is kept free so nothing shifts when they appear. In Top they lead the cluster, and in Footer they end the row. They aren't shown while the root is selected, on a root with no children, on a [locked tab](/help/tabs/locking-tabs/), on a hidden or locked active [layer](/help/canvas/layers/), or to a Viewer or Participant. Both are always in the root's **Mind Map** menu section too, which is the way in from the keyboard or on a touch screen. See [Edit Outline](/help/palette/mind-maps/edit-outline/).
+  **Mind Map Commands.** A mind map root with at least one child carries **Edit Outline** (edit the
+  whole map as a list) and **Tidy Map** (lay the map out neatly again). These are things you **do**,
+  not things the root **has**, so they stay hidden until you **hover** the root. Their space is kept
+  free so nothing shifts when they appear. In Top they lead the cluster, and in Footer they end the
+  row. They aren't shown while the root is selected, on a root with no children, on a [locked
+  tab](/help/tabs/locking-tabs/), on a hidden or locked active [layer](/help/canvas/layers/), or to
+  a Viewer or Participant. Both are always in the root's **Mind Map** menu section too, which is the
+  way in from the keyboard or on a touch screen. See [Edit
+  Outline](/help/palette/mind-maps/edit-outline/).
 </AppNote>
 
-<Figure app="livediagram" caption="Hovering a mind map root shows Edit Outline and Tidy Map ahead of its note indicator.">
+<Figure
+  app="livediagram"
+  caption="Hovering a mind map root shows Edit Outline and Tidy Map ahead of its note indicator."
+>
   <MindRootCommandsScene />
 </Figure>
 
@@ -150,17 +187,19 @@ Turning indicators **Off** hides them on every element. Nothing becomes unreacha
 - **Assign Action** and **Add Comment** sit under **Resources**, the last category of the element's menu; every open thread and action is also listed in the **Collaborate** panel.
 
 <AppNote app="livedocuments">
-  Under **Resources**, a row the element already has is tinted and reads **View Action** or **View Comments**.
+  Under **Resources**, a row the element already has is tinted and reads **View Action** or **View
+  Comments**.
 </AppNote>
 
 <AppNote app="livediagram,livedesign">
-  Links and notes are under **Resources** too, and a row the element already has is filled in and marked **Added**.
+  Links and notes are under **Resources** too, and a row the element already has is filled in and
+  marked **Added**.
 </AppNote>
 
 <AppNote app="livediagram">
-  A mind map root's commands no longer appear on hover; **Edit Outline** and **Tidy Map** are in the root's **Mind Map** section.
+  A mind map root's commands no longer appear on hover; **Edit Outline** and **Tidy Map** are in the
+  root's **Mind Map** section.
 </AppNote>
-
 
 ## When They Don't Show
 
@@ -170,13 +209,15 @@ Turning indicators **Off** hides them on every element. Nothing becomes unreacha
 - **Embeds**: a <Noun /> [embedded](/help/collaboration/sharing/embeds/) in another page shows no indicators at all, whether the embed is for viewing or editing and whatever style you chose. Open it in <AppName /> to see them.
 
 <AppNote app="livediagram">
-  **Community**: a visitor viewing a canvas in the [Community](/help/collaboration/sharing/community/) sees no comment counts, since there is no comments panel for them to open. The other indicators still show.
+  **Community**: a visitor viewing a canvas in the
+  [Community](/help/collaboration/sharing/community/) sees no comment counts, since there is no
+  comments panel for them to open. The other indicators still show.
 </AppNote>
 
 <AppNote app="livediagram,livedesign">
-  Viewers and Participants also still see links and notes, and can open each one to read it. Viewers and Participants get no mind map commands.
+  Viewers and Participants also still see links and notes, and can open each one to read it. Viewers
+  and Participants get no mind map commands.
 </AppNote>
-
 
 <Tip>
   [Zen mode](/help/tools/zen-mode/) hides the editor's panels and bars, but indicators are part of
@@ -189,9 +230,9 @@ Turning indicators **Off** hides them on every element. Nothing becomes unreacha
 Indicators work the same on a touch screen: tap one to open what it points to. See [Mobile](/help/supported-devices/mobile/).
 
 <AppNote app="livediagram">
-  There is no pointer to hover with, so a mind map root's commands don't appear; long-press the root and use its **Mind Map** section instead.
+  There is no pointer to hover with, so a mind map root's commands don't appear; long-press the root
+  and use its **Mind Map** section instead.
 </AppNote>
-
 
 <Note>
   Element indicators are separate from the other marks an element can wear. The padlock on a [locked
@@ -200,7 +241,8 @@ Indicators work the same on a touch screen: tap one to open what it points to. S
 </Note>
 
 <AppNote app="livediagram">
-  The tally on an element during a [vote](/help/collaboration/session-tools/voting/) is not affected by this setting either.
+  The tally on an element during a [vote](/help/collaboration/session-tools/voting/) is not affected
+  by this setting either.
 </AppNote>
 
 </ArticleLayout>

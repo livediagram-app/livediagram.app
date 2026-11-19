@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { CardAnatomy, AccentEdges } from '@liveworkspace/help-site/art/illustrations/palette-diagram-elements';
+import {
+  CardAnatomy,
+  AccentEdges,
+} from '@liveworkspace/help-site/art/illustrations/palette-diagram-elements';
 
 export const metadata = helpMetadata({
   title: 'Cards and Callouts',
@@ -11,6 +14,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="palette/cards-and-callouts"
   title="Cards and Callouts"
   description="One node with a title, a meta line, a body, an icon and tags, each switched on or off."
   categoryTitle="Palette"
@@ -21,7 +25,8 @@ export const metadata = helpMetadata({
 A **Card** is a single node with slots: a title, a muted meta line, a body, an icon and a row of tags. Use it wherever a node has more to say than its name: a service with what it runs on, a persona with their role, a feature with its status.
 
 <AppNote app="livediagram">
-  In Diagram and Workshop mode it sits in the palette's **Layout** category ([Build Elements](/help/palette/build/)).
+  In Diagram and Workshop mode it sits in the palette's **Layout** category ([Build
+  Elements](/help/palette/build/)).
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
@@ -29,11 +34,16 @@ A **Card** is a single node with slots: a title, a muted meta line, a body, an i
 </AppNote>
 
 <AppNote app="livedesign">
-  It is also in **Elements** on a wireframe page. Its tile opens six presets to start from: **Service** (an icon, a title and meta line, a body and tags), **Compact** (an icon with a title and meta line on one row), **Panel** (a header band with a badge), **Person** (an initial, a name and role), **Accent** (a coloured edge) and **Callout**. Each is an ordinary card, so you can switch any slot on or off afterwards.
+  It is also in **Elements** on a wireframe page. Its tile opens six presets to start from:
+  **Service** (an icon, a title and meta line, a body and tags), **Compact** (an icon with a title
+  and meta line on one row), **Panel** (a header band with a badge), **Person** (an initial, a name
+  and role), **Accent** (a coloured edge) and **Callout**. Each is an ordinary card, so you can
+  switch any slot on or off afterwards.
 </AppNote>
 
 <AppNote app="livedocuments">
-  The Card tile also opens a few presets to start from: **Service**, **Compact**, **Panel**, **Person**, **Accent** and **Callout**.
+  The Card tile also opens a few presets to start from: **Service**, **Compact**, **Panel**,
+  **Person**, **Accent** and **Callout**.
 </AppNote>
 
 A new card shows every slot filled in, so you can see what each one is and switch off the ones you don't need.
@@ -70,21 +80,15 @@ Everything else is an ordinary element: resize it and the text re-wraps, recolou
 
 The **Callout** tile places a card with a badge, a heading and a body: a soft note box for a tip or a warning. It is a card underneath, so you can add tags or a meta line to it like any other.
 
-<AppNote app="livediagram">
-  The tile is in Diagram mode's **Write** category.
-</AppNote>
+<AppNote app="livediagram">The tile is in Diagram mode's **Write** category.</AppNote>
 
 ## Accent edge
 
 Any card, rectangle or stadium can carry an **accent edge**: a coloured strip down its left side, or across its top or bottom. Use it to colour-code them by team or status without filling the whole box.
 
-<AppNote app="livediagram">
-  A mind-map node can carry one too.
-</AppNote>
+<AppNote app="livediagram">A mind-map node can carry one too.</AppNote>
 
-<AppNote app="livedesign,livedocuments">
-  The rectangle is the **Square** shape there.
-</AppNote>
+<AppNote app="livedesign,livedocuments">The rectangle is the **Square** shape there.</AppNote>
 
 <Figure caption="An accent edge on the left, the top and the bottom.">
   <AccentEdges />
@@ -93,7 +97,13 @@ Any card, rectangle or stadium can carry an **accent edge**: a coloured strip do
 Right-click, open **Appearance**, then **Border**, and pick the side under **Accent Edge**. **Edge Colour** sets its colour, and **Match Border** makes it the border's own colour again. The format painter copies it along with the border.
 
 <AppNote app="livedesign">
-  **Colour by tag.** Give a tag a colour once and every card on the tab carrying that tag follows it: the tag's chip is tinted, and the card draws an accent edge in that colour (on the left, unless it has an edge side of its own). Retag a card and its colour follows; change a tag's colour and every card with it changes. Right-click a card with tags, open **Tools**, then **Card**, and pick a colour for any of its tags under **Tag Colours**. **Clear** beside it removes the colour. A card takes the colour of its first coloured tag, and a card with its own **Edge Colour** keeps it. A tab holds colours for up to 12 tags, and tags match whatever their capitals.
+  **Colour by tag.** Give a tag a colour once and every card on the tab carrying that tag follows
+  it: the tag's chip is tinted, and the card draws an accent edge in that colour (on the left,
+  unless it has an edge side of its own). Retag a card and its colour follows; change a tag's colour
+  and every card with it changes. Right-click a card with tags, open **Tools**, then **Card**, and
+  pick a colour for any of its tags under **Tag Colours**. **Clear** beside it removes the colour. A
+  card takes the colour of its first coloured tag, and a card with its own **Edge Colour** keeps it.
+  A tab holds colours for up to 12 tags, and tags match whatever their capitals.
 </AppNote>
 
 <Tip>

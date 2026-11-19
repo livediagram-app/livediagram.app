@@ -12,6 +12,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="palette/tools/code-blocks"
   title="Code Blocks"
   description="A monospace card for code snippets, with syntax highlighting in nine languages and eight colour schemes."
   categoryTitle="Palette"
@@ -55,16 +56,15 @@ An empty block shows a muted `// double-click to add code` placeholder until you
 
 Double-clicking opens the **Code** dialog: a monospace editor where `Tab` inserts two spaces instead of moving focus, so indenting works the way it does in a real editor. Pick the snippet's language from the **Language** dropdown and **Save**; the block updates in one undoable step. A block holds up to 4,000 characters.
 
-<AppNote app="livediagram">
-  `Shift+Tab` leaves the editor, and `⌘/Ctrl+Enter` saves.
-</AppNote>
+<AppNote app="livediagram">`Shift+Tab` leaves the editor, and `⌘/Ctrl+Enter` saves.</AppNote>
 
 <AppNote app="livedesign">
   `Shift+Tab` leaves the editor, and `⌘Enter` or `Ctrl+Enter` saves.
 </AppNote>
 
 <AppNote app="livedocuments">
-  `Shift+Tab` moves on to the next control, and `⌘Enter` or `Ctrl+Enter` also saves. **Cancel** or Escape leaves the block as it was.
+  `Shift+Tab` moves on to the next control, and `⌘Enter` or `Ctrl+Enter` also saves. **Cancel** or
+  Escape leaves the block as it was.
 </AppNote>
 
 <Figure caption="The Code dialog: the snippet in a monospace editor, the Language dropdown, and Save.">

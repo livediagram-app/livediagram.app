@@ -2,7 +2,10 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { ProgressBarAndRing } from '@liveworkspace/help-site/art/illustrations/palette-data';
-import { ProgressAnimationMenu, ProgressMenu } from '@liveworkspace/help-site/art/illustrations/tools-menus';
+import {
+  ProgressAnimationMenu,
+  ProgressMenu,
+} from '@liveworkspace/help-site/art/illustrations/tools-menus';
 
 export const metadata = helpMetadata({
   title: 'Progress Bars and Rings',
@@ -11,7 +14,7 @@ export const metadata = helpMetadata({
   path: '/help/palette/tools/data-elements/progress-elements/',
 });
 
-<ArticleLayout title="Progress Bars and Rings" description="Two ways to show a single percentage: a horizontal bar that fills, and a donut ring that draws round." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Data and Chart Elements", slug: "data-elements" }} subArticles={getSubArticles("data-elements").filter((a) => a.slug !== "progress-elements")}>
+<ArticleLayout path="palette/tools/data-elements/progress-elements" title="Progress Bars and Rings" description="Two ways to show a single percentage: a horizontal bar that fills, and a donut ring that draws round." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Data and Chart Elements", slug: "data-elements" }} subArticles={getSubArticles("data-elements").filter((a) => a.slug !== "progress-elements")}>
 
 A progress bar and a progress ring both show one number, a percentage from 0 to 100. The bar is a wide rounded pill that fills from the left; the ring is a donut that draws round from the top. They're the quickest way to show how far along something is, right next to whatever it relates to on your <Noun />.
 
@@ -27,13 +30,11 @@ A progress bar and a progress ring both show one number, a percentage from 0 to 
 </Step>
 
 <AppNote app="livediagram">
-  The **Data** category is on the palette strip in [Workshop](/help/canvas/workshop-mode/); in Diagram mode, use the search panel.
+  The **Data** category is on the palette strip in [Workshop](/help/canvas/workshop-mode/); in
+  Diagram mode, use the search panel.
 </AppNote>
 
-<AppNote app="livedesign">
-  A logo page has no Data category, so use the search panel there.
-</AppNote>
-
+<AppNote app="livedesign">A logo page has no Data category, so use the search panel there.</AppNote>
 
 <Step n={2}>
   Pick **Progress** for the bar or **Donut** for the ring, then tap the canvas to drop it, or drag
@@ -61,9 +62,7 @@ To animate the fill, right-click and open **Animation**, then choose **None**, *
   The four options are in the **Progress** section of **Animation**.
 </AppNote>
 
-<AppNote app="livedesign">
-  The **Shape** section moves it as a bounce or a float.
-</AppNote>
+<AppNote app="livedesign">The **Shape** section moves it as a bounce or a float.</AppNote>
 
 The animations each behave differently:
 

@@ -14,12 +14,13 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/sharing/community/',
 });
 
-<ArticleLayout title="Sharing to the Community" description="Put it in the public gallery so others can find it, learn from it and make their own copy." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "community")}>
+<ArticleLayout path="collaboration/sharing/community" title="Sharing to the Community" description="Put it in the public gallery so others can find it, learn from it and make their own copy." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "community")}>
 
 The [Community](/community/) is a public gallery of <Noun plural /> people are proud of. Anyone can browse it, filter it by category and tag, open a <Noun /> read-only, like it, and make their own copy to start from. Sharing a <Noun /> there is a way to show your work and to help someone else get going.
 
 <AppNote app="livedesign">
-  The gallery holds logos, websites, app screens, photo edits and more, filed under the same categories as the templates. A shared design gives someone a better start than a blank artboard.
+  The gallery holds logos, websites, app screens, photo edits and more, filed under the same
+  categories as the templates. A shared design gives someone a better start than a blank artboard.
 </AppNote>
 
 <AppNote app="livedocuments">
@@ -27,14 +28,17 @@ The [Community](/community/) is a public gallery of <Noun plural /> people are p
 </AppNote>
 
 <AppNote app="liveplanner">
-  The gallery holds sprint boards, budgets, event plans, sign-up forms, hiring pipelines and more. Sharing a plan there is a way to show how you work.
+  The gallery holds sprint boards, budgets, event plans, sign-up forms, hiring pipelines and more.
+  Sharing a plan there is a way to show how you work.
 </AppNote>
 
 ## Sharing It
 
 You need to be signed in to share a <Noun /> to the Community, so every <Noun /> there has a real author. A guest still sees the Share dialog's **Community** tab, with a note that sharing needs an account and a **Sign In to Share** button. Browsing, liking and copying need no account.
 
-<Step n={1}>Open the **Share** dialog on your <Noun />.</Step>
+<Step n={1}>
+  Open the **Share** dialog on your <Noun />.
+</Step>
 <Step n={2}>
   Open the dialog's **Community** tab, beside **Passes**, and choose **Share to Community**.
 </Step>
@@ -47,46 +51,35 @@ You need to be signed in to share a <Noun /> to the Community, so every <Noun />
 You can also share from the [Explorer](/help/explorer/explorer-page/), for the <Noun plural /> you own. The dialog shows a preview of the card people will see. Once it is shared, a confirmation offers **Copy Link** to copy the Community page's address, and **View Post** to open it.
 
 <AppNote app="livediagram">
-  In the Explorer, choose **Share** in a canvas's **⋯** menu, and the same dialog opens with its **Community** tab.
+  In the Explorer, choose **Share** in a canvas's **⋯** menu, and the same dialog opens with its
+  **Community** tab.
 </AppNote>
 
 <AppNote app="livehuddle">
-  In the Explorer, choose **Share** in a space's **⋯** menu, and the same dialog opens with its **Community** tab.
+  In the Explorer, choose **Share** in a space's **⋯** menu, and the same dialog opens with its
+  **Community** tab.
 </AppNote>
 
-<AppNote app="livedesign">
-  The card's picture is your design's first page.
-</AppNote>
+<AppNote app="livedesign">The card's picture is your design's first page.</AppNote>
 
-<AppNote app="livedocuments">
-  The card's picture is your document's first page.
-</AppNote>
+<AppNote app="livedocuments">The card's picture is your document's first page.</AppNote>
 
 <AppNote app="liveplanner">
-  The card's picture is your plan's first tab. The categories are the same as the template categories under **Start With**, such as **Projects and Teams**, **Finance**, **Events** or **Hiring and People**, so a shared plan is found beside the templates for the same job. **Something Else** is there for anything that fits none of them.
+  The card's picture is your plan's first tab. The categories are the same as the template
+  categories under **Start With**, such as **Projects and Teams**, **Finance**, **Events** or
+  **Hiring and People**, so a shared plan is found beside the templates for the same job.
+  **Something Else** is there for anything that fits none of them.
 </AppNote>
 
 Good tags are the words someone would search for. Each tag is 2 to 24 letters, numbers or hyphens, in any language, so café and 日本語 keep their letters. They help people find your <Noun /> through the filters on the Community page.
 
-<AppNote app="livediagram">
-  Think of the tools, the method, the subject.
-</AppNote>
+<AppNote app="livediagram,livehuddle">Think of the tools, the method, the subject.</AppNote>
 
-<AppNote app="livehuddle">
-  Think of the tools, the method, the subject.
-</AppNote>
+<AppNote app="livedesign">Think of the subject, the style, the purpose.</AppNote>
 
-<AppNote app="livedesign">
-  Think of the subject, the style, the purpose.
-</AppNote>
+<AppNote app="livedocuments">Think of the subject, the format, the purpose.</AppNote>
 
-<AppNote app="livedocuments">
-  Think of the subject, the format, the purpose.
-</AppNote>
-
-<AppNote app="liveplanner">
-  Think of the team, the method, the purpose.
-</AppNote>
+<AppNote app="liveplanner">Think of the team, the method, the purpose.</AppNote>
 
 Your <Noun /> is shared anonymously by default: it shows as Anonymous, with no name or picture. Turn off **Share Anonymously** in the same dialog to show your name instead.
 
@@ -101,23 +94,41 @@ A Community <Noun /> always shows your **latest saved version**, so your edits a
 Each card shows how many people liked the <Noun /> and how many made a copy.
 
 <AppNote app="livediagram">
-  Visitors can pan, zoom and switch tabs. **Comments stay private.** They are not shown to Community visitors.
+  Visitors can pan, zoom and switch tabs. **Comments stay private.** They are not shown to Community
+  visitors.
 </AppNote>
 
 <AppNote app="livedesign">
-  Visitors see every page of it. **Comments and who actions are assigned to stay private.** They are not shown to Community visitors, and a copy made from the Community leaves them out too. The designs people like most also reach **Start Making Pages**: each category's three most liked designs of the past month (with at least five likes in that time) show after its templates, marked **Community**, so a well-loved design can be someone else's starting point. See [Templates](/help/canvas/templates/#starting-from-a-template).
+  Visitors see every page of it. **Comments and who actions are assigned to stay private.** They are
+  not shown to Community visitors, and a copy made from the Community leaves them out too. The
+  designs people like most also reach **Start Making Pages**: each category's three most liked
+  designs of the past month (with at least five likes in that time) show after its templates, marked
+  **Community**, so a well-loved design can be someone else's starting point. See
+  [Templates](/help/canvas/templates/#starting-from-a-template).
 </AppNote>
 
 <AppNote app="livedocuments">
-  Visitors see every page of it, and can scroll, zoom and switch tabs. **Comments, presenter notes and who actions are assigned to stay private.** They are not shown to Community visitors, and a copy made from the Community leaves them out too. A document people really take to is shown beyond the gallery too: the three most liked in each category over the past month, each with at least five likes in that time, appear on [Start Making Pages](/help/canvas/templates/) after that category's templates, marked **Community**, so anyone starting a new document can begin from a copy of it.
+  Visitors see every page of it, and can scroll, zoom and switch tabs. **Comments, presenter notes
+  and who actions are assigned to stay private.** They are not shown to Community visitors, and a
+  copy made from the Community leaves them out too. A document people really take to is shown beyond
+  the gallery too: the three most liked in each category over the past month, each with at least
+  five likes in that time, appear on [Start Making Pages](/help/canvas/templates/) after that
+  category's templates, marked **Community**, so anyone starting a new document can begin from a
+  copy of it.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Visitors do not join your Space live, so strangers never walk in, hear your calls or see your cursor. The month's most liked spaces in each category (at least five likes in the past 30 days, three at most) also show in [Start a Space](/help/canvas/templates/), after that category's templates, marked **Community**, so someone starting a new space can begin from yours.
+  Visitors do not join your Space live, so strangers never walk in, hear your calls or see your
+  cursor. The month's most liked spaces in each category (at least five likes in the past 30 days,
+  three at most) also show in [Start a Space](/help/canvas/templates/), after that category's
+  templates, marked **Community**, so someone starting a new space can begin from yours.
 </AppNote>
 
 <AppNote app="liveplanner">
-  Visitors can look through every Board, Sheet, Dashboard and Form tab, and a Community plan shows every tab of it. **Comments, votes and who cards are assigned to stay private.** Every People field is left empty, a Form's link is left out, and a response card keeps only its title. None of it is shown to Community visitors, and a copy made from the Community leaves it out too.
+  Visitors can look through every Board, Sheet, Dashboard and Form tab, and a Community plan shows
+  every tab of it. **Comments, votes and who cards are assigned to stay private.** Every People
+  field is left empty, a Form's link is left out, and a response card keeps only its title. None of
+  it is shown to Community visitors, and a copy made from the Community leaves it out too.
 </AppNote>
 
 Opened from the Community, a <Noun /> is read-only for you too, so you can see it exactly as visitors do and never change it by accident from the gallery. The bar across the top offers **Edit Your <Noun capital />**, which opens your own <Noun />.
@@ -141,7 +152,8 @@ Open the **Share** dialog again, on its **Community** tab. It shows your post wi
     <DesignCommunityShareSection />
   </Figure>
 
-  While it is listed, your design reads **Public** on the Share dialog's line under its title and in the Explorer.
+While it is listed, your design reads **Public** on the Share dialog's line under its title and in the Explorer.
+
 </AppNote>
 
 <AppNote app="livedocuments">
@@ -149,7 +161,8 @@ Open the **Share** dialog again, on its **Community** tab. It shows your post wi
     <DocumentsCommunityShareSection />
   </Figure>
 
-  While it is listed, your document reads **Public** in the editor's header and in the Explorer.
+While it is listed, your document reads **Public** in the editor's header and in the Explorer.
+
 </AppNote>
 
 <AppNote app="livehuddle">
@@ -166,7 +179,8 @@ Open the **Share** dialog again, on its **Community** tab. It shows your post wi
     />
   </Figure>
 
-  While it is listed, your plan reads **Public** in the editor's header and in the Explorer.
+While it is listed, your plan reads **Public** in the editor's header and in the Explorer.
+
 </AppNote>
 
 <Tip>
@@ -186,16 +200,13 @@ Anyone can report a post. When three different people, on different networks, re
 - A <Noun /> whose first tab is empty can't be shared until you add something to it.
 - A <Noun /> in the **Trash** disappears from the Community until you restore it.
 
-<AppNote app="livediagram">
-  The first tab needs something added to it even if other tabs have content.
-</AppNote>
-
-<AppNote app="livehuddle">
+<AppNote app="livediagram,livehuddle">
   The first tab needs something added to it even if other tabs have content.
 </AppNote>
 
 <AppNote app="livedesign">
-  For a design it is the first page: add a shape, some text or a photo, because that page is the picture on your Community card.
+  For a design it is the first page: add a shape, some text or a photo, because that page is the
+  picture on your Community card.
 </AppNote>
 
 <AppNote app="livedocuments">
@@ -203,7 +214,8 @@ Anyone can report a post. When three different people, on different networks, re
 </AppNote>
 
 <AppNote app="liveplanner">
-  An empty tab is a Board with no card, a Sheet with no value, a Dashboard with nothing on it, or a Form with no question: that tab is the picture on your Community card.
+  An empty tab is a Board with no card, a Sheet with no value, a Dashboard with nothing on it, or a
+  Form with no question: that tab is the picture on your Community card.
 </AppNote>
 
 ## Finding Others

@@ -10,6 +10,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="palette/arrows/avoiding-elements"
   title="Arrows That Curve Around Things"
   description="Why a new arrow sometimes lands curved, and how to straighten it."
   categoryTitle="Palette"
@@ -32,7 +33,9 @@ Only at the moment you **finish drawing a new arrow**, out of a shape or off ano
 If neither side can be cleared without an enormous bend, the arrow stays straight: a wild curve reads worse than the crossing it was avoiding.
 
 <AppNote app="livediagram">
-  On a tab or element with the **Professional** [finish](/help/canvas/finish/), a new arrow never bows: it lands as a right-angled (**Angled**) connector instead, an ordinary angled arrow you can restyle like any other.
+  On a tab or element with the **Professional** [finish](/help/canvas/finish/), a new arrow never
+  bows: it lands as a right-angled (**Angled**) connector instead, an ordinary angled arrow you can
+  restyle like any other.
 </AppNote>
 
 ## When it does not
@@ -45,9 +48,7 @@ It is deliberately a one-shot at draw time, not a rule the <Noun /> lives under:
 - **Imported and generated content keeps its own geometry**: [imports](/help/tabs/import-tabs/), templates, AI authoring and auto layout all decide their own routing.
 - **Shapes that already overlap an end don't count.** An arrow drawn out of a shape inside a frame, or between overlapping shapes, can't clear them, so it ignores them.
 
-<AppNote app="livedocuments">
-  The same goes for a shape inside a stack.
-</AppNote>
+<AppNote app="livedocuments">The same goes for a shape inside a stack.</AppNote>
 
 ## Changing it
 

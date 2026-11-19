@@ -28,13 +28,31 @@ export default defineProject({
         extends: true,
         oxc: { jsx: { runtime: 'automatic' } },
         resolve: { alias: scoped('livediagram') },
-        test: { name: 'framework', include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'lib/**/*.test.ts'] },
+        test: {
+          name: 'framework',
+          include: ['src/**/*.test.ts', 'scripts/**/*.test.ts', 'lib/**/*.test.ts'],
+          // `extends: true` concatenates the base config's include, so each project also excludes the others' files.
+          exclude: ['editions/**', 'node_modules/**', '.next/**', 'dist/**', 'out/**'],
+        },
       },
       ...SCOPES.map((scope) => ({
         extends: true,
         oxc: { jsx: { runtime: 'automatic' as const } },
         resolve: { alias: scoped(scope) },
-        test: { name: scope, include: [`editions/${scope}/tests/**/*.test.{ts,tsx}`] },
+        test: {
+          name: scope,
+          include: [`editions/${scope}/tests/**/*.test.{ts,tsx}`],
+          exclude: [
+            ...SCOPES.filter((other) => other !== scope).map((other) => `editions/${other}/**`),
+            'src/**',
+            'scripts/**',
+            'lib/**',
+            'node_modules/**',
+            '.next/**',
+            'dist/**',
+            'out/**',
+          ],
+        },
       })),
     ],
   },

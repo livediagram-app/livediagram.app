@@ -4,13 +4,13 @@
 // accepts the help events from it). No page-view or web-vitals boots: the platform's ingest takes neither from here.
 import type { Viewport } from 'next';
 import { brandMarkSvg } from '@liveworkspace/brand/svg';
-import { createHelpTelemetryIds, HELP_TELEMETRY_OVERRIDES } from '@liveworkspace/help-registry/telemetry';
+import {
+  createHelpTelemetryIds,
+  HELP_TELEMETRY_OVERRIDES,
+} from '@liveworkspace/help-registry/telemetry';
 import { PLATFORM_TELEMETRY_APP } from '@liveworkspace/telemetry';
 import { createTelemetryEngine } from '@liveworkspace/telemetry/emitter';
-import {
-  telemetryEnabledByBuild,
-  telemetryServiceUrl,
-} from '@liveworkspace/telemetry-client';
+import { telemetryEnabledByBuild, telemetryServiceUrl } from '@liveworkspace/telemetry-client';
 import { trustedConstant } from '@liveworkspace/trusted-types';
 import { appearanceBootScript } from '@liveworkspace/ui/appearance-storage';
 export { PageNotFound } from '@liveworkspace/ui';
@@ -18,7 +18,9 @@ import { createSocialCard } from '@liveworkspace/ui/social-card';
 
 // liveworkspace.app's Appearance key, the one the header's toggle writes (editions/all/lib/appearance-store.ts).
 import { PLATFORM_APPEARANCE_KEY } from '../../editions/all/lib/appearance-store';
-export const APPEARANCE_BOOT_SCRIPT = trustedConstant(appearanceBootScript(PLATFORM_APPEARANCE_KEY));
+export const APPEARANCE_BOOT_SCRIPT = trustedConstant(
+  appearanceBootScript(PLATFORM_APPEARANCE_KEY),
+);
 
 export const PUBLIC_VIEWPORT: Viewport = { themeColor: '#64748b', colorScheme: 'light dark' };
 
@@ -62,5 +64,8 @@ export function installErrorTracking(_track?: unknown): void {}
 
 // A path means one article whichever app's help shows it, so All Apps reads every app's overrides at once.
 export const { helpPathTelemetryId } = createHelpTelemetryIds(
-  Object.assign({}, ...Object.values(HELP_TELEMETRY_OVERRIDES)),
+  Object.values(HELP_TELEMETRY_OVERRIDES).reduce<Record<string, string>>(
+    (merged, overrides) => ({ ...merged, ...overrides }),
+    {},
+  ),
 );

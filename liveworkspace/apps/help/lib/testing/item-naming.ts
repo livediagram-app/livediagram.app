@@ -14,16 +14,22 @@ import { scopedArticleSources } from './scoped-articles';
 // JSX tags and import lines are no words on the page, and livedocuments' name is the app it is. A line naming every
 // app's items together (closing an account deletes "canvases, plans, documents, designs and Spaces") is allowed.
 const WORD = /\bdocuments?\b/i;
-const EVERY_APP = /(canvas(es)?|plans?|projects?),? [^.]*\bdocuments?\b[^.]*\b(designs?|spaces?)\b/i;
+const EVERY_APP =
+  /(canvas(es)?|plans?|projects?),? [^.]*\bdocuments?\b[^.]*\b(designs?|spaces?)\b/i;
 
-/** The line as the page shows it: no inline code, link targets, JSX tags or livedocuments' name. */
+/** The line as the page shows it: no inline code, link targets, JSX tags, livedocuments' name or the Community
+ *  article's address. */
 function visibleText(line: string): string {
-  return line
-    .replace(/`[^`]*`/g, '')
-    .replace(/\]\([^)]*\)/g, ']')
-    .replace(/<[^>]*>/g, '')
-    .replace(/\blivedocuments(\.app)?\b/gi, '')
-    .replace(/[Dd]ocument(ation|ed|ing)\b/g, '');
+  return (
+    line
+      .replace(/`[^`]*`/g, '')
+      .replace(/\]\([^)]*\)/g, ']')
+      .replace(/<[^>]*>/g, '')
+      .replace(/\blivedocuments(\.app)?\b/gi, '')
+      // The Community's help address is the same in every app (@liveworkspace/help-registry/community).
+      .replace(/finding-community-documents/g, '')
+      .replace(/[Dd]ocument(ation|ed|ing)\b/g, '')
+  );
 }
 
 /** Each line of `source` a reader sees that names the other app's item, as `<label>:<line>: <text>`. */
@@ -34,7 +40,8 @@ export function misnamedLines(label: string, source: string): string[] {
     if (line.trimStart().startsWith('```')) fenced = !fenced;
     if (fenced || /^\s*(import|export) /.test(line)) return;
     const text = visibleText(line);
-    if (WORD.test(text) && !EVERY_APP.test(text)) out.push(`${label}:${i + 1}: ${line.trim().slice(0, 120)}`);
+    if (WORD.test(text) && !EVERY_APP.test(text))
+      out.push(`${label}:${i + 1}: ${line.trim().slice(0, 120)}`);
   });
   return out;
 }
@@ -65,9 +72,19 @@ export function describeItemNaming({ item }: { item: string }) {
     it('flags the word and lets the rest through (guard against this test going blind)', () => {
       expect(misnamedLines('x', 'Open the document from Explorer.')).toHaveLength(1);
       expect(misnamedLines('x', 'Call `document.body` or read the documentation.')).toEqual([]);
-      expect(misnamedLines('x', 'See [the API](/help/developers/working-with-documents/).')).toEqual([]);
-      expect(misnamedLines('x', 'Closing your account deletes your canvases, plans, documents, designs and Spaces.')).toEqual([]);
+      expect(
+        misnamedLines('x', 'See [the API](/help/developers/working-with-documents/).'),
+      ).toEqual([]);
+      expect(
+        misnamedLines(
+          'x',
+          'Closing your account deletes your canvases, plans, documents, designs and Spaces.',
+        ),
+      ).toEqual([]);
       expect(misnamedLines('x', '```\nGET /api/documents\n```')).toEqual([]);
+      expect(
+        misnamedLines('x', "  path: '/help/collaboration/sharing/finding-community-documents/',"),
+      ).toEqual([]);
     });
   });
 }

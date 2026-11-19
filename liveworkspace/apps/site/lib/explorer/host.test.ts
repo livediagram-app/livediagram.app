@@ -90,7 +90,9 @@ describe('platformHelpHref', () => {
     expect(platformHelpHref({ kind: 'trash' })).toBe('/help/account-and-data/trash/');
     expect(platformHelpHref({ kind: 'search', q: '' })).toBe('/help/explorer/filters/');
     expect(platformHelpHref({ kind: 'folder', id: 'f1' } as never)).toBe('/help/explorer/folders/');
-    expect(platformHelpHref({ kind: 'team', id: 't1' } as never)).toBe('/help/explorer/team-spaces/');
+    expect(platformHelpHref({ kind: 'team', id: 't1' } as never)).toBe(
+      '/help/explorer/team-spaces/',
+    );
   });
 
   it('has no article for a view without one', () => {

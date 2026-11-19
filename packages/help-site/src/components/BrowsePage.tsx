@@ -43,7 +43,9 @@ export function BrowsePage({
   const Art = listing ? site.art.categoryArt[slug] : undefined;
   // The apps the landing holds articles for, read by the app switch (AppSwitch, HELP_APPLIES_ATTR) to send a reader
   // to another app's home when that app has none here.
-  const apps = site.scope ? site.catalogue.categories.find((c) => c.slug === slug)?.apps : undefined;
+  const apps = site.scope
+    ? site.catalogue.categories.find((c) => c.slug === slug)?.apps
+    : undefined;
   return (
     <div {...(apps && { 'data-help-applies': apps.join(',') })}>
       {listing && (

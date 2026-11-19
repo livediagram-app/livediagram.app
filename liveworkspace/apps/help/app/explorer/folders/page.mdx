@@ -4,11 +4,12 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Folders',
-  description: 'Organise your work into nested folders in the Explorer: create them, file work into them, move, rename and delete.',
+  description:
+    'Organise your work into nested folders in the Explorer: create them, file work into them, move, rename and delete.',
   path: '/help/explorer/folders/',
 });
 
-<ArticleLayout title="Folders" description="Organise a growing library into nested folders, in your own space or a team's." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("folders")}>
+<ArticleLayout path="explorer/folders" title="Folders" description="Organise a growing library into nested folders, in your own space or a team's." categoryTitle="Explorer" categorySlug="explorer" subArticles={getSubArticles("folders")}>
 
 Folders are how you organise a growing library in the Explorer. Every item lives in exactly one folder, or in none (at the root of its space), and folders can nest inside other folders. A team has folders of its own too ([Team Spaces](/help/explorer/team-spaces/)), which work the same way.
 
@@ -63,7 +64,8 @@ In the [card view](/help/explorer/list-and-card-views/) a folder shows a small m
 <AppNote app="liveplanner">
   **Default folders.** A **default folder** is where your new plans go when you make one without choosing a place; with none set, they land in My Work. Choose **Use as Default for…** in a folder's menu and, under **New plans that open as**, tick what it should collect: **Plans** (every new plan no more specific entry claims), **Retrospective plans** or **Kanban plans** (new plans made from one of those templates). Each entry points at one folder, so ticking it moves it from wherever it was; unticking it sends those plans back to My Work. **My Work** has the same menu. A team's folders work too, as long as you are a member; a team's own top level cannot be a default.
 
-  A default folder carries a small mark after its name; hover it to read what it collects. **New Plan** never asks where a plan goes: starting inside a folder or a team keeps you there, and otherwise the plan is filed in the default for its template, else your **Plans** default, else My Work. **Settings > Explorer > Default Folders** (**Where New Plans Go**) lists each entry with **Change** and **Clear**, and says so when a default folder can no longer be reached. Defaults are yours alone, kept for your account or guest identity, and never move plans you already have.
+A default folder carries a small mark after its name; hover it to read what it collects. **New Plan** never asks where a plan goes: starting inside a folder or a team keeps you there, and otherwise the plan is filed in the default for its template, else your **Plans** default, else My Work. **Settings > Explorer > Default Folders** (**Where New Plans Go**) lists each entry with **Change** and **Clear**, and says so when a default folder can no longer be reached. Defaults are yours alone, kept for your account or guest identity, and never move plans you already have.
+
 </AppNote>
 
 </ArticleLayout>

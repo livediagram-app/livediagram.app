@@ -4,11 +4,12 @@ import { GalleryCards } from '@liveworkspace/help-site/art/illustrations/explore
 
 export const metadata = helpMetadata({
   title: 'Image Gallery',
-  description: "Every image you have uploaded, in one place, with a 'used in' badge so you can spot and clear the ones nothing references.",
+  description:
+    "Every image you have uploaded, in one place, with a 'used in' badge so you can spot and clear the ones nothing references.",
   path: '/help/explorer/image-gallery/',
 });
 
-<ArticleLayout title="Image Gallery" description="Every image you have uploaded, in one place, with a 'used in' badge so you can spot and clear the ones nothing references." categoryTitle="Explorer" categorySlug="explorer">
+<ArticleLayout path="explorer/image-gallery" title="Image Gallery" description="Every image you have uploaded, in one place, with a 'used in' badge so you can spot and clear the ones nothing references." categoryTitle="Explorer" categorySlug="explorer">
 
 The **Image Gallery** lives under **Library** in the Explorer sidebar's More group and collects every image you have uploaded. It is the companion to placing images on the <Noun />: the <Noun /> is where you use them, and the gallery is where you manage them. Pictures you pick from the image search land here too.
 
@@ -17,7 +18,8 @@ The **Image Gallery** lives under **Library** in the Explorer sidebar's More gro
 </AppNote>
 
 <AppNote app="livehuddle">
-  The gallery is where you manage the pictures behind your profile and the images already in your spaces. Images that come in with an imported tab land here too.
+  The gallery is where you manage the pictures behind your profile and the images already in your
+  spaces. Images that come in with an imported tab land here too.
 </AppNote>
 
 ## What it shows
@@ -29,7 +31,8 @@ Each image appears as a card with its name, its size in pixels and on disk, and 
 - **Couldn’t check** means liveworkspace could not look up where the image is used just now, so it says neither. Open the gallery again to retry. These images are never listed under **Unused**.
 
 <AppNote app="livediagram">
-  **In Library** means an item in the [Library](/help/palette/library/) holds the image, so it counts as used for as long as the item is kept.
+  **In Library** means an item in the [Library](/help/palette/library/) holds the image, so it
+  counts as used for as long as the item is kept.
 </AppNote>
 
 <AppNote app="livediagram">
@@ -65,7 +68,9 @@ Each image appears as a card with its name, its size in pixels and on disk, and 
 </AppNote>
 
 <AppNote app="livediagram,livedocuments,livedesign">
-  A picture an AI assistant added through its [MCP connection](/help/account-and-data/connect-ai-mcp/) carries a **Made by AI** chip on its card, the same chip an AI-made file shows in the Explorer.
+  A picture an AI assistant added through its [MCP
+  connection](/help/account-and-data/connect-ai-mcp/) carries a **Made by AI** chip on its card, the
+  same chip an AI-made file shows in the Explorer.
 </AppNote>
 
 To add an image, drop it, paste it, or click the **Drop, paste, or click to upload an image** area at the top. It uses the same checks as uploading from the <Noun />: one image can be up to 10 MB, and an image you already have is not stored twice.

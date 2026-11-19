@@ -8,14 +8,14 @@ what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker       | Type                                                                          |
-| ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
-| `apps/marketing` | `liveplanner-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`    | `liveplanner-editor`    | Static assets plus a small path-rewrite worker.                               |
+| App                       | Cloudflare Worker                      | Type                                                                                                                                                               |
+| ------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/marketing`          | `liveplanner-marketing`                | Static assets only (Next.js `output: 'export'`).                                                                                                                   |
+| `apps/editor`             | `liveplanner-editor`                   | Static assets plus a small path-rewrite worker.                                                                                                                    |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `liveplanner` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)). |
-| `apps/api`       | `liveplanner-api`       | Worker with one Durable Object class (`PlanRoom`); no D1 and no R2.           |
-| `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `liveplanner-router`    | Worker with service bindings to marketing, editor, api and help.              |
+| `apps/api`                | `liveplanner-api`                      | Worker with one Durable Object class (`PlanRoom`); no D1 and no R2.                                                                                                |
+| `apps/mcp`                | `liveplanner-mcp`                      | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                      |
+| `apps/router`             | `liveplanner-router`                   | Worker with service bindings to marketing, editor, api and help.                                                                                                   |
 
 `apps/cli` is the npm CLI ([CLI](../015-api/cli.md)) and deploys nowhere. Its npm publishing and the MCP Registry
 listing ([MCP server](../015-api/mcp-server.md) "Registry listing", by hand or the root `mcp-registry.yml` workflow

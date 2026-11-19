@@ -7,7 +7,8 @@ export const articles: Article[] = [
   {
     slug: 'what-is-open-source',
     title: 'What is Open Source?',
-    description: 'Open source means the code is public and anyone can read, run, or modify it. The apps are MIT-licensed, so here is what that gives you.',
+    description:
+      'The code is public, free to read, and free to run. Here is what open source means and what being MIT-licensed gives you.',
     keywords: 'mit license free code github oss public repository',
     category: 'About',
     categorySlug: 'about',
@@ -23,8 +24,10 @@ export const articles: Article[] = [
   {
     slug: 'who-is-it-for',
     title: 'Who Is It For?',
-    description: 'The apps are for teams who do their thinking and making together: diagrams, plans, documents, designs and meetings, built by several people at once.',
-    keywords: 'audience use cases teams developers designers educators students software product project managers retros hiring planning plan writers presenters speakers talks flashcards marketing infographics remote hybrid stand-up all-hands community events hosts',
+    description:
+      'Teams who work together, from sprints and workshops to reports, logos and stand-ups.',
+    keywords:
+      'audience use cases teams developers designers educators students software product project managers retros hiring planning plan writers presenters speakers talks flashcards marketing infographics remote hybrid stand-up all-hands community events hosts',
     category: 'About',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -40,8 +43,10 @@ export const articles: Article[] = [
   {
     slug: 'accessibility',
     title: 'Accessibility and Keyboard Navigation',
-    description: 'Use the keyboard and a screen reader: reach the work, move through it, hear your selection announced and edit with keyboard verbs.',
-    keywords: 'a11y screen reader focus tab navigation aria assistive accessible f6 regions reduce motion ui scale',
+    description:
+      'Reach your work, move through it, and edit with the keyboard, with changes announced to screen readers.',
+    keywords:
+      'a11y screen reader focus tab navigation aria assistive accessible f6 regions reduce motion ui scale',
     category: 'Getting Started',
     categorySlug: 'getting-started',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -49,7 +54,7 @@ export const articles: Article[] = [
   {
     slug: 'adding-shapes-and-arrows',
     title: 'Adding Shapes and Arrows',
-    description: 'Drop shapes from the Palette and connect them with arrows using quick-connect, the building blocks of everything you draw.',
+    description: 'Dropping shapes from the Palette and connecting them with arrows.',
     keywords: 'add box connector line draw create insert place flowchart process flow how-to',
     category: 'Getting Started',
     categorySlug: 'getting-started',
@@ -58,7 +63,8 @@ export const articles: Article[] = [
   {
     slug: 'guest-vs-account',
     title: 'Guest vs Account',
-    description: 'The editor always works without signing in. Learn what you get as a guest and what an account adds.',
+    description:
+      'The editor always works without signing in. Here is what a guest gets, and what an account adds on top.',
     keywords: 'sign in up anonymous login register benefits sync account',
     category: 'Getting Started',
     categorySlug: 'getting-started',
@@ -67,8 +73,9 @@ export const articles: Article[] = [
   {
     slug: 'keyboard-essentials',
     title: 'Keyboard Essentials',
-    description: 'The handful of keyboard shortcuts worth learning first: undo, search, panning, and the keys for your own kind of work.',
-    keywords: 'shortcuts hotkeys keys copy paste undo delete essential redo search zen board cards sheet cells',
+    description: 'The small set of shortcuts worth learning first to work quickly.',
+    keywords:
+      'shortcuts hotkeys keys copy paste undo delete essential redo search zen board cards sheet cells',
     category: 'Getting Started',
     categorySlug: 'getting-started',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -76,8 +83,9 @@ export const articles: Article[] = [
   {
     slug: 'sharing-your-document',
     title: 'Sharing Your Work',
-    description: 'Hand a colleague a share link and collaborate on the same work in real time, even if they never sign in.',
-    keywords: 'share link collaborate invite send url realtime together diagram document meet space',
+    description: 'Hand over a link and work together, live, even with people who never sign in.',
+    keywords:
+      'share link collaborate invite send url realtime together diagram document meet space',
     category: 'Getting Started',
     categorySlug: 'getting-started',
     apps: ['livediagram', 'livedocuments', 'livehuddle'],
@@ -90,7 +98,8 @@ export const articles: Article[] = [
   {
     slug: 'the-canvas-basics',
     title: 'Canvas Basics',
-    description: 'Learn to find your way around the canvas: panning, zooming, the tools that move and select, and the panels around it.',
+    description:
+      'Panning, zooming, and finding your way around the surface where you build everything.',
     keywords: 'pan zoom navigate move around scroll basics orientation',
     category: 'Getting Started',
     categorySlug: 'getting-started',
@@ -99,8 +108,9 @@ export const articles: Article[] = [
   {
     slug: 'exporting-pages',
     title: 'Exporting Pages',
-    description: 'Export pages as a PDF, PNG or SVG of every page or just one, each exactly its sheet, and the extra formats each app adds.',
-    keywords: 'export download pdf png svg gif animated animation moving image loop zip all pages one page import json print printable infographic slides slide deck present presentation add as from powerpoint pptx keynote google word docx docs editable speaker notes logo kit photo jpeg webp psd',
+    description: 'Every page or one page as a PDF or images.',
+    keywords:
+      'export download pdf png svg gif animated animation moving image loop zip all pages one page import json print printable infographic slides slide deck present presentation add as from powerpoint pptx keynote google word docx docs editable speaker notes logo kit photo jpeg webp psd',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -112,8 +122,10 @@ export const articles: Article[] = [
   {
     slug: 'pages-tour',
     title: 'The Pages Tour',
-    description: 'Take the Pages tour: a walkthrough for each kind of page that opens the real controls on your own page.',
-    keywords: 'pages tour walkthrough onboarding intro introduction getting started guide tutorial first time learn page name cog settings layout background add slides slide deck to present presentation infographic article show me replay rerun accessibility flashcards get logo wireframe photo photos',
+    description:
+      'A short, optional walkthrough for each kind of page, started from Get Started at the bottom of the editor, or from Show Me on any page.',
+    keywords:
+      'pages tour walkthrough onboarding intro introduction getting started guide tutorial first time learn page name cog settings layout background add slides slide deck to present presentation infographic article show me replay rerun accessibility flashcards get logo wireframe photo photos',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -122,8 +134,10 @@ export const articles: Article[] = [
   {
     slug: 'working-with-pages',
     title: 'Working with Pages',
-    description: 'Every tab is a row of pages, side by side, each its own sheet, to build and then export.',
-    keywords: 'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us square social post instagram linkedin story stories slide portrait landscape orientation size background article articles document kind first choice navigator next previous backgrounds colour color gradient pattern dots grid lines theme dark name rename duplicate move reorder drag delete add snap margins margin fit resize scale split into contents sidebar find a lock locked unlock padlock protect freeze read only custom photo image picture overlay wash tint fade blur blurred soft softened frosted upload title bar layout button tidy up align straighten even spacing widescreen carry over blank logo wireframe design',
+    description:
+      'Work on a tab as pages: add them, paint them, reorder and lock them, then export them.',
+    keywords:
+      'pages page infographic infographics poster one pager one-pager flyer handout report sheet a4 a3 letter us square social post instagram linkedin story stories slide portrait landscape orientation size background article articles document kind first choice navigator next previous backgrounds colour color gradient pattern dots grid lines theme dark name rename duplicate move reorder drag delete add snap margins margin fit resize scale split into contents sidebar find a lock locked unlock padlock protect freeze read only custom photo image picture overlay wash tint fade blur blurred soft softened frosted upload title bar layout button tidy up align straighten even spacing widescreen carry over blank logo wireframe design',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -132,8 +146,9 @@ export const articles: Article[] = [
   {
     slug: 'report-a-vulnerability',
     title: 'Reporting a Vulnerability',
-    description: 'Report a security vulnerability privately on GitHub: what is in scope, the rules for testing, and our safe-harbour promise to researchers.',
-    keywords: 'security vulnerability disclosure bug exploit cve advisory responsible safe harbour harbor pentest researcher hacker report',
+    description: 'How to report a security issue privately, and what to expect when you do.',
+    keywords:
+      'security vulnerability disclosure bug exploit cve advisory responsible safe harbour harbor pentest researcher hacker report',
     category: 'Policies',
     categorySlug: 'policies',
     parentSlug: 'policies',
@@ -142,8 +157,10 @@ export const articles: Article[] = [
   {
     slug: 'data-privacy',
     title: 'Data Privacy',
-    description: 'Where your work lives, what is stored, and the control you have over your own data.',
-    keywords: 'storage stored cloudflare security where data location safe document images uploads media google drive community project',
+    description:
+      'Where your work lives, what gets stored, and how you stay in control of your own data.',
+    keywords:
+      'storage stored cloudflare security where data location safe document images uploads media google drive community project',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -152,8 +169,10 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Keep work saved only in your browser, never on the server, and move it to and from your account.',
-    keywords: 'local only pill this browser storage private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload folders new folder document take offline plan server switch project',
+    description:
+      "Work saved only in this browser, where a guest's new work starts, and how to move it to and from your account.",
+    keywords:
+      'local only pill this browser storage private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload folders new folder document take offline plan server switch project',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -162,7 +181,8 @@ export const articles: Article[] = [
   {
     slug: 'open-source-trust',
     title: 'Open Source and Trust',
-    description: 'The apps are MIT-licensed with a public codebase, so you can audit exactly how they handle your data.',
+    description:
+      'The whole codebase is public and MIT-licensed, so you do not have to take any privacy claim on faith.',
     keywords: 'github mit audit code public license transparent inspect',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
@@ -172,8 +192,10 @@ export const articles: Article[] = [
   {
     slug: 'share-link-security',
     title: 'Share Link Security',
-    description: 'Add a password or an expiry to a share link so a shared URL does not grant access forever.',
-    keywords: 'password protect expire lock secure links safety access pass expiry extend revoke viewer editor participant link preview previews unfurl slack teams discord imessage whatsapp card thumbnail',
+    description:
+      'Two self-serve controls, a share password and link expiry, that bound who can open a shared work and for how long.',
+    keywords:
+      'password protect expire lock secure links safety access pass expiry extend revoke viewer editor participant link preview previews unfurl slack teams discord imessage whatsapp card thumbnail',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -182,8 +204,10 @@ export const articles: Article[] = [
   {
     slug: 'what-we-collect',
     title: 'What We Collect',
-    description: 'Anonymous, first-party, opt-out product events, published openly on a public dashboard. Here is exactly what that means.',
-    keywords: 'privacy telemetry analytics tracking data collect opt out anonymous page views pageviews visits',
+    description:
+      'Anonymous, first-party product events, published on a public dashboard, with a one-click opt-out.',
+    keywords:
+      'privacy telemetry analytics tracking data collect opt out anonymous page views pageviews visits',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -192,8 +216,10 @@ export const articles: Article[] = [
   {
     slug: 'telemetry-dashboard',
     title: 'The Public Telemetry Dashboard',
-    description: 'Read the public telemetry dashboard at liveworkspace.app: views, Today, 7-day and 30-day windows, timing percentiles and Core Web Vitals from anonymous events.',
-    keywords: 'telemetry dashboard analytics stats metrics public transparency charts trends timings percentiles p75 median core web vitals lcp inp cls exceptions search anonymous features pages help health detail',
+    description:
+      'Everything the app measures, published as anonymous counts on a public dashboard anyone can read.',
+    keywords:
+      'telemetry dashboard analytics stats metrics public transparency charts trends timings percentiles p75 median core web vitals lcp inp cls exceptions search anonymous features pages help health detail',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security/what-we-collect',
     parentSlug: 'what-we-collect',
@@ -202,7 +228,7 @@ export const articles: Article[] = [
   {
     slug: 'desktop',
     title: 'Desktop',
-    description: 'On a computer you get the full experience: every tool, every keyboard shortcut, right-click menus, and every panel.',
+    description: 'On a computer you get the complete editor, with nothing held back.',
     keywords: 'computer pc mac windows laptop mouse full editor',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
@@ -211,8 +237,10 @@ export const articles: Article[] = [
   {
     slug: 'mobile',
     title: 'Mobile',
-    description: 'Use the app on a phone: touch gestures, long-press for menus, a layout fitted to the screen, and what differs from a computer.',
-    keywords: 'phone iphone android touch gestures small screen toolbar dock mobile layout landscape sideways rotate header tabs hide fullscreen',
+    description:
+      'On a phone the editor is built for touch, with finger gestures and a layout fitted to the screen.',
+    keywords:
+      'phone iphone android touch gestures small screen toolbar dock mobile layout landscape sideways rotate header tabs hide fullscreen',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -220,7 +248,7 @@ export const articles: Article[] = [
   {
     slug: 'tablet',
     title: 'Tablet',
-    description: 'Use the app on a tablet: the full layout with touch gestures, shortcuts once a keyboard is paired, and when the compact phone layout applies.',
+    description: 'A tablet has room for the full layout, with touch for direct editing.',
     keywords: 'ipad touch stylus pen android surface tablet keyboard',
     category: 'Supported Devices',
     categorySlug: 'supported-devices',
@@ -229,8 +257,10 @@ export const articles: Article[] = [
   {
     slug: 'dark-mode',
     title: 'Appearance: Light, Dark, System',
-    description: 'Three settings for the app\'s own look (Light, Dark, or follow your device), kept separate from the theme each tab is saved with.',
-    keywords: 'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
+    description:
+      "Light, Dark, or follow your device: the look of the app itself, apart from each tab's theme.",
+    keywords:
+      'night theme appearance dark light system os device switch toggle cycle eyes mode website help header',
     category: 'Tools',
     categorySlug: 'tools',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -238,7 +268,8 @@ export const articles: Article[] = [
   {
     slug: 'layout-cleanup',
     title: 'Layout Cleanup',
-    description: 'Tidy a messy tab in one step from the command palette: snap elements to a grid with Auto-Align, or recompute the layout of connected shapes with Auto Layout.',
+    description:
+      'Tidiers for nudging things into alignment and for laying connected shapes out from scratch.',
     keywords: 'tidy align arrange auto grid organise organize straighten up neat layout',
     category: 'Tools',
     categorySlug: 'tools',
@@ -247,7 +278,7 @@ export const articles: Article[] = [
   {
     slug: 'auto-align',
     title: 'Auto-Align',
-    description: 'Snap every element\'s size to a 10 px grid so near-aligned elements line up exactly and drift disappears.',
+    description: 'A quick grid snap for when elements are nearly lined up but a few pixels off.',
     keywords: 'grid tidy straighten arrange snap organise organize',
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
@@ -257,8 +288,9 @@ export const articles: Article[] = [
   {
     slug: 'auto-layout',
     title: 'Auto Layout',
-    description: 'Recompute connected shapes\' positions from the arrows with Auto Layout, in a layered style, a tree, or a radial arrangement.',
-    keywords: 'arrange flowchart tree mindmap tidy up automatic graph preview hover try before greyed out disabled already lanes swimlane route arrows layered radial',
+    description: 'Let the app lay out connected shapes for you from the arrows between them.',
+    keywords:
+      'arrange flowchart tree mindmap tidy up automatic graph preview hover try before greyed out disabled already lanes swimlane route arrows layered radial',
     category: 'Tools',
     categorySlug: 'tools/layout-cleanup',
     parentSlug: 'layout-cleanup',
@@ -267,8 +299,9 @@ export const articles: Article[] = [
   {
     slug: 'markdown-import',
     title: 'Markdown Import',
-    description: 'Bring Markdown into the app: an outline becomes a themed tree diagram, or a .md file becomes an article.',
-    keywords: 'outline text to diagram tree convert bullet list paste markdown md file article headings lists formatting import',
+    description: 'Bring Markdown into the app as a tidy, themed tree diagram, or as an article.',
+    keywords:
+      'outline text to diagram tree convert bullet list paste markdown md file article headings lists formatting import',
     category: 'Tools',
     categorySlug: 'tools',
     apps: ['livediagram', 'livedocuments'],
@@ -276,7 +309,7 @@ export const articles: Article[] = [
   {
     slug: 'zen-mode',
     title: 'Zen Mode',
-    description: 'A distraction-free focus mode that hides the toolbars and panels and leaves just your work, for reading, sharing a screen, or thinking.',
+    description: 'Hide the toolbars and panels to leave just your work.',
     keywords: 'distraction free fullscreen hide ui focus clean minimal presentation screen share',
     category: 'Tools',
     categorySlug: 'tools',
@@ -285,7 +318,7 @@ export const articles: Article[] = [
   {
     slug: 'browser-compatibility',
     title: 'Browser Compatibility',
-    description: 'Which browsers work best, and a checklist for fixing rendering, connection, and extension problems.',
+    description: 'Which browsers work best, and a checklist for fixing browser-related glitches.',
     keywords: 'chrome safari firefox edge supported rendering glitch display broken',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
@@ -293,8 +326,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'cannot-sign-in',
-    title: 'Can\'t Sign In',
-    description: 'A checklist for sign-in problems: the email code, the right address, Google, cookies, and a reminder that the editor always works as a guest.',
+    title: "Can't Sign In",
+    description:
+      'A checklist for sign-in problems, and how to keep working while you sort them out.',
     keywords: 'login failed locked out access problem cant sign in error code',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
@@ -303,7 +337,7 @@ export const articles: Article[] = [
   {
     slug: 'collaboration-issues',
     title: 'Real-Time Collaboration Problems',
-    description: 'A checklist for when presence or collaborators\' edits do not show up: access, the live connection, locks, and what to try next.',
+    description: 'What to check when you cannot see collaborators, or edits are slow to arrive.',
     keywords: 'sync realtime not working lag disconnect websocket updates stale',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
@@ -312,8 +346,10 @@ export const articles: Article[] = [
   {
     slug: 'document-not-loading',
     title: 'A File Will Not Load',
-    description: 'What to check when something will not open: quick checks, a stuck opening screen, a single tab, access and share links.',
-    keywords: 'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others document',
+    description:
+      'What to check when something will not open, from quick checks to share-link problems.',
+    keywords:
+      'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others document',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
     apps: ['livediagram', 'livedocuments', 'livehuddle'],
@@ -326,8 +362,10 @@ export const articles: Article[] = [
   {
     slug: 'missing-changes',
     title: 'My Changes Are Missing',
-    description: 'A checklist for work that seems to have vanished: finding it, how autosave works, and recovering with undo, snapshots or the Trash.',
-    keywords: 'lost work autosave recover restore disappeared gone save history new version reload update no longer supported chart checklist embed placeholder',
+    description:
+      'What to check when work seems to have vanished, and how to recover it with autosave and undo.',
+    keywords:
+      'lost work autosave recover restore disappeared gone save history new version reload update no longer supported chart checklist embed placeholder',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -335,8 +373,9 @@ export const articles: Article[] = [
   {
     slug: 'repair-this-browser',
     title: 'Repair This Browser',
-    description: 'Clear the settings and caches the app keeps in this browser when something is stuck loading, without losing your work or identity.',
-    keywords: 'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data document project',
+    description: 'Clear stuck settings and caches in this browser, keeping your work and identity.',
+    keywords:
+      'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data document project',
     category: 'Troubleshooting',
     categorySlug: 'troubleshooting',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],

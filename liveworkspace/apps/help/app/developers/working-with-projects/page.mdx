@@ -10,6 +10,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="developers/working-with-projects"
   title="Working with Plans"
   description="Copy-pasteable examples for the calls you will reach for most."
   categoryTitle="Developers"
@@ -229,8 +230,8 @@ The response includes the share code to build a link from. See [Sharing and Embe
 <Note>
   **Send the `role` explicitly, and spell it exactly.** Omitting it does not mean "view": a body
   with no role mints an **edit** link, which is the app's own default. A role the API does not
-  recognise is dropped as if you had sent none, not rejected, so a typo also mints an edit link. Check the `role` in
-  the answer.
+  recognise is dropped as if you had sent none, not rejected, so a typo also mints an edit link.
+  Check the `role` in the answer.
 </Note>
 
 <Tip>

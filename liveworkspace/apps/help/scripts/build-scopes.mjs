@@ -11,7 +11,15 @@
 //   node scripts/build-scopes.mjs --only=all,livedesign
 //   node scripts/build-scopes.mjs --write-scope    write HELP_SCOPE's generated files and stop (`pnpm dev`'s predev)
 import { spawnSync } from 'node:child_process';
-import { cpSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,7 +41,9 @@ const THEMES = {
 const NOTE =
   "Written by scripts/build-scopes.mjs for each build (and by `pnpm dev`'s predev step from HELP_SCOPE). The\n" +
   "checked-in copy is livediagram's, so a plain `next dev` works. Do not edit by hand.";
-const tsNote = NOTE.split('\n').map((l) => `// ${l}`).join('\n');
+const tsNote = NOTE.split('\n')
+  .map((l) => `// ${l}`)
+  .join('\n');
 const cssNote = `/* ${NOTE.split('\n').join('\n * ')} */`;
 
 /** The generated files for `scope`, by path under the app. */
@@ -52,13 +62,9 @@ export function generatedFiles(scope) {
 }
 
 // Each scope's favicon, copied to app/icon.svg and app/icon.png (Next serves them under /help): an app's from its
-// edition (editions/<app>/icon.*), All Apps' from liveworkspace.app's own.
+// edition (editions/<scope>/icon.*). All Apps' are liveworkspace.app's slate prism (apps/site/app/icon.svg) and a
+// 256px PNG of it, checked in beside its edition (the site draws its PNGs at export, from a route, not a file).
 export function iconSources(scope) {
-  if (scope === 'all')
-    return {
-      'app/icon.svg': '../site/app/icon.svg',
-      'app/icon.png': '../site/public/liveworkspace-icon-256.png',
-    };
   return {
     'app/icon.svg': `editions/${scope}/icon.svg`,
     'app/icon.png': `editions/${scope}/icon.png`,
@@ -88,12 +94,12 @@ function run(command, args) {
 
 /** Drops from an app's export the pages of articles and landings that do not apply to it. */
 function prune(dir, scope, manifest) {
-  const drop = [...Object.entries(manifest.articles), ...Object.entries(manifest.categories)].filter(
-    ([, apps]) => apps.length > 0 && !apps.includes(scope),
-  );
+  const drop = [
+    ...Object.entries(manifest.articles),
+    ...Object.entries(manifest.categories),
+  ].filter(([, apps]) => apps.length > 0 && !apps.includes(scope));
   for (const [route] of drop) {
-    for (const file of ['index.html', 'index.txt'])
-      rmSync(join(dir, route, file), { force: true });
+    for (const file of ['index.html', 'index.txt']) rmSync(join(dir, route, file), { force: true });
     rmSync(join(dir, 'og', `${route}.png`), { force: true });
   }
   return drop.length;
@@ -117,7 +123,8 @@ function build(scopes) {
       manifest = JSON.parse(readFileSync(own, 'utf8'));
     }
     rmSync(own, { force: true });
-    if (scope !== 'all') console.log(`[build-scopes] ${scope}: ${prune(target, scope, manifest)} pages dropped`);
+    if (scope !== 'all')
+      console.log(`[build-scopes] ${scope}: ${prune(target, scope, manifest)} pages dropped`);
   }
 }
 
@@ -127,7 +134,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   if (args.includes('--write-scope')) {
     writeScope(process.env.HELP_SCOPE || DEFAULT_SCOPE);
   } else {
-    const only = args.find((a) => a.startsWith('--only='))?.slice('--only='.length).split(',');
+    const only = args
+      .find((a) => a.startsWith('--only='))
+      ?.slice('--only='.length)
+      .split(',');
     // All Apps always builds first: its manifest is the Worker's map and each app's prune list.
     const scopes = ['all', ...APPS.filter((s) => !only || only.includes(s))];
     try {

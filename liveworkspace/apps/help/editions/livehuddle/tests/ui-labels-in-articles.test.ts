@@ -1,7 +1,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { APP_DIR, scopedArticleSources } from '@/lib/testing/scoped-articles';
+import { APP_DIR, inScopeWords, scopedArticleSources } from '@/lib/testing/scoped-articles';
 
 // When an article puts a control's name in bold it is telling the reader what
 // to look for in the editor, so the spelling has to be the editor's. A reader
@@ -37,6 +37,7 @@ const COMMUNITY_UI_PACKAGE = `${ROOT}/../packages/community-ui/src`;
 // The Community page itself, its gallery and its Forum, is liveworkspace's site (liveworkspace/apps/site), served on
 // the app's address as the app's own.
 const COMMUNITY_SITE = `${ROOT}/../liveworkspace/apps/site/components/community`;
+const TELEMETRY_SITE = `${ROOT}/../liveworkspace/apps/site/app/telemetry`;
 // The shared editor chrome (@liveworkspace/workbench): the comment thread's reactions, the Collaborators modal's
 // footer and the rest every editor renders as its own.
 const WORKBENCH_PACKAGE = `${ROOT}/../packages/workbench/src`;
@@ -52,12 +53,12 @@ function uiLabels(): Map<string, Set<string>> {
     const key = label.toLowerCase();
     byLower.set(key, (byLower.get(key) ?? new Set()).add(label));
   };
-  const walk = (dir: string) => {
+  const walk = (dir: string, objectLabels = false) => {
     for (const entry of readdirSync(dir)) {
       if (skip.has(entry)) continue;
       const full = `${dir}/${entry}`;
       if (statSync(full).isDirectory()) {
-        walk(full);
+        walk(full, objectLabels);
       } else if (/\.tsx?$/.test(entry) && !entry.includes('.test.')) {
         const src = readFileSync(full, 'utf8');
         // `(?<![\w-])` keeps aria-label out. An aria-label is written for a
@@ -67,6 +68,9 @@ function uiLabels(): Map<string, Set<string>> {
         // and taking the latter as truth flags a correct article.
         for (const m of src.matchAll(/(?<![\w-])label="([^"]{3,30})"/g)) add(m[1]!);
         for (const m of src.matchAll(/menuLabel: '([^']{3,30})'/g)) add(m[1]!);
+        // The Explorer keeps some printed labels in objects and types (the Inbox's `{ kind: 'assigned'; label: 'To do' }`).
+        if (objectLabels)
+          for (const m of src.matchAll(/(?<![\w-])label: '([^']{3,30})'/g)) add(m[1]!);
         // A label table (`export const SIDEBAR_LABELS = { home: 'Home', ... }`): rows that
         // print a shared constant rather than a literal `label="..."`.
         for (const table of src.matchAll(/export const \w+_LABELS = \{([\s\S]*?)\n\}/g))
@@ -75,15 +79,15 @@ function uiLabels(): Map<string, Set<string>> {
     }
   };
   walk(`${ROOT}/apps/editor`);
-  walk(EXPLORER_PACKAGE);
+  walk(EXPLORER_PACKAGE, true);
   walk(SETTINGS_PACKAGE);
   return byLower;
 }
 
 // The articles this app's help shows, each read without the other apps' notes, which name other editors' controls
-// (lib/testing/scoped-articles.ts).
+// (lib/testing/scoped-articles.ts), with <Noun /> and <AppName /> written out as this app reads them.
 function articles(): { path: string; source: string }[] {
-  return scopedArticleSources();
+  return scopedArticleSources().map((a) => ({ ...a, source: inScopeWords(a.source) }));
 }
 
 // Every string the editor could print, as one lowercase haystack. Deliberately
@@ -109,6 +113,8 @@ function editorSource(): string {
   walk(ICONS_PACKAGE);
   walk(COMMUNITY_UI_PACKAGE);
   walk(COMMUNITY_SITE);
+  // The public telemetry dashboard is liveworkspace.app's page, which the Telemetry Dashboard article walks through.
+  walk(TELEMETRY_SITE);
   walk(WORKBENCH_PACKAGE);
   walk(SNAPSHOTS_PACKAGE);
   return all.toLowerCase();

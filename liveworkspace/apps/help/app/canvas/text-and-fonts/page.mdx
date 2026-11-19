@@ -12,6 +12,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="canvas/text-and-fonts"
   title="Text and Fonts"
   description="Label any element on the canvas and choose its typeface from eleven curated fonts, set per element or as a default for the whole tab."
   categoryTitle="Canvas"
@@ -37,22 +38,33 @@ Shapes, text elements and sticky notes can all carry text, so you can annotate a
 - With one element selected, press `Space` to start editing its label, or **just start typing**: the first character replaces the existing label.
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  Table cells and arrows carry text too: double-click an arrow to edit its caption, or a table cell to edit that cell.
+  Table cells and arrows carry text too: double-click an arrow to edit its caption, or a table cell
+  to edit that cell.
 </AppNote>
 
 <AppNote app="livediagram,livehuddle">
-  - **Double-click empty canvas** to drop a new text element right there and start typing in it. On a touch screen, a double-tap with your finger zooms in instead; use the palette's Text to add text there.
-  - Press `T` (or pick Text from the palette) to add a text element, then tap or drag on the canvas to place it.
+  - **Double-click empty canvas** to drop a new text element right there and start typing in it. On
+  a touch screen, a double-tap with your finger zooms in instead; use the palette's Text to add text
+  there. - Press `T` (or pick Text from the palette) to add a text element, then tap or drag on the
+  canvas to place it.
 </AppNote>
 
 <AppNote app="livedesign">
-  - **Double-click empty canvas** to drop a new Paragraph right there and start typing in it. On a touch screen, a double-tap with your finger zooms in instead; use a text style from the palette's Write to add text there.
-  - Press `T` to add a Paragraph, or pick a text style from the palette's **Write** (Title, Subtitle, Heading, Subheading, Paragraph, Quote or Caption), then tap or drag on the canvas to place it. A text's right-click **Text** menu switches it to another style under **Text Style**; see [Write Elements](/help/palette/write/).
+  - **Double-click empty canvas** to drop a new Paragraph right there and start typing in it. On a
+  touch screen, a double-tap with your finger zooms in instead; use a text style from the palette's
+  Write to add text there. - Press `T` to add a Paragraph, or pick a text style from the palette's
+  **Write** (Title, Subtitle, Heading, Subheading, Paragraph, Quote or Caption), then tap or drag on
+  the canvas to place it. A text's right-click **Text** menu switches it to another style under
+  **Text Style**; see [Write Elements](/help/palette/write/).
 </AppNote>
 
 <AppNote app="livedocuments">
-  - **Pick a text style from Write**: **Title**, **Subtitle**, **Heading**, **Subheading**, **Paragraph** or **Quote**. Each starts set as that style (a Title is 64 pixels and bold, a Paragraph 24), and then tap or drag on the page to place it: a drag sets how wide it is, so it wraps there. A heading's box fits its words; a paragraph or a quote wraps at its width.
-  - **Double-click empty canvas** to drop a Paragraph right there and start typing in it. On a touch screen, a double-tap with your finger zooms in instead; use a style from Write to add text there.
+  - **Pick a text style from Write**: **Title**, **Subtitle**, **Heading**, **Subheading**,
+  **Paragraph** or **Quote**. Each starts set as that style (a Title is 64 pixels and bold, a
+  Paragraph 24), and then tap or drag on the page to place it: a drag sets how wide it is, so it
+  wraps there. A heading's box fits its words; a paragraph or a quote wraps at its width. -
+  **Double-click empty canvas** to drop a Paragraph right there and start typing in it. On a touch
+  screen, a double-tap with your finger zooms in instead; use a style from Write to add text there.
   - Press `T` to add a Paragraph, then tap or drag on the canvas to place it.
 </AppNote>
 
@@ -67,19 +79,30 @@ Labels can run over several lines: `Enter` starts a new line. Click outside the 
 </AppNote>
 
 <AppNote app="livedocuments">
-  New text is always **left aligned**, the way a document reads. Change it from the right-click menu: **Appearance**, then **Text**, then **Alignment**. A style's size is where it starts: restyle it like any other text.
+  New text is always **left aligned**, the way a document reads. Change it from the right-click
+  menu: **Appearance**, then **Text**, then **Alignment**. A style's size is where it starts:
+  restyle it like any other text.
 </AppNote>
-
 
 ## Choosing a Typeface
 
-<AppName /> ships eleven Google Fonts, picked to give a <Noun /> a distinct voice: Inter, Poppins, Nunito, Oswald, Space Grotesk, Lora, Bodoni Moda, Roboto Slab, Roboto Mono, Kalam, and Shantell Sans. Together they span crisp, friendly, formal, and hand-drawn looks. See [Choosing Fonts](/help/canvas/text-and-fonts/choosing-fonts/) for where to set them and how the levels interact.
+<AppName /> ships eleven Google Fonts, picked to give a <Noun /> a distinct voice: Inter, Poppins,
+Nunito, Oswald, Space Grotesk, Lora, Bodoni Moda, Roboto Slab, Roboto Mono, Kalam, and Shantell
+Sans. Together they span crisp, friendly, formal, and hand-drawn looks. See [Choosing
+Fonts](/help/canvas/text-and-fonts/choosing-fonts/) for where to set them and how the levels
+interact.
 
-<Figure app="livediagram,livedocuments,livehuddle" caption="Right-click a labelled element, open Appearance, then Text, and pick a typeface from the Font tiles.">
+<Figure
+  app="livediagram,livedocuments,livehuddle"
+  caption="Right-click a labelled element, open Appearance, then Text, and pick a typeface from the Font tiles."
+>
   <DiagramCanvasBasics.ElementFontMenu />
 </Figure>
 
-<Figure app="livedesign" caption="Right-click a labelled element, open Text, and pick a typeface from the Font tiles.">
+<Figure
+  app="livedesign"
+  caption="Right-click a labelled element, open Text, and pick a typeface from the Font tiles."
+>
   <DesignCanvasBasics.ElementFontMenu />
 </Figure>
 
@@ -91,7 +114,6 @@ Fonts work at two levels. You can set a font on a single element so one label st
   The **Text** section sits under **Appearance**.
 </AppNote>
 
-
 ## Text Size
 
 An element's text size lives beside its font, in the right-click menu's **Text** section. Drag the **Text Size** slider, or press the **Scale** icon to the right of it to fit the text to the element instead. The text changes as you drag and settles when you let go, so one drag is one undo. The arrow keys move it a pixel at a time. The same slider sets the tab's size for new text. New elements take the tab's default size, which starts at Small on a fresh canvas.
@@ -100,31 +122,38 @@ An element's text size lives beside its font, in the right-click menu's **Text**
   The slider covers any size from 6 to 48 pixels, with marks at 6, 12, 24, 36 and 48 to guide you.
 </AppNote>
 
-<AppNote app="livediagram">
-  The **Text** section is under **Appearance**.
-</AppNote>
+<AppNote app="livediagram">The **Text** section is under **Appearance**.</AppNote>
 
 <AppNote app="livediagram,livedesign,livedocuments">
   The same slider sets an arrow's caption, a table cell and a chart's key.
 </AppNote>
 
 <AppNote app="livedocuments">
-  An element's text size lives beside its font, under **Appearance**, then **Text**, in the right-click menu. Drag the **Text Size** slider to any size from 24 to 72 pixels for a text element or a shape, with marks at 24, 36, 48, 60 and 72 to guide you (a sticky note, an arrow's caption, a table cell or a chart's key runs from 6 to 48, since those are small print), or press the **Scale** icon to the right of it to fit the text to the element instead. The text changes as you drag and settles when you let go, so one drag is one undo. The arrow keys move it a pixel at a time. The same slider sets an arrow's caption, a table cell, a chart's key and the tab's size for new text. Text that is smaller than the slider, from before or from a template, keeps its size until you move the slider. New elements take the tab's default size, which starts at Small on a fresh canvas; a text style from **Write** keeps its own.
+  An element's text size lives beside its font, under **Appearance**, then **Text**, in the
+  right-click menu. Drag the **Text Size** slider to any size from 24 to 72 pixels for a text
+  element or a shape, with marks at 24, 36, 48, 60 and 72 to guide you (a sticky note, an arrow's
+  caption, a table cell or a chart's key runs from 6 to 48, since those are small print), or press
+  the **Scale** icon to the right of it to fit the text to the element instead. The text changes as
+  you drag and settles when you let go, so one drag is one undo. The arrow keys move it a pixel at a
+  time. The same slider sets an arrow's caption, a table cell, a chart's key and the tab's size for
+  new text. Text that is smaller than the slider, from before or from a template, keeps its size
+  until you move the slider. New elements take the tab's default size, which starts at Small on a
+  fresh canvas; a text style from **Write** keeps its own.
 </AppNote>
-
 
 ## Text Colour
 
 A text element's colour is in its right-click menu under **Appearance**, then **Colours**. **Reset to Theme** puts the theme's text colour back. To colour only some of the words, select them while editing and use the colour swatch on the editing toolbar.
 
 <AppNote app="livediagram">
-  The colour is also one click away in the [Quick Style Panel](/help/canvas/quick-style-panel/) while the element is selected.
+  The colour is also one click away in the [Quick Style Panel](/help/canvas/quick-style-panel/)
+  while the element is selected.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments">
-  The colour is also one click away on the [Quick Style bar](/help/canvas/quick-style-panel/) while the element is selected.
+  The colour is also one click away on the [Quick Style bar](/help/canvas/quick-style-panel/) while
+  the element is selected.
 </AppNote>
-
 
 <Tip>
   Switching the [theme](/help/canvas/themes/) only recolours your <Noun />, it never changes your

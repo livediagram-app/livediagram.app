@@ -12,6 +12,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="palette/behaviour/mode-buttons"
   title="Selection Mode Buttons"
   description="A button on the canvas that switches whoever presses it into a mode."
   categoryTitle="Palette"
@@ -22,8 +23,11 @@ export const metadata = helpMetadata({
 
 A mode button is an element that hands whoever presses it a mode. The part below for your app says which modes and where it lives.
 
-<AppNote app="livediagram">
+<AppNote app="livediagram,livehuddle">
+Pressing it changes the mode for **the person who pressed it** and nobody else. Everyone else carries on in whatever tool they were already using.
+</AppNote>
 
+<AppNote app="livediagram">
 A Selection Mode button is an element that hands out a [selection mode](/help/selection-modes/). Put one on the canvas and anybody can press it, without ever having opened the mode picker.
 
 Avatar mode and its Avatar button now live in livehuddle. A board saved with an Avatar button keeps it, shown as a card that says **Moved to livehuddle**; you can still move or delete it.
@@ -42,8 +46,6 @@ Selection Mode buttons are on [Workshop mode](/help/canvas/workshop-mode/)'s pal
 
 **What pressing it does**
 
-Pressing it changes the mode for **the person who pressed it** and nobody else. Everyone else carries on in whatever tool they were already using.
-
 Pressing it again while you are in that mode hands you back your previous one, so a button is never a one-way door: a button for the mode you are already in reads "Leave Spotlight" rather than offering it again, even if you gave it a label of your own.
 
 A click on the round icon presses the button; a click anywhere else on the card selects it, and a drag moves it, so you can arrange a bar of them without setting one off.
@@ -58,11 +60,9 @@ In a read-only embed there is no tool to switch, so the button shows but does no
   Pair an **Eraser** button with a **Select** button so a reviewer can tidy up what they see and put
   the eraser down again without leaving the canvas.
 </Tip>
-
 </AppNote>
 
 <AppNote app="livehuddle">
-
 A Selection Mode button is an element that hands out [Avatar mode](/help/selection-modes/avatar-mode/). Put one on the canvas and an editor can press it to start walking; Participants and view-only visitors are always walking, so for them it is just a sign. Avatar is the one mode a button hands out in livehuddle, so it is called the **Avatar Button** in the palette.
 
 It is the board's own way into Avatar mode, beside **Walk** at the start of the palette strip, and a space with one opens walking, just below the first, once each visit. The templates no longer carry one: every Space, and every blank tab you start, has an [Avatar Pad](/help/palette/avatar-pads/) where people arrive instead. Spaces made before keep their **Walk In** button, and it still works; add an Avatar button yourself when you want a visible door on the board.
@@ -78,8 +78,6 @@ It drops ready to press, reading "Switch to Avatar". You can type your own label
 </Figure>
 
 **What Pressing It Does**
-
-Pressing it changes the mode for **the person who pressed it** and nobody else. Everyone else carries on in whatever tool they were already using.
 
 Pressing it again while you are walking hands you back your previous tool, so the button is never a one-way door: while you are in Avatar mode it reads "Leave Avatar" rather than offering it again.
 
@@ -97,7 +95,6 @@ In a read-only embed there is no walking, so the button shows but does nothing.
   Older boards may still have Select, Hand, Eraser or Format buttons on them. They open as Avatar
   buttons now, keeping their place, label and colours.
 </Tip>
-
 </AppNote>
 
 </ArticleLayout>

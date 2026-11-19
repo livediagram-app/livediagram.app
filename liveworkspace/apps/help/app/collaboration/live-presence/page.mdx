@@ -10,11 +10,12 @@ import { ReleaseHold } from '@liveworkspace/help-site/art/illustrations/release-
 export const metadata = helpMetadata({
   title: 'Live Presence',
   description:
-    "See who is here with you in real time: who is on which tab, what each person is working on, live cursors where an app has them, and agents at work.",
+    'See who is here with you in real time: who is on which tab, what each person is working on, live cursors where an app has them, and agents at work.',
   path: '/help/collaboration/live-presence/',
 });
 
 <ArticleLayout
+  path="collaboration/live-presence"
   title="Live Presence"
   description="When more than one person opens the same work, you see each other live: who is here, which tab they are on, and what they are working on."
   categoryTitle="Collaboration"
@@ -24,20 +25,14 @@ export const metadata = helpMetadata({
 
 Open a <Noun /> with other people and it comes alive. Everyone sees each other's changes as they happen, and can tell at a glance who is around and what they are working on. Nothing needs setting up: as soon as two or more people are in a shared <Noun />, presence just appears.
 
-<AppNote app="livediagram">
-  Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard.
-</AppNote>
-
-<AppNote app="livedocuments">
-  Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard.
-</AppNote>
-
-<AppNote app="livehuddle">
-  Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard.
+<AppNote app="livediagram,livedocuments,livehuddle">
+  Everyone sees each other move, select, and edit in real time, so it feels like working at the same
+  whiteboard.
 </AppNote>
 
 <AppNote app="livedesign">
-  Everyone sees each other move, select, and edit in real time, so it feels like working at the same desk.
+  Everyone sees each other move, select, and edit in real time, so it feels like working at the same
+  desk.
 </AppNote>
 
 ## Live Cursors
@@ -47,11 +42,13 @@ You see everyone else's pointer move around the <Noun />, each labelled with the
 If a cursor or its name is in the way of what you want to see, move your pointer onto it: it fades out while your pointer is there and comes back when you move on. It never blocks a click, so you can click straight through it. On a touch screen there is no pointer to hover, so cursors stay put.
 
 <AppNote app="livehuddle">
-  Someone walking in Avatar mode shows their character instead, with no cursor, so the cursors you see are Editors building the Space (Participants and Viewers always walk).
+  Someone walking in Avatar mode shows their character instead, with no cursor, so the cursors you
+  see are Editors building the Space (Participants and Viewers always walk).
 </AppNote>
 
 <AppNote app="liveplanner">
-  Other people's cursors show only on a Dashboard tab. Board and Sheet tabs show no one's pointer: the card rings and cell outlines described below do that job there.
+  Other people's cursors show only on a Dashboard tab. Board and Sheet tabs show no one's pointer:
+  the card rings and cell outlines described below do that job there.
 </AppNote>
 
 <Figure caption="Live cursors carry each person's name and colour, and each tab shows the initials of who is on it.">
@@ -63,19 +60,26 @@ If a cursor or its name is in the way of what you want to see, move your pointer
 When someone moves something, you see it move as they do, and it settles where they let go.
 
 <AppNote app="livediagram">
-  The same goes for dragging, resizing or reshaping, with any arrows attached to it following along. If they press Escape halfway, it simply goes back. Editors can move anything, Participants any sticky note, image or mind-map node plus what they added themselves, and Viewers nothing.
+  The same goes for dragging, resizing or reshaping, with any arrows attached to it following along.
+  If they press Escape halfway, it simply goes back. Editors can move anything, Participants any
+  sticky note, image or mind-map node plus what they added themselves, and Viewers nothing.
 </AppNote>
 
 <AppNote app="livedesign">
-  The same goes for dragging, resizing or reshaping, with any arrows attached to it following along. If they press Escape halfway, it simply goes back. Editors can move anything, Participants any sticky or image plus what they added themselves, and Viewers nothing.
+  The same goes for dragging, resizing or reshaping, with any arrows attached to it following along.
+  If they press Escape halfway, it simply goes back. Editors can move anything, Participants any
+  sticky or image plus what they added themselves, and Viewers nothing.
 </AppNote>
 
 <AppNote app="livedocuments">
-  The same goes for dragging, resizing or reshaping, with any arrows attached to it following along. If they press Escape halfway, it simply goes back. Only Editors move things; Participants and Viewers move nothing.
+  The same goes for dragging, resizing or reshaping, with any arrows attached to it following along.
+  If they press Escape halfway, it simply goes back. Only Editors move things; Participants and
+  Viewers move nothing.
 </AppNote>
 
 <AppNote app="livehuddle">
-  The same goes for dragging, resizing or reshaping. If they press Escape halfway, it simply goes back. Only Editors move things: Participants and Viewers walk, and use the room's pieces instead.
+  The same goes for dragging, resizing or reshaping. If they press Escape halfway, it simply goes
+  back. Only Editors move things: Participants and Viewers walk, and use the room's pieces instead.
 </AppNote>
 
 <AppNote app="liveplanner">
@@ -89,9 +93,7 @@ Each person is given a colour and a name. Signed-in people show their account na
 - **On each tab**, small initials show who is currently looking at that tab, so you can tell at a glance where everyone is working.
 - A coloured ring around someone shows whether they are **active**, **away** (after five quiet minutes), or have gone **offline**. Hover an avatar for their name and status.
 
-<AppNote app="liveplanner">
-  The initials sit on each tab in the tab bar.
-</AppNote>
+<AppNote app="liveplanner">The initials sit on each tab in the tab bar.</AppNote>
 
 ## Collaborators
 
@@ -101,72 +103,55 @@ Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Col
 - Each person shows their name, their role when it is known, whether they are online, away or offline, and how long ago they were last active.
 - **Hide Participant Cursors**, at the foot of Collaborators, stops showing everyone else's cursor and name on your screen, for when a busy session gets distracting. Avatars and Follow stay, and others still see your cursor. It is the same switch as in **Settings**, under **Collaborate**, and it is remembered in this browser only.
 
+<AppNote app="livediagram,livehuddle">
+  **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while
+  you do). See [Following someone](/help/canvas/follow-along/) for how it works. The buttons to hand
+  out the [facilitator](/help/collaboration/facilitator/) role live here too, on each person's row.
+</AppNote>
+
 <AppNote app="livehuddle">
   The switch sits in **Settings** › **Panels**, under **Collaborate**.
 </AppNote>
 
 <AppNote app="liveplanner">
-  The switch sits in **Settings** › **Panels**, in its **Collaborate** section. Because cursors show only on a Dashboard, the switch is there only while you are on a Dashboard. On a Board, Sheet or Form tab it is hidden, and your choice is kept for when you come back.
+  The switch sits in **Settings** › **Panels**, in its **Collaborate** section. Because cursors show
+  only on a Dashboard, the switch is there only while you are on a Dashboard. On a Board, Sheet or
+  Form tab it is hidden, and your choice is kept for when you come back.
 </AppNote>
 
-<AppNote app="livediagram">
-  **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while you do). See [Following someone](/help/canvas/follow-along/) for how it works. The buttons to hand out the [facilitator](/help/collaboration/facilitator/) role live here too, on each person's row.
-</AppNote>
-
-<AppNote app="livedesign">
-  **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while you do). See [Following someone](/help/canvas/follow-along/) for how it works.
-</AppNote>
-
-<AppNote app="livedocuments">
-  **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while you do). See [Following someone](/help/canvas/follow-along/) for how it works.
+<AppNote app="livedocuments,livedesign">
+  **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while
+  you do). See [Following someone](/help/canvas/follow-along/) for how it works.
 </AppNote>
 
 <AppNote app="livehuddle">
-  **Follow** beside someone makes your view follow theirs (it changes to **Stop Following** while you do). See [Following someone](/help/canvas/follow-along/) for how it works. The buttons to hand out the [facilitator](/help/collaboration/facilitator/) role live here too, on each person's row.
-
-  **Nudge** beside someone gets their attention: their screen plays a chime and shows "Sam nudged you" with a **Go to Sam** button that takes them to you. See **Nudging Someone** below.
+**Nudge** beside someone gets their attention: their screen plays a chime and shows "Sam nudged you" with a **Go to Sam** button that takes them to you. See **Nudging Someone** below.
 </AppNote>
 
 <AppNote app="livehuddle">
   **Hearing People Come and Go.** When someone arrives in the Space you have open, you hear a soft chime, and a softer one when they leave. It plays even while the Space is on another browser tab, so you can get on with other work and still hear when someone comes in to talk to you.
 
-  - You hear the chime when you arrive too, so you know you're in. Someone reloading or briefly losing their connection is silent.
-  - When several people arrive together you hear one chime, not one each.
-  - Browsers keep a page silent until you have clicked or typed on it once, so click anywhere in the Space after opening it.
-  - Turn it off in **Settings** › **Account** › **Notifications**, with **Join and Leave Sounds**. **Do Not Disturb** quiets it too.
+- You hear the chime when you arrive too, so you know you're in. Someone reloading or briefly losing their connection is silent.
+- When several people arrive together you hear one chime, not one each.
+- Browsers keep a page silent until you have clicked or typed on it once, so click anywhere in the Space after opening it.
+- Turn it off in **Settings** › **Account** › **Notifications**, with **Join and Leave Sounds**. **Do Not Disturb** quiets it too.
 
-  **Nudging Someone.** Press **Nudge** beside someone in **Collaborators** to get their attention. You can nudge each person once every two minutes: the button reads **Nudged** until then, and its tooltip counts down to when you can nudge again. Editors and Participants can nudge; Viewers can't, but anyone can be nudged.
+**Nudging Someone.** Press **Nudge** beside someone in **Collaborators** to get their attention. You can nudge each person once every two minutes: the button reads **Nudged** until then, and its tooltip counts down to when you can nudge again. Editors and Participants can nudge; Viewers can't, but anyone can be nudged.
 
-  When someone nudges you:
+When someone nudges you:
 
-  - You hear a chime, louder than the join chime, even with the Space on another tab.
-  - A note says who nudged you, with a **Go to** button (such as **Go to Sam**) that switches to their tab and centres your view on them.
-  - If the Space is on a tab in the background, your computer shows a desktop notification, "Sam nudged you in Weekly Standup". Clicking it brings the tab back and goes to them.
+- You hear a chime, louder than the join chime, even with the Space on another tab.
+- A note says who nudged you, with a **Go to** button (such as **Go to Sam**) that switches to their tab and centres your view on them.
+- If the Space is on a tab in the background, your computer shows a desktop notification, "Sam nudged you in Weekly Standup". Clicking it brings the tab back and goes to them.
 
-  Desktop notifications need your browser's permission, which is only ever asked when you press something: the **Desktop Notifications** switch in **Settings** (beside **Join and Leave Sounds**), or the one-time offer the first time you nudge or are nudged. If your browser blocks notifications, Settings says so, and the sound and the note still work. On **Do Not Disturb** a nudge still shows its note, silently and with no desktop notification.
+Desktop notifications need your browser's permission, which is only ever asked when you press something: the **Desktop Notifications** switch in **Settings** (beside **Join and Leave Sounds**), or the one-time offer the first time you nudge or are nudged. If your browser blocks notifications, Settings says so, and the sound and the note still work. On **Do Not Disturb** a nudge still shows its note, silently and with no desktop notification.
 </AppNote>
 
 ## Seeing What Others Are Working On
 
 When someone selects something, you can tell, and it is gently locked for everyone else, so two people can't fight over the same thing at once.
 
-<AppNote app="livediagram">
-  A small disc with their initials appears on the element's top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is locked for everyone else. A Viewer's selection only shows the disc. If they select several elements, every one of them is locked, not just the one they clicked. Letting go does not free an element quite at once: while the change they just made is still being saved (a moment, and never more than about 10 seconds if the save keeps failing) it stays locked, so nobody's edit is lost. Otherwise it frees up again as soon as they click away. When you zoom far out, the discs hide until you zoom back in.
-
-  <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
-    <PresenceSelection />
-  </Figure>
-</AppNote>
-
-<AppNote app="livedesign">
-  A small disc with their initials appears on the element's top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is locked for everyone else. A Viewer's selection only shows the disc. If they select several elements, every one of them is locked, not just the one they clicked. Letting go does not free an element quite at once: while the change they just made is still being saved (a moment, and never more than about 10 seconds if the save keeps failing) it stays locked, so nobody's edit is lost. Otherwise it frees up again as soon as they click away. When you zoom far out, the discs hide until you zoom back in.
-
-  <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
-    <PresenceSelection />
-  </Figure>
-</AppNote>
-
-<AppNote app="livedocuments">
+<AppNote app="livediagram,livedocuments,livedesign">
   A small disc with their initials appears on the element's top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is locked for everyone else. A Viewer's selection only shows the disc. If they select several elements, every one of them is locked, not just the one they clicked. Letting go does not free an element quite at once: while the change they just made is still being saved (a moment, and never more than about 10 seconds if the save keeps failing) it stays locked, so nobody's edit is lost. Otherwise it frees up again as soon as they click away. When you zoom far out, the discs hide until you zoom back in.
 
   <Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
@@ -185,20 +170,21 @@ When someone selects something, you can tell, and it is gently locked for everyo
 <AppNote app="liveplanner">
   What you see depends on the tab:
 
-  - **On a Board**, a card someone has open or is dragging carries a ring in their colour and their first name, so you know a teammate is in it. Cards they move and fields they change update on your screen as they go.
-  - **On a Sheet**, each other person's selected cells are outlined in their colour, with their name on a small tag. A cell someone is typing in has a thicker outline. Two people typing in different cells never overwrite each other.
-  - **On a Dashboard**, you see everyone else's pointer move, labelled with their name in their colour. If someone's pointer or name is in the way, move your pointer onto it: it fades out until you move on, and a click goes straight through it.
+- **On a Board**, a card someone has open or is dragging carries a ring in their colour and their first name, so you know a teammate is in it. Cards they move and fields they change update on your screen as they go.
+- **On a Sheet**, each other person's selected cells are outlined in their colour, with their name on a small tag. A cell someone is typing in has a thicker outline. Two people typing in different cells never overwrite each other.
+- **On a Dashboard**, you see everyone else's pointer move, labelled with their name in their colour. If someone's pointer or name is in the way, move your pointer onto it: it fades out until you move on, and a click goes straight through it.
 
-  Someone who joins late sees what is already held: the cards others have open and the cells they have selected.
+Someone who joins late sees what is already held: the cards others have open and the cells they have selected.
 
-  **Held while someone else has it.** When an Editor or a Participant selects something, it is gently **held** for everyone else. It wears the holder's colour as an outline and you can't select, drag or edit it until they let go. A few details:
+**Held while someone else has it.** When an Editor or a Participant selects something, it is gently **held** for everyone else. It wears the holder's colour as an outline and you can't select, drag or edit it until they let go. A few details:
 
-  - **A whole selection is held.** If they select several things at once, every one of them is held, not just the one they clicked.
-  - **A Viewer holds nothing.** A Viewer's selection only shows who is looking.
-  - **Letting go isn't quite instant.** While the change they just made is still being saved, it stays held so nobody's edit is lost: a moment, and never more than about 10 seconds if the save keeps failing. Otherwise it frees up as soon as they click away, switch tab or leave.
-  - **It is a guard, not a guarantee.** The hold keeps collisions rare, but it can't stop two people racing within the same instant, or a script using an [API token](/help/account-and-data/api-tokens/), which never sees it. If two people do change the same thing, the last change to arrive wins.
+- **A whole selection is held.** If they select several things at once, every one of them is held, not just the one they clicked.
+- **A Viewer holds nothing.** A Viewer's selection only shows who is looking.
+- **Letting go isn't quite instant.** While the change they just made is still being saved, it stays held so nobody's edit is lost: a moment, and never more than about 10 seconds if the save keeps failing. Otherwise it frees up as soon as they click away, switch tab or leave.
+- **It is a guard, not a guarantee.** The hold keeps collisions rare, but it can't stop two people racing within the same instant, or a script using an [API token](/help/account-and-data/api-tokens/), which never sees it. If two people do change the same thing, the last change to arrive wins.
 
-  If something stays held for good, its holder has probably wandered off with it still selected: ask them to click away. See [Real-Time Collaboration Problems](/help/troubleshooting/collaboration-issues/).
+If something stays held for good, its holder has probably wandered off with it still selected: ask them to click away. See [Real-Time Collaboration Problems](/help/troubleshooting/collaboration-issues/).
+
 </AppNote>
 
 ## Freeing an Element Someone Left Selected
@@ -212,29 +198,37 @@ The lock clears by itself when the person clicks away, switches tab or leaves. W
 <AppNote app="livediagram,livehuddle,livedesign,livedocuments">
   When that happens, it can be freed:
 
-  <Step n={1}>Right-click the locked element.</Step>
-  <Step n={2}>
-    A small **In use** menu opens, with one row per person holding it, such as "Release Jae's Hold".
-  </Step>
-  <Step n={3}>Choose that row. The element frees up for everyone straight away.</Step>
+<Step n={1}>Right-click the locked element.</Step>
+<Step n={2}>
+  A small **In use** menu opens, with one row per person holding it, such as "Release Jae's Hold".
+</Step>
+<Step n={3}>Choose that row. The element frees up for everyone straight away.</Step>
 
-  <Figure caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
-    <ReleaseHold />
-  </Figure>
+<Figure caption="Right-clicking an element a teammate is holding opens the In use menu, naming whose hold you would release.">
+  <ReleaseHold />
+</Figure>
 
-  **What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them their hold was freed, so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.
+**What the holder sees.** As the menu says: "They keep their work; it just stops being theirs to edit." Their selection is dropped, and if they were typing into the element, that editing ends too, but the element itself is not changed. A short notification tells them their hold was freed, so it doesn't look like a glitch. Nobody else in the room is told anything; the element simply stops looking locked.
+
 </AppNote>
 
 <AppNote app="livediagram,livehuddle">
-  **Who can do it.** While someone is the [facilitator](/help/collaboration/facilitator/), only they can. While nobody is facilitating, any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens nothing, as it does for an Editor while somebody else is facilitating. The holder's notification reads "The facilitator freed an element you were holding".
+  **Who can do it.** While someone is the [facilitator](/help/collaboration/facilitator/), only they
+  can. While nobody is facilitating, any Editor can. Participants and Viewers can't free a hold: for
+  them, right-clicking a locked element opens nothing, as it does for an Editor while somebody else
+  is facilitating. The holder's notification reads "The facilitator freed an element you were
+  holding".
 </AppNote>
 
 <AppNote app="livedesign">
-  **Who can do it.** Any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens their usual short menu, without **Edit Text** while someone else holds it.
+  **Who can do it.** Any Editor can. Participants and Viewers can't free a hold: for them,
+  right-clicking a locked element opens their usual short menu, without **Edit Text** while someone
+  else holds it.
 </AppNote>
 
 <AppNote app="livedocuments">
-  **Who can do it.** Any Editor can. Participants and Viewers can't free a hold: for them, right-clicking a locked element opens nothing.
+  **Who can do it.** Any Editor can. Participants and Viewers can't free a hold: for them,
+  right-clicking a locked element opens nothing.
 </AppNote>
 
 ## Agents at Work
@@ -246,32 +240,36 @@ An AI agent or a script working on a <Noun /> with an [API token](/help/account-
 
 Agents are listed in Collaborators, but they are not counted as people.
 
-<AppNote app="livediagram">
-  **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements. Agents can't be followed, and never hold the facilitator role.
+<AppNote app="livediagram,livehuddle">
+  **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks
+  anything: you can keep working on those elements. Agents can't be followed, and never hold the
+  facilitator role.
 </AppNote>
 
-<AppNote app="livehuddle">
-  **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements. Agents can't be followed, and never hold the facilitator role.
-</AppNote>
-
-<AppNote app="livedesign">
-  **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements. Agents can't be followed.
-</AppNote>
-
-<AppNote app="livedocuments">
-  **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements. Agents can't be followed.
+<AppNote app="livedocuments,livedesign">
+  **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks
+  anything: you can keep working on those elements. Agents can't be followed.
 </AppNote>
 
 <AppNote app="livediagram">
-  **Shared Laser Pointer.** The [Laser Pointer](/help/selection-modes/laser/) is built for presenting together: when you draw with it, everyone on the same tab sees your glowing trail in real time, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
+  **Shared Laser Pointer.** The [Laser Pointer](/help/selection-modes/laser/) is built for
+  presenting together: when you draw with it, everyone on the same tab sees your glowing trail in
+  real time, then it fades away. It is perfect for "look over here" without changing anything on the
+  canvas.
 </AppNote>
 
 <AppNote app="livedesign">
-  **Shared Laser Pointer.** The [Laser Pointer](/help/selection-modes/laser/) is built for walking people through a design together: when you draw with it, everyone on the same tab sees your glowing trail in real time, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
+  **Shared Laser Pointer.** The [Laser Pointer](/help/selection-modes/laser/) is built for walking
+  people through a design together: when you draw with it, everyone on the same tab sees your
+  glowing trail in real time, then it fades away. It is perfect for "look over here" without
+  changing anything on the canvas.
 </AppNote>
 
 <AppNote app="livedocuments">
-  **Shared Laser Pointer.** The [Laser Pointer](/help/selection-modes/laser/) is built for presenting together: when you draw with it, everyone on the same tab sees your glowing trail in real time, drawn with the width, colour and effect you set in its **Laser** panel, then it fades away. It is perfect for "look over here" without changing anything on the canvas.
+  **Shared Laser Pointer.** The [Laser Pointer](/help/selection-modes/laser/) is built for
+  presenting together: when you draw with it, everyone on the same tab sees your glowing trail in
+  real time, drawn with the width, colour and effect you set in its **Laser** panel, then it fades
+  away. It is perfect for "look over here" without changing anything on the canvas.
 </AppNote>
 
 ## Who Can See Presence

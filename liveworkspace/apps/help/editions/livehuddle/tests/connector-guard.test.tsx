@@ -14,9 +14,12 @@ vi.mock('@liveworkspace/help-site/art/primitives-canvas', async (importOriginal)
 
 describe('livehuddle’s help scenes', () => {
   it('mark each arrow that joins two shapes', () => {
-    const modules = import.meta.glob<Record<string, unknown>>(['../components/**/*.tsx', '!../components/**/*.test.tsx'], {
-      eager: true,
-    });
+    const modules = import.meta.glob<Record<string, unknown>>(
+      ['../components/**/*.tsx', '!../components/**/*.test.tsx'],
+      {
+        eager: true,
+      },
+    );
     const { scanned, findings } = scanScenes(modules);
     expect(scanned).toBeGreaterThan(10);
     expect(findings).toEqual([]);

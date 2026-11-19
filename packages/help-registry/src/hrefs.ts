@@ -82,7 +82,9 @@ export function canonicalScope(item: { apps?: readonly AppId[] }, shownIn: HelpS
 }
 
 /** The canonical address of an article: {@link canonicalScope}'s site, at the article's path. */
-export function canonicalArticleUrl(article: Pick<Article, 'categorySlug' | 'slug' | 'apps'>): string {
+export function canonicalArticleUrl(
+  article: Pick<Article, 'categorySlug' | 'slug' | 'apps'>,
+): string {
   return articleHref(article, canonicalScope(article, 'all'));
 }
 

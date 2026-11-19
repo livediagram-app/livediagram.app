@@ -104,7 +104,10 @@ describe('category counts', () => {
   ];
   it('counts the direct articles in the scope and the apps under the category', () => {
     const [tabs, canvas] = withCounts(categories, articlesIn(all, 'livedesign'), all);
-    expect(tabs).toMatchObject({ articleCount: 0, apps: ['livediagram', 'liveplanner', 'livedesign'] });
+    expect(tabs).toMatchObject({
+      articleCount: 0,
+      apps: ['livediagram', 'liveplanner', 'livedesign'],
+    });
     expect(canvas).toMatchObject({ articleCount: 0, apps: ['livediagram'] });
     const [diagramTabs] = withCounts(categories, articlesIn(all, 'livediagram'), all);
     expect(diagramTabs!.articleCount).toBe(1);
@@ -151,7 +154,9 @@ describe('addresses', () => {
     expect(switchHref('all', '/canvas/shapes/', diagramOnly.apps)).toBe(
       `${helpUrl('all')}/canvas/shapes/`,
     );
-    expect(switchHref('livehuddle', '/contact/', undefined)).toBe(`${helpUrl('livehuddle')}/contact/`);
+    expect(switchHref('livehuddle', '/contact/', undefined)).toBe(
+      `${helpUrl('livehuddle')}/contact/`,
+    );
   });
   it('carries the search box, trimmed and capped, and nothing when it is empty', () => {
     expect(withQuery('https://x.test/help/', '  ')).toBe('https://x.test/help/');
@@ -169,7 +174,9 @@ describe('redirects', () => {
     expect(redirectFor(HELP_REDIRECTS, 'canvas/links', 'livedocuments')?.to).toBe('canvas');
     expect(redirectFor(HELP_REDIRECTS, 'canvas/links', 'livediagram')).toBeUndefined();
     expect(redirectFor(HELP_REDIRECTS, 'self-hosting/docker', 'livedesign')?.to).toBe('');
-    expect(redirectFor(HELP_REDIRECTS, 'explorer/timeline', 'livehuddle')?.to).toBe('explorer/home');
+    expect(redirectFor(HELP_REDIRECTS, 'explorer/timeline', 'livehuddle')?.to).toBe(
+      'explorer/home',
+    );
   });
   it('never sends a path to itself', () => {
     for (const r of HELP_REDIRECTS) expect(r.to, r.from).not.toBe(r.from);
@@ -182,10 +189,17 @@ describe('per-app wording', () => {
     title: 'Using Tabs',
     description: 'Shared copy.',
     group: 'Tabs',
-    byApp: { liveplanner: { title: 'Plan Tabs', description: 'Planner copy.', group: 'Boards', category: 'Plan' } },
+    byApp: {
+      liveplanner: {
+        title: 'Plan Tabs',
+        description: 'Planner copy.',
+        group: 'Boards',
+        category: 'Plan',
+      },
+    },
   };
 
-  it("shows an app its own wording, every field it names", () => {
+  it('shows an app its own wording, every field it names', () => {
     expect(wordedArticle(worded, 'liveplanner')).toMatchObject({
       title: 'Plan Tabs',
       description: 'Planner copy.',
@@ -209,7 +223,7 @@ describe('per-app wording', () => {
     });
   });
 
-  it("words a category for its app only", () => {
+  it('words a category for its app only', () => {
     const category: Category = {
       slug: 'tabs',
       title: 'Tabs',
@@ -217,14 +231,22 @@ describe('per-app wording', () => {
       articleCount: 0,
       byApp: { livedesign: { description: 'Designer copy.' } },
     };
-    expect(wordedCategory(category, 'livedesign')).toMatchObject({ title: 'Tabs', description: 'Designer copy.' });
+    expect(wordedCategory(category, 'livedesign')).toMatchObject({
+      title: 'Tabs',
+      description: 'Designer copy.',
+    });
     expect(wordedCategory(category, 'all')).toBe(category);
   });
 });
 
 describe('the search index', () => {
   it('keeps only the fields a result reads, in the scope wording', () => {
-    const worded = { ...diagramOnly, parentSlug: 'x', group: 'G', byApp: { livediagram: { title: 'Shapes!' } } };
+    const worded = {
+      ...diagramOnly,
+      parentSlug: 'x',
+      group: 'G',
+      byApp: { livediagram: { title: 'Shapes!' } },
+    };
     const [entry] = searchIndex([worded], 'livediagram');
     expect(entry).toEqual({
       slug: 'shapes',
@@ -237,9 +259,12 @@ describe('the search index', () => {
     });
   });
 
-  it("words a one-app article as its app under All Apps, a shared one as All Apps", () => {
+  it('words a one-app article as its app under All Apps, a shared one as All Apps', () => {
     const one = { ...diagramOnly, byApp: { livediagram: { title: 'Diagram Shapes' } } };
     const two = { ...shared, byApp: { livediagram: { title: 'Diagram Tabs' } } };
-    expect(searchIndex([one, two], 'all').map((e) => e.title)).toEqual(['Diagram Shapes', 'tabs/using-tabs']);
+    expect(searchIndex([one, two], 'all').map((e) => e.title)).toEqual([
+      'Diagram Shapes',
+      'tabs/using-tabs',
+    ]);
   });
 });

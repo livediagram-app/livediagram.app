@@ -10,6 +10,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="canvas/themes/changing-theme"
   title="Changing the Theme"
   description="Use the Tab Style dialog to pick a look or a theme for the active tab."
   categoryTitle="Canvas"
@@ -20,31 +21,33 @@ export const metadata = helpMetadata({
 
 Changing a tab's look is a matter of picking a new theme and watching the canvas update. <AppName /> brings the theme picker front and centre in a dedicated dialog, so there is plenty of room to compare looks.
 
-<Figure app="livediagram,livedesign,livedocuments,livehuddle" caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
+<Figure
+  app="livediagram,livedesign,livedocuments,livehuddle"
+  caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first."
+>
   <DiagramCanvasBasics.LookAndFeelTheme />
 </Figure>
 
 ## Opening the Dialog
 
 <AppNote app="livediagram,livedesign,livehuddle">
-  Click the **Theme & canvas** button in the bottom-right corner of the editor, beside the zoom controls. It is there on every screen size, phones included, and is named **Style** on a wide screen.
+  Click the **Theme & canvas** button in the bottom-right corner of the editor, beside the zoom
+  controls. It is there on every screen size, phones included, and is named **Style** on a wide
+  screen.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Click the **Style** button on a page's title bar (top right of every page; on an article page, **Style** then **Tab Style**). It is there on every screen size, phones included.
+  Click the **Style** button on a page's title bar (top right of every page; on an article page,
+  **Style** then **Tab Style**). It is there on every screen size, phones included.
 </AppNote>
 
 It opens the **Tab Style** dialog on its home, which has two parts: **Looks** at the top, and **Fine-tune** below. You can also run **Open Theme** from the [command palette](/help/search-panel/the-search-panel/command-palette/) to open the dialog straight on its **Colours** panel, or **Open Canvas Options** to land on its **Canvas** panel.
 
 The button only appears for people who can edit the tab, so it is missing for a Participant or a Viewer on a shared link, and in an embed.
 
-<AppNote app="livediagram,livedesign,livedocuments">
-  It is hidden in zen mode too.
-</AppNote>
+<AppNote app="livediagram,livedesign,livedocuments">It is hidden in zen mode too.</AppNote>
 
-<AppNote app="livediagram">
-  It is hidden in [Draw mode](/help/canvas/draw-mode/) as well.
-</AppNote>
+<AppNote app="livediagram">It is hidden in [Draw mode](/help/canvas/draw-mode/) as well.</AppNote>
 
 <AppNote app="livehuddle">
   It also steps aside while you walk the Space; switch back to **Edit** to bring it back.
@@ -59,21 +62,33 @@ A look restyles the whole tab in one click. Each one sets four things together: 
 <AppNote app="livediagram">
   There are twenty-nine: **Everyday**, **Textbook**, **Whiteboard**, **Spectrum**, **Boardroom**, **Notebook**, **Seaside**, **Doodle**, **Editorial**, **Midnight**, **Poster**, **Workshop**, **Graph Paper**, **Daydream**, **Engineer**, **Lagoon**, **Studio**, **Garden**, **Billboard**, **Patchwork**, **Northern Lights**, **Coffeehouse**, **Schematic**, **Flipchart**, **Sketchbook**, **Greenboard**, **Picnic**, **Mural** and **Field Notes**. **Whiteboard**, **Workshop**, **Flipchart**, **Greenboard** and **Mural** are drawn in the [Marker](/help/canvas/finish/) finish.
 
-  Ten of them give your boxes different colours: **Spectrum**, **Doodle**, **Daydream**, **Patchwork**, **Flipchart** and **Picnic** use the Rainbow and Pastel [multicolour themes](/help/canvas/themes/multicolour-themes/), **Lagoon** and **Poster** use Tropical, and **Textbook** and **Schematic** use UML, which colours each kind of shape its own way.
+Ten of them give your boxes different colours: **Spectrum**, **Doodle**, **Daydream**, **Patchwork**, **Flipchart** and **Picnic** use the Rainbow and Pastel [multicolour themes](/help/canvas/themes/multicolour-themes/), **Lagoon** and **Poster** use Tropical, and **Textbook** and **Schematic** use UML, which colours each kind of shape its own way.
+
 </AppNote>
 
 <AppNote app="livedesign">
-  There are eleven: **Everyday**, **Blueprint**, **Spectrum**, **Wireframe**, **Boardroom**, **Workshop**, **Midnight**, **Daydream**, **Editorial**, **Lagoon** and **Graph Paper**. **Workshop** is drawn in the [Marker](/help/canvas/finish/) finish. **Spectrum**, **Daydream** and **Lagoon** give your boxes different colours, using the Rainbow, Pastel and Tropical [multicolour themes](/help/canvas/themes/multicolour-themes/).
+  There are eleven: **Everyday**, **Blueprint**, **Spectrum**, **Wireframe**, **Boardroom**,
+  **Workshop**, **Midnight**, **Daydream**, **Editorial**, **Lagoon** and **Graph Paper**.
+  **Workshop** is drawn in the [Marker](/help/canvas/finish/) finish. **Spectrum**, **Daydream** and
+  **Lagoon** give your boxes different colours, using the Rainbow, Pastel and Tropical [multicolour
+  themes](/help/canvas/themes/multicolour-themes/).
 </AppNote>
 
 <AppNote app="livedocuments">
-  There are seventeen: **Everyday**, **Boardroom**, **Spectrum**, **Editorial**, **Notebook**, **Midnight**, **Daydream**, **Studio**, **Seaside**, **Textbook**, **Lagoon**, **Garden**, **Sketchbook**, **Night Shift**, **Workshop**, **Billboard** and **Classroom**. **Workshop** is drawn in the [Marker](/help/canvas/finish/) finish. **Spectrum**, **Daydream**, **Lagoon** and **Classroom** give your boxes different colours, using the Rainbow, Pastel and Tropical [multicolour themes](/help/canvas/themes/multicolour-themes/); **Textbook** keeps to one crisp ink, the Mono theme.
+  There are seventeen: **Everyday**, **Boardroom**, **Spectrum**, **Editorial**, **Notebook**,
+  **Midnight**, **Daydream**, **Studio**, **Seaside**, **Textbook**, **Lagoon**, **Garden**,
+  **Sketchbook**, **Night Shift**, **Workshop**, **Billboard** and **Classroom**. **Workshop** is
+  drawn in the [Marker](/help/canvas/finish/) finish. **Spectrum**, **Daydream**, **Lagoon** and
+  **Classroom** give your boxes different colours, using the Rainbow, Pastel and Tropical
+  [multicolour themes](/help/canvas/themes/multicolour-themes/); **Textbook** keeps to one crisp
+  ink, the Mono theme.
 </AppNote>
 
 <AppNote app="livehuddle">
   Each look dresses a room: in place of a pattern it sets the floor (carpet tiles, wood, marble, grass and the rest), and eight of them paint the walls you see in the 3D view too. There are twenty-nine: **Everyday**, **Gallery**, **Spectrum**, **Meeting Room**, **Boardroom**, **Cabin**, **Seaside**, **Playroom**, **Editorial**, **Midnight**, **Poster**, **Sandstone**, **Lab**, **Daydream**, **Engineer**, **Lagoon**, **Studio**, **Garden**, **Billboard**, **Patchwork**, **Northern Lights**, **Coffeehouse**, **Schematic**, **Flipchart**, **Atelier**, **Classroom**, **Picnic**, **Mural** and **Potting Shed**. **Meeting Room**, **Sandstone**, **Flipchart**, **Classroom** and **Mural** are drawn in the [Marker](/help/canvas/finish/) finish.
 
-  Eight of them give your boxes different colours: **Spectrum**, **Playroom**, **Daydream**, **Patchwork**, **Flipchart** and **Picnic** use the Rainbow and Pastel [multicolour themes](/help/canvas/themes/multicolour-themes/), and **Lagoon** and **Poster** use Tropical. **Gallery**, **Schematic** and **Meeting Room** keep to one crisp ink, the Mono theme.
+Eight of them give your boxes different colours: **Spectrum**, **Playroom**, **Daydream**, **Patchwork**, **Flipchart** and **Picnic** use the Rainbow and Pastel [multicolour themes](/help/canvas/themes/multicolour-themes/), and **Lagoon** and **Poster** use Tropical. **Gallery**, **Schematic** and **Meeting Room** keep to one crisp ink, the Mono theme.
+
 </AppNote>
 
 To see only the looks of one [finish](/help/canvas/finish/), use the finish dropdown on the **Looks** heading row, beside the carousel's arrows: **All finishes** (the default) shows every look, and **Flexible**, **Professional**, **Sketch** or **Marker** narrows the carousel to that finish. The filter is just for browsing: it changes nothing on the tab, and it is back on All finishes the next time you open the dialog.
@@ -84,9 +99,7 @@ Picking a look counts as one change, so a single undo takes it back. Elements th
 
 For the holidays, press **Seasonal** beside the finish dropdown. The carousel swaps to six seasonal looks: **Countdown** for New Year, **Egg Hunt** for Easter, **Haunted** for Halloween, and **Christmas Morning**, **Winter Wonderland** and **Fireside** for Christmas. Each card names its season above the look's name. The season on now, or the next one coming, comes first, but every season is there all year. They bring festive colours and canvas motifs (sparkles, eggs, cobwebs, candy stripes and snowflakes) that you will only find here: the seasonal themes are worn only through these looks, so they are not in the **Colours** panel. The **Mashup** card stays with the everyday looks. Press **Seasonal** again to go back to the everyday looks; the finish dropdown narrows either set.
 
-<AppNote app="livehuddle">
-  Fireside lays the tab on floorboards by the fire.
-</AppNote>
+<AppNote app="livehuddle">Fireside lays the tab on floorboards by the fire.</AppNote>
 
 ## Rolling a Mashup
 
@@ -110,11 +123,13 @@ Below the looks, **Fine-tune** lists four rows, each showing its current setting
 ## Picking a Theme
 
 <AppNote app="livediagram">
-  The Colours panel lists every theme in one carousel, nine to a page: **Default** first, then the rest of the twenty-five built-in themes.
+  The Colours panel lists every theme in one carousel, nine to a page: **Default** first, then the
+  rest of the twenty-five built-in themes.
 </AppNote>
 
 <AppNote app="livedesign,livedocuments,livehuddle">
-  The Colours panel lists every theme in one carousel, nine to a page: **Default** first, then the rest of the twenty-four built-in themes.
+  The Colours panel lists every theme in one carousel, nine to a page: **Default** first, then the
+  rest of the twenty-four built-in themes.
 </AppNote>
 
 It opens on the page holding the tab's current theme; the arrows or the page dots move between pages. Click a theme to apply it; the canvas eases into the new colours. Double-click a theme to apply it and close the dialog in one move.
@@ -126,7 +141,11 @@ Every theme works in light and dark mode: each person sees the tab in their own 
 Applying a theme recolours the tab's backdrop and the elements on it, but keeps colours you have hand-set, so deliberate customisations survive the switch. That goes for the backdrop too: a backdrop colour you chose yourself stays put. Sticky notes keep their own note colours.
 
 <AppNote app="livediagram,livedesign,livedocuments">
-  Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because connectors left on an old hue read as broken. A shape carrying a [style preset](/help/palette/shapes/style-presets/) moves to the new theme's version of that preset, and **Reset to Default** in a shape's presets brings a hand-coloured shape back to the theme's colours.
+  Arrows are the one exception: every arrow's stroke always snaps to the new theme's colour, because
+  connectors left on an old hue read as broken. A shape carrying a [style
+  preset](/help/palette/shapes/style-presets/) moves to the new theme's version of that preset, and
+  **Reset to Default** in a shape's presets brings a hand-coloured shape back to the theme's
+  colours.
 </AppNote>
 
 <Tip>

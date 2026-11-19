@@ -43,7 +43,10 @@ export function Footer() {
           <ul className="mt-3 flex flex-col items-start gap-2 text-sm pointer-coarse:mt-0.5 pointer-coarse:gap-0">
             {APP_ORDER.map((app) => (
               <li key={app}>
-                <a href={`${helpUrl(app)}/`} className={`${SITE_FOOTER_LINK} inline-flex items-center gap-2`}>
+                <a
+                  href={`${helpUrl(app)}/`}
+                  className={`${SITE_FOOTER_LINK} inline-flex items-center gap-2`}
+                >
                   <BrandGlyph className="size-3.5 text-slate-400" />
                   {app}
                 </a>

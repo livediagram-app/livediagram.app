@@ -40,15 +40,21 @@ function report(name: string, find: (text: string) => string[]): string[] {
 
 describe('docs ledgers and indexes', () => {
   it('give every default in a DEFAULTS.md ledger its own id', () => {
-    expect(report('DEFAULTS.md', (t) => [...t.matchAll(/^\| (D\d+) +\|/gm)].map((m) => m[1]!))).toEqual([]);
+    expect(
+      report('DEFAULTS.md', (t) => [...t.matchAll(/^\| (D\d+) +\|/gm)].map((m) => m[1]!)),
+    ).toEqual([]);
   });
 
   it('give every blueprint one section in a COMPLETENESS.md', () => {
-    expect(report('COMPLETENESS.md', (t) => [...t.matchAll(/^## (.+)$/gm)].map((m) => m[1]!))).toEqual([]);
+    expect(
+      report('COMPLETENESS.md', (t) => [...t.matchAll(/^## (.+)$/gm)].map((m) => m[1]!)),
+    ).toEqual([]);
   });
 
   it('list every file once in a README.md index', () => {
-    expect(report('README.md', (t) => [...t.matchAll(/^- (\.\/\S+)/gm)].map((m) => m[1]!))).toEqual([]);
+    expect(report('README.md', (t) => [...t.matchAll(/^- (\.\/\S+)/gm)].map((m) => m[1]!))).toEqual(
+      [],
+    );
   });
 
   it('finds a duplicate it is meant to catch', () => {

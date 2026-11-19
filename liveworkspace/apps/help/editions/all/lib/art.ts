@@ -27,7 +27,7 @@ import * as plannerIcons from '../../liveplanner/lib/featureIcons';
 // Imported by the all edition only, so no app's build carries another app's art.
 
 const firstWins = <T>(...maps: Readonly<Record<string, T>>[]): Record<string, T> =>
-  Object.assign({}, ...[...maps].reverse());
+  maps.reduceRight<Record<string, T>>((merged, map) => ({ ...merged, ...map }), {});
 
 export const ALL_APPS_ART: HelpArt = {
   featureHex: firstWins(

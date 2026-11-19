@@ -9,6 +9,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="developers/api-overview"
   title="The API"
   description="The same REST API the editor uses, callable from your own scripts with an API token."
   categoryTitle="Developers"
@@ -40,7 +41,8 @@ If you want to connect an AI assistant rather than write code, you usually want 
 </AppNote>
 
 <AppNote app="livehuddle">
-  livehuddle has no MCP server and no CLI: the REST API is how scripts and integrations work with it.
+  livehuddle has no MCP server and no CLI: the REST API is how scripts and integrations work with
+  it.
 </AppNote>
 
 ## The base URL
@@ -241,7 +243,7 @@ The token-callable surface mirrors the app:
 
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">
 
-The complete, machine-readable description of every endpoint, request shape, and response shape is published as an **OpenAPI 3.1** document, with no authentication required:
+The complete, machine-readable description of every endpoint, request shape, and response shape is published in **OpenAPI 3.1** format, with no authentication required:
 
 </AppNote>
 
@@ -294,9 +296,8 @@ curl https://www.livehuddle.app/api/openapi.json
 Point Postman, an OpenAPI viewer, or a client generator at that URL to explore the whole surface or scaffold a client. Endpoints an external token can use are tagged `x-token-usable`.
 
 <Tip>
-  The realtime collaboration WebSocket is not part of the REST reference. The OpenAPI document lists
-  the upgrade endpoint, but the live message protocol is intentionally separate.
+  The realtime collaboration WebSocket is not part of the REST reference. The OpenAPI reference
+  lists the upgrade endpoint, but the live message protocol is intentionally separate.
 </Tip>
-
 
 </ArticleLayout>

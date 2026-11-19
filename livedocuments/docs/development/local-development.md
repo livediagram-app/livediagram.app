@@ -41,15 +41,15 @@ corepack pnpm dev:documents
 Turbo spins up livedocuments' six dev servers in parallel, in its 3300 port block (`corepack pnpm dev` inside
 `livedocuments/` does the same):
 
-| App              | Dev URL                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3300`: **everything on one port**, stitched like production                      |
-| `apps/marketing` | `http://localhost:3301`                                                                            |
-| `apps/editor`    | `http://localhost:3302` (clean routes: /new, /document/<id>, /offline, ...)                        |
-| `liveworkspace/apps/help`      | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livedocuments corepack pnpm --filter @liveworkspace/help dev`) |
-| `apps/community` | `http://localhost:3305/community`                                                                  |
-| `apps/api`       | `http://localhost:8987/api`                                                                        |
-| `apps/mcp`       | `http://localhost:8988` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+| App                       | Dev URL                                                                                                                       |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router`             | `http://localhost:3300`: **everything on one port**, stitched like production                                                 |
+| `apps/marketing`          | `http://localhost:3301`                                                                                                       |
+| `apps/editor`             | `http://localhost:3302` (clean routes: /new, /document/<id>, /offline, ...)                                                   |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livedocuments corepack pnpm --filter @liveworkspace/help dev`) |
+| `apps/community`          | `http://localhost:3305/community`                                                                                             |
+| `apps/api`                | `http://localhost:8987/api`                                                                                                   |
+| `apps/mcp`                | `http://localhost:8988` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only)                            |
 
 The `router` dev server (`wrangler dev --env local`, port 3300) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/help` and `/api` (`/telemetry` redirects to liveworkspace's dashboard), so there is no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 

@@ -6,14 +6,14 @@ There is a second environment, **staging**, which does deploy on its own: when C
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker       | Type                                                                          |
-| ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
-| `apps/marketing` | `livediagram-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`    | `livediagram-editor`    | Static assets + a tiny path-rewrite worker.                                   |
+| App                       | Cloudflare Worker                      | Type                                                                                                                                                               |
+| ------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/marketing`          | `livediagram-marketing`                | Static assets only (Next.js `output: 'export'`).                                                                                                                   |
+| `apps/editor`             | `livediagram-editor`                   | Static assets + a tiny path-rewrite worker.                                                                                                                        |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `livediagram` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)). |
-| `apps/api`       | `livediagram-api`       | Worker (Durable Objects; no database or bucket of its own).                   |
-| `apps/mcp`       | `livediagram-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `livediagram-router`    | Worker (service bindings to marketing, editor, api and help).                 |
+| `apps/api`                | `livediagram-api`                      | Worker (Durable Objects; no database or bucket of its own).                                                                                                        |
+| `apps/mcp`                | `livediagram-mcp`                      | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                      |
+| `apps/router`             | `livediagram-router`                   | Worker (service bindings to marketing, editor, api and help).                                                                                                      |
 
 `apps/cli` is the npm CLI and deploys nowhere. Publishing is a manual step outside CI: the CLI goes to npm by hand, and `livediagram/server.json` is listed on the official MCP Registry by hand, or by the root `mcp-registry.yml` workflow started by hand ([MCP server §4.16](../015-api/mcp-server.md#416-registry-listing)). CI builds and packs the CLI on every run that reaches it (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
 

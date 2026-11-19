@@ -12,43 +12,55 @@ export const metadata = helpMetadata({
   path: '/help/getting-started/sharing-your-document/',
 });
 
-<ArticleLayout title="Sharing Your Work" description="Hand over a link and work together, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
+<ArticleLayout path="getting-started/sharing-your-document" title="Sharing Your Work" description="Hand over a link and work together, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
 
-<AppName /> is multiplayer from the start. Sharing is just creating a link and handing it over: whoever opens it joins the same <Noun />, sees everyone else live, and takes part. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
+<AppName /> is multiplayer from the start. Sharing is just creating a link and handing it over:
+whoever opens it joins the same <Noun />, sees everyone else live, and takes part. The person you
+share with does not need an account. For the full details see
+[Sharing](/help/collaboration/sharing/).
 
 <AppNote app="livediagram,livedocuments">
-  Whoever opens the link sees live cursors and edits alongside you. livedocuments is multiplayer from the first page, livediagram from the first shape.
+  Whoever opens the link sees live cursors and edits alongside you. livedocuments is multiplayer
+  from the first page, livediagram from the first shape.
 </AppNote>
 
 <AppNote app="livehuddle">
-  livehuddle is multiplayer from the moment someone walks in: whoever opens the link joins the same Space, walks round it as their character, and sees everyone else live.
+  livehuddle is multiplayer from the moment someone walks in: whoever opens the link joins the same
+  Space, walks round it as their character, and sees everyone else live.
 </AppNote>
 
 ## Create a Share Link
 
 <Step n={1}>
   Open the <Noun /> you want to share and click **Share** at the top right of the editor, or choose
-  **Share** from the <Noun />'s **⋯** menu in the Explorer. Only the <Noun />'s owner (or a member
-  of the team it belongs to) can issue passes, so someone who joined through a link sees **Copy**
-  (Make a Copy) in its place, to duplicate the <Noun /> into their own files.
+  **Share** from the <Noun />
+  's **⋯** menu in the Explorer. Only the <Noun />
+  's owner (or a member of the team it belongs to) can issue passes, so someone who joined through a
+  link sees **Copy** (Make a Copy) in its place, to duplicate the <Noun /> into their own files.
 </Step>
 
 <Step n={2}>
   Under **Issue a pass**, click the role card to choose a role. **Valid** sets how long it lasts:
-  Forever, 1 week, 1 month or 6 months. In a <Noun /> with several tabs, **Opens** can limit the link
-  to one tab.
+  Forever, 1 week, 1 month or 6 months. In a <Noun /> with several tabs, **Opens** can limit the
+  link to one tab.
 </Step>
 
 <AppNote app="livediagram">
-  The roles are **Editor** (draws with you in real time, the default), **Participant** (adds stickies, writes and votes, but can't reshape the board) and **Viewer** (watches, pans and zooms; can't comment, vote or change a thing).
+  The roles are **Editor** (draws with you in real time, the default), **Participant** (adds
+  stickies, writes and votes, but can't reshape the board) and **Viewer** (watches, pans and zooms;
+  can't comment, vote or change a thing).
 </AppNote>
 
 <AppNote app="livedocuments">
-  The roles are **Editor** (draws with you in real time, the default), **Participant** (edits text and comments, but can't add, move or restyle anything) and **Viewer** (watches, pans and zooms; can't comment or change a thing).
+  The roles are **Editor** (draws with you in real time, the default), **Participant** (edits text
+  and comments, but can't add, move or restyle anything) and **Viewer** (watches, pans and zooms;
+  can't comment or change a thing).
 </AppNote>
 
 <AppNote app="livehuddle">
-  The role card starts on **Participant** (always walking: walks, talks and uses the pieces, but adds nothing to the Space), the pass most meetings want; press it to pick **Editor** (changes the Space with you in real time) instead.
+  The role card starts on **Participant** (always walking: walks, talks and uses the pieces, but
+  adds nothing to the Space), the pass most meetings want; press it to pick **Editor** (changes the
+  Space with you in real time) instead.
 </AppNote>
 
 <Step n={3}>
@@ -56,29 +68,36 @@ export const metadata = helpMetadata({
   in the <Noun />; each pass in the list also has its own copy button.
 </Step>
 
-If you are a guest, check the name under **Sharing as** at the foot of the dialog first (or press the shuffle button beside it for another): that is the name peers see on your cursor and comments. A <Noun /> saved to **This Browser** has to be on <AppName /> before it can be shared: **Share** then offers **Sync <Noun capital />**, which moves it there in place.
+If you are a guest, check the name under **Sharing as** at the foot of the dialog first (or press the shuffle button beside it for another): that is the name peers see on your cursor and comments. A <Noun /> saved to **Offline** has to be on <AppName /> before it can be shared: **Share** then offers **Sync <Noun capital />**, which moves it there in place.
 
-<AppNote app="livediagram">
-  This Browser is where a guest's new canvases go.
-</AppNote>
+<AppNote app="livediagram">Offline is where a guest's new canvases go.</AppNote>
 
-<AppNote app="livedocuments">
-  Syncing moves it to your account in place.
-</AppNote>
+<AppNote app="livedocuments">Syncing moves it to your account in place.</AppNote>
 
 <AppNote app="livehuddle">
-  The name shows on your cursor and character. A Space saved to **This Browser** has nothing to share yet: **Share** opens on **This Space Is in This Browser**, and **Sync Space** puts it on livehuddle's servers (guest or signed in) and shows the share options in its place.
+  The name shows on your cursor and character. A Space saved to **Offline** has nothing to share
+  yet: **Share** opens on **This Space Is Offline**, and **Sync Space** puts it on livehuddle's
+  servers (guest or signed in) and shows the share options in its place.
 </AppNote>
 
-<Figure app="livediagram" caption="The Share dialog: pick Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+<Figure
+  app="livediagram"
+  caption="The Share dialog: pick Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below."
+>
   <DiagramSharePassesDialog />
 </Figure>
 
-<Figure app="livedocuments" caption="The Share dialog: pick Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+<Figure
+  app="livedocuments"
+  caption="The Share dialog: pick Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below."
+>
   <DocumentsSharePassesDialog />
 </Figure>
 
-<Figure app="livehuddle" caption="The Share dialog: choose Participant or Editor, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+<Figure
+  app="livehuddle"
+  caption="The Share dialog: choose Participant or Editor, set how long the pass is valid, then Create Pass. Live passes are listed below."
+>
   <HuddleSharePassesDialog />
 </Figure>
 
@@ -95,7 +114,10 @@ Someone opening your link for the first time enters the password if you set one,
 - **No sign-in required.** A guest can join straight away, the editor never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
 
 <AppNote app="livehuddle">
-  **Characters, cursors and selections.** Everyone sees where everyone else is standing and pointing, and what they have selected. Walking in [Avatar mode](/help/selection-modes/avatar-mode/), each person shows their name and status over their character. A guest walks in straight away.
+  **Characters, cursors and selections.** Everyone sees where everyone else is standing and
+  pointing, and what they have selected. Walking in [Avatar
+  mode](/help/selection-modes/avatar-mode/), each person shows their name and status over their
+  character. A guest walks in straight away.
 </AppNote>
 
 ## Managing and Ending Access
@@ -115,24 +137,21 @@ Back in the Share dialog you can manage links over time:
 </AppNote>
 
 <AppNote app="livediagram,livedocuments">
-  **Approval.** Signed in, the dialog's **Approval** tab asks the people you name to approve the <Noun />. See [Request Approval](/help/collaboration/sharing/request-approval/).
+  **Approval.** Signed in, the dialog's **Approval** tab asks the people you name to approve the{' '}
+  <Noun />. See [Request Approval](/help/collaboration/sharing/request-approval/).
 </AppNote>
 
 **Community.** The dialog's **Community** tab, beside **Passes**, publishes the <Noun />, once you're signed in, to the public [Community](/help/collaboration/sharing/community/) gallery. A <Noun /> in the Community can't have a password, and a password-protected one can't be published.
 
 <Tip>
-  Want to put the <Noun /> on a web page or in a doc? Each pass can also be copied as an embed (**Copy
-  iframe**) or, while no password is set, as a live image that stays up to date. A Participant pass
-  embeds look-only; an Editor pass embeds an editable <Noun />. See
+  Want to put the <Noun /> on a web page or in a doc? Each pass can also be copied as an embed
+  (**Copy iframe**) or, while no password is set, as a live image that stays up to date. A
+  Participant pass embeds look-only; an Editor pass embeds an editable <Noun />. See
   [Embeds](/help/collaboration/sharing/embeds/).
 </Tip>
 
-<AppNote app="livediagram,livedocuments">
-  A Viewer pass embeds look-only too.
-</AppNote>
+<AppNote app="livediagram,livedocuments">A Viewer pass embeds look-only too.</AppNote>
 
-<AppNote app="livehuddle">
-  A legacy Viewer pass embeds look-only as well.
-</AppNote>
+<AppNote app="livehuddle">A legacy Viewer pass embeds look-only as well.</AppNote>
 
 </ArticleLayout>

@@ -191,13 +191,13 @@ copy left to drift. Four rules keep the rest small:
 
 The report at step 9 (2026-11-04), the rows with the most changed files:
 
-|                     | identical | changed | only in livediagram | only in livehuddle |
-| ------------------- | --------- | ------- | ------------------- | ------------------ |
-| `apps/editor`       | 1,875     | 464     | 325                 | 13                 |
-| `liveworkspace/apps/help`         | 133       | 249     | 25                  | 3                  |
-| `docs/specs`        | 207       | 221     | 33                  | 9                  |
-| `packages/document` | 388       | 106     | 88                  | 1                  |
-| All files           | 3,581     | 1,369   | 841                 | 43                 |
+|                           | identical | changed | only in livediagram | only in livehuddle |
+| ------------------------- | --------- | ------- | ------------------- | ------------------ |
+| `apps/editor`             | 1,875     | 464     | 325                 | 13                 |
+| `liveworkspace/apps/help` | 133       | 249     | 25                  | 3                  |
+| `docs/specs`              | 207       | 221     | 33                  | 9                  |
+| `packages/document`       | 388       | 106     | 88                  | 1                  |
+| All files                 | 3,581     | 1,369   | 841                 | 43                 |
 
 Of the editor's 464 changed files, about 300 lost code for a cut feature, about 100 say Space, and the other 60 or so
 are mostly Prettier re-wrapping a line the longer or shorter name moved; the help centre and the specs changed as

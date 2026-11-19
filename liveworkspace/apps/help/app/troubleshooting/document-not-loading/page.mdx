@@ -9,19 +9,28 @@ export const metadata = helpMetadata({
   path: '/help/troubleshooting/document-not-loading/',
 });
 
-<ArticleLayout title="A File Will Not Load" description="What to check when something will not open, from quick checks to share-link problems." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout path="troubleshooting/document-not-loading" title="A File Will Not Load" description="What to check when something will not open, from quick checks to share-link problems." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
 When a <Noun /> does not open, the cause is usually access-related rather than data loss. <AppName /> deliberately returns the same "not found" surface for a <Noun /> you cannot reach as for one that truly does not exist, so a blank or "not found" screen does not mean your work is gone. Work through the checks below in order.
 
-<Figure app="livediagram" caption="A canvas stuck mid-load. A reload re-runs the load from scratch and clears most transient blips.">
+<Figure
+  app="livediagram"
+  caption="A canvas stuck mid-load. A reload re-runs the load from scratch and clears most transient blips."
+>
   <StuckCanvas noun="canvas" />
 </Figure>
 
-<Figure app="livedocuments" caption="A document stuck mid-load. A reload re-runs the load from scratch and clears most transient blips.">
+<Figure
+  app="livedocuments"
+  caption="A document stuck mid-load. A reload re-runs the load from scratch and clears most transient blips."
+>
   <StuckCanvas noun="document" />
 </Figure>
 
-<Figure app="livehuddle" caption="A space stuck mid-load. A reload re-runs the load from scratch and clears most transient blips.">
+<Figure
+  app="livehuddle"
+  caption="A space stuck mid-load. A reload re-runs the load from scratch and clears most transient blips."
+>
   <StuckCanvas noun="space" />
 </Figure>
 

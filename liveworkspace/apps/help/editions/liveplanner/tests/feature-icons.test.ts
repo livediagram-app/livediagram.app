@@ -2,8 +2,15 @@ import { markupBounds } from '@liveworkspace/icons/centring';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { articles, categories } from '@/lib/articles';
-import { FEATURE_CATEGORY_ICONS, FEATURE_FALLBACK_ICON, FEATURE_ICONS } from '@/editions/liveplanner/lib/featureIcons';
-import { FEATURE_CATEGORY_HEX, FEATURE_ENTITY_HEX } from '@/editions/liveplanner/lib/featureColours';
+import {
+  FEATURE_CATEGORY_ICONS,
+  FEATURE_FALLBACK_ICON,
+  FEATURE_ICONS,
+} from '@/editions/liveplanner/lib/featureIcons';
+import {
+  FEATURE_CATEGORY_HEX,
+  FEATURE_ENTITY_HEX,
+} from '@/editions/liveplanner/lib/featureColours';
 import { FEATURE_FALLBACK_HEX } from '@liveworkspace/help-site/lib/feature-tile';
 import { site } from '@/lib/help-site';
 

@@ -3,11 +3,12 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
   title: 'Deleting Your Data',
-  description: 'How to delete your work or your whole account, and how guest and account data are scoped to you.',
+  description:
+    'How to delete your work or your whole account, and how guest and account data are scoped to you.',
   path: '/help/account-and-data/deleting-your-data/',
 });
 
-<ArticleLayout title="Deleting Your Data" description="Remove a piece of work or your whole account, and understand how your data is scoped whether you are a guest or signed in." categoryTitle="Account and Data" categorySlug="account-and-data">
+<ArticleLayout path="account-and-data/deleting-your-data" title="Deleting Your Data" description="Remove a piece of work or your whole account, and understand how your data is scoped whether you are a guest or signed in." categoryTitle="Account and Data" categorySlug="account-and-data">
 
 You own your <Noun plural />, and removing one is straightforward. It helps to know how your data is scoped first, because that determines what "your data" means whether you are working as a guest or signed in.
 
@@ -19,7 +20,7 @@ Deleting a <Noun /> moves it to the [Trash](/help/account-and-data/trash/), wher
 
 A copy of a tab you added to another <Noun /> is that <Noun />'s own, so it stays there.
 
-[<Noun plural capital /> in This Browser](/help/privacy-and-security/offline-mode/) have no Trash: deleting one asks you first, then removes it for good.
+[Offline <Noun plural />](/help/privacy-and-security/offline-mode/) have no Trash: deleting one asks you first, then removes it for good.
 
 If you have organised your work into [folders](/help/explorer/folders/), you can also tidy up by moving <Noun plural /> between folders or removing folders, separately from deleting the <Noun plural /> themselves.
 
@@ -28,7 +29,9 @@ If you have organised your work into [folders](/help/explorer/folders/), you can
 When you are signed in, open **Settings**, choose **Profile** (under **Account**), and choose **Delete Account** under **Danger Zone**. The account menu's **Settings** opens Settings there. Because this cannot be undone, you confirm it twice: type your email address and choose **Email Me a Code**, then enter the 6-digit code we email you (the same kind of code you sign in with) and choose **Delete Account**. The code works for 10 minutes, so nobody using a computer you left signed in can delete your account without your inbox.
 
 <AppNote app="livedocuments">
-  To keep a copy first, **Your Data**, also under **Account**, downloads everything you own as one zip ([Downloading Everything at Once](/help/account-and-data/exporting-documents/#downloading-everything-at-once)).
+  To keep a copy first, **Your Data**, also under **Account**, downloads everything you own as one
+  zip ([Downloading Everything at
+  Once](/help/account-and-data/exporting-documents/#downloading-everything-at-once)).
 </AppNote>
 
 Deleting your account is not only about <AppName />: it closes your liveworkspace account, which every liveworkspace app shares. It removes from the server, straight away:
@@ -41,31 +44,34 @@ Deleting your account is not only about <AppName />: it closes your liveworkspac
 - your liveworkspace account itself, and with it **everything you own in every other liveworkspace app**: your canvases, plans, documents, designs and spaces in livediagram, liveplanner, livedocuments, livedesign and livehuddle, the Trash included, deleted for good the same way.
 
 <AppNote app="livediagram,liveplanner,livedocuments,livedesign">
-  A <Noun />'s comments are removed with it, in the Trash and from the server.
+  A <Noun />
+  's comments are removed with it, in the Trash and from the server.
 </AppNote>
 
-<AppNote app="livediagram,livehuddle">
-  Your shape libraries are deleted too.
-</AppNote>
+<AppNote app="livediagram,livehuddle">Your shape libraries are deleted too.</AppNote>
 
 <AppNote app="livedocuments">
-  Every image you uploaded, in any liveworkspace app, goes with it, and so do your [workbench](/help/developers/workbenches/) pairings and sessions, which closes any workbench you had open.
+  Every image you uploaded, in any liveworkspace app, goes with it, and so do your
+  [workbench](/help/developers/workbenches/) pairings and sessions, which closes any workbench you
+  had open.
 </AppNote>
 
-<AppNote app="livehuddle">
-  Deleting your API tokens stops any script using them at once.
-</AppNote>
+<AppNote app="livehuddle">Deleting your API tokens stops any script using them at once.</AppNote>
 
-<Noun plural capital /> in a [team's](/help/collaboration/teams/) shared library are not deleted with you: they pass to a remaining member, so the team keeps its work. A team you were the last member of is deleted, and its <Noun plural />, which are all yours by then, are deleted with your account. If email is set up, you get a short confirmation once it is done.
+<Noun plural capital /> in a [team's](/help/collaboration/teams/) shared library are not deleted
+with you: they pass to a remaining member, so the team keeps its work. A team you were the last
+member of is deleted, and its <Noun plural />, which are all yours by then, are deleted with your
+account. If email is set up, you get a short confirmation once it is done.
 
 <AppNote app="livedocuments,liveplanner">
   Closing the account also takes you out of every [team](/help/collaboration/teams/) you were in.
 </AppNote>
 
-Your <AppName /> data goes first, then the account. If closing the account fails, <AppName /> says so and you stay signed in, so choosing **Delete Account** again finishes it (with the same code while it lasts, or a new one). [<Noun plural capital /> in This Browser](/help/privacy-and-security/offline-mode/) were never on the server, so they stay in this browser until you clear its storage.
+Your <AppName /> data goes first, then the account. If closing the account fails, <AppName /> says so and you stay signed in, so choosing **Delete Account** again finishes it (with the same code while it lasts, or a new one). [Offline <Noun plural />](/help/privacy-and-security/offline-mode/) were never on the server, so they stay in this browser until you clear its storage.
 
 <AppNote app="liveplanner">
-  Plans kept in **Browser Storage** were never on the server, so they stay in this browser until you clear its storage.
+  Plans kept **Offline** were never on the server, so they stay in this browser until you clear its
+  storage.
 </AppNote>
 
 ## How your data is scoped
@@ -76,15 +82,24 @@ Where your data lives depends on how you are identified:
 - **When signed in**, your <Noun plural /> are owned by your account and synced across every device where you sign in. Deleting a <Noun /> removes it everywhere, because the account is the single source of truth.
 
 <AppNote app="livedocuments,liveplanner">
-  As a guest, your new <Noun plural /> are kept in this browser until you sync them; the ones on the server are owned by your [guest identity](/help/account-and-data/guest-identity/), which liveworkspace gives this one browser. Clearing the browser's site data for liveworkspace.app and <code><AppName />.app</code> removes the browser's link to your guest content.
+  As a guest, your new <Noun plural /> are kept in this browser until you sync them; the ones on the
+  server are owned by your [guest identity](/help/account-and-data/guest-identity/), which
+  liveworkspace gives this one browser. Clearing the browser's site data for liveworkspace.app and{' '}
+  <code>
+    <AppName />
+    .app
+  </code>{' '}
+  removes the browser's link to your guest content.
 </AppNote>
 
-A guest has no account to delete. To remove what you created as a guest, delete the <Noun plural /> you no longer want and empty the Trash. Clearing the browser's storage deletes your <Noun plural /> in This Browser, but only removes this browser's record of your guest identity: <Noun plural /> you shared or synced stay on the server, out of reach from a fresh browser, so delete them first if you want them gone.
+A guest has no account to delete. To remove what you created as a guest, delete the <Noun plural /> you no longer want and empty the Trash. Clearing the browser's storage deletes your <Noun plural /> kept Offline, but only removes this browser's record of your guest identity: <Noun plural /> you shared or synced stay on the server, out of reach from a fresh browser, so delete them first if you want them gone.
 
 Guest <Noun plural /> on the server are not kept forever: 400 days after your last visit, everything your guest identity owns is deleted for good, shared <Noun plural /> included ([how long guest work is kept](/help/account-and-data/guest-identity/#how-long-guest-work-is-kept)).
 
 <Tip>
-  If you plan to clear your browser, sign in first if you want to keep anything. Your guest <Noun plural /> on the server move into the account on sign-up. Ones in This Browser move only if you accept the offer to move them after signing in, so do that before you clear the browser.
+  If you plan to clear your browser, sign in first if you want to keep anything. Your guest{' '}
+  <Noun plural /> on the server move into the account on sign-up. Ones kept Offline move only if you
+  accept the offer to move them after signing in, so do that before you clear the browser.
 </Tip>
 
 </ArticleLayout>

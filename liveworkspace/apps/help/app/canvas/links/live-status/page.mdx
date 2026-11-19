@@ -9,7 +9,7 @@ export const metadata = helpMetadata({
   path: '/help/canvas/links/live-status/',
 });
 
-<ArticleLayout title="Live Service Status" description="Bind a shape to a service's public status URL, and a badge on it shows whether the service is up, degraded or down while the canvas is open." categoryTitle="Canvas" categorySlug="canvas" parentArticle={{ title: "Links and Link Cards", slug: "links" }} subArticles={getSubArticles("links").filter((a) => a.slug !== "live-status")}>
+<ArticleLayout path="canvas/links/live-status" title="Live Service Status" description="Bind a shape to a service's public status URL, and a badge on it shows whether the service is up, degraded or down while the canvas is open." categoryTitle="Canvas" categorySlug="canvas" parentArticle={{ title: "Links and Link Cards", slug: "links" }} subArticles={getSubArticles("links").filter((a) => a.slug !== "live-status")}>
 
 An architecture diagram usually says what a system looks like, not whether it is working. **Live status** closes that gap: bind a shape to the public status URL of the service it stands for, and a small badge on the shape's bottom-right corner shows **Up**, **Degraded**, **Down** or **Unknown** while anyone has the canvas open. The diagram and the dashboard become one tab.
 

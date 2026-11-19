@@ -16,8 +16,12 @@ describe('siteHref', () => {
     expect(siteHref('https://www.liveplanner.app/help/', 'www.livediagram.app')).toBe(
       'https://www.liveplanner.app/help/',
     );
-    expect(siteHref('https://www.liveplanner.app/help/', '')).toBe('https://www.liveplanner.app/help/');
+    expect(siteHref('https://www.liveplanner.app/help/', '')).toBe(
+      'https://www.liveplanner.app/help/',
+    );
     expect(siteHref('/help/canvas/', 'staging.livediagram.app')).toBe('/help/canvas/');
-    expect(siteHref('https://example.com/', 'staging.livediagram.app')).toBe('https://example.com/');
+    expect(siteHref('https://example.com/', 'staging.livediagram.app')).toBe(
+      'https://example.com/',
+    );
   });
 });

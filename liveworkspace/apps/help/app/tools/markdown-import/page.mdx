@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { MarkdownImportPanel, MarkdownToTree } from '@/editions/livediagram/components/illustrations/tools';
+import {
+  MarkdownImportPanel,
+  MarkdownToTree,
+} from '@/editions/livediagram/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Markdown Import',
@@ -10,54 +13,54 @@ export const metadata = helpMetadata({
   path: '/help/tools/markdown-import/',
 });
 
-<ArticleLayout title="Markdown Import" description="Bring Markdown into the app as a tidy, themed tree diagram, or as an article." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("markdown-import")}>
+<ArticleLayout path="tools/markdown-import" title="Markdown Import" description="Bring Markdown into the app as a tidy, themed tree diagram, or as an article." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("markdown-import")}>
 
 Markdown import brings text you have written in Markdown into <AppName />, and what you get depends on the app.
 
 <AppNote app="livediagram">
   Markdown import takes an outline written in Markdown and turns it into a real, editable diagram. It is built for the notes and mind maps you already have: an XMind export, an Obsidian or Logseq outline, or any file of headings and bullet points. The parser reads whatever hierarchy is actually in the file rather than expecting one fixed shape.
 
-  **What it reads.** Your file is treated as a hierarchical outline, and the importer is tolerant of how that hierarchy is expressed:
+**What it reads.** Your file is treated as a hierarchical outline, and the importer is tolerant of how that hierarchy is expressed:
 
-  - **Headings** (`#` to `######`) nest by depth, so a deeper heading sits under the nearest shallower one.
-  - **List items** (`-`, `*`, `+`, or numbered) nest by indentation, and attach under the heading above them. Task-list checkboxes are kept as their text.
-  - **Tables** (pipe tables with a header row) become a table element.
-  - **Plain prose lines** become leaf nodes so nothing is silently dropped.
+- **Headings** (`#` to `######`) nest by depth, so a deeper heading sits under the nearest shallower one.
+- **List items** (`-`, `*`, `+`, or numbered) nest by indentation, and attach under the heading above them. Task-list checkboxes are kept as their text.
+- **Tables** (pipe tables with a header row) become a table element.
+- **Plain prose lines** become leaf nodes so nothing is silently dropped.
 
-  Fenced code blocks and horizontal rules are skipped, a leading `>` is dropped from quoted lines, and inline formatting such as bold, italic, code, and links is flattened to plain text in the labels. Very long lines are shortened to 120 characters. An import keeps the first 2,000 headings, list items, lines and tables; anything after that is left out, and the dialog tells you how many. If the file has a single top-level item it becomes the root; otherwise a root named after the tab holds the top-level items so you always get one connected diagram.
+Fenced code blocks and horizontal rules are skipped, a leading `>` is dropped from quoted lines, and inline formatting such as bold, italic, code, and links is flattened to plain text in the labels. Very long lines are shortened to 120 characters. An import keeps the first 2,000 headings, list items, lines and tables; anything after that is left out, and the dialog tells you how many. If the file has a single top-level item it becomes the root; otherwise a root named after the tab holds the top-level items so you always get one connected diagram.
 
-  **What you get.** The result is a **tidy left-to-right tree**: the root on the left, each level in its own column, children stacked and centred on their parent so nothing overlaps. Boxes are sized to their labels, deeper levels use smaller text, and parents connect to children with curved arrows. Any tables are placed in a column below the tree.
+**What you get.** The result is a **tidy left-to-right tree**: the root on the left, each level in its own column, children stacked and centred on their parent so nothing overlaps. Boxes are sized to their labels, deeper levels use smaller text, and parents connect to children with curved arrows. Any tables are placed in a column below the tree.
 
-  Everything is recoloured to a theme (the active tab's theme, or Default if it has none) and the tab takes on that theme's background, so the import looks native rather than pasted in. It is ordinary elements afterwards, not a locked block, so you can rearrange and restyle it freely.
+Everything is recoloured to a theme (the active tab's theme, or Default if it has none) and the tab takes on that theme's background, so the import looks native rather than pasted in. It is ordinary elements afterwards, not a locked block, so you can rearrange and restyle it freely.
 
-  <Figure caption="A Markdown outline becomes a tidy left-to-right tree, themed and connected with curved arrows.">
-    <MarkdownToTree />
-  </Figure>
+<Figure caption="A Markdown outline becomes a tidy left-to-right tree, themed and connected with curved arrows.">
+  <MarkdownToTree />
+</Figure>
 
-  **How to import.**
+**How to import.**
 
-  <Step n={1}>
-    Open the tab's ⋯ menu and choose **Import**, or run "Import…" from the [command
-    palette](/help/search-panel/the-search-panel/command-palette/).
-  </Step>
+<Step n={1}>
+  Open the tab's ⋯ menu and choose **Import**, or run "Import…" from the [command
+  palette](/help/search-panel/the-search-panel/command-palette/).
+</Step>
 
-  <Step n={2}>
-    In the **Import to Tab** dialog, choose **Markdown** as the format. This sets the example text,
-    the file picker's filter, and tells <AppName /> to build a tree.
-  </Step>
+<Step n={2}>
+  In the **Import to Tab** dialog, choose **Markdown** as the format. This sets the example text,
+  the file picker's filter, and tells <AppName /> to build a tree.
+</Step>
 
-  <Step n={3}>
-    Paste your outline into the box and press **Import**, or use **Import a file instead** to pick a
-    `.md` file. The outline is built into the themed tree on that tab.
-  </Step>
+<Step n={3}>
+  Paste your outline into the box and press **Import**, or use **Import File** to pick a `.md` file.
+  The outline is built into the themed tree on that tab.
+</Step>
 
-  <Figure caption="The Markdown step of Import to Tab: paste an outline or pick a file, with the replace warning above.">
-    <MarkdownImportPanel />
-  </Figure>
+<Figure caption="The Markdown step of Import to Tab: paste an outline or pick a file, with the replace warning above.">
+  <MarkdownImportPanel />
+</Figure>
 
-  Import **replaces the current tab's contents**, including its elements, theme, and background, while keeping the tab's name. The dialog warns you before you commit. Because the replace is a single step, **Undo** (⌘Z / Ctrl+Z) restores the previous contents if you change your mind. To keep what is on the tab, add a new tab first and import into that.
+Import **replaces the current tab's contents**, including its elements, theme, and background, while keeping the tab's name. The dialog warns you before you commit. Because the replace is a single step, **Undo** (⌘Z / Ctrl+Z) restores the previous contents if you change your mind. To keep what is on the tab, add a new tab first and import into that.
 
-  If the file has nothing the importer recognises, the dialog says "No headings, lists, or tables found in this Markdown." and leaves your tab untouched. Import is greyed out on a [locked tab](/help/tabs/locking-tabs/), and Viewers and Participants don't have the tab menu at all.
+If the file has nothing the importer recognises, the dialog says "No headings, lists, or tables found in this Markdown." and leaves your tab untouched. Import is greyed out on a [locked tab](/help/tabs/locking-tabs/), and Viewers and Participants don't have the tab menu at all.
 
   <Tip>
     The same dialog imports a `.json` tab export, a Mermaid diagram, an Excalidraw scene, a draw.io
@@ -69,28 +72,28 @@ Markdown import brings text you have written in Markdown into <AppName />, and w
 <AppNote app="livedocuments">
   Markdown comes into <AppName /> as writing. Import a `.md` file into a tab and it becomes an [article](/help/pages/articles/), or paste any Markdown into an article page: either way it is turned into the formatted blocks it describes, ready to edit like anything else you have typed.
 
-  **What it reads.**
+**What it reads.**
 
-  - **Headings**: `#` becomes the largest heading, `##` the next, and `###` and deeper the smallest.
-  - **Lists**: `-`, `*` and `+` make a bulleted list, `1.` a numbered one, and `- [ ]` or `- [x]` a to-do, ticked or not. Indenting an item nests it, up to four levels.
-  - **Quotes**: a line starting with `>`.
-  - **Code**: a block fenced with three backticks, kept exactly as written.
-  - **Dividers**: a line of `---`, `***` or `___`.
-  - **Inline marks**: bold, italic, strikethrough, inline code and links.
-  - **Tables**: a pipe table (a header line, a `|---|` line, then rows) becomes a table.
-  - **Footnotes**: a `[^1]` in the text, with its note on a line of its own (`[^1]: The note`), becomes a footnote.
-  - **Contents**: `[TOC]` alone on a line becomes a table of contents.
-  - **Images**: an imported `![alt](address)` becomes a link named by its alt text. Add the picture itself from **Media**.
+- **Headings**: `#` becomes the largest heading, `##` the next, and `###` and deeper the smallest.
+- **Lists**: `-`, `*` and `+` make a bulleted list, `1.` a numbered one, and `- [ ]` or `- [x]` a to-do, ticked or not. Indenting an item nests it, up to four levels.
+- **Quotes**: a line starting with `>`.
+- **Code**: a block fenced with three backticks, kept exactly as written.
+- **Dividers**: a line of `---`, `***` or `___`.
+- **Inline marks**: bold, italic, strikethrough, inline code and links.
+- **Tables**: a pipe table (a header line, a `|---|` line, then rows) becomes a table.
+- **Footnotes**: a `[^1]` in the text, with its note on a line of its own (`[^1]: The note`), becomes a footnote.
+- **Contents**: `[TOC]` alone on a line becomes a table of contents.
+- **Images**: an imported `![alt](address)` becomes a link named by its alt text. Add the picture itself from **Media**.
 
-  Everything else is a paragraph: lines that run on together make one paragraph, and a blank line starts the next. Pasting into an empty line replaces it with the pasted blocks; pasting into a code block, or pasting a single line with no Markdown in it, puts the text in exactly as typed.
+Everything else is a paragraph: lines that run on together make one paragraph, and a blank line starts the next. Pasting into an empty line replaces it with the pasted blocks; pasting into a code block, or pasting a single line with no Markdown in it, puts the text in exactly as typed.
 
-  **Importing a file into a tab.** Markdown always becomes an article, so **Import** offers it on an article tab and on an empty tab (one still showing the start screen), never on a slide deck, infographic or flashcard tab, where it would replace those pages with an article. To bring Markdown into a document of slides, add a new tab first.
+**Importing a file into a tab.** Markdown always becomes an article, so **Import** offers it on an article tab and on an empty tab (one still showing the start screen), never on a slide deck, infographic or flashcard tab, where it would replace those pages with an article. To bring Markdown into a document of slides, add a new tab first.
 
-  Open the tab's menu, choose **Import**, then **Markdown**. Paste the Markdown into the box, or press **Import a file instead** to pick a `.md` file. The tab's contents are replaced by an article holding the writing, flowed onto as many pages as it needs; undo brings the old contents back. On a locked tab **Import** is greyed out, so unlock the tab first. See [Importing a Tab](/help/tabs/import-tabs/).
+Open the tab's menu, choose **Import**, then **Markdown**. Paste the Markdown into the box, or press **Import File** to pick a `.md` file. The tab's contents are replaced by an article holding the writing, flowed onto as many pages as it needs; undo brings the old contents back. On a locked tab **Import** is greyed out, so unlock the tab first. See [Importing a Tab](/help/tabs/import-tabs/).
 
-  An import can hold up to 400,000 characters, making at most 5,000 blocks, with no single paragraph over 20,000 characters. Past any of these the import stops and says which one, so split the long paragraph with a blank line or bring the rest in on another tab.
+An import can hold up to 400,000 characters, making at most 5,000 blocks, with no single paragraph over 20,000 characters. Past any of these the import stops and says which one, so split the long paragraph with a blank line or bring the rest in on another tab.
 
-  Dropping a `.md` file on the canvas does not import it: the canvas only places images, and a note points you to **Import**.
+Dropping a `.md` file on the canvas does not import it: the canvas only places images, and a note points you to **Import**.
 
   <Tip>
     Writing from scratch? The same Markdown works as shortcuts while you type in an article: start a

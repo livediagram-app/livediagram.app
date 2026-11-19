@@ -17,7 +17,10 @@ describe('the search indexes', () => {
   for (const app of APP_ORDER) {
     it(`${app}'s index holds only its own articles, within ${APP_INDEX_MAX_BYTES} bytes`, () => {
       const index = searchIndexFor(app);
-      const own = allArticles.filter((a) => appliesTo(a, app)).map(articlePath).sort();
+      const own = allArticles
+        .filter((a) => appliesTo(a, app))
+        .map(articlePath)
+        .sort();
       expect(index.map(articlePath).sort()).toEqual(own);
       expect(bytes(index)).toBeLessThanOrEqual(APP_INDEX_MAX_BYTES);
     });
@@ -31,8 +34,14 @@ describe('the search indexes', () => {
 
   it('carries only the fields a result reads', () => {
     for (const entry of searchIndexFor('all'))
-      expect(Object.keys(entry).sort()).toEqual(
-        ['apps', 'category', 'categorySlug', 'description', 'keywords', 'slug', 'title'],
-      );
+      expect(Object.keys(entry).sort()).toEqual([
+        'apps',
+        'category',
+        'categorySlug',
+        'description',
+        'keywords',
+        'slug',
+        'title',
+      ]);
   });
 });

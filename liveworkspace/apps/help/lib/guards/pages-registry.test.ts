@@ -18,7 +18,9 @@ describe('the article tree and the catalogue', () => {
   });
 
   it('has a page.mdx for every article (no dead search links)', () => {
-    expect(allArticles.filter((a) => !existsSync(`${APP_DIR}/${articleFile(a)}`)).map(articlePath)).toEqual([]);
+    expect(
+      allArticles.filter((a) => !existsSync(`${APP_DIR}/${articleFile(a)}`)).map(articlePath),
+    ).toEqual([]);
   });
 
   it('lists every article page.mdx (none invisible to search)', () => {

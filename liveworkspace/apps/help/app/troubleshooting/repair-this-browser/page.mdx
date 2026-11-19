@@ -13,7 +13,7 @@ export const metadata = helpMetadata({
   path: '/help/troubleshooting/repair-this-browser/',
 });
 
-<ArticleLayout title="Repair This Browser" description="Clear stuck settings and caches in this browser, keeping your work and identity." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+<ArticleLayout path="troubleshooting/repair-this-browser" title="Repair This Browser" description="Clear stuck settings and caches in this browser, keeping your work and identity." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
 
 If a <Noun /> opens for a colleague but not for you, something saved in your browser may be in the way. A repair clears the settings and caches <AppName /> keeps in this browser, then you open the <Noun /> again. It works from this page even when the editor itself will not start.
 
@@ -48,11 +48,12 @@ If a <Noun /> opens for a colleague but not for you, something saved in your bro
 
 - **Your <Noun plural />.** <Noun plural capital /> stored on the server stay there, and a repair never touches them.
 - **Your guest identity.** If you use <AppName /> without an account, the <Noun plural /> you made belong to an identity saved in this browser. A repair keeps it, so your <Noun plural /> stay in your list.
-- **<Noun plural capital /> in This Browser.** These exist only in this browser, so a repair leaves them alone.
+- **Offline <Noun plural />.** These exist only in this browser, so a repair leaves them alone.
 - **Your sign-in.** A repair never signs you out.
 
 <AppNote app="liveplanner">
-  **Changes waiting for the connection.** Card and Sheet changes you made while offline that have not reached liveplanner yet are kept, and still save when you reconnect.
+  **Changes waiting for the connection.** Card and Sheet changes you made while offline that have
+  not reached liveplanner yet are kept, and still save when you reconnect.
 </AppNote>
 
 ## Copy Diagnostics

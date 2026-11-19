@@ -9,7 +9,8 @@ export const articles: Article[] = [
     slug: 'the-search-panel',
     title: 'The Search Panel',
     description: 'Open the global search, what it covers, and how to navigate the results.',
-    keywords: 'find lookup global search everywhere quick open locate settings preferences help articles command palette',
+    keywords:
+      'find lookup global search everywhere quick open locate settings preferences help articles command palette',
     category: 'Search Panel',
     categorySlug: 'search-panel',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -17,7 +18,8 @@ export const articles: Article[] = [
   {
     slug: 'command-palette',
     title: 'The Command Palette (⌘K)',
-    description: 'Press Cmd/Ctrl+K to run any editor command by name: undo, auto layout, export, settings and more.',
+    description:
+      'Press Cmd/Ctrl+K to run any editor command by name: undo, auto layout, export, settings and more.',
     keywords: 'cmd k ctrl quick actions run commands launcher shortcut',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -27,7 +29,8 @@ export const articles: Article[] = [
   {
     slug: 'search-add-to-canvas',
     title: 'Adding Elements from Search',
-    description: 'Search the palette and drop an element or icon onto the canvas without leaving search.',
+    description:
+      'Search the palette and drop an element or icon onto the canvas without leaving search.',
     keywords: 'insert shape icon quick add place drop sticky note sticker furniture',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -47,7 +50,8 @@ export const articles: Article[] = [
   {
     slug: 'search-documents',
     title: 'Finding Your Work and Folders',
-    description: 'Find your work by name from the editor, and your items and folders from the Explorer page.',
+    description:
+      'Find your work by name from the editor, and your items and folders from the Explorer page.',
     keywords: 'find lookup locate files library open diagrams document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -63,7 +67,8 @@ export const articles: Article[] = [
     slug: 'search-tabs-and-elements',
     title: 'Finding Tabs and Elements',
     description: 'Inside your work, jump to any tab, element or card.',
-    keywords: 'find jump locate text label shape board lookup document tab name card number title open project page',
+    keywords:
+      'find jump locate text label shape board lookup document tab name card number title open project page',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',
@@ -75,7 +80,8 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find the teams you belong to, and where their folders and work turn up in search.',
+    description:
+      'Find the teams you belong to, and where their folders and work turn up in search.',
     keywords: 'find team lookup locate page every app shared folders project document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -94,8 +100,9 @@ export const articles: Article[] = [
   {
     slug: 'format-painter',
     title: 'Format Painter',
-    description: 'Copy one element\'s style and paint it onto others.',
-    keywords: 'copy style clone look paste formatting appearance brush selection toolbar paint match',
+    description: "Copy one element's style and paint it onto others.",
+    keywords:
+      'copy style clone look paste formatting appearance brush selection toolbar paint match',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -115,7 +122,8 @@ export const articles: Article[] = [
   {
     slug: 'laser',
     title: 'Laser Pointer',
-    description: 'A temporary laser trail for drawing attention while presenting, on a call or on a shared screen.',
+    description:
+      'A temporary laser trail for drawing attention while presenting, on a call or on a shared screen.',
     keywords: 'presentation highlight trail point attention presenting red pointer pen glow comet',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
@@ -125,7 +133,8 @@ export const articles: Article[] = [
     slug: 'select',
     title: 'Select',
     description: 'The default pointer for selecting, moving, and editing elements.',
-    keywords: 'pointer cursor arrow tool default mode click marquee picker shift edit walk toggle switch select build footprints avatar character pan hand space drag trackpad middle delete remove erase eraser backspace selection',
+    keywords:
+      'pointer cursor arrow tool default mode click marquee picker shift edit walk toggle switch select build footprints avatar character pan hand space drag trackpad middle delete remove erase eraser backspace selection',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -136,8 +145,10 @@ export const articles: Article[] = [
   {
     slug: 'slide-deck',
     title: 'Slide Deck',
-    description: 'Build slides and present them full screen, with notes, transitions and auto-advance.',
-    keywords: 'presentation presenting present mode slideshow slide show slides deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter script full fullscreen next previous advance start build element set spans tabs contents add to pages one tab at a time',
+    description:
+      'Build slides and present them full screen, with notes, transitions and auto-advance.',
+    keywords:
+      'presentation presenting present mode slideshow slide show slides deck talk demo walkthrough narrate projector screen share screenshare speaker notes presenter script full fullscreen next previous advance start build element set spans tabs contents add to pages one tab at a time',
     category: 'Selection Modes',
     categorySlug: 'selection-modes',
     apps: ['livediagram', 'livedocuments'],
@@ -146,7 +157,8 @@ export const articles: Article[] = [
     slug: 'building-a-deck',
     title: 'Building a Deck',
     description: 'Add, hide, reorder and annotate the slides before you present them.',
-    keywords: 'build deck new slide add remove elements selection membership rename duplicate copy delete confirm hide hidden skip struck through eye reorder drag order presenter notes script speaker budget minutes timing per pace menu ellipsis contents to slides page infographic article in show veil present from here start note cards right click',
+    keywords:
+      'build deck new slide add remove elements selection membership rename duplicate copy delete confirm hide hidden skip struck through eye reorder drag order presenter notes script speaker budget minutes timing per pace menu ellipsis contents to slides page infographic article in show veil present from here start note cards right click',
     category: 'Selection Modes',
     categorySlug: 'selection-modes/slide-deck',
     parentSlug: 'slide-deck',
@@ -154,9 +166,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'presenter-controls',
-    title: 'The Presenter\'s Controls',
-    description: 'The strip in the corner of a running deck, and the eleven settings behind its cog.',
-    keywords: 'hud controls strip corner position counter slide name jump to list grid notes button popover elapsed time clock budget minutes over amber pacing settings cog transition speed auto advance autoadvance loop click fill screen actual size show keep visible hide pointer cursor kiosk unattended',
+    title: "The Presenter's Controls",
+    description:
+      'The strip in the corner of a running deck, and the eleven settings behind its cog.',
+    keywords:
+      'hud controls strip corner position counter slide name jump to list grid notes button popover elapsed time clock budget minutes over amber pacing settings cog transition speed auto advance autoadvance loop click fill screen actual size show keep visible hide pointer cursor kiosk unattended',
     category: 'Selection Modes',
     categorySlug: 'selection-modes/slide-deck',
     parentSlug: 'slide-deck',
@@ -165,8 +179,10 @@ export const articles: Article[] = [
   {
     slug: 'presenting',
     title: 'Presenting',
-    description: 'What a running deck does: framing, transitions, moving through it, and what a click does.',
-    keywords: 'present full screen fullscreen start presenting framing frame fit padding backdrop transition travel slide fade reduce motion advance next previous arrow keys space page down home end escape exit laser spotlight point read only popover note comment action wake lock awake announce reader shortcuts dead',
+    description:
+      'What a running deck does: framing, transitions, moving through it, and what a click does.',
+    keywords:
+      'present full screen fullscreen start presenting framing frame fit padding backdrop transition travel slide fade reduce motion advance next previous arrow keys space page down home end escape exit laser spotlight point read only popover note comment action wake lock awake announce reader shortcuts dead',
     category: 'Selection Modes',
     categorySlug: 'selection-modes/slide-deck',
     parentSlug: 'slide-deck',
@@ -185,7 +201,8 @@ export const articles: Article[] = [
     slug: 'agent-changes',
     title: "Reviewing and Undoing an Agent's Changes",
     description: 'See what an agent or a script changed, and undo it for 30 days',
-    keywords: 'changeset changesets undo revert agent ai mcp cli history review rollback toast kept diff script',
+    keywords:
+      'changeset changesets undo revert agent ai mcp cli history review rollback toast kept diff script',
     category: 'Developers',
     categorySlug: 'developers',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -193,8 +210,10 @@ export const articles: Article[] = [
   {
     slug: 'agent-comments-presence',
     title: 'Comments and Presence for Agents',
-    description: 'Show what your agent is doing, and talk through comment threads where the app has them.',
-    keywords: 'agent comments reply resolve reopen threads presence status focus ring card api cli bot read list script gone 410',
+    description:
+      'Show what your agent is doing, and talk through comment threads where the app has them.',
+    keywords:
+      'agent comments reply resolve reopen threads presence status focus ring card api cli bot read list script gone 410',
     category: 'Developers',
     categorySlug: 'developers',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -203,7 +222,8 @@ export const articles: Article[] = [
     slug: 'api-overview',
     title: 'The API',
     description: 'What the REST API is, the base URL, and how to start calling it with a token.',
-    keywords: 'rest api endpoints base url http programmatic developer integrate openapi archive presence comments',
+    keywords:
+      'rest api endpoints base url http programmatic developer integrate openapi archive presence comments',
     category: 'Developers',
     categorySlug: 'developers',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -227,8 +247,10 @@ export const articles: Article[] = [
   {
     slug: 'cli',
     title: 'The CLI',
-    description: 'Read, build, edit and discuss your work from a terminal: install, sign in, the commands, and profiles.',
-    keywords: 'cli command line terminal shell npm npx install agent coding script automation device code login sign in token keychain export pull push profile host document project component image gallery share rename',
+    description:
+      'Read, build, edit and discuss your work from a terminal: install, sign in, the commands, and profiles.',
+    keywords:
+      'cli command line terminal shell npm npx install agent coding script automation device code login sign in token keychain export pull push profile host document project component image gallery share rename',
     category: 'Developers',
     categorySlug: 'developers',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
@@ -252,7 +274,8 @@ export const articles: Article[] = [
     slug: 'workbenches',
     title: 'Your Work in Your Developer Tools',
     description: 'Work inside a developer tool beside your agent, and talk about what you select.',
-    keywords: 'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding live view developer tool workspace explorer folder whole document project',
+    keywords:
+      'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding live view developer tool workspace explorer folder whole document project',
     category: 'Developers',
     categorySlug: 'developers',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
@@ -267,7 +290,8 @@ export const articles: Article[] = [
     slug: 'building-a-workbench',
     title: 'Building a Workbench',
     description: 'Pair, frame and message the editor from your own developer tool.',
-    keywords: 'workbench integration postmessage post message iframe frame embed ticket pairing pair handshake hello ack renew selection reference reveal theme ended vs code extension protocol origin',
+    keywords:
+      'workbench integration postmessage post message iframe frame embed ticket pairing pair handshake hello ack renew selection reference reveal theme ended vs code extension protocol origin',
     category: 'Developers',
     categorySlug: 'developers/workbenches',
     parentSlug: 'workbenches',
@@ -277,7 +301,8 @@ export const articles: Article[] = [
     slug: 'working-with-documents',
     title: 'Working with Files',
     description: 'Worked examples: list, read, create, and update your files, tabs, and folders.',
-    keywords: 'examples curl crud create update list read api requests diagrams outline view text agent document',
+    keywords:
+      'examples curl crud create update list read api requests diagrams outline view text agent document',
     category: 'Developers',
     categorySlug: 'developers',
     apps: ['livediagram', 'livedocuments', 'livehuddle'],
@@ -290,8 +315,10 @@ export const articles: Article[] = [
   {
     slug: 'edit-operations',
     title: 'Edit Operations Reference',
-    description: 'Every changeset operation, selector, placement and flag, and the lint findings where the app has them.',
-    keywords: 'changeset edit operations ops line form json selector placement flags lint findings vocabulary cli mcp agent',
+    description:
+      'Every changeset operation, selector, placement and flag, and the lint findings where the app has them.',
+    keywords:
+      'changeset edit operations ops line form json selector placement flags lint findings vocabulary cli mcp agent',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -310,8 +337,10 @@ export const articles: Article[] = [
   {
     slug: 'minimap',
     title: 'Map',
-    description: 'A zoomed-out overview of the canvas in the bottom-left with a box for your view: tap or drag to navigate. Where an app has none, Contents and the page navigator take over.',
-    keywords: 'minimap mini map overview navigate viewport birds eye locate where am i contents pages',
+    description:
+      'A zoomed-out overview of the canvas in the bottom-left with a box for your view: tap or drag to navigate. Where an app has none, Contents and the page navigator take over.',
+    keywords:
+      'minimap mini map overview navigate viewport birds eye locate where am i contents pages',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -320,7 +349,8 @@ export const articles: Article[] = [
     slug: 'context-menus',
     title: 'Context Menus',
     description: 'Right-click menus across the editor, each scoped to what you clicked.',
-    keywords: 'right click menu long press options popup categories more appearance resources quick bar save to library',
+    keywords:
+      'right click menu long press options popup categories more appearance resources quick bar save to library',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -329,7 +359,8 @@ export const articles: Article[] = [
     slug: 'toolbar',
     title: 'The Toolbar',
     description: 'The contextual toolbar that appears when you select one or more elements.',
-    keywords: 'selection bar buttons floating contextual duplicate lock delete comment filter export more save to library rotate turn furniture format painter',
+    keywords:
+      'selection bar buttons floating contextual duplicate lock delete comment filter export more save to library rotate turn furniture format painter',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -347,7 +378,8 @@ export const articles: Article[] = [
     slug: 'tab-bar',
     title: 'The Tab Bar',
     description: 'Switch between tabs, add new ones, and group them into folders.',
-    keywords: 'tabs boards pages switch bottom bar sheets dashboards forms add rename reorder menu project document',
+    keywords:
+      'tabs boards pages switch bottom bar sheets dashboards forms add rename reorder menu project document',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -355,8 +387,10 @@ export const articles: Article[] = [
   {
     slug: 'title-bar',
     title: 'The Top Corners',
-    description: 'There is no bar across the top of the editor: the logo and the menu in the top-left corner, and Share or Copy and your account in the top right.',
-    keywords: 'title bar header top bar corner corners card menu button explorer logo editor mode switch present prototype share share form copy make a copy account sign in sign out design canvas document space plan name rename visibility',
+    description:
+      'There is no bar across the top of the editor: the logo and the menu in the top-left corner, and Share or Copy and your account in the top right.',
+    keywords:
+      'title bar header top bar corner corners card menu button explorer logo editor mode switch present prototype share share form copy make a copy account sign in sign out design canvas document space plan name rename visibility',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -369,8 +403,10 @@ export const articles: Article[] = [
   {
     slug: 'quick-controls',
     title: 'Quick Controls',
-    description: 'The always-available Tools (with Search), Settings and appearance controls at the end of the bottom bar, with Get Started while a tour is on offer.',
-    keywords: 'corner buttons actions tools toolbox search settings get started tour receptionist history snapshots webhooks walkthroughs slide deck github bottom bar cluster appearance light dark automations sign in sync plan badge',
+    description:
+      'The always-available Tools (with Search), Settings and appearance controls at the end of the bottom bar, with Get Started while a tour is on offer.',
+    keywords:
+      'corner buttons actions tools toolbox search settings get started tour receptionist history snapshots webhooks walkthroughs slide deck github bottom bar cluster appearance light dark automations sign in sync plan badge',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -379,7 +415,8 @@ export const articles: Article[] = [
     slug: 'panel-layout',
     title: 'Panel Layout',
     description: 'Where the toolbar and panels sit around the canvas, and how to rearrange them.',
-    keywords: 'ui window dock arrange workspace interface layout move panels chrome corner snap reset position menu button header board header bottom right buttons cluster undo redo trash types board style tools top corners tab bar phone',
+    keywords:
+      'ui window dock arrange workspace interface layout move panels chrome corner snap reset position menu button header board header bottom right buttons cluster undo redo trash types board style tools top corners tab bar phone',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -388,7 +425,8 @@ export const articles: Article[] = [
     slug: 'settings',
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
-    keywords: 'settings preferences options config configure gear cog toggles panel opacity toolbar map minimap welcome tour receptionist notifications toasts join leave sounds desktop notifications hide participant cursors proximity ring audio proximity ring reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale button labels element indicators badges dock position draw default folders where new designs go where new documents go where new spaces go email api tokens trash delete delete account canvas design document space spaces project projects plan plans',
+    keywords:
+      'settings preferences options config configure gear cog toggles panel opacity toolbar map minimap welcome tour receptionist notifications toasts join leave sounds desktop notifications hide participant cursors proximity ring audio proximity ring reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale button labels element indicators badges dock position draw default folders where new designs go where new documents go where new spaces go email api tokens trash delete delete account canvas design document space spaces project projects plan plans',
     category: 'User Interface',
     categorySlug: 'user-interface',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -420,8 +458,10 @@ export const articles: Article[] = [
   {
     slug: 'presenting-well',
     title: 'Walking People Through Your Work',
-    description: 'Show your work on a call with Zen mode, the laser, the spotlight, and follow along or a slide deck.',
-    keywords: 'present presenting presentation demo walkthrough screen share screenshare call meeting zen laser spotlight follow point slideshow fullscreen slides',
+    description:
+      'Show your work on a call with Zen mode, the laser, the spotlight, and follow along or a slide deck.',
+    keywords:
+      'present presenting presentation demo walkthrough screen share screenshare call meeting zen laser spotlight follow point slideshow fullscreen slides',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
     apps: ['livediagram', 'livedocuments', 'livedesign'],
@@ -430,7 +470,8 @@ export const articles: Article[] = [
       livedocuments: { title: 'Presenting from the Canvas' },
       livedesign: {
         title: 'Presenting from the Canvas',
-        description: 'Show your work on a call with Zen mode, the laser, the spotlight, and follow along.',
+        description:
+          'Show your work on a call with Zen mode, the laser, the spotlight, and follow along.',
       },
     },
   },
@@ -438,7 +479,8 @@ export const articles: Article[] = [
     slug: 'format-painter',
     title: 'The Format Painter',
     description: 'Copy the look of one element onto others in two clicks.',
-    keywords: 'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the page background pattern',
+    keywords:
+      'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the page background pattern',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -447,7 +489,8 @@ export const articles: Article[] = [
     slug: 'copy-and-paste',
     title: 'Copy and Paste',
     description: 'Move elements between tabs, files and windows through the system clipboard.',
-    keywords: 'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between designs documents diagrams another design another document another tab second window screenshot paste image picture offset reconnect arrows system clipboard canvas space spaces excalidraw',
+    keywords:
+      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between designs documents diagrams another design another document another tab second window screenshot paste image picture offset reconnect arrows system clipboard canvas space spaces excalidraw',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
     apps: ['livediagram', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -455,8 +498,10 @@ export const articles: Article[] = [
   {
     slug: 'command-palette',
     title: 'The Palette',
-    description: 'Pick tools and add shapes, text, icons and more from the palette strip, or run commands from the keyboard.',
-    keywords: 'quick add search elements toolbar strip launcher categories category bar flyout dropdown popular selection mode tiles bands edit walk toggle write rooms seats perks play garden meet travel stickers cmd k ctrl k quick actions run commands shortcut',
+    description:
+      'Pick tools and add shapes, text, icons and more from the palette strip, or run commands from the keyboard.',
+    keywords:
+      'quick add search elements toolbar strip launcher categories category bar flyout dropdown popular selection mode tiles bands edit walk toggle write rooms seats perks play garden meet travel stickers cmd k ctrl k quick actions run commands shortcut',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -468,7 +513,8 @@ export const articles: Article[] = [
     slug: 'keyboard-shortcuts',
     title: 'Keyboard Shortcuts',
     description: 'The full shortcut reference and how to toggle shortcuts off.',
-    keywords: 'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter settings keyboard category draw mode pens shift d disable all',
+    keywords:
+      'hotkey hotkeys keybinding cheat sheet reference keys bindings number numbers digit digits tool row excalidraw muscle memory single key letter settings keyboard category draw mode pens shift d disable all',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],

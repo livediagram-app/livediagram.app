@@ -1,7 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { MindMapFlows, MindMapGrowth } from '@/editions/livediagram/components/illustrations/mind-maps';
+import {
+  MindMapFlows,
+  MindMapGrowth,
+} from '@/editions/livediagram/components/illustrations/mind-maps';
 
 export const metadata = helpMetadata({
   title: 'Mind Maps',
@@ -11,6 +14,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="palette/mind-maps"
   title="Mind Maps"
   description="Grow a branch without touching the mouse: Tab for a child, Enter for a sibling."
   categoryTitle="Palette"

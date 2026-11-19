@@ -14,4 +14,11 @@ import { articles as b4ExplorerTabsAccount } from './b4-explorer-tabs-account';
 import { articles as b5DevUiTips } from './b5-dev-ui-tips';
 import { articles as b6Support } from './b6-support';
 
-export const sharedArticles: readonly Article[] = [...b1Palette, ...b2Canvas, ...b3Collaboration, ...b4ExplorerTabsAccount, ...b5DevUiTips, ...b6Support];
+export const sharedArticles: readonly Article[] = [
+  ...b1Palette,
+  ...b2Canvas,
+  ...b3Collaboration,
+  ...b4ExplorerTabsAccount,
+  ...b5DevUiTips,
+  ...b6Support,
+];

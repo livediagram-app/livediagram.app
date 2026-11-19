@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useMemo, useRef, useSyncExternalStore } from 'react';
 import { usePathname } from 'next/navigation';
 import {
   APP_ORDER,
@@ -33,14 +33,16 @@ export const HELP_APPLIES_ATTR = 'data-help-applies';
 
 const noQuery = () => '';
 
-function readApplies(): AppId[] | undefined {
-  const el = document.querySelector(`[${HELP_APPLIES_ATTR}]`);
-  if (!el) return undefined;
-  return (el.getAttribute(HELP_APPLIES_ATTR) ?? '').split(',').filter(isAppId);
+/** The page's apps as its layout wrote them (`[data-help-applies]`), or null on a page that names none. A string, so
+ *  React compares snapshots by value. */
+function readAppliesAttr(): string | null {
+  return document.querySelector(`[${HELP_APPLIES_ATTR}]`)?.getAttribute(HELP_APPLIES_ATTR) ?? null;
 }
+const noSubscription = () => () => {};
 
 /** The guide count's words in a menu row. */
-const guides = (n: number | undefined) => (n === undefined ? '' : `${n} ${n === 1 ? 'guide' : 'guides'}`);
+const guides = (n: number | undefined) =>
+  n === undefined ? '' : `${n} ${n === 1 ? 'guide' : 'guides'}`;
 
 export function AppSwitch({ size = 'header' }: { size?: 'header' | 'large' | 'chip' }) {
   const client = useHelpClient();
@@ -50,7 +52,13 @@ export function AppSwitch({ size = 'header' }: { size?: 'header' | 'large' | 'ch
   const query = useSyncExternalStore(subscribeSearchQuery, getSearchQuery, noQuery);
   // Each scope's address in the page's deployment: staging stays on staging, a dev server on its ports.
   const siteHref = useSiteHref();
-  const [applies, setApplies] = useState<AppId[] | undefined>(undefined);
+  // Read on every render and checked again after each commit (useSyncExternalStore), so a client navigation, which
+  // swaps the article under a header that stays, is picked up once the new page is in the DOM.
+  const appliesAttr = useSyncExternalStore(noSubscription, readAppliesAttr, () => null);
+  const applies = useMemo<AppId[] | undefined>(
+    () => (appliesAttr === null ? undefined : appliesAttr.split(',').filter(isAppId)),
+    [appliesAttr],
+  );
   const { open, close, trigger, initialFocus, triggerProps } = useMenuButton();
   const { attach, surfaceProps } = useMenu({
     open,
@@ -61,8 +69,6 @@ export function AppSwitch({ size = 'header' }: { size?: 'header' | 'large' | 'ch
   });
   const ref = useRef<HTMLDivElement>(null);
   useClickOutside(ref, close, open);
-  // The page's apps, read again on every move: a client navigation swaps the article under a header that stays.
-  useEffect(() => setApplies(readApplies()), [pathname]);
 
   if (!scope) return null;
   const path = pathname.endsWith('/') ? pathname : `${pathname}/`;

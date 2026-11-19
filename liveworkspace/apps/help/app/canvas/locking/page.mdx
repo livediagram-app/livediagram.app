@@ -11,15 +11,21 @@ export const metadata = helpMetadata({
   path: '/help/canvas/locking/',
 });
 
-<ArticleLayout title="Locking Elements" description="Pin an element in place so a stray drag or delete can't disturb it, then unlock it when you need to change it." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("locking")}>
+<ArticleLayout path="canvas/locking" title="Locking Elements" description="Pin an element in place so a stray drag or delete can't disturb it, then unlock it when you need to change it." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("locking")}>
 
 Once part of the canvas is the way you want it, locking keeps it that way. A locked element can't be moved, resized, or deleted by accident, so you can keep building around it without knocking it out of place.
 
-<Figure app="livediagram,livedesign" caption="A locked element wears a padlock badge on its top-left corner and shows no resize handles, even while selected.">
+<Figure
+  app="livediagram,livedesign"
+  caption="A locked element wears a padlock badge on its top-left corner and shows no resize handles, even while selected."
+>
   <LockedElementScene />
 </Figure>
 
-<Figure app="livedocuments" caption="A locked element wears a padlock badge on its top-left corner and shows no resize handles, even while selected.">
+<Figure
+  app="livedocuments"
+  caption="A locked element wears a padlock badge on its top-left corner and shows no resize handles, even while selected."
+>
   <DocumentLockedElementScene />
 </Figure>
 
@@ -28,24 +34,23 @@ Once part of the canvas is the way you want it, locking keeps it that way. A loc
 Select an element and press `Cmd+Shift+L` (`Ctrl+Shift+L` on Windows and Linux). Locking is a normal edit: it syncs to collaborators and **Undo** reverses it.
 
 <AppNote app="livediagram,livedesign">
-  You can also click the **Lock** button in the element's floating toolbar. The button reads **Unlock** while it's locked, so the same control toggles it back, and so does the shortcut. Select several elements first and the button locks or unlocks the whole selection at once.
+  You can also click the **Lock** button in the element's floating toolbar. The button reads
+  **Unlock** while it's locked, so the same control toggles it back, and so does the shortcut.
+  Select several elements first and the button locks or unlocks the whole selection at once.
 </AppNote>
 
 <AppNote app="livedocuments">
-  You can also open the search palette (`Cmd+K`) and run **Lock / Unlock Selection**; run either again to unlock it. Select several elements and the toolbar floating above them has a **Lock** button too, reading **Unlock** when every one of them is locked; the shortcut locks or unlocks the whole selection at once.
+  You can also open the search palette (`Cmd+K`) and run **Lock / Unlock Selection**; run either
+  again to unlock it. Select several elements and the toolbar floating above them has a **Lock**
+  button too, reading **Unlock** when every one of them is locked; the shortcut locks or unlocks the
+  whole selection at once.
 </AppNote>
-
 
 A locked element shows a small **padlock** badge on its top-left corner, selected or not, so it's clear at a glance which parts of the canvas are protected (arrows show no badge, and the badge hides when you zoom far out). Only Editors can lock and unlock.
 
-<AppNote app="livediagram,livedesign">
-  Viewers and Participants don't get the Lock button.
-</AppNote>
+<AppNote app="livediagram,livedesign">Viewers and Participants don't get the Lock button.</AppNote>
 
-<AppNote app="livedocuments">
-  For Viewers and Participants the shortcut does nothing.
-</AppNote>
-
+<AppNote app="livedocuments">For Viewers and Participants the shortcut does nothing.</AppNote>
 
 ## What Locking Protects
 
@@ -57,48 +62,38 @@ A locked element:
 - **Can't be deleted**: Delete and Backspace skip it, and a multi-select delete keeps the locked members while removing the rest. Deleting a shape that an arrow connects to also leaves a locked arrow in place.
 - **Can still be labelled**: double-click to edit its text. Locking protects an element's position and existence, not its content.
 
-<AppNote app="livediagram,livedesign">
-  Its toolbar's Delete is disabled.
-</AppNote>
+<AppNote app="livediagram,livedesign">Its toolbar's Delete is disabled.</AppNote>
 
-<AppNote app="livedocuments">
-  **Delete** in its right-click menu is disabled.
-</AppNote>
+<AppNote app="livedocuments">**Delete** in its right-click menu is disabled.</AppNote>
 
-<AppNote app="livediagram">
-  The [eraser](/help/selection-modes/eraser/) passes over it.
-</AppNote>
+<AppNote app="livediagram">The [eraser](/help/selection-modes/eraser/) passes over it.</AppNote>
 
 **Arrows** lock the same way: a locked arrow's endpoint handles can't be dragged, and it can't be moved or deleted until you unlock it. Double-clicking a locked arrow doesn't open its text.
 
-<AppNote app="livediagram,livedesign">
-  Use **Edit Text** on its selection toolbar instead.
-</AppNote>
+<AppNote app="livediagram,livedesign">Use **Edit Text** on its selection toolbar instead.</AppNote>
 
-<AppNote app="livedocuments">
-  Select it and press `Space` instead.
-</AppNote>
-
+<AppNote app="livedocuments">Select it and press `Space` instead.</AppNote>
 
 <Note>
   This per-element lock is different from the brief lock you see in a live session, where everything
-  someone else has selected, one element or many, is held for them until they move on and their change is saved. See [live
-  presence](/help/collaboration/live-presence/) for that one.
+  someone else has selected, one element or many, is held for them until they move on and their
+  change is saved. See [live presence](/help/collaboration/live-presence/) for that one.
 </Note>
 
 <Tip>
   Lock a finished background before you start arranging the busy part of a <Noun />, so the
-  foundation stays put while you work on top of it. To freeze a whole tab at once, see
-  [locking a tab](/help/tabs/locking-tabs/).
+  foundation stays put while you work on top of it. To freeze a whole tab at once, see [locking a
+  tab](/help/tabs/locking-tabs/).
 </Tip>
 
 <AppNote app="livediagram">
-  Lock a finished frame or legend the same way. To protect a whole slice of the canvas, [lock its layer](/help/canvas/layers-visibility-and-locking/#locking-a-layer).
+  Lock a finished frame or legend the same way. To protect a whole slice of the canvas, [lock its
+  layer](/help/canvas/layers-visibility-and-locking/#locking-a-layer).
 </AppNote>
 
 <AppNote app="livedesign">
-  Lock a finished picture or heading the same way. To protect a whole slice of the canvas, see [Layers](/help/canvas/layers/).
+  Lock a finished picture or heading the same way. To protect a whole slice of the canvas, see
+  [Layers](/help/canvas/layers/).
 </AppNote>
-
 
 </ArticleLayout>

@@ -10,12 +10,14 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/teams/team-shared-documents/',
 });
 
-<ArticleLayout title="Team Shared Library" description="A shared library of work and folders that everyone on the team can manage." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "team-shared-documents")}>
+<ArticleLayout path="collaboration/teams/team-shared-documents" title="Team Shared Library" description="A shared library of work and folders that everyone on the team can manage." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Teams", slug: "teams" }} subArticles={getSubArticles("teams").filter((a) => a.slug !== "team-shared-documents")}>
 
 Every team has a shared library: a folder tree plus the items in it, which all joined members can see and manage. It works just like your own My Work, only shared. Open a team from the **Spaces** group of the Explorer sidebar to see it.
 
 <AppNote app="livedocuments">
-  The library is liveworkspace's, so it holds items from every app: a team's folder can keep a document beside items from other apps. Choose **All** at the top of the page to see them all. See [My Work](/help/explorer/personal-space/).
+  The library is liveworkspace's, so it holds items from every app: a team's folder can keep a
+  document beside items from other apps. Choose **All** at the top of the page to see them all. See
+  [My Work](/help/explorer/personal-space/).
 </AppNote>
 
 <AppNote app="livediagram">
@@ -44,45 +46,49 @@ Deleting a team <Noun /> moves it to the team's [Trash](/help/account-and-data/t
 There are no per-folder or per-member permissions inside a team: everyone who has joined can manage everything. People with a pending invitation get nothing until they accept.
 
 <AppNote app="livediagram">
-  Members open a team canvas directly from the library and don't need a link. A team canvas also can't be [shared to the Community](/help/collaboration/sharing/community/), since it belongs to the team. Deleting a team canvas puts it in the team's Trash, in the last row of the Explorer sidebar's **Library**, which every joined member can see.
+  Members open a team canvas directly from the library and don't need a link. A team canvas also
+  can't be [shared to the Community](/help/collaboration/sharing/community/), since it belongs to
+  the team. Deleting a team canvas puts it in the team's Trash, in the last row of the Explorer
+  sidebar's **Library**, which every joined member can see.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Members open a team space directly from the library and don't need a link. A team space also can't be [shared to the Community](/help/collaboration/sharing/community/), since it belongs to the team. Deleting a team space puts it in the team's Trash, in the last row of the Explorer sidebar's **Library**, which every joined member can see.
+  Members open a team space directly from the library and don't need a link. A team space also can't
+  be [shared to the Community](/help/collaboration/sharing/community/), since it belongs to the
+  team. Deleting a team space puts it in the team's Trash, in the last row of the Explorer sidebar's
+  **Library**, which every joined member can see.
 </AppNote>
 
-<AppNote app="livedocuments">
-  Create with **Create**.
-</AppNote>
+<AppNote app="livedocuments">Create with **Create**.</AppNote>
 
 ## Moving Items In and Out
 
 A <Noun /> lives in exactly one place: your own My Work, or one team's library. **Change Folder** in its menu opens a picker of every place you can file it: pick a space first (**My Work**, or one of your teams), then browse into the folder you want. Moving a <Noun /> into or out of a team needs you to be a member of that team.
 
-<AppNote app="livedocuments">
-  Press **Move Here** to finish.
-</AppNote>
+<AppNote app="livedocuments">Press **Move Here** to finish.</AppNote>
 
 <AppNote app="livediagram">
   Within a team, a canvas sits either in a folder or at the team's root, listed beside its folders.
 
-  - **Moving a canvas into a team** files it in that team's library and removes it from your personal lists. Only the canvas's owner can move a personal canvas into a team.
-  - **Moving a canvas out of a team** into your own personal library transfers ownership to you, the mover, since personal folders are tied to their owner. (If the owner is the one moving it out, ownership stays with them.)
-  - **Moving a canvas to another team** whose members don't include its owner also transfers ownership to you, so the canvas never stays owned by someone outside the team that holds it.
-  - **Re-foldering within the team** can be done by any joined member.
+- **Moving a canvas into a team** files it in that team's library and removes it from your personal lists. Only the canvas's owner can move a personal canvas into a team.
+- **Moving a canvas out of a team** into your own personal library transfers ownership to you, the mover, since personal folders are tied to their owner. (If the owner is the one moving it out, ownership stays with them.)
+- **Moving a canvas to another team** whose members don't include its owner also transfers ownership to you, so the canvas never stays owned by someone outside the team that holds it.
+- **Re-foldering within the team** can be done by any joined member.
 
-  The picker lets you file a canvas anywhere you have access from one place. A canvas already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My Work and your other teams one step back (**‹ Back** to **Choose a Space**), so a team canvas can always be moved back to your personal tree.
+The picker lets you file a canvas anywhere you have access from one place. A canvas already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My Work and your other teams one step back (**‹ Back** to **Choose a Space**), so a team canvas can always be moved back to your personal tree.
+
 </AppNote>
 
 <AppNote app="livehuddle">
   Within a team, a space sits either in a folder or at the team's root, listed beside its folders.
 
-  - **Moving a space into a team** files it in that team's library and removes it from your personal lists. Only the space's owner can move a personal space into a team.
-  - **Moving a space out of a team** into your own personal library transfers ownership to you, the mover, since personal folders are tied to their owner. (If the owner is the one moving it out, ownership stays with them.)
-  - **Moving a space to another team** whose members don't include its owner also transfers ownership to you, so the space never stays owned by someone outside the team that holds it.
-  - **Re-foldering within the team** can be done by any joined member.
+- **Moving a space into a team** files it in that team's library and removes it from your personal lists. Only the space's owner can move a personal space into a team.
+- **Moving a space out of a team** into your own personal library transfers ownership to you, the mover, since personal folders are tied to their owner. (If the owner is the one moving it out, ownership stays with them.)
+- **Moving a space to another team** whose members don't include its owner also transfers ownership to you, so the space never stays owned by someone outside the team that holds it.
+- **Re-foldering within the team** can be done by any joined member.
 
-  The picker lets you file a space anywhere you have access from one place. A space already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My Work and your other teams one step back (**‹ Back** to **Choose a Space**), so a team space can always be moved back to your personal tree.
+The picker lets you file a space anywhere you have access from one place. A space already in a folder opens the picker where it is, that folder selected. On a team's own page the picker opens on that team, with My Work and your other teams one step back (**‹ Back** to **Choose a Space**), so a team space can always be moved back to your personal tree.
+
 </AppNote>
 
 A <Noun /> in a team library shows a **Team** badge, since every joined member can open it.
@@ -92,43 +98,52 @@ A <Noun /> in a team library shows a **Team** badge, since every joined member c
 A person who leaves the team, or is removed, loses access to its library.
 
 <AppNote app="livediagram">
-  The canvases and folders they created in the library stay with the team: ownership passes to a remaining member (the longest-standing Admin). If they have one of the team's canvases open at the time, they lose access straight away.
+  The canvases and folders they created in the library stay with the team: ownership passes to a
+  remaining member (the longest-standing Admin). If they have one of the team's canvases open at the
+  time, they lose access straight away.
 </AppNote>
 
 <AppNote app="livehuddle">
-  The spaces and folders they created in the library stay with the team: ownership passes to a remaining member (the longest-standing Admin). If they have one of the team's spaces open at the time, they lose access straight away.
+  The spaces and folders they created in the library stay with the team: ownership passes to a
+  remaining member (the longest-standing Admin). If they have one of the team's spaces open at the
+  time, they lose access straight away.
 </AppNote>
 
 <AppNote app="livedocuments">
-  Membership is checked each time someone opens a team item, so a person who leaves the team, or is removed, loses access within a few minutes, even to an item they have open.
+  Membership is checked each time someone opens a team item, so a person who leaves the team, or is
+  removed, loses access within a few minutes, even to an item they have open.
 </AppNote>
 
 <AppNote app="livediagram">
   **When a team is deleted.** Deleting a team removes it and its member list for everyone, so nobody can open its canvases afterwards. They are not moved back to anyone's My Work, so move any you want to keep out of the team first. The team's Library pictures and gallery are deleted for good by a daily clean-up.
 
-  A canvas in a team library shows a **Team** badge in the editor instead of "Private", since every joined member can open it. If you also share that canvas with a link, it reads **Shared** as normal: share links and team membership are separate, independent grants.
+A canvas in a team library shows a **Team** badge in the editor instead of "Private", since every joined member can open it. If you also share that canvas with a link, it reads **Shared** as normal: share links and team membership are separate, independent grants.
+
 </AppNote>
 
 <AppNote app="livehuddle">
   **When a team is deleted.** Deleting a team removes it and its member list for everyone, so nobody can open its spaces afterwards. They are not moved back to anyone's My Work, so move any you want to keep out of the team first. The team's Library pictures and gallery are deleted for good by a daily clean-up.
 
-  A space in a team library shows a **Team** badge in the editor instead of "Private", since every joined member can open it. If you also share that space with a link, it reads **Shared** as normal: share links and team membership are separate, independent grants.
+A space in a team library shows a **Team** badge in the editor instead of "Private", since every joined member can open it. If you also share that space with a link, it reads **Shared** as normal: share links and team membership are separate, independent grants.
+
 </AppNote>
 
-<Tip>
-  Create new work from inside a team folder so it lands in the folder you are browsing.
-</Tip>
+<Tip>Create new work from inside a team folder so it lands in the folder you are browsing.</Tip>
 
 <AppNote app="livediagram">
-  Use **New Canvas** from within a team folder so the fresh canvas lands in the folder you are browsing rather than in your default folder (the root of My Work, unless you have chosen another in Default Folders).
+  Use **New Canvas** from within a team folder so the fresh canvas lands in the folder you are
+  browsing rather than in your default folder (the root of My Work, unless you have chosen another
+  in Default Folders).
 </AppNote>
 
 <AppNote app="livedocuments">
-  Use **Create**, then **New Document**, from inside a team folder so the new document lands in the folder you are browsing.
+  Use **Create**, then **New Document**, from inside a team folder so the new document lands in the
+  folder you are browsing.
 </AppNote>
 
 <AppNote app="livehuddle">
-  Use **New Space** from within a team folder so the fresh space lands in the folder you are browsing rather than at the root of your My Work.
+  Use **New Space** from within a team folder so the fresh space lands in the folder you are
+  browsing rather than at the root of your My Work.
 </AppNote>
 
 </ArticleLayout>

@@ -75,7 +75,7 @@ export const HELP_ARTICLES = {
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
   // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
-  myWork: 'explorer/my-work',
+  myWork: 'explorer/personal-space',
   teamSpaces: 'explorer/team-spaces',
   explorerPage: 'explorer/explorer-page',
   dataElements: 'palette/tools/data-elements',

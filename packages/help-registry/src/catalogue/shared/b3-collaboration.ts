@@ -16,8 +16,10 @@ export const articles: Article[] = [
   {
     slug: 'comments',
     title: 'Comments',
-    description: 'Leave threaded comments, react with an emoji, mention teammates and resolve them.',
-    keywords: 'thread feedback reply resolve discussion note annotate mention reaction reactions react emoji thumbs up like heart hooray eyes laugh threads comment and',
+    description:
+      'Leave threaded comments, react with an emoji, mention teammates and resolve them.',
+    keywords:
+      'thread feedback reply resolve discussion note annotate mention reaction reactions react emoji thumbs up like heart hooray eyes laugh threads comment and',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
@@ -26,7 +28,8 @@ export const articles: Article[] = [
     slug: 'facilitator',
     title: 'Facilitator',
     description: 'Give one person the tools that run a live session, and hand the role on.',
-    keywords: 'facilitator workshop host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting',
+    keywords:
+      'facilitator workshop host run the room session lead moderator driver baton timer vote poll control handover take over step down chair meeting',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'livehuddle'],
@@ -34,8 +37,10 @@ export const articles: Article[] = [
   {
     slug: 'live-presence',
     title: 'Live Presence',
-    description: 'See who is here in real time: who is on which tab, what each person is working on, and agents at work.',
-    keywords: 'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus sound chime join leave arrive nudge poke ping attention desktop notification',
+    description:
+      'See who is here in real time: who is on which tab, what each person is working on, and agents at work.',
+    keywords:
+      'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus sound chime join leave arrive nudge poke ping attention desktop notification',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -43,8 +48,10 @@ export const articles: Article[] = [
   {
     slug: 'session-tools',
     title: 'Session Tools',
-    description: 'A shared timer, and in some apps live dot-voting and polls, for running a live session.',
-    keywords: 'timer voting workshop meeting facilitation retro countdown poll polls survey pulse check stopwatch dots picker random temperature fist of five timebox clock room piece',
+    description:
+      'A shared timer, and in some apps live dot-voting and polls, for running a live session.',
+    keywords:
+      'timer voting workshop meeting facilitation retro countdown poll polls survey pulse check stopwatch dots picker random temperature fist of five timebox clock room piece',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livehuddle'],
@@ -53,7 +60,8 @@ export const articles: Article[] = [
     slug: 'timer',
     title: 'Timer and Stopwatch',
     description: 'Run a shared countdown or stopwatch that everyone sees tick in sync.',
-    keywords: 'countdown stopwatch timebox clock minutes workshop timer chime alarm meeting palette piece place room start pause reset',
+    keywords:
+      'countdown stopwatch timebox clock minutes workshop timer chime alarm meeting palette piece place room start pause reset',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',
@@ -63,7 +71,8 @@ export const articles: Article[] = [
     slug: 'voting',
     title: 'Dot Voting',
     description: 'Let everyone vote live, privately if you want, and tally the results.',
-    keywords: 'vote poll tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals dot',
+    keywords:
+      'vote poll tally decide prioritise prioritize dots anonymous private privacy secret blind hide hidden cursors pointers counts totals dot',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools',
     parentSlug: 'session-tools',
@@ -73,7 +82,8 @@ export const articles: Article[] = [
     slug: 'casting-dots',
     title: 'Casting Dots',
     description: 'Spending and taking back your dots, and what counts as votable.',
-    keywords: 'cast dot dots vote counter tally pill plus minus retract withdraw budget spend stack votable shapes sticky notes images frames arrows not cards board',
+    keywords:
+      'cast dot dots vote counter tally pill plus minus retract withdraw budget spend stack votable shapes sticky notes images frames arrows not cards board',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools/voting',
     parentSlug: 'voting',
@@ -83,7 +93,8 @@ export const articles: Article[] = [
     slug: 'vote-panel',
     title: 'The Vote Panel',
     description: 'Track how far through a vote the room has got.',
-    keywords: 'vote panel turnout progress dots cast finished waiting pips remaining left rows unnamed anonymous when to end',
+    keywords:
+      'vote panel turnout progress dots cast finished waiting pips remaining left rows unnamed anonymous when to end',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools/voting',
     parentSlug: 'voting',
@@ -93,7 +104,8 @@ export const articles: Article[] = [
     slug: 'vote-privacy',
     title: 'Private Voting',
     description: 'Hide cursors and hide the running counts for a blind vote.',
-    keywords: 'private privacy secret blind anonymous hide cursors pointers laser running counts totals tallies pile on bandwagon switches fixed',
+    keywords:
+      'private privacy secret blind anonymous hide cursors pointers laser running counts totals tallies pile on bandwagon switches fixed',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools/voting',
     parentSlug: 'voting',
@@ -103,7 +115,8 @@ export const articles: Article[] = [
     slug: 'vote-results',
     title: 'Vote Results',
     description: 'The shared walkthrough of what won, with the ranked list beside it.',
-    keywords: 'results reveal show winners ranked list top result walkthrough previous next done highlight amber follow shared focus clear vote',
+    keywords:
+      'results reveal show winners ranked list top result walkthrough previous next done highlight amber follow shared focus clear vote',
     category: 'Collaboration',
     categorySlug: 'collaboration/session-tools/voting',
     parentSlug: 'voting',
@@ -112,8 +125,10 @@ export const articles: Article[] = [
   {
     slug: 'sharing',
     title: 'Sharing and Embeds',
-    description: 'Share links at the access level you choose, passwords, expiry, embeds and live images.',
-    keywords: 'share link collaborate invite embed read only publish url send viewer participant editor create and copy turn off pass role legacy',
+    description:
+      'Share links at the access level you choose, passwords, expiry, embeds and live images.',
+    keywords:
+      'share link collaborate invite embed read only publish url send viewer participant editor create and copy turn off pass role legacy',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -122,7 +137,8 @@ export const articles: Article[] = [
     slug: 'community',
     title: 'Sharing to the Community',
     description: 'Publish your work to the public gallery for others to view and copy.',
-    keywords: 'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse canvas explorer from plan design portfolio',
+    keywords:
+      'community gallery public publish showcase inspiration examples share document proud like likes copy copies tags category report moderation discover browse canvas explorer from plan design portfolio',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -132,7 +148,8 @@ export const articles: Article[] = [
     slug: 'embeds',
     title: 'Embeds',
     description: 'Put a live view inside another page with a ready-made embed.',
-    keywords: 'iframe embed website notion confluence wiki blog integrate document session strip timer vote poll project',
+    keywords:
+      'iframe embed website notion confluence wiki blog integrate document session strip timer vote poll project',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -141,8 +158,10 @@ export const articles: Article[] = [
   {
     slug: 'finding-community-documents',
     title: 'Finding Work in the Community',
-    description: 'Search the Community by words, #tags, category and sort, then make something your own.',
-    keywords: 'community gallery browse search find filter hashtag tag tags sort most loved copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden document plan board sheet dashboard form template deck infographic logo wireframe mockup photo poster illustration',
+    description:
+      'Search the Community by words, #tags, category and sort, then make something your own.',
+    keywords:
+      'community gallery browse search find filter hashtag tag tags sort most loved copied newest category inspiration examples like heart copy duplicate report flag my shares mine own popular popularity stats hidden document plan board sheet dashboard form template deck infographic logo wireframe mockup photo poster illustration',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -179,7 +198,8 @@ export const articles: Article[] = [
     slug: 'request-approval',
     title: 'Request Approval',
     description: 'Ask named people to approve it, and see where their answers stand.',
-    keywords: 'approve approval sign off review request changes approver badge awaiting approved changed since due note audit history signoff tab',
+    keywords:
+      'approve approval sign off review request changes approver badge awaiting approved changed since due note audit history signoff tab',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -189,7 +209,8 @@ export const articles: Article[] = [
     slug: 'share-link-expiry',
     title: 'Share Link Expiry',
     description: 'Give a share link a lifetime so it stops working later.',
-    keywords: 'expire time limit temporary duration deadline revoke extend expired forever week month',
+    keywords:
+      'expire time limit temporary duration deadline revoke extend expired forever week month',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -209,7 +230,8 @@ export const articles: Article[] = [
     slug: 'snapshots',
     title: 'Snapshots',
     description: 'Save points for the whole work: take one, keep five, revert to one.',
-    keywords: 'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history tools timeline take',
+    keywords:
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history tools timeline take',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -218,7 +240,8 @@ export const articles: Article[] = [
     slug: 'teams',
     title: 'Teams',
     description: 'Invite members, assign roles, and share a library across a team.',
-    keywords: 'workspace organisation organization members invite group company document manage teams liveworkspace project',
+    keywords:
+      'workspace organisation organization members invite group company document manage teams liveworkspace project',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'],
@@ -226,8 +249,10 @@ export const articles: Article[] = [
   {
     slug: 'audit-log',
     title: 'Audit Log',
-    description: 'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
-    keywords: 'audit log history who shared joined removed role changed webhook export csv admin activity record compliance approval approved changes requested',
+    description:
+      'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
+    keywords:
+      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance approval approved changes requested',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
@@ -237,7 +262,8 @@ export const articles: Article[] = [
     slug: 'roles-and-invites',
     title: 'Roles and Invites',
     description: 'Admin and Member roles, and inviting people by email.',
-    keywords: 'admin member permission email invite add people access decline reject rejected reminder expire expired',
+    keywords:
+      'admin member permission email invite add people access decline reject rejected reminder expire expired',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
@@ -262,7 +288,8 @@ export const articles: Article[] = [
     slug: 'walkthroughs',
     title: 'Walkthroughs',
     description: 'Record a narrated tour and let others play it back over the work.',
-    keywords: 'walkthrough record recording narrate narration voice video screen share tab camera webcam loom talktrack async tour explain play playback public link rename',
+    keywords:
+      'walkthrough record recording narrate narration voice video screen share tab camera webcam loom talktrack async tour explain play playback public link rename',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'liveplanner', 'livedocuments', 'livedesign'],
@@ -271,7 +298,8 @@ export const articles: Article[] = [
     slug: 'webhooks',
     title: 'Webhooks',
     description: 'Post what happens to your work to Slack, Microsoft Teams or your own service.',
-    keywords: 'webhook webhooks slack microsoft teams channel integration notify notification post http https endpoint json signed hmac automation zapier events send test pause resume deliveries tools',
+    keywords:
+      'webhook webhooks slack microsoft teams channel integration notify notification post http https endpoint json signed hmac automation zapier events send test pause resume deliveries tools',
     category: 'Collaboration',
     categorySlug: 'collaboration',
     apps: ['livediagram', 'livedesign'],

@@ -22,13 +22,14 @@ body {
 }
 
 /* Article intro: the paragraph(s) before the first h2. A lead callout
-   with a left brand accent and slightly larger text. */
+   with a left brand accent and slightly larger text. An app note in the intro keeps its own type and colours (this
+   CSS is unlayered, so it would beat the note's utilities). */
 .article-intro {
   padding: 1rem 0 1.5rem 1.25rem;
   border-left: 3px solid color-mix(in oklab, var(--color-brand-500) 40%, transparent);
   margin-bottom: 0.5rem;
 }
-.article-intro p {
+.article-intro p:not([data-app-note] p) {
   font-size: 1rem;
   line-height: 1.85;
   color: #475569; /* slate-600 */
@@ -37,7 +38,7 @@ body {
 .dark .article-intro {
   border-left-color: color-mix(in oklab, var(--color-brand-500) 50%, transparent);
 }
-.dark .article-intro p {
+.dark .article-intro p:not([data-app-note] p) {
   color: var(--color-slate-300);
 }
 

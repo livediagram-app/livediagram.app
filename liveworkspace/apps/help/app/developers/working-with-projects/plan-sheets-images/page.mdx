@@ -9,7 +9,7 @@ export const metadata = helpMetadata({
   path: '/help/developers/working-with-projects/plan-sheets-images/',
 });
 
-<ArticleLayout title="Plan Items, Sheets and More" description="Worked examples for the rest of a plan: Plan cards, Sheets, forms, pictures, copies and your themes." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Plans", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "plan-sheets-images")}>
+<ArticleLayout path="developers/working-with-projects/plan-sheets-images" title="Plan Items, Sheets and More" description="Worked examples for the rest of a plan: Plan cards, Sheets, forms, pictures, copies and your themes." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Plans", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "plan-sheets-images")}>
 
 A tab's elements change through [changesets](/help/developers/working-with-projects/edit-operations/), but most of a plan lives elsewhere: the cards on its boards, the cells of its Sheets, the questions of its forms. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a plan id in `$DOC`; paths are relative to `https://www.liveplanner.app/api`, and `/api/openapi.json` has every field.
 

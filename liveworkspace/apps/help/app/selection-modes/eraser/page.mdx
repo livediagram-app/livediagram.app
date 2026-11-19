@@ -12,6 +12,7 @@ export const metadata = helpMetadata({
 });
 
 <ArticleLayout
+  path="selection-modes/eraser"
   title="Eraser"
   description="Delete elements quickly by clicking or dragging across them."
   categoryTitle="Selection Modes"
@@ -40,7 +41,6 @@ While the mode is active an **Eraser** panel sits at the bottom right, above the
 - **Size**: **Point** for the exact pixel, or **Small**, **Medium** and **Large** brushes. Above Point, a ring follows the cursor at the brush's real size, so you can see what a sweep will take before you press. The brush stays the same size on screen however far you zoom.
 - **Erases**: **Anything**, **Drawings** (freehand strokes only: pencil, marker and highlighter), or **Arrows** (connectors only). Drawings is what makes sketching over the <Noun /> safe: sweep the whole thing at Large and everything underneath is untouched. Arrows lets you rewire without disturbing the boxes.
 
-
 <Figure caption="The Eraser panel set to a Large brush that erases Drawings only: the ring turns amber, and the shape under the scribble is safe.">
   <EraserPanelScene />
 </Figure>
@@ -57,12 +57,11 @@ Locked elements, and anything on a locked or hidden layer, are never erased what
 <AppNote app="livediagram">
   On a view-only link there is no Eraser.
 
-  In [Draw mode](/help/canvas/draw-mode/) the drawing dock has its own Eraser (still `E`), with its settings in the dock rather than this panel.
+In [Draw mode](/help/canvas/draw-mode/) the drawing dock has its own Eraser (still `E`), with its settings in the dock rather than this panel.
+
 </AppNote>
 
-<AppNote app="livedesign">
-  On a Viewer or Participant link there is no Eraser.
-</AppNote>
+<AppNote app="livedesign">On a Viewer or Participant link there is no Eraser.</AppNote>
 
 <Note>
   Erasing removes elements straight away. If you take off something you meant to keep, press

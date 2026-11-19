@@ -8,7 +8,8 @@ export const articles: Article[] = [
     slug: 'alignment-guides',
     title: 'Alignment Guides',
     description: 'Show the guide lines that explain a snap while moving or resizing.',
-    keywords: 'snap lines smart guides distribute align straighten ruler snapping hide off cmd ctrl free',
+    keywords:
+      'snap lines smart guides distribute align straighten ruler snapping hide off cmd ctrl free',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -28,7 +29,8 @@ export const articles: Article[] = [
     slug: 'arrow-styles',
     title: 'Arrow Styles',
     description: 'Straight, curved, and elbow arrows, and passing behind boxes.',
-    keywords: 'straight curved elbow bezier connector line switch kind behind under overlap cross crossing break gap route occlude z-index on top',
+    keywords:
+      'straight curved elbow bezier connector line switch kind behind under overlap cross crossing break gap route occlude z-index on top',
     category: 'Palette',
     categorySlug: 'palette/arrows',
     parentSlug: 'arrows',
@@ -48,7 +50,8 @@ export const articles: Article[] = [
     slug: 'avoiding-elements',
     title: 'Arrows That Curve Around Things',
     description: 'Why a new arrow lands curved when a straight one would cut through something.',
-    keywords: 'avoid avoidance collision obstacle around through crossing cut bow bend curve automatic automatically why curved detour clearance route routing straighten reroute',
+    keywords:
+      'avoid avoidance collision obstacle around through crossing cut bow bend curve automatic automatically why curved detour clearance route routing straighten reroute',
     category: 'Palette',
     categorySlug: 'palette/arrows',
     parentSlug: 'arrows',
@@ -77,8 +80,9 @@ export const articles: Article[] = [
   {
     slug: 'badges-and-step-numbers',
     title: 'Badges and Step Numbers',
-    description: 'Small marks that attach to a node\'s corner and travel with it.',
-    keywords: 'badge badges pill label tag status version new beta count step number numbers numbered disc circle walkthrough order sequence 1 2 3 attach attached corner marker renumber play in annotate annotation',
+    description: "Small marks that attach to a node's corner and travel with it.",
+    keywords:
+      'badge badges pill label tag status version new beta count step number numbers numbered disc circle walkthrough order sequence 1 2 3 attach attached corner marker renumber play in annotate annotation',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -90,8 +94,10 @@ export const articles: Article[] = [
   {
     slug: 'behaviour',
     title: 'Interactive Elements',
-    description: 'Elements that come alive with the room, so a canvas or Space can run itself instead of waiting on whoever built it.',
-    keywords: 'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run workshop facilitation runtime live tools react navigate selection walk in meeting travel seating rooms amenities perks play garden meet avatar',
+    description:
+      'Elements that come alive with the room, so a canvas or Space can run itself instead of waiting on whoever built it.',
+    keywords:
+      'behaviour behavior behaviours behaviors interactive button portal session timer stopwatch countdown count up elapsed vote poll reveal hide cover picker random spinner control mode switch chair seat desk sofa couch fence barrier link card bookmark preview url bring focus look here attention gather reaction pad confetti celebrate sparkles hearts applause fireworks emoji burst done check finished ready waiting who progress everyone mark complete collaborate collaboration estimate quiz trivia question temperature idea box agenda decision roll call ask the room keep a record run workshop facilitation runtime live tools react navigate selection walk in meeting travel seating rooms amenities perks play garden meet avatar',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -105,7 +111,8 @@ export const articles: Article[] = [
     slug: 'bring-focus',
     title: 'Bring Focus',
     description: 'Ask everyone else in the room to come and look at one spot.',
-    keywords: 'bring focus look here attention everyone jump navigate gather point show spotlight presenter workshop big board find lost viewport zoom same view',
+    keywords:
+      'bring focus look here attention everyone jump navigate gather point show spotlight presenter workshop big board find lost viewport zoom same view',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
@@ -115,7 +122,8 @@ export const articles: Article[] = [
     slug: 'mode-buttons',
     title: 'Selection Mode Buttons',
     description: 'A button on the canvas that switches whoever presses it into a mode.',
-    keywords: 'mode button selection switch tool select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only avatar walk in travel',
+    keywords:
+      'mode button selection switch tool select hand pan laser spotlight eraser format painter isometric control bar press leave walkthrough read-only avatar walk in travel',
     category: 'Palette',
     categorySlug: 'palette/behaviour',
     parentSlug: 'behaviour',
@@ -125,7 +133,8 @@ export const articles: Article[] = [
     slug: 'cards-and-callouts',
     title: 'Cards and Callouts',
     description: 'One node with a title, a meta line, a body, an icon and tags, plus accent edges.',
-    keywords: 'card cards node service component title meta line subtitle body tags chips icon badge tile initial header band callout note tip warning accent edge stripe strip colour color coded side border architecture persona and caption tag colours by presets compact panel person',
+    keywords:
+      'card cards node service component title meta line subtitle body tags chips icon badge tile initial header band callout note tip warning accent edge stripe strip colour color coded side border architecture persona and caption tag colours by presets compact panel person',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -137,8 +146,10 @@ export const articles: Article[] = [
   {
     slug: 'components',
     title: 'Components',
-    description: 'Cards, badges, step numbers and ready-made components that re-flow as you resize, with every line of text editable.',
-    keywords: 'banner callout stat row rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps big count up change quote quotes testimonial pull pages make component reusable instance main overrides detach in this design symbol devices',
+    description:
+      'Cards, badges, step numbers and ready-made components that re-flow as you resize, with every line of text editable.',
+    keywords:
+      'banner callout stat row rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps big count up change quote quotes testimonial pull pages make component reusable instance main overrides detach in this design symbol devices',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -147,8 +158,10 @@ export const articles: Article[] = [
   {
     slug: 'concept-graphics',
     title: 'Concept Graphics',
-    description: 'Stacks, pyramids, funnels, cycles, hubs, onions, chevrons and timelines that lay out their rows.',
-    keywords: 'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages timeline milestones roadmap',
+    description:
+      'Stacks, pyramids, funnels, cycles, hubs, onions, chevrons and timelines that lay out their rows.',
+    keywords:
+      'concept concepts graphic layer stack layers tiers pyramid triangle hierarchy maslow inverted funnel conversion cycle loop ring flywheel pdca plan do check act smartart rows build pulse flow animation hub and spoke satellites ecosystem onion rings concentric core chevron chevrons pipeline value chain stages timeline milestones roadmap',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -161,7 +174,8 @@ export const articles: Article[] = [
     slug: 'sankey-diagram',
     title: 'Sankey Diagram',
     description: 'Show how much moves where: bands as wide as the amount they carry.',
-    keywords: 'sankey flow flows diagram energy budget money income spending funnel conversion journey migration material supply chain band bands width amount quantity nodes split merge sankeymatic alluvial csv paste spreadsheet',
+    keywords:
+      'sankey flow flows diagram energy budget money income spending funnel conversion journey migration material supply chain band bands width amount quantity nodes split merge sankeymatic alluvial csv paste spreadsheet',
     category: 'Palette',
     categorySlug: 'palette/concept-graphics',
     parentSlug: 'concept-graphics',
@@ -170,8 +184,10 @@ export const articles: Article[] = [
   {
     slug: 'timeline-rail',
     title: 'Timeline',
-    description: 'Milestones along a line, each with when and what, for roadmaps, plans and histories.',
-    keywords: 'timeline rail roadmap milestones dates when quarter sprint plan project phases schedule history journey concept',
+    description:
+      'Milestones along a line, each with when and what, for roadmaps, plans and histories.',
+    keywords:
+      'timeline rail roadmap milestones dates when quarter sprint plan project phases schedule history journey concept',
     category: 'Palette',
     categorySlug: 'palette/concept-graphics',
     parentSlug: 'concept-graphics',
@@ -181,7 +197,8 @@ export const articles: Article[] = [
     slug: 'devices',
     title: 'Devices',
     description: 'Browser, phone, laptop and other wireframing frames.',
-    keywords: 'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device mock up pages',
+    keywords:
+      'browser phone laptop wireframe mockup frame window screen monitor smartwatch watch tablet foldable fold unfolded desktop device mock up pages',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -190,8 +207,10 @@ export const articles: Article[] = [
   {
     slug: 'embed-elements',
     title: 'Embeds on the Canvas',
-    description: 'Play a video, or open a Figma file, Google Doc, any website or a live file from our apps, on the canvas.',
-    keywords: 'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame live choose a file liveplanner livedocuments livedesign canvas plan design read-only pages share connected',
+    description:
+      'Play a video, or open a Figma file, Google Doc, any website or a live file from our apps, on the canvas.',
+    keywords:
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame live choose a file liveplanner livedocuments livedesign canvas plan design read-only pages share connected',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -203,8 +222,10 @@ export const articles: Article[] = [
   {
     slug: 'website',
     title: 'Website Embeds',
-    description: 'Frame any web address on the canvas, for anything the named services do not cover.',
-    keywords: 'website embed url address site web page iframe frame browser https link any blank refused x-frame-options sandbox load host label not loading empty open in new tab escape hatch',
+    description:
+      'Frame any web address on the canvas, for anything the named services do not cover.',
+    keywords:
+      'website embed url address site web page iframe frame browser https link any blank refused x-frame-options sandbox load host label not loading empty open in new tab escape hatch',
     category: 'Palette',
     categorySlug: 'palette/embed-elements',
     parentSlug: 'embed-elements',
@@ -214,7 +235,8 @@ export const articles: Article[] = [
     slug: 'icons',
     title: 'Icons',
     description: 'A searchable catalogue of single-colour glyphs.',
-    keywords: 'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape stickers icons and food drink shopping money business travel nature weather health learning media',
+    keywords:
+      'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape stickers icons and food drink shopping money business travel nature weather health learning media',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -223,8 +245,10 @@ export const articles: Article[] = [
   {
     slug: 'library',
     title: 'The Library',
-    description: 'Save elements to your Personal or a team Library, then place copies of them again in any liveworkspace app.',
-    keywords: 'library save to reuse reusable saved items personal team shared assets logo component snippet favourites favorites folder place drag copy livedocuments livedesign shapes components brand kit symbols snippets drop share across apps blocks folders insert rename delete asset',
+    description:
+      'Save elements to your Personal or a team Library, then place copies of them again in any liveworkspace app.',
+    keywords:
+      'library save to reuse reusable saved items personal team shared assets logo component snippet favourites favorites folder place drag copy livedocuments livedesign shapes components brand kit symbols snippets drop share across apps blocks folders insert rename delete asset',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -244,7 +268,8 @@ export const articles: Article[] = [
     slug: 'pointer-notes',
     title: 'Pointer Notes',
     description: 'A note joined by a line to the one spot it is about.',
-    keywords: 'pointer note notes leader line callout remark comment annotate point spot pin pinned dot tip attach detach follow arrow label caveat',
+    keywords:
+      'pointer note notes leader line callout remark comment annotate point spot pin pinned dot tip attach detach follow arrow label caveat',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -267,7 +292,8 @@ export const articles: Article[] = [
     slug: 'shapes',
     title: 'Shapes',
     description: 'Squares, circles, cylinders and more, with morphing and markers.',
-    keywords: 'square circle rectangle box diamond triangle ellipse cylinder morph node hexagon trapezoid stadium parallelogram pill speech bubble cloud star document',
+    keywords:
+      'square circle rectangle box diamond triangle ellipse cylinder morph node hexagon trapezoid stadium parallelogram pill speech bubble cloud star document',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -287,7 +313,8 @@ export const articles: Article[] = [
     slug: 'style-presets',
     title: 'Style Presets',
     description: 'One-click colour and line-style variations for shapes and arrows.',
-    keywords: 'quick styles variations color colour line fill appearance preset sticky table chart theme reset bold style presets variation dashed dotted outline one click shape arrow look restyle',
+    keywords:
+      'quick styles variations color colour line fill appearance preset sticky table chart theme reset bold style presets variation dashed dotted outline one click shape arrow look restyle',
     category: 'Palette',
     categorySlug: 'palette/shapes',
     parentSlug: 'shapes',
@@ -297,7 +324,8 @@ export const articles: Article[] = [
     slug: 'stacks',
     title: 'Stacks',
     description: 'A container that lines up what you drop in, with even gaps.',
-    keywords: 'stack stacks row column grid auto layout autolayout flex flexbox align distribute even gaps spacing padding container list reflow arrange',
+    keywords:
+      'stack stacks row column grid auto layout autolayout flex flexbox align distribute even gaps spacing padding container list reflow arrange',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -310,7 +338,8 @@ export const articles: Article[] = [
     slug: 'stickers',
     title: 'Stickers',
     description: 'Die-cut colour emoji and word badges for reactions and status.',
-    keywords: 'emoji sticker badge label approved blocked wip reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
+    keywords:
+      'emoji sticker badge label approved blocked wip reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -319,8 +348,10 @@ export const articles: Article[] = [
   {
     slug: 'technology',
     title: 'Technology',
-    description: 'Full-colour AWS, Azure, Cloudflare and infrastructure icons, added from the search panel.',
-    keywords: 'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker cloudflare firebase postgres database lambda s3 architecture brand',
+    description:
+      'Full-colour AWS, Azure, Cloudflare and infrastructure icons, added from the search panel.',
+    keywords:
+      'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker cloudflare firebase postgres database lambda s3 architecture brand',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -330,7 +361,8 @@ export const articles: Article[] = [
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
     description: 'The palette strip across the top of the canvas, its More and its Search.',
-    keywords: 'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element other modes per page kind slide article wireframe logo library saved components categories',
+    keywords:
+      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element other modes per page kind slide article wireframe logo library saved components categories',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -340,7 +372,8 @@ export const articles: Article[] = [
     slug: 'tools',
     title: 'Where each tool lives',
     description: 'A map of the palette categories and which elements are in each.',
-    keywords: 'tools tab category where find text pencil pen table frame chart sticky note image avatar draw write diagrams concepts layout structure mind node lane timeline embed search behaviour collaborate session participate data moved components media devices icons stickers panel slide article wireframe logo categories portal chair room meeting walk in sticker travel seating rooms amenities navigate selection mode',
+    keywords:
+      'tools tab category where find text pencil pen table frame chart sticky note image avatar draw write diagrams concepts layout structure mind node lane timeline embed search behaviour collaborate session participate data moved components media devices icons stickers panel slide article wireframe logo categories portal chair room meeting walk in sticker travel seating rooms amenities navigate selection mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -360,7 +393,8 @@ export const articles: Article[] = [
     slug: 'code-blocks',
     title: 'Code Blocks',
     description: 'A monospace card with syntax-highlighted code snippets, in eight colour schemes.',
-    keywords: 'code snippet syntax highlight monospace programming source developer json sql python javascript typescript',
+    keywords:
+      'code snippet syntax highlight monospace programming source developer json sql python javascript typescript',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -370,7 +404,8 @@ export const articles: Article[] = [
     slug: 'data-elements',
     title: 'Data and Chart Elements',
     description: 'Charts, legends, progress bars and rings, ratings, and timeline rails.',
-    keywords: 'chart progress bar ring rating star pie timeline graphs visualisation visualization donut meter link to sheet linked liveplanner spreadsheet range update unlink live data',
+    keywords:
+      'chart progress bar ring rating star pie timeline graphs visualisation visualization donut meter link to sheet linked liveplanner spreadsheet range update unlink live data',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -379,8 +414,10 @@ export const articles: Article[] = [
   {
     slug: 'bar-and-line-charts',
     title: 'Bar and Line Charts',
-    description: 'Column and bar charts from label and value rows, and line, area and scatter charts from a grid or a CSV import, each switchable to any chart type.',
-    keywords: 'graph series csv data plot axis columns trends bar chart line column area scatter xy doughnut donut type right second liveplanner sheet link linked range live show gridlines ticks negative values spreadsheet',
+    description:
+      'Column and bar charts from label and value rows, and line, area and scatter charts from a grid or a CSV import, each switchable to any chart type.',
+    keywords:
+      'graph series csv data plot axis columns trends bar chart line column area scatter xy doughnut donut type right second liveplanner sheet link linked range live show gridlines ticks negative values spreadsheet',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -390,7 +427,8 @@ export const articles: Article[] = [
     slug: 'legend',
     title: 'Legend',
     description: 'A key of colour-coded rows to explain what your colours mean.',
-    keywords: 'key colour code swatch label caption guide chart color palette match vivid ocean forest sunset berry earth grey contrast',
+    keywords:
+      'key colour code swatch label caption guide chart color palette match vivid ocean forest sunset berry earth grey contrast',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -400,7 +438,8 @@ export const articles: Article[] = [
     slug: 'pie-chart',
     title: 'Pie Chart',
     description: 'An editable pie chart built from label and value rows.',
-    keywords: 'circle graph percentages segments donut doughnut proportions data chart type liveplanner sheet link linked spreadsheet',
+    keywords:
+      'circle graph percentages segments donut doughnut proportions data chart type liveplanner sheet link linked spreadsheet',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -429,8 +468,10 @@ export const articles: Article[] = [
   {
     slug: 'drawing',
     title: 'Drawing and Polygons',
-    description: 'Place clean, straight-edged outlines point by point with the Polygon tool; in livediagram, sketch freehand and snap sketches to shapes.',
-    keywords: 'pencil freehand sketch draw doodle pen scribble ink polygon polyline vertex points outline zone region shape recognition point by straight edges vertices close path logo',
+    description:
+      'Place clean, straight-edged outlines point by point with the Polygon tool; in livediagram, sketch freehand and snap sketches to shapes.',
+    keywords:
+      'pencil freehand sketch draw doodle pen scribble ink polygon polyline vertex points outline zone region shape recognition point by straight edges vertices close path logo',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -445,7 +486,8 @@ export const articles: Article[] = [
     slug: 'images',
     title: 'Images',
     description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
-    keywords: 'picture photo upload png jpg insert logo screenshot avatar caption layout search find stock free openverse creative commons licence license credit attribution crop trim mask shape circle hexagon star greyscale grayscale black white strip logos clients and',
+    keywords:
+      'picture photo upload png jpg insert logo screenshot avatar caption layout search find stock free openverse creative commons licence license credit attribution crop trim mask shape circle hexagon star greyscale grayscale black white strip logos clients and',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -454,8 +496,10 @@ export const articles: Article[] = [
   {
     slug: 'portals',
     title: 'Portals',
-    description: 'Link two portals and jump between them in one click, across a big canvas or to another tab.',
-    keywords: 'portal door teleport jump travel warp link pair navigate shortcut across tabs walk through',
+    description:
+      'Link two portals and jump between them in one click, across a big canvas or to another tab.',
+    keywords:
+      'portal door teleport jump travel warp link pair navigate shortcut across tabs walk through',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -475,7 +519,8 @@ export const articles: Article[] = [
     slug: 'tables',
     title: 'Tables',
     description: 'An editable grid of cells for tabular content on the canvas.',
-    keywords: 'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor comparison pricing table tick ticks cross crosses yes no highlight recommended column plans',
+    keywords:
+      'grid cells rows columns spreadsheet matrix data preset presets look looks style banded zebra striped header band recolour recolor comparison pricing table tick ticks cross crosses yes no highlight recommended column plans',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -484,8 +529,10 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description: 'The elements made of words: text, sticky notes, pointer notes and, in livehuddle, images.',
-    keywords: 'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer leader event storming domain command actor policy read model aggregate hotspot brandolini ddd workshop notation subtitle subheading paragraph quote body small print style styles',
+    description:
+      'The elements made of words: text, sticky notes, pointer notes and, in livehuddle, images.',
+    keywords:
+      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer leader event storming domain command actor policy read model aggregate hotspot brandolini ddd workshop notation subtitle subheading paragraph quote body small print style styles',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',

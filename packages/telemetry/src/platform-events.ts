@@ -44,7 +44,8 @@ export const PLATFORM_HELP_TELEMETRY_ACTIONS = [
 ] as const;
 
 const HELP_SEARCH_TYPES: readonly string[] = ['Results', 'NoResults'];
-const HELP_SCOPE_TYPE = /^Scope\.(all|livediagram|liveplanner|livedocuments|livedesign|livehuddle)$/;
+const HELP_SCOPE_TYPE =
+  /^Scope\.(all|livediagram|liveplanner|livedocuments|livedesign|livehuddle)$/;
 const HELP_ARTICLE_TYPE = /^[a-z0-9-]{1,40}$/;
 
 /** Whether the All Apps help could have sent this event: a Help action with its own kind of token. */

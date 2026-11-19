@@ -11,7 +11,7 @@ import { appOrigin, workspaceHref } from './page-app';
 // The Explorer's articles every app's help centre has (lib/explorer/host.ts VIEW_HELP), by name.
 const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
   { slug: 'explorer/explorer-page', label: 'The Explorer' },
-  { slug: 'explorer/my-work', label: 'My Work' },
+  { slug: 'explorer/personal-space', label: 'My Work' },
   { slug: 'explorer/folders', label: 'Folders' },
   { slug: 'explorer/team-spaces', label: 'Team Spaces' },
   { slug: 'explorer/recent', label: 'Recent' },

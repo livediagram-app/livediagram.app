@@ -6,13 +6,13 @@ There is a second environment, **staging**, which does deploy on its own: when C
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker      | Type                                                                   |
-| ---------------- | ---------------------- | ---------------------------------------------------------------------- |
-| `apps/marketing` | `livehuddle-marketing` | Static assets only (Next.js `output: 'export'`).                       |
-| `apps/editor`    | `livehuddle-editor`    | Static assets + a tiny path-rewrite worker.                            |
+| App                       | Cloudflare Worker                      | Type                                                                                                                                                              |
+| ------------------------- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/marketing`          | `livehuddle-marketing`                 | Static assets only (Next.js `output: 'export'`).                                                                                                                  |
+| `apps/editor`             | `livehuddle-editor`                    | Static assets + a tiny path-rewrite worker.                                                                                                                       |
 | `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `livehuddle` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)). |
-| `apps/api`       | `livehuddle-api`       | Worker (Durable Objects; no database or bucket of its own).            |
-| `apps/router`    | `livehuddle-router`    | Worker (service bindings to marketing, editor, api and help).          |
+| `apps/api`                | `livehuddle-api`                       | Worker (Durable Objects; no database or bucket of its own).                                                                                                       |
+| `apps/router`             | `livehuddle-router`                    | Worker (service bindings to marketing, editor, api and help).                                                                                                     |
 
 livehuddle has no MCP server or CLI ([Not in livehuddle](../002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)), so nothing is published outside the Workers.
 
