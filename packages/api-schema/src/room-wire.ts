@@ -48,6 +48,12 @@ export const GRANT_LAPSED_CLOSE = 4007;
 // it held from before the revert is saved over it. Beside 4008 (a full room, room-capacity.ts).
 export const SNAPSHOT_REVERTED_CLOSE = 4009;
 
+// The close code every session ends with when the item is archived from anywhere (liveworkspace/docs/specs/004-index/
+// one-explorer.md "Archived from elsewhere while open"): an archived item is its owner's alone, so the room keeps
+// nobody. Final, like 4004 (the item was trashed): the editor does not reconnect, it leaves for the Explorer.
+export const ITEM_ARCHIVED_CLOSE = 4010;
+export const ITEM_ARCHIVED_REASON = 'item-archived';
+
 // A request about one file carries the index's grant for it here
 // (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Grants"), so `Authorization` keeps the person's own
 // token. The api checks it offline against the index's keys. A caller with no grant (an API token, a workbench

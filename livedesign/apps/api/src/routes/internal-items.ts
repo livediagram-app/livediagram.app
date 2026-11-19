@@ -25,7 +25,12 @@ import { deleteAccount } from '../db/account';
 import { mergeMediaOwner } from '../media';
 import { purgeDesignPreviews } from '../db/designs';
 import { designRoom } from '../design-client';
-import { closeTokenSessions, closeWorkbenchSessions, tellTrashed } from '../room-access-client';
+import {
+  closeArchivedSessions,
+  closeTokenSessions,
+  closeWorkbenchSessions,
+  tellTrashed,
+} from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDesignFileFor } from './internal-file';
 import { designFromTemplate } from './internal-template';
@@ -100,6 +105,9 @@ export function handleInternalItems(
       // closes. Nothing is kept, so a restore reopens as before.
       standing: async (id, standing) => {
         if (standing.trashed) await tellTrashed(env, id, 'design-trashed');
+        // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
+        // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.
+        else if (standing.archived) await closeArchivedSessions(env, id);
       },
       copy: async (from, to, tabId, copier, title) => {
         // The source as the copier may take it: anyone but the owner takes the comments as the tab read serves them;
