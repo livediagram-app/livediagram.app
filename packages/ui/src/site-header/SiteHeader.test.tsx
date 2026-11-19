@@ -1,48 +1,47 @@
+import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 
 import { ExplorerLink } from '../ExplorerLink';
-import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { createSiteHeader } from './SiteHeader';
 import { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 
-// A product's binding, as its SiteHeader.tsx makes one: the shared CTA links and Explorer link, a stand-in logo
-// and switcher (the one menu in the bar), and its funnel's `via` on the wizard links. A visitor's static HTML.
+// A product's binding, as its SiteHeader.tsx makes one: the shared Start Blank and Explorer link, a stand-in logo
+// and switcher (the one menu in the bar), and its funnel's `via` on the wizard link. A visitor's static HTML,
+// or (`signedIn`) the bar once the hint cookie says someone is signed in.
 const via = (href: string, source: string) =>
   `${href}${href.includes('?') ? '&' : '?'}via=${source}`;
 const EXPLORER_HOME = '/explorer/home';
 
-const SiteHeader = createSiteHeader<'Home' | 'Ai', 'product.example'>({
-  siteId: 'product.example',
-  SiteSwitcher: ({ children }) => (
-    <div>
-      <button type="button" aria-haspopup="menu" aria-label="Switch site" />
-      {children}
-    </div>
-  ),
-  Brand: ({ href, className, wordmarkClassName }) => (
-    <a href={href} className={className}>
-      <span className={wordmarkClassName}>product</span>
-    </a>
-  ),
-  ExplorerLink: (props) => <ExplorerLink href={EXPLORER_HOME} signedIn={false} {...props} />,
-  HeaderPrimaryCta: ({ ctaSurface, ...props }) => (
-    <HeaderPrimaryCta
-      newHref={ctaSurface ? via('/new', `${ctaSurface}.Header`) : '/new'}
-      explorerHref={EXPLORER_HOME}
-      signedIn={false}
-      {...props}
-    />
-  ),
-  StartBlankLink: ({ ctaSurface, className }) => (
-    <StartBlankLink
-      href={ctaSurface ? via(START_BLANK_HREF, `${ctaSurface}.HeaderBlank`) : START_BLANK_HREF}
-      className={className}
-    />
-  ),
-  ShareRail: () => null,
-  SiteAccount: () => <button type="button" aria-label="Guest, account menu" />,
-});
+const makeSiteHeader = (signedIn: boolean) =>
+  createSiteHeader<'Home' | 'Ai', 'product.example'>({
+    siteId: 'product.example',
+    SiteSwitcher: ({ children }) => (
+      <div>
+        <button type="button" aria-haspopup="menu" aria-label="Switch site" />
+        {children}
+      </div>
+    ),
+    Brand: ({ href, className, wordmarkClassName }) => (
+      <a href={href} className={className}>
+        <span className={wordmarkClassName}>product</span>
+      </a>
+    ),
+    ExplorerLink: (props) => <ExplorerLink href={EXPLORER_HOME} signedIn={signedIn} {...props} />,
+    StartBlankLink: ({ ctaSurface }) => (
+      <StartBlankLink
+        href={ctaSurface ? via(START_BLANK_HREF, `${ctaSurface}.HeaderBlank`) : START_BLANK_HREF}
+      />
+    ),
+    ShareRail: () => null,
+    SiteAccount: () => <button type="button" aria-label="Guest, account menu" />,
+  });
+const SiteHeader = makeSiteHeader(false);
+
+// The bar's right-hand links: everything after the logo (the switcher's stand-in has none).
+const rightLinks = (html: string) =>
+  [...html.slice(html.indexOf('</a>') + 4).matchAll(/<a [^>]*>.*?<\/a>/g)].map((m) => m[0]);
+const nameOf = (a: string) => a.match(/aria-label="([^"]*)"/)?.[1] ?? a.replace(/<[^>]*>/g, '');
 
 // docs/specs/019-marketing/marketing-site.md "Header".
 describe('SiteHeader', () => {
@@ -56,28 +55,37 @@ describe('SiteHeader', () => {
       /<a [^>]*href="\/new\?start=blank&amp;via=Home\.HeaderBlank"[^>]*>(.*?)<\/a>/,
     );
     expect(link?.[1]).toContain('Start Blank');
-    expect(link?.[0]).toContain('max-sm:hidden');
+    // The bar's one way into the editor, so it shows at every width, a phone's included.
+    expect(link?.[0]).not.toContain('hidden');
     expect([...html.matchAll(/href="(\/new[^"]*)"/g)].map((m) => m[1])).toEqual([
       '/new?start=blank&amp;via=Home.HeaderBlank',
-      '/new?via=Home.Header',
     ]);
   });
 
-  it('keeps Choose Template the primary beside it', () => {
-    const primary = html.match(/<a [^>]*href="\/new\?via=Home\.Header"[^>]*>(.*?)<\/a>/);
-    expect(primary?.[0]).toContain('aria-label="Choose Template"');
-    // The static HTML is for a visitor: Choose Template shows, and Open Explorer only holds its width
-    // (invisible, aria-hidden) for a signed-in swap after hydration.
-    expect(primary?.[1]).toMatch(
-      /<span class="text-optical-line \[grid-area:1\/1\] ">.*Choose .*Template<\/span>/,
-    );
-    expect(primary?.[1]).toMatch(
-      /<span aria-hidden="true" class="text-optical-line \[grid-area:1\/1\] invisible">/,
-    );
+  it('has no Choose Template (Work Tracker 1317): the Explorer link, then Start Blank last', () => {
+    expect(html).not.toContain('Choose Template');
+    expect(html).not.toContain('via=Home.Header"');
+    const links = rightLinks(html);
+    expect(links.map(nameOf)).toEqual(['Explorer', 'Start Blank']);
+    // A visitor's Explorer link is the quiet one, the folder alone below sm.
+    expect(links[0]).toContain('!text-slate-600');
+    expect(links[0]).toContain('max-sm:px-3');
+    expect(links[0]).toContain('<span class="text-optical-line max-sm:hidden">Explorer</span>');
   });
 
-  it('drops "Choose" only below 430px, so the bar fits every phone up to a 430px one', () => {
-    expect(html).toMatch(/<span class="max-\[429px\]:hidden">Choose <\/span>Template/);
+  it("is the filled Open Explorer, in the Explorer link's place, for someone signed in", () => {
+    const signedIn = renderToStaticMarkup(
+      createElement(makeSiteHeader(true), { ctaSurface: 'Home', shareRail: false }),
+    );
+    const links = rightLinks(signedIn);
+    expect(links.map(nameOf)).toEqual(['Open Explorer', 'Start Blank']);
+    expect(links[0]).toContain(`href="${EXPLORER_HOME}"`);
+    expect(links[0]).toContain('max-sm:px-3');
+    expect(links[0]).toContain(
+      '<span class="text-optical-line max-sm:hidden">Open Explorer</span>',
+    );
+    expect(links[0]).not.toContain('!text-slate-600');
+    expect(signedIn).not.toContain('Choose Template');
   });
 
   it('no longer says Just Draw anywhere', () => {
@@ -99,36 +107,42 @@ describe('SiteHeader: the marketing bar', () => {
     expect(plain).not.toContain('Build with AI');
   });
 
-  it('is the logo, then Build with AI, Choose Template and Explorer, in that order', () => {
+  it('is the logo, then Build with AI and Explorer, in that order, with no Choose Template', () => {
     expect(html.indexOf('href="/"')).toBeLessThan(html.indexOf('href="/ai"'));
-    expect(hrefs).toEqual(['/ai', '/new?via=Home.Header', '/explorer/home']);
+    expect(hrefs).toEqual(['/ai', '/explorer/home']);
+    expect(html).not.toContain('Choose Template');
+    expect(html).not.toContain('href="/new');
   });
 
-  it('has no Start Blank and no Open Explorer swap', () => {
+  it('has no Start Blank and no Open Explorer swap, signed in or not', () => {
     expect(html).not.toContain('Start Blank');
     expect(html).not.toContain('Open Explorer');
+    const signedIn = renderToStaticMarkup(
+      createElement(makeSiteHeader(true), {
+        ctaSurface: 'Home',
+        buildWithAi: 'link',
+        shareRail: false,
+      }),
+    );
+    expect(signedIn).not.toContain('Open Explorer');
+    expect(signedIn).toContain('aria-label="Explorer"');
   });
 
-  it('shortens as it narrows: the quiet links are glyphs below lg and leave a phone, the mark alone below 480px', () => {
+  it('shortens as it narrows: Build with AI is a glyph below lg and leaves a phone, the mark alone below 480px', () => {
     const tag = (href: string) =>
       html.match(new RegExp(`<a [^>]*href="${href}"[^>]*>.*?</a>`))?.[0] ?? '';
-    // Build with AI and Choose Template share one wrapper, hidden below sm; Explorer is outside it.
+    // Build with AI sits in a wrapper hidden below sm; Explorer is outside it.
     const quiet = html.match(/<span class="contents max-sm:hidden">(.*?)<\/span><a /)?.[1] ?? '';
-    for (const [href, name] of [
-      ['/ai', 'Build with AI'],
-      ['/new\\?via=Home\\.Header', 'Choose Template'],
-    ] as const) {
-      const link = tag(href);
-      expect(quiet).toContain(link);
-      expect(link.match(/<a [^>]*>/)?.[0]).not.toContain('hidden');
-      expect(link).toContain(`aria-label="${name}"`);
-      expect(link).toContain(`<span class="text-optical-line max-lg:hidden">${name}</span>`);
-    }
+    const ai = tag('/ai');
+    expect(quiet).toBe(ai);
+    expect(ai.match(/<a [^>]*>/)?.[0]).not.toContain('hidden');
+    expect(ai).toContain('aria-label="Build with AI"');
+    expect(ai).toContain('<span class="text-optical-line max-lg:hidden">Build with AI</span>');
     // Explorer is the bar's one filled button, its name shown at every width.
     const explorer = tag('/explorer/home');
     expect(quiet).not.toContain(explorer);
     expect(explorer).toContain('aria-label="Explorer"');
-    expect(explorer).toContain('<span class="text-optical-line">Explorer</span>');
+    expect(explorer).toMatch(/<span class="text-optical-line ?">Explorer<\/span>/);
     expect(explorer.match(/<a [^>]*>/)?.[0]).not.toContain('ghost');
     expect(html).toContain('max-[479px]:hidden');
     expect(html).not.toContain('max-[359px]:hidden');
@@ -139,19 +153,20 @@ describe('SiteHeader: the marketing bar', () => {
       <SiteHeader ctaSurface="Ai" buildWithAi="current" shareRail={false} />,
     );
     expect(ai).toMatch(/<a [^>]*href="\/ai"[^>]*aria-current="page"/);
-    expect(ai).toContain('href="/new?via=Ai.Header"');
+    expect(ai).not.toContain('href="/new');
     expect(html.match(/<a [^>]*href="\/ai"[^>]*>/)?.[0]).not.toContain('aria-current');
   });
 
-  it('is Choose Template and Explorer alone for a product with no Build with AI page', () => {
+  it('is Explorer alone for a product with no Build with AI page', () => {
     const bar = renderToStaticMarkup(
       <SiteHeader ctaSurface="Home" marketing account shareRail={false} />,
     );
     expect(bar).not.toContain('Build with AI');
     expect(bar).not.toContain('href="/ai"');
     expect(bar).not.toContain('Start Blank');
-    expect(bar).toContain('<span class="contents max-sm:hidden"><a ');
-    expect(bar).toContain('href="/new?via=Home.Header"');
+    expect(bar).not.toContain('Choose Template');
+    expect(bar).not.toContain('contents max-sm:hidden');
+    expect(rightLinks(bar).map((a) => a.match(/href="([^"]*)"/)?.[1])).toEqual([EXPLORER_HOME]);
     expect(bar).toContain('aria-label="Guest, account menu"');
     expect(bar).toContain('max-[479px]:hidden');
   });

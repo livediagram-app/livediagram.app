@@ -2,7 +2,6 @@ import type { CtaSurface } from '@livedocuments/api-schema';
 import { createSiteHeader } from '@liveworkspace/ui/site-header';
 import { Brand } from './Brand';
 import { ExplorerLink } from './ExplorerLink';
-import { HeaderPrimaryCta } from './HeaderPrimaryCta';
 import { ShareRail } from './ShareRail';
 import { SiteAccount } from './SiteAccount';
 import { SITE_ID } from './site';
@@ -18,7 +17,6 @@ export const SiteHeader = /* @__PURE__ */ createSiteHeader<CtaSurface, typeof SI
   SiteSwitcher,
   Brand,
   ExplorerLink,
-  HeaderPrimaryCta,
   StartBlankLink,
   ShareRail,
   SiteAccount,

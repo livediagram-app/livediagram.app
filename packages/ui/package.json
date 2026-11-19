@@ -25,7 +25,6 @@
     "./social-card": "./src/social-card.tsx",
     "./seo": "./src/seo.ts",
     "./site-header": "./src/site-header/SiteHeader.tsx",
-    "./header-primary-cta": "./src/site-header/HeaderPrimaryCta.tsx",
     "./start-blank-link": "./src/site-header/StartBlankLink.tsx",
     "./signed-in-hint": "./src/site-header/signed-in-hint.ts",
     "./page-view-tracker": "./src/page-view-tracker.tsx",

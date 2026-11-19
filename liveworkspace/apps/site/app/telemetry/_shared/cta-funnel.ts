@@ -52,6 +52,7 @@ const SURFACE_LABELS: Readonly<Record<string, string>> = {
 // What each slot's button says, so a row reads as the thing on the page. An app words a slot its
 // own way with `slotLabels` (livediagram's session is a Workshop).
 const SLOT_LABELS: Readonly<Record<string, string>> = {
+  // The header's Choose Template, retired in November 2026 (Work Tracker 1317): its rows are history.
   Header: 'Header: Choose Template',
   HeaderBlank: 'Header: Start Blank',
   HeaderDraw: 'Header: Blank Diagram',

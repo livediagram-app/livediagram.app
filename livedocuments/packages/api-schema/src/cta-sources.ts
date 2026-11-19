@@ -10,6 +10,8 @@
 // visitor: the only values it can ever take are the ones below.
 export const CTA_SOURCES = {
   Home: [
+    // The header's Choose Template (/new), retired in November 2026 (Work Tracker 1317) on every surface
+    // below too: no header links it now. The slot stays so its stored history still reads on the dashboard.
     'Header',
     // The header's Start Blank, a plain link to the wizard (/new?start=blank), on every surface with a header.
     'HeaderBlank',

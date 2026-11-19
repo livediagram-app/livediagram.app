@@ -27,7 +27,7 @@ const CommunityShowcase = dynamic(() =>
 export default function LandingPage() {
   return (
     <>
-      <Header surface="Home" />
+      <Header />
       <main>
         <Hero />
         <TemplateGallery />
