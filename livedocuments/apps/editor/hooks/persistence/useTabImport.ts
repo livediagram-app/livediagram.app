@@ -64,6 +64,9 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Notes the view the import starts from and the elements it lands, just before its commit, so undoing it brings
+  // the view back (@liveworkspace/workbench/hooks/canvas/useImportUndoView).
+  noteImport?: (tabId: string, elements: readonly { id: string }[]) => void;
   // Whose gallery an import's images go to, and the open document (an Offline Mode one embeds them).
   ownerId: string;
   documentId: string | null;
@@ -80,6 +83,7 @@ export function useTabImport({
   setFormatSourceId,
   setImportError,
   requestFit,
+  noteImport,
   ownerId,
   documentId,
   onSlidesImported,
@@ -96,6 +100,7 @@ export function useTabImport({
     const { elements, dropped } = savableElements(raw.elements);
     if (dropped > 0) debugLog('[import] dropped unsavable elements', { dropped });
     const imported = { ...raw, elements };
+    noteImport?.(activeId, elements);
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mergeImportedTab(t, imported) : t)));
     // The importer is the writer of what came in: this editor lays its articles out (pages, pictures' places).
     for (const flow of Object.keys(articlesOf(imported))) markArticleSettle(activeId, flow);
@@ -113,6 +118,8 @@ export function useTabImport({
   const importTextIntoActiveTab = async (
     format: TextImportFormat,
     text: string,
+    // The file path says so, so a refusal names a file; the paste editor's text is pasted text.
+    from: 'file' | 'paste' = 'paste',
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
@@ -129,7 +136,7 @@ export function useTabImport({
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');
-    const result = parseImportedTab(text);
+    const result = parseImportedTab(text, from);
     if (!result.ok) return { status: 'error', error: result.error };
     replaceActiveTabContent(remintTabElements(result.tab));
     track('Tab', 'Imported', 'JSON');
@@ -151,7 +158,7 @@ export function useTabImport({
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile(accept);
     if (!picked) return { status: 'cancelled' };
-    return importTextIntoActiveTab(format, picked.text);
+    return importTextIntoActiveTab(format, picked.text, 'file');
   };
 
   // Import a Word or PowerPoint FILE into the active tab (docs/specs/020-import-export/office-import.md): read in the

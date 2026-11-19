@@ -1,6 +1,6 @@
 # Approvals
 
-Status: built (Work Tracker 937) in livediagram, livedocuments and livedesign.
+Status: built (Work Tracker 937) in livediagram, livedocuments and livedesign; in liveplanner by Work Tracker 1145.
 
 ## What
 
@@ -12,8 +12,9 @@ badge saying where it stands, and keeps saying so after it is approved: once the
 
 It is the index's: one record for every app (platform first, [platform.md](../001-platform-scope/platform.md)), beside
 the item's share links and History. An app keeps a thin door: its gate, its email and where its badge, banner and Share
-dialog sit. livediagram, livedocuments and livedesign offer it (the owner's scope, 2026-11-15); liveplanner and
-livehuddle do not yet.
+dialog sit. livediagram, livedocuments and livedesign offer it (the owner's scope, 2026-11-15), and liveplanner
+(Work Tracker 1145). livehuddle does not: a Space is a place to meet, not work sent for sign-off, and its walls change
+in every meeting (livehuddle's `013-workspace/share-roles.md` "Approvals: not offered").
 
 ## One request at a time
 
@@ -196,11 +197,15 @@ Four events, written in the batch that makes the change, with the actor named as
 Three surfaces, the same in every app that offers approvals, from `@liveworkspace/explorer`'s approvals kit: the app's
 host builds a door from its gate and hands it to the provider; nothing is read for anyone without a door.
 
-- **The badge**, in the header's pills after the role pill: Awaiting n of m (amber, a clock), Changes Requested (rose,
+- **The badge**, first in the editor's corner card: Awaiting n of m (amber, a clock), Changes Requested (rose,
   a flag), Approved (green, a checked page), Changed Since Approval (amber outline, a pencil). Its tooltip names the
   requester, the due day (and Overdue) and who has and hasn't answered. For an Editor of the whole item it opens the
-  Share dialog on its Approval tab. Like every header pill it shows from `sm` up.
-- **The banner**, under the header, for a named approver of the open request: "<Requester> asked you to approve this
+  Share dialog on its Approval tab. With no header bar it leads the editor's corner card (`EditorCornerActions`,
+  before Share and the account; the app passes it in the card's `approval` slot, so an app with no door never bundles
+  it), 36 px tall like the card's buttons, its glyph alone on a phone or wherever the card
+  drops its names, its words in its label and tooltip.
+- **The banner**, a strip across the top of the editor, above the floating corner card and menu card (never under
+  them), for a named approver of the open request: "<Requester> asked you to approve this
   <noun>", the note, the due day, and **Request Changes** and **Approve**. Request Changes opens a note field in place
   ("What needs to change?") with **Cancel** and **Send**; Send is off until there is a note. Once they have decided
   the banner says so ("You approved this. Waiting on 2 more.", "You asked for changes.") with **Change Decision**, and
@@ -211,7 +216,9 @@ host builds a door from its gate and hands it to the provider; nothing is read f
   - With no request (or a cancelled one): **Approvers**, a checklist of whom they may name (the team's members, then
     the owner and link visitors), each with their avatar and how they reach it (Team, Owner, Link), with a filter field
     once there are more than eight; **Note** (optional); **Due** (optional, a date); **Save this version as a
-    snapshot** where the editor offers Snapshots; and **Request Approval**, off until someone is ticked. Empty: "Nobody
+    snapshot** where the editor offers Snapshots; and **Request Approval**, off until someone is ticked. Under the
+    form, and under a request's status, a **Learn more** link opens the app's Request Approval help article (the Share
+    dialog's `helpHref('requestApproval')`). Empty: "Nobody
     else can open this <noun> yet. Share it, or move it to a team, to ask someone to approve it."
   - With a request: its status pill, who asked and when, the note and due day, the snapshot it points at, and each
     approver with their decision (Approved, Changes Requested, Waiting) and note. **Cancel Request** (open only)
@@ -228,4 +235,4 @@ next read.
 - Approval chains or stages, required approver counts below everyone, or approvers outside who can open the item.
 - Locking the item while approval is pending or after it.
 - Webhook events, an MCP tool or a CLI verb for approvals.
-- liveplanner and livehuddle's doors.
+- livehuddle's door (a Space is not sent for sign-off, above).

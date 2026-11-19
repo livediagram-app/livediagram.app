@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TopCorners } from '@/components/illustrations/title-bar';
+import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
   title: 'The Top Corners',
@@ -18,8 +18,8 @@ export const metadata = helpMetadata({
 
 livediagram has no title bar. The canvas runs all the way to the top of the screen, and a few small cards float on it in the top corners, either side of the [palette strip](/help/palette/toolbar-layout/): the logo and the menu card at the left, and the actions that matter most for this canvas at the right.
 
-<Figure caption="The top corners of a shared canvas, as its owner sees it: the logo, the Explorer menu and the Diagram mode switch at the left; Present, a solid Share and the account at the right.">
-  <TopCorners />
+<Figure caption="The top of a shared canvas, as its owner sees it: the menu card with the logo, the menu button and the mode switch, the palette, and the actions card with a solid Share button and the account.">
+  <TitleBarParts product="livediagram" mode="Diagram" />
 </Figure>
 
 ## Top Left
@@ -37,7 +37,7 @@ The card at the top right holds, from left to right:
 - **Copy**, for anyone who cannot share this canvas (see below).
 - **Present**, while the canvas's [slide deck](/help/selection-modes/slide-deck/) has a slide to show. It starts the presentation. Not on a phone. See [Presenting](/help/selection-modes/slide-deck/presenting/).
 - **Share**, for those who can share the canvas (see below).
-- **Your account.** Signed in, it shows your picture or initials and your first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account, without leaving the canvas) and **Sign Out**. Not signed in, it reads **Sign in** (see [Signing In](/help/account-and-data/signing-in/)).
+- **Your account.** Signed in, it shows your picture or initials and your first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account, without leaving the canvas) and **Sign Out**. Not signed in, it reads **Sign In** (see [Signing In](/help/account-and-data/signing-in/)).
 
 When the strip needs the room, the card drops its words and keeps its icons. On a phone it shows icons alone.
 
@@ -56,10 +56,6 @@ When the strip needs the room, the card drops its words and keeps its icons. On 
 Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the canvas through a link to a single tab, the copy holds just that tab.
 
 Someone who opened a canvas from the [Community](/help/collaboration/sharing/finding-community-documents/) does not get **Copy** here. A slim Community bar offers **Make a Copy** instead, which works the same way.
-
-## Previewing a Role
-
-If you can edit the canvas, **Editing Mode** in **Tools**, in the [bottom bar](/help/user-interface/quick-controls/), lets you see it the way someone on another kind of link does: **Editing**, **Participating** (add and vote, as a Participant does, but not restructure) or **Viewing** (read only, as a Viewer sees it). Only you see the switch: everyone else keeps their own role, and reloading brings you back to **Editing**. A Participant or a Viewer does not get it, since their link sets their role.
 
 ## Where the Canvas Name Went
 

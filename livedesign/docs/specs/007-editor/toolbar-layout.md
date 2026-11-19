@@ -102,6 +102,10 @@ under the pointer as a category is switched.
 
 ### The flyout
 
+The flyout, its side panel and their keyboard are every editor's one copy, in `@liveworkspace/workbench`
+(`CategoryBarFlyout`, `CategoryFlyout`, `CategoryFlyoutSide`, `category-flyout-keys`; Work Tracker 1261): this editor
+keeps only its tiles and how its categories are arranged, bound once in `components/palette/category-flyout-kit.tsx`.
+
 Hung centred under its button (spanning the screen between the gutters on a phone), capped to the window and
 scrolling when long:
 
@@ -339,9 +343,11 @@ panels in their corners, the bottom-row popovers over their buttons. What change
   - One shared look, the **palette tray**: a card of the strip's own surface (white, hairline border all
     round, all four corners rounded and the strip's shadow, dark in dark mode), 6 px below the strip's bottom edge:
     close enough to read as the strip's, apart so the two don't look stuck together.
-  - Centred under the strip's card and never wider than it, on a phone too (where the card sits beside the
-    menu button). Off a phone, a strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
-    8 px inside the window, so a message is never cut to its first letter. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
+  - Centred under the strip's card and never wider than it, unless the strip is narrow. A strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
+    8 px inside the window, so a message is never cut to its first letter. A phone too, where the card sits beside
+    the menu button (at most the window's width less 8 px each side), and the tray's card stays centred under the
+    strip's: an empty tab's **Show Templates** and a template's **Clear Example Content** and **Keep It** sit inside
+    the tray on one line rather than running past its edge. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box). It also follows a move with no resize at all (the strip re-centring as the tab-name pill beside it changes
     width on a tab switch, a delete or a reload, or going crowded and back): one IntersectionObserver whose margin is
     the card's own box (`watchMove`, shared) hears a move of a pixel or more and costs nothing while the strip is still.
@@ -353,7 +359,9 @@ panels in their corners, the bottom-row popovers over their buttons. What change
   - It also carries an empty tab's **Show Templates**: once a start's × has closed it, "Tab 1 is empty" with **Show
     Templates**, which opens the start again, until the first element lands
     ([Template starts](start-diagramming.md) "Bringing it back").
-  - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
+  - While anything sits in the tray (a mode banner, the modifier hint, an empty tab's Show Templates, a template's
+    example content), the top-centre stack starts below the tray instead, so the tray never covers the Offline
+    banner.
   - While one of the strip's popovers is open (a category's flyout, Search) the tray steps aside, as it does
     for the Explorer: it would cover the popover's top.
   - Without a strip (zen, read-only, the welcome flow) the messages stay the

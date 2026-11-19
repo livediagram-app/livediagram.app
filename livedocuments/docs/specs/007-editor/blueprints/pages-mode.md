@@ -732,7 +732,7 @@ joinedMenuCardWidth(joinedWidth, toolbarScale)` (the sidebar less the card's 12 
   - The strip's room (toolbar-layout.md "The strip's room"): `useBarFold` (`../packages/workbench/src/components/palette/useBarFold.ts`,
     on while the bar is bare and off on a phone) measures the whole bare bar once (`BarMeasure`: each
     `[data-category-bar-button]`'s end, the card past the last, the narrowest button) and `barFold(measure, room)`
-    gives how many categories show (null: all). `CategoryBarButtons`' `shown` slices the bar and hands the rest to
+    gives how many categories show (null: all). `CategoryBarButtons`' `shown` (the bar's state and buttons are workbench's, `../packages/workbench/src/components/palette/CategoryBar.tsx`) slices the bar and hands the rest to
     `CategoryBarMore` (`../packages/workbench/src/components/palette/CategoryBarMore.tsx`, `data-category-bar-more`, "More Categories",
     a `PortalMenu` of the folded categories), registered in `bar.buttons` as `MORE_KEY` so `useCategoryBar`'s
     `open` hangs a folded category's flyout from it and `close(true)` refocuses it.

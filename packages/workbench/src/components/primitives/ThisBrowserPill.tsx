@@ -19,12 +19,8 @@ import {
 
 export const THIS_BROWSER_LABEL = THIS_BROWSER_COPY.label;
 export const THIS_BROWSER_DESCRIPTION = THIS_BROWSER_COPY.sentence;
-// Shared with the editor header's This Browser badge (share-states.tsx).
-export { THIS_BROWSER_TONE };
-
-// The pill's glyph, a browser window, as the editors draw it on the header badge too.
-// The This Browser glyph, also the visibility pill's and its legend's (chrome/share-states, VisibilityLegend).
-export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
+// The pill's glyph, a browser window.
+const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
 
 const PILL = `optical-edges inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 ${THIS_BROWSER_TONE}`;
 

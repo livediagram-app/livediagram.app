@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { EXPLORER_ARTICLES, explorerArticlePath } from '@/lib/help/platform-help';
 
 // Required for `output: 'export'`: resolved at build time.
 export const dynamic = 'force-static';
@@ -19,6 +20,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: 'monthly',
       priority: 0.4,
     },
+    // The Explorer's help articles on liveworkspace.app (apps/site/lib/help/platform-help.ts).
+    ...EXPLORER_ARTICLES.map(({ slug }) => ({
+      url: `https://www.liveworkspace.app${explorerArticlePath(slug)}`,
+      changeFrequency: 'monthly' as const,
+      priority: 0.4,
+    })),
     { url: 'https://www.liveworkspace.app/privacy', changeFrequency: 'yearly', priority: 0.3 },
     { url: 'https://www.liveworkspace.app/terms', changeFrequency: 'yearly', priority: 0.3 },
     { url: 'https://www.liveworkspace.app/licences', changeFrequency: 'monthly', priority: 0.2 },

@@ -30,9 +30,10 @@ import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
 import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
-import { Fragment, useCallback } from 'react';
+import { Fragment, useCallback, useRef } from 'react';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
+import { useRenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
@@ -168,6 +169,18 @@ function CanvasChromeView(props: CanvasChromeProps) {
   // above a strip that needs the whole top row). A read-only visitor has no
   // strip, so it keeps the corner there.
   const menuInStrip = isMobile && paletteShown;
+  // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
+  // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
+  const explorerButtonRef = useRef<HTMLButtonElement>(null);
+  const renameCurrent = useRenameCurrentRequest({
+    nonce: props.renameCurrentNonce ?? 0,
+    explorerOpen: activeDockPanel === 'explorer',
+    available: !zenMode && !props.explorerHidden && !props.workbenchBack,
+    openExplorer: () => {
+      const button = explorerButtonRef.current;
+      if (button) handleDockButtonClick('explorer', button);
+    },
+  });
   // Panel elements + their wiring live in useCanvasChromePanels.
   const {
     panelEls,
@@ -180,6 +193,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
     paletteTint,
   } = useCanvasChromePanels({
     props,
+    renameCurrent,
     chromeHidden,
     isMobile,
     panelWiringFor,
@@ -213,6 +227,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
+      buttonRef={explorerButtonRef}
       inline={menuInStrip}
       {...menuJoin}
     />

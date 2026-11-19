@@ -76,6 +76,7 @@ export function EditorCanvasHost() {
     projectName,
     sessionTabScope,
     nameProject,
+    renameProjectNonce,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -359,6 +360,7 @@ export function EditorCanvasHost() {
             currentProjectId={projectId}
             currentShareCode={sessionShareCode}
             onRenameCurrentProject={nameProject}
+            renameCurrentNonce={renameProjectNonce}
             onNewProject={newProject}
             explorerMenuActions={{
               // The header's Share gate: the owner, or a joined member of the project's team

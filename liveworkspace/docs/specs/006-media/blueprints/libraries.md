@@ -96,7 +96,7 @@ shape library items draw with its LibraryItemThumbnail and keep their drag.
 Every other tile drags `application/x-liveworkspace-library-item` `{ id }` (`lib/library/library-dnd.ts`). Each
 editor's `usePaletteDrop` takes it as `onDropLibraryItem(id, at)`, and its `useInsertCanvasProps` binds that to the
 workbench's `useLibraryDrop`: the item from the list the provider holds, `place` (the door), then the editor's own
-insert at the drop point in one commit. A failed place inserts nothing and sets the Library's notice.
+insert at the drop point in one commit. A failed place inserts nothing, sets the Library’s notice and hands the same words to the provider’s `onPlaceFailed`, which each editor’s door shows as an error toast.
 
 Saving reads each picture the selection places through the app's `pictures` source (its `apiFetchImageBlobUrl`, the
 copy the canvas already holds) and draws it at `pictureEdge` (its share of the item's longest side, 16 to 128 px) as a

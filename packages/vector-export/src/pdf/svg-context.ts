@@ -5,6 +5,7 @@ import type { faceOpener } from '../outline-text/outline-element';
 import { invert, multiply, type Matrix } from './matrix';
 import type { PdfFile } from './pdf-file';
 import type { PdfResources } from './pdf-resources';
+import type { StructTree } from './struct-tree';
 import type { TextItem } from './text-layer';
 
 export type Outliner = { faces: readonly FaceSource[]; open: ReturnType<typeof faceOpener> };
@@ -35,6 +36,11 @@ export type SvgContext = {
   rasterScale: number;
   // The page's embedded faces, taken out of the mounted SVG and given back to each fallback picture.
   fontCss: string;
+  // The structure tree, while the page's own stream of a tagged PDF is written outside any figure: a described
+  // picture opens a Figure in it. Null in a group's form, a pattern's tile, a figure, or an untagged PDF.
+  tags: Pick<StructTree, 'figure'> | null;
+  // Inside a figure or a translucent group drawn on a tagged page: the alt texts it holds, joined into its Figure.
+  alts: string[] | null;
 };
 
 /** The current user space in the current stream's own space: a pattern's or a shading's matrix. */

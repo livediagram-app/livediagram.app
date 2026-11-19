@@ -121,7 +121,7 @@ The retired `/explorer/activity` opens the Inbox, and the retired `/explorer/tim
   reader by email.
 - **New Team** is the group's last row, for signed-in readers only. Teams are made and run in the Explorer
   ([Teams](teams.md)): it opens the team dialog (name, optional organisation), and the team made opens.
-- A **guest** sees the sign-in nudge ("Sign in to access Teams") as the group's last item instead of New Team.
+- A **guest** sees the sign-in nudge ("Sign In to Use Teams") as the group's last item instead of New Team.
 
 ### More
 
@@ -285,7 +285,7 @@ Top to bottom:
    page), **Help**. They are the product menu's entries but Telemetry; the editor
    header carries no product menu ([Live app: header](../007-editor/live-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Design card ("Keep your work. A free
-   account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
+   account saves it across devices." with **Sign In**, on a phone "Keep your work." with **Sign In** alone so it stays one
    line), dismissible as the sign-in notice is.
 
 **Size and scrim.** On a desktop or tablet the panel is up to **54rem** wide (kept 1rem inside the window) and

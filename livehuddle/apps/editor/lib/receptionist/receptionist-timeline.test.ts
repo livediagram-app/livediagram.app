@@ -11,7 +11,9 @@ import {
   routeMs,
 } from './receptionist-day';
 import {
+  BEHIND_DESK,
   bellDetour,
+  deskBehind,
   greetDetour,
   leadDetour,
   releaseDetour,
@@ -226,5 +228,21 @@ describe('receptionistNextChangeMs', () => {
     expect(receptionistNextChangeMs({ ...standing, encoreInMs: 200 }, 1000, detour)).toBe(200);
     expect(receptionistNextChangeMs(standing, 2000, detour)).toBe(RECEPTIONIST_LEG_MS - 2000);
     expect(receptionistNextChangeMs(standing, RECEPTIONIST_LEG_MS - 0.5, null)).toBe(1);
+  });
+});
+
+// receptionist.md "Behind the desk he is seen whole in the 3D view": the desk he stands behind, for the 3D lift.
+describe('deskBehind', () => {
+  const desk = { x: 200, y: 84, width: 200, height: 112 };
+  it('finds the desk whose bell spot he stands on, or nearer it', () => {
+    expect(deskBehind([desk], { x: 250, y: 84 - BEHIND_DESK })).toBe(desk);
+    expect(deskBehind([desk], { x: 399, y: 80 })).toBe(desk);
+  });
+  it('finds none further back, beside it, in front of it or on it', () => {
+    expect(deskBehind([desk], { x: 250, y: 84 - BEHIND_DESK - 2 })).toBeNull();
+    expect(deskBehind([desk], { x: 190, y: 60 })).toBeNull();
+    expect(deskBehind([desk], { x: 250, y: 220 })).toBeNull();
+    expect(deskBehind([desk], { x: 250, y: 84 })).toBeNull();
+    expect(deskBehind([], { x: 250, y: 44 })).toBeNull();
   });
 });

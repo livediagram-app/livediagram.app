@@ -21,13 +21,17 @@ export function useEditorHistory(opts: {
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   undoHistory: () => void;
   redoHistory: () => void;
+  // Told just before the person's own undo or redo steps, so an import's undo can bring its view back
+  // (hooks/canvas/useImportUndoView).
+  beforeStep?: () => void;
   set: {
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
     setFormatSourceId: SetState<string | null>;
   };
 }) {
-  const { activeId, editsBlocked, tabLocked, tickTabs, undoHistory, redoHistory, set } = opts;
+  const { activeId, editsBlocked, tabLocked, tickTabs, undoHistory, redoHistory, beforeStep, set } =
+    opts;
   const canUndo = opts.canUndo && !tabLocked;
   const canRedo = opts.canRedo && !tabLocked;
   const { setSelectedId, setEditingId, setFormatSourceId } = set;
@@ -49,6 +53,7 @@ export function useEditorHistory(opts: {
     if (!canUndo) return;
     track('Document', 'Undone');
     announce('Undid the last change');
+    beforeStep?.();
     undoHistory();
     clearFocus();
   };
@@ -57,6 +62,7 @@ export function useEditorHistory(opts: {
     if (!canRedo) return;
     track('Document', 'Redone');
     announce('Redid the last change');
+    beforeStep?.();
     redoHistory();
     clearFocus();
   };

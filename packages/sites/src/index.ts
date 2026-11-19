@@ -233,17 +233,24 @@ export type AppShare = {
   // `{ tabs: [{ id, name, kind }] }`). Null: passes open every tab.
   tabsPath: string | null;
   // The app's help articles on sharing, under `${url}/help/`.
-  help: { sharing: string; shareLinkExpiry: string; sharePasswords: string };
+  help: {
+    sharing: string;
+    shareLinkExpiry: string;
+    sharePasswords: string;
+    requestApproval: string;
+  };
   // An item's Community post as its owner manages it (`/api/<items>/:id/community`, the Share dialog's Community
   // tab; liveworkspace/docs/specs/007-community/community.md), or null while the app has no Community.
   communityPath: string | null;
 };
 
-// Every app's help centre keeps sharing under the same three addresses.
+// Every app's help centre keeps sharing under the same addresses (requestApproval is read only where the app has
+// Approvals: livediagram, livedocuments and livedesign).
 const SHARE_HELP = {
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
+  requestApproval: 'collaboration/sharing/request-approval',
 };
 
 /** Where an app on the index kit serves an item's tabs alone (@liveworkspace/index-app tabs.ts). */

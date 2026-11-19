@@ -1,4 +1,5 @@
 import { contentAddBlocked } from '@/lib/editor-capabilities';
+import { useImportUndoView } from '@liveworkspace/workbench/hooks/canvas/useImportUndoView';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
 import { usePlanFileImport } from '@/hooks/plan/usePlanFileImport';
 import { useTrackerImport } from '@/hooks/plan/useTrackerImport';
@@ -84,10 +85,13 @@ export function useEditorTabs(
     toast,
   } = collaborationSlice;
   const { activeTab, itemTypes, planItems, sheets, teams } = planDataSlice;
-  const { getViewportCenter, requestFit } = viewportSlice;
+  const { getViewportCenter, requestFit, viewport } = viewportSlice;
   const { activeTabLocked, commit, createBlocked, editsBlocked, structureCreateBlocked } =
     editingSlice;
   const { forms, plan, presetCardTypes, teamPeople } = planSlice;
+  // An import's undo puts the view back where it was before the import, and its redo frames it again
+  // (docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its view back").
+  const importUndoView = useImportUndoView({ tabs, activeId, viewport, land: requestFit });
   // Undo / redo handlers. See useEditorHistory.
   const editorHistory = useEditorHistory({
     activeId,
@@ -98,6 +102,7 @@ export function useEditorTabs(
     tickTabs,
     undoHistory,
     redoHistory,
+    beforeStep: importUndoView.beforeStep,
     set: { setSelectedId, setEditingId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
@@ -167,6 +172,7 @@ export function useEditorTabs(
     setEditingId,
     setImportError,
     requestFit,
+    noteImport: importUndoView.noteImport,
     confirm,
     toast,
     importPlanItems,

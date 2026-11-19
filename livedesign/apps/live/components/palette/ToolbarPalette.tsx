@@ -550,7 +550,6 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
               <CategoryBarFlyout
                 bar={bar}
                 categories={barCategories}
-                mode={editorMode}
                 actions={tileActions}
                 pendingDraw={pendingDraw ?? null}
                 isMobile={isMobile}

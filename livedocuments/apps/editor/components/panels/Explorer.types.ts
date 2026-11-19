@@ -13,6 +13,10 @@ export type ExplorerProps = {
   currentShareCode?: string | null;
   // The open document renamed from the panel (its card, or its row's menu): the editor's title follows.
   onRenameCurrent?: (name: string) => void;
+  // The Rename command's request: the Current card opens its name field once, then says so (one-explorer.md
+  // "Rename from the search").
+  renameCurrentRequest?: number;
+  onRenameCurrentHandled?: () => void;
   // The editor's own New (the in-editor flow); without it New goes to /new.
   onNewDocument?: () => void;
   // The header ⋯ menu's verbs beyond new / open. Each optional: an absent handler drops its row.

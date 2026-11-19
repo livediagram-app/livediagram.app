@@ -9,6 +9,7 @@ import type { PanelId } from '@/lib/panel-layout';
 import { ItemToolsHost } from '@/components/panels/ItemToolsHost';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
+import type { RenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import type { CanvasChromeProps } from './CanvasChrome';
 import { stripSegmentGone, type SessionStripTools } from './SessionClusterStrip';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
@@ -61,6 +62,7 @@ function LazyPopover({ onError, children }: { onError: () => void; children: Rea
 
 export function useCanvasChromePanels({
   props,
+  renameCurrent,
   stripTools,
   chromeHidden,
   isMobile,
@@ -68,6 +70,8 @@ export function useCanvasChromePanels({
   panelsOn,
 }: {
   props: CanvasChromeProps;
+  // The Rename command's request for the Explorer's Current card (useRenameCurrentRequest).
+  renameCurrent: RenameCurrentRequest;
   // The tools the Session strip offers (sessionStripTools), as CanvasChrome drew them.
   stripTools: SessionStripTools | null;
   chromeHidden: boolean;
@@ -203,6 +207,8 @@ export function useCanvasChromePanels({
           inboxOpenAction={inboxOpenAction}
           currentShareCode={currentShareCode ?? null}
           onRenameCurrent={onRenameCurrentProject}
+          renameCurrentRequest={renameCurrent.request}
+          onRenameCurrentHandled={renameCurrent.onHandled}
           onNewProject={explorerHandlers.onNewProject}
           menuActions={explorerMenu}
           popoverOpen={explorerOpen}

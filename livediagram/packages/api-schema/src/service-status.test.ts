@@ -6,8 +6,12 @@ import {
   classifyStatusAnswer,
   currentServiceState,
   readStatusBody,
+  STATUS_BACKOFF_MAX_MS,
   STATUS_BODY_MAX,
+  STATUS_POLL_MS,
   STATUS_STALE_MS,
+  STATUS_TIMEOUT_STALE_MS,
+  statusWaitMs,
 } from './service-status';
 
 const bytes = (text: string) => new TextEncoder().encode(text);
@@ -151,5 +155,26 @@ describe('currentServiceState', () => {
     expect(currentServiceState(status, NOW + STATUS_STALE_MS)).toBe('down');
     expect(currentServiceState(status, NOW + STATUS_STALE_MS + 1)).toBe('unknown');
     expect(currentServiceState(undefined, NOW)).toBe('unknown');
+  });
+
+  it('reads a timeout, which the room checks less often, until two rounds past its slowest re-check', () => {
+    const status = { state: 'down', checkedAt: NOW, reason: 'timeout' } as const;
+    expect(currentServiceState(status, NOW + STATUS_STALE_MS + 1)).toBe('down');
+    expect(currentServiceState(status, NOW + STATUS_TIMEOUT_STALE_MS)).toBe('down');
+    expect(currentServiceState(status, NOW + STATUS_TIMEOUT_STALE_MS + 1)).toBe('unknown');
+  });
+});
+
+describe('statusWaitMs', () => {
+  it('doubles the minute for each timeout in a row, up to the cap', () => {
+    expect([0, 1, 2, 3, 4, 50].map(statusWaitMs)).toEqual([
+      STATUS_POLL_MS,
+      2 * STATUS_POLL_MS,
+      4 * STATUS_POLL_MS,
+      8 * STATUS_POLL_MS,
+      STATUS_BACKOFF_MAX_MS,
+      STATUS_BACKOFF_MAX_MS,
+    ]);
+    expect(statusWaitMs(-1)).toBe(STATUS_POLL_MS);
   });
 });

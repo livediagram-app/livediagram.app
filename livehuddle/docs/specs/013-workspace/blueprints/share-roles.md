@@ -32,9 +32,8 @@ livediagram's [Later](../../../../../livediagram/docs/specs/013-workspace/share-
 | `apps/api/src/document-room/document-room.ts`, `apps/api/src/document-room/room-message.ts`, `room-op-gate.ts`, `document-room-rules.ts` | Level on the session; op gate by class; participant `el` ops through the tab write queue      |
 | `apps/api/src/participant-write.ts` (new)                                                                                                | `writeParticipantOp`, `writeParticipantAnswers`: compare-and-swap writes of the rule's output |
 | `apps/editor/lib/editor-capabilities.ts` (new)                                                                                           | `resolveEditorCapabilities`, `EditorCapabilities`                                             |
-| `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`)                           | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
+| `apps/editor/app/document/[id]/*` (`useEditorState`, `tab-save-flow`, `editor-page-helpers`)                                             | `sessionRole: AccessLevel`; `can`; the participant save flow                                  |
 | `../packages/explorer/src/dialogs/share/ShareComposer.tsx`, `parts.tsx`                                                                  | Three cards                                                                                   |
-| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                                               | Participating pill                                                                            |
 | `apps/editor/lib/collaborator-roster.ts`, `../packages/explorer/src/explorer/SharedList.tsx`                                             | Participant badge; Participate chip                                                           |
 
 ## Domain and naming
@@ -141,15 +140,13 @@ bundle's `?s=` upgrade, or a failed mint) may update but never add or remove (SR
 
 Editor state:
 
-| Flag            | Value                                                                        |
-| --------------- | ---------------------------------------------------------------------------- |
-| `sessionRole`   | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`    |
-| `canEdit`       | `sessionRole === 'edit' && !viewPreview` (unchanged)                         |
-| `isReadOnly`    | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
-| `can`           | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
-| Session gates   | `roleGates(can, runBlocked)`: `run`, `shape`, `takePart` (below)             |
-| Pill level      | `viewPreview ? 'view' : sessionRole`                                         |
-| `canToggleRole` | `sessionRole === 'edit'` (unchanged)                                         |
+| Flag          | Value                                                                        |
+| ------------- | ---------------------------------------------------------------------------- |
+| `sessionRole` | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`    |
+| `canEdit`     | `sessionRole === 'edit'` (unchanged)                                         |
+| `isReadOnly`  | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
+| `can`         | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
+| Session gates | `roleGates(can, runBlocked)`: `run`, `shape`, `takePart` (below)             |
 
 `EditorCapabilities` for a session that is not an Editor; an Editor holds every flag:
 
@@ -427,7 +424,6 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Every gate of the spec's table, per level, in the editor                         | `apps/editor/lib/share-roles.test.ts`                                       |
 | Participant save branch                                                          | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                       |
 | Three cards and keys                                                             | `../packages/explorer/src/dialogs/ShareDialog.test.tsx`                     |
-| Pill per level                                                                   | `apps/editor/components/chrome/RoleIndicator.test.tsx`                      |
 
 ## Constants and configuration
 

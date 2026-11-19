@@ -21,6 +21,7 @@ import type { EditorSession } from './useEditorSession';
 import type { EditorCollaboration } from './useEditorCollaboration';
 import type { EditorViewport } from './useEditorViewport';
 import type { EditorPages } from './useEditorPages';
+import type { EditorHistory } from './useEditorUndoState';
 
 // Tabs and the document around them: the tab actions, connected tabs, the active tab's name in the menu box, tab
 // folders, document actions, naming and the template / identity flow, and the tab canvas actions.
@@ -34,6 +35,7 @@ export function useEditorTabs({
   collaborationSlice,
   viewportSlice,
   pagesSlice,
+  historySlice,
 }: {
   documentSlice: EditorDocument;
   selectionSlice: EditorSelection;
@@ -41,6 +43,7 @@ export function useEditorTabs({
   collaborationSlice: EditorCollaboration;
   viewportSlice: EditorViewport;
   pagesSlice: EditorPages;
+  historySlice: EditorHistory;
 }) {
   // Unmemoised by the React Compiler, as the one hook it was cut from was (see ../useEditorState.ts).
   'use no memo';
@@ -113,6 +116,7 @@ export function useEditorTabs({
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport: historySlice.importUndoView.noteImport,
     onSlidesImported: slideDeck.adoptImportedSlides,
     refreshDocumentList: () => refreshDocumentList(),
     confirm,

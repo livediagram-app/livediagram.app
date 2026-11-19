@@ -26,7 +26,7 @@ export type ViewModeTelemetry = 'ExplorerViewList' | 'ExplorerViewCard' | 'Explo
 export type ExplorerExtras = {
   accounts: ExplorerAccounts | null;
   people: PeopleStore;
-  // A guest sees the Sign in to access Teams nudge.
+  // A guest sees the Sign In to Use Teams nudge.
   signedIn: boolean;
   signInHref?: string;
   // Where a guest makes an account (Invites offers it beside Sign In).

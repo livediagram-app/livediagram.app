@@ -12,7 +12,7 @@ describe('SharePasswordGate', () => {
     expect(screen.getByRole('heading', { name: 'This plan is password-protected' })).toBeTruthy();
     expect(screen.getByText('Enter the password Ada set to open this plan.')).toBeTruthy();
     expect(screen.getByLabelText('Plan password')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Open plan' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Open Plan' })).toBeTruthy();
   });
 
   it('hands up the trimmed password, and flags a wrong one', () => {
@@ -21,7 +21,7 @@ describe('SharePasswordGate', () => {
     expect(screen.getByText('Enter the password the owner set to open this design.')).toBeTruthy();
     expect(screen.getByText("That password didn't match. Try again.")).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Design password'), { target: { value: '  pw  ' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Open design' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open Design' }));
     expect(onSubmit).toHaveBeenCalledWith('pw');
   });
 

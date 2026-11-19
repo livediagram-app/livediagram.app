@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { renderHook } from '@testing-library/react';
 import {
   createImage,
   createPinnedArrow,
@@ -20,11 +19,10 @@ import {
   type EditorCapabilities,
 } from '@/lib/editor-capabilities';
 import { PARTICIPANT_CANVAS_TOOLS, participantTiles } from '@/components/palette/palette-layouts';
-import { useViewPreview } from '@/app/document/[id]/useViewPreview';
 
 // docs/specs/013-workspace/share-roles.md "The levels" and "What a Participant changes", as the editor renders
 // them: one block per row of the two tables, one case per level. The room's half is apps/api/src/share-roles.test.ts.
-// Each level's session is what useParticipantSession and useViewPreview give it: `can` for its level, and
+// Each level's session is what useParticipantSession and the collaboration slice give it: `can` for its level, and
 // `isReadOnly` (`!canEdit`) true below an Editor. A Participant holds the adder key its room ticket carries.
 
 type Level = 'edit' | 'participate' | 'view';
@@ -56,9 +54,8 @@ const toolsFor = (level: Level): readonly string[] => {
   const all = CANVAS_TOOLS.map((t) => t.id);
   return level === 'edit' ? all : all.filter((id) => PARTICIPANT_CANVAS_TOOLS.includes(id));
 };
-// A session's `isReadOnly`, read the way the editor reads it: through the view preview hook's `canEdit`.
-const isReadOnlyFor = (level: Level) =>
-  !renderHook(() => useViewPreview(level, () => {})).result.current.canEdit;
+// A session's `isReadOnly`, read the way the editor reads it (useEditorCollaboration): `canEdit` is the level `edit`.
+const isReadOnlyFor = (level: Level) => level !== 'edit';
 
 const expectPerLevel = (
   name: string,

@@ -1,6 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { CornerActionsParts } from '@/components/illustrations/title-bar';
+import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
   title: 'Share, Copy and Your Account',
@@ -18,8 +18,8 @@ export const metadata = helpMetadata({
 
 livehuddle has **no title bar**: the canvas runs right up to the top of the window, and the few things that sat in a bar there now float in two cards. At the top left are the logo and the menu button. At the top right is a card with the button that matters most for this space, **Share** if you can share it or **Copy** if you can't, and your account.
 
-<Figure caption="The top of the editor, as the owner of a shared space sees it: the logo and the menu button at the left, a solid Share button and the account at the right.">
-  <CornerActionsParts />
+<Figure caption="The top of a shared space, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
+  <TitleBarParts product="livehuddle" />
 </Figure>
 
 ## Share or Copy
@@ -44,18 +44,13 @@ On a phone the card meets the right edge of the screen and its buttons show thei
 
 ## Your account
 
-At the right of the card is your account. Signed in, it shows your picture or initials and your first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the space) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+At the right of the card is your account. Signed in, it shows your picture or initials and your first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the space) and **Sign Out**. Not signed in, it shows **Sign In** instead (see [Signing In](/help/account-and-data/signing-in/)).
 
 ## Where the title bar's parts went
 
 - **The logo** sits in its own card at the top left. Click it to open the Explorer on the folder that holds this space.
 - **The space's name** is no longer shown in the editor; the tab bar names the tabs. To rename the space, use **Rename** on its ⋯ menu in the [Explorer](/help/explorer/explorer-panel/).
 - **Who can see the space** is in the Share dialog, behind **Share**.
-- **Your role.** If your role lets you edit, **Editing Mode** in [Tools](/help/user-interface/quick-controls/) switches how you see the space, so you can check what each kind of link will get before you send it:
-  - **Participating**: you work the space as someone on a Participant link does, with no building palette and always walking. You add, write, move and delete nothing, and can pin notes on a Notice Board.
-  - **Viewing**: the space becomes read-only and you walk with no way out, exactly as someone on a Viewer link sees it.
-  - **Editing**: back to editing.
-
-  The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the space. On a Participant or Viewer link your role is fixed, so Tools has no Editing Mode.
+- **Your role** is no longer shown: the link you opened the space with sets it.
 
 </ArticleLayout>

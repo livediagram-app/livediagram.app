@@ -13,7 +13,7 @@ where Export sits, so whoever may export may print, a Viewer included.
 
 ## The panel
 
-The card opens a panel behind the dialog's `BackBar` ("All formats", the chip **Print**):
+The card opens a panel behind the dialog's `BackBar` ("All Formats", the chip **Print**):
 
 - A segmented control, **Current Page** or **Whole Document**, starting on Current Page.
 - With Current Page, the page picker (the export's page select), starting on the page in view. With one page

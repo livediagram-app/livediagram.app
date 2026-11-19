@@ -105,7 +105,7 @@ describe('readExcalidrawBoardFiles', () => {
     expect(r.scenes.map((s) => s.title)).toEqual(['Good']);
     expect(r.failures).toEqual([
       { title: 'photo', message: EXCALIDRAW_NOT_A_SCENE },
-      { title: 'broken', message: "File isn't valid JSON." },
+      { title: 'broken', message: "This isn't valid JSON." },
       { title: 'other', message: expect.stringContaining('Excalidraw scene') },
     ]);
   });

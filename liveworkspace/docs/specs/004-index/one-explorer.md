@@ -126,9 +126,10 @@ files", "Keep your files safe"), and the hero asks "what are you working on toda
 app's kind. In no app, where New offers every app's kind, the Explorer's own sentences say **files** too (the
 Default Folders dialog, Use as Default, a folder's Delete words), never the kind of the app New would make by default;
 what one app makes or keeps keeps that app's word (an import's line, This Browser's tile). Help follows the same rule:
-in no app there is no view Help button, no sign-in banner article and no help in Search, since liveworkspace.app has
-no Explorer articles of its own and one app's would speak of its kind alone; the Share dialog's help is always the
-item's own app's. It goes to the app's new-item route, where the app creates the Durable Object and
+in no app the view Help button, the sign-in banner's article and the help in Search are liveworkspace.app's own
+Explorer articles (site.md "Help": the overview, Folders, Teams, Moving Work, Sharing Across Apps and Guest or
+Account), never one app's, which would speak of its kind alone; the Share dialog's help is always the item's own
+app's. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.
 
 An empty folder says "Add a <kind> or a subfolder", so its New is a menu of both, New <Kind> (each app's kind in no
@@ -307,7 +308,7 @@ panel keeps its own Home without it, and a first run shows its starting points i
   every app's.
 - **No teams yet.** Signed in where teams can be run, a dashed **Create a Team** tile follows My Work ("Work
   together on shared plans."): it opens New Team, and goes to the team once made. A guest has My Work, then a
-  **Sign In to Work in Teams** tile where the host says where signing in is; a deployment without accounts shows My
+  **Sign In to Use Teams** tile where the host says where signing in is; a deployment without accounts shows My
   Work alone.
 - **Loading** draws tile-shaped placeholders in the same grid, one per space known (at most eight). **A failed
   read** keeps every tile, since names and links need nothing from it, without its mosaic or line, and says
@@ -505,6 +506,17 @@ liveworkspace.app.
   Explorer says "Moved “<title>” to Archived." once on arrival (`archivedOnArrival`), with no Undo, then drops both
   from the address. A workbench frame's Explorer takes the same item from sessionStorage, kept for one page load and
   30 seconds (`arrivedArchived`). Archiving any other item keeps the person where they are, with the usual toast.
+- **Archived from elsewhere while open.** An archive made anywhere else (another tab, the Explorer on another device,
+  MCP `archive_document` or `archive_project`, the CLI) closes the item for everyone who has it open, as a trash does
+  (Work Tracker 1242). The index's standing push (one-explorer-contracts.md "Where an item stands") reaches the app,
+  whose room closes every session with **4010** (`ITEM_ARCHIVED_CLOSE`, `@liveworkspace/api-schema/room-wire`, reason
+  `item-archived`), with no op sent first, since nothing more of an archived item goes to anyone. The editor stops (no
+  reconnect) and leaves for the Explorer (`leaveArchivedElsewhere`, `@liveworkspace/workbench/lib/archived`): the
+  owner's tab the way archiving it in place does, with "Moved “<title>” to Archived."; anyone else's with
+  `?ended=archived`, which says "That <noun> was archived by its owner, so it is no longer open to you." An MCP live
+  view says "This <noun> was archived." and the CLI's room stream ends. Its links are revoked only once the standing
+  push has been answered, so a visitor who came in by a link hears it was archived, not that the link was revoked. A
+  move between folders, a move out of Archived and a restore close nothing.
 - **Gone from everywhere else.** Home (Most Used, Recent, the hero's count), Recent, Shared With
   Me, the Inbox, every folder and team, and the panel's lists leave it out. Archiving deletes its
   Recent, Most Used and Inbox rows for everyone, so moving it out starts fresh: not in Recent until it is opened
@@ -783,6 +795,15 @@ through the package's `useOpenItem`.
   editor's header, a collaborator's or an agent's (which reach the editor through its live room) shows on the card at
   once, while the panel is open or the next time it opens, with no read of the index (Work Tracker 1028). A rename
   from the card or a menu lays the Explorer's overlay over it while the index takes it, as on every row.
+- **Rename from the search.** Each editor's command palette offers **Rename <Kind>** (Rename Canvas, Plan, Design,
+  Document, Space). The editors have no header bar, so the card's name is where the open item is renamed: the command
+  opens the panel from its menu button (left open when it already is) and the card's name field opens with the name
+  selected, as a click on the name does. The editor hands the panel a request (`renameCurrentRequest`, a number, 0 for
+  none) and clears it once the card took it (`onRenameCurrentHandled`), so the field opens once per command, including
+  when the panel's code is still loading. A request the panel closes on before the card shows is dropped, never kept
+  for a later opening. Someone who may not rename the item gets the panel open on its card and no field. The command
+  is left out where the panel cannot open: in Zen mode and in a workspace frame, where an app has them (on a phone held sideways, which
+  withholds the panel, it opens nothing).
 
 #### Opening on the Explorer
 
@@ -881,7 +902,10 @@ The journeys, one way each:
    name and an optional organisation, and **Create Team** makes it with you as its admin and opens its view, where
    you invite people. In the editor's panel the same **New Team** sits under the rail's Spaces. The Move dialog
    keeps its **New Team** tile, a shortcut for filing the item being moved into a team made on the spot (name
-   only); it is the same team and the same request.
+   only); it is the same team and the same request. When accounts doesn't answer in time the team may still have
+   been made, so either place says "The team may have been made. Refresh to check." with **Refresh**, which opens
+   the team if it was made and otherwise says none was, never a bare "try again" that could make a second one
+   ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
 2. **Run a team.** Choose the team (sidebar or panel rail). Its view opens on the team's card, above its library:
    the organisation, how many have joined and how many are invited; every member with their role, on a disc of
    their Google picture over their initials, painted as their account button in the header is

@@ -6,7 +6,8 @@ import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { EmptyCanvasBanner } from '@/components/canvas/EmptyCanvasBanner';
 import { showsEmptyCanvasCard } from '@/components/canvas/empty-canvas-card';
 import { roleGates } from '@/lib/editor-capabilities';
-import { StartAgainTray } from '@/components/start/StartAgainTray';
+import { StartAgainTray } from '@liveworkspace/workbench/components/start/StartAgainTray';
+import { startClosedKey } from '@/components/start/start-closed-key';
 import { StartViewTransition } from '@liveworkspace/workbench/components/start/StartViewTransition';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 
@@ -78,8 +79,7 @@ export function EditorStartPanels() {
             {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
             <StartAgainTray
               key={`tray:${activeTab.id}:${templateStart}`}
-              mode={templateStart}
-              tabId={activeTab.id}
+              closedKey={startClosedKey(activeTab.id, templateStart)}
               tabName={activeTab.name}
             />
           </>

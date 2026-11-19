@@ -19,6 +19,7 @@ import { headingPages } from '@/lib/article/article-toc-view';
 import { isSafeArticleHref } from '@livedocuments/document';
 import { articleSchema } from '@/lib/article/article-schema';
 import { columnAt, flowFrame, pagePlaceOf } from '@/lib/article/article-flow-geometry';
+import { blockTagger } from '@/lib/article/article-pdf-tags';
 import { snapshotBars, snapshotWriting, type ArticleDrawOp } from '@/lib/article/article-snapshot';
 
 // What the writing is laid out over, as ArticleEditor's props hold it.
@@ -379,11 +380,13 @@ export function createArticleHandle({
     },
     snapshot: () => {
       const s = scale();
-      const ops = snapshotWriting(view.dom, toCanvas(s), s.z);
+      // One numbering of blocks for a PDF's tags: the notes' blocks after the writing's, never sharing a number.
+      const tags = blockTagger();
+      const ops = snapshotWriting(view.dom, toCanvas(s), s.z, tags);
       // Each page's notes as drawn, a note cut short at the box's foot cut there too.
       for (const box of noteRoots?.() ?? []) {
         const foot = toCanvas(s)(0, box.getBoundingClientRect().bottom).y;
-        for (const op of snapshotWriting(box, toCanvas(s), s.z))
+        for (const op of snapshotWriting(box, toCanvas(s), s.z, tags))
           if (op.k !== 'text' || op.y <= foot) ops.push(op);
       }
       return ops;

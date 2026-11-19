@@ -20,4 +20,4 @@ Follow the references below only as needed; never upfront.
 - ./ui-scale.md - when working on UI scale: the Appearance sliders (80% to 120%, 100% in the middle, desktop only) that scale the panels, the toolbar and the bottom-right corner buttons with CSS `zoom`, together or each on its own, and nothing else
 - ./power-user-mode.md - retired (Work Tracker #500): what Power user mode and Minimal chrome were, and what happens to their stored keys
 - ./editor-modes.md - when working on editor modes: Diagram and Draw on a general tab, the mode switch beside the menu button and on an empty tab's start, kinds versus modes
-- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, editor modes, the role pill, UI scale, load recovery)
+- ./blueprints/README.md - when implementing an editor spec from its blueprint (appearance, editor modes, UI scale, load recovery)

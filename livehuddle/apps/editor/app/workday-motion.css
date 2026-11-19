@@ -28,71 +28,160 @@
   }
 }
 
-/* The dog's trot to its next spot over PET_TROT_MS (3 s): the move is a transition on the dog's own transform, at a
-   steady pace with a short start and stop, so it walks rather than glides. */
-.lh-pet-trot {
-  transition: transform 3s cubic-bezier(0.3, 0, 0.75, 1);
+/* On its way (the dog's `data-pet-trot` mark) its legs step in diagonal pairs, swinging from the hip, and its body
+   bobs once a step. Each leg, the bob, the tail and a sleeping breath is a box of its own in the dog's drawing
+   (OfficeDog.tsx), whose origin it sets, so the compositor plays them; its trot along the floor is an animation of its
+   own (dog-trot.ts), and facing left (`data-pet-left`) mirrors the drawing. */
+[data-pet-left] [data-pet-drawing] {
+  transform: scaleX(-1);
 }
-
-/* On its way its legs step in diagonal pairs, swinging from the hip, and its body bobs once a step. */
-.lh-pet-leg {
-  transform-box: fill-box;
-  transform-origin: 50% 0%;
-  animation: lh-pet-step 0.32s ease-in-out infinite alternate;
+/* Each moving box keeps a layer of its own, so setting off, stopping and turning change no layers (a re-layering of
+   the board each time, Work Tracker 1257). */
+[data-pet],
+.lh-pet-bob,
+.lh-pet-leg,
+.lh-pet-tail,
+.lh-pet-breathe {
+  will-change: transform;
 }
-.lh-pet-leg-b {
+[data-pet-trot] .lh-pet-leg {
+  animation: lh-pet-step 6.4s ease-in-out infinite;
+}
+[data-pet-trot] .lh-pet-leg-b {
   animation-delay: -0.32s;
 }
+/* Twenty swings of 0.32 s in one iteration, not one swing an iteration: each iteration's end is an event the page
+   handles, and a trot (a few seconds) then runs without one. The bob and the tail's trot loop are built the same way. */
 @keyframes lh-pet-step {
-  from {
+  0%,
+  10%,
+  20%,
+  30%,
+  40%,
+  50%,
+  60%,
+  70%,
+  80%,
+  90%,
+  100% {
     transform: rotate(-24deg);
   }
-  to {
+  5%,
+  15%,
+  25%,
+  35%,
+  45%,
+  55%,
+  65%,
+  75%,
+  85%,
+  95% {
     transform: rotate(24deg);
   }
 }
-.lh-pet-bob {
-  animation: lh-pet-bob 0.32s ease-in-out infinite alternate;
+[data-pet-trot] .lh-pet-bob {
+  animation: lh-pet-bob 6.4s ease-in-out infinite;
 }
 @keyframes lh-pet-bob {
-  from {
+  0%,
+  10%,
+  20%,
+  30%,
+  40%,
+  50%,
+  60%,
+  70%,
+  80%,
+  90%,
+  100% {
     transform: translateY(0);
   }
-  to {
+  5%,
+  15%,
+  25%,
+  35%,
+  45%,
+  55%,
+  65%,
+  75%,
+  85%,
+  95% {
     transform: translateY(-1.2px);
   }
 }
 
-/* The tail wags; faster for a moment after a pat. */
+/* The tail wags all the way while the dog trots, four wags as it stops, and eight fast ones for a pat; then it rests
+   where the wag began. A dog sitting still asks for no frames (docs/specs/008-canvas/canvas-performance.md "A still
+   Space does nothing"): every loop here but the trot's ends, and each is one iteration of several swings, so the page
+   handles one event as it ends rather than one a swing. The face keys the tail on a pat, so a pat and its end each wag
+   afresh; leaving the trot changes the animation, which plays the stop's wags again. */
 .lh-pet-tail {
-  transform-box: fill-box;
-  transform-origin: 0% 100%;
-  animation: lh-pet-wag 0.6s ease-in-out infinite alternate;
+  animation: lh-pet-wag 2.4s ease-in-out both;
 }
-.lh-pet-tail-fast {
-  animation-duration: 0.18s;
+[data-pet-trot] .lh-pet-tail {
+  animation: lh-pet-wag-run 6s ease-in-out infinite both;
+}
+.lh-pet-tail.lh-pet-tail-fast {
+  animation: lh-pet-wag-fast 1.44s ease-in-out both;
 }
 @keyframes lh-pet-wag {
-  from {
+  0%,
+  50%,
+  100% {
     transform: rotate(-14deg);
   }
-  to {
+  25%,
+  75% {
+    transform: rotate(18deg);
+  }
+}
+@keyframes lh-pet-wag-run {
+  0%,
+  20%,
+  40%,
+  60%,
+  80%,
+  100% {
+    transform: rotate(-14deg);
+  }
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: rotate(18deg);
+  }
+}
+@keyframes lh-pet-wag-fast {
+  0%,
+  25%,
+  50%,
+  75%,
+  100% {
+    transform: rotate(-14deg);
+  }
+  12.5%,
+  37.5%,
+  62.5%,
+  87.5% {
     transform: rotate(18deg);
   }
 }
 
-/* A sleeping dog breathes. */
+/* A dog settling down to sleep breathes three slow breaths, then lies still under its z. */
 .lh-pet-breathe {
-  transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: lh-pet-breathe 3s ease-in-out infinite;
+  animation: lh-pet-breathe 9s ease-in-out both;
 }
 @keyframes lh-pet-breathe {
   0%,
+  33.3333%,
+  66.6667%,
   100% {
     transform: scaleY(1);
   }
-  50% {
+  16.6667%,
+  50%,
+  83.3333% {
     transform: scaleY(1.06);
   }
 }
@@ -163,9 +252,6 @@
   .lh-welcome-bubble {
     animation: none !important;
   }
-  .lh-pet-trot {
-    transition: none !important;
-  }
 }
 :root.reduce-motion .lh-belt-run,
 :root.reduce-motion .lh-belt-run-along,
@@ -177,7 +263,4 @@
 :root.reduce-motion .lh-bell-wave,
 :root.reduce-motion .lh-welcome-bubble {
   animation: none !important;
-}
-:root.reduce-motion .lh-pet-trot {
-  transition: none !important;
 }

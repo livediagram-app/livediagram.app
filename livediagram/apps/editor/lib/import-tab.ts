@@ -51,13 +51,15 @@ type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 // Parse text from a chosen `.json` file. Returns a discriminated
 // union — callers branch on `.ok` and surface the error string to
 // the user when present. Never throws on bad input; user-supplied
-// JSON is expected to be wrong sometimes.
-export function parseImportedTab(text: string): ImportResult {
+// JSON is expected to be wrong sometimes. `from` names what was read in the errors: a pasted text is never called a
+// file (Work Tracker 1060).
+export function parseImportedTab(text: string, from: 'file' | 'paste' = 'file'): ImportResult {
+  const what = from === 'file' ? 'file' : 'pasted text';
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
-    return { ok: false, error: "File isn't valid JSON." };
+    return { ok: false, error: `This ${what} isn't valid JSON.` };
   }
   if (!raw || typeof raw !== 'object') {
     return { ok: false, error: 'Expected a JSON object at the top level.' };
@@ -66,7 +68,7 @@ export function parseImportedTab(text: string): ImportResult {
   if (env.kind !== 'livediagram.tab') {
     return {
       ok: false,
-      error: "This file isn't a livediagram tab export (missing kind field).",
+      error: `This ${what} isn't a livediagram tab export (missing kind field).`,
     };
   }
   if (typeof env.schemaVersion !== 'number') {
@@ -75,7 +77,7 @@ export function parseImportedTab(text: string): ImportResult {
   if (env.schemaVersion > TAB_SCHEMA_VERSION) {
     return {
       ok: false,
-      error: `File was exported with schema v${env.schemaVersion}; this editor understands up to v${TAB_SCHEMA_VERSION}. Update the editor and try again.`,
+      error: `This tab was exported with schema v${env.schemaVersion}; this editor understands up to v${TAB_SCHEMA_VERSION}. Update the editor and try again.`,
     };
   }
   if (!env.tab || typeof env.tab !== 'object') {
@@ -116,7 +118,8 @@ type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
 
 export function pickTabFile(
   accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
-  opts: { maxBytes?: number } = {},
+  // `binary`: the file is handed over unread (a .vsdx is read as bytes by its importer).
+  opts: { maxBytes?: number; binary?: boolean } = {},
 ): Promise<PickedTabFile | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
@@ -154,6 +157,10 @@ export function pickTabFile(
       // Past the caller's limit the file is never read: reading a huge file would hang the tab before it is refused.
       if (opts.maxBytes !== undefined && file.size > opts.maxBytes) {
         finish({ name: file.name, text: '', file, tooBig: true });
+        return;
+      }
+      if (opts.binary) {
+        finish({ name: file.name, text: '', file });
         return;
       }
       try {

@@ -89,9 +89,10 @@ export function useEditorDialogs() {
   const closeCollaborators = useCallback(() => setCollaborators(null), []);
 
   // Rename-request nonces. The command palette (useEditorCommands) can't reach
-  // into EditorHeader / TabBar's local inline-rename state, so it bumps a
-  // monotonic counter that each component watches via an effect to enter edit
-  // mode. A number (not a boolean) so a repeated request always re-triggers.
+  // into the Explorer panel's Current card or TabBar's local inline-rename state, so it bumps a
+  // monotonic counter: the canvas chrome opens the Explorer on the item's name for the first
+  // (useRenameCurrentRequest), and TabBar enters edit mode for the second. A number (not a
+  // boolean) so a repeated request always re-triggers.
   const [renameProjectNonce, setRenameProjectNonce] = useState(0);
   const requestRenameProject = useCallback(() => setRenameProjectNonce((n) => n + 1), []);
   const [renameTabNonce, setRenameTabNonce] = useState(0);

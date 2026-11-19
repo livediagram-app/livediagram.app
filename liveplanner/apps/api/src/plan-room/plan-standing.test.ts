@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createHmac } from 'node:crypto';
 import type { AutomationRule, AutomationRun } from '@liveplanner/items';
 import { PROJECT_TRASHED_CLOSE, type AutomationSecretResponse } from '@liveplanner/api-schema';
+import { ITEM_ARCHIVED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import { endRepeatWorld } from './test-repeat-world';
 import { automationWorld, type AutomationWorld } from './automations/test-automation-world';
 import { STANDING_KEY, WAIT_PUT_AWAY } from './plan-standing';
@@ -168,14 +169,36 @@ describe('a trashed plan’s open sessions', () => {
     }
   });
 
-  it('closes nothing on an archive, or on a trash older than the last word', async () => {
+  // Work Tracker 1242, one-explorer.md "Archived from elsewhere while open": MCP archive_project, the CLI, the Explorer.
+  it('closes every session with 4010 on an archive, sending nothing first', async () => {
+    const editor = open('edit');
+    const view = open('view');
+    expect((await tell(true, false)).status).toBe(200);
+    for (const s of [editor, view]) {
+      expect(ops(s)).toEqual([]);
+      expect(s.closed).toEqual([ITEM_ARCHIVED_CLOSE, 'item-archived']);
+    }
+  });
+
+  it('closes nothing on a move out, an older archive, or a trash older than the last word', async () => {
     const editor = open('edit');
     const at = Date.now();
+    await tell(false, false, at);
+    await tell(true, false, at - 1);
     await tell(true, false, at);
     await tell(false, true, at - 1);
-    await tell(false, true, at);
     expect(ops(editor)).toEqual([]);
     expect(editor.closed).toBeNull();
+  });
+
+  it('opens again after a move out of Archived', async () => {
+    open('edit');
+    await tell(true, false);
+    await tell(false, false);
+    sockets().length = 0;
+    const back = open('edit');
+    expect(room().standing.putAway).toBe(false);
+    expect(back.closed).toBeNull();
   });
 
   it('opens again after a restore: a later session hears the plan as before', async () => {

@@ -82,7 +82,10 @@ A Map that shows after the fit (it shows from four elements on, so a template's 
 while the view is still that fit, or still gliding to it: Walk to Edit glides to the fit, and when a warm open's
 catch-up lands that glide starts before the Map has a box, so it glides on to the fit clear of the Map.
 A fit that lands at once (Fit to Screen, or that refit once the glide's time is up) stops any glide still on its
-way, so a late frame of the older glide never puts the view back under the Map.
+way, so a late frame of the older glide never puts the view back under the Map. A glide counts as on its way until
+its last frame has drawn, not until its clock runs out: on a busy machine the frames trail the clock, so a Map that
+shows when the glide's time is up but a frame is still to come lands the refit at once and stops that frame (Work
+Tracker 1125). The view settles once, clear of the Map, with no later jump back under it.
 
 ## Geometry
 

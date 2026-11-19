@@ -4,11 +4,12 @@
 // edited, the card reads it again. A refusal is said under the fields and the dialog stays.
 
 import { useId, useState, type FormEvent } from 'react';
-import { teamErrorMessage, type TeamResult } from '../data/teams';
+import { TEAM_CREATE_UNCONFIRMED, teamErrorMessage, type TeamResult } from '../data/teams';
 import { Button } from '@liveworkspace/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { teamHeroArt } from '@liveworkspace/ui/dialog-hero-art/team';
 import { Dialog, DialogFooter } from '../ui/Dialog';
+import { RefreshTeamsButton } from './RefreshTeamsButton';
 import { ORGANISATION_MAX, TEAM_NAME_MAX } from './rules';
 
 export const TEAM_FIELD =
@@ -18,17 +19,22 @@ export function TeamFormDialog({
   mode,
   initial,
   onSubmit,
+  onRefresh,
   onClose,
 }: {
   mode: 'create' | 'edit';
   initial?: { name: string; organisation: string | null };
   onSubmit: (input: { name: string; organisation: string | null }) => Promise<TeamResult<unknown>>;
+  /** Refresh beside "The team may have been made": checks for a team of `name`, its answer said like a submit's. */
+  onRefresh?: (name: string) => Promise<TeamResult<unknown>>;
   onClose: () => void;
 }) {
   const [name, setName] = useState(initial?.name ?? '');
   const [organisation, setOrganisation] = useState(initial?.organisation ?? '');
   const [busy, setBusy] = useState(false);
+  // The account API's error code; teamErrorMessage words it.
   const [error, setError] = useState<string | null>(null);
+  const [checking, setChecking] = useState(false);
   const nameId = useId();
   const orgId = useId();
   const titleId = useId();
@@ -48,8 +54,18 @@ export function TeamFormDialog({
       organisation: organisation.trim() || null,
     });
     if (!result.ok) {
-      setError(teamErrorMessage(result.error));
+      setError(result.error);
       setBusy(false);
+    }
+  }
+
+  async function refresh() {
+    if (!onRefresh || checking) return;
+    setChecking(true);
+    const result = await onRefresh(name.trim());
+    if (!result.ok) {
+      setError(result.error);
+      setChecking(false);
     }
   }
 
@@ -106,7 +122,13 @@ export function TeamFormDialog({
           </div>
           {error ? (
             <p role="alert" className="text-xs text-rose-600 dark:text-rose-400">
-              {error}
+              {teamErrorMessage(error)}
+              {error === TEAM_CREATE_UNCONFIRMED && onRefresh ? (
+                <>
+                  {' '}
+                  <RefreshTeamsButton busy={checking} onClick={() => void refresh()} />
+                </>
+              ) : null}
             </p>
           ) : null}
         </div>

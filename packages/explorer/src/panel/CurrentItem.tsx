@@ -1,6 +1,6 @@
 'use client';
 
-import { useContext, useMemo, useState, type ReactNode } from 'react';
+import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Item } from '@liveworkspace/index-client';
 import { useExplorer } from '../explorer/context';
 import { VisibilityBadge } from '../explorer/badges';
@@ -14,6 +14,7 @@ import { relativeSince, useNow } from '../time';
 import { PANE_CARD_PICTURE, PANE_CARD_SURFACE } from './pane-parts';
 import { RailPicture } from './useRailFit';
 import { SIDEBAR_LABELS } from '../views';
+import { useLatest } from '../ui/useLatest';
 
 // ---- The current item's card ----------------------------------------------------------------------------
 
@@ -24,11 +25,13 @@ export function CurrentItem({
   item: read,
   title,
   compact = false,
+  renameRequest = 0,
+  onRenameRequestHandled,
 }: {
   item: Item;
   title?: string | null;
   compact?: boolean;
-}) {
+} & RenameRequestProps) {
   const { overlay, renderThumbnail, actions, openItem, renamingId, setRenamingId } = useExplorer();
   const item = overlay.apply(title && title !== read.title ? { ...read, title } : read);
   // Its pencil, or Rename on its menu (which names it for renaming, as every row's does).
@@ -38,13 +41,15 @@ export function CurrentItem({
     setPencil(on);
     if (!on && renamingId === item.id) setRenamingId(null);
   };
+  const canRename = item.access === 'edit';
+  useRenameRequest(renameRequest, canRename, () => setPencil(true), onRenameRequestHandled);
   const menu = useRowMenu({ disabled: editing });
   return (
     <CurrentCard
       compact={compact}
       title={item.title}
       updatedAt={item.updatedAt}
-      canRename={item.access === 'edit'}
+      canRename={canRename}
       editing={editing}
       setEditing={setEditing}
       onRename={(title) => void actions.rename(item, title)}
@@ -68,15 +73,23 @@ export function LocalCurrentItem({
   title,
   onRename,
   compact = false,
+  renameRequest = 0,
+  onRenameRequestHandled,
 }: {
   item: ThisBrowserItem;
   // The editor's own title, ahead of the list, which hears it only once the store has saved it.
   title?: string | null;
   onRename?: (title: string) => void;
   compact?: boolean;
-}) {
+} & RenameRequestProps) {
   const { app } = useExplorer();
   const [editing, setEditing] = useState(false);
+  useRenameRequest(
+    renameRequest,
+    Boolean(onRename),
+    () => setEditing(true),
+    onRenameRequestHandled,
+  );
   const menu = useRowMenu({ disabled: editing });
   return (
     <CurrentCard
@@ -97,6 +110,29 @@ export function LocalCurrentItem({
       ) : null}
     </CurrentCard>
   );
+}
+
+type RenameRequestProps = {
+  // The editor's Rename <Kind> command (one-explorer.md "Rename from the search"): above 0, the name field opens once.
+  renameRequest?: number;
+  onRenameRequestHandled?: () => void;
+};
+
+// Takes the editor's rename request as the card mounts or the request arrives: the name field opens (its input takes
+// the focus with the name selected) for someone who may rename, and the editor hears it was taken either way.
+function useRenameRequest(
+  request: number,
+  canRename: boolean,
+  startEditing: () => void,
+  onHandled: (() => void) | undefined,
+) {
+  const latest = useLatest({ canRename, startEditing, onHandled });
+  useEffect(() => {
+    if (!request) return;
+    const now = latest.current;
+    if (now.canRename) now.startEditing();
+    now.onHandled?.();
+  }, [request, latest]);
 }
 
 /**

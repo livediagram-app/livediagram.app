@@ -43,8 +43,10 @@ const TONE_CLASS: Record<BannerTone, string> = {
 const STACK_TOP: Record<'toolbar' | 'tray' | 'dock' | 'none', string> = {
   toolbar: 'top-[4.25rem]',
   // A message sits just under the strip as its tray (docs/specs/007-editor/toolbar-layout.md): the stack starts
-  // under the tray (the strip's 58 px, the tray's 6 px gap and 36 px, then the stack's 8 px gap).
-  tray: 'top-[6.75rem]',
+  // under the tray (the strip's 58 px, the tray's 6 px gap and 36 px, then the stack's 8 px gap). From `sm:` up the
+  // strip's card is taller (its bottom at 65 px), so the stack starts 8 px lower: at 108 px it touched the tray's
+  // shadow, the Offline banner 1 px under it.
+  tray: 'top-[6.75rem] sm:top-[7.25rem]',
   // The Draw dock is the strip's height now (livediagram's docs/specs/023-draw-mode/draw-mode.md), so the same.
   dock: 'top-[4.25rem]',
   none: 'top-[4.75rem] sm:top-3',

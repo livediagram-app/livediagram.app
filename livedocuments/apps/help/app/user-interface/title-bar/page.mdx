@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
   title: 'The Title Bar',
@@ -20,6 +21,10 @@ livedocuments has **no title bar** across the top of the editor. The canvas runs
 - **Top left**, the menu card: the livedocuments logo, the menu button that opens the [Explorer](/help/explorer/explorer-panel/), and on a computer the open tab's name.
 - **Top right**, the actions card: **Copy**, **Present** and **Share** when they apply, then your account.
 
+<Figure caption="The top of a shared document, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
+  <TitleBarParts product="livedocuments" />
+</Figure>
+
 Both cards hide in [Zen mode](/help/tools/zen-mode/), and an [embed](/help/collaboration/sharing/embeds/) shows neither.
 
 ## The logo
@@ -29,12 +34,6 @@ The logo opens the Explorer on the place that holds this document, so you land b
 ## The document's name and who can see it
 
 The editor itself does not show the document's name or a visibility pill. To rename a document, or see whether it is Private, Shared or in a team, use its row in the [Explorer](/help/explorer/explorer-page/). Whether it is shared also shows on the **Share** button, which turns solid once the document has a live link.
-
-## Previewing as a Participant or a Viewer
-
-To check what a share link will get before you send it, open **Tools** in the [quick controls](/help/user-interface/quick-controls/) and choose **Editing Mode**. Pick **Participating** to work the document as someone on a Participant link does (edit text and comment, but not add, move, restyle or delete anything), or **Viewing** to see it read-only, as a Viewer does. Pick **Editing** to go back.
-
-The preview only changes what you can do, in this browser tab: nobody else sees it, and reloading the page brings you back to editing. Any text you change while participating stays changed. **Editing Mode** is only offered to someone whose link lets them edit; a Participant's and a Viewer's role is fixed.
 
 ## Share or Copy
 
@@ -58,6 +57,6 @@ While there are slides to present, a **Present** button joins the card on a comp
 
 ## Your account
 
-At the end of the card is your account. Signed in, it shows your picture or initials; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the document) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+At the end of the card is your account. Signed in, it shows your picture or initials; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the document) and **Sign Out**. Not signed in, it shows **Sign In** instead (see [Signing In](/help/account-and-data/signing-in/)).
 
 </ArticleLayout>

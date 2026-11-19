@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { parseAccessCloseMatch, sessionMatchesAccessClose } from './room-access';
+import {
+  ACCESS_CHANGED_CLOSE,
+  ITEM_ARCHIVED_CLOSE,
+  WORKBENCH_ENDED_CLOSE,
+} from '@liveworkspace/api-schema/room-wire';
+import { accessCloseCode, parseAccessCloseMatch, sessionMatchesAccessClose } from './room-access';
 
 const TAG = 'f'.repeat(64);
 
@@ -87,5 +92,39 @@ describe('the token close match', () => {
     ).toBe(false);
     expect(sessionMatchesAccessClose({ personTag: TAG, apiToken: null }, token)).toBe(false);
     expect(sessionMatchesAccessClose({ workbenchPairing: TOKEN }, token)).toBe(false);
+  });
+});
+
+// one-explorer.md "Archived from elsewhere while open": an archive ends every socket in the room, and only an archive
+// closes with 4010, so no other access change sends an editor off as if its file were archived.
+describe('the archived close match', () => {
+  const archived = { match: 'archived' } as const;
+
+  it('parses, with nothing else to it', () => {
+    expect(parseAccessCloseMatch({ match: 'archived' })).toEqual(archived);
+    expect(parseAccessCloseMatch({ match: 'archived', personTag: TAG })).toEqual(archived);
+  });
+
+  it('matches every session, one whose session cannot be read included', () => {
+    expect(sessionMatchesAccessClose({ personTag: TAG }, archived)).toBe(true);
+    expect(sessionMatchesAccessClose({ shareCode: 'abc' }, archived)).toBe(true);
+    expect(sessionMatchesAccessClose({}, archived)).toBe(true);
+    expect(sessionMatchesAccessClose(null, archived)).toBe(true);
+  });
+
+  it('closes with 4010, and no other match does', () => {
+    expect(accessCloseCode(archived)).toEqual([ITEM_ARCHIVED_CLOSE, 'item-archived']);
+    expect(ITEM_ARCHIVED_CLOSE).toBe(4010);
+    expect(accessCloseCode({ match: 'workbench', pairingId: 'p' })).toEqual([
+      WORKBENCH_ENDED_CLOSE,
+      'workbench-ended',
+    ]);
+    for (const other of [
+      { match: 'share-code' },
+      { match: 'person', personTag: TAG },
+      { match: 'token', tokenId: 't' },
+    ] as const) {
+      expect(accessCloseCode(other)).toEqual([ACCESS_CHANGED_CLOSE, 'access-changed']);
+    }
   });
 });

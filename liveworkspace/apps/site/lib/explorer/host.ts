@@ -24,7 +24,8 @@ import {
   siteOfApp,
   type AppName,
 } from '@liveworkspace/sites';
-import { appOrigin } from './page-app';
+import { explorerViewArticlePath } from '@/lib/help/platform-help';
+import { appOrigin, workspaceHref } from './page-app';
 
 // ---------- Which app the person came from -------------------------------------------------------------------
 
@@ -150,6 +151,13 @@ export function helpHrefFor(app: App): HelpHref {
   };
 }
 
+/** The Explorer in no app, where it mixes every app's work: Help is liveworkspace.app's own articles (lib/help), a
+ *  folder's and a team's, else a section of the overview. The Invites view has none. */
+export const platformHelpHref: HelpHref = (view) => {
+  const path = explorerViewArticlePath(view.kind);
+  return path ? workspaceHref(path) : undefined;
+};
+
 // ---------- The filter lens's Template chip ----------------------------------------------------------------------
 
 const FAMILY_LABELS: Record<string, string> = { kanban: 'Kanban' };
@@ -235,11 +243,17 @@ export function settingsOpening(
 
 export const ENDED_PARAM = 'ended';
 
-/** `?ended=revoked`, set by an editor whose share link was revoked under it: the toast that explains the arrival. */
+/** `?ended=revoked`, set by an editor whose share link was revoked under it, or `?ended=archived`, by one whose file
+ *  its owner archived elsewhere (one-explorer.md "Archived from elsewhere while open"): the toast that explains the
+ *  arrival. */
 export function arrivalNotice(search: string, app: AppName | null): string | null {
-  if (new URLSearchParams(search).get(ENDED_PARAM) !== 'revoked') return null;
+  const ended = new URLSearchParams(search).get(ENDED_PARAM);
   const noun = app ? APP_ITEMS[app].noun.toLowerCase() : 'item';
-  return `The link you opened that ${noun} with was revoked, so it is no longer open to you.`;
+  if (ended === 'revoked')
+    return `The link you opened that ${noun} with was revoked, so it is no longer open to you.`;
+  if (ended === 'archived')
+    return `That ${noun} was archived by its owner, so it is no longer open to you.`;
+  return null;
 }
 
 // ---------- Retired addresses --------------------------------------------------------------------------------

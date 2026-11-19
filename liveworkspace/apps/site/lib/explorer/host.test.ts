@@ -6,6 +6,7 @@ import {
   arrival,
   arrivalNotice,
   helpHrefFor,
+  platformHelpHref,
   itemHref,
   newItemHref,
   LAST_APP_KEY,
@@ -82,6 +83,21 @@ describe("every app's addresses", () => {
   });
 });
 
+describe('platformHelpHref', () => {
+  it("sends each view to liveworkspace.app's own Explorer article, a folder's and a team's to theirs", () => {
+    expect(platformHelpHref({ kind: 'home' })).toBe('/help/explorer#home');
+    expect(platformHelpHref({ kind: 'all' })).toBe('/help/explorer#my-work');
+    expect(platformHelpHref({ kind: 'trash' })).toBe('/help/explorer#trash');
+    expect(platformHelpHref({ kind: 'search', q: '' })).toBe('/help/explorer#search');
+    expect(platformHelpHref({ kind: 'folder', id: 'f1' } as never)).toBe('/help/explorer/folders');
+    expect(platformHelpHref({ kind: 'team', id: 't1' } as never)).toBe('/help/explorer/teams');
+  });
+
+  it('has no article for a view without one', () => {
+    expect(platformHelpHref({ kind: 'invites' } as never)).toBeUndefined();
+  });
+});
+
 describe('addresses the Explorer used to have', () => {
   it('opens the Settings panel in place on the section `?settings=` names, notifications included', () => {
     expect(settingsOpening('notifications', 'liveplanner')).toEqual({
@@ -140,5 +156,14 @@ describe('addresses the Explorer used to have', () => {
     );
     expect(arrivalNotice('?ended=revoked', null)).toMatch(/that item/);
     expect(arrivalNotice('', 'liveplanner')).toBeNull();
+  });
+
+  // one-explorer.md "Archived from elsewhere while open": an editor whose file its owner archived under it.
+  it("says its owner archived the file open here, in the app's words, and nothing for another word", () => {
+    expect(arrivalNotice('?ended=archived', 'livediagram')).toBe(
+      'That canvas was archived by its owner, so it is no longer open to you.',
+    );
+    expect(arrivalNotice('?ended=archived', null)).toMatch(/^That item was archived/);
+    expect(arrivalNotice('?ended=other', 'liveplanner')).toBeNull();
   });
 });

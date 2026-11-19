@@ -5,6 +5,7 @@
 
 import { ApiError, type ApiClient } from '@liveworkspace/api-client';
 import { DOCUMENT_TRASHED_CLOSE } from '@livediagram/api-schema';
+import { ITEM_ARCHIVED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import type { CliIo, RoomSocket } from '../io';
 
 export const ROOM_RECONNECT_MIN_MS = 1_000;
@@ -113,6 +114,10 @@ export function openRoomStream(deps: Deps): RoomStream {
         stopped = true;
         return settle('trashed');
       }
+      // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): ask for a ticket
+      // again at once, saying nothing. The api's refusal (409 archived) ends the stream in its own words; a ticket
+      // means the item is back, and the stream goes on.
+      if (code === ITEM_ARCHIVED_CLOSE) return void connect();
       retry();
     });
   };

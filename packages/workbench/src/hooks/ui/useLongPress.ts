@@ -23,6 +23,12 @@ const MOVE_SLOP_PX = 10;
 // the long-press fires at LONG_PRESS_MS.
 const REVEAL_DELAY_MS = 180;
 
+// One press, one long press: the innermost hold that sees a press claims it, and every outer one it bubbles to
+// (the element around a table cell, the canvas under an element) stands aside, as a right-click's innermost
+// `contextmenu` handler stops it. Without this a held table cell armed both its own hold and its table's, and the
+// table's menu opened over the cell's (Work Tracker 1285). Keyed on the native event, so it lives as long as it.
+const CLAIMED = new WeakSet<Event>();
+
 export function useLongPress(onLongPress: (clientX: number, clientY: number) => void): {
   onPointerDown: (e: ReactPointerEvent) => void;
   // Screen coords of an in-progress press once it has been held past the
@@ -62,6 +68,11 @@ export function useLongPress(onLongPress: (clientX: number, clientY: number) => 
 
   const onPointerDown = (e: ReactPointerEvent) => {
     if (e.pointerType !== 'touch') return;
+    const native = e.nativeEvent as Event | undefined;
+    if (native) {
+      if (CLAIMED.has(native)) return;
+      CLAIMED.add(native);
+    }
     const startX = e.clientX;
     const startY = e.clientY;
     clearTimers();

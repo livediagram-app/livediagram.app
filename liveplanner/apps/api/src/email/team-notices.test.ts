@@ -191,6 +191,37 @@ describe('the first share link (milestone)', () => {
   });
 });
 
+describe('an approval request (the index’s approval_requested notice)', () => {
+  const asked = {
+    type: 'approval_requested',
+    approvalId: 'ap_1',
+    requesterId: OWNER,
+    requesterName: 'Owen',
+    approverIds: [BOB, 'guest_x'],
+    itemTitle: 'Roadmap',
+    note: 'Check the dates',
+    due: '2026-11-20',
+  };
+
+  it('emails each approver with an account, opening the plan', async () => {
+    expect((await notice('d1', asked)).status).toBe(202);
+    expect(sent()).toEqual([
+      expect.objectContaining({
+        to: 'bob@x.test',
+        kind: 'ApprovalRequested',
+        subject: 'Owen asked you to approve Roadmap',
+      }),
+    ]);
+    expect(sent()[0]!.html).toContain('https://app.test/project/d1');
+  });
+
+  it('respects the approver’s Actions Assigned to Me switch', async () => {
+    fake.settings.set(BOB, { all: { notifyActionAssigned: false }, app: {} });
+    expect((await notice('d1', asked)).status).toBe(202);
+    expect(sent()).toEqual([]);
+  });
+});
+
 describe('someone joined my plan', () => {
   it('tells the owner who opened their plan, once a window, never about a guest or themselves', async () => {
     await notice('d1', { type: 'joined', personId: 'guest_x', level: 'view' });

@@ -27,7 +27,8 @@ An architecture diagram usually says what a system looks like, not whether it is
 
 <Step n={3}>
   Within a few seconds the badge appears. The canvas checks the address about once a minute for as
-  long as it is open.
+  long as it is open. An address that keeps not answering within 5 seconds is checked less often, up
+  to every 8 minutes, until it answers again.
 </Step>
 
 To change the address, open **Live Status…** again; **Remove** takes the binding off. Both are one step you can undo.
@@ -49,12 +50,12 @@ Addresses that can't be checked are refused as you type: anything that isn't `ht
 
 ## What the Badge Means
 
-| Badge        | What it means                                                                                                                                      |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Up**       | The service answered and says it is working.                                                                                                       |
-| **Degraded** | The service reports a partial outage or maintenance.                                                                                               |
-| **Down**     | The service reports an outage, answered with an error, or didn't answer.                                                                           |
-| **Unknown**  | The address redirects or can't be checked, the canvas holds too many status links (more than 25), or it hasn't been checked in the last 3 minutes. |
+| Badge        | What it means                                                                                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Up**       | The service answered and says it is working.                                                                                                                                         |
+| **Degraded** | The service reports a partial outage or maintenance.                                                                                                                                 |
+| **Down**     | The service reports an outage, answered with an error, or didn't answer.                                                                                                             |
+| **Unknown**  | The address redirects or can't be checked, the canvas holds too many status links (more than 25), or it hasn't been checked in the last 3 minutes (10 for one that isn't answering). |
 
 Hover the badge to see why, when it was last checked and which host it asked.
 

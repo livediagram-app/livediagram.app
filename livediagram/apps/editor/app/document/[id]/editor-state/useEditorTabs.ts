@@ -86,7 +86,7 @@ export function useEditorTabs({
   const { loadAllTabs } = fromRoom;
   const { activeTab } = fromComments;
   const { editorMode } = fromModes;
-  const { getViewportCenter } = fromViewport;
+  const { getViewportCenter, importUndoView } = fromViewport;
   const { requestFit } = fromFollowing;
   const { commit, structureBlocked } = fromEditing;
 
@@ -130,6 +130,7 @@ export function useEditorTabs({
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport: importUndoView.noteImport,
     refreshDocumentList: () => refreshDocumentList(),
     confirm,
     toast,

@@ -74,14 +74,18 @@ Scope, by file:
   `maintenance` degraded; `major`, `critical` down; another word up). Otherwise the first of `status`, `state`,
   `health` that is a string is looked up in the word sets; a word in none, or no such field, is `up`. Any state but
   `up` from the body carries reason `reported`.
-- `currentServiceState(status, now)`: `unknown` when there is no status or `now - checkedAt > STATUS_STALE_MS`;
-  otherwise the stored state.
+- `currentServiceState(status, now)`: `unknown` when there is no status or `now - checkedAt` passes its stale age:
+  `STATUS_TIMEOUT_STALE_MS` for a state with reason `timeout`, `STATUS_STALE_MS` for any other; otherwise the stored
+  state.
 
 ### The room's rounds (part 2)
 
-State: `at` (the next round, null for none, in memory) and `statuses` (`Map<url, ServiceStatus>`, mirrored to the
-storage key `service-status` as one record). A URL is due when it has no status or `checkedAt + STATUS_POLL_MS <=
-now`. `nextDue(urls)` is the least of `checkedAt + STATUS_POLL_MS`, or now for a URL without a status. `bring(t)` sets
+State: `at` (the next round, null for none, in memory), `statuses` (`Map<url, ServiceStatus>`) and `timeouts`
+(`Map<url, number>`, the checks in a row that timed out), both mirrored to the storage key `service-status` as one
+record (each entry the status, plus `timeouts` when above 0; the field never leaves the room). A URL's wait is
+`statusWaitMs(timeouts)`: `min(STATUS_POLL_MS * 2^timeouts, STATUS_BACKOFF_MAX_MS)`, so 1, 2, 4, then 8 minutes. A URL
+is due when it has no status or `checkedAt + wait <= now`. `nextDue(urls)` is the least of `checkedAt + wait`, or now
+for a URL without a status. `bring(t)` sets
 `at` to `t` only when `at` is null or later, then re-arms the room's alarm (which floors it a second ahead).
 
 - `readStatusSources(sql, documentId)`: one query over `document_tabs` joined to `tabs`, `instr(data, '"statusUrl"')`
@@ -89,7 +93,7 @@ now`. `nextDue(urls)` is the least of `checkedAt + STATUS_POLL_MS`, or now for a
   elements (records only) through `statusUrlsOf(…, Infinity)`. A tab that doesn't parse or has no element list is
   skipped. `checked` is the first `STATUS_SOURCES_MAX` distinct URLs, `overflow` the rest, `byTab` each tab's own.
 - `restore()` (in the constructor's `blockConcurrencyWhile`, before the first `armAlarm`): reads the key, keeping
-  entries with a string `state` and numeric `checkedAt`; when any are kept and the room is live, `at = nextDue(kept)`,
+  entries with a string `state` and numeric `checkedAt` (and a positive whole `timeouts` apart from the status); when any are kept and the room is live, `at = nextDue(kept)`,
   so a room woken by a message keeps the alarm its round set.
 - `join(ws)` (on every hello): off, or no binding on any tab: nothing. Otherwise sends the session its states (below)
   and, when anything is checked, `bring(nextDue(checked))`: a URL never checked is due now (the alarm's floor makes
@@ -101,7 +105,8 @@ now`. `nextDue(urls)` is the least of `checkedAt + STATUS_POLL_MS`, or now for a
 - `alarm(now)` (the room's alarm, after every other duty): nothing unless `at <= now`; a round already running is
   awaited rather than started twice. The round: `at = null`; not live, return (nothing fetched, nothing re-armed);
   read the sources; drop each status whose URL is no longer in `checked`; check the due URLs through `pooled`,
-  `STATUS_CHECKS_AT_ONCE` at a time, each stamped `checkedAt = now`; persist when anything was checked or dropped
+  `STATUS_CHECKS_AT_ONCE` at a time, each stamped `checkedAt = now`; a check with reason `timeout` adds one to the
+  URL's `timeouts`, any other result clears it (a dropped URL loses it too); persist when anything was checked or dropped
   (`delete` when none is left); when anything was checked, send every hello'd socket its states; then, when any URL
   is bound, `bring(nextDue(checked))`.
 - A check: a URL `isStatusUrl` refuses (stored before a rule tightened) is never fetched: Unknown, `refused`.
@@ -212,19 +217,21 @@ now)` picks the look. It is absolute at the bottom-right (`right: 10px`, `bottom
 
 ## Constants and configuration
 
-| Name                     | Value                                                   | Where                     |
-| ------------------------ | ------------------------------------------------------- | ------------------------- |
-| `STATUS_URL_MAX`         | 2,048                                                   | `status-source.ts`        |
-| `STATUS_POLL_MS`         | 60,000                                                  | `service-status.ts`       |
-| `STATUS_STALE_MS`        | 180,000                                                 | `service-status.ts`       |
-| `STATUS_SOURCES_MAX`     | 25                                                      | `service-status.ts`       |
-| `STATUS_TIMEOUT_MS`      | 5,000                                                   | `service-status.ts`       |
-| `STATUS_BODY_MAX`        | 65,536                                                  | `service-status.ts`       |
-| `STATUS_BIND_DELAY_MS`   | 3,000                                                   | `service-status.ts`       |
-| `STATUS_CHECKS_AT_ONCE`  | 3                                                       | `room-service-status.ts`  |
-| `STATUS_USER_AGENT`      | `livediagram-status/1.0 (+https://www.livediagram.app)` | `room-service-status.ts`  |
-| `SERVICE_STATUS_KEY`     | `service-status`                                        | `room-service-status.ts`  |
-| `SERVICE_STATUS_TICK_MS` | 15,000                                                  | `service-status-store.ts` |
+| Name                      | Value                                                   | Where                     |
+| ------------------------- | ------------------------------------------------------- | ------------------------- |
+| `STATUS_URL_MAX`          | 2,048                                                   | `status-source.ts`        |
+| `STATUS_POLL_MS`          | 60,000                                                  | `service-status.ts`       |
+| `STATUS_STALE_MS`         | 180,000                                                 | `service-status.ts`       |
+| `STATUS_BACKOFF_MAX_MS`   | 480,000                                                 | `service-status.ts`       |
+| `STATUS_TIMEOUT_STALE_MS` | 600,000                                                 | `service-status.ts`       |
+| `STATUS_SOURCES_MAX`      | 25                                                      | `service-status.ts`       |
+| `STATUS_TIMEOUT_MS`       | 5,000                                                   | `service-status.ts`       |
+| `STATUS_BODY_MAX`         | 65,536                                                  | `service-status.ts`       |
+| `STATUS_BIND_DELAY_MS`    | 3,000                                                   | `service-status.ts`       |
+| `STATUS_CHECKS_AT_ONCE`   | 3                                                       | `room-service-status.ts`  |
+| `STATUS_USER_AGENT`       | `livediagram-status/1.0 (+https://www.livediagram.app)` | `room-service-status.ts`  |
+| `SERVICE_STATUS_KEY`      | `service-status`                                        | `room-service-status.ts`  |
+| `SERVICE_STATUS_TICK_MS`  | 15,000                                                  | `service-status-store.ts` |
 
 ## Testing
 
@@ -233,11 +240,14 @@ now)` picks the look. It is absolute at the bottom-right (`right: 10px`, `bottom
   names `statusUrl`.
 - `participant-content.test.ts`: a Participant's own mind node keeps its stored `statusUrl` and can't add one; the
   leak test covers every other element.
-- `service-status.test.ts`: every row of the spec's answer table; a CPU-time budget on a 64 KiB body.
+- `service-status.test.ts`: every row of the spec's answer table; a CPU-time budget on a 64 KiB body; a timed-out
+  state staying Down to `STATUS_TIMEOUT_STALE_MS` while any other turns Unknown past `STATUS_STALE_MS`.
 - `room-service-status.test.ts`: one check per distinct URL per round for ten viewers and two tabs; no second check
   within a minute; nothing with polling off or nobody connected (save, round, last socket leaving); a save checks
   only the new URL; the 25 cap and the overflow's Unknown; three checks at once; one round at a time; scope
-  filtering; the join greeting; dropping unbound URLs and the key; refused and throwing checks; restore; purge;
+  filtering; the join greeting; dropping unbound URLs and the key; refused and throwing checks; restore; purge; a
+  URL that times out waiting 2, 4, then 8 minutes and back on the minute once it answers, its count kept over a
+  wake; the first hour of 25 hanging URLs keeping the room busy under 8 s a minute (6.75 s measured, was 45 s);
   `readStatusSources` (order, dedupe, per tab, non-shapes, bad data, other documents, overflow); `checkStatusUrl`
   refusing a host resolving private without fetching it, following no redirect, sending no credentials; and the real
   `DocumentRoom` wired end to end, on and off.

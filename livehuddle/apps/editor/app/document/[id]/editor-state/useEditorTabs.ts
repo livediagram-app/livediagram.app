@@ -85,7 +85,7 @@ export function useEditorTabs({
   const { openWalking } = fromModes;
   const { getViewportCenter } = fromViewport;
   const { requestFit } = fromFollowing;
-  const { commit, structureBlocked } = fromEditing;
+  const { commit, importUndoView, structureBlocked } = fromEditing;
   // --- Tab actions ---------------------------------------------------------
 
   // Tab-lifecycle actions (add / import / rename / duplicate / delete /
@@ -122,6 +122,7 @@ export function useEditorTabs({
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport: importUndoView.noteImport,
     refreshDocumentList: () => refreshDocumentList(),
     confirm,
     toast,

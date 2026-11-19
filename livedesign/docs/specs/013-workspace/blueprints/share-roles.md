@@ -29,7 +29,6 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 | `packages/agent-verbs/src/mcp/schema.ts`                                                                                               | `share_design.role` takes three levels, default `participate`                            |
 | `apps/live/lib/editor-capabilities.ts`                                                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                        |
 | `apps/live/app/design/[id]/*` (`useParticipantSession`, `useEditorState`, `tab-save-flow`)                                             | `sessionRole: AccessLevel`; `can`; the participant save flow                             |
-| `apps/live/components/chrome/RoleIndicator.tsx`, `app/design/[id]/useRoleIndicator.ts`                                                 | Participating pill                                                                       |
 | `apps/live/lib/collaborator-roster.ts`                                                                                                 | Participant badge                                                                        |
 
 The Share dialog's three cards (`LEVEL_PASS`, `RolePicker`) are `packages/explorer/src/dialogs/share/`'s.
@@ -127,14 +126,12 @@ bundle's `?s=` upgrade, or a failed mint) may update but never add or remove (SR
 
 Editor state:
 
-| Flag            | Value                                                                        |
-| --------------- | ---------------------------------------------------------------------------- |
-| `sessionRole`   | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`    |
-| `canEdit`       | `sessionRole === 'edit' && !viewPreview` (unchanged)                         |
-| `isReadOnly`    | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
-| `can`           | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
-| Pill level      | `viewPreview ? 'view' : sessionRole`                                         |
-| `canToggleRole` | `sessionRole === 'edit'` (unchanged)                                         |
+| Flag          | Value                                                                        |
+| ------------- | ---------------------------------------------------------------------------- |
+| `sessionRole` | owner: `edit`; link: its level; embed: `edit` stays, anything else `view`    |
+| `canEdit`     | `sessionRole === 'edit'` (unchanged)                                         |
+| `isReadOnly`  | `!canEdit` (unchanged): every structural gate stays shut for a Participant   |
+| `can`         | `resolveEditorCapabilities({ level, adderKey })`, in `useParticipantSession` |
 
 `EditorCapabilities` for a session that is not an Editor; an Editor holds every flag:
 
@@ -378,7 +375,6 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Pending cap                                                                      | `apps/api/src/room-participant.test.ts`                                                                     |
 | Capabilities per level                                                           | `apps/live/lib/editor-capabilities.test.ts`                                                                 |
 | Participant save branch                                                          | `apps/live/app/design/[id]/tab-save-flow.test.ts`                                                           |
-| Pill per level                                                                   | `apps/live/components/chrome/RoleIndicator.test.tsx`                                                        |
 | MCP default and enum                                                             | `packages/agent-verbs` MCP schema tests                                                                     |
 
 ## Constants and configuration
