@@ -114,7 +114,7 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
   email's "one account" line.
 - **E2E:** `e2e.yml` calls `e2e-product.yml` for livehuddle when its editor is reached (in place since the fork,
   now planned like any product's).
-- **Canvas performance:** livehuddle's probe joins the nightly `canvas-perf.yml`, with an avatar fan-out probe of its
+- **Canvas performance:** livehuddle's probe runs by hand, as every product's does, with an avatar fan-out probe of its
   own ([Build plan](../005-project-roadmap/build-plan.md#risks), R3).
 - **Suites that read other workspaces** declare their `$TURBO_ROOT$` inputs in `turbo.json`, as docs/ci.md requires.
 

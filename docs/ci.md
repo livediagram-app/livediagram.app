@@ -24,7 +24,7 @@ A group the change never reached runs no jobs. A product forked in-tree before i
 (`held: true` on its group in `ci-plan.mjs`): its group then runs only when a change touches its folder itself or
 everything runs, never because a shared package it uses changed (its E2E the same way), and none of its Workers
 deploy. None is held today: livehuddle was until its launch (Work Tracker #189), and now runs, tests, runs its E2E
-and deploys like any product. Every product's nightly canvas probe runs, livehuddle's included. The base is the pull request's base, or for a push to
+and deploys like any product. The base is the pull request's base, or for a push to
 `main` the commit before it. Everything runs when there is no base to compare with, or when the
 change touches something every workspace leans on without turbo seeing it as theirs: `.github/`, the
 root `package.json`, `pnpm-workspace.yaml`, `turbo.json`, `tsconfig.base.json`, `.npmrc` or the
@@ -145,19 +145,9 @@ always()`, seen in the probe) and fails on the `cancelled` jobs it needs, so a r
   `main`, for each product whose editor a change reaches: one smoke build shared by the smoke shards (three for livediagram, whose smoke specs take about three minutes a shard; two for the others, whose shards take about a minute and a half on three), the sites audit and the
   signed-in specs, in Playwright's container, with Turbopack's build cache restored from `main`.
   **E2E** is its one result check.
-- **Canvas performance** (`canvas-perf.yml`): each product's probe, nightly against `main`. A miss
-  opens or updates that product's issue, **Canvas performance budget: <product>**, and never fails the job;
-  the job fails only when the probe cannot run or the issue cannot be written. A gesture is judged on the work in its
-  longest task, read from a trace of each run, not on the time the main thread waits for the runner's CPU-only raster
-  (a drag's 158 ms task held 38 ms of work); the table shows the whole task beside the work when the wait was 10 ms
-  or more. The issue lists the latest 30
-  commits since the last successful run, then how many more: from 2026-10-16 to 2026-11-11 every night was
-  red because the list ran to 2,219 commits (190 KB, past GitHub's 65,536-character body) and the slide
-  transition bench in livediagram and livedocuments opened its deck with no base URL.
-  The issue is written whenever the probe wrote its rows, even when a bench beside it fails (that still fails the
-  job): from 2026-11-12 livedocuments had no issue because its slide transition bench waited on a retired panel
-  for its whole 15 minutes. The bench now opens its deck from the header's Present button and gives that click a
-  minute, so a control that moves again fails the bench fast and by name.
+- **Canvas performance** runs in no workflow: each product's probe runs by hand (`pnpm perf:canvas` in its
+  editor), before and after a change that touches the canvas. Its nightly run, which opened an issue per product
+  on a miss, went red every night without anyone acting on it, and was removed on 2026-11-19.
 - **Cache prune** (`cache-prune.yml`): after CI or E2E on `main`, deletes the superseded caches (see
   [Cache pruning](#cache-pruning)).
 - **Lucide re-vendor** (`lucide-revendor.yml`): on pull requests that change `packages/icons/package.json`.
