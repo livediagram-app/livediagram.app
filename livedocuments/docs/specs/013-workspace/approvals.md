@@ -15,9 +15,10 @@ what is livedocuments's.
   owner and its link visitors.
 - **Save this version as a snapshot** is offered there whenever Snapshots are ([snapshots.md](snapshots.md)): the
   snapshot is taken first, named "Sent for approval", and the request points at it.
-- **The badge** sits after the visibility pill in the header; it opens the Share dialog on the Approval tab for an Editor
-  of the whole document.
-- **The banner** sits under the header, for a signed-in, named approver of the open request, whatever their level.
+- **The badge** is the first thing in the corner card at the top right (with Copy, Share and the account); it opens
+  the Share dialog on the Approval tab for an Editor of the whole document. On a phone, and wherever the card drops
+  its names, it shows its glyph alone.
+- **The banner** is a strip across the top of the editor, above the floating chrome, for a signed-in, named approver of the open request, whatever their level.
 
 ## Share roles
 

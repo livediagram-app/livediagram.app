@@ -44,7 +44,11 @@ test.describe('Rename from the search', () => {
   }) => {
     await openEditor(page);
     await page.keyboard.press('ControlOrMeta+k');
-    await page.keyboard.type('Rename Document');
+    // Type only once the search holds focus: keys sent before it does reach the canvas as tool shortcuts.
+    const search = page.getByRole('combobox', { name: 'Search' });
+    await expect(search).toBeFocused();
+    await search.fill('Rename Document');
+    await expect(page.getByRole('option', { name: /^Rename Document/ })).toBeVisible();
     await page.keyboard.press('Enter');
     const field = page.getByRole('textbox', { name: /^Rename / });
     await expect(field).toBeFocused();
