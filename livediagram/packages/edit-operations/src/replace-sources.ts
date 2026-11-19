@@ -11,7 +11,7 @@ import {
   type Element,
   type GraphInput,
 } from '@livediagram/document';
-import { drawnRecord, INFRA_SOURCES_MAX_STORED_CHARS } from '@livediagram/document/infra-code';
+import { drawnRecord, INFRA_SOURCES_MAX_STORED_CHARS } from '@livediagram/document/infra-sources';
 
 const refusal = (detail: string): EditRejection => ({
   code: 'invalid_value',

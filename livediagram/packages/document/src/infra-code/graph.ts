@@ -8,16 +8,9 @@ import { GRAPH_LAYOUT_MAX_EDGES } from '../graph-limits';
 import { hasEnv, partOf, readInfraFile, type ParsedFile } from './file-part';
 import { capNodes, groupByPrefix } from './large';
 import { INFRA_GROUP_FROM, INFRA_MAX_FILES, INFRA_MAX_NODES } from './limits';
+import { PASTE_NAME } from './paste-name';
 import { mergeSkipped } from './summary';
 import type { InfraFile, InfraFormat, InfraGroup, InfraPart, InfraResult } from './types';
-
-/** What a paste is called where a file would be named. */
-export const PASTE_NAME: Record<InfraFormat, string> = {
-  wrangler: 'wrangler.toml',
-  compose: 'docker-compose.yml',
-  terraform: 'main.tf',
-  kubernetes: 'manifest.yaml',
-};
 
 // The longest title and subtitle the drawing's header takes.
 const TITLE_MAX = 120;

@@ -6,8 +6,8 @@ import type { DiagramSourceFile, DiagramSourceNode } from '../diagram-sources';
 import type { GraphInput } from '../graph-input';
 import type { Element } from '../index';
 import { detectInfraFormat } from './detect';
-import { PASTE_NAME } from './graph';
 import { INFRA_SOURCES_MAX_STORED_CHARS } from './limits';
+import { PASTE_NAME } from './paste-name';
 import type { InfraFile } from './types';
 
 /** FNV-1a, 32 bits, over the UTF-16 code units: eight hex digits that tell an unchanged file cheaply. */

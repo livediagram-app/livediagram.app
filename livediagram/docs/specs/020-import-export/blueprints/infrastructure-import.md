@@ -32,6 +32,8 @@ The spec decides; this file only adds engineering precision. Defaults applied wh
 | `packages/document/src/infra-code/merge.ts`                 | `mergeSourceGraph(input)`: the three-way re-read of a tab                                                        |
 | `packages/document/src/infra-code/placement.ts`             | `placeAdded(...)`: where a new box goes, clear of the rest; frames grown                                         |
 | `packages/document/src/infra-code/index.ts`                 | The subpath `@livediagram/document/infra-code` (kept out of the package root so no other app loads the parsers)  |
+| `packages/document/src/infra-code/record.ts`                | The subpath `@livediagram/document/infra-sources`: `drawnRecord` and the text cap, none of the parsers           |
+| `packages/document/src/infra-code/paste-name.ts`            | `PASTE_NAME`: what a paste is called per format, a leaf so the record's parts reach no parser                    |
 | `packages/agent-verbs/src/verbs/link.ts`                    | The `link.from-code` verb: input, output, text, CLI projection                                                   |
 | `apps/cli/src/commands/from-code.ts`                        | `linkFromCode`: finds and reads the files, prints the summary, creates the document or adds the tab              |
 | `apps/cli/src/commands/from-code-update.ts`                 | `updateFromCode`: reads a tab and its record, merges the files over it, writes the replace with its record       |
@@ -354,6 +356,10 @@ files: sourceFiles(files), env?, nodes, edges } } }`, `base: rev` and `strict` (
 - The parsers, the merge and the placement live behind the `infra-code` subpath, imported dynamically by the editor
   only once the Infrastructure panel or the update opens, so the first load is unchanged; the editor's first-load JS
   is measured before and after in the PR.
+- The api and MCP server write a record through edit-operations' `replace`, which imports only the `infra-sources`
+  subpath: its graph (`sources.ts`, `detect.ts`, `limits.ts`, `paste-name.ts`) reaches no parser, so the Workers'
+  bundles, and the `/licences` page their inputs feed, carry no YAML, TOML or HCL reader (`record.test.ts` walks the
+  imports and fails on one).
 - Worst cases, each under a CPU-time budget (`cpuBudgetMs`): a 200-service Compose file read and laid out
   (`graph.test.ts`); a 1 MB HCL file of about 14,000 resources each referencing the one before, and 1 MB of pathological
   HCL (unclosed interpolations, a long run of `{`, a heredoc that never ends) (`hcl.test.ts`); a manifest of 2,000

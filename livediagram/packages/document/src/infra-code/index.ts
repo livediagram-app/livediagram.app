@@ -2,7 +2,8 @@
 // a subpath of its own so only the CLI and the editor's lazy import load the TOML, YAML and HCL readers, and the
 // update's merge.
 
-export { infraGraph, PASTE_NAME } from './graph';
+export { infraGraph } from './graph';
+export { PASTE_NAME } from './paste-name';
 export { detectInfraFormat } from './detect';
 export { infraFileFacts } from './facts';
 export { skippedLine } from './summary';
