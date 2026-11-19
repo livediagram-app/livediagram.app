@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./layout": "./src/layout.ts",
+    "./access-request": "./src/access-request.ts",
     "./inbound": "./src/inbound/index.ts"
   },
   "scripts": {

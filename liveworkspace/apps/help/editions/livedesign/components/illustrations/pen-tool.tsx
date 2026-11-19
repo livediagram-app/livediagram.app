@@ -1,4 +1,4 @@
-// The Pen illustrations for The Pen and Edit Points article (liveworkspace/docs/specs/016-help/help-centre.md; drawing
+// The Pen illustrations for The Pen and Edit Points article (liveworkspace/docs/specs/017-help/help-centre.md; drawing
 // docs/specs/023-draw-mode/path-tool.md). Real labels from apps/live/components/canvas/path/PathEditToolbar.tsx: the
 // node type choice (Corner, Mirrored, Aligned), Close Path and Done. Corner nodes draw as squares, smooth ones as
 // circles, and a selected node shows its two handles.

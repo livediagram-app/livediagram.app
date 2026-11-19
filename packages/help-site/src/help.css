@@ -1,4 +1,4 @@
-/* The help centre's own styles (liveworkspace/docs/specs/016-help/help-centre.md), shared by every product's help app. Each app's
+/* The help centre's own styles (liveworkspace/docs/specs/017-help/help-centre.md), shared by every product's help app. Each app's
  * app/globals.css imports Tailwind, its theme and its hero band, then this file, and sets the two print colours:
  *
  *   --help-print-link     links on paper (the product's default-theme brand-700)

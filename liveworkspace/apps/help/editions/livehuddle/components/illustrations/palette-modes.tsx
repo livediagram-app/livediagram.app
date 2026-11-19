@@ -1,4 +1,4 @@
-// Palette-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): Edit and Walk (the two sides of the toggle at
+// Palette-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): Edit and Walk (the two sides of the toggle at
 // the start of the palette strip), the Format Painter on the selection toolbar, and the palette settings (Panel
 // Opacity). Composed only from the shared primitives so the house style holds, except the Avatar sprite, which is
 // deliberately pixel art.

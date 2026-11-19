@@ -1,4 +1,4 @@
-// Calls illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the call group on the Call dock at the bottom centre, the
+// Calls illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the call group on the Call dock at the bottom centre, the
 // microphone's states, earshot and the talking bars, and the camera and screen bubbles. Calls cannot run without
 // the Realtime secrets, so these are drawn rather than shot, from the call components' own words and tones:
 // apps/editor/components/calls/CallStripGroup.tsx (the strip and its hover cards), TalkingBars.tsx

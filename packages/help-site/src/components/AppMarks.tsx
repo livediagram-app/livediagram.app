@@ -2,7 +2,7 @@ import { BrandGlyph } from '@liveworkspace/brand';
 import { APP_ORDER, type AppId, type HelpScope } from '@liveworkspace/help-registry';
 import { APP_MARK_CLASS, appMarkStyle, appRingStyle } from '../lib/app-palette';
 
-// The apps' marks as the help centre shows them (liveworkspace/docs/specs/016-help/help-centre.md "The logos"): each
+// The apps' marks as the help centre shows them (liveworkspace/docs/specs/017-help/help-centre.md "The logos"): each
 // app's Living Prism glyph (BrandGlyph, stateless, no gradients, no motion), in its own colour. A row puts the
 // current app first and rings it in its accent; under All Apps the row keeps the registry's order.
 

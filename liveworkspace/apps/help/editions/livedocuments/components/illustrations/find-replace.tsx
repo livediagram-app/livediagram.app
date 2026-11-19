@@ -1,4 +1,4 @@
-// Illustration for Find and Replace (liveworkspace/docs/specs/016-help/help-centre.md, docs/specs/007-editor/find-and-replace.md):
+// Illustration for Find and Replace (liveworkspace/docs/specs/017-help/help-centre.md, docs/specs/007-editor/find-and-replace.md):
 // the Find bar at the top right of the canvas (components/find/FindBar.tsx) with its Replace row open, over a page
 // whose matches are tinted, the match in hand stronger, and an element holding a match ringed. Composed from the
 // shared primitives.

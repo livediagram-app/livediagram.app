@@ -45,6 +45,7 @@ export {
   ACCOUNT_CALL_TIMEOUT_MS,
   ACCOUNT_WRITE_TIMEOUT_MS,
   AccountCallTimeout,
+  accountAddresses,
   accountEmails,
   claimLegacyGuest,
   claimMilestone,

@@ -21,7 +21,7 @@ type Search = HelpSearch;
 
 // The search runs over an index of articles with their descriptions and keywords, which every help page would
 // otherwise download to show a search box. It loads on the reader's first focus or keystroke instead, well before a
-// query is long enough to search: the scope's own index first (liveworkspace/docs/specs/016-help/help-centre.md
+// query is long enough to search: the scope's own index first (liveworkspace/docs/specs/017-help/help-centre.md
 // "Search"), and in an app's help the every-app index only once the scope's results show, for "From Other Apps".
 // Each first load is kept, or dropped on failure so the next try loads again.
 const searches = new Map<() => Promise<Search>, Promise<Search>>();
@@ -87,7 +87,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   };
 
   // Once it has arrived, the switch's links carry it on, its results load, and the address drops `q`
-  // (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The app switch"), so a reload or a link copied
+  // (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The app switch"), so a reload or a link copied
   // later opens the page itself.
   useEffect(() => {
     if (!arrived) return;
@@ -151,7 +151,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   // open is equivalent: typing or focusing clears `dismissed` anyway.
   useClickOutside(wrapperRef, () => setDismissed(true), isOpen);
 
-  // `/` searches from anywhere on the page (liveworkspace/docs/specs/016-help/help-centre.md "Search"), unless the reader is
+  // `/` searches from anywhere on the page (liveworkspace/docs/specs/017-help/help-centre.md "Search"), unless the reader is
   // already typing somewhere. A page with the large search box gives it the key; the header's box takes it
   // everywhere else.
   useEffect(() => {
@@ -276,7 +276,7 @@ export function SearchInput({ large = false }: { large?: boolean }) {
         </div>
       )}
       {/* What the dropdown holds, said to a screen reader: the results appear below the field with nothing else to
-          announce them (liveworkspace/docs/specs/016-help/help-centre.md "Search"). */}
+          announce them (liveworkspace/docs/specs/017-help/help-centre.md "Search"). */}
       <p aria-live="polite" className="sr-only">
         {isOpen
           ? shown === 0

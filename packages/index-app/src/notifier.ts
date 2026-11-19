@@ -21,7 +21,12 @@ import {
   type NotifyTarget,
   type TeamPerson,
 } from '@liveworkspace/auth-client';
-import type { ApprovalNotice } from '@liveworkspace/index-client';
+import type {
+  AccessGrantedNotice,
+  AccessRequestedNotice,
+  ApprovalNotice,
+  Level,
+} from '@liveworkspace/index-client';
 import { claimNotice, claimNotices, type SenderAllowance } from './notify-claims';
 
 type ClaimsDb = Parameters<typeof claimNotices>[0];
@@ -61,6 +66,9 @@ export type NotifierDeps<E, M extends NotifierEmail = NotifierEmail> = {
   nameOf(env: E, personId: string): Promise<string | null>;
   /** A team's people (joined and invited), or null when it can't be read. */
   teamPeople(env: E, teamId: string): Promise<readonly TeamPerson[] | null>;
+  /** The verified addresses of these accounts, whatever their switches (auth-client's accountAddresses), for the
+   *  access granted email; an app without it sends none. */
+  addresses?(env: E, ids: readonly string[]): Promise<Map<string, string>>;
   settings: NotifierSettings;
   emails: {
     milestone(env: E, count: number): M;
@@ -75,6 +83,10 @@ export type NotifierDeps<E, M extends NotifierEmail = NotifierEmail> = {
     ): M;
     /** An approval request (approvals.md "The email"); an app without it sends none. */
     approvalRequested?(env: E, input: ApprovalEmailInput): M;
+    /** Request Access (request-access.md "The emails"): a manager told someone asked, and the requester told a manager
+     *  shared it. An app without them sends none. */
+    accessRequested?(env: E, input: AccessRequestedEmailInput): M;
+    accessGranted?(env: E, input: AccessGrantedEmailInput): M;
     /** `partId` is the part the comment sits on (a plan's card), for the email's button. */
     mentioned(
       env: E,
@@ -93,6 +105,21 @@ export type ApprovalEmailInput = {
   note: string | null;
   // The day hoped for, `YYYY-MM-DD`.
   due: string | null;
+};
+
+/** What the access requested email says: who asks, the item, their note, and the request, for the Inbox's link. */
+export type AccessRequestedEmailInput = {
+  requestId: string;
+  requesterName: string | null;
+  item: NotifierItem;
+  note: string | null;
+};
+
+/** What the access granted email says: who shared it, the item and the level it opens at. */
+export type AccessGrantedEmailInput = {
+  granterName: string | null;
+  item: NotifierItem;
+  level: Level;
 };
 
 /** A comment as the mention email reads it. */
@@ -141,6 +168,8 @@ export type Notifier<E> = {
   /** Answers the ids of the people it emailed (the caller may fall back for anyone left out). */
   notifyMentioned(env: E, input: MentionedInput): Promise<string[]>;
   notifyApprovalRequested(env: E, itemId: string, notice: ApprovalNotice): Promise<void>;
+  notifyAccessRequested(env: E, itemId: string, notice: AccessRequestedNotice): Promise<void>;
+  notifyAccessGranted(env: E, itemId: string, notice: AccessGrantedNotice): Promise<void>;
 };
 
 export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
@@ -390,6 +419,45 @@ export function createNotifier<E, M extends NotifierEmail = NotifierEmail>(
           return to ? [deps.send(env, { ...email, to })] : [];
         }),
       );
+    },
+
+    // Someone asked these managers for access to an item (the index's `access_requested` notice). Each who has an
+    // address and the app's join switch on gets one; the index already limits one person's ask about one item to a
+    // week and an item's emails to ten a day, so no claim is kept here.
+    async notifyAccessRequested(env, itemId, notice) {
+      const template = deps.emails.accessRequested;
+      if (!deps.enabled(env) || !template) return;
+      const ids = notice.recipientIds.filter((id) => deps.isAccount(id));
+      if (ids.length === 0) return;
+      const addresses = await deps.recipients(env, ids, deps.settings.join);
+      const email = template(env, {
+        requestId: notice.requestId,
+        requesterName: notice.requesterName,
+        item: { id: itemId, name: notice.itemTitle },
+        note: notice.note,
+      });
+      await Promise.all(
+        ids.flatMap((id) => {
+          const to = addresses.get(id);
+          return to ? [deps.send(env, { ...email, to })] : [];
+        }),
+      );
+    },
+
+    // A manager shared an item with the person who asked (the index's `access_granted` notice): they asked for it, so
+    // their verified address gets it whatever their switches. The index sends one notice per grant.
+    async notifyAccessGranted(env, itemId, notice) {
+      const template = deps.emails.accessGranted;
+      if (!deps.enabled(env) || !template || !deps.addresses) return;
+      if (!deps.isAccount(notice.requesterId)) return;
+      const to = (await deps.addresses(env, [notice.requesterId])).get(notice.requesterId);
+      if (!to) return;
+      const email = template(env, {
+        granterName: notice.granterName,
+        item: { id: itemId, name: notice.itemTitle },
+        level: notice.level,
+      });
+      await deps.send(env, { ...email, to });
     },
   };
 }

@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { StillNeedHelp } from './ArticlePager';
 
-// liveworkspace/docs/specs/016-help/help-centre.md "Article pages": the foot's Still Need Help sits inside the article, in the page's
+// liveworkspace/docs/specs/017-help/help-centre.md "Article pages": the foot's Still Need Help sits inside the article, in the page's
 // main landmark, so it must not be a landmark of its own (axe landmark-complementary-is-top-level).
 describe('StillNeedHelp', () => {
   it('is no complementary landmark', () => {

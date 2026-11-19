@@ -5,11 +5,11 @@ import { appliesTo, articlePath, type Article } from '@liveworkspace/help-regist
 import { site } from '@/lib/help-site';
 import { SCOPE } from '@/lib/scope.generated';
 
-// The layout every article's MDX imports (liveworkspace/docs/specs/016-help/help-centre.md "Article pages"), bound to this help
+// The layout every article's MDX imports (liveworkspace/docs/specs/017-help/help-centre.md "Article pages"), bound to this help
 // centre. Kept at this path because every article imports it.
 //
 // An article's MDX passes its path (and its shared title), and an app may word the article its own way
-// (Article.byApp, liveworkspace/docs/specs/016-help/help-centre.md "Per-app wording"). So the page is handed to the
+// (Article.byApp, liveworkspace/docs/specs/017-help/help-centre.md "Per-app wording"). So the page is handed to the
 // layout as the scope's entry at its path, whose title and description are the ones the page shows. A path this
 // scope does not hold is a page its build renders and then drops: it gets no entry. Server-side only.
 

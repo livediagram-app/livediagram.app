@@ -1,4 +1,4 @@
-// Schema.org JSON-LD builders for the help centre (liveworkspace/docs/specs/016-help/help-centre.md in each product). Search
+// Schema.org JSON-LD builders for the help centre (liveworkspace/docs/specs/017-help/help-centre.md in each product). Search
 // engines read these to render breadcrumb trails, article rich results, and the site name in results. Pure
 // functions of the product's facts, returning plain objects; a <JsonLd> renders them into a
 // <script type="application/ld+json">. The article shell builds its TechArticle in the browser, so these
@@ -53,7 +53,7 @@ export function webSiteJsonLd(facts: HelpFacts) {
   };
 }
 
-/** A category landing (liveworkspace/docs/specs/016-help/help-centre.md "SEO"): a CollectionPage whose ItemList names every
+/** A category landing (liveworkspace/docs/specs/017-help/help-centre.md "SEO"): a CollectionPage whose ItemList names every
  *  article the page lists, in the order shown, so a search engine reads the landing as an index of guides. */
 export function collectionJsonLd(
   facts: HelpFacts,

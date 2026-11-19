@@ -1,7 +1,7 @@
 // The branded social card (Open Graph + Twitter, 1200x630) every public app renders through next/og at
 // build time (docs/specs/019-marketing/marketing-site.md "SEO and metadata" in each product): marketing's
 // brand card and its per-page cards, and the help centre's per-article cards
-// (liveworkspace/docs/specs/016-help/help-centre.md "SEO"). Plain JSX with inline styles, the subset next/og's renderer
+// (liveworkspace/docs/specs/017-help/help-centre.md "SEO"). Plain JSX with inline styles, the subset next/og's renderer
 // understands; each app keeps its own ImageResponse route, since per-route config can't be shared through
 // a module. The card is one shape for every product; what is a product's own (its mark, its wordmark,
 // colours and copy) it hands in through createSocialCard.

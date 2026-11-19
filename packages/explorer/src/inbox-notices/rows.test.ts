@@ -197,7 +197,7 @@ describe('each kind', () => {
     ]);
   });
 
-  it('an access request and a share open the item, on its own app’s address', () => {
+  it('a share opens the item and an access request its Inbox row, on its own app’s address', () => {
     const rows = noticeRows(
       inbox({ accessRequests: [request()], shares: [share()] }),
       ME,
@@ -209,7 +209,7 @@ describe('each kind', () => {
         'access',
         'Ana asked for access',
         'For the review',
-        `${siteOfApp('livedocuments').url}/document/doc1`,
+        `${siteOfApp('livedocuments').url}/explorer/inbox?at=r%3Aar1`,
       ],
     ]);
   });

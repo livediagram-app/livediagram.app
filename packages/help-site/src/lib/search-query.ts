@@ -1,6 +1,6 @@
 import { QUERY_MAX } from '@liveworkspace/help-registry/hrefs';
 
-// The search box's text, shared with the app switch (liveworkspace/docs/specs/016-help/help-centre.md "A search
+// The search box's text, shared with the app switch (liveworkspace/docs/specs/017-help/help-centre.md "A search
 // survives the move"): the box publishes what the reader typed, the switch's links carry it as `?q=`, and the page a
 // link lands on reads it back into its box. A tiny store rather than context, so the header's box and a phone chip
 // elsewhere in the tree read the same text without a provider between them.

@@ -6,33 +6,19 @@
 // never reloads by itself, reloads only once everything edited has been saved, and never reloads into
 // the same build. Each editor binds it once (its components/chrome/NewVersionPrompt.tsx) with its
 // product's name, format number, server release store and build id.
-import {
-  type CSSProperties,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  useSyncExternalStore,
-} from 'react';
-import { Button } from '@liveworkspace/ui';
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import { useToast } from '@liveworkspace/ui/toast';
 import { workbench } from '../../bindings';
+import { useLatest } from '../../hooks/ui/useLatest';
 import { useNewerEditorLive } from '../../hooks/ui/useNewerEditorLive';
 import { debugLog } from '../../lib/debug-log';
 import { checkLiveEditor } from '../../lib/live-editor-build';
 import { reloadWhenSaved } from '../../lib/reload-when-saved';
-import { START_FOOTER_SELECTOR, useStartPanelOpen } from '../start/start-panel-open';
-import { useChromeFloor } from '../toast/useToastFloor';
-import { TOAST_SURFACE } from '../toast/ToastCard';
-import { announceToastFloorChange } from '../toast/toast-floor';
-import { CORNER_CLUSTER_CLEARANCE } from './corner-cluster-clearance';
 
 type Phase = 'offered' | 'saving' | 'unsaved' | 'arriving';
 
-/** The layer and height the prompt takes while a start panel is open, where that panel is a sheet (StartPanel): one
- *  above the overlay layer, and standing on the sheet's foot row (`--start-clear`, measured), never lower than usual
- *  (CORNER_CLUSTER_CLEARANCE_PX, written out: Tailwind reads only literal classes). */
-export const OVER_START_SHEET =
-  'max-sm:z-[calc(var(--z-overlay)+1)] short-window:z-[calc(var(--z-overlay)+1)] max-sm:bottom-[max(135px,var(--start-clear))] short-window:bottom-[max(135px,var(--start-clear))]';
+/** The toast's key: one standing toast, upserted in place as its phase changes. */
+export const NEW_VERSION_TOAST_KEY = 'new-version';
 
 const SAVING = 'Saving your changes…';
 const UNSAVED = "Your latest changes aren't saved yet. Reload once they are.";
@@ -78,11 +64,7 @@ export function NewVersionPrompt({
   );
   const editorLive = useNewerEditorLive(ahead, checkLive);
   const visible = ahead && editorLive && (dismissedAt === null || server > dismissedAt);
-  // On a phone and a short window an empty tab's start is a sheet on the overlay layer: the prompt stands one above
-  // it there, still under the canvas modal and every dialog, so Reload is in reach before anything is picked.
-  const overStart = useStartPanelOpen();
-  // Above the sheet's foot row (the Save switch), measured as the toasts measure their floor; only while both show.
-  const startClear = useChromeFloor(visible && overStart, 0, START_FOOTER_SELECTOR);
+  const toast = useToast();
 
   useEffect(() => {
     if (!visible || announced.current) return;
@@ -90,14 +72,9 @@ export function NewVersionPrompt({
     debugLog(`[${workbench.formatLogScope}] newer on the server`, { editor: editorFormat, server });
     workbench.track('UI', 'Opened', 'NewVersionPrompt');
   }, [visible, server, editorFormat]);
-  // A toast already up stands on the prompt while it shows, and drops back when it goes.
-  useEffect(() => {
-    announceToastFloorChange();
-  }, [visible]);
 
-  if (!visible) return null;
-
-  const onReload = async () => {
+  // Reload, read by the toast's button at its newest without re-raising the toast.
+  const onReload = useLatest(async () => {
     workbench.track('UI', 'Used', 'NewVersionPrompt');
     setPhase('saving');
     // Saved first (no reload yet: `reload` here only marks it settled), then the same build check.
@@ -112,7 +89,7 @@ export function NewVersionPrompt({
       return;
     }
     reload();
-  };
+  });
 
   const copy =
     phase === 'saving'
@@ -123,34 +100,30 @@ export function NewVersionPrompt({
           ? STILL_ARRIVING
           : `A new version of ${product} is ready.`;
 
-  return (
-    <div
-      role="status"
-      data-new-version-prompt=""
-      // The toast's look, not its stack (docs/specs/004-interface-design/toasts.md "Out of scope"); the toasts
-      // stand on it, as on any bottom chrome. Clear of the canvas's bottom-right cluster (zoom), which it covered on a
-      // phone and at 450px at 80px up, as the accounts-outage notice is (Work Tracker 1193).
-      data-toast-floor=""
-      className={`fixed ${CORNER_CLUSTER_CLEARANCE} left-1/2 z-[var(--z-chrome)] ${overStart ? OVER_START_SHEET : ''} flex w-[calc(100vw-2rem)] max-w-md -translate-x-1/2 animate-toast-in items-center gap-3 border-slate-200 px-4 py-3 text-sm dark:border-slate-700 ${TOAST_SURFACE}`}
-      style={overStart ? ({ '--start-clear': `${startClear}px` } as CSSProperties) : undefined}
-    >
-      <p className="min-w-0 flex-1">{copy}</p>
-      <Button size="sm" busy={phase === 'saving'} onClick={() => void onReload()}>
-        Reload
-      </Button>
-      <Button
-        size="sm"
-        variant="secondary"
-        disabled={phase === 'saving'}
-        onClick={() => {
-          setDismissedAt(server);
-          setPhase('offered');
-        }}
-      >
-        Not now
-      </Button>
-    </div>
-  );
+  // A standing toast (liveworkspace/docs/specs/016-notifications/toasts.md "Timing"): Reload is its action, closing it
+  // is Not now (it comes back only for a newer version still), and it leaves when the page no longer needs a reload.
+  useEffect(() => {
+    if (!visible) {
+      toast.dismissAction(NEW_VERSION_TOAST_KEY);
+      return;
+    }
+    toast.action({
+      key: NEW_VERSION_TOAST_KEY,
+      message: copy,
+      sticky: true,
+      important: true,
+      actions: [
+        { label: 'Reload', onSelect: () => void onReload.current(), disabled: phase === 'saving' },
+      ],
+      onDismiss: () => {
+        setDismissedAt(server);
+        setPhase('offered');
+      },
+    });
+  }, [toast, visible, copy, phase, server, onReload]);
+  useEffect(() => () => toast.dismissAction(NEW_VERSION_TOAST_KEY), [toast]);
+
+  return null;
 }
 
 function noReload(): void {}

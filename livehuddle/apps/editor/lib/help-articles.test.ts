@@ -11,7 +11,7 @@ import {
 import { articles, categories } from '@livehuddle/help-registry';
 
 // The editor deep-links into the help centre by the paths in HELP_ARTICLES, so a stale path ships a 404 link. The
-// help is the one help centre now (liveworkspace/apps/help, liveworkspace/docs/specs/016-help/help-centre.md), whose
+// help is the one help centre now (liveworkspace/apps/help, liveworkspace/docs/specs/017-help/help-centre.md), whose
 // app/ holds every app's articles: a link resolves when its page is on disk AND livehuddle's help shows it (an article
 // that applies to livehuddle, in @livehuddle/help-registry's slice, or one of its category landings or fixed pages), since an
 // article for other apps only answers livehuddle's address with a redirect away. Reading help's app/ here is a

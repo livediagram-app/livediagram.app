@@ -1,4 +1,4 @@
-// The apps the one help centre serves, and its scopes (liveworkspace/docs/specs/016-help/help-centre.md). Every article
+// The apps the one help centre serves, and its scopes (liveworkspace/docs/specs/017-help/help-centre.md). Every article
 // names the apps it applies to; a scope is one app's help, or All Apps. Data-free: the names and words here are the
 // help centre's own, so a page that only labels or links an app never loads a catalogue.
 

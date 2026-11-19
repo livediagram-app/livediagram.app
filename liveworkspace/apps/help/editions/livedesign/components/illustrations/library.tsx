@@ -1,4 +1,4 @@
-// The Library illustrations for The Library article (liveworkspace/docs/specs/016-help/help-centre.md; drawing
+// The Library illustrations for The Library article (liveworkspace/docs/specs/017-help/help-centre.md; drawing
 // liveworkspace/docs/specs/006-media/libraries.md). Real labels from the shared workbench's SaveToLibraryDialog.tsx
 // (Save to Library, Name, Save to, Personal with "Only you", a team's line, Folder (optional), Save) and
 // LibraryPaletteTab.tsx (Search the library, a folder heading per scope, the saved tiles).

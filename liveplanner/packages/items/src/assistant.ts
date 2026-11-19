@@ -102,3 +102,11 @@ export const itemAssistantOf = (item: Pick<Item, 'fields'>): ItemAssistant | und
 export const assistantPersonOf = (assistant: ItemAssistant): ItemPerson => ({
   ...assistant.assistant.person,
 });
+
+// Who hands back the cards of an assistant whose token was revoked (docs/specs/026-plan/items.md "When its token is
+// revoked"): a system author, as Repeat is, so the card's history notes why and no person is named as having done it.
+export const REVOKED_PERSON: ItemPerson = {
+  id: 'access-revoked',
+  name: 'Access Revoked',
+  color: '#64748b',
+};

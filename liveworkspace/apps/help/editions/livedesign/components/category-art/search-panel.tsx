@@ -3,7 +3,7 @@ import {
   SearchPanelArt as Scene,
 } from '@liveworkspace/help-site/art/scenes/search-panel';
 
-// Search Panel: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). "roadmap" finds a design, a tab
+// Search Panel: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). "roadmap" finds a design, a tab
 // of its screens, a sticky note on a wireframe and the Timeline Rail guide.
 export function SearchPanelArt() {
   return (

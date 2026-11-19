@@ -1,4 +1,4 @@
-// The Pages illustrations of the pages in a row and the page panel (liveworkspace/docs/specs/016-help/help-centre.md),
+// The Pages illustrations of the pages in a row and the page panel (liveworkspace/docs/specs/017-help/help-centre.md),
 // re-exported from ./pages: the pages with their title bars (CanvasPages.tsx, PageTitleBar.tsx) and the
 // page panel (PagePanel.tsx, page-panel-sections.tsx). Composed from the shared primitives.
 

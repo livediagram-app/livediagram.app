@@ -1,6 +1,6 @@
 import { appliesTo, type HelpScope, type SearchEntry } from '@liveworkspace/help-registry';
 
-// The one help centre's search panel (liveworkspace/docs/specs/016-help/help-centre.md "Search"), grouped by the page's
+// The one help centre's search panel (liveworkspace/docs/specs/017-help/help-centre.md "Search"), grouped by the page's
 // scope. In an app's help the results from its own index come first, then up to three from the every-app index that
 // apply only to other apps (once that index has loaded); under All Apps one list. A help centre with no scope keeps
 // its one list.

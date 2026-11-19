@@ -20,7 +20,7 @@ import * as documentsIcons from '../../livedocuments/lib/featureIcons';
 import * as huddleIcons from '../../livehuddle/lib/featureIcons';
 import * as plannerIcons from '../../liveplanner/lib/featureIcons';
 
-// All Apps' card art (liveworkspace/docs/specs/016-help/help-centre.md "The home pages"): every app's scenes, icons
+// All Apps' card art (liveworkspace/docs/specs/017-help/help-centre.md "The home pages"): every app's scenes, icons
 // and hues together, since All Apps lists every app's categories. Where two apps draw the same category, the first in
 // registry order wins (livediagram's canvas, liveplanner's plan). The scenes paint with `brand-*` classes, which the
 // all build's theme sets to liveworkspace's slate, so they read in the platform's colours.

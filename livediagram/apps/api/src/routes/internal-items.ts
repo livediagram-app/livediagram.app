@@ -27,7 +27,12 @@ import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
-import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
+import {
+  notifyAccessGranted,
+  notifyAccessRequested,
+  notifyApprovalRequested,
+  notifyFirstShare,
+} from '../email/notifications';
 import { personStore } from '../person-client';
 import {
   closeArchivedSessions,
@@ -69,6 +74,10 @@ export function handleInternalItems(
       revoke: (id, codes, reason) => documentRoom(env, id).revokeCodes(codes, reason),
       // An approval request (liveworkspace approvals.md): the approvers' email.
       approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
+      // Request Access (liveworkspace request-access.md "The emails"): a manager's email when someone asks, and the
+      // requester's when a manager shares it.
+      accessRequested: (id, notice) => notifyAccessRequested(env, id, notice),
+      accessGranted: (id, notice) => notifyAccessGranted(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)

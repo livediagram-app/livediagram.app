@@ -1,4 +1,4 @@
-// Edit | Walk illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the toggle at the very start of the palette strip
+// Edit | Walk illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the toggle at the very start of the palette strip
 // (docs/specs/007-editor/toolbar-layout.md) in both its states, the Format panel the Format Painter opens while its
 // brush is loaded, and the pixel characters Avatar mode walks. The toggle replaced the Selection Mode picker: Select,
 // Hand, Eraser and Format are no longer modes to pick.

@@ -8,8 +8,12 @@
 // a notification problem can't break the request that triggered it.
 
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
-import { isAccountId, type TeamPerson } from '@liveworkspace/auth-client';
-import type { ApprovalNotice } from '@liveworkspace/index-client';
+import { accountAddresses, isAccountId, type TeamPerson } from '@liveworkspace/auth-client';
+import type {
+  AccessGrantedNotice,
+  AccessRequestedNotice,
+  ApprovalNotice,
+} from '@liveworkspace/index-client';
 import { MENTIONS_MAX, type Comment } from '@liveplanner/project';
 import { claimFormEmail } from '../db';
 import { ownerEmail } from '../person/account-app';
@@ -34,6 +38,8 @@ const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 // responses"); the next one says how many came while it was held. Safe range 5..60 minutes.
 const FORM_EMAIL_THROTTLE_MS = 15 * 60 * 1000;
 import {
+  accessGrantedEmail,
+  accessRequestedEmail,
   actionAssignedEmail,
   approvalRequestedEmail,
   commentNotificationEmail,
@@ -127,12 +133,15 @@ const notifier = createNotifier<Env, RenderedEmail>({
   allowance: (env) => accountsAllowance(accountCredentials(env)),
   nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
   teamPeople,
+  addresses: (env, ids) => accountAddresses(accountCredentials(env), ids),
   settings: { join: 'notifyProjectJoin' },
   emails: {
     milestone: milestoneEmail,
     firstShare: firstShareEmail,
     joined: projectJoinedEmail,
     actionAssigned: actionAssignedEmail,
+    accessRequested: accessRequestedEmail,
+    accessGranted: accessGrantedEmail,
     approvalRequested: approvalRequestedEmail,
     mentioned: (env, authorName, plan, text, cardId) =>
       mentionedEmail(env, authorName, plan.name, plan.id, text, cardId ?? undefined),
@@ -146,6 +155,22 @@ export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
 export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>
   notifier.notifyFirstShare(env, actorId);
+
+// Someone asked for access to a plan these managers run (the index's `access_requested` notice,
+// routes/internal-items.ts; liveworkspace request-access.md "The emails"). Opt-out with the join switch.
+export const notifyAccessRequested = (
+  env: Env,
+  id: string,
+  notice: AccessRequestedNotice,
+): Promise<void> => notifier.notifyAccessRequested(env, id, notice);
+
+// A manager shared a plan with the person who asked (the index's `access_granted` notice): their email, which no
+// switch holds back.
+export const notifyAccessGranted = (
+  env: Env,
+  id: string,
+  notice: AccessGrantedNotice,
+): Promise<void> => notifier.notifyAccessGranted(env, id, notice);
 
 // Someone asked these people to approve a plan (the index's `approval_requested` notice, routes/internal-items.ts).
 // Opt-out with assigned actions (notifyActionAssigned).

@@ -13,7 +13,7 @@ import { cardAppsLabel } from './CategoryCard';
 import { AppName, appliesToLine, Noun } from './ScopeWords';
 import { rowOrder } from './AppMarks';
 
-// liveworkspace/docs/specs/016-help/help-centre.md "Articles and the apps they apply to".
+// liveworkspace/docs/specs/017-help/help-centre.md "Articles and the apps they apply to".
 
 describe('app notes', () => {
   it('reads one app, a comma list or a list, each once', () => {

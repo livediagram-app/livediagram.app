@@ -16,7 +16,7 @@ import { ToolsArt } from './tools';
 import { TroubleshootingArt } from './troubleshooting';
 import { UserInterfaceArt } from './user-interface';
 
-// One scene per help category, keyed by the category slug (liveworkspace/docs/specs/016-help/help-centre.md "Category art").
+// One scene per help category, keyed by the category slug (liveworkspace/docs/specs/017-help/help-centre.md "Category art").
 // Contact has no card, so no scene. A test holds every other category to having one.
 export const CATEGORY_ART: Record<string, ComponentType> = {
   about: AboutArt,

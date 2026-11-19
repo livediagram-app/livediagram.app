@@ -2,7 +2,7 @@ import { Label, Shape } from '@liveworkspace/help-site/art/primitives';
 import { Card, Sparkle } from '@liveworkspace/help-site/art/parts';
 import { ToolsArt as Scene } from '@liveworkspace/help-site/art/scenes/tools';
 
-// Tools: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with livehuddle's helper: Auto-align
+// Tools: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with livehuddle's helper: Auto-align
 // snapping a meeting's notes into line, beside the shared appearance switch (livehuddle has no Zen mode).
 export function ToolsArt() {
   return (

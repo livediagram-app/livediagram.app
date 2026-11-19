@@ -1,7 +1,7 @@
 import { CODE_TONES, DevelopersArt as Scene } from '@liveworkspace/help-site/art/scenes/developers';
 import { MiniSlide } from '@liveworkspace/help-site/art/work';
 
-// Developers: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). `POST /api/documents` with one tab
+// Developers: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). `POST /api/documents` with one tab
 // from the `slide-deck` template (the CLI article's `document create "Pitch" --template slide-deck`), and the slide
 // it makes.
 export function DevelopersArt() {

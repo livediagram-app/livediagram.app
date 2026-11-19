@@ -30,11 +30,11 @@ export function BrowsePage({
 }: {
   site: HelpSite;
   title: string;
-  /** The label above the title (liveworkspace/docs/specs/016-help/help-centre.md "Shared look"). */
+  /** The label above the title (liveworkspace/docs/specs/017-help/help-centre.md "Shared look"). */
   eyebrow?: string;
   lede: string;
   // A category landing's own path and the registry articles it lists, for its CollectionPage
-  // structured data (liveworkspace/docs/specs/016-help/help-centre.md "SEO"). Pages that list something else leave it out.
+  // structured data (liveworkspace/docs/specs/017-help/help-centre.md "SEO"). Pages that list something else leave it out.
   listing?: { appPath: string; articles: Article[] };
   children: ReactNode;
 }) {

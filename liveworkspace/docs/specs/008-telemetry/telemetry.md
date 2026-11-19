@@ -149,7 +149,7 @@ the app's to report, so each change is counted once.
   the project kits' (`PLATFORM_OWN_TELEMETRY_EVENTS` in `packages/telemetry/src/platform-events.ts`), and the All
   Apps help's at www.liveworkspace.app/help (`isPlatformHelpTelemetryEvent` there: `Help·View`, `Help·Helpful` and
   `Help·Unhelpful` by article id, `Help·Searched` by outcome, `Help·Changed·Scope.<scope>` for the app switch,
-  [016-help](../016-help/help-centre.md) "Telemetry"), which the ingest takes only for `liveworkspace.app` and only
+  [017-help](../017-help/help-centre.md) "Telemetry"), which the ingest takes only for `liveworkspace.app` and only
   from its origin.
 - **What it may send.** The Explorer's events, each with its closed set of type tokens:
   `EXPLORER_TELEMETRY_EVENTS` in `packages/telemetry/src/explorer-events.ts`, and in an app's name

@@ -15,7 +15,7 @@ import {
 import { AppMark, AppMarkRow } from './AppMarks';
 import { ChevronDownIcon } from './chrome-icons';
 
-// What is true for one app only, inside an article for several (liveworkspace/docs/specs/016-help/help-centre.md
+// What is true for one app only, inside an article for several (liveworkspace/docs/specs/017-help/help-centre.md
 // "App notes"): an accented box in that app's palette, its mark at the start and "In <app>" as its label. In an app's
 // help that app's notes are open where the author put them and the other apps' fold into one closed row the article
 // layout places at the end (AppNotesFold); under All Apps every note is open in place. The apps with no note are

@@ -26,7 +26,7 @@ before. Each kind, and what it says:
 | Mention        | a thread mentions the reader and its latest comment is someone else's                                       | **Priya mentioned you**, the comment's first line        | the Inbox at the row |
 | Comment        | a thread on the reader's item, or one they are in, where someone else wrote last                            | **Priya commented** or **Priya replied**, its first line | the Inbox at the row |
 | Assigned       | an open action or card assigned to the reader by someone else                                               | **Bo assigned you a card**, its number and title         | the Inbox at the row |
-| Access request | someone asks for access to an item the reader manages ([request-access.md](request-access.md#in-the-inbox)) | **Ana asked for access**, the item                       | the item             |
+| Access request | someone asks for access to an item the reader manages ([request-access.md](request-access.md#in-the-inbox)) | **Ana asked for access**, the item                       | the Inbox at the row |
 | Share          | a manager granted the reader's own request in the last 7 days (`shares`, below)                             | **Ana shared it with you**, the item named below         | the item             |
 
 Each notice also names the item (and the tab, for a thread). Form responses, work the reader handed out and threads
@@ -34,9 +34,9 @@ whose latest comment is their own never notify: the reader's own actions are nev
 never notifies (a browser opened after a week away shows the Inbox's count, not a week of notices), and neither does
 anything already in the Inbox when this browser first watches for this person.
 
-An access request and a share have no row of their own in the Explorer's Inbox list yet (the request's row is Work
-Tracker 1137 part 2; a share is never a row), so their link opens the item itself, in its app; once the request's
-row is drawn its link moves to it.
+A share has no row of its own in the Explorer's Inbox list (it asks nothing), so its link opens the item itself, in
+its app. An access request's row (`r:<request id>`) is on the Inbox of the request's app, or on liveworkspace.app's
+for an app with no Inbox (livehuddle).
 
 ### `shares` in the Inbox read
 
@@ -75,7 +75,7 @@ palette strip, the menu card or the corner card, and takes no focus.
 - **One row**: the kind's icon, who and what in one line (**Priya mentioned you**), the comment's first line in quotes
   where there is one (an `@handle` of the reader, of who mentioned them or of who wrote it reads as that person's
   name, **@Ada Quinn**, not **@ada-quinn**; anyone else's handle stays as written, as in the comment's chips), the item (› the tab › the element, or › the card, as its Inbox row names them, so rows on one
-  canvas tell apart) in small text, and one action: **Open in Inbox** (or **Open** for an access request or a share).
+  canvas tell apart) in small text, and one action: **Open in Inbox** (or **Open** for a share).
   A close button (**Dismiss**, with its tooltip) at the top right.
 - **Several rows** that arrive in one read, or while a notice is still on screen, are one notice: **3 New in Your
   Inbox**, then up to three lines (each who and what, then the item, each a link to its own place), **and 2 more**

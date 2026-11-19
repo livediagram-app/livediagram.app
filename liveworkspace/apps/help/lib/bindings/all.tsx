@@ -1,4 +1,4 @@
-// All Apps' pieces of the one help centre's chrome (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The
+// All Apps' pieces of the one help centre's chrome (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The
 // build"), re-exported for the `all` build by lib/bindings.generated.ts: liveworkspace.app's own appearance key and
 // slate, the platform's social card, and telemetry sent as liveworkspace.app (packages/telemetry platform-events.ts
 // accepts the help events from it). No page-view or web-vitals boots: the platform's ingest takes neither from here.

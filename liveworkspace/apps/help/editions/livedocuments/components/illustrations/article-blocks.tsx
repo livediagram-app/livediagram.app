@@ -1,4 +1,4 @@
-// Illustrations for the blocks an article's writing holds beyond its paragraphs (liveworkspace/docs/specs/016-help/help-centre.md,
+// Illustrations for the blocks an article's writing holds beyond its paragraphs (liveworkspace/docs/specs/017-help/help-centre.md,
 // docs/specs/007-editor/article-pages.md "Tables", "Table of contents" and "Headers and footers"): a table block
 // with its header row and the page toolbar's Table menu (article/page-toolbar-table.tsx), and an article page with
 // its header, a contents block and its footer (article/ArticleBandsSection.tsx, lib/article/article-toc-view.ts).

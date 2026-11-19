@@ -19,7 +19,7 @@ const CARD = (
   </>
 );
 
-// Search Panel: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). "roadmap" finds a plan, its
+// Search Panel: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). "roadmap" finds a plan, its
 // Roadmap tab, a card (its number, its title and its board's tab) and the Boards guide, in the order the panel
 // groups them (Plans, Tabs, Cards, Help).
 export function SearchPanelArt() {

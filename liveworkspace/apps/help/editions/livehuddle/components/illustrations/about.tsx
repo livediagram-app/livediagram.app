@@ -1,4 +1,4 @@
-// About-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the conceptual articles, what
+// About-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the conceptual articles, what
 // livehuddle is, who it serves, why use it, and what open source means.
 // Composed only from the shared primitives so the house style holds. Several
 // About figures reuse canvas / collaboration scenes (CanvasOverview,

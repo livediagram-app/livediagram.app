@@ -1,4 +1,4 @@
-// Shared SVG building blocks for every help centre's illustrations (liveworkspace/docs/specs/016-help/help-centre.md in each product).
+// Shared SVG building blocks for every help centre's illustrations (liveworkspace/docs/specs/017-help/help-centre.md in each product).
 //
 // Every illustration in `components/illustrations/*` is composed from these
 // primitives so the whole help centre reads as one coherent window into the

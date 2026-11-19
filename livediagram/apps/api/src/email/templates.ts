@@ -12,7 +12,12 @@ import {
   subjectText,
   type EmailSection,
 } from '@liveworkspace/email/layout';
-import type { ApprovalEmailInput } from '@liveworkspace/index-app';
+import { accessGrantedParts, accessRequestedParts } from '@liveworkspace/email/access-request';
+import type {
+  AccessGrantedEmailInput,
+  AccessRequestedEmailInput,
+  ApprovalEmailInput,
+} from '@liveworkspace/index-app';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
@@ -50,6 +55,8 @@ export type EmailKind =
   | 'CommentNotification'
   | 'ActionAssigned'
   | 'ApprovalRequested'
+  | 'AccessRequested'
+  | 'AccessGranted'
   | 'Mentioned'
   | 'FormResponse'
   | 'FormSuspended'
@@ -352,5 +359,46 @@ export function firstShareEmail(env: Env): RenderedEmail {
       ),
     }),
     unsubscribeUrl: profilePath(env),
+  };
+}
+
+// Request Access (liveworkspace/docs/specs/004-index/request-access.md "The emails"), worded once
+// (@liveworkspace/email/access-request) in this app's look: someone asked for access to a canvas the recipient manages
+// (opt-out with the join switch), and a manager shared it with the person who asked (no switch: they asked for it).
+const ACCESS_WORDS = { noun: 'canvas', escape: xmlEscape };
+
+export function accessRequestedEmail(env: Env, input: AccessRequestedEmailInput): RenderedEmail {
+  const inbox = `${appBaseUrl(env)}/explorer/inbox?at=${encodeURIComponent(`r:${input.requestId}`)}`;
+  const parts = accessRequestedParts(
+    {
+      requesterName: input.requesterName,
+      itemTitle: input.item.name,
+      note: input.note,
+      href: inbox,
+    },
+    ACCESS_WORDS,
+  );
+  return {
+    kind: 'AccessRequested',
+    subject: parts.subject,
+    html: shell(env, { ...parts.section, footer: manageNotificationsFooter(env, parts.reason) }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+export function accessGrantedEmail(env: Env, input: AccessGrantedEmailInput): RenderedEmail {
+  const parts = accessGrantedParts(
+    {
+      granterName: input.granterName,
+      itemTitle: input.item.name,
+      level: input.level,
+      href: `${appBaseUrl(env)}/document/${encodeURIComponent(input.item.id)}`,
+    },
+    ACCESS_WORDS,
+  );
+  return {
+    kind: 'AccessGranted',
+    subject: parts.subject,
+    html: shell(env, { ...parts.section, footer: parts.reason }),
   };
 }

@@ -1,4 +1,4 @@
-// The help paths that moved (liveworkspace/docs/specs/016-help/help-centre.md "Every old help path keeps working"):
+// The help paths that moved (liveworkspace/docs/specs/017-help/help-centre.md "Every old help path keeps working"):
 // each old path answers 308 to its new one on the same address, before anything else, so a link people already
 // shared keeps landing. The help Worker reads them from the build's manifest (apps/help scripts/build-scopes.mjs).
 //

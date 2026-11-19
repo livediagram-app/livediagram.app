@@ -1,4 +1,4 @@
-// Tips-and-tricks illustrations (liveworkspace/docs/specs/016-help/help-centre.md): keyboard shortcuts and their toggle,
+// Tips-and-tricks illustrations (liveworkspace/docs/specs/017-help/help-centre.md): keyboard shortcuts and their toggle,
 // the palette strip as a quick-add launchpad, and the screen-sharing surfaces
 // (Zen mode and the laser pointer). Format-painter and theme scenes are reused
 // from canvas.tsx, not redrawn. Composed only from the shared primitives.

@@ -36,8 +36,7 @@ function kindIcon(row: NoticeRow, size = 14): ReactNode {
   return icons[row.kind];
 }
 
-const linkWords = (row: NoticeRow) =>
-  row.kind === 'access' || row.kind === 'share' ? 'Open' : 'Open in Inbox';
+const linkWords = (row: NoticeRow) => (row.kind === 'share' ? 'Open' : 'Open in Inbox');
 const placeWords = (row: NoticeRow) => (row.detail ? `${row.place} › ${row.detail}` : row.place);
 
 /** Where the card hangs: under the corner card when the editor draws one, read when it shows and on resize. */

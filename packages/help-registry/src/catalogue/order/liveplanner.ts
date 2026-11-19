@@ -1,4 +1,4 @@
-// liveplanner's reading order (liveworkspace/docs/specs/016-help/help-centre.md): every article path its help shows, in the
+// liveplanner's reading order (liveworkspace/docs/specs/017-help/help-centre.md): every article path its help shows, in the
 // order its own registry listed them before the merge, shared articles in their old places. Generated once from the
 // five registries the merge replaced; a new article not listed here reads after the listed ones of its category.
 

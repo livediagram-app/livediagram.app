@@ -125,7 +125,7 @@ here.
 `Cloud` for livehuddle and `Offline` for the Offline location. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
-## Help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md))
+## Help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md))
 
 The Offline Mode article says a guest's new documents start in this browser and a signed-in person's on livehuddle,
 and how to move one either way. No article of its own: each location's article (offline today) is where the substance
@@ -143,4 +143,4 @@ is.
 See [Dedicated route for new-document creation](../007-editor/new-document-route.md) (the wizard),
 [Offline Mode](offline-mode.md) (the browser-only store),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
-[One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md) (help).
+[One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md) (help).

@@ -1,6 +1,6 @@
 import { TipsAndTricksArt as Scene } from '@liveworkspace/help-site/art/scenes/tips-and-tricks';
 
-// Tips and Tricks: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with livedocuments's commands
+// Tips and Tricks: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with livedocuments's commands
 // (the Command Palette article: the Slide Deck tool, Fit to Screen, zen mode) and the keys that put writing and a
 // picture on a page without opening the palette (Keyboard Shortcuts).
 export function TipsAndTricksArt() {

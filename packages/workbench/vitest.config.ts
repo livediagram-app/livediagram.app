@@ -8,6 +8,9 @@ import { defineProject } from '@liveworkspace/vitest-config';
 // (docs/specs/007-editor/pages-mode.md "Contents" in each). The editors' door tests drive them with real pages; these
 // gates keep the package's own tests covering every branch. A new file joins the list on the commit that adds it.
 const HELD_AT_100 = [
+  // Request Access, the requester's side (liveworkspace/docs/specs/004-index/request-access.md "On screen"; Work
+  // Tracker 1137 and 1308).
+  'src/components/request-access/**',
   // Charts linked to a liveplanner sheet, the editors' one copy (each reader app's 009-elements pie-chart.md, Work
   // Tracker 940 and 1133).
   'src/components/sheet-links/sheet-links.ts',
@@ -162,6 +165,9 @@ const HELD_AT_100 = [
   // The Tab Style dialog the five editors kept as near-copies, one home with each editor's profile
   // (liveworkspace/docs/specs/011-workbench/tab-style.md).
   'src/components/dialogs/tab-style/*.{ts,tsx}',
+  // Mixed-direction text painted a line at a time in the shared label editor
+  // (liveworkspace/docs/specs/011-workbench/label-editor.md, Work Tracker 1188).
+  'src/components/label-editor/rich-text-lines.ts',
 ];
 
 export default defineProject({

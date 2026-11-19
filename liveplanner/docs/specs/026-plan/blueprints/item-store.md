@@ -209,6 +209,29 @@ CREATE INDEX IF NOT EXISTS known_assistants_seen ON known_assistants (seen_at);
 - Account closing (`plan-anonymise.ts`): `DELETE FROM known_assistants WHERE person_id = ?` beside the cards'
   rewrite. Copies, exports, Community posts and snapshots never read the table.
 
+### A revoked assistant (`apps/api/src/plan-room/assistant-revoked.ts`, Work Tracker 1294)
+
+[When its token is revoked](../items.md#when-its-token-is-revoked). The index's
+`POST /api/internal/people/:id/assistant-revoked { client, items }` (`@liveworkspace/index-app` `assistantRevoked`,
+up to `PERSON_ITEMS_MAX` (100) items, `client` 1 to 80 characters, `:id` a `user_` id) runs the app's
+`assistantRevoked(itemId, personId, client)` for each item through `purgeEach` (bounded), answering `200` or `503`
+with `unreached`. liveplanner's handler (`routes/internal-items.ts`) calls the plan's Durable Object
+(`PlanClient.assistantRevoked`, `plan-room-doors.ts` `assistantRevoked`), which skips a plan never started (no
+schema made) and runs `handBackRevoked(env, planId, personId, client, relay)`:
+
+- The assistant id is `assistantIdFor(await itemPersonId(personId), client)`; a client `itemAssistantFor` refuses
+  (blank, past `ASSISTANT_CLIENT_MAX`) ends it with nothing done.
+- `DELETE FROM known_assistants WHERE id = ?`.
+- The cards: `SELECT id FROM items WHERE plan_id = ? AND fields ->> '$.assignee.id' = ?` (one scan of the plan's own
+  rows), read whole (`readItems`), each kept only when `itemAssistantOf(card)?.id` is the assistant. Each is
+  `applyPatch(card, { set: { assignee: assistantPersonOf(held) } }, { now, by: REVOKED_PERSON })` written through
+  `updateItemsAtRev` in batches of `REVOKE_WRITE_BATCH` (100); a card that moved on is read again and checked again,
+  up to `ITEM_WRITE_RETRIES`, so one a person re-assigned meanwhile is left alone. Each landed batch is relayed
+  (`{ kind: 'items', upserts, removed: [], rev }` through the room's ordered broadcast) and its history appended
+  (`appendItemHistory`, no tag), which is the card's note. Logs `[items] assistant.revoked { cards, retries }`.
+- `REVOKED_PERSON` (`@liveplanner/items`, `assistant.ts`): `{ id: 'access-revoked', name: 'Access Revoked',
+color: '#64748b' }`, a system author as `REPEAT_PERSON` is; never a person to notify.
+
 ### The assistant on the card (editor)
 
 [The Assignee picker, the AI mark and progress](../items.md#handing-a-card-to-an-ai-assistant).

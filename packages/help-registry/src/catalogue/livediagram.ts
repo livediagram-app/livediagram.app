@@ -1,4 +1,4 @@
-// The livediagram help catalogue: its categories and the articles only livediagram has (docs/specs/016-help/help-centre.md).
+// The livediagram help catalogue: its categories and the articles only livediagram has (docs/specs/017-help/help-centre.md).
 // Articles several apps share live in ./shared/. Moved from livediagram's own help registry; each article names the
 // app it applies to.
 
@@ -77,7 +77,7 @@ export const categories: Category[] = [
   // Feature-guide categories (kind: 'feature'). Rendered under "Feature Guides"
   // on the home page; each has a card-grid index at /help/<slug>/. articleCount
   // counts the feature landings in the category (each landing has its own
-  // sub-guides). See liveworkspace/docs/specs/016-help/help-centre.md.
+  // sub-guides). See liveworkspace/docs/specs/017-help/help-centre.md.
   {
     slug: 'user-interface',
     title: 'User Interface',

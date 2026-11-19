@@ -11,7 +11,7 @@ import {
   dataAttrsForRun,
   readRunsFromDom,
   reconcileTrailingNewline,
-} from '@/components/rich-text/rich-text-dom';
+} from '@liveworkspace/workbench/components/label-editor/rich-text-dom';
 
 /** The formatting a row carries: bold, italic and underline, nothing else. */
 export function outlineMarks(runs: TextRun[]): TextRun[] {

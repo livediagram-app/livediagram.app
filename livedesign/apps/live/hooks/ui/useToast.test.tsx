@@ -6,11 +6,8 @@ import { ToastProvider, useToast, type ToastOffer } from './useToast';
 import { useToast as useWorkbenchToast } from '@liveworkspace/workbench/hooks/ui/useToast';
 import { bindWorkbench } from '@/lib/workbench-bindings';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
-import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/workbench/components/toast/ToastStack';
-import {
-  TOAST_ANSWER_TIMEOUT_MS,
-  TOAST_TIMEOUT_MS,
-} from '@liveworkspace/workbench/components/toast/toast-queue';
+import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/ui/toast';
+import { TOAST_ANSWER_TIMEOUT_MS, TOAST_TIMEOUT_MS } from '@liveworkspace/ui/toast';
 
 // A toast leaves by playing its exit; jsdom never fires animationend, so the exit hold removes it.
 function afterExit() {

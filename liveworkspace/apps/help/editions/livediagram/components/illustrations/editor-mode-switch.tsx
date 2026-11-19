@@ -1,5 +1,5 @@
 // Editor-mode illustrations for the Canvas articles on Draw mode and Editor Modes
-// (liveworkspace/docs/specs/016-help/help-centre.md): the mode switch at the top of an empty tab's start with its menu open,
+// (liveworkspace/docs/specs/017-help/help-centre.md): the mode switch at the top of an empty tab's start with its menu open,
 // the list of modes and the preview of one (chrome/editor-mode/ModeMenu.tsx), and Draw mode's dock
 // across the top of the canvas (canvas/whiteboard/WhiteboardDock.tsx). Real labels throughout: the
 // three modes, a mode's description and tools, ⇧D in the preview, the dock's tools and their keys.

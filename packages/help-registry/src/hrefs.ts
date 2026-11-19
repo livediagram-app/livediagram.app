@@ -1,7 +1,7 @@
 // Canonical help-centre paths and addresses, apart from any catalogue: a page that only builds links imports this
 // and skips the articles. Re-exported from the package root and each app's slice.
 //
-// A path (`/canvas/themes/`) is the same on every address an article applies to (liveworkspace/docs/specs/016-help/
+// A path (`/canvas/themes/`) is the same on every address an article applies to (liveworkspace/docs/specs/017-help/
 // help-centre.md "Addresses, canonicals and the old paths"); a scope's address is its app's `www` origin, or
 // liveworkspace.app's for All Apps, both under `/help`. The origins are the sites' own (@liveworkspace/sites), so a dev
 // server links to the local routers and a build to the live sites.

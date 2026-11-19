@@ -1,5 +1,5 @@
 // The Canvas panel of the Tab Style dialog, for the canvas basics of livediagram, livedocuments and
-// livedesign (liveworkspace/docs/specs/016-help/help-centre.md): the Static and Animated pattern carousels
+// livedesign (liveworkspace/docs/specs/017-help/help-centre.md): the Static and Animated pattern carousels
 // (CanvasStyleControls.tsx). Composed from the shared primitives.
 
 import { Label } from '../primitives';

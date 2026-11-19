@@ -1,4 +1,4 @@
-// Comparison table illustration for the Tables article (liveworkspace/docs/specs/016-help/help-centre.md,
+// Comparison table illustration for the Tables article (liveworkspace/docs/specs/017-help/help-centre.md,
 // docs/specs/009-elements/comparison-tables.md): a pricing table as the canvas draws it, features down the side, three
 // plans across, each cell a tick or cross in its disc, and the middle plan's column highlighted (a soft accent wash,
 // its header cell filled with the accent, a frame round it). Composed from the shared primitives.

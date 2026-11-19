@@ -150,7 +150,7 @@ the repair plus signing out.
 ## Repair page in the help centre
 
 A help article, **Repair This Browser** (`/help/troubleshooting/repair-this-browser/`),
-runs the same repair from the help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)).
+runs the same repair from the help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)).
 It lives there, not only in the editor, because every app shares one origin:
 the help page can repair the editor's storage even when the editor itself
 cannot start. The page lists what is cleared and kept, runs the browser checks

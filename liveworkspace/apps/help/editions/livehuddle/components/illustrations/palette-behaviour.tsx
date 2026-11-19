@@ -1,4 +1,4 @@
-// Meeting-element illustrations (liveworkspace/docs/specs/016-help/help-centre.md, drawing docs/specs/009-elements/mode-button.md and
+// Meeting-element illustrations (liveworkspace/docs/specs/017-help/help-centre.md, drawing docs/specs/009-elements/mode-button.md and
 // docs/specs/002-project-scope/not-in-livehuddle.md): the meeting palette's Space categories, plus one scene per
 // element that does something when somebody presses it: the Avatar Selection Mode button.
 //

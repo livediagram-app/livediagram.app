@@ -61,7 +61,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ vector-export            the PDF writer every product's export loads on demand: SVG drawn as vectors, letters outlined, a text layer, tags
 │  ├─ walkthrough              recorded narrations in the four canvas apps: the recorder, the event timeline, the player, the Tools row and its panel, the dock and the bubble
 │  ├─ vitest-config            the Vitest defaults and test helpers every workspace extends
-│  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell
+│  └─ workbench                the editor code all four editors share and that names no product: lib, hooks, primitives, menus, dialogs, tour shell, the label editor
 ├─ scripts/                    the root's own scripts: git-hooks, ts-source-hooks.mjs (Node type stripping for every product's repo scripts), and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
 │  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /community, /telemetry, /status, /sign-in
@@ -147,7 +147,7 @@ liveworkspace/
 │  ├─ templates, template-previews
 │  ├─ help-site                    the help centre's pages, components and checks around each product's articles
 │  ├─ marketing-site               the marketing pages every product shares (hero, Build with AI, FAQ, licences)
-│  ├─ ui                           design system: buttons, menus, dialogs, tokens
+│  ├─ ui                           design system: buttons, menus, dialogs, tokens, the one toast
 │  ├─ workbench                    NEW: the editor shell lifted out of apps/editor:
 │  │                               tabs, explorer, panels, chrome, split view, start
 │  │                               screen, toasts, providers. A product hands it the tab
@@ -509,9 +509,8 @@ Each step is its own PR, and both products build and pass their tests after ever
      row from `components/palette/MenuToggleRow` (each product's module re-exports what it held). The Collaborate
      rules (`collaborate-model`), the context-menu scaffold, the chart legend and surface and the element
      indicator style take the structural part of the product's rows, props or preferences they read, so each
-     product's own types pass in as they are. `useToast` reads Show Notifications through `readPreferences`,
-     and livediagram, livedocuments and livehuddle keep a one-line door at `hooks/ui/useToast.tsx` for their many
-     importers. `useMovablePanelMeasure` is livediagram's copy in every editor: its extra selector, the Draw dock,
+     product's own types pass in as they are. `useToast` (the shared toast in `@liveworkspace/ui/toast`) reads Show Notifications through
+     `readPreferences`, and every editor keeps a one-line door at `hooks/ui/useToast.tsx` for its many importers. `useMovablePanelMeasure` is livediagram's copy in every editor: its extra selector, the Draw dock,
      matches nothing where there is no dock. Left, and why: tests, e2e harness files and scripts (as in the first
      sweep); route files; the hooks that send telemetry (the Format and Spotlight config hooks, the debounced canvas
      telemetry, `trackOrganise`), since the telemetry dashboard's emitter scan reads each product's own folders and
@@ -586,6 +585,19 @@ Each step is its own PR, and both products build and pass their tests after ever
      `CollaborateRows.tsx` keeps only its Sheet-cell row names). Their discs paint through `lib/identity-fill`, the
      identity fill on the colour maths every editor's own `identity-fill.ts` binds. The compact relative time
      (`formatRelativeTimeCompact`) moved to `@liveworkspace/ui/relative-time` beside the other ladders.
+   - Eleventh slice (Work Tracker 1188), the label editor all five editors kept as near-copies: one copy in `@liveworkspace/workbench/components/label-editor`
+     ([label-editor.md](../liveworkspace/docs/specs/011-workbench/label-editor.md)). The editor (`LabelEditor`), its
+     session, the runs machine the note editors also stand on (`useRichTextRuns`, which was each product's
+     `useRichTextDocument` or livedesign's `useRichTextDesign`), the formatting commands, the DOM bridge, the block
+     types, the label typography, the auto-fit and the hug measurer. Each editor keeps a binding at the old paths:
+     `components/canvas/RichTextEditor.tsx` hands in its toolbar and its telemetry (livediagram its mind keys and
+     Escape out of a placement), and `label-style.ts` and `text-hug-measure.ts` bind the run style (livedocuments'
+     paints its Text Effects; livediagram adds the mind label's measure). The copies differed in comments and
+     imports, and livedocuments read a run's highlight and gradient back, which the shared copy does for all five (liveplanner's and livehuddle's older copies also gain the right-to-left
+     lines and the character cap).
+     Right-to-left text over several lines is now painted a line at a time instead of with `plaintext`, so no long
+     line in it is slow to type. Still per product: the label toolbars, the note editors' surfaces, and the text box's
+     geometry (`lib/text-hug`).
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy
      now with the product's own names handed in:

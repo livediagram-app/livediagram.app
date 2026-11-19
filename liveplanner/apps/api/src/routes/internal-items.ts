@@ -21,7 +21,12 @@ import {
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
-import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
+import {
+  notifyAccessGranted,
+  notifyAccessRequested,
+  notifyApprovalRequested,
+  notifyFirstShare,
+} from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgePlanPreviews } from '../db/projects';
 import { mediaClient, mediaOwner } from '../media';
@@ -83,6 +88,10 @@ export function handleInternalItems(
       standing: (id, standing) => planRoom(env, id).takeStanding(standing),
       // An approval request (liveworkspace approvals.md, docs/specs/013-workspace/approvals.md): the approvers' email.
       approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
+      // Request Access (liveworkspace request-access.md "The emails"): a manager's email when someone asks, and the
+      // requester's when a manager shares it.
+      accessRequested: (id, notice) => notifyAccessRequested(env, id, notice),
+      accessGranted: (id, notice) => notifyAccessGranted(env, id, notice),
       // Someone's first time in through a link: the owner's email, and Project·Joined by the link's level.
       notice: (id, notice) =>
         notice.type === 'shared'
@@ -112,6 +121,10 @@ export function handleInternalItems(
         await communityService.mergeCopier(env, guestId, userId);
       },
       anonymise: (id, personId, guestIds) => planRoom(env, id).anonymise(personId, guestIds),
+      // An AI tool whose last token was revoked at liveworkspace: the plan forgets it and hands its cards back to the
+      // person it worked for (plan-room/assistant-revoked.ts).
+      assistantRevoked: (id, personId, client) =>
+        planRoom(env, id).assistantRevoked(personId, client),
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the plan's tab bar.
       connectedTab: (id, write) => planRoom(env, id).addConnectedTab(write),

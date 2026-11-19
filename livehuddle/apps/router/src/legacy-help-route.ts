@@ -1,5 +1,5 @@
 // Renamed help articles: the ones about the container moved when it became a document,
-// (In the one help centre, liveworkspace/docs/specs/016-help/help-centre.md, livehuddle's help has no Draw mode, Editor
+// (In the one help centre, liveworkspace/docs/specs/017-help/help-centre.md, livehuddle's help has no Draw mode, Editor
 // Modes or Diagram Tour article, so those land on the Canvas, Selection Modes and Your First Space instead.)
 // Whiteboards became Draw mode, the Highlighter went from a selection mode to a Draw tile, and
 // the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
@@ -23,7 +23,7 @@
 // The Quick Style panel left livehuddle too (owner, 2026-11-05): its article lands on Colours, Borders and Opacity, the
 // element menu's styling that stays.
 // The Self-Hosting category was retired; its pages land on the help centre home (an empty target). The old addresses are
-// links people have already shared (liveworkspace/docs/specs/016-help/help-centre.md, "Renamed articles").
+// links people have already shared (liveworkspace/docs/specs/017-help/help-centre.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   // Hand and the Eraser left as modes with the Selection Mode picker (owner, 2026-11-06; livehuddle/docs/specs/
   // 002-project-scope/not-in-livehuddle.md "Hand, Eraser and Format as modes").

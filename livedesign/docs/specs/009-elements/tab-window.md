@@ -12,7 +12,7 @@ livehuddle and livedocuments had already retired it), and nothing in livedesign 
   (`packages/agent-verbs/src/mcp/schema.ts`), and `add tab-window` is refused ("tab windows are retired",
   `packages/edit-operations/src/operations/add-kind.ts`). The API's element schema still names the kind, since a
   stored one is valid;
-- no help article (`pages/tab-windows` is gone and redirects to Pages, [One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)), palette
+- no help article (`pages/tab-windows` is gone and redirects to Pages, [One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)), palette
   description or marketing feature card.
 
 ## A stored window

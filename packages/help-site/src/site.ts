@@ -30,7 +30,7 @@ export type { HelpCard } from './lib/help-cards';
 
 export interface HelpSite extends ArticleNeighbours {
   facts: HelpFacts;
-  /** The one help centre's scope (liveworkspace/docs/specs/016-help/help-centre.md), or undefined for a help
+  /** The one help centre's scope (liveworkspace/docs/specs/017-help/help-centre.md), or undefined for a help
    *  centre of one product alone. */
   scope: HelpScope | undefined;
   catalogue: HelpCatalogue;

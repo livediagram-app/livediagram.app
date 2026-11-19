@@ -7,7 +7,7 @@ import { movedToLivehuddle } from '@/editions/livediagram/lib/moved-to-livehuddl
 // The articles that moved to livehuddle (Work Tracker #650). livediagram's help kept a stub at each old path that
 // sent a link on to livehuddle's help; in the one help centre each path is one article that applies to livehuddle
 // and not livediagram, so the help Worker answers livediagram's address with a 308 to the article's canonical one on
-// livehuddle (liveworkspace/docs/specs/016-help/help-centre.md "Addresses, canonicals and the old paths").
+// livehuddle (liveworkspace/docs/specs/017-help/help-centre.md "Addresses, canonicals and the old paths").
 const MOVED = [
   'palette/avatar-pads',
   'palette/chairs',

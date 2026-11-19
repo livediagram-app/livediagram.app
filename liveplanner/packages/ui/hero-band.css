@@ -1,5 +1,5 @@
 /* The landing hero's band (docs/specs/019-marketing/marketing-site.md "Hero"), which the help centre's page
-   headers wear too (liveworkspace/docs/specs/016-help/help-centre.md "Shared look"): its colours, drawn from
+   headers wear too (liveworkspace/docs/specs/017-help/help-centre.md "Shared look"): its colours, drawn from
    the brand mark's prism (packages/brand/src/apps.ts), in one place for light and dark. Light is the
    prism's pale violet ground with its deep violet ink; dark is the page's deepest slate with the prism's light
    violet for accents. The primary button is the header's brand-700 in light and the prism's vivid violet in dark

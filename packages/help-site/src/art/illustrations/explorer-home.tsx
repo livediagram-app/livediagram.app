@@ -1,4 +1,4 @@
-// Explorer Home illustration (each product's liveworkspace/docs/specs/016-help/help-centre.md): Most Used, Recent and Shared With
+// Explorer Home illustration (each product's liveworkspace/docs/specs/017-help/help-centre.md): Most Used, Recent and Shared With
 // You Recently. Drawn from the real labels in the shared Explorer's HomePane. Composed from the shared
 // primitives, so the house style holds. A product names its own recent items.
 

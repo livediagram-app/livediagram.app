@@ -4,7 +4,8 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
 import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
-import { ShareVisibilityButton, shareStateOf, type ItemVisibility } from './ShareVisibilityButton';
+import { ShareVisibilityButton } from './ShareVisibilityButton';
+import { shareStateOf, shareStatesOf, type ItemVisibility } from './share-states';
 import type { VisibilityActions } from './share-states';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
@@ -47,7 +48,7 @@ export type EditorCornerActionsProps = {
   showShare: boolean;
   shareable: boolean;
   // Who else can see the item, besides a share link (team library, Offline, the Community): the Share button's
-  // words wear it and its hover legend marks it (ShareVisibilityButton).
+  // words wear it and its hover legend marks it (ShareVisibilityButton); several at once sweep their hues.
   visibility?: ItemVisibility;
   onOpenShare: () => void;
   // Take Offline from the Share legend's Offline stop (the app's own conversion, which confirms first). Absent where
@@ -209,6 +210,7 @@ export function EditorCornerActions({
         {!shareAction && showShare ? (
           <ShareVisibilityButton
             state={shareStateOf(shareable, visibility)}
+            states={shareStatesOf(shareable, visibility)}
             onOpenShare={onOpenShare}
             actions={{
               shared: onOpenShare,

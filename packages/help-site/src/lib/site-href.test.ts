@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { siteHref } from './site-href';
 
-// Cross-site links stay in the page's deployment (liveworkspace/docs/specs/016-help/help-centre.md "Choosing an app").
+// Cross-site links stay in the page's deployment (liveworkspace/docs/specs/017-help/help-centre.md "Choosing an app").
 describe('siteHref', () => {
   it("moves every site's live origin to its staging one on a staging host", () => {
     expect(siteHref('https://www.liveplanner.app/help/tabs/', 'staging.livediagram.app')).toBe(

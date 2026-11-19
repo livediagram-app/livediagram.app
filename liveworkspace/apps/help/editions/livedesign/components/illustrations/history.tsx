@@ -1,4 +1,4 @@
-// The History illustration for the History article (liveworkspace/docs/specs/016-help/help-centre.md; drawing
+// The History illustration for the History article (liveworkspace/docs/specs/017-help/help-centre.md; drawing
 // livediagram/docs/specs/013-workspace/history.md "The dialog" and liveworkspace/docs/specs/004-index/footer-tools-menu.md
 // "History, with Snapshots in it"). Real labels from the shared Explorer's HistoryParts.tsx (History, Today) and
 // @liveworkspace/snapshots' snapshot-parts.tsx (Take Snapshot): the At a Glance card with its faces and 14-day bars,

@@ -5,7 +5,8 @@
 // with Copy Link and Open Roadmap, the settings saving as they change (the link kept), and Unpublish behind a confirm.
 // A tab with several boards gets a board picker at the top. The privacy note is always there. Once published with
 // Voting on, a chosen card type whose cards would not show their votes gets Votes on its own (one change to the plan's
-// card types), never as an offer.
+// card types), never as an offer. Opened from a board's Roadmap pill it starts on that board (`startBoardId`), and every
+// change to its list of published roadmaps goes back to the pills (`onRoadmaps`).
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { PublishedRoadmap, RoadmapSettings, RoadmapsResponse } from '@liveplanner/api-schema';
 import {
@@ -62,14 +63,20 @@ export function namesOf(names: readonly string[]): string {
 export function RoadmapDialog({
   scope,
   startTabId,
+  startBoardId,
   cardTypes,
+  onRoadmaps,
   onClose,
 }: {
   scope: RoadmapScope;
   // The tab in view when it opened: the Tab picker starts there when it holds a board.
   startTabId: string;
+  // The board whose Roadmap pill opened it: its tab and it are picked once the read knows where it is.
+  startBoardId?: string | undefined;
   // The plan's card types and their changes (useItemTypes): where a published roadmap's types get Votes. Absent: none.
   cardTypes?: Pick<ItemTypesSlice, 'catalogue' | 'types' | 'saveCatalogue'> | undefined;
+  // The plan's published roadmaps, each time the dialog's list changes (a read, Publish, a save, Unpublish).
+  onRoadmaps?: ((roadmaps: readonly PublishedRoadmap[]) => void) | undefined;
   onClose: () => void;
 }) {
   const titleId = useId();
@@ -77,7 +84,7 @@ export function RoadmapDialog({
   const fieldId = useId();
   const [data, setData] = useState<RoadmapsResponse | null>(null);
   const [readFailed, setReadFailed] = useState(false);
-  const [boardId, setBoardId] = useState<string | null>(null);
+  const [boardId, setBoardId] = useState<string | null>(startBoardId ?? null);
   // The settings for a board not yet published (a published one's are its own).
   const [draft, setDraft] = useState<RoadmapSettings | null>(null);
   const [busy, setBusy] = useState(false);
@@ -96,15 +103,25 @@ export function RoadmapDialog({
 
   const read = useCallback(async () => {
     try {
-      setData(await readRoadmaps(scope));
+      const next = await readRoadmaps(scope);
+      // Opened from a board's pill: that board's tab, wherever the tab in view is.
+      const start = startBoardId ? next.boards.find((b) => b.id === startBoardId) : undefined;
+      if (start) setTabId(start.tabId);
+      setData(next);
     } catch {
       setReadFailed(true);
     }
-  }, [scope]);
+  }, [scope, startBoardId]);
   useEffect(() => {
     // oxlint-disable-next-line react/set-state-in-effect -- a fetch from the api: its state lands after the await, never synchronously
     void read();
   }, [read]);
+
+  // The pills follow the dialog's list (use-roadmaps-on-boards.ts).
+  const roadmaps = data?.roadmaps;
+  useEffect(() => {
+    if (roadmaps) onRoadmaps?.(roadmaps);
+  }, [roadmaps, onRoadmaps]);
 
   // The plan's tabs holding a board the api knows, in plan order, and the chosen one's boards (a board just drawn may
   // not be saved yet). A chosen tab with none falls back to the first that has some.

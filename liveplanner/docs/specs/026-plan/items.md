@@ -964,7 +964,8 @@ assigned to a person: the assistant becomes its Assignee, finds it, works it (it
   its token reaches the plan's cards (lists them or changes them) with the right to change them: a token of an Editor
   or a Participant of the whole plan, never a read-only token, a tab-scoped link or a Community visitor. It keeps the
   tool's name and its person (id, name, colour), never the token, refreshed at most once an hour, the most recent
-  `KNOWN_ASSISTANTS_MAX` (50) kept; a closed account's assistants are forgotten with its name. Every assistant a card
+  `KNOWN_ASSISTANTS_MAX` (50) kept; a closed account's assistants are forgotten with its name, and a tool whose
+  token is revoked is forgotten too ([When its token is revoked](#when-its-token-is-revoked)). Every assistant a card
   already holds is offered too. An AI tool connected but never pointed at the plan is not known yet: asking it to
   look at the plan (or to take a card, `"assignee": "me"`) makes it one. The list is the plan's own and travels with
   no copy, export or Community post.
@@ -995,6 +996,33 @@ assigned to a person: the assistant becomes its Assignee, finds it, works it (it
     person can open, so a copy never gives a stranger's assistant any work it can see.
   - A [Community](../025-community/community.md) post, and a copy taken through it, drop it with every person: a
     stranger sees and takes the plan's content, never who or what was working on it.
+
+### When its token is revoked
+
+> **Status: Built** (Work Tracker 1294).
+
+An assistant that can no longer act should not keep work. Once its person revokes the last token that could write
+under its name (in Settings, a CLI signing out, or ending the AI tool's connection;
+[accounts.md "Revoking a token tells the apps"](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#revoking-a-token-tells-the-apps)),
+liveworkspace tells every plan its person may have reached, through the index
+([One Explorer contracts "Revoking an AI tool's token"](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md#revoking-an-ai-tools-token)),
+and each plan:
+
+- **Forgets it**: it leaves the plan's remembered assistants, so the Assignee picker no longer offers it.
+- **Hands its cards back**: every card whose Assignee is that assistant (live, archived or in the Trash) is handed to
+  the person it worked for, as the card holds them (`assistant.person`: their id, name and colour), never anyone else.
+  A card a person already gave to someone else, or took back, no longer holds the assistant and is left alone. Each
+  hand-back is one write through the item store, relayed to everyone in the plan at once, and it notifies nobody.
+- **Notes it in the card's history**: the write is by **Access Revoked** (`REVOKED_PERSON`, a system author like
+  Repeat), so the card's Activity reads "Access Revoked: Set Assignee to Thomas", and Last Edited names Access
+  Revoked. The assistant's comments and earlier history stay as they were.
+- **Only that tool**: the plan matches the assistant by its id (the person and the tool's name), so the same person's
+  other tools, and other people's, keep their cards. A tool reconnected later under the same name is remembered again
+  the next time it reaches the plan.
+- **Off everyone's path**: revoking never waits for a plan; a plan that cannot be reached is asked again an hour later,
+  for up to a week. Doing it twice changes nothing. A plan never started, or that never met the tool, holds nothing
+  and changes nothing. At most `ITEMS_MAX` cards can hold it, read in one query on the plan's own storage and written in
+  batches of `REVOKE_WRITE_BATCH` (100).
 
 ## Who may do what
 

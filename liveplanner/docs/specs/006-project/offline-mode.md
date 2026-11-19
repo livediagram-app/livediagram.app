@@ -559,7 +559,7 @@ The illustration is a small local-first glyph (a browser/device with a project
 inside, "no cloud"), consistent with the existing privacy iconography
 ([Marketing assets](../019-marketing/marketing-assets.md)). It links to the help article below.
 
-## Help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md))
+## Help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md))
 
 Add a help article **"Offline Mode"** (under a saving / privacy-oriented
 category), and (per the help-registry rule) **register it in
@@ -625,7 +625,7 @@ Track adoption without content, reusing the closed vocabulary:
   "Sync Project" and "Take Offline" (with confirmation).
 - `apps/marketing`: the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
 - `liveworkspace/apps/help`: the "Offline Mode" article + its `articles.ts` registry entry
-  ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)).
+  ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)).
 - Telemetry: the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## References
@@ -638,6 +638,6 @@ See [Business model + licence](../002-project-scope/business-model-and-licence.m
 [Dedicated route for new-project creation](../007-editor/new-project-route.md) (New Project),
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
-[One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
+[One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
 [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime, the separate concern),
 [Save Locations](save-locations.md) (the Save location chooser).

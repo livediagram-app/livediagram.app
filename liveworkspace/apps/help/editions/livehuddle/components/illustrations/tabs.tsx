@@ -1,4 +1,4 @@
-// Tabs-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the tab bar and its tabs,
+// Tabs-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the tab bar and its tabs,
 // tab folders opening in place, the tab menu (toolbar over full-width rows split into groups),
 // the Organise in Tab Folder / Add to Document / Import / Export dialogs, cross-tab links and a
 // before/after cleanup. Labels are the editor's own (TabPortalMenu,

@@ -1,4 +1,4 @@
-// The photo page illustration for the Pages article on Photo Pages (liveworkspace/docs/specs/016-help/help-centre.md). Draws the
+// The photo page illustration for the Pages article on Photo Pages (liveworkspace/docs/specs/017-help/help-centre.md). Draws the
 // real surface with its real labels: the palette strip holding the photo tools in place of its categories, the
 // selection mode first and Search last, the colours after the groups (ToolbarPalette.tsx, PhotoToolsRail.tsx,
 // PhotoColours.tsx); the options bar of the Brush in hand under it (PhotoOptionsBar.tsx); the page's label

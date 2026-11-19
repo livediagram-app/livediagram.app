@@ -1,4 +1,4 @@
-// Maps and text effects illustrations (liveworkspace/docs/specs/016-help/help-centre.md): a map of Europe with offices
+// Maps and text effects illustrations (liveworkspace/docs/specs/017-help/help-centre.md): a map of Europe with offices
 // pinned and markets highlighted, the Edit Map dialog, and a headline with a marker highlight, a gradient
 // word and a soft shadow. The map is drawn from the element's own geometry and layout
 // (@livedocuments/document), so the figure is the canvas's drawing, in the house palette. Server-rendered:

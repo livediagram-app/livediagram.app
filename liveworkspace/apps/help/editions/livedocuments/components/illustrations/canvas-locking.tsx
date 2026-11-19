@@ -1,4 +1,4 @@
-// Element illustrations for the Canvas article on Locking Elements (liveworkspace/docs/specs/016-help/help-centre.md),
+// Element illustrations for the Canvas article on Locking Elements (liveworkspace/docs/specs/017-help/help-centre.md),
 // drawn as the canvas draws them: a locked element wears a solid padlock badge on its top-left corner and shows no resize handles
 // (canvas/element-parts.tsx LockBadge).
 

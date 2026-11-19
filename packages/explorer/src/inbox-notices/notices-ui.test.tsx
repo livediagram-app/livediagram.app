@@ -167,7 +167,9 @@ describe('a new row shows', () => {
       ],
     });
     expect(notice()!.textContent).toContain('Ana asked for access');
-    expect(screen.getByRole('link', { name: 'Open' }).getAttribute('href')).toBe('/document/d9');
+    expect(screen.getByRole('link', { name: 'Open in Inbox' }).getAttribute('href')).toBe(
+      '/explorer/inbox?at=r%3Ar1',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
     t.answer({
       shares: [

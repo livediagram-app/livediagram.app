@@ -1,4 +1,4 @@
-// The shape of the one help centre's catalogue (liveworkspace/docs/specs/016-help/help-centre.md): the articles and
+// The shape of the one help centre's catalogue (liveworkspace/docs/specs/017-help/help-centre.md): the articles and
 // categories under src/catalogue/ are in these shapes, and the help app, each app's slice and the editors' search
 // read them through the helpers here, so all of them link, group, search and count alike.
 
@@ -58,7 +58,7 @@ export interface Category {
   /** Feature-guide categories: grouped under "Feature Guides" on the home page,
    *  apart from the support categories (About, Getting Started, ...). */
   kind?: 'feature';
-  /** The order this category's card groups appear in on its page (liveworkspace/docs/specs/016-help/help-centre.md "Groups").
+  /** The order this category's card groups appear in on its page (liveworkspace/docs/specs/017-help/help-centre.md "Groups").
    *  Names every `group` its articles use; without it, groups appear in first-appearance order. */
   groups?: string[];
   /** The apps the category holds articles for: the union of its articles' apps, worked out by categoriesFor (an

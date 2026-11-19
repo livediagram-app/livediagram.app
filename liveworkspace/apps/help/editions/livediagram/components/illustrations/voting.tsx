@@ -1,4 +1,4 @@
-// Dot-voting illustrations (liveworkspace/docs/specs/016-help/help-centre.md, drawing docs/specs/012-collaboration/session-tools.md): the Vote set-up in the
+// Dot-voting illustrations (liveworkspace/docs/specs/017-help/help-centre.md, drawing docs/specs/012-collaboration/session-tools.md): the Vote set-up in the
 // session panel, the votable-layer picker, the two privacy switches, the Vote
 // panel's turnout view, and the results walkthrough.
 //

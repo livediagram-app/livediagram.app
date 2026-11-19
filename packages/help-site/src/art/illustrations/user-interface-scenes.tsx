@@ -1,5 +1,5 @@
 // User-Interface-category scenes every help app whose editor lays its chrome out the same way draws alike
-// (liveworkspace/docs/specs/016-help/help-centre.md): the quick controls, the bottom bar's tabs, the zoom controls, the selection
+// (liveworkspace/docs/specs/017-help/help-centre.md): the quick controls, the bottom bar's tabs, the zoom controls, the selection
 // toolbars, the element menu and the Map. Composed from the shared chrome (./user-interface-chrome) and
 // primitives; each app's user-interface.tsx re-exports the ones it draws as they are and keeps its own panel
 // layout (and any scene its editor draws differently).

@@ -1,4 +1,5 @@
 import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
+import { ToastBell } from '@liveworkspace/ui/toast';
 import {
   CHROME_BTN,
   CHROME_BTN_LABELLED,
@@ -73,6 +74,9 @@ export function ChromeControls({
           <ChromeLabel show={labelled}>Settings</ChromeLabel>
         </button>
       ) : null}
+      {/* The notification list (liveworkspace/docs/specs/016-notifications/toasts.md): an icon alone, right of
+          Settings; toasts collapse into it as they leave. */}
+      <ToastBell className={CHROME_BTN} />
       {appearance ? <AppearanceToggle /> : null}
     </>
   );

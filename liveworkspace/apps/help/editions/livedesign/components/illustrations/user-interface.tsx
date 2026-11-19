@@ -1,4 +1,4 @@
-// User-Interface-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): where the editor's
+// User-Interface-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): where the editor's
 // panels and fixed controls sit (the bottom bar with its tabs and quick
 // controls, the bottom-right corner cluster), the selection toolbars, the
 // element menu and the Map. Labels are the editor's own (apps/live:

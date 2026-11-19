@@ -1,4 +1,4 @@
-// The help centre's shared shapes and lookups (liveworkspace/docs/specs/016-help/help-centre.md). The one catalogue
+// The help centre's shared shapes and lookups (liveworkspace/docs/specs/017-help/help-centre.md). The one catalogue
 // is its own entry (`@liveworkspace/help-registry/catalogue`) and each app's slice another (`/slice/<app>`), so a
 // page that only needs these never loads the articles.
 

@@ -1,4 +1,4 @@
-// The palette category scene for the Icons article (liveworkspace/docs/specs/016-help/help-centre.md,
+// The palette category scene for the Icons article (liveworkspace/docs/specs/017-help/help-centre.md,
 // drawing docs/specs/010-palette/palette-top-level-categories.md and docs/specs/010-palette/palette-category-browse.md).
 //
 // Drawn as the palette body (More's popover) shows it: a header band with the

@@ -1,4 +1,4 @@
-// The merged articles of the explorer, tabs and account batch (liveworkspace/docs/specs/016-help/help-centre.md): one
+// The merged articles of the explorer, tabs and account batch (liveworkspace/docs/specs/017-help/help-centre.md): one
 // entry per path, `apps` the apps whose help had the article, in registry order. Keywords are the union of the copies'.
 
 import type { Article } from '../../types';

@@ -1,4 +1,4 @@
-// Behaviour-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md, drawing docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md and
+// Behaviour-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md, drawing docs/specs/009-elements/mode-button.md to docs/specs/012-collaboration/picker.md and
 // docs/specs/009-elements/reaction-pad.md): the palette's Behaviour groups, plus one scene per element that
 // does something when somebody presses it: Selection Mode buttons, Session
 // buttons, the Done check, Reaction pads, Reveal zones and the Picker.

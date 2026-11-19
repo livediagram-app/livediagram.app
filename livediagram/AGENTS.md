@@ -179,7 +179,7 @@ Treat them as part of the change, not an afterthought:
 
 ## Help centre articles must stay registered
 
-Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug. livediagram's help is the one help centre's livediagram scope (`liveworkspace/apps/help`, [Help centre](../liveworkspace/docs/specs/016-help/help-centre.md)).
+Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug. livediagram's help is the one help centre's livediagram scope (`liveworkspace/apps/help`, [Help centre](../liveworkspace/docs/specs/017-help/help-centre.md)).
 
 ## Domain language
 

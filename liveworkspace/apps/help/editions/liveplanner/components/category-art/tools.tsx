@@ -9,7 +9,7 @@ const COLUMNS = [
   { x: 342, head: 'fill-emerald-400', tags: ['fill-emerald-400'] },
 ];
 
-// Tools: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). liveplanner's Tools are Dark Mode and
+// Tools: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). liveplanner's Tools are Dark Mode and
 // Zen Mode: the Z key and what Zen mode hides, and a board in Zen mode and the Dark appearance, nothing round it but
 // the work.
 export function ToolsArt() {

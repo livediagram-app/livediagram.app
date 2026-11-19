@@ -1,4 +1,4 @@
-// Explorer illustrations for the imports and the Library pages (liveworkspace/docs/specs/016-help/help-centre.md):
+// Explorer illustrations for the imports and the Library pages (liveworkspace/docs/specs/017-help/help-centre.md):
 // the import checklists (draw.io, Microsoft Whiteboard), the Shape libraries page and the Image
 // gallery. Labels are lifted from the live copy (ImportChecklist, and the shared Explorer's
 // ShapeLibrariesPane and GalleryPane) so the figures match what a reader sees. Composed from the

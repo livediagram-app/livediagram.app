@@ -1,4 +1,4 @@
-// Canvas basics illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the palette strip and dock on the
+// Canvas basics illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the palette strip and dock on the
 // canvas, the multi-selection toolbar, the element menu's
 // Font tiles, and the Colours, Text and Canvas panels of the Tab Style dialog.
 // Each draws the real surface with its real labels: ToolbarPalette.tsx, CanvasChrome.tsx,

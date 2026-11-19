@@ -1,4 +1,4 @@
-// Undo / Redo illustrations for the Canvas category (liveworkspace/docs/specs/016-help/help-centre.md): a change on
+// Undo / Redo illustrations for the Canvas category (liveworkspace/docs/specs/017-help/help-centre.md): a change on
 // the canvas being stepped back or re-applied, the Undo / Redo pair in the
 // bottom-right controls, and the keyboard shortcut. Composed only from the
 // shared primitives so the house style holds.

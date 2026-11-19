@@ -10,7 +10,7 @@ import { ArrowRightIcon, ExternalLinkIcon, MessageIcon } from './chrome-icons';
 import { HelpHero } from './HelpHero';
 import { SearchInput } from './SearchInput';
 
-// The help centre's front page (liveworkspace/docs/specs/016-help/help-centre.md "Home page"): the hero with the search and the
+// The help centre's front page (liveworkspace/docs/specs/017-help/help-centre.md "Home page"): the hero with the search and the
 // popular topics, Start here, the product's category sections, and the closing Still stuck band. The layout and the
 // hero's lede are the product's; an open-source product adds a link to its issue tracker in the closing band.
 

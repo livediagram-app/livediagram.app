@@ -87,7 +87,7 @@ const BAR: readonly string[] = [
   'Tech',
 ];
 // A name's width at the strip's 8px type, and the padding either side of it. Tight enough that the whole
-// strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in liveworkspace/docs/specs/016-help/help-centre.md).
+// strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in liveworkspace/docs/specs/017-help/help-centre.md).
 const charW = 4.1;
 const PAD = 3.5;
 // A divider between the bands, and where the first category starts after the selection mode.

@@ -16,7 +16,7 @@ import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS } from './lib/featureIcons';
 import { HOME } from './lib/home-sections';
 import type { Edition } from '../types';
 
-// The livehuddle edition of the one help centre (docs/specs/016-help/help-centre.md): what is livehuddle's alone,
+// The livehuddle edition of the one help centre (docs/specs/017-help/help-centre.md): what is livehuddle's alone,
 // gathered from what its own help app bound in lib/help-site.tsx, app/page.tsx and components/. The
 // framework's `editions/index.ts` picks it when the build's scope is `livehuddle`.
 const art: HelpArt = {

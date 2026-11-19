@@ -1,4 +1,4 @@
-// The "Was this article helpful?" vote (liveworkspace/docs/specs/016-help/help-centre.md), as telemetry (docs/specs/017-telemetry/telemetry.md).
+// The "Was this article helpful?" vote (liveworkspace/docs/specs/017-help/help-centre.md), as telemetry (docs/specs/017-telemetry/telemetry.md).
 //
 // A reader can change their mind: tap "Not really", read on, tap "Yes, it
 // helped". Emitting on every tap counted that reader twice, once on each

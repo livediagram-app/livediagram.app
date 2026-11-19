@@ -1,4 +1,4 @@
-// The one help centre's Worker (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The Worker"): the scope
+// The one help centre's Worker (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The Worker"): the scope
 // from the x-help-app header (else All Apps), the redirect map and the canonical 308s from dist/manifest.json, then
 // the scope's static file. Exports only its default handler (a named export stops workerd); the logic is
 // src/help-scope.ts.

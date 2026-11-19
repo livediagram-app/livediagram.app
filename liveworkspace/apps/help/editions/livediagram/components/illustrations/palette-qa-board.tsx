@@ -1,4 +1,4 @@
-// The Q&A board's help scene (liveworkspace/docs/specs/016-help/help-centre.md, drawing docs/specs/012-collaboration/qa-board.md): the spotlight
+// The Q&A board's help scene (liveworkspace/docs/specs/017-help/help-centre.md, drawing docs/specs/012-collaboration/qa-board.md): the spotlight
 // with the facilitator's Done and Done, next over a ranked queue, the top row
 // marked Most wanted, a vote of your own filled in, heat bars measuring each
 // row against the top, and the composer with its Anonymous switch.

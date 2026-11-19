@@ -3,6 +3,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
+import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/ui/toast';
 import { TOAST_ANSWER_MS, ToastProvider, useToast } from '../ui/Toasts';
 import { afterFolderDelete } from './Dialogs';
 
@@ -34,13 +35,14 @@ describe('toasts', () => {
     act(() => void vi.advanceTimersByTime(6000));
     const toast = screen.getByRole('status');
     expect(toast.textContent).toContain('deleted');
-    fireEvent.mouseEnter(toast);
+    fireEvent.pointerEnter(toast);
     act(() => void vi.advanceTimersByTime(60_000));
     expect(screen.queryByRole('status')).toBeTruthy();
-    fireEvent.mouseLeave(toast);
+    fireEvent.pointerLeave(toast);
     act(() => void vi.advanceTimersByTime(TOAST_ANSWER_MS - 6000 - 1));
     expect(screen.queryByRole('status')).toBeTruthy();
-    act(() => void vi.advanceTimersByTime(2));
+    // It leaves, and is gone once its exit has played.
+    act(() => void vi.advanceTimersByTime(2 + TOAST_EXIT_HOLD_MS));
     expect(screen.queryByRole('status')).toBeNull();
   });
 
@@ -54,17 +56,17 @@ describe('toasts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'go' }));
     const toast = screen.getByRole('status');
     fireEvent.focus(screen.getByRole('button', { name: 'Undo' }));
-    fireEvent.mouseEnter(toast);
-    fireEvent.mouseLeave(toast);
+    fireEvent.pointerEnter(toast);
+    fireEvent.pointerLeave(toast);
     act(() => void vi.advanceTimersByTime(60_000));
     expect(screen.queryByRole('status')).toBeTruthy();
     // And the other way round: hovered, focus leaving does not start it either.
-    fireEvent.mouseEnter(toast);
+    fireEvent.pointerEnter(toast);
     fireEvent.blur(screen.getByRole('button', { name: 'Undo' }));
     act(() => void vi.advanceTimersByTime(60_000));
     expect(screen.queryByRole('status')).toBeTruthy();
-    fireEvent.mouseLeave(toast);
-    act(() => void vi.advanceTimersByTime(TOAST_ANSWER_MS + 1));
+    fireEvent.pointerLeave(toast);
+    act(() => void vi.advanceTimersByTime(TOAST_ANSWER_MS + 1 + TOAST_EXIT_HOLD_MS));
     expect(screen.queryByRole('status')).toBeNull();
   });
 

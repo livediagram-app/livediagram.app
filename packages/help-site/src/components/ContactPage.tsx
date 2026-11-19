@@ -3,7 +3,7 @@ import type { HelpSite } from '../site';
 import { Breadcrumb } from './Breadcrumb';
 import { ExternalLinkIcon } from './chrome-icons';
 
-// The Contact route (liveworkspace/docs/specs/016-help/help-centre.md "Contact"): the contact form, a way to report a problem,
+// The Contact route (liveworkspace/docs/specs/017-help/help-centre.md "Contact"): the contact form, a way to report a problem,
 // and a pointer back into the guides. An open-source product's way to report is its issue tracker; any other
 // product's is the private vulnerability report.
 

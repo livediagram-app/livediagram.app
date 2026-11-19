@@ -1,4 +1,4 @@
-// All Apps' categories (liveworkspace/docs/specs/016-help/help-centre.md "The All Apps home"): the title and
+// All Apps' categories (liveworkspace/docs/specs/017-help/help-centre.md "The All Apps home"): the title and
 // description www.liveworkspace.app/help gives each category, in the order its pages list them. The categories
 // themselves, their kinds and groups, are the apps' (each app's catalogue file); this names them for every app at
 // once, where an app's own copy speaks of its own work ("About livediagram", "your canvases"). A category not listed

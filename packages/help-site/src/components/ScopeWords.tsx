@@ -8,7 +8,7 @@ import {
 import { capital as capitalise } from '../art/noun';
 import { AppMarkRow, rowOrder } from './AppMarks';
 
-// The words shared copy reads per scope (liveworkspace/docs/specs/016-help/help-centre.md "The work's name"), and the
+// The words shared copy reads per scope (liveworkspace/docs/specs/017-help/help-centre.md "The work's name"), and the
 // article header's Applies To row. Bound to the help centre's scope by createUseMdxComponents, so an article writes
 // `<Noun />` and `<AppName />` with no import.
 

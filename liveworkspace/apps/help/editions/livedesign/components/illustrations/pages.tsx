@@ -1,5 +1,5 @@
 // Illustrations for the Pages articles on Working with Pages and Exporting Pages
-// (liveworkspace/docs/specs/016-help/help-centre.md). Each draws the real surface with its real labels: the pages in
+// (liveworkspace/docs/specs/017-help/help-centre.md). Each draws the real surface with its real labels: the pages in
 // a row with their labels, title bar cards with their cogs (CanvasPages.tsx, PageTitleBar.tsx), add buttons
 // (AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the page panel (PagePanel.tsx,
 // page-panel-sections.tsx) and the export page picker (ExportPagePicker.tsx). Composed from the

@@ -1,4 +1,4 @@
-// A scope's view of the catalogue (liveworkspace/docs/specs/016-help/help-centre.md "Articles and the apps they apply
+// A scope's view of the catalogue (liveworkspace/docs/specs/017-help/help-centre.md "Articles and the apps they apply
 // to"): the articles that apply to it in its reading order, and its categories with their counts and apps worked out.
 // Pure functions over lists, so the whole catalogue (catalogue/index.ts) and each app's slice (slice/<app>.ts) build
 // their views the same way from the data they hold.

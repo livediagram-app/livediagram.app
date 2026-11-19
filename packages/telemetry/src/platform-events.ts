@@ -30,7 +30,7 @@ export const PLATFORM_OWN_TELEMETRY_EVENTS = {
 
 const TYPES = PLATFORM_OWN_TELEMETRY_EVENTS as Record<string, readonly (string | null)[]>;
 
-// The one help centre's All Apps view (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "Telemetry"), at
+// The one help centre's All Apps view (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "Telemetry"), at
 // www.liveworkspace.app/help: the events each app's help sends in its own name, here in liveworkspace.app's, so the
 // batch's app is the scope. `View`, `Helpful` and `Unhelpful` carry the article's telemetry id, a bounded token;
 // `Searched` the outcome ('Results' | 'NoResults'), never the query; `Changed` the app switch's move

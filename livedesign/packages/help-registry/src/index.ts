@@ -1,4 +1,4 @@
-// livedesign's help catalogue, as the one help centre holds it (liveworkspace/docs/specs/016-help/help-centre.md): the
+// livedesign's help catalogue, as the one help centre holds it (liveworkspace/docs/specs/017-help/help-centre.md): the
 // categories and articles live in @liveworkspace/help-registry (src/catalogue/livedesign.ts and src/catalogue/shared/),
 // and this package binds this app's slice of them under the names the help editor, CLI and MCP have always imported.
 

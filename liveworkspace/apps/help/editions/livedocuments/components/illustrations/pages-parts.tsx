@@ -1,4 +1,4 @@
-// Shared bits of the Pages illustrations (liveworkspace/docs/specs/016-help/help-centre.md): a sheet of paper on the canvas,
+// Shared bits of the Pages illustrations (liveworkspace/docs/specs/017-help/help-centre.md): a sheet of paper on the canvas,
 // a section title and solid segments, drawn by ./pages, ./pages-row-panel and ./pages-layouts.
 
 import type { ReactNode } from 'react';

@@ -1,4 +1,4 @@
-// livehuddle's own tips-and-tricks illustrations (liveworkspace/docs/specs/016-help/help-centre.md): keyboard shortcuts
+// livehuddle's own tips-and-tricks illustrations (liveworkspace/docs/specs/017-help/help-centre.md): keyboard shortcuts
 // and the palette strip as a quick-add launchpad. The shortcuts toggle is
 // @liveworkspace/help-site/art/illustrations/tips; format-painter and theme scenes are reused from
 // canvas.tsx, not redrawn. Composed only from the shared primitives.

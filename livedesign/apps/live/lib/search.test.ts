@@ -454,7 +454,7 @@ describe('buildSearchResults — commands (action palette)', () => {
   });
 });
 
-describe('buildSearchResults — help articles (liveworkspace/docs/specs/016-help/help-centre.md + docs/specs/018-help/contextual-help-links.md)', () => {
+describe('buildSearchResults — help articles (liveworkspace/docs/specs/017-help/help-centre.md + docs/specs/018-help/contextual-help-links.md)', () => {
   const helpItems = [
     {
       id: 'help:keyboardShortcuts',

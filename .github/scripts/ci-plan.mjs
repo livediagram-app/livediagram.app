@@ -215,7 +215,7 @@ for (const spec of GROUPS) {
 // centre is a liveworkspace Worker deployed as a site, in tier 1.
 const TIER_OF = new Map([
   ['liveworkspace/apps/accounts', 1],
-  // The one help centre (liveworkspace/docs/specs/016-help/help-centre.md) is a site, built like one (six static
+  // The one help centre (liveworkspace/docs/specs/017-help/help-centre.md) is a site, built like one (six static
   // exports, from full history), so it deploys with the sites; every product router (tier 2) binds to it.
   ['liveworkspace/apps/help', 1],
   ['liveworkspace/apps/redirect', 2],

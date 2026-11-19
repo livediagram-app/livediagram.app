@@ -1,7 +1,7 @@
 import { CODE_TONES, DevelopersArt as Scene } from '@liveworkspace/help-site/art/scenes/developers';
 import { MiniWireframe } from '@liveworkspace/help-site/art/work';
 
-// Developers: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). `POST /api/designs` with one tab
+// Developers: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). `POST /api/designs` with one tab
 // from the `wireframe-mobile-app` template (the CLI article's `design create "Coffee app" --template
 // wireframe-mobile-app`), and the phone screens it makes.
 export function DevelopersArt() {

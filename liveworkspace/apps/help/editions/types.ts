@@ -3,7 +3,7 @@ import type { AppId, HelpScope } from '@liveworkspace/help-registry';
 import type { HelpHomeLayout } from '@liveworkspace/help-site/lib/home';
 import type { HelpArt, HelpSiteConfig } from '@liveworkspace/help-site/site';
 
-// One scope's edition of the one help centre (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "Editions"):
+// One scope's edition of the one help centre (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "Editions"):
 // what is that scope's own, gathered in editions/<scope>/edition.ts. editions/index.ts exposes the build's
 // (editions/current.generated.ts, written by scripts/build-scopes.mjs, so a build bundles only its own edition).
 // Everything else (the catalogue, the pages, the components) is the framework's and reads the scope.

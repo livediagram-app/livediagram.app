@@ -116,7 +116,7 @@ describe('searchArticles', () => {
       ).toContain('dashboards');
   });
 
-  it('ranks title matches ahead of description and keyword matches (liveworkspace/docs/specs/016-help/help-centre.md "Search")', () => {
+  it('ranks title matches ahead of description and keyword matches (liveworkspace/docs/specs/017-help/help-centre.md "Search")', () => {
     const inTitle = searchArticles('share').map((a) => a.title.toLowerCase().includes('share'));
     expect(inTitle.indexOf(false)).toBeGreaterThan(inTitle.lastIndexOf(true));
     // A title that starts with the query leads.

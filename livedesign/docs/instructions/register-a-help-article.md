@@ -1,8 +1,8 @@
 # Register a help article
 
 livedesign's help is the `livedesign` scope of liveworkspace's one help centre (`liveworkspace/apps/help`,
-[One help centre](../../../liveworkspace/docs/specs/016-help/help-centre.md) and its
-[blueprint](../../../liveworkspace/docs/specs/016-help/blueprints/help-centre.md)). Its catalogue,
+[One help centre](../../../liveworkspace/docs/specs/017-help/help-centre.md) and its
+[blueprint](../../../liveworkspace/docs/specs/017-help/blueprints/help-centre.md)). Its catalogue,
 `packages/help-registry/src/catalogue/` at the monorepo root, is the **single source for the help search, the
 category and browse listings, and the editor's search panel Help group** (`apps/live/lib/help-search.ts` reads
 livedesign's slice through [`@livedesign/help-registry`](../../packages/help-registry/src/index.ts)). An article's MDX page

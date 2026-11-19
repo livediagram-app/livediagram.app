@@ -5,7 +5,7 @@ import { articlesFor, categoriesFor } from '@liveworkspace/help-registry/catalog
 import { figureShowsIn } from '@liveworkspace/help-site/components/Figure';
 import { SCOPE } from '@/lib/scope.generated';
 
-// What a suite reading the article tree sees of one scope (liveworkspace/docs/specs/016-help/help-centre.md "Articles
+// What a suite reading the article tree sees of one scope (liveworkspace/docs/specs/017-help/help-centre.md "Articles
 // and the apps they apply to"). The one help centre holds every app's articles under app/, so an edition's suites
 // (editions/<app>/tests, run with the scope set to that app, vitest.config.ts) read only the pages that scope shows:
 // its articles' page.mdx, the landings of its categories, and the pages every scope has (the home, contact, the

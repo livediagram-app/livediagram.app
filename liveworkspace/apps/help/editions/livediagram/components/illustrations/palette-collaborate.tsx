@@ -1,4 +1,4 @@
-// Collaborate-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md, drawing docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md and
+// Collaborate-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md, drawing docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md and
 // docs/specs/012-collaboration/comment-pin.md): the palette's Collaborate groups, plus one scene per element that
 // collects what the room thinks: estimate card, temperature check, idea box,
 // agenda, decision record and roll call. (The comment and action panels live in

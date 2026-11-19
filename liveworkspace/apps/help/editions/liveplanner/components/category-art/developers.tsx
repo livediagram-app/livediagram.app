@@ -1,7 +1,7 @@
 import { CODE_TONES, DevelopersArt as Scene } from '@liveworkspace/help-site/art/scenes/developers';
 import { MiniBoard } from '@liveworkspace/help-site/art/work';
 
-// Developers: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). `POST /api/projects` with one tab
+// Developers: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). `POST /api/projects` with one tab
 // from the `kanban` template (Working with Plans), and the board it makes.
 export function DevelopersArt() {
   return (

@@ -1,6 +1,6 @@
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 // An article's own URL and its parent's, read off the route it is served at
-// (liveworkspace/docs/specs/016-help/help-centre.md "SEO"). The help centre nests sub-articles
+// (liveworkspace/docs/specs/017-help/help-centre.md "SEO"). The help centre nests sub-articles
 // under their parent's folder (`palette/tools/data-elements/legend/` sits
 // under `palette/tools/data-elements/`), so the route already says where the
 // parent lives. The page props cannot: `categorySlug` is sometimes the top

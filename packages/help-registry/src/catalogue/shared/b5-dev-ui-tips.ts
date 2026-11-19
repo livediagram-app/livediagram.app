@@ -1,5 +1,5 @@
 // The merged articles of the developers, selection-modes, user-interface, tips-and-tricks and search-panel batch
-// (liveworkspace/docs/specs/016-help/help-centre.md): one entry per path, `apps` the apps whose help had the article,
+// (liveworkspace/docs/specs/017-help/help-centre.md): one entry per path, `apps` the apps whose help had the article,
 // in registry order. Keywords are the union of the copies'.
 
 import type { Article } from '../../types';

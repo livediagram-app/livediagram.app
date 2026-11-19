@@ -405,8 +405,10 @@ Changes are optimistic: rename, hide from Recent, move, Trash, restore and dismi
   read before the change, or after the index took it, does not.
 - If the index refuses, the change is taken back and a toast says why.
 - Toasts name what they acted on: a move ("Moved “X” to Y.") and a delete ("Moved “X” to the Trash.") each carry an
-  Undo, a restore says "“X” restored.". A toast with an Undo stays 10 s (`TOAST_ANSWER_MS`), its clock stopped while
-  it is hovered or focused; others go after 5 s. Delete Forever is always confirmed. Deleting the folder on screen,
+  Undo, a restore says "“X” restored.". They are the shared toast (`@liveworkspace/ui/toast`,
+  liveworkspace/docs/specs/016-notifications/toasts.md): every one can be closed, one with an Undo stays 10 s
+  (`TOAST_ANSWER_MS`) and the rest go by their tone's time, each clock stopped while it is hovered or focused, and
+  each is kept in the Explorer's notification list (the bell). Inside an editor they join the editor's stack. Delete Forever is always confirmed. Deleting the folder on screen,
   or one holding it, goes to My Work or the team's library.
 - A copy or an emptied Trash cannot be guessed, so those reload the lists instead.
 - Rows are memoised and keep their identity unless their own item changed, so one change re-renders one row.

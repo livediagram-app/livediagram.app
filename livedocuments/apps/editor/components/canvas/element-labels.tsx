@@ -27,7 +27,7 @@ import {
   type TextSize,
 } from '@livedocuments/document';
 import { RichTextEditor } from '@/components/canvas/RichTextEditor';
-import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
+import { fitMultilineFontPx } from '@liveworkspace/workbench/components/label-editor/fit-multiline-text';
 import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
 import type { TextHugLabel } from './useTextHug';
 import type { TextAnimView } from './useTextAnimation';

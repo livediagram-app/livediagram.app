@@ -1,5 +1,5 @@
 // The Explorer's help articles on liveworkspace.app (liveworkspace/docs/specs/010-site/site.md "Help"): the articles of
-// All Apps' help (the one help centre, liveworkspace/docs/specs/016-help/help-centre.md) that speak of the Explorer in
+// All Apps' help (the one help centre, liveworkspace/docs/specs/017-help/help-centre.md) that speak of the Explorer in
 // no app, where it mixes every app's work and an app's articles would speak of its kind alone. Names and addresses
 // only, so the Explorer's bundle never carries the articles' text. The Help button, the sign-in banner and Search
 // read it.
@@ -60,7 +60,7 @@ export const explorerArticlePath = (slug: string) => {
 };
 
 /** The article each Explorer view's Help button opens, in All Apps' help on liveworkspace.app (the one help centre,
- *  liveworkspace/docs/specs/016-help/help-centre.md): the same Explorer articles each app's help has
+ *  liveworkspace/docs/specs/017-help/help-centre.md): the same Explorer articles each app's help has
  *  (lib/explorer/host.ts VIEW_HELP), since the overview's old sections are gone. The Invites view has none. */
 const VIEW_ARTICLE: Record<string, string> = {
   home: '/help/explorer/home/',

@@ -1,7 +1,7 @@
 import { SupportedDevicesArt as Scene } from '@liveworkspace/help-site/art/scenes/supported-devices';
 import { MiniBoard } from '@liveworkspace/help-site/art/work';
 
-// Supported Devices: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), one board of cards on a
+// Supported Devices: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), one board of cards on a
 // computer, a tablet and a phone.
 export function SupportedDevicesArt() {
   return (

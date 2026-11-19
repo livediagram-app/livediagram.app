@@ -1,6 +1,6 @@
 import { TipsAndTricksArt as Scene } from '@liveworkspace/help-site/art/scenes/tips-and-tricks';
 
-// Tips and Tricks: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with livedesign's commands
+// Tips and Tricks: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with livedesign's commands
 // (the Command Palette article: the Format Painter, Fit to Screen, zen mode) and the drawing keys (Keyboard
 // Shortcuts: P the Freehand pencil, F a Frame, 6 the Shape Pen).
 export function TipsAndTricksArt() {

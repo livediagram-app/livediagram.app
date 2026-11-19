@@ -31,7 +31,8 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./013-export/README.md - when working on an export every product shares: the PDF writer (`@liveworkspace/vector-export`)
 - ./014-snapshots/README.md - when working on Snapshots in any app: manual save points of a whole item, the latest five, Revert, `@liveworkspace/snapshots`
 - ./015-suggestions/README.md - retired: suggest mode (canvas suggestions, Suggest Only), removed from every product
-- ./016-help/README.md - when working on the one help centre every app shares: liveworkspace.app/help and each app's /help, the app switch and where it moves you, articles for several apps and their app notes, search, canonicals and old paths
+- ./016-notifications/README.md - when working on toasts in any editor, the Explorer or Settings, the footer's bell and the notification list
+- ./017-help/README.md - when working on the one help centre every app shares: liveworkspace.app/help and each app's /help, the app switch and where it moves you, articles for several apps and their app notes, search, canonicals and old paths
 
 ## Workflow
 

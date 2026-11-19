@@ -1,4 +1,4 @@
-// The one catalogue (liveworkspace/docs/specs/016-help/help-centre.md): every app's own articles and categories
+// The one catalogue (liveworkspace/docs/specs/017-help/help-centre.md): every app's own articles and categories
 // (./<app>.ts), the articles the apps share (./shared), All Apps' category copy (./all.ts) and each app's reading
 // order (./order), put together once, with the views each scope reads. The help centre imports this; an editor
 // imports its app's slice (../slice/<app>.ts) instead, so it never bundles the other apps' entries.

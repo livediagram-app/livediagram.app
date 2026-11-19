@@ -1,5 +1,5 @@
 // The Pages illustration of the Layout button's layout gallery (PageLayoutsButton.tsx,
-// layout-gallery/LayoutGallery.tsx; liveworkspace/docs/specs/016-help/help-centre.md), re-exported from ./pages. Composed
+// layout-gallery/LayoutGallery.tsx; liveworkspace/docs/specs/017-help/help-centre.md), re-exported from ./pages. Composed
 // from the shared primitives.
 
 import type { ReactNode } from 'react';

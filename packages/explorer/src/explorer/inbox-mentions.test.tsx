@@ -103,7 +103,8 @@ function renderInbox(index: ReturnType<typeof createFakeIndex>, over: Partial<Ex
   );
 }
 
-const pane = () => screen.getByRole('region', { name: /./ });
+// The toast stack is a region too ("Notifications"); the pane is the other one.
+const pane = () => screen.getByRole('region', { name: /^(?!Notifications$)./ });
 const inboxRow = () => screen.getByRole('treeitem', { name: /^Inbox/ });
 
 beforeEach(() => {

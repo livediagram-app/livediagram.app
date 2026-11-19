@@ -1,4 +1,4 @@
-// The parts the palette mode illustrations are drawn from (liveworkspace/docs/specs/016-help/help-centre.md): a glyph
+// The parts the palette mode illustrations are drawn from (liveworkspace/docs/specs/017-help/help-centre.md): a glyph
 // per mode and the isometric projection the Isometric scene needs. The glyphs of the modes every product shares
 // come from @liveworkspace/help-site; Isometric is livediagram's alone, so its glyph and the projection
 // helpers (iso, IsoCard) live here.

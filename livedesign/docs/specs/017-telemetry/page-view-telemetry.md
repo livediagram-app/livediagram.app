@@ -103,7 +103,7 @@ whether or not the design exists.
 - The same path twice in a row is not counted twice. This suppresses React
   StrictMode's dev-only double effect; in production a path can't repeat
   without a navigation in between, and a real reload starts a fresh page.
-- `Help·View·<article id>` ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)) counts help articles too, keyed by article id,
+- `Help·View·<article id>` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)) counts help articles too, keyed by article id,
   and drives the Pages & Help tab's Help section; the two overlap for articles by design.
 
 ## Who emits

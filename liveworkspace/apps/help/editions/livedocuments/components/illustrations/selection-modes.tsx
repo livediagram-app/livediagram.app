@@ -1,4 +1,4 @@
-// Selection-mode illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the palette's canvas-tool picker
+// Selection-mode illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the palette's canvas-tool picker
 // as the editor actually draws it (a trigger at the start of the palette strip that
 // opens a tile grid in three bands), the panels each tool opens while it is
 // active. The per-mode canvas scenes in

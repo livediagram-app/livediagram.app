@@ -2,7 +2,7 @@ import { DocThumb } from '@liveworkspace/help-site/art/parts';
 import { AccountAndDataArt as Scene } from '@liveworkspace/help-site/art/scenes/account-and-data';
 import { MiniSlide } from '@liveworkspace/help-site/art/work';
 
-// Account and Data: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with livedocuments's
+// Account and Data: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with livedocuments's
 // documents (an article, a deck and a report) and its export formats (Exporting Documents).
 export function AccountAndDataArt() {
   return (

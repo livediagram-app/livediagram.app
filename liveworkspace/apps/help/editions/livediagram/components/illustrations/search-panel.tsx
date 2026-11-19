@@ -1,4 +1,4 @@
-// Search-panel category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the global search overlay with
+// Search-panel category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the global search overlay with
 // a query field and results grouped by type. Composed only from the shared
 // primitives (plus a few raw motifs the kit lacks, like the magnifier glyph) so
 // the house style holds. The overlay frame is the shared figure's, and every article fills it with

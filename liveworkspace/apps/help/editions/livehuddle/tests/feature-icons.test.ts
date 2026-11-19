@@ -9,7 +9,7 @@ import { site } from '@/lib/help-site';
 
 const { featureColour, featureIcon } = site;
 
-// The feature-card icon + accent resolution (liveworkspace/docs/specs/016-help/help-centre.md).
+// The feature-card icon + accent resolution (liveworkspace/docs/specs/017-help/help-centre.md).
 //
 // The state this replaced: 107 of the 172 landing cards under the ten feature
 // categories had no entry in FEATURE_ICONS, so nearly two thirds of the
@@ -101,7 +101,7 @@ describe('the catalogue as rendered', () => {
   // Nothing at runtime can notice that, so the check has to.
   //
   // If this fails, the fix is an entry in FEATURE_ICONS and FEATURE_ENTITY_HEX
-  // (the test below insists on both), not an exemption here. liveworkspace/docs/specs/016-help/help-centre.md records the
+  // (the test below insists on both), not an exemption here. liveworkspace/docs/specs/017-help/help-centre.md records the
   // house style and the one rule worth knowing: draw what the card is ABOUT, and
   // check it does not land on a glyph the set already uses.
   it('gives every feature card a glyph of its own, not just a fallback', () => {

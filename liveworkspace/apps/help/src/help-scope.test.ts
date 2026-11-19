@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { answer, helpPath, scopeOf, withHelpHeaders, type HelpManifest } from './help-scope';
 
-// liveworkspace/docs/specs/016-help/help-centre.md "Addresses, canonicals and the old paths".
+// liveworkspace/docs/specs/017-help/help-centre.md "Addresses, canonicals and the old paths".
 
 const manifest: HelpManifest = {
   articles: {

@@ -1,4 +1,4 @@
-// The Mini View figure (liveworkspace/docs/specs/016-help/help-centre.md): the small window Pop Out opens, drawn from the editor's own
+// The Mini View figure (liveworkspace/docs/specs/017-help/help-centre.md): the small window Pop Out opens, drawn from the editor's own
 // words and tones: apps/editor/components/calls/PopOutSegment.tsx (the dock's last button),
 // calls/mini-view/MiniView.tsx (In the Space and its count, Back to Space, Near You, the rows) and MiniViewControls.tsx
 // (the microphone at the foot), with MiniViewTiles.tsx's camera tiles over the list. Calls cannot run without the Realtime secrets, so it is drawn rather than shot.

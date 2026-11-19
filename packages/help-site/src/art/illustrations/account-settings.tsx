@@ -1,4 +1,4 @@
-// Account-and-data surfaces drawn for the support articles (liveworkspace/docs/specs/016-help/help-centre.md): the
+// Account-and-data surfaces drawn for the support articles (liveworkspace/docs/specs/017-help/help-centre.md): the
 // Trash view, the API Tokens category of Settings, the MCP connection consent card, and the
 // Notifications category. Labels are the real ones from the editor. Composed only from the shared
 // primitives so the house style holds.

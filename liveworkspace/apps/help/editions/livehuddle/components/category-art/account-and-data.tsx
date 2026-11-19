@@ -1,7 +1,7 @@
 import { DocThumb } from '@liveworkspace/help-site/art/parts';
 import { AccountAndDataArt as Scene } from '@liveworkspace/help-site/art/scenes/account-and-data';
 
-// Account and Data: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with livehuddle's
+// Account and Data: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with livehuddle's
 // documents (two diagrams and a page of notes) and its export formats.
 export function AccountAndDataArt() {
   return (

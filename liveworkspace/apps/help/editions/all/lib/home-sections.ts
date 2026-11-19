@@ -1,6 +1,6 @@
 import type { HelpHomeLayout } from '@liveworkspace/help-site/lib/home';
 
-// The All Apps home's layout (liveworkspace/docs/specs/016-help/help-centre.md "The home pages"): New to
+// The All Apps home's layout (liveworkspace/docs/specs/017-help/help-centre.md "The home pages"): New to
 // liveworkspace? (the account, the Explorer, connected files and sharing), Written once for every app (the shared
 // categories), the account and policy pages, and Still Stuck. Pick an App sits above it (AllAppsHome).
 export const HOME: HelpHomeLayout = {

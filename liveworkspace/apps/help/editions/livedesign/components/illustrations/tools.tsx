@@ -1,4 +1,4 @@
-// Tools-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): zen mode, light/dark
+// Tools-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): zen mode, light/dark
 // mode, and the two layout tidiers (Auto-Align, Auto Layout).
 // Composed only from the shared primitives so the house style holds.
 

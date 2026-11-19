@@ -6,8 +6,9 @@
 
 import type { App, InboxResponse, InboxThread } from '@liveworkspace/index-client';
 import { mentionHandle } from '@liveworkspace/model-core/comment-mentions';
-import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
-import { actionKey, threadKey } from '../explorer/inbox/sections';
+import { APP_ITEMS, PLATFORM_SITE, siteOfApp } from '@liveworkspace/sites';
+import { appHasInbox } from '../inbox-apps';
+import { actionKey, requestKey, threadKey } from '../explorer/inbox/sections';
 import type { SeenStore } from './seen';
 
 /** A row older than this never notifies: it waits in the Inbox and its count. */
@@ -69,6 +70,13 @@ export function nameMentions(text: string, names: readonly (string | null | unde
 export function inboxRowHref(rowApp: App, key: string, here: App): string {
   const origin = rowApp === here ? '' : siteOfApp(rowApp).url;
   return `${origin}/explorer/inbox?at=${encodeURIComponent(key)}`;
+}
+
+/** An access request's row in the Inbox: on its app's address, or liveworkspace.app's for an app with no Inbox
+ *  (livehuddle), whose Explorer lists every app's. */
+export function requestRowHref(rowApp: App, key: string, here: App): string {
+  if (appHasInbox(rowApp)) return inboxRowHref(rowApp, key, here);
+  return `${PLATFORM_SITE.url}/explorer/inbox?at=${encodeURIComponent(key)}`;
 }
 
 /** An item in its own app (this app's on this address). */
@@ -168,8 +176,9 @@ export function noticeRows(
   }
   for (const r of data.accessRequests ?? []) {
     if (r.requesterId === viewerId) continue;
+    const key = requestKey(r);
     out.push({
-      key: `r:${r.id}`,
+      key,
       at: r.askedAt,
       kind: 'access',
       app: r.app,
@@ -178,7 +187,7 @@ export function noticeRows(
       quote: r.note ? firstLine(r.note) : null,
       place: r.itemTitle,
       detail: null,
-      href: itemHref(r.app, r.itemId, here),
+      href: requestRowHref(r.app, key, here),
     });
   }
   for (const s of data.shares ?? []) {

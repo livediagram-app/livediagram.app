@@ -32,7 +32,7 @@ export interface HelpFacts {
   helpUrl: string;
   /** The product's public contact form, the way on from an article that did not help. */
   contactFormUrl: string;
-  /** The one help centre's scope (liveworkspace/docs/specs/016-help/help-centre.md): the app whose help this
+  /** The one help centre's scope (liveworkspace/docs/specs/017-help/help-centre.md): the app whose help this
    *  build is, or `all`. Absent for a help centre of one product alone, which shows no app switch or notes. */
   scope?: HelpScope;
   /** How many guides each scope shows, for the app switch's menu. */

@@ -1,4 +1,4 @@
-// Live poll scenes for the Collaboration › Session Tools articles (liveworkspace/docs/specs/016-help/help-centre.md),
+// Live poll scenes for the Collaboration › Session Tools articles (liveworkspace/docs/specs/017-help/help-centre.md),
 // drawn from the live editor's PollPromptSheet and PollPanel (apps/editor/components/panels). Labels
 // are the real UI strings.
 

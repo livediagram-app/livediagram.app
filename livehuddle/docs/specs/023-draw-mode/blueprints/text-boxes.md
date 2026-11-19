@@ -18,11 +18,11 @@ Scope, by file:
 | `apps/editor/components/canvas/BoxedElementView.tsx`                                                                                               | Draws the live size; hands `TextHugLabel` to `renderLabel`                               |
 | `apps/editor/components/canvas/element-labels.tsx`                                                                                                 | `renderLabel(..., hug)`: padding, no placeholder, fixed px for `scale`, the scale        |
 | `apps/editor/components/canvas/element-label-views.tsx` (`FixedSizeLabel` from `packages/workbench/src/components/canvas/element-label-views.tsx`) | `FixedSizeLabel` takes `px`; `RichLabel` takes `textScale`; padding may be CSS           |
-| `apps/editor/components/canvas/label-style.ts`                                                                                                     | `labelBasePx`, `labelRunPx`, `LabelPadding`                                              |
+| `../packages/workbench/src/components/label-editor/label-style.ts`                                                                                 | `labelBasePx`, `labelRunPx`, `LabelPadding`                                              |
 | `apps/editor/components/canvas/RichTextEditor*.ts(x)`                                                                                              | `textScale`, `onLiveText`                                                                |
-| `apps/editor/components/canvas/useRichTextSession.ts`                                                                                              | Scaled px; reports the editor node after every change                                    |
-| `apps/editor/components/rich-text/useRichTextDocument.ts`                                                                                          | Re-sets the caret when an Enter at the end opens the empty last line                     |
-| `apps/editor/components/rich-text/rich-text-dom.ts`                                                                                                | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
+| `../packages/workbench/src/components/label-editor/useRichTextSession.ts`                                                                          | Scaled px; reports the editor node after every change                                    |
+| `../packages/workbench/src/components/label-editor/useRichTextRuns.ts`                                                                             | Re-sets the caret when an Enter at the end opens the empty last line                     |
+| `../packages/workbench/src/components/label-editor/rich-text-dom.ts`                                                                               | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
 | `apps/editor/lib/draw-commit.ts`                                                                                                                   | `buildDrawnBoxed` places a whiteboard text box through `placedTextBox`                   |
 | `apps/editor/app/document/[id]/useSelectionEditing.ts`                                                                                             | `commitLabel` hugs or removes, in the label's one commit                                 |
 | `apps/editor/hooks/canvas/boxed-drag-resolve.ts`                                                                                                   | `resizedElement`, `TextHugResize`                                                        |
@@ -200,18 +200,18 @@ copy of the editor's nodes; per resize frame: one layout. Both well under a fram
 
 ## Testing
 
-| Rule                                                  | Test                                                                 |
-| ----------------------------------------------------- | -------------------------------------------------------------------- |
-| Padding, font px, hug size, wrap at 480               | `apps/editor/lib/text-hug.test.ts`                                   |
-| Placement: tap caret-sized, drag width, one line      | `apps/editor/lib/draw-commit.test.ts`, `text-hug.test.ts`            |
-| Commit hugs; empty removed; set width kept            | `apps/editor/lib/text-hug.test.ts` (`hugCommittedText`)              |
-| Resize: width set, height hugs, anchors, Shift scale  | `text-hug.test.ts`, `hooks/canvas/boxed-drag-resolve.resize.test.ts` |
-| Style changes re-hug; a picked size drops the scale   | `hooks/canvas/useTextStyleSetters.test.ts`                           |
-| No menu beside a whiteboard text box being typed into | `hooks/canvas/useEditModeContextMenu.test.tsx`                       |
-| The measurer's layout inputs                          | `components/canvas/text-hug-measure.test.ts`                         |
-| Enter at the end keeps the caret on the new line      | `components/rich-text/useRichTextDocument.test.tsx`                  |
-| The fields' bounds                                    | `packages/document/src/validate.test.ts`                             |
-| An export draws the scale                             | `packages/document/src/svg-render-fidelity.test.ts`                  |
+| Rule                                                  | Test                                                                         |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Padding, font px, hug size, wrap at 480               | `apps/editor/lib/text-hug.test.ts`                                           |
+| Placement: tap caret-sized, drag width, one line      | `apps/editor/lib/draw-commit.test.ts`, `text-hug.test.ts`                    |
+| Commit hugs; empty removed; set width kept            | `apps/editor/lib/text-hug.test.ts` (`hugCommittedText`)                      |
+| Resize: width set, height hugs, anchors, Shift scale  | `text-hug.test.ts`, `hooks/canvas/boxed-drag-resolve.resize.test.ts`         |
+| Style changes re-hug; a picked size drops the scale   | `hooks/canvas/useTextStyleSetters.test.ts`                                   |
+| No menu beside a whiteboard text box being typed into | `hooks/canvas/useEditModeContextMenu.test.tsx`                               |
+| The measurer's layout inputs                          | `../packages/workbench/src/components/label-editor/text-hug-measure.test.ts` |
+| Enter at the end keeps the caret on the new line      | `../packages/workbench/src/components/label-editor/useRichTextRuns.test.tsx` |
+| The fields' bounds                                    | `packages/document/src/validate.test.ts`                                     |
+| An export draws the scale                             | `packages/document/src/svg-render-fidelity.test.ts`                          |
 
 Browser proof (Chromium and WebKit, dark and light, 100 % and zoomed): the box equals the text
 rect plus the padding within 1 px at every step of place, type, Enter, delete back and commit.

@@ -8,6 +8,8 @@
 // a notification problem can't break the request that triggered it.
 
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
+import type { AccessGrantedNotice, AccessRequestedNotice } from '@liveworkspace/index-client';
+import { accountAddresses } from '@liveworkspace/auth-client';
 import { accountCredentials } from '../auth/accounts';
 import { isAccountIdShape } from '@livehuddle/api-schema';
 import { claimCommentNotify } from '../document-room/document-content';
@@ -18,6 +20,8 @@ import { teamPeople } from '../liveworkspace/team-people';
 import type { DocumentEnv, Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
 import {
+  accessGrantedEmail,
+  accessRequestedEmail,
   actionAssignedEmail,
   commentNotificationEmail,
   documentJoinedEmail,
@@ -69,12 +73,15 @@ const notifier = createNotifier<Env, RenderedEmail>({
   allowance: (env) => accountsAllowance(accountCredentials(env)),
   nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
   teamPeople,
+  addresses: (env, ids) => accountAddresses(accountCredentials(env), ids),
   settings: { join: 'notifyDocumentJoin' },
   emails: {
     milestone: milestoneEmail,
     firstShare: firstShareEmail,
     joined: documentJoinedEmail,
     actionAssigned: actionAssignedEmail,
+    accessRequested: accessRequestedEmail,
+    accessGranted: accessGrantedEmail,
     mentioned: (env, authorName, canvas, text) =>
       mentionedEmail(env, authorName, canvas.name, canvas.id, text),
   },
@@ -87,6 +94,22 @@ export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
 export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>
   notifier.notifyFirstShare(env, actorId);
+
+// Someone asked for access to a space these managers run (the index's `access_requested` notice,
+// routes/internal-items.ts; liveworkspace request-access.md "The emails"). Opt-out with the join switch.
+export const notifyAccessRequested = (
+  env: Env,
+  id: string,
+  notice: AccessRequestedNotice,
+): Promise<void> => notifier.notifyAccessRequested(env, id, notice);
+
+// A manager shared a space with the person who asked (the index's `access_granted` notice): their email, which no
+// switch holds back.
+export const notifyAccessGranted = (
+  env: Env,
+  id: string,
+  notice: AccessGrantedNotice,
+): Promise<void> => notifier.notifyAccessGranted(env, id, notice);
 
 // A signed-in person opened one of an owner's canvases through a share link for the first time (the index's `joined`
 // notice, run inside the canvas's Durable Object). Opt-out (notifyDocumentJoin).

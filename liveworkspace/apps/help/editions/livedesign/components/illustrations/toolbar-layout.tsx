@@ -86,7 +86,7 @@ const BAR: readonly string[] = [
   'Media',
 ];
 // A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
-// strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in liveworkspace/docs/specs/016-help/help-centre.md).
+// strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in liveworkspace/docs/specs/017-help/help-centre.md).
 const charW = 4.5;
 const PAD = 5;
 const nameW = (name: string) => Math.round(name.length * charW + 2 * PAD);

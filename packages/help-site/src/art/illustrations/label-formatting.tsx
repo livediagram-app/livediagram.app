@@ -1,7 +1,7 @@
 // The label editing toolbar, for the Canvas article on Formatting Label Text
-// (liveworkspace/docs/specs/016-help/help-centre.md). Draws the real toolbar with its real labels
+// (liveworkspace/docs/specs/017-help/help-centre.md). Draws the real toolbar with its real labels
 // (canvas/RichTextToolbar.tsx): Bold, Italic, Underline and Strikethrough, the block type dropdown
-// open on its six entries (rich-text/block-type.ts), the alignment dropdown and the text colour
+// open on its six entries (workbench label-editor/block-type.ts), the alignment dropdown and the text colour
 // swatch, floating above the shape whose label is being edited. Composed from the shared primitives.
 
 import type { ReactNode } from 'react';

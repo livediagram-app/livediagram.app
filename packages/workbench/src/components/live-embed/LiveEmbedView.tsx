@@ -19,6 +19,8 @@ import {
 } from '@liveworkspace/icons/lucide';
 import type { LiveItem } from '@liveworkspace/element-model/live-item';
 import { liveEmbedItemHref } from './live-embed-target';
+import { useDeferredAuth } from '../providers/deferred-auth';
+import { RequestAccessButton } from '../request-access/RequestAccessButton';
 import { liveEmbedWords as words, liveNameOr } from './live-embed-words';
 import { settledWithoutFrame, useLiveEmbedFrame } from './useLiveEmbedFrame';
 import { useLiveEmbedSlot } from './useLiveEmbedSlot';
@@ -81,6 +83,8 @@ export function LiveEmbedView({
   const href =
     liveItem && host !== null ? liveEmbedItemHref(liveItem.app, liveItem.itemId, host) : null;
   const noAccess = frame.state === 'no-access';
+  // Signed in, a reader can ask for access from the card itself (request-access.md "On screen").
+  const { isSignedIn } = useDeferredAuth();
 
   return (
     <div
@@ -150,6 +154,7 @@ export function LiveEmbedView({
                 {words.open(liveItem.app)}
               </a>
             ) : null}
+            {isSignedIn && liveItem ? <RequestAccessButton itemId={liveItem.itemId} /> : null}
           </Centre>
         ) : frame.state === 'gone' ? (
           <Centre glass>

@@ -1,4 +1,4 @@
-// livedesign's pieces of the one help centre's chrome (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The
+// livedesign's pieces of the one help centre's chrome (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The
 // build"), re-exported for a livedesign build by lib/bindings.generated.ts: its appearance key, viewport, page-view and
 // web-vitals boots, not-found card, social card and telemetry (sent as livedesign.app, the origin the page is served on). One module per
 // scope, so a build bundles only its own app's.

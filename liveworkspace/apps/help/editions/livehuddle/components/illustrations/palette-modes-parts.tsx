@@ -1,4 +1,4 @@
-// The parts the palette mode illustrations are drawn from (liveworkspace/docs/specs/016-help/help-centre.md): the Edit | Walk
+// The parts the palette mode illustrations are drawn from (liveworkspace/docs/specs/017-help/help-centre.md): the Edit | Walk
 // toggle at the very start of the palette strip (docs/specs/007-editor/toolbar-layout.md), its two glyphs, and the
 // Format Painter's brush, which now sits on the selection toolbar. Select and Hand, Eraser and Format are no longer
 // modes to pick, so the picker and its tiles are gone.

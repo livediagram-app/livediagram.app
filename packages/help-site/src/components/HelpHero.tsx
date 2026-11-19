@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-// The header band every help page opens on (liveworkspace/docs/specs/016-help/help-centre.md "Shared look"): the marketing
+// The header band every help page opens on (liveworkspace/docs/specs/017-help/help-centre.md "Shared look"): the marketing
 // hero's band (`hero-band` in the product's ui package), the canvas's dot grid fading out towards its foot, a display
 // title in the band's ink, and optionally a category scene on the right from `lg` up. The home page passes
 // `home` for the centred, display-size version.

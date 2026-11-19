@@ -3,7 +3,7 @@ import {
   SearchPanelArt as Scene,
 } from '@liveworkspace/help-site/art/scenes/search-panel';
 
-// Search Panel: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). "roadmap" finds a space, a
+// Search Panel: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). "roadmap" finds a space, a
 // tab, a sticky note on a canvas and a help guide.
 export function SearchPanelArt() {
   return (

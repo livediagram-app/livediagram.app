@@ -3,7 +3,7 @@ import type { AppId } from '@liveworkspace/help-registry';
 import type { CSSProperties } from 'react';
 
 // Each app's colours where the help centre names an app on a page in another app's theme (liveworkspace/docs/specs/
-// 016-help/blueprints/help-centre.md "MDX components"): its mark in the Applies To row, a note's tint. The page's own
+// 017-help/blueprints/help-centre.md "MDX components"): its mark in the Applies To row, a note's tint. The page's own
 // `brand-*` classes are the scope's, so another app's colours come from its brand ramp (@liveworkspace/brand
 // BRAND_APPS) as custom properties, which the classes below read; the `.dark` steps swap in under the dark class.
 

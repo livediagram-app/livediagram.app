@@ -12,7 +12,7 @@ import type { HelpFacts } from './types';
 // page (the page-view boot, the header's search box), so the provider ships nothing a page did not have.
 
 /** The telemetry events the help centre's components send, through the product's siteTrack. `Changed` is the app
- *  switch's move to another scope (`Scope.<scope>`, liveworkspace/docs/specs/016-help/blueprints/help-centre.md
+ *  switch's move to another scope (`Scope.<scope>`, liveworkspace/docs/specs/017-help/blueprints/help-centre.md
  *  "Telemetry"). */
 export type HelpTrack = (
   category: 'Help',
@@ -32,7 +32,7 @@ export interface HelpClient {
    *  catalogue is too big for every page's JavaScript. */
   loadSearch: () => Promise<HelpSearch>;
   /** Loads the search over every app's articles, for an app's "From Other Apps" group: fetched only once the
-   *  scope's results show (liveworkspace/docs/specs/016-help/help-centre.md "Search"). Absent under All Apps, whose
+   *  scope's results show (liveworkspace/docs/specs/017-help/help-centre.md "Search"). Absent under All Apps, whose
    *  own search is already every article. */
   loadSearchAll?: () => Promise<HelpSearch>;
 }

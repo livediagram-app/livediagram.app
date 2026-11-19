@@ -1,4 +1,4 @@
-// The parts the palette mode illustrations are drawn from (liveworkspace/docs/specs/016-help/help-centre.md): a glyph
+// The parts the palette mode illustrations are drawn from (liveworkspace/docs/specs/017-help/help-centre.md): a glyph
 // per mode two or more products share. A product with modes of its own draws those in its own help app, beside a
 // re-export of these.
 //

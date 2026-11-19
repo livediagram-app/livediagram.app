@@ -14,7 +14,7 @@ import { sharedArticles } from './catalogue/shared';
 import { topCategorySlug } from './types';
 import { articlePath } from './telemetry';
 
-// The one catalogue's rules (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "Tests").
+// The one catalogue's rules (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "Tests").
 
 describe('the one catalogue', () => {
   it('names at least one app for every article, in registry order', () => {

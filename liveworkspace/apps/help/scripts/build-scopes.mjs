@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Builds the one help centre once per scope (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The
+// Builds the one help centre once per scope (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The
 // build"): for each scope it writes the generated files that make the build that scope's (lib/scope.generated.ts,
 // lib/bindings.generated.ts, editions/current.generated.ts, app/scope.generated.css), runs `next build`, and moves
 // the static export from out/ to dist/<scope>/. All Apps builds first: its /scope-manifest.json becomes

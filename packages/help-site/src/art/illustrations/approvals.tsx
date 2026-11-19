@@ -1,5 +1,5 @@
 // Request Approval scenes for the Request Approval article of livediagram, livedocuments and livedesign
-// (liveworkspace/docs/specs/016-help/help-centre.md; liveworkspace/docs/specs/004-index/approvals.md "In the editor"). Drawn once here,
+// (liveworkspace/docs/specs/017-help/help-centre.md; liveworkspace/docs/specs/004-index/approvals.md "In the editor"). Drawn once here,
 // since the badge, the banner and the Share dialog's Approval tab are the platform's (@liveworkspace/explorer's
 // approvals kit) and the same in every app that offers them; a scene that names the work takes the product's `noun`.
 // Labels are the real UI strings.

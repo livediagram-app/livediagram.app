@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 // Marketing and the help centre each built their own and had drifted: help sent a `summary` Twitter card
 // with no image and suffixed every title with the product's name, marketing a `summary_large_image` with
 // the brand card and the title as given. One rule now (docs/specs/019-marketing/marketing-site.md "SEO and
-// metadata" and liveworkspace/docs/specs/016-help/help-centre.md in each product): the title passes through verbatim, and
+// metadata" and liveworkspace/docs/specs/017-help/help-centre.md in each product): the title passes through verbatim, and
 // every page carries the large brand card unless it ships its own. A product binds it to its own site with
 // createPageMetadata (its `seo.ts`).
 
@@ -36,7 +36,7 @@ export type PageMetadataInput = {
   // is then left off so it doesn't override the page's own.
   ownOgImage?: boolean;
   // A card of the page's own at a known absolute URL, used for both Open Graph and Twitter in place
-  // of the brand card (the help centre's per-article cards, liveworkspace/docs/specs/016-help/help-centre.md "SEO").
+  // of the brand card (the help centre's per-article cards, liveworkspace/docs/specs/017-help/help-centre.md "SEO").
   image?: { url: string; alt: string };
   // The OG type. `article` suits a content page; a hub or dashboard that is
   // the app's own front page (a Community gallery, the Telemetry

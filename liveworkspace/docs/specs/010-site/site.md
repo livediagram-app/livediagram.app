@@ -225,7 +225,7 @@ why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclo
 
 ### Help (`/help`)
 
-`www.liveworkspace.app/help*` is the one help centre's ([Help centre](../016-help/help-centre.md)): All Apps' help,
+`www.liveworkspace.app/help*` is the one help centre's ([Help centre](../017-help/help-centre.md)): All Apps' help,
 built from `liveworkspace/apps/help` and served by its Worker, which takes the route before the site's own files (a
 dev server forwards `/help*` to it on 3020, `next.config.ts`). The site has no help pages of its own: the platform's
 features that are the same in every app (Google Drive sync, the Explorer in no app, teams, sharing across apps,

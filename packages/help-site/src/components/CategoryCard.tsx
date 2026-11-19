@@ -19,7 +19,7 @@ export function cardAppsLabel(apps: readonly unknown[]): string {
   return `${apps.length} apps`;
 }
 
-/** A category card's corner row (liveworkspace/docs/specs/016-help/help-centre.md "The logos"): the apps whose
+/** A category card's corner row (liveworkspace/docs/specs/017-help/help-centre.md "The logos"): the apps whose
  *  articles the category holds, small, the current app first and ringed, when it holds shared ones. */
 export function CardApps({
   category,
@@ -47,13 +47,13 @@ export function guideCount(n: number): string {
   return n > 0 ? `${n} ${n === 1 ? 'guide' : 'guides'}` : '';
 }
 
-/** The category's scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), or nothing for a slug without one. */
+/** The category's scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), or nothing for a slug without one. */
 export function CategoryArt({ site, slug }: { site: HelpSite; slug: string }) {
   const Scene = site.art.categoryArt[slug];
   return Scene ? <Scene /> : null;
 }
 
-// A category's card (liveworkspace/docs/specs/016-help/help-centre.md "Category art"): its scene across the top, then its title,
+// A category's card (liveworkspace/docs/specs/017-help/help-centre.md "Category art"): its scene across the top, then its title,
 // its description and how many guides it holds. `wide` lays the scene beside the copy instead, for a section
 // with only two cards, where a stacked card would run a full screen tall.
 export function CategoryCard({

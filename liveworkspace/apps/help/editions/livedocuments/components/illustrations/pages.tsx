@@ -1,5 +1,5 @@
 // Illustrations for the Pages articles on Working with Pages, Infographic Layouts,
-// Exporting and Presenting Pages and Writing Articles (liveworkspace/docs/specs/016-help/help-centre.md). Each draws
+// Exporting and Presenting Pages and Writing Articles (liveworkspace/docs/specs/017-help/help-centre.md). Each draws
 // the real surface with its real labels: the pages in a row with their labels, title-bar buttons,
 // the title bar card with its cog (CanvasPages.tsx, PageTitleBar.tsx), the add buttons (AddPageButton.tsx), the navigator (PageNavigatorClusterStrip.tsx), the
 // page panel (PagePanel.tsx, page-panel-sections.tsx), the Layout button's

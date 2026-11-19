@@ -45,6 +45,7 @@ const sections = (threads: InboxThread[]): InboxSections => ({
   byMe: [],
   forms: [],
   threads,
+  requests: [],
 });
 
 describe('a card thread in the Inbox', () => {

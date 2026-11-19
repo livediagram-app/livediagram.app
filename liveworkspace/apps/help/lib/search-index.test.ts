@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { APP_ORDER, appliesTo, articlePath } from '@liveworkspace/help-registry';
 import { allArticles, searchIndexFor } from '@liveworkspace/help-registry/catalogue';
 
-// The search box's indexes (app/search-index.json, app/search-all.json; liveworkspace/docs/specs/016-help/
+// The search box's indexes (app/search-index.json, app/search-all.json; liveworkspace/docs/specs/017-help/
 // help-centre.md "Search"): an app's help fetches only its own articles on the first search, and every app's only
 // when its "From Other Apps" group is wanted. These caps keep both small enough for a phone on a slow line. Sizes
 // are the JSON a build writes, before compression; estimated from the catalogue at about 115 KB for livediagram's

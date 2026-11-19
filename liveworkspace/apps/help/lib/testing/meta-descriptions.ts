@@ -10,7 +10,7 @@ import { readScoped, scopedArticleSources, scopedLandingFiles } from './scoped-a
 
 // The metadata checks every edition runs over the pages its scope shows. A search result shows about 160 characters
 // of a meta description and cuts the rest mid-sentence; under about 50 it is too thin to earn the click
-// (liveworkspace/docs/specs/016-help/help-centre.md, each product's marketing site holds its pages to the same range).
+// (liveworkspace/docs/specs/017-help/help-centre.md, each product's marketing site holds its pages to the same range).
 // Titles are held unique too: two pages titled alike compete for one query and read as duplicates to a search engine.
 // Each page is read in the scope's wording: an article the app words its own way (Article.byApp) shows that title and
 // description there, as lib/help-site's helpMetadata does.

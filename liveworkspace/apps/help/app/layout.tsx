@@ -16,7 +16,7 @@ import { site } from '@/lib/help-site';
 import { SCOPE } from '@/lib/scope.generated';
 import './globals.css';
 
-// The one help centre (liveworkspace/docs/specs/016-help/help-centre.md), one build per scope: the scope's header and
+// The one help centre (liveworkspace/docs/specs/017-help/help-centre.md), one build per scope: the scope's header and
 // footer (its edition), its theme (app/scope.generated.css), its appearance key, telemetry and boots
 // (lib/bindings.generated.ts). `data-help-scope` on <html> names the build for styles and tests. No third-party
 // scripts.

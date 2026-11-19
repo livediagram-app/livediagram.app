@@ -17,7 +17,7 @@ import { AppMark } from './AppMarks';
 import { useSiteHref } from './SiteLink';
 import { CheckIcon, ChevronDownIcon } from './chrome-icons';
 
-// The app switch (liveworkspace/docs/specs/016-help/help-centre.md "Choosing an app"): a segment naming the current
+// The app switch (liveworkspace/docs/specs/017-help/help-centre.md "Choosing an app"): a segment naming the current
 // scope with a caret, and an All Apps segment. The caret opens a menu of This App (ticked), All Apps and Another App,
 // each with its guide count. Every choice is a link (`<a href>`), so it works without script, opens in a new tab and
 // is crawlable; with script its `?q=` follows the search box as the reader types. Choosing moves the reader: to the

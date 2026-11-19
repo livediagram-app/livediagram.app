@@ -23,7 +23,7 @@ import {
 } from './scope';
 import type { Article, Category } from './types';
 
-// The scope views (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The catalogue", "The app switch").
+// The scope views (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The catalogue", "The app switch").
 
 const article = (path: string, apps: Article['apps']): Article => {
   const at = path.lastIndexOf('/');

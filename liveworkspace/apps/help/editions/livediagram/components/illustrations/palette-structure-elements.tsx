@@ -1,4 +1,4 @@
-// Element scenes for the Entities, Lanes and Event Storming Elements articles (liveworkspace/docs/specs/016-help/help-centre.md,
+// Element scenes for the Entities, Lanes and Event Storming Elements articles (liveworkspace/docs/specs/017-help/help-centre.md,
 // drawing docs/specs/009-elements/entity.md, docs/specs/009-elements/lane.md and
 // docs/specs/021-event-storming/event-storming.md).
 

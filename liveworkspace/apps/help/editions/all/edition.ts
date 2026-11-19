@@ -7,7 +7,7 @@ import { ALL_APPS_ART } from './lib/art';
 import { HOME } from './lib/home-sections';
 import type { Edition } from '../types';
 
-// The All Apps edition (liveworkspace/docs/specs/016-help/help-centre.md "Where it is shown"): www.liveworkspace.app/
+// The All Apps edition (liveworkspace/docs/specs/017-help/help-centre.md "Where it is shown"): www.liveworkspace.app/
 // help, in liveworkspace's slate with its own logo, header and footer, every app's art, and its own home layout.
 const { pageMetadata } = /* @__PURE__ */ createPageMetadata({
   url: PLATFORM_SITE.url,

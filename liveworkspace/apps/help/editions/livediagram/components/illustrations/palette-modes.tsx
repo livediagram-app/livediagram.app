@@ -1,4 +1,4 @@
-// Palette-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the mode picker (Select, Hand,
+// Palette-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the mode picker (Select, Hand,
 // Eraser, Format Painter, Laser, Spotlight, Isometric) and the palette
 // settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
 // holds.

@@ -3,7 +3,7 @@
 `GET /api/openapi.json` serves an OpenAPI 3.1 description of the `/api/*` surface, assembled from a declarative route
 manifest plus component schemas generated from `@livedocuments/api-schema`, with a drift test pinning both to the real
 handlers. A human-facing reference in the help centre links to it (`liveworkspace/apps/help`, the **Developers** category,
-[One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)).
+[One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)).
 
 ## Why
 

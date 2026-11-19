@@ -1,4 +1,4 @@
-// Palette category scenes for the Components, Devices and Icons articles (Devices a row in Components) (liveworkspace/docs/specs/016-help/help-centre.md,
+// Palette category scenes for the Components, Devices and Icons articles (Devices a row in Components) (liveworkspace/docs/specs/017-help/help-centre.md,
 // drawing docs/specs/010-palette/palette-top-level-categories.md and docs/specs/010-palette/palette-category-browse.md).
 //
 // Drawn as the palette body (More's popover) shows them: a header band with the

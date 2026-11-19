@@ -163,7 +163,7 @@ runs and forks keep the origins (liveworkspace/docs/specs/002-architecture/archi
 
 ## Renamed help articles
 
-The help articles renamed or retired since the code was forked ([One help centre, old paths](../../../../liveworkspace/docs/specs/016-help/help-centre.md#addresses-canonicals-and-the-old-paths)) answer a permanent `308` from their old `/help/…` address, before any worker sees it (`apps/router/src/legacy-help-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does. livehuddle never served `/diagram/<id>`, so there is no editor redirect.
+The help articles renamed or retired since the code was forked ([One help centre, old paths](../../../../liveworkspace/docs/specs/017-help/help-centre.md#addresses-canonicals-and-the-old-paths)) answer a permanent `308` from their old `/help/…` address, before any worker sees it (`apps/router/src/legacy-help-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does. livehuddle never served `/diagram/<id>`, so there is no editor redirect.
 
 ## The Community
 

@@ -1151,7 +1151,7 @@ contrast as the rest of the label (4.5:1 against its fill, the normal-text bar, 
 size below large text). The canvas, the SVG export and the PNG and PDF exports drawn from it render it
 at the same 10 px.
 
-An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`, `run.color ?? el.textColor`, `run.size ?? el.textSize`), so the existing whole-element controls keep working as the base layer untouched, and an explicit per-range override wins over a later whole-element toggle (same precedence as table `cellStyles`). `element.label` is always kept equal to the runs' concatenated plain text, so search, auto-rename, markdown export, and every legacy reader work unchanged. When `richText` is absent (or a single override-free run) the label renders via the legacy whole-element path; applying any per-run override opts the label out of `scale` SVG auto-fit into fixed-px rendering (mixing per-run sizes with whole-element auto-fit is contradictory). The pure runs algebra (`runsPlainText` / `normalizeRuns` / `applyFormatToRange` / `toggleFormatInRange`) lives in `../packages/model-core/src/rich-text.ts`; the DOM ↔ offset mapping in `apps/editor/components/rich-text/rich-text-dom.ts`. The field is additive + optional, so it syncs to peers + persists with no backend change, and visual exports (PNG / SVG) render the runs span-by-span on one baseline.
+An unset run attribute **inherits** the element field (`run.bold ?? el.textBold`, `run.color ?? el.textColor`, `run.size ?? el.textSize`), so the existing whole-element controls keep working as the base layer untouched, and an explicit per-range override wins over a later whole-element toggle (same precedence as table `cellStyles`). `element.label` is always kept equal to the runs' concatenated plain text, so search, auto-rename, markdown export, and every legacy reader work unchanged. When `richText` is absent (or a single override-free run) the label renders via the legacy whole-element path; applying any per-run override opts the label out of `scale` SVG auto-fit into fixed-px rendering (mixing per-run sizes with whole-element auto-fit is contradictory). The pure runs algebra (`runsPlainText` / `normalizeRuns` / `applyFormatToRange` / `toggleFormatInRange`) lives in `../packages/model-core/src/rich-text.ts`; the DOM ↔ offset mapping in `../packages/workbench/src/components/label-editor/rich-text-dom.ts`. The field is additive + optional, so it syncs to peers + persists with no backend change, and visual exports (PNG / SVG) render the runs span-by-span on one baseline.
 
 ## Quick text drop
 
@@ -1319,9 +1319,10 @@ A shape can carry an inline **text label**.
   closing punctuation at the end it belongs: "مرحبا بالعالم!" ends with "!" at its left, not stranded on the right as
   under the page's left-to-right default. A line in English beside it stays left to right. Alignment is unchanged
   (a label's Left, Centre and Right are where the user put them). This holds in shapes, text, sticky notes, tables,
-  arrow labels and the inline line editors, and while editing. An editor whose text cannot read
-  differently line by line (no right-to-left letters, or one line) is laid out as one isolated run in the direction
-  of its first letter instead, which draws the same and keeps a keystroke in a long text light
+  arrow labels and the inline line editors, and while editing. A label's editor lays each line out as its own
+  isolated run in that line's direction when its lines could read differently (right-to-left letters and more than
+  one line), and the whole text as one isolated run in the direction of its first letter otherwise: both draw the
+  same as line by line and keep a keystroke in a long text light
   ([Canvas performance](canvas-performance.md), "Typing in a long label stays light"). Exports do the same: an SVG `<text>` has one
   direction, so an exported line holding right-to-left letters is wrapped in a First Strong Isolate (U+2068 … U+2069,
   `svg-bidi.ts` in `@livedocuments/document`), and any other line is written exactly as before.

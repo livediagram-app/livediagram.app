@@ -72,7 +72,7 @@ function SidebarCard({
   );
 }
 
-/** One row of the Contents card's Read It In list (liveworkspace/docs/specs/016-help/help-centre.md "Read It
+/** One row of the Contents card's Read It In list (liveworkspace/docs/specs/017-help/help-centre.md "Read It
  *  In"): an app the article applies to, linked to the article on that app's address. */
 export interface ReadInLink {
   app: AppId;
@@ -144,7 +144,7 @@ export interface ArticleShellProps extends ArticleLayoutProps {
   afterContent?: React.ReactNode;
 }
 
-// The client half of an article page (liveworkspace/docs/specs/016-help/help-centre.md "Article pages"): the header, the reading
+// The client half of an article page (liveworkspace/docs/specs/017-help/help-centre.md "Article pages"): the header, the reading
 // time, the sidebar and its mobile drawer, the vote and the telemetry. ArticleLayout (the server half, which every
 // article's MDX renders) looks the article up in the registry and passes only the links this needs, so the
 // registry never ships to the browser.
@@ -200,7 +200,7 @@ export function ArticleShell({
     parentTitle: parentArticle?.title,
   });
 
-  // Article structured data (liveworkspace/docs/specs/016-help/help-centre.md). The Breadcrumb component already emits
+  // Article structured data (liveworkspace/docs/specs/017-help/help-centre.md). The Breadcrumb component already emits
   // the BreadcrumbList, so this only adds the TechArticle node, at this
   // page's own URL (selfHref, above).
 

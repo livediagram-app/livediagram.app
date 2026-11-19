@@ -10,7 +10,7 @@ import { FEATURE_FALLBACK_HEX, FEATURE_TILE_CLASS, featureTileStyle } from './li
 import { headingId } from './lib/heading-id';
 import type { HelpSite } from './site';
 
-// What an article's MDX renders with (liveworkspace/docs/specs/016-help/help-centre.md "MDX"): the house styles for markdown's own
+// What an article's MDX renders with (liveworkspace/docs/specs/017-help/help-centre.md "MDX"): the house styles for markdown's own
 // elements, and the article components (Step, Tip, Note, Feature, FeatureGrid, Figure, AppNote, Noun, AppName) the
 // articles use without an
 // import. Each app's mdx-components.tsx, the file @next/mdx looks for, is one line:
@@ -193,7 +193,7 @@ export function createUseMdxComponents(
   const BoundFeature = (props: Omit<ComponentProps<typeof Feature>, 'site'>) => (
     <Feature site={site} {...props} />
   );
-  // The one help centre's words and notes (liveworkspace/docs/specs/016-help/help-centre.md), bound to the site's
+  // The one help centre's words and notes (liveworkspace/docs/specs/017-help/help-centre.md), bound to the site's
   // scope. A help centre with no scope reads its own app's words: livediagram's until it is folded in.
   const scope = site.scope ?? 'livediagram';
   const BoundAppNote = (props: AppNoteProps) => <AppNote scope={site.scope} {...props} />;

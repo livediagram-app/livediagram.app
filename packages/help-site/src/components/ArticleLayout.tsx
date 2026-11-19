@@ -6,12 +6,12 @@ import type { HelpSite } from '../site';
 import { AppNotesFold, findAppNotes, notedApps, SameIn } from './AppNote';
 import { ArticleShell, type ArticleLayoutProps, type ReadInLink } from './ArticleShell';
 
-// The layout every article's MDX renders (liveworkspace/docs/specs/016-help/help-centre.md "Article pages"). A server component:
+// The layout every article's MDX renders (liveworkspace/docs/specs/017-help/help-centre.md "Article pages"). A server component:
 // it finds the article in the registry by its title and works out its category link and its previous and next
 // articles, then hands those few links to the client half (ArticleShell). The registry stays on the server.
 // Each app binds its site in components/ArticleLayout.tsx, the path its articles import.
 //
-// In the one help centre (liveworkspace/docs/specs/016-help/help-centre.md "Articles and the apps they apply to") it
+// In the one help centre (liveworkspace/docs/specs/017-help/help-centre.md "Articles and the apps they apply to") it
 // also reads the article's apps: the Applies To row, the Read It In list, and the app notes. It finds every
 // <AppNote> in the body, fails the build on a note for an app the article does not apply to, and in an app's help
 // places the other apps' notes in one closed row at the end (AppNote hides them in place), then the apps with no

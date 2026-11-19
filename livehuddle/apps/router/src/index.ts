@@ -165,7 +165,7 @@ export function withPrefixedRedirect(res: Response, prefix: string): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
-// The one help centre (liveworkspace/docs/specs/016-help/help-centre.md "Where it is shown") serves every app's help
+// The one help centre (liveworkspace/docs/specs/017-help/help-centre.md "Where it is shown") serves every app's help
 // from one Worker, liveworkspace-help, and picks the scope from this header: livehuddle's help, on livehuddle's
 // address.
 const HELP_APP_HEADER = 'x-help-app';
@@ -347,7 +347,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   const legacyHelp = legacyHelpRedirect(url);
   if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
-    // The help centre (liveworkspace/docs/specs/016-help/help-centre.md), a basePath:'/help' static app — same
+    // The help centre (liveworkspace/docs/specs/017-help/help-centre.md), a basePath:'/help' static app — same
     // prefix-strip as the editor app's assets.
     return forward(helpRequest(request), url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }

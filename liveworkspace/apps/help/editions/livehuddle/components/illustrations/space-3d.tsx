@@ -1,4 +1,4 @@
-// The 3D View (docs/specs/008-canvas/3d-view.md, liveworkspace/docs/specs/016-help/help-centre.md): a room seen through the tilted
+// The 3D View (docs/specs/008-canvas/3d-view.md, liveworkspace/docs/specs/017-help/help-centre.md): a room seen through the tilted
 // camera while you walk, and the bottom-right cluster's Turn Left, Turn Right and 3D buttons
 // (apps/editor/components/canvas/space-3d/Space3DButton.tsx).
 //

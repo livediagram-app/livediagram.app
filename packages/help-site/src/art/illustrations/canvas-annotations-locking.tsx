@@ -1,5 +1,5 @@
 // Element illustrations for the Canvas articles on Annotations and Locking Elements
-// (liveworkspace/docs/specs/016-help/help-centre.md), drawn as the canvas draws them: an annotation is a themed
+// (liveworkspace/docs/specs/017-help/help-centre.md), drawn as the canvas draws them: an annotation is a themed
 // circle holding the note marker, with its note floated above it on hover (AnnotationView), and
 // a locked element wears a solid padlock badge on its top-left corner and shows no resize handles
 // (canvas/element-parts.tsx LockBadge).

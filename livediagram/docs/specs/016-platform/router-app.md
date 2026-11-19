@@ -167,7 +167,7 @@ runs and forks keep the origins (liveworkspace/docs/specs/002-architecture/archi
 
 Every `/diagram/<id>` address (share links, embeds, bookmarks, `/diagram/shared?s=…`) answers a permanent `308` to the same path under `/document` ([Document](../006-document/document.md)), query string included, before any worker sees it (`apps/router/src/legacy-editor-route.ts`). A redirect is routing, not business logic, the same as the prefix-less help paths.
 
-The help articles renamed with it ([One help centre, old paths](../../../../liveworkspace/docs/specs/016-help/help-centre.md#addresses-canonicals-and-the-old-paths)) redirect the same way, from their old `/help/…` address. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does.
+The help articles renamed with it ([One help centre, old paths](../../../../liveworkspace/docs/specs/017-help/help-centre.md#addresses-canonicals-and-the-old-paths)) redirect the same way, from their old `/help/…` address. A bare `/self-hosting` or `/self-hosting/…` (a retired help category whose link lost its `/help` prefix) lands on the help centre home, `/help/`, as its `/help/self-hosting/…` address does.
 <!-- /legacy-names -->
 
 ## The Community

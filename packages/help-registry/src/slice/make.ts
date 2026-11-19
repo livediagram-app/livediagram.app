@@ -1,4 +1,4 @@
-// One app's slice of the catalogue (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The catalogue"):
+// One app's slice of the catalogue (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The catalogue"):
 // the articles that apply to the app, in its reading order, its categories with their counts, and the lookups over
 // them, under the names each app's own help registry exported before the merge. Its editor's search panel, CLI and
 // MCP read it through @<app>/help-registry, so they never bundle the other apps' own articles.

@@ -10,7 +10,7 @@ const MONO = {
 // The Markdown pasted into the Import box, one line each.
 const MARKDOWN = ['# Launch plan', '- Goals', '- [x] Brief'];
 
-// Tools: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with livedocuments's helper: Markdown
+// Tools: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with livedocuments's helper: Markdown
 // Import (the tab menu's Import, then Markdown) turning `#`, `-` and `- [x]` lines into an article's heading, bullet
 // and ticked to-do, beside the shared appearance switch and Zen mode.
 export function ToolsArt() {

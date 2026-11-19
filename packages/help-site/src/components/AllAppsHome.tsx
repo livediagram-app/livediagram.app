@@ -9,7 +9,7 @@ import { ArrowRightIcon } from './chrome-icons';
 import { HelpHome } from './HelpHome';
 import { SiteLink } from './SiteLink';
 
-// The All Apps home at www.liveworkspace.app/help (liveworkspace/docs/specs/016-help/help-centre.md "The home
+// The All Apps home at www.liveworkspace.app/help (liveworkspace/docs/specs/017-help/help-centre.md "The home
 // pages"): "Help for every app" with the guide count across apps, search and Popular chips; Pick an App, five tiles
 // each with its mark on a band in its palette, its line and its guide count, linking to its help; then the edition's
 // layout (New to liveworkspace?, Written once for every app, the shared categories) and Still Stuck, drawn by the

@@ -1,4 +1,4 @@
-// Stage illustrations (liveworkspace/docs/specs/016-help/help-centre.md, docs/specs/012-collaboration/meeting-rooms-and-stage.md): a
+// Stage illustrations (liveworkspace/docs/specs/017-help/help-centre.md, docs/specs/012-collaboration/meeting-rooms-and-stage.md): a
 // hall seen from above with a speaker on its stage heard by the whole tab, and the element menu's Stage section.
 // Calls cannot run without the Realtime secrets, so these are drawn rather than shot, from the editor's own words:
 // apps/editor/components/palette/StageMenuSection.tsx (Who Can Speak, Editors, Editors and Participants, Show

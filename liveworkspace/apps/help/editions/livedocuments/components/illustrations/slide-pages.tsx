@@ -1,4 +1,4 @@
-// Slide page illustrations for the Canvas article on Slide Pages (liveworkspace/docs/specs/016-help/help-centre.md).
+// Slide page illustrations for the Canvas article on Slide Pages (liveworkspace/docs/specs/017-help/help-centre.md).
 // Draws the real surface with its real labels: two slide pages in a row, each with its label
 // ("Slide (16:9)") and its title bar card (CanvasPages.tsx, PageTitleBar.tsx), its controls as icons at
 // this size: Layout and Background (page-title-bar.tsx), then Notes once the page is in the deck

@@ -50,6 +50,7 @@ import {
 import { pushInternal } from '../push/routes.ts';
 import { handleWorkbenchInternal } from '../workbench/internal.ts';
 import { tokenBySecret, endTokenWorkbench } from '../workbench/revoke.ts';
+import { tellAssistantRevoked } from '../assistant-revoked.ts';
 import { answer, error, json, readBody, type WaitUntil } from './http.ts';
 
 // --- The apps' servers ---
@@ -206,6 +207,7 @@ export async function handleInternal(
     const revoked = typeof token === 'string' && (await revokeApiTokenBySecret(db, token));
     if (!revoked || !found) return error(404, 'invalid_token');
     await endTokenWorkbench(env, found.userId, found.id, waitUntil);
+    tellAssistantRevoked(env, found.userId, found.id, waitUntil);
     return json({ ok: true });
   }
 

@@ -1,4 +1,4 @@
-// The Make Sizes illustrations for the Make Sizes article (liveworkspace/docs/specs/016-help/help-centre.md; drawing
+// The Make Sizes illustrations for the Make Sizes article (liveworkspace/docs/specs/017-help/help-centre.md; drawing
 // docs/specs/031-photo/photo-pages.md "Making sizes"). Real labels from MakeSizesDialog.tsx and PhotoExportPanel.tsx:
 // the format tiles (a checkbox each, the photo's preview in the format's shape, its name and pixel size), Select All
 // and Clear over the grid, Cancel and "Make 3 Sizes" in the footer; then the toast's Export All Sizes and the Export

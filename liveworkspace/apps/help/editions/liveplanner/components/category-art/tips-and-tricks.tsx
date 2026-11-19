@@ -1,6 +1,6 @@
 import { TipsAndTricksArt as Scene } from '@liveworkspace/help-site/art/scenes/tips-and-tricks';
 
-// Tips and Tricks: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with liveplanner's commands
+// Tips and Tricks: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with liveplanner's commands
 // and the keys that add and move cards on a board and edit a sheet's cells without touching the mouse.
 export function TipsAndTricksArt() {
   return (

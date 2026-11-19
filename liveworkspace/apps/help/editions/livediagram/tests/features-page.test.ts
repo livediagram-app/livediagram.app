@@ -3,7 +3,7 @@ import { featuresMetadata } from '@liveworkspace/help-site/components/CategoryPa
 import { categories } from '@/lib/articles';
 import { site } from '@/lib/help-site';
 
-// The features index's meta description names its areas (liveworkspace/docs/specs/016-help/help-centre.md "SEO"): every feature
+// The features index's meta description names its areas (liveworkspace/docs/specs/017-help/help-centre.md "SEO"): every feature
 // category, in the registry's order, and nothing else. It once left out Selection Modes and Search Panel, which the
 // page itself lists.
 // The description is made from the catalogue (featuresMetadata), so this holds the product's real one.

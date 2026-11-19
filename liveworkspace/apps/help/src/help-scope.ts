@@ -1,4 +1,4 @@
-// The one help centre's Worker, its logic (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "The Worker"):
+// The one help centre's Worker, its logic (liveworkspace/docs/specs/017-help/blueprints/help-centre.md "The Worker"):
 // which scope a request is for, and what it answers. A module of its own so it is tested without a Worker runtime;
 // src/worker.ts is the entry and exports only its default handler.
 import {

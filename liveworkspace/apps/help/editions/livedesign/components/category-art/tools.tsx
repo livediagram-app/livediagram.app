@@ -12,7 +12,7 @@ const BLOCKS = [
   { from: [6, 98], to: [0, 96], w: 92, h: 14, tone: 'fill-brand-500' },
 ] as const;
 
-// Tools: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), with livedesign's helper: Auto-align
+// Tools: the shared scene (liveworkspace/docs/specs/017-help/help-centre.md "Category art"), with livedesign's helper: Auto-align
 // (the command palette's Actions, Layout Cleanup) taking a wireframe's drifting blocks and lining them up on one
 // edge, beside the shared appearance switch and Zen mode.
 export function ToolsArt() {

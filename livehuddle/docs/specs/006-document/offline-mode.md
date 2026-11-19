@@ -587,7 +587,7 @@ The illustration is a small local-first glyph (a browser/device with a document
 inside, "no cloud"), consistent with the existing privacy iconography
 ([Marketing assets](../019-marketing/marketing-assets.md)). It links to the help article below.
 
-## Help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md))
+## Help centre ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md))
 
 Add a help article **"Offline Mode"** (under a saving / privacy-oriented
 category), and, per the help-registry rule, **register it in
@@ -657,7 +657,7 @@ Track adoption without content, reusing the closed vocabulary:
   download-on-take-offline.
 - `apps/marketing`: the privacy-area mention + small asset ([Marketing site](../019-marketing/marketing-site.md), /23).
 - `liveworkspace/apps/help`: the "Offline Mode" article + its `articles.ts` registry entry
-  ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)).
+  ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)).
 - Telemetry: the create `type` + conversion events ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 ## References
@@ -671,6 +671,6 @@ See [Open source + distribution](../002-project-scope/open-source-and-business-m
 [Marketing site](../019-marketing/marketing-site.md) + [Marketing assets](../019-marketing/marketing-assets.md) (landing),
 [Image element + per-owner gallery](../009-elements/images.md) (images),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
-[One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
+[One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md) + [Contextual help links](../018-help/contextual-help-links.md) (help),
 [Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md) (realtime, the separate concern),
 [Save Locations](save-locations.md) (the Save location chooser).

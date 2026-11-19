@@ -1,4 +1,4 @@
-// The articles two or more apps share (liveworkspace/docs/specs/016-help/help-centre.md "Articles and the apps they
+// The articles two or more apps share (liveworkspace/docs/specs/017-help/help-centre.md "Articles and the apps they
 // apply to"): one entry per path, its `apps` the apps it came from in registry order. Each merge batch keeps its
 // entries in a file of its own here (`<batch>.ts`, exporting `articles: Article[]`) and adds it below, one import
 // and one spread per batch, so the catalogue (../index.ts) and every app's slice read them all from this one list.

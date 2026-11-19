@@ -1,6 +1,6 @@
 import type { HelpHomeLayout, HomeSection } from '@liveworkspace/help-site/lib/home';
 
-// The help home page's layout (liveworkspace/docs/specs/016-help/help-centre.md "Home page"): which categories each section
+// The help home page's layout (liveworkspace/docs/specs/017-help/help-centre.md "Home page"): which categories each section
 // shows, in order, and the popular topics under the search. The shared suite (help-site.test.ts) holds it to the
 // registry: every category in exactly one section, every popular topic a real article.
 

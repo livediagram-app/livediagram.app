@@ -21,7 +21,7 @@ const MEDIA_DEV = process.env.MEDIA_DEV_ORIGIN ?? 'http://localhost:8792';
 const STATUS_DEV = process.env.STATUS_DEV_ORIGIN ?? 'http://localhost:3010';
 const DRIVE_DEV = process.env.DRIVE_DEV_ORIGIN ?? 'http://localhost:3011';
 // The one help centre (liveworkspace/apps/help, `pnpm dev` on 3020), which www.liveworkspace.app/help* routes to in
-// production (liveworkspace/docs/specs/016-help/help-centre.md). It serves its own /help basePath.
+// production (liveworkspace/docs/specs/017-help/help-centre.md). It serves its own /help basePath.
 const HELP_DEV = process.env.HELP_DEV_ORIGIN ?? 'http://localhost:3020';
 
 // The build's assets under a path of their own (@liveworkspace/sites/workspace-proxy SITE_ASSET_PREFIX), because the
