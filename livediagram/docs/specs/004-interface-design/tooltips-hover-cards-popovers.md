@@ -133,6 +133,8 @@ These meet WCAG 2.2 AA, including 1.4.13 Content on Hover or Focus.
   period covers the gap between the two. Leaving both closes it.
 - **Persistent.** A hint stays open while the pointer is over the control or the hint, or while the
   control has keyboard focus. It has no timeout.
+- **Only while hovered or focused.** A hint never outlives both: focus landing elsewhere, or the pointer moving on, closes it
+  even when the control's own blur or pointer-leave was missed (a step change under a resting pointer, a swapped-out control).
 - **Pressing closes it.** A press on the control closes its hint and cancels a pending one, so a click
   never leaves a name hanging over the menu it opened.
 - **One at a time.** Opening a hint closes any other.
