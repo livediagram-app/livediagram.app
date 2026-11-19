@@ -102,6 +102,7 @@ var LDV = (function () {
   function stopWords(why, word) {
     var w = word || 'document';
     if (why === 'trashed') return 'This ' + w + ' moved to the Trash.';
+    if (why === 'archived') return 'This ' + w + ' was archived.';
     if (why === 'lost') return 'Live updates stopped: the connection kept dropping.';
     return 'Live updates are off for this ' + w + '.';
   }
@@ -343,7 +344,8 @@ const LIVE = String.raw`
       ws.onclose = function (e) {
         live.ws = null;
         clearTimeout(live.renew);
-        if (e.code === 4004) stop('trashed'); else lost();
+        // 4004: moved to the Trash; 4010: archived from anywhere (one-explorer.md "Archived from elsewhere while open").
+        if (e.code === 4004) stop('trashed'); else if (e.code === 4010) stop('archived'); else lost();
       };
     }, function () { if (live.doc === doc && !live.off) { live.pending = false; stop('refused'); } });
   }

@@ -101,3 +101,26 @@ export function arrivedArchived(app: App): ArchivedItem | null {
 export function forgetArchivedArrival(): void {
   arrivals.clear();
 }
+
+// ---------- Archived from elsewhere while open ---------------------------------------------------------------------
+// An archive made anywhere else (another tab, MCP, the CLI) closes the item's room with ITEM_ARCHIVED_CLOSE
+// (one-explorer.md "Archived from elsewhere while open"), and every editor on it leaves for the Explorer.
+
+/** The Explorer address's word (`?ended=`) for an item its owner archived while someone else had it open. */
+export const ENDED_ARCHIVED = 'archived';
+
+/** Leaves the editor for the Explorer once the open file was archived elsewhere: its owner as for an archive made here
+ *  (the Explorer says it moved to Archived), anyone else with `?ended=archived` (it says its owner archived it). */
+export function leaveArchivedElsewhere(
+  app: App,
+  item: ArchivedItem,
+  isOwner: boolean,
+  leave: (href: string) => void = (href) => window.location.assign(href),
+  now = Date.now(),
+): void {
+  if (isOwner) {
+    leaveArchivedItem(app, item, leave, now);
+    return;
+  }
+  leave(explorerHref('', `?ended=${ENDED_ARCHIVED}`));
+}

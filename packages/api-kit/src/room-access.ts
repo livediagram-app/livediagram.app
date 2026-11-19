@@ -13,12 +13,24 @@
 //   - `token`: the sockets one API token's room tickets opened (an MCP server's live view, a CLI), which carry the
 //     token's id (each product's docs/specs/015-api/public-api-and-tokens.md "Revoking a token"). The token was
 //     revoked; they close with ACCESS_CHANGED_CLOSE.
+//   - `archived`: every socket in the room, whoever opened it. The item was archived from anywhere (liveworkspace/
+//     docs/specs/004-index/one-explorer.md "Archived from elsewhere while open"); they close with ITEM_ARCHIVED_CLOSE.
+//
+// Which close code a match ends its sessions with is `accessCloseCode`'s, so the five rooms can't drift on it.
+
+import {
+  ACCESS_CHANGED_CLOSE,
+  ITEM_ARCHIVED_CLOSE,
+  ITEM_ARCHIVED_REASON,
+  WORKBENCH_ENDED_CLOSE,
+} from '@liveworkspace/api-schema/room-wire';
 
 export type AccessCloseMatch =
   | { match: 'share-code' }
   | { match: 'person'; personTag: string }
   | { match: 'workbench'; pairingId: string }
-  | { match: 'token'; tokenId: string };
+  | { match: 'token'; tokenId: string }
+  | { match: 'archived' };
 
 type SessionAccess = {
   shareCode?: string | null;
@@ -42,7 +54,7 @@ export function parseAccessCloseMatch(body: unknown): AccessCloseMatch | null {
     pairingId?: unknown;
     tokenId?: unknown;
   };
-  if (match === 'share-code') return { match };
+  if (match === 'share-code' || match === 'archived') return { match };
   if (match === 'person' && typeof personTag === 'string' && PERSON_TAG.test(personTag)) {
     return { match, personTag };
   }
@@ -59,10 +71,20 @@ export function sessionMatchesAccessClose(
   session: SessionAccess | null,
   close: AccessCloseMatch,
 ): boolean {
+  // Archived ends every socket, one whose session can't be read included: nobody keeps an archived item open.
+  if (close.match === 'archived') return true;
   if (!session) return false;
   if (close.match === 'share-code') return !!session.shareCode;
   if (close.match === 'workbench')
     return !!session.workbenchPairing && session.workbenchPairing === close.pairingId;
   if (close.match === 'token') return !!session.apiToken && session.apiToken === close.tokenId;
   return !!session.personTag && session.personTag === close.personTag;
+}
+
+/** The close code and reason a match's sockets end with: a workbench pairing's 4006, an archive's 4010, and 4005 for
+ *  every other access change. */
+export function accessCloseCode(close: AccessCloseMatch): [code: number, reason: string] {
+  if (close.match === 'workbench') return [WORKBENCH_ENDED_CLOSE, 'workbench-ended'];
+  if (close.match === 'archived') return [ITEM_ARCHIVED_CLOSE, ITEM_ARCHIVED_REASON];
+  return [ACCESS_CHANGED_CLOSE, 'access-changed'];
 }

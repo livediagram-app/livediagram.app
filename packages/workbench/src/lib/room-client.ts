@@ -10,7 +10,7 @@ import {
   ROOM_FULL_MESSAGE,
   ROOM_FULL_RETRY_MS,
 } from '@liveworkspace/api-schema/room-capacity';
-import { SNAPSHOT_REVERTED_CLOSE } from '@liveworkspace/api-schema/room-wire';
+import { ITEM_ARCHIVED_CLOSE, SNAPSHOT_REVERTED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import type { OpRefusedMessage } from '@liveworkspace/api-schema/room-refusal';
 import type { TimingHandle } from '@liveworkspace/telemetry-client';
 import { debugLog } from './debug-log';
@@ -58,6 +58,10 @@ export type RoomClientHandlers<Op, Participant> = {
   // client"): the room closed every session with SNAPSHOT_REVERTED_CLOSE. The connector stops; the page reloads onto
   // the reverted content unless the caller handles it.
   onSnapshotReverted?: () => void;
+  // The item was archived from anywhere (liveworkspace/docs/specs/004-index/one-explorer.md "Archived from elsewhere
+  // while open"): the room closed every session with ITEM_ARCHIVED_CLOSE. The connector stops for good, and the
+  // caller leaves for the Explorer.
+  onItemArchived?: () => void;
   // The room already holds ROOM_MAX_CONNECTIONS (docs/specs/015-api/api.md "Room size") and closed this
   // connection with ROOM_FULL_CLOSE. Called once per spell of being turned away (a join resets it); the
   // connector keeps trying every ROOM_FULL_RETRY_MS, and whenever the tab is shown again.
@@ -453,6 +457,12 @@ export function connectRoomClient<
         closed = true;
         settleTimings(false);
         handlers.onWorkbenchEnded?.();
+        return;
+      }
+      if (event?.code === ITEM_ARCHIVED_CLOSE) {
+        closed = true;
+        settleTimings(false);
+        handlers.onItemArchived?.();
         return;
       }
       if (event?.code === SNAPSHOT_REVERTED_CLOSE) {

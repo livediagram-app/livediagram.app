@@ -157,4 +157,13 @@ describe('addresses the Explorer used to have', () => {
     expect(arrivalNotice('?ended=revoked', null)).toMatch(/that item/);
     expect(arrivalNotice('', 'liveplanner')).toBeNull();
   });
+
+  // one-explorer.md "Archived from elsewhere while open": an editor whose file its owner archived under it.
+  it("says its owner archived the file open here, in the app's words, and nothing for another word", () => {
+    expect(arrivalNotice('?ended=archived', 'livediagram')).toBe(
+      'That canvas was archived by its owner, so it is no longer open to you.',
+    );
+    expect(arrivalNotice('?ended=archived', null)).toMatch(/^That item was archived/);
+    expect(arrivalNotice('?ended=other', 'liveplanner')).toBeNull();
+  });
 });

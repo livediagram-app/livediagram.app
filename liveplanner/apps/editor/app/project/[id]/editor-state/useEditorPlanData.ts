@@ -1,4 +1,5 @@
 import { planHidesCursors } from '@/lib/plan-cursors';
+import { leaveArchivedElsewhere } from '@liveworkspace/workbench/lib/archived';
 import { usePlanPresence } from '@/hooks/plan/usePlanPresence';
 import { usePlanItems } from '@/hooks/plan/usePlanItems';
 import { usePlanCopyFollow } from '../usePlanCopyFollow';
@@ -254,6 +255,16 @@ export function useEditorPlanData(
   useRoomConnection({
     onAdderKey: participant.setAdderKey,
     onRoomFull: roomFullNotice.noticeFull,
+    // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): its owner leaves for
+    // the Explorer's archived toast, anyone else for the Explorer saying its owner archived it.
+    onItemArchived: () => {
+      if (projectId)
+        leaveArchivedElsewhere(
+          'liveplanner',
+          { id: projectId, title: lastSavedNameRef.current || null },
+          realtime.isOwner,
+        );
+    },
     hydrated,
     projectId,
     projectServerStored: realtime.projectServerStored,
