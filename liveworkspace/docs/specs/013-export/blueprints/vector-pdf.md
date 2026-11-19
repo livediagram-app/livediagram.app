@@ -122,7 +122,7 @@ the page's own SVG; nothing is fetched except pictures the SVG already names and
 - O(n) in elements and characters: `mergeLines` and `readingOrder` are linear (a stable sort of tagged runs); each
   line's tag path is parsed once per distinct path and its elements found by key; a page's figures are sorted once
   and merged with its blocks in one pass; alt texts inside a fallback picture are gathered once per picture, which
-  never overlap. `src/pdf/struct-tree.test.ts` holds a CPU-time budget for 20,000 tagged lines and 2,000 figures.
+  never overlap. `src/pdf/struct-tree.test.ts` holds a CPU-time budget for 20,000 tagged lines and 2,000 figures (measured 75 to 170 ms under load); livedocuments' `article-pdf-tags.test.ts` one for tagging 6,000 list items and a 1,000-row table in one pass (31 ms).
 
 ## Accessibility
 

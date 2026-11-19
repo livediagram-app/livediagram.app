@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { afterEach, describe, expect, it } from 'vitest';
 import { blockTagger } from './article-pdf-tags';
 import { snapshotWriting } from './article-snapshot';
@@ -100,6 +101,23 @@ describe('blockTagger', () => {
     tags.scan(body);
     expect(tags.of(notes.querySelector('#n'))).toEqual({ tag: 'P', block: 2 });
     expect(tags.of(document.createElement('h3'))).toEqual({ tag: 'H3', block: 3 });
+  });
+});
+
+describe('a long article', () => {
+  it('is tagged in one pass: 6,000 list items over four levels and a 1,000-row table', () => {
+    const root = document.createElement('div');
+    const items = Array.from({ length: 6000 }, (_, i) => li(`i${i}`, i % 4));
+    const rows = Array.from({ length: 1000 }, () => '<tr><td>a</td><td>b</td></tr>').join('');
+    root.innerHTML = `${items.join('')}<table><tbody>${rows}</tbody></table>`;
+    const words = [...root.querySelectorAll('li, td')];
+    const run = () => {
+      const tags = blockTagger();
+      tags.scan(root);
+      for (const w of words) tags.of(w);
+    };
+    run();
+    expect(cpuMsOf(run)).toBeLessThan(cpuBudgetMs(250));
   });
 });
 
