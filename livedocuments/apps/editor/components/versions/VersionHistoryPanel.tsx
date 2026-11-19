@@ -250,7 +250,9 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
               track('Version', 'Named', 'Editor');
             }}
             onRename={async (id, name) => {
-              await history.rename(id, name);
+              const version = await history.rename(id, name);
+              // A name taken off can answer the automatic version already holding that revision: select it.
+              if (version.id !== id && selected === id) setSelected(version.id);
               if (name !== null) track('Version', 'Named', 'Editor');
             }}
           />

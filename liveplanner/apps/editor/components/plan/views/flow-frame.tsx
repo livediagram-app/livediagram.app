@@ -1,7 +1,7 @@
 'use client';
 
 // What the three flow charts share (docs/specs/026-plan/plan-views.md "Flow charts"): the read of their range, the
-// frame headed by name and range, every state (loading, This Browser, failed with Try Again, nothing in the range,
+// frame headed by name and range, every state (loading, Offline, failed with Try Again, nothing in the range,
 // outside a plan), the summary line and key above the plot, the axes, and the hover card.
 import { useMemo, type ReactNode } from 'react';
 import { Button, CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
@@ -103,7 +103,7 @@ export function FlowFrame({
         ink={ink}
         icon={<FlowGlyph />}
         title="Flow Needs a Cloud Plan"
-        description="Flow charts read the plan's history, which plans in This Browser don't keep."
+        description="Flow charts read the plan's history, which plans kept Offline don't keep."
       />
     ) : flow.status === 'error' ? (
       <CompactEmptyState
@@ -178,7 +178,7 @@ export function FlowFrame({
   );
 }
 
-// What the frame shows: loading until the cards and the flow are in, the empty state for This Browser, a failed read,
+// What the frame shows: loading until the cards and the flow are in, the empty state for Offline, a failed read,
 // outside a plan or nothing to draw, else the chart.
 export function flowFrameState(
   plan: PlanContextValue | undefined,

@@ -21,7 +21,7 @@ export type ConnectedTabPageProps = {
   name: string;
   connection: TabConnection;
   hostApp: App;
-  // The host cannot reach the index (a This Browser item): connected files open when online.
+  // The host cannot reach the index (an offline item): connected files open when online.
   offline: boolean;
   // The session may change the host's tabs (`can('edit')`, not tab-scoped): Remove Tab, Connect Again, the rename.
   canEdit: boolean;

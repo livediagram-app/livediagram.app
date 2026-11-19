@@ -438,7 +438,7 @@ element.cellComments }`.
   title alone; `sheets` is `SheetNamesOf`, by store id: `title` names every row of the Sheet, `cellRef` the cell), at most `CELL_INBOX_ROWS_MAX` a Sheet by newest comment, none past
   `INDEX_ID_MAX` (`@liveworkspace/index-client/constants`). The api's outbox (`plan-room/plan-outbox.ts`) hands it `sheetCellNames`
   (`apps/api/src/sheet-cell-refs.ts`, also the comment listing's A1), over `sheetNamesFrom`
-  (`@liveplanner/sheets/sheet-names`, which the editor's This Browser Inbox, `lib/offline/offline-activity.ts`, reads
+  (`@liveplanner/sheets/sheet-names`, which the editor's Offline Inbox, `lib/offline/offline-activity.ts`, reads
   the plan's own sheets with). Schema step V25 (`plan-room/plan-schema.ts`) adds
   `outbox_sheet_layout`: a `sheets.layout` change queues its tab's `tab` key when the tab's data holds `"cellComments"`. The editor's `useCollabDeepLink` takes an `el`
   no element has through `splitCellThreadKey`: the Sheet selected, `focusSheetCell` (held until the Sheet is drawn)

@@ -1,6 +1,6 @@
 // The Explorer page's in-place Delete of an item kept only in this browser (liveworkspace/docs/specs/004-index/
 // one-explorer.md "Take Offline, Sync and Delete"): the record leaves the app's offline store, the open editor tabs are
-// told, and the item leaves This Browser's list and the Inbox; where the store isn't there, nothing is made.
+// told, and the item leaves Offline's list and the Inbox; where the store isn't there, nothing is made.
 import { IDBFactory } from 'fake-indexeddb';
 import { describe, expect, it, vi } from 'vitest';
 import { APP_ITEMS } from '@liveworkspace/sites';

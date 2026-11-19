@@ -122,7 +122,7 @@ export function useEditorCalendarFeed(ctx: EditorContextValue, isOffline: boolea
   return { calendarFeedScope, calendarFeedGate };
 }
 
-// Publish as Roadmap's scope (docs/specs/026-plan/public-roadmap.md "Who may publish"): the plan's owner or a team
+// Publish Roadmap's scope (docs/specs/026-plan/public-roadmap.md "Who may publish"): the plan's owner or a team
 // member on a plan saved to the server, a guest owner included; null (no tab menu row) for everyone else.
 export function useEditorRoadmap(ctx: EditorContextValue, isOffline: boolean): RoadmapScope | null {
   return roadmapScopeFor({
@@ -160,7 +160,7 @@ export function useEditorEmailIntake(ctx: EditorContextValue, isOffline: boolean
 export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean) {
   const { isStructureReadOnly, hydrated, embedMode, accountUserId } = ctx;
   // Automations (docs/specs/026-plan/automations.md "Who may do what"): a signed-in Editor of the whole plan saved to
-  // an account opens the screen; one who could edit it but for a plan in This Browser or no account opens the gate.
+  // an account opens the screen; one who could edit it but for a plan kept Offline or no account opens the gate.
   const automationsGateInput = {
     level: ctx.can.level,
     structureReadOnly: isStructureReadOnly,
@@ -182,7 +182,7 @@ export function useEditorAutomations(ctx: EditorContextValue, isOffline: boolean
 }
 
 // Snapshots (docs/specs/013-workspace/snapshots.md "In the editor"): an Editor of the whole plan stored on the server,
-// never in This Browser or an embed. The api answers everyone else 404 all the same, so this is presentation.
+// never Offline or an embed. The api answers everyone else 404 all the same, so this is presentation.
 export function useEditorSnapshots(ctx: EditorContextValue, isOffline: boolean) {
   const scope = ctx.plan.context?.itemsScope ?? null;
   const allowed =

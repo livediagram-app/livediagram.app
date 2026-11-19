@@ -254,6 +254,7 @@ export function EditorCanvasHost() {
         tabBackgroundColor={backdrop.backgroundColor}
         tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
         tabBackgroundPatternScale={activeTab.backgroundPatternScale ?? 1}
+        tabWallColor={activeTab.wallColor}
         tabPatternColor={backdrop.patternColor}
         tabFont={activeTab.font}
         tabFinish={activeTab.finish}

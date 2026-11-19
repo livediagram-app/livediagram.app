@@ -24,7 +24,7 @@ which is gone ([Coming from livediagram's mirror](#coming-from-livediagrams-mirr
 - **Their own work, in every app.** Everything the person owns outside a team, in livediagram, liveplanner,
   livedocuments, livedesign and livehuddle: the index's personal items and the person's whole folder tree, which
   already holds items from any app. Team items, items shared with them (at any level: Editor, Participant or Viewer),
-  and anything only in a browser (This Browser, Offline) are not mirrored.
+  and anything only in a browser (Offline, Offline Mode) are not mirrored.
 - **A held app is mirrored too.** An app registered before its launch
   ([Integrating an app](../002-architecture/integrating-an-app.md#registered-before-launch)) is one of the mirrored
   apps from the start: its items are written and its file opens like any other app's, and nothing liveworkspace.app

@@ -96,7 +96,7 @@ describe('flow store', () => {
     expect(store.get(key)).toEqual({ status: 'ready', data: ANSWER });
   });
 
-  it('says a This Browser plan has no flow, and drops an answer a newer read overtook', async () => {
+  it('says an offline plan has no flow, and drops an answer a newer read overtook', async () => {
     let resolveOld: (v: FlowResponse) => void = () => {};
     const read = vi
       .fn()

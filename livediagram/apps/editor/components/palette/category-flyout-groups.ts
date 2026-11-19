@@ -58,7 +58,7 @@ const TAGLINES: Readonly<Record<string, string>> = {
   build: 'Structures that grow as you type.',
   diagrams: 'Structures that grow as you type, and the C4 model.',
   layout: 'Lanes, frames and the parts that label a diagram.',
-  concepts: 'Ideas laid out as one element that arranges itself.',
+  concepts: 'Structures that grow as you type, and ideas laid out as one element.',
   technology: 'Cloud and infrastructure marks for architecture.',
   media: 'Pictures and people.',
   data: 'Charts and meters that read at a glance.',
@@ -104,6 +104,9 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'tools:arrow': 'Connectors',
   'tools:mind-node': 'Diagrams',
   'diagrams:c4-person': 'C4 Model',
+  'concepts:layer-stack': 'Layers',
+  'concepts:funnel': 'Process',
+  'concepts:cycle': 'Relationships',
   'tools:lane': 'Containers',
   'tools:diagram-key': 'Parts',
   'collab:comment-pin': 'Comments',
@@ -126,6 +129,8 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
 // in this browser under the key `optionalGroupKey` names, and opening one reports `UI`/`Opened`/its telemetry type.
 // Search finds their tiles whether open or not.
 const OPTIONAL_GROUPS: Readonly<Record<string, { slug: string; telemetry: string }>> = {
+  'shapes:cylinder': { slug: 'flowchart', telemetry: 'FlowchartGroup' },
+  'shapes:cloud': { slug: 'more-shapes', telemetry: 'MoreShapesGroup' },
   'bpmn:start-event': { slug: 'bpmn', telemetry: 'BpmnGroup' },
 };
 

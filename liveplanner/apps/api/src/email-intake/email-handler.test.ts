@@ -111,7 +111,7 @@ describe('what a message makes', () => {
     expect((await cards())[0]!.fields['title']).toBe('Email from stranger@else.com');
   });
 
-  it('attaches pictures and lists what it dropped', async () => {
+  it('attaches pictures and PDFs and lists what it dropped', async () => {
     Reflect.set(planEnv(), 'MEDIA_KEY', 'k');
     const uploads: string[] = [];
     vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
@@ -173,18 +173,32 @@ describe('what a message makes', () => {
       'Content-Type: application/pdf; name=report.pdf',
       '',
       'not a picture',
+      '--b',
+      'Content-Type: application/pdf; name=quote.pdf',
+      'Content-Transfer-Encoding: base64',
+      '',
+      btoa('%PDF-1.7\n1 0 obj << >> endobj\n%%EOF'),
+      '--b',
+      'Content-Type: application/vnd.openxmlformats-officedocument.wordprocessingml.document; name=notes.docx',
+      'Content-Transfer-Encoding: base64',
+      '',
+      btoa('PK\u0003\u0004 a word file'),
       '--b--',
     ]);
     await deliver(m);
     expect(m.rejected).toBeNull();
-    expect(uploads).toEqual(['image/png']);
+    expect(uploads).toEqual(['image/png', 'application/pdf']);
     const [card] = await cards();
     expect(card!.fields['attachments']).toEqual([
       { id: 'img_1', name: 'shot.png', size: 29, type: 'image/png' },
+      { id: 'img_2', name: 'quote.pdf', size: 35, type: 'application/pdf' },
     ]);
     expect(card!.fields['description']).toBe(
-      'See attached.\n\nNot attached: report.pdf (1 KB, not a picture).',
+      'See attached.\n\nNot attached: report.pdf (1 KB, not a picture or PDF), notes.docx (1 KB, not a picture or PDF).',
     );
+    // One write, as made: its last edit is its making, by its sender, so the panel says Created by alone.
+    expect(card!.updatedAt).toBe(card!.createdAt);
+    expect(card!.updatedBy).toEqual(card!.createdBy);
   });
 });
 

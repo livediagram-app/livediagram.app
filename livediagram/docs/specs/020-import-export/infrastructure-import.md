@@ -189,7 +189,8 @@ Every other key not drawn is named in the **summary**: each key once with how of
 
 The Import dialog offers **Infrastructure** beside Mermaid. Its panel takes several files at once:
 
-- **Files.** A drop target that opens the picker (several files at a time) and takes files dropped on it. Each file
+- **Files.** A drop target that opens the picker (several files at a time) and takes files dropped on it, its file
+  endings listed under it (README "File types"). Each file
   added is a row: its format, its name and a way to remove it. Up to `INFRA_MAX_FILES`; a file past
   `INFRA_MAX_FILE_BYTES` is refused unread, named in the error.
 - **Paste.** A text box under the files, for one file's text; it is read with them.

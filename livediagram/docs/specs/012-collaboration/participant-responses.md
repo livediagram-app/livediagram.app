@@ -70,7 +70,7 @@ the `hello`, and the room tells each session its own key (`collab-key`). A
 response naming any key but its sender's is dropped, from an Editor too, and a
 whole-tab write keeps everyone's responses but its writer's as the room's ledger,
 else the stored tab, has them ([Share roles](../013-workspace/share-roles.md#the-collab-key)). Before
-the room answers, and in a document only in This Browser, the editor records answers
+the room answers, and in a document only Offline, the editor records answers
 under this browser's own key (`livediagram:v2:collab-key`, `ensureCollabKey`), as it
 did before keys were derived.
 

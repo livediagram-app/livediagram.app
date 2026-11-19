@@ -22,7 +22,7 @@ describe('who sees Subscribe to Calendar', () => {
     ['a share link at any level', { scope: { ...OWNER.scope, shareCode: 'code1' } }],
     ['a link to one tab', { scope: { ...OWNER.scope, tabId: 't1' } }],
     ['a guest', { signedIn: false }],
-    ['a plan in This Browser', { offline: true }],
+    ['a plan kept Offline', { offline: true }],
     ['an embed', { embed: true }],
     ['a workbench frame', { workbench: true }],
     ['a plan still opening', { hydrated: false }],

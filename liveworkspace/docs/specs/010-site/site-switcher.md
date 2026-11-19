@@ -63,7 +63,7 @@ app whose address the page is on is the one marked; on liveworkspace.app it is l
   ([one-explorer.md](../004-index/one-explorer.md)), so their ids open on every app.
 - **What doesn't**: the query that only speaks on arrival or hands over to one app (`from`,
   `ended`, `trashed`, `title`, `convert`, `item`), and the hash. A view the target doesn't have
-  opens its Explorer's Home instead: This Browser (`/explorer/offline`) on liveworkspace.app, which
+  opens its Explorer's Home instead: Offline (`/explorer/offline`) on liveworkspace.app, which
   can't read an app's offline list, and an app's Image Gallery (`/explorer/images`) or Shape
   Libraries (`/explorer/shape-libraries`) where it keeps none (the registry's `imagesPath` and
   `shapeLibrariesPath` say which apps do; liveworkspace.app shows the last app's).

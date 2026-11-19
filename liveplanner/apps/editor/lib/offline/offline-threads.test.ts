@@ -7,7 +7,7 @@ import { migratedRecord, recordThreads, threadsAfterItemWrite } from './offline-
 import { fetchThreads, writeThread } from '../api/card-threads';
 import { writeItem } from '../api/items';
 
-// A This Browser plan's comment threads (docs/specs/026-plan/items.md "Comments", "Offline projects"): kept in the
+// An offline plan's comment threads (docs/specs/026-plan/items.md "Comments", "Offline projects"): kept in the
 // record beside its items, written by the same rules the api applies, a card's old single thread read as its
 // first thread, and cards coming and going.
 
@@ -51,7 +51,7 @@ describe('offline threads', () => {
     expect('commentId' in reply && reply.commentId).toBeTruthy();
     const id = t.comments[0]!.id;
     await writeThread(scope, { kind: 'edit', threadId: t.id, commentId: id, text: 'Fixed' }, who);
-    // docs/specs/012-collaboration/comment-reactions.md: a This Browser plan keeps its reactions too.
+    // docs/specs/012-collaboration/comment-reactions.md: an offline plan keeps its reactions too.
     const react = {
       kind: 'react',
       threadId: t.id,

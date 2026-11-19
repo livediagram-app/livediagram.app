@@ -139,7 +139,7 @@ describe('Copy Inspect Link', () => {
     expect(m.toast.error).toHaveBeenCalledTimes(2);
   });
 
-  it('offers no link for a design kept in This Browser, or one a visitor may not share', () => {
+  it('offers no link for a design kept Offline, or one a visitor may not share', () => {
     m.offline = true;
     expect(host().view.result.current.copyLink).toBeNull();
     m.offline = false;

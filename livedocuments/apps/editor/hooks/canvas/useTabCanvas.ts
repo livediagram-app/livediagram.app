@@ -8,12 +8,20 @@
 // `checkpointBurst` (see useBurstCheckpoint).
 
 import {
+  pageLockRefuses,
+  pageUnits,
+  pagesGivenNewPageBackground,
+  pagesOf,
+  withNewPageBackground,
   type BackgroundPattern,
   type Finish,
   type Element,
+  type PageBackground,
   type Tab,
   type TextSize,
 } from '@livedocuments/document';
+import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
+import { everyPageMessage } from '@liveworkspace/page-background/new-page-background-label';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';
@@ -220,7 +228,37 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     scheduleCanvasTelemetry('backgroundAnimationSpeed', 'BackgroundAnimationSpeed');
   };
 
+  // New Page Background (docs/specs/011-theme/canvas-and-theme-dialog.md "New Page Background"): the background every
+  // new page of the tab starts on; null goes back to carrying over the page before. One undo step a pick.
+  const setNewPageBackground = (patch: Partial<PageBackground> | null) => {
+    if (editsBlocked) return;
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withNewPageBackground(t, patch) : t)));
+    track('Tab', 'Changed', patch === null ? 'NewPageBackgroundCarried' : 'NewPageBackground');
+  };
+
+  // Apply to Every Page: every page of the tab given that background, re-inked, as one undo step; a locked page keeps
+  // its own, and a notice says what it did.
+  const applyNewPageBackgroundToEveryPage = () => {
+    if (editsBlocked) return;
+    const units = pageUnits(pagesOf(activeTab));
+    const pages = pagesOf(activeTab);
+    const kept = units.filter((u) => pageLockRefuses(pages, u.pageIds[0]!)).length;
+    const reached = units.length - kept;
+    track('Tab', 'Changed', 'NewPageBackgroundToEveryPage');
+    commitTabs((ts) =>
+      ts.map((t) => {
+        if (t.id !== activeId) return t;
+        const out = pagesGivenNewPageBackground(t, pageInkMemory(activeId));
+        if (out.memory) rememberPageInk(activeId, out.memory);
+        return out.tab;
+      }),
+    );
+    notify?.(everyPageMessage(reached, kept));
+  };
+
   return {
+    setNewPageBackground,
+    applyNewPageBackgroundToEveryPage,
     autoAlignTab,
     autoLayoutTab,
     setTabFont,

@@ -69,14 +69,14 @@ The share roles every app applies (each app's `013-workspace/share-roles.md`), w
 requesting changes is the one write a Viewer has** (the owner's choice, 2026-11-15). Only a named approver may decide,
 whatever their level.
 
-| Who                                                                                                        | Sees the badge | Requests and cancels | Approves or requests changes |
-| ---------------------------------------------------------------------------------------------------------- | -------------- | -------------------- | ---------------------------- |
-| An **Editor** of the whole item: its owner, a member of its team, an edit link to the whole item           | Yes            | Yes                  | When named                   |
-| An Editor through a link **confined to one tab**                                                           | Yes            | No                   | No                           |
-| A **Participant**                                                                                          | Yes            | No                   | When named                   |
-| A **Viewer**                                                                                               | Yes            | No                   | When named                   |
-| A **Community** visitor (a public link), a **guest**, a workbench frame, an embed, an item in This Browser | No             | No                   | No                           |
-| An **API token** (agents, MCP, CLI: an app acting for its person)                                          | No             | No                   | No                           |
+| Who                                                                                                     | Sees the badge | Requests and cancels | Approves or requests changes |
+| ------------------------------------------------------------------------------------------------------- | -------------- | -------------------- | ---------------------------- |
+| An **Editor** of the whole item: its owner, a member of its team, an edit link to the whole item        | Yes            | Yes                  | When named                   |
+| An Editor through a link **confined to one tab**                                                        | Yes            | No                   | No                           |
+| A **Participant**                                                                                       | Yes            | No                   | When named                   |
+| A **Viewer**                                                                                            | Yes            | No                   | When named                   |
+| A **Community** visitor (a public link), a **guest**, a workbench frame, an embed, an item kept Offline | No             | No                   | No                           |
+| An **API token** (agents, MCP, CLI: an app acting for its person)                                       | No             | No                   | No                           |
 
 Every route refuses an app acting for a person, the Drive mirror and the data export (403 `approvals_need_a_person`),
 and a guest token, as the index refuses guests everywhere. A Community visitor's request answers `approval: null`.

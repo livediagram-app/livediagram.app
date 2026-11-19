@@ -66,13 +66,14 @@ describe('settling a pointer note (I1, I2)', () => {
     expect(n.y + pointerTipOf(n).y).toBeCloseTo(140, 5);
   });
 
-  it('keeps the note where it was moved and re-aims the tip at the point', () => {
+  // Owner, 2026-11-19: the tip moves to the middle of the host's side facing the note (here the bottom).
+  it('keeps the note where it was moved and re-aims the tip at the side facing it', () => {
     const prev = [host(), attached()];
     const next = [host(), { ...attached(), x: 400, y: 300 }];
     const n = byId(settleChips(prev, next), 'note');
     expect(n.x).toBe(400);
-    expect(n.x + pointerTipOf(n).x).toBeCloseTo(220, 5);
-    expect(n.y + pointerTipOf(n).y).toBeCloseTo(100, 5);
+    expect(n.x + pointerTipOf(n).x).toBeCloseTo(160, 5);
+    expect(n.y + pointerTipOf(n).y).toBeCloseTo(160, 5);
   });
 
   it('carries a badge on it to where the note now is when its host moves', () => {
@@ -123,6 +124,8 @@ describe('the tip handle (snapPointerTip)', () => {
       pointerTip: { x: 220 - 300, y: 100 - 20 },
       attachedTo: 'host',
       attachAt: 'top-right',
+      // The arrow anchor it took (pointer-note.md "Attaching the tip").
+      pointerAnchor: 'ne',
     });
   });
 

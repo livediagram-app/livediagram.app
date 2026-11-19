@@ -2,8 +2,8 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser after signing in": offered
-// once signed in when this browser holds designs in This Browser, every one ticked; Move syncs each in
+// docs/specs/014-identity/auth-and-guest-access.md "Moving designs kept Offline after signing in": offered
+// once signed in when this browser holds designs kept Offline, every one ticked; Move syncs each in
 // turn and names any that stayed; Not Now is remembered until the count grows.
 
 const { auth, store, convert, track } = vi.hoisted(() => {
@@ -52,9 +52,9 @@ const show = async (enabled?: boolean) => {
 };
 
 describe('LocalMovePrompt', () => {
-  it('offers every design in This Browser, newest first, all ticked', async () => {
+  it('offers every design kept Offline, newest first, all ticked', async () => {
     await show();
-    expect(screen.getByText('Move Designs in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Offline Designs to Your Account?')).toBeTruthy();
     const names = screen.getAllByRole('checkbox').slice(1);
     expect(names.map((c) => (c as HTMLInputElement).checked)).toEqual([true, true]);
     expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual([
@@ -84,7 +84,7 @@ describe('LocalMovePrompt', () => {
     await show();
     // Nothing held here: the records are never read.
     expect(store.offlineListDesigns).not.toHaveBeenCalled();
-    expect(screen.queryByText('Move Designs in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Offline Designs to Your Account?')).toBeNull();
   });
 
   it('moves the ticked designs into the account, then reloads', async () => {
@@ -98,7 +98,7 @@ describe('LocalMovePrompt', () => {
     expect(reload).toHaveBeenCalledOnce();
   });
 
-  it('names what stayed This Browser, and reloads on Done when something moved', async () => {
+  it('names what stayed Offline, and reloads on Done when something moved', async () => {
     convert.saveOfflineToCloud.mockImplementation(async (id: string) => {
       if (id === 'a') throw new Error('too big');
       return id;
@@ -108,7 +108,7 @@ describe('LocalMovePrompt', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Move' }));
     await act(async () => {});
     expect(screen.getByRole('alert').textContent).toBe(
-      'This one could not be moved and is still in This Browser:',
+      'This one could not be moved and is still Offline:',
     );
     expect(screen.getByText('Older sketch')).toBeTruthy();
     expect(reload).not.toHaveBeenCalled();
@@ -116,14 +116,14 @@ describe('LocalMovePrompt', () => {
     expect(reload).toHaveBeenCalledOnce();
   });
 
-  it('remembers Not Now until there are more designs in This Browser', async () => {
+  it('remembers Not Now until there are more designs kept Offline', async () => {
     await show();
     fireEvent.click(screen.getByRole('button', { name: 'Not Now' }));
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'LocalMovePrompt');
-    expect(screen.queryByText('Move Designs in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Offline Designs to Your Account?')).toBeNull();
     cleanup();
     await show();
-    expect(screen.queryByText('Move Designs in This Browser to Your Account?')).toBeNull();
+    expect(screen.queryByText('Move Offline Designs to Your Account?')).toBeNull();
     // Not even listed while the count is no more than what was put off.
     expect(store.offlineListDesigns).toHaveBeenCalledOnce();
     store.offlineIdCount.mockResolvedValue(3);
@@ -133,6 +133,6 @@ describe('LocalMovePrompt', () => {
     ]);
     cleanup();
     await show();
-    expect(screen.getByText('Move Designs in This Browser to Your Account?')).toBeTruthy();
+    expect(screen.getByText('Move Offline Designs to Your Account?')).toBeTruthy();
   });
 });

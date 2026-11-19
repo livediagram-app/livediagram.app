@@ -1,6 +1,6 @@
 'use client';
 
-// Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "The dialog"): a board of the tab as a public page, read
+// Publish Roadmap (docs/specs/026-plan/public-roadmap.md "The dialog"): a board of the tab as a public page, read
 // fresh when it opens, in one of two states. Not published: the settings and Publish Roadmap. Published: the live link
 // with Copy Link and Open Roadmap, the settings saving as they change (the link kept), and Unpublish behind a confirm.
 // A tab with several boards gets a board picker at the top. The privacy note is always there. Once published with
@@ -320,7 +320,7 @@ export function RoadmapDialog({
       <HeroDialogHeader
         art={roadmapHeroArt}
         titleId={titleId}
-        title="Publish as Roadmap"
+        title="Publish Roadmap"
         onClose={onClose}
       />
       <div

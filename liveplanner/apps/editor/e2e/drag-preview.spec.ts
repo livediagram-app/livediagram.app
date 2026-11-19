@@ -70,7 +70,7 @@ const arrowPath = (page: Page) =>
 async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  // On liveplanner, not This Browser: the board is seeded, and its saves read back, through the api.
+  // On liveplanner, not Offline: the board is seeded, and its saves read back, through the api.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);

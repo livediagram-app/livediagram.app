@@ -42,7 +42,7 @@ export type ConversionHandoffOptions = {
   getItem: (id: string) => Promise<{ item: Pick<Item, 'app' | 'sharedVia' | 'access' | 'title'> }>;
   // The items this browser keeps (the app's offline store).
   listKept: () => Promise<readonly { id: string; name?: string | null }[]>;
-  // Deletes one kept only in this browser, for good (the editor's This Browser delete, which leaves the item).
+  // Deletes one kept only in this browser, for good (the editor's Offline delete, which leaves the item).
   remove: (id: string) => Promise<unknown>;
 };
 

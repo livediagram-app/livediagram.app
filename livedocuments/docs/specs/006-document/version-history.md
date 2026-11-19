@@ -23,7 +23,9 @@ History) and Word (Version History) all keep versions, and writers moving from t
 | **restore**           | Making a version the tab's current content again, as one change by the person who restores it. |
 | **make a copy**       | A new tab after the document's last, holding a version's content.                              |
 
-"Snapshot" names the platform's previews ([Document previews](document-snapshots.md)), never a version. A version is
+In the editor "Snapshot" names a save point of the whole document ([Snapshots](../013-workspace/snapshots.md)) and,
+in `006-*`, the previews ([Document previews](document-snapshots.md)), never a version, though a named version is kept
+in the snapshots' store ("Where versions are kept" below). A version is
 of a **tab**, as every write is ([Agent changesets](../024-agents/agent-changesets.md): one tab, one changeset); the
 document's name, its tab order and folders, its slide deck and its share links are not in it.
 
@@ -39,11 +41,44 @@ The document keeps a version, at most one per tab revision, at four moments:
 | `manual`  | **Name This Version.** The tab's current content, named. Naming an older version names that one instead (no copy).                                                                                                                                                                                                                                                                      | The person who named it      |
 
 - **One per revision.** A moment that would keep a revision already kept keeps nothing new (an `idle` version and
-  an `agent` one at the same revision are one version). Naming the current content when it is already kept names
-  that version.
+  an `agent` one at the same revision are one version). Naming the current content when a named version already holds
+  it renames that one. Where only an automatic version holds it, the named one is kept in the snapshots' store and the
+  automatic one is left out of the list.
 - **The idle check costs nothing on a busy tab.** It is a trigger on the tab row comparing two numbers, so an
   autosave every 600 ms while someone types pays only the comparison; the copy is SQLite copying the stored body,
   never parsed in JavaScript.
+
+## Where versions are kept
+
+A document has one store of save points, the platform's snapshot tables ([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md)
+"Save points of one part of an item"), and its whole-document snapshots and its tabs' named versions share it (the
+owner's answer on Work Tracker 948; built by 1097). Automatic versions stay in the tab's own table, where the trigger
+on the tab row keeps them:
+
+| What                                                                | Kept in                                                                             | Scoped by         |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------- |
+| A snapshot of the whole document                                    | the snapshot tables                                                                 | the document's id |
+| A version kept by **Name This Version**                             | the snapshot tables, its tab revision and tab name beside it (`tab_named_versions`) | `tab:<tab id>`    |
+| An automatic version, a name given to one, a name given before 1097 | `tab_versions`                                                                      | the tab           |
+
+- **Name This Version saves through the snapshots' store**: the tab's stored content as one `manual` save point of its
+  tab, written with its revision row in one transaction. The document's Snapshots never list a tab's versions, never
+  count them in their five, and a revert or a delete of a snapshot never reaches one; Version History never lists a
+  whole-document snapshot.
+- **Naming an automatic version** (a row's **Name**) names it where it is: no copy, nothing moves.
+- **Removing a name** from a version in the snapshots' store makes it an automatic version again: its content goes
+  into `tab_versions` with its id, in one transaction, and the automatic bounds then reach it. Where an automatic
+  version already holds that revision, that one stands and the named copy goes (the same content).
+- **Read both.** The list is one read of each store, merged newest first into one list, the shape it always had.
+  Opening, restoring, copying and naming find a version by its id in either. A version named before this change stays
+  in `tab_versions` as it was, and keeps opening, restoring and copying: nothing is moved, rewritten or backfilled.
+- **One store failing leaves the other.** A snapshots' store that cannot be read lists `tab_versions` alone (logged
+  `[versions] refused` `store`); one that cannot be written keeps Name This Version's version in `tab_versions`, as
+  before 1097.
+- **The 25 names count both stores**; a deleted tab takes its versions from both, and closing an account takes its
+  name off both.
+- **On the wire** nothing changes: the same `VersionSummary`, an id of `v_` (the tab's table) or `s_` (the snapshots'
+  store) and 16 hex characters, which clients treat as opaque.
 
 ## Bounds
 
@@ -72,7 +107,7 @@ storage. They are bounded by count, age and bytes, per tab:
 - **What it costs.** Measured on node:sqlite with the stored bodies (`versions/version-storage.test.ts`): a typical tab
   (the slide-deck template's elements over 12 slides, 10 a slide) is 27 KB, so a tab at the 50-version cap holds
   about 1.3 MB of versions; a large tab (a 600-paragraph, 30-page article with 60 elements) is 154 KB, so 50 versions
-  hold about 7.5 MB, under the byte cap. A tab at the 2 MB cap keeps 8 automatic versions. The worst case is the byte
+  hold about 7.5 MB, under the byte cap. A named version in the snapshots' store costs the same bytes, in chunks. A tab at the 2 MB cap keeps 8 automatic versions. The worst case is the byte
   cap plus 25 named versions of the largest tab: about 64 MB per tab, inside a Durable Object's 10 GB. Keeping a
   version of a 2 MB tab adds about 3 ms to the write that keeps it (3.7 ms against 1.1 ms for the same write without
   a pause), and nothing to a save that is not the first after a pause.
@@ -145,7 +180,7 @@ it has no Make a Copy.
 
 - **Version History** lives inside **History** in the editor footer's **Tools** menu ([The footer's Tools
   menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "History, with Snapshots in it"; owner,
-  2026-11-17), for every role, on a document stored on the server (not in This Browser, not in an embed or workbench
+  2026-11-17), for every role, on a document stored on the server (not Offline, not in an embed or workbench
   frame), once the document is up: an **Open Version History** button over History's timeline, under the snapshots, or
   under History's sign-in prompt. Where History holds nothing else for this person, the History row opens Version
   History straight away. Either way it opens **Version History** on the open tab and closes Tools. The header carries no History. The Explorer's bottom bar has none.

@@ -1,6 +1,6 @@
 'use client';
 
-// Gives the editor its door to Publish as Roadmap (RoadmapContext), the Tools row's, and draws the dialog while it is
+// Gives the editor its door to Publish Roadmap (RoadmapContext), the Tools row's, and draws the dialog while it is
 // open (docs/specs/026-plan/public-roadmap.md "Where it lives"). The door is there only on a plan with a Plan board on
 // any tab; the dialog picks the tab, starting on the one in view. The
 // dialog's code loads the first time it opens (docs/specs/016-platform/web-performance.md), so a plan whose people

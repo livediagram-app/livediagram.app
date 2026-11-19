@@ -85,7 +85,7 @@ for (const scheme of ['dark', 'light'] as const) {
         route.fulfill({ json: { pairings: [PAIRING] } }),
       );
       // Settings opens on its deep link wherever the editor is (a blank design here, made on the server as the
-      // signed-in account, so no This Browser copy asks to move; the Explorer is liveworkspace.app's).
+      // signed-in account, so no Offline copy asks to move; the Explorer is liveworkspace.app's).
       await openStartBlank(page);
       await page.goto(`${new URL(page.url()).pathname}?settings=tokens`);
       const pairings = page.getByRole('list', { name: 'Paired workbenches' });

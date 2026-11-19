@@ -589,7 +589,7 @@ describe('the last seen copy', () => {
     }
   });
 
-  it('keeps none for a Community post, an embed or an item in This Browser', async () => {
+  it('keeps none for a Community post, an embed or an item kept Offline', async () => {
     const lastSeen = doors();
     const post = harness({
       loadShared: vi.fn(async () => resolved({ community: { postId: 'p1' } })),

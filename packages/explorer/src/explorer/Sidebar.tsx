@@ -1,7 +1,7 @@
 'use client';
 
 // The Explorer's sidebar (liveplanner's ExplorerSidebar): Overview (Home, Inbox, Shared With Me), Spaces (My Work
-// and its folders, each team and its folders, This Browser and its folders while it holds anything), and More (the
+// and its folders, each team and its folders, Offline and its folders while it holds anything), and More (the
 // Library: Recent, the host's Gallery and Shape Libraries, Archived and the Trash; then the
 // host's own rows). Rows carry toned
 // tiles and the current row is a raised pill, in the host app's brand colour. The tree reads the folder store, so it
@@ -100,7 +100,7 @@ export function useOpenCurrentRows(
   }, [rows, place, expansion]);
 }
 
-/** The space holding the view (My Work, a team, This Browser), kept open when another space opens; null outside one. */
+/** The space holding the view (My Work, a team, Offline), kept open when another space opens; null outside one. */
 export function spaceOfView(
   view: ExplorerView,
   byId: Parameters<typeof rowsAbove>[1],
@@ -414,7 +414,7 @@ export function Sidebar() {
             </SidebarRow>
           );
         })}
-        {/* While this browser holds anything (one-explorer.md "This Browser, a Space"). */}
+        {/* While this browser holds anything (one-explorer.md "Offline, a Space"). */}
         <ThisBrowserSpaceRow
           expanded={expanded}
           toggle={toggle}
@@ -499,7 +499,7 @@ export function Sidebar() {
           />
           <TrashRow depth={1} />
         </SidebarRow>
-        {/* The host's own rows (This Browser's hand-off on liveworkspace.app): each leaves for its page. */}
+        {/* The host's own rows (Offline's hand-off on liveworkspace.app): each leaves for its page. */}
         {sidebarLinks.map((link) => (
           <SidebarRow
             key={link.id}

@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@liveplanner/project';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR, tabKindOf } from '@liveplanner/project';
 
 import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
@@ -77,6 +77,8 @@ export function EditorModals() {
       {canvasThemeTab !== null && !isReadOnly ? (
         <CanvasThemeDialog
           tab={canvasThemeTab}
+          // The tab's kind is the Tab Style surface; a diagram tab is the canvas.
+          surface={tabKindOf(activeTab) === 'diagram' ? 'canvas' : tabKindOf(activeTab)}
           onTabChange={setCanvasThemeTab}
           backgroundPattern={activeTab.backgroundPattern ?? 'grid'}
           backgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}

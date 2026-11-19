@@ -6,8 +6,8 @@ import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { Spinner } from '@/components/palette/template-picker-icons';
 
-// The offer to move a project in This Browser onto liveplanner (docs/specs/006-project/offline-mode.md "Sharing a
-// project in This Browser"), drawn inside a dialog: the project Share dialog's gate and Share Form's
+// The offer to move a project kept Offline onto liveplanner (docs/specs/006-project/offline-mode.md "Sharing a
+// project kept Offline"), drawn inside a dialog: the project Share dialog's gate and Share Form's
 // (docs/specs/030-forms/forms.md "Publishing and the form link"). It says the project is offline and offers Sync
 // Project; the sync converts the open project in place, and the dialog around it swaps this prompt for what it was
 // opened for as the project stops being offline. Sync waits for `ready` (the reader is known). Automations draws it
@@ -16,7 +16,7 @@ import { Spinner } from '@/components/palette/template-picker-icons';
 export function SyncProjectPrompt({
   onSyncToCloud,
   ready = true,
-  title = 'This Plan Is in This Browser',
+  title = 'This Plan Is Offline',
   message,
   onBusyChange,
   signInHref,
@@ -59,7 +59,7 @@ export function SyncProjectPrompt({
         data-prompt-glyph={signInHref ? 'person' : 'cloud-off'}
         className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-50 text-teal-700 ring-1 ring-teal-200 dark:bg-teal-500/10 dark:text-teal-300 dark:ring-teal-500/30"
       >
-        {/* Cloud-off for a plan in This Browser; a person (Lucide's user) for a guest, who signs in. */}
+        {/* Cloud-off for a plan kept Offline; a person (Lucide's user) for a guest, who signs in. */}
         <Glyph size={24} units={24}>
           {signInHref ? (
             <>

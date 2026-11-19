@@ -7,7 +7,7 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 import { ShareOfflineGate } from './ShareOfflineGate';
 
-// docs/specs/006-document/offline-mode.md "Sharing a document in This Browser": Share says the document is
+// docs/specs/006-document/offline-mode.md "Sharing a document kept Offline": Share says the document is
 // offline and offers Sync Document; nothing syncs until it is pressed, nor before the reader is known;
 // a failure leaves the button to try again.
 afterEach(() => {
@@ -20,7 +20,7 @@ describe('ShareOfflineGate', () => {
     const sync = vi.fn(async () => {});
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
     await act(async () => {});
-    expect(screen.getByText('This Document Is in This Browser')).toBeTruthy();
+    expect(screen.getByText('This Document Is Offline')).toBeTruthy();
     expect(sync).not.toHaveBeenCalled();
   });
 

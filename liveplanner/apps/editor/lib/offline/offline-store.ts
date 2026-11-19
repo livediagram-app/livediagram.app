@@ -63,7 +63,7 @@ export type OfflineProjectRecord = {
   // (docs/specs/013-workspace/trash.md). Absent = live.
   // A trashed record keeps everything else so a restore is exact.
   trashedAt?: number;
-  // This Browser's opens of the project (docs/specs/013-workspace/explorer-home.md "Opens"),
+  // Offline's opens of the project (docs/specs/013-workspace/explorer-home.md "Opens"),
   // for Home's Recent; see ./offline-opens.ts. Optional: a record never opened has none.
   opens?: StoredLocalOpens;
   // The project's item store (docs/specs/026-plan/items.md "Offline projects"): its items, the
@@ -310,7 +310,7 @@ export async function offlineSaveItemTypes(
   await writeLive(id, (rec) => ({ ...rec, itemTypes, savedAt: now }));
 }
 
-// The template whose starter rules a plan in This Browser starts with once it is saved to the cloud
+// The template whose starter rules a plan kept Offline starts with once it is saved to the cloud
 // (docs/specs/026-plan/plan-templates.md "Starter rules"): Start Planning's on its first tab.
 export async function offlineSaveStarterRules(
   id: string,

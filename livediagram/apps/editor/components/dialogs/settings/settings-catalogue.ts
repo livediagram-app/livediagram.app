@@ -129,7 +129,7 @@ type SettingsRowContext = {
   // The tab on screen draws other people's cursors (docs/specs/012-collaboration/collaborator-enhancements.md
   // "Only where cursors are drawn"); absent reads as drawn.
   cursorsDrawn?: boolean;
-  // Documents in This Browser with parts set aside (docs/specs/006-document/offline-mode.md "Moving retired parts
+  // Documents kept Offline with parts set aside (docs/specs/006-document/offline-mode.md "Moving retired parts
   // to the other apps").
   retiredParts?: number;
 };
@@ -259,7 +259,7 @@ export type SettingsDeleteAccountRowSpec = RowBase & { kind: 'deleteAccount' };
 // Account in the Danger Zone. Not a preference itself: it clears them.
 export type SettingsResetSettingsRowSpec = RowBase & { kind: 'resetSettings' };
 
-// Pages and boards set aside from documents in This Browser (docs/specs/006-document/offline-mode.md "Moving
+// Pages and boards set aside from documents kept Offline (docs/specs/006-document/offline-mode.md "Moving
 // retired parts to the other apps"): not a preference, the way back to the offer. Only while there are any.
 export type SettingsRetiredPartsRowSpec = RowBase & { kind: 'retiredParts' };
 
@@ -1241,8 +1241,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       {
         kind: 'retiredParts',
         key: 'retiredParts',
-        section: 'This Browser',
-        label: 'Pages and Boards in This Browser',
+        section: 'Offline',
+        label: 'Offline Pages and Boards',
         keywords:
           'pages boards designs slides articles sheets forms logos wireframes move livedocuments liveplanner livedesign old this browser local',
         description:
@@ -1402,7 +1402,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
-// A section's target id: "This Browser" → "this-browser". Settings can open on one
+// A section's target id: "Offline" → "this-browser". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');

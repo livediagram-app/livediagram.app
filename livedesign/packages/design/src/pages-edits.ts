@@ -32,6 +32,7 @@ import {
 } from './page-content';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 import { blankPhoto, photoOfPage, roomForPhotoPage, withPhoto, type Photo } from './photo-pages';
+import { newPageBackgroundOf } from './tab-new-page-background';
 import { sameFill, withBackgroundPatch } from './page-paint';
 import {
   WIREFRAME_DEVICES,
@@ -57,6 +58,7 @@ export type PageEditRefusal =
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
   pageOrientation?: unknown;
+  newPageBackground?: unknown;
 };
 
 export type PageEdit<T> = { tab: T } | { refused: PageEditRefusal };
@@ -257,9 +259,9 @@ function pageAppended<T extends PagesTab>(
     const page = newPhotoPage(id, photo.width, photo.height);
     return { tab: withPhoto(withPages(tab, [...pages, page]), id, photo) };
   }
-  // The new page wears the background of the page before it, whatever either kind; a logo page takes its fill
-  // alone, since it takes no pattern.
-  const carried = carriedBackground(pageBefore(pages, after)?.background, kind);
+  // The new page starts on the tab's new-page background when it has one, else wears the background of the page
+  // before it, whatever either kind; a logo page takes its fill alone, since it takes no pattern.
+  const carried = carriedBackground(startingBackground(tab, pages, after), kind);
   // A wireframe page takes the last wireframe page's device and frame
   // (docs/specs/007-editor/wireframe-pages.md "Choosing the device"), its device unless one was
   // just chosen.
@@ -323,7 +325,7 @@ export function pageAddedLike<T extends PagesTab>(
     return pageAdded(tab, kind, id, undefined, undefined, after);
   }
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
-  const carried = carriedBackground(pageBefore(pages, after)?.background, 'wireframe');
+  const carried = carriedBackground(startingBackground(tab, pages, after), 'wireframe');
   const page: Page = {
     ...newWireframePage(id, source.device, source.frameLook),
     orientation: source.orientation,
@@ -331,6 +333,16 @@ export function pageAddedLike<T extends PagesTab>(
     ...(carried ? { background: carried } : {}),
   };
   return { tab: placedAfter(withPages(tab, [...pages, page]), id, after) };
+}
+
+// The background a new page starts on before its kind narrows it: the tab's own new-page background (the plain paper
+// for `{}`), else the page before's.
+function startingBackground(
+  tab: PagesTab,
+  pages: readonly Page[],
+  after: string | undefined,
+): PageBackground | undefined {
+  return newPageBackgroundOf(tab) ?? pageBefore(pages, after)?.background;
 }
 
 // The background a new page of `kind` carries over from the page before it: none for the paper,

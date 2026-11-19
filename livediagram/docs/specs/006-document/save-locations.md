@@ -1,7 +1,7 @@
 # Save Locations
 
 A new document is stored in one of a small set of **save locations**: on the server (livediagram) or in this browser
-only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible). Google Drive is not
+only (Offline, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible). Google Drive is not
 one of them: it is a mirror of cloud documents, not a place a document is stored
 ([Google Drive is a mirror, not a location](#google-drive-is-a-mirror-not-a-location)).
 
@@ -9,20 +9,20 @@ one of them: it is a mirror of cloud documents, not a place a document is stored
 asks nothing: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Canvas** and **Take Offline**.
 (A Location step would be answered with the default by most people before they had anything on the canvas.) A
-document in This Browser says what it is on the document itself: the editor header's
-**This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
+document kept Offline says what it is on the document itself: the editor header's
+**Offline** badge and its legend, [Offline Mode](offline-mode.md#offline-badge--explorer).)
 
-| Location         | What it means                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livediagram**  | A normal cloud document, saved to the api (its Durable Object), reachable from any device.                   |
-| **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
+| Location        | What it means                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| **livediagram** | A normal cloud document, saved to the api (its Durable Object), reachable from any device.                   |
+| **Offline**     | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
 
-| Who                | Default          |
-| ------------------ | ---------------- |
-| A guest            | **This Browser** |
-| A signed-in person | **livediagram**  |
+| Who                | Default         |
+| ------------------ | --------------- |
+| A guest            | **Offline**     |
+| A signed-in person | **livediagram** |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 
@@ -35,10 +35,10 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 - Before sign-in has answered, `signedIn` is the `ld_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
-  signed-in person is never handed a document in This Browser; a guest never waits. The page's 5-second give-up on
-  sign-in (it then carries on as a guest) is not that answer, or a slow session would make the document This Browser.
+  signed-in person is never handed a document kept Offline; a guest never waits. The page's 5-second give-up on
+  sign-in (it then carries on as a guest) is not that answer, or a slow session would make the document Offline.
   Only a known account saves on livediagram; a session that
-  still hasn't answered after the wait keeps the document in This Browser, where nothing is lost.
+  still hasn't answered after the wait keeps the document kept Offline, where nothing is lost.
 - There is no per-person override: no setting chooses the store. Where a document is **filed** on livediagram is the
   person's to set, in Settings > Explorer > Default Folders ([Default folders](../013-workspace/default-folders.md)).
   The retired `skipLocationStep` preference is not read ([User preferences](../007-editor/user-preferences.md)).
@@ -47,7 +47,7 @@ Why a guest starts local: [Auth + guest access → Guest documents start local](
 
 Nobody is asked, but the start screen offers one switch, **Sync Canvas to Server**, in a quiet strip under its choices
 (a mode's start), so a new canvas can change place while it is still empty without a trip to the Explorer. It reflects
-where the canvas is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
+where the canvas is **now**, so it starts as the default above: **off** for a guest (Offline), **on** for a signed-in
 person (livediagram).
 
 - **The whole row is the switch**, as a Settings row is: a press anywhere on it (its icon, label or line) flips
@@ -95,8 +95,8 @@ Where a document goes within livediagram is chosen in the shared Explorer
 ([`@liveworkspace/explorer`](../../../../packages/explorer/README.md)): its Move dialog (`MoveToFolderDialog`,
 [Folders](../013-workspace/folders.md)) and its default folder picker ([Default folders](../013-workspace/default-folders.md)),
 both over the index's folders. The Move dialog's **New Team** makes a team on the spot, opens it and files the item
-in it, offered only to someone signed in ([Teams](../013-workspace/teams.md)). A document in This Browser has no
-folder: it is listed on This Browser's own page ([Offline Mode](offline-mode.md)).
+in it, offered only to someone signed in ([Teams](../013-workspace/teams.md)). A document kept Offline has no
+folder: it is listed on Offline's own page ([Offline Mode](offline-mode.md)).
 
 ## The contract for adding a location
 
@@ -120,7 +120,7 @@ A signed-in person can keep a copy of their own work, from every liveworkspace a
 Drive. The document still lives in livediagram (the default location): Drive
 holds a copy that liveworkspace keeps in sync, and a Drive
 file is never the document's home. So Drive is never a save location, and a document created with
-**livediagram** is synced like any other. Canvases in This Browser have no
+**livediagram** is synced like any other. Canvases kept Offline have no
 server copy and are not synced. The sync itself (connection, folder tree,
 rename, move, delete to Trash, "Open with") is liveworkspace's, specified in [Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md), not
 here.
@@ -128,7 +128,7 @@ here.
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 `Document` / `Created` carries a `type` naming the store,
-`Cloud` for livediagram and `Offline` for This Browser. A future location adds
+`Cloud` for livediagram and `Offline` for the Offline location. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))

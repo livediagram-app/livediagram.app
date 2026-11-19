@@ -7,19 +7,19 @@ served at livedesign's own `/explorer` by livedesign's router ([one-explorer.md]
 "The Explorer on each app's address"): the address bar keeps livedesign's name, it asks the index as livedesign's
 session and wears livedesign's colours. What is livedesign's own reaches it through the sites registry
 (`@liveworkspace/sites` `APP_ITEMS.livedesign`): its addresses, its Image Gallery (`imagesPath`, `/explorer/images`),
-and its This Browser view (`offlinePath`, `/explorer/offline`; the editor at a design's own address runs Take Offline
-and Sync handed over from it, `offlineConversions`). `/offline`, the old This Browser page, only redirects there. Teams are made
+and its Offline view (`offlinePath`, `/explorer/offline`; the editor at a design's own address runs Take Offline
+and Sync handed over from it, `offlineConversions`). `/offline`, the old Offline page, only redirects there. Teams are made
 and run over liveworkspace's account API through the router (`/api/workspace/account`). Signed in, the header has a **Settings** button beside Appearance that opens
 livedesign's settings in place, and any `?settings=` address opens them here too. A workbench's
 workspace frame keeps its own copy of the Explorer (`apps/live/app/embed/workbench/ExplorerHost.tsx`).
 
-**From an open design.** The editor's doors to the Explorer from an open design, the header's logo (`apps/live/components/chrome/EditorHeader.tsx`) and **Open Explorer** in the Explorer panel's ⋯ menu (`apps/live/components/panels/ExplorerHeaderMenu.tsx`), pass only the design's id (`/explorer?item=<id>`, `explorerItemHref`). The Explorer opens the place that holds it, with the design marked: its My Work folder or My Work, its team's library at its folder, This Browser at its local folder, or Shared With Me ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item"). Back returns to the design. Every other door (a page with no design, a trashed design's card) opens the Explorer as before.
+**From an open design.** The editor's doors to the Explorer from an open design, the header's logo (`apps/live/components/chrome/EditorHeader.tsx`) and **Open Explorer** in the Explorer panel's ⋯ menu (`apps/live/components/panels/ExplorerHeaderMenu.tsx`), pass only the design's id (`/explorer?item=<id>`, `explorerItemHref`). The Explorer opens the place that holds it, with the design marked: its My Work folder or My Work, its team's library at its folder, Offline at its local folder, or Shared With Me ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item"). Back returns to the design. Every other door (a page with no design, a trashed design's card) opens the Explorer as before.
 
-**Browser Storage.** The owner renamed This Browser to **Browser Storage** in the Explorer on 2026-11-10, for clarity
-([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser, a Space"): its Space
-row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's groups, and the
-Explorer's menus, toasts and labels. The editor keeps **This Browser** for its badge on an open item kept only in this
-browser. This spec, like the code and the `/explorer/offline` address, still says This Browser for the place itself.
+**Offline, by name.** The Explorer names the place **Offline**, as the editor's badge on an open item kept only in
+this browser does ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "Offline, a
+Space"): its Space row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's
+groups, and the Explorer's menus, toasts and labels. The owner renamed This Browser to Browser Storage in the Explorer
+on 2026-11-10, for clarity, then "Browser Storage" to "Offline" on 2026-11-19.
 
 ## What
 
@@ -55,7 +55,7 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
   slate wash.
 - **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
   8 px) tinted in the row's **tone**: Home and My Work sky, Inbox violet, Shared With Me emerald,
-  a team indigo, This Browser teal, Invites rose. New Team and the rows of More (Tags, Library, Trash) keep a bare slate
+  a team indigo, Offline teal, Invites rose. New Team and the rows of More (Tags, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
   pages, tags) keep a bare icon too.
 - **The current row** is a raised pill in the brand's rose: white, a hairline rose edge and a soft rose shadow, its
@@ -89,20 +89,20 @@ The retired `/explorer/activity` opens the Inbox, and the retired `/explorer/tim
 
 ### Spaces
 
-| Row          | Opens                             | Children                | Badge                      |
-| ------------ | --------------------------------- | ----------------------- | -------------------------- |
-| My Work      | `/explorer/all`, the My Work root | The root folders        | None                       |
-| Each team    | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
-| This Browser | `/explorer/offline`               | Its local root folders  | Designs in this browser    |
-| Invites      | `/explorer/invites`               | None                    | Pending invites            |
-| New Team     | The team dialog, then the team    | None                    | None                       |
+| Row       | Opens                             | Children                | Badge                      |
+| --------- | --------------------------------- | ----------------------- | -------------------------- |
+| My Work   | `/explorer/all`, the My Work root | The root folders        | None                       |
+| Each team | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
+| Offline   | `/explorer/offline`               | Its local root folders  | Designs in this browser    |
+| Invites   | `/explorer/invites`               | None                    | Pending invites            |
+| New Team  | The team dialog, then the team    | None                    | None                       |
 
-- **This Browser** is a Space of its own ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#this-browser-a-space) "This Browser, a Space"). It shows only
+- **Offline** is a Space of its own ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#offline-a-space) "Offline, a Space"). It shows only
   while this browser holds at least one live offline design or one local folder, or while its view is the current
   one (so the highlighted row never vanishes under the reader). It has local folders (New Folder, Rename, Move to
   Folder, Delete Folder, nesting as My Work's do), each at `/explorer/offline?folder=<id>`; its view shows the
   folders as cards, then the designs. Sync Design of a design in a local folder offers the My Work folder of the same
-  name. Its designs are the reader's own ([designs in This Browser](#designs-in-this-browser)).
+  name. Its designs are the reader's own ([designs kept Offline](#offline-designs)).
 - **The My Work root** lists its root folders, then its root designs, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
   `/explorer/dynamic` open the My Work root, `/explorer/generated` opens Search results filtered by
@@ -175,7 +175,7 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | Home           | `/explorer/home`    | Home           |
 | Shared With Me | `/explorer/shared`  | Shared With Me |
 | My Work        | `/explorer/all`     | My Work        |
-| This Browser   | `/explorer/offline` | This Browser   |
+| Offline        | `/explorer/offline` | Offline        |
 | Image gallery  | `/explorer/images`  | Image gallery  |
 
 Every other row's view already carries its row's label (Inbox, a folder or team by its name, Invites,
@@ -189,7 +189,7 @@ Home, and its breadcrumb leads back to it (**Home › Recent**).
 | Overview      | All four               | All four               |
 | My Work       | Yes                    | Yes                    |
 | Teams         | None                   | One row per team       |
-| This Browser  | While it holds designs | While it holds designs |
+| Offline       | While it holds designs | While it holds designs |
 | Invites       | No                     | While one is pending   |
 | New Team      | No                     | Yes                    |
 | Sign-in nudge | Yes                    | No                     |
@@ -266,7 +266,7 @@ Top to bottom:
    a phone's sheet drops the `⋯` menu, every entry of it a tap away there already.
 2. **The Current Design card**, when a design is open: its thumbnail, the label "Current Design", the
    design's **name**, "Updated <relative time>". The design's **visibility badge** (the editor header's badge:
-   Private, Shared, Team or This Browser, with its legend, [Offline Mode](../006-design/offline-mode.md)) sits
+   Private, Shared, Team or Offline, with its legend, [Offline Mode](../006-design/offline-mode.md)) sits
    at the right of the label's row and its `⋯` (the design menu) at the right of the date's, so the name has the
    card's whole width. The badge's legend opens over everything, right-aligned under it, never clipped
    by the panel.
@@ -274,10 +274,10 @@ Top to bottom:
      design); hovering the name underlines it (dotted) and shows a pencil, the name's own width, never a block of
      fill. The name becomes a text field in place: Enter or leaving it saves, Escape keeps the old name, an empty name
      keeps the old one. For anyone else it is plain text.
-   - **A design kept only in this browser** (the index never holds it) still has its card, drawn from This
-     Browser's list: livedesign's picture of a local design, the **This Browser** pill, "Updated <relative time>",
-     its name renamed by the editor's own rename (this browser's store; nothing goes to the index), and This
-     Browser's menu (Open, Sync Design signed in, Delete Design asked first)
+   - **A design kept only in this browser** (the index never holds it) still has its card, drawn from Offline's
+     list: livedesign's picture of a local design, the **Offline** pill, "Updated <relative time>",
+     its name renamed by the editor's own rename (this browser's store; nothing goes to the index), and Offline's
+     menu (Open, Sync Design signed in, Delete Design asked first)
      ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel).
 3. **The rail and the pane**, side by side on a desktop: the rail on the left lists the sections, the pane on the right
    shows the picked one.
@@ -303,7 +303,7 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Design** (one click to a new design; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox,
-Shared With Me; My Work, each team, This Browser (while this browser holds designs or a local folder, with their
+Shared With Me; My Work, each team, Offline (while this browser holds designs or a local folder, with their
 count) and New Team (signed in); Library and Trash. Shared With Me carries its count (the panel reads no other feed until
 its section is shown). No
 Invites or sign-in nudge: those are the Explorer page's. A team's pane has a **Members** button that opens the
@@ -332,7 +332,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                   | None       |
 | Shared With Me | The designs shared with the reader, as rows                                                                                                                                                                                                                                                                          | None       |
 | My Work        | The root folders as preview cards (their counts on the picture), then the root designs as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it | New Folder |
-| This Browser   | Its local folders as cards, then the designs kept only in this browser, each a row with a compact mark, opening in the editor; signed in, **Sync Design** runs in place                                                                                                                                              | None       |
+| Offline        | Its local folders as cards, then the designs kept only in this browser, each a row with a compact mark, opening in the editor; signed in, **Sync Design** runs in place                                                                                                                                              | None       |
 | A team         | The team's folders, then its designs, the same way                                                                                                                                                                                                                                                                   | New Folder |
 | Library        | The Image Gallery, read over livedesign's own API (`/api/images`, the sites registry's `imagesPath`) with the person's Bearer (`apps/live/lib/explorer-library.ts`)                                                                                                                                                  | None       |
 | Trash          | A line on the 30 days, then each deleted design as a row with **Restore** and **Delete** as icon buttons named by their tooltips (Delete asked first)                                                                                                                                                                | None       |
@@ -342,7 +342,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
   `⋯` shows on hover or focus under a mouse, always on a touch screen.
 - **Rows with designs**: a design row shows its thumbnail and "Updated <relative time>"; activating it opens the
   design; it carries the design menu, and, for an offline
-  design, the This Browser pill; the open design's row is the current one. A folder row shows its counts ("2
+  design, the Offline pill; the open design's row is the current one. A folder row shows its counts ("2
   folders · 5 designs") and opens the folder in the pane; Up and Down move between rows.
 - **Filing.** One of the reader's own design rows drags onto a personal folder row (resting on it opens it), or onto
   the My Work rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
@@ -380,19 +380,19 @@ opens its menu. A folder's breadcrumb is a `nav` named "Folder path". The footer
 The panel is the reader's own: it lists their designs and views whatever the open design's share role. Renaming
 from the card follows the editor's rename (an Editor only); a Participant or Viewer sees the name as text.
 
-## designs in This Browser
+## offline designs
 
 A design saved only in this browser ([Offline Mode](../006-design/offline-mode.md)) is the reader's own: it counts
 wherever the reader's own designs count (Space `mine`, owner "You"), the same as a design in My Work. Every
-row and card of one, wherever it is listed (folders, This Browser, Recent, Search results, the
-editor's Explorer, the Trash), carries the **This Browser** pill
-([Offline Mode: This Browser pill](../006-design/offline-mode.md#this-browser-pill)).
+row and card of one, wherever it is listed (folders, Offline, Recent, Search results, the
+editor's Explorer, the Trash), carries the **Offline** pill
+([Offline Mode: Offline pill](../006-design/offline-mode.md#offline-pill)).
 
-The editor header names such a design with the matching **This Browser** badge. Home's Recent carries the
+The editor header names such a design with the matching **Offline** badge. Home's Recent carries the
 same pill (`ThisBrowserPill`) on the design's card, which is the same size and shape as the rest of its group, with
 the same ⋯ menu and right-click (Open, Sync Design) and the same drag: to the Trash, deleted for good after a
 confirmation where the host can; to a folder, synced to the account first
-([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser on Home",
+([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "Offline on Home",
 [Explorer Home](explorer-home.md)).
 
 ## Telemetry

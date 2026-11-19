@@ -1,4 +1,4 @@
-// A browser's This Browser document moved by product (docs/migration.md step 6 "Local only documents";
+// A browser's Offline document moved by product (docs/migration.md step 6 "Local only documents";
 // docs/specs/015-api/api.md "Migration"): the editor's one-time pass sends a local document's raw record; this splits
 // it (@liveworkspace/migration splitLocalDocument) with livediagram's hooks, keeps nothing, and hands each other app's
 // part to the index (`POST /app/migration/handoff`, as the caller), which makes the item for them and writes it
@@ -19,7 +19,11 @@ import type {
   MigrationRoomPayload,
   SplitHooks,
 } from '@liveworkspace/migration';
-import { INDEX_APP_HEADER, INDEX_PERSON_HEADER, INDEX_TEAMS_HEADER } from '@liveworkspace/index-client';
+import {
+  INDEX_APP_HEADER,
+  INDEX_PERSON_HEADER,
+  INDEX_TEAMS_HEADER,
+} from '@liveworkspace/index-client';
 import { APP_ITEMS, APP_SITES } from '@liveworkspace/sites';
 import { indexApiUrl } from '../index-service';
 import { capStoredName } from '../names';

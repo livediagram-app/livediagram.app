@@ -77,7 +77,7 @@ describe('useLastSeenFollow', () => {
     expect(f.followSave).toHaveBeenCalledWith('user_a', 'd2', landing);
   });
 
-  it('forgets the copy of a document taken offline to This Browser', () => {
+  it('forgets the copy of a document taken Offline', () => {
     const f = follower();
     const { rerender } = renderHook((p: Props) => useLastSeenFollow(p), { initialProps: base(f) });
     expect(f.forget).not.toHaveBeenCalled();
@@ -85,7 +85,7 @@ describe('useLastSeenFollow', () => {
     expect(f.forget).toHaveBeenCalledWith('user_a', 'd1');
   });
 
-  it('forgets nothing for a This Browser document it never followed, nor before hydrating', () => {
+  it('forgets nothing for an offline document it never followed, nor before hydrating', () => {
     const f = follower(false);
     renderHook((p: Props) => useLastSeenFollow(p), {
       initialProps: { ...base(f), serverStored: false, following: false },

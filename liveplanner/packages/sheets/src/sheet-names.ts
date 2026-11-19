@@ -1,6 +1,6 @@
 // How a cell thread names its Sheet and cell outside the grid (docs/specs/029-sheets/sheet.md "Cell comments" "Inbox"):
 // the stored sheet's title and the cell key's A1, from a plan's sheets by store id. One reader for the api's push and
-// listing and the editor's This Browser Inbox. Each sheet's layout is indexed only when one of its cells is asked for.
+// listing and the editor's Offline Inbox. Each sheet's layout is indexed only when one of its cells is asked for.
 import { formatA1 } from './address';
 import { layoutIndex } from './layout';
 import type { SheetLayout } from './sheet';

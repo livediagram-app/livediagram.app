@@ -1,9 +1,13 @@
-// The Inbox's read of documents in This Browser (docs/specs/013-workspace/inbox.md §2.6). They never reach the
+// The Inbox's read of documents kept Offline (docs/specs/013-workspace/inbox.md §2.6). They never reach the
 // worker, so the server's collaboration index never holds them; this finds their open actions and comment threads
 // in the browser's offline store, with the same derivation the index uses (collabIndexRowsFromElements) and the
 // same rules the server read applies, the reader owning every one of them.
 
-import { ACTIVITY_LIST_MAX, type ActivityAction, type ActivityThread } from '@livedocuments/api-schema';
+import {
+  ACTIVITY_LIST_MAX,
+  type ActivityAction,
+  type ActivityThread,
+} from '@livedocuments/api-schema';
 import { collabIndexRowsFromElements } from '@livedocuments/document';
 import { offlineBackend } from './offline-backend';
 import { offlineIdCount } from './offline-ids';
@@ -23,7 +27,7 @@ export function offlineReader(ids: readonly (string | null)[]): OfflineReader {
   return { ids: [...new Set(ids.filter((id): id is string => !!id))] };
 }
 
-// Reads every live record in This Browser and lists what is waiting on the reader. A browser with no documents in This Browser
+// Reads every live record kept Offline and lists what is waiting on the reader. A browser with no documents kept Offline
 // reads no records: the id index answers first, and is cached for the page load.
 export async function readOfflineActivity(
   ids: readonly (string | null)[],
@@ -114,7 +118,7 @@ function collector(reader: OfflineReader) {
           },
           firstAt: t.firstAt,
           youCommented: t.participantIds.some((id) => me.has(id)),
-          // The reader owns every document in This Browser.
+          // The reader owns every document kept Offline.
           onYourDocument: true,
           mentionsYou: t.mentionedIds.some((id) => me.has(id)),
         });

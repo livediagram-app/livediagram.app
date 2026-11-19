@@ -57,6 +57,7 @@ export function MaximisableSlot({
   onMaximisedSize,
   tint,
   blend,
+  opaque = false,
   children,
 }: {
   id: string;
@@ -69,6 +70,8 @@ export function MaximisableSlot({
   // The element's hue for the chrome in its header band (planBandTint), or its own surface and border (blend).
   tint?: string | undefined;
   blend?: BandBlend | undefined;
+  // Its surface hides the canvas under it (a Sheet, a plan view): the cover draws no moving pattern there.
+  opaque?: boolean;
   children: ReactNode;
 }) {
   const [host] = useState(() => {
@@ -125,6 +128,7 @@ export function MaximisableSlot({
           host={host}
           tint={tint}
           blend={blend}
+          opaque={opaque}
           {...(onMaximisedSize ? { onSize: onMaximisedSize } : {})}
         />
       ) : maximised ? (
@@ -133,6 +137,7 @@ export function MaximisableSlot({
           host={host}
           tint={tint}
           blend={blend}
+          opaque={opaque}
           {...(onMaximisedSize ? { onSize: onMaximisedSize } : {})}
         />
       ) : null}
@@ -172,11 +177,13 @@ export function MaximisedPlanLayer({
   onSize,
   tint,
   blend,
+  opaque = false,
 }: {
   id: string;
   host: HTMLElement;
   tint?: string | undefined;
   blend?: BandBlend | undefined;
+  opaque?: boolean;
   onSize?: (size: { width: number; height: number } | null) => void;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -208,6 +215,7 @@ export function MaximisedPlanLayer({
               marker={{ 'data-maximised-board': '' }}
               tint={tint}
               blend={blend}
+              opaque={opaque}
             >
               <div
                 ref={boxRef}
@@ -227,11 +235,13 @@ function FilledTabLayer({
   host,
   tint,
   blend,
+  opaque = false,
   onSize,
 }: {
   host: HTMLElement;
   tint?: string | undefined;
   blend?: BandBlend | undefined;
+  opaque?: boolean;
   // The layer's size, for a view to lay itself out at (a Visualisation tab's chart).
   onSize?: ((size: { width: number; height: number } | null) => void) | undefined;
 }) {
@@ -259,6 +269,7 @@ function FilledTabLayer({
               marker={{ 'data-fill-tab-board': '' }}
               tint={tint}
               blend={blend}
+              opaque={opaque}
               enter
             >
               <div ref={boxRef} className="relative h-full w-full" />

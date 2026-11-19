@@ -92,7 +92,7 @@ describe('ImportTabDialog, offered formats', () => {
 
 // docs/specs/020-import-export/markdown-import.md: two cards across; the warning's keys only for a keyboard.
 describe('ImportTabDialog on a phone', () => {
-  it('lays its formats out two across and names Undo’s keys only on a fine pointer', () => {
+  it('lays its formats out two across and names no keys in its warning', () => {
     render(
       <ImportTabDialog
         tabName="Board"
@@ -104,9 +104,9 @@ describe('ImportTabDialog on a phone', () => {
     );
     const grid = screen.getByRole('button', { name: /Markdown/ }).parentElement!;
     expect(grid.className).toContain('grid-cols-2');
-    const keys = screen.getByText(/⌘Z/);
-    expect(keys.className).toContain('pointer-coarse:hidden');
-    expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
+    // The owner, 2026-11-19: no keyboard shortcuts written in the text.
+    expect(screen.getByText(/Undo brings it back\./)).toBeTruthy();
+    expect(screen.queryByText(/⌘Z|Ctrl.Z/)).toBeNull();
   });
 });
 

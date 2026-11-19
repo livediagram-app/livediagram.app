@@ -711,8 +711,8 @@ whole Sheet.
   @-mentioned in it, and in "threads I'm in or mentioned in". Its row is keyed by the cell: `elementId` is
   `<sheetElementId>:<rowId>:<colId>` (the Sheet element's id, then the cell key), so two cells on one Sheet never
   share a row and the key holds through inserted, moved and sorted lines. Its label is the Sheet's name and the
-  cell's A1 (`Budget!B4`), worked out from the stored sheet when the tab is pushed (from the plan's own sheets on a This
-  Browser plan): "Budget (Deleted Cell)" when the cell's row or column is gone, the Sheet's name alone where the sheet
+  cell's A1 (`Budget!B4`), worked out from the stored sheet when the tab is pushed (from the plan's own sheets on an offline
+  plan): "Budget (Deleted Cell)" when the cell's row or column is gone, the Sheet's name alone where the sheet
   is not at hand. The Sheet's own thread's row takes the same name. An A1 that an
   inserted row moves follows within the minute: a change to a Sheet's layout (a line inserted, deleted, moved or
   sorted) queues its tab's push when the tab carries cell threads. Its link (`#t=<tab>&el=<sheetElementId>:<cell>&open=comments`)

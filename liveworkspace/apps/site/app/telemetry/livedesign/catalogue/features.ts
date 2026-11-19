@@ -297,6 +297,10 @@ export const PAGE_SETUP = chart(
       'PageBackgroundAnimatedSpeed',
       'PageBackgroundAppliedToAll',
       'PageBackgroundPainted',
+      // Tab Style's New Page Background (docs/specs/011-theme/canvas-and-theme-dialog.md).
+      'NewPageBackground',
+      'NewPageBackgroundCarried',
+      'NewPageBackgroundToEveryPage',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
@@ -539,7 +543,7 @@ export const EXPLORER_SIDEBAR_PICKS = chart(
   'UI',
   'Selected',
   'Explorer Sidebar Picks',
-  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This Browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
+  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, Offline, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
   {
     typeIn: (type) =>
       (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
@@ -638,6 +642,16 @@ export const TOOLBAR_CATEGORY = chart(
   'Toolbar Category',
   'The Toolbar layout switched to another category.',
   { types: ['ToolbarCategory'] },
+);
+
+// Tab Style's Element Colours row (docs/specs/011-theme/canvas-and-theme-dialog.md): whether a look or theme pick
+// recolours the design's elements or leaves them as they are.
+export const TAB_STYLE_ELEMENT_COLOURS = chart(
+  'UI',
+  'Changed',
+  'Tab Style Element Colours',
+  "Tab Style's Element Colours row switched between following the theme and keeping a design's colours as they are.",
+  { types: ['TabStyleElementColours'] },
 );
 
 export const PALETTE_USE: MetricStack = {
@@ -828,7 +842,7 @@ export const ACTION_SIGN_IN_NUDGE = opened(
   (t) => t === 'ActionSignInNudge',
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs kept Offline
 // after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(
   'Move Prompt Shown',
@@ -947,6 +961,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
+    TAB_STYLE_ELEMENT_COLOURS,
     HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],

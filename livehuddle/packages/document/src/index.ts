@@ -166,6 +166,9 @@ export type Tab = {
   // keyframes; ignored by the static patterns. The canvas Speed slider
   // (shown only while an animated pattern is active) writes it.
   backgroundAnimationSpeed?: number;
+  // The 3D view's wall colour (docs/specs/008-canvas/3d-view.md "Themes"), a `#rrggbb`; unset = the plaster. Set in
+  // Tab Style's Room panel or by a look; the flat plan's rooms keep the theme's colours.
+  wallColor?: string;
   // Selected preset theme name (see apps/editor/lib/themes.ts). Setting
   // a theme via the palette repaints every existing element on the tab
   // to match (sticky notes keep their amber palette). Newly added

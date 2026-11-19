@@ -8,6 +8,7 @@ import { shade } from './colors';
 import { pagesOf, pageKindOf, type PageBackground } from './page';
 import { PAGE_GRADIENT_ANGLE } from './page-paint';
 import type { Tab, ThemeDefinition } from './index';
+import { newPageBackgroundOf } from './tab-new-page-background';
 
 // The accent a theme without its own stroke paints in (the brand blue).
 export const FALLBACK_THEME_ACCENT = '#0ea5e9';
@@ -66,26 +67,33 @@ export function defaultPageBackground(
 
 /** The tab with every new page that has no background of its own given the theme's default, when
  *  `ids` names it (the pages just made): an infographic page always, a slide only as a new slide
- *  document's (the tab's one page), so a deck on paper keeps its paper. The same tab when none
- *  changes. */
-export function withDefaultPageBackgrounds<T extends Partial<Pick<Tab, 'pages'>>>(
+ *  document's (the tab's one page), so a deck on paper keeps its paper. A tab with a new-page
+ *  background of its own gives every such page of any kind that instead (the plain paper, none).
+ *  The same tab when none changes. */
+export function withDefaultPageBackgrounds<
+  T extends Partial<Pick<Tab, 'pages' | 'newPageBackground'>>,
+>(
   tab: T,
   theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
   ids?: ReadonlySet<string>,
 ): T {
   const pages = pagesOf(tab);
+  const own = newPageBackgroundOf(tab);
   let changed = false;
   const next = pages.map((p) => {
     const kind = pageKindOf(p);
-    const themed = kind === 'infographic' || (kind === 'slide' && pages.length === 1);
-    if (p.background || p.flow || !themed) return p;
+    const themed = own
+      ? !!(own.fill || own.pattern)
+      : kind === 'infographic' || (kind === 'slide' && pages.length === 1);
+    // Without a background of the tab's own, an article page or a card starts on the paper.
+    if (p.background || (p.flow && !own) || !themed) return p;
     if (ids && !ids.has(p.id)) return p;
     // An unchosen first page (no kind yet) waits for its choice.
     if (p.kind === undefined && !ids) return p;
     changed = true;
     return {
       ...p,
-      background: defaultPageBackground(theme, kind === 'slide' ? 'slide' : 'infographic'),
+      background: own ?? defaultPageBackground(theme, kind === 'slide' ? 'slide' : 'infographic'),
     };
   });
   return changed ? { ...tab, pages: next } : tab;

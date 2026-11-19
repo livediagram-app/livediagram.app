@@ -1,5 +1,5 @@
 // The write gate's memory in workerd, the runtime every api Worker runs in (Work Tracker 655): a 32 MB chunked body,
-// the largest a product takes (a This Browser migration's local parts, LOCAL_PARTS_MAX_BYTES), read through
+// the largest a product takes (an offline migration's local parts, LOCAL_PARTS_MAX_BYTES), read through
 // withCappedBody and then parsed as the migration route does, or forwarded to a Durable Object as the room routes do.
 // Measured from V8 itself through the Worker's inspector (Runtime.getHeapUsage): the isolate's JS heap plus the
 // ArrayBuffers behind it (the body's chunks), sampled while the request runs, against the Worker's 128 MB limit.

@@ -32,3 +32,12 @@ Import header too, each with its own one line.
 An import's refusal names what it read: a picked file is "This file isn't valid JSON.", pasted text "This pasted text
 isn't valid JSON." (a JSON tab), and an Excalidraw scene, pasted, dropped or picked, "This isn't valid JSON."; never
 "File" for text that was pasted (Work Tracker 1060).
+
+## File types
+
+Every Import format says which files it takes (owner, 2026-11-19): its card in **All Formats** lists the endings as
+small chips under its description (`.toml` `.yml` `.yaml` `.tf` for Infrastructure), and its panel repeats them beside
+**Import File** ("Import File takes …"), or under a binary format's or Infrastructure's drop target. One table
+(`apps/editor/lib/import-file-types.ts`) feeds both the picker's `accept` and these words, so they never disagree.
+The warning above reads "This replaces everything on <tab> with the imported content. Undo brings it back.", with no
+keyboard shortcut in the text.

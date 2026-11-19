@@ -53,7 +53,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   await adoptGuest(page, owner);
   await page.addInitScript(() => localStorage.setItem('livedocuments:v2:name-confirmed', '1'));
   await page.goto(`/document/${liveDoc}`);
-  await page.getByRole('button', { name: /^Shared?$/ }).click();
+  await page.getByRole('button', { name: /^Share, / }).click();
   const dialog = page.getByRole('dialog', { name: 'Share Launch document' });
   await dialog
     .getByRole('region', { name: 'Issue a pass' })
@@ -108,7 +108,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
 });
 
 test('the owner is never scoped', async ({ page, pageErrors }) => {
-  // On livedocuments: a document in This Browser has no share links to scope.
+  // On livedocuments: a document kept Offline has no share links to scope.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await expect(page.getByRole('button', { name: 'Not shared' })).toHaveCount(0);

@@ -2,13 +2,13 @@
 
 // The new pass's level: one compact card naming the chosen level, which unfolds the levels the item's app offers
 // (APP_LINK_LEVELS: three, or livehuddle's Editor and Participant) beneath it when
-// pressed (a click, never a hover). It unfolds in place rather than floating, so the dialog's scroll never clips it
+// pressed (a click, never a hover), less the chosen one, which the card already names (owner 2026-11-19). It unfolds in place rather than floating, so the dialog's scroll never clips it
 // and nothing covers the fine print. Choosing a level folds it again. livediagram's ShareRolePicker from before the
 // Explorer split, in each app's words.
 
 import { useId, useRef, useState, type KeyboardEvent } from 'react';
 import type { Level } from '@liveworkspace/index-client';
-import { CheckIcon, ChevronDownIcon } from '@liveworkspace/ui';
+import { ChevronDownIcon } from '@liveworkspace/ui';
 import type { App } from '@liveworkspace/index-client';
 import { LEVEL_ORDER, LEVEL_PASS, levelBlurb } from './parts';
 
@@ -28,6 +28,8 @@ export function RolePicker({
   const [open, setOpen] = useState(false);
   const listId = useId();
   const pass = LEVEL_PASS[level];
+  // The levels to switch to: the chosen one is the card itself.
+  const others = levels.filter((l) => l !== level);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
   // Folding makes the levels inert, which would drop focus on one of them to the page: it goes back to the card.
@@ -51,8 +53,8 @@ export function RolePicker({
       fold();
       return;
     }
-    const i = levels.indexOf(level);
-    const last = levels.length - 1;
+    const i = others.indexOf(e.currentTarget.dataset.level as Level);
+    const last = others.length - 1;
     const to: Record<string, number> = {
       ArrowUp: i - 1,
       ArrowLeft: i - 1,
@@ -63,8 +65,7 @@ export function RolePicker({
     };
     if (!(e.key in to)) return;
     e.preventDefault();
-    const next = levels[(to[e.key]! + levels.length) % levels.length]!;
-    onChange(next);
+    const next = others[(to[e.key]! + others.length) % others.length]!;
     e.currentTarget.parentElement
       ?.querySelector<HTMLButtonElement>(`[data-level="${next}"]`)
       ?.focus();
@@ -125,26 +126,21 @@ export function RolePicker({
         <div className="min-h-0 overflow-hidden">
           <div
             id={listId}
-            role="radiogroup"
-            aria-label="What the pass lets people do"
+            role="group"
+            aria-label="Other levels for the pass"
             className="flex flex-col gap-1 border-t border-slate-200/70 p-1.5 dark:border-slate-700/70"
           >
-            {levels.map((l) => {
+            {others.map((l, n) => {
               const option = LEVEL_PASS[l];
-              const active = l === level;
               return (
                 <button
                   key={l}
                   type="button"
-                  role="radio"
-                  aria-checked={active}
-                  tabIndex={active ? 0 : -1}
+                  tabIndex={n === 0 ? 0 : -1}
                   data-level={l}
                   onClick={() => choose(l)}
                   onKeyDown={onLevelKey}
-                  className={`flex items-center gap-3 rounded-lg bg-white/70 px-2 py-1.5 text-left transition-colors duration-micro dark:bg-slate-900/40 ${
-                    active ? option.chosen : option.hover
-                  }`}
+                  className={`flex items-center gap-3 rounded-lg bg-white/70 px-2 py-1.5 text-left transition-colors duration-micro dark:bg-slate-900/40 ${option.hover}`}
                 >
                   <span
                     className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-md ${option.solid}`}
@@ -159,14 +155,6 @@ export function RolePicker({
                       {levelBlurb(l, app)}
                     </span>
                   </span>
-                  {active ? (
-                    <span
-                      aria-hidden
-                      className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-full ${option.solid}`}
-                    >
-                      <CheckIcon size={10} />
-                    </span>
-                  ) : null}
                 </button>
               );
             })}

@@ -131,9 +131,11 @@ export function pageEdits({
   currentPage?: () => string | null;
 }): PageEdits {
   // A new infographic page, or a new slide document's slide (by id), on its default background,
-  // unless it carried one over.
+  // unless it carried one over; on a tab with a new-page background of its own, any new page on that.
   const themed = (t: Tab | null, id: string): Tab | null =>
-    t && theme ? withDefaultPageBackgrounds(t, theme, new Set([id])) : t;
+    t && (theme || t.newPageBackground)
+      ? withDefaultPageBackgrounds(t, theme ?? {}, new Set([id]))
+      : t;
   // A locked tab, or a person no longer editing, takes no page edit. A handler that tells or moves the view after
   // its edit asks first, so nothing is said of an edit that never landed.
   const takesEdits = () => mayEdit() && tab.locked !== true;
@@ -267,14 +269,16 @@ export function pageEdits({
   // A new infographic page takes the last infographic page's size and orientation (else A4
   // portrait); a new document the last page's paper size and orientation when it is a paper size
   // (A4, US Letter, A3), else A4 portrait; a new slide the last slide's size (else 16:9),
-  // landscape. All on the plain paper.
+  // landscape. An infographic page or a new deck's slide on the theme's default, the rest on the plain paper, unless
+  // the tab has a new-page background of its own.
   const choosePageKind = (pageId: string, kind: PageKind) => {
     if (refusedLocked(pageId, 'kind')) return;
     track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
     const flow = nextArticleFlowId(new Set());
     commitTab((t) => {
       const chosen = withPageKindChosen(t, pageId, kind, flow);
-      return kind === 'infographic' || kind === 'slide' ? themed(chosen, pageId) : chosen;
+      // An article or a card starts on the paper unless the tab has a new-page background (withDefaultPageBackgrounds).
+      return themed(chosen, pageId);
     });
     if (kind === 'article' || kind === 'flashcard') onArticleCreated?.(flow);
     debugLog('[page] first page kind chosen', { tabId, pageId, kind });
@@ -292,7 +296,7 @@ export function pageEdits({
     const after = currentPage() ?? undefined;
     commitTab((t) => {
       const added = edited(t, pageAdded(t, kind, id, flow, after));
-      return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
+      return themed(added, id);
     });
     if (kind === 'article' || kind === 'flashcard') {
       onGoTo(id);
@@ -314,7 +318,7 @@ export function pageEdits({
     commitTab((t) => {
       // Right after the page whose + was pressed, or Contents' page here.
       const added = edited(t, pageAddedLike(t, pageId, id, flow, after));
-      return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
+      return themed(added, id);
     });
     if (kind === 'article' || kind === 'flashcard') {
       onGoTo(id);

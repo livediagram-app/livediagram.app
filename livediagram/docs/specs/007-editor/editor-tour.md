@@ -20,7 +20,7 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
 
 **The button reads Get Started** in every app (owner, 2026-11-16), whichever tour it offers: it has no hover card; the tour's own name ("Start Draw Tour", "Watch It Built") is in its accessible name, "Get Started, <tour name>". Icon only on a phone, as before.
 
-- **The footer's Get Started button is the one way in.** Every tour (this one, the mode tours, the element tours,
+- **The footer's Get Started button is the one way in.** Every tour but the element tours (this one, the mode tours,
   the avatar tour) is started from one button in the editor's bottom bar, left of Tools:
   a contained chip with a play glyph in a small accent disc, reading **Start <Name> Tour** (**Start Draw Tour**), or a
   tour's own words when it gives them: the Diagram tour read **Start Diagram Tour** before 8 November 2026 and
@@ -29,15 +29,16 @@ the shared stepped engine that the [Draw tour](../023-draw-mode/draw-tour.md), t
   at `duration-micro`, it has a visible focus ring, and it has light and dark looks. On a phone (below `sm`), and
   wherever its neighbours drop their words, it shows the glyph alone and keeps its words (**Watch It Built**) as its
   accessible name; it never widens the bar past the screen. A tour never starts, prompts or offers itself on its
-  own: no banner, no card, no toolbar beside an element. Offer banners would be something people have to keep turning down.
+  own: no banner, no card, nothing beside an element but an element tour's own Play button. Offer banners would be something people have to keep turning down.
 - **First of the bar's controls.** The button leads the bar's right-hand cluster, in the same place on a
   computer, a narrow window and a phone: **Get Started**, then **Search**, then **Settings** and the appearance
   switch (`ChromeControls`). So the button comes and goes at the cluster's left edge, by the tabs, without moving
   Search, Settings or the appearance switch.
 - **Which tour it offers.** Each tour's host publishes its tour while the person could take it (`useOfferTour`,
-  `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the selected element's own
-  tour first, then the tab's
-  mode (Diagram, Draw, Workshop). Between two of the same rank, the one published last wins. With
+  `tour-offer.ts`), and the button offers the most specific one (`TOUR_OFFER_RANK`): the tab's
+  mode (Diagram, Draw, Workshop). Element tours are not offered here (owner, 2026-11-19): each has its own Play
+  button beside the selection toolbar ([Element tours](element-tours.md) "The Play button"), so the button does not
+  change with the selection. Between two of the same rank, the one published last wins. With
   no tour on offer the button is not drawn.
 - **Only in Diagram mode.** This tour is on offer, and runs, only while the open tab is in Diagram mode, to an
   Editor, once the editor is ready: hydrated, no welcome overlay, no start on screen ([Template

@@ -75,6 +75,27 @@ describe('a maximisable slot', () => {
     expect(button.closest('[data-plan-slot="el"]')).not.toBeNull();
   });
 
+  it('hands an opaque body’s cover no moving pattern, maximised or filling its tab', () => {
+    const slot = (over: { maximised: boolean; fill: boolean }, opaque: boolean) =>
+      render(
+        <CanvasPatternContext.Provider value={{ pattern: 'aurora', color: '#123456' }}>
+          <MaximisableSlot id="el" placeholder={{}} opaque={opaque} {...over}>
+            <span />
+          </MaximisableSlot>
+        </CanvasPatternContext.Provider>,
+      );
+    const layer = () => document.querySelector('[data-tab-pattern-layer]');
+    slot({ maximised: false, fill: true }, false);
+    expect(layer()).not.toBeNull();
+    cleanup();
+    slot({ maximised: false, fill: true }, true);
+    expect(layer()).toBeNull();
+    cleanup();
+    slot({ maximised: true, fill: false }, true);
+    expect(document.querySelector('[data-maximised-board]')).not.toBeNull();
+    expect(layer()).toBeNull();
+  });
+
   it('stops the body’s presses at the slot only while maximised', () => {
     const onDown = vi.fn();
     render(
@@ -295,6 +316,19 @@ describe('the canvas cover', () => {
     expect(cover('graph').querySelector('[data-tab-pattern-layer]')).toBeNull();
     cleanup();
     expect(cover(null).querySelector('[data-tab-pattern-layer]')).toBeNull();
+  });
+
+  // docs/specs/011-theme/canvas-and-theme-dialog.md "A moving pattern under an opaque page".
+  it('draws no moving pattern under an opaque element, whose margin shows the canvas colour', () => {
+    const { container } = render(
+      <CanvasPatternContext.Provider value={{ pattern: 'aurora', color: '#123456' }}>
+        <CanvasCover layout={{ insets, band: null }} marker={{}} opaque>
+          <span />
+        </CanvasCover>
+      </CanvasPatternContext.Provider>,
+    );
+    expect(container.querySelector('[data-tab-pattern-layer]')).toBeNull();
+    expect(container.querySelector('[data-animated-pattern]')).toBeNull();
   });
 
   it('sets the header band for the element it holds, and none without one', () => {

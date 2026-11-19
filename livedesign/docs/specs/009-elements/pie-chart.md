@@ -212,7 +212,7 @@ signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs
   - who cannot open the plan (or has lost access, or the plan or sheet was deleted) sees the values last saved on the
     chart, and the line says "saved 2 hours ago" with no Update;
   - when the read fails (offline, the plan's app down) the line says "Couldn't update" and Update tries again.
-- **A design saved in This Browser** has no room, so no change signal reaches it: its linked charts are read on
+- **A design saved Offline** has no room, so no change signal reaches it: its linked charts are read on
   open, on a tab change and on Update, each with the person's own access, and draw the saved values when offline.
 - **While linked**, the Sheet row takes the place of the slice and series rows ("These numbers come from the
   sheet."): the next read would overwrite a hand edit. Chart type, palette, legend, values, axis and animation stay the

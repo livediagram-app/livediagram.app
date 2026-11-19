@@ -1,9 +1,9 @@
 'use client';
 
-// Archived's This Browser group (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): what the host app
+// Archived's Offline group (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): what the host app
 // keeps only in this browser and the person archived here (this-browser.ts `setThisBrowserArchived`). Each row has its
-// local picture and the This Browser pill, and is closed: a click says it is archived, Rename writes its new name into
-// the app's offline store (this-browser-record.ts, as its editor would), Change Folder moves it back to This Browser
+// local picture and the Offline pill, and is closed: a click says it is archived, Rename writes its new name into
+// the app's offline store (this-browser-record.ts, as its editor would), Change Folder moves it back Offline
 // (or, signed in, syncs it into the account), and Delete removes it for good where the host deletes in place. Nothing
 // on liveworkspace.app, which can't read the app's store.
 
@@ -21,7 +21,7 @@ import { useExplorer } from './context';
 import { useHostExtras } from './host';
 import { LocalPreview } from './LocalPreview';
 
-/** Renames one archived here, in the app's offline store and This Browser's list; a toast says when it couldn't. */
+/** Renames one archived here, in the app's offline store and Offline's list; a toast says when it couldn't. */
 export function useRenameLocal(): (item: ThisBrowserItem, title: string) => Promise<boolean> {
   const { app, toast } = useExplorer();
   return useCallback(

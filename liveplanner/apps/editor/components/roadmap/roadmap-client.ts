@@ -1,4 +1,4 @@
-// A plan's public roadmaps as Publish as Roadmap manages them (docs/specs/026-plan/public-roadmap.md "Managing a
+// A plan's public roadmaps as Publish Roadmap manages them (docs/specs/026-plan/public-roadmap.md "Managing a
 // roadmap"), typed with @liveplanner/api-schema. Never through a share link: the dialog opens only for the plan's
 // owner or a team member (roadmap-gate.ts).
 import type { RoadmapResponse, RoadmapSettings, RoadmapsResponse } from '@liveplanner/api-schema';

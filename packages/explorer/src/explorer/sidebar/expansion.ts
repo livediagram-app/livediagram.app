@@ -9,10 +9,10 @@ export const EXPANDED_KEY = 'liveworkspace:explorer-expanded';
 export const MY_WORK = 'my-work';
 export const LIBRARY = 'library';
 export const teamKey = (teamId: string) => `team:${teamId}`;
-// This Browser's space row (one-explorer.md "This Browser, a Space").
+// Offline's space row (one-explorer.md "Offline, a Space").
 export const LOCAL_ROW_KEY = 'this-browser';
 
-// A space's own row: My Work, a team, This Browser. Folders and the Library are not spaces.
+// A space's own row: My Work, a team, Offline. Folders and the Library are not spaces.
 export const isSpaceKey = (key: string) =>
   key === MY_WORK || key === LOCAL_ROW_KEY || key.startsWith('team:');
 

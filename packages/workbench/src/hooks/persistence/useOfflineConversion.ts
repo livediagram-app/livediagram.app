@@ -27,7 +27,7 @@ export type OfflineConversionDeps = {
 };
 
 // Offline Mode conversions (docs/specs/006-document/offline-mode.md) for the menus that offer them: the editor's
-// Explorer panel's item menu (Take Offline, useOfflineItemMenu) and This Browser's rows (Sync).
+// Explorer panel's item menu (Take Offline, useOfflineItemMenu) and Offline's rows (Sync).
 // `syncToCloud` uploads an offline item to the account; `takeOffline` pulls a cloud item down and deletes
 // the server copy (gated by a confirm). Neither reloads the page: the one open in this editor moves in place (useSyncInPlace, useTakeOfflineInPlace), and
 // the Explorer loads its lists again once the returned promise settles. A second conversion

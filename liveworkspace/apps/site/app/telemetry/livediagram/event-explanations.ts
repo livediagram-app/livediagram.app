@@ -255,7 +255,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A document was opened, counted on every open (including a page refresh and the first open of a document just created).',
   'Document|Moved|': 'A document was moved into (or out of) a folder.',
   'Document|Moved|SavedToCloud':
-    'Someone synced a document in This Browser to their account, turning it into a cloud document kept on the server.',
+    'Someone synced a document kept Offline to their account, turning it into a cloud document kept on the server.',
   'Document|Moved|TakenOffline':
     'Someone took a document offline, moving it out of their account into this browser only.',
   'Document|Redone|': 'Someone hit Redo on a document edit.',
@@ -910,7 +910,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Opened|NotTakingFull':
     "Someone pressed a form's Not Taking Responses warning: its document held as many cards as it can.",
   'Form|Moved|SyncedToShare':
-    'Someone synced a document in This Browser from Share Form, so its form could be published.',
+    'Someone synced a document kept Offline from Share Form, so its form could be published.',
   'Form|Sent|Response':
     'Someone filled in a form through its link, and the response became a card on its board.',
   'Form|Sent|Dropped':
@@ -1562,6 +1562,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone opened one of Session's groups (Tools, Record, React, Selection Mode or Navigate) on Workshop mode's palette strip. Earlier, a category inside the palette's Collaborate tab (formerly Behaviours), before Workshop offered those categories one by one and then gathered them into Session.",
   'UI|Opened|BpmnGroup':
     "Someone opened the BPMN section at the end of Diagram mode's Shapes flyout, which stays closed until opened.",
+  'UI|Opened|MoreShapesGroup':
+    'Someone opened the More Shapes section of the Shapes flyout (Cloud to Bubble), which stays closed until opened.',
+  'UI|Opened|FlowchartGroup':
+    'Someone opened the Flowchart section of the Shapes flyout (Cylinder to Stadium), which stays closed until opened.',
   'UI|Opened|CanvasStyle':
     "Someone opened the tab's look-and-feel dialog on its Canvas tab, to change the background.",
   'UI|Opened|CollabGroup':
@@ -2593,7 +2597,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
   'Form|Opened': "Someone pressed a form's Not Taking Responses warning, to see why and fix it.",
   'Form|Moved':
-    'Someone synced a document in This Browser from Share Form, so its form could be published.',
+    'Someone synced a document kept Offline from Share Form, so its form could be published.',
   'Form|Sent': 'A response came in through a form link.',
   'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",

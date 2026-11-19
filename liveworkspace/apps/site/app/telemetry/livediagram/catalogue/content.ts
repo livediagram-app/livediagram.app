@@ -142,7 +142,7 @@ export const DOCUMENTS_CREATED: Metric = {
   action: 'Created',
   allTypes: true,
   title: 'Documents Created',
-  blurb: 'New documents from the New Document wizard, stored in the cloud or in This Browser.',
+  blurb: 'New documents from the New Document wizard, stored in the cloud or Offline.',
 };
 
 export const DOCUMENTS_RENAMED: Metric = {
@@ -169,13 +169,13 @@ export const DOCUMENTS_DUPLICATED: Metric = {
 };
 
 // Offline Mode (docs/specs/006-document/offline-mode.md): a document kept only in this browser, and the two
-// conversions between the stores. Created in This Browser is a subset of Documents
+// conversions between the stores. Created Offline is a subset of Documents
 // Created, so it sits in Document Actions outside the headline as well as
 // heading its own stack.
 export const CREATED_OFFLINE = chart(
   'Document',
   'Created',
-  'Created in This Browser',
+  'Created Offline',
   'A new document kept only in this browser (Offline Mode), never sent to the server. Part of Documents Created.',
   { types: ['Offline'] },
 );
@@ -192,11 +192,11 @@ export const SAVED_TO_CLOUD = chart(
   'Document',
   'Moved',
   'Saved to Cloud',
-  'A document in This Browser synced up to the server with Sync Document, so it can be shared.',
+  'A document kept Offline synced up to the server with Sync Document, so it can be shared.',
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents kept Offline
 // after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
 // Each document it moves is a Saved to Cloud.
 export const LOCAL_MOVE_ACCEPTED = chart(
@@ -319,7 +319,7 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or in This Browser (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or Offline (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,

@@ -124,7 +124,7 @@ export default function NewProjectPage() {
   // here, if any. Counts the arrival now and the project once it's committed.
   const cta = useCtaAttribution();
 
-  // Where a new project is stored: This Browser for a guest (docs/specs/006-project/save-locations.md), decided at
+  // Where a new project is stored: Offline for a guest (docs/specs/006-project/save-locations.md), decided at
   // commit.
   const { resolveSaveLocation } = useNewProjectLocation({
     authLoaded,
@@ -193,7 +193,7 @@ export default function NewProjectPage() {
     setSubmitting(true);
     // A `?q=` preset becomes the search in the new project's Start Planning (start-query.ts).
     handStartQuery(newProjectQuery(window.location.search));
-    // Save location (docs/specs/006-project/save-locations.md): only This Browser takes the offline branch.
+    // Save location (docs/specs/006-project/save-locations.md): only Offline takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { projectId, tabId } = createIdsFor(retrying);
     // A blank in the cloud: the template picked later on Start Planning may move it to that template's default
@@ -211,7 +211,7 @@ export default function NewProjectPage() {
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
     try {
-      // A project in This Browser has no owner on the server to wait for (docs/specs/006-project/offline-mode.md
+      // A project kept Offline has no owner on the server to wait for (docs/specs/006-project/offline-mode.md
       // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
       // Inside the try: signing the guest id and loading a template's seeds can both fail, and either
       // failure must reach the error card, never leave /new on "Creating" for good.
@@ -308,8 +308,8 @@ export default function NewProjectPage() {
     setOpenedId(projectId);
   };
 
-  // Every create from /new goes where new plans go by default (docs/specs/007-editor/new-project-route.md): This
-  // Browser for a guest, liveplanner for a signed-in person or anyone with a /new?folder= / ?team= context
+  // Every create from /new goes where new plans go by default (docs/specs/007-editor/new-project-route.md): Offline
+  // for a guest, liveplanner for a signed-in person or anyone with a /new?folder= / ?team= context
   // (docs/specs/006-project/save-locations.md), and that context when there is one; without one the index files it at
   // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {

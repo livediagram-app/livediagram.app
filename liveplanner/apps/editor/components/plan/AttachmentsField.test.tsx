@@ -18,7 +18,7 @@ import type { PlanPalette } from './plan-palette';
 
 // docs/specs/026-plan/items.md "Attachments": a card's pictures in the panel (add, open, cover, remove), on a board's
 // card (a drop, a cover, a count), for each share role: an Editor and a Participant add and change them, a Viewer
-// only opens and saves them; a This Browser plan takes none.
+// only opens and saves them; an offline plan takes none.
 
 const api = vi.hoisted(() => ({
   upload: vi.fn(),
@@ -356,6 +356,28 @@ describe('the card panel, for an Editor or a Participant', () => {
     click.mockRestore();
   });
 
+  it('draws a PDF an email brought with a glyph, fetches nothing for it, and never offers it as the cover', async () => {
+    const pdf: ItemAttachment = { id: 'q', name: 'Quote.pdf', size: 2048, type: 'application/pdf' };
+    const tab = { location: { href: '' }, close: vi.fn() };
+    const open = vi.spyOn(window, 'open').mockReturnValue(tab as never);
+    Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:pdf'), revokeObjectURL: vi.fn() });
+    api.original.mockResolvedValue(new Blob(['%PDF-'], { type: 'application/pdf' }));
+    field([pdf]);
+    await flush();
+    expect(api.url).not.toHaveBeenCalled();
+    const row = screen.getByRole('button', { name: 'Open Quote.pdf, PDF, 2 KB' });
+    expect(row.textContent).toContain('PDF · 2 KB');
+    expect(row.querySelector('img')).toBeNull();
+    fireEvent.click(row);
+    await flush();
+    expect(tab.location.href).toBe('blob:pdf');
+    fireEvent.click(screen.getByRole('button', { name: 'More for Quote.pdf' }));
+    expect(screen.getByRole('menuitem', { name: 'Download' })).toBeTruthy();
+    expect(screen.getByRole('menuitem', { name: 'Remove' })).toBeTruthy();
+    expect(screen.queryByRole('menuitem', { name: 'Set as Cover' })).toBeNull();
+    open.mockRestore();
+  });
+
   it('closes the new tab when the picture can’t be read', async () => {
     api.original.mockResolvedValue(null);
     const tab = { location: { href: '' }, close: vi.fn() };
@@ -437,7 +459,7 @@ describe('the card panel, for a Viewer', () => {
   });
 });
 
-describe('a This Browser plan', () => {
+describe('an offline plan', () => {
   it('takes no picture, and says why', async () => {
     offline.value = true;
     field(undefined);
@@ -632,7 +654,7 @@ describe('a file dropped on a board’s card', () => {
     expect(screen.queryByText('Drop to Attach')).toBeNull();
   });
 
-  it('is said in a toast when the plan is in This Browser', async () => {
+  it('is said in a toast when the plan is Offline', async () => {
     card();
     offline.value = true;
     const el = document.querySelector('[data-plan-card]')!;

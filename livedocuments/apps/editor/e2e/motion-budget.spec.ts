@@ -66,7 +66,7 @@ const transitions = (all: MotionRecord[]) =>
 
 async function startBlank(page: Page): Promise<void> {
   // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), made on livedocuments (serverNewUrl). A guest's
-  // own /new keeps it in This Browser, where the Explorer shows no Current Document card and so no Document menu.
+  // own /new keeps it Offline, where the Explorer shows no Current Document card and so no Document menu.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await dismissQuickTour(page);

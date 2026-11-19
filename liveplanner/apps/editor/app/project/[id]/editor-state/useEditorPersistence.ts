@@ -110,7 +110,7 @@ export function useEditorPersistence(
   // The last seen copy follows the open plan (docs/specs/006-project/offline-mode.md "Warm open of a cloud project"):
   // its name and tab list as they change, its first tab as each save of it lands (the cards and the first tab's sheets
   // follow in useEditorPlanData). Only a cloud plan the open kept a copy of is followed; never an embed, a workbench
-  // or a This Browser plan.
+  // or an offline plan.
   const lastSeen = useLastSeenFollow({
     follower: lastSeenCopies,
     reader: selfParticipant.id,
@@ -229,7 +229,7 @@ export function useEditorPersistence(
   });
   useEffect(() => {
     // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
-    // a project in This Browser opens before the reader is known (docs/specs/006-project/offline-mode.md
+    // a project kept Offline opens before the reader is known (docs/specs/006-project/offline-mode.md
     // "Instant open"), and 'self' is nobody's row.
     if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;

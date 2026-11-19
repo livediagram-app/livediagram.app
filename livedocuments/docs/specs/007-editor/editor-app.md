@@ -175,8 +175,8 @@ It draws every link as a **pass**, a ticket that admits whoever holds it. Top to
 livedocuments hands the dialog what is its own (`apps/editor/lib/explorer-host.ts`): a link's address,
 `/document/<id>?s=<code>`; the embed address, `/embed?s=<code>`; the live image's,
 `/api/share/<code>/image.svg` with `?tab=<id>`; the help articles; telemetry; and the guest's name. A document in
-This Browser opens the Sync Document gate instead (`ShareOfflineGate`,
-[Offline Mode](../006-document/offline-mode.md#sharing-a-document-in-this-browser)).
+Offline opens the Sync Document gate instead (`ShareOfflineGate`,
+[Offline Mode](../006-document/offline-mode.md#sharing-an-offline-document)).
 
 ## Destructive actions
 

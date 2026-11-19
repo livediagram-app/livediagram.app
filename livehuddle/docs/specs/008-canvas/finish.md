@@ -205,8 +205,8 @@ Draws exactly as livehuddle did before finishes existed.
   shapes, arrows, text, stickies and tables, and in the multi-selection menu when the selection holds any of
   them (the commit then sets every one of them).
 - **Tab style:** the **Finish** panel (a Fine-tune row of the dialog's home, beside Colours, Text and Canvas, [Canvas + Theme dialog](../011-theme/canvas-and-theme-dialog.md)), and every **Look** sets a finish, with the four finishes as tiles, a
-  **Preview** under them showing a small sample diagram (a step, a decision, the arrow between them and a sticky
-  note) in the chosen finish on the tab's own background and font. Picking a finish applies to the whole tab at once: every
+  **Preview** under them showing a small room (its walls and door, a desk, a plant and a sticky note on the tab's
+  floor) in the chosen finish on the tab's own background and font. Picking a finish applies to the whole tab at once: every
   element's own finish on the tab is cleared so they all follow it again.
 - **New tabs** start Flexible. Duplicated and imported tabs keep their finish.
 - **Agents (API):** `create_document` and `add_tab` take an optional `finish`; an element's `finish` is an

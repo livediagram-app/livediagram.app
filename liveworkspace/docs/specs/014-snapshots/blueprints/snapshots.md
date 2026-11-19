@@ -1,6 +1,6 @@
 # Snapshots blueprint
 
-Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN30 are cited from the code.
+Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN33 are cited from the code.
 
 ## Domain and naming
 
@@ -81,6 +81,18 @@ SN8. Delete: the row and its chunks; `false` for no such snapshot.
 SN9. Generation: `readGeneration(db, itemId)` reads `snapshot_state` once per `D1Database` and item and keeps it in a
 `WeakMap`; an object holds one item and every write to it goes through this module, so the kept value is the stored
 one. No table yet reads 0 without creating one. `advanceGeneration` writes `generation + 1` and updates the kept value.
+
+SN31. Scoped takes (spec "Save points of one part of an item"): `takeSnapshot`'s input may carry `id` (minted by the
+caller with `snapshotId()`), `keep` (`null` keeps every row of the item id: no prune and no orphan sweep; default
+`SNAPSHOTS_KEPT`) and `alongside(id)`, statements run in the take's own batch after its chunks, so an app's own row
+beside the snapshot is written in the same transaction or not at all. `SNAPSHOT_SCHEMA` is exported so an app's schema
+step can make the tables before its own trigger names them; it is the SQL SN3 runs.
+
+SN32. `renameSnapshot(db, itemId, id, name)`: sets `name`; `false` for no such snapshot of the item.
+
+SN33. `rewriteSnapshotText(db, itemId, id, text)`: the text measured as SN4 measures it (`too_large` writes nothing),
+then one batch that drops the old chunks, writes the new ones and sets `bytes` and `chunks`; `missing` for no such
+snapshot of the item.
 
 ## Behaviour and state
 
@@ -222,7 +234,7 @@ charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.ts`).
 ## Testing
 
 - `packages/snapshots`: store (chunking at the limit and a surrogate pair at a cut, the cap at six, unreadable bodies,
-  the generation cache), routes (every row of SN10 and SN11, the revert's order with a door that fails at each step),
+  the generation cache, a scoped take with its own id, no prune and a statement alongside, rename, rewrite), routes (every row of SN10 and SN11, the revert's order with a door that fails at each step),
   fence (each SN16 branch), client fence (stamp and note), the UI (the History host's gating, take, revert confirm,
   delete confirm, empty, error, busy, pins on the timeline and their rail).
 - Each app's api: snapshot, edit, revert gives the snapshot back; a sixth drops the oldest; Editor, Participant,

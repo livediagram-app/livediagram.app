@@ -3,7 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ../015-api/api.md#storage - when touching where a document's content is stored or read: one SQLite-backed Durable Object per document (`DocumentRoom`) holds its tabs, slide deck, image references and changesets; the worker routes every content request to it by RPC; each person's workbench is a Durable Object of its own; there is no D1, and the document's outbox pushes to liveworkspace's index and media service
-- ./domain-language.md - when naming or adding anything that distinguishes documents or tabs: mode (Pages, the one mode), kind (the general tab) and template (what a document was made from), never interchangeable; and This Browser, the one name for a document saved only in this browser
+- ./domain-language.md - when naming or adding anything that distinguishes documents or tabs: mode (Pages, the one mode), kind (the general tab) and template (what a document was made from), never interchangeable; and Offline, the one name for a document saved only in this browser
 - ./testing.md - when working on Testing: Vitest across the monorepo; shared config; co-located unit tests plus jsdom hook and component tests; per-workspace coverage shape
 - ./source-layout.md - when deciding where a file in `apps/editor` goes: components and hooks grouped by domain (canvas, chrome, dialogs, panels, palette, ...), and what belongs in a package instead
 - ./e2e-smoke.md - when working on End-to-end tests: the post-merge Chromium Playwright suite (one spec file per browser-risky feature) driving the real editor build + api worker, with the pageErrors / expectNoPageErrors fixture

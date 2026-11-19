@@ -17,12 +17,12 @@ describe('a host’s own chrome', () => {
         onCreate={vi.fn()}
         allLabel="All apps"
         sidebarLinks={[
-          { id: 'browser', label: 'This Browser', href: 'https://lp/offline', icon: 'browser' },
+          { id: 'browser', label: 'Offline', href: 'https://lp/offline', icon: 'browser' },
         ]}
       />,
     );
     expect(await screen.findByRole('button', { name: 'All apps' })).toBeTruthy();
-    const row = screen.getAllByRole('treeitem', { name: 'This Browser' })[0]!;
+    const row = screen.getAllByRole('treeitem', { name: 'Offline' })[0]!;
     row.querySelector<HTMLButtonElement>('button[type=button]:not([aria-hidden])')!.click();
     expect(assign).toHaveBeenCalledWith('https://lp/offline');
     vi.unstubAllGlobals();

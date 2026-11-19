@@ -213,7 +213,7 @@ sheet. The editor's side is one copy, shared with livediagram and livedesign, in
   - who cannot open the plan sees the values last saved on the chart only, and the line says "Linked to <plan> ·
     saved 2 h ago" with no Update;
   - when the read fails (the network, the plan's app down) the line offers **Update**, which tries again.
-- **A document saved in This Browser** has no room, so no change signal reaches it: its linked charts are read on
+- **A document saved Offline** has no room, so no change signal reaches it: its linked charts are read on
   open, on a tab change and on Update, each with the person's own access, and draw the saved values when offline.
 - **While linked**, the slice and series rows of the Data section are read only ("These numbers come from the
   sheet.") and Edit Data is not offered: the next read would overwrite a hand edit. Chart type, palette, legend,

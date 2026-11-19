@@ -97,7 +97,7 @@ so a reaction there is a **thread write** like a reply:
   rises so every copy converges, but `updatedAt` does not move (a reaction is not activity, so the thread keeps its
   place in the list). Adding one past the thread's byte budget is refused `comments_full`; an agent token is
   refused `403 forbidden`.
-- It reaches everyone through the room's `threads` op, as every thread write does, and a This Browser plan applies
+- It reaches everyone through the room's `threads` op, as every thread write does, and an offline plan applies
   the same change to its own record.
 - `list_threads` (MCP) and `thread ls` (CLI) show each comment's reactions, read only.
 

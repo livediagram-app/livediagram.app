@@ -3,7 +3,7 @@
 // copy as before and holds it as `current`; the editor's follows fold the item's name, its tab list and the first
 // tab's landed saves into `current`, and a timer writes the newest of them at most once per LAST_SEEN_REFRESH_MS, off
 // the editing path. A follow names its reader and item and changes nothing unless `current` is that reader's copy of
-// that item, so only a copy an arrival kept (never an embed, a Community post, a workbench or a This Browser item) is
+// that item, so only a copy an arrival kept (never an embed, a Community post, a workbench or an offline item) is
 // followed, and never for another reader.
 import { firstTabToLoad } from '../tab-scope';
 import type { LastSeenCopy, LastSeenFirstTab, LastSeenInput } from './last-seen-copies';

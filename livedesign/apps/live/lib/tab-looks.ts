@@ -3,39 +3,21 @@
 // four ordinary fields, and a look reads as selected only while the tab still matches all four.
 import { type BackgroundPattern, type Finish, type Tab } from '@livedesign/design';
 import { createTabLooks } from '@liveworkspace/workbench/lib/tab-looks';
-import { withThemeApplied } from '@/lib/tab-theme-apply';
+import { withThemeApplied, type ThemeApplyOptions } from '@/lib/tab-theme-apply';
 import { SEASONAL_LOOKS, type Season } from '@liveworkspace/workbench/lib/seasonal-looks';
 
 export type TabLookId =
   | 'everyday'
-  | 'whiteboard'
-  | 'graph-paper'
-  | 'boardroom'
-  | 'notebook'
-  | 'midnight'
-  | 'seaside'
-  | 'editorial'
-  | 'engineer'
-  | 'workshop'
-  | 'garden'
-  | 'studio'
+  | 'blueprint'
   | 'spectrum'
-  | 'doodle'
+  | 'wireframe'
+  | 'boardroom'
+  | 'workshop'
+  | 'midnight'
   | 'daydream'
+  | 'editorial'
   | 'lagoon'
-  | 'textbook'
-  | 'poster'
-  | 'billboard'
-  | 'patchwork'
-  | 'northern-lights'
-  | 'coffeehouse'
-  | 'schematic'
-  | 'flipchart'
-  | 'sketchbook'
-  | 'greenboard'
-  | 'picnic'
-  | 'mural'
-  | 'field-notes'
+  | 'graph-paper'
   // Seasonal looks (lib/seasonal-looks.ts): shown only behind the carousel's Seasonal toggle.
   | 'countdown'
   | 'egg-hunt'
@@ -63,10 +45,18 @@ export type TabLook = {
   season?: Season;
 };
 
-/** The looks, in the order the dialog shows them after the Mashup card: with it, four carousel pages of six.
+/** The finishes that read as drawn by hand: a wireframe's sketch, not a logo's or a photo's finished art. */
+export const HAND_DRAWN_FINISHES: readonly Finish[] = ['sketch', 'marker'];
+
+/** Whether a look suits a logo or a photo page: no hand-drawn finish (Tab Style's look filter there). */
+export const suitsFinishedArt = (look: Pick<TabLook, 'finish'>): boolean =>
+  !HAND_DRAWN_FINISHES.includes(look.finish);
+
+/** The looks, in the order the dialog shows them after the Mashup card: with it, two carousel pages of six. Suited to
+ *  wireframes and presentation pages: clean faces, quiet surrounds, a low-fidelity Wireframe and a Blueprint grid.
  *  Everyday stays first; the rest are in a fixed, interleaved order (never shuffled at runtime) that puts one or two
- *  of the eight multi-colour looks (Rainbow, Pastel, Tropical) on every page and never sets two neighbours on a
- *  page in the same theme or finish. Textbook and Schematic wear Mono: UML is retired here. */
+ *  of the three multi-colour looks (Rainbow, Pastel, Tropical) on every page and never sets two neighbours on a page
+ *  in the same theme or finish. */
 export const TAB_LOOKS: readonly TabLook[] = [
   {
     id: 'everyday',
@@ -78,19 +68,19 @@ export const TAB_LOOKS: readonly TabLook[] = [
     pattern: 'grid',
   },
   {
-    id: 'textbook',
-    label: 'Textbook',
-    description: 'Mono, Professional, Oswald, graph',
-    theme: 'mono',
+    id: 'blueprint',
+    label: 'Blueprint',
+    description: 'Sky, Professional, Roboto Mono, engineering grid',
+    theme: 'sky',
     finish: 'professional',
-    font: 'oswald',
-    pattern: 'graph',
+    font: 'roboto-mono',
+    pattern: 'engineering',
     patternOpacity: 0.5,
   },
   {
     id: 'spectrum',
     label: 'Spectrum',
-    description: 'Rainbow, Flexible, Inter, soft dots',
+    description: 'Rainbow, Flexible, Inter, soft grid',
     theme: 'rainbow',
     finish: 'flexible',
     font: 'inter',
@@ -98,256 +88,79 @@ export const TAB_LOOKS: readonly TabLook[] = [
     patternOpacity: 0.5,
   },
   {
-    id: 'whiteboard',
-    label: 'Whiteboard',
-    description: 'Mono, Marker, plain white',
+    id: 'wireframe',
+    label: 'Wireframe',
+    description: 'Mono, Sketch, a low-fidelity sketch',
     theme: 'mono',
-    // A whiteboard is drawn in marker; its letters in Shantell Sans itself.
-    finish: 'marker',
+    finish: 'sketch',
     font: undefined,
     pattern: 'blank',
   },
   {
     id: 'boardroom',
     label: 'Boardroom',
-    description: 'Steel, Professional, Inter',
+    description: 'Steel, Professional, Inter, plain',
     theme: 'steel',
     finish: 'professional',
     font: 'inter',
     pattern: 'blank',
   },
   {
-    id: 'notebook',
-    label: 'Notebook',
-    description: 'Mocha, Sketch, lined paper',
-    theme: 'mocha',
-    finish: 'sketch',
+    id: 'workshop',
+    label: 'Workshop',
+    description: 'Sand, Marker, grid',
+    theme: 'sand',
+    finish: 'marker',
     font: undefined,
-    pattern: 'lines',
+    pattern: 'grid',
+    patternOpacity: 0.6,
   },
   {
-    id: 'seaside',
-    label: 'Seaside',
-    description: 'Ocean, Flexible, Nunito, waves',
-    theme: 'ocean',
+    id: 'midnight',
+    label: 'Midnight',
+    description: 'Midnight, Professional, Space Grotesk, plain',
+    theme: 'midnight',
+    finish: 'professional',
+    font: 'space-grotesk',
+    pattern: 'blank',
+  },
+  {
+    id: 'daydream',
+    label: 'Daydream',
+    description: 'Pastel, Flexible, Nunito, soft grid',
+    theme: 'pastel',
     finish: 'flexible',
     font: 'nunito',
-    pattern: 'waves',
-  },
-  {
-    id: 'doodle',
-    label: 'Doodle',
-    description: 'Rainbow, Sketch, Kalam, plain paper',
-    theme: 'rainbow',
-    finish: 'sketch',
-    font: 'caveat',
-    pattern: 'blank',
+    pattern: 'grid',
+    patternOpacity: 0.6,
   },
   {
     id: 'editorial',
     label: 'Editorial',
-    description: 'Cream, Professional, Lora serif',
+    description: 'Cream, Professional, Lora, plain',
     theme: 'cream',
     finish: 'professional',
     font: 'lora',
     pattern: 'blank',
   },
   {
-    id: 'midnight',
-    label: 'Midnight',
-    description: 'Midnight, Flexible, grid',
-    theme: 'midnight',
-    finish: 'flexible',
-    font: undefined,
-    pattern: 'grid',
-  },
-  {
-    id: 'poster',
-    label: 'Poster',
-    description: 'Tropical, Professional, Bodoni, diagonal',
+    id: 'lagoon',
+    label: 'Lagoon',
+    description: 'Tropical, Flexible, Space Grotesk, ruled',
     theme: 'tropical',
-    finish: 'professional',
-    font: 'abril-fatface',
-    pattern: 'diagonal',
+    finish: 'flexible',
+    font: 'space-grotesk',
+    pattern: 'lines',
     patternOpacity: 0.4,
-  },
-  {
-    id: 'workshop',
-    label: 'Workshop',
-    description: 'Sand, Marker, soft grid',
-    theme: 'sand',
-    finish: 'marker',
-    // Marker letters in Shantell Sans itself.
-    font: undefined,
-    pattern: 'grid',
-    patternOpacity: 0.6,
   },
   {
     id: 'graph-paper',
     label: 'Graph Paper',
-    description: 'Indigo, Professional, mono type',
+    description: 'Indigo, Professional, Roboto Mono, graph',
     theme: 'indigo',
     finish: 'professional',
     font: 'roboto-mono',
     pattern: 'graph',
-  },
-  {
-    id: 'daydream',
-    label: 'Daydream',
-    description: 'Pastel, Flexible, Nunito, dotted paper',
-    theme: 'pastel',
-    finish: 'flexible',
-    font: 'nunito',
-    pattern: 'grid',
-    patternOpacity: 0.6,
-  },
-  {
-    id: 'engineer',
-    label: 'Engineer',
-    description: 'Sky, Professional, engineering grid',
-    theme: 'sky',
-    finish: 'professional',
-    font: 'space-grotesk',
-    pattern: 'engineering',
-  },
-  {
-    id: 'lagoon',
-    label: 'Lagoon',
-    description: 'Tropical, Flexible, Space Grotesk, ripples',
-    theme: 'tropical',
-    finish: 'flexible',
-    font: 'space-grotesk',
-    pattern: 'ripple',
-    patternOpacity: 0.5,
-  },
-  {
-    id: 'studio',
-    label: 'Studio',
-    description: 'Lavender, Professional, slab serif',
-    theme: 'lavender',
-    finish: 'professional',
-    font: 'roboto-slab',
-    pattern: 'crosshatch',
-  },
-  {
-    id: 'garden',
-    label: 'Garden',
-    description: 'Forest, Flexible, Poppins, hexagons',
-    theme: 'forest',
-    finish: 'flexible',
-    font: 'poppins',
-    pattern: 'hexagonal',
-    patternOpacity: 0.4,
-  },
-  {
-    id: 'billboard',
-    label: 'Billboard',
-    description: 'Sunset, Professional, Oswald, stripes',
-    theme: 'sunset',
-    finish: 'professional',
-    font: 'oswald',
-    pattern: 'stripes',
-    patternOpacity: 0.4,
-  },
-  {
-    id: 'patchwork',
-    label: 'Patchwork',
-    description: 'Pastel, Sketch, Lora, soft checks',
-    theme: 'pastel',
-    finish: 'sketch',
-    font: 'lora',
-    pattern: 'checkerboard',
-    patternOpacity: 0.3,
-  },
-  {
-    id: 'northern-lights',
-    label: 'Northern Lights',
-    description: 'Abyss, Flexible, Poppins, aurora',
-    theme: 'abyss',
-    finish: 'flexible',
-    font: 'poppins',
-    pattern: 'aurora',
-    patternOpacity: 0.6,
-  },
-  {
-    id: 'coffeehouse',
-    label: 'Coffeehouse',
-    description: 'Espresso, Sketch, Kalam, bricks',
-    theme: 'espresso',
-    finish: 'sketch',
-    font: 'caveat',
-    pattern: 'bricks',
-    patternOpacity: 0.4,
-  },
-  {
-    id: 'schematic',
-    label: 'Schematic',
-    description: 'Mono, Professional, Roboto Mono, crosshatch',
-    theme: 'mono',
-    finish: 'professional',
-    font: 'roboto-mono',
-    pattern: 'crosshatch',
-    patternOpacity: 0.4,
-  },
-  // The fifth page: Marker on a flip chart, a green board and a wall, between Sketch and Flexible looks.
-  {
-    id: 'flipchart',
-    label: 'Flipchart',
-    description: 'Rainbow, Marker, ruled pad',
-    theme: 'rainbow',
-    finish: 'marker',
-    // Marker letters in Shantell Sans itself.
-    font: undefined,
-    pattern: 'lines',
-    patternOpacity: 0.5,
-  },
-  {
-    id: 'sketchbook',
-    label: 'Sketchbook',
-    description: 'Rose, Sketch, plain paper',
-    theme: 'rose',
-    finish: 'sketch',
-    font: undefined,
-    pattern: 'blank',
-  },
-  {
-    id: 'greenboard',
-    label: 'Greenboard',
-    description: 'Pine, Marker, a green board',
-    theme: 'pine',
-    finish: 'marker',
-    font: undefined,
-    pattern: 'blank',
-  },
-  {
-    id: 'picnic',
-    label: 'Picnic',
-    description: 'Pastel, Flexible, Poppins, gingham',
-    theme: 'pastel',
-    finish: 'flexible',
-    font: 'poppins',
-    pattern: 'checkerboard',
-    patternOpacity: 0.25,
-  },
-  {
-    id: 'mural',
-    label: 'Mural',
-    description: 'Plum, Marker, soft dots',
-    theme: 'plum',
-    finish: 'marker',
-    font: undefined,
-    pattern: 'grid',
-    patternOpacity: 0.5,
-  },
-  {
-    id: 'field-notes',
-    label: 'Field Notes',
-    description: 'Olive, Sketch, lined paper',
-    theme: 'olive',
-    finish: 'sketch',
-    font: undefined,
-    pattern: 'lines',
-    patternOpacity: 0.6,
   },
 ];
 
@@ -361,10 +174,16 @@ export type LookSettings = Pick<
 
 // The lookup, apply and match are the shared ones (@liveworkspace/workbench/lib/tab-looks), over every named look,
 // year-round and seasonal: a tab wearing a seasonal look reads as that look too.
-export const { tabLookById, withLookApplied, lookMatches, activeLookId } = createTabLooks<
-  Tab,
-  TabLook
->({
-  looks: [...TAB_LOOKS, ...SEASONAL_LOOKS],
-  withThemeApplied,
+const NAMED = [...TAB_LOOKS, ...SEASONAL_LOOKS];
+const shared = createTabLooks<Tab, TabLook>({ looks: NAMED, withThemeApplied });
+// The same apply with Element Colours on Keep as They Are: the theme recolours no element.
+const keeping = createTabLooks<Tab, TabLook>({
+  looks: NAMED,
+  withThemeApplied: (tab, id) => withThemeApplied(tab, id, undefined, { keepElementColours: true }),
 });
+export const { tabLookById, lookMatches, activeLookId } = shared;
+
+/** The tab with a look applied (the shared apply), its elements' colours kept when `options` says so. */
+export function withLookApplied(tab: Tab, look: TabLook, options: ThemeApplyOptions = {}): Tab {
+  return (options.keepElementColours ? keeping : shared).withLookApplied(tab, look);
+}

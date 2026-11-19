@@ -48,7 +48,7 @@ async function loadIds(): Promise<Set<string>> {
         for (const id of removedIds) ids.delete(id);
         removedIds.clear();
         idCache = ids;
-        // Read anyway: This Browser's list rebuilt from it, once per page load (this-browser.ts).
+        // Read anyway: Offline's list rebuilt from it, once per page load (this-browser.ts).
         publishThisBrowser(recs);
         return ids;
       })

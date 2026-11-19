@@ -1,5 +1,5 @@
 // What one tab contributes to the collaboration index (docs/specs/013-workspace/inbox.md §2), and what
-// a tab of a project in This Browser contributes to the Inbox read in the browser (§2.6).
+// a tab of a project kept Offline contributes to the Inbox read in the browser (§2.6).
 //
 // A pure projection of the tab's elements into the rows `collab_actions`
 // and `collab_threads` hold: one per element carrying an action, and one per Sheet cell

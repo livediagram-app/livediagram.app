@@ -46,7 +46,7 @@ Top to bottom, left column:
   shrink beside the corner, never under it:
   - the person's designs: "1 design" / "N designs" (every space the person is in: My Work and each of their
     teams, each design counted once; not what was shared with them through a link, nor this browser's designs in
-    This Browser), opening **My Work**, or for someone in a team, Search results narrowed to those spaces
+    Offline), opening **My Work**, or for someone in a team, Search results narrowed to those spaces
     (`space:mine,team:…`); a green dot;
   - the Inbox: "Inbox is clear" when no open action is assigned to the person, else "N open in your Inbox", the
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
@@ -162,7 +162,7 @@ Used and Recent, on Home"): a design is in the first of New, Most Used and Recen
 - Only designs the person can open now: never one in the Trash, nor one whose share link has lapsed or whose
   team they have left.
 - A design stored only in this browser ([Offline Mode](../006-design/offline-mode.md)) takes part with this
-  browser's own record of its opens and edits ([Opens](#opens)), and carries the **This Browser** pill on its
+  browser's own record of its opens and edits ([Opens](#opens)), and carries the **Offline** pill on its
   thumbnail, as every other row and card of one does.
 - Each design is a **card**: its snapshot thumbnail, its name, and one quiet line that says why it is there. A design an
   AI tool made carries the **Made by AI** badge on its thumbnail's corner.
@@ -176,7 +176,7 @@ Used and Recent, on Home"): a design is in the first of New, Most Used and Recen
     (`jumpBackInLine` in `@liveworkspace/explorer`).
 - **Each card has the design's ⋯ menu**, the same menu its row and card carry everywhere else in the Explorer
   (Rename, Duplicate, Move, History, Delete and the rest; a design shared with you gets the
-  shared-with-you menu; a This Browser design gets This Browser's), so it can be changed from Home without opening
+  shared-with-you menu; an offline design gets Offline's), so it can be changed from Home without opening
   it. A ⋯ button on the card opens it, and a right-click anywhere on the card opens it too. Under a mouse the button
   shows while the card is hovered or has keyboard focus; on touch it always shows. It is a button beside the card's
   link, never inside it.
@@ -212,8 +212,8 @@ Used and Recent, on Home"): a design is in the first of New, Most Used and Recen
 
 ### Phone
 
-- Below `md`, each section is its own **sideways-scrolling strip** of at most **8** thumbnails (New's of four) under its own heading (This
-  Browser's among Recent's), with no quiet lines: each tile is its thumbnail and name.
+- Below `md`, each section is its own **sideways-scrolling strip** of at most **8** thumbnails (New's of four) under its own heading (Offline's
+  among Recent's), with no quiet lines: each tile is its thumbnail and name.
 - Recent's strip ends in a **See More** tile, the same size as a thumbnail, that opens the Recent page.
 - The strip scrolls sideways (touch, trackpad, Shift+wheel, and keyboard focus moving through it). Its trailing
   edge fades to say there is more, and only while there is more.
@@ -252,7 +252,7 @@ Used and Recent, on Home"): a design is in the first of New, Most Used and Recen
 Under Recent, Home ends with two more sections, drawn by the shared Explorer as on every app's Home
 ([One Explorer "Spaces, on Home"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#spaces-on-home)):
 
-- **Spaces**: My Work, then each team the person is in, then This Browser while it holds anything, each a tile with
+- **Spaces**: My Work, then each team the person is in, then Offline while it holds anything, each a tile with
   a mosaic of its newest designs that goes straight to that space's list. Up to eight show, with **Show All N
   Spaces** past that. A person with no team gets a **Create a Team** tile (a guest, **Sign In to Use Teams**).
 - **Shared With You Recently**: up to four designs most recently shared with the person through a link, as large
@@ -272,7 +272,7 @@ An **open** is the editor loading a design for a person to look at.
   Offline, and any read through the public API or an AI tool.
 - Opens are **private**. Only the person who opened a design ever sees that they did: in their Most Used and Recent, never in a design's
   History ([History](history.md)).
-- Offline Mode designs never reach the server, so the server records none of their opens. **This Browser counts
+- Offline Mode designs never reach the server, so the server records none of their opens. **Offline counts
   them instead**: the editor opening a design stored only here adds the day to that design's own record in
   this browser, by the same once-per-UTC-day rule, keeping the days of the last 90, and moves its last open. Its
   last edit is the record's own save time. Making a design here starts that record with the day and the moment
@@ -334,7 +334,7 @@ Recently.
 - Each section is a landmark (`section`) named by its heading (**New**, **Most Used**, **Recent**, **Spaces**,
   **Shared With You Recently**).
 - Each section's designs are one list; each design is one link named by its design's
-  name (plus **This Browser** for a design stored only here). No row or group carries a label of its own.
+  name (plus **Offline** for a design stored only here). No row or group carries a label of its own.
 - Keyboard order follows the reading order: New's designs, Most Used's designs, Recent's See More (desktop and
   tablet), then Recent's designs in their order (then the See More tile on a phone), then the Spaces tiles and
   Shared With You Recently.

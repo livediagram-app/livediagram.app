@@ -1,12 +1,13 @@
 # Element tours
 
 An **element tour** teaches one complex element type, on the element itself: what its parts mean, how to read it and
-how to change it. It is started from the footer's Get Started button while an element of that type is selected, and it
-walks through the real element the person selected, not a sample.
+how to change it. It is started from a **Play button beside the selection toolbar** while an element of that type is
+selected, and it walks through the real element the person selected, not a sample.
 
 It sits beside the mode tours (the [Diagram tour](editor-tour.md) and its siblings) and [Show Me](show-me.md) (started
-from a button on one surface). Like the mode tours it never offers itself: the one way in is the
-Get Started button ([Diagram tour](editor-tour.md) "Where it appears").
+from a button on one surface). It never starts on its own: the one way in is its Play button. The footer's Get Started
+button offers the tab's mode tour only, whatever is selected (owner, 2026-11-19: it changed with the selection, from
+25 October until then).
 
 The toured kinds: the [Sankey diagram](../009-elements/sankey.md), and the
 [concept graphics](../009-elements/concept-graphics.md) layer stack, pyramid, funnel, cycle, hub and spoke, onion and chevron process; the
@@ -33,20 +34,21 @@ On the Get Started button an element tour is named from its closing card's eyebr
 "tour": **Start Sankey Tour**, **Start Hub and Spoke Tour**, **Start Diagram Key Tour** (`tourNameOf`). Its Settings
 section is still called **Show Me**. "Element tour" is the code's and the specs' word only.
 
-## On the Get Started button
+## The Play button
 
-- **Most specific first.** While a toured element is selected its tour is the one the button offers, ahead of a tool
-  in hand and the tab's mode tour (`TOUR_OFFER_RANK.element`).
-- **When it is on offer**, all of these hold:
+- **Beside the selection toolbar**, leading it: a small toolbar of two buttons, a solid **Play** and an **X**
+  (`ElementTourOffer`, published by `ElementTourHost` through `element-tour-offer.ts`), with no hover cards (owner,
+  2026-11-19); their accessible names are "Play the Sankey walkthrough" and "Dismiss the Sankey walkthrough".
+- **When it shows**, all of these hold:
   - exactly one element is selected, of a toured kind;
   - the person may edit it (for a Sankey, `canEditSankey`: an Editor, on an unlocked diagram);
   - the editor is usable: hydrated, no welcome overlay, no start panel open, not an embed, not on a phone (narrower
     than 640px, or a phone held sideways: `useIsMobileViewport`).
-- **Gone once taken, back from Settings.** Starting an element's tour takes that kind off the button
-  ([Diagram tour](editor-tour.md) "Where it appears"): selecting another element of the kind offers the mode's tour
-  instead, if one is owed, or no button. Its switch in Settings' **Show Me** section (below) puts it back.
+  - the kind has not been dismissed.
+- **Taken or not**: watching a tour does not take its button away, so it can be watched again; only its X does,
+  recording the kind in `elementTourKinds` until its Settings switch is turned back on.
 - **A press** starts the tour on its first step, on the selected element. A press while another tour is on screen
-  does nothing. Deselecting the element takes its tour off the button.
+  does nothing. Deselecting the element takes the button away.
 
 ## Remembering runs
 
@@ -77,7 +79,18 @@ A step whose copy names a part of the element's own menu ("In its menu, Tools �
 Stack…") opens that menu on the element (`openElementMenu`, as a right-click does), opens each row of its path in
 turn (an accordion section, or a flyout such as **Tools**), highlights the part the last row opened, and closes the
 menu as the step ends, however it ends (`inTheMenu`, `menuStep`, `element-menu-tour.ts`). A path that cannot be
-followed (a row missing) highlights the deepest part it reached.
+followed (a row missing) highlights the deepest part it reached. A group the menu folds away (**Tools** holding only
+one thing shows its contents at the top) is passed over at once, so the step lands on the row under it rather than
+waiting out its target and skipping (owner, 2026-11-19: "it hangs and then skips the step"). Pressing Next or Back
+on the card never closes the open menu, flyout or "+" ring first: those close on an outside press, and the tour card
+is not outside them.
+
+## Kind tool steps
+
+A step about an element kind's own verb (a mind node's or person's **Add Child** and **Add Sibling**, a flowchart
+step's **Add Step**, **Add Branch**, **Step Type** and **Lane**) rings that button in the Quick Style panel's Tools
+row while the panel is open, else opens the element menu at its top bar of kind tools and closes it as the step ends
+(`onKindTool`). These verbs left the selection toolbar on 2026-11-16 ([Kind tools](../008-canvas/element-menu-quick-bar.md#kind-tools-owner-2026-11-16)).
 
 ## The page waits
 
@@ -253,11 +266,11 @@ the canvas, not in a Rows section.
 ## The Mind Map tour
 
 On a selected mind node (not a person node: that is the org chart's), from `mind-node-tour-steps.ts`. It points at the
-node and its selection toolbar; it never grows the map itself.
+node and its kind tools; it never grows the map itself.
 
 1. **A Node That Knows Its Parent**: rings the node; every node grown from it is joined to it, and the map keeps
    itself tidy.
-2. **Grow a Child**: rings the toolbar's **Add Child**. With a keyboard: "Tab, or Add Child here", and typing names
+2. **Grow a Child**: rings **Add Child** (a kind tool step). With a keyboard: "Tab, or Add Child here", and typing names
    the new node; on a touch screen, the button alone.
 3. **Add a Sibling**: rings **Add Sibling**. With a keyboard it names Enter and Shift+Enter (a new line while typing);
    on a touch screen, the button alone.
@@ -272,11 +285,11 @@ children).
 
 ## The Flowchart tour
 
-On a selected flowchart step, from `flowchart-tour-steps.ts`. It points at the step and its toolbar; it never grows or
+On a selected flowchart step, from `flowchart-tour-steps.ts`. It points at the step and its kind tools; it never grows or
 re-lays the chart itself.
 
 1. **A Step in a Flowchart**: rings the step; every change lays the chart out again.
-2. **The Next Step**: rings the toolbar's **Add Step** ("Tab, or Add Step here" with a keyboard; the button alone on a
+2. **The Next Step**: rings **Add Step** (a kind tool step) ("Tab, or Add Step here" with a keyboard; the button alone on a
    touch screen).
 3. **Add a Branch**: rings **Add Branch** (Enter with a keyboard): a step beside this one, from the same step.
 4. **Change Its Type**: rings **Step Type**; the type is the shape, the words are kept, the chart re-lays.
@@ -287,7 +300,7 @@ re-lays the chart itself.
 ## The Org Chart tour
 
 On a selected person node (a mind node with the person look), from `org-chart-tour-steps.ts`. It points at the node,
-its parts (`data-tour-part="person-role"`, `"person-initials"`) and its toolbar; it never grows the chart itself.
+its parts (`data-tour-part="person-role"`, `"person-initials"`) and its kind tools; it never grows the chart itself.
 
 1. **A Person in the Chart**: rings the node: name, role and initials; double-click (double-tap) to change the name.
 2. **Their Role**: rings the role line; click (tap) to write it.
@@ -387,7 +400,7 @@ On a selected lane, from `lane-tour-steps.ts`. Its gutter carries `data-lane-gut
 2. **The Title Gutter**: rings the gutter; double-click (double-tap) to name it, its colour is Heading under Colours.
 3. **Drag the Seam** (rings the seam): more or less room for the title, snapping to the seams of the lanes around it.
 4. **Carries Its Steps**: rings the lane; dragging it brings everything inside, as a frame does.
-5. **Rows or Columns**: the menu step. Centring the title at the top turns the lane into a column; Upright Title
+5. **Rows or Columns**: the menu step, at **Appearance › Text**. Centring the title at the top turns the lane into a column; Upright Title
    (Text) turns a side title to read bottom to top.
 6. **That Is a Lane**: the closing card, with **Lanes Help**.
 
@@ -432,8 +445,10 @@ its style and its meanings are an Editor's), never `isReadOnly` alone.
 Each toured kind has its own tokens, `<Kind>Tour` (`SankeyTour`, `LayerStackTour`, `PyramidTour`, `FunnelTour`, `CycleTour`, `HubTour`, `OnionTour`, `ChevronsTour`, `TimelineTour`, `MindMapTour`, `FlowchartTour`, `OrgChartTour`, `SequenceTour`, `ChartTour`, `StackTour`, `EntityTour`, `LaneTour`, `BoundaryTour`, `DiagramKeyTour`), named in its registry entry:
 
 - **Offer**: `UI` · `Opened` · `<Kind>TourOffer` the first time the Get Started button shows that kind's tour in a
-  page load. Until 25 October 2026 it counted the offer toolbar showing, and `UI` · `Closed` · `<Kind>TourOffer`
-  counted **Cancel**; nothing sends Closed now, and its explanation stays for the history.
+  page load. Until 25 October 2026 it counted the offer toolbar showing.
+- **Declined**: `UI` · `Closed` · `<Kind>TourOffer` when the **X** beside the Play button turns that kind's tour
+  down (Element Tours Declined). Until 25 October 2026 it counted the old offer toolbar's **Cancel**; from then until
+  19 November 2026 nothing sent it.
 - **Start**: `UI` · `Started` · `<Kind>Tour` on a press of the button.
 - **Stage views**: `UI` · `View` · `<Kind>TourStep<Id>` once per step entry: the Sankey's `SankeyTourStepBands`,
   `...Leftover`, `...Style`, `...Flows`, the dialog's `...FlowsNodes`, `...FlowsRows`, `...FlowsAdd`,

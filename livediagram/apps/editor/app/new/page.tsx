@@ -150,7 +150,7 @@ export default function NewDocumentPage() {
   const search = useSyncExternalStore(subscribeNever, searchFromUrl, noSearch);
   const plan = useMemo(() => (search === null ? null : newDocumentKind(search)), [search]);
   const presetQuery = useMemo(() => (search === null ? null : wizardPresetQuery(search)), [search]);
-  // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
+  // Where a new document is stored: Offline for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
   const { resolveSaveLocation } = useNewDocumentLocation({
     authLoaded,
@@ -233,7 +233,7 @@ export default function NewDocumentPage() {
     setSubmitting(true);
     // A `?q=` preset becomes the search in the new document's start panel (start-query.ts).
     handStartQuery(presetQuery);
-    // Save location (docs/specs/006-document/save-locations.md): only This Browser takes the offline branch.
+    // Save location (docs/specs/006-document/save-locations.md): only Offline takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
     // An explicit blank (Start Blank, a template link) opens with its start closed (close-start-for-blank.ts).
@@ -252,13 +252,13 @@ export default function NewDocumentPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A document in This Browser has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
+    // A document kept Offline has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
     // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
     const cloudOwner = offline ? null : await settleIdentity();
     if (offline) {
       // Except a first visit's guest token (offline-mode.md "Instant open"): fetching one leaves the page for the
       // accounts site and comes back to this /new address, so a create begun first would run again on the way back and
-      // leave the first canvas behind in Browser Storage. Taken first, the canvas is made once; a returning guest's token
+      // leave the first canvas behind Offline. Taken first, the canvas is made once; a returning guest's token
       // is already here and this answers at once.
       await ensureGuestToken();
       void settleIdentity().catch((err: unknown) =>
@@ -329,7 +329,7 @@ export default function NewDocumentPage() {
   };
 
   // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md
-  // "No welcome step"): This Browser for a guest, livediagram for a signed-in person or anyone with a /new?folder= /
+  // "No welcome step"): Offline for a guest, livediagram for a signed-in person or anyone with a /new?folder= /
   // ?team= context (docs/specs/006-document/save-locations.md), and that context when there is one;
   // without one it carries no placement, so a default folder may answer (docs/specs/013-workspace/default-folders.md
   // "Precedence"). `startClosed` opens it with its start closed (Start Blank, a template link).

@@ -237,7 +237,7 @@ export function withStableEventProps<P extends object>(Inner: ComponentType<P>):
 | A selection change renders only the flipped views     | `CanvasElementsLayer.renders.test.tsx`: select one, then another; two views render                      |
 | Selection behaviour unchanged                         | the existing selection unit tests and `e2e/select-clicks.spec.ts`, unchanged                            |
 | The chrome follows the selection                      | `e2e/selection-chrome.spec.ts`: pluses, grips, union box, free-arrow frame, delete and undo, tab switch |
-| The budget                                            | the probe on the branch, then nightly                                                                   |
+| The budget                                            | the probe on the branch, by hand                                                                        |
 
 ## Constants and configuration
 

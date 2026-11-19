@@ -105,7 +105,7 @@ async function importThroughDialog(page: Page, base: string, file: string) {
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await page.getByRole('button', { name: /^draw\.io/ }).click();
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Import a file instead' }).click();
+  await page.getByRole('button', { name: 'Import File' }).click();
   await (await chooser).setFiles(file);
   // A clean import closes the dialog; one with a report waits on Done.
   const done = page.getByRole('button', { name: 'Done' });

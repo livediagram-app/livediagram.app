@@ -91,13 +91,13 @@ export const MY_WORK_TONE: SpaceTone = {
 };
 
 /** A space's tone: My Work's sky, or a team's picked from its id, so it wears the same colour on every visit. */
-/** This Browser's tile: the teal its pill and sidebar tile wear (no app's accent, no team's tone). */
+/** Offline's tile: the teal its pill and sidebar tile wear (no app's accent, no team's tone). */
 export const LOCAL_SPACE_TONE: SpaceTone = {
   disc: 'bg-teal-100 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300',
   wash: 'bg-teal-50/70 dark:bg-teal-400/[0.06]',
 };
 
-/** This Browser's tile's line, from its list: "3 plans · Edited 2 hours ago" (just the count before the clock is
+/** Offline's tile's line, from its list: "3 plans · Edited 2 hours ago" (just the count before the clock is
  *  known, "No plans yet" with folders alone). */
 export function localSpaceLine(
   count: number,

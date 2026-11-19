@@ -313,7 +313,7 @@ A walkthrough is not swept for age: it stays until someone deletes it or its doc
 | `DELETE /api/walkthroughs/<id>?d=`    | Its recorder, or an Editor of the document                                             |
 
 A tab-scoped link's visitor sees no walkthroughs (one can travel across tabs), nor does a document in the Trash.
-A document kept in This Browser has no walkthroughs, since no server holds it. Without a media key every route
+A document kept Offline has no walkthroughs, since no server holds it. Without a media key every route
 answers `503 { error: "walkthroughs_unavailable" }`, and the editor offers none.
 
 ## The Explorer's Walkthroughs

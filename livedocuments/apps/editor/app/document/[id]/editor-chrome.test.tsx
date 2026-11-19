@@ -248,7 +248,12 @@ function Page({ value, children }: { value: EditorContextValue; children?: React
   return (
     <EditorContext.Provider value={value}>
       <EditorChromeContext.Provider value={chrome}>
-        <EditorViewHeader isOffline={false} isMobileViewport={false} landscapeShown />
+        <EditorViewHeader
+          isOffline={false}
+          headerCommunity={false}
+          isMobileViewport={false}
+          landscapeShown
+        />
         <EditorViewFooter isOffline={false} landscapeShown onSelectTab={() => {}} />
         {HOSTS}
         <DocumentReader />

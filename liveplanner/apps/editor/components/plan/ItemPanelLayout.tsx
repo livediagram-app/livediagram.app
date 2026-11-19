@@ -138,6 +138,9 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const made = itemStampTime(item, 'createdAt');
   const editor = itemStampPerson(item, 'updatedBy');
   const edited = itemStampTime(item, 'updatedAt');
+  // A card as made: its Edited by is only its maker, at the moment it was made, so it says Created by alone until
+  // someone really edits it (items.md "Created and Last Edited").
+  const unedited = editor?.id === maker?.id && edited === made;
   if (!maker && !response && !fromEmail && !editor) return null;
   const github = isGithubStamp(editor);
   const madeByGithub = isGithubStamp(maker);
@@ -147,7 +150,7 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
       className="mt-auto flex shrink-0 flex-col gap-0.5 pt-5 text-[12px] text-slate-500 dark:text-slate-400"
     >
       <div className="flex flex-col gap-0.5 border-t border-slate-200/80 pt-3 dark:border-slate-700/80">
-        {editor ? (
+        {editor && !unedited ? (
           <MetaRow
             lead={<PersonDisc person={github ? GITHUB_PERSON : editor} />}
             at={edited}

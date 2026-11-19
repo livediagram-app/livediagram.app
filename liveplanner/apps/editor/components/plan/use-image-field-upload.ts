@@ -103,7 +103,7 @@ export function useImageFieldUpload(
       const now = planRef.current;
       const item = now?.items.get(itemId);
       if (!canAdd || !scope || !now || !item || files.length === 0) return;
-      // A This Browser plan takes none (its pictures would never be reported, and the sweep would take them).
+      // An offline plan takes none (its pictures would never be reported, and the sweep would take them).
       if (await isOfflineId(scope.projectId)) {
         setProblems([ATTACHMENTS_OFFLINE]);
         return;

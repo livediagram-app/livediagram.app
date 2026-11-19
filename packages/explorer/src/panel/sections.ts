@@ -51,7 +51,7 @@ export function sectionFromKey(key: string | null | undefined): PanelSection | n
   return (SIMPLE as readonly string[]).includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
-/** The rail's entries: the sidebar's three groups, each team under Spaces and This Browser after them while this
+/** The rail's entries: the sidebar's three groups, each team under Spaces and Offline after them while this
  *  browser keeps any of the app's items or a local folder, the Library while the host keeps one, and the Inbox
  *  unless the app has none (appHasInbox). A remembered Inbox then opens Home (resolveSection). */
 export function panelSectionGroups(
@@ -73,7 +73,7 @@ export function panelSectionGroups(
     },
     {
       id: 'spaces',
-      // This Browser last among the spaces, as the sidebar's (one-explorer.md "This Browser, a Space").
+      // Offline last among the spaces, as the sidebar's (one-explorer.md "Offline, a Space").
       sections: [
         { kind: 'mine' },
         ...teams.map((t) => ({ kind: 'team' as const, id: t.id })),

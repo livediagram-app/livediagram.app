@@ -118,7 +118,7 @@ export default defineConfig({
       : []),
     // Opt-in (E2E_PERF=1, pnpm perf:canvas): the canvas performance probe
     // (docs/specs/008-canvas/canvas-performance.md "Measuring"). Reports against the budget and never
-    // fails on a miss; it runs nightly (canvas-perf.yml), not on every push.
+    // fails on a miss; it runs by hand, never in CI.
     ...(process.env.E2E_PERF === '1'
       ? [
           {

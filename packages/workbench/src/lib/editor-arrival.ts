@@ -400,7 +400,7 @@ export async function openOwnAddress<
 >(
   product: ArrivalProduct<Item, Role, Post, Community, OwnStep>,
   run: ArrivalRun<Item, Role, Community>,
-  // `early`: an early open (an item in This Browser before auth settled), whose naming nudge waits for auth.
+  // `early`: an early open (an item kept Offline before auth settled), whose naming nudge waits for auth.
   own: { id: string; early: boolean; accountUserId: string | null | undefined },
 ): Promise<boolean> {
   const { id, early, accountUserId } = own;
@@ -470,7 +470,7 @@ export async function openOwnAddress<
     set.setIdentityPromptOpen(true);
   }
   set.setItemId(id);
-  // This Browser's items open from this browser already: only a server item keeps a copy.
+  // Offline's items open from this browser already: only a server item keeps a copy.
   if (!offline) {
     keepCopy(product.lastSeen, {
       reader: self.id,

@@ -215,7 +215,7 @@ export async function pagePoint(
   return { x: Math.round(sheet.x + sheet.width * fx), y: Math.round(sheet.y + sheet.height * fy) };
 }
 
-// A /new address that makes the design on livedesign. A guest's own /new makes it in This Browser
+// A /new address that makes the design on livedesign. A guest's own /new makes it Offline
 // (docs/specs/006-design/save-locations.md "The default depends on who is creating"), where the index holds no item
 // and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
 // /new makes it there whoever is creating. The page becomes a minted guest (its token where the app keeps it, so /new

@@ -35,7 +35,7 @@ async function openBoard(page: Page) {
   await page.emulateMedia({ colorScheme: 'dark' });
   // Wide enough for the whole board.
   await page.setViewportSize({ width: 1600, height: 900 });
-  // On livedocuments, not This Browser: seedTab writes the board through the api.
+  // On livedocuments, not Offline: seedTab writes the board through the api.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);

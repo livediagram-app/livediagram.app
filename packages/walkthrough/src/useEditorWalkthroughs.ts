@@ -2,7 +2,7 @@
 
 // The walkthroughs as a canvas editor mounts them (liveworkspace/docs/specs/006-media/walkthroughs.md "One package,
 // four apps"): the editor hands in its own facts, this says where walkthroughs fit and binds the host. Off (no
-// Tools row, no request) in an embed, the workbench frame, This Browser, a tab-scoped link, on a phone and until the
+// Tools row, no request) in an embed, the workbench frame, Offline, a tab-scoped link, on a phone and until the
 // item is up.
 
 import { selectionIds, type SelectionStore } from '@liveworkspace/workbench/lib/selection-store';

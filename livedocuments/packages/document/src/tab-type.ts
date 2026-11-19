@@ -2,7 +2,7 @@
 // look and settings. Re-exported from the package root (./index). Type-only imports, so nothing here
 // exists at runtime.
 import type { TagColour } from './tag-colours';
-import type { Page, PageArrangement, PageOrientation } from './page';
+import type { Page, PageArrangement, PageBackground, PageOrientation } from './page';
 import type { ArticleFlow } from './article-flow';
 import type { Layer } from './layers';
 import type { Finish } from './finish';
@@ -52,6 +52,10 @@ export type Tab = {
   // keyframes; ignored by the static patterns. The canvas Speed slider
   // (shown only while an animated pattern is active) writes it.
   backgroundAnimationSpeed?: number;
+  // The background every new page starts on (docs/specs/007-editor/pages-mode.md "A new page's background", set in
+  // Tab Style's New Page Background): a fill and a pattern, never a picture. Absent, a new page carries over the
+  // page before it, and a first page takes its kind's theme default. Read via `newPageBackgroundOf`.
+  newPageBackground?: PageBackground;
   // Selected preset theme name (see apps/editor/lib/themes.ts). Setting
   // a theme via the palette repaints every existing element on the tab
   // to match (sticky notes keep their amber palette). Newly added

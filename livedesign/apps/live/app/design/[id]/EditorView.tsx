@@ -25,7 +25,11 @@ import type { SheetLinkEvent } from '@liveworkspace/workbench/components/sheet-l
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
+import { API_BASE } from '@/lib/api-client';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
+import { useCommunityState } from '@/lib/community-state-store';
+import { designIsPublic } from '@/lib/community-public';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 
@@ -44,6 +48,8 @@ import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { useIsOfflineDesign } from '@/hooks/persistence/useIsOfflineDesign';
+import { useOfflineConversions } from '@/hooks/persistence/useOfflineConversion';
+import { useVisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
@@ -103,7 +109,7 @@ const CommunityBar = dynamic(
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-design/offline-mode.md): a design saved only in this browser. Drives the
-  // "This Browser" header badge and hides server-only actions (Share).
+  // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDesign(ctx.designId);
   // Snapshots (docs/specs/013-workspace/snapshots.md): the footer's button and dialog, for an Editor of the whole item.
   const snapshotsDoor = useEditorSnapshotsDoor({
@@ -189,6 +195,15 @@ export function EditorView() {
     community: sessionCommunity !== null && !sessionCommunity.ownDesignId,
     makeCopy,
   });
+  // The Share button's Public colour follows the design's Community post (docs/specs/025-community/community.md
+  // "Publishing"); the Community's switch is asked only while there is a listed post, and never in an embed.
+  const communityState = useCommunityState(designId);
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
+  const headerCommunity = designIsPublic({
+    communityOn,
+    ownPostState: communityState,
+    communitySession: sessionCommunity !== null,
+  });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
 
@@ -269,7 +284,42 @@ export function EditorView() {
     selectTab,
     selectionStore: ctx.selectionStore,
   });
-  const header = editorViewHeader(ctx);
+  // The Share legend's Offline stop takes the design offline, after Take Offline's confirm, for the person whose
+  // Explorer menu would offer it: one who may share it (owner or joined team member), not through a link or the
+  // Community, and not already offline (hooks/persistence/useOfflineItemMenu.tsx).
+  const offlineOwnerId =
+    ctx.selfParticipant?.id === 'self' ? null : (ctx.selfParticipant?.id ?? null);
+  const { takeOffline, syncToCloud } = useOfflineConversions(offlineOwnerId);
+  const onTakeOffline =
+    canShareDesign &&
+    !isOffline &&
+    !sessionShareCode &&
+    !sessionCommunity &&
+    offlineOwnerId &&
+    designId
+      ? () => void takeOffline({ id: designId, name: ctx.designName?.trim() || 'Untitled design' })
+      : undefined;
+  // Its other stops (useVisibilityActions), for the same person: Private syncs an offline design, Team opens the
+  // Explorer panel's Change Folder on it, Everyone opens Share on the Community tab (Passes where the Community is off).
+  const visibilityActions = useVisibilityActions({
+    manage: Boolean(
+      canShareDesign && !sessionShareCode && !sessionCommunity && offlineOwnerId && designId,
+    ),
+    offline: isOffline,
+    team: !!ctx.designTeamId,
+    community: !!headerCommunity,
+    sync: designId
+      ? () => void syncToCloud({ id: designId, name: ctx.designName?.trim() || 'Untitled design' })
+      : undefined,
+    openShare: () => ctx.setShareDialogOpen(true),
+    openCommunity: () => ctx.openShareOn('app'),
+  });
+  const header = editorViewHeader(ctx, {
+    isOffline,
+    headerCommunity,
+    onTakeOffline,
+    visibilityActions,
+  });
   const footer = editorViewFooter(ctx, {
     isOffline,
     selectTab,

@@ -6,7 +6,7 @@ import { ItemPanelMenu } from './ItemPanelMenu';
 import { ItemRepeatLine, browserTimeZone, useItemRepeat } from './ItemRepeatLine';
 
 // docs/specs/026-plan/items.md "Repeating cards": the Details line names the rule and its next day; an Editor edits
-// and stops it there or from the ⋯ menu; a plan in This Browser says it makes none.
+// and stops it there or from the ⋯ menu; a plan kept Offline says it makes none.
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 let offline = false;
@@ -52,7 +52,7 @@ describe('ItemRepeatLine', () => {
     expect(screen.queryByRole('button')).toBeNull();
   });
 
-  it('names next year, an ended rule and a plan in This Browser', () => {
+  it('names next year, an ended rule and a plan kept Offline', () => {
     render(
       <ItemRepeatLine
         rule={{ every: 'month', date: 31, from: '2026-12-31', timeZone: 'Europe/London' }}
@@ -179,7 +179,7 @@ describe('useItemRepeat', () => {
     expect(screen.queryByRole('menuitem', { name: /Repeat/ })).toBeNull();
   });
 
-  it('offers no Repeat in This Browser, and says a rule from before makes none', () => {
+  it('offers no Repeat kept Offline, and says a rule from before makes none', () => {
     offline = true;
     render(<Harness item={card({ repeat: { ...RULE } })} canSet onSave={vi.fn()} />);
     expect(screen.getByText('Repeats only in plans saved to your account')).toBeTruthy();

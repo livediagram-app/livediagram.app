@@ -10,7 +10,7 @@ import {
 } from './AutomationsContext';
 
 // A template's starter rules made once the plan can hold them (docs/specs/026-plan/plan-templates.md "Starter
-// rules"): a signed-in Editor's cloud plan gets them; a plan in This Browser or a guest's drops them for good.
+// rules"): a signed-in Editor's cloud plan gets them; a plan kept Offline or a guest's drops them for good.
 const makeStarterRules = vi.fn(async () => {});
 vi.mock('@/components/plan/start/describe-plan/starter-rules-client', () => ({
   STARTER_RULES_FAILED: 'failed',
@@ -87,7 +87,7 @@ describe('PendingStarterRules', () => {
     await waitFor(() => expect(toast.error).toHaveBeenCalledWith('failed'));
   });
 
-  it('keeps the kind with a plan in This Browser, for its sync to make', async () => {
+  it('keeps the kind with a plan kept Offline, for its sync to make', async () => {
     markPendingStarterRules('t1', 'kanban');
     render(<PendingStarterRules tabId="t1" projectId="p" offline />, {
       wrapper: wrap(null, { open: () => {}, offline: true }),
@@ -100,7 +100,7 @@ describe('PendingStarterRules', () => {
     });
   });
 
-  it('keeps nothing in This Browser while no project is open', async () => {
+  it('keeps nothing Offline while no project is open', async () => {
     markPendingStarterRules('t1', 'kanban');
     render(<PendingStarterRules tabId="t1" projectId={null} offline />, {
       wrapper: wrap(null, { open: () => {}, offline: true }),
@@ -109,7 +109,7 @@ describe('PendingStarterRules', () => {
     expect(offlineSaveStarterRules).not.toHaveBeenCalled();
   });
 
-  it('says so when This Browser can’t keep it', async () => {
+  it('says so when Offline can’t keep it', async () => {
     offlineSaveStarterRules.mockRejectedValueOnce(new Error('idb'));
     markPendingStarterRules('t1', 'kanban');
     render(<PendingStarterRules tabId="t1" projectId="p" offline />, {

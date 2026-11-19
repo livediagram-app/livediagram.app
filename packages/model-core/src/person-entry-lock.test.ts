@@ -204,7 +204,7 @@ describe('dots', () => {
   });
 });
 
-// A create keeps only its creator's entries: their collab key's, or a browser key's (what a This Browser canvas
+// A create keeps only its creator's entries: their collab key's, or a browser key's (what an offline canvas
 // records them under, naming nobody), never another collab key's.
 describe('creates', () => {
   const OLD = '6f2c1d3e-9a7b-4c5d-8e1f-0a2b3c4d5e6f';

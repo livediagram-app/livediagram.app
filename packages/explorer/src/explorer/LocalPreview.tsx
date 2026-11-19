@@ -1,6 +1,6 @@
 'use client';
 
-// A This Browser item's picture, on its own so an editor's thumbnail can draw it without the rest of the Explorer
+// An offline item's picture, on its own so an editor's thumbnail can draw it without the rest of the Explorer
 // (`@liveworkspace/explorer/local-preview`).
 
 import { memo, type CSSProperties } from 'react';
@@ -8,7 +8,7 @@ import type { App } from '@liveworkspace/index-client';
 import { siteOf } from '../words';
 
 /**
- * A This Browser item's picture where a server item shows its snapshot (none leaves the browser), tinted in the accent
+ * An offline item's picture where a server item shows its snapshot (none leaves the browser), tinted in the accent
  * of the app that owns it on a wash of that accent. It says "only on this device" by itself, with no pill on it
  * (owner, 2026-11-17): a browser window holding the item, a crossed-out cloud on its corner. In a small box (an
  * `iconSize` under 18, a row's square) it is the window and the crossed cloud as one glyph. Fills its box; the caller

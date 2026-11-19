@@ -38,31 +38,27 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `../packages/e2e-kit/src/perf/interactive.ts`                          | `interactiveMs`: the open row's quiet-window rule over long tasks and long frames (pure)                                                                                                                                                                                                           |
 | `apps/editor/e2e/perf/reference-board.ts`                              | `buildReferenceBoard(seed, count)`                                                                                                                                                                                                                                                                 |
 | `../packages/e2e-kit/src/perf/budget.ts`                               | `evaluateBudget`, `budgetTable`, `medianOfRuns` and the budget constants, over the tabs each editor names (pure, shared)                                                                                                                                                                           |
-| `../packages/e2e-kit/src/perf/budget-report.ts`                        | `budgetIssueTitle`, `budgetIssueAction`, `budgetIssueComment`: what the nightly run does with the issue (shared)                                                                                                                                                                                   |
-| `../packages/e2e-kit/src/perf/nightly.mjs`                             | The nightly run's I/O: `previous` and `report <product>`, run from the editor's folder (shared)                                                                                                                                                                                                    |
 | `../packages/e2e-kit/src/perf/calibrate.ts`                            | `benchmarkInPage`, `calibratedThrottle`, `REFERENCE_BENCH_MS`, `TARGET_SLOWDOWN`                                                                                                                                                                                                                   |
 | `../packages/e2e-kit/src/perf/trace-tasks.ts`                          | `mainThreadTasks`: the renderer main thread's task durations from a trace                                                                                                                                                                                                                          |
 | `../packages/e2e-kit/src/perf/canvas-probe.ts`                         | `runCanvasProbe`: calibrates, opens the board in fresh contexts, writes the report (shared)                                                                                                                                                                                                        |
 | `../packages/e2e-kit/src/perf/canvas-gestures.ts`                      | `measureZoom`: the still board and each gesture, untraced runs and one traced (shared)                                                                                                                                                                                                             |
 | `apps/editor/e2e/perf/canvas.perf.ts`                                  | The probe's binding: the tabs, seed, sign-in, editor path and canvas chrome it hands `runCanvasProbe`                                                                                                                                                                                              |
-| root `.github/workflows/canvas-perf.yml`                               | The nightly run and the budget issue                                                                                                                                                                                                                                                               |
 | `../packages/workbench/src/lib/tab-style-ease.ts`                      | `BUSY_CANVAS_ELEMENTS`, `canvasIsBusy(count)` (shared by every editor): when a Tab Style change eases the canvas only                                                                                                                                                                              |
 
 ## Domain and naming
 
-| Term             | Identifier                                     | Meaning                                                                                       |
-| ---------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Gesture          | `CanvasGesture`                                | `'pan' \| 'zoom' \| 'move' \| 'resize' \| 'reshape' \| 'marquee' \| 'stroke' \| 'erase'`      |
-| At rest          | `'idle'`                                       | No gesture open                                                                               |
-| Element gesture  | `ELEMENT_GESTURES`                             | `move`, `resize`, `reshape`, `stroke`, `erase`: the gestures that change elements every frame |
-| Selection moving | `selectionMoving(g)`                           | `g` is `move`, `resize` or `reshape`                                                          |
-| Element view     | `BoxedElementView`, `ArrowView`                | The memoised per-element components                                                           |
-| Element grid     | `ElementGrid`                                  | The spatial index of boxed element bounds                                                     |
-| Arrow frame      | `ArrowViewFrame`                               | An arrow's resolved `from`, `to`, `pathD`, `curveAnchors`, `curveControl`, `elbowPoint`       |
-| Holes            | `holes: Rect[]`                                | The route-behind rects punched from an arrow                                                  |
-| Reference board  | `buildReferenceBoard`                          | The seeded synthetic board                                                                    |
-| Budget row       | `BudgetRow`                                    | One line of the spec's budget table, with its measured value and verdict                      |
-| Budget issue     | title `Canvas performance budget: liveplanner` | The one GitHub issue the nightly run opens, comments on and closes                            |
+| Term             | Identifier                      | Meaning                                                                                       |
+| ---------------- | ------------------------------- | --------------------------------------------------------------------------------------------- |
+| Gesture          | `CanvasGesture`                 | `'pan' \| 'zoom' \| 'move' \| 'resize' \| 'reshape' \| 'marquee' \| 'stroke' \| 'erase'`      |
+| At rest          | `'idle'`                        | No gesture open                                                                               |
+| Element gesture  | `ELEMENT_GESTURES`              | `move`, `resize`, `reshape`, `stroke`, `erase`: the gestures that change elements every frame |
+| Selection moving | `selectionMoving(g)`            | `g` is `move`, `resize` or `reshape`                                                          |
+| Element view     | `BoxedElementView`, `ArrowView` | The memoised per-element components                                                           |
+| Element grid     | `ElementGrid`                   | The spatial index of boxed element bounds                                                     |
+| Arrow frame      | `ArrowViewFrame`                | An arrow's resolved `from`, `to`, `pathD`, `curveAnchors`, `curveControl`, `elbowPoint`       |
+| Holes            | `holes: Rect[]`                 | The route-behind rects punched from an arrow                                                  |
+| Reference board  | `buildReferenceBoard`           | The seeded synthetic board                                                                    |
+| Budget row       | `BudgetRow`                     | One line of the spec's budget table, with its measured value and verdict                      |
 
 "Drag" in the spec maps to the gestures `move` and `resize`; arrow handle drags are `reshape`.
 
@@ -362,27 +358,10 @@ OPEN_QUIET_MS`), up to `OPEN_SETTLE_TIMEOUT_MS` (60,000; a harness error past it
 - A budget miss never fails the test; a harness error (seeding, the stack, a missing element)
   does.
 
-### The nightly run
+### Running it
 
-- The root `.github/workflows/canvas-perf.yml`: `schedule` at `30 2 * * *` (D67) and `workflow_dispatch`; permissions
-  `contents: read`, `issues: write`, `actions: read`; one run at a time, with one job per product (liveplanner's among them).
-- `../packages/e2e-kit/src/perf/nightly.mjs previous`, run from `apps/editor`, prints the head SHA of the last successful run of this
-  workflow on `main` (the REST API, `GITHUB_API_URL`). On a scheduled run that SHA equals
-  `github.sha` → the summary says nothing is new and every later step is skipped.
-- Otherwise: Playwright's container image, `pnpm install`, a check that the workflow's image matches the locked
-  Playwright version, `next build` of
-  `apps/editor`, `pnpm --filter @liveplanner/editor perf:canvas`, then `nightly.mjs report liveplanner`, and the
-  `test-results/perf` folder (report, gzipped traces, screenshots) uploaded as `canvas-perf-liveplanner` with
-  `retention-days: 14`.
-- `nightly.mjs report` writes the table to `$GITHUB_STEP_SUMMARY`, finds the open issue titled
-  `Canvas performance budget: liveplanner` (by title; no label), and acts on `budgetIssueAction`
-  (`budget-report.ts`): a miss opens it or comments on it, an all-pass run comments "Back within
-  budget at <sha>" and closes it. `budgetIssueComment` carries the table,
-  `git log --oneline <previous-sha>..<sha>` and the run's link.
-- `onMain` is `GITHUB_REF === 'refs/heads/main'`. A run started by hand on another branch
-  (`gh workflow run canvas-perf.yml --ref <branch>`) writes the same job summary and artefact, and
-  `budgetIssueAction` returns `none`, so the issue and its baseline stay `main`'s. The run logs
-  `[canvas-perf] <misses> of <rows> over budget on <ref>; issue: <action>`.
+- By hand only: `pnpm --filter @liveplanner/editor perf:canvas` against a local build, which writes the table,
+  report, traces and screenshots to `apps/editor/test-results/perf`. No workflow runs it.
 
 ## Interfaces and contracts
 
@@ -454,11 +433,6 @@ export type Measurement<Tab extends string = string> = {
 export type BudgetRow<Tab extends string = string> = Measurement<Tab> & { rule: string; measured: string; pass: boolean };
 export function evaluateBudget<Tab extends string>(m: readonly Measurement<Tab>[]): BudgetRow<Tab>[];
 export function budgetTable(rows: readonly BudgetRow<string>[]): string;
-
-// ../packages/e2e-kit/src/perf/budget-report.ts
-export function budgetIssueTitle(product: string): string; // 'Canvas performance budget: liveplanner'
-export function budgetIssueAction(run: { misses: number; issueOpen: boolean; onMain: boolean }): 'open' | 'comment' | 'close' | 'none';
-export function budgetIssueComment(report: BudgetIssueReport): string;
 ```
 
 - `queryElementGrid` with a rect of non-finite or negative size returns the oversize list only and
@@ -485,7 +459,7 @@ label's render object while `sameLabelRender` holds.
 
 - Nothing is persisted: the gesture store, the grid, the settled elements and the zoom context
   are session state. The reference board is never stored outside the probe's own e2e database.
-- The nightly artefact is retained 14 days; the budget issue is the only lasting record.
+- The probe's report, traces and screenshots stay in `test-results/perf` on the machine that ran it.
 
 ## Errors and edge cases
 
@@ -502,15 +476,11 @@ label's render object while `sameLabelRender` holds.
 | A hidden layer                                    | Hidden elements stay out of the grid (`drawnElements`)                                    |
 | The selection is deleted mid-drag by a peer       | The drag ends through its existing path, ending the gesture                               |
 | Reduced motion                                    | The toolbar fade is the existing micro transition, which reduced motion already flattens  |
-| Probe: seeding or the stack fails                 | The test fails; the workflow fails as an error, not as a budget miss; no issue is touched |
-| Nightly: the issue API fails                      | The step fails visibly; the summary still carries the table                               |
-| Nightly: no previous successful run               | No skip; the run proceeds                                                                 |
+| Probe: seeding or the stack fails                 | The test fails as an error, not as a budget miss                                          |
 
 ## Security and trust
 
-- The workflow's permissions are `contents: read`, `issues: write`, `actions: read`; no secrets
-  beyond `GITHUB_TOKEN`. The probe's stack is local to the runner with test-only keys, as the e2e
-  stack.
+- The probe needs no secrets; its stack is local, with test-only keys, as the e2e stack.
 - The reference board is synthetic; no user content enters a report.
 
 ## Performance and limits
@@ -556,7 +526,6 @@ label's render object while `sameLabelRender` holds.
 - `[element-grid] bad query rect` (debug) `{ rect }`, once per session.
 - `[canvas-gesture] begin` / `end` (debug) `{ kind, open }`, behind the `canvas-gesture` scope.
 - `[map] redraw` (debug) `{ reason: 'gesture-end' | 'change' | 'trailing', count }`.
-- The nightly job summary, artefact and budget issue.
 
 ## Testing
 
@@ -581,32 +550,30 @@ label's render object while `sameLabelRender` holds.
 | Nothing shown over the page restyles the editor  | `useBodyEndAnchor.test.tsx` (workbench): the anchor stays last as an overlay comes and goes, and leaves with the editor                                                                                                                                                                         |
 | A press on the canvas selects no text            | `useNoCanvasTextSelection.test.tsx` (workbench): cancelled on the board, left alone in editors, fields and `select-text`                                                                                                                                                                        |
 | A sweep adds and removes no element              | `MarqueeRect.test.tsx` (workbench): one node through a sweep, hidden between                                                                                                                                                                                                                    |
-| The budget holds                                 | The nightly probe                                                                                                                                                                                                                                                                               |
+| The budget holds                                 | `pnpm perf:canvas`, by hand                                                                                                                                                                                                                                                                     |
 | A busy canvas eases the canvas, not its parts    | `tab-style-ease.test.ts` (workbench); `canvas-motion.test.ts`: the parts' transition is gated on `:not([data-canvas-busy])` and `Canvas` sets it                                                                                                                                                |
 
 ## Constants and configuration
 
-| Constant                             | Value        | Provenance                                         | Safe range                       |
-| ------------------------------------ | ------------ | -------------------------------------------------- | -------------------------------- |
-| `WHEEL_SETTLE_MS`                    | 150          | D62                                                | 100–300                          |
-| `ELEMENT_GRID_CELL`                  | 256          | D63                                                | 128–1024                         |
-| `ELEMENT_GRID_MAX_CELLS`             | 64           | D64                                                | 16–1024                          |
-| `REFERENCE_SEED`                     | 1            | D65                                                | Any integer                      |
-| `REFERENCE_COUNT`                    | 1000         | Spec                                               | Spec-fixed                       |
-| `REFERENCE_AREA`                     | 5760 × 2700  | Spec: four 1440 px screens wide, three 900 px high | Spec-fixed                       |
-| `TARGET_SLOWDOWN`                    | 4            | Spec                                               | Spec-fixed                       |
-| `REFERENCE_BENCH_MS`                 | 13.6         | Measured on the reference machine, quiet (D70)     | Re-measured only with the budget |
-| `LONG_TASK_MS`                       | 50           | Spec                                               | Spec-fixed                       |
-| `DRAG_MEDIAN_FRAME_MS`               | 33           | Spec                                               | Spec-fixed                       |
-| `SELECT_TASK_MS`                     | 100          | Spec                                               | Spec-fixed                       |
-| `OPEN_INTERACTIVE_MS`                | 3000         | Spec                                               | Spec-fixed                       |
-| `OPEN_QUIET_MS`                      | 500          | D68                                                | Spec-fixed with D68              |
-| `OPEN_POLL_MS`                       | 1000         | D80                                                | 250–2000                         |
-| `OPEN_SETTLE_TIMEOUT_MS`             | 60000        | D80                                                | 30000–120000                     |
-| `IDLE_WORK_MS`                       | 5            | D66                                                | 0–16                             |
-| `schedule.cron` (`canvas-perf.yml`)  | `30 2 * * *` | D67                                                | Any off-peak time                |
-| `retention-days` (`canvas-perf.yml`) | 14           | Spec                                               | Spec-fixed                       |
-| `BUSY_CANVAS_ELEMENTS`               | 20           | Spec (D129: measured eased restyle per element)    | 10–60                            |
+| Constant                 | Value       | Provenance                                         | Safe range                       |
+| ------------------------ | ----------- | -------------------------------------------------- | -------------------------------- |
+| `WHEEL_SETTLE_MS`        | 150         | D62                                                | 100–300                          |
+| `ELEMENT_GRID_CELL`      | 256         | D63                                                | 128–1024                         |
+| `ELEMENT_GRID_MAX_CELLS` | 64          | D64                                                | 16–1024                          |
+| `REFERENCE_SEED`         | 1           | D65                                                | Any integer                      |
+| `REFERENCE_COUNT`        | 1000        | Spec                                               | Spec-fixed                       |
+| `REFERENCE_AREA`         | 5760 × 2700 | Spec: four 1440 px screens wide, three 900 px high | Spec-fixed                       |
+| `TARGET_SLOWDOWN`        | 4           | Spec                                               | Spec-fixed                       |
+| `REFERENCE_BENCH_MS`     | 13.6        | Measured on the reference machine, quiet (D70)     | Re-measured only with the budget |
+| `LONG_TASK_MS`           | 50          | Spec                                               | Spec-fixed                       |
+| `DRAG_MEDIAN_FRAME_MS`   | 33          | Spec                                               | Spec-fixed                       |
+| `SELECT_TASK_MS`         | 100         | Spec                                               | Spec-fixed                       |
+| `OPEN_INTERACTIVE_MS`    | 3000        | Spec                                               | Spec-fixed                       |
+| `OPEN_QUIET_MS`          | 500         | D68                                                | Spec-fixed with D68              |
+| `OPEN_POLL_MS`           | 1000        | D80                                                | 250–2000                         |
+| `OPEN_SETTLE_TIMEOUT_MS` | 60000       | D80                                                | 30000–120000                     |
+| `IDLE_WORK_MS`           | 5           | D66                                                | 0–16                             |
+| `BUSY_CANVAS_ELEMENTS`   | 20          | Spec (D129: measured eased restyle per element)    | 10–60                            |
 
 ## Defaults ledger
 

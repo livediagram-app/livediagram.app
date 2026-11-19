@@ -273,7 +273,7 @@ export function EmailIntakeDialog({
             steps={[
               'Turn it on to get the board’s own address.',
               'Forward or send an email to it.',
-              'The subject becomes the title, the message the description, pictures attached.',
+              'The subject becomes the title, the message the description, pictures and PDFs attached.',
             ]}
             data="email-intake"
           />

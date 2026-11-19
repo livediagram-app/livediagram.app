@@ -41,7 +41,7 @@ import {
   withBoardTaking,
 } from '@liveplanner/templates';
 
-// Publish as Roadmap's suggestion form: an Idea (the card's title) and its Details, as a Blank form takes its board's
+// Publish Roadmap's suggestion form: an Idea (the card's title) and its Details, as a Blank form takes its board's
 // type (so planFormStart writes no type and makes no board).
 const SUGGESTION_STARTER: FormStarter = {
   ...formStarter('blank'),
@@ -66,7 +66,7 @@ export type FormActions = FormDestinationActions & {
   // New Form on a board's cog: a Blank form on a new Form tab after the board's, its responses going to that board,
   // opened.
   newFormFor: (boardElementId: string) => void;
-  // Publish as Roadmap's Create Suggestion Form (docs/specs/026-plan/public-roadmap.md "Suggest an Idea"): an Idea and
+  // Publish Roadmap's Create Suggestion Form (docs/specs/026-plan/public-roadmap.md "Suggest an Idea"): an Idea and
   // Details form on a new Form tab after the board's, its cards of `typeId` landing in `status` (a hidden column), not
   // opened, so the roadmap's page stays. Its new tab's id, or null when the board's tab can't take it.
   newSuggestionForm?: (input: {

@@ -13,7 +13,7 @@ import { isOfflineId } from '../offline/offline-store';
 import { fetchItemHistory } from './item-history';
 
 // A card's history on the api (docs/specs/026-plan/items.md "History"): one card's route, a tab-scoped session's tab,
-// and a This Browser plan, which keeps none and is never asked.
+// and an offline plan, which keeps none and is never asked.
 const SCOPE = { ownerId: 'me', projectId: 'p 1', shareCode: null, tabId: null };
 
 beforeEach(() => {
@@ -33,7 +33,7 @@ describe('fetchItemHistory', () => {
     ]);
   });
 
-  it('asks nothing of a This Browser plan', async () => {
+  it('asks nothing of an offline plan', async () => {
     vi.mocked(isOfflineId).mockResolvedValue(true);
     expect(await fetchItemHistory(SCOPE, 'c1')).toBe('offline');
     expect(apiFetch).not.toHaveBeenCalled();

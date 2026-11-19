@@ -1,7 +1,7 @@
-# Blueprint: This Browser, a Space
+# Blueprint: Offline, a Space
 
-Spec: [one-explorer.md "This Browser, a Space"](../one-explorer.md#this-browser-a-space) and
-[one-explorer-contracts.md "This Browser's list"](../one-explorer-contracts.md#this-browsers-list-in-the-browser-never-the-index).
+Spec: [one-explorer.md "Offline, a Space"](../one-explorer.md#offline-a-space) and
+[one-explorer-contracts.md "Offline's list"](../one-explorer-contracts.md#offlines-list-in-the-browser-never-the-index).
 
 ## Files
 

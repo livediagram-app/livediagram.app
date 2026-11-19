@@ -1,6 +1,6 @@
 // The Inbox as a list and a reading pane: every kind of row newest first under its date divider, the filter dropdown and
 // its counts (kept per viewer), choosing a row and reading it, the keys, the phone's list-to-pane-to-Back, the verbs
-// the host can carry out (and only those, with Open always there), the host's This Browser rows, the re-read on
+// the host can carry out (and only those, with Open always there), the host's Offline rows, the re-read on
 // returning to the tab, and the telemetry it reports.
 import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -731,7 +731,7 @@ describe('the verbs', () => {
 });
 
 describe('reading', () => {
-  it('merges the host’s This Browser rows, and lists none of them when its store fails', async () => {
+  it('merges the host’s Offline rows, and lists none of them when its store fails', async () => {
     const index = createFakeIndex();
     index.inbox.threads.push(thread({ latestAt: NOW - 2 * MIN }));
     const localRows = vi.fn().mockResolvedValue({
@@ -742,7 +742,7 @@ describe('reading', () => {
     });
     const { unmount } = renderInbox(index, { inbox: { localRows } });
     const local = await screen.findByRole('option', { name: /Offline plan/ });
-    expect(local.querySelector('[data-this-browser]')!.textContent).toContain('Browser Storage');
+    expect(local.querySelector('[data-this-browser]')!.textContent).toContain('Offline');
     // Newest first, whichever side it came from.
     expect(options()[0]).toBe(local);
     expect(options()[1]!.querySelector('[data-this-browser]')).toBeNull();

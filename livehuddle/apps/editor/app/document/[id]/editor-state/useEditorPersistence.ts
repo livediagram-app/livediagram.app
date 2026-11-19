@@ -151,7 +151,7 @@ export function useEditorPersistence({
   // the last-saved mirror refs above are seeded by the hydration effect.
   // The last seen copy follows the open document (docs/specs/006-document/offline-mode.md "Warm open of a cloud document"):
   // its name and tab list as they change, its first tab as each save of it lands. Only a cloud document the open kept
-  // a copy of is followed; never an embed or a This Browser document.
+  // a copy of is followed; never an embed or an offline document.
   const lastSeen = useLastSeenFollow({
     follower: lastSeenCopies,
     reader: selfParticipant.id,
@@ -276,7 +276,7 @@ export function useEditorPersistence({
     announceRoomColour(documentId ? roomRef.current : null, color),
   );
   useEffect(() => {
-    // The placeholder never writes the participant record: a document in This Browser opens before the reader
+    // The placeholder never writes the participant record: a document kept Offline opens before the reader
     // is known (docs/specs/006-document/offline-mode.md "Instant open"), and 'self' is nobody's row.
     if (!hydrated || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;

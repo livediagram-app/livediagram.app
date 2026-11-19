@@ -61,7 +61,7 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
 async function openBlank(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  // On livedocuments, not This Browser: the prompt answers what the api's responses say.
+  // On livedocuments, not Offline: the prompt answers what the api's responses say.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);

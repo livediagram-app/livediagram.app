@@ -41,3 +41,12 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## tab-style-pages
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Performance and limits
+- [x] Testing

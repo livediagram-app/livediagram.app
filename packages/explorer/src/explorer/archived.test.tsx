@@ -310,7 +310,7 @@ describe('Change Folder', () => {
   });
 });
 
-describe('Browser Storage', () => {
+describe('Offline', () => {
   it('keeps an archive mark through the app’s own writes, and drops it on the way out', () => {
     writeThisBrowser('liveplanner', [local()]);
     setThisBrowserArchived('liveplanner', 'local-1', 9_000);
@@ -331,10 +331,10 @@ describe('Browser Storage', () => {
     expect(readThisBrowser('liveplanner')[0]!.archivedAt).toBeUndefined();
   });
 
-  it('lists an archived one in Archived with its pill, closed, and moves it back to This Browser', async () => {
+  it('lists an archived one in Archived with its pill, closed, and moves it back to Offline', async () => {
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'Browser Storage' });
+    const group = await screen.findByRole('region', { name: 'Offline' });
     expect(group.querySelector('[data-this-browser]')).toBeTruthy();
     expect(screen.queryByText('Nothing Archived')).toBeNull();
     fireEvent.click(within(group).getByRole('button', { name: /^Local 1/ }));
@@ -342,12 +342,12 @@ describe('Browser Storage', () => {
     expect(within(dialog).getByText('“⁨Local 1⁩” is archived')).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Change Folder' }));
     const move = await screen.findByRole('dialog', { name: 'Move to folder' });
-    // Not signed in to sync here: This Browser and Archived alone.
+    // Not signed in to sync here: Offline and Archived alone.
     expect(within(move).queryByRole('button', { name: /My Work/ })).toBeNull();
-    fireEvent.click(within(move).getByRole('button', { name: /Browser Storage/ }));
+    fireEvent.click(within(move).getByRole('button', { name: /Offline/ }));
     fireEvent.click(within(move).getByRole('button', { name: 'Move Here' }));
     expect(isThisBrowserArchived('liveplanner', 'local-1')).toBe(false);
-    expect(await screen.findByText('Moved “⁨Local 1⁩” to Browser Storage.')).toBeTruthy();
+    expect(await screen.findByText('Moved “⁨Local 1⁩” to Offline.')).toBeTruthy();
   });
 
   it('renames one archived here in the app’s store and the list, without opening it', async () => {
@@ -368,7 +368,7 @@ describe('Browser Storage', () => {
     vi.stubGlobal('indexedDB', idb);
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'Browser Storage' });
+    const group = await screen.findByRole('region', { name: 'Offline' });
     fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
     const input = within(group).getByRole('textbox', { name: 'Rename Local 1' });
     fireEvent.change(input, { target: { value: 'Old Launch Plan' } });
@@ -387,7 +387,7 @@ describe('Browser Storage', () => {
     vi.stubGlobal('indexedDB', undefined);
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'Browser Storage' });
+    const group = await screen.findByRole('region', { name: 'Offline' });
     fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
     const input = within(group).getByRole('textbox', { name: 'Rename Local 1' });
     fireEvent.change(input, { target: { value: 'Other' } });
@@ -400,7 +400,7 @@ describe('Browser Storage', () => {
   it('keeps the name when a rename here is cancelled', async () => {
     writeThisBrowser('liveplanner', [local({ archivedAt: 9_000 })]);
     page(createFakeIndex(), { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
-    const group = await screen.findByRole('region', { name: 'Browser Storage' });
+    const group = await screen.findByRole('region', { name: 'Offline' });
     fireEvent.click(within(group).getByRole('button', { name: 'Rename Local 1' }));
     fireEvent.keyDown(within(group).getByRole('textbox', { name: 'Rename Local 1' }), {
       key: 'Escape',
@@ -415,7 +415,7 @@ describe('Browser Storage', () => {
     index.fail.set('listItems', new IndexError(500, 'unknown'));
     page(index, { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })] });
     expect(await screen.findByText(/Couldn’t load this list/)).toBeTruthy();
-    expect(await screen.findByRole('region', { name: 'Browser Storage' })).toBeTruthy();
+    expect(await screen.findByRole('region', { name: 'Offline' })).toBeTruthy();
   });
 
   it('syncs one into the account from Change Folder, its mark cleared first', async () => {
@@ -425,7 +425,7 @@ describe('Browser Storage', () => {
       index.items.push(makeItem(9, { id: 'local-1', title: 'Local 1' }));
     });
     page(index, { kind: 'archived' }, { items: [local({ archivedAt: 9_000 })], sync });
-    const group = await screen.findByRole('region', { name: 'Browser Storage' });
+    const group = await screen.findByRole('region', { name: 'Offline' });
     fireEvent.click(within(group).getByRole('button', { name: 'Change Folder: Local 1' }));
     const move = await screen.findByRole('dialog', { name: 'Move to folder' });
     fireEvent.click(within(move).getByRole('button', { name: /My Work/ }));
@@ -436,7 +436,7 @@ describe('Browser Storage', () => {
     await waitFor(() => expect(sync).toHaveBeenCalled());
   });
 
-  it('archives a live one from This Browser, and it leaves the list there', async () => {
+  it('archives a live one from Offline, and it leaves the list there', async () => {
     writeThisBrowser('liveplanner', [local()]);
     page(createFakeIndex(), { kind: 'offline' }, { items: [local()] });
     fireEvent.click(await screen.findByRole('button', { name: 'Move to Archived: Local 1' }));
@@ -444,7 +444,7 @@ describe('Browser Storage', () => {
     expect(await screen.findByText('Moved “⁨Local 1⁩” to Archived.')).toBeTruthy();
   });
 
-  it('leaves an archived one out of This Browser and its Trash group', async () => {
+  it('leaves an archived one out of Offline and its Trash group', async () => {
     page(
       createFakeIndex(),
       { kind: 'offline' },
@@ -458,6 +458,6 @@ describe('Browser Storage', () => {
     );
     expect(await screen.findByText('Local 2')).toBeTruthy();
     expect(screen.queryByText('Local 1')).toBeNull();
-    expect(row('Browser Storage (1 in Browser Storage)')).toBeTruthy();
+    expect(row('Offline (1 kept Offline)')).toBeTruthy();
   });
 });

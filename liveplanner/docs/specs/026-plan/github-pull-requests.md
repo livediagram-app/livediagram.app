@@ -107,7 +107,7 @@ route answers 404, and nothing logs an error. Pull Request fields still read and
 
 - **Who**: a signed-in Editor of the whole plan (the owner, the plan's team, a whole-plan Editor link), as the plan's
   webhooks are: never an API token, a workbench session, a guest, a Participant, a Viewer or a link to one tab. A
-  plan in Browser Storage has no connection (deliveries reach the server, not a browser).
+  plan kept Offline has no connection (deliveries reach the server, not a browser).
 - **Where**: the Automations screen's **GitHub** view ([Automations](automations.md#github-triggers)), reached from
   the screen's header, from the GitHub group of Pick a Trigger, and from a GitHub trigger's panel in the builder.
 - **How**: the GitHub view asks the api to start a connection, and the api answers the App's install page

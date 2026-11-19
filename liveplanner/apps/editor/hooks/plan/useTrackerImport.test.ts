@@ -327,7 +327,7 @@ describe('useTrackerImport: into a new plan', () => {
     expect(warn).toHaveBeenCalledWith('[tracker-import] new plan not deleted', expect.anything());
   });
 
-  it('deletes a guest’s new plan from This Browser when its cards fail', async () => {
+  it('deletes a guest’s new plan from Offline when its cards fail', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     offline.offlineWriteItem.mockRejectedValueOnce(new Error('quota'));
     const s = setup({ signedIn: false });
@@ -345,7 +345,7 @@ describe('useTrackerImport: into a new plan', () => {
     });
   });
 
-  it('keeps a guest’s new plan in This Browser', async () => {
+  it('keeps a guest’s new plan Offline', async () => {
     const s = setup({ signedIn: false });
     await s.tracker().importPlan(await planned(s, 'plan'), 'plan');
     expect(api.apiCreateProject).not.toHaveBeenCalled();

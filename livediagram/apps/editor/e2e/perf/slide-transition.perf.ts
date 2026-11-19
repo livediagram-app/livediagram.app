@@ -94,7 +94,7 @@ async function openDeck(
     viewport: VIEW,
     colorScheme: 'dark',
     reducedMotion,
-    // The test's own: `process.env.E2E_BASE_URL` is unset on the nightly run, and an undefined base URL
+    // The test's own: `process.env.E2E_BASE_URL` is unset in a plain `pnpm perf:canvas`, and an undefined base URL
     // overrode the config's, so every goto failed ("Cannot navigate to invalid URL") and the run with it.
     baseURL,
   });

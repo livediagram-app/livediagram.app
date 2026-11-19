@@ -122,7 +122,7 @@ palette section `UI·Opened·BpmnGroup` (counted in Palette Groups Opened).
 `packages/document/src/bpmn.test.ts`: vocabulary, kinds, sizes, the variant chain, the change rule, flows, mark
 geometry finite for every symbol, export markup, validation. Template kind lists and preview bounds cover the template.
 The section: `CategoryBar.test.tsx` (closed by default, open and closed remembered across a remount, storage that
-throws, the arrows stopping on the closed header), `category-flyout-groups.test.ts` (BPMN alone is optional, its key),
+throws, the arrows stopping on the closed header), `category-flyout-groups.test.ts` (Flowchart and BPMN alone are optional, their keys),
 `ToolbarPalette.test.tsx` (Search finds BPMN tiles while it is closed), and in workbench `useStoredOpen.test.tsx` and
 `AccordionSection.test.tsx`.
 

@@ -1,7 +1,7 @@
 # Public roadmap blueprint
 
 Derived from [public-roadmap.md](../public-roadmap.md) (Work Tracker 936): the roadmaps table, the managing routes,
-the public read and vote, the vote field and its sort, the editor's Publish as Roadmap dialog and the public page.
+the public read and vote, the vote field and its sort, the editor's Publish Roadmap dialog and the public page.
 
 ## Domain and naming
 

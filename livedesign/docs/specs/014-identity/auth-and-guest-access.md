@@ -166,7 +166,7 @@ livedesign holds no migration of its own; liveworkspace does it ([liveworkspace/
 
 Settings > Account > Delete Account deletes the whole account: the person's livedesign data and their **liveworkspace account**, which closes it in every liveworkspace app. Then it ends the session:
 
-The Settings row reads just "Permanently deletes your liveworkspace account and everything you own in every liveworkspace app." The dialog itself says more before anything else: it deletes the liveworkspace account and **everything the person owns in every liveworkspace app**, not only livedesign. It lists what goes (every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle, the Trash included; folders, settings and API tokens; teams they run alone), says it signs them out everywhere and can't be undone, and that designs in This Browser stay on the device. Closing the account purges every app's items through the index ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#closing-an-account)), so naming only this app's would understate it.
+The Settings row reads just "Permanently deletes your liveworkspace account and everything you own in every liveworkspace app." The dialog itself says more before anything else: it deletes the liveworkspace account and **everything the person owns in every liveworkspace app**, not only livedesign. It lists what goes (every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle, the Trash included; folders, settings and API tokens; teams they run alone), says it signs them out everywhere and can't be undone, and that designs kept Offline stay on the device. Closing the account purges every app's items through the index ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#closing-an-account)), so naming only this app's would understate it.
 
 1. **Confirm with a code emailed to the account.** After the person types their email, **Email Me a Code** (`POST /api/account/deletion-code`, [API](../015-api/api.md)) has the accounts Worker email a 6-digit code to the account's own address, the same kind of code that signs in ([liveworkspace/docs/specs/003-accounts/sign-in.md](../../../../liveworkspace/docs/specs/003-accounts/sign-in.md#closing-an-account)). The dialog then asks for it in the sign-in page's six boxes (`CodeDigits` from `@liveworkspace/ui`), with **Resend Code**, and **Delete Account** sends it with the delete. Being signed in is not enough on its own: someone at a machine left signed in can't delete the account without the inbox. The email box reads neutral while it is empty or still a correct start of the address, shows a rose border and “That isn’t your account’s email.” only once what is typed can no longer become it, and a green border once it matches, so a correct entry never reads as an error.
 2. **Check the code, delete the server data, then close the account** (`DELETE /api/account { code }`, [API](../015-api/api.md)). The worker first checks the code with the accounts Worker (`confirmDeletionCode` from `@liveworkspace/auth-client`) and deletes nothing unless it is right: no code is `400 code_required`, a wrong or expired one `403 invalid_code`, the third wrong one `403 too_many_attempts` (the code is gone; ask for a new one), too many tries a minute `429 rate_limited`. Then it removes designs, folders and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data), then asks the accounts Worker to close the account (`closeAccount` from `@liveworkspace/auth-client`: `POST /api/auth/delete-account` with this app's client credentials, the caller's access token and the code, which the accounts Worker checks again and spends). Closing it removes the account's sessions, its Google link, and every app's refresh tokens. The response clears the refresh cookie.
@@ -178,19 +178,19 @@ The emailed code is the step-up, and it is checked on the servers, by this app's
 
 ## Guest designs start local
 
-A guest's new design is **This Browser** by default ([Offline Mode](../006-design/offline-mode.md), [Save Locations](../006-design/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
+A guest's new design is **Offline** by default ([Offline Mode](../006-design/offline-mode.md), [Save Locations](../006-design/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
 
-**Why.** A guest cloud design belongs to the guest whose token this browser keeps in `localStorage`. Clearing site data loses that token, and with it every design under it: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A design in This Browser is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-design/offline-mode.md#instant-open)).
+**Why.** A guest cloud design belongs to the guest whose token this browser keeps in `localStorage`. Clearing site data loses that token, and with it every design under it: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A design kept Offline is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-design/offline-mode.md#instant-open)).
 
 - **Signed-in people are unchanged.** Their default stays livedesign.
-- **Moving to the server is always the guest's own act**: Sync Design (from the Share dialog, which explains why first, [Offline Mode → Sharing a design in This Browser](../006-design/offline-mode.md#sharing-a-design-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest design is uploaded silently.
+- **Moving to the server is always the guest's own act**: Sync Design (from the Share dialog, which explains why first, [Offline Mode → Sharing a design kept Offline](../006-design/offline-mode.md#sharing-an-offline-design), or the Explorer), or the prompt after signing in (below). No guest design is uploaded silently.
 - **Nothing is purged.** Guest cloud designs already on the server stay where they are; this changes where new ones start, not what happens to old ones.
 
 ### Who is a guest, before sign-in answers
 
 The session loads deferred, so `/new` cannot wait for the token request without making every create slower. It reads the `ldes_signed_in` hint cookie instead (`apps/live/lib/signed-in-hint.ts`): the api sets it to `1` beside the HttpOnly refresh cookie when a sign-in completes, readable from script and holding no secret, and to `0` on sign-out or when a refresh is refused (`signedInHintOf` in `packages/api-schema/src/signed-in-hint.ts`, shared with the site header's primary link and the Repair page).
 
-- **No hint, or `ldes_signed_in=0`**: a guest. The create goes ahead at once, This Browser.
+- **No hint, or `ldes_signed_in=0`**: a guest. The create goes ahead at once, Offline.
 - **`ldes_signed_in=1`**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
 - **The consent and device pages** (`/oauth/*`) read the hint the same way. With `ldes_signed_in=1` they show their
   loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
@@ -203,7 +203,7 @@ The session loads deferred, so `/new` cannot wait for the token request without 
   the page shows **Can’t reach your account right now** with **Try Again**, starts no guest hand-off, and carries on
   by itself once the session answers ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
   A `401` is signed out at once, as before.
-- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a design in This Browser, the safe direction.
+- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a design kept Offline, the safe direction.
 
 ### The account name cookie
 
@@ -216,14 +216,14 @@ authenticates nothing: it is only the name the marketing header's account menu s
 ([Marketing site](../019-marketing/marketing-site.md), "Header"), so a public page can say who is signed in without
 asking the api.
 
-### Moving designs in This Browser after signing in
+### Moving offline designs after signing in
 
-Signing in never moves a design in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-design/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, the editor and This Browser's page (`/offline`) check this browser's designs in This Browser. If there are any, it offers to move them:
+Signing in never moves a design kept Offline by itself ([Offline Mode → Auth / guest interaction](../006-design/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, the editor and Offline's page (`/offline`) check this browser's designs kept Offline. If there are any, it offers to move them:
 
-- **Move Designs in This Browser to Your Account?** A dialog lists each design in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
-- **Move** runs Sync Design ([Offline Mode → Save to server](../006-design/offline-mode.md#save-to-server-offline--cloud)) on each ticked design in turn, showing progress. A design that fails stays This Browser and is named in the result; the rest move.
-- **Not Now** is remembered for this account in this browser (`livedesign:v2:local-move-dismissed:<userId>`), with the count of designs in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate design in This Browser is not asked again about it. Taking a design offline counts the same way: the count is remembered as it lands, so a design taken offline on purpose is never offered back.
-- The same move is always reachable by hand: **Sync Design** on any design in This Browser.
+- **Move Offline Designs to Your Account?** A dialog lists each design kept Offline (name, last edited), every one ticked, with **Move** and **Not Now**.
+- **Move** runs Sync Design ([Offline Mode → Save to server](../006-design/offline-mode.md#save-to-server-offline--cloud)) on each ticked design in turn, showing progress. A design that fails stays Offline and is named in the result; the rest move.
+- **Not Now** is remembered for this account in this browser (`livedesign:v2:local-move-dismissed:<userId>`), with the count of designs kept Offline at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate design kept Offline is not asked again about it. Taking a design offline counts the same way: the count is remembered as it lands, so a design taken offline on purpose is never offered back.
+- The same move is always reachable by hand: **Sync Design** on any design kept Offline.
 
 ## Implications for how we build
 

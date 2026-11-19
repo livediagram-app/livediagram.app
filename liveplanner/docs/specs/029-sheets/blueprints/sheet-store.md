@@ -243,7 +243,7 @@ when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from ea
   inserted with `insertSheetStatements` unless it exists, the tab is full (`PROJECT_SHEETS_MAX`,
   `PROJECT_CELLS_MAX`: log `[changeset] template sheet skipped`) or it does not validate; only the Sheets made lose
   the mark; never a refusal.
-- The wizard's This Browser create (`apps/editor/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
+- The wizard's Offline create (`apps/editor/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
   only when `hasTemplateSheets`), stored as the record's `sheets` by `offlineCreateProject`.
 - The editor (`useSheetModel`): a Sheet still carrying a known `start`, its sheet absent once the tab is `ready`, for
   someone who may edit: `templateSheetWithCharts` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),

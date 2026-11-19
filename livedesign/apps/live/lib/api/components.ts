@@ -1,5 +1,5 @@
 // The component library's calls (docs/specs/009-elements/components.md "Sharing, collaboration and storage"): read
-// the mains a session may see, make one, and patch one element by element. A This Browser design keeps its library
+// the mains a session may see, make one, and patch one element by element. An offline design keeps its library
 // in its offline record instead.
 import type { ComponentResponse, ComponentsResponse } from '@livedesign/api-schema';
 import {
@@ -58,7 +58,7 @@ export async function cloudPutComponent(
 }
 
 /** Changes one main by a patch, applied to the stored main element by element; answers it as stored. `local` is
- *  this editor's copy, which a This Browser design stores as it is. */
+ *  this editor's copy, which an offline design stores as it is. */
 export async function apiPatchComponent(
   ownerId: string,
   designId: string,

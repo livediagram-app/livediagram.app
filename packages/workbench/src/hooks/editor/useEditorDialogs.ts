@@ -72,6 +72,14 @@ export function createEditorDialogs<CanvasThemeTab extends string>({
       url.searchParams.delete('share');
       window.history.replaceState(null, '', url.pathname + url.search + url.hash);
     }, []);
+    // The tab Share opens on: Passes, or the Community tab for the Share legend's Everyone stop (openShareOn). Back to
+    // Passes once the dialog closes, so a plain Share opens where it always has.
+    const [shareStartView, setShareStartView] = useState<'passes' | 'app'>('passes');
+    if (!shareDialogOpen && shareStartView !== 'passes') setShareStartView('passes');
+    const openShareOn = useCallback((view: 'passes' | 'app') => {
+      setShareStartView(view);
+      setShareDialogOpen(true);
+    }, []);
     // The right-click Canvas/Theme dialog (docs/specs/011-theme/canvas-and-theme-dialog.md). null = closed; the
     // value is which tab it opened on. A single flag drives both the open
     // state and the active tab.
@@ -116,6 +124,8 @@ export function createEditorDialogs<CanvasThemeTab extends string>({
       closeSettings,
       shareDialogOpen,
       setShareDialogOpen,
+      shareStartView,
+      openShareOn,
       canvasThemeTab,
       setCanvasThemeTab,
       exportOpen,

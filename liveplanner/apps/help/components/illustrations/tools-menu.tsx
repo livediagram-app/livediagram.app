@@ -9,7 +9,7 @@ import { TabBar, TabPill } from '@liveworkspace/help-site/art/illustrations/tabs
 const GROUPS: readonly { title: string; rows: readonly string[] }[] = [
   { title: 'FIND', rows: ['Search…'] },
   { title: 'AUTOMATE', rows: ['Automations…', 'Webhooks', 'Email to Board'] },
-  { title: 'COLLABORATE', rows: ['Subscribe to Calendar', 'Publish as Roadmap'] },
+  { title: 'COLLABORATE', rows: ['Subscribe to Calendar', 'Publish Roadmap'] },
   { title: 'VERSIONING', rows: ['History'] },
 ];
 

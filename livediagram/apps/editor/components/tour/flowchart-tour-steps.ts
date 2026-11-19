@@ -1,5 +1,5 @@
 import type { ElementTourApi } from './element-tour-api';
-import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, inTheMenu, onGraphic, onKindTool } from './concept-element-tour-steps';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
@@ -15,9 +15,6 @@ export type FlowchartTourContext = {
   hasLanes: boolean;
 };
 
-const toolbarButton = (label: string) =>
-  `[data-testid="selection-popover"] button[aria-label="${label}"]`;
-
 export function flowchartTourSteps(ctx: FlowchartTourContext): TourStepOf<ElementTourApi>[] {
   const { elementId: id } = ctx;
   return [
@@ -27,35 +24,28 @@ export function flowchartTourSteps(ctx: FlowchartTourContext): TourStepOf<Elemen
       'The chart lays itself out as you go, so you never line boxes up by hand.',
       elementSelector(id),
     ),
-    onGraphic(
+    onKindTool(
       'next',
       'The Next Step',
       ctx.touch
         ? 'Add Step adds the next step, already connected.'
         : 'Press Tab, or Add Step, for the next step. Then just type.',
-      toolbarButton('Add Step'),
+      'Add Step',
     ),
-    onGraphic(
+    onKindTool(
       'branch',
       'Add a Branch',
       `${ctx.touch ? 'Add Branch adds' : 'Press Enter, or Add Branch, for'} another path, like a decision’s No.`,
-      toolbarButton('Add Branch'),
+      'Add Branch',
     ),
-    onGraphic(
+    onKindTool(
       'type',
       'Change Its Type',
       'Change the step’s type: Process, Decision, Database and more.',
-      toolbarButton('Step Type'),
+      'Step Type',
     ),
     ...(ctx.hasLanes
-      ? [
-          onGraphic(
-            'lane',
-            'Its Lane',
-            'Pick a lane to move the step there, or drag it.',
-            toolbarButton('Lane'),
-          ),
-        ]
+      ? [onKindTool('lane', 'Its Lane', 'Pick a lane to move the step there, or drag it.', 'Lane')]
       : []),
     ...(ctx.hasMore
       ? [

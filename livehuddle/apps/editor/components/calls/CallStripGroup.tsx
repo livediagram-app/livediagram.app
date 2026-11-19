@@ -12,7 +12,7 @@
 // carries no help link (docs/specs/018-help/contextual-help-links.md). A stage adds Raise Hand (or the count of raised
 // hands for its speakers) and, on a stage you may not speak from, a line over the group; Do Not Disturb adds a segment
 // that clears it (meeting-rooms-and-stage.md "Raise hand", "The stage line", "Do Not Disturb"). With no call to offer
-// (This Browser, no calls on the server, calls paused), the microphone, the camera and Share Screen still show where
+// (Offline, no calls on the server, calls paused), the microphone, the camera and Share Screen still show where
 // the browser can capture, as a local preview only you see (proximity-audio.md and video-and-screen-bubbles.md "Local
 // preview"). While a share is on, its controls are the Screen Share group's (ScreenShareStripGroup), not this group's.
 // While the browser holds the call's sound back and you hear somebody, Click to Hear leads the group (proximity-audio.md

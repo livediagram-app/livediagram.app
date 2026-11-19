@@ -81,6 +81,7 @@ describe('what each ranking leaves out', () => {
       'BackgroundOpacity',
       'PatternColor',
       'BackgroundPatternScale',
+      'WallColor',
     ])
       expect(NON_PATTERN_CANVAS_TYPES).toContain(t);
     expect(NON_PATTERN_CANVAS_TYPES).not.toContain('Grid');

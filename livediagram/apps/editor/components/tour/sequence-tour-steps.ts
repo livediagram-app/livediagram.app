@@ -49,6 +49,24 @@ function onCanvas(id: string, title: string, body: string, selector: string): St
   return { ...onGraphic(id, title, body, selector), prepare: (api) => api.closeSequence() };
 }
 
+// The menu step closes the Sequence editor first, then opens the menu (its own prepare replaced the menu step's, so the
+// menu never opened and the step waited out its target and skipped).
+function sequenceMenuStep(): TourStepOf<ElementTourApi> {
+  const step = inTheMenu(
+    'menu',
+    'The Sequence Menu',
+    'In its menu, Sequence edits it or numbers the messages.',
+    ['Tools', 'Sequence'],
+  );
+  return {
+    ...step,
+    prepare: async (api) => {
+      api.closeSequence();
+      await step.prepare?.(api);
+    },
+  };
+}
+
 export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
   const { elementId: id } = ctx;
   const click = ctx.touch ? 'Tap' : 'Click';
@@ -59,19 +77,7 @@ export function sequenceTourSteps(ctx: SequenceTourContext): Step[] {
       'Each participant has a line down; each message is a row, top to bottom.',
       elementSelector(id),
     ),
-    ...(ctx.hasMore
-      ? [
-          {
-            ...inTheMenu(
-              'menu',
-              'The Sequence Menu',
-              'In its menu, Sequence edits it or numbers the messages.',
-              ['Tools', 'Sequence'],
-            ),
-            prepare: (api: ElementTourApi) => api.closeSequence(),
-          },
-        ]
-      : []),
+    ...(ctx.hasMore ? [sequenceMenuStep()] : []),
     onCanvas(
       'write',
       'Write It as a List',

@@ -55,6 +55,14 @@ const OWNER_COLUMNS: OwnerColumn[] = [
     column: 'author_id',
     deleteKeeps: { when: '1 = 1', why: "a document's own store, anonymised and aged out" },
   },
+  // The save points in the snapshots' store (docs/specs/013-workspace/snapshots.md), the named versions of a tab among
+  // them (Work Tracker 1097), in each document's own store: the closed account's name comes off a named version
+  // (document-room/document-anonymise.ts), and the document's own five go with the document.
+  {
+    table: 'snapshots',
+    column: 'author_id',
+    deleteKeeps: { when: '1 = 1', why: "a document's own store, its named versions anonymised" },
+  },
   // The document's once-only email claims (@liveworkspace/index-app notify-claims.ts), in its own store, name their
   // sender: dropped when the index says the account closed (document-room/document-anonymise.ts), and past the
   // dedupe window as new ones are claimed.
@@ -141,6 +149,15 @@ function seed(sql: DatabaseSync, id: string) {
     bytes: 15,
     element_count: 0,
     saved_at: T0,
+    created_at: T0,
+  });
+  insert(sql, 'snapshots', {
+    id: `s-${id}`,
+    item_id: `tab:tab-${id}`,
+    kind: 'manual',
+    author_id: id,
+    bytes: 2,
+    chunks: 1,
     created_at: T0,
   });
   insert(sql, 'notify_claims', { key: `claim-${id}`, sender: id, at: T0 });

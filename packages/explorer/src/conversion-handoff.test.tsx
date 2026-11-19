@@ -1,4 +1,4 @@
-// Take Offline and Sync handed over by the Explorer on an app's address: read once from This Browser's address,
+// Take Offline and Sync handed over by the Explorer on an app's address: read once from Offline's address,
 // taken out of it, checked, confirmed, then run by the app's own conversions.
 import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -132,7 +132,7 @@ describe('Take Offline and Sync handed over by the Explorer', () => {
     expect(h.syncToCloud).not.toHaveBeenCalled();
   });
 
-  it('deletes one this browser keeps once the person confirms, in This Browser’s words, signed out too', async () => {
+  it('deletes one this browser keeps once the person confirms, in Offline’s words, signed out too', async () => {
     at('?convert=delete&item=d1');
     h.kept = [{ id: 'd1', name: 'Notes' }];
     renderHook(() => useConversionHandoff(options('guest_1', false, { noun: 'plan' })));

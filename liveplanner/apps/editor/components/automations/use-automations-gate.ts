@@ -1,4 +1,4 @@
-// The footer's Automations for someone who could edit the plan but must first sync it (a plan in This Browser) or
+// The footer's Automations for someone who could edit the plan but must first sync it (a plan kept Offline) or
 // sign in (a guest on a server plan) (docs/specs/026-plan/automations.md "Who may do what"): the gate's kind
 // (automationsGateFor), with the Sync Plan move Share's gate uses and whether the reader is known yet.
 

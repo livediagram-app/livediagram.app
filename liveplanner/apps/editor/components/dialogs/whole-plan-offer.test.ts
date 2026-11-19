@@ -1,5 +1,5 @@
 // Whole Plan by share role (docs/specs/026-plan/plan-tabs.md "Whole Plan"): an Editor of the whole plan on a plan
-// saved to an account; never a Participant, a Viewer, a tab-scoped link or a This Browser plan.
+// saved to an account; never a Participant, a Viewer, a tab-scoped link or an offline plan.
 import { describe, expect, it } from 'vitest';
 import { wholePlanOffer } from './whole-plan-offer';
 
@@ -14,7 +14,7 @@ describe('wholePlanOffer', () => {
     expect(wholePlanOffer({ ...base, isStructureReadOnly: true })).toBeUndefined();
   });
 
-  it('offers nothing on a This Browser plan, or before the plan has an id', () => {
+  it('offers nothing on an offline plan, or before the plan has an id', () => {
     expect(wholePlanOffer({ ...base, isOffline: true })).toBeUndefined();
     expect(wholePlanOffer({ ...base, projectId: null })).toBeUndefined();
   });

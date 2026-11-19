@@ -4,6 +4,7 @@
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { BackBar, Button } from '@livediagram/ui';
+import { FileTypes } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import type { InfraFile } from '@livediagram/document/infra-code';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { entriesToFiles, newEntries, type InfraEntry } from '@/lib/infra-files';
@@ -20,11 +21,14 @@ export const INFRA_PASTE_PLACEHOLDER =
 
 export function InfraImportPanel({
   note,
+  fileTypes,
   onImport,
   onDone,
   onBack,
 }: {
   note?: ReactNode;
+  // The file endings the drop target takes (FileTypes), under it as on the other formats' panels.
+  fileTypes?: readonly string[];
   onImport: (files: InfraFile[], env?: string) => Promise<ImportOutcome>;
   onDone: (outcome: DoneOutcome) => void;
   onBack?: () => void;
@@ -79,6 +83,7 @@ export function InfraImportPanel({
           void readDroppedInfraFiles(data).then(({ files: read, refused }) => add(read, refused));
         }}
       />
+      {fileTypes?.length ? <FileTypes types={fileTypes} className="mt-2" /> : null}
       {entries.length > 0 ? (
         <ul
           aria-label="Files to import"

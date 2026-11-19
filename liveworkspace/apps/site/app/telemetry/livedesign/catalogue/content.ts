@@ -115,7 +115,7 @@ export const DESIGNS_CREATED: Metric = {
   action: 'Created',
   allTypes: true,
   title: 'Designs Created',
-  blurb: 'New designs from the New Design wizard, stored in the cloud or in This Browser.',
+  blurb: 'New designs from the New Design wizard, stored in the cloud or Offline.',
 };
 
 export const DESIGNS_RENAMED: Metric = {
@@ -142,13 +142,13 @@ export const DESIGNS_DUPLICATED: Metric = {
 };
 
 // Offline Mode (docs/specs/006-design/offline-mode.md): a design kept only in this browser, and the two
-// conversions between the stores. Created in This Browser is a subset of Designs
+// conversions between the stores. Created Offline is a subset of Designs
 // Created, so it sits in Design Actions outside the headline as well as
 // heading its own stack.
 export const CREATED_OFFLINE = chart(
   'Document',
   'Created',
-  'Created in This Browser',
+  'Created Offline',
   'A new design kept only in this browser (Offline Mode), never sent to the server. Part of Designs Created.',
   { types: ['Offline'] },
 );
@@ -165,11 +165,11 @@ export const SAVED_TO_CLOUD = chart(
   'Document',
   'Moved',
   'Saved to Cloud',
-  'A design in This Browser synced up to the server with Sync Design, so it can be shared.',
+  'A design kept Offline synced up to the server with Sync Design, so it can be shared.',
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs kept Offline
 // after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
 // Each design it moves is a Saved to Cloud.
 export const LOCAL_MOVE_ACCEPTED = chart(
@@ -262,7 +262,7 @@ export const DESIGN_ACTIONS: MetricStack = {
   stack: true,
   title: 'Design Actions',
   blurb:
-    'Designs opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or in This Browser (those three are part of Designs Created), and how often the wizard was backed out of with Escape.',
+    'Designs opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or Offline (those three are part of Designs Created), and how often the wizard was backed out of with Escape.',
   members: [
     DESIGNS_LOADED,
     DESIGNS_CREATED,

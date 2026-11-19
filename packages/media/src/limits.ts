@@ -19,6 +19,18 @@ export function isAcceptedImageType(value: unknown): value is AcceptedImageType 
   return typeof value === 'string' && (ACCEPTED_IMAGE_TYPES as readonly string[]).includes(value);
 }
 
+// The files an upload may be beside pictures (media.md "PDFs"): stored, deduped and capped as a picture is, but
+// never listed in the gallery, so no app's image picker offers one. Sniffed by their first bytes as pictures are.
+export const ACCEPTED_FILE_TYPES = ['application/pdf'] as const;
+export type AcceptedFileType = (typeof ACCEPTED_FILE_TYPES)[number];
+
+export function isAcceptedFileType(value: unknown): value is AcceptedFileType {
+  return typeof value === 'string' && (ACCEPTED_FILE_TYPES as readonly string[]).includes(value);
+}
+
+/** The largest file the service stores: a picture's cap. */
+export const MAX_FILE_BYTES = MAX_IMAGE_BYTES;
+
 // The longest original file name kept, in characters. R2's custom metadata holds 2 KB in all.
 export const ORIGINAL_NAME_MAX = 200;
 

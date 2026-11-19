@@ -105,9 +105,9 @@ fits wins (`notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`, th
 - **Link Not Valid** ("This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared
   it for a new one."): the address carries a share code (`?s=`) the api refused, unknown, revoked or expired alike.
   No "404" line.
-- **Space Not Found** with **Sign In** ("This space doesn’t exist, or you need to sign in to open it."): a signed-out
+- **Space Not Found** with **Sign In** ("This space doesn’t exist, or you don’t have access to it.", then on its own line "If you are joining a colleague on this space, ask them to share a URL via the Share button."): a signed-out
   visitor. Sign In comes back to the same address.
-- **Space Not Found** ("This space doesn’t exist or isn’t yours."): anyone else.
+- **Space Not Found** ("This space doesn’t exist or isn’t yours.", then on its own line "If you are joining a colleague on this space, ask them to share a URL via the Share button."): anyone else.
 
 In an embed a refused share code reads **No Longer Shared** ("This space is no longer shared at this link. Ask whoever
 shared it for a new one.") with no buttons, and the embed's browser tab names the card ("No Longer Shared | livehuddle").
@@ -117,7 +117,7 @@ An embed never offers Sign In.
 
 A space its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Space Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
+**Space Not Found**), or this browser holds it archived ([offline-mode.md "Archived Offline"](../006-document/offline-mode.md#archived-offline)).
 Either way the editor shows the same card in place of the space, titled **Space Archived** ("This space is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
@@ -231,14 +231,14 @@ is "continue" is a step between the person and what they came for; Start a Space
 search and the Sync Space to Server switch ([Save Locations → On the start screen](../006-document/save-locations.md#on-the-start-screen)).
 
 - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest (with sign-in enabled), livehuddle for everyone else. Decided at commit by
+  says: Offline for a guest (with sign-in enabled), livehuddle for everyone else. Decided at commit by
   `resolveSaveLocation`: a guest never waits, a browser that looks signed in waits for identity, so a signed-in
-  person is never handed a document in This Browser. Start a Space's footer switch moves it while it is empty.
+  person is never handed a document kept Offline. Start a Space's footer switch moves it while it is empty.
 - **Filed** (livehuddle) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
   otherwise the create carries no placement and the server files it in the person's
   [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
 - **Once, on a first visit too.** A guest's first visit leaves `/new` for the guest token's handoff and comes back
-  to it, so a create bound for This Browser first waits for the token (`ensureGuestToken`): with none, the page leaves
+  to it, so a create bound for Offline first waits for the token (`ensureGuestToken`): with none, the page leaves
   before anything is made and creates on its return. A guest who holds a token waits for nothing.
 - **Named** after its template ("Untitled Space", `untitledNameForTemplate`); it is renamed in the editor.
 - **Themed** Default; the Tab Style dialog changes it later.
@@ -456,7 +456,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 
 - `/document/placeholder` with no `?s=` → redirects to `/new`, no flash.
 - `/new` → the opening screen on first paint, then the editor on `/document/<id>`, on Start a Space, on Recommended.
-- `/new` → the document is created at once, This Browser for a guest, filed in the signed-in person's default folder
+- `/new` → the document is created at once, Offline for a guest, filed in the signed-in person's default folder
   for it.
 - Back from the editor after `/new` → the page before `/new`.
 - `/document/<id>` (existing) → editor hydrates as before.

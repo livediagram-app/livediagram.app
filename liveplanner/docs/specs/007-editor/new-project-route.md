@@ -104,9 +104,9 @@ fits wins (`notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`, th
 - **Link Not Valid** ("This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared
   it for a new one."): the address carries a share code (`?s=`) the api refused, unknown, revoked or expired alike.
   No "404" line.
-- **Plan Not Found** with **Sign In** ("This plan doesn’t exist, or you need to sign in to open it."): a signed-out
+- **Plan Not Found** with **Sign In** ("This plan doesn’t exist, or you don’t have access to it.", then on its own line "If you are joining a colleague on this plan, ask them to share a URL via the Share button."): a signed-out
   visitor. Sign In comes back to the same address.
-- **Plan Not Found** ("This plan doesn’t exist or isn’t yours."): anyone else.
+- **Plan Not Found** ("This plan doesn’t exist or isn’t yours.", then on its own line "If you are joining a colleague on this plan, ask them to share a URL via the Share button."): anyone else.
 
 In an embed a refused share code reads **No Longer Shared** ("This plan is no longer shared at this link. Ask whoever
 shared it for a new one.") with no buttons, and the embed's browser tab names the card ("No Longer Shared | liveplanner").
@@ -116,7 +116,7 @@ An embed never offers Sign In.
 
 A plan its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Plan Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-project/offline-mode.md#archived-in-this-browser)).
+**Plan Not Found**), or this browser holds it archived ([offline-mode.md "Archived Offline"](../006-project/offline-mode.md#archived-offline)).
 Either way the editor shows the same card in place of the plan, titled **Plan Archived** ("This plan is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
@@ -217,7 +217,7 @@ The route (`apps/editor/app/new/page.tsx`) owns:
 - The participant-identity bootstrap (same `liveplanner:v2:self-id`
   localStorage key, same `apiLoadSelf` / `apiSaveSelf` API).
 - The "name confirmed" persistence (same `liveplanner:v2:name-confirmed` localStorage key).
-- The create: mint a UUID, POST `/api/projects` (or create in This Browser) with the template's tabs inline, or one
+- The create: mint a UUID, POST `/api/projects` (or create Offline) with the template's tabs inline, or one
   blank tab, then hand off to the editor in place.
 
 ## Creating on arrival
@@ -231,10 +231,10 @@ Mode's second effect off):
   workspace frame's create in place reads too. A template link fires `UI / Used / TemplateLink`. The marketing site's
   template gallery links every card here ([Marketing site](../019-marketing/marketing-site.md)).
 - **Stored** where [Save Locations → The default depends on who is creating](../006-project/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest, liveplanner for a signed-in person. Decided at the create by
+  says: Offline for a guest, liveplanner for a signed-in person. Decided at the create by
   `resolveSaveLocation` (`app/new/useNewProjectLocation.ts`): a guest never waits, and is created without waiting
   for identity at all, a first visit's guest token aside ([Offline Mode → Instant open](../006-project/offline-mode.md#instant-open)); a browser that
-  looks signed in waits for identity, so a signed-in person is never handed a project in This Browser.
+  looks signed in waits for identity, so a signed-in person is never handed a project kept Offline.
 - **Filed** (liveplanner) in the `/new?folder=` / `?team=` context when there is one, an explicit placement that makes
   the create a cloud one whoever is creating; otherwise the create carries no placement and the server files it in
   the person's [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
@@ -369,7 +369,7 @@ default ([Default folders](../013-workspace/default-folders.md) "A template pick
 ## Tests / sanity-check checklist
 
 - The editor index with no params → redirects to `/new`.
-- `/new` → the opening screen, then the editor on `/project/<id>`, its empty tab on Start Planning; This Browser for
+- `/new` → the opening screen, then the editor on `/project/<id>`, its empty tab on Start Planning; Offline for
   a guest, filed in the signed-in person's default folder for it.
 - `/new?folder=<id>` → the project files into that folder.
 - `/new?template=kanban` → a Kanban project, the editor on `/project/<id>`.

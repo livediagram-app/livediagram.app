@@ -527,7 +527,7 @@ itemId })` is `<origin>/project/<id>[?s=<code>]` plus `cardHash`, keeping only t
   generic box drag moves the board). Not interactive: nothing stops propagation; double-click on a card opens it.
 - **Team people** (`useTeamPeople(ownerId, enabled, signedIn, teams, projectTeamId)`, `useEditorState`): the
   token's team whose id is `projectTeamId` (`editor-realtime.ts`, the plan's `team_id`), else none, so a personal,
-  This Browser, shared-from-My-Work or guest plan asks for nobody. One `apiTeamMembers` request for that team,
+  Offline, shared-from-My-Work or guest plan asks for nobody. One `apiTeamMembers` request for that team,
   joined members only (`teamMemberPerson`), each in their chosen presence colour, else Automatic (`presenceColourOf`). The mention list (`useCommentMentions`) picks the same team.
 - **Assignable people** (`usePlanSlice` `people`): `planPeople(self, teamPeople, assigned)` from
   `@liveplanner/items` (`plan-people.ts`): self, then team members, then every assignee a card holds
@@ -765,7 +765,7 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   face to `DataChartView`, so axis ticks, Show Values and the legend inherit the UI face, or the chart's own
   `element.font`, on a canvas tab and on a Sheet alike.
 - Font pickers: `PLANNER_FONTS` (`@liveplanner/project` `planner-fonts.ts`, `FONTS` less
-  `PLANNER_EXCLUDED_FONT_IDS`) feeds `TextTab`, `TypographySections` and `SheetToolbarMenus`; labels of a stored
+  `PLANNER_EXCLUDED_FONT_IDS`) feeds the Tab Style Text panel (its profile's `fonts`), `TypographySections` and `SheetToolbarMenus`; labels of a stored
   font still read from `FONTS`, so an excluded face already set keeps its name.
 - Cursors (`components/plan/board-cursors.ts`): `planCardCursor(interactive, canEditCards)` is `grab` for an
   Editor or a Participant, `pointer` for a Viewer, nothing out of Plan mode; `planBoardBodyCursor(interactive)`

@@ -1,5 +1,5 @@
 // A folded row that takes no drop of its own (the Library) opens under a drag that rests on it, so a target inside it
-// (the Trash) is in reach: after LIBRARY_HOVER_OPEN_MS of the Explorer's own drag (an item, a folder, a This Browser
+// (the Trash) is in reach: after LIBRARY_HOVER_OPEN_MS of the Explorer's own drag (an item, a folder, an offline
 // item) held over it, once per visit. Shorter than a folder's spring (DRAG_HOVER_OPEN_MS): nothing lands on it, so a
 // drag passing over it costs only an open row.
 

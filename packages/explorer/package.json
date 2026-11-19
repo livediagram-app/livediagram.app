@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./this-browser": "./src/this-browser.ts",
+    "./visibility-tones": "./src/visibility-tones.ts",
     "./this-browser-record": "./src/this-browser-record.ts",
     "./inbox-actions": "./src/inbox-actions.ts",
     "./local-preview": "./src/explorer/LocalPreview.tsx",
@@ -20,6 +21,7 @@
     "./search-shortcut": "./src/search/useSearchShortcut.ts",
     "./hero-theme": "./src/hero/hero-theme.ts",
     "./approvals": "./src/approvals/index.ts",
+    "./move-current-request": "./src/panel/move-current-request.ts",
     "./explorer.css": "./explorer.css"
   },
   "scripts": {

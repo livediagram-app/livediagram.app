@@ -1,5 +1,5 @@
 // A card's history, as the editor reads it (docs/specs/026-plan/items.md "History", blueprint item-store.md
-// "History"): one request for one card, when its panel opens. A This Browser plan keeps none, so it is never asked.
+// "History"): one request for one card, when its panel opens. An offline plan keeps none, so it is never asked.
 // A session on a tab-scoped link names its tab.
 
 import type { ItemHistoryResponse } from '@liveplanner/api-schema';

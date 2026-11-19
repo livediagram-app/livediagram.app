@@ -105,7 +105,7 @@ export function useIdentityBootstrapCore<
     warmFirstTab: () => warmRef.current?.firstTab ?? null,
     keepActiveId: () => (warmRef.current ? activeIdRef.current : null),
   });
-  // `early`: an item in This Browser opening before auth has settled (offline-mode.md "Instant open"). It has no
+  // `early`: an item kept Offline opening before auth has settled (offline-mode.md "Instant open"). It has no
   // owner on the server to wait for, so it loads under the placeholder participant and settleEarlyIdentity resolves
   // who is reading once auth answers.
   const bootstrap = useEffectEvent((early = false) => {
@@ -233,7 +233,7 @@ export function useIdentityBootstrapCore<
       // again on every wrong guess.
       let self: P;
       if (early) {
-        // An item in This Browser reads from this browser whoever is reading: the identity follows.
+        // An item kept Offline reads from this browser whoever is reading: the identity follows.
         self = selfParticipant;
       } else if (selfParticipant.id !== 'self') {
         // Already resolved: skip the network round-trip.
@@ -307,7 +307,7 @@ export function useIdentityBootstrapCore<
     // The same moment as a timing (timing-telemetry.md "WarmPaint"), so production shows how fast a warm open paints.
     deps.timeWarmPaint(origin).endAfterPaint();
   });
-  // Instant open (offline-mode.md): before auth settles, a path naming an item in This Browser opens straight from
+  // Instant open (offline-mode.md): before auth settles, a path naming an item kept Offline opens straight from
   // this browser. Share links, embeds and workbenches always wait. A cloud item this browser opened before warm-opens
   // from its last seen copy instead ("Warm open of a cloud document").
   const earlyOpen = useRef(false);
@@ -354,7 +354,7 @@ export function useIdentityBootstrapCore<
       // Auth may have answered while the local index loaded: then the ordinary bootstrap has run.
       if (runRef.current !== 0) return;
       earlyOpen.current = true;
-      debugLog(`[load] early open of a ${deps.noun} in This Browser`);
+      debugLog(`[load] early open of a ${deps.noun} kept Offline`);
       bootstrap(true);
       return;
     }

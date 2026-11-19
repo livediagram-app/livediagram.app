@@ -12,7 +12,7 @@ The name is **Describe a Plan**, apart from the marketing site's **Build with AI
 
 - **Signed in only.** A person with an account (in the browser, or through their API token, never a read-only one)
   may ask; a guest or a link visitor may not. No plan exists on the server yet when Start Planning shows (a new plan
-  can still be This Browser's), so the plan's own 100 AI steps a day can't be the cap; the person's account is.
+  can still be Offline's), so the plan's own 100 AI steps a day can't be the cap; the person's account is.
 - A guest sees the entry on Start Planning all the same, and choosing it shows a sign-in nudge in place of the text
   box: "Sign in to describe a plan in your own words. Your plan stays as it is." with **Sign In** (the app's sign-in,
   coming back to this plan). The api answers a guest 403 `plan_draft_needs_account`, and a caller with no identity 401.
@@ -59,7 +59,7 @@ AI** and "Change anything you like. Nothing is made until you press Make Plan."
   in the rules that name it (while the old name was its alone and the new one is no other's); one removed leaves the
   rule naming something the plan won't have, said at the rule: "This rule names the column “Offer”, which this plan
   won’t have." (or "card type", "field"), with a rule's name problems ("Give this rule a name.", "Two rules are
-  called “…”.") and any refusal of the rule's own check. On a plan in This Browser the rules can't be made (Automations
+  called “…”.") and any refusal of the rule's own check. On a plan kept Offline the rules can't be made (Automations
   runs on a plan saved to an account): the section says "Starter rules need this plan saved to your account, so these
   are left out. Sync the plan, then add rules in Automations." and the rows are not drawn nor checked.
 - What is added starts named, its name selected to type over: **New Column**, **New Field**, **Option 2**, **New
@@ -84,7 +84,7 @@ taking the drafted types), named after the board while the tab still has its def
 card types it lacks. Undo takes the board away as it would any board; the card types stay, as a Plan template's do.
 `Plan · Created · PlanDraft` is sent. Then the starter rules left in are made, as New Rule makes a rule, through the
 Automations routes (so only an Editor of the whole plan, signed in, on a plan saved to an account; anyone else never
-sees Start Planning or sees the This Browser line above): each named as its draft and made free among the plan's rules
+sees Start Planning or sees the Offline line above): each named as its draft and made free among the plan's rules
 ("Stamp Offer Date 2"), in the board's statuses and the plan's types, chain off, in the person's time zone, and turned
 off after when its switch is off. They are made in turn after the board; one that can't be made (the plan at its 50
 rules, a fault) is said in a toast, "Couldn't add the starter rules. Add them in Automations.", and the plan stays as

@@ -43,7 +43,7 @@ export type RoomNameAnnounce = {
   hasIdentity: boolean;
   // The profile write landed: a person's door reads it, so a failed one is not announced.
   saved: boolean;
-  // The open room, or null with none (a document in This Browser): then there is nobody to tell.
+  // The open room, or null with none (a document kept Offline): then there is nobody to tell.
   room: { send: (msg: RoomOutgoing) => void } | null;
   // POST /room-name for the document (lib/api/room-name.ts).
   announce: () => Promise<string | null>;

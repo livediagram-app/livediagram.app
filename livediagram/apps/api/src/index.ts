@@ -210,7 +210,7 @@ async function routeApiRequest(
     const len = Number(request.headers.get('content-length'));
     // Image uploads carry raw bytes with their own, larger cap (docs/specs/009-elements/images.md);
     // the route re-checks it and answers with file_too_large + limitBytes.
-    // A This Browser document's parts (routes/migration.ts) cross whole, up to an RPC message's cap.
+    // An offline document's parts (routes/migration.ts) cross whole, up to an RPC message's cap.
     const cap =
       segments[1] === 'images'
         ? MAX_IMAGE_BYTES

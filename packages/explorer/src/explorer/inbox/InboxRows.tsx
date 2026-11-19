@@ -5,7 +5,7 @@
 //
 //   who (semibold when it needs you)                                  when
 //   what: the action, the card's #number and title, the element a thread is on, the form's heading
-//   why (a status icon and its words) · the app's Living Prism and the item · This Browser
+//   why (a status icon and its words) · the app's Living Prism and the item · Offline
 //
 // A row is an option of the list's listbox: choosing it shows it in the reading pane (./InboxReader), and the pane
 // opens it in its app. The page and the editor's panel draw the same row, `comfortable` or `compact`.

@@ -192,6 +192,59 @@ describe('uploads', () => {
     expect(db.objects.size).toBe(0);
   });
 
+  it('stores a PDF 0 by 0, keeps it out of the gallery, and lists it for the export', async () => {
+    const pdf = new TextEncoder().encode('%PDF-1.7\n1 0 obj << >> endobj\n%%EOF');
+    const picture = await uploaded(png(1));
+    const file = await uploaded(pdf, { type: 'application/pdf', name: 'Quote.pdf', width: 9 });
+    expect(file.image).toMatchObject({
+      contentType: 'application/pdf',
+      width: 0,
+      height: 0,
+      originalName: 'Quote.pdf',
+    });
+    // No dimensions needed for a PDF.
+    const bare = new TextEncoder().encode('%PDF-1.4\nanother');
+    expect((await uploaded(bare, { type: 'application/pdf', width: 0, height: 0 })).deduped).toBe(
+      false,
+    );
+    const list = (await (await asApp('/app/images?owner=user_1')).json()) as MediaListResponse;
+    expect(list.images.map((i) => i.id)).toEqual([picture.image.id]);
+    const exported = await call(
+      '/app/images?owner=user_1',
+      { headers: { Authorization: 'Bearer export-key', 'X-Media-App': 'export' } },
+      { ...db.env, MEDIA_KEY_EXPORT: 'export-key' },
+    );
+    const all = (await exported.json()) as MediaListResponse;
+    expect(all.images.map((i) => i.contentType).sort()).toEqual([
+      'application/pdf',
+      'application/pdf',
+      'image/png',
+    ]);
+    const bytes = await asApp(`/app/images/${file.image.id}/bytes`);
+    expect(bytes.headers.get('Content-Type')).toBe('application/pdf');
+    expect(bytes.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    expect(bytes.headers.get('Content-Disposition')).toBe('attachment');
+    expect(bytes.headers.get('Content-Security-Policy')).toBe('sandbox');
+    const pictureBytes = await asApp(`/app/images/${picture.image.id}/bytes`);
+    expect(pictureBytes.headers.get('Content-Disposition')).toBeNull();
+    expect(pictureBytes.headers.get('Content-Security-Policy')).toBeNull();
+  });
+
+  it('refuses a declared PDF that is not one, and a PDF declared as a picture', async () => {
+    const pdf = new TextEncoder().encode('%PDF-1.7\nbody');
+    const fake = await upload(new TextEncoder().encode('<html>not a pdf</html>'), {
+      type: 'application/pdf',
+    });
+    expect(fake.status).toBe(415);
+    expect(await fake.json()).toMatchObject({
+      acceptedTypes: expect.arrayContaining(['application/pdf', 'image/png']),
+    });
+    expect((await upload(pdf, { type: 'image/png' })).status).toBe(415);
+    expect((await upload(png(1), { type: 'application/pdf' })).status).toBe(415);
+    expect((await upload(pdf, { type: 'application/msword' })).status).toBe(415);
+    expect(db.objects.size).toBe(0);
+  });
+
   it('refuses a file over the cap and an upload with no size or dimensions', async () => {
     const big = await asApp('/app/images?owner=user_1', {
       method: 'POST',

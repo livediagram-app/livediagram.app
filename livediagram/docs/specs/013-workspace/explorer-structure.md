@@ -3,17 +3,17 @@
 The Explorer is liveworkspace's: the shared package [`@liveworkspace/explorer`](../../../../packages/explorer/README.md),
 built once by liveworkspace.app and shown at livediagram's own address. livediagram's router answers `/explorer/*` by
 fetching the same page from liveworkspace.app, with the address bar unchanged (`livediagram.app/explorer/recent`), so
-the person's session, This Browser's canvases and livediagram's colours come along
+the person's session, Offline's canvases and livediagram's colours come along
 ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "The Explorer on each app's address"). The editor
 serves no `/explorer` page of its own; its links to it go through `explorerHref` (`../packages/workbench/src/lib/explorer-href.ts`).
 
-**From an open canvas.** The editor's doors to the Explorer from an open canvas, the header's logo (`apps/editor/components/chrome/EditorHeader.tsx`) and **Open Explorer** in the Explorer panel's ⋯ menu (`apps/editor/components/panels/ExplorerHeaderMenu.tsx`), pass only the canvas's id (`/explorer?item=<id>`, `explorerItemHref`). The Explorer opens the place that holds it, with the canvas marked: its My Work folder or My Work, its team's library at its folder, This Browser at its local folder, or Shared With Me ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item"). Back returns to the canvas. Every other door (a page with no canvas, a trashed canvas's card) opens the Explorer as before.
+**From an open canvas.** The editor's doors to the Explorer from an open canvas, the header's logo (`apps/editor/components/chrome/EditorHeader.tsx`) and **Open Explorer** in the Explorer panel's ⋯ menu (`apps/editor/components/panels/ExplorerHeaderMenu.tsx`), pass only the canvas's id (`/explorer?item=<id>`, `explorerItemHref`). The Explorer opens the place that holds it, with the canvas marked: its My Work folder or My Work, its team's library at its folder, Offline at its local folder, or Shared With Me ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item"). Back returns to the canvas. Every other door (a page with no canvas, a trashed canvas's card) opens the Explorer as before.
 
-**Browser Storage.** The owner renamed This Browser to **Browser Storage** in the Explorer on 2026-11-10, for clarity
-([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser, a Space"): its Space
-row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's groups, and the
-Explorer's menus, toasts and labels. The editor keeps **This Browser** for its badge on an open item kept only in this
-browser. This spec, like the code and the `/explorer/offline` address, still says This Browser for the place itself.
+**Offline, by name.** The Explorer names the place **Offline**, as the editor's badge on an open item kept only in
+this browser does ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "Offline, a
+Space"): its Space row and view title, Home's tile, the pill on Explorer rows and cards, the Trash's and Archived's
+groups, and the Explorer's menus, toasts and labels. The owner renamed This Browser to Browser Storage in the Explorer
+on 2026-11-10, for clarity, then "Browser Storage" to "Offline" on 2026-11-19.
 
 ## Views
 
@@ -30,7 +30,7 @@ origin and other apps' items on their own sites, and the filter shows "this app'
 ## What livediagram lends it
 
 The page at `/explorer` reads livediagram's entry in the sites registry (`APP_ITEMS.livediagram` in
-`@liveworkspace/sites`: item, share, new, preview, Library, import and This Browser paths). The editor's Explorer panel
+`@liveworkspace/sites`: item, share, new, preview, Library, import and Offline paths). The editor's Explorer panel
 and the workbench's Explorer (`apps/editor/app/embed/workbench/ExplorerHost.tsx`) get the same from the editor's own
 hosts, named below.
 
@@ -61,16 +61,16 @@ hosts, named below.
 The editor's floating Explorer panel is the package's `ExplorerPanel`, with the same lists, menus and dialogs as the
 page, inside the editor's movable panel, which docks in a corner or opens as the menu button's popover
 (`apps/editor/components/panels/Explorer.tsx`). The open canvas shows on top, read once from the index when the
-panel opens (the package's `useOpenItem`), or from This Browser's list for a canvas kept only in this browser, with
-the This Browser pill and This Browser's menu ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel). On a desktop or tablet the popover is up to 54rem (its rail 13rem, its preview cards four across)
+panel opens (the package's `useOpenItem`), or from Offline's list for a canvas kept only in this browser, with
+the Offline pill and Offline's menu ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address) "The Explorer on each app's address": the editors' panel). On a desktop or tablet the popover is up to 54rem (its rail 13rem, its preview cards four across)
 wide and 45rem tall, inside the window, over a dimmed scrim on every screen size (a press on it closes the panel and
 focus goes back to the menu button); on a phone it stays the sheet. Every list is one request a page, loaded only once its section is chosen. It is wrapped in `React.memo`
 so the editor's per-frame churn never re-renders it.
 
-## This Browser
+## Offline
 
 Canvases kept only in this browser ([Offline Mode](../006-document/offline-mode.md)) never reach the index, so none of
-the index's lists holds them. They are the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the
+the index's lists holds them. They are the Explorer's **Offline** view, in the page (`/explorer/offline`) and the
 editor's panel alike: every one, newest first, read from this browser alone, each opening in the editor. For a
 signed-in person each row has **Sync Canvas**, which moves it to the account and so into the Explorer; in the panel
 each row has **Delete**, which removes it for good after a confirmation, since nothing else holds it. With none, the
@@ -78,20 +78,20 @@ view says so. Its local folders show first, as folder cards, then the canvases.
 
 - **The Explorer on livediagram's address** reads them too: the editor's offline store keeps a small list of them
   (id, title and dates, never content) in the shared `localStorage` key the Explorer reads
-  (`apps/editor/lib/offline/this-browser.ts`, `@liveworkspace/explorer/this-browser`). **This Browser** is a
-  Space in its sidebar ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#this-browser-a-space) "This Browser, a Space"): in the Spaces group after My Work and the
-  teams, with their count, shown while it holds a canvas or a local folder, opening the Explorer's own This Browser
+  (`apps/editor/lib/offline/this-browser.ts`, `@liveworkspace/explorer/this-browser`). **Offline** is a
+  Space in its sidebar ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#offline-a-space) "Offline, a Space"): in the Spaces group after My Work and the
+  teams, with their count, shown while it holds a canvas or a local folder, opening the Explorer's own Offline
   view (`/explorer/offline`, a local folder at `/explorer/offline?folder=<id>`), each canvas opening in the editor.
   It has local folders of its own (New Folder, and on each folder Rename, New Subfolder, Move Folder and Delete Folder), and Sync of a canvas in one
   offers the My Work folder of the same name; Home's Most Used and Recent shows the ones opened, each a card
-  like the rest with the This Browser badge, its menu (Open, Sync Canvas) and its drag (the Trash or a folder,
-  [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "This Browser on Home"). On
-  liveworkspace.app, which cannot read this browser's storage for livediagram, This Browser is never a Space: a quiet row after the Library links to `/explorer/offline` here.
-- **The editor's Explorer panel** has This Browser as a view of its own: a rail entry, last among the spaces, with
+  like the rest with the Offline badge, its menu (Open, Sync Canvas) and its drag (the Trash or a folder,
+  [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) "Offline on Home"). On
+  liveworkspace.app, which cannot read this browser's storage for livediagram, Offline is never a Space: a quiet row after the Library links to `/explorer/offline` here.
+- **The editor's Explorer panel** has Offline as a view of its own: a rail entry, last among the spaces, with
   the count, shown only while it holds something, opening its pane in place (`apps/editor/hooks/persistence/useThisBrowserHost.ts`,
   the panel's `thisBrowser`). Each canvas opens in the editor; signed in, each row has **Sync Canvas**; each row has
   **Delete**, which asks first.
-- **`/offline`**, the old This Browser page, only redirects to `/explorer/offline`, its query kept
+- **`/offline`**, the old Offline page, only redirects to `/explorer/offline`, its query kept
   (`@liveworkspace/explorer/offline-redirect`). Take Offline, Sync and Delete asked by an address run in the editor at the
   canvas's own address (`/document/<id>?convert=take-offline|sync|delete&item=<id>`, `apps/editor/components/dialogs/ConversionHandoff.tsx`
   over `apps/editor/hooks/persistence/useConversionHandoff.ts`), which checks the canvas is the person's to move and

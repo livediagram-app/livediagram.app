@@ -83,7 +83,7 @@ describe('useItemTypes', () => {
     expect(onError).not.toHaveBeenCalled();
   });
 
-  // Work Tracker 827: a plan synced from This Browser in place holds its own revision count (3 saves here); the
+  // Work Tracker 827: a plan synced from Offline in place holds its own revision count (3 saves here); the
   // server's starts again, so its refusal names a lower one, which the save takes and lands on.
   it('saves straight after Sync Plan, taking the server’s lower revision from its refusal', async () => {
     api.saveItemTypes.mockRejectedValueOnce(

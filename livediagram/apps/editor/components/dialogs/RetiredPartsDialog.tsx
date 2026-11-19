@@ -7,7 +7,7 @@ import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/Dialog
 import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 import type { RetiredPartsPhase } from '@/hooks/persistence/useRetiredPartsMove';
 
-// The dialog that moves the parts set aside from documents in This Browser
+// The dialog that moves the parts set aside from documents kept Offline
 // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps"). Drawn from the hook's phase;
 // opened on load (RetiredPartsOffer) and from Settings (SettingsRetiredPartsRow).
 
@@ -114,7 +114,7 @@ export function RetiredPartsDialog({
         <DialogCloseButton onClick={onNotNow} />
       </DialogHeader>
       <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
-        <ul className="list-disc pl-5" aria-label="Canvases in This Browser">
+        <ul className="list-disc pl-5" aria-label="Offline Canvases">
           {phase.rows.map((row) => (
             <li key={row.id}>{row.name}</li>
           ))}

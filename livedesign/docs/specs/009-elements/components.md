@@ -177,7 +177,7 @@ the instance keep their end as a free point where it was. One undo step. Detachi
   same id, the later `updatedAt` winning (at most 8 MB of mains per body; any past it draw as missing there until a
   later body carries them). After that each design's library is its own.
 - **A copy of a design** copies its library (a one-tab copy, the mains that tab uses), and so does the design's Drive
-  file (`components` beside its tabs). **A This Browser design** keeps its library in the browser with its tabs.
+  file (`components` beside its tabs). **An offline design** keeps its library in the browser with its tabs.
 - **Clipboard**: copied instances carry their mains; a paste into a design without one adds it to that library.
 
 ## Exports, thumbnails and agents

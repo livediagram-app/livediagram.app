@@ -1,8 +1,8 @@
 'use client';
 
-// A list of things to show or hide, as a card of rows (Publish as Roadmap's Columns, Card Types and Fields): a head
+// A list of things to show or hide, as a card of rows (Publish Roadmap's Columns, Card Types and Fields): a head
 // with the group's name, how many are on, and Show All / Hide All; then a row each with its glyph, name and a switch.
-// Collapsible (Publish as Roadmap keeps one open at a time): closed, the head alone shows, with what is on as a
+// Collapsible (Publish Roadmap keeps one open at a time): closed, the head alone shows, with what is on as a
 // line of names. It scales: past eight rows a filter field appears and the rows scroll inside the card, never the dialog.
 import { useId, useMemo, useState, type ReactNode } from 'react';
 import { Switch, SwitchRow } from '@liveworkspace/ui';

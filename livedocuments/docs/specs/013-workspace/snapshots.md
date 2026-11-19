@@ -19,7 +19,9 @@ The document as its own export file, the `livedocuments.document` envelope (`exp
 - **Version History is kept, beside it** ([version-history.md](../006-document/version-history.md)): a revert
   writes each tab as a save does, so the idle trigger may keep a tab's previous content as an automatic
   version, and named versions stay. Version History restores one tab; a snapshot reverts the whole document.
-  Folding Name This Version into snapshots is a follow-up of Work Tracker 948.
+- **One store** (Work Tracker 1097): Name This Version keeps its version in the snapshot tables too, scoped to its tab
+  (`tab:<tab id>`), so this list, its five and its revert never see one ([Version history](../006-document/version-history.md)
+  "Where versions are kept"). A tab a revert removes takes its named versions with it.
 - The document's name stays.
 
 ## Roles
@@ -32,7 +34,7 @@ an API token is refused (403).
 
 Snapshots live inside **History** in the footer's **Tools** menu ([The footer's Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md)
 "History, with Snapshots in it"; owner, 2026-11-17), there for that Editor once the document is stored on the server
-(never in This Browser, a workbench frame or a Community visit): **Take Snapshot** over History's timeline and each
+(never Offline, a workbench frame or a Community visit): **Take Snapshot** over History's timeline and each
 snapshot pinned on it, or the snapshots on their own for an Editor through a share link, naming the item
 "document" ([Snapshots](../../../../liveworkspace/docs/specs/014-snapshots/snapshots.md) "In History"). There is no
 Snapshots row of its own.

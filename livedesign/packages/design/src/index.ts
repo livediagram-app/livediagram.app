@@ -149,6 +149,7 @@ export * from './page-default-background';
 export * from './pages-edits';
 export * from './photo-pages';
 export * from './pages-background-copy';
+export * from './tab-new-page-background';
 export * from './tab-window';
 export * from './svg-id-prefix';
 export * from './components';

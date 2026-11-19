@@ -17,6 +17,7 @@ import {
 import { pagesInkFor } from './page-ink';
 import { PAGE_GRADIENT_ANGLE, sameFill } from './page-paint';
 import { themePresetColors } from './theme-presets';
+import { newPageBackgroundOf } from './tab-new-page-background';
 import type { Tab, ThemeDefinition } from './index';
 
 type ThemeColours = Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
@@ -185,6 +186,27 @@ export function isThemeOwnFill(fill: PageFill, theme: ThemeDefinition): boolean 
 /** The tab with every page on a fill of the old theme's own moved to the new theme's, its content
  *  re-inked; the same tab when no page changes. */
 export function withPageBackgroundsFollowingTheme<T extends Pick<Tab, 'elements'>>(
+  tab: T,
+  prev: ThemeDefinition,
+  next: ThemeDefinition,
+): T {
+  return pagesFollowingTheme(newPageBackgroundFollowingTheme(tab, prev, next), prev, next);
+}
+
+/** The tab's new-page background (Tab Style's New Page Background) following a theme change as a page's does: a fill
+ *  of the old theme's own becomes the new theme's. */
+function newPageBackgroundFollowingTheme<T>(
+  tab: T,
+  prev: ThemeDefinition,
+  next: ThemeDefinition,
+): T {
+  const own = newPageBackgroundOf(tab as { newPageBackground?: unknown });
+  const to = own?.fill ? followedFill(own.fill, prev, next) : undefined;
+  if (!own || !to || sameFill(to, own.fill)) return tab;
+  return { ...tab, newPageBackground: { ...own, fill: to } };
+}
+
+function pagesFollowingTheme<T extends Pick<Tab, 'elements'>>(
   tab: T,
   prev: ThemeDefinition,
   next: ThemeDefinition,
