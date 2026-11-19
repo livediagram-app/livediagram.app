@@ -103,7 +103,9 @@ To see the pictures on every pull request, add this workflow. It posts one comme
 ```yaml
 # .github/workflows/diagram-changes.yml
 name: Diagram changes
-on: pull_request
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed] # closed removes the pull request's pictures
 permissions:
   contents: write # the pictures go on a livediagram-previews branch
   pull-requests: write # the comment
@@ -117,7 +119,7 @@ jobs:
       - uses: livediagram-app/livediagram.app/livediagram/apps/cli/github-action@main
 ```
 
-The pictures are kept on a `livediagram-previews` branch of your repository, so only people who can read the repository can see them. The comment draws up to ten tabs and lists the rest, and it has an **Open in livediagram** link for each canvas. Images on a canvas are drawn as placeholder boxes. A pull request from a fork can't comment, so its pictures are attached to the workflow run instead.
+The pictures are kept on a `livediagram-previews` branch of your repository, so only people who can read the repository can see them. When a pull request closes, the Action removes its folder from that branch, so the branch doesn't keep growing; leave `closed` out of `types` to keep the pictures. The comment draws up to ten tabs and lists the rest, and it has an **Open in livediagram** link for each canvas. Images on a canvas are drawn as placeholder boxes. A pull request from a fork can't comment, so its pictures are attached to the workflow run instead.
 
 ## Public Repositories
 
