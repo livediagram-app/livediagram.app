@@ -63,7 +63,7 @@ export function useEditorLayers({
   const { formatSettings } = fromTools;
   const { isReadOnly, participant } = fromCollaboration;
   const { activeTab } = fromComments;
-  const { getViewportCenter } = fromViewport;
+  const { getViewportCenter, importUndoView } = fromViewport;
   const { activeTabLocked, commit, commitActiveTab, editsBlocked, structureBlocked } = fromEditing;
 
   // Layers domain slice (docs/specs/006-document/layers.md): the active layer, the panel /
@@ -128,6 +128,7 @@ export function useEditorLayers({
     tickTabs,
     undoHistory,
     redoHistory,
+    beforeStep: importUndoView.beforeStep,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
