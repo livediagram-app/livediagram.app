@@ -16,6 +16,41 @@ attempts=3
 cli=(npx --yes "@livediagram/cli@${REVIEW_CLI_VERSION:-0.3.0}")
 [[ -n "${REVIEW_CLI:-}" ]] && read -r -a cli <<<"$REVIEW_CLI"
 
+# The pull request number names a folder on the previews branch: only digits, so no value can reach another folder.
+[[ "$REVIEW_PR" =~ ^[0-9]+$ ]] || { echo "::error::REVIEW_PR must be a pull request number"; exit 1; }
+
+# A closed pull request (optional: the workflow lists `closed` in its types) has its pr-<n>/ folder removed from the
+# previews branch, in one commit, and nothing else is done. The retry starts again from the branch's new tip.
+remove_pictures() {
+  local tree="$1"
+  git -C "$tree" fetch --no-tags --quiet --depth=1 origin "$branch" || return 1
+  git -C "$tree" checkout --quiet --force --detach FETCH_HEAD || return 1
+  git -C "$tree" rm -r -q --ignore-unmatch -- "pr-${REVIEW_PR}" || return 1
+  git -C "$tree" diff --cached --quiet && return 0
+  git -C "$tree" -c user.name="$bot" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+    commit --quiet -m "livediagram: remove pictures for #${REVIEW_PR}" || return 1
+  git -C "$tree" push --quiet origin "HEAD:refs/heads/${branch}"
+}
+
+if [[ "${REVIEW_EVENT_ACTION:-}" == closed ]]; then
+  if [[ "${REVIEW_FORK:-false}" != true ]] && git ls-remote --exit-code --heads origin "$branch" >/dev/null; then
+    tree="$(mktemp -d)"
+    git worktree add --quiet --detach "$tree" HEAD
+    for ((try = 1; ; try++)); do
+      remove_pictures "$tree" && break
+      if ((try >= attempts)); then
+        echo "::error::could not remove the pictures from ${branch} after ${attempts} attempts"
+        exit 1
+      fi
+    done
+    git worktree remove --force "$tree"
+    echo "Removed the pictures for #${REVIEW_PR}."
+  else
+    echo "No pictures to remove for #${REVIEW_PR}."
+  fi
+  exit 0
+fi
+
 # The merge base must be here: a shallow checkout gets the base commit and enough history to reach it.
 if [[ "$(git rev-parse --is-shallow-repository)" == true ]]; then
   git fetch --no-tags --quiet --unshallow origin || true

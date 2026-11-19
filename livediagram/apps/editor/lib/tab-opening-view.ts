@@ -1,21 +1,20 @@
 // The view a tab lands on by itself: on a tab entry, a template or an import (docs/specs/008-canvas/canvas-and-palette.md
 // "On a phone the opening view focuses on the main element"). Off a phone it is Fit to Screen. On a phone a
 // fit-all of a real diagram is too small to read, so unless the whole tab already fits at a readable zoom the view
-// centres on the tab's main element at a usable zoom, and the person pans from there.
+// centres on the tab's main element at that readable zoom, the most of the diagram that still reads, and the person
+// pans from there.
 
 import { isBoxed, type BoxedElement, type Element } from '@livediagram/document';
 import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
-import { computeFitToScreen } from '@liveworkspace/workbench/lib/viewport';
 import type { ViewPose } from '@liveworkspace/workbench/lib/viewport-glide';
 import { fitPadding, tabFitView } from './tab-fit-view';
 
 type Box = { x: number; y: number; width: number; height: number };
 
-// The phone's readable zoom: a fit-all at or above it is kept, and the focus view never goes below it. The same 60%
-// the canvas starts at on a phone (hooks/canvas/useEditorViewport MOBILE_DEFAULT_ZOOM).
+// The phone's readable zoom: a fit-all at or above it is kept, and below it the focus view lands at exactly this zoom.
+// The same 60% the canvas starts at on a phone (hooks/canvas/useEditorViewport MOBILE_DEFAULT_ZOOM). Zooming in
+// further to fit the main element (up to 100%, as it once did) cropped a template to a box or two (Work Tracker 1200).
 export const PHONE_READABLE_ZOOM = 0.6;
-// The focus view never zooms past 100%: a small main element does not fill the screen.
-export const PHONE_FOCUS_MAX_ZOOM = 1;
 // A candidate covering more than this share of the content's box is a frame, a lane or a backdrop, not the subject.
 const BACKDROP_SHARE = 0.5;
 
@@ -91,8 +90,8 @@ export function pickMainElement(
 }
 
 /**
- * Centre on `main` at the zoom that fits it with `padding`, clamped to the phone's readable range, then pull the
- * centre toward `content` on each axis so the padded screen stays inside the content where the content is larger.
+ * Centre on `main` at the phone's readable zoom, then pull the centre toward `content` on each axis so the padded
+ * screen stays inside the content where the content is larger.
  */
 export function focusView(
   size: { width: number; height: number },
@@ -100,8 +99,7 @@ export function focusView(
   main: Box,
   padding: number,
 ): ViewPose {
-  const fitMain = computeFitToScreen(size, main, PHONE_FOCUS_MAX_ZOOM, padding).zoom;
-  const zoom = Math.max(PHONE_READABLE_ZOOM, fitMain);
+  const zoom = PHONE_READABLE_ZOOM;
   const axis = (start: number, span: number, at: number, screen: number) => {
     const visible = Math.max(0, screen - 2 * padding) / zoom;
     if (visible >= span) return start + span / 2;

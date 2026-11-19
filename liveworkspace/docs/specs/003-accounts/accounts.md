@@ -608,6 +608,10 @@ so none can hang a page the way the token answer did:
   wait 20 s (`ACCOUNT_WRITE_TIMEOUT_MS`), and their timeout says the outcome is unknown rather than failed
   (`AccountCallTimeout`, `unconfirmed`): New Team answers **504** `{ "error": "team_create_unconfirmed" }`, never
   the 503 that reads as safe to repeat.
+  The Explorer's New Team (its dialog, and the Move dialog's tile) says so in words when that, or the router's own
+  **504** for the same request, comes back: "The team may have been made. Refresh to check.", with **Refresh**,
+  which reads the person's teams again. A team of that name that wasn't there before opens as if just made; none
+  says "No team was made. You can create it now." and the name stays to try again.
 - **Closing an account.** The deletion code's send and check go over the binding too, and give up after 10 s as
   before. Closing the account itself waits as long as it takes: an account half closed is worse than a slow answer.
 - **The index.** Its calls to accounts for a person's teams now and people's names go over the index's `ACCOUNTS`
@@ -623,6 +627,10 @@ so none can hang a page the way the token answer did:
   route that stalled; the same 30 s deadline holds on a binding. Without a binding (a local run, a fork) the public
   route is used. A binding that throws answers `502` as an unreachable origin does, and is never retried over the
   public route, so a write is never sent twice.
+  An app API's workbench forward (`/api/workbench/*`, for a caller that reaches the API directly) goes the same way
+  over the API's own `ACCOUNTS` binding: the whole request, its method, headers and body as sent, the public route
+  only when the binding is missing or local dev says the accounts Worker isn't running. A binding that throws on a
+  request with a body is not retried either.
   A page load (a `GET` or `HEAD` asking for HTML) whose forward to liveworkspace fails or times out gets a styled
   page rather than the plain line naming the origin: **This Page Couldn’t Load**, saying liveworkspace didn't answer
   and nothing made was lost, with **Try Again** (the same address) and the platform's status page

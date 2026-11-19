@@ -29,9 +29,9 @@ export interface VerifierOptions {
   keysFrom?: KeysFetcher;
 }
 
-/** What a service binding offers: `fetch` with a URL and init. */
+/** What a service binding offers: `fetch` with a URL and init, or a whole `Request`. */
 export interface KeysFetcher {
-  fetch(input: string, init?: RequestInit): Promise<Response>;
+  fetch(input: string | Request, init?: RequestInit): Promise<Response>;
 }
 
 export interface AccountClaims {

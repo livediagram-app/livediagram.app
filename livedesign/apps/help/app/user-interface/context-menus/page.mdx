@@ -18,18 +18,19 @@ export const metadata = helpMetadata({
 
 A **context menu** is the menu you get by right-clicking, or by pressing and holding for half a second on touch. Each one is scoped to whatever you clicked, so it only ever offers what makes sense there. On a phone the menus open as a sheet from the bottom of the screen.
 
-<Figure caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, style, animation, text and collaboration.">
+<Figure caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, style, animation, text and resources.">
   <ElementContextMenu />
 </Figure>
 
 ## On an element
 
-The element menu is where an element is **styled and described**. It is built from collapsible sections, with Appearance and Animation (when it has text) opening to the side, and which ones appear depends on what you clicked. Along its top, a row of buttons: **Assign Action**, **Add Comment**, **Add Link** and **Add Note** at the left (tinted when the element already has one), and **Clear Styles** at the right. Below them, for a shape:
+The element menu is where an element is **styled and described**. It is built from collapsible sections, with Appearance and Animation (when it has text) opening to the side, and which ones appear depends on what you clicked. Along its top, a slim bar holds **Clear Styles** at the right, while the element has a style to clear. Below it, for a shape:
 
 - **Layer**: **Bring to Front**, **Send to Back**, moving it to another [layer](/help/canvas/layers/), and its opacity.
 - **Size**, **Shape** (change the kind of shape) and **Rotation**.
 - **Appearance**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text, background and border, with **Reset to Theme**), **Border** and, once it has text, **Text** (font, size, padding, alignment and markers).
 - **Animation**: a looping effect for the shape and, separately, for its text, with speed and repeat (see [Animations](/help/canvas/animations/)).
+- **Resources**, last: what attaches to the element, **Assign Action**, **Add Comment**, **Add Link** and **Add Note** (each reads **View** or **Edit** once the element has one).
 
 An arrow's menu has **Line** (straight, curved or angled, pattern and thickness) and **Pointer** (its arrowheads) instead of the shape sections, and images, tables, icons and data elements each add a section of their own.
 

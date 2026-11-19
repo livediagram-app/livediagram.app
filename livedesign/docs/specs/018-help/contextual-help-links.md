@@ -94,6 +94,8 @@ Grouped by priority; each links the keyed article.
 
 - Share dialog - expiry dropdown -> `share-link-expiry`
 - Share dialog - password section -> `share-passwords`
+- Share dialog - Approval tab (a "Learn more" link under the form or status) -> `request-approval`
+- Make Sizes dialog - the Formats row (`labelled`) -> `make-sizes`
 - Share dialog - header (roles / real-time) -> `sharing`
 - Palette settings - auto-attach arrows -> `auto-attach-arrows`
 - Palette settings - alignment guides -> `alignment-guides`
