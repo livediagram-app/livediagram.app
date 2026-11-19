@@ -4,6 +4,7 @@ import {
   attachmentName,
   attachmentSizeText,
   attachmentsValue,
+  isPictureAttachmentType,
   itemAttachments,
   normaliseAttachments,
   withAttachmentsAdded,
@@ -59,6 +60,8 @@ describe('an Attachments value', () => {
       { ...pic('a'), size: ITEM_ATTACHMENT_BYTES_MAX + 1 },
       { ...pic('a'), type: 'image/svg+xml' },
       { ...pic('a'), cover: false },
+      { ...pic('a'), type: 'application/msword' },
+      { ...pic('a'), type: 'application/pdf', cover: true },
     ];
     for (const entry of bad) expect(normaliseAttachments([entry])).toBeUndefined();
     expect(normaliseAttachments('not a list')).toBeUndefined();
@@ -112,6 +115,14 @@ describe('a card’s pictures', () => {
     expect(withoutAttachment(list, 'b').map((a) => a.id)).toEqual(['a']);
     expect(attachmentsValue([])).toBeUndefined();
     expect(attachmentsValue(list)).toBe(list);
+  });
+
+  it('keeps a PDF an email brought, never as the cover', () => {
+    const pdf = pic('q', { name: 'Quote.pdf', type: 'application/pdf' });
+    expect(normaliseAttachments([pic('a'), pdf])).toEqual([pic('a'), pdf]);
+    expect(withCover([pic('a', { cover: true }), pdf], 'q').some((a) => a.cover)).toBe(false);
+    expect(isPictureAttachmentType('application/pdf')).toBe(false);
+    expect(isPictureAttachmentType('image/gif')).toBe(true);
   });
 
   it('says a size as people read it', () => {
