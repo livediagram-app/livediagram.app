@@ -6,7 +6,7 @@
 // enough to read as the strip's, apart so the two are not stuck together), centred under the strip's card and
 // never wider, unless the strip is narrower than the tray's minimum. Without a strip on screen there is no box,
 // and the caller draws its usual top-centre pill instead.
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { lucideGlyph } from '@liveworkspace/ui';
 import { lucideSparkles } from '@liveworkspace/icons/lucide';
@@ -26,9 +26,10 @@ export const PALETTE_TRAY_GAP_PX = 6;
 export const PALETTE_TRAY_MIN_WIDTH_PX = 360;
 
 /** The tray's slot under `box`: the strip's width, or the minimum centred under it, kept 8 px inside the window.
- *  A phone (below `sm`) keeps the strip's width: its card sits beside the menu button, and a long message wraps. */
+ *  A phone too, where the strip's card sits beside the menu button and is narrower than the minimum (at most the
+ *  window less 8 px each side): kept to the card's width, a tray's actions ran past its edge ("Keep It" at 390 px,
+ *  "Show Templates" at 320 px) and its message wrapped to a second line. */
 export function traySlot(box: StripBox, viewportWidth: number): { left: number; width: number } {
-  if (viewportWidth < 640) return { left: box.left, width: box.width };
   const width = Math.min(
     Math.max(box.width, PALETTE_TRAY_MIN_WIDTH_PX),
     Math.max(0, viewportWidth - 16),
@@ -179,6 +180,32 @@ export function trayHost(): { node: HTMLElement; dx: number; dy: number } {
   return { node: host, dx: r.left, dy: r.top };
 }
 
+// How many trays are on screen, so the top-centre stack can start below one (usePaletteTrayShown). A count rather
+// than a flag: a mode banner's tray can mount while an empty tab's standing one is still up.
+let traysShown = 0;
+const trayListeners = new Set<() => void>();
+const onTraysChange = (listener: () => void) => {
+  trayListeners.add(listener);
+  return () => {
+    trayListeners.delete(listener);
+  };
+};
+function countTray(step: 1 | -1) {
+  traysShown += step;
+  for (const listener of trayListeners) listener();
+}
+
+/** Whether any palette tray is on screen (a mode banner, the modifier hint, an empty tab's Show Templates, a
+ *  template's example content): while one is, each editor's top-centre stack starts below the tray instead of the
+ *  strip (`TopCenterStack` `below="tray"`), or the tray covers the Offline banner. */
+export function usePaletteTrayShown(): boolean {
+  return useSyncExternalStore(
+    onTraysChange,
+    () => traysShown > 0,
+    () => false,
+  );
+}
+
 export function PaletteTray({
   box,
   lead,
@@ -197,22 +224,33 @@ export function PaletteTray({
   // is on screen, as the two share the tray's slot (`[data-mode-message]` in globals.css).
   standing?: boolean;
 }) {
+  useEffect(() => {
+    countTray(1);
+    return () => countTray(-1);
+  }, []);
   if (typeof document === 'undefined') return null;
   const host = trayHost();
   const slot = traySlot(box, window.innerWidth);
+  // The card centres under the strip's card, not the slot: a slot kept inside the window (a phone, where the strip
+  // sits off the window's centre beside the menu button) is not centred on the strip. Two growing spacers do it with
+  // no measuring: the one on the strip's side starts twice the offset wide, so the card's centre lands on the
+  // strip's, and a card too wide for that shrinks the spacer first, which keeps it inside the slot.
+  const shift = box.left + box.width / 2 - (slot.left + slot.width / 2);
   return createPortal(
     <div
       // Steps aside while the Explorer is open: its panel reaches under the strip (explorer-structure.md "Layout").
-      className="pointer-events-none fixed z-[var(--z-chrome)] flex justify-center [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
+      className="pointer-events-none fixed z-[var(--z-chrome)] flex [body[data-explorer-open]_&]:hidden [body[data-strip-popover-open]_&]:hidden"
       style={{
         left: slot.left - host.dx,
         width: slot.width,
         top: box.bottom + PALETTE_TRAY_GAP_PX - host.dy,
       }}
     >
+      <span aria-hidden className="grow" style={{ flexBasis: Math.max(0, 2 * shift) }} />
       <PaletteTrayCard lead={lead} end={end} standing={standing}>
         {children}
       </PaletteTrayCard>
+      <span aria-hidden className="grow" style={{ flexBasis: Math.max(0, -2 * shift) }} />
     </div>,
     host.node,
   );
@@ -237,7 +275,7 @@ function PaletteTrayCard({
       data-palette-tray=""
       {...(standing ? { 'data-yields-to-mode': '' } : { 'data-mode-message': '' })}
       role="status"
-      className="pointer-events-auto flex min-w-0 max-w-full animate-fade-in items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-slate-950/40"
+      className="pointer-events-auto flex min-w-0 max-w-full shrink-0 animate-fade-in items-center gap-2 rounded-xl border border-slate-200 bg-white py-1 pl-3 pr-1 text-[13px] text-slate-700 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:shadow-slate-950/40"
       onPointerDown={(e) => e.stopPropagation()}
     >
       <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">{lead}</span>
@@ -276,7 +314,8 @@ export function TemplateExampleTray({
       <PaletteTrayAction label="Keep It" onAction={onKeep} />
     </>
   );
-  // On a phone the strip's width holds only the two actions, so the sentence is for screen readers there.
+  // On a phone the tray's width (the window's, traySlot) holds only the two actions, so the sentence is for screen
+  // readers there.
   const message = <span className="max-sm:sr-only">Example content shows how this works.</span>;
   if (strip)
     return (
