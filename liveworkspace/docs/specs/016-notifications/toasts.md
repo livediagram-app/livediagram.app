@@ -50,6 +50,8 @@ reads as one family; the icon says the tone at a glance, and an error or warning
 ## Every toast can be closed, and may carry an action
 
 - **Every toast has a close button** (and Escape, with the focus inside it). Closing an offer is its decline.
+  **Closing is dismissing**: the toast fades where it is and leaves the notification list too, so what the person
+  sent away does not come back as a row (the owner, 2026-11-19).
 - **A toast may carry a primary action** when there is a follow-on step ("Undo" after a move to the Trash, "Reload"
   for a new version, "Try Again" when the account does not answer). Pressing a plain toast's action closes it.
 - **An action toast** (`toast.action`) carries a message and one or two buttons and is upserted in place by its `key`,
@@ -65,8 +67,13 @@ The last button is the primary one (the brand-coloured answer: Undo, Reload); an
   (`TOAST_ANSWER_TIMEOUT_MS`), long enough to reach for Undo, and then leaves. What its button offered is still
   reachable elsewhere (a deleted canvas waits in the Trash, an agent's change in the history).
 - **A standing toast** (`sticky`) says something that stays true until it is dealt with: a new version of the editor
-  is ready, the account is not answering. It does not time out: it leaves when it is closed, when its action is
+  is ready, the account is not answering, nothing on the tab is in view, a board shows a template's example cards. It
+  does not time out: it leaves when it is closed, when its action is
   taken, or when what it says stops being true (the account answers).
+- **Nothing in view** (every editor): while everything on the tab has scrolled off screen, a standing info toast says
+  **"Nothing in view"** with **Show All**, which fits the tab to the screen as Fit does (the owner, 2026-11-19: a
+  toast, not a callout over the zoom cluster). It leaves when something is back in view; closed, it stays away until
+  the tab next scrolls out of view.
 - **Hovering or focusing a toast pauses its timer**, and leaving it resumes with the time it had left, never a fresh
   start. A hidden page (another browser tab) pauses it too.
 - The same message in the same tone, while one is still up, is not shown twice.
@@ -94,15 +101,17 @@ A toast is easy to miss. Every one is also written to a list the person can open
 - **A bell icon, with no label**, in the bottom bar, right of Settings: the editor's tab bar (every product) and the
   Explorer's bottom bar on liveworkspace.app. Its accessible name and hover card say "Notifications".
 - **A dot on the bell** (brand colour, 8px, top right) when the list holds a toast the person has not seen: one that
-  timed out, one retired from a full stack, or one that never popped up because notifications are off. A toast the
-  person closed, or whose action they took, counts as seen. Opening the list marks everything in it seen and clears
+  timed out, one retired from a full stack, or one that never popped up because notifications are off. A toast whose
+  action the person took counts as seen; one they closed is not in the list at all. Opening the list marks everything in it seen and clears
   the dot. The dot is announced in the button's name ("Notifications, new").
 
 ### Collapsing into the bell
 
-- When a toast leaves (timed out, closed, answered, retired from a full stack), it **collapses into the bell**: it
+- When a toast leaves (timed out, answered, retired from a full stack), it **collapses into the bell**: it
   shrinks and slides towards the bell's centre and fades as it arrives, over `long` (250ms) on the ease-in-out curve,
   so the eye follows where it went. The bell then gives one small pulse (it grows to 115% and back over `short`).
+- **A closed toast does not collapse into the bell**: it fades and drops 4px over `micro` where it is, as it is gone
+  from the list.
 - Where there is no bell on screen (a page without the bottom bar, a presentation, the bar scrolled or hidden), a
   toast leaves as before: it fades and drops 4px over `micro`.
 - **Under reduced motion** (the system setting or the app's Reduce Motion), a toast fades out where it is and the bell

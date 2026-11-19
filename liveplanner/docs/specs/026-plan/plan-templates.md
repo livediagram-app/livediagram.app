@@ -30,7 +30,7 @@ board of the template shows some, and every plan view on its Dashboard has somet
 - **Repeating examples.** A card whose work comes round on a rule carries a [repeat](items.md#repeating-cards) of its
   own: Weekly Planner's **Weekly review** repeats every week on Friday, landing in Friday. Its `from` is the day the
   project is made and its `timeZone` the maker's (the browser's; the API's seeded create uses UTC), so its first copy
-  is the next Friday after today. It is an example card like the rest (Clear Example Cards trashes it, which stops it
+  is the next Friday after today. It is an example card like the rest (Clear trashes it, which stops it
   while it is in the Trash); its copies are ordinary cards, as every repeat's are. A plan kept Offline holds the
   rule and makes copies once it is saved to an account. A seed names only `every`, `days`, `date` and `status`, and a
   test holds every seeded rule to what `readRepeatRule` accepts.
@@ -41,22 +41,22 @@ board of the template shows some, and every plan view on its Dashboard has somet
   one undo step, after the tabs land). **Agents** (the MCP's `create_project` and `add_tab`, the api's seeded create)
   get the set-up alone: an agent fills a board with real cards, and examples would be cards it then had to find and
   delete.
-- **Clearing them.** While the project holds an example card that is not in the Trash, every board showing one
-  carries a one-line notice under its header: an info glyph, **"Example cards show how this board runs."**, and two
-  buttons, **Clear Example Cards** and **Keep Them**. The two buttons keep together: where the board is too narrow
-  for the sentence and both on one line (a phone, a 450 px window), they move together to a line of their own under
-  the sentence, at its right, never one button alone on a line.
-  - **Clear Example Cards** sends every example card of the project (every board, every tab) to the Trash as one
-    write and one undo step, and announces "N example cards moved to the Trash". The Trash restores any of them.
-  - **Keep Them** takes the flag off every example card, one write and one undo step: they are ordinary cards from
-    then on.
-  - Either way no card is an example any more, so the notice goes, for everyone, on every board. Undo brings it back
-    with the cards or the flags.
-  - It sends `Plan · Deleted · ExampleCards` or `Plan · Changed · ExampleCardsKept`.
-  - **Who sees it**: only an **Editor** (the notice trashes or changes other people's cards, which a Participant may
+- **Clearing them.** While the project holds an example card that is not in the Trash and a board on screen shows
+  one, a standing toast ([Toasts](../../../liveworkspace/docs/specs/016-notifications/toasts.md)) says
+  **"Example cards show how this board runs."** with one action, **Clear** (the owner, 2026-11-19: a toast, not a strip
+  on the board, and no Keep). It is one toast however many boards show example cards, and it does not time out.
+  - **Clear** sends every example card of the project (every board, every tab) to the Trash as one write and one undo
+    step, and announces "N example cards moved to the Trash". The Trash restores any of them. No card is an example
+    any more, so the toast goes, for everyone. Undo brings it back with the cards.
+  - **Closing it** (its X or Escape) hides it until the plan is opened again; the cards stay examples, and nothing is
+    written.
+  - It leaves by itself when no board on screen shows an example card any more (the tab changed, the cards were
+    deleted).
+  - Clear sends `Plan · Deleted · ExampleCards`.
+  - **Who sees it**: only an **Editor** (the toast trashes other people's cards, which a Participant may
     not, [Share roles](../013-workspace/share-roles.md#what-a-participant-changes)). A **Participant** and a
     **Viewer** never see it; to them the example cards are cards like any other. A card shown outside a board (a
-    Plan card, a Dashboard's views) carries no notice: the board does.
+    Plan card, a Dashboard's views) raises no toast: a board does.
 - **Blank Plan and the spreadsheet templates** have no boards, so no example cards; a spreadsheet template's Sheet is
   already filled in ([Spreadsheet templates](#spreadsheet-templates)).
 - **The catalogue.** `PLAN_TEMPLATE_SEEDS` (`packages/templates/src/plan-template-seed-data.ts`), pure data, resolved

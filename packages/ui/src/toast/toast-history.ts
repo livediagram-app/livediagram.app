@@ -202,6 +202,16 @@ export function settleToast(id: string, state: 'missed' | 'seen', scope = scopeO
   write(scope, next);
 }
 
+/** A toast the person closed: it leaves the list too. */
+export function forgetToast(id: string, scope = scopeOf()): void {
+  const list = readToastHistory(scope);
+  if (!list.some((r) => r.id === id)) return;
+  write(
+    scope,
+    list.filter((r) => r.id !== id),
+  );
+}
+
 /** The list was opened: everything missed in it is seen. */
 export function markToastHistorySeen(): void {
   const scope = scopeOf();

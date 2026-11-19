@@ -89,7 +89,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
     on.expire(toast.id),
   );
   useLayoutEffect(() => {
-    if (!leaving || !card.current) return;
+    if (!leaving || !card.current || toast.dismissed) return;
     const motion = collapseIntoBell(card.current);
     if (!motion) return;
     collapsing.current = true;
@@ -98,7 +98,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
       () => {},
     );
     return () => motion.cancel();
-  }, [leaving, on, toast.id]);
+  }, [leaving, on, toast.id, toast.dismissed]);
   // The fallback for an exit whose end never comes (a hidden tab, a test environment).
   useEffect(() => {
     if (!leaving) return;

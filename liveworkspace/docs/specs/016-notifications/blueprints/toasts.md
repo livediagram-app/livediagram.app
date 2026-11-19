@@ -52,7 +52,8 @@ which entry it became (new, or the keyed one upserted in place) and records that
   `missed` and goes no further.
 - A plain toast's `options.action` becomes its one action, wrapped to retire the toast (seen) after it runs. An action
   toast's actions are wrapped to settle its record `seen` before they run; the toast stays (its feature dismisses it).
-- Close (button, Escape): `onDismiss?.()` once, then the offer's decline when it is an offer; settled `seen`.
+- Close (button, Escape): `onDismiss?.()` once, then the offer's decline when it is an offer; its record is
+  removed (`forgetToast`) and the entry marked `dismissed`, so it fades in place instead of collapsing into the bell.
 - Expire: settled `missed`. Retired by the limit: `missed`. `dismissAction(key)`: `seen` (NT4).
 
 Nesting: `ToastProvider` reads its own context; when an outer provider is there it renders its children alone, so
@@ -79,7 +80,7 @@ bell reads it with `useSyncExternalStore` wherever it is drawn, inside the provi
   one. A `missed` toast under a key updates that key's last record when it is `missed` and under
   `TOAST_HISTORY_MERGE_MS` old (NT1). Keeps the last `TOAST_HISTORY_LIMIT`.
 - Record ids: `<page start in base 36>-<toast id>`, unique across reloads.
-- `settleToast(id, state)` changes a `live` record only. `markToastHistorySeen()` turns every `missed` into `seen`
+- `settleToast(id, state)` changes a `live` record only. `forgetToast(id)` removes a record (a closed toast). `markToastHistorySeen()` turns every `missed` into `seen`
   (opening the list). `clearToastHistory()` empties the scope. `hasMissedToast(records)` is the dot.
 - Read back: `parseToastRecords` keeps well-formed records only; a `live` record from an earlier page is `missed`
   (NT2).

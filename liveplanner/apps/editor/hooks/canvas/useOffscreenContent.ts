@@ -5,7 +5,7 @@ import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObserv
 import { useCanvasCovered } from '@/hooks/plan/plan-cover-store';
 
 // True while every element on the tab is panned / zoomed entirely out of view, and there is something to see. Drives the "bring it back"
-// nudge above the Fit button (OffscreenContentHint). Never while something covers the canvas (a board or Sheet filling
+// "Nothing in view" toast (OffscreenContentHint). Never while something covers the canvas (a board or Sheet filling
 // its tab or maximised, a Dashboard's or a Form's page): the canvas's own view is hidden then, so where its elements sit
 // says nothing about what is on screen, and a Dashboard tab said "Nothing's in view" over its own slots.
 //

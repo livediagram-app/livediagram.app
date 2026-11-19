@@ -27,6 +27,7 @@ import {
   recordToast,
   setToastHistoryScope,
   settleToast,
+  forgetToast,
   toastRecordId,
 } from './toast-history';
 
@@ -256,14 +257,22 @@ function ToastRoot({ children, quiet = neverQuiet, historyScope }: ToastProvider
     };
     return {
       answer,
+      // Closing is dismissing: the toast fades where it is and leaves the notification list.
       close: (entry) => {
-        if (!entry.leaving) entry.onDismiss?.();
-        answer(entry, false);
+        if (entry.leaving) return;
+        entry.onDismiss?.();
+        commit(
+          list.current.map((t) =>
+            t.id === entry.id ? { ...t, leaving: true, dismissed: true } : t,
+          ),
+        );
+        forgetToast(toastRecordId(entry.id), scope());
+        if (entry.offer) entry.offer.onDecline();
       },
       expire: (id) => retire((t) => t.id === id, 'missed'),
       remove: (id) => commit(list.current.filter((t) => t.id !== id)),
     };
-  }, [retire, commit]);
+  }, [retire, commit, scope]);
 
   return (
     <ToastContext.Provider value={api}>

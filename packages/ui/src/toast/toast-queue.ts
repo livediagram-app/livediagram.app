@@ -47,6 +47,8 @@ export type ToastEntry = {
   onDismiss?: () => void;
   // Dismissed, still playing its exit before the stack removes it.
   leaving?: boolean;
+  // Closed by the person: it fades where it is (no collapse into the bell) and is gone from the list.
+  dismissed?: boolean;
   // Arrived on a full stack and retired an older toast: it enters with a bolder pop, so the change is seen.
   full?: boolean;
 };

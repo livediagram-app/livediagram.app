@@ -174,7 +174,7 @@ export function usePlanItemWrites(
     },
     [write, planItems.items, setOpenItemId],
   );
-  // Many cards changed as one write and one undo step (Keep Them on a template's example cards).
+  // Many cards changed as one write and one undo step (a batch of card changes).
   const patchItems = useCallback(
     (patches: readonly ItemPatchOf[]) => {
       if (patches.length === 0) return;

@@ -43,7 +43,7 @@ afterEach(() => {
 });
 
 describe('ToastProvider', () => {
-  it('closes any toast with its close button, and lists it as seen', () => {
+  it('closing any toast dismisses it: gone from the screen and from the list', () => {
     render(
       <ToastProvider>
         <Grab />
@@ -54,7 +54,7 @@ describe('ToastProvider', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
     afterExit();
     expect(screen.queryByRole('status')).toBeNull();
-    expect(states()).toEqual([['“Roadmap” moved', 'seen']]);
+    expect(states()).toEqual([]);
   });
 
   it('a plain toast’s action runs, then closes it; it stays the answer time', () => {
@@ -240,8 +240,8 @@ describe('ToastProvider', () => {
           <Grab />
         </ToastProvider>,
       );
-      act(() => api.info('Collapse me'));
-      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+      act(() => api.info('Collapse me', { action: { label: 'Open', onSelect: () => {} } }));
+      fireEvent.click(screen.getByRole('button', { name: 'Open' }));
       expect(animate).toHaveBeenCalled();
       // Past the plain exit, it is still collapsing.
       afterExit();
@@ -249,12 +249,19 @@ describe('ToastProvider', () => {
       await act(async () => finish());
       expect(screen.queryByText('Collapse me')).toBeNull();
       // The fallback hold covers a collapse whose end never comes.
-      act(() => api.info('Never ends'));
-      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+      act(() => api.info('Never ends', { action: { label: 'Open', onSelect: () => {} } }));
+      fireEvent.click(screen.getByRole('button', { name: 'Open' }));
       act(() => {
         vi.advanceTimersByTime(TOAST_COLLAPSE_MS + TOAST_EXIT_HOLD_MS);
       });
       expect(screen.queryByText('Never ends')).toBeNull();
+      // A closed toast fades where it is: it is gone from the list, so it does not fly to the bell.
+      animate.mockClear();
+      act(() => api.info('Sent away'));
+      fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+      expect(animate).not.toHaveBeenCalled();
+      afterExit();
+      expect(screen.queryByText('Sent away')).toBeNull();
     } finally {
       delete (HTMLElement.prototype as Partial<HTMLElement>).animate;
       bell.remove();

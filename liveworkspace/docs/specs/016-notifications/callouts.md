@@ -37,12 +37,11 @@ that surface in both themes.
 
 ## Floating callouts
 
+(Nothing in view was one; it is now a standing toast, [Toasts](./toasts.md) "Timing".)
+
 A few callouts are anchored on the canvas, to a control or an element, not laid in a panel. They keep their anchor
 and take the callout's look, on an opaque surface with a shadow so they read over any canvas:
 
-- **Nothing in view** (every editor): above the zoom cluster when everything on the tab has scrolled off screen.
-  Info tone, one line: **"Nothing in view"** with **Show All** (fits the tab to the screen, as Fit does). It no longer
-  carries a second line or a full-width button.
 - **Too long for this card** (livedocuments flashcards): warning tone at the card's foot, with **Split Onto a New
   Card** for someone who may change the pages. It sits below the card's last line, not over it.
 - **The paste notice** (livediagram): warning tone at the bottom of the canvas after a paste that changed or dropped
