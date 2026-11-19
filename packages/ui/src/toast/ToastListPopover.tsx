@@ -41,7 +41,16 @@ export default function ToastListPopover({
       align="end"
       bare
     >
-      <ToastList titleId={titleId} records={records} now={now} />
+      <ToastList
+        titleId={titleId}
+        records={records}
+        now={now}
+        // Clearing is the last thing done here: the emptied list closes with it (owner, 2026-11-19).
+        onClear={() => {
+          clearToastHistory();
+          onClose();
+        }}
+      />
     </ResponsivePopover>
   );
 }
@@ -50,10 +59,12 @@ function ToastList({
   titleId,
   records,
   now,
+  onClear,
 }: {
   titleId: string;
   records: readonly ToastRecord[];
   now: number;
+  onClear: () => void;
 }) {
   return (
     <div className="flex max-h-[inherit] flex-col">
@@ -63,7 +74,7 @@ function ToastList({
         </h2>
         <button
           type="button"
-          onClick={clearToastHistory}
+          onClick={onClear}
           disabled={records.length === 0}
           className="touch-target relative inline-flex h-8 items-center rounded-lg px-2.5 text-sm font-semibold text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:cursor-not-allowed disabled:opacity-50 dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white"
         >
