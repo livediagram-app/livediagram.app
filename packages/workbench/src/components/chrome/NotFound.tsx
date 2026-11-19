@@ -161,7 +161,10 @@ export function NotFound({
   const createNew = deadLink && embed ? undefined : onCreateNew;
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-      <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
+      {/* Asking, the card is a step wider so its three buttons keep one row. */}
+      <div
+        className={`pointer-events-auto flex ${asking ? 'max-w-lg' : 'max-w-md'} animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900`}
+      >
         {deadLink ? (
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             <UnlinkIcon />
