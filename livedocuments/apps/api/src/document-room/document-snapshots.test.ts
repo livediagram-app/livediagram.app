@@ -4,6 +4,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ShapeElement } from '@livedocuments/document';
 import { SNAPSHOT_GENERATION_HEADER } from '@liveworkspace/snapshots';
+import { getNamedVersion, keepNamedVersion } from '../db/named-versions';
 import { getTab, upsertTab } from '../db/tabs';
 import type { DocumentGrant as ItemGrant } from '../index-service';
 import { makeTestRouteContext } from '../routes/test-route-context';
@@ -126,6 +127,22 @@ describe('document snapshots', () => {
     await send('POST', `/snapshots/${list.snapshots[0]!.id}/revert`);
     expect((await getTab(env, 'A', 't3'))?.name).toBe('New');
     expect(await getTab(env, 'A', 't2')).toBeNull();
+  });
+
+  // Work Tracker 1097: a tab's named versions share the snapshot tables, scoped to the tab.
+  it("never lists, counts or reverts a tab's named versions, and a revert keeps them", async () => {
+    const { db, env, send } = await arrange();
+    const author = { id: OWNER, name: 'Ada', color: '#000' };
+    const named = await keepNamedVersion(env, { tabId: 't1', name: 'Mine', author, now: 5 });
+    for (let i = 0; i < 6; i += 1) await send('POST', '/snapshots', { body: { name: `n${i}` } });
+    const list = await (await send('GET', '/snapshots')).json<{ snapshots: { id: string }[] }>();
+    expect(list.snapshots).toHaveLength(5);
+    expect(list.snapshots.map((s) => s.id)).not.toContain(named!.id);
+    expect((await send('DELETE', `/snapshots/${named!.id}`)).status).toBe(404);
+    expect((await send('POST', `/snapshots/${named!.id}/revert`)).status).toBe(404);
+    await send('POST', `/snapshots/${list.snapshots[4]!.id}/revert`);
+    expect((await getNamedVersion(env, 't1', named!.id))?.summary.name).toBe('Mine');
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM tab_named_versions').get()).toEqual({ n: 1 });
   });
 
   it('keeps the latest five: a sixth drops the oldest', async () => {

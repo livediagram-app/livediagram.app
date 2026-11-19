@@ -71,6 +71,14 @@ export type NotFoundProps = {
   archived?: { onChangeFolder?: () => void } | null;
 };
 
+// The line under the body for the cases a colleague reaches from an editor address someone copied (signed out, or
+// signed in without access): only a share link lets them in.
+function shareHintOf(reason: NotFoundReason, noun: string): string | null {
+  return reason === 'sign-in' || reason === 'missing'
+    ? `If you are joining a colleague on this ${noun}, ask them to share a URL via the Share button.`
+    : null;
+}
+
 // What the card says under its heading, case by case.
 function bodyOf(reason: NotFoundReason, noun: string, embed: boolean): string {
   switch (reason) {
@@ -83,7 +91,7 @@ function bodyOf(reason: NotFoundReason, noun: string, embed: boolean): string {
         ? `This ${noun} is no longer shared at this link. Ask whoever shared it for a new one.`
         : 'This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared it for a new one.';
     case 'sign-in':
-      return `This ${noun} doesn’t exist, or you need to sign in to open it.`;
+      return `This ${noun} doesn’t exist, or you don’t have access to it.`;
     default:
       return `This ${noun} doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.`;
   }
@@ -99,6 +107,7 @@ export function NotFound({
   archived = null,
 }: NotFoundProps) {
   const Noun = capitalised(noun);
+  const shareHint = shareHintOf(reason, noun);
   if (archived) {
     return (
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
@@ -166,6 +175,11 @@ export function NotFound({
         <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
           {bodyOf(reason, noun, embed)}
         </p>
+        {shareHint ? (
+          <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-400">
+            {shareHint}
+          </p>
+        ) : null}
         {onOpenExplorer || createNew || signIn ? (
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             {onOpenExplorer ? (

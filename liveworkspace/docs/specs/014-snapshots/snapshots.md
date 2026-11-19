@@ -15,7 +15,8 @@ feature.
 
 livedocuments' Version History (its `006-document/version-history.md`) is a different thing kept beside them:
 automatic versions of one tab, named or not, restored one tab at a time. A snapshot is the whole document, taken by a
-person.
+person. The two share one store: a version named with Name This Version is kept in the snapshot tables, scoped to its
+tab ("Save points of one part of an item" below).
 
 ## What a snapshot holds
 
@@ -47,6 +48,21 @@ In the item's own Durable Object SQLite, beside its content, never in R2 or D1. 
 
 A snapshot larger than **32 MiB** is refused before anything is written ("too large to snapshot"), so five of them
 stay well under the object's storage. Deleting the item deletes its snapshots with it, as its object goes.
+
+### Save points of one part of an item
+
+The same two tables also hold an app's save points of **one part** of an item, kept apart from the item's own
+snapshots by a scoped item id. livedocuments' named versions (Name This Version, one tab's content; its
+`006-document/version-history.md`, Work Tracker 1097) are the one use: each is a `manual` row under the item id
+`tab:<tab id>`, so the item's list, its five, its revert and its delete never see them, and they never see the item's.
+
+- **Their own cap.** A take may keep every row of its scope (no prune), when the app bounds them itself (livedocuments
+  refuses a 26th name).
+- **The app's own columns beside them.** What only the app knows of a save point (livedocuments: the tab revision and
+  name it held) lives in the app's own table, keyed by the snapshot id and written in the same transaction as the take.
+- **Rename and rewrite.** A save point's name can change in place, and its text can be rewritten whole (a closed
+  account's name taken off it), under the same size cap and chunking as a take.
+- **Gone with their part.** The app removes a part's save points when the part goes (livedocuments: with the tab).
 
 ## Revert
 

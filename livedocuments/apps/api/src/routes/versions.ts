@@ -14,9 +14,10 @@ import {
   copyTabStatement,
   getDocument,
   getVersion,
+  keepNamedVersion,
   listVersions,
+  nameVersion,
   namedVersionCount,
-  setVersionName,
   tabRev,
   versionAtRev,
   versionId,
@@ -152,8 +153,8 @@ const tooManyNames = () =>
 const tabBusy = () =>
   json({ error: 'tab_busy', message: 'The tab kept changing; try again.' }, { status: 409 });
 
-// Name This Version (VH10): the version already holding the tab's revision is named, or the content is kept as a
-// `manual` one.
+// Name This Version (VH10, VH20): a named version already holding the tab's revision is renamed; otherwise the
+// content is kept as a `manual` one in the snapshots' store, or in `tab_versions` when that store fails.
 async function nameCurrent(
   ctx: DocumentRouteContext,
   document: DocumentDTO,
@@ -165,13 +166,41 @@ async function nameCurrent(
   const rev = await tabRev(ctx.env, tabId);
   if (rev === null) return notFound();
   const existing = await versionAtRev(ctx.env, tabId, rev);
-  if (existing?.name == null && (await namedVersionCount(ctx.env, tabId)) >= VERSION_NAMED_MAX) {
-    return tooManyNames();
-  }
-  if (existing) {
-    const version = await setVersionName(ctx.env, tabId, existing.id, name);
+  if (existing?.name != null) {
+    const version = await nameVersion(ctx.env, tabId, existing.id, name);
     return json({ version }, { status: 201 });
   }
+  if ((await namedVersionCount(ctx.env, tabId)) >= VERSION_NAMED_MAX) return tooManyNames();
+  const author = await authorOf(ctx, owner);
+  const now = Date.now();
+  try {
+    const kept = await keepNamedVersion(ctx.env, { tabId, name, author, now });
+    if (kept === undefined) return notFound();
+    // Another version took the revision between the read and the write: name it on the next try.
+    if (kept === null) return tabBusy();
+    console.info('[versions] kept', {
+      documentId: document.id,
+      tabId,
+      kind: 'manual',
+      rev: kept.rev,
+      store: 'snapshots',
+    });
+    return json({ version: kept }, { status: 201 });
+  } catch (err) {
+    console.warn('[versions] refused', { documentId: document.id, tabId, reason: 'store' }, err);
+  }
+  return keepInTabVersions(ctx, document, tabId, { rev, name, author, now });
+}
+
+// Name This Version as it was before the snapshots' store: a `manual` row of `tab_versions`, the fallback when that
+// store cannot be written (VH20).
+async function keepInTabVersions(
+  ctx: DocumentRouteContext,
+  document: DocumentDTO,
+  tabId: string,
+  v: { rev: number; name: string; author: Awaited<ReturnType<typeof authorOf>>; now: number },
+): Promise<Response> {
+  const { rev, name, author, now } = v;
   const id = versionId();
   await copyTabStatement(ctx.env, {
     id,
@@ -179,8 +208,8 @@ async function nameCurrent(
     rev,
     kind: 'manual',
     name,
-    author: await authorOf(ctx, owner),
-    now: Date.now(),
+    author,
+    now,
   }).run();
   const version = await getVersion(ctx.env, tabId, id);
   // The tab moved between the read and the copy: name what now holds its revision on the next try.
@@ -201,7 +230,7 @@ async function rename(
   if (name !== null && current.name === null) {
     if ((await namedVersionCount(ctx.env, tabId)) >= VERSION_NAMED_MAX) return tooManyNames();
   }
-  const version = await setVersionName(ctx.env, tabId, current.id, name);
+  const version = await nameVersion(ctx.env, tabId, current.id, name);
   console.info('[versions] named', { documentId: document.id, tabId, named: name !== null });
   return json({ version });
 }
