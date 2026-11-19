@@ -135,6 +135,7 @@ const HELD_AT_100 = [
   // per-tab-storage.md "Saving", Work Tracker 1243).
   'src/hooks/persistence/useIdentityBootstrapCore.ts',
   'src/hooks/persistence/useUnloadFlushCore.ts',
+  'src/lib/load-progress.ts',
 ];
 
 export default defineProject({

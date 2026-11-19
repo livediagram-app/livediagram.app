@@ -540,6 +540,7 @@
     "./lib/index-client": "./src/lib/index-client.ts",
     "./lib/key-label": "./src/lib/key-label.ts",
     "./lib/live-editor-build": "./src/lib/live-editor-build.ts",
+    "./lib/load-progress": "./src/lib/load-progress.ts",
     "./lib/listeners": "./src/lib/listeners.ts",
     "./lib/relative-now": "./src/lib/relative-now.ts",
     "./components/sheet-links/SheetLinkedCharts": "./src/components/sheet-links/SheetLinkedCharts.tsx",
