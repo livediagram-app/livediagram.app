@@ -139,6 +139,13 @@ const HELD_AT_100 = [
   'src/components/chrome/ModifierHintBanner.tsx',
   'src/components/start/StartAgainTray.tsx',
   'src/components/palette/CategoryBar.tsx',
+  // The category flyout, its side panel and their keyboard, every editor's one copy (Work Tracker 1261).
+  'src/components/palette/CategoryBarFlyout.tsx',
+  'src/components/palette/CategoryFlyout.tsx',
+  'src/components/palette/CategoryFlyoutSide.tsx',
+  'src/components/palette/category-flyout-items.tsx',
+  'src/components/palette/category-flyout-keys.ts',
+  'src/components/palette/category-flyout-kit.ts',
   // The view across an import's undo and redo, every editor's one copy (each editor's 008-canvas
   // canvas-and-palette.md "Undoing an import brings its view back", Work Tracker 1247).
   'src/lib/import-undo-view.ts',

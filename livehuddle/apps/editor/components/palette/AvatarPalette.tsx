@@ -40,8 +40,8 @@ import { AVATAR_PALETTE_CATEGORIES, type AvatarPaletteCategoryId } from '@/lib/a
 import { CategoryBarButtons, useCategoryBar, type BarCategory } from './CategoryBar';
 import { CARD_CLASS, CardWidth, StripRow, stripRootLayout } from './ToolbarPalette';
 import { Divider } from './strip-rail-items';
-import { FlyoutHeader } from './CategoryFlyout';
-import { FLYOUT_FOOTER_CLASS } from './category-flyout-items';
+import { FlyoutHeader } from '@liveworkspace/workbench/components/palette/CategoryFlyout';
+import { FLYOUT_FOOTER_CLASS } from '@liveworkspace/workbench/components/palette/category-flyout-items';
 import {
   AVATAR_FLYOUT_WIDTH,
   AVATAR_FLYOUT_WIDTH_CLASS,

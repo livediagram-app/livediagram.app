@@ -27,8 +27,15 @@ import { setJukeboxListening, useJukeboxListening } from '@/lib/jukebox-listenin
 import { previewHandlers, setAvatarPreview } from '@/lib/avatar-preview';
 import { ColourSwatch } from '@/components/colour/ColourSwatch';
 import { MenuToggleRow } from './context-menu-input-rows';
-import { FlyoutGroupTitle, FlyoutHeader, onFlyoutArrowKey } from './CategoryFlyout';
-import { CardTile, PictureTile } from './category-flyout-items';
+import {
+  FlyoutGroupTitle,
+  FlyoutHeader,
+} from '@liveworkspace/workbench/components/palette/CategoryFlyout';
+import { onFlyoutArrowKey } from '@liveworkspace/workbench/components/palette/category-flyout-keys';
+import {
+  CardTile,
+  PictureTile,
+} from '@liveworkspace/workbench/components/palette/category-flyout-items';
 import type { AvatarPaletteActions } from './avatar-palette-widths';
 
 // The avatar palette's flyouts (docs/specs/008-canvas/avatar-mode.md "The avatar palette"): one per category, under

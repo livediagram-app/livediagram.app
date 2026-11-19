@@ -102,6 +102,10 @@ under the pointer as a category is switched.
 
 ### The flyout
 
+The flyout, its side panel and their keyboard are every editor's one copy, in `@liveworkspace/workbench`
+(`CategoryBarFlyout`, `CategoryFlyout`, `CategoryFlyoutSide`, `category-flyout-keys`; Work Tracker 1261): this editor
+keeps only its tiles and how its categories are arranged, bound once in `components/palette/category-flyout-kit.tsx`.
+
 Hung centred under its button (spanning the screen between the gutters on a phone), capped to the window and
 scrolling when long:
 

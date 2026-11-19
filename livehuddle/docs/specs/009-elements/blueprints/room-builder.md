@@ -85,7 +85,8 @@ Notes:
   `door-art.ts`); the PNG (and the PDF's raster fallback) rasters a Door's SVG in a frame padded by it
   (`renderTabToCanvas`), so the swing the SVG draws is never cropped. Paints are data too: a revolving drum's floor is
   `pane` (the glass wash, unoutlined).
-- `CategoryFlyoutSide` lifts the side panel against `[data-canvas-root]`'s bottom (`sideFloor`), at its settled height
+- Workbench's shared `CategoryFlyoutSide` lifts the side panel against the floor the flyout kit gives it
+  (`category-flyout-kit.tsx` `sideFloor`: `[data-canvas-root]`'s bottom), at its settled height
   (the opening animation's scale divided out, `animationScale`), re-measured on `animationend`, resize and a
   ResizeObserver.
 - The Long Table (office.md "Long Table") is the Meeting Table's `long` variant: `@livehuddle/avatar/seats`
@@ -118,7 +119,8 @@ furniture-art` `longTableArt(width, height, facing)` (re-exported by `office.ts`
 'long' }`, after the Meeting Table in Seats' catalogue order.
 - A room preset's pieces stand at their layout place from the room's top left (`roomPresetCompanions`), never scaled:
   a preset always lands at its own size (`dropsAtOwnSize`).
-- On a phone `CategoryFlyoutSide` takes `minHeight: flyoutHeight` (the flyout's height, from `sidePlacement`), so it
+- On a phone the shared `CategoryFlyoutSide` takes `minHeight: flyoutHeight` (the flyout's height, from
+  `sidePlacement`) where the kit sets `sideCoversFlyoutOnPhone`, so it
   covers the whole flyout however few presets it holds, as a `flex flex-col` whose body is `grow`, so the footer
   pins to the bottom.
 
