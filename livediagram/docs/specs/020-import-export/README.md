@@ -28,3 +28,7 @@ in over its edge; an arrow into a tray is its mark. Both arts are shared
 (`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike. The start screen's **Import** list
 and the tools' own import dialogs, **Import from draw.io**, **Import from Excalidraw** and **Import from Microsoft Whiteboard**, wear the
 Import header too, each with its own one line.
+
+An import's refusal names what it read: a picked file is "This file isn't valid JSON.", pasted text "This pasted text
+isn't valid JSON." (a JSON tab), and an Excalidraw scene, pasted, dropped or picked, "This isn't valid JSON."; never
+"File" for text that was pasted (Work Tracker 1060).

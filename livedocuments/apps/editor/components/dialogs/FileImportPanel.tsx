@@ -91,7 +91,7 @@ export function FileImportPanel({
   return (
     <div>
       {onBack ? (
-        <BackBar label="All formats" current={copy.title} onClick={onBack} disabled={busy} />
+        <BackBar label="All Formats" current={copy.title} onClick={onBack} disabled={busy} />
       ) : null}
       <div
         role="region"

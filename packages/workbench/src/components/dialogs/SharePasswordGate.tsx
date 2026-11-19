@@ -7,7 +7,7 @@ const capitalised = (word: string) => word.charAt(0).toUpperCase() + word.slice(
 
 export type SharePasswordGateProps = {
   // The product's word for what the link opens, in lower case ('design', 'plan'): "This design is
-  // password-protected", "Open design".
+  // password-protected", "Open Design" (the button in Title Case, Work Tracker 1060).
   noun: string;
   // True when the visitor already submitted a wrong password (vs the
   // first prompt), so we show an error line.
@@ -82,7 +82,7 @@ export function SharePasswordGate({
           </p>
         ) : null}
         <Button type="submit" size="md" disabled={!value.trim()} className="w-full shadow-sm">
-          {`Open ${noun}`}
+          {`Open ${capitalised(noun)}`}
         </Button>
       </form>
     </div>

@@ -135,7 +135,7 @@ describe('ShareDialog', () => {
   it('says when the clipboard refused, rather than failing quietly', async () => {
     writeText.mockRejectedValue(new Error('denied'));
     const { notify } = renderDialog({}, { links: [link('a1')] });
-    fireEvent.click(await screen.findByRole('button', { name: 'Copy link' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Copy Viewer pass link' }));
     await waitFor(() =>
       expect(notify).toHaveBeenCalledWith(
         'Couldn’t copy the link. Select it to copy it yourself.',
@@ -166,13 +166,22 @@ describe('ShareDialog', () => {
     expect(document.querySelectorAll('[data-share-connected-from]')).toHaveLength(1);
   });
 
+  // Work Tracker 1060: two passes' buttons never read alike to a screen reader.
+  it('names each pass on its Copy and Revoke buttons', async () => {
+    renderDialog({}, { links: [link('a1'), link('e1', { level: 'edit' })] });
+    expect(await screen.findByRole('button', { name: 'Copy Viewer pass link' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Copy Editor pass link' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Revoke Viewer pass link' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Revoke Editor pass link' })).toBeTruthy();
+  });
+
   it('asks before revoking, then revokes', async () => {
     const { calls, onTelemetry } = renderDialog({}, { links: [link('a1')] });
-    fireEvent.click(await screen.findByRole('button', { name: 'Revoke link' }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Revoke Viewer pass link' }));
     const ask = screen.getByRole('alertdialog', { name: 'Revoke this pass?' });
     fireEvent.click(within(ask).getByRole('button', { name: 'Cancel' }));
     expect(calls.filter((c) => c.method === 'revokeShareLink')).toHaveLength(0);
-    fireEvent.click(screen.getByRole('button', { name: 'Revoke link' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Revoke Viewer pass link' }));
     fireEvent.click(
       within(screen.getByRole('alertdialog')).getByRole('button', { name: 'Revoke' }),
     );

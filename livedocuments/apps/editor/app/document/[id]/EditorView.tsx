@@ -39,7 +39,7 @@ import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs'
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { EditorTours } from '@/components/tour/EditorTours';
 import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopovers';
-import { ModifierHint } from '@/components/chrome/ModifierHintBanner';
+import { ModifierHint } from '@liveworkspace/workbench/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';

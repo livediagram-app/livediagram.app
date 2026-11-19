@@ -281,5 +281,5 @@ A template chosen fires `Template · Used · <kind>` through `chooseTemplate`. A
 - `../packages/community-ui/src/start/start-tiles.test.tsx`: a group's Community cards, a search with them joined
   in, and the badge's colours reading at AA in light and dark (shared by every app's start).
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing the start
+- `../packages/workbench/src/components/start/StartAgainTray.test.tsx` (every editor's one tray), `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing the start
   back), `hooks/editor/page-edits.test.ts` (the last page).

@@ -194,16 +194,21 @@ export function lineOps(line: TextItem, fonts: InvisibleFonts): string {
   return out.join('\n');
 }
 
-/** The page's text layer: each line in a text object of its own, wrapped by `mark` (its tags) when given. */
+/** The page's text layer: each line in a text object of its own, wrapped by `mark` (its tags) when given. A tagged
+ *  line with no text (an empty table cell's marker) is handed to `declare`: a structure element with no content. */
 export function textLayerOps(
   lines: readonly TextItem[],
   fonts: InvisibleFonts,
   mark?: (line: TextItem, index: number) => { open: string; close: string },
+  declare?: (line: TextItem, index: number) => void,
 ): string {
   const out: string[] = [];
   for (const [i, line] of lines.entries()) {
     const ops = lineOps(line, fonts);
-    if (!ops) continue;
+    if (!ops) {
+      if (line.text === '' && line.tag !== undefined) declare?.(line, i);
+      continue;
+    }
     const m = mark?.(line, i);
     if (m) out.push(m.open);
     out.push('BT', '3 Tr', ops, 'ET');
