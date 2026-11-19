@@ -130,7 +130,9 @@ export function AppSwitch({ size = 'header' }: { size?: 'header' | 'large' | 'ch
           type="button"
           {...triggerProps}
           aria-label={isAll ? 'Choose App' : `${scopeLabel(scope)}, choose another app`}
-          className={`${segment} ${isAll ? idle : selected}`}
+          // pr-2, not the segment's px-2.5: the chevron's ink sits ~3px inside its 12px box, so equal padding
+          // reads ~1px left of centre (the optical audit, optical-alignment.md "Ink audit").
+          className={`${segment} !pr-2 ${isAll ? idle : selected}`}
         >
           {!isAll && <AppMark app={scope} size={large ? 18 : 16} />}
           <span>{isAll ? 'Choose App' : scope}</span>

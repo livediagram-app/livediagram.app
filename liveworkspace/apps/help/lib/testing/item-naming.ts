@@ -17,14 +17,22 @@ const WORD = /\bdocuments?\b/i;
 const EVERY_APP =
   /(canvas(es)?|plans?|projects?),? [^.]*\bdocuments?\b[^.]*\b(designs?|spaces?)\b/i;
 
+/** `text` with its JSX tags stripped until none is left, so a tag split around another (`<<b>x>`) goes too. */
+function withoutTags(text: string): string {
+  let prev: string;
+  let out = text;
+  do {
+    prev = out;
+    out = out.replace(/<[^>]*>/g, '');
+  } while (out !== prev);
+  return out;
+}
+
 /** The line as the page shows it: no inline code, link targets, JSX tags, livedocuments' name or the Community
  *  article's address. */
 function visibleText(line: string): string {
   return (
-    line
-      .replace(/`[^`]*`/g, '')
-      .replace(/\]\([^)]*\)/g, ']')
-      .replace(/<[^>]*>/g, '')
+    withoutTags(line.replace(/`[^`]*`/g, '').replace(/\]\([^)]*\)/g, ']'))
       .replace(/\blivedocuments(\.app)?\b/gi, '')
       // The Community's help address is the same in every app (@liveworkspace/help-registry/community).
       .replace(/finding-community-documents/g, '')
