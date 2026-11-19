@@ -8,8 +8,8 @@ describe('new element articles are searchable from the editor', () => {
     ).map((i) => i.title);
   it('finds them by the words a user would type', () => {
     for (const [q, want] of [
-      ['figma', 'Embeds on the canvas'],
-      ['vimeo', 'Embeds on the canvas'],
+      ['figma', 'Embeds on the Canvas'],
+      ['vimeo', 'Embeds on the Canvas'],
     ] as const) {
       expect(find(q), q).toContain(want);
     }
