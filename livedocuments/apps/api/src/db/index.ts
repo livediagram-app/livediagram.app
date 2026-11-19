@@ -13,4 +13,5 @@ export * from './api-tokens';
 export * from './account';
 export * from './image-grants';
 export * from './changesets';
+export * from './named-versions';
 export * from './versions';

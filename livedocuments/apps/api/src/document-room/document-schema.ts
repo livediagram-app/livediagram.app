@@ -19,6 +19,7 @@ import {
   outboxRetrySchema,
   tabSharesSchema,
 } from '@liveworkspace/index-app';
+import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
@@ -320,6 +321,11 @@ CREATE INDEX IF NOT EXISTS canvas_suggestions_tab ON canvas_suggestions (tab_id,
 // Canvas suggestions on slides and infographics, since retired, kept as written: their table, beside the tabs.
 const V10 = CANVAS_SUGGESTIONS_SCHEMA;
 
+// Named versions in the snapshots' store (docs/specs/006-document/version-history.md "Where versions are kept"; Work
+// Tracker 1097): the platform's snapshot tables and the revision rows beside them (versions/named-store-schema.ts).
+// Additive, every statement IF NOT EXISTS: `tab_versions` is untouched.
+const V11 = NAMED_STORE_STEP;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -331,6 +337,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V8,
   V9,
   V10,
+  V11,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;
