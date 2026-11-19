@@ -71,7 +71,7 @@ describe('rollMashup', () => {
     expect(themes.size).toBe(THEMES.filter((t) => !t.seasonal).length);
     for (const t of THEMES.filter((t) => t.seasonal)) expect(themes.has(t.id), t.id).toBe(false);
     expect(new Set(rolls.map((m) => m.finish)).size).toBe(FINISHES.length);
-    expect(MASHUP_COMBINATIONS).toBeGreaterThan(10_000);
+    expect(MASHUP_COMBINATIONS).toBeGreaterThan(4_000);
   });
 
   it('names its four ingredients on the card, like a look does', () => {

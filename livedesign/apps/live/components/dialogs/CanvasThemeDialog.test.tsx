@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { ComponentProps } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CanvasThemeDialog } from './CanvasThemeDialog';
@@ -43,6 +43,14 @@ const props: ComponentProps<typeof CanvasThemeDialog> = {
   onSetFinish: vi.fn(),
   onApplyLook: vi.fn(),
   onClose: vi.fn(),
+  pages: {
+    kind: 'wireframe',
+    newPageBackground: undefined,
+    themeId: 'default',
+    units: 2,
+    onSet: vi.fn(),
+    onApplyToEveryPage: vi.fn(),
+  },
 };
 
 describe('CanvasThemeDialog placement', () => {
@@ -118,26 +126,19 @@ describe('CanvasThemeDialog home', () => {
     );
   const lookNames = [
     'Everyday',
-    'Textbook',
+    'Blueprint',
     'Spectrum',
-    'Whiteboard',
+    'Wireframe',
     'Boardroom',
-    'Notebook',
-    'Seaside',
-    'Doodle',
-    'Editorial',
-    'Midnight',
     'Workshop',
-    'Poster',
-    'Graph Paper',
+    'Midnight',
     'Daydream',
-    'Engineer',
+    'Editorial',
     'Lagoon',
-    'Studio',
-    'Garden',
+    'Graph Paper',
   ];
 
-  it('offers the eighteen looks, each drawn as a preview', () => {
+  it('offers the eleven looks, each drawn as a preview', () => {
     home();
     for (const name of lookNames) {
       const card = lookCard(name);
@@ -145,30 +146,37 @@ describe('CanvasThemeDialog home', () => {
     }
   });
 
-  it('pages the Mashup card and the looks in a carousel of five pages, opening on the current look’s page', () => {
+  it('pages the Mashup card and the looks in a carousel of two pages, opening on the current look’s page', () => {
     const { unmount } = home({ themeId: 'brand', finish: undefined, font: null });
     const next = screen.getByRole('button', { name: 'Next looks' });
     const prev = screen.getByRole('button', { name: 'Previous looks' });
     expect(prev.hasAttribute('disabled')).toBe(true);
     fireEvent.click(next);
-    fireEvent.click(next);
-    fireEvent.click(next);
-    fireEvent.click(next);
     expect(next.hasAttribute('disabled')).toBe(true);
     expect(
-      screen.getByRole('button', { name: 'Looks page 5 of 5' }).getAttribute('aria-current'),
+      screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
     ).toBe('true');
     unmount();
-    // A tab on a page-three look opens there (the Mashup card leads page one).
+    // A tab on a page-two look opens there (the Mashup card leads page one).
     home({
-      themeId: 'lavender',
+      themeId: 'indigo',
       finish: 'professional',
-      font: 'roboto-slab',
-      backgroundPattern: 'crosshatch',
+      font: 'roboto-mono',
+      backgroundPattern: 'graph',
     });
     expect(
-      screen.getByRole('button', { name: 'Looks page 3 of 5' }).getAttribute('aria-current'),
+      screen.getByRole('button', { name: 'Looks page 2 of 2' }).getAttribute('aria-current'),
     ).toBe('true');
+  });
+
+  it('leaves the hand-drawn looks off a logo or a photo page', () => {
+    for (const kind of ['logo', 'photo'] as const) {
+      const { unmount } = home({ surface: kind, pages: { ...props.pages, kind } });
+      expect(lookCard('Wireframe'), kind).toBeNull();
+      expect(lookCard('Workshop'), kind).toBeNull();
+      expect(lookCard('Boardroom'), kind).not.toBeNull();
+      unmount();
+    }
   });
 
   it('shows only the looks, with no Current card for the tab’s own mix', () => {
@@ -179,8 +187,22 @@ describe('CanvasThemeDialog home', () => {
   it('applies a look on click', () => {
     const onApplyLook = vi.fn();
     home({ onApplyLook });
-    fireEvent.click(screen.getByRole('button', { name: /^Whiteboard/ }));
-    expect(onApplyLook).toHaveBeenCalledWith('whiteboard');
+    fireEvent.click(screen.getByRole('button', { name: /^Wireframe/ }));
+    expect(onApplyLook).toHaveBeenCalledWith('wireframe', undefined);
+  });
+
+  it('applies looks and themes keeping the element colours once Keep as They Are is chosen', () => {
+    const onApplyLook = vi.fn();
+    const onSetTheme = vi.fn();
+    const { rerender } = home({ onApplyLook, onSetTheme });
+    const row = document.querySelector('[data-tab-style-element-colours]')!;
+    expect(row.textContent).toContain('Element Colours');
+    fireEvent.click(screen.getByRole('button', { name: /Keep as They Are/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Boardroom/ }));
+    expect(onApplyLook).toHaveBeenLastCalledWith('boardroom', { keepElementColours: true });
+    rerender(<CanvasThemeDialog {...props} tab="theme" onSetTheme={onSetTheme} />);
+    fireEvent.click(screen.getAllByRole('button', { name: /Steel/ })[0]!);
+    expect(onSetTheme).toHaveBeenLastCalledWith('steel', { keepElementColours: true });
   });
 
   it('marks the look the tab matches, and none for its own mix', () => {
@@ -207,7 +229,9 @@ describe('CanvasThemeDialog home', () => {
     expect(screen.getByRole('button', { name: 'Finish: Professional' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Text: Inter, large/ }));
     expect(onTabChange).toHaveBeenLastCalledWith('font');
-    fireEvent.click(screen.getByRole('button', { name: /^Canvas: / }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'New Page Background: Like the page before' }),
+    );
     expect(onTabChange).toHaveBeenLastCalledWith('canvas');
     fireEvent.click(screen.getByRole('button', { name: /^Colours: / }));
     expect(onTabChange).toHaveBeenLastCalledWith('theme');
@@ -257,5 +281,60 @@ describe('CanvasThemeDialog Apply to All Tabs', () => {
       />,
     );
     expect(row()).toBeNull();
+  });
+});
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "New Page Background": the Canvas panel's place.
+describe('CanvasThemeDialog New Page Background', () => {
+  const panel = (pages: Partial<ComponentProps<typeof CanvasThemeDialog>['pages']> = {}) => {
+    const all = { ...props.pages, onSet: vi.fn(), onApplyToEveryPage: vi.fn(), ...pages };
+    render(<CanvasThemeDialog {...props} tab="canvas" pages={all} />);
+    return all;
+  };
+
+  it('carries over the page before until Choose One starts on the paper', () => {
+    const pages = panel();
+    expect(document.querySelector('[data-new-page-background-all]')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Choose One/ }));
+    expect(pages.onSet).toHaveBeenCalledWith({});
+  });
+
+  it('with one chosen, offers the background and Apply to Every Page, and Like the Page Before clears it', () => {
+    const pages = panel({ newPageBackground: { fill: { kind: 'solid', color: '#ccfbf1' } } });
+    fireEvent.click(document.querySelector('[data-new-page-background-all]')!);
+    expect(pages.onApplyToEveryPage).toHaveBeenCalledTimes(1);
+    expect(screen.getByText(/Gives the 2 pages this background/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Like the Page Before/ }));
+    expect(pages.onSet).toHaveBeenCalledWith(null);
+  });
+
+  it('on a photo page offers only Around the Pages', () => {
+    panel({ kind: 'photo' });
+    expect(screen.getByText(/takes no background/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Choose One/ })).toBeNull();
+    expect(screen.getByRole('group', { name: 'Pattern around the pages' })).toBeTruthy();
+  });
+
+  it('sets the surround’s colour pattern from Around the Pages', () => {
+    const onSetBackgroundPattern = vi.fn();
+    render(
+      <CanvasThemeDialog {...props} tab="canvas" onSetBackgroundPattern={onSetBackgroundPattern} />,
+    );
+    const group = screen.getByRole('group', { name: 'Pattern around the pages' });
+    fireEvent.click(within(group).getByRole('button', { name: /Lines/ }));
+    expect(onSetBackgroundPattern).toHaveBeenCalledWith('lines');
+  });
+
+  it('previews on a frame wearing the background new pages start on', () => {
+    render(
+      <CanvasThemeDialog
+        {...props}
+        tab="finish"
+        pages={{ ...props.pages, newPageBackground: { fill: { kind: 'solid', color: '#ccfbf1' } } }}
+      />,
+    );
+    const preview = screen.getByRole('img', { name: /sample frame/ });
+    expect(preview.hasAttribute('data-preview-frame')).toBe(true);
+    expect(preview.innerHTML.toLowerCase()).toContain('#ccfbf1');
   });
 });

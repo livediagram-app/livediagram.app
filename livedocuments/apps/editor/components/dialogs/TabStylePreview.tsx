@@ -2,21 +2,37 @@
 
 import { builtMarkup, htmlProps } from '@livedocuments/ui';
 
-// The sample diagram the Tab Style panels preview their setting on (docs/specs/011-theme/canvas-and-theme-dialog.md
-// "Finish panel", "Text panel"): a step, a decision, the arrow between and a sticky, drawn by the export renderer
-// (lib/finish-preview.ts) in the tab's theme, finish and font, on the tab's paper, so it is exactly what the canvas
-// will show. Rebuilt only when one of those changes.
+// The page the Tab Style panels preview their setting on (docs/specs/011-theme/canvas-and-theme-dialog.md
+// "Previews"): a page of the kind the dialog styles (lib/page-preview.ts), on the background new pages start on (else
+// its kind's own: the theme's Dusk for an infographic page, Steel for a slide, the paper for an article or a card),
+// drawn by the page exporter in the tab's theme, finish and font, over the tab's surround. An article shows its top,
+// its title and first lines. Rebuilt only when one of those changes.
 
 import { useMemo } from 'react';
 import {
   DARK_CANVAS_BACKGROUND_COLOR,
   DEFAULT_BACKGROUND_COLOR,
+  defaultPageBackground,
   type Finish,
+  type PageBackground,
+  type PageKind,
   type TextSize,
 } from '@livedocuments/document';
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
-import { finishPreviewSvg } from '@/lib/finish-preview';
-import { resolveTabBackdrop } from '@/lib/themes';
+import { pagePreviewSvg } from '@/lib/page-preview';
+import { getTheme, resolveTabBackdrop } from '@/lib/themes';
+import { useTabStylePages } from './tab-style-pages';
+
+/** The background the sample page wears: the tab's New Page Background, else what a first page of the kind takes. */
+export function previewPageBackground(
+  kind: PageKind,
+  own: PageBackground | undefined,
+  themeId: string,
+): PageBackground | undefined {
+  if (own) return own;
+  if (kind === 'article' || kind === 'flashcard') return undefined;
+  return defaultPageBackground(getTheme(themeId), kind === 'slide' ? 'slide' : 'infographic');
+}
 
 export function TabStylePreview({
   finish,
@@ -37,30 +53,43 @@ export function TabStylePreview({
   label: string;
 }) {
   const surface = useCanvasSurface();
-  // The tab's canvas as this viewer sees it: a theme's own colour in their half (docs/specs/011-theme/
-  // light-and-dark.md), a picked colour as it is.
-  const background = canvasBackground
+  const pages = useTabStylePages();
+  const kind = pages.kind ?? 'infographic';
+  // The surround as this viewer sees it: a theme's own colour in their half (docs/specs/011-theme/light-and-dark.md),
+  // a picked colour as it is.
+  const around = canvasBackground
     ? resolveTabBackdrop({ theme: themeId, backgroundColor: canvasBackground }).backgroundColor
     : surface === 'dark'
       ? DARK_CANVAS_BACKGROUND_COLOR
       : DEFAULT_BACKGROUND_COLOR;
+  const own = pages.newPageBackground;
   const markup = useMemo(
     () =>
-      finishPreviewSvg(finish, {
-        background,
+      pagePreviewSvg({
+        kind,
+        background: previewPageBackground(kind, own, themeId),
         theme: themeId,
+        finish,
         font: font ?? undefined,
         textSize,
       }),
-    [finish, background, themeId, font, textSize],
+    [kind, own, themeId, finish, font, textSize],
   );
   return (
     <div
       role="img"
       aria-label={label}
       data-finish-preview={finish}
-      className="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full"
-      {...htmlProps(builtMarkup(markup))}
-    />
+      data-preview-page={kind}
+      className="overflow-hidden rounded-lg border border-slate-200 p-3 dark:border-slate-700"
+      style={{ backgroundColor: around }}
+    >
+      <div
+        className={`overflow-hidden rounded shadow-sm ring-1 ring-slate-900/10 [&>svg]:block [&>svg]:h-auto [&>svg]:w-full ${
+          kind === 'article' ? 'aspect-[16/9]' : ''
+        }`}
+        {...htmlProps(builtMarkup(markup))}
+      />
+    </div>
   );
 }

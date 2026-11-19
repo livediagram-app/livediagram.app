@@ -11,13 +11,15 @@ import {
   pageLockRefuses,
   type PageEdit,
 } from './pages-edits';
-import { pagesSharing } from './page-units';
+import { pageUnits, pagesSharing } from './page-units';
+import { newPageBackgroundOf } from './tab-new-page-background';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
   pageOrientation?: unknown;
   articles?: unknown;
+  newPageBackground?: unknown;
 };
 
 /** Why a background cannot go onto a page: a logo page takes no picture. */
@@ -98,6 +100,46 @@ export function pageBackgroundSpread<T extends PagesTab>(
     out = edit.tab;
     inks.push(...edit.inks);
     applied += 1;
+  }
+  const inked = pagesInkFor(out, inks, memory);
+  const recall = inks.length > 0 ? inked.memory : memory;
+  return { tab: inked.tab, ...(recall ? { memory: recall } : {}), applied, skipped };
+}
+
+export type NewPageBackgroundSpread<T> = {
+  tab: T;
+  memory?: InkMemory;
+  // The pages that now wear it, and the locked ones left as they were.
+  applied: number;
+  skipped: number;
+};
+
+/** Apply to Every Page: every page of the tab given its new-page background (or put back on the paper when it has
+ *  none), as one edit, each re-inked for its new fill in one walk. A logo page takes the fill alone; a photo page
+ *  has no background and is passed by; a locked page keeps its own and counts as skipped. */
+export function pagesGivenNewPageBackground<T extends PagesTab>(
+  tab: T,
+  memory?: InkMemory,
+): NewPageBackgroundSpread<T> {
+  const background = newPageBackgroundOf(tab);
+  const pages = pagesOf(tab);
+  let out = tab;
+  const inks: PageInk[] = [];
+  let applied = 0;
+  let skipped = 0;
+  for (const unit of pageUnits(pages)) {
+    const first = pages.find((p) => p.id === unit.pageIds[0])!;
+    if (pageKindOf(first) === 'photo') continue;
+    // backgroundPatchFor refuses only a picture on a logo page, and the field never holds one.
+    const patch = backgroundPatchFor(first, background)!;
+    const edit = pageBackgroundStored(out, first.id, patch);
+    if ('refused' in edit) {
+      skipped += unit.pageIds.length;
+      continue;
+    }
+    out = edit.tab;
+    inks.push(...edit.inks);
+    applied += unit.pageIds.length;
   }
   const inked = pagesInkFor(out, inks, memory);
   const recall = inks.length > 0 ? inked.memory : memory;

@@ -92,3 +92,25 @@ describe('custom animated colours and the theme', () => {
     expect(followedFill(own, ocean, forest)).toBeUndefined();
   });
 });
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "New Page Background": the tab's own follows as a page's does.
+describe('the New Page Background and the theme', () => {
+  const mist = (t: typeof ocean) =>
+    themeBackgroundPresets(t).find((p) => p.id === 'theme-mist')!.fill;
+
+  it('moves a fill of the old theme’s own to the new theme’s and leaves a chosen one', () => {
+    const tab = {
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [],
+      newPageBackground: { fill: mist(ocean), pattern: 'dots' },
+    } as Tab;
+    expect(withPageBackgroundsFollowingTheme(tab, ocean, forest).newPageBackground).toEqual({
+      fill: mist(forest),
+      pattern: 'dots',
+    });
+    const own = { ...tab, newPageBackground: { fill: { kind: 'solid', color: '#ccfbf1' } } } as Tab;
+    expect(withPageBackgroundsFollowingTheme(own, ocean, forest)).toBe(own);
+  });
+});

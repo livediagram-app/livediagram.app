@@ -61,6 +61,9 @@ export type TabStyleDialogProps<Look extends TabStyleLook, Pattern extends strin
   onSetFinish: (finish: Finish) => void;
   // The tab's own background, unresolved, for the previews' paper.
   canvasBackground?: string;
+  // The Canvas row's value, when the product's Canvas panel sets something other than the pattern (new pages'
+  // background); the pattern's name when unset.
+  canvasSummary?: string;
   // A named look's id, or the Mashup card's random look whole: sets the tab's theme, finish, font and pattern at once.
   onApplyLook: (look: string | Look) => void;
   // Apply to All Tabs, at the foot of the home: offered to an Editor of the whole item only, so undefined otherwise.
@@ -170,6 +173,7 @@ function TabStyleViewBody<Look extends TabStyleLook, Pattern extends string>({
           font={font}
           defaultTextSize={defaultTextSize}
           pattern={backgroundPattern}
+          canvasSummary={props.canvasSummary}
           onOpenPanel={go}
           onOpenLink={(open) => {
             props.onClose();

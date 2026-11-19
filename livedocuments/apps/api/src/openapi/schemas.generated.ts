@@ -7415,6 +7415,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "newPageBackground": {
+        "$ref": "#/components/schemas/PageBackground"
+      },
       "pageArrangement": {
         "$ref": "#/components/schemas/PageArrangement"
       },
@@ -7551,6 +7554,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "newPageBackground": {
+        "$ref": "#/components/schemas/PageBackground"
       },
       "orderIndex": {
         "type": "number"

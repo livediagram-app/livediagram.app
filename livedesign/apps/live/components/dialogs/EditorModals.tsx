@@ -1,10 +1,18 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livedesign/design';
+import { useMemo } from 'react';
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+  newPageBackgroundOf,
+  pageKindOf,
+  pagesOf,
+} from '@livedesign/design';
 
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
+import { useCurrentPageKind } from '@/lib/current-page-kind';
 
 const SettingsDialog = dynamic(
   () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
@@ -49,7 +57,23 @@ export function EditorModals() {
     applyStyleToAllTabs,
     applyingStyleToAllTabs,
     canApplyStyleToAllTabs,
+    setNewPageBackground,
+    applyNewPageBackgroundToEveryPage,
   } = useEditorContext();
+  // The page someone is on is the Tab Style surface; a page nobody has chosen a kind for is the canvas.
+  const pageKind = useCurrentPageKind();
+  // What the dialog knows of the tab's pages (tab-style-pages.ts), worked out when the tab or the page kind changes.
+  const pages = useMemo(
+    () => ({
+      kind: pageKind,
+      newPageBackground: newPageBackgroundOf(activeTab),
+      themeId: activeTab.theme ?? 'brand',
+      units: pagesOf(activeTab).filter((p) => pageKindOf(p) !== 'photo').length,
+      onSet: setNewPageBackground,
+      onApplyToEveryPage: applyNewPageBackgroundToEveryPage,
+    }),
+    [activeTab, pageKind, setNewPageBackground, applyNewPageBackgroundToEveryPage],
+  );
 
   return (
     <>
@@ -76,8 +100,9 @@ export function EditorModals() {
       ) : null}
       {canvasThemeTab !== null && !isReadOnly ? (
         <CanvasThemeDialog
+          pages={pages}
           tab={canvasThemeTab}
-          surface="canvas"
+          surface={pageKind ?? 'canvas'}
           onTabChange={setCanvasThemeTab}
           backgroundPattern={activeTab.backgroundPattern ?? 'grid'}
           backgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}

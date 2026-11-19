@@ -158,6 +158,7 @@ export * from './page-default-background';
 export * from './page-theme-fills';
 export * from './pages-edits';
 export * from './pages-background-copy';
+export * from './tab-new-page-background';
 export * from './tab-window';
 
 // --- Re-exported resource modules -----------------------------------------

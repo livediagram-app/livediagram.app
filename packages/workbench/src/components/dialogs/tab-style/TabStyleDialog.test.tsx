@@ -253,6 +253,18 @@ describe('the home', () => {
     expect(document.querySelector('[data-tab-style-link]')).toBeNull();
   });
 
+  it("shows the surface's extra between the looks and Fine-tune, and the product's Canvas summary", () => {
+    const profile = profileWith({
+      surfaces: { article: { renderHomeExtra: () => <p>Article Style lives on the page</p> } },
+    });
+    open({ profile, surface: 'article', canvasSummary: 'New pages: Dusk' });
+    expect(screen.getByText('Article Style lives on the page')).toBeTruthy();
+    expect(button('Canvas: New pages: Dusk')).toBeTruthy();
+    cleanup();
+    open({ profile, surface: 'slide' });
+    expect(screen.queryByText('Article Style lives on the page')).toBeNull();
+  });
+
   it('opens on the home when asked for a panel the surface leaves out', () => {
     const profile = profileWith({ surfaces: { article: { panels: ['theme'] } } });
     open({ profile, surface: 'article', tab: 'canvas' });
