@@ -7,6 +7,6 @@ import { createRoomAccessClient } from '@liveworkspace/api-kit/room-access-clien
 import { roomFetch } from './room-client';
 
 // Read at call time, so a test's mock of ./room-client is the one asked.
-export const { closeTokenSessions, tellTrashed } = createRoomAccessClient(
+export const { closeTokenSessions, tellTrashed, closeArchivedSessions } = createRoomAccessClient(
   (...args: Parameters<typeof roomFetch>) => roomFetch(...args),
 );

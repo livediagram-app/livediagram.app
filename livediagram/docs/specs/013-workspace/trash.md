@@ -70,6 +70,15 @@ cleared with them. An open editor shows the deleted card at once rather than on 
 room, and a room that cannot be reached is logged; its sessions then end at their next grant renewal, which the
 trashed grant refuses. The room keeps nothing of it, so a restored canvas's room admits people as before.
 
+An archive made anywhere else while the canvas is open (another tab, the Explorer, MCP `archive_document`, the CLI) ends its
+sessions the same way (Work Tracker 1242; [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived)
+"Archived from elsewhere while open"). On `archived: true` (and not trashed) the api closes every socket in the room
+with `4010` (`ITEM_ARCHIVED_CLOSE`, reason `item-archived`) through its `/close-sessions` door (`{match: 'archived'}`),
+sending nothing first: an archived canvas is its owner's alone. Each editor stops without reconnecting and leaves for
+the Explorer (`leaveArchivedElsewhere`): the owner's with "Moved “<name>” to Archived.", anyone else's with "That
+canvas was archived by its owner, so it is no longer open to you." An MCP live view says "This canvas was archived." and the CLI's room stream ends.
+A move between folders, a move out of Archived and a restore close nothing.
+
 When the api answers a canvas as not found, the editor asks the index whether it is in the Trash
 (`isTrashedInIndex`, `@liveworkspace/workbench/lib/editor-arrival`, which `apps/editor/lib/document-trashed.ts` re-exports): the index's item outlives the trashing, so it can tell a
 trashed canvas from one that does not exist. A trashed one shows the deleted card in place of the canvas: Restore for

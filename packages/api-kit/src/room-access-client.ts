@@ -54,6 +54,10 @@ export function createRoomAccessClient<E>(roomFetch: RoomFetch<E>) {
     // The sockets one API token's room tickets opened on the item (its live views), closed: the token was revoked.
     closeTokenSessions: (env: E, itemId: string, tokenId: string): Promise<boolean> =>
       closeRoomSessions(env, itemId, { match: 'token', tokenId }),
+    // Every socket on the item, closed with ITEM_ARCHIVED_CLOSE: it was archived from anywhere (liveworkspace/docs/
+    // specs/004-index/one-explorer.md "Archived from elsewhere while open"). Told off the archive's path, best effort.
+    closeArchivedSessions: (env: E, itemId: string): Promise<boolean> =>
+      closeRoomSessions(env, itemId, { match: 'archived' }),
     // The item moved to the Trash (each product's docs/specs/013-workspace/trash.md "Open editors"): its room sends the
     // product's trashed op (`kind`) to every session and closes each, as its /broadcast does for that op. The index
     // tells the app off the trash's own path (its standing push), so this never slows a trash. Nothing is kept: a

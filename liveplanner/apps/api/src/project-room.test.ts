@@ -1900,6 +1900,24 @@ describe('PlanRoom tab-scoped sessions', () => {
       for (const ws of [owner, member]) expect(ops(ws)).toEqual([]);
     });
 
+    // one-explorer.md "Archived from elsewhere while open" (Work Tracker 1242): the owner's, a teammate's and a link
+    // visitor's sockets all close with 4010, and nobody is sent anything first.
+    it('closes every session with 4010 when the item is archived, telling nobody', async () => {
+      const { room, state } = newRoom();
+      const owner = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const member = makeSocket() as FakeSocket & { closed?: [number, string] };
+      const visitor = makeSocket() as FakeSocket & { closed?: [number, string] };
+      scopedSession(state, owner, presence('p-o', 'edit'), null);
+      scopedSession(state, member, presence('p-m', 'view'), null);
+      scopedSession(state, visitor, presence('p-v', 'edit'), 't2', 'CODE2345');
+      const res = await closeSessions(room, { match: 'archived' });
+      expect(res.status).toBe(204);
+      for (const ws of [owner, member, visitor]) {
+        expect(ws.closed).toEqual([4010, 'item-archived']);
+        expect(ops(ws)).toEqual([]);
+      }
+    });
+
     it("closes only the departed member's sessions by their person tag", async () => {
       const { room, state } = newRoom();
       const gone = makeSocket() as FakeSocket & { closed?: [number, string] };

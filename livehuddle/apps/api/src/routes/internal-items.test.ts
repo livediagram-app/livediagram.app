@@ -13,12 +13,14 @@ const { notifyFirstShare, notifyDocumentJoin, reportServerEvent, countCommunityC
     countCommunityCopy: vi.fn(async () => {}),
   }),
 );
-const { tellTrashed } = vi.hoisted(() => ({
+const { tellTrashed, closeArchivedSessions } = vi.hoisted(() => ({
   tellTrashed: vi.fn(async (_env: unknown, _id: string, _kind: string) => true),
+  closeArchivedSessions: vi.fn(async (_env: unknown, _id: string) => true),
 }));
 vi.mock('../room-access-client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../room-access-client')>()),
   tellTrashed,
+  closeArchivedSessions,
 }));
 vi.mock('../email/notifications', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../email/notifications')>()),
@@ -388,8 +390,9 @@ describe('PUT /api/internal/people/:id/migration', () => {
 // docs/specs/013-workspace/trash.md "Open editors": the index pushes where an item stands after every trash (the api,
 // MCP or the Explorer alike), and a trashed document's room tells its editors and closes.
 describe('POST /api/internal/items/:id/standing', () => {
-  it("tells a trashed document's room, and never an archived or restored one's", async () => {
+  it("tells a trashed document's room, and closes an archived one's sessions", async () => {
     tellTrashed.mockClear();
+    closeArchivedSessions.mockClear();
     const stand = (id: string, archived: boolean, trashed: boolean) =>
       handleInternalItems(
         new Request(`https://api.test/api/internal/items/${id}/standing`, {
@@ -405,6 +408,12 @@ describe('POST /api/internal/items/:id/standing', () => {
     expect(tellTrashed.mock.calls.map(([, id, op]) => [id, op])).toEqual([
       ['A', 'document-trashed'],
     ]);
+    // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): B's room closes every session,
+    // and a trashed or restored item's never does.
+    expect(closeArchivedSessions.mock.calls.map(([, id]) => id)).toEqual(['B']);
+    // An archived item sent to the Trash is trashed: its room hears the trash, not the archive.
+    expect((await stand('D', true, true))?.status).toBe(200);
+    expect(closeArchivedSessions).toHaveBeenCalledTimes(1);
   });
 });
 

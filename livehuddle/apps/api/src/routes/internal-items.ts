@@ -25,7 +25,7 @@ import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
-import { closeTokenSessions, tellTrashed } from '../room-access-client';
+import { closeArchivedSessions, closeTokenSessions, tellTrashed } from '../room-access-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
@@ -68,6 +68,9 @@ export function handleInternalItems(
       // closes. Nothing is kept, so a restore reopens as before.
       standing: async (id, standing) => {
         if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+        // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
+        // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.
+        else if (standing.archived) await closeArchivedSessions(env, id);
       },
       // Where Community posts' items stand, as the index reads them, for the Community's sweep.
       communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),

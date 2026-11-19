@@ -24,13 +24,16 @@ async function deliver(env: Env, app: App, id: string, standing: ItemStanding): 
   if (!res.ok) console.warn('[index] standing not delivered', { app, error: res.error });
 }
 
-/** Tells `app` where item `id` stands now, in the background. */
+/** Tells `app` where item `id` stands now, in the background. The returned promise settles once the call is answered
+ *  (or dropped), for a call that must follow it (an archive's revoke). */
 export function tellStanding(
   env: Env,
   waitUntil: (promise: Promise<unknown>) => void,
   app: App,
   id: string,
   standing: ItemStanding,
-): void {
-  waitUntil(deliver(env, app, id, standing));
+): Promise<void> {
+  const told = deliver(env, app, id, standing).catch(() => {});
+  waitUntil(told);
+  return told;
 }
