@@ -79,7 +79,9 @@ describe('BoxedElementView indicators', () => {
     // Its stored link and note are retired (docs/specs/009-elements/links-and-notes-retired.md): the comment alone.
     expect(cluster.querySelectorAll('button')).toHaveLength(1);
     // The content area starts below the cluster.
-    const moved = getByText('Cloud storage for every team').closest<HTMLElement>('[data-label-body]')!;
+    const moved = getByText('Cloud storage for every team').closest<HTMLElement>(
+      '[data-label-body]',
+    )!;
     expect(parseFloat(moved.style.top)).toBeGreaterThan(0);
   });
 
