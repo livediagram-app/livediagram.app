@@ -119,10 +119,10 @@ not laggy.
   2026-11-17: "text like the receptionist chat looks blurry in 3d"). So turning the view in and out, they stay over
   their speaker on every frame.
 - **What lies on the floor stays on it**: the hearing ring, the "you are here" ring, an Avatar Pad's arrival beam.
-- **The floor pattern goes**: the tab's dots or grid are drawn on the screen, not on the floor, so the 3D view
-  shows the tab's background colour alone, fading into a soft horizon along the top fifth of the screen, faint past
-  its first half so what stands at the back of a room (a bar and its stools) stays crisp (the owner, 2026-11-18: "bar
-  stools look blurry in 3d").
+- **The horizon**: past the floor the background's colour fades into a soft horizon along the top fifth of the
+  screen, faint past its first half so what stands at the back of a room (a bar and its stools) stays crisp (the
+  owner, 2026-11-18: "bar stools look blurry in 3d"). The tab's pattern lies on the floor with its colour ("The tab's
+  background lies on the floor", above).
 
 ## Pieces stand up
 

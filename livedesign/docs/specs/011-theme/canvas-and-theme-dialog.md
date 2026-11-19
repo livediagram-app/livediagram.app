@@ -344,6 +344,23 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 `FinishToAll` and `ResetElements` events, are gone)
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
+## One dialog, this editor's profile
+
+The dialog is the one every editor shares ([Tab Style dialog](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md), in `@liveworkspace/workbench`):
+`apps/live/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
+(`apps/live/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
+**surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
+describes it on each.
+
+- **Surfaces.** `canvas`.
+- **Panels and controls.** All four panels, every control.
+- **Looks.** Every look in `apps/live/lib/tab-looks.ts`.
+- **Canvas panel.** `CanvasStyleControls`: the static and animated patterns drawn for real, the colours, Opacity, Size
+  and Speed.
+- **Preview.** The sample design (`TabStylePreview`, `apps/live/lib/finish-preview.ts`), in the Finish and Text panels.
+- **Copy.** The shared lines.
+- **Frame.** The shared modal, its Show Me bound in `apps/live/components/tour/TabStyleTour.tsx`.
+
 ## Reuse notes
 
 - `CanvasStyleControls`: pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.

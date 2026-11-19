@@ -35,6 +35,7 @@ export type TabStyleSurfaceName =
   | 'article'
   | 'slide'
   | 'infographic'
+  | 'flashcard'
   | 'space';
 
 /** A look as the dialog shows it: its four settings, its card's name and line, and a seasonal look's season. */

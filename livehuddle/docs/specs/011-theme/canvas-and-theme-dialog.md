@@ -358,6 +358,24 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 `FinishToAll` or `ResetElements` events)
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
+## One dialog, this editor's profile
+
+The dialog is the one every editor shares ([Tab Style dialog](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md), in `@liveworkspace/workbench`):
+`apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
+(`apps/editor/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
+**surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
+describes it on each.
+
+- **Surfaces.** `space`.
+- **Panels and controls.** All four panels; a floor never moves, so there is no animation speed.
+- **Looks.** Every look in `apps/editor/lib/tab-looks.ts`, the seasonal ones from `apps/editor/lib/seasonal-looks.ts`.
+- **Canvas panel.** The Floor panel (`CanvasStyleControls`): the floors drawn for real, the canvas colour, a seasonal
+  motif's colour, Strength and Size.
+- **Preview.** The sample (`TabStylePreview`, `apps/editor/lib/finish-preview.ts`), in the Finish and Text panels.
+- **Copy.** The shared lines.
+- **Frame.** The shared modal, its Show Me bound in `apps/editor/components/tour/TabStyleTour.tsx`. Apply to All Tabs
+  names no locked tabs (livehuddle has no tab locks).
+
 ## Reuse notes
 
 - `CanvasStyleControls`: the floors carousel, the canvas colour and the Strength and Size sliders: the dialog's Canvas panel.

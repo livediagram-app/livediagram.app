@@ -40,13 +40,14 @@ export type TabStyleDialogProps<Look extends TabStyleLook, Pattern extends strin
   patternColor: string;
   backgroundOpacity: number;
   backgroundPatternScale: number;
-  backgroundAnimationSpeed: number;
+  // An animated pattern's speed, 1 its own pace; unset in an editor with no animated patterns (livehuddle's floors).
+  backgroundAnimationSpeed?: number;
   onSetBackgroundPattern: (pattern: Pattern) => void;
   onSetBackgroundColor: (color: string) => void;
   onSetPatternColor: (color: string) => void;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
-  onSetBackgroundAnimationSpeed: (speed: number) => void;
+  onSetBackgroundAnimationSpeed?: (speed: number) => void;
   // The tab's theme id, widened to string: a stored id may name no built-in theme.
   themeId: string;
   onSetTheme: (id: string) => void;
@@ -121,6 +122,8 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
     profile.frame.render({ ...parts, children })
   );
 }
+
+const noop = () => {};
 
 function TabStyleViewBody<Look extends TabStyleLook, Pattern extends string>({
   profile,
@@ -205,13 +208,13 @@ function TabStyleViewBody<Look extends TabStyleLook, Pattern extends string>({
       patternColor: props.patternColor,
       backgroundOpacity: props.backgroundOpacity,
       backgroundPatternScale: props.backgroundPatternScale,
-      backgroundAnimationSpeed: props.backgroundAnimationSpeed,
+      backgroundAnimationSpeed: props.backgroundAnimationSpeed ?? 1,
       onSetBackgroundPattern: eased(props.onSetBackgroundPattern),
       onSetBackgroundColor: props.onSetBackgroundColor,
       onSetPatternColor: props.onSetPatternColor,
       onSetBackgroundOpacity: props.onSetBackgroundOpacity,
       onSetBackgroundPatternScale: props.onSetBackgroundPatternScale,
-      onSetBackgroundAnimationSpeed: props.onSetBackgroundAnimationSpeed,
+      onSetBackgroundAnimationSpeed: props.onSetBackgroundAnimationSpeed ?? noop,
       hidden,
     });
   const { ThemeBrowser } = profile;

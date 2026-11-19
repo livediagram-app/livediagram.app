@@ -5,6 +5,7 @@ import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livedocuments/
 
 import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
+import { useCurrentPageKind } from '@/lib/current-page-kind';
 
 const SettingsDialog = dynamic(
   () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
@@ -60,6 +61,8 @@ function OpenEditorModals() {
     applyingStyleToAllTabs,
     canApplyStyleToAllTabs,
   } = useEditorContext();
+  // The page someone is on is the Tab Style surface; a tab with no pages yet is the canvas.
+  const pageKind = useCurrentPageKind();
 
   return (
     <>
@@ -87,6 +90,7 @@ function OpenEditorModals() {
       {canvasThemeTab !== null && !isReadOnly ? (
         <CanvasThemeDialog
           tab={canvasThemeTab}
+          surface={pageKind ?? 'canvas'}
           onTabChange={setCanvasThemeTab}
           backgroundPattern={activeTab.backgroundPattern ?? 'grid'}
           backgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}

@@ -35,7 +35,7 @@ in front of the person. The names in use:
 
 | Surface       | Where                                         |
 | ------------- | --------------------------------------------- |
-| `canvas`      | a canvas tab (livediagram, livedesign)        |
+| `canvas`      | a canvas tab (livediagram, livedesign), a diagram tab (liveplanner), a tab with no pages yet (livedocuments) |
 | `whiteboard`  | a whiteboard tab (livediagram)                |
 | `board`       | a Board tab (liveplanner)                     |
 | `sheet`       | a Sheet tab (liveplanner)                     |
@@ -44,6 +44,7 @@ in front of the person. The names in use:
 | `article`     | an article page (livedocuments)               |
 | `slide`       | a slide page (livedocuments)                  |
 | `infographic` | an infographic page (livedocuments)           |
+| `flashcard`   | a flashcard page (livedocuments)              |
 | `space`       | a Space (livehuddle)                          |
 
 A surface the profile does not name, or none, takes the profile's base. Today every product's surfaces take its base,

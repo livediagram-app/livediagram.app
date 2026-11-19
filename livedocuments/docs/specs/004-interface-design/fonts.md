@@ -184,7 +184,7 @@ sign-in and the Explorer included, by a full round trip to Google.
 
 Both pickers **preview each face**: the per-element font menu shows an
 `Aa` glyph in the font beside its name, and the per-tab picker
-(Tab Style's Text panel, `components/dialogs/TextTab.tsx`) shows each face as a
+(Tab Style's Text panel, the shared `TextPanel`, `packages/workbench/src/components/dialogs/tab-style/TextPanel.tsx`) shows each face as a
 **specimen card**, "Aa" and its name in its own typeface, six to a carousel page
 (a native `<select>` can't: browsers / macOS ignore `font-family` on `<option>`,
 so the names would all look alike). Picking one letters the whole tab at once.
@@ -218,7 +218,7 @@ SVG / PDF paint the same typeface the canvas did, never the UI sans.
   mid-swap would bake the fallback into the file.
 
 Implementation: `../packages/model-core/src/fonts.ts` (catalogue + resolver),
-`components/dialogs/TextTab.tsx` (the per-tab typeface cards; element fonts use the
+`packages/workbench/src/components/dialogs/tab-style/TextPanel.tsx` (the per-tab typeface cards; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
 apply the resolved stack; `useElementStyle.setFontSelected` and

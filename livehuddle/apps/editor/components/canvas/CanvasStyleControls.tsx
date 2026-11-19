@@ -12,6 +12,10 @@ import { PatternCarousel } from './PatternCarousel';
 import { ColorSwatch, PATTERNS } from '@/components/palette/palette-controls';
 import { HoverCard } from '@livehuddle/ui';
 import { RANGE_SLIDER } from '@liveworkspace/workbench/components/primitives/surface-classes';
+import type { TabStyleControl } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
+
+// Nothing left out: the dialog's default.
+const NONE_HIDDEN: ReadonlySet<TabStyleControl> = new Set();
 
 // A motif is ink on the canvas, so the strong tone only.
 const PATTERN_TONES = ['strong'] as const;
@@ -27,6 +31,7 @@ export function CanvasStyleControls({
   onSetPatternColor,
   onSetBackgroundOpacity,
   onSetBackgroundPatternScale,
+  hidden = NONE_HIDDEN,
 }: {
   backgroundPattern: BackgroundPattern;
   backgroundColor: string;
@@ -38,6 +43,9 @@ export function CanvasStyleControls({
   onSetPatternColor: (color: string) => void;
   onSetBackgroundOpacity: (opacity: number) => void;
   onSetBackgroundPatternScale: (scale: number) => void;
+  // The controls the Tab Style surface leaves out (liveworkspace/docs/specs/011-workbench/tab-style.md "The profile").
+  // A floor never moves, so there is no animation speed to leave out.
+  hidden?: ReadonlySet<TabStyleControl>;
 }) {
   // What the canvas draws: a retired diagram pattern is picked as the floor it shows as.
   const drawn = spacePattern(backgroundPattern);
@@ -61,7 +69,7 @@ export function CanvasStyleControls({
         >
           <ColorSwatch label="Canvas" value={backgroundColor} onChange={onSetBackgroundColor} />
         </HoverCard>
-        {isSeasonalPattern(drawn) ? (
+        {isSeasonalPattern(drawn) && !hidden.has('patternColor') ? (
           <HoverCard title="Pattern colour" description="The colour of the seasonal motif.">
             <ColorSwatch
               label="Pattern"
@@ -89,23 +97,25 @@ export function CanvasStyleControls({
           className={RANGE_SLIDER}
         />
       </div>
-      <div className="mt-3 flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
-          <span className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
-            {Math.round(backgroundPatternScale * 100)}%
-          </span>
+      {hidden.has('patternScale') ? null : (
+        <div className="mt-3 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
+              {Math.round(backgroundPatternScale * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0.5}
+            max={2}
+            step={0.1}
+            value={backgroundPatternScale}
+            onChange={(e) => onSetBackgroundPatternScale(parseFloat(e.target.value))}
+            className={RANGE_SLIDER}
+          />
         </div>
-        <input
-          type="range"
-          min={0.5}
-          max={2}
-          step={0.1}
-          value={backgroundPatternScale}
-          onChange={(e) => onSetBackgroundPatternScale(parseFloat(e.target.value))}
-          className={RANGE_SLIDER}
-        />
-      </div>
+      )}
     </>
   );
 }

@@ -2,21 +2,46 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FONTS, PLANNER_EXCLUDED_FONT_IDS, PLANNER_FONTS } from '@liveplanner/project';
-import { TextTab } from './TextTab';
+import { CanvasThemeDialog } from './CanvasThemeDialog';
 
-// docs/specs/004-interface-design/fonts.md "Not offered in liveplanner": the Typeface cards offer liveplanner's faces.
+// jsdom has no ResizeObserver; the dialog's animated height measures itself with one.
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+} as unknown as typeof ResizeObserver;
+
+// docs/specs/004-interface-design/fonts.md "Not offered in liveplanner": the Text panel's Typeface cards offer
+// liveplanner's faces (its Tab Style profile's `fonts`).
 afterEach(cleanup);
 
 const renderTab = (font: string | null) =>
   render(
-    <TextTab
+    <CanvasThemeDialog
+      tab="font"
+      onTabChange={vi.fn()}
+      backgroundPattern="grid"
+      backgroundColor="#ffffff"
+      patternColor="#cccccc"
+      backgroundOpacity={1}
+      backgroundPatternScale={1}
+      backgroundAnimationSpeed={1}
+      onSetBackgroundPattern={vi.fn()}
+      onSetBackgroundColor={vi.fn()}
+      onSetPatternColor={vi.fn()}
+      onSetBackgroundOpacity={vi.fn()}
+      onSetBackgroundPatternScale={vi.fn()}
+      onSetBackgroundAnimationSpeed={vi.fn()}
+      themeId="default"
+      onSetTheme={vi.fn()}
       font={font}
       onSetFont={vi.fn()}
       defaultTextSize={undefined}
       onSetDefaultTextSize={vi.fn()}
       finish="flexible"
-      canvasBackground={undefined}
-      themeId="default"
+      onSetFinish={vi.fn()}
+      onApplyLook={vi.fn()}
+      onClose={vi.fn()}
     />,
   );
 
@@ -27,7 +52,7 @@ const typefaces = () =>
       [...page.querySelectorAll('button')].map((b) => b.getAttribute('aria-label')),
     );
 
-describe('TextTab typefaces', () => {
+describe('the Text panel typefaces', () => {
   it('offers the editor default and every face liveplanner offers, in order', () => {
     renderTab(null);
     expect(typefaces()).toEqual(['Editor default', ...PLANNER_FONTS.map((f) => f.label)]);

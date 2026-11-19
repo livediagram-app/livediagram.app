@@ -77,6 +77,7 @@ export function EditorModals() {
       {canvasThemeTab !== null && !isReadOnly ? (
         <CanvasThemeDialog
           tab={canvasThemeTab}
+          surface="canvas"
           onTabChange={setCanvasThemeTab}
           backgroundPattern={activeTab.backgroundPattern ?? 'grid'}
           backgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}

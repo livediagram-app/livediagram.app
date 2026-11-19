@@ -111,12 +111,11 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
   (Flipchart and Picnic) keep two on it.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
-- Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
-  preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
-  The sample is coloured with its two boxes as separate branches, taking the palette's first and fourth colours
-  (across the wheel: Rainbow's red and green, Tropical's teal and orange), and its arrow is put back on its pins
-  after; so a multi-colour look's card shows two contrasting palette colours rather than the trunk neutral and one
-  hue. Single-colour looks draw exactly as they would without it (`apps/editor/lib/look-preview.ts`).
+- Each look is a card: a small sample board drawn in the look (three columns, To do, Doing and Done, each a heading
+  over its cards), by the tab exporter, on the look's own canvas colour and pattern, in the viewer's half of its
+  theme; its name, and a line on what it is made of. Each card is a loose box, so a multi-colour look gives each card
+  the next colour of its palette and a single-colour look paints them all alike (`apps/editor/lib/look-preview.ts`).
+  The Finish and Text panels' preview is a different sample, the one in "Finish panel".
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
   (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
   element's own finish or font still wins over the tab's.
@@ -184,7 +183,7 @@ and the user can keep pressing it to regenerate.
   (`apps/editor/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).
 - **Always new.** A roll that equals one of the named looks, or the mashup the card already shows, is rolled
   again (up to `MASHUP_REROLLS` times), so a press always changes the tab and never lands on a named look.
-- **The card.** Like a look's card (the sample diagram drawn in the mashup, in the viewer's half), named **Mashup**
+- **The card.** Like a look's card (the sample board drawn in the mashup, in the viewer's half), named **Mashup**
   with a dice badge, and a line naming its four ingredients the way a look's does ("Ocean, Sketch, Kalam, waves").
   The dialog opens with a fresh roll on the card that is not applied yet, so the first press applies exactly what the
   card shows. While the tab wears the card's mashup the card is selected, and the next press rolls a new one and
@@ -336,6 +335,24 @@ Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button
 the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (the Apply to All actions, and their
 `FinishToAll` and `ResetElements` events, are gone)
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+
+## One dialog, this editor's profile
+
+The dialog is the one every editor shares ([Tab Style dialog](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md), in `@liveworkspace/workbench`):
+`apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
+(`apps/editor/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
+**surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
+describes it on each.
+
+- **Surfaces.** The active tab's kind: `board`, `sheet`, `form` or `dashboard`, and `canvas` for a diagram tab.
+- **Panels and controls.** All four panels, every control, on every kind.
+- **Looks.** Every look in `apps/editor/lib/tab-looks.ts`.
+- **Canvas panel.** `CanvasStyleControls`: the patterns drawn for real, the colours, Opacity, Size and Speed.
+- **Preview.** The sample scene (`TabStylePreview`, `apps/editor/lib/finish-preview.ts`), in the Finish and Text panels.
+- **Typefaces.** The faces liveplanner offers (`PLANNER_FONTS`, [Fonts](../004-interface-design/fonts.md)).
+- **Copy.** The shared lines, but Colours "The colours everything on the tab draws in." and Finish "How everything on
+  the tab is drawn.": a plan's tab holds cards, cells and fields as well as elements.
+- **Frame.** Its own: `ClusterPanel`, the frame it shares with a board's Configure, with no Show Me.
 
 ## Reuse notes
 

@@ -15,9 +15,10 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
   "Style" while the bar is named, its icon alone otherwise), first in the bar's looks group
   ([Pages mode](../007-editor/pages-mode.md) "Beside the cog"), opening the dialog on its home; the bottom-right
   cluster then holds no Theme & canvas button. An article page (or a card) already has a Style for its writing, so
-  it never shows two: its Style popover **leads with a Tab Style row** (a brand icon tile, "Tab Style", "Theme,
-  finish, fonts and canvas for the whole tab", a chevron) above the article's own style, and the row opens the
-  dialog. The row rather than a dialog section, because the article's style is what that button is pressed for
+  it never shows two: its Style popover **leads with a Tab Style row** (a brand icon tile, "Tab Style", "The tab's
+  colours and the canvas around its pages", a chevron) above the article's own style, and the row opens the dialog.
+  The line says only what reaches an article: the theme's accent colours its writing, and the canvas is the pages'
+  surround; the finish and the tab font do not reach its text ("One dialog, this editor's profile", "Articles"). The row rather than a dialog section, because the article's style is what that button is pressed for
   on that page; the tab's look is one press further, named plainly
   (`apps/editor/lib/tab-style-opener.ts`, `PageTabStyleButton`, `PageArticleButtons`' `TabStyleRow`).
 - A **dock button** ("Theme & canvas") sits in the bottom-right chrome cluster, in a strip of its own
@@ -350,6 +351,27 @@ Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button
 `track('UI', 'Opened', 'CanvasStyle')` (Canvas Options). Picking a look fires `track('Tab', 'Changed', 'Look')` (a Mashup press, `track('Tab', 'Changed', 'Mashup')`);
 the underlying setters send their own `Canvas` / `Theme` / `Tab` events; there is no Apply to All
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+
+## One dialog, this editor's profile
+
+The dialog is the one every editor shares ([Tab Style dialog](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md), in `@liveworkspace/workbench`):
+`apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
+(`apps/editor/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
+**surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
+describes it on each.
+
+- **Surfaces.** The kind of the page someone is on (`article`, `slide`, `infographic` or `flashcard`), and `canvas` on
+  a tab with no pages yet.
+- **Panels and controls.** All four panels, every control.
+- **Looks.** Every look in `apps/editor/lib/tab-looks.ts`.
+- **Canvas panel.** `CanvasStyleControls`: the patterns drawn for real, the colours, Opacity, Size and Speed.
+- **Preview.** The sample (`TabStylePreview`, `apps/editor/lib/finish-preview.ts`), in the Finish and Text panels.
+- **Text size.** New text's size runs over a text's range, 24 to 72 px.
+- **Copy.** The shared lines.
+- **Frame.** The shared modal, hanging from the page Style that opened it (`apps/editor/lib/tab-style-opener.ts`), its
+  Show Me bound in `apps/editor/components/tour/TabStyleTour.tsx`.
+- **Articles.** On an article only the theme's accent reaches the writing; the rest styles the pages' surround. Phase 2
+  gives the `article` surface its own profile settings, so the dialog shows an article what reaches it.
 
 ## Reuse notes
 

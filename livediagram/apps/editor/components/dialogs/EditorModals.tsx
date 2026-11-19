@@ -54,6 +54,7 @@ export function EditorModals() {
     applyStyleToAllTabs,
     applyingStyleToAllTabs,
     canApplyStyleToAllTabs,
+    editorMode,
   } = useEditorContext();
 
   return (
@@ -83,6 +84,7 @@ export function EditorModals() {
         <CanvasThemeDialog
           tab={canvasThemeTab}
           onTabChange={setCanvasThemeTab}
+          surface={editorMode.mode === 'draw' ? 'whiteboard' : 'canvas'}
           backgroundPattern={activeTab.backgroundPattern ?? 'grid'}
           backgroundColor={activeTab.backgroundColor ?? DEFAULT_BACKGROUND_COLOR}
           patternColor={activeTab.patternColor ?? DEFAULT_PATTERN_COLOR}

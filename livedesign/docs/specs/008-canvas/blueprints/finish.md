@@ -384,12 +384,12 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 - `lib/style-presets.ts`: `applyFinishToEl(el, finish | null)` (null deletes the key; other types unchanged).
 - `useStylePreview`: `previewFinish`, `commitFinish` (`'Finish'` telemetry type), plumbed through `useEditorState`,
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
-- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; `components/dialogs/FinishTab.tsx` (four tiles, two columns, four from `sm`) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
+- `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; the shared `FinishPanel` (`packages/workbench/src/components/dialogs/tab-style/FinishPanel.tsx`: four tiles, two columns, four from `sm`) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
   `withTabFinish` (`lib/tab-style-transforms.ts`): the tab's finish, every element's own cleared, one `commit`.
 - Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
   `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
   "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
-  `FinishTab`'s `FinishPreview` memoises it on finish, background, theme and font and inlines it
+  `FinishPanel`'s `FinishPreview` memoises it on finish, background, theme and font and inlines it
   (`role="img"`, `aria-label` naming the finish). The background is the tab's own, else the surface default
   (`DARK_CANVAS_BACKGROUND_COLOR` / `DEFAULT_BACKGROUND_COLOR`), passed as `canvasBackground` from `EditorModals`.
 
