@@ -42,7 +42,7 @@ board of the template shows some, and every plan view on its Dashboard has somet
   get the set-up alone: an agent fills a board with real cards, and examples would be cards it then had to find and
   delete.
 - **Clearing them.** While the project holds an example card that is not in the Trash and a board on screen shows
-  one, a standing toast ([Toasts](../../../liveworkspace/docs/specs/016-notifications/toasts.md)) says
+  one, a standing toast ([Toasts](../../../../liveworkspace/docs/specs/016-notifications/toasts.md)) says
   **"Example cards show how this board runs."** with one action, **Clear** (the owner, 2026-11-19: a toast, not a strip
   on the board, and no Keep). It is one toast however many boards show example cards, and it does not time out.
   - **Clear** sends every example card of the project (every board, every tab) to the Trash as one write and one undo
