@@ -7,6 +7,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IndexError } from '@liveworkspace/index-client';
+import { markRequestIntent } from './request-intent';
 
 const requestAccess = vi.fn();
 vi.mock('../../lib/index-client', () => ({ indexClient: { requestAccess } }));
@@ -100,6 +101,36 @@ describe('on the Not Found card', () => {
       fireEvent.keyDown(note(), { key: 'Enter', ctrlKey: true });
     });
     expect(requestAccess).toHaveBeenLastCalledWith('p2', {});
+  });
+
+  it('back from Sign In to Request Access, opens its note at once, for this address only', () => {
+    markRequestIntent();
+    render(<RequestAccess itemId="p1" noun="plan" />);
+    expect(document.activeElement).toBe(note());
+    cleanup();
+    // Read once: a second card starts closed.
+    render(<RequestAccess itemId="p1" noun="plan" />);
+    expect(screen.queryByRole('textbox')).toBeNull();
+    cleanup();
+    // A mark for another address does not open it here.
+    window.sessionStorage.setItem('liveworkspace:request-access-intent', '/elsewhere');
+    render(<RequestAccess itemId="p1" noun="plan" />);
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(window.sessionStorage.getItem('liveworkspace:request-access-intent')).toBeNull();
+  });
+
+  it('opens closed when storage is blocked', () => {
+    const get = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    const set = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('blocked');
+    });
+    markRequestIntent();
+    render(<RequestAccess itemId="p1" noun="plan" />);
+    expect(screen.queryByRole('textbox')).toBeNull();
+    get.mockRestore();
+    set.mockRestore();
   });
 
   it('lets a plain Enter and other keys type', () => {
