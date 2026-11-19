@@ -43,7 +43,7 @@ describe('labelBodyInset', () => {
 
   it("keeps a slanted kind's label inside its slants where they cross the middle", () => {
     const at = (kind: 'parallelogram' | 'trapezoid') =>
-      labelBodyInset({ ...createShape(kind, 0, 0), width: 200, height: 80 } as BoxedElement);
+      labelBodyInset({ ...createShape(kind, 0, 0), width: 200, height: 80 });
     expect(at('parallelogram')).toEqual({ top: 0, bottom: 0, side: 20 });
     expect(at('trapezoid').side).toBeCloseTo(24, 9);
     // The drawn outlines: the parallelogram's left side runs 20,0 to 0,100 (x 10 at mid-height), the
