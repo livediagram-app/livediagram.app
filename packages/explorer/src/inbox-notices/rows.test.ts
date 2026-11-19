@@ -129,18 +129,25 @@ describe('each kind', () => {
     expect(noticeHeadline(row!)).toBe('Quinn mentioned you');
   });
 
-  it('names the element as the Inbox row does, with or without a tab name', () => {
+  it('names the element as the Inbox row does, with or without a tab name, never the item twice', () => {
     const rows = noticeRows(
       inbox({
         threads: [
           thread({ elementId: 'e2', tabName: '', elementLabel: 'Note 13', latestAt: NOW - 400 }),
           thread({ elementId: 'e3', tabName: '', elementLabel: '', latestAt: NOW - 300 }),
+          thread({
+            elementId: 'e4',
+            tabName: 'Roadmap',
+            elementLabel: 'Roadmap',
+            latestAt: NOW - 200,
+          }),
         ],
       }),
       ME,
       'livediagram',
     );
     expect(rows.map((r) => [r.place, r.detail])).toEqual([
+      ['Roadmap', null],
       ['Roadmap', null],
       ['Roadmap', 'Note 13'],
     ]);

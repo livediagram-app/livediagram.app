@@ -77,10 +77,12 @@ function threadRow(t: InboxThread, viewerId: string, here: App): NoticeRow | nul
     return null;
   }
   const key = threadKey(t);
-  // Where in the item, as the Inbox row says it: the card, else the tab and the element, so rows on one canvas differ.
+  // Where in the item, as the Inbox row says it: the card, else the tab and the element, so rows on one canvas
+  // differ. A part that only repeats the item's name ("Launch plan › Launch plan") is left out.
   const label = t.card
     ? `#${t.card.key} ${t.card.title}`
-    : [t.tabName, t.elementLabel].filter(Boolean).join(' › ') || null;
+    : [t.tabName, t.elementLabel].filter((part) => part && part !== t.itemTitle).join(' › ') ||
+      null;
   return {
     key,
     at: t.latestAt,
