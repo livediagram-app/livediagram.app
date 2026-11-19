@@ -655,6 +655,19 @@ belong to the account rather than to a browser. The accounts side is `src/end-se
 3. The page goes to `next` (a full-page visit: the only way an app on another site reaches liveworkspace.app's
    cookie), else straight to `<path>`.
 
+**Signed out of this app only.** When `next` is null after a person's own Sign Out (the accounts site didn't answer
+within 5 s, or there was no refresh token), only this app signed out, and the page says so where it lands rather than
+letting the person believe every app did. Before it leaves, the page notes the time in its tab's sessionStorage
+(`noteSignedOutHere`, `@liveworkspace/auth-client/signed-out-here`); the page it lands on takes that note once
+(`takeSignedOutHere`, good for a minute, so a note no page took never surfaces later) and shows a notice under its
+account control, naming the app: **"Signed out of livediagram only"**, then "Your liveworkspace account didn't answer
+in time, so other apps in this browser may still be signed in. Sign out in each of them, or on liveworkspace.app.",
+with a Dismiss button (`SignedOutHereNotice`, `@liveworkspace/account-menu/signed-out-notice`). It is a status, read
+out to a screen reader, and stays until dismissed or the page is left. Every place a person signs out of an app shows
+it: an editor's account menu (it lands on the app's landing page, whose header is `createSiteAccount`'s), a marketing
+page's account menu, and the Explorer on an app's address (its header's account control and Settings › Your Account's
+Sign Out). Signing out after Delete Account never notes it: the account is closed, so no app is still signed in.
+
 At `GET /api/auth/end-session` the accounts Worker:
 
 - refuses with a `400` that goes nowhere when the client is unknown or disabled, or `post_logout_redirect_uri` is not

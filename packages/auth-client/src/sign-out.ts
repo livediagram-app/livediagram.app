@@ -3,6 +3,8 @@
 // liveworkspace one, and answers the hop through liveworkspace.app the page then takes to clear its cookie there; safe
 // in the browser, with no secrets.
 
+import { noteSignedOutHere } from './signed-out-here';
+
 export interface SignOutAnswer {
   // Whether the app's API signed out (false: it refused or couldn't be reached, and nothing changed).
   ok: boolean;
@@ -11,9 +13,15 @@ export interface SignOutAnswer {
 }
 
 // Asks the app's API on this page's own origin to sign out, coming back to `returnTo` (a path on this site).
+// `noteHereOnly`: a person's own Sign Out, so a sign-out of this app alone (signed out, with no hop) is noted in the
+// tab for the page it lands on to say so (signed-out-here.ts). Off for the sign-out after Delete Account.
 export async function askSignOut(
   returnTo: string,
-  { apiBase = '/api', fetchImpl = fetch }: { apiBase?: string; fetchImpl?: typeof fetch } = {},
+  {
+    apiBase = '/api',
+    fetchImpl = fetch,
+    noteHereOnly = false,
+  }: { apiBase?: string; fetchImpl?: typeof fetch; noteHereOnly?: boolean } = {},
 ): Promise<SignOutAnswer> {
   try {
     const response = await fetchImpl(
@@ -24,6 +32,7 @@ export async function askSignOut(
     const body = (await response.json().catch(() => null)) as { next?: unknown } | null;
     const next =
       typeof body?.next === 'string' && /^https?:\/\//.test(body.next) ? body.next : null;
+    if (next === null && noteHereOnly) noteSignedOutHere();
     return { ok: true, next };
   } catch {
     return { ok: false, next: null };

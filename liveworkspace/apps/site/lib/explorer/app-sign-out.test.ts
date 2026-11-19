@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { takeSignedOutHere } from '@liveworkspace/auth-client/signed-out-here';
 import { appAccount, appSignOut, resetAppSession, SIGNED_IN_HINTS } from './app-session';
 
 // The Sign Out row in the Explorer on an app's own address (liveworkspace/docs/specs/010-site/site.md "Your Account",
@@ -83,6 +84,14 @@ describe('Sign Out in the Explorer on an app’s address', () => {
     const go = vi.fn();
     expect(await appSignOut(go)).toBe(true);
     expect(go).toHaveBeenCalledExactlyOnceWith('/explorer?folder=f1');
+    // And the page it reloads to says so, under its account control (AppAccountControl, Work Tracker 1283).
+    expect(takeSignedOutHere()).toBe(true);
+  });
+
+  it('notes nothing after Delete Account, when no app is left signed in', async () => {
+    signOutAnswer = () => json(200, { signedIn: false, next: null });
+    expect(await appSignOut(vi.fn(), { noteHereOnly: false })).toBe(true);
+    expect(takeSignedOutHere()).toBe(false);
   });
 
   it('leaves everything as it was when the app refuses', async () => {
