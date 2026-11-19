@@ -223,11 +223,19 @@ same builder every app's marketing site uses. Its `Policy` is the repository's s
 (`SECURITY_POLICY_URL`), since every app's policy agrees and this site has no help centre of its own. The fields and
 why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md#securitytxt-on-every-site).
 
-### Help (`/help/google-drive`)
+### Help (`/help/google-drive`, `/help/explorer`)
 
 Each app keeps its own help centre; a feature that is the platform's, the same in every app, is explained once here
-instead. That is Google Drive sync (drive.md): `/help/google-drive`, one page in the site's own chrome, listed
-in the sitemap. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**
+instead, in pages in the site's own chrome (`components/help/HelpArticle.tsx`) listed in the sitemap. One is Google
+Drive sync (drive.md): `/help/google-drive`. The other is the Explorer on liveworkspace.app in no app, where it mixes
+every app's work: `/help/explorer` (the overview, a section each for Home, My Work, Recent, Shared With Me, the Inbox,
+the Trash and Search), `/help/explorer/folders`, `/help/explorer/teams`, `/help/explorer/moving`,
+`/help/explorer/sharing` (sharing across apps) and `/help/explorer/signing-in` (guest or account). In no app the
+Explorer's view Help button opens the article for its view (a folder's and a team's their own, every other view a
+section of the overview), the sign-in banner's Learn more opens `/help/explorer/signing-in`, and Search lists the six
+under **liveworkspace Help**. On an app's address all three keep that app's own help centre. The articles speak of
+files and apps, never of one app's kind; their names and addresses are in `lib/help/platform-help.ts`, checked by
+`components/help/explorer-articles.test.tsx`. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**
 article under Account and Data (`/help/account-and-data/google-drive/`) that points here, so the apps' search,
 links and old addresses still find it. It names every app's file extension (drive.md "The file"), which
 `app/app-lists.test.ts` checks against the listed apps. Change it when drive.md changes what a person sees.
@@ -929,7 +937,10 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     from, with every app's tokens from that session, and answers the hop through the accounts site that clears its
     cookie there; so the row's "Sign out of every liveworkspace app in this browser." holds. Only when the accounts
     site doesn't answer (or there is no refresh token) is it this app alone, remembered by its signed-out mark, as in
-    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)). And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
+    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)), and then the page it reloads to says so
+    under its account control: "Signed out of livediagram only" (the app's name), with what that means and a Dismiss
+    button (`SignedOutHereNotice`, accounts.md "Signed out of this app only"), so the row's promise is never broken
+    in silence. The header's account menu on this address does the same. And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
     in every liveworkspace app.", whose **Delete Account** button (`AccountHost.deleteAccount`) opens that app's own
     Delete Account dialog, the one its editor opens (`DeleteAccountDialog` in `@liveworkspace/workbench`, with the
     app's name and its This Browser items), its confirmation unchanged: the typed email, then the code emailed to the

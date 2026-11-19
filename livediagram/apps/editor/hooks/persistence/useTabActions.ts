@@ -75,6 +75,8 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Notes an import's view and elements, so its undo can bring the view back (hooks/canvas/useImportUndoView).
+  noteImport?: (tabId: string, elements: readonly Element[]) => void;
   // Re-pulls the owner's document list after a cross-document tab link.
   refreshDocumentList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
@@ -99,6 +101,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport,
     refreshDocumentList,
     confirm,
     toast,
@@ -145,6 +148,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport,
     // Declared below; called only once an import runs, after this render has defined it.
     importScene: (scene, onProgress) => importSceneIntoActiveTab(scene, onProgress),
   });

@@ -8,6 +8,7 @@
 
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { takeSignedOutHere } from '@liveworkspace/auth-client/signed-out-here';
 
 // The silent sign-in's second look (liveworkspace/docs/specs/003-accounts/accounts.md "A hint that outlived its session").
 const retrySilentSignIn = vi.hoisted(() => vi.fn());
@@ -236,6 +237,23 @@ describe('AccountsBridge', () => {
       expect.objectContaining({ method: 'POST' }),
     );
     expect(assign).toHaveBeenCalledWith(hop);
+  });
+
+  // liveworkspace/docs/specs/003-accounts/accounts.md "Signed out of this app only".
+  it('notes a sign-out of this app alone for the landing page, never one after Delete Account', async () => {
+    fetchMock.mockResolvedValueOnce(signedIn('access-1'));
+    const state = await mount();
+    vi.stubGlobal('location', { ...window.location, assign: vi.fn() });
+    sessionStorage.clear();
+    const alone = () => new Response('{"signedIn":false,"next":null}');
+    fetchMock.mockResolvedValueOnce(alone());
+    await state.deleteAccount?.();
+    fetchMock.mockResolvedValueOnce(alone());
+    await state.signOut({ redirectUrl: '/', accountClosed: true });
+    expect(takeSignedOutHere()).toBe(false);
+    fetchMock.mockResolvedValueOnce(alone());
+    await state.signOut({ redirectUrl: '/' });
+    expect(takeSignedOutHere()).toBe(true);
   });
 
   it('ends the session after the account is deleted, without leaving the page', async () => {

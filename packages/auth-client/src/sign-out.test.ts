@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { askSignOut } from './sign-out';
+import { SIGNED_OUT_HERE_KEY, takeSignedOutHere } from './signed-out-here';
 
 const answer = (body: unknown, status = 200) =>
   vi.fn<typeof fetch>(async () => new Response(JSON.stringify(body), { status }));
@@ -31,6 +32,26 @@ describe('askSignOut', () => {
     });
     const notJson = vi.fn<typeof fetch>(async () => new Response('ok'));
     expect(await askSignOut('/', { fetchImpl: notJson })).toEqual({ ok: true, next: null });
+  });
+
+  it('notes a sign-out of this app alone for the landing page, only when asked and only without a hop', async () => {
+    const items = new Map<string, string>();
+    vi.stubGlobal('sessionStorage', {
+      getItem: (key: string) => items.get(key) ?? null,
+      setItem: (key: string, value: string) => void items.set(key, value),
+      removeItem: (key: string) => void items.delete(key),
+    });
+    try {
+      const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+      await askSignOut('/', { fetchImpl: answer({ next: hop }), noteHereOnly: true });
+      await askSignOut('/', { fetchImpl: answer({}, 503), noteHereOnly: true });
+      await askSignOut('/', { fetchImpl: answer({ next: null }) });
+      expect(items.has(SIGNED_OUT_HERE_KEY)).toBe(false);
+      await askSignOut('/', { fetchImpl: answer({ next: null }), noteHereOnly: true });
+      expect(takeSignedOutHere()).toBe(true);
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('says so when the API refused or was not reached', async () => {

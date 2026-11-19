@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { searchEntries } from './search';
 
-// Search's entries (liveworkspace/docs/specs/004-index/one-explorer.md): an app's own help on its address, none in no
-// app, where liveworkspace.app has no Explorer articles of its own.
+// Search's entries (liveworkspace/docs/specs/004-index/one-explorer.md): an app's own help on its address, liveworkspace.app's
+// own Explorer articles in no app.
 describe('searchEntries', () => {
   it("lists the app's help articles on its address", () => {
     const help = searchEntries('livediagram', false).filter((e) => e.group === 'help');
@@ -11,8 +11,18 @@ describe('searchEntries', () => {
     expect(help[0]!.hint).toBe('livediagram Help');
   });
 
-  it("lists no one app's help in no app", () => {
-    expect(searchEntries(null, false)).toEqual([]);
-    expect(searchEntries(null, true).some((e) => e.group === 'help')).toBe(false);
+  it("lists liveworkspace.app's own Explorer articles in no app, never one app's", () => {
+    const help = searchEntries(null, false);
+    expect(help.map((e) => e.href)).toEqual([
+      '/help/explorer',
+      '/help/explorer/folders',
+      '/help/explorer/teams',
+      '/help/explorer/moving',
+      '/help/explorer/sharing',
+      '/help/explorer/signing-in',
+    ]);
+    expect(help.every((e) => e.group === 'help' && e.hint === 'liveworkspace Help')).toBe(true);
+    expect(new Set(help.map((e) => e.id)).size).toBe(help.length);
+    expect(searchEntries(null, true).filter((e) => e.group === 'help')).toHaveLength(help.length);
   });
 });

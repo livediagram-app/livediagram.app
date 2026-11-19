@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   DEFAULT_ARROW_LABEL_LAYOUT_OPTIONS,
   KNOCKOUT_MARGIN_PX,
@@ -157,6 +157,19 @@ describe('layoutArrowLabels: beside the line', () => {
     const above = layoutOf(els(-70), 'a');
     expect(Math.sign(below.center.y)).toBe(-1);
     expect(Math.sign(above.center.y)).toBe(1);
+  });
+
+  it('writes nothing to the console on the hot layout path', () => {
+    const spies = (['debug', 'log', 'info', 'warn'] as const).map((m) =>
+      vi.spyOn(console, m).mockImplementation(() => {}),
+    );
+    try {
+      const l = layoutOf([arrow('a', [0, 0], [60, 0], 'Use personal assistant')], 'a');
+      expect(l.mode).toBe('beside');
+      for (const spy of spies) expect(spy).not.toHaveBeenCalled();
+    } finally {
+      for (const spy of spies) spy.mockRestore();
+    }
   });
 });
 

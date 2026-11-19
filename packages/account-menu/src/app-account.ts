@@ -148,12 +148,15 @@ export function useAppAccount(hint: string): AppAccount {
  *  and ends the liveworkspace session, or, should that fail, remembers not to sign in silently here;
  *  liveworkspace/docs/specs/003-accounts/accounts.md "Signing out"), then goes through the accounts site's hop, or
  *  straight back to this page, as a visitor.
- *  Resolves false when the API refused, leaving everything as it was. */
+ *  Resolves false when the API refused, leaving everything as it was. Signed out of this app alone (no hop), it notes
+ *  that in the tab for the page it lands on to say so (SignedOutHereNotice), unless `noteHereOnly` is false (the
+ *  sign-out after Delete Account, when no app is left signed in). */
 export async function appSignOut(
   go: (to: string) => void = (to) => window.location.assign(to),
+  { noteHereOnly = true }: { noteHereOnly?: boolean } = {},
 ): Promise<boolean> {
   const here = pageHere();
-  const { ok, next } = await askSignOut(here);
+  const { ok, next } = await askSignOut(here, { noteHereOnly });
   if (!ok) return false;
   go(next ?? here);
   return true;

@@ -289,7 +289,7 @@ export function ShareDialog({
           aria-labelledby={shareTabId('approval')}
           className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-6 py-5"
         >
-          <ApprovalPanel />
+          <ApprovalPanel helpHref={helpHref?.('requestApproval')} />
         </div>
       ) : appTab && showApp ? (
         <div

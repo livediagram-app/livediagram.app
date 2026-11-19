@@ -13,7 +13,7 @@ import { deleteAppAccount, endAppSession, sendAppDeletionCode } from './AppDelet
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const app = vi.hoisted(() => ({
-  signOut: vi.fn(async (_go?: (to: string) => void) => true),
+  signOut: vi.fn(async (_go?: (to: string) => void, _options?: { noteHereOnly?: boolean }) => true),
   account: {
     token: 'app-token',
     expiresAt: Date.now() + 600_000,
@@ -33,7 +33,8 @@ vi.mock('@/lib/explorer/page-app', async (original) => ({
 vi.mock('@/lib/explorer/app-session', async (original) => ({
   ...(await original<typeof import('@/lib/explorer/app-session')>()),
   appAccount: async () => app.account,
-  appSignOut: (go?: (to: string) => void) => app.signOut(go),
+  appSignOut: (go?: (to: string) => void, options?: { noteHereOnly?: boolean }) =>
+    app.signOut(go, options),
   onAppAccountChange: () => () => {},
 }));
 // The account API through the app's router, with the app's token: answered by the fetch below.
@@ -213,6 +214,8 @@ describe('the app’s own deletion requests', () => {
     // No navigation of its own: the dialog's onDeleted goes to the landing page.
     const go = app.signOut.mock.calls[0]![0]!;
     expect(go('/elsewhere')).toBeUndefined();
+    // The account is closed, so no app is left signed in: no "Signed out of this app only" notice.
+    expect(app.signOut.mock.calls[0]![1]).toEqual({ noteHereOnly: false });
     app.signOut.mockResolvedValueOnce(false);
     await expect(endAppSession()).rejects.toThrow('did not sign out');
   });

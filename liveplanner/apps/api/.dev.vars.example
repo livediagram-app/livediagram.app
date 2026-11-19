@@ -17,3 +17,6 @@ APP_BASE_URL=http://localhost:3200
 # The local index (liveworkspace/apps/index, its dev key for liveplanner).
 INDEX_ORIGIN=http://127.0.0.1:8793
 INDEX_KEY=dev-liveplanner-index-key
+# Images, through the local media Worker (liveworkspace/apps/media): its MEDIA_KEY_LIVEPLANNER.
+MEDIA_URL=http://localhost:8792/api/media
+MEDIA_KEY=dev-liveplanner-media-key

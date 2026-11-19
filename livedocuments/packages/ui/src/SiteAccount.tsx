@@ -8,6 +8,7 @@ import { useSignedInHint } from './HeaderPrimaryCta';
 // (SiteAccountMenu): loaded at once when the hint says signed in, and for a visitor only when the pointer or
 // focus reaches the Guest button, so a visitor's page carries none of it and makes no request.
 export const SiteAccount = /* @__PURE__ */ createSiteAccount({
+  app: 'livedocuments',
   load: () => import('./SiteAccountMenu'),
   useSignedInHint,
 });

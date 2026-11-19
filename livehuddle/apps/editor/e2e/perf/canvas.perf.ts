@@ -10,7 +10,7 @@ import {
 } from '../fixtures';
 import { runCanvasProbe } from '@liveworkspace/e2e-kit/perf/canvas-probe';
 import { buildTemplate, type TemplateKind } from '@livehuddle/templates';
-import type { Element } from '@livehuddle/document';
+import { isFurnitureShape, type Element } from '@livehuddle/document';
 import { FURNITURE_KINDS, buildReferenceBoard } from './reference-board';
 
 // The canvas performance probe (docs/specs/008-canvas/canvas-performance.md "Measuring";
@@ -30,9 +30,13 @@ type Tab = 'space';
 const TEMPLATE = process.env.E2E_PERF_BOARD as TemplateKind | undefined;
 const BOARD: Element[] = TEMPLATE ? buildTemplate(TEMPLATE, 0, 0) : buildReferenceBoard();
 
-// The gestures select and drag a piece of furniture, the commonest thing moved in a Space.
+// The gestures select and drag a piece of furniture, the commonest thing moved in a Space: on the reference board its
+// desks, chairs, sofas and plants; on a template every piece (a coat stand, a bookshelf), since at 100% the middle of
+// a Virtual Office shows its Avatar Pad and the pieces round it, none of them a desk (Work Tracker 1257).
 const SHAPE_IDS = BOARD.filter(
-  (el) => el.type === 'shape' && FURNITURE_KINDS.includes(el.shape),
+  (el) =>
+    el.type === 'shape' &&
+    (TEMPLATE ? isFurnitureShape(el.shape) : FURNITURE_KINDS.includes(el.shape)),
 ).map((el) => el.id);
 
 async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promise<string> {
