@@ -130,6 +130,18 @@ with the camera's video as it is. Read straight, some USB microphones record abo
 garbled (an NZXT USB mic in Brave: 5 s came out 6.36 s, whatever the processing); through Web Audio the same mic
 records 4.98 s.
 
+**On no speaker's clock** (Work Tracker 1314, 2026-11-19). A Web Audio context runs on its output device's clock, so a
+recording routed through it is only as true as the speakers or headphones it plays to: the slow sound came back on prod
+with the same fix in place. The context the Record press starts (`primeAudio`, which the recorder and the level meter
+share) and the recorder's own fallback (`recordingContext`, `@liveworkspace/capture`) therefore ask for no output
+device at all (`sinkId: { type: 'none' }`, so the browser clocks it by wall time) at 48 kHz, Opus's own rate, so a
+Bluetooth headset that opens at 16 kHz never narrows it. A browser that refuses either is asked again without the
+rate, then with no options, so a recording is never lost or silent for it (Firefox and Safari ignore the sink and keep
+their default). Nothing is played through this context; it only feeds the recorder and the meter. The microphone's
+own constraints are unchanged: measured in Chromium, a context at 16, 24, 44.1 or 48 kHz fed by a 16, 44.1 or 48 kHz
+source records 4.98 s of 5 s at true pitch, so a rate mismatch alone does not slow a recording. Opening a Bluetooth
+headset's microphone still switches it to its call profile, which narrows the sound before the browser has it.
+
 **Chosen before, never during** (owner, 2026-11-17). Hide From Recording is in the set-up alone: the recording bar
 has only the clock, the level, Discard and Finish, so what a walkthrough hides is settled before it starts.
 
