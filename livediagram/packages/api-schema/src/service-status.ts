@@ -34,6 +34,20 @@ export type ServiceStatus = {
 export const STATUS_POLL_MS = 60_000;
 // A state older than three rounds reads Unknown, so a room that stopped checking never leaves a green dot behind.
 export const STATUS_STALE_MS = 3 * STATUS_POLL_MS;
+// A URL whose checks keep timing out is checked less often (docs/specs/009-elements/live-status.md "Less often for a
+// URL that keeps timing out"): each timeout in a row doubles its wait, 2, 4, then this long at most, and the first
+// check that ends any other way puts it back on the minute. A hanging URL holds the room for its whole deadline, so
+// 25 of them held it about 45 s of every minute; at 8 minutes that is under 6 s a minute. Safe range: 2 to 15 minutes
+// (past 15 a recovered service waits long to turn green again).
+export const STATUS_BACKOFF_MAX_MS = 8 * STATUS_POLL_MS;
+// A timed-out state is stale two rounds past its slowest re-check, as any other is two rounds past the minute, so the
+// badge keeps saying Down between backed-off checks rather than falling to Unknown and back.
+export const STATUS_TIMEOUT_STALE_MS = STATUS_BACKOFF_MAX_MS + 2 * STATUS_POLL_MS;
+
+/** How long the room waits after a URL's last check before the next, given the checks in a row that timed out. */
+export function statusWaitMs(timeouts: number): number {
+  return Math.min(STATUS_POLL_MS * 2 ** Math.max(0, timeouts), STATUS_BACKOFF_MAX_MS);
+}
 // The distinct URLs one round checks; any beyond read Unknown.
 export const STATUS_SOURCES_MAX = 25;
 // One check's deadline over the whole exchange, and the most of its body read.
@@ -141,8 +155,11 @@ export function classifyStatusAnswer(result: PublicFetchResult, checkedAt: numbe
   }
 }
 
-/** The state a viewer sees at `now`: Unknown once it is older than `STATUS_STALE_MS`. */
+/** The state a viewer sees at `now`: Unknown once it is older than `STATUS_STALE_MS` (`STATUS_TIMEOUT_STALE_MS` for a
+ *  timeout, which the room checks less often). */
 export function currentServiceState(status: ServiceStatus | undefined, now: number): ServiceState {
-  if (status === undefined || now - status.checkedAt > STATUS_STALE_MS) return 'unknown';
+  if (status === undefined) return 'unknown';
+  const staleAfter = status.reason === 'timeout' ? STATUS_TIMEOUT_STALE_MS : STATUS_STALE_MS;
+  if (now - status.checkedAt > staleAfter) return 'unknown';
   return status.state;
 }
