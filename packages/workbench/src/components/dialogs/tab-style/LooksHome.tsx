@@ -1,29 +1,23 @@
 'use client';
 
-// The Tab Style dialog's home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks", "Fine-tune"): the looks
-// carousel (LooksCarousel), then one Fine-tune row per setting showing its current value, each opening that setting's
-// panel in place. Looks only set the tab's existing settings (lib/tab-looks.ts); the panels are the existing
-// controls.
+// The Tab Style dialog's home (liveworkspace/docs/specs/011-workbench/tab-style.md; each product's
+// 011-theme/canvas-and-theme-dialog.md "Looks", "Fine-tune"): the looks carousel (LooksCarousel), then one Fine-tune
+// row per panel the surface shows, each with its current value, opening that panel in place.
 
 import type { ReactNode } from 'react';
-import {
-  FONTS,
-  type BackgroundPattern,
-  type Finish,
-  type TextSize,
-  type TextSizePreset,
-} from '@livediagram/document';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
+import type { Finish } from '@liveworkspace/element-model/finish';
+import type { TextSize, TextSizePreset } from '@liveworkspace/model-core/basics';
+import { Glyph, lucideGlyph } from '@liveworkspace/ui';
 import { lucideChevronRight } from '@liveworkspace/icons/lucide';
-import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
-import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
-import { patternLabel as labelOfPattern } from '@/components/palette/palette-patterns';
-import { getTheme } from '@/lib/themes';
-import { type LookSettings, type TabLook, type TabLookId } from '@/lib/tab-looks';
+import type { TabLookSettings } from '../../../lib/tab-looks';
 import { LooksCarousel } from './LooksCarousel';
-
-/** The panels a Fine-tune row opens. */
-type LookPanel = 'theme' | 'finish' | 'font' | 'canvas';
+import { tabStyleFontLabel } from './tab-style-fonts';
+import type {
+  TabStyleLook,
+  TabStylePanel,
+  TabStyleProfile,
+  TabStyleSurface,
+} from './tab-style-profile';
 
 const SIZE_LABELS: Record<TextSizePreset, string> = {
   scale: 'scaled',
@@ -36,12 +30,14 @@ const SIZE_LABELS: Record<TextSizePreset, string> = {
 const sizeLabel = (size: TextSize | undefined): string =>
   typeof size === 'number' ? `${size}px` : SIZE_LABELS[size ?? 'md'];
 
-const sectionLabel =
+/** The home's section headings. */
+export const SECTION_LABEL =
   'text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400';
 
-export function LooksHome({
+export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
+  profile,
+  surface,
   settings,
-  activeLook,
   onPickLook,
   themeId,
   finish,
@@ -50,30 +46,48 @@ export function LooksHome({
   pattern,
   onOpenPanel,
 }: {
-  // The tab's four look settings (the Mashup card is selected while they are its mashup's).
-  settings: LookSettings;
-  // The look the tab's settings match, undefined when it has its own mix.
-  activeLook: TabLookId | undefined;
+  profile: TabStyleProfile<Look, Pattern>;
+  surface: TabStyleSurface<Look, Pattern>;
+  // The tab's four look settings (a card is selected while they are its look's).
+  settings: TabLookSettings;
   // A named look's id, or the Mashup card's random look whole.
-  onPickLook: (look: TabLookId | TabLook) => void;
+  onPickLook: (look: string | Look) => void;
   // The tab's current settings, for the Fine-tune rows' summaries.
   themeId: string;
   finish: Finish;
   font: string | null;
   defaultTextSize: TextSize | undefined;
-  pattern: BackgroundPattern;
-  onOpenPanel: (panel: LookPanel) => void;
+  pattern: Pattern;
+  onOpenPanel: (panel: TabStylePanel) => void;
 }) {
-  const theme = getTheme(themeId);
-  const fontLabel = FONTS.find((f) => f.id === font)?.label ?? 'Editor default';
-  const patternLabel = labelOfPattern(pattern);
+  const { label: themeLabel, swatch } = profile.themeSummary(themeId);
+  const { FinishSwatch } = profile;
+  const titles = surface.copy.panelTitles;
+  const fontLabel = tabStyleFontLabel(font);
+  const rows: Record<TabStylePanel, { value: string; icon: ReactNode }> = {
+    theme: {
+      value: `${themeLabel} theme`,
+      icon: <span className="block w-8 overflow-hidden rounded">{swatch}</span>,
+    },
+    finish: { value: profile.finishLabels[finish], icon: <FinishSwatch finish={finish} /> },
+    font: {
+      value: surface.hiddenControls.includes('defaultTextSize')
+        ? fontLabel
+        : `${fontLabel}, ${sizeLabel(defaultTextSize)}`,
+      icon: <span className="text-[15px] font-semibold">Aa</span>,
+    },
+    canvas: { value: profile.patternLabel(pattern), icon: <CanvasGlyph /> },
+  };
+  const activeLook = profile.looks.activeId(settings);
   return (
     <div className="flex flex-col gap-5">
       <LooksCarousel
+        profile={profile}
+        lookFilter={surface.lookFilter}
         settings={settings}
         activeLook={activeLook}
         onPickLook={onPickLook}
-        headingClass={sectionLabel}
+        headingClass={SECTION_LABEL}
       />
 
       <section
@@ -81,38 +95,19 @@ export function LooksHome({
         data-tour-id="tab-style-fine-tune"
         className="flex flex-col gap-2"
       >
-        <h3 id="fine-tune-heading" className={sectionLabel}>
+        <h3 id="fine-tune-heading" className={SECTION_LABEL}>
           Fine-tune
         </h3>
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <FineTuneRow
-            label="Colours"
-            value={`${theme.label} theme`}
-            icon={
-              <span className="block w-8 overflow-hidden rounded">
-                <ThemeSwatch theme={theme} heightClass="h-5" />
-              </span>
-            }
-            onOpen={() => onOpenPanel('theme')}
-          />
-          <FineTuneRow
-            label="Finish"
-            value={FINISH_LABELS[finish]}
-            icon={<FinishSwatch finish={finish} />}
-            onOpen={() => onOpenPanel('finish')}
-          />
-          <FineTuneRow
-            label="Text"
-            value={`${fontLabel}, ${sizeLabel(defaultTextSize)}`}
-            icon={<span className="text-[15px] font-semibold">Aa</span>}
-            onOpen={() => onOpenPanel('font')}
-          />
-          <FineTuneRow
-            label="Canvas"
-            value={patternLabel}
-            icon={<CanvasGlyph />}
-            onOpen={() => onOpenPanel('canvas')}
-          />
+          {surface.panels.map((panel) => (
+            <FineTuneRow
+              key={panel}
+              label={titles[panel]}
+              value={rows[panel].value}
+              icon={rows[panel].icon}
+              onOpen={() => onOpenPanel(panel)}
+            />
+          ))}
         </div>
       </section>
     </div>

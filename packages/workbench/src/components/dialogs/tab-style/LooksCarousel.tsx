@@ -1,36 +1,27 @@
 'use client';
 
-// The Looks carousel on the Tab Style home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): the looks
-// in pages of six (PagedCarousel), led by the Mashup card ("Mashup": a random look, rolled afresh on each press),
-// opening on the page that holds the tab's current look, with a Seasonal toggle and a Finish filter left of the page
-// controls. The toggle swaps the everyday looks for the seasonal ones ("Seasonal looks", lib/seasonal-looks.ts). Each
-// card is a live preview drawn by the exporter.
+// The Looks carousel on the Tab Style home (liveworkspace/docs/specs/011-workbench/tab-style.md "What is shared"; each
+// product's 011-theme/canvas-and-theme-dialog.md "Looks", "Mashup", "Seasonal looks"): the looks in pages of six
+// (PagedCarousel), led by the Mashup card (a random look, rolled afresh on each press), opening on the page that holds
+// the tab's current look, with a Seasonal toggle and a Finish filter left of the page controls. The toggle swaps the
+// everyday looks for the seasonal ones. Each card is a live preview drawn by the product's renderer.
 
 import { useMemo, useState, type ReactNode } from 'react';
-import { FINISHES, type Finish } from '@livediagram/document';
-import { Select, lucideGlyph, builtMarkup, htmlProps } from '@livediagram/ui';
+import { FINISHES, type Finish } from '@liveworkspace/element-model/finish';
+import { Select, lucideGlyph } from '@liveworkspace/ui';
+import { builtMarkup, htmlProps } from '@liveworkspace/trusted-types';
 import { lucideDices } from '@liveworkspace/icons/lucide';
-import { FINISH_LABELS } from '@/components/palette/FinishSection';
-import { track } from '@/lib/telemetry';
-import { useAppearance } from '@/hooks/ui/useAppearance';
-import { PagedCarousel } from '@liveworkspace/workbench/components/primitives/PagedCarousel';
-import { lookPreviewSvg, lookPreviewTab } from '@/lib/look-preview';
-import { rollMashup } from '@/lib/look-mashup';
-import { SEASON_LABELS, seasonalLooksFor } from '@liveworkspace/workbench/lib/seasonal-looks';
-import {
-  LOOKS_PER_PAGE,
-  TAB_LOOKS,
-  lookMatches,
-  type LookSettings,
-  type TabLook,
-  type TabLookId,
-} from '@/lib/tab-looks';
+import { workbench } from '../../../bindings';
+import { PagedCarousel } from '../../primitives/PagedCarousel';
+import { LOOKS_PER_PAGE, type TabLookSettings } from '../../../lib/tab-looks';
+import { SEASON_LABELS } from '../../../lib/seasonal-looks';
+import type { TabStyleLook, TabStyleProfile } from './tab-style-profile';
 
 const DiceIcon = lucideGlyph(lucideDices, 14);
 
 // The Mashup card leads every page set; the looks follow.
-type Card = { kind: 'mashup' } | TabLook;
-const MASHUP_CARD: Card = { kind: 'mashup' };
+type Card<Look> = { kind: 'mashup' } | Look;
+const MASHUP_CARD = { kind: 'mashup' } as const;
 
 // The Seasonal toggle: a quiet chip beside the Finish filter, brand-tinted while on.
 const SEASONAL_TOGGLE =
@@ -40,59 +31,68 @@ const SEASONAL_OFF =
 const SEASONAL_ON =
   'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-500/60 dark:bg-brand-500/15 dark:text-brand-200';
 
-export function LooksCarousel({
+export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>({
+  profile,
+  lookFilter,
   settings,
   activeLook,
   onPickLook,
   headingClass,
 }: {
+  profile: Pick<TabStyleProfile<Look, Pattern>, 'looks' | 'finishLabels' | 'useAppearance'>;
+  // The surface's filter over the catalogue; every look when unset.
+  lookFilter?: (look: Look) => boolean;
   // The tab's four look settings, to tell whether it wears the Mashup card's look.
-  settings: LookSettings;
-  activeLook: TabLookId | undefined;
+  settings: TabLookSettings;
+  activeLook: string | undefined;
   // A named look's id, or the Mashup card's random look whole.
-  onPickLook: (look: TabLookId | TabLook) => void;
+  onPickLook: (look: string | Look) => void;
   headingClass: string;
 }) {
-  // Each look's preview is fixed for an appearance, so they are drawn once per open (again if the viewer's mode
+  const { looks: catalogue, finishLabels } = profile;
+  // Each look's preview is fixed for an appearance, so it is drawn once per open (again if the viewer's mode
   // changes: they draw in its half).
-  const { appearance } = useAppearance();
+  const appearance = profile.useAppearance();
   // The finish the looks are narrowed to, or all of them.
   const [finish, setFinish] = useState<Finish | 'all'>('all');
   // The seasonal looks for today, the season on now (or next) first; worked out once per open.
-  const [seasonalLooks] = useState(() => seasonalLooksFor(new Date()));
+  const [seasonalLooks] = useState(() => catalogue.seasonalFor(new Date()));
   // Seasonal looks only, in place of the everyday ones. Opens on when the tab already wears a seasonal look.
   const [seasonal, setSeasonal] = useState(() => seasonalLooks.some((l) => l.id === activeLook));
-  const pool = seasonal ? seasonalLooks : TAB_LOOKS;
+  const pool = (seasonal ? seasonalLooks : catalogue.all).filter((l) => !lookFilter || lookFilter(l));
   const looks = finish === 'all' ? pool : pool.filter((l) => l.finish === finish);
   // The Mashup card rolls everyday ingredients, so it leads the everyday looks only.
-  const cards: Card[] = seasonal ? [...looks] : [MASHUP_CARD, ...looks];
+  const cards: Card<Look>[] = seasonal ? [...looks] : [MASHUP_CARD, ...looks];
   // The card's mashup: rolled on open, not applied until pressed, so the first press applies what the card shows.
-  const [mashup, setMashup] = useState(() => rollMashup());
-  const wearingMashup = lookMatches(settings, mashup);
+  const [mashup, setMashup] = useState(() => catalogue.rollMashup());
+  const wearingMashup = catalogue.matches(settings, mashup);
   const pickMashup = () => {
     // While the tab wears the card's mashup, a press rolls the next one; otherwise it applies the one on show.
     const next = wearingMashup
-      ? rollMashup({ finish: finish === 'all' ? undefined : finish, previous: mashup })
+      ? catalogue.rollMashup({ finish: finish === 'all' ? undefined : finish, previous: mashup })
       : mashup;
     setMashup(next);
     onPickLook(next);
   };
   const mashupPreview = useMemo(
-    () => ({ markup: lookPreviewSvg(mashup), paper: lookPreviewTab(mashup).backgroundColor }),
+    () => catalogue.preview(mashup),
     // oxlint-disable-next-line react/exhaustive-deps -- as the looks' previews: redrawn in the viewer's half when it changes
     [mashup, appearance],
   );
-  const previews = useMemo(
-    () =>
-      new Map(
-        [...TAB_LOOKS, ...seasonalLooks].map((look) => [
-          look.id,
-          { markup: lookPreviewSvg(look), paper: lookPreviewTab(look).backgroundColor },
-        ]),
-      ),
-    // oxlint-disable-next-line react/exhaustive-deps -- the previews read the viewer's appearance themselves (getTheme); it is a dependency so they redraw on a change
-    [appearance],
-  );
+  // Drawn when a card first mounts (the page on show and its neighbours), not all at once on open: every look's
+  // preview is a full export, and drawing them all up front was what a loaded machine's first render choked on.
+  const previewOf = useMemo(() => {
+    const drawn = new Map<string, { markup: string; paper: string | undefined }>();
+    return (look: Look) => {
+      let preview = drawn.get(look.id);
+      if (!preview) {
+        preview = catalogue.preview(look);
+        drawn.set(look.id, preview);
+      }
+      return preview;
+    };
+    // oxlint-disable-next-line react/exhaustive-deps -- the previews read the viewer's appearance themselves; it is a dependency so they redraw on a change
+  }, [appearance]);
   return (
     <section aria-labelledby="looks-heading" data-tour-id="tab-style-looks">
       <PagedCarousel
@@ -116,7 +116,7 @@ export function LooksCarousel({
               type="button"
               aria-pressed={seasonal}
               onClick={() => {
-                track('UI', 'Changed', 'LooksSeasonal');
+                workbench.track('UI', 'Changed', 'LooksSeasonal');
                 setSeasonal(!seasonal);
               }}
               className={`${SEASONAL_TOGGLE} ${seasonal ? SEASONAL_ON : SEASONAL_OFF}`}
@@ -130,17 +130,17 @@ export function LooksCarousel({
               value={finish}
               onChange={(e) => {
                 const next = e.target.value as Finish | 'all';
-                track('UI', 'Changed', 'LooksFinishFilter');
+                workbench.track('UI', 'Changed', 'LooksFinishFilter');
                 setFinish(next);
                 // The card's mashup rolls within the chosen finish.
                 if (next !== 'all' && mashup.finish !== next)
-                  setMashup(rollMashup({ finish: next }));
+                  setMashup(catalogue.rollMashup({ finish: next }));
               }}
             >
               <option value="all">All finishes</option>
               {FINISHES.map((f) => (
                 <option key={f} value={f}>
-                  {FINISH_LABELS[f]}
+                  {finishLabels[f]}
                 </option>
               ))}
             </Select>
@@ -160,7 +160,7 @@ export function LooksCarousel({
                 badge={<DiceIcon />}
               />
             );
-          const preview = previews.get(look.id)!;
+          const preview = previewOf(look);
           return (
             <LookCard
               key={look.id}
@@ -188,7 +188,7 @@ function LookCard({
   badge,
   eyebrow,
 }: {
-  look: TabLook;
+  look: TabStyleLook;
   active: boolean;
   markup: string;
   paper: string | undefined;
