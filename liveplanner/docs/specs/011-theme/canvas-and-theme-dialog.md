@@ -346,17 +346,36 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 The dialog is the one every editor shares ([Tab Style dialog](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md), in `@liveworkspace/workbench`):
 `apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
 (`apps/editor/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
-**surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
-describes it on each.
+**surface** as it opens the dialog, and the profile tailors the dialog to it: each kind of tab shows only the
+controls that change what it draws, says so in its header, and links to the settings that really style it.
 
 - **Surfaces.** The active tab's kind: `board`, `sheet`, `form` or `dashboard`, and `canvas` for a diagram tab.
-- **Panels and controls.** All four panels, every control, on every kind.
-- **Looks.** Every look in `apps/editor/lib/tab-looks.ts`.
-- **Canvas panel.** `CanvasStyleControls`: the patterns drawn for real, the colours, Opacity, Size and Speed.
-- **Preview.** The sample scene (`TabStylePreview`, `apps/editor/lib/finish-preview.ts`), in the Finish and Text panels.
+- **A diagram tab** (`canvas`, the base): all four panels, every control, every look, the sample diagram as the
+  preview.
+- **A Board tab** (`board`). A board is 80% see-through, so the canvas under it shows: the Canvas panel keeps the
+  pattern, its colour, Opacity and Size, but offers the **static** patterns only and no Speed (a moving canvas under
+  cards is a distraction, and costs a frame's work every frame); the looks are the calm ones (every look without an
+  animated pattern, so Northern Lights and the moving seasonal motifs are left out). The Text panel keeps Size of New
+  Text, which reaches the board's cards ([Fonts](../004-interface-design/fonts.md)). The preview is a small board
+  (three columns of cards under their headings), its columns in the theme's colours on a multi-colour theme as a real
+  board's are ([Columns in the theme's colours](../026-plan/plan-board.md)). Fine-tune ends with a **Board
+  Configure** row ("Columns, cards and density"), which closes the dialog and opens the board's Configure.
+- **A Sheet tab** (`sheet`). The sheet fills the tab with an opaque surface, the canvas showing only in the narrow rim
+  round it: the Canvas panel keeps the static patterns, the canvas colour and Opacity, without Size, Speed or the
+  pattern colour; the looks are the calm ones; Size of New Text is not offered (cells are a fixed 13 px, and the tab
+  font reaches the sheet's title only). Its header says so: "Colours, the frame's finish and the title's font for the
+  sheet." Fine-tune ends with a **Sheet Settings** row ("Gridlines, headers and cell sizes"), opening the sheet's own
+  settings.
+- **A Form tab** (`form`): as a sheet (the form is a page on the canvas), but the tab font letters the whole form;
+  no link (a form's settings are in the form itself).
+- **A Dashboard tab** (`dashboard`): the static patterns, the calm looks, no Speed and no Size of New Text (a
+  dashboard keeps its own scale); Fine-tune ends with a **Dashboard Settings** row ("Layout, tint and slots").
+- **A moving pattern under an opaque page.** A Sheet or a plan view filling its tab (or maximised) covers the
+  canvas with an opaque surface, so an animated pattern's layer is not drawn under it: only the rim would show it,
+  and it would still run every frame. The rim shows the canvas colour instead.
 - **Typefaces.** The faces liveplanner offers (`PLANNER_FONTS`, [Fonts](../004-interface-design/fonts.md)).
 - **Copy.** The shared lines, but Colours "The colours everything on the tab draws in." and Finish "How everything on
-  the tab is drawn.": a plan's tab holds cards, cells and fields as well as elements.
+  the tab is drawn.": a plan's tab holds cards, cells and fields as well as elements; and each kind's own lines above.
 - **Frame.** Its own: `ClusterPanel`, the frame it shares with a board's Configure, with no Show Me.
 
 ## Reuse notes

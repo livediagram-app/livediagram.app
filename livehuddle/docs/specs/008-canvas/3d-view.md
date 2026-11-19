@@ -326,6 +326,15 @@ lighter top edge, a soft shadow at its foot and a wooden skirting. On a dark can
 same walls in evening light, deeper, whatever the app's light or dark mode. A wall reads against the floor by its
 shading, its foot shadow and its skirting rather than by a stroke.
 
+**Wall colour.** A tab can paint its walls: `wallColor` on the tab (a `#rrggbb`, set in Tab Style's Room panel or by
+a look, [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#room-panel)). Unset, the walls are the plaster
+above. Set, the face takes the colour, its shade a third darker, its top edge a quarter lighter, and on a dark canvas
+the lot is the same colour in evening light (a fifth deeper), as the plaster is. Anything drawn on a wall (a
+sign's ink) takes a dark or a light ink, whichever reads at 4.5:1 on the face. The skirting, doors and windows keep
+their own colours. The walls layer sets these as its own custom properties (`--space-wall`, `--space-wall-shade`,
+`--space-wall-top`, `--space-wall-ink`), so nothing is restyled per wall and a change costs one style write. The
+tab body is stored as JSON, so the field needs no migration; Apply to All Tabs copies it with the rest of the style.
+
 ## Performance
 
 The owner's "not laggy" is the budget: walking in 3D holds 60 fps on a mid laptop on a Space the size of Virtual

@@ -220,6 +220,10 @@ type Display editor, a view's cards) keep scale 1.
 
 Exports, thumbnails and agent images already draw a board in the system sans, so they are unchanged.
 
+Only a board (and a diagram tab's elements) reads the size, so the Tab Style dialog offers Size of New Text on Board
+and diagram tabs only: a Sheet's cells are a fixed 13 px, a Form has no size of its own and a Dashboard keeps scale 1
+([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md) "One dialog, this editor's profile").
+
 ### Not offered in liveplanner
 
 A face that still does not read on a card heading is left out of every liveplanner font picker (the Tab Style

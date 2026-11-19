@@ -66,7 +66,10 @@ type TabStyleSurface<Look, Pattern> = {
   renderCanvasPanel: (props: TabStyleCanvasPanelProps<Pattern>) => ReactNode; // values, setters, hidden set
   renderPreview: (kind: 'finish' | 'text', props: TabStylePreviewProps) => ReactNode;
   copy: { viewLines: Record<TabStyleView, string>; panelTitles: Record<TabStylePanel, string> };
+  links?: readonly TabStyleLink[]; // after the panels' rows; none when unset
 };
+
+type TabStyleLink = { id: string; label: string; value: string; onOpen: () => void };
 ```
 
 - `TabStyleSurfaceChanges` is `Partial` of the surface with `copy` itself partial: `resolveTabStyleSurface` spreads
@@ -88,6 +91,8 @@ type TabStyleSurface<Look, Pattern> = {
 - `enter` is `'fade'` on open, `'forward'` into a panel and `'back'` home (`AnimatedHeightBox`).
 - Every pick goes through `easedStyleChange`: the look, theme select, font, text size, finish and pattern; the canvas
   colours, opacity, scale and speed apply unwrapped (slider drags).
+- After them, one row per `surface.links` entry (`data-tab-style-link={id}`, the same row with a chevron): pressing
+  it calls `onClose` and then the link's `onOpen`, so the product's own setting opens with the dialog gone.
 - The Fine-tune rows follow `surface.panels`; with `defaultTextSize` hidden, the Text row's value is the font name
   alone and the Text panel renders no Size of New Text section.
 - The looks pool is the year-round looks (or, Seasonal on, the seasonal ones) through `lookFilter`, then the Finish
@@ -130,7 +135,8 @@ Show Me's Started and Ended through the editor's bound tour. The dialog adds no 
 
 - `tab-style-profile.test.ts`: the resolve (base, an unknown surface, a surface's changes with partial copy), the
   copy helper and the shown view.
-- `TabStyleDialog.test.tsx`, over a fake profile: the home's rows follow the panels; a hidden panel's view opens
+- `TabStyleDialog.test.tsx`, over a fake profile: the home's rows follow the panels; a surface's links follow
+  them, and a press closes the dialog and runs the opener; a hidden panel's view opens
   home; hidden controls reach the Canvas panel and drop the Text panel's size; the look filter; the preview's kind
   and labels; the modal frame's anchors (brush, cluster, opener, phone, none) and the custom frame; the Seasonal
   toggle and Finish filter tracking; the Mashup roll; Apply to All Tabs; the theme commit closing the dialog.

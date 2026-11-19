@@ -47,9 +47,9 @@ in front of the person. The names in use:
 | `flashcard`   | a flashcard page (livedocuments)                                                                             |
 | `space`       | a Space (livehuddle)                                                                                         |
 
-A surface the profile does not name, or none, takes the profile's base. Today every product's surfaces take its base,
-so each dialog is what it was; the surfaces are where a product tailors the dialog later (phase 2 adapts it for
-livedocuments' articles).
+A surface the profile does not name, or none, takes the profile's base. The surfaces are where a product tailors the
+dialog: liveplanner's sheets, forms and dashboards drop the controls their opaque pages hide, and link to the settings
+that really style them.
 
 ## The profile
 
@@ -78,6 +78,9 @@ The surface settings say, for a surface:
   `text`), from the tab's finish, paper, theme, font and the size new text takes. Each product's is its sample today.
 - **Copy**: the header's line for each view, and each panel's name (the Fine-tune row's label and the breadcrumb's
   chip). The shared lines are the default; a product changes only the ones it words differently.
+- **Links**: rows after the panels' in the Fine-tune list for settings that live outside the dialog but style this
+  surface (liveplanner's Board Configure on a board, say). Each has a name and a line saying what it holds; pressing
+  one closes the dialog and runs the product's opener. None by default.
 
 ## Placement
 
