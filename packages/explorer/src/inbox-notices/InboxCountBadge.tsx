@@ -1,5 +1,6 @@
 // The Inbox's count on the editor's Explorer button (inbox-notices.md "The count"): the sidebar's count, as a small
-// brand pill over the button's top right corner, 9+ past nine, nothing at 0 or while unread. Decorative: the button's
+// brand pill over the button's top right corner (inside its width, so it never meets the name beside it; `flex` so
+// the ring hugs the pill, not a taller line box), 9+ past nine, nothing at 0 or while unread. Decorative: the button's
 // own name says it (`inboxButtonLabel`).
 
 import { CountBadge } from '@liveworkspace/ui';
@@ -19,7 +20,7 @@ export function InboxCountBadge({ count }: { count: number | undefined }) {
     <span
       aria-hidden="true"
       data-inbox-count=""
-      className="pointer-events-none absolute -right-1 -top-1 rounded-full ring-2 ring-white dark:ring-slate-900"
+      className="pointer-events-none absolute right-0 top-0 flex rounded-full ring-2 ring-white dark:ring-slate-900"
     >
       <CountBadge tone="brand" size="sm">
         {inboxBadgeText(count)}
