@@ -696,10 +696,10 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, ref?, type,
 typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {name, color?, done} | null, start?,
 due?}` (`ref` the card's number as its plan shows it, its card type's prefix and its number, `WI-100`: the app
-works it out from the plan's card types as it pushes, since nothing reading the index across items has them; a
-reader shows `ref`, else `#` and `key` (`#100`), so a row pushed before refs, or by an app with no prefixes, reads as
-before; a prefix of 1 to 6 upper-case letters and digits starting with a letter, `-`, then `key` itself, else
-dropped, never the push refused; `start` and `due` the card's Start and Due days, `YYYY-MM-DD`, on an assigned card's action, for the person's
+  works it out from the plan's card types as it pushes, since nothing reading the index across items has them; a
+  reader shows `ref`, else `#` and `key` (`#100`), so a row pushed before refs, or by an app with no prefixes, reads as
+  before; a prefix of 1 to 6 upper-case letters and digits starting with a letter, `-`, then `key` itself, else
+  dropped, never the push refused; `start` and `due` the card's Start and Due days, `YYYY-MM-DD`, on an assigned card's action, for the person's
   calendar feed below; absent when the card has none, and a malformed one is dropped, never the push refused; `board`
   is where the row opens it; null when no board shows it; `column` the column on that board holding the card's
   status as of the push: its name, its colour (`#rrggbb`) when it has one, and whether it is a done column; null or
