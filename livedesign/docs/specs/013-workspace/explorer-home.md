@@ -254,7 +254,7 @@ Under Recent, Home ends with two more sections, drawn by the shared Explorer as 
 
 - **Spaces**: My Work, then each team the person is in, then This Browser while it holds anything, each a tile with
   a mosaic of its newest designs that goes straight to that space's list. Up to eight show, with **Show All N
-  Spaces** past that. A person with no team gets a **Create a Team** tile (a guest, **Sign In to Work in Teams**).
+  Spaces** past that. A person with no team gets a **Create a Team** tile (a guest, **Sign In to Use Teams**).
 - **Shared With You Recently**: up to four designs most recently shared with the person through a link, as large
   cards, with **See All** at the heading's right opening Shared With Me. Left out, heading and all, when there are
   none.

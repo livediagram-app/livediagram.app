@@ -86,7 +86,7 @@ describe('ImportTabDialog, offered formats', () => {
     render(<ImportTabDialog {...props} formats={['json']} />);
     expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
     expect(screen.getByRole('textbox')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
   });
 });
 
@@ -179,7 +179,7 @@ describe('ImportTabDialog, Word and PowerPoint', () => {
 
   it('goes back to every format', () => {
     openFile(/^Word/, { status: 'done' });
-    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    fireEvent.click(screen.getByRole('button', { name: /All Formats/ }));
     expect(screen.getByRole('button', { name: /PowerPoint/ })).toBeTruthy();
   });
 });

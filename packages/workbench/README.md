@@ -107,6 +107,17 @@ signed in, not in a workbench, and preferences not kept only in this browser); e
 catalogue's inputs and the tours it reruns on close (`onClosing`). Whose preferences stay in this browser is one record
 (`lib/preferences-local-only`), written by each editor's `lib/preferences-sync.ts` when the api keeps none.
 
+Three pieces of the editor's chrome are one copy too (Work Tracker 1217). The modifier hint
+(`components/chrome/ModifierHintBanner`, with its selection-bound `ModifierHint`) takes what differs as props: an Alt
+offer (`altHint`, livediagram's insert between, from its `components/chrome/ModifierHintBanner.tsx` binding), a Shift
+message in place of the canvas's (`shiftMessage`, livehuddle's walk), and livedesign binds its drag store in its own
+door. The start-again tray (`components/start/StartAgainTray`) takes the closed start's key and, where the editor has
+one, the dock its pill stands clear of (`dockSelector`, livediagram's Draw). The category bar's state and buttons
+(`components/palette/CategoryBar`: `useCategoryBar`, `CategoryBarButtons`, the flyout widths) are bound by each
+editor's `components/palette/CategoryBar.tsx` to its own flyout widths and strip divider; the flyout under the bar
+(`CategoryBarFlyout`) stays each editor's own, drawn from its tiles. The bar sends its `UI·Changed·ToolbarCategory`
+through the `track` binding.
+
 Never by importing the product: a workbench module that needs `@<product>/…` is not ready to move.
 
 ## Bindings

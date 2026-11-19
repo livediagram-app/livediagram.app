@@ -87,7 +87,7 @@ describe('readExcalidrawEnvelope', () => {
   });
 
   it.each([
-    ['not-json', 'nope', "File isn't valid JSON."],
+    ['not-json', 'nope', "This isn't valid JSON."],
     ['not-object', '[1,2]', 'Expected a JSON object at the top level.'],
     ['not-object', 'null', 'Expected a JSON object at the top level.'],
     ['not-excalidraw', '{"type":"other","elements":[]}', 'excalidraw'],

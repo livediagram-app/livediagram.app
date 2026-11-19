@@ -30,12 +30,14 @@ type ImportResult = { ok: true; tab: Tab } | { ok: false; error: string };
 // union — callers branch on `.ok` and surface the error string to
 // the user when present. Never throws on bad input; user-supplied
 // JSON is expected to be wrong sometimes.
-export function parseImportedTab(text: string): ImportResult {
+// `from` names what was read in the errors: pasted text is never called a file (Work Tracker 1060).
+export function parseImportedTab(text: string, from: 'file' | 'paste' = 'file'): ImportResult {
+  const what = from === 'file' ? 'file' : 'pasted text';
   let raw: unknown;
   try {
     raw = JSON.parse(text);
   } catch {
-    return { ok: false, error: "File isn't valid JSON." };
+    return { ok: false, error: `This ${what} isn't valid JSON.` };
   }
   if (!raw || typeof raw !== 'object') {
     return { ok: false, error: 'Expected a JSON object at the top level.' };
@@ -44,7 +46,7 @@ export function parseImportedTab(text: string): ImportResult {
   if (env.kind !== 'livehuddle.tab') {
     return {
       ok: false,
-      error: "This file isn't a livehuddle tab export (missing kind field).",
+      error: `This ${what} isn't a livehuddle tab export (missing kind field).`,
     };
   }
   if (typeof env.schemaVersion !== 'number') {
@@ -53,7 +55,7 @@ export function parseImportedTab(text: string): ImportResult {
   if (env.schemaVersion > TAB_SCHEMA_VERSION) {
     return {
       ok: false,
-      error: `File was exported with schema v${env.schemaVersion}; this editor understands up to v${TAB_SCHEMA_VERSION}. Update the editor and try again.`,
+      error: `This tab was exported with schema v${env.schemaVersion}; this editor understands up to v${TAB_SCHEMA_VERSION}. Update the editor and try again.`,
     };
   }
   if (!env.tab || typeof env.tab !== 'object') {

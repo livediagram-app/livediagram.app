@@ -81,6 +81,15 @@ describe('svgImageShape', () => {
       svgImageShape(pic({ alt: '  ' }), 'a.png', 'cover', 0, { altTitle: true }),
     ).not.toContain('<title>');
   });
+
+  it('gives a PDF the alt text on the picture’s group, always, and nothing for none', () => {
+    const alt = pic({ alt: ' Harbour <dawn> ' });
+    expect(svgImageShape(alt, 'a.png', 'cover', 0)).toContain(
+      '<g clip-path="url(#lvd-img-el1)" data-pdf-alt="Harbour &lt;dawn&gt;">',
+    );
+    expect(svgImageShape(pic({ alt: '  ' }), 'a.png', 'cover', 0)).not.toContain('data-pdf-alt');
+    expect(svgImageShape(pic({}), 'a.png', 'cover', 0)).not.toContain('data-pdf-alt');
+  });
 });
 
 describe('svgIconShape', () => {

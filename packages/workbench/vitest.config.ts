@@ -133,6 +133,10 @@ const HELD_AT_100 = [
   // (docs/specs/004-interface-design/colour-picker.md "Reading on its ground", Work Tracker 1108).
   'src/components/colour/ContrastHint.tsx',
   'src/components/colour/useJudgedSwatch.ts',
+  // The modifier hint, the start-again tray and the category bar every editor carried a copy of (Work Tracker 1217).
+  'src/components/chrome/ModifierHintBanner.tsx',
+  'src/components/start/StartAgainTray.tsx',
+  'src/components/palette/CategoryBar.tsx',
   // The view across an import's undo and redo, every editor's one copy (each editor's 008-canvas
   // canvas-and-palette.md "Undoing an import brings its view back", Work Tracker 1247).
   'src/lib/import-undo-view.ts',

@@ -40,7 +40,19 @@ describe('parseImportedTab — happy path', () => {
 describe('parseImportedTab — rejections (never throws)', () => {
   it('rejects non-JSON text', () => {
     const result = parseImportedTab('{not json');
-    expect(result).toEqual({ ok: false, error: "File isn't valid JSON." });
+    expect(result).toEqual({ ok: false, error: "This file isn't valid JSON." });
+  });
+
+  // Work Tracker 1060: pasted text is never called a file.
+  it('names pasted text as pasted text, not a file', () => {
+    expect(parseImportedTab('{not json', 'paste')).toEqual({
+      ok: false,
+      error: "This pasted text isn't valid JSON.",
+    });
+    const wrongKind = parseImportedTab(JSON.stringify({ schemaVersion: 1 }), 'paste');
+    expect(wrongKind.ok).toBe(false);
+    if (!wrongKind.ok)
+      expect(wrongKind.error).toMatch(/^This pasted text isn't a livedocuments tab export/);
   });
 
   it('rejects JSON that is not an object', () => {

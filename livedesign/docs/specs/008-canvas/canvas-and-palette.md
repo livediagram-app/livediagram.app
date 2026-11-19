@@ -26,7 +26,7 @@ Sections, top to bottom:
 
 - **Current Design**: the active design's row. Click to rename in place; the row's ellipsis menu surfaces Rename, Duplicate, and Delete for the current design.
 - **Overview, Spaces and More**: the Explorer sidebar's three groups, built from the same rows, layout rules and keyboard model at the panel's width; rows with designs open in place, the rest go to their Explorer page ([Explorer structure](../013-workspace/explorer-structure.md#the-editors-explorer)).
-- **Sign-in prompt** (`SignInPrompt`, under the Current Design card): for a guest, one quiet line, **Keep your work.** "A free account saves it across devices." with a **Sign in** action and a dismiss (X); the dismissal is remembered in this browser (`livedesign:v2:signin-prompt-dismissed`). Signed in, or dismissed, it renders nothing and the panel's **Open Explorer** button takes its slot. In the sidebar groups, a guest sees the shared Explorer's **Sign in to access Teams** card in place of New Team.
+- **Sign-in prompt** (`SignInPrompt`, under the Current Design card): for a guest, one quiet line, **Keep your work.** "A free account saves it across devices." with a **Sign In** action and a dismiss (X); the dismissal is remembered in this browser (`livedesign:v2:signin-prompt-dismissed`). Signed in, or dismissed, it renders nothing and the panel's **Open Explorer** button takes its slot. In the sidebar groups, a guest sees the shared Explorer's **Sign In to Use Teams** card in place of New Team.
 
 ## Text alignment
 
@@ -639,7 +639,7 @@ Shift is the editor's "power modifier": it chains quick-connect arrows, forks a 
 
 The pill leads with a `⇧ Shift` key chip so the message reads as "while this key is down". It never shows while typing (a Shift press inside an input / contentEditable is just capitalisation), while another mode banner owns the top slot (format painter / draw), in read-only sessions, or on an empty canvas with nothing to act on. It renders from a shared `useShiftHeld` key-state subscription so holding Shift re-renders only the pill. That and `useModKeyHeld` are now the same store, `../packages/workbench/src/hooks/ui/held-key-store.ts` owns the one window listener, the subscriber set and the SSR-safe snapshot; each hook supplies only its key policy.
 
-The component is `ModifierHintBanner`: its job was always "name what a modifier does right now", and the old `ShiftHintBanner` name described its trigger rather than its work.
+The component is `ModifierHintBanner`, every editor's one copy in `@liveworkspace/workbench` (`../packages/workbench/src/components/chrome/ModifierHintBanner.tsx`, with its store-bound `ModifierHint`): its job was always "name what a modifier does right now", and the old `ShiftHintBanner` name described its trigger rather than its work.
 
 ## Keyboard shortcuts
 

@@ -20,7 +20,7 @@ describe('SignInBanner', () => {
   // docs/specs/014-identity/sign-in-encouragement.md: the headline names what an account opens up.
   it('invites a sign-in for Teams, in one short line of reasons that never mentions AI (livehuddle has no MCP)', () => {
     const view = render(<SignInBanner surface="Explorer" onDismiss={() => {}} />);
-    expect(view.getByText('Sign in to access Teams')).toBeTruthy();
+    expect(view.getByText('Sign In to Use Teams')).toBeTruthy();
     expect(
       view.getByText('Share with your team, sync across devices, connect scripts with API tokens.'),
     ).toBeTruthy();
@@ -54,7 +54,7 @@ describe('SignInBanner', () => {
   // docs/specs/014-identity/sign-in-encouragement.md: a panel opened from the chrome reaches up into the banner's band.
   it('steps aside while a panel opened from the chrome is open', () => {
     render(<SignInBanner surface="Editor" onDismiss={() => {}} />);
-    const wrapper = screen.getByText('Sign in to access Teams').closest('.fixed')!;
+    const wrapper = screen.getByText('Sign In to Use Teams').closest('.fixed')!;
     expect(wrapper.className).toContain(
       '[body:has([data-dock-button]_[aria-expanded=true])_&]:hidden',
     );
@@ -68,7 +68,7 @@ describe('SignInBanner', () => {
     window.addEventListener(TOAST_FLOOR_CHANGED_EVENT, heard);
     const view = render(<SignInBanner surface="Explorer" onDismiss={() => {}} />);
     const card = document.querySelector(TOAST_FLOOR_SELECTOR);
-    expect(card?.textContent).toContain('Sign in to access Teams');
+    expect(card?.textContent).toContain('Sign In to Use Teams');
     expect(heard).toHaveBeenCalledTimes(1);
     view.unmount();
     expect(heard).toHaveBeenCalledTimes(2);

@@ -2,7 +2,7 @@
 
 // The Custom Number Format popover (docs/specs/029-sheets/sheet.md "Formatting"): a Format Code field, a live Preview
 // of the active cell's value in it, the codes people use most, then Cancel and Apply (one change, one undo step).
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { Button, TextInput } from '@liveplanner/ui';
 import {
   FORMAT_CODE_MAX,
@@ -58,6 +58,7 @@ export function SheetCustomFormat({
   const v = isArray(value) ? scalarOf(value) : value;
   const sample = typeof v === 'number' || (typeof v === 'string' && v !== '') ? v : PREVIEW_SAMPLE;
   const reads = formatCodeReads(code);
+  const readsId = useId();
   const preview =
     reads && !isError(sample)
       ? displayValue(sample, { nf: 'custom', nc: code }, c.locale).text
@@ -84,13 +85,14 @@ export function SheetCustomFormat({
             maxLength={FORMAT_CODE_MAX}
             spellCheck={false}
             invalid={!reads}
+            hintId={readsId}
             onChange={(e) => setCode(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === 'Enter') apply();
             }}
           />
         </label>
-        <p className="text-[12px]" aria-live="polite">
+        <p id={readsId} className="text-[12px]" aria-live="polite">
           {reads ? (
             <>
               <span className="text-slate-500 dark:text-slate-400">Preview: </span>

@@ -53,3 +53,53 @@ export function readPdf(bytes: Uint8Array): ReadPdf {
         .map(([n, o]) => ({ n, dict: o.dict, stream: o.stream })),
   };
 }
+
+const hexText = (hex: string) => {
+  let s = '';
+  for (let i = 4; i < hex.length; i += 4)
+    s += String.fromCharCode(parseInt(hex.slice(i, i + 4), 16));
+  return s;
+};
+
+/** The structure tree as indented lines, a reader's tag pane in text: each element's tag, its `/Alt` or `/Scope`,
+ *  and its marked content as `page:mcid` (pages numbered from 0 in the page tree's order). Throws when an element's
+ *  `/P` doesn't name its parent or the parent tree doesn't map one of its MCIDs back to it. */
+export function structDump(pdf: ReadPdf): string {
+  const root = pdf.find('/Type /StructTreeRoot')[0];
+  if (!root) return '(untagged)';
+  const pagesDict = pdf.find('/Type /Pages')[0]!.dict;
+  const pageObjs = [.../\/Kids \[([^\]]*)\]/.exec(pagesDict)![1]!.matchAll(/(\d+) 0 R/g)].map((m) =>
+    Number(m[1]),
+  );
+  const parentTree = pdf.objects.get(Number(/\/ParentTree (\d+) 0 R/.exec(root.dict)![1]))!.dict;
+  const owners = new Map<string, number>();
+  for (const [, i, refs] of parentTree.matchAll(/(\d+) \[([^\]]*)\]/g))
+    [...refs!.matchAll(/(\d+) 0 R/g)].forEach((m, mcid) =>
+      owners.set(`${pageObjs[Number(i)]}:${mcid}`, Number(m[1])),
+    );
+  const lines: string[] = [];
+  const walk = (n: number, parent: number, depth: number) => {
+    const dict = pdf.objects.get(n)!.dict;
+    if (Number(/\/P (\d+) 0 R/.exec(dict)![1]) !== parent) throw new Error(`${n}: wrong /P`);
+    const tag = /\/S \/(\w+)/.exec(dict)![1]!;
+    const alt = /\/Alt <([0-9A-F]+)>/.exec(dict);
+    const scope = /\/Scope \/(\w+)/.exec(dict);
+    const k = dict.slice(dict.indexOf('/K [') + 4, dict.lastIndexOf(']'));
+    const mcrs: string[] = [];
+    const kids: number[] = [];
+    for (const m of k.matchAll(/<< \/Type \/MCR \/Pg (\d+) 0 R \/MCID (\d+) >>|(\d+) 0 R/g)) {
+      if (m[3]) kids.push(Number(m[3]));
+      else {
+        if (owners.get(`${m[1]}:${m[2]}`) !== n)
+          throw new Error(`${n}: parent tree misses ${m[2]}`);
+        mcrs.push(`${pageObjs.indexOf(Number(m[1]))}:${m[2]}`);
+      }
+    }
+    lines.push(
+      `${'  '.repeat(depth)}${tag}${alt ? ` "${hexText(alt[1]!)}"` : ''}${scope ? ` ${scope[1]}` : ''}${mcrs.length ? ` [${mcrs.join(' ')}]` : ''}`,
+    );
+    for (const kid of kids) walk(kid, n, depth + 1);
+  };
+  walk(Number(/\/K (\d+) 0 R/.exec(root.dict)![1]), root.n, 0);
+  return lines.join('\n');
+}

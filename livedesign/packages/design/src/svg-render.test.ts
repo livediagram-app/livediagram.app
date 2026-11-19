@@ -215,11 +215,11 @@ describe('renderElementsToSvg', () => {
       });
       expect(svg).toContain(`<image`);
       expect(svg).toContain(`href="${href}"`);
-      // contain (the default) letterboxes via meet; no placeholder / alt text.
+      // contain (the default) letterboxes via meet; no placeholder, and the alt text only for a PDF's tags.
       expect(svg).toContain('preserveAspectRatio="xMidYMid meet"');
-      expect(svg).toContain('clip-path="url(#lvd-img-i)"');
+      expect(svg).toContain('clip-path="url(#lvd-img-i)" data-pdf-alt="A photo"');
       expect(svg).not.toContain('stroke-dasharray="4 4"');
-      expect(svg).not.toContain('A photo');
+      expect(svg.split('A photo')).toHaveLength(2);
     });
 
     it("uses slice for objectFit 'cover'", () => {

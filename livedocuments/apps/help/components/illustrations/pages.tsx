@@ -19,7 +19,7 @@ export { LayoutGalleryScene } from './pages-layouts';
 // --- Exporting pages ---------------------------------------------------------------------------
 
 /** The Export dialog's page picker, inside the PDF panel (reached from the format cards, with
- *  the All formats bar to go back): All pages or One page, the page the preview shows, and the
+ *  the All Formats bar to go back): All pages or One page, the page the preview shows, and the
  *  line saying what the download will be, over the preview of that page. */
 export function ExportPagePickerScene() {
   return (
@@ -38,7 +38,7 @@ export function ExportPagePickerScene() {
       </Label>
       {/* The two-level bar back to the format cards. */}
       <Label x={32} y={56} size={10.5} weight={600} tone="muted">
-        ‹ All formats
+        ‹ All Formats
       </Label>
       <Label x={102} y={56} size={10.5} tone="muted">
         ›
