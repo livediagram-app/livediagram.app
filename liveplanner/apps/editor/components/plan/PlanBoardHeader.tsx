@@ -4,6 +4,7 @@
 // widgets, then Reveal and Retry when they apply, Maximise Board, and the list of items not on the board. The header's
 // own background is the board's handle: a press there moves the board, its controls do not.
 import { FormBoardStrip } from '@/components/forms/FormBoardStrip';
+import { RoadmapBoardPill } from '@/components/roadmap/RoadmapBoardPill';
 import { cardRefIn } from './card-ref';
 import { useRef, useState } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
@@ -40,6 +41,7 @@ const GripIcon = lucideGlyph(lucideGripVertical, 16);
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 
 export function PlanBoardHeader({
+  boardId,
   setup,
   projection,
   items,
@@ -66,6 +68,8 @@ export function PlanBoardHeader({
   chips,
   end,
 }: {
+  // The board element's id, for its Roadmap pill (absent in a test or an export: none).
+  boardId?: string;
   setup: PlanBoardSetup;
   projection: BoardProjection;
   // The items the board shows, unfiltered, for the widgets that count them.
@@ -136,10 +140,12 @@ export function PlanBoardHeader({
   const [bandMarker, inBand] = useInHeaderBand();
   const inBox = inBand && !!nameSlot;
   // The board's widgets: in the header on a canvas; in a header band, in the controls card before the cog. A form
-  // sending its responses here leads them (FormBoardStrip), with no one adding it.
+  // sending its responses here leads them (FormBoardStrip), then the board's published roadmap (RoadmapBoardPill), with
+  // no one adding either.
   const widgetZone = (
     <>
-      <FormBoardStrip palette={palette} />
+      <FormBoardStrip palette={palette} boardId={boardId} />
+      <RoadmapBoardPill boardId={boardId} palette={palette} />
       <BoardWidgetZone
         widgets={widgets}
         canEdit={canEdit}

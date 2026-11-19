@@ -97,11 +97,47 @@ write fails, the dialog stays as it was and says "Couldn't save. Try again."
 An **All Cards** board or an archive board has no columns to choose, so it cannot be published (the dialog says "This
 board has no columns to publish.").
 
+### On the board
+
+A published board says so in its own header, as a board a form sends its responses to shows its Form strip
+([forms.md](../030-forms/forms.md) "Hearing about responses"), so the team sees at a glance which board is out in
+public (Work Tracker 1312, owner 2026-11-19):
+
+- **The Roadmap pill** leads the board's widgets, after any Form pills (in the header, or in the band's controls card
+  when the board fills its tab), shown with no one adding it, in the Form pill's shape: the megaphone glyph (Publish
+  Roadmap's own), the word **Roadmap**, a green dot (its state read out, "Published"), then three buttons, each with a
+  tooltip: **Copy Roadmap Link** (it reads "Copied"), **Open Roadmap** (the public page in a new tab; its tooltip names
+  the roadmap, "Open Product Roadmap", as a Form pill's Open names its form) and **Roadmap
+  Settings** (a cog: Publish Roadmap opens on this board, its tab and board picked, the same dialog as Tools'). It is
+  not a stored widget: it comes with **Publish Roadmap** and goes with **Unpublish**, at once, from whichever door
+  the dialog was opened by, and a settings change (a new title) shows on it as it saves.
+- **Who sees it**: only someone who may publish ([Who may publish](#who-may-publish): the plan's owner and its team
+  members, in person). A share-link holder at any level, an Editor included, sees no pill, so the board tells them
+  nothing it did not before; the public page is still theirs to open from its link, like anyone's. (The Form pill
+  shows to everyone the board shows, since its Form tab is theirs to open too; a roadmap has no tab of its own.)
+  Offline, embedded and workbench plans have no roadmap, so no pill.
+- **It keeps the widgets their room**: it shows the word Roadmap, never the title (the board's own title is beside
+  it, and a roadmap starts with the board's title), so a board with a Form pill and a roadmap still shows its card
+  type chips and widgets on a desktop header; the roadmap's title is the pill's accessible name ("Product Roadmap,
+  published roadmap") and Open Roadmap's tooltip. Short of room it gives way as the Form pill does. **On a phone**,
+  whose header has room for about one pill, it is one button: the megaphone with its green dot, named "Product
+  Roadmap, published roadmap. Roadmap settings", with the tooltip Roadmap Settings, opening the dialog (which has
+  the link, Copy Link and Open Roadmap). A Form pill beside it leaves its Copy Form Link to the Form tab there, so
+  it keeps its count and Open Form, and neither runs under the top-right corner card.
+- A board in a Dashboard slot has no pill until it is maximised from the slot, as it has no Form strip.
+- **How it knows**: one read of the plan's roadmaps (the managing `GET`, [below](#managing-a-roadmap-signed-in-routes)),
+  the first time a board header is drawn for someone who may publish, kept for as long as the plan is open and
+  shared by every board's header; the dialog's own Publish, changes and Unpublish update it, so it is never read
+  again per header or per render. A read that fails shows no pill and is not retried until the plan is opened again.
+  A roadmap published from another browser shows the next time the plan is opened.
+
 ### Telemetry
 
 Counts only, never a plan, a board, a column or a link: the dialog opened (UI·Opened·Roadmap), a roadmap published
 (Plan·Created·Roadmap), its settings changed (Plan·Changed·Roadmap), its link copied (Plan·Copied·Roadmap) and
-unpublished (Plan·Ended·Roadmap), and a suggestion form made by Create a Suggestion Form (Form·Created·Roadmap).
+unpublished (Plan·Ended·Roadmap), and a suggestion form made by Create a Suggestion Form (Form·Created·Roadmap). The
+board's Roadmap pill counts its Copy Roadmap Link as the dialog's Copy Link (Plan·Copied·Roadmap) and its Roadmap
+Settings as the dialog opening (UI·Opened·Roadmap).
 
 ## What a visitor sees
 
@@ -208,12 +244,12 @@ code. Anything else is `400 roadmap_invalid`. Every answer is `no-store`.
 
 ## Share roles
 
-| Role                         | Publish, change, Unpublish | See the dialog | Open the public page |
-| ---------------------------- | -------------------------- | -------------- | -------------------- |
-| Owner, team member           | yes                        | yes            | yes                  |
-| Editor (share link)          | no                         | no row         | yes, like anyone     |
-| Participant, Viewer (link)   | no                         | no row         | yes, like anyone     |
-| Anyone with the roadmap link | no                         | no             | yes, and upvote      |
+| Role                         | Publish, change, Unpublish | See the dialog | The board's Roadmap pill | Open the public page |
+| ---------------------------- | -------------------------- | -------------- | ------------------------ | -------------------- |
+| Owner, team member           | yes                        | yes            | yes, with its buttons    | yes                  |
+| Editor (share link)          | no                         | no row         | no                       | yes, like anyone     |
+| Participant, Viewer (link)   | no                         | no row         | no                       | yes, like anyone     |
+| Anyone with the roadmap link | no                         | no             | no                       | yes, and upvote      |
 
 ## Not yet
 

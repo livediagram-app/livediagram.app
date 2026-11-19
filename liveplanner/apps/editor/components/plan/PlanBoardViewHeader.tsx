@@ -65,6 +65,7 @@ export function planBoardViewHeader(v: PlanBoardViewValues) {
     />
   ) : (
     <PlanBoardHeader
+      boardId={element.id}
       setup={setup}
       projection={projection}
       items={shownItems}

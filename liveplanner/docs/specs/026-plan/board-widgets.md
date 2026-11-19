@@ -20,6 +20,10 @@ header; they are not in the palette.
 - The header holds, left to right: the board's **title**, its **card type chips** (for someone who may add cards,
   [Plan board](plan-board.md#card-type-chips)), the **widget zone**, then the controls a board needs
   whatever its widgets are (**Reveal** on a hide-writing board, **Retry** when items failed to load).
+- Two pills that are not stored widgets lead the widget zone, with no one adding them, in one shape: a **Form pill**
+  for each form sending its responses to the board ([forms.md](../030-forms/forms.md) "Hearing about responses"),
+  then the **Roadmap pill** while the board is published as a public roadmap, for someone who may publish
+  ([public-roadmap.md](public-roadmap.md) "On the board").
 - <a id="more"></a>The widget zone is **one row**, never two, so the board's columns never move down for it, and it
   never scrolls. Widgets keep their order; the ones that do not fit go into **More** at the end of the row (Work
   Tracker 880, replacing the sideways scroll of Work Tracker 823). The zone is clipped across at its edge, so one
