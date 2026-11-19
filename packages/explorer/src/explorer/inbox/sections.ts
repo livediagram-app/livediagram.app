@@ -1,8 +1,8 @@
-// The Inbox's model (one-explorer-contracts.md "Inbox"): what the index and the host's This Browser rows hold, split
+// The Inbox's model (one-explorer-contracts.md "Inbox"): what the index and the host's Offline rows hold, split
 // by whose move it is (assigned to the person, assigned by them, form responses, open threads), then laid out as one
 // list, newest first, under date dividers, with a filter bar over it. The sidebar's count is the work waiting on the
 // person: what is assigned to them, and the threads that ask something of them (a mention, a thread on their item
-// they have not written in themselves), This Browser's rows included. At 0 the sidebar and the rail show no badge;
+// they have not written in themselves), Offline's rows included. At 0 the sidebar and the rail show no badge;
 // forms, threads they replied in and work they handed out are listed but not counted.
 
 import type { InboxAction, InboxForm, InboxThread } from '@liveworkspace/index-client';
@@ -77,7 +77,7 @@ export type InboxReason =
 /** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, until
  *  they reply themselves; then that they are in it: someone else wrote last (Replied to you), or they did (You
  *  replied). A thread the index lists for none of these reaches them only through their agent (its comments posted
- *  with their token, `agentIds`): Your agent wrote. A This Browser row always has a reason. */
+ *  with their token, `agentIds`): Your agent wrote. An offline row always has a reason. */
 export function threadReason(
   t: Pick<InboxThread, 'app' | 'mentionsYou' | 'onYourItem' | 'youCommented'> & {
     latestAuthorId?: string | null;

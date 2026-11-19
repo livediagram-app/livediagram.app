@@ -230,7 +230,7 @@ rule gone, and the redacted parts through the real route), `RuleSummarySheet.tes
 
 Gate on every other route: `gateEdit` for the whole plan, a signed-in caller or an API token of one (Phase 3, "Agents and
 the CLI" below, which also sets what a read-only token may do), never a workbench session, not a tab-scoped link
-(403 `automations_need_editor`). A Browser Storage plan never calls them. An unknown path under `/automations` is
+(403 `automations_need_editor`). An Offline plan never calls them. An unknown path under `/automations` is
 not routed (the OpenAPI drift probe's clean 404), and every route is in the OpenAPI manifest under the tag
 **Automations**. Run Rule past the day's budget answers 429 `automation_budget_spent` and runs nothing.
 
@@ -354,7 +354,7 @@ ALTER TABLE automation_rules ADD COLUMN turn INTEGER NOT NULL DEFAULT 0;        
 - Assign panel gains **People in Turn** (a person multi-picker, 2 to 10, order as picked).
 - Templates tab and the empty state's gallery (`TemplatesGallery`, category chips, tiles); a picked template opens
   the builder unsaved with its left-to-pick steps marked.
-- A Browser Storage plan's footer button opens the **Rules Run on Our Servers** panel instead of the screen.
+- An Offline plan's footer button opens the **Rules Run on Our Servers** panel instead of the screen.
 
 ### As built (Phase 2 engine)
 
@@ -511,7 +511,7 @@ gone)`, the run's first related failure giving its own, and `store.settle(..., {
   changes. `more` adds `,"more":[...]` (10 bytes plus 3 and the id for each further one) only to a condition
   line naming several gone, bounded by the condition's own list.
 - **The gate.** `automationsGateFor` gives whoever could edit the whole plan (hydrated, not an embed, edit level,
-  structure editable, no tab scope) a kind: `sync` on a plan in This Browser, `sign_in` for a guest on a server plan
+  structure editable, no tab scope) a kind: `sync` on a plan kept Offline, `sign_in` for a guest on a server plan
   once sign-in has answered (`authLoaded`), else none; `automationsScopeFor` now also needs `signedIn`, so a guest
   never reads rules and never meets Only an Editor Can See Rules (the api's 403 for a guest, live in Phase 1). Either
   kind gives the footer an `AutomationsDoorContext` door without any `AutomationsContext`, so Run Rule and the list
@@ -1465,8 +1465,8 @@ gallery's builders run over the plan a template makes.
   create (`app/new`, `create-in-place.ts`), the offline record (`OfflineProjectRecord.starterRules`, set by
   `offlineCreateProject` and `offlineSaveStarterRules`) and Sync Plan's create (`offline-sync.ts`). Start Planning on a
   first tab leaves the kind in `lib/pending-starter-rules.ts`; `components/automations/PendingStarterRules.tsx`, under
-  `AutomationsHost`, makes them through the routes (`makeStarterRules` of Describe a Plan), keeps them on a This
-  Browser record, or drops them for a guest.
+  `AutomationsHost`, makes them through the routes (`makeStarterRules` of Describe a Plan), keeps them on an offline
+  record, or drops them for a guest.
 - Tests: templates (every boarded template ships one rule on, every rule reads as a save reads it, no outgoing step),
   api `starter-rules.test.ts` (owner, token, guest, workbench, a named template, a re-commit), editor
   (`PendingStarterRules`, `pending-starter-rules`, `starter-rules-ask`, offline store and sync).

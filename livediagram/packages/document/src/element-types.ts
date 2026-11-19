@@ -19,6 +19,7 @@ import type { ShapeMarker } from '@liveworkspace/model-core/shape-marker';
 import type { BpmnSymbol } from './bpmn';
 import type { AccentEdge } from './accent-edge';
 import type { CardMedia } from './card';
+import type { Anchor } from '@liveworkspace/element-model/arrow-types';
 import type { ChipLook } from './chip';
 import type { AttachPoint } from './attachment';
 import type { BoundaryStyle } from './boundary';
@@ -468,6 +469,8 @@ export type ShapeElement = {
   chipLook?: ChipLook;
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
+  // A pointer note's tip held on an arrow anchor of its host (pointer-note.md "Attaching the tip"); wins over attachAt.
+  pointerAnchor?: Anchor;
   stepSequence?: boolean;
   // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
   pointerTip?: { x: number; y: number };

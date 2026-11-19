@@ -127,7 +127,7 @@ Each failure is named under the panel, in the dialog's error style; nothing down
 
 | Failure  | Message                                                                                     |
 | -------- | ------------------------------------------------------------------------------------------- |
-| `draw`   | "This Browser couldn't draw a picture for the file. Try Chrome, Edge or Firefox, or a PDF." |
+| `draw`   | "This browser couldn't draw a picture for the file. Try Chrome, Edge or Firefox, or a PDF." |
 | `gone`   | "This tab has no pages to export any more."                                                 |
 | `failed` | "Couldn't make the file. Try again, or export a PDF."                                       |
 

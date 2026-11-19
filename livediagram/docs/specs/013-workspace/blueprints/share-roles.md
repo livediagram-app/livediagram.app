@@ -248,7 +248,7 @@ document). A create (no clash) goes through `lockCreatedTabs` instead (below). T
 A create (Work Tracker 817): `lockCreatedTabs(tabs, person)` runs `lockCreatedTab(tab, { key, isDerivedKey:
 isCollabKey })` on each seeded tab, with `key = collabKeyFor(person)` (null for a token), and reads no ledger (no room
 holds anything for a document that does not exist yet). `createOwns(key, isDerivedKey)` is the keep rule: a key is the
-creator's when it is `key`, or when it is not `isDerivedKey` (a browser's own key, which a This Browser canvas records
+creator's when it is `key`, or when it is not `isDerivedKey` (a browser's own key, which an offline canvas records
 its creator's entries under). `keepOwnEntries` keeps a card's `responses` and each comment's `reactions` the rule owns,
 `keepOwnDots` the vote's dots; `collapseLegacyReactions` then runs on every comment as on any write. A tab nothing
 dropped is the same object; one that dropped something logs `[whole-tab-lock] locked` with `write: 'create'`.

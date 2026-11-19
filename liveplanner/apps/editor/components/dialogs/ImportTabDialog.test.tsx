@@ -205,11 +205,11 @@ describe('ImportTabDialog: a liveplanner Tab', () => {
     expect(onClose).toHaveBeenCalledOnce();
   });
 
-  it('names Undo’s keys only on a fine pointer', () => {
+  it('names no keys in its warning', () => {
     open({ tracker: NO_TRACKER });
-    const keys = screen.getByText(/⌘Z/);
-    expect(keys.className).toContain('pointer-coarse:hidden');
-    expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
+    // The owner, 2026-11-19: no keyboard shortcuts written in the text.
+    expect(screen.getByText(/Undo brings it back\./)).toBeTruthy();
+    expect(screen.queryByText(/⌘Z|Ctrl.Z/)).toBeNull();
   });
 });
 
@@ -343,7 +343,7 @@ describe('ImportTabDialog: a file dropped on the liveplanner Tab step', () => {
     );
     dropOnStep(new File(['A,B'], 'cards.csv'));
     expect(await screen.findByText(DROP_WANTS_JSON)).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Import a file instead' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Import File' }));
     await waitFor(() => expect(onImportFile).toHaveBeenCalledOnce());
     expect(screen.queryByText(DROP_WANTS_JSON)).toBeNull();
   });

@@ -590,7 +590,7 @@ export const ACTION_SIGN_IN_NUDGE = opened(
   (t) => t === 'ActionSignInNudge',
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving projects kept Offline
 // after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(
   'Move Prompt Shown',
@@ -632,11 +632,11 @@ export const MY_WORK_CALENDAR_FEED_OPENED = opened(
   (t) => t === 'MyWorkCalendarFeed',
 );
 
-// Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "Telemetry", in the liveplanner folder): its dialog
+// Publish Roadmap (docs/specs/026-plan/public-roadmap.md "Telemetry", in the liveplanner folder): its dialog
 // opened from the tab menu.
 export const ROADMAP_OPENED = opened(
-  'Publish as Roadmap Opened',
-  'Publish as Roadmap opened from the tab menu, to publish a board as a public roadmap, change it or unpublish it.',
+  'Publish Roadmap Opened',
+  'Publish Roadmap opened from the tab menu, to publish a board as a public roadmap, change it or unpublish it.',
   (t) => t === 'Roadmap',
 );
 

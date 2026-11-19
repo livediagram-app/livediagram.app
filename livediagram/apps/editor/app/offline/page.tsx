@@ -1,11 +1,11 @@
 import type { Metadata } from 'next';
 import { OfflineRedirect } from '@liveworkspace/explorer/offline-redirect';
 
-// The old This Browser page: the canvases kept only in this browser are a view of the Explorer now, in the editor's
-// Explorer panel and at /explorer/offline (docs/specs/013-workspace/explorer-structure.md "This Browser"). This
+// The old Offline page: the canvases kept only in this browser are a view of the Explorer now, in the editor's
+// Explorer panel and at /explorer/offline (docs/specs/013-workspace/explorer-structure.md "Offline"). This
 // address only sends people there, its query kept.
 export const metadata: Metadata = {
-  title: 'Browser Storage | livediagram',
+  title: 'Offline | livediagram',
   robots: { index: false, follow: false },
 };
 

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 import { useAssignRef } from '../../hooks/ui/useLatest';
 import { openModalCount, useOpenModalCount } from '../../lib/modal-guard';
 import { findTour, waitForSelector } from './tour-dom';
+import { debugLog } from '../../lib/debug-log';
 import { revealInScrollers } from './tour-reveal';
 import { hasAnchor, type TourStepOf } from './tour-step';
 
@@ -214,6 +215,7 @@ export function useTourEngine<Api>({
         return;
       }
       setAwaitingTarget(true);
+      const stepStarted = performance.now();
       try {
         await step.prepare?.(api);
       } catch {
@@ -225,6 +227,8 @@ export function useTourEngine<Api>({
       if (cancelled || token !== runTokenRef.current) return;
       setAwaitingTarget(false);
       if (!el) {
+        // A skip is a broken step: say which, so a tour sweep finds it (debug-log, on in development).
+        debugLog('[tour] step skipped', { id: step.id, waitedMs: TARGET_WAIT_MS });
         // Target never appeared: skip on the way the person was going. Going back, past it to the step before
         // (never before the first); else forward, finishing from the last.
         step.cleanup?.(apiRef.current);
@@ -237,6 +241,10 @@ export function useTourEngine<Api>({
         } else finishRef.current('completed');
         return;
       }
+      debugLog('[tour] step landed', {
+        id: step.id,
+        ms: Math.round(performance.now() - stepStarted),
+      });
       adoptRef.current(step, el);
       revealInScrollers(el, step.revealAt);
       // Land on the target's resting rect, not mid-way through its own opening (a menu growing in, a panel

@@ -1,6 +1,6 @@
 'use client';
 
-// The menus of This Browser's Space (one-explorer.md "This Browser, a Space"), as My Work's: its own row's (Open, New
+// The menus of Offline's Space (one-explorer.md "Offline, a Space"), as My Work's: its own row's (Open, New
 // Folder) and each local folder's (Open, Rename, New Subfolder, Move Folder, Delete Folder), the same from the
 // sidebar's ⋯ and right-click and a folder card's ⋯. Rename and a new folder's name are typed wherever the caller
 // says (the sidebar's row, or the card).
@@ -62,7 +62,7 @@ export function LocalFolderMenu({
   );
 }
 
-/** This Browser's own row's menu: Open, and New Folder at its root. */
+/** Offline's own row's menu: Open, and New Folder at its root. */
 export function ThisBrowserSpaceMenu({
   anchor,
   onClose,

@@ -55,8 +55,8 @@ Connected; a tap on it goes to that tab rather than making a second. When both w
 could not be reached, a toast says so ("<name> could not be reached, so it has no tab back here."); the host's tab
 stands.
 
-The entry shows only where connecting can work: the person is signed in, the item is on the server (not a This
-Browser item), and the session may change its tabs (an Editor's, not a tab-scoped link's, an embed's, a workbench's
+The entry shows only where connecting can work: the person is signed in, the item is on the server (not an offline
+item), and the session may change its tabs (an Editor's, not a tab-scoped link's, an embed's, a workbench's
 or a Community visitor's). Elsewhere the sidebar has no such entry.
 
 Who may connect:
@@ -144,7 +144,7 @@ A connected tab that opens nothing says why, in place of the target, with what c
 | The target is in the Trash, or gone                      | "This file is no longer there." Remove                      |
 | Its pass was deleted (from the target's Share) or lapsed | "This connection's link was removed." Connect Again, Remove |
 | The tab came with a copy, an export or an import         | "Connect this copy to <name>." Connect Again, Remove        |
-| The host is offline (a This Browser item, or no network) | "Connected files open when you are online."                 |
+| The host is offline (an offline item, or no network)     | "Connected files open when you are online."                 |
 
 Connect Again makes a new connection to the same target in the same tab, under the same rules as connecting.
 

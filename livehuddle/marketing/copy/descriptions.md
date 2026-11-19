@@ -141,8 +141,8 @@ detailed GitHub / Product Hunt write-up.
 > in their browser until they press Share, which syncs it in one step. Share
 > links come as Editor or Participant (walk, talk, comment and react), with
 > an optional password or expiry, and can be revoked at any time. Teams share a
-> library of Spaces. Spaces can sync to your own Google Drive, or stay in This
-> Browser and never reach our servers.
+> library of Spaces. Spaces can sync to your own Google Drive, or stay Offline
+> and never reach our servers.
 >
 > #### Talking
 >

@@ -59,7 +59,7 @@ async function importExcalidrawFile(page: Page, name: string, buffer: Buffer) {
   await page.getByRole('button', { name: 'Import', exact: true }).click();
   await page.getByRole('button', { name: /^Excalidraw/ }).click();
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Import a file instead' }).click();
+  await page.getByRole('button', { name: 'Import File' }).click();
   await (await chooser).setFiles({ name, mimeType: 'application/octet-stream', buffer });
 }
 

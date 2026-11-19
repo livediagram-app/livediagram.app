@@ -40,9 +40,16 @@ export async function openMenuPath(path: readonly string[]): Promise<void> {
   clearMenuPath();
   if (!(await waitForSelector(CONTEXT_MENU, 2000))) return;
   let row: HTMLButtonElement | null = null;
-  for (const title of path) {
-    row = await waitFor(() => findRow(title), 1500);
-    if (!row) return;
+  for (const [i, title] of path.entries()) {
+    const last = i === path.length - 1;
+    // A group row the menu folds away when it holds one thing ("A category with one thing in it is not a category":
+    // Tools around a lone Rows or Sankey) is passed over at once, rather than waited on until the step is skipped.
+    const found = await waitFor(() => findRow(title), last ? 1500 : 250);
+    if (!found) {
+      if (last) return;
+      continue;
+    }
+    row = found;
     if (row.getAttribute('aria-expanded') !== 'true') row.click();
   }
   if (!row) return;

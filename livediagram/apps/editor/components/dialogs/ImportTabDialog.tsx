@@ -9,6 +9,7 @@ import type { ImportImageProgress } from '@/lib/import-images';
 import { reportHasLosses } from '@/lib/board-scene/report';
 import { ImportImageReport } from './ImportImageReport';
 import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
+import { importFileTypes } from '@/lib/import-file-types';
 import { Glyph } from '@livediagram/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
@@ -123,7 +124,7 @@ const FORMATS: {
       'A wrangler.toml or docker-compose file. Draws each Worker or service with its bindings, dependencies and networks.',
     placeholder:
       'services:\n  web:\n    image: nginx\n    depends_on: [api]\n  api:\n    build: .\n    depends_on: [db]\n  db:\n    image: postgres:16\n\n# or a wrangler.toml',
-    note: { article: 'importTabs', label: 'See what a wrangler.toml or Compose file draws' },
+    note: { article: 'importTabs', label: 'See what an infrastructure file draws' },
   },
 ];
 
@@ -242,9 +243,7 @@ function ImportChooser({
         <span>
           This replaces everything on{' '}
           <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-          content. Undo
-          {/* The keys only where there is a keyboard to press them. */}
-          <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
+          content. Undo brings it back.
         </span>
       </div>
       {activeFormat?.file ? (
@@ -252,6 +251,7 @@ function ImportChooser({
           formatTitle={activeFormat.title}
           dropLabel={activeFormat.file.dropLabel}
           hint={activeFormat.file.hint}
+          fileTypes={importFileTypes(activeFormat.key)}
           note={
             activeFormat.note ? (
               <HelpArticleLink
@@ -271,6 +271,7 @@ function ImportChooser({
         <TextImportPanel
           formatTitle={activeFormat.title}
           placeholder={activeFormat.placeholder}
+          fileTypes={importFileTypes(activeFormat.key)}
           /* Quiet footnote for this format. It used to sit under the picker
                grid, where it asked "Importing a Markdown outline?" of a reader
                who had not picked a format yet — an answer to a question nobody
@@ -299,6 +300,7 @@ function ImportChooser({
               key={f.key}
               title={f.title}
               description={f.description}
+              fileTypes={importFileTypes(f.key)}
               onClick={() => onPick(f.key)}
             >
               <FormatIcon kind={f.key} />

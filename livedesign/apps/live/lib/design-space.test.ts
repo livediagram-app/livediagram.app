@@ -1,4 +1,4 @@
-// Where a listed design belongs to the reader (docs/specs/013-workspace/explorer-structure.md#designs-in-this-browser).
+// Where a listed design belongs to the reader (docs/specs/013-workspace/explorer-structure.md#offline-designs).
 
 import { describe, expect, it } from 'vitest';
 import { designSpace, isInThisBrowser, readerAccessOf } from './design-space';

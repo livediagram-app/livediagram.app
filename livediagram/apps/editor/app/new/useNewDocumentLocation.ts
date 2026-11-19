@@ -8,7 +8,7 @@ const subscribeNever = () => () => {};
 // The prerender has no cookies: it reads as a guest, and the client snapshot follows at hydration.
 const serverHint = () => false;
 
-// How long a create waits for a session that looks signed in before it keeps the new item in This Browser.
+// How long a create waits for a session that looks signed in before it keeps the new item kept Offline.
 const SESSION_WAIT_MS = 15_000;
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 // The session has answered: an account, or its own word (`sessionAnswered`, else `authLoaded`) that there is none.
@@ -23,7 +23,7 @@ const answered = (s: {
 // place, so it is livediagram whoever is creating; otherwise a guest is known at once and never waits, and a browser
 // that looks signed in (the `ld_signed_in` hint, docs/specs/014-identity/auth-and-guest-access.md "Who is a guest,
 // before sign-in answers") waits for identity (`settle`, the page's own wait) and then reads the settled answer, so a
-// signed-in person is never handed a document in This Browser.
+// signed-in person is never handed a document kept Offline.
 export function useNewDocumentLocation(opts: {
   authLoaded: boolean;
   // Whether the session itself has answered (useAccountBootstrap); `authLoaded` alone when not given.
@@ -43,14 +43,14 @@ export function useNewDocumentLocation(opts: {
     if (hasPlacementParams) return 'livediagram';
     if (chosen) return chosen;
     // A browser that looks signed in waits for its session's own answer: the page's 5 s give-up settles
-    // `authLoaded` with no one in it, and reading that as a guest made a signed-in person's create This Browser.
+    // `authLoaded` with no one in it, and reading that as a guest made a signed-in person's create Offline.
     if (!latest.current.accountUserId && readSignedInHint()) {
       if (!latest.current.authLoaded) await settle();
       const until = Date.now() + SESSION_WAIT_MS;
       while (!answered(latest.current) && Date.now() < until) await sleep(100);
     }
     const now = latest.current;
-    // Only a known account saves on the server: a guest, or a session that never answered, stays in This Browser.
+    // Only a known account saves on the server: a guest, or a session that never answered, stays Offline.
     const location = defaultSaveLocationFor({ signedIn: !!now.accountUserId });
     debugLog(`[new] save location=${location} answered=${answered(now)}`);
     return location;

@@ -1,6 +1,6 @@
 'use client';
 
-// Sync keeping its place on the Explorer page (one-explorer.md "This Browser, a Space"): the page hands Sync over to
+// Sync keeping its place on the Explorer page (one-explorer.md "Offline, a Space"): the page hands Sync over to
 // the app's editor, which syncs the item and stays there, so the page notes first where it should land
 // (noteSyncPlace). Here, once an Explorer on this address is open and the item has left this browser's list, it is
 // read from the index (one request per note, and notes are rare) and moved there if it is still where a Sync lands,

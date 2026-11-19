@@ -16,7 +16,7 @@ export type InspectSession = {
     scale: InspectExportScale;
     surface: CanvasSurface;
   }) => Promise<void>;
-  // Null where there is no link to copy (a design kept in This Browser).
+  // Null where there is no link to copy (a design kept Offline).
   copyLink: (() => Promise<void>) | null;
 };
 

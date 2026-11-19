@@ -539,7 +539,7 @@ export const EXPLORER_SIDEBAR_PICKS = chart(
   'UI',
   'Selected',
   'Explorer Sidebar Picks',
-  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, This Browser, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
+  "A row picked in the Explorer sidebar or the editor's Explorer panel: Home, Inbox, Timeline, a space or folder, Offline, the Library pages, or Trash. Picks of the Activity row, the Inbox's old name, still count here as history.",
   {
     typeIn: (type) =>
       (type ?? '').startsWith('Sidebar.') || (type ?? '').startsWith('ExplorerPanel.'),
@@ -828,7 +828,7 @@ export const ACTION_SIGN_IN_NUDGE = opened(
   (t) => t === 'ActionSignInNudge',
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving designs kept Offline
 // after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(
   'Move Prompt Shown',

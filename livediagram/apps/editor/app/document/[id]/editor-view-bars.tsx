@@ -10,6 +10,7 @@ import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search
 import { track } from '@/lib/telemetry';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import type { VisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
@@ -33,6 +34,8 @@ export function editorViewHeader(
   ctx: EditorContextValue,
   view: {
     isOffline: boolean;
+    onTakeOffline: (() => void) | undefined;
+    visibilityActions: VisibilityActions | undefined;
     headerCommunity: ReturnType<typeof documentIsPublic>;
     isMobileViewport: boolean;
     landscapeShown: boolean;
@@ -62,6 +65,12 @@ export function editorViewHeader(
         approval={<ApprovalBadge corner />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
+        // The Share button's words wear who can see the document; hovering it shows the legend.
+        visibility={{
+          team: !!ctx.documentTeamId,
+          offline: view.isOffline,
+          community: !!view.headerCommunity,
+        }}
         // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
         // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
@@ -69,6 +78,8 @@ export function editorViewHeader(
             ? () => void makeCopy()
             : undefined
         }
+        onTakeOffline={view.onTakeOffline}
+        visibilityActions={view.visibilityActions}
         copying={copying}
         copyDescription="Duplicate this canvas into your own files."
         // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".

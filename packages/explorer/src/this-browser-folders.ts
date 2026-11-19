@@ -1,4 +1,4 @@
-// This Browser's folders (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser, a Space"): kept in the same
+// Offline's folders (liveworkspace/docs/specs/004-index/one-explorer.md "Offline, a Space"): kept in the same
 // localStorage list as the items (this-browser.ts, version 2), each `{ id, name, parentId, … }`, and each item's
 // `folderId`. Every write here reads the list, changes it and writes it whole, as the item writes do; the readers hear
 // it through the same event. Plain TypeScript, no React.
@@ -169,7 +169,7 @@ function withFolder(item: ThisBrowserItem, folderId: string | null): ThisBrowser
   return atRoot;
 }
 
-/** Moves one item into a local folder (null: This Browser's root). False when it is there already, or either is
+/** Moves one item into a local folder (null: Offline's root). False when it is there already, or either is
  *  gone. */
 export function moveThisBrowserItem(
   app: App,

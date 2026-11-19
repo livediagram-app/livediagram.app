@@ -57,6 +57,7 @@ export function EditorTabDialogs() {
     importTextIntoActiveTab,
     setImportOpen,
     shareDialogOpen,
+    shareStartView,
     selfParticipant,
     setSelfParticipant,
     accountUserId,
@@ -160,6 +161,8 @@ export function EditorTabDialogs() {
           firstTabEmpty={
             !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
           }
+          // The Share legend's Everyone stop opens it on the Community tab (openShareOn).
+          initialView={shareStartView}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

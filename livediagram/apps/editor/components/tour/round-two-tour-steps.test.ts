@@ -63,7 +63,7 @@ describe('laneTourSteps', () => {
     expect(ids(steps)).toEqual(['lane', 'gutter', 'seam', 'carry', 'menu', 'outro']);
     expect(ringed(step(steps, 'gutter'))).toBe('[data-element-id="el"] [data-lane-gutter]');
     expect(ringed(step(steps, 'seam'))).toBe('[data-element-id="el"] [data-lane-seam]');
-    expect(step(steps, 'menu').body).toMatch(/^More, then Text/);
+    expect(step(steps, 'menu').body).toMatch(/^More, then Appearance, then Text/);
   });
 });
 

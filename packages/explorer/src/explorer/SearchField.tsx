@@ -72,7 +72,7 @@ export function useLensContext(): LensContext {
   const kind = lensViewOf(view.kind) ?? 'aggregate';
   // Held to the host's own app, a list offers no Opens in chip.
   const oneApp = filter === 'app' ? APP_KINDS[app] : null;
-  // This Browser's list keeps no template, maker or mode, so it offers no chip for them.
+  // Offline's list keeps no template, maker or mode, so it offers no chip for them.
   const local = view.kind === 'offline';
   return useMemo(
     () => ({

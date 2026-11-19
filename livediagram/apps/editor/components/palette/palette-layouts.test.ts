@@ -43,7 +43,6 @@ describe('palette layouts', () => {
       'my-shapes',
       'write',
       'draw',
-      'diagrams',
       'concepts',
       'layout',
       'icons',
@@ -159,8 +158,11 @@ describe('palette layouts', () => {
       'tools:table',
       'tools:checklist',
     ]);
-    // Diagram's Layout, with the Timeline after the containers: Workshop has no Concepts to find it in.
-    const layout = tileIds('diagram', 'layout');
+    // Diagram's Layout, with the Timeline after the containers: Workshop has no Concepts to find it in. Its Table is
+    // in Write, and it has no Infrastructure tile (the C4 tiles are Diagram's).
+    const layout = tileIds('diagram', 'layout').filter(
+      (id) => id !== 'tools:table' && id !== 'layout:infrastructure',
+    );
     expect(layout).not.toContain('tools:timeline');
     expect(tilesOf('layout')).toEqual([
       ...layout.slice(0, layout.indexOf('tools:boundary') + 1),
@@ -203,8 +205,13 @@ describe('palette layouts', () => {
   it('offers every Popular tile in another category of its mode', () => {
     for (const mode of ['diagram', 'workshop'] as const) {
       const cats = paletteCategoriesFor(mode);
+      // On a strip, or in a strip tile's popover (Layout's Infrastructure holds the Entity).
       const elsewhere = new Set(
-        cats.filter((c) => c.id !== 'popular').flatMap((c) => (c.tiles ?? []).map((t) => t.id)),
+        cats
+          .filter((c) => c.id !== 'popular')
+          .flatMap((c) =>
+            (c.tiles ?? []).flatMap((t) => [t.id, ...(t.variants ?? []).map((v) => v.id)]),
+          ),
       );
       for (const tile of cats.find((c) => c.id === 'popular')?.tiles ?? [])
         if (tile.action.type !== 'open')
@@ -212,9 +219,12 @@ describe('palette layouts', () => {
     }
   });
 
+  // Concepts' Process group ends on the Sankey; Relationships (Cycle, Hub) close the category (owner, 2026-11-19).
   it('files the Sankey under Concepts, not Build, in Diagram', () => {
-    expect(tileIds('diagram', 'concepts').at(-1)).toBe('tools:sankey');
-    expect(tileIds('diagram', 'diagrams')).not.toContain('tools:sankey');
+    const concepts = tileIds('diagram', 'concepts');
+    expect(concepts).toContain('tools:sankey');
+    expect(concepts.at(-1)).toBe('concepts:hub');
+    expect(paletteCategoriesFor('diagram').map((c) => c.id)).not.toContain('build');
   });
 
   it('defaults a category to its own tiles', () => {

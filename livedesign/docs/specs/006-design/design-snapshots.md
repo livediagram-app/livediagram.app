@@ -132,7 +132,7 @@ choice is design-wide, applying to every share link's image.
 
 The thumbnail shows on **every** Explorer surface that lists a design:
 the full-page `/explorer` rows (Recent / My Work / folders / Search results /
-This Browser), the team library page, the "Shared With Me" list, and the
+Offline), the team library page, the "Shared With Me" list, and the
 in-editor Explorer. A single shared `DesignThumbnail`
 component (`components/panels/DesignThumbnail.tsx`) backs them all, fed
 the **viewer's** owner id (never the design's) plus, for a shared row,
@@ -142,7 +142,7 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / My Work / folders / Search results / This Browser)
+The browse views (Recent / My Work / folders / Search results / Offline)
 have a **List / Card / Details** toggle in the header's actions, left of Help and
 Create, which always sit further right (device-local preference,
 `livedesign:explorer-view`). **Card is the default**:

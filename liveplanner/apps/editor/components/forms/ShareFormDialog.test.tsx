@@ -135,7 +135,7 @@ describe('Share Form, published and closed (forms.md "A live form is locked")', 
   });
 });
 
-describe('Share Form on a project in This Browser (forms.md "Publishing and the form link")', () => {
+describe('Share Form on a project kept Offline (forms.md "Publishing and the form link")', () => {
   const offline = () => link({ link: null, status: 'offline' });
 
   it("offers Sync Project, the Share dialog's move, and syncs nothing by itself", () => {
@@ -150,7 +150,7 @@ describe('Share Form on a project in This Browser (forms.md "Publishing and the 
         onSyncToCloud={sync}
       />,
     );
-    expect(screen.getByText('This Plan Is in This Browser')).toBeTruthy();
+    expect(screen.getByText('This Plan Is Offline')).toBeTruthy();
     expect(screen.getByText(/this form can’t be published yet/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Publish Form' })).toBeNull();
     expect(sync).not.toHaveBeenCalled();

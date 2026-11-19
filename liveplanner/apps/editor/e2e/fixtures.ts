@@ -143,7 +143,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // A new plan through /new (docs/specs/007-editor/new-project-route.md): it asks nothing, makes the plan as it
 // mounts and opens it in place, an empty tab on Start Planning. `_mode` is kept so callers that named a mode need
 // not change; Plan is the only one. `url` may carry a `/new?folder=` / `?team=` / `?template=` context. A guest's
-// plain `/new` makes it in This Browser; `serverNewUrl` makes it on liveplanner. Resolves to the new plan's id.
+// plain `/new` makes it Offline; `serverNewUrl` makes it on liveplanner. Resolves to the new plan's id.
 export async function createInMode(page: Page, _mode = 'plan', url = '/new'): Promise<string> {
   await page.goto(url);
   await page.waitForURL(/\/project\/[^/?#]+/, { timeout: 30_000 });
@@ -176,7 +176,7 @@ export async function startBlankProject(page: Page): Promise<void> {
   await createInMode(page, 'plan', await serverNewUrl(page));
 }
 
-// A /new address that makes the plan on liveplanner. A guest's own /new makes it in This Browser
+// A /new address that makes the plan on liveplanner. A guest's own /new makes it Offline
 // (docs/specs/006-project/save-locations.md "The default depends on who is creating"), but a `?folder=` context
 // names a place on the server, so /new makes it there whoever is creating. The page becomes a minted guest (its token
 // where the app keeps it, so /new never leaves for the guest handoff) and the folder is one of theirs, made at the

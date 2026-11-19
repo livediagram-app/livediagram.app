@@ -1,6 +1,6 @@
 // Home's New (one-explorer.md "New, on Home"): the four items made most recently in the person's own space and their
 // teams', newest first, in this app or every app under All; above Most Used and Recent; their cards with a "Made …"
-// line and Made by AI on an AI tool's; This Browser's merged in; hidden with none or a failed read; its placeholders
+// line and Made by AI on an AI tool's; Offline's merged in; hidden with none or a failed read; its placeholders
 // while it loads; no request of its own.
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

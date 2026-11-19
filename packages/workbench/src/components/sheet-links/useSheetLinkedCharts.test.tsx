@@ -84,7 +84,7 @@ describe('readSheetLink', () => {
     expect(await readSheetLink(source, 'doc_1', grantOf)).toEqual({ kind: 'failed' });
   });
 
-  it('reads without a watch when there is no grant (a This Browser item, a refusal) or no item', async () => {
+  it('reads without a watch when there is no grant (an offline item, a refusal) or no item', async () => {
     grantOf.mockRejectedValue(new Error('no'));
     readSheetRange.mockResolvedValue(readOf([1, 2]));
     await readSheetLink(source, 'doc_local', grantOf);

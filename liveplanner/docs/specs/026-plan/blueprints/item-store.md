@@ -214,7 +214,7 @@ CREATE INDEX IF NOT EXISTS known_assistants_seen ON known_assistants (seen_at);
 [The Assignee picker, the AI mark and progress](../items.md#handing-a-card-to-an-ai-assistant).
 
 - `apps/editor/lib/api/plan-assistants.ts` `apiPlanAssistants(scope)`: the GET above, through the plan's items scope
-  (owner, share code); a tab-scoped link and a This Browser plan read none, with no request.
+  (owner, share code); a tab-scoped link and an offline plan read none, with no request.
 - `hooks/plan/usePlanAssistants.ts`: `planAssistants(held, remembered)` over the cards and the fetched list; fetched
   once a plan with Plan content and a server copy loads, and again on `refresh()` (the picker's open) at most once a
   `PLAN_ASSISTANTS_REFRESH_MS` (60 s). Kept as the same array until the assistants change (`peopleKey`). A failure
@@ -647,7 +647,7 @@ Refusals, by name: `400` text missing or too long, `400 title_too_long`, `400 fi
   anyone else `409 thread_has_others` unless `threadOnlyBy(thread, actor.owner)` (`@liveplanner/project`: every
   stored comment's `authorId` is the actor's; an empty thread passes), read from the thread as stored on each try,
   so a delete made through another plan is checked in the home the same way. 409, not 403: the person may delete
-  threads; this one's content stands in the way, and resolving is the way on. The editor's This Browser path
+  threads; this one's content stands in the way, and resolving is the way on. The editor's Offline path
   (`offline-threads.ts`) refuses the same; the ⋯ menu shows Delete Thread… greyed, with the reason, when
   `threadOnlyBy(thread, selfId)` is false (the viewer's copy keeps only their own author ids, so another's comment
   reads as not theirs).
@@ -663,7 +663,7 @@ lists empty and reads `GET /threads` again.
 - `PlanCopy.threads`: the threads stored here on the copied cards (`threadForViewer` for `redactAuthorsFor`), each
   re-homed into the copy with only its copied cards (`projectId` the copy's); `importPlanCopy` inserts them and their
   links.
-- **This Browser**: `OfflineProjectRecord.threads?: CardThread[]`; `recordThreads(rec)` moves an old item's
+- **Offline**: `OfflineProjectRecord.threads?: CardThread[]`; `recordThreads(rec)` moves an old item's
   `fields.comments` into it on read (`legacyThreadOf`); `offlineWriteThread(projectId, op)` applies
   `applyThreadChange` (same rights) in `serializeOfflineWrite`. **Sync to cloud** sends `threads` with the create
   (`POST /projects` `threads`, each read as a restore); **Take offline** fetches `GET /threads` and keeps those whose
@@ -810,7 +810,7 @@ history.retention` with the count.
 
 ### Editor
 
-- `lib/api/item-history.ts` `fetchItemHistory(scope, itemId)`: `'offline'` for a This Browser plan (no request), else
+- `lib/api/item-history.ts` `fetchItemHistory(scope, itemId)`: `'offline'` for an offline plan (no request), else
   the entries.
 - `hooks/plan/useCardHistory.ts` `useCardHistory({ scope, itemId, rev, enabled })`: `{ status: 'loading' | 'ready' |
 'error' | 'offline', entries, retry }`; reads when enabled and again when the card's `rev` moves (debounced
@@ -820,7 +820,7 @@ history.retention` with the count.
   then the day groups and runs `activityTimeline(entries, now)` makes (`activity-timeline.ts`, pure: `dayHeading`,
   runs of one author within `ACTIVITY_RUN_GAP_MS` on one day, and `previousValues`, each `set` / `cleared` change's
   earlier value from the same field's older entry), the first `ACTIVITY_ENTRIES_SHOWN` entries, **Show N More**, and
-  the loading skeleton, empty, failed (Try Again), This Browser and no-plan states (`CompactEmptyState`).
+  the loading skeleton, empty, failed (Try Again), Offline and no-plan states (`CompactEmptyState`).
   `activity-words.ts` turns a change into a line (`changeLine`: its glyph kind and parts, values as chips with a
   status phase or a priority colour) from the plan's `statusNames` and `statusPhases`, the card's type (field labels)
   and its items (a Card field's title). The rail, disc and chip classes are `timeline-parts.tsx`'s, shared with the
@@ -894,7 +894,7 @@ type, status`, only for a plan holding no row yet, so it runs again harmlessly.
 FLOW_DAYS_MAX)`, so the last day before the kept range stays as the baseline. Called by the daily upkeep
     (`plan-room-content.ts` `maintain`) after the history sweep; logs `[items] flow.retention` with the count.
 - Copies, project files and offline records never read the table; a new plan's own inserts start its counts on the
-  day it is made. This Browser plans have no plan room and keep none.
+  day it is made. Offline plans have no plan room and keep none.
 
 ### Flow read (part 2, `apps/api/src/routes/flow-route.ts`, `apps/api/src/db/flow-history.ts`)
 

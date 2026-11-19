@@ -81,7 +81,7 @@ An embed never offers Sign In.
 
 A design its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Design Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-design/offline-mode.md#archived-in-this-browser)).
+**Design Not Found**), or this browser holds it archived ([offline-mode.md "Archived Offline"](../006-design/offline-mode.md#archived-offline)).
 Either way the editor shows the same card in place of the design, titled **Design Archived** ("This design is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
@@ -149,9 +149,9 @@ logging `[new] restored, back out <target>` (`../packages/workbench/src/hooks/ui
   tab that opens on its start. An unknown template kind is ignored rather than guessed, so a stale link makes a
   design, not a 404; a retired kind opens its replacement (`templateKindOf`). `blank` wins when both are present.
 - **Stored** where [Save Locations → The default depends on who is creating](../006-design/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest, livedesign for a signed-in person. Decided at commit by `resolveSaveLocation`
+  says: Offline for a guest, livedesign for a signed-in person. Decided at commit by `resolveSaveLocation`
   (`app/new/useNewDesignLocation.ts`): a guest never waits, a browser that looks signed in waits for identity, so a
-  signed-in person is never handed a design in This Browser. A guest's This Browser design is created without
+  signed-in person is never handed a design kept Offline. A guest's Offline design is created without
   waiting for identity at all (`offlineCreateDesign`, [Offline Mode → Instant
   open](../006-design/offline-mode.md#instant-open)). A placement param (`folder` / `team`) names a server place, so
   it makes the create a cloud one whoever is creating.
@@ -267,7 +267,7 @@ create into a team has succeeded, never on a refused one ([Telemetry](../017-tel
 - `/design/<id>` (existing) → the editor hydrates.
 - `/design/shared?s=<code>` (visitor) → the editor and the name prompt.
 - An unknown address → Page Not Found, no API call; a missing design → Design Not Found.
-- `/new` → created at once, This Browser for a guest, filed in the signed-in person's default folder for it.
+- `/new` → created at once, Offline for a guest, filed in the signed-in person's default folder for it.
 - `/new?blank=1` → a blank design, its start closed; `/new?blank=1&folder=<id>` files it into that folder.
 - `/new?template=not-a-kind` → a design that opens on its start.
 - `/new?q=logo` → the new design's start opens with its search reading "logo".

@@ -506,9 +506,9 @@ time the charts arrive.
   start can be older than the range), its type, when it was made and its oldest kept entry: what all three charts are
   worked out from, by status, never an entry's author or values.
 - **States**: before the data arrives, **Loading flow…**; a plan with no finish in the range, **No cards finished in
-  this range** (Cycle Time, Throughput); a failed read, **Couldn't Load Flow** with **Try Again**. A This Browser plan
+  this range** (Cycle Time, Throughput); a failed read, **Couldn't Load Flow** with **Try Again**. An offline plan
   keeps no history or counts: **Flow Needs a Cloud Plan** and "Flow charts read the plan's history, which plans in
-  This Browser don't keep." Cumulative Flow with no counted day by its range's end: **No flow counted yet**. A
+  Offline don't keep." Cumulative Flow with no counted day by its range's end: **No flow counted yet**. A
   refresh after the first read keeps the chart on screen until the new answer arrives; a failed refresh keeps the
   last answer.
 - **Images**: an image export has no flow read, so it draws a flow chart's frame, its name and range, and "Open the

@@ -177,6 +177,7 @@ export type ShapeElement = BoxBase & {
   // A badge, step or pointer note's host point (attachment.ts), and a pointer note's tip.
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
+  pointerAnchor?: Anchor;
   pointerTip?: { x: number; y: number };
   // A stack's layout (stack.ts).
   stackDirection?: StackDirection;

@@ -5,7 +5,7 @@ import { cardRefIn } from './card-ref';
 
 // Link Existing's write (docs/specs/026-plan/item-types.md "Link Existing"): the picked card's field now names the
 // open card. One ordinary card write through `patchItem`, the same as choosing it in that card's own field, so it
-// undoes, syncs live, keeps to the plan's permissions and works in a This Browser plan alike. False: the card is
+// undoes, syncs live, keeps to the plan's permissions and works in an offline plan alike. False: the card is
 // gone or the write was refused (nothing announced). `moved`: it linked to another card before.
 export async function linkExistingCard(
   plan: Pick<PlanContextValue, 'items' | 'patchItem' | 'announce'> &

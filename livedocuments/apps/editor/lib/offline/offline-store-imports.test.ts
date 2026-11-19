@@ -1,7 +1,7 @@
 // The Offline Mode store's imports never come back round to it (Work Tracker #576). It sits under the api modules (the
 // unload save and the tab beacon reach it), so a path from it into lib/api closed a cycle: a test that mocked the
 // store had to import the api module first, or the module saw the real store. And one inside lib/offline (the store,
-// This Browser's list, the opens) left the store half-loaded while the opens read it. A static import that closes
+// Offline's list, the opens) left the store half-loaded while the opens read it. A static import that closes
 // either again passes every other test; this one fails.
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { dirname, join, relative, resolve } from 'node:path';

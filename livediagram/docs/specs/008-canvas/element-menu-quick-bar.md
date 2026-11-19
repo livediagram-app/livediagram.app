@@ -78,7 +78,9 @@ Every editor (livediagram, liveplanner, livedocuments, livedesign) opens the sam
 
 An element kind's own verbs are not on the floating selection toolbar, which keeps the same buttons on every element.
 They sit in a bar of glyph buttons at the top of the element menu, above its first category: a mind node's Add Child and
-Add Sibling, a flowchart step's Add Step, Add Branch, Step Type and Lane, a relationship's cardinality. Each names
+Add Sibling, a flowchart step's Add Step, Add Branch, Step Type and Lane, a relationship's cardinality, and a concept graphic's
+add while it has room (Add Layer, Add Tier, Add Step, Add Satellite, Add Ring, Add Stage, Add Milestone; owner,
+2026-11-19), which the Quick Style panel shows too, as it shows a mind node's. Each names
 itself in a hover card; a verb closes the menu as it runs, and a dropdown closes it on its pick. An element with none
 has no bar. Tab and Enter still grow a mind map, and the quick-connect ring still offers Add Child and Add Sibling.
 

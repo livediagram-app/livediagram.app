@@ -53,8 +53,7 @@ name) }`. `offered` is the tools' `canImport`; `blocked` is the offline sentence
 - `ExportTabDialog` takes `wholePlan?: { projectId, ownerId }`, which `EditorTabDialogs` sets from
   `wholePlanOffer({ projectId, ownerId, isOffline, isStructureReadOnly })`
   (`apps/editor/components/dialogs/whole-plan-offer.ts`): only for an Editor of the whole plan
-  (`isStructureReadOnly` is a Participant's, a Viewer's and a tab-scoped link's) on a plan that is not This
-  Browser's.
+  (`isStructureReadOnly` is a Participant's, a Viewer's and a tab-scoped link's) on a plan that is not Offline's.
 
 ## Behaviour and state
 

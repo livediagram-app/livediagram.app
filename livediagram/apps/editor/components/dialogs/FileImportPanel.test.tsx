@@ -35,7 +35,7 @@ describe('ImportTabDialog, Visio', () => {
     expect(screen.queryByRole('textbox')).toBeNull();
     expect(screen.getByText(/From Lucidchart: File, Export, Visio \(VSDX\)/)).toBeTruthy();
     expect(screen.getByText('See what carries over from Visio')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    fireEvent.click(screen.getByRole('button', { name: /All Formats/ }));
     expect(screen.getByRole('button', { name: /Visio/ })).toBeTruthy();
   });
 
@@ -112,6 +112,6 @@ describe('ImportTabDialog, Visio', () => {
       />,
     );
     expect(dropZone()).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
   });
 });

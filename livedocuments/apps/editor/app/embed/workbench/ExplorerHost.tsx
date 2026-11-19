@@ -110,7 +110,7 @@ export function ExplorerHost({
     [viewerId, accountUserId, accountDisplayName, communityOn, guestId],
   );
   const inboxHost = useMemo(() => explorerInboxHost(viewerId ?? null), [viewerId]);
-  // This Browser: the documents kept only in this browser, which the index never sees, as a view of the Explorer.
+  // Offline: the documents kept only in this browser, which the index never sees, as a view of the Explorer.
   const thisBrowser = useThisBrowserHost(viewerId ?? null, !!accountUserId);
   // The synced preferences (docs/specs/007-editor/user-preferences.md): the device cache at once, the server's
   // copy merged in once the person is known.

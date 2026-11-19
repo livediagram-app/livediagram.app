@@ -4,7 +4,7 @@
 // selection bounds, and every "should this chrome show?" predicate the
 // Canvas render reads. Lifted out of Canvas.tsx so this decision logic
 // is unit-testable in isolation (the component itself has no tests).
-import { isFixedSizeElement, isChipShape, type Rect } from '@livediagram/document';
+import { isFixedSizeElement, isChipShape, isSankeyShape, type Rect } from '@livediagram/document';
 import {
   drawnBounds,
   elementBounds,
@@ -164,6 +164,9 @@ export function deriveCanvasSelection(input: {
     selected.type !== 'annotation' &&
     // Nor is a badge or step number: it is a mark on a node (docs/specs/009-elements/badge.md).
     !(selected.type === 'shape' && isChipShape(selected.shape)) &&
+    // Nor a Sankey (owner, 2026-11-19): a self-contained picture, not a node a flow is drawn from; a concept
+    // graphic keeps one "+" offering only its add-a-row (QuickConnectPluses, canvas-and-palette.md "Quick-connect").
+    !(selected.type === 'shape' && isSankeyShape(selected.shape)) &&
     editingId !== selected.id &&
     !isPaintMode &&
     !selectedLocked &&

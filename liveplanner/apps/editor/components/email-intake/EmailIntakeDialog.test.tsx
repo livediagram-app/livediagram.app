@@ -253,7 +253,7 @@ describe('the Tools row', () => {
   });
 
   // liveworkspace/docs/specs/004-index/footer-tools-menu.md "Always there".
-  it('shows an Editor on a plan in This Browser the row with Sync Plan, opening its gate', async () => {
+  it('shows an Editor on a plan kept Offline the row with Sync Plan, opening its gate', async () => {
     const sync = vi.fn(async () => {});
     render(
       <EmailIntakeHost scope={null} gate={{ kind: 'sync', ready: true, sync }} boardIds={['b1']}>

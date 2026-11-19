@@ -149,7 +149,7 @@ export function MarkdownImportPanel() {
           {l.replace(/^ +/, (m) => ' '.repeat(m.length * 2))}
         </Label>
       ))}
-      <Button x={168} y={200} w={138} h={24} label="Import a file instead" variant="ghost" />
+      <Button x={168} y={200} w={138} h={24} label="Import File" variant="ghost" />
       <Button x={312} y={200} w={72} h={24} label="Import" variant="primary" />
     </Scene>
   );

@@ -202,7 +202,7 @@ describe('offlineDeleteIfUnchanged (Sync Design, docs/specs/006-design/offline-m
   });
 });
 
-// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving designs in This Browser
+// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving designs kept Offline
 // after signing in"): a count off the cached index, never a full read.
 describe('offlineIdCount', () => {
   it('counts the designs this browser holds', async () => {

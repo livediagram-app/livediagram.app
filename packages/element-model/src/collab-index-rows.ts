@@ -1,5 +1,5 @@
 // What one tab contributes to the collaboration index (docs/specs/013-workspace/inbox.md §2), and what
-// a tab in This Browser contributes to the Inbox read in the browser (§2.6). One copy for every product
+// a tab kept Offline contributes to the Inbox read in the browser (§2.6). One copy for every product
 // whose model reads element-model's actions; each binds it to its own boxed-element test
 // (collabIndexRowsFor) at its collab-index-rows.ts.
 //

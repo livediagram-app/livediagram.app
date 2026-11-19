@@ -223,7 +223,7 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   next), `articlesOf` keeps each article's reading per stored article object (an unchanged card keeps its object),
   and `hasZoneBlock` and `articleNoteIds` answer per article's `blocks`. A closed context menu reads only its state
   (`EditorContextMenuHost`), not the 150 values its open menu needs. The page's starting tabs are made once.
-- Measured (#728, the #386 probe: a production `next build` export, This Browser, a 100-card stack with two lines a
+- Measured (#728, the #386 probe: a production `next build` export, Offline, a 100-card stack with two lines a
   card, 390x844 touch at 3x, CPU 4x, 60 keys 120 ms apart then 3 s of settling, five runs each way alternating, on a
   shared machine at a load of 6 to 12): the longest busy stretch, before 27.9 to 29.8 ms (the commit's own render,
   about 18 ms of it React's), after 18.3 to 21.2 ms in four runs and 30.7 ms in one (that run also had three keys
@@ -270,14 +270,14 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   - Still rendering on a typing commit, each reading the document: the canvas (`CanvasView`, its pages and each
     `CanvasPageSheet`, `ArticleFlows`, the element layer) and the Contents list when it shows (its rows read the
     writing), which renders only the row being written in (Work Tracker 945, below).
-- Measured (#828, the #728 probe on a production `next build --profile` export, This Browser, a 100-card stack of
+- Measured (#828, the #728 probe on a production `next build --profile` export, Offline, a 100-card stack of
   three blocks a card, 390x844 touch at 3x, CPU 4x, 60 keys 120 ms apart in bursts of ten, five runs each way
   alternating, 30 typing commits each way, on a shared machine at a load of 6 to 11). Components rendered per typing
   commit (function, class, memo and forwardRef fibers that did work, skipping subtrees React left untouched): 158 to
   162 before, 107 to 111 after. React render time per typing commit (the `actualDuration` of each topmost rendered
   component, summed): median 10.9 ms before (quartiles 8.9 and 11.8), 9.0 ms after (7.9 and 10.6). The rest of the
   time is the page's own hooks (`useEditorState`), `SplitViewFrame`'s render function and the canvas.
-- Measured (Work Tracker 907, a dev build, This Browser, a 100-card stack of three blocks a card, 30 keys 700 ms apart
+- Measured (Work Tracker 907, a dev build, Offline, a 100-card stack of three blocks a card, 30 keys 700 ms apart
   after one warm-up key, components counted as in #828). On a phone (390x844): 105 components per typing commit
   before, every listed chrome component among them (`CanvasChrome` and its 19, the title bar's `PageTitleBar` and
   buttons, both tours, `QuickStyleHost`, `FindHost`, `ModifierHint`, `NewVersionPrompt`, `LandscapeBarsHandle`) in

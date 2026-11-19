@@ -167,8 +167,8 @@ to liveworkspace's index directly: share links, their levels and the password ar
 - **Password**: one password for every link ("Links need a password." / "No password: a link alone opens it."),
   with **Set Password**, **Change** and **Remove** ([Share password](../013-workspace/share-password.md)).
 - A link's address is liveplanner's: `/project/<id>?s=<code>` (`shareUrl` in `apps/editor/lib/explorer-host.ts`).
-- A project in This Browser opens the Sync Project gate instead (`ShareOfflineGate`,
-  [Offline Mode](../006-project/offline-mode.md#sharing-a-project-in-this-browser)).
+- A project kept Offline opens the Sync Project gate instead (`ShareOfflineGate`,
+  [Offline Mode](../006-project/offline-mode.md#sharing-an-offline-project)).
 
 The dialog offers no embed code or live-image snippet. An embed is `/embed?s=<code>` ([Read-only embeds](../013-workspace/embeds.md))
 and a live image `/api/share/<code>/image.svg` ([Live image](../013-workspace/live-image-share.md)), built by hand from a link.

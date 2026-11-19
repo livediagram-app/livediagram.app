@@ -66,7 +66,7 @@ const SIGN_IN = {
 } as const;
 type SignInFor = keyof typeof SIGN_IN;
 
-// An item in This Browser: how to save it to the server (the editor's Sync move), and whether the reader is known yet.
+// An item kept Offline: how to save it to the server (the editor's Sync move), and whether the reader is known yet.
 export type ItemToolsOffline = { sync: () => Promise<void>; ready: boolean };
 
 // Snapshots inside History (owner, 2026-11-17): the hook the timeline calls for its Take Snapshot and pinned entries,
@@ -109,7 +109,7 @@ export function useItemToolsRows({
   history: ItemHistoryHost | null;
   // Whether someone is signed in; until they are, both rows show and ask for a sign-in.
   signedIn: boolean;
-  // Set while the open item lives in This Browser: both rows show, badged Sync <Item>, and ask for a sync.
+  // Set while the open item lives Offline: both rows show, badged Sync <Item>, and ask for a sync.
   offline?: ItemToolsOffline | null;
   // Snapshots, for someone who may take them (useHistorySnapshotsHost); null otherwise.
   snapshots?: ItemSnapshotsHost | null;

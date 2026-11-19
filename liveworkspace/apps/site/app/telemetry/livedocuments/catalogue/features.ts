@@ -710,7 +710,7 @@ export const ACTION_SIGN_IN_NUDGE = opened(
   (t) => t === 'ActionSignInNudge',
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents kept Offline
 // after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(
   'Move Prompt Shown',

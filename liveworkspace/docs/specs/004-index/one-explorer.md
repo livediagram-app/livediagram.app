@@ -125,7 +125,7 @@ view takes one. Words about the person's whole collection follow the list: under
 files", "Keep your files safe"), and the hero asks "what are you working on today?"; words about one item keep its
 app's kind. In no app, where New offers every app's kind, the Explorer's own sentences say **files** too (the
 Default Folders dialog, Use as Default, a folder's Delete words), never the kind of the app New would make by default;
-what one app makes or keeps keeps that app's word (an import's line, This Browser's tile). Help follows the same rule:
+what one app makes or keeps keeps that app's word (an import's line, Offline's tile). Help follows the same rule:
 in no app the view Help button, the sign-in banner's article and the help in Search are liveworkspace.app's own
 Explorer articles (site.md "Help": the overview, Folders, Teams, Moving Work, Sharing Across Apps and Guest or
 Account), never one app's, which would speak of its kind alone; the Share dialog's help is always the item's own
@@ -221,8 +221,8 @@ place, as it does for the rest.
 **Each item shows once.** New, Most Used and Recent never show the same item twice: an item is in the first of the
 three it qualifies for, New first, then Most Used, then Recent. Something made yesterday and opened a dozen times
 since is in New only; once newer items push it out of New, it is in Most Used. Leaving an item out never shrinks a
-section that has more to show: each fills to its size from the next items in its own order. The same holds for This
-Browser's items merged in, under All Apps and on each app's Explorer, and on a phone's strips, which draw the same
+section that has more to show: each fills to its size from the next items in its own order. The same holds for Offline's
+items merged in, under All Apps and on each app's Explorer, and on a phone's strips, which draw the same
 lists. Shared With You Recently is a different list (other people's items) and keeps its own.
 
 - **Which.** The live items in the person's own space (My Work) and in each team they are in, by when each was made
@@ -239,8 +239,8 @@ lists. Shared With You Recently is a different list (other people's items) and k
   ago · Marketing": its folder, its team's name for a team item in no folder, My Work for one of the person's own).
   An item an AI tool made carries the Explorer's **Made by AI** badge on its thumbnail's corner (`MadeByAiBadge`, as
   rows and Details show it); Most Used and Recent's cards carry it the same way. Each opens the item.
-- **This Browser.** Where the Explorer reads this browser's store, the items it keeps are merged in by the same rule
-  (made most recently first, four in all), as Recent merges the opened ones: the same This Browser card.
+- **Offline.** Where the Explorer reads this browser's store, the items it keeps are merged in by the same rule
+  (made most recently first, four in all), as Recent merges the opened ones: the same Offline card.
 - **Loading** draws Home's card placeholders, one row of four cards (the strip's on a phone). **Nothing made yet**, or a failed read,
   leaves the section out (Recent below says when Home could not load), so Home never shows two empty states.
 - **Phones.** Below `md` the four are one scrolling strip of small tiles, Recent's strip (its picture and
@@ -263,7 +263,7 @@ directly after it (`HomePane` in `@liveworkspace/explorer`).
   each line saying when ("Opened 2 hours ago"); the next most recent fill the places they leave. A most used item
   past Most Used's eight (one New's items pushed out) is in Recent by its last open, like any other. This browser's
   opened items are merged in by last open, those New shows left out
-  ("This Browser on Home" below). **See More** sits at the right of Recent's heading, as See All does
+  ("Offline on Home" below). **See More** sits at the right of Recent's heading, as See All does
   on Shared With You Recently, and opens the Recent view; Most Used has no link.
 - **A card** is Home's large card, the one New and Shared With You Recently draw: the item's thumbnail, its name and
   its line, the ⋯ menu, right-click and drag. From `md` each section is a grid, two rows of four from `lg`.
@@ -325,15 +325,15 @@ panel keeps its own Home without it, and a first run shows its starting points i
   order are the same as everywhere else.
 - **The read.** One `GET /spaces/previews` ([contracts](one-explorer-contracts.md#folders-and-defaults)) per
   filter, asked with Home's other reads and again whenever they are (an epoch), never per space.
-- **This Browser.** Where the Explorer reads this browser's store (an app's own address), This Browser's tile
-  follows the teams while it holds anything ([This Browser, a Space](#this-browser-a-space)): the browser glyph on
+- **Offline.** Where the Explorer reads this browser's store (an app's own address), Offline's tile
+  follows the teams while it holds anything ([Offline, a Space](#offline-a-space)): the browser glyph on
   the teal disc, a mosaic of up to four of its newest items, each the app's picture of a local item
   (`LocalPreview`, drawn in the browser with nothing fetched), "+N" past four, and the line "3 plans · Edited 2 hours
   ago" from the list itself. It needs no request: it shows when the index's previews fail, and while they load it
   waits with the other tiles, so the grid never jumps. It counts among the eight before Show All.
 
-What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, This
-Browser, in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
+What a browser keeps offline belongs to its app's origin. On the app's address it is a view of the Explorer, Offline,
+in the page and in the editor's panel alike; on liveworkspace.app, which can't read it, the sidebar links to
 that view on the app's own address. On a phone (below `sm`) each of its rows puts Sync and its buttons on a line under
 the title, so the title and its pill keep the row's width rather than being squeezed to nothing beside them.
 
@@ -360,33 +360,33 @@ misleading, not about loss.
 Three groups, the same in every app's Explorer and on liveworkspace.app (`explorer/Sidebar.tsx`):
 
 - **Overview**: Home, Inbox and Shared With Me.
-- **Spaces**: My Work and its folders, each team and its folders, **This Browser** and its folders (while this
-  browser holds anything, [below](#this-browser-a-space)), and Invites while one waits. New Team is a plain plus
+- **Spaces**: My Work and its folders, each team and its folders, **Offline** and its folders (while this
+  browser holds anything, [below](#offline-a-space)), and Invites while one waits. New Team is a plain plus
   at the far right of the **Spaces** heading (owner, 2026-11-15), an icon button named "New Team" whose tooltip
   says so to a mouse or keyboard (never on touch); it shows where New Team's row did (signed in, with a
   `teamsHost`).
 - **More**: the **Library**, an accordion folded by default, whose rows are, in order, Recent,
   the host's Image Gallery and Shape Libraries (where it has them), **Archived** and the **Trash**; then
-  the host's own rows (liveworkspace.app's This Browser link, below). The Trash keeps everything it does: its drop target (an item, a folder or a
-  This Browser item dragged there), its waiting and over states, and the Trash view's This Browser group. The
+  the host's own rows (liveworkspace.app's Offline link, below). The Trash keeps everything it does: its drop target (an item, a folder or a
+  Offline item dragged there), its waiting and over states, and the Trash view's Offline group. The
   Library row carries no count. (Its Timeline row and New count were retired in November 2026; an old
   `/explorer/timeline` address opens Home.)
 
 **The current view's rows are open.** Opening a view unfolds the rows that hold its own row, however it is reached
 (a sidebar click, a breadcrumb, an address, Back): My Work for My Work, a team's row for its page, a space and every
-folder down to it for a folder (that folder too, so its subfolders show), This Browser and its folders down to a local one, and the Library for any of its pages
+folder down to it for a folder (that folder too, so its subfolders show), Offline and its folders down to a local one, and the Library for any of its pages
 (Recent, the Gallery, Shape Libraries, Archived, the Trash). It only ever adds to what is open,
 and once per change of the rows a view needs, so a row the person folds stays folded until the view (or its place)
 changes (`rowsForView`, `useOpenCurrentRows`).
 
 **One space open at a time.** Opening a space's row with its chevron (or Right in the tree) folds every other space
-(My Work, each team, This Browser), except the space holding the current view, which stays open so something can
+(My Work, each team, Offline), except the space holding the current view, which stays open so something can
 be dragged out of it into the space just opened (owner, 2026-11-15: with every space open at once the sidebar was
 confusing). Folding never touches the folders inside a space, so a space opened again shows its folders as it left
 them. A drag resting on a folded space opens it without folding the others, and the current view's rows still open
 as above (`Expansion.openSpace`).
 
-**A drag opens the Library.** A drag of an item, a folder or a This Browser item resting on the folded Library row
+**A drag opens the Library.** A drag of an item, a folder or an offline item resting on the folded Library row
 for half a second (`LIBRARY_HOVER_OPEN_MS`) opens it, so the Trash inside is in reach; the Library itself takes no
 drop. A folded folder or space opens the same way after `DRAG_HOVER_OPEN_MS`, as it did.
 
@@ -404,47 +404,47 @@ or any change of view (Back included), and gives focus back to the bar. The edit
 is its way round.
 
 **The editor's panel** has no accordion: its rail lists Home, Inbox and Shared With Me under Overview, the spaces
-(This Browser last among them, by the same rule as the sidebar's), then under More the Library's order
+(Offline last among them, by the same rule as the sidebar's), then under More the Library's order
 (the Library's pages, Archived, the Trash). Picking a view from a shared menu shows its section.
 
-#### This Browser, a Space
+#### Offline, a Space
 
 What an app keeps only in this browser is a **Space** of its own (owner, 2026-11-10: "Make This Browser a Space
 instead, so it isn't hidden in the Library, but only show it when it contains at least 1 item. Also let me create
 folders in it."). It used to be a row under More, after the Library.
 
-**Its name in the Explorer is Browser Storage** (the owner's rename, 2026-11-10, for clarity): the Space's sidebar row
-and view title, Home's tile, the pill on Explorer rows and cards (Archived, the Trash, Most Used and Recent, the Inbox, the
-editor's Explorer panel), the Trash's and Archived's groups, menus, toasts and labels for assistive technology
-("Moved “X” to Browser Storage.", "Nothing is kept in Browser Storage.", "3 in Browser Storage"). The editor keeps
-**This Browser** for its own badge on such an item (the pill at the top of an open item) and its other copy. These
-specs, like the code (`thisBrowser`, `ThisBrowserItem`, `/explorer/offline`, which keep their names), say This
-Browser for the place itself; every Explorer label they quote reads Browser Storage. Old links keep working: the
-address never changed.
+**Its name in the Explorer is Offline**, the same word as the editor's badge on such an item (the pill at the top
+of an open item) and its other copy: the Space's sidebar row and view title, Home's tile, the pill on Explorer rows and
+cards (Archived, the Trash, Most Used and Recent, the Inbox, the editor's Explorer panel), the Trash's and Archived's
+groups, menus, toasts and labels for assistive technology ("Moved “X” to Offline.", "Nothing is kept Offline.",
+"3 kept Offline"). The owner renamed "This Browser" to "Browser Storage" in the Explorer on 2026-11-10, for clarity,
+and the editor's "This Browser" to "Offline" on 2026-11-19. "Browser Storage" renamed to "Offline" by the owner on
+2026-11-19, in every product: the Space, pills, labels, help and copy. The code keeps its names (`thisBrowser`,
+`ThisBrowserItem`, `BROWSER_STORAGE_COPY`, `/explorer/offline`). Old links keep working: the address never changed.
 
 - **Where.** The sidebar's Spaces group, after My Work and the teams and before Invites and New Team, with the
-  browser glyph (`BrowserIcon`) on the teal tile, its count of live items as its badge ("3 in Browser Storage" to a
+  browser glyph (`BrowserIcon`) on the teal tile, its count of live items as its badge ("3 kept Offline" to a
   screen reader). It folds and opens like My Work: its children are its folders, nested as My Work's are.
 - **Only while it holds something.** It shows while this browser keeps at least one live item (out of the app's
   Trash and out of Archived) or at least one local folder, and goes when the last goes. It is read from this
   browser's storage once and heard as it changes (no request, no polling, `useThisBrowserSpace`). When it empties
-  under a person on its view, the view stays, saying "Nothing is kept in Browser Storage." with **Go to My Work**,
+  under a person on its view, the view stays, saying "Nothing is kept Offline." with **Go to My Work**,
   and the row stays while that view is open, so the highlight never vanishes, as Invites' does.
-- **Folders.** **New Folder** (the view's header, the row's ⋯ and right-click) makes one, in This Browser's root
+- **Folders.** **New Folder** (the view's header, the row's ⋯ and right-click) makes one, in Offline's root
   or inside the open local folder; each folder's menu (as My Work's folders') has **Open**, **Rename** (in place),
-  **New Subfolder**, **Move Folder** (within This Browser, never into itself or below it) and **Delete Folder**, which asks first and says
+  **New Subfolder**, **Move Folder** (within Offline, never into itself or below it) and **Delete Folder**, which asks first and says
   its folders and items move up a level, to its parent, as an account folder's delete does; nothing is deleted with
   it. They nest as deep as My Work's. Names are trimmed, at most 120 characters, and need not be unique (as My
   Work's). At most 200 folders are kept; New Folder past that says so.
 - **Moving items.** A live item has **Move to Folder** (a folder button on its row, beside Move to Archived, and on
-  its card's menu on Home), which picks among This Browser's root and its folders (the placement browser's tree, This Browser's
+  its card's menu on Home), which picks among Offline's root and its folders (the placement browser's tree, Offline's
   own); signed in, the account's places are offered too, and choosing one goes through Sync (below). A drag of a
-  This Browser item onto a local folder (its sidebar row, its card) or onto This Browser's own row moves it there,
+  Offline item onto a local folder (its sidebar row, its card) or onto Offline's own row moves it there,
   with "Moved “X” to Y." and an Undo; onto an account folder, My Work or a team it asks to Sync, as before. Folders
   are not moved by dragging, as in My Work.
-- **The view.** `/explorer/offline` is This Browser's root, `/explorer/offline?folder=<id>` one of its folders (an
-  unknown id shows the root). The header names it (This Browser, or the folder's name) with the back bar to the
-  level above (This Browser > Folder > Subfolder, as My Work's), **New Folder**, and the help. The folders show
+- **The view.** `/explorer/offline` is Offline's root, `/explorer/offline?folder=<id>` one of its folders (an
+  unknown id shows the root). The header names it (Offline, or the folder's name) with the back bar to the
+  level above (Offline > Folder > Subfolder, as My Work's), **New Folder**, and the help. The folders show
   first, as folder cards (My Work's card: up to four of its items' local pictures, or the folder glyph while it
   holds none, its name, its count of folders and items, its ⋯), sorted by name; then
   the items as rows, newest change first. The lens narrows both at that level (a folder by its name, an item as
@@ -469,10 +469,10 @@ address never changed.
   A tab still running the version-1 code (opened before the deploy and never reloaded) reads a version-2 list as
   empty, and its next write stores version 1 again, so the folders and placements go (never an item: the app's next
   page load lists every record again). Known and accepted: it lasts only while such a tab stays open.
-- **On Home.** Home's Spaces lists This Browser after the teams, by the same rule (below).
-- **liveworkspace.app** can't read an app's origin storage, so it can't know whether This Browser holds anything
+- **On Home.** Home's Spaces lists Offline after the teams, by the same rule (below).
+- **liveworkspace.app** can't read an app's origin storage, so it can't know whether Offline holds anything
   and never shows it as a Space (an always-shown Space would break the rule above, and one that guesses would lie).
-  It keeps its hand-off instead: a quiet row after the Library, "This Browser", that leaves for the app's own
+  It keeps its hand-off instead: a quiet row after the Library, "Offline", that leaves for the app's own
   `/explorer/offline`, where the Space and its folders are; `/explorer/offline` there goes to the same place. The
   editors' panel and the Explorer on each app's address read the store and follow the rule. The panel's pane
   lists every live item, whichever folder holds it (its rows are compact; the folders are the page's).
@@ -494,12 +494,12 @@ liveworkspace.app.
   again."
 - **Moving one there.** **Move to Archived** (the archive-box icon) in an item's ⋯ and right-click menus, beside
   Change Folder, for a document the person owns: their own, or a team document they made (the index's owner rule;
-  other teammates don't see it), or one kept only in This Browser (below). Not for a folder or an item reached
+  other teammates don't see it), or one kept only Offline (below). Not for a folder or an item reached
   through a link. It moves at once, the card leaves where it was, and a toast says "Moved “<title>” to Archived."
   with no Undo: what archiving deleted (its links, everyone's Recent rows) can't come back, and Change Folder is the way
   out. Change Folder offers the same as a space of its own.
 - **Archiving the open item.** Archived is closed, so archiving the item open in an editor (from the Explorer panel's
-  menus, its Current card, or Change Folder's Archived; an account's or one kept in This Browser) leaves the editor
+  menus, its Current card, or Change Folder's Archived; an account's or one kept Offline) leaves the editor
   for the Explorer, as deleting it does (owner, 2026-11-17, Work Tracker 1240). The panel hands the item to its host
   (`onArchivedCurrent`) once the archive is taken, and says nothing itself; the editor leaves for
   `/explorer?archived=<id>&title=<name>` (`leaveArchivedItem`, `@liveworkspace/workbench/lib/archived`), and the
@@ -534,19 +534,19 @@ liveworkspace.app.
   Change Folder, which comes back here as `/explorer/archived?move=<id>` and opens Change Folder on it.
 - **Moving one out.** Change Folder, or a drag onto My Work, a folder or a team in the sidebar: it lands there,
   open again. A drag onto the Trash deletes it as any document.
-- **This Browser.** A document kept only in this browser archives in this browser alone: its record in This
-  Browser's list (`liveworkspace:this-browser:<app>`) takes `archivedAt` (`setThisBrowserArchived`) and nothing is
-  uploaded: from its This Browser row (an archive-box button beside Sync and Delete) or its card's menu on
+- **Offline.** A document kept only in this browser archives in this browser alone: its record in Offline's
+  list (`liveworkspace:this-browser:<app>`) takes `archivedAt` (`setThisBrowserArchived`) and nothing is
+  uploaded: from its Offline row (an archive-box button beside Sync and Delete) or its card's menu on
   Home (**Move to Archived**), on the page and in the panel. Every write of the list keeps the marks it held, since the app republishes its records without them.
-  It leaves This Browser's view, Home's Recent and the Trash's This Browser group, and shows in Archived with the
-  **This Browser** pill and its local picture (`LocalPreview`). The Explorer's open shows the archived dialog, and the
+  It leaves Offline's view, Home's Recent and the Trash's Offline group, and shows in Archived with the
+  **Offline** pill and its local picture (`LocalPreview`). The Explorer's open shows the archived dialog, and the
   app's editor reads the mark (`isThisBrowserArchived`) and shows its archived card instead of opening it. Change
-  Folder from Archived offers **This Browser** (the mark cleared) and, signed in, the account's places, through Sync
-  as a This Browser drop does (`sync-local`). **Rename** (a pencil button on its row) edits the name in place: the
+  Folder from Archived offers **Offline** (the mark cleared) and, signed in, the account's places, through Sync
+  as an offline drop does (`sync-local`). **Rename** (a pencil button on its row) edits the name in place: the
   Explorer writes the record's `name` and `savedAt` into the app's offline store (`renameThisBrowserRecord`, as the
   editor's own rename writes them; the page shares the app's origin), then its row in the list, the mark kept. Where
-  it can't reach the store, a toast says it couldn't rename. Delete deletes it for good, as any This Browser item. On
-  liveworkspace.app, which can't read an app's store, Archived lists the account's documents alone, as This Browser
+  it can't reach the store, a toast says it couldn't rename. Delete deletes it for good, as any Offline item. On
+  liveworkspace.app, which can't read an app's store, Archived lists the account's documents alone, as Offline
   there is a link into the app.
 - **Move Folder.** A folder moves within its own space, so its Move dialog offers that space alone, headed by the
   space's name (My Work, or the team's), never "Choose a Space" with nothing to choose, and said once: the top
@@ -571,7 +571,7 @@ History. What replaced them is what was always beside them: Home's Most Used and
   (400), and an item no longer carries `favourite`. The `favourites` table, left unread when they went, is
   dropped with its rows by migration `0023_drop_favourites.sql` (Work Tracker 1199), so nothing about a favourite
   is stored any more. Old `favourited` events stay out of every History until they age out.
-- **This Browser.** A local record's `favourite` mark is no longer read or written; an older record keeping one is
+- **Offline.** A local record's `favourite` mark is no longer read or written; an older record keeping one is
   harmless. Take Offline and Sync carry no star either way.
 - **Agents.** The MCP and CLI never had a favourite verb; the archive verbs no longer mention favourites.
 
@@ -624,37 +624,37 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   Nothing in Settings links away: the Account section's Profile, Sign-in Methods, API Tokens and Your Data
   draw in place, over the app's token ([site.md "Settings"](../010-site/site.md#settings)), and the Explorer's
   search opens Profile and API Tokens here too.
-- **This Browser.** The app keeps a small list of its offline items (id, title and dates, never content) in
+- **Offline.** The app keeps a small list of its offline items (id, title and dates, never content) in
   localStorage under `liveworkspace:this-browser:<app>` (`@liveworkspace/explorer/this-browser`), written by its
-  offline store as it writes. The Explorer reads it: This Browser's Space in the sidebar with the count and its
-  folders ([This Browser, a Space](#this-browser-a-space)), `/explorer/offline`, its tile on Home, a This Browser
+  offline store as it writes. The Explorer reads it: Offline's Space in the sidebar with the count and its
+  folders ([Offline, a Space](#offline-a-space)), `/explorer/offline`, its tile on Home, an offline
   group in the Trash, and the opened ones in Home's Recent. Each opens in the app's editor.
-  liveworkspace.app can't read another origin's list, so its This Browser row (and `/explorer/offline` there) goes
-  to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only This Browser page: the
+  liveworkspace.app can't read another origin's list, so its Offline row (and `/explorer/offline` there) goes
+  to the app's own `/explorer/offline` (the registry's `offlinePath`). That view is the only Offline page: the
   apps' old `/offline` pages only redirect to it, their query kept. Each of its rows has **Sync** (signed in) and
   **Delete**, asked first and for good, since nothing else holds the item: the same verbs and confirmation as the
-  panel's This Browser rows. The confirmation says it deletes only this browser's copy, the one there is, and that
+  panel's Offline rows. The confirmation says it deletes only this browser's copy, the one there is, and that
   nothing in the account changes (`thisBrowserDeleteCopy`, the editors' handed-over Delete words it the same). Every
   host has `remove`, so Delete is never missing in one app and there in another, and both delete **in place**: the
-  person stays where they pressed it (This Browser's view, Home's Recent, the Trash drop) and the item leaves
+  person stays where they pressed it (Offline's view, Home's Recent, the Trash drop) and the item leaves
   the list there, with no page opened and none left (owner, 2026-11-04: Delete used to open the item in the editor,
   delete it and come back). The editor's panel uses its offline store's delete; the page, on the app's own address
   and so the same origin, deletes the record itself (`removeThisBrowserRecord`, @liveworkspace/explorer/this-browser,
   below). Each row says when it last changed in relative words ("Changed 3 hours ago"), its full date
   and time in the browser's locale on hover (`title`), as the panel's rows do; with none, the page and the panel both
-  say "Nothing is kept in Browser Storage." The view takes the filter lens like My Work (the field and chip
+  say "Nothing is kept Offline." The view takes the filter lens like My Work (the field and chip
   row), matched in the browser over the list, since the index never sees these items.
-- **This Browser in the Inbox.** The Inbox's rows from those offline items (actions, cards and threads, which the
+- **Offline in the Inbox.** The Inbox's rows from those offline items (actions, cards and threads, which the
   index never holds) are worked out by the app's own code. The editor's panel reads them from the offline store
   directly; for the page, the app also keeps a snapshot of them in localStorage under
   `liveworkspace:this-browser-inbox:<app>` (`@liveworkspace/explorer/this-browser`): the ids of the person they are
   for (the account, and this browser's guest), at most 100 actions and 100 threads, newest first. The app works it
   out again about 1.5 s after its offline store last writes, once a page load and as the panel's Inbox reads, and
-  drops it when no offline items are left. The page lists it, with the This Browser pill, only to the person it
+  drops it when no offline items are left. The page lists it, with the Offline pill, only to the person it
   names, and hears it change. liveworkspace.app can't read it, as it can't read the list.
 - **Take Offline, Sync and Delete.** Where the app's editor runs them (the registry's `offlineConversions`), each of
-  the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live This
-  Browser row has **Sync** for a person signed in and **Delete** for anyone. Take Offline and Sync copy an item's
+  the app's own items the person edits and holds themselves has **Take Offline** on its menu, and each live Offline
+  row has **Sync** for a person signed in and **Delete** for anyone. Take Offline and Sync copy an item's
   content, which only the app's code knows, so in the editor's panel they run in place and the page hands them over
   to the app's editor at the item's own address (`<itemPath><id>?convert=take-offline|sync&item=<id>`,
   `thisBrowserConvertHref`), which takes the request out of the address, checks the item is the person's to move,
@@ -664,25 +664,25 @@ suites run on any port (an agent's own block, a CI runner's) and never read as a
   their names from it, so the two never drift). `removeThisBrowserRecord(app, id)` opens that database at whatever
   version it is (never creating or upgrading it), deletes the one record in a single transaction, tells the app's open
   editor tabs on its channel (`{ kind: 'remove', id }`, as the editor's own delete does) so none keeps routing writes
-  to it, drops it from This Browser's list (so every view hears it go) and its rows from the Inbox snapshot. It goes
-  for good, as the editor's This Browser delete does; nothing goes to a trash. Where the record can't be removed that
+  to it, drops it from Offline's list (so every view hears it go) and its rows from the Inbox snapshot. It goes
+  for good, as the editor's Offline delete does; nothing goes to a trash. Where the record can't be removed that
   way (the database or store isn't there yet, an editor not opened since an upgrade renamed its store, or IndexedDB
   fails), Delete falls back to the hand-over: the page leaves a note for that one item in this tab's session storage
   (`markThisBrowserDeleteConfirmed`) and opens the item's address with `?convert=delete`, and the editor takes the
   note (once, for that item) in place of asking again, deletes it and comes back to `/explorer/offline`. A
   `?convert=delete` link without the note asks first. A request that
-  reaches This Browser's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on to the
+  reaches Offline's view instead (`/explorer/offline?convert=…`, an older `/offline` link) goes on to the
   editor the same way. A link alone never moves or deletes anything.
-- **This Browser on Home.** An opened This Browser item is one card among Recent's others, the same size and
-  shape as the rest of its group (a thumbnail area, the title, and a line with the **This Browser** badge and when it
+- **Offline on Home.** An opened Offline item is one card among Recent's others, the same size and
+  shape as the rest of its group (a thumbnail area, the title, and a line with the **Offline** badge and when it
   was opened). It has no snapshot (none leaves the browser), so its thumbnail is a picture of the browser it lives in,
-  tinted in the accent of the app that owns it (`LocalPreview`): the same picture on its This Browser rows, on the page
-  and in the panel. The **This Browser** badge, in teal (no app's accent and no status colour, with its icon and words), says where it lives; the tint says whose it is. It has the same ⋯ menu and right-click as any card, with This Browser's own verbs: **Open**, **Sync**
-  (signed in, as This Browser's rows offer it: in place in the panel, handed over to the editor on the page) and,
+  tinted in the accent of the app that owns it (`LocalPreview`): the same picture on its Offline rows, on the page
+  and in the panel. The **Offline** badge, in teal (no app's accent and no status colour, with its icon and words), says where it lives; the tint says whose it is. It has the same ⋯ menu and right-click as any card, with Offline's own verbs: **Open**, **Sync**
+  (signed in, as Offline's rows offer it: in place in the panel, handed over to the editor on the page) and,
   where the host has `remove`, **Delete**, asked first and in place (the card leaves Recent where it was). It drags as
   the others do, and each target means what it can for an item the account doesn't hold. On the **Trash** it is
   deleted for good after a confirmation, since nothing else holds it; a host without `remove` (none today, kept for
-  a host that can't reach the app's editor) makes the drop say so and offer Open, as the Trash's This Browser group
+  a host that can't reach the app's editor) makes the drop say so and offer Open, as the Trash's Offline group
   does. On a **folder**, My Work
   or a team it has to be synced to the account first, so the drop asks to Sync: in place, it then moves there; on
   the page Sync hands over to the editor, and the dialog says it can be moved once it's in the account. Signed out,
@@ -719,7 +719,7 @@ press outside, Esc, the button again or opening an item. Its code loads the firs
 once the editor is idle). The editors' status screens (deleted, couldn't load, not found) show neither the panel
 nor the menu button.
 
-The panel keeps the person in the editor. Its rail's sections each open their pane in place, This Browser among
+The panel keeps the person in the editor. Its rail's sections each open their pane in place, Offline among
 them (under More, with its count, while this browser keeps any of the app's items: each opens in the editor, Sync
 moves one into the account and the panel asks before deleting one for good). Each pane's header names its section
 in full, never cut short, beside quiet glyphs: **New Folder** (New Subfolder inside a folder) in a space, a team's
@@ -734,9 +734,9 @@ card placeholders; a failed read draws one "Home could not load." notice with **
 sections come from one request (`jumpBackInLoader` asking five most used and nine recent): the open item leaves
 before Most Used is cut to four, so it still ends on a full row when the open item is among the most used, and a
 spare most used that is not needed joins Recent by its last open.
-The panel's Home lists This Browser's opened items among its Recent by the page's rule (`mergeOpened`: last opened
-first, among the index's), each a card with This Browser's picture (`LocalPreview`), the **This Browser** pill on its
-picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and This Browser's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
+The panel's Home lists Offline's opened items among its Recent by the page's rule (`mergeOpened`: last opened
+first, among the index's), each a card with Offline's picture (`LocalPreview`), the **Offline** pill on its
+picture's top-left corner (so the line below has the card's width for when it was opened), when it was opened and Offline's menu, so it never says "No <kind> yet" while this browser keeps opened ones. The
 open item is left out there, as the index's is.
 
 **The editors' panel: its size and the scrim.** On a desktop or tablet the popover is roomy: up to **56rem** (896 px) wide, kept 1rem
@@ -748,14 +748,14 @@ strip inset in the card, so it read shorter than Home's and Spaces' cards for no
 the card's top in the same **16:9** frame (about 124 px tall in the 240 px rail), a hairline under it, then the name
 and its line. On a phone's sheet, where the card is a row over the chips, its picture keeps the same 16:9 at the
 row's 56 px height (100 px wide; it was 80 by 56). On a short window the picture first shrinks to the room left (its 16:9 height down to 48 px; owner,
-2026-11-17, after a canvas in Browser Storage, whose extra sidebar row cost 5 px, lost its picture entirely): the
+2026-11-17, after a canvas kept Offline, whose extra sidebar row cost 5 px, lost its picture entirely): the
 frame gets shorter but the picture inside keeps its 16:9 shape, centred and cut top and bottom, never squashed;
 then, with under 48 px to spare, the card drops it, its "where it lives" pill moving to the start of the "Updated …"
 line, and takes it back as soon as 48 px fit again (measured, so a person with several teams sees the same rule). Below that
 the rail scrolls, as it must (owner, 2026-11-17: no scrollbar the rail doesn't need). The pane's preview
 cards (Most Used, Recent, folders) are compact, so more fit in a row: two across in a narrow pane, three once it is 24rem
 wide (a tablet, a wide phone's sheet and the desktop popover, whose pane is about 40rem), four once it is 44rem (the
-full-page Explorer): a card narrower than about 12rem cuts its "This Browser" chip's time short, so the popover keeps
+full-page Explorer): a card narrower than about 12rem cuts its "Offline" chip's time short, so the popover keeps
 three. Each card's
 picture 16:9 over a 13 px name and a quiet line. Home's sections end on a full row: one of four cards shows three at
 three across (two rows of two at two across), and Recent's eight, with nothing most used, shows its first **six**
@@ -775,18 +775,18 @@ chip row it reads **New**, 36 px to the eye with a 44 px tap, as the chips are. 
 600 in dark) in every app.
 
 **The Current card** shows the item open in the editor on top of the panel whenever there is one. The index's copy
-draws it when the index has the item. An item kept only in This Browser, which the index never holds, is drawn from
-This Browser's list instead: its title, the app's picture of a local item (`LocalPreview`), the **This Browser** pill
+draws it when the index has the item. An item kept only Offline, which the index never holds, is drawn from
+Offline's list instead: its title, the app's picture of a local item (`LocalPreview`), the **Offline** pill
 and "Updated <relative time>". Its name renames it through the editor's own rename (the app's offline store, which
-writes This Browser's list), and its ⋯ menu and right-click are This Browser's (**Open**, **Sync <Kind>** signed in,
+writes Offline's list), and its ⋯ menu and right-click are Offline's (**Open**, **Sync <Kind>** signed in,
 **Delete <Kind>** asked first, for good). Nothing about it is sent to the index. The editors read the index's copy
 through the package's `useOpenItem`.
 
 - **Which card.** The editor says whether the open item is kept only in this browser (its own offline check, the
-  same that draws its header's This Browser badge). While it is, the card is This Browser's, whatever the index
-  answered before (a Take Offline while the panel stays mounted), and the index is not asked for it. When This
-  Browser's list does not hold it yet (a fresh **/new** item before the list has heard of it), the card is drawn from
-  the editor's own title, with the **Browser Storage** pill and This Browser's menu all the same (Work Tracker 1165).
+  same that draws its header's Offline badge). While it is, the card is Offline's, whatever the index
+  answered before (a Take Offline while the panel stays mounted), and the index is not asked for it. When Offline's
+  list does not hold it yet (a fresh **/new** item before the list has heard of it), the card is drawn from
+  the editor's own title, with the **Offline** pill and Offline's menu all the same (Work Tracker 1165).
   Signed in or out makes no difference: only Sync needs an account, and its row is there only then.
 - **Asking again.** The index is asked once per item, again when the item stops being local (a Sync in place), and
   again on an opening of the panel while the index had nothing for it (a cloud item created since the last read).
@@ -844,11 +844,11 @@ Work Tracker 686. Every editor's door to the Explorer from an open item (the hea
 editor's Explorer panel's ⋯ menu) opens the place that holds that item, so its neighbours are one look away rather
 than a click down from Home. The editor knows only the item: its door is `/explorer?item=<id>`
 (`explorerItemHref` in `packages/workbench/src/lib/explorer-href.ts`), and the Explorer works out the place, from
-This Browser's list or the index, the same way for every app (decided on the card, 2026-11-14: the Explorer, not each
+Offline's list or the index, the same way for every app (decided on the card, 2026-11-14: the Explorer, not each
 editor, resolves it).
 
 - **Where it lands** (`viewOfItem` in `packages/explorer/src/item-view.ts`), first match wins:
-  - kept only in this browser (in This Browser's list, read on the app's address): **This Browser** at its local
+  - kept only in this browser (in Offline's list, read on the app's address): **Offline** at its local
     folder (`{ kind: 'offline', folder }`), or its root;
   - in the Trash: the **Trash**; in the person's Archived: **Archived**;
   - in a team the person is in: that **team's library** at its folder (`{ kind: 'team', id, folderId }`), or the
@@ -869,7 +869,7 @@ editor, resolves it).
   an item further down opens its folder (or view) without the ring, as an item never found does. Nothing searches
   further: a folder that deep is rare, each page is another `GET /items` the person waits behind, and the place is
   the point of the door, the ring only a help within it.
-- **The address.** While the item is looked up (one `GET /items/:id`, none for a This Browser item) the page shows the
+- **The address.** While the item is looked up (one `GET /items/:id`, none for an offline item) the page shows the
   Explorer's skeleton, never Home first. The moment the place is known the Explorer opens on it, and the address is
   replaced with the place's own (`?item=` dropped) alongside, not before: the page does not wait for the router's
   move. So Back returns to the item in its editor, and a reload stays in the place. An item the index can't answer
@@ -968,7 +968,7 @@ one, through one shared formatter (`@liveworkspace/ui/date-format`). A time is w
 options and locale, made the first time it is asked for, so a list of thousands of rows makes none per row. A date
 that has to be a given zone's day keeps its zone (the status page's days are UTC). Text a prerender would write
 can't know the reader's locale, so dates are written only in the browser: the lists that carry them read their data
-in the browser (the Explorer's items, This Browser's list, the status history, the Settings rows), and a prerender
+in the browser (the Explorer's items, Offline's list, the status history, the Settings rows), and a prerender
 shows none.
 
 **Names in sentences.** A toast or a confirmation that names an item, a folder, a team or a picture ("Moved “Plan”

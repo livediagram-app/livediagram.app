@@ -47,9 +47,9 @@ folder drops the defaults that point at it.
 - An API create that names no place is filed by the template family of its first seeded tab
   (`apps/api/src/routes/document-seed.ts`).
 - Duplicate and the server copy land beside their source and are never filed by a default.
-- This Browser's canvases are never filed by a default: an offline canvas is kept where it is made
-  ([Offline Mode](../006-document/offline-mode.md)), at This Browser's root, and only the person moves it into one of
-  its local folders ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#this-browser-a-space) "This Browser, a Space").
+- Offline's canvases are never filed by a default: an offline canvas is kept where it is made
+  ([Offline Mode](../006-document/offline-mode.md)), at Offline's root, and only the person moves it into one of
+  its local folders ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#offline-a-space) "Offline, a Space").
 
 ### A template picked after creation
 
@@ -59,7 +59,7 @@ folder drops the defaults that point at it.
 
 - **`/new` leaves a note** (this browser tab only): the canvas it made, its first tab, and whether the person
   chose the folder themselves (a `/new?folder=` / `?team=` context). It is written for a cloud canvas made as a
-  Blank Space, never for This Browser or a template link.
+  Blank Space, never for Offline or a template link.
 - **The first template picked from a start screen** on that first tab takes the note. When the person did not
   choose the folder, the index's defaults are read again for the template's family, then the app's, and the canvas
   goes to the default that answers when it is somewhere else. A toast says so: "Moved to **Meetings**, your default
@@ -87,7 +87,7 @@ folder drops the defaults that point at it.
 ## Non-goals
 
 - A default for a space's root, per device, or per template (templates route only through their family).
-- Defaults for This Browser's canvases.
+- Defaults for Offline's canvases.
 - Moving existing canvases when a default changes.
 
 ## References

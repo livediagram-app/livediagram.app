@@ -1,5 +1,5 @@
 import type { ElementTourApi } from './element-tour-api';
-import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, inTheMenu, onGraphic, onKindTool } from './concept-element-tour-steps';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
@@ -14,9 +14,6 @@ export type OrgChartTourContext = {
   // The node has reports, so dragging it carries a team.
   hasReports: boolean;
 };
-
-const toolbarButton = (label: string) =>
-  `[data-testid="selection-popover"] button[aria-label="${label}"]`;
 
 export function orgChartTourSteps(ctx: OrgChartTourContext): TourStepOf<ElementTourApi>[] {
   const { elementId: id } = ctx;
@@ -40,19 +37,19 @@ export function orgChartTourSteps(ctx: OrgChartTourContext): TourStepOf<ElementT
       "The disc takes the first letters of the name's first two words, and follows the name as it changes.",
       elementSelector(id, '[data-tour-part="person-initials"]'),
     ),
-    onGraphic(
+    onKindTool(
       'report',
       'Add a Report',
       ctx.touch
         ? 'Add Child adds someone who reports to this person.'
         : 'Press Tab, or Add Child, for someone who reports here. Then type their name.',
-      toolbarButton('Add Child'),
+      'Add Child',
     ),
-    onGraphic(
+    onKindTool(
       'peer',
       'Add a Peer',
       `${ctx.touch ? 'Add Sibling' : 'Press Enter, or Add Sibling,'} for a teammate with the same manager.`,
-      toolbarButton('Add Sibling'),
+      'Add Sibling',
     ),
     onGraphic(
       'team',

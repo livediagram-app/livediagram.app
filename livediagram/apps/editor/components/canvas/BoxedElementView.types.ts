@@ -243,7 +243,11 @@ export type BoxedElementViewProps = {
   // (docs/specs/009-elements/web-components-and-no-groups.md). Omitted in read-only.
   onSetWebRows?: (elementId: string, rows: WebRows) => void;
   // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md).
-  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
+  onSetPointerTip?: (
+    elementId: string,
+    tipAbs: { x: number; y: number },
+    phase?: 'preview' | 'commit' | 'cancel',
+  ) => { x: number; y: number } | null | void;
   onSetHeroCaptionLine?: (elementId: string, field: keyof HeroCaption, value: string) => void;
   // Live dot-vote (docs/specs/012-collaboration/session-tools.md). `vote` is the active tab's vote session
   // (undefined when none). `selfId` is the local participant (for "my

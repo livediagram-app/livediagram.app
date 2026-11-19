@@ -89,7 +89,6 @@ describe('a flyout’s groups', () => {
       'Containers',
       'Parts',
       'Pictures',
-      'People',
     ]);
     expect(flyoutGroups('data', tiles('workshop', 'data')).map((g) => g.title)).toEqual([
       'Charts',
@@ -112,10 +111,18 @@ describe('a flyout’s groups', () => {
     ]);
   });
 
-  it('marks BPMN, and only BPMN, as an optional group with its own storage key', () => {
+  it('marks Flowchart, More Shapes and BPMN, and only those, as optional groups with their own storage keys', () => {
     // toolbar-layout.md "Optional groups".
     const groups = flyoutGroups('shapes', tiles('diagram', 'shapes'));
-    expect(groups.filter((g) => g.optional).map((g) => g.title)).toEqual(['BPMN']);
+    expect(groups.filter((g) => g.optional).map((g) => g.title)).toEqual([
+      'Flowchart',
+      'More Shapes',
+      'BPMN',
+    ]);
+    expect(groups.find((g) => g.title === 'Flowchart')!.optional).toEqual({
+      storageKey: 'livediagram:v2:palette-group-open:flowchart',
+      telemetryType: 'FlowchartGroup',
+    });
     expect(groups.at(-1)!.optional).toEqual({
       storageKey: 'livediagram:v2:palette-group-open:bpmn',
       telemetryType: 'BpmnGroup',

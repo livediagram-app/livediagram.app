@@ -30,7 +30,7 @@ export const DESCRIBE_PLAN_NOT_READY = 'This plan isn’t ready yet. Try again i
 
 export function DescribePlanHost({ onClose }: { onClose: () => void }) {
   const ctx = useEditorContext();
-  // Automations for this person on this plan: null on a plan in This Browser, where the rules can't be made.
+  // Automations for this person on this plan: null on a plan kept Offline, where the rules can't be made.
   const automations = useAutomationsAccess();
   const toast = useToast();
   const plan = ctx.plan?.context;

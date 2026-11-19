@@ -123,7 +123,7 @@ export function useEditorPersistence({
   const tabRevisions = useTabRevisions(realtime.changesetSeen.seen);
   // The last seen copy follows the open document (docs/specs/006-document/offline-mode.md "Warm open of a cloud document"):
   // its name and tab list as they change, its first tab as each save of it lands. Only a cloud document the open kept
-  // a copy of is followed; never an embed, a workbench or a This Browser document.
+  // a copy of is followed; never an embed, a workbench or an offline document.
   const lastSeen = useLastSeenFollow({
     follower: lastSeenCopies,
     reader: selfParticipant.id,
@@ -242,7 +242,7 @@ export function useEditorPersistence({
   });
   useEffect(() => {
     // The editor in a workbench never writes the participant record (I9). Nor does the placeholder:
-    // a document in This Browser opens before the reader is known (docs/specs/006-document/offline-mode.md
+    // a document kept Offline opens before the reader is known (docs/specs/006-document/offline-mode.md
     // "Instant open"), and 'self' is nobody's row.
     if (!hydrated || workbenchMode || selfParticipant.id === 'self') return;
     const prev = lastPersistedSelfRef.current;

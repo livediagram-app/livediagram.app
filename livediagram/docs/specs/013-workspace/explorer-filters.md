@@ -38,7 +38,7 @@ Which apps' items a list holds is the **Canvases / All** switch in the page head
 | My Work, and each of its folders             | `/explorer/all`, `/explorer/folder?id=<id>`                | Scoped                            |
 | A team, at its root or in one of its folders | `/explorer/team?id=<id>`                                   | Scoped                            |
 | Recent, Shared With Me, Search results       | `/explorer/recent`, `/explorer/shared`, `/explorer/search` | Aggregate                         |
-| This Browser                                 | `/explorer/offline`                                        | Scoped, matched in this browser   |
+| Offline                                      | `/explorer/offline`                                        | Scoped, matched in this browser   |
 | Home, Inbox, Timeline, Trash                 | Their own                                                  | None: typing opens Search results |
 
 - **Search results** (`/explorer/search`) lists every item the reader can open: their own, every team's they have
@@ -50,7 +50,7 @@ Which apps' items a list holds is the **Canvases / All** switch in the page head
   as one flat list, newest first. Folder rows step aside while the lens is set and return when it is cleared. A row
   from a subfolder names its folder.
 - The old Generated view's address, `/explorer/generated`, opens Search results filtered by `made-by:ai`.
-- **This Browser** (`/explorer/offline`) takes the lens too: the field and chip row narrow the canvases kept only in
+- **Offline** (`/explorer/offline`) takes the lens too: the field and chip row narrow the canvases kept only in
   this browser at the level shown, and its local folders there by name. The index never sees them, so the Explorer matches them itself (`thisBrowserSubject`, `compileLens`):
   the words against the name, Edited against the last change, Opens in against this app, People as the reader's
   own and Space as My Work (a Space token is inert here, as on any scoped view). Template, Made by AI and Mode are

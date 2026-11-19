@@ -32,7 +32,7 @@ async function importFile(page: Page, file: string) {
   await page.getByRole('button', { name: /^draw\.io/ }).click();
   await shot(page, `${file}-1-panel`);
   const chooser = page.waitForEvent('filechooser');
-  await page.getByRole('button', { name: 'Import a file instead' }).click();
+  await page.getByRole('button', { name: 'Import File' }).click();
   await (await chooser).setFiles(join(FIXTURES, file));
 }
 

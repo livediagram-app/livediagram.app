@@ -1,5 +1,5 @@
 // The browser's one-time doors of the move (routes/migration.ts): the legacy guest claim's forwarding and answers,
-// and a This Browser document's parts handed to the index, with the real splitter and with a stub one.
+// and an offline document's parts handed to the index, with the real splitter and with a stub one.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type {
   HandoffRequest,

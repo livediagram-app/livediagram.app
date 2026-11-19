@@ -108,7 +108,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
 });
 
 test('the owner is never scoped', async ({ page, pageErrors }) => {
-  // On liveplanner: a plan in This Browser has no share links to scope.
+  // On liveplanner: a plan kept Offline has no share links to scope.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.locator('[data-canvas-a11y-root]').waitFor();
   await expect(page.getByRole('button', { name: 'Not shared' })).toHaveCount(0);

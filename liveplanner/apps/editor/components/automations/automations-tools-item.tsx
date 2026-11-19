@@ -1,7 +1,7 @@
 'use client';
 
 // The Automations row in the footer's Tools menu (docs/specs/026-plan/automations.md "The footer button"): there for
-// an Editor of the whole plan saved to an account, and for whoever can edit a plan in Browser Storage (it opens Rules
+// an Editor of the whole plan saved to an account, and for whoever can edit a plan kept Offline (it opens Rules
 // Run on Our Servers there). No door from the host, no row. A badge at its right edge counts the rules that are on
 // (none at 0); a rule that paused itself turns it amber and puts an amber dot on the Tools button. It reads the list
 // the host fetched once the plan settled, never fetching its own.

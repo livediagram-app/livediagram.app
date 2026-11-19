@@ -12,55 +12,55 @@ export const metadata = helpMetadata({
 
 Most spaces are saved to livehuddle's servers so you can reach them from any device and share them. **Offline Mode** is the opposite choice: a space saved **only in the browser you made it in**, that is never stored on the server. It suits private, local-first work, or simply wanting a space that physically never leaves your machine.
 
-## Creating a space in This Browser
+## Creating an offline space
 
-Offline Mode is chosen per space, so you can keep normal spaces and ones in This Browser side by side.
+Offline Mode is chosen per space, so you can keep normal spaces and ones kept Offline side by side.
 
-- **If you haven't signed in**, your new spaces start in This Browser. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from the [New Space](/new) screen, and from the links that create a space straight away (a template from the home page, **Start Blank**), starts in This Browser. Use **Sync Space** on one if you would rather it went to the server now.
+- **If you haven't signed in**, your new spaces start Offline. Nothing you try out is sent to our servers until you choose to share it, sync it, or sign in and move it to your account. Everything you make from the [New Space](/new) screen, and from the links that create a space straight away (a template from the home page, **Start Blank**), starts Offline. Use **Sync Space** on one if you would rather it went to the server now.
 - **Once you've signed in**, new spaces go to your account. To keep one only in this browser, choose **Take Offline** from its menu in the editor's Explorer panel (see below).
-- A [new Space](/new) opens on its start screen, **Start a Space**, whose **Sync Space to Server** switch shows where it went: off for a guest ("Saved in this browser only"), on once you're signed in. Flip it while the space is still empty to move it to the server or back into This Browser.
-- The space is written to your browser's own storage (IndexedDB) and opens like any other. A **This Browser** badge next to its name in the editor marks it, so you always know which spaces live only in this browser; hover or focus it to read that clearing this browser's site data deletes it. In the Explorer, the place these live is called **Browser Storage**. They are not in your account's lists: **This Browser**, a space of its own in the Explorer sidebar's **Spaces** group, lists them all with how many there are, and so does their own page, [This Browser](/offline), where each has **Sync Space** and **Delete**.
+- A [new Space](/new) opens on its start screen, **Start a Space**, whose **Sync Space to Server** switch shows where it went: off for a guest ("Saved in this browser only"), on once you're signed in. Flip it while the space is still empty to move it to the server or back Offline.
+- The space is written to your browser's own storage (IndexedDB) and opens like any other. An **Offline** badge next to its name in the editor marks it, so you always know which spaces live only in this browser; hover or focus it to read that clearing this browser's site data deletes it. They are not in your account's lists: **Offline**, a space of its own in the Explorer sidebar's **Spaces** group, lists them all with how many there are, and so does their own page, [Offline](/offline), where each has **Sync Space** and **Delete**.
 
 <Note>
-  A space in This Browser is **not synced and not backed up**. It lives only in this browser:
-  clearing your site data, or the browser reclaiming storage, will delete it. Keep anything
-  important on the cloud, or export a copy.
+  A space kept Offline is **not synced and not backed up**. It lives only in this browser: clearing
+  your site data, or the browser reclaiming storage, will delete it. Keep anything important on the
+  cloud, or export a copy.
 </Note>
 
 ## What's different
 
-A space in This Browser is a normal space: every editor feature works, including elements, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
+A space kept Offline is a normal space: every editor feature works, including elements, tabs, themes, undo/redo, and export. Only the features that need the server are unavailable, because there's no server copy to power them:
 
-- **Sharing** needs a space on the server. Opening **Share** on a space in This Browser tells you so and offers **Sync Space**: press it and the space uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
-- **Live collaboration** and **teams** don't apply; a space in This Browser is yours alone.
+- **Sharing** needs a space on the server. Opening **Share** on a space kept Offline tells you so and offers **Sync Space**: press it and the space uploads, and the Share options appear in the same dialog, with no reload. Embeds are unavailable until it is synced, for the same reason.
+- **Live collaboration** and **teams** don't apply; a space kept Offline is yours alone.
 - Images you add are stored **inside the space**, so it stays fully local.
-- **Add a Tab to Another Space** is unavailable for a space in This Browser in either direction, and **Duplicate** makes another copy in This Browser rather than uploading one.
+- **Add a Tab to Another Space** is unavailable for a space kept Offline in either direction, and **Duplicate** makes another copy kept Offline rather than uploading one.
 
-## Folders in Browser Storage
+## Offline Folders
 
-**New Folder** on the Browser Storage page, or the **⋯** menu on its row in the sidebar, makes a folder that lives in this browser too, and folders can hold folders, as in My Work. **Move to Folder** on a space's menu, or a drag onto a folder, files it. A folder's menu has **Rename**, **New Subfolder**, **Move Folder** and **Delete Folder**; deleting a folder never deletes what is in it, which moves up a level. The folders are kept in this browser alone, like the spaces in them.
+**New Folder** on the Offline page, or the **⋯** menu on its row in the sidebar, makes a folder that lives in this browser too, and folders can hold folders, as in My Work. **Move to Folder** on a space's menu, or a drag onto a folder, files it. A folder's menu has **Rename**, **New Subfolder**, **Move Folder** and **Delete Folder**; deleting a folder never deletes what is in it, which moves up a level. The folders are kept in this browser alone, like the spaces in them.
 
-## Archiving a space in This Browser
+## Archiving an offline space
 
-**Move to Archived** works on a space in This Browser too. It never leaves this browser: it moves out of the Browser Storage list into **Archived**, and it won't open until you move it out. Opening it shows a **Space Archived** card with **Change Folder**, which puts it back in This Browser (or, when you are signed in, moves it into your account). Clearing this browser's data removes it like any other space kept here.
+**Move to Archived** works on a space kept Offline too. It never leaves this browser: it moves out of the Offline list into **Archived**, and it won't open until you move it out. Opening it shows a **Space Archived** card with **Change Folder**, which puts it back Offline (or, when you are signed in, moves it into your account). Clearing this browser's data removes it like any other space kept here.
 
 ## Moving to and from your account
 
-You can change your mind at any time, from the space's **⋯** menu in the editor's Explorer panel, or from the [Browser Storage](/offline) page.
+You can change your mind at any time, from the space's **⋯** menu in the editor's Explorer panel, or from the [Offline](/offline) page.
 
-- **When you sign in** with spaces in This Browser, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
+- **When you sign in** with spaces kept Offline, we offer to move them to your account. Every one is ticked; untick any you want to keep in this browser, then **Move**. **Not Now** leaves them where they are, and we only ask again when there are more.
 
-- **Sync Space** uploads a space in This Browser to the cloud. It becomes a normal space, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
+- **Sync Space** uploads a space kept Offline to the cloud. It becomes a normal space, shareable and (when you're signed in) reachable from your other devices, and the copy in this browser is removed.
 - **A space in a folder keeps its place.** Sync Space offers the My Work folder with the same name (or My Work itself when there is none) and says where it will go. The folder in this browser stays, empty, until you delete it.
 - **Take Offline** does the reverse: it downloads a cloud space into this browser and then **removes it from your account and every other device**. Because that deletes the server copy for good, we ask you to confirm first.
 
 <Note>
-  **Take Offline** is deliberate and irreversible on the server side: once a space is in This
-  Browser it exists only in the browser you took it offline in. If it was shared, taking it offline
-  also revokes the share links, and a team space leaves the team library. For the owner it is a
-  move, not a delete, so it skips the [Trash](/help/account-and-data/trash/); a teammate taking a
-  team space offline sends the team's copy to the team Trash. Deleting a space in This Browser
-  removes it for good: nothing else holds it, so it has no Trash.
+  **Take Offline** is deliberate and irreversible on the server side: once a space is Offline it
+  exists only in the browser you took it offline in. If it was shared, taking it offline also
+  revokes the share links, and a team space leaves the team library. For the owner it is a move, not
+  a delete, so it skips the [Trash](/help/account-and-data/trash/); a teammate taking a team space
+  offline sends the team's copy to the team Trash. Deleting a space kept Offline removes it for
+  good: nothing else holds it, so it has no Trash.
 </Note>
 
 </ArticleLayout>

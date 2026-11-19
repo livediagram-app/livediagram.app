@@ -61,7 +61,7 @@ describe('ExportTabDialog: Whole Plan', () => {
     }
   });
 
-  it('is not offered without the plan (a Participant, a Viewer, a tab-scoped link, a This Browser plan)', () => {
+  it('is not offered without the plan (a Participant, a Viewer, a tab-scoped link, an offline plan)', () => {
     open(tabOf('board'), false);
     expect(card()).toBeNull();
   });

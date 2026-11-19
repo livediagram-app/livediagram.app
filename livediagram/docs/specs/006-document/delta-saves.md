@@ -87,7 +87,7 @@ The autosave sends deltas, and so does the unload flush (below, [Unload](#unload
   lands, whichever way it went ([Collaboration race hardening](../012-collaboration/collab-race-hardening.md#saves)).
 - The unload flush sends a delta where it has one, so a large tab's last edits fit the keepalive budget (Work Tracker
   589; [Unload](#unload)).
-- An offline document (This Browser) never sends one: it has no api.
+- An offline document (Offline) never sends one: it has no api.
 
 ## Unload
 

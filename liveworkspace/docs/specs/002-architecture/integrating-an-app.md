@@ -262,7 +262,7 @@ launched with Work Tracker #189: its row is in `APP_SITES`. Its telemetry was he
 to #189). It ships every platform-wide
 feature, as the other apps do (owner, 2026-11-02): its MCP server, which the status checks look at
 ([status.md](../009-status/status.md#where-the-checks-go)), and a Community, whose service takes its posts under
-`COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with This Browser's
+`COMMUNITY_KEY_LIVEHUDDLE` ([Community](../007-community/community.md#adding-an-app)), with Offline's
 conversions and the Share dialog's Community tab in its `AppItems`.
 
 A held app's Settings are its own from the start: its plain-data catalogue sits beside the listed apps'

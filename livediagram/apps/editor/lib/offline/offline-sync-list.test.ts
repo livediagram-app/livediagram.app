@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// Sync Canvas leaves Browser Storage (Work Tracker 1198, docs/specs/006-document/offline-mode.md "Syncing in place"):
-// once the server has the canvas, its record and its row in This Browser's list are gone, so the Explorer lists it once,
+// Sync Canvas leaves Offline (Work Tracker 1198, docs/specs/006-document/offline-mode.md "Syncing in place"):
+// once the server has the canvas, its record and its row in Offline's list are gone, so the Explorer lists it once,
 // under its server home. And /new makes a first visit's canvas once: the guest token's round trip comes back to /new,
 // so it is fetched before the create ("Instant open"), never after, which left a second canvas behind here.
 import { readFileSync } from 'node:fs';
@@ -30,7 +30,7 @@ afterEach(() => {
   created.length = 0;
 });
 
-describe('Sync Canvas and Browser Storage', () => {
+describe('Sync Canvas and Offline', () => {
   it('drops the record and its row once the server has it, leaving the others', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateDocument({ id: 'synced', name: 'Roadmap' }, 1_000);

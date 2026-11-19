@@ -3,7 +3,7 @@
 // Who a card can be assigned to (docs/specs/026-plan/items.md "Who may do what"): the joined members of the plan's
 // team, the team whose library holds it, when your token names that team (liveworkspace/docs/specs/003-accounts/
 // accounts.md "Teams"; its people from the api, which reads them from liveworkspace). Never your other teams: a plan
-// in My Work, This Browser or shared from someone's My Work has no team, so nobody is asked for. Named as items
+// in My Work, Offline or shared from someone's My Work has no team, so nobody is asked for. Named as items
 // name people (hashed ids, docs/specs/026-plan/blueprints/item-store.md "Security and trust"), so the person picked
 // is the one the api signs their writes as. Fetched once a plan has Plan content (docs/specs/026-plan/plan-mode.md
 // "Cost"), and only when signed in: a guest has no teams. The mention list (useCommentMentions) reads the same team.

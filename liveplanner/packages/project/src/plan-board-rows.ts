@@ -96,7 +96,7 @@ export type CardPlaces = {
   ): { title: string; column: string | null } | null;
 };
 
-/** Where a plan's cards open, from its tabs in order: the Inbox's card rows, in the browser (This Browser's plans)
+/** Where a plan's cards open, from its tabs in order: the Inbox's card rows, in the browser (Offline's plans)
  *  and in the plan's Durable Object (what it pushes to the index) alike. */
 export function cardPlacesOf(
   tabs: readonly { id: string; name: string; elements: readonly Element[] }[],

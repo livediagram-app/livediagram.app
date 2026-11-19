@@ -70,7 +70,7 @@ account or guest id, the same on every device. It rides the roster as
 `ParticipantPresence.key`, which the room stamps from the session, never from
 the `hello`, and the room tells each session its own key (`collab-key`). A
 response naming any key but its sender's is dropped, from an Editor too. Before
-the room answers, and in a document only in This Browser, the editor records answers
+the room answers, and in a document only Offline, the editor records answers
 under this browser's own key (`livehuddle:v2:collab-key`, `ensureCollabKey`), as it
 did before keys were derived.
 

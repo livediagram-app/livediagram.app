@@ -175,7 +175,7 @@ describe('the delta carries what the whole save carries', () => {
   });
 });
 
-describe('a document in This Browser', () => {
+describe('a document kept Offline', () => {
   it('never sends a delta: it has no api', async () => {
     const tab = tabOf(Array.from({ length: 40 }, (_, i) => box(i)));
     await apiSaveTab('owner', 'local-1', tab);

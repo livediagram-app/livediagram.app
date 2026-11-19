@@ -1,5 +1,5 @@
 // Who an offline project's example cards are made by (docs/specs/026-plan/plan-templates.md "Example cards"): the
-// person making it, as every card they make names them (itemPersonId). A project in This Browser opens before identity
+// person making it, as every card they make names them (itemPersonId). A project kept Offline opens before identity
 // settles (docs/specs/006-project/offline-mode.md "Instant open"), so while it is still pending the cards are made
 // by the example team's Maya, as they would be by anyone else.
 import { itemPersonId, type ItemPerson } from '@liveplanner/items';

@@ -527,7 +527,7 @@ itemId })` is `<origin>/project/<id>[?s=<code>]` plus `cardHash`, keeping only t
   generic box drag moves the board). Not interactive: nothing stops propagation; double-click on a card opens it.
 - **Team people** (`useTeamPeople(ownerId, enabled, signedIn, teams, projectTeamId)`, `useEditorState`): the
   token's team whose id is `projectTeamId` (`editor-realtime.ts`, the plan's `team_id`), else none, so a personal,
-  This Browser, shared-from-My-Work or guest plan asks for nobody. One `apiTeamMembers` request for that team,
+  Offline, shared-from-My-Work or guest plan asks for nobody. One `apiTeamMembers` request for that team,
   joined members only (`teamMemberPerson`), each in their chosen presence colour, else Automatic (`presenceColourOf`). The mention list (`useCommentMentions`) picks the same team.
 - **Assignable people** (`usePlanSlice` `people`): `planPeople(self, teamPeople, assigned)` from
   `@liveplanner/items` (`plan-people.ts`): self, then team members, then every assignee a card holds

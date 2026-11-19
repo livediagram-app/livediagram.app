@@ -220,7 +220,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 ### A vote on a large board, measured
 
 Work Tracker 885. Headless Chromium against the static production export (`next build`, served by
-`scripts/e2e-stack.mjs` with `E2E_EDITOR_ONLY=1`), a This Browser document of 2,000 sticky notes (180 × 180,
+`scripts/e2e-stack.mjs` with `E2E_EDITOR_ONLY=1`), an offline document of 2,000 sticky notes (180 × 180,
 50 to a row) with a vote open, at Fit (Shift+1), then 40 ctrl+wheel steps in and 40 out at the canvas centre; each
 frame is a wheel event to the next animation frame, and main-thread time is the `TaskDuration` the CDP Performance
 domain adds over the 80 steps and the settle after them. Five alternating runs of each build on a shared, loaded

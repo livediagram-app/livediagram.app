@@ -13,7 +13,6 @@ import {
 import { BpmnMenuSection } from '@/components/palette/BpmnMenuSection';
 import { CardMenuSection } from '@/components/palette/CardMenuSection';
 import { ChipMenuSection } from '@/components/palette/ChipMenuSection';
-import { PointerNoteMenuSection } from '@/components/palette/PointerNoteMenuSection';
 import { TagColoursBlock } from '@/components/palette/TagColoursBlock';
 import { StackMenuSection } from '@/components/palette/StackMenuSection';
 import { BoundaryMenuSection } from '@/components/palette/BoundaryMenuSection';
@@ -91,14 +90,6 @@ export function ElementLayoutToolSections({
           ops={props.elementStyle}
           sectionProps={sectionProps}
           onEdit={props.onEditSequence}
-        />
-      ) : null}
-      {/* A pointer note's Detach (docs/specs/009-elements/pointer-note.md). */}
-      {shapeTarget?.shape === 'pointer-note' ? (
-        <PointerNoteMenuSection
-          target={shapeTarget}
-          ops={props.elementStyle}
-          sectionProps={sectionProps}
         />
       ) : null}
       {/* The card's slots (docs/specs/009-elements/card.md): band, title, meta line, media. */}

@@ -1,6 +1,6 @@
 // A card's comment threads (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "Comments"): many
 // conversations on a card, each stored once in its home plan and shown on every card it is on, in any plan. The
-// pure core the api, the editor and This Browser plans all apply: the shape, the automatic title, the writes, the
+// pure core the api, the editor and Offline plans all apply: the shape, the automatic title, the writes, the
 // face count, author redaction and the move from the old single thread a card held in `fields.comments`. Who may
 // do what is the caller's (the routes, the offline store); nothing here knows who is asking.
 
@@ -39,7 +39,7 @@ export type ThreadChange =
   | { kind: 'removeCard'; projectId: string; itemId: string }
   // One person's reaction on one comment, on or off (docs/specs/012-collaboration/comment-reactions.md): `by` is
   // their public collab key, `name` the name the server stamped, `person` their hashed person id where the server
-  // stamped it (a This Browser plan's own change has none). Not activity: the thread keeps its place.
+  // stamped it (an offline plan's own change has none). Not activity: the thread keeps its place.
   | {
       kind: 'react';
       commentId: string;

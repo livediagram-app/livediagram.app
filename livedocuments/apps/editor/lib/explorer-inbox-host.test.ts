@@ -51,7 +51,7 @@ const local: OfflineActivity = {
 };
 
 describe('the Inbox host', () => {
-  it('turns This Browser rows into the index’s shape, the reader standing in for their old ids', () => {
+  it('turns Offline rows into the index’s shape, the reader standing in for their old ids', () => {
     const rows = localInboxRows(local, 'user_me');
     expect(rows.actions[0]).toMatchObject({
       app: 'livedocuments',

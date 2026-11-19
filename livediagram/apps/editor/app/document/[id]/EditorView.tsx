@@ -86,6 +86,8 @@ import {
   apiFetch as itemApiFetch,
   apiHeaders as itemApiHeaders,
 } from '@/lib/api/core';
+import { useOfflineConversions } from '@/hooks/persistence/useOfflineConversion';
+import { useVisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 
 // Loaded when first drawn (docs/specs/016-platform/web-performance.md): search while it is open. Its code is
 // fetched once the editor is idle (EDITOR_SURFACE_CODE), so opening it does not wait.
@@ -109,7 +111,7 @@ const trackSheetLink = (event: SheetLinkEvent): void =>
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-document/offline-mode.md): a document saved only in this browser. Drives the
-  // "This Browser" header badge and hides server-only actions (Share).
+  // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDocument(ctx.documentId);
   // Snapshots (docs/specs/013-workspace/snapshots.md): the footer's button and dialog, for an Editor of the whole item.
   const snapshotsDoor = useEditorSnapshotsDoor({
@@ -264,8 +266,45 @@ export function EditorView() {
     selectionStore: ctx.selectionStore,
     deck: ctx.slideDeck,
   });
+  // The Share legend's Offline stop takes the canvas offline, after Take Offline's confirm, for the person whose
+  // Explorer menu would offer it: one who may share it (owner or joined team member), not through a link or the
+  // Community, and not already offline (hooks/persistence/useOfflineItemMenu.tsx).
+  const offlineOwnerId =
+    ctx.selfParticipant?.id === 'self' ? null : (ctx.selfParticipant?.id ?? null);
+  const { takeOffline, syncToCloud } = useOfflineConversions(offlineOwnerId);
+  const onTakeOffline =
+    ctx.canShareDocument &&
+    !isOffline &&
+    !sessionShareCode &&
+    !sessionCommunity &&
+    offlineOwnerId &&
+    documentId
+      ? () =>
+          void takeOffline({ id: documentId, name: ctx.documentName?.trim() || 'Untitled canvas' })
+      : undefined;
+  // Its other stops (useVisibilityActions), for the same person: Private syncs an offline canvas, Team opens the
+  // Explorer panel's Change Folder on it, Everyone opens Share on the Community tab.
+  const canvasName = ctx.documentName?.trim() || 'Untitled canvas';
+  const visibilityActions = useVisibilityActions({
+    manage: Boolean(
+      ctx.canShareDocument &&
+      !sessionShareCode &&
+      !sessionCommunity &&
+      offlineOwnerId &&
+      documentId,
+    ),
+    offline: isOffline,
+    team: !!ctx.documentTeamId,
+    community: !!headerCommunity,
+    sync: documentId ? () => void syncToCloud({ id: documentId, name: canvasName }) : undefined,
+    openShare: () => ctx.setShareDialogOpen(true),
+    // Where the Community is off the dialog has no such tab and opens on Passes.
+    openCommunity: () => ctx.openShareOn('app'),
+  });
   const header = editorViewHeader(ctx, {
     isOffline,
+    onTakeOffline,
+    visibilityActions,
     headerCommunity,
     isMobileViewport,
     landscapeShown: landscapeBars.shown,

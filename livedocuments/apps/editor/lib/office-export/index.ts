@@ -35,7 +35,7 @@ export type OfficeExportResult =
   | { ok: false; cancelled: true };
 
 export const OFFICE_EXPORT_MESSAGES: Readonly<Record<OfficeExportFailure, string>> = {
-  draw: "This Browser couldn't draw a picture for the file. Try Chrome, Edge or Firefox, or a PDF.",
+  draw: "This browser couldn't draw a picture for the file. Try Chrome, Edge or Firefox, or a PDF.",
   gone: 'This tab has no pages to export any more.',
   failed: "Couldn't make the file. Try again, or export a PDF.",
 };

@@ -154,7 +154,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 // that pass it: there is one mode.
 // Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context. Without one the document is
 // made on livehuddle (serverNewUrl), so a spec can seed it, share it or watch its saves; pass `'/new'` for a guest's
-// own create, which keeps it in This Browser.
+// own create, which keeps it Offline.
 export async function createInMode(page: Page, _mode: string, url?: string): Promise<string> {
   await page.goto(url ?? (await serverNewUrl(page)));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
@@ -194,7 +194,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
   await start.waitFor({ state: 'detached' });
 }
 
-// A /new address that makes the document on livehuddle. A guest's own /new makes it in This Browser
+// A /new address that makes the document on livehuddle. A guest's own /new makes it Offline
 // (docs/specs/006-document/save-locations.md "The default depends on who is creating"), where the index holds no item
 // and so gives no grant (seedTab's grant request answers 404). A `?folder=` context names a place on the server, so
 // /new makes it there whoever is creating. The page becomes a minted guest (its token where the app keeps it, so /new

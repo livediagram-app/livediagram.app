@@ -71,7 +71,7 @@ One view lists everything the person can restore, grouped:
 
 - **Your designs**: the personal Trash.
 - **One group per team** the person has joined, named after the team.
-- **This Browser only**: the local Trash of offline designs, labelled as such.
+- **Offline only**: the local Trash of offline designs, labelled as such.
 
 Each row shows the design's name, when it was deleted, and how many days are
 left before it is purged. A design the clean-up moved says so instead: "Moved

@@ -94,7 +94,7 @@ function Rows(props: {
 const row = (name: string) => screen.getByRole('button', { name });
 
 describe('History and Webhooks in Tools', () => {
-  it('shows a guest on an item in This Browser both, badged Sign In then Sync Canvas, asking to sign in first', () => {
+  it('shows a guest on an item kept Offline both, badged Sign In then Sync Canvas, asking to sign in first', () => {
     render(<Rows signedIn={false} offline={{ sync: vi.fn(), ready: true }} />);
     expect(row('History').getAttribute('data-badges')).toBe('Sign In, Sync Canvas');
     expect(row('Webhooks').getAttribute('data-badges')).toBe('Sign In, Sync Canvas');

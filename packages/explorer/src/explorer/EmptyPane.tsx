@@ -132,7 +132,7 @@ export function emptyCopy(
     case 'offline':
       return {
         icon: <BrowserIcon />,
-        title: 'Nothing in Browser Storage',
+        title: 'Nothing kept Offline',
         description: `${w.many} you keep only in this browser show up here.`,
         cta: false,
       };

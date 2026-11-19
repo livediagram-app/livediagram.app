@@ -163,7 +163,7 @@ dashboard on liveworkspace.app shows them under its own app.
   call beside the Space. Desktop apps, calendar integrations and large broadcast events stay theirs.
 - **Our ground**: free with no tiers, MIT open source, no sign-up even to create or to talk, any browser with nothing
   to install, a Space that is also a board (sticky notes, text, stickers, a Timer and a Stopwatch), the three share
-  roles, the REST API, Google Drive sync and This Browser. livehuddle has no MCP server or CLI, so a page never
+  roles, the REST API, Google Drive sync and Offline. livehuddle has no MCP server or CLI, so a page never
   offers one.
 - **Migration answers are honest.** There is no importer for any of them; the answer is a template (Virtual Office,
   Coworking Space) and the office pieces.

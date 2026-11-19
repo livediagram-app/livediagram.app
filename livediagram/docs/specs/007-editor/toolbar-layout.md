@@ -11,7 +11,7 @@ Excalidraw's tool bar works. In Diagram and Workshop the strip is the **category
 
 ```
  ☰ ⬡|✎   ┌──────────────────────────────────────────────────────────────────────┐
- │        │ [↖ ▾] │ Shapes Write Draw │ Diagrams Concepts Layout │ Icons … │ [🔍] │   Diagram, Workshop
+ │        │ [↖ ▾] │ Shapes Write Draw │ Concepts Layout │ Icons … │ [🔍] │            Diagram, Workshop
  ▼        └──────────────────────────────────────────────────────────────────────┘
  Explorer            (Undo/Redo, Layers, zoom: the bottom-right cluster)
 ```
@@ -48,23 +48,25 @@ under the pointer as a category is switched.
   named Draw would hold more words and comments than strokes, so its name would not say what was inside. Write holds the
   words and the notes about the canvas; Draw holds only what is made by a stroke or a drag: the pens, Polygon, Arrow
   and Line.
-- **Diagram splits Build into Diagrams and Layout**: **Diagrams** holds the structures that grow as you type (Mind
-  node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** what arranges and labels them (Lane, Frame,
-  Stack, Boundary, Timeline, then Diagram key, Card, Badge, Step number), after Concepts: what you build comes first, the ideas laid out beside it, then what it is arranged in. Fifteen tiles under one name mixed what
-  you build with what you build it in. Workshop offers the same **Layout**: a board is laid out in frames and
+- **Diagram spreads Build over Concepts and Layout** (owner, 2026-11-19; a **Diagrams** category held the builders
+  until then): **Concepts** opens with a **Diagrams** group, the structures that grow as you type (Mind node, Org
+  chart, Flowchart, Sequence), before the concept graphics in three groups (Layers, Process, Relationships); **Layout** holds what arranges and labels them:
+  **Containers** (Lane, Frame, Stack, Boundary, Table), **Parts** (Diagram key, Card, Badge, Step number, then
+  **Infrastructure**, a tile whose popover offers the C4 tiles and Entity) and **Pictures**. Fifteen tiles under one name mixed what you
+  build with what you build it in. Workshop offers the same **Layout**: a board is laid out in frames and
   lanes as a diagram is.
 - **Session** (Workshop): the Collaborate categories Tools, Record, React, Selection Mode and Navigate gathered
   into one category, browsed as Icons is (the two-pane browse, below), searchable across all of them. **Ask** keeps
   its own button beside it: putting a question to the room is the session's main act, not one of its tools.
 - **The bars:**
 
-  | Mode     | Bar                                                            |
-  | -------- | -------------------------------------------------------------- |
-  | Diagram  | Shapes, Write, Draw · Diagrams, Concepts, Layout · Icons, Tech |
-  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons · Data     |
+  | Mode     | Bar                                                        |
+  | -------- | ---------------------------------------------------------- |
+  | Diagram  | Shapes, Write, Draw · Concepts, Layout · Icons, Tech       |
+  | Workshop | Shapes, Write, Draw · Layout · Ask, Session · Icons · Data |
 
-  Media is not a category of its own in either mode: its Image and Avatar close Layout, as a **Pictures** group
-  after its Containers and Parts (owner, 2026-11-16). The Library is not on the bar either: it is the icon button
+  Media is not a category of its own in either mode: its Image and Avatar close Layout, side by side as one **Pictures** group
+  after its Containers and Parts (owner, 2026-11-16; one group since 2026-11-19). The Library is not on the bar either: it is the icon button
   beside Search ([Libraries](../../../../liveworkspace/docs/specs/006-media/libraries.md)).
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
@@ -123,9 +125,11 @@ scrolling when long:
 Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Charts`, `Meters`; `Desktop`,
   `Mobile`; `Pictures`, `Embeds`, `People`; ...). A category shows its groups only when every one is named, else one
   block, so a layout whose dividers fall elsewhere never shows half its groups headed and half bare.
-- **Optional groups** (owner, 2026-11-18): a notation group a specialist wants and most people scroll past (today
-  only Diagram's **BPMN**) shows as a **header row, closed by default**, so the flyout stays clean until someone
-  asks for more. The row is one button: the group's name and hairline as any group heading, its tile count as a
+- **Optional groups** (owner, 2026-11-18; Flowchart joined 2026-11-19): a notation group a specialist wants and most
+  people scroll past (Shapes' **Flowchart** and **More Shapes** in every mode, and Diagram's **BPMN**) shows as a **header row, closed by default**, so the flyout stays clean until someone
+  asks for more. With a mouse, **hovering** a closed group **peeks** it open until the pointer leaves the group;
+  pressing one of its tiles (to place or drag it) or its row keeps it open, as a click does (owner, 2026-11-19). The
+  row is one button: the group's name and hairline as any group heading, its tile count as a
   `CountBadge`, and a chevron that turns when open; a soft plate while closed, flat once open. Pressing it opens the
   tiles in place, under the row, and pressing it again closes them. **Open or closed is remembered in this browser**
   (`livediagram:v2:palette-group-open:<group>` in localStorage, `useStoredOpen` in `@liveworkspace/workbench`), so
@@ -133,7 +137,7 @@ Shapes`; `Pens`, `Outlines`, `Connectors`; `Diagrams`, `Layout and Parts`; `Char
   closes, for the visit. The row is a button with `aria-expanded` and `aria-controls`; a closed body is inert and
   hidden from assistive tech, so the arrow keys stop on the row and skip its tiles, and Enter or Space toggles it.
   On a touch screen the row is 44 px tall. **Search** ("Search: every element type") lists the group's tiles
-  whether it is open or not. Opening one reports `UI`/`Opened`/`<Group>Group` (`BpmnGroup`); a close reports
+  whether it is open or not. Opening one reports `UI`/`Opened`/`<Group>Group` (`FlowchartGroup`, `MoreShapesGroup`, `BpmnGroup`); a close reports
   nothing. Another optional group needs only its first tile's entry in the flyout's list of optional groups.
 - **Pictures or cards**, by the palette's own rule ([Rows, not tiles](../010-palette/palette-top-level-categories.md#rows-not-tiles-for-most-categories)):
   Shapes as a five-column grid of 72 px picture tiles with their names under them; every other category as cards,
@@ -312,16 +316,18 @@ every add.
 
 **Fixed dividers** split a category into its groups of related tiles (a tile's `dividerAfter`):
 
-- **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium) |
-  the rest (Cloud to Bubble); Diagram's adds **BPMN** (Start Event to Association,
+- **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium), an optional group closed until opened |
+  the rest (Cloud to Bubble), also optional; Diagram's adds **BPMN** (Start Event to Association,
   [BPMN](../009-elements/bpmn.md)) as a fourth group, an optional one, closed until opened ("Optional groups").
 - **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note and Callout to the notes, then Comment,
   Action as a third group, **Comments**.
 - **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
 - **Build**: Mind node, Table | Lane, Frame, Timeline.
-- **Diagrams** (Diagram): Mind node, Org chart, Flowchart, Sequence, Table | Entity.
-- **Layout** (Diagram): Lane, Frame, Stack, Boundary, Timeline | Diagram key, Card, Badge, Step number, headed
-  **Containers** and **Parts** in the flyout.
+- **Concepts** (Diagram): Mind node, Org chart, Flowchart, Sequence | Layer stack, Pyramid, Onion | Funnel,
+  Chevrons, Timeline, Sankey | Cycle, Hub and spoke, headed **Diagrams**, **Layers**, **Process** and
+  **Relationships** in the flyout (owner, 2026-11-19).
+- **Layout** (Diagram): Lane, Frame, Stack, Boundary, Table | Diagram key, Card, Badge, Step number,
+  Infrastructure (popover: the C4 tiles, Entity) | Image, Avatar, headed **Containers**, **Parts** and **Pictures** in the flyout.
 - **Components**: the cards (Code, Checklist, Entity) | the website blocks.
 - **Media** (search only now: its Image and Avatar sit in Layout's Pictures group): Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).

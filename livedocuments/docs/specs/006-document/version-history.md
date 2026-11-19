@@ -145,7 +145,7 @@ it has no Make a Copy.
 
 - **Version History** lives inside **History** in the editor footer's **Tools** menu ([The footer's Tools
   menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "History, with Snapshots in it"; owner,
-  2026-11-17), for every role, on a document stored on the server (not in This Browser, not in an embed or workbench
+  2026-11-17), for every role, on a document stored on the server (not Offline, not in an embed or workbench
   frame), once the document is up: an **Open Version History** button over History's timeline, under the snapshots, or
   under History's sign-in prompt. Where History holds nothing else for this person, the History row opens Version
   History straight away. Either way it opens **Version History** on the open tab and closes Tools. The header carries no History. The Explorer's bottom bar has none.

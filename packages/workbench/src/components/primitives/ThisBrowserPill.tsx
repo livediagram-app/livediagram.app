@@ -10,17 +10,17 @@ import {
   THIS_BROWSER_TONE,
 } from '@liveworkspace/explorer/this-browser';
 
-// The This Browser pill (each product's docs/specs/006-*/offline-mode.md#this-browser-pill): every row and
+// The Offline pill (each product's docs/specs/006-*/offline-mode.md#offline-pill): every row and
 // card of an item saved only in this browser carries it, in every editor. An icon and words, never
 // colour alone; what it means on hover, on focus and to a screen reader; and a link to the editor's
 // Offline Mode guide. Inside a single control (a search result) it is a plain label carrying the
-// same sentence, since a link cannot sit inside a button. Its words and teal tone are the shared
+// same sentence, since a link cannot sit inside a button. Its words and grey tone are the shared
 // Explorer's (`@liveworkspace/explorer/this-browser`), so the editor's pill and the Explorer's agree.
 
 export const THIS_BROWSER_LABEL = THIS_BROWSER_COPY.label;
 export const THIS_BROWSER_DESCRIPTION = THIS_BROWSER_COPY.sentence;
-// The pill's glyph, a browser window.
-const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
+// The Offline glyph, also the visibility legend's (chrome/share-states, VisibilityLegend).
+export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
 
 const PILL = `optical-edges inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 ${THIS_BROWSER_TONE}`;
 

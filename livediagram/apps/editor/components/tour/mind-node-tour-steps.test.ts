@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
 import { mindNodeTourSteps, type MindNodeTourContext } from './mind-node-tour-steps';
+import { kindToolSelector } from './concept-element-tour-steps';
 
 const ctxOf = (over: Partial<MindNodeTourContext> = {}): MindNodeTourContext => ({
   elementId: 'mn',
@@ -31,10 +32,8 @@ describe('mindNodeTourSteps', () => {
     const steps = mindNodeTourSteps(ctxOf());
     const sel = (id: string) => steps.find((s) => s.id === id)!.selector!(api);
     expect(sel('node')).toBe('[data-element-id="mn"]');
-    expect(sel('child')).toBe('[data-testid="selection-popover"] button[aria-label="Add Child"]');
-    expect(sel('sibling')).toBe(
-      '[data-testid="selection-popover"] button[aria-label="Add Sibling"]',
-    );
+    expect(sel('child')).toBe(kindToolSelector('Add Child'));
+    expect(sel('sibling')).toBe(kindToolSelector('Add Sibling'));
   });
 
   it('names the keys on a keyboard, and only the buttons on a touch screen', () => {

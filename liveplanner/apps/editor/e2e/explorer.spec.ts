@@ -3,7 +3,7 @@ import { expect, expectNoPageErrors, test } from './fixtures';
 
 // The shared Explorer (@liveworkspace/explorer, liveworkspace/docs/specs/004-index/one-explorer.md) as liveplanner hosts it at
 // /explorer: what it lists is the index's, reached through /api/index on this origin, beside this browser's own
-// plans (Browser Storage). One guest, one plan, every verb a person uses on it: make it (in This Browser, a guest's
+// plans (Offline). One guest, one plan, every verb a person uses on it: make it (Offline, a guest's
 // default), sync it to liveplanner, rename it, open it, find it in Recent, file it in a new folder, delete it
 // and restore it.
 
@@ -59,7 +59,7 @@ test('a guest makes, syncs, renames, opens, files, deletes and restores a plan',
   pageErrors,
 }) => {
   // A new guest's Explorer Home is a first run, so its hero is the welcome (liveworkspace/docs/specs/004-index/
-  // one-explorer.md): its Start Blank goes through /new, which makes a guest's plan in This Browser and opens it
+  // one-explorer.md): its Start Blank goes through /new, which makes a guest's plan kept Offline and opens it
   // (docs/specs/006-project/save-locations.md "The default depends on who is creating").
   await page.goto('/explorer');
   await page.getByRole('link', { name: 'Start Blank', exact: true }).first().click();
@@ -68,10 +68,10 @@ test('a guest makes, syncs, renames, opens, files, deletes and restores a plan',
   const id = new URL(page.url()).pathname.split('/').pop()!;
   await expect.poll(() => thisBrowserList(page)).toContain(id);
 
-  // The Explorer lists it under Browser Storage.
+  // The Explorer lists it under Offline.
   await page.goto('/explorer');
   await sidebar(page)
-    .getByRole('button', { name: /^Browser Storage/ })
+    .getByRole('button', { name: /^Offline/ })
     .click();
   await expect(page.locator(`[data-this-browser-row="${id}"]`)).toBeVisible();
 

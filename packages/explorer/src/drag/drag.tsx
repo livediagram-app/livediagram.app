@@ -7,8 +7,8 @@
 // optimistic move and rollback) and says where it went, with an Undo. Anything that drags also drops on the Trash,
 // which wakes as a target for the whole drag: an item through its own Delete (with its Undo), one of the person's
 // folders through Delete Folder (with its confirmation). Folders are not moved by dragging. An item kept only in this
-// browser (This Browser, Home's Most Used and Recent) drags too, and each target means what it can for something the account
-// doesn't hold (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser on Home"): the Trash deletes it for good after
+// browser (Offline, Home's Most Used and Recent) drags too, and each target means what it can for something the account
+// doesn't hold (liveworkspace/docs/specs/004-index/one-explorer.md "Offline on Home"): the Trash deletes it for good after
 // a confirmation where the host can, and a place asks to sync it to the account first.
 //
 // Drags carry custom types, so dropping one outside any target (the page, the URL bar, another app) does nothing
@@ -49,7 +49,7 @@ export const TRASH_GULP_MS = 250;
 export const TRASH_DROP_COPY = { waiting: 'Drop to Trash', over: 'Let go to trash it' } as const;
 
 export type DropPlace = { teamId: string | null; folderId: string | null };
-/** A place in This Browser (one-explorer.md "This Browser, a Space"): one of its folders, or its root (null). Only an
+/** A place kept Offline (one-explorer.md "Offline, a Space"): one of its folders, or its root (null). Only an
  *  item kept in this browser drops there. */
 export type LocalDropPlace = { local: string | null };
 
@@ -112,7 +112,7 @@ export const THIS_BROWSER_DROP_COPY = {
     `${quoted(name)} is kept only in this browser. Sign in and sync it to your account to put it in a folder.`,
 } as const;
 
-/** Moves an item kept in this browser into one of This Browser's folders (null: its root), saying where with an
+/** Moves an item kept in this browser into one of Offline's folders (null: its root), saying where with an
  *  Undo, as an account item's move does. The menu's Move to Folder and a drop both come here. */
 export function useMoveLocal(): (item: ThisBrowserItem, folderId: string | null) => void {
   const { app, toast } = useExplorer();
@@ -133,7 +133,7 @@ export function useMoveLocal(): (item: ThisBrowserItem, folderId: string | null)
   );
 }
 
-/** What a drop does with an item kept only in this browser, through This Browser's own verbs: the Trash asks before
+/** What a drop does with an item kept only in this browser, through Offline's own verbs: the Trash asks before
  *  deleting it for good (`remove`), and a place asks to sync it into the account first (`sync`, or `syncHref` on
  *  the page). Where the host has neither, the drop says why, rather than doing nothing. */
 function useThisBrowserDrop() {
@@ -233,7 +233,7 @@ export function useDropTarget(
     if (to === null) return false;
     const payload = store.get();
     const kind = payload?.kind;
-    // A place in This Browser takes only its own items, and not where one already is.
+    // A place kept Offline takes only its own items, and not where one already is.
     if (isLocalPlace(to))
       return (
         payload?.kind === 'local' &&

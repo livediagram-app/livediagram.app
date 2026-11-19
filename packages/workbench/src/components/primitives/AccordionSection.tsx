@@ -22,6 +22,7 @@ export function AccordionSection({
   titleClassName = 'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400',
   chevronClassName,
   bodyClassName = 'flex flex-col gap-2 pb-2',
+  motionClassName = 'duration-short ease-out',
   headerProps,
   children,
 }: {
@@ -35,6 +36,8 @@ export function AccordionSection({
   titleClassName?: string;
   chevronClassName?: string;
   bodyClassName?: string;
+  // The body's open and close easing (its duration and curve).
+  motionClassName?: string;
   // More for the header button (a data hook a host's arrow keys walk by); never its own type, click, expanded
   // state, controls or class.
   headerProps?: Omit<
@@ -67,7 +70,7 @@ export function AccordionSection({
         // order (Tab no longer lands on a hidden switch), aria-hidden out of the accessibility tree.
         inert={!open}
         aria-hidden={!open || undefined}
-        className={`grid transition-[grid-template-rows] duration-short ease-out ${
+        className={`grid transition-[grid-template-rows] ${motionClassName} ${
           open ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'
         }`}
       >

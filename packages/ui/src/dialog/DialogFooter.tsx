@@ -22,7 +22,7 @@ import { ToolFooter } from '../ToolFooter';
 // The buttons are a children slot rather than props because no two footers
 // agree on them: one Remove link, Cancel + Save, Cancel + a danger Delete,
 // and Share's row of three.
-// Drawn inside Tools (a tool that is a dialog: Publish as Roadmap, Email to Board, ...), the row becomes the tools' one
+// Drawn inside Tools (a tool that is a dialog: Publish Roadmap, Email to Board, ...), the row becomes the tools' one
 // footer (owner, 2026-11-17: every tool's buttons look alike, Walkthroughs' way): pinned at the foot, each button full
 // width in ToolFooterButton's size, stacked in the row's order so the main action, written last, sits at the bottom.
 const INLINE_BUTTONS =

@@ -1,6 +1,6 @@
 // The place that holds an item, for an editor's door from an open item (liveworkspace/docs/specs/004-index/one-explorer.md
 // "Opening from an open item"): the editor hands over only the item's id (`/explorer?item=<id>`) and the Explorer
-// works out where it lives, from This Browser's list or the index, the same way for every app.
+// works out where it lives, from Offline's list or the index, the same way for every app.
 import type { IndexClient, Item } from '@liveworkspace/index-client';
 import type { ThisBrowserItem } from './this-browser';
 import type { ExplorerView } from './views';
@@ -30,12 +30,12 @@ export function viewOfItem(item: Placed, viewer: ItemViewer): ExplorerView {
   return item.folderId ? { kind: 'folder', id: item.folderId } : { kind: 'all' };
 }
 
-/** The view that holds an item kept only in this browser: This Browser, at its local folder. */
+/** The view that holds an item kept only in this browser: Offline, at its local folder. */
 export function viewOfLocalItem(item: Pick<ThisBrowserItem, 'folderId'>): ExplorerView {
   return item.folderId ? { kind: 'offline', folder: item.folderId } : { kind: 'offline' };
 }
 
-/** The place that holds item `id`: This Browser's when this browser keeps it (no request), else the index's answer;
+/** The place that holds item `id`: Offline's when this browser keeps it (no request), else the index's answer;
  *  null when the index can't answer it (gone, or not the person's to reach), so the page opens as it would have. */
 export async function resolveItemView(
   id: string,

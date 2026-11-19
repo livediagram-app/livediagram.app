@@ -178,7 +178,7 @@ there leaves placeholders and a count, never a failed import.
 
 `naturalWidth` / `naturalHeight` are captured on load so a future "Reset to natural size" affordance can snap back to them, but that menu entry is **not yet wired** (the right-click context menu currently exposes Link / Remove Icon / layer order / Note / Comment only). Aspect lock defaults to true on first paint (the user can explicitly unlock via the Shape accordion's existing aspect-lock toggle, which works on ImageElement the same way it works on shapes).
 
-**A `data:` id is its own bytes.** Every read of one picture's bytes (`apps/live/lib/api/images.ts` `fetchImage`, behind `apiFetchImageBlob`, `apiFetchImageDataUrl` and `apiFetchImageBlobUrl`) decodes a `data:` id in place and never sends it to `GET /api/images/<id>`, so Open a Picture, Place a Picture and Edit as Photo work on a This Browser design.
+**A `data:` id is its own bytes.** Every read of one picture's bytes (`apps/live/lib/api/images.ts` `fetchImage`, behind `apiFetchImageBlob`, `apiFetchImageDataUrl` and `apiFetchImageBlobUrl`) decodes a `data:` id in place and never sends it to `GET /api/images/<id>`, so Open a Picture, Place a Picture and Edit as Photo work on an offline design.
 
 ### Visual export (PNG / SVG / PDF)
 

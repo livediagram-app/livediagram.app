@@ -157,7 +157,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     'A design was opened, counted on every open (including a page refresh and the first open of a design just created).',
   'Document|Moved|': 'A design was moved into (or out of) a folder.',
   'Document|Moved|SavedToCloud':
-    'Someone synced a design in This Browser to their account, turning it into a cloud design kept on the server.',
+    'Someone synced a design kept Offline to their account, turning it into a cloud design kept on the server.',
   'Document|Moved|TakenOffline':
     'Someone took a design offline, moving it out of their account into this browser only.',
   'Document|Redone|': 'Someone hit Redo on a design edit.',

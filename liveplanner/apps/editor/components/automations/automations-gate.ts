@@ -2,7 +2,7 @@
 // saved to an account, signed in. A Participant, a Viewer, a tab-scoped link and an embed see no button and no Run
 // Rule; the api refuses them all the same (403 `automations_need_editor`), so this is presentation, never the rule.
 // Whoever could edit the plan but for where it lives or who they are still sees the button, which opens a gate
-// (automationsGateFor): Sync Plan on a plan in This Browser, Sign In for a guest. Pure.
+// (automationsGateFor): Sync Plan on a plan kept Offline, Sign In for a guest. Pure.
 
 import type { AccessLevel } from '@liveplanner/api-schema';
 import type { AutomationsScope } from './automations-client';
@@ -41,7 +41,7 @@ export function automationsScopeFor(input: GateInput): AutomationsScope | null {
 }
 
 /** What stands before the screen for someone who could edit the plan: Sign In for a guest (once sign-in has answered),
- *  then Sync Plan on a plan in This Browser, else nothing. */
+ *  then Sync Plan on a plan kept Offline, else nothing. */
 export type AutomationsGateKind = 'sync' | 'sign_in';
 export function automationsGateFor(input: GateInput): AutomationsGateKind | null {
   if (!canEditWhole(input)) return null;

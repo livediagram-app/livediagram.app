@@ -1,9 +1,9 @@
 'use client';
 
-// This Browser's row in the sidebar's Spaces group (one-explorer.md "This Browser, a Space"): after My Work and the
+// Offline's row in the sidebar's Spaces group (one-explorer.md "Offline, a Space"): after My Work and the
 // teams, shown while this browser holds a live item or a local folder (or while its view is open, so the highlight
 // never vanishes), with the count of live items and its folders below it, nested as My Work's are. Each row takes a
-// This Browser item dropped on it (the root, or that folder), carries its menu and renames in place.
+// Offline item dropped on it (the root, or that folder), carries its menu and renames in place.
 
 import { useLayoutEffect } from 'react';
 import { localChildren, localPath, type ThisBrowserFolder } from '../../this-browser';
@@ -36,7 +36,7 @@ export function ThisBrowserSpaceRow({
   const menu = useRowMenu();
   const onView = view.kind === 'offline';
   const open = onView ? (view.folder ?? null) : null;
-  // The current local folder's rows are open: This Browser's, and each folder down to it (itself too).
+  // The current local folder's rows are open: Offline's, and each folder down to it (itself too).
   const path = localPath(folders, open)
     .map((f) => localKey(f.id))
     .join('\n');
@@ -55,7 +55,7 @@ export function ThisBrowserSpaceRow({
       depth={0}
       dropTo={{ local: null }}
       badge={live.length || undefined}
-      badgeLabel={`${live.length} in Browser Storage`}
+      badgeLabel={`${live.length} kept Offline`}
       expandable={roots.length > 0}
       expanded={expanded.has(LOCAL_ROW_KEY)}
       onToggleExpand={() => toggleSpace(LOCAL_ROW_KEY)}

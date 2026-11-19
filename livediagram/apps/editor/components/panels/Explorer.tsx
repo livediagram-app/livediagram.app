@@ -93,7 +93,7 @@ function ExplorerImpl({
     }),
     [accountUserId, accountDisplayName, communityOn, guestId],
   );
-  // A guest's too: their This Browser items' rows are theirs (lib/explorer-inbox-host.tsx).
+  // A guest's too: their Offline items' rows are theirs (lib/explorer-inbox-host.tsx).
   const inboxOwner = accountUserId ?? guestId ?? null;
   const inboxBase = useMemo(() => explorerInboxHost(inboxOwner), [inboxOwner]);
   // The pane's verbs: this app's threads, and an action on the open canvas's active tab.
@@ -121,7 +121,7 @@ function ExplorerImpl({
 
   // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
   const shown = popoverOpen === true;
-  // Kept only in this browser? Then the index is not asked and the card is This Browser's, with its Browser Storage
+  // Kept only in this browser? Then the index is not asked and the card is Offline's, with its Offline
   // pill, before the list has heard of it too (one-explorer.md "The Current card"). An opening asks the index again
   // while it had nothing for the canvas (a new one registered since).
   const offline = useIsOfflineDocument(currentDocumentId ?? null);
@@ -228,7 +228,7 @@ function ExplorerImpl({
           shareUrl={shareUrl}
           share={shareHost}
           inbox={inboxHost}
-          // The canvases kept only in this browser, which no index list holds: This Browser on the rail, in place.
+          // The canvases kept only in this browser, which no index list holds: Offline on the rail, in place.
           thisBrowser={thisBrowser}
           onOrganise={trackOrganise}
           itemMenu={itemMenu}

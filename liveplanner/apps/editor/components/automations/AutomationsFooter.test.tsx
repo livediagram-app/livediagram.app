@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/automations.md "Where it lives" and "Who may do what": the footer's Automations button is an
 // Editor of the whole plan's (a Participant, a Viewer, a tab link and an embed see none), its amber dot says a rule
-// paused, and it opens the screen. On a plan in This Browser it opens Share's sync gate with the Automations copy,
+// paused, and it opens the screen. On a plan kept Offline it opens Share's sync gate with the Automations copy,
 // and once synced goes on to the screen. The host reads the list once the plan settles.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -97,8 +97,8 @@ describe('the Automations button', () => {
     ['a Viewer', { level: 'view' as const, structureReadOnly: true }],
     ['a tab-scoped link', { scope: { ...ITEMS, tabId: 't1' } }],
     ['an embed', { embed: true }],
-    ['a Viewer of a plan in Browser Storage', { offline: true, level: 'view' as const }],
-    ['an embedded plan in Browser Storage', { offline: true, embed: true }],
+    ['a Viewer of a plan kept Offline', { offline: true, level: 'view' as const }],
+    ['an embedded plan kept Offline', { offline: true, embed: true }],
   ])('is not drawn for %s', (_who, over) => {
     render(<Footer {...EDITOR} {...over} />);
     expect(automationsRow()).toBeNull();
@@ -145,7 +145,7 @@ describe('the Automations button', () => {
     expect(badge.className).toContain('text-amber-950');
   });
 
-  it('asks to sync a plan in This Browser first, as Share does, then goes on to the screen', async () => {
+  it('asks to sync a plan kept Offline first, as Share does, then goes on to the screen', async () => {
     vi.useRealTimers();
     const sync = vi.fn(async () => {});
     render(<Footer {...EDITOR} offline sync={sync} />);

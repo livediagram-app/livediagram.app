@@ -94,6 +94,7 @@ describe('buildPaletteSearchItems', () => {
 
   it('emits no duplicate ids', () => {
     const ids = buildPaletteSearchItems().map((i) => i.id);
+    expect(ids.filter((id, n) => ids.indexOf(id) !== n)).toEqual([]);
     expect(ids.length).toBe(new Set(ids).size);
   });
 

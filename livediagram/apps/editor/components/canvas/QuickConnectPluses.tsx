@@ -2,6 +2,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   canAppendWebRow,
   isEntity,
+  isConceptShape,
   isFlowchartStep,
   type Element,
   type Rect,
@@ -9,26 +10,7 @@ import {
 import type { QuickConnectDirection, QuickConnectKind } from '@/lib/canvas';
 import { QuickConnectRing } from '@/components/canvas/QuickConnectRing';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
-
-// The ring action each row-carrying web component offers (docs/specs/009-elements/web-components-and-no-groups.md).
-const WEB_ROW_ACTION: Partial<Record<string, { label: string; description: string }>> = {
-  'stat-row': { label: 'Add Stat', description: 'Add another KPI card to the row.' },
-  process: { label: 'Add Step', description: 'Add another step to the end of the process.' },
-  'site-header': { label: 'Add Link', description: 'Add another link to the header.' },
-  card: { label: 'Add Tag', description: 'Add a tag chip along the bottom of the card.' },
-  // Concept graphics (docs/specs/009-elements/concept-graphics.md).
-  'layer-stack': {
-    label: 'Add Layer',
-    description: 'Add another layer to the bottom of the stack.',
-  },
-  pyramid: { label: 'Add Tier', description: 'Add another tier to the pyramid.' },
-  cycle: { label: 'Add Step', description: 'Add another step to the cycle.' },
-  hub: { label: 'Add Satellite', description: 'Add another satellite round the hub.' },
-  onion: { label: 'Add Ring', description: 'Add another ring round the outside.' },
-  chevrons: { label: 'Add Stage', description: 'Add another stage to the end.' },
-  // Missing until October 2026, so a timeline's ring offered no Add Milestone (concept-graphics.md promises one).
-  'timeline-rail': { label: 'Add Milestone', description: 'Add another milestone to the end.' },
-};
+import { WEB_ROW_ACTION } from '@/lib/web-row-actions';
 
 // The four quick-connect "+" buttons around a single selected element (docs/specs/008-canvas/canvas-and-palette.md),
 // one per side, each opening its ring. Drawn in the canvas grips layer, above every element.
@@ -79,12 +61,20 @@ export function QuickConnectPluses({
           onAdd: () => onAppendWebRow(selectedElement.id),
         }
       : undefined;
-  const sides = [
+  // A concept graphic grows by its rows only: one "+" beneath it, offering just its add.
+  const rowOnly = selectedElement?.type === 'shape' && isConceptShape(selectedElement.shape);
+  const allSides = [
     { placement: 'right', x: bounds.x + bounds.width, y: bounds.y + bounds.height / 2 },
     { placement: 'below', x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height },
     { placement: 'left', x: bounds.x, y: bounds.y + bounds.height / 2 },
     { placement: 'above', x: bounds.x + bounds.width / 2, y: bounds.y },
   ] as const;
+  // Full (no room for another row): nothing to offer, so no "+" at all.
+  const sides = rowOnly
+    ? webRow
+      ? allSides.filter((s) => s.placement === 'below')
+      : []
+    : allSides;
   return (
     <>
       {sides.map(({ placement, x, y }) => (
@@ -103,6 +93,7 @@ export function QuickConnectPluses({
           onArrowPointerDown={(e) => onStartArrow(placement, e)}
           onPencil={onStartPencil}
           webRow={webRow}
+          rowOnly={rowOnly}
           // Table ring (docs/specs/008-canvas/canvas-and-palette.md): Arrow + this side's structural add.
           variant={selectedIsTable ? 'table' : 'default'}
           onAddTableRow={selectedIsTable && placement === 'below' ? onAddTableRow : undefined}

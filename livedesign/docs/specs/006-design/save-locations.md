@@ -1,25 +1,25 @@
 # Save Locations
 
 A new design is stored in one of a small set of **save locations**: on the server (livedesign) or in this browser
-only (This Browser, [Offline Mode](offline-mode.md)).
+only (Offline, [Offline Mode](offline-mode.md)).
 
 **Nobody is asked.** `/new` ([New design route](../007-editor/new-design-route.md#what-new-makes)) stores every new
 design in the default location for who is creating it, below. A design moves between the two afterwards with
 [Offline Mode](offline-mode.md)'s **Sync Design** and **Take Offline**, or the start screen's switch (below). A design
-in This Browser says what it is on the design itself: the editor header's **This Browser** badge and its legend
-([Offline Mode](offline-mode.md#this-browser-badge--explorer)).
+Offline says what it is on the design itself: the editor header's **Offline** badge and its legend
+([Offline Mode](offline-mode.md#offline-badge--explorer)).
 
-| Location         | What it means                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livedesign**   | A normal cloud design, saved to the api (its Durable Object), reachable from any device.                     |
-| **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
+| Location       | What it means                                                                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------ |
+| **livedesign** | A normal cloud design, saved to the api (its Durable Object), reachable from any device.                     |
+| **Offline**    | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
 
-| Who                | Default          |
-| ------------------ | ---------------- |
-| A guest            | **This Browser** |
-| A signed-in person | **livedesign**   |
+| Who                | Default        |
+| ------------------ | -------------- |
+| A guest            | **Offline**    |
+| A signed-in person | **livedesign** |
 
 Why a guest starts local: [Auth + guest access → Guest designs start local](../014-identity/auth-and-guest-access.md#guest-designs-start-local).
 
@@ -32,9 +32,9 @@ Why a guest starts local: [Auth + guest access → Guest designs start local](..
 - Before sign-in has answered, `signedIn` is the `ldes_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
-  signed-in person is never handed a design in This Browser; a guest never waits. The page's 5-second give-up on
+  signed-in person is never handed a design kept Offline; a guest never waits. The page's 5-second give-up on
   sign-in (it then carries on as a guest) is not that answer. Only a known account saves on livedesign; a session that
-  still hasn't answered after the wait keeps the design in This Browser, where nothing is lost.
+  still hasn't answered after the wait keeps the design kept Offline, where nothing is lost.
 - There is no per-person override: no setting chooses the store. Where a design is **filed** on livedesign is the
   person's to set, in Settings > Explorer > Default Folders ([Default folders](../013-workspace/default-folders.md)).
 
@@ -42,7 +42,7 @@ Why a guest starts local: [Auth + guest access → Guest designs start local](..
 
 Nobody is asked, but the start screen offers one switch, **Sync Design to Server**, in a quiet strip under its choices
 (its template start), so a new design can change place while it is still empty without a trip to the Explorer. It reflects
-where the design is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
+where the design is **now**, so it starts as the default above: **off** for a guest (Offline), **on** for a signed-in
 person (livedesign).
 
 - **The whole row is the switch**, as a Settings row is: a press anywhere on it (its icon, label or line) flips
@@ -102,7 +102,7 @@ Inside `/new`, the location travels as `NewDesignSettings.saveLocation: SaveLoca
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 `Document` / `Created` carries a `type` naming the store,
-`Cloud` for livedesign and `Offline` for This Browser. The location id itself never leaves as content.
+`Cloud` for livedesign and `Offline` for the Offline location. The location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))
 

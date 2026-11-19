@@ -33,7 +33,7 @@ export type OfflineStoreConfig<Rec, Tab, Item, Summary> = {
   rememberId: (id: string) => void;
   forgetId: (id: string) => void;
   isOfflineIdSync: (id: string) => boolean;
-  // This Browser's list (each editor's this-browser.ts) hears what every write left.
+  // Offline's list (each editor's this-browser.ts) hears what every write left.
   noteThisBrowser: (id: string, after: Rec | 'delete' | undefined) => void;
   toItem: (rec: Rec) => Item;
   toSummary: (rec: Rec) => Summary;
@@ -163,7 +163,7 @@ export function createOfflineStore<
 
   // Read-modify-write one record in a single transaction. Callers run it inside serializeOfflineWrite.
   function offlineUpdateRecord(id: string, change: OfflineChange<Rec>): Promise<void> {
-    // What the change left, for This Browser's list.
+    // What the change left, for Offline's list.
     let after: ReturnType<OfflineChange<Rec>>;
     return backend()
       .update(id, (rec) => (after = change(rec)))

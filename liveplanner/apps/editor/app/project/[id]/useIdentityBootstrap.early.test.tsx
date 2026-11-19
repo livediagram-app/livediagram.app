@@ -2,7 +2,7 @@
 import { renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// docs/specs/006-project/offline-mode.md "Instant open": a project in This Browser opens before auth
+// docs/specs/006-project/offline-mode.md "Instant open": a project kept Offline opens before auth
 // settles, with no guest id, participant read or Explorer lists in its way; who is reading resolves
 // once auth answers, without loading the project again. Anything else still waits for auth.
 
@@ -86,7 +86,7 @@ beforeEach(() => {
 afterEach(() => vi.clearAllMocks());
 
 describe('useIdentityBootstrap early open', () => {
-  it('opens a project in This Browser before auth settles, without the server', async () => {
+  it('opens a project kept Offline before auth settles, without the server', async () => {
     const { set } = render({ authLoaded: false });
     await flush();
     expect(api.apiLoadProject).toHaveBeenCalledExactlyOnceWith('self', 'doc-1');

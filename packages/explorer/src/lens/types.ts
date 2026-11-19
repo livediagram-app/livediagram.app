@@ -40,7 +40,7 @@ export type LensContext = {
   templates: readonly LensOption[];
   modes?: readonly LensOption[];
   oneApp?: OpensInValue | null;
-  /** The list is This Browser's, which keeps no template, maker or mode: those dimensions offer no chip there. */
+  /** The list is Offline's, which keeps no template, maker or mode: those dimensions offer no chip there. */
   local?: boolean;
 };
 

@@ -1,4 +1,4 @@
-// This Browser's list and folders as the app last wrote them on its own origin, read through
+// Offline's list and folders as the app last wrote them on its own origin, read through
 // useSyncExternalStore so a reader re-renders only when the stored list changes. ThisBrowser.tsx re-exports the hooks.
 
 import { useCallback, useSyncExternalStore } from 'react';
@@ -43,7 +43,7 @@ function snapshotOf(app: App): Snapshot {
 const snapshot = (app: App) => snapshotOf(app).items;
 const folderSnapshot = (app: App) => snapshotOf(app).folders;
 
-/** The app's This Browser list on its own origin (every item, live and trashed, newest change first), heard as it
+/** The app's Offline list on its own origin (every item, live and trashed, newest change first), heard as it
  *  changes in this tab or another. Empty for no app, and while prerendered. */
 export function useThisBrowserList(app: App | null): readonly ThisBrowserItem[] {
   const subscribe = useCallback(
@@ -57,7 +57,7 @@ export function useThisBrowserList(app: App | null): readonly ThisBrowserItem[] 
   );
 }
 
-/** This Browser's folders on the app's own origin, heard as they change: one parse per change of the stored list,
+/** Offline's folders on the app's own origin, heard as they change: one parse per change of the stored list,
  *  shared with useThisBrowserList. Empty for no app, and while prerendered. */
 export function useThisBrowserFolders(app: App | null): readonly ThisBrowserFolder[] {
   const subscribe = useCallback(

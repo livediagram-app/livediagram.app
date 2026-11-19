@@ -4,6 +4,7 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
+import type { VisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { memo } from 'react';
 import type { Tab } from '@livedocuments/document';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
@@ -34,6 +35,9 @@ const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
 // and limits"). Its handlers read the newest view-model when they run.
 export const EditorViewHeader = memo(function EditorViewHeader(view: {
   isOffline: boolean;
+  onTakeOffline?: (() => void) | undefined;
+  visibilityActions?: VisibilityActions | undefined;
+  headerCommunity: boolean;
   isMobileViewport: boolean;
   landscapeShown: boolean;
 }) {
@@ -46,6 +50,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const canShareDocument = useEditorChrome((s) => s.canShareDocument);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const copying = useEditorChrome((s) => s.copying);
+  const teamDocument = useEditorChrome((s) => !!s.documentTeamId);
   const slideCount = useEditorChrome((s) => s.slideDeck.runnable.length);
   const startingDeck = useEditorChrome((s) => s.slideDeck.startingDeck);
   const { isMobileViewport } = view;
@@ -58,6 +63,12 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
         approval={<ApprovalBadge corner />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
+        // The Share button's colour reads the document's visibility, as the header's badge did.
+        visibility={{
+          team: teamDocument,
+          offline: view.isOffline,
+          community: view.headerCommunity,
+        }}
         // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
         // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
@@ -65,6 +76,8 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
             ? () => void chrome.get().makeCopy()
             : undefined
         }
+        onTakeOffline={view.onTakeOffline}
+        visibilityActions={view.visibilityActions}
         copying={copying}
         copyDescription="Duplicate this document into your own files."
         // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".

@@ -29,7 +29,7 @@ describe('roadmapScopeFor', () => {
     ['a grant to one tab', { scope: { ...OWNER_SCOPE, tabId: 't1' } }],
     ['an embed', { embed: true }],
     ['a workbench frame', { workbench: true }],
-    ['a plan in This Browser', { offline: true }],
+    ['a plan kept Offline', { offline: true }],
     ['before the plan loads', { hydrated: false }],
     ['no plan', { scope: null }],
   ])('stays shut for %s', (_, patch) => {

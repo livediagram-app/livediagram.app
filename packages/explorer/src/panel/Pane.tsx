@@ -123,7 +123,7 @@ export function Pane({
             className="flex min-w-0 max-w-[8.5rem] max-sm:max-w-[13rem]"
           />
         ) : null}
-        {/* This Browser holds only this app's items, and the Library is the app's own. */}
+        {/* Offline holds only this app's items, and the Library is the app's own. */}
         {section.kind === 'library' || section.kind === 'offline' ? null : (
           <span className="ml-1 shrink-0">
             <FilterToggle />

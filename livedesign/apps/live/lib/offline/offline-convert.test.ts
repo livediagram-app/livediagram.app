@@ -30,7 +30,7 @@ vi.mock('@liveworkspace/workbench/lib/index-client', () => ({
   },
 }));
 
-// The component library travels both ways (docs/specs/009-elements/components.md "This Browser").
+// The component library travels both ways (docs/specs/009-elements/components.md "Offline").
 vi.mock('@/lib/api/components', () => ({
   apiLoadComponents: vi.fn(async () => []),
   cloudPutComponent: vi.fn(async (_o: string, _d: string, c: unknown) => {

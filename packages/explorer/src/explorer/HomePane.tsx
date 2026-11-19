@@ -7,7 +7,7 @@
 // then Spaces (HomeSpaces: My Work and each team, each a tile into its list), and Shared With You Recently. On a phone
 // each of Most Used and Recent is its own strip of up to eight under its own heading. A section with nothing in it is
 // left out. Each item shows once, in the first of New, Most Used and Recent it qualifies for (home-sections.ts). An item kept only in this browser is one card among Recent's (LocalCard): the same frame, size, menu and
-// drag, with the This Browser badge on its line and This Browser's own verbs. With the hero hidden, Home takes the
+// drag, with the Offline badge on its line and Offline's own verbs. With the hero hidden, Home takes the
 // ordinary page header. Three requests, each one small page: Recent carries Most Used and New beside it (the index's
 // `used` and `newest`), so its two sections cost one; the spaces' previews; and Shared. The cards are HomeCards.tsx's.
 

@@ -123,8 +123,8 @@ export function templateHref(app: App, template: string): string {
   return `${appUrl(app)}${APP_ITEMS[app].newPath}?template=${encodeURIComponent(template)}`;
 }
 
-/** The app's view of what it keeps only in this browser: This Browser in the Explorer on the app's address
- *  (`offlinePath`, `/explorer/offline`), which can read the app's list (one-explorer.md "This Browser"). Null for an
+/** The app's view of what it keeps only in this browser: Offline in the Explorer on the app's address
+ *  (`offlinePath`, `/explorer/offline`), which can read the app's list (one-explorer.md "Offline"). Null for an
  *  app that keeps nothing there. */
 export function offlineHref(app: App): string | null {
   const path = APP_ITEMS[app].offlinePath;

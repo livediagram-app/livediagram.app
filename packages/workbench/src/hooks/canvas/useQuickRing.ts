@@ -26,7 +26,9 @@ export function useQuickRing(selection: SelectionStore) {
   useEffect(() => {
     if (!quickRingOpen) return;
     const onDown = (e: PointerEvent) => {
-      if (!(e.target as HTMLElement)?.closest?.('[data-quick-ring]')) setQuickRingOpen(null);
+      // A tour's card keeps the ring it rings open: its step closes the ring itself on leaving (concept tours).
+      if (!(e.target as HTMLElement)?.closest?.('[data-quick-ring],[data-tour-popover]'))
+        setQuickRingOpen(null);
     };
     document.addEventListener('pointerdown', onDown);
     return () => document.removeEventListener('pointerdown', onDown);

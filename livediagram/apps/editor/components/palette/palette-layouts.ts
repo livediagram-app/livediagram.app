@@ -84,24 +84,13 @@ const WRITE_WITH_COMMENTS = [
   'collab:action-card',
 ];
 
-// Diagram's Build as two categories (docs/specs/010-palette/build-category.md "In Diagram: Diagrams and Layout").
-// Diagrams: the structures that grow as you type, the Entity (a class or table, a data model's node) last; it was
-// Popular's alone, and the category bar has no Popular.
-const DIAGRAM_DIAGRAMS = [
+// Diagram's Build spread over Concepts and Layout (docs/specs/010-palette/build-category.md "In Diagram: Concepts and
+// Layout"). The structures that grow as you type open Concepts as its Diagrams group.
+const DIAGRAM_BUILDERS = [
   'tools:mind-node',
   'tools:org-chart',
   'tools:flowchart',
   'tools:sequence',
-  'tools:table',
-  'tools:entity',
-  // The C4 model's elements (docs/specs/010-palette/build-category.md "The C4 model"), a group of their own after
-  // the Entity's divider.
-  'diagrams:c4-person',
-  'diagrams:c4-system',
-  'diagrams:c4-container',
-  'diagrams:c4-component',
-  'diagrams:c4-external',
-  'diagrams:c4-database',
 ];
 
 // Diagram's Shapes: its own tiles, then the BPMN notation as a group of its own (docs/specs/009-elements/bpmn.md
@@ -113,7 +102,8 @@ const DIAGRAM_SHAPES = [
 ];
 
 // Image and Avatar; no embedded pages.
-const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES);
+// Image and Avatar side by side as one Pictures group (owner, 2026-11-19): the embeds' divider between them dropped.
+const MEDIA_WITHOUT_EMBEDS = tilesExcept('media', ...EMBED_TILES).filter((id) => id !== DIVIDE);
 
 // Layout (Diagram and Workshop): the containers a diagram or a board is arranged in, then the parts that label
 // it, the Card, Badge and Step number borrowed from Components.
@@ -141,8 +131,35 @@ const WORKSHOP_LAYOUT_TILES = [
   ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE)),
 ];
 
-// The concept graphics, then the Sankey (Diagram's Concepts).
-const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
+// Diagram's Layout: the containers with the Table (its own divider ends them), the parts with the Infrastructure
+// tile after the Step number (owner, 2026-11-19: its popover holds the C4 tiles and the Entity, as the Card's holds
+// its presets), then the pictures.
+const DIAGRAM_LAYOUT_TILES = [
+  ...LAYOUT_TILES.slice(0, LAYOUT_TILES.indexOf(DIVIDE)),
+  'tools:table',
+  ...LAYOUT_TILES.slice(LAYOUT_TILES.indexOf(DIVIDE) + 1, LAYOUT_TILES.lastIndexOf(DIVIDE)),
+  'layout:infrastructure',
+  ...LAYOUT_TILES.slice(LAYOUT_TILES.lastIndexOf(DIVIDE)),
+];
+
+// Diagram's Concepts in four groups (owner, 2026-11-19; toolbar-layout.md "Fixed dividers"): Diagrams (the builders),
+// Layers (what stacks or nests), Process (what moves through stages or time) and Relationships (what turns or
+// radiates).
+const DIAGRAM_CONCEPTS = [
+  ...DIAGRAM_BUILDERS,
+  DIVIDE,
+  'concepts:layer-stack',
+  'concepts:pyramid',
+  'concepts:onion',
+  DIVIDE,
+  'concepts:funnel',
+  'concepts:chevrons',
+  'tools:timeline',
+  'tools:sankey',
+  DIVIDE,
+  'concepts:cycle',
+  'concepts:hub',
+];
 
 // The tiles no mode's strip holds, found only by searching (docs/specs/007-editor/toolbar-layout.md "Search: every
 // element type"): the Code block, the embeds, the devices and the page blocks (Hero, Header, Banner, Stat row,
@@ -157,6 +174,10 @@ export const SEARCH_ONLY_TILE_IDS: readonly string[] = [
   'components:banner',
   'components:stat',
   'components:process',
+  // The C4 tiles, offered on the strip only inside Layout's Infrastructure popover.
+  ...tilesForCategory('diagrams')
+    .map((t) => t.id)
+    .filter((id) => id !== 'layout:infrastructure'),
 ];
 
 // Diagram mode: Popular, then every category but the mock-up kit (Components, Devices), the charts
@@ -190,14 +211,12 @@ const DIAGRAM: PaletteLayout = {
     // Comments and assigned actions belong to every mode, so their two Collaborate tiles stay here.
     { id: 'write', tiles: WRITE_WITH_COMMENTS },
     { id: 'draw' },
-    // Build as Diagrams and Layout, with the diagram-building elements from Components (docs/specs/009-elements/card.md
-    // and its siblings).
-    { id: 'diagrams', tiles: DIAGRAM_DIAGRAMS },
-    // Concept graphics (docs/specs/009-elements/concept-graphics.md), and the Sankey: a flow drawn as wide as what it
-    // carries explains an idea the way a funnel or a cycle does, so it sits with them rather than with the builders.
-    { id: 'concepts', tiles: CONCEPTS_WITH_SANKEY },
-    // Layout after Concepts: what is built, then the ideas laid out beside it, then what it is all arranged in.
-    { id: 'layout', tiles: LAYOUT_TILES },
+    // Build spread over Concepts and Layout (owner, 2026-11-19; docs/specs/010-palette/build-category.md). Concepts:
+    // the builders, then the concept graphics (docs/specs/009-elements/concept-graphics.md) and the Sankey, a flow
+    // drawn as wide as what it carries.
+    { id: 'concepts', tiles: DIAGRAM_CONCEPTS },
+    // Layout after Concepts: what is built, then what it is all arranged in, labelled with and drawn from.
+    { id: 'layout', tiles: DIAGRAM_LAYOUT_TILES },
     { id: 'event-storming', boardOnly: true },
     { id: 'icons' },
     { id: 'technology' },

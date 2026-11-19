@@ -1,4 +1,4 @@
-// A This Browser plan's comment threads (docs/specs/026-plan/items.md "Comments", "Offline projects"): stored in its
+// An offline plan's comment threads (docs/specs/026-plan/items.md "Comments", "Offline projects"): stored in its
 // own record as `threads`, beside its items, and written by the same pure writes the api applies
 // (@liveplanner/project applyThreadChange), serialised with the record's other writes. The person holds the plan, so
 // they are its Editor; another plan never reaches these threads, so a thread here is on this plan's cards alone.
@@ -139,7 +139,7 @@ function changeOf(
   }
 }
 
-/** One thread action on a This Browser plan, as the api would answer it. */
+/** One thread action on an offline plan, as the api would answer it. */
 export async function offlineWriteThread(
   projectId: string,
   action: ThreadAction,

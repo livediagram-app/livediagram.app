@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The Inbox on an app's own address (inbox.tsx `localInboxHost`): the app's This Browser rows, from the snapshot the
+// The Inbox on an app's own address (inbox.tsx `localInboxHost`): the app's Offline rows, from the snapshot the
 // app keeps in this origin's localStorage, only for the person it names, heard as the app rewrites it. On
 // liveworkspace.app (no app) there are none: the snapshot is on the app's origin.
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -33,7 +33,7 @@ const card: InboxAction = {
   updatedAt: 1,
 };
 
-describe("the Inbox's This Browser rows on an app's address", () => {
+describe("the Inbox's Offline rows on an app's address", () => {
   it("lists the app's snapshot to the person it names, and to no one else", async () => {
     writeInboxSnapshot('liveplanner', ['user_me', 'guest_1'], { actions: [card], threads: [] });
     const mine = localInboxHost(inboxHost, 'liveplanner', 'user_me');

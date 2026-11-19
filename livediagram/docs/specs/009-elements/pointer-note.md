@@ -3,7 +3,7 @@
 ## What
 
 A **Pointer note**: a short note joined by a leader line to a point it is about. The line's tip can attach to one of
-the eight points of another element ([The badge](badge.md) "Attachment"), and then the note travels with that element,
+the points an arrow pins to on another element (its connector anchors), and then the note travels with that element,
 so "stale here" keeps pointing at the right place when the diagram moves. A `shape: 'pointer-note'`.
 
 ## Why
@@ -16,7 +16,7 @@ a quiet dot.
 ## The element
 
 - **The note** is the element's box: a soft panel in the warm note colours (an amber border and a pale amber wash by
-  default), its text the element's label, top-left aligned at the small size. Double-click edits it like any label,
+  default), its text the element’s label, centred both ways at the small size (owner, 2026-11-19; top-left until then). Double-click edits it like any label,
   rich text included.
 - **The leader** runs from the note's nearest edge point to the **tip**, a small solid dot in the border colour. Its
   line is the border colour at 1.5 px.
@@ -31,13 +31,17 @@ a quiet dot.
 
 ## Attaching the tip
 
-While the note is selected its tip shows a **handle**. Dragging the handle moves the tip; letting go within 16 px of
-one of another element's eight points attaches it there (`attachedTo` / `attachAt`, the badge's fields and hosts),
-and letting go anywhere else leaves it free.
+While the note is selected its tip shows a **handle**. Dragging the handle moves the tip; while it is near an element
+that element shows the **same anchor dots an arrow shows** (the sixteen around a box, the compass eight on a circle or
+diamond, on the shape's real outline), the one in reach highlighted. Letting go within 16 px of an anchor attaches the
+tip there (`attachedTo` and `pointerAnchor`, an arrow end's anchor; `attachAt` keeps the nearest of the badge's eight
+points for older readers), and letting go anywhere else leaves it free. (Owner, 2026-11-19: until then the tip took
+only the badge's eight box points, which on a circle or diamond sit in empty space.)
 
 - **Attached**, the tip is held on its point: moving, resizing, rotating or laying out the host carries the note with
-  it, keeping the note's place relative to the tip. Moving the note itself leaves the tip on its point and the leader
-  re-runs.
+  it, keeping the note's place relative to the tip. Moving the note itself keeps the tip on the host and moves it to
+  the middle of the host's side facing the note when the move ends (a corner only where that side has no middle) (through the drag it holds its original point), as an arrow's end turns to face what it joins (owner,
+  2026-11-19); the leader re-runs.
 - **Deleted, copied, duplicated** with its host, as an attached badge is; copying or deleting the note on its own does
   just that, and a pasted lone note is detached.
 - A host that no longer exists (a peer deleted it) leaves the note where it is, its tip free.
@@ -49,8 +53,9 @@ or an API reader that knows nothing of attachment draws the note and its leader 
 
 ## Menu
 
-A **Pointer Note** section (Tools flyout), closed until opened: **Detach** while the tip is attached. Colours, Border
-(width, pattern) and the Text controls work as on any shape; the leader takes the border colour.
+No section of its own (owner, 2026-11-19: the Pointer Note section and its Detach went): dragging the tip off its
+host detaches it. Colours, Border (width, pattern) and the Text controls work as on any shape; the leader takes the
+border colour.
 
 ## Animation
 
@@ -75,5 +80,6 @@ to the spot the note is about. CSS only; reduced motion and every export show th
 
 ## Agents
 
-The MCP server and the REST API take `pointer-note` with `label`, `pointerTip` and `attachedTo` / `attachAt`; an agent
-sets the host and point and the editor places the note's tip on it when the board next loads.
+The MCP server and the REST API take `pointer-note` with `label`, `pointerTip` and `attachedTo` with `pointerAnchor`
+(an anchor, as an arrow end's) or `attachAt` (a badge point); an agent sets the host and point and the editor places
+the note's tip on it when the board next loads. `pointerAnchor` wins when both are set.

@@ -22,13 +22,13 @@ Nobody is asked when creating a document; the default decides:
 
 - `/new` ([Dedicated route for new-document creation](../007-editor/new-document-route.md))
   asks nothing and creates the document in the default location for who is creating
-  ([Save Locations](save-locations.md)): **This Browser** for a guest, **livedocuments** for a signed-in person.
-  Either moves later: **Take Offline** moves a cloud document into This Browser, **Sync Document** puts one in This Browser on
+  ([Save Locations](save-locations.md)): **Offline** for a guest, **livedocuments** for a signed-in person.
+  Either moves later: **Take Offline** moves a cloud document Offline, **Sync Document** puts one kept Offline on
   livedocuments.
 - The links that create a particular start (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-document creation → Start Blank](../007-editor/new-document-route.md#start-blank))
   take the same default, so a guest following a template from the landing page
-  gets a document in This Browser.
+  gets a document kept Offline.
 - A `/new?folder=` / `?team=` context names a server place, so it is livedocuments whoever is creating.
 - The location only changes _where the document is stored_; the mode, templates and theme work identically.
 
@@ -104,7 +104,7 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## Instant open
 
-A document in This Browser lives in this browser, so opening it waits on nothing the
+A document kept Offline lives in this browser, so opening it waits on nothing the
 server says. The editor bootstrap ([Dedicated route for new-document creation → In-place handoff](../007-editor/new-document-route.md#in-place-handoff-to-the-editor),
 `app/document/[id]/useIdentityBootstrap.ts`) takes an **early open** when, before
 auth has settled, the path names a document registered in the local index
@@ -125,7 +125,7 @@ auth has settled, the path names a document registered in the local index
   nudge. The document is not reloaded: an offline document is the reader's own
   whoever they turn out to be.
 - **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))
-  creating This Browser, the create writes to IndexedDB and hands off without
+  creating Offline, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewDocument` in `app/new/page.tsx`).
 - **Except a first visit's guest token.** A browser with no guest token yet (or one near its end) fetches one before
@@ -142,10 +142,10 @@ auth has settled, the path names a document registered in the local index
 same way with the local api (headless Chromium, 10 runs each, interleaved; a
 fresh browser profile per first visit), guest create to first canvas paint:
 
-| Link                   | Before (cloud) first / return | After (This Browser) first / return | API requests |
-| ---------------------- | ----------------------------- | ----------------------------------- | ------------ |
-| `/new?template=kanban` | 2,956 / 1,775 ms              | 955 / 819 ms                        | 24 → 1       |
-| `/new?blank=1`         | 3,076 / 1,803 ms              | 1,053 / 834 ms                      | 20 → 1       |
+| Link                   | Before (cloud) first / return | After (Offline) first / return | API requests |
+| ---------------------- | ----------------------------- | ------------------------------ | ------------ |
+| `/new?template=kanban` | 2,956 / 1,775 ms              | 955 / 819 ms                   | 24 → 1       |
+| `/new?blank=1`         | 3,076 / 1,803 ms              | 1,053 / 834 ms                 | 20 → 1       |
 
 The one request left is `GET /api/capabilities`; the guest id, participant and
 Explorer lists follow after the paint.
@@ -184,11 +184,11 @@ server.
   the catch-up brings the rest. Refreshes are gathered into at most one write every 2
   seconds, made off the editing path, so they never hold up a save or a keystroke; a
   waiting one is written at once when the page is hidden or closed. Only a copy the open
-  kept is followed, for the same reader: an embed, a Community post or a This Browser document
-  never gains one, and a document taken offline to This Browser drops its copy.
+  kept is followed, for the same reader: an embed, a Community post or an offline document
+  never gains one, and a document taken offline drops its copy.
 - **Bounded.** At most 20 copies, the oldest seen dropped first; a copy over 1,000,000
   characters of JSON is not kept (a bigger document opens as it does today); a copy older
-  than 30 days is never read. Embeds, Community posts, workbenches and This Browser
+  than 30 days is never read. Embeds, Community posts, workbenches and Offline
   documents keep none.
 
 **The warm open.** An address naming a cloud document with a copy for the reader paints that
@@ -201,7 +201,7 @@ account is reading. A stale hint (a sign-out in another app) paints nothing, and
 empties the store. Signed in, the warm open gives up the token round trip of its head start
 and keeps the rest (the participant, the document and its first tab). A signed-out browser, or
 one whose guest is someone else, never reads an account's copy. A
-share link warm-opens only when its share code is the one the copy was kept under: by an address that names the document, or by the link's own address (`/document/shared?s=<code>`, as the Share dialog gives it), which names no document and finds the reader's newest copy kept under that code, for the same reader rules. The warm open leaves the address as it is (the load that catches up names the document in the bar, as it always has). Embeds, workbenches and This Browser documents never
+share link warm-opens only when its share code is the one the copy was kept under: by an address that names the document, or by the link's own address (`/document/shared?s=<code>`, as the Share dialog gives it), which names no document and finds the reader's newest copy kept under that code, for the same reader rules. The warm open leaves the address as it is (the load that catches up names the document in the bar, as it always has). Embeds, workbenches and Offline documents never
 warm-open, and a copy whose first tab is not the tab this open would show first (no first
 tab kept, or the address's `#t=` names another tab) is not painted: the document opens as it
 always did.
@@ -290,49 +290,49 @@ back cost about a millisecond against the seconds the warm open saves.
 | 500 elements   | 120 KB    | 0.2 / 0.3 ms | 0.3 / 1.5 ms | 0.2 / 0.8 ms  | 0.1 / 0.2 ms |
 | 2,000 elements | 480 KB    | 0.7 / 0.7 ms | 0.7 / 3.4 ms | 0.5 / 2.2 ms  | 0.5 / 0.6 ms |
 
-## Archived in This Browser
+## Archived Offline
 
-A document in This Browser can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the
-browser: the mark (`archivedAt`) lives only in This Browser's shared list (`@liveworkspace/explorer/this-browser`),
+A document kept Offline can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the
+browser: the mark (`archivedAt`) lives only in Offline's shared list (`@liveworkspace/explorer/this-browser`),
 and every rewrite of the list carries the marks it held. Before the editor opens a document it reads the mark once
 (`isThisBrowserArchived`), and an archived one shows the **Document Archived** card in place of the document
 ([Archived](../007-editor/new-document-route.md#archived)), whether or not the early open would have taken it. Change Folder moves it out,
-back into This Browser's list.
+back into Offline's list.
 
-## "This Browser" badge + Explorer
+## "Offline" badge + Explorer
 
 - **Visibility badge.** The open item's badge is the Explorer panel's Current card's (the open editor has no
   header bar, and its legend went with it): Private / Shared / Team from the index, and, for an item kept only
-  here, the [This Browser pill](#this-browser-pill) with its words, browser-window icon, teal tone and sentence
+  here, the [Offline pill](#offline-pill) with its words, browser-window icon, teal tone and sentence
   (one-explorer.md "The Current card").
 - **Explorer.** The shared Explorer lists what liveworkspace's index holds, and offline documents never reach it.
   livedocuments keeps a small list of them in this browser (id, title and dates, never their content,
-  `@liveworkspace/explorer/this-browser`), which the Explorer on livedocuments' own address reads: a **This Browser**
-  sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
+  `@liveworkspace/explorer/this-browser`), which the Explorer on livedocuments' own address reads: an **Offline**
+  sidebar row with their count, a view of its own (`/explorer/offline`), an offline group in the Trash and a
   place in Home's Most Used and Recent, each opening in the editor, and **Sync Document** on each live row for a signed-in
-  person. The editor's Explorer panel has This Browser on its rail too, with the count, shown while
+  person. The editor's Explorer panel has Offline on its rail too, with the count, shown while
   this browser holds at least one, opening its pane in place, **Sync Document** run there for a signed-in person
-  (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page, only redirects to
+  (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old Offline page, only redirects to
   `/explorer/offline`, its query kept
-  ([Explorer structure](../013-workspace/explorer-structure.md#this-browser)).
+  ([Explorer structure](../013-workspace/explorer-structure.md#offline)).
 
-### This Browser pill
+### Offline pill
 
-Every row and card of an offline document carries a **This Browser** pill,
+Every row and card of an offline document carries an **Offline** pill,
 wherever the document is listed: the list and card views (folders, Search results,
-This Browser, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
+Offline, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows and its Current Document card, and the Trash.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
-  "This Browser", in a teal tone whose text meets 4.5:1 on its fill in light and
+  "Offline", in a teal tone whose text meets 4.5:1 on its fill in light and
   dark mode; the ring meets 3:1 against the row. Teal because it is no app's accent
   (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, liveworkspace
   slate) and no status colour (green fine, amber warning, red failing), so the pill never reads
   as whose an item is, or as fine or failing. One pill for every editor and the Explorer
   (`ThisBrowserPill` in `@liveworkspace/workbench`, its tone `THIS_BROWSER_TONE` from
   `@liveworkspace/explorer/this-browser`).
-- **What it means, on hover and focus.** Its hover card reads "This Browser" over
+- **What it means, on hover and focus.** Its hover card reads "Offline" over
   "Lives only in this browser. Clearing this browser's site data deletes it."
   The same sentence is the pill's accessible description (`aria-describedby`),
   so a screen reader hears it without hovering.
@@ -353,18 +353,18 @@ rows and its Current Document card, and the Trash.
 Conversion works **both directions**, from the Explorer row menu (in both the
 in-editor panel and the full-page Explorer). In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
-the move prompt ([Auth + guest access → Moving documents in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-documents-in-this-browser-after-signing-in)).
+the move prompt ([Auth + guest access → Moving documents kept Offline after signing in](../014-identity/auth-and-guest-access.md#moving-offline-documents-after-signing-in)).
 
 On a fresh, unshared document's start screen the **Sync Document to Server** switch moves it either way, in place and with no confirmation ([Save Locations → On the start screen](save-locations.md#on-the-start-screen)).
 
-### Sharing a document in This Browser
+### Sharing an offline document
 
 Share is how most people find out a document needs the server. Pressing it never
 uploads anything by itself; the dialog explains and asks, for a guest and a
 signed-in person alike:
 
-- **The gate.** Share on a document in This Browser opens the Share dialog on its
-  offline gate (`ShareOfflineGate`): **This Document Is in This Browser**, "It is saved only
+- **The gate.** Share on a document kept Offline opens the Share dialog on its
+  offline gate (`ShareOfflineGate`): **This Document Is Offline**, "It is saved only
   in this browser, so there is nothing to share yet. Sync it to livedocuments to
   share it: share links, real-time collaboration and the live image all need it
   on our servers. You can take it offline again any time.", with **Sync Document**
@@ -376,7 +376,7 @@ signed-in person alike:
   cloud document.
 - The button waits for the reader to be known (an early open runs under the
   `'self'` placeholder, [Instant open](#instant-open)).
-- A failed sync keeps the document This Browser, says why in a toast
+- A failed sync keeps the document Offline, says why in a toast
   (`syncFailureMessage`) and leaves the button to try again; nothing is
   half-uploaded (see below).
 
@@ -401,7 +401,7 @@ reload:
 5. **The room opens** (`documentServerStored` turns true) and the Explorer list
    refreshes.
 
-The Explorer panel's Sync and Take Offline (an item's menu, This Browser's rows) never reload either: the
+The Explorer panel's Sync and Take Offline (an item's menu, Offline's rows) never reload either: the
 document open in the editor moves in place as above, any other moves on its own, and the Explorer loads its lists again
 once the move settles. Only the move prompt after signing in still reloads, since several move at once.
 
@@ -424,8 +424,8 @@ switch only shows on a fresh document nobody else has, so there is nothing to lo
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Sync Document"** (one name everywhere: the document menu and This Browser's rows in the editor's Explorer panel,
-the Explorer's This Browser view, the Share dialog gate and the move prompt after signing in).
+Action: **"Sync Document"** (one name everywhere: the document menu and Offline's rows in the editor's Explorer panel,
+the Explorer's Offline view, the Share dialog gate and the move prompt after signing in).
 
 - Uploads the document's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud document owned by the current identity (signed-in account, or the guest's
@@ -483,7 +483,7 @@ confirmation:
 - On confirm: download the document's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **This Browser**. Referenced uploaded images are downloaded and embedded
+  badge flips to **Offline**. Referenced uploaded images are downloaded and embedded
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the document stays on the server.
@@ -530,9 +530,9 @@ Offline Mode is independent of sign-in:
   an offline document never touches the server at all.
 - Sign-in / sign-out never migrates offline documents by itself (the index's guest-to-account move, [Auth + guest access](../014-identity/auth-and-guest-access.md#guest--account),
   only moves a guest's _cloud_ documents). After signing in, a prompt
-  **offers** to move them ([Moving documents in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-documents-in-this-browser-after-signing-in));
+  **offers** to move them ([Moving documents kept Offline after signing in](../014-identity/auth-and-guest-access.md#moving-offline-documents-after-signing-in));
   a document the person leaves stays put.
-- The "This Browser" badge and pill read the same for a guest as for anyone: the
+- The "Offline" badge and pill read the same for a guest as for anyone: the
   sentence about clearing site data is the one a guest most needs to see.
 
 ## Persistence architecture
@@ -560,7 +560,7 @@ target:
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
   to dispatch on yet: `/new` (`app/new/page.tsx`) calls `offlineCreateDocument`
-  directly when the location is This Browser, and
+  directly when the location is Offline, and
   that call is what registers the id every later operation routes on.
 - Only the document/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline
@@ -637,7 +637,7 @@ Track adoption without content, reusing the closed vocabulary:
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): where the new document is saved
   ([Save Locations](save-locations.md)).
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
-  show the **This Browser** pill wherever an offline document is listed plus a
+  show the **Offline** pill wherever an offline document is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
 - The default + instant open: `lib/save-locations.ts` (`defaultSaveLocationFor`),
   `lib/signed-in-hint.ts`, `app/new/useNewDocumentLocation.ts`, the early open in

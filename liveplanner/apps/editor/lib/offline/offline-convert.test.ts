@@ -153,7 +153,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     });
   });
 
-  it('carries the template’s starter rules a plan in This Browser kept, for the cloud create to make', async () => {
+  it('carries the template’s starter rules a plan kept Offline kept, for the cloud create to make', async () => {
     // docs/specs/026-plan/plan-templates.md "Starter rules": made when it is saved to the cloud.
     const starterRules = { template: 'kanban', timeZone: 'Europe/London' };
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({

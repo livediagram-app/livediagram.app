@@ -281,7 +281,7 @@ Every editor mounts the shared UI through thin doors of its own; the shared part
   Again (`connectedTabBroken`). A press on the tab is the bar's plain select: it tells the page nothing, so it never
   opens the file.
 - **`ConnectedTabPage.tsx`**: in the canvas's place while the open tab is connected. Starts `ready` (the preview and
-  Open, however the tab became the open one), or `offline` for a This Browser host; only the card's Open (and Try
+  Open, however the tab became the open one), or `offline` for an offline host; only the card's Open (and Try
   Again) runs an open. Each open aborts the one before, asks the host's
   grant, runs `openConnectedTab`, marks the tab broken or mended, shows the answer's view and, for an Editor
   (`canEdit`: may change the tabs), renames the tab to the answered name (IDX26). Keyed by tab and connection id, so
@@ -309,7 +309,7 @@ sm:mt-auto` inside the rail's scroller), every app's logo stacked where its icon
 - **Each editor** (`<editor>/components/connect/`): `ConnectedTabHost` (the page through `next/dynamic`, from the
   editor's context: `canEdit` is `!isStructureReadOnly`, Remove is its tab delete, the rename its tab rename) and
   `useConnectStart` (the start panel's `connect` render through `next/dynamic`, or nothing when the person is a guest,
-  the item is a This Browser one, or the session may not change its tabs: a viewer, a tab-scoped link, an embed, a
+  the item is an offline one, or the session may not change its tabs: a viewer, a tab-scoped link, an embed, a
   workbench). `hostManaged` is a session with no share link (its owner or a team member). Its editor state adds
   `activeTabConnected` (an edit blocker beside the tab lock) and `connectedTabs`; its view shows `ConnectedTabHost` in
   the canvas's place; its start screens stand down on a connected tab; its placeholders and outline op carry the
