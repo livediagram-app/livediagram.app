@@ -4,6 +4,7 @@ import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { withoutGitRepoEnv } from '@liveworkspace/cli-kit/git-env';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const ACTION = join(import.meta.dirname, '../../github-action');
@@ -13,8 +14,11 @@ const HELP = join(
 );
 const BRANCH = 'livediagram-previews';
 
+// A git hook (pre-push runs this suite) exports GIT_DIR and friends, which outrank `-C` and would point every call
+// below at the pusher's own repository, committing onto their branch.
+const gitEnv = withoutGitRepoEnv(process.env);
 const git = (cwd: string, ...args: string[]) =>
-  execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8' }).trim();
+  execFileSync('git', ['-C', cwd, ...args], { encoding: 'utf8', env: gitEnv }).trim();
 
 let dir: string;
 let origin: string;
