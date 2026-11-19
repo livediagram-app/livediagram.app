@@ -15,3 +15,6 @@ AUTH_ORIGIN=http://localhost:3100
 # The local index (liveworkspace/apps/index, its dev key for livediagram).
 INDEX_ORIGIN=http://127.0.0.1:8793
 INDEX_KEY=dev-livediagram-index-key
+# Images, through the local media Worker (liveworkspace/apps/media): its MEDIA_KEY_LIVEDIAGRAM.
+MEDIA_URL=http://localhost:8792/api/media
+MEDIA_KEY=dev-livediagram-media-key

@@ -1,7 +1,5 @@
 import type { Metadata } from 'next';
-import type { ReactNode } from 'react';
-import { Footer } from '@/components/Footer';
-import { Header } from '@/components/Header';
+import { HelpArticle, type HelpSection } from '@/components/help/HelpArticle';
 
 // Google Drive sync, the platform's one help article (liveworkspace/docs/specs/010-site/site.md "Help", liveworkspace/docs/specs/005-drive/drive.md):
 // the mirror is liveworkspace's, the same for every app, so it is explained once here. Each app's help keeps a short
@@ -26,13 +24,7 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
 };
 
-// Reading styles for the article's plain HTML, as the legal pages set theirs.
-const PROSE =
-  'text-[1.0625rem] leading-relaxed text-slate-700 dark:text-slate-300 [&_a]:font-medium [&_a]:text-slate-900 [&_a]:underline [&_a]:decoration-slate-300 [&_a]:underline-offset-4 hover:[&_a]:decoration-slate-900 dark:[&_a]:text-white dark:[&_a]:decoration-slate-600 dark:hover:[&_a]:decoration-white [&_code]:rounded [&_code]:bg-slate-100 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:text-[0.9em] dark:[&_code]:bg-slate-800 [&_li]:pl-1 [&_li]:marker:text-slate-400 [&_p]:mt-4 first:[&_p]:mt-0 [&_strong]:font-semibold [&_strong]:text-slate-900 dark:[&_strong]:text-white [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-5 [&_table]:mt-4 [&_table]:w-full [&_table]:text-left [&_table]:text-base [&_th]:border-b [&_th]:border-slate-200 [&_th]:py-2 [&_th]:pr-4 [&_th]:font-semibold [&_th]:text-slate-900 dark:[&_th]:border-slate-700 dark:[&_th]:text-white [&_td]:border-b [&_td]:border-slate-100 [&_td]:py-2 [&_td]:pr-4 [&_td]:align-top dark:[&_td]:border-slate-800';
-
-type Section = { id: string; title: string; body: ReactNode };
-
-const SECTIONS: Section[] = [
+const SECTIONS: HelpSection[] = [
   {
     id: 'connecting',
     title: 'Connecting',
@@ -295,53 +287,10 @@ const SECTIONS: Section[] = [
 
 export default function GoogleDriveHelpPage() {
   return (
-    <>
-      <Header />
-      <main className="mx-auto max-w-3xl px-4 pt-14 pb-20 sm:px-6 sm:pt-20 sm:pb-24">
-        <p className="text-xs font-semibold tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          Help
-        </p>
-        <h1 className="mt-3 text-4xl font-semibold tracking-tight text-balance text-slate-900 sm:text-5xl dark:text-white">
-          {HEADING}
-        </h1>
-        <p className="mt-4 text-lg leading-relaxed text-slate-600 dark:text-slate-300">
-          Keep a copy of your work, from every app, in your own Google Drive: each item a file in
-          folders that match yours, kept in step as you work.
-        </p>
-        <nav aria-label="On this page" className="mt-8">
-          <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-            {SECTIONS.map((section) => (
-              <li key={section.id}>
-                <a
-                  href={`#${section.id}`}
-                  className="relative touch-target-y font-medium text-slate-600 underline-offset-4 hover:text-slate-900 hover:underline dark:text-slate-300 dark:hover:text-white"
-                >
-                  {section.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <div className="mt-10">
-          {SECTIONS.map((section) => (
-            <section
-              key={section.id}
-              id={section.id}
-              aria-labelledby={`${section.id}-title`}
-              className="scroll-mt-24 border-t border-slate-200 py-10 dark:border-slate-800"
-            >
-              <h2
-                id={`${section.id}-title`}
-                className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white"
-              >
-                {section.title}
-              </h2>
-              <div className={`mt-5 ${PROSE}`}>{section.body}</div>
-            </section>
-          ))}
-        </div>
-      </main>
-      <Footer />
-    </>
+    <HelpArticle
+      heading={HEADING}
+      lede="Keep a copy of your work, from every app, in your own Google Drive: each item a file in folders that match yours, kept in step as you work."
+      sections={SECTIONS}
+    />
   );
 }

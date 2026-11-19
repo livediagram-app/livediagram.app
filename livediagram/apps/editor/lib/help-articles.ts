@@ -22,6 +22,7 @@ export const HELP_ARTICLES = {
   sharing: 'collaboration/sharing',
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
+  requestApproval: 'collaboration/sharing/request-approval',
   // The Community's own help map holds the path (the public sites link it too).
   community: COMMUNITY_HELP.sharing.path,
   // Palette behaviour
@@ -156,6 +157,10 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   sharePasswords: {
     title: 'Learn about share passwords',
     description: 'How the optional password gate protects every link.',
+  },
+  requestApproval: {
+    title: 'Learn about requesting approval',
+    description: 'Who can approve, what they see and how answers come back.',
   },
   community: {
     title: 'Learn about the Community',
