@@ -53,7 +53,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   await adoptGuest(page, owner);
   await page.addInitScript(() => localStorage.setItem('liveplanner:v2:name-confirmed', '1'));
   await page.goto(`/project/${liveDoc}`);
-  await page.getByRole('button', { name: /^Share$/ }).click();
+  await page.getByRole('button', { name: /^Share, / }).click();
   const dialog = page.getByRole('dialog', { name: /^Share / });
   await dialog
     .getByRole('region', { name: 'Issue a pass' })

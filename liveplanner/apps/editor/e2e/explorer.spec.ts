@@ -78,7 +78,7 @@ test('a guest makes, syncs, renames, opens, files, deletes and restores a plan',
   // Sharing needs it on liveplanner: Share offers Sync Plan first, which moves it there in place.
   await page.goto(`/project/${id}`);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
-  await page.getByRole('button', { name: /^Share$/ }).click();
+  await page.getByRole('button', { name: /^Share, / }).click();
   await page.getByRole('button', { name: 'Sync Plan', exact: true }).click();
   await expect.poll(() => thisBrowserList(page), { timeout: 15_000 }).not.toContain(id);
   await page.keyboard.press('Escape');
