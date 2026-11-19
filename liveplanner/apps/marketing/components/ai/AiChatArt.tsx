@@ -8,14 +8,14 @@ const SparklesIcon = lucideGlyph(lucideSparkles, 14);
 // editor. Each card's dot is its card type's colour, so the categorical tones stay as they are.
 const COLUMNS = [
   {
-    name: 'To do',
+    name: 'To Do',
     cards: [
       { title: 'Write launch copy', tone: 'bg-amber-400' },
       { title: 'Test checkout', tone: 'bg-rose-400', fresh: true },
     ],
   },
   {
-    name: 'Doing',
+    name: 'In Progress',
     cards: [{ title: 'Build pricing page', tone: 'bg-emerald-400' }],
   },
   {

@@ -24,7 +24,14 @@ import {
 // Every window's scene is drawn in this box on a wide screen.
 const LANDSCAPE_VIEWBOX = '0 -60 600 400';
 
-export type TabDef = { name: string; color: string; active?: boolean };
+export type TabDef = {
+  name: string;
+  color: string;
+  active?: boolean;
+  // Who is on the tab, as its presence stack shows them, when the scene names them; otherwise the active tab
+  // shows you, and on a shared project one teammate.
+  people?: { initials: string; color: string }[];
+};
 
 // Every window sits on the Default scheme's canvas (the --art-* palette in
 // hero-animations.css, its light or dark half with the appearance), dotted as the
@@ -191,7 +198,18 @@ export function EditorWindow({
                         draws it: a stack of small initials between the tab name
                         and its ellipsis, one per person on that tab (you, and on
                         a shared project whoever else is there). */}
-                {t.active ? (
+                {t.people ? (
+                  <span className="ml-0.5 flex items-center">
+                    {t.people.map((p, i) => (
+                      <TabAvatar
+                        key={p.initials}
+                        initials={p.initials}
+                        color={p.color}
+                        last={i === t.people!.length - 1}
+                      />
+                    ))}
+                  </span>
+                ) : t.active ? (
                   <span className="ml-0.5 flex items-center">
                     <TabAvatar initials="TM" color="#8b5cf6" last={!shared} />
                     {shared ? <TabAvatar initials="JR" color="#ec4899" last /> : null}

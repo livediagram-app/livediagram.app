@@ -98,7 +98,7 @@ export function heroTemplate(kind: TemplateKind): HeroMatch {
 }
 
 // The kanban wall's cards from `xl` (components/HeroKanban.tsx): six from the same pool, in the order
-// Backlog top, Backlog below, Done top, Done below, To do's foot, then the card being dragged from Doing.
+// Backlog top, Backlog below, Done top, Done below, To Do's foot, then the card being dragged from In Progress.
 // The static HTML shows this opening hand; once script runs this visit's shuffle replaces it, and then it
 // holds still.
 export const HERO_BOARD_SLOTS = 6;

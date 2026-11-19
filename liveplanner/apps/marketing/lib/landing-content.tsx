@@ -20,26 +20,32 @@ import {
   CommentsArt,
   ConnectedFilesArt,
   ConditionalFormatArt,
+  ConfigureBoardArt,
   DashboardArt,
   DescribePlanArt,
   DescribeRuleArt,
   DriveCopyArt,
+  EmailToBoardArt,
   EmbedBoardArt,
   ExpiryArt,
   FindCardArt,
+  FlowChartsArt,
   FormAlertsArt,
   FormBuilderArt,
   FormResponsesArt,
   FormSectionsArt,
   FormShareArt,
+  GanttClashArt,
   GithubPrArt,
   HiddenVotesArt,
   IncomingWebhookArt,
   McpArt,
+  OfflineSaveArt,
   OutgoingArt,
   PlanBoardArt,
   PlanViewsArt,
   PresenceArt,
+  PublicRoadmapArt,
   RealtimeArt,
   RevokeArt,
   RuleFlowArt,
@@ -55,11 +61,14 @@ import {
   SheetFigureArt,
   SheetTogetherArt,
   SheetValidationArt,
+  SheetChartArt,
   SheetsArt,
+  SnapshotsArt,
   TeamsArt,
   TemplatesArt,
   TrackerImportArt,
   TriggersArt,
+  WalkthroughArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -105,14 +114,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore boards',
     title: 'Plan the work, then watch it move',
     description:
-      'A plan holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, and one card that can sit on every board it belongs to.',
+      'A plan holds the work on boards of cards: columns with WIP limits, swimlanes, card types with fields of your own, one card on every board it belongs to, and a public roadmap when you want one.',
     metaDescription:
       'Boards of cards with WIP limits, swimlanes, your own card types and fields, comments on every card, and one card that sits on every board it belongs to.',
     highlights: [
       'Boards with WIP limits',
       'One card, every board',
       'Card types and fields of your own',
-      'Change many cards at once',
+      'Publish a roadmap people vote on',
     ],
     items: [
       {
@@ -172,6 +181,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Pin widgets to a board header (Completion, Due Soon, WIP Alerts, Top Voted, Stale Cards and more) and press one to narrow the board to just those cards. Save the view your team checks every morning as a filter anyone can apply in one click.',
       },
       {
+        art: <ConfigureBoardArt />,
+        href: '/help/plan/boards/',
+        title: 'A board set up in one click',
+        description:
+          'Configure Board suggests layouts that suit the board’s own cards, such as By Person or Quick Wins First, and says why. A preset never touches the columns or the cards, so trying one is safe. Or fine-tune any part, tile by tile.',
+      },
+      {
         art: <SelectCardsArt />,
         href: '/help/plan/select-cards/',
         title: 'Change many cards at once',
@@ -190,7 +206,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/boards/',
         title: 'Boards in and out as CSV',
         description:
-          'Import a CSV or TSV and each row becomes a card, landing in the column its Status names and with the person its Assignee names; only a title is required, and one undo takes it all back. Export any board as CSV, an image, a PDF or a Markdown outline.',
+          'Import a CSV or TSV and each row becomes a card, landing in the column its Status names and with the person its Assignee names; only a title is required, and one undo takes it all back. Export any board as CSV, an image, a PDF or a Markdown outline, or the whole plan as one .liveplanner file that imports back as a new plan.',
       },
       {
         art: <TrackerImportArt />,
@@ -200,11 +216,25 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Drop a Trello board’s JSON export, or an Asana, Jira or Linear CSV export, on the Import dialog and it becomes a Board tab, or a new plan, with its columns, cards, fields and people. It is a one-off import, so nothing stays tied to the old tool.',
       },
       {
+        art: <EmailToBoardArt />,
+        href: '/help/plan/email-to-board/',
+        title: 'Email straight to the board',
+        description:
+          'Give a board its own secret address and forward a request or a bug report to it: it lands as a card in the first column, the subject as its title and the pictures attached. Who Can Send keeps it to plan members, or opens it to anyone with the address.',
+      },
+      {
         art: <HiddenVotesArt />,
         href: '/help/plan/boards/',
         title: 'Retros that keep a secret',
         description:
           'Cards stay face down while the team writes, so nobody anchors on the first idea. Press Reveal, then vote for what matters most.',
+      },
+      {
+        art: <PublicRoadmapArt />,
+        href: '/help/plan/public-roadmap/',
+        title: 'Publish a roadmap people vote on',
+        description:
+          'Publish as Roadmap turns a board into a live public page of the columns, card types and fields you choose, and nothing else. Visitors upvote what they want most and Suggest an Idea through one of your forms, with no account, and Unpublish takes it down at once.',
       },
       {
         art: <TemplatesArt />,
@@ -218,7 +248,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/account-and-data/connect-ai-mcp/',
         title: 'Agents that move the cards',
         description:
-          'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them, and attach pictures to a card’s Image fields.',
+          'Your AI tools can read the plan and add, edit and move cards over MCP, the API or the CLI, naming columns and fields the way the board shows them, and attach pictures to a card’s Image fields. In Claude the board opens right in the chat, following the plan live.',
       },
     ],
   },
@@ -231,12 +261,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
     description:
       'Bring your boards, sheets, charts and notes side by side on a Dashboard tab, every slot live, so the picture is never out of date.',
     metaDescription:
-      'Dashboard tabs put your boards, sheets, live charts of every card and notes side by side, in rows of slots you arrange, all of it live.',
+      'Dashboard tabs put boards, sheets, notes and live charts side by side, from a Gantt chart to Cycle Time, Throughput and Cumulative Flow.',
     highlights: [
       'Dashboards on one page',
       'Live charts of every card',
       'Dashboards made from your work',
-      'Figures and charts from a Sheet',
+      'See how work flows',
     ],
     items: [
       {
@@ -252,6 +282,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Live charts of every card',
         description:
           'A Gantt chart, due and start calendars you can drag cards across, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date. Give one a tab of its own and it fills the page, with a Chart Settings cog for which cards it shows and how it groups them.',
+      },
+      {
+        art: <FlowChartsArt />,
+        href: '/help/plan/visualisations/',
+        title: 'See how work flows',
+        description:
+          'Cycle Time shows how long cards take, with the time 85% get done within. Throughput counts what is finished each week, and Cumulative Flow shows where work piles up. All three read each card’s history over the last 14 to 180 days.',
+      },
+      {
+        art: <GanttClashArt />,
+        href: '/help/plan/visualisations/',
+        title: 'A Gantt that spots clashes',
+        description:
+          'Link cards with Blocked By and the Gantt chart draws the arrows between them. When a card starts before its blocker is due, its arrow turns amber and a mark on the card says by how many days. Drag a card later and one press moves the cards that follow it too, in one undo.',
       },
       {
         art: <SuggestedDashboardsArt />,
@@ -280,6 +324,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Arrange it your way',
         description:
           'Drag a slot by its grip to swap or move it, drag the bar between slots to share a row differently, or use the arrow keys; every change is one undo. On a phone the slots stack one under another, and a dashboard exports as a PNG, SVG or PDF.',
+      },
+      {
+        art: <McpArt lands="dashboard" />,
+        href: '/help/plan/dashboards/',
+        title: 'Dashboards your agents can build',
+        description:
+          'Ask a connected AI tool for a dashboard and it lays out the slots for you: the boards, the figures, the charts and the flow charts over the range you name. It changes a dashboard only when you can edit the plan.',
       },
     ],
   },
@@ -315,11 +366,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'List the board’s cards as rows: change a cell and the card changes, move the card and its row follows. The sheet and the board are one set of work.',
       },
       {
-        art: <PlanViewsArt />,
+        art: <SheetChartArt />,
         href: '/help/plan/sheets/',
         title: 'Charts from your cells',
         description:
-          'Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells, redrawn the moment a number changes.',
+          'Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells, redrawn the moment a number changes. Charts in livedocuments, livediagram and livedesign can read a range of a Sheet too, and keep in step with it.',
       },
       {
         art: <SheetValidationArt />,
@@ -350,7 +401,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Everyone sees each change as it is made, with each person’s selection outlined in their colour and name. Two people typing in different cells never overwrite each other, and a participant link can fill in cells without changing the rules.',
       },
       {
-        art: <TemplatesArt />,
+        art: <TemplatesArt set="sheets" />,
         href: '/help/plan/sheet-functions/',
         title: 'Twelve ready-made spreadsheets',
         description:
@@ -418,7 +469,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Each response shows New until you open it, the form counts what is new to you, and your Inbox lists every form with fresh answers. The owner also gets an email, at most one every 15 minutes per form, and can switch it off in Settings.',
       },
       {
-        art: <TemplatesArt />,
+        art: <TemplatesArt set="forms" />,
         href: '/help/plan/forms/',
         title: 'Seven forms to start from',
         description:
@@ -469,7 +520,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/automations/',
         title: 'Triggers for every moment',
         description:
-          'Start a rule when a card is added, moves, changes a field, is archived or restored, gets a comment or a mention, finishes its checklist, has every thread resolved, is unblocked, sees its last child done or tips a column over its limit. Or run one from a card’s menu yourself.',
+          'Start a rule when a card is added, moves, changes a field, is archived or restored, gets a comment or a mention, finishes its checklist, has every thread resolved, is unblocked, sees its last child done or tips a column over its limit, or when an email lands on the board. Or run one from a card’s menu yourself.',
       },
       {
         art: <ScheduleArt />,
@@ -518,10 +569,10 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/automations/',
         title: 'Every run on the record',
         description:
-          'Test a rule on a real card before you save it and see what it would do. Once it is on, the Audit Trail lists every run with its card, its result and each step it took, and what a rule changed reads as Automation on the card.',
+          'Test a rule on a real card before you save it and see what it would do. Once it is on, the Audit Trail lists every run with its card, its result and each step it took, and what a rule changed reads as Automation on the card. A rule that fails ten times in a row pauses itself and says why, until you press Resume.',
       },
       {
-        art: <McpArt />,
+        art: <McpArt lands="rule" />,
         href: '/help/plan/automations/',
         title: 'Rules your agents can write',
         description:
@@ -536,7 +587,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Plan it together, live',
     description:
-      'Share a link and your team is in the plan with you: live cursors on every board, sheet and dashboard, comments on cards and cells, links with the access each person needs, and agents that can lend a hand.',
+      'Share a link and your team is in the plan with you: live presence on every board, sheet and dashboard, comments on cards and cells, links with the access each person needs, and agents that can lend a hand.',
     metaDescription:
       'Share a link and your team plans with you live: presence on every tab, comments on cards and cells, share links with the right access, and agent access.',
     highlights: [
@@ -593,6 +644,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Run the session in the plan',
         description:
           'Time-box a retro with a countdown everyone sees ticking in sync, then dot-vote on the cards with live tallies and a results reveal. Join late or reload and the clock and the votes are right where the room left them.',
+      },
+      {
+        art: <WalkthroughArt />,
+        href: '/help/collaboration/walkthroughs/',
+        group: 'Work together live',
+        title: 'Walk them through it',
+        description:
+          'Record a walkthrough: your voice, your camera in a round bubble if you like, and every tab you open. Teammates play it back over the plan itself, so they can pause, look around and carry on. Hide private cards from the recording first.',
+      },
+      {
+        art: <SnapshotsArt />,
+        href: '/help/collaboration/snapshots/',
+        group: 'Work together live',
+        title: 'Snapshots before a big change',
+        description:
+          'Take a snapshot of the whole plan before a reorganisation, an import or a clean-up with an agent. The latest five are kept, and Revert puts every tab, card and Sheet back as it was in one step.',
+      },
+      {
+        art: <OfflineSaveArt />,
+        href: '/help/troubleshooting/missing-changes/',
+        group: 'Work together live',
+        title: 'Keep going when the wifi drops',
+        description:
+          'Lose the connection and keep moving cards and filling in cells: each change waits in this browser and saves when you reconnect. And a burst of removals that would clear a board is held until you choose Keep Cards or remove them.',
       },
       {
         art: <ShareLinksArt />,
@@ -680,7 +755,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Beyond the plan',
         title: 'Files from your other apps',
         description:
-          'Connect a file from any liveworkspace app as a tab beside your boards and sheets, so the brief, the screens and the architecture behind the plan are one tap away, each with a preview and a way in.',
+          'Connect a file from any liveworkspace app as a tab beside your boards and sheets, so the brief, the screens and the architecture behind the plan are one tap away, each with a preview and a way in. Signed in, Start a Project makes a plan and its files in the other apps at once, already connected.',
       },
       {
         art: <DriveCopyArt />,
