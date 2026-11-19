@@ -8,10 +8,12 @@ import { useLayoutEffect, useRef, useState } from 'react';
 import {
   TOAST_EDGE_PX,
   TOAST_FLOOR_CHANGED_EVENT,
+  TOAST_FLOOR_POPOVER,
   TOAST_FLOOR_SELECTOR,
   TOAST_SIDE_SELECTOR,
   toastFloor,
   toastPlacement,
+  type FloorRect,
   type ToastPlacement,
 } from './toast-floor';
 
@@ -21,10 +23,27 @@ const UNPLACED: ToastPlacement = { bottom: TOAST_EDGE_PX, right: null };
 export function useToastFloor(active: boolean, count: number): ToastPlacement {
   const [placement, setPlacement] = useState(UNPLACED);
   useMeasure(active, count, TOAST_FLOOR_SELECTOR, (found) => {
-    const floors: DOMRect[] = [];
-    const sides: DOMRect[] = [];
-    for (const el of found)
-      (el.matches(TOAST_SIDE_SELECTOR) ? sides : floors).push(el.getBoundingClientRect());
+    const floors: FloorRect[] = [];
+    const sides: FloorRect[] = [];
+    for (const el of found) {
+      if (el.matches(TOAST_SIDE_SELECTOR)) {
+        sides.push(el.getBoundingClientRect());
+        continue;
+      }
+      const r = el.getBoundingClientRect();
+      floors.push(
+        el.getAttribute('data-toast-floor') === TOAST_FLOOR_POPOVER
+          ? {
+              top: r.top,
+              left: r.left,
+              right: r.right,
+              width: r.width,
+              height: r.height,
+              rises: true,
+            }
+          : r,
+      );
+    }
     const next = toastPlacement({
       viewportWidth: window.innerWidth,
       viewportHeight: window.innerHeight,

@@ -149,7 +149,9 @@ A toast is easy to miss. Every one is also written to a list the person can open
 - **Clear of the bottom chrome, and of banners.** The stack sits 16px above the bottom edge (clear of the home
   indicator), and above anything that occupies the bottom of the screen beneath it: the editor's tab bar, its
   bottom-right cluster and the whiteboard dock, the Explorer's bottom bar, and the sign-in banner. It lifts 8px clear
-  of the highest of those that overlaps its column, measured as they move or resize.
+  of the highest of those that overlaps its column, measured as they move or resize. A popover opened up from that
+  chrome (the Session strip's Timer and Vote, Layers) is a floor too while it is open, so a standing toast never covers
+  the tool just opened (a phone's example cards toast sat over the Timer's Start).
 - **Beside the bottom-right cluster on desktop.** From 640px, where the canvas's bottom-right cluster (Undo, Redo,
   Tidy, Layers, Style, Zoom) would sit beneath the centred stack, the stack stays on the cluster's line instead of
   rising above it: its bottom level with the cluster's, its right edge 8px left of Undo, the toasts aligned to that

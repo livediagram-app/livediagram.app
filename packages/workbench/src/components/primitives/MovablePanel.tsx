@@ -6,6 +6,7 @@
 // popover arrow drawn under the panel's contents.
 import { useEffect, useRef, useState, type ComponentType, type RefObject } from 'react';
 import { useClickOutside } from '@liveworkspace/ui';
+import { announceToastFloorChange, TOAST_FLOOR_POPOVER } from '@liveworkspace/ui/toast';
 import { isMobileViewportSync } from '../../lib/responsive';
 import { announcePanelPresence } from '../../lib/panel-presence';
 
@@ -145,10 +146,15 @@ export function createMovablePanel<HelpKey extends string>({
     useDockPopoverKeys(ref, popoverShown, onPopoverClose);
 
     // Opening up from a bottom button, it stops short of a toolbar across the canvas's top.
-    const topClear = usePopoverTopClearance(
-      ref,
-      popoverShown && popoverAnchor?.bottom !== undefined,
-    );
+    const risesFromBottom = popoverShown && popoverAnchor?.bottom !== undefined;
+    const topClear = usePopoverTopClearance(ref, risesFromBottom);
+    // Risen from the bottom chrome, it is a floor the toast stack stands on while it is open
+    // (liveworkspace/docs/specs/016-notifications/toasts.md "Placement"), so a standing toast never covers it.
+    useEffect(() => {
+      if (!risesFromBottom) return;
+      announceToastFloorChange();
+      return announceToastFloorChange;
+    }, [risesFromBottom]);
 
     // Outside-tap auto-close, for a popover that opts in with
     // `dismissOnOutside` (the Toolbar Explorer, the Layers / Activity /
@@ -249,6 +255,7 @@ export function createMovablePanel<HelpKey extends string>({
           <div
             ref={ref}
             data-floating-panel=""
+            data-toast-floor={anchor?.bottom !== undefined ? TOAST_FLOOR_POPOVER : undefined}
             data-tour-id={dataTourId}
             // Named by its title, so a screen reader moving into it hears which panel it is in
             // (docs/specs/004-interface-design/canvas-accessibility.md "Panels are named regions").

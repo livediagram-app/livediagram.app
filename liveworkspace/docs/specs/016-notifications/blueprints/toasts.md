@@ -170,7 +170,10 @@ dark:ring-slate-900`.
 
 `TOAST_FLOOR_SELECTOR`: `[data-toast-floor], [data-start-footer], [data-editor-tabbar], [data-zoom-cluster],
 [data-whiteboard-dock]`. The Explorer bottom bar and the sign-in banner's card carry `data-toast-floor`; a template
-start's foot row carries `data-start-footer`, and `setStartPanelOpen` announces the floor change.
+start's foot row carries `data-start-footer`, and `setStartPanelOpen` announces the floor change. A workbench
+`MovablePanel` popover opened up from a bottom button (`popoverAnchor.bottom` set) carries
+`data-toast-floor="popover"` (`TOAST_FLOOR_POPOVER`) while open and announces the floor change as it opens and closes;
+`toastFloor` keeps such a floor (`rises`) even when its top reaches above the middle of the screen.
 
 `toastPlacement()` gives the stack its `bottom` and, from 640px, a `right`: the bottom-right cluster
 (`TOAST_SIDE_SELECTOR`, `[data-zoom-cluster]`) that intrudes on the centred column (576px) is taken as a side, not a

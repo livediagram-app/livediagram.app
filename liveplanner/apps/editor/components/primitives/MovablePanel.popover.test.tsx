@@ -17,6 +17,7 @@ vi.stubGlobal(
 );
 
 import { MovablePanel } from './MovablePanel';
+import { TOAST_FLOOR_CHANGED_EVENT, TOAST_FLOOR_POPOVER } from '@liveworkspace/ui/toast';
 
 afterEach(cleanup);
 
@@ -79,6 +80,23 @@ describe('MovablePanel popover: height and scrim', () => {
     expect(onPopoverClose).not.toHaveBeenCalled();
     fireEvent.pointerDown(document.body);
     expect(onPopoverClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('risen from a bottom button, is a floor the toast stack stands on while it is open', () => {
+    // liveworkspace/docs/specs/016-notifications/toasts.md "Placement": a standing toast never covers it.
+    const said = vi.fn();
+    window.addEventListener(TOAST_FLOOR_CHANGED_EVENT, said);
+    const view = renderPopover({
+      popoverAnchor: { left: 16, top: 0, bottom: 56, arrowOffset: 20 },
+    });
+    expect(view.popover.getAttribute('data-toast-floor')).toBe(TOAST_FLOOR_POPOVER);
+    expect(said).toHaveBeenCalledTimes(1);
+    cleanup();
+    expect(said).toHaveBeenCalledTimes(2);
+    // Hung below a top button, it is not bottom chrome.
+    expect(renderPopover().popover.hasAttribute('data-toast-floor')).toBe(false);
+    expect(said).toHaveBeenCalledTimes(2);
+    window.removeEventListener(TOAST_FLOOR_CHANGED_EVENT, said);
   });
 
   it('is a region named by its title, as a panel at rest is', () => {
