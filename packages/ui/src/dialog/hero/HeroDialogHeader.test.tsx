@@ -54,7 +54,9 @@ describe('the dialog hero header', () => {
     expect(root.className).toContain('px-4');
     expect(root.className).toContain('sm:px-6');
     const line = container.querySelector('[data-dialog-hero-subtitle]')!;
-    expect(line.className).toContain('truncate');
+    // One line from sm; on a phone it wraps to a second rather than lose its end (Work Tracker 1092).
+    expect(line.className).toContain('sm:truncate');
+    expect(line.className).toContain('max-sm:line-clamp-2');
     expect(line.className).not.toContain('sr-only');
   });
 

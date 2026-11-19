@@ -22,7 +22,7 @@ import type { Participant } from '@/lib/identity';
 import { hasConfirmedName } from '@/lib/local-identity';
 import { setLoadStep } from '@/lib/load-progress';
 import { isProjectTrashedError } from '@/lib/project-trashed';
-import { planGrant } from '@/lib/api/plan-grants';
+import { planGrant, planPasswordLink } from '@/lib/api/plan-grants';
 import { resolveProjectSession } from './editor-page-helpers';
 import type { CommunitySession } from './editor-realtime';
 
@@ -38,8 +38,6 @@ export type BootstrapSetters = {
   setLoadError: SetState<boolean>;
   // The project is in the Trash (docs/specs/013-workspace/trash.md).
   setProjectTrashed: (trashed: boolean) => void;
-  setProjectOwnerColor: SetState<string | null>;
-  setProjectOwnerId: SetState<string | null>;
   setProjectOwnerName: SetState<string | null>;
   setProjectShareable: SetState<boolean>;
   setProjectTeamId: SetState<string | null>;
@@ -94,6 +92,8 @@ export const PLAN_ARRIVAL: ArrivalProduct<
     resolveProjectSession({ projectOwnerId: ownerId, ...rest }),
   communitySession: (post, ownProjectId) => ({ ...post, ownProjectId }),
   grant: planGrant,
+  // A protected plan reopened with no code opens through its link (share-password.md).
+  passwordLink: planPasswordLink,
   offlineOwnerId: OFFLINE_OWNER_ID,
   // The last seen copy a later open warm-opens from (offline-mode.md "Warm open of a cloud project").
   lastSeen: lastSeenCopies,

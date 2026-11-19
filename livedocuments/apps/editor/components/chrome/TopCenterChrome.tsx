@@ -5,7 +5,10 @@ import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { ModeBanner } from '@liveworkspace/workbench/components/chrome/ModeBanner';
 import { OfflineBanner } from '@liveworkspace/workbench/components/chrome/OfflineBanner';
-import { usePaletteStripBox } from '@liveworkspace/workbench/components/chrome/PaletteTray';
+import {
+  usePaletteStripBox,
+  usePaletteTrayShown,
+} from '@liveworkspace/workbench/components/chrome/PaletteTray';
 import {
   TopCenterBanner,
   TopCenterRow,
@@ -51,13 +54,16 @@ export function TopCenterChrome({
   const drawBanner = !!pendingDraw;
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
+  // Anything in the tray (a mode banner, the modifier hint, an empty tab's Show Templates, a template's example
+  // content): the stack starts below it, or the tray covers the Offline banner (toolbar-layout.md "Layout details").
+  const trayShown = usePaletteTrayShown();
   // The strip is on screen for an Editor only (docs/specs/013-workspace/share-roles.md): the stack starts beneath
   // it, or the banners sit on the palette.
   const stripShown = !readOnly;
   const tray = stripShown ? strip : null;
   // A board, view or Sheet covering the canvas: the draw hint moves to the bottom.
   return (
-    <TopCenterStack below={stripShown ? (tray && modeBanner ? 'tray' : 'toolbar') : undefined}>
+    <TopCenterStack below={stripShown ? (trayShown ? 'tray' : 'toolbar') : undefined}>
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
       <OfflineBanner readOnly={readOnly === true} />

@@ -76,6 +76,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   arrows: '#3b82f6',
   tools: '#14b8a6',
   components: '#d946ef',
+  library: '#7c3aed',
   devices: '#0284c7',
   icons: '#ec4899',
   'audit-log': '#10b981',
@@ -138,6 +139,7 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   // Explorer section guides
   'list-and-card-views': '#0ea5e9',
   home: '#8b5cf6',
+  'start-a-project': '#0d9488',
   activity: '#f43f5e',
   folders: '#f59e0b',
   'default-folders': '#f59e0b',

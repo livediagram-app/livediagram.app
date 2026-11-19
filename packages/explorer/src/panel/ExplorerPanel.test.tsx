@@ -606,6 +606,72 @@ describe("the panel's This Browser", () => {
     expect(index.count('updateItem')).toBe(0);
   });
 
+  // one-explorer.md "Rename from the search": the editors' Rename <Kind> command.
+  describe('the rename request', () => {
+    it("opens the index card's name field, focused with the name selected, once per request", () => {
+      const item = makeItem(1, { title: 'Roadmap' });
+      const index = createFakeIndex({ items: [item] });
+      const onRenameCurrentHandled = vi.fn();
+      const props = {
+        app: 'liveplanner' as const,
+        client: index.client,
+        itemHref,
+        onCreate: vi.fn(),
+        current: item,
+        currentId: item.id,
+        onRenameCurrentHandled,
+      };
+      const { rerender } = render(<ExplorerPanel {...props} renameCurrentRequest={0} />);
+      const card = () => screen.getByRole('region', { name: 'Current plan' });
+      expect(within(card()).queryByRole('textbox')).toBeNull();
+      rerender(<ExplorerPanel {...props} renameCurrentRequest={1} />);
+      const input = within(card()).getByRole('textbox', {
+        name: 'Rename Roadmap',
+      }) as HTMLInputElement;
+      expect(document.activeElement).toBe(input);
+      expect([input.selectionStart, input.selectionEnd]).toEqual([0, 'Roadmap'.length]);
+      expect(onRenameCurrentHandled).toHaveBeenCalledTimes(1);
+      // Escape ends it; the host's cleared request (0) asks nothing more.
+      fireEvent.keyDown(input, { key: 'Escape' });
+      rerender(<ExplorerPanel {...props} renameCurrentRequest={0} />);
+      expect(within(card()).queryByRole('textbox')).toBeNull();
+      expect(onRenameCurrentHandled).toHaveBeenCalledTimes(1);
+    });
+
+    it('takes a request already waiting when the panel mounts (its code was still loading)', () => {
+      const onRenameCurrent = vi.fn();
+      const onRenameCurrentHandled = vi.fn();
+      renderPanel(createFakeIndex({ items: [] }), {
+        thisBrowser: host(),
+        currentId: 'l1',
+        onRenameCurrent,
+        renameCurrentRequest: 4,
+        onRenameCurrentHandled,
+      });
+      const card = screen.getByRole('region', { name: 'Current plan' });
+      const input = within(card).getByRole('textbox', { name: 'Rename Kept here' });
+      expect(document.activeElement).toBe(input);
+      expect(onRenameCurrentHandled).toHaveBeenCalledTimes(1);
+      fireEvent.change(input, { target: { value: 'Kept, renamed from search' } });
+      fireEvent.keyDown(input, { key: 'Enter' });
+      expect(onRenameCurrent).toHaveBeenCalledWith('Kept, renamed from search');
+    });
+
+    it('opens no field for someone who may not rename it, and still ends the request', () => {
+      const item = makeItem(1, { title: 'Read only', access: 'view' });
+      const onRenameCurrentHandled = vi.fn();
+      renderPanel(createFakeIndex({ items: [item] }), {
+        current: item,
+        currentId: item.id,
+        renameCurrentRequest: 1,
+        onRenameCurrentHandled,
+      });
+      const card = screen.getByRole('region', { name: 'Current plan' });
+      expect(within(card).queryByRole('textbox')).toBeNull();
+      expect(onRenameCurrentHandled).toHaveBeenCalledTimes(1);
+    });
+  });
+
   it("gives a This Browser item This Browser's menu: Sync in place, Delete after asking", async () => {
     const sync = vi.fn();
     const remove = vi.fn();

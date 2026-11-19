@@ -38,6 +38,9 @@ const tab = fixtureTab();
 const pages = rowsOf(tab);
 const can = resolveEditorCapabilities('edit');
 const editor = { renders: 0 };
+// How long a test waits for a result that lands after the debounce: a ceiling for a starved runner, never a pace, as
+// the wait ends the moment the result shows.
+const RESULT_WAIT_MS = 10_000;
 const countRender = () => void editor.renders++;
 // The editor's door, as useEditorState holds it: FindHost assigns its opener here.
 const openerRef: { current: FindDoor['openBar'] } = { current: () => {} };
@@ -85,40 +88,46 @@ describe('FindHost', () => {
 
   // Work Tracker 1051: the writing committed while the bar was shut (a typing commit renders nothing here) is the
   // writing it searches as it opens, not the tab as the bar last rendered.
-  it('searches the writing as it is when the bar opens', async () => {
-    const base = fixtureTab();
-    const withText = (runs: { text: string }[]): typeof base => ({
-      ...base,
-      articles: { f1: { blocks: [{ id: 'a', type: 'paragraph' as const, runs }] } },
-    });
-    const empty = withText([]);
-    const typed = withText([{ text: 'teh teh' }]);
-    const depsOf = (activeTab: typeof base, mainRef: { current: HTMLElement | null }) => ({
-      activeTab,
-      pages,
-      can,
-      standsAside: false,
-      canvasMainRef: mainRef,
-      getView: () => ({ zoom: 1, offset: { x: 0, y: 0 } }),
-      focusPage: () => {},
-      scrollIntoView: () => {},
-      commitActiveTab: () => {},
-      notify: () => {},
-    });
-    const mainRef: { current: HTMLElement | null } = { current: document.createElement('main') };
-    const store = createEditorChromeStore({
-      findDeps: depsOf(empty, mainRef),
-    } as unknown as EditorContextValue);
-    render(
-      <EditorChromeContext.Provider value={store}>
-        <EditorFindHost openerRef={openerRef} canvasMainRef={mainRef} />
-      </EditorChromeContext.Provider>,
-    );
-    act(() => store.set({ findDeps: depsOf(typed, mainRef) } as unknown as EditorContextValue));
-    act(() => openerRef.current(false));
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find' }), { target: { value: 'teh' } });
-    expect(await screen.findByText('1 of 2')).toBeTruthy();
-  });
+  it(
+    'searches the writing as it is when the bar opens',
+    async () => {
+      const base = fixtureTab();
+      const withText = (runs: { text: string }[]): typeof base => ({
+        ...base,
+        articles: { f1: { blocks: [{ id: 'a', type: 'paragraph' as const, runs }] } },
+      });
+      const empty = withText([]);
+      const typed = withText([{ text: 'teh teh' }]);
+      const depsOf = (activeTab: typeof base, mainRef: { current: HTMLElement | null }) => ({
+        activeTab,
+        pages,
+        can,
+        standsAside: false,
+        canvasMainRef: mainRef,
+        getView: () => ({ zoom: 1, offset: { x: 0, y: 0 } }),
+        focusPage: () => {},
+        scrollIntoView: () => {},
+        commitActiveTab: () => {},
+        notify: () => {},
+      });
+      const mainRef: { current: HTMLElement | null } = { current: document.createElement('main') };
+      const store = createEditorChromeStore({
+        findDeps: depsOf(empty, mainRef),
+      } as unknown as EditorContextValue);
+      render(
+        <EditorChromeContext.Provider value={store}>
+          <EditorFindHost openerRef={openerRef} canvasMainRef={mainRef} />
+        </EditorChromeContext.Provider>,
+      );
+      act(() => store.set({ findDeps: depsOf(typed, mainRef) } as unknown as EditorContextValue));
+      act(() => openerRef.current(false));
+      fireEvent.change(screen.getByRole('textbox', { name: 'Find' }), { target: { value: 'teh' } });
+      // Waits on the count itself, as long as a loaded runner needs: the search runs FIND_DEBOUNCE_MS after the key,
+      // and findBy's default second failed at a load of 21 (Work Tracker 1127).
+      expect(await screen.findByText('1 of 2', {}, { timeout: RESULT_WAIT_MS })).toBeTruthy();
+    },
+    RESULT_WAIT_MS + 5_000,
+  );
 
   // Work Tracker 1052: open over a page's title bar (its Lock page and cog at the right end), the bar steps under it,
   // and follows it as the canvas moves it (a wheel, a pan or a zoom), back under the strip once it is out of the way.

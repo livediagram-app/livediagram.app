@@ -74,7 +74,7 @@ are one copy too, `@liveworkspace/api-schema/room-wire`, re-exported by each pro
 Some Workers fetch a URL a person, an AI assistant or a stored document chose: the index's webhooks
 ([webhooks.md](../004-index/webhooks.md#security)), livediagram's live service status, an MCP's `upload_image` by URL
 (`fetchPublicBytes`, `@liveworkspace/api-kit/public-fetch`) and every product's link-card unfurl (`isBlockedHost`,
-`@liveworkspace/api-kit/unfurl`). Each refuses the same hosts (SSRF), by one shared rule,
+`@liveworkspace/api-kit/unfurl`, then `checkPublicHop` on every hop). Each refuses the same hosts (SSRF), by one shared rule,
 `@liveworkspace/model-core/private-host`:
 
 - **Internal names:** `localhost`, a single-label name (`metadata`, `intranet`), and names under `.localhost`,
@@ -95,10 +95,14 @@ Where the paths differ is deliberate, never in what they count as private:
   judged by its address: image hosts and pages are reached that way today, and refusing them breaks those calls for no
   gain, since the address itself is checked. A webhook and a live status URL refuse every IP literal, public or not
   (IDX15): they are stored and fetched again for months, so they must be names re-resolved before each send.
-- **Names resolving to private addresses:** the webhooks, live status and image upload resolve the name (DNS over
-  HTTPS, A and AAAA) before each request and refuse a private answer by the same address list. The link unfurl
-  follows redirects in Workers `fetch` and checks the final URL's host by spelling only; Workers can't reach a
-  private network, which is the residual control there.
+- **Names resolving to private addresses:** every one of them resolves the name (DNS over HTTPS, A and AAAA) before
+  each request and refuses a private answer by the same address list. The image upload and the link unfurl follow
+  redirects by hand, at most a few, putting every hop through that same check (`checkPublicHop`,
+  `@liveworkspace/api-kit/public-fetch`), so a redirect can't step onto a private host either; Workers `fetch` never
+  follows one on its own for them.
+- **http:** the image upload takes `https` on 443 only. The link unfurl also takes `http` on any port, by an http
+  variant of the same per-hop check: people paste `http` links and their cards preview today, and the scheme changes
+  nothing about which hosts are reached, since every hop's address is checked the same way.
 
 ## When a request fails
 
@@ -210,6 +214,14 @@ vocabulary, its copy) and, where its package's surface must stay stable, a one-l
 '@liveworkspace/…'` binding. A new copy of a source file across two or more products is refused in CI, and the
 copies the products still hold may only become fewer ([docs/ci.md](../../../../docs/ci.md#copies-across-products)).
 Each product's router reads one set of caching rules, `@liveworkspace/sites/cache-policy`.
+
+### The shared text fields
+
+Every app's single-line field and textarea is `@liveworkspace/ui`'s `TextInput` and `TextArea`. A field marked
+invalid is told to a screen reader as well as drawn in rose: it carries `aria-invalid`, and the line under it that
+says why (or the hint it shows) is tied to it with `aria-describedby`, so the reader hears the field, that its value
+is wrong and what to type instead. A caller that sets its own `aria-invalid` or `aria-describedby` keeps it (the
+hint is added to its own list, never in place of it).
 
 ### The shared element model
 

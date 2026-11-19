@@ -50,7 +50,7 @@ export const categories: Category[] = [
     title: 'Account and Data',
     description:
       'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, the Google Drive mirror, and email notifications work.',
-    articleCount: 9,
+    articleCount: 11,
   },
   {
     slug: 'privacy-and-security',
@@ -118,7 +118,7 @@ export const categories: Category[] = [
     slug: 'selection-modes',
     title: 'Selection Modes',
     description:
-      'The pointer modes at the top of the palette: Select, Hand, Eraser, Format Painter, Laser, Spotlight, Slide Deck, and Isometric.',
+      'The pointer modes at the top of the palette (Select, Hand, Eraser, Format Painter, Laser, Spotlight and Isometric), and the Slide Deck, opened from Tools.',
     articleCount: 8,
     kind: 'feature',
   },
@@ -127,7 +127,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 33,
+    articleCount: 34,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -159,7 +159,7 @@ export const categories: Category[] = [
     title: 'Collaboration',
     description:
       'Work together in real time: comments, assigned actions, live presence, teams, sharing, and session tools.',
-    articleCount: 9,
+    articleCount: 10,
     kind: 'feature',
   },
   {
@@ -204,7 +204,8 @@ export const articles: Article[] = [
     slug: 'context-menus',
     title: 'Context Menus',
     description: 'Right-click menus across the editor, each scoped to what you clicked.',
-    keywords: 'right click menu long press options popup categories more',
+    keywords:
+      'right click menu long press options popup categories more appearance resources quick bar save to library',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -238,9 +239,9 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description:
-      'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
+      'Get Started, Tools (with Search), Settings and the appearance switch at the end of the bottom bar.',
     keywords:
-      'corner buttons actions settings search github bottom bar cluster appearance light dark',
+      'corner buttons actions tools search settings get started tour bottom bar cluster appearance light dark slide deck history webhooks walkthroughs',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -256,10 +257,11 @@ export const articles: Article[] = [
 
   {
     slug: 'title-bar',
-    title: 'The Title Bar',
-    description: 'Rename the canvas, see who can see it, preview as a viewer, and Share or Copy.',
+    title: 'The Top Corners',
+    description:
+      'The logo, the Explorer menu and the editor mode at the top left; Present, Share or Copy and your account at the top right.',
     keywords:
-      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account canvas untitled auto name automatic name named after first label site switcher logo',
+      'title bar header top bar corner card menu button explorer logo editor mode switch present share copy make a copy account sign in sign out canvas name rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -314,11 +316,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'diagram-tour',
-    title: 'The Diagram Tour',
+    title: 'Watch It Built',
     description:
-      'The interactive Diagram mode walkthrough, offered once and replayable from Settings.',
+      'Pick a Diagram topic from Get Started and watch a cursor build it with the real controls. Nothing is saved.',
     keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps welcome diagram mode palette',
+      'tour walkthrough guide onboarding get started watch it built replay learn tutorial intro diagram mode topics example cursor',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -524,13 +526,32 @@ export const articles: Article[] = [
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
+  {
+    slug: 'phone-notifications',
+    title: 'Phone Notifications and Installing the App',
+    description: 'Install livediagram like an app, and hear on your phone when someone needs you.',
+    keywords:
+      'phone push mobile notification notifications notify device iphone ipad android install installable app pwa home screen add to home screen turn on mention reply comment action assigned',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'download-your-data',
+    title: 'Download Your Data',
+    description: 'Everything you own in every app, or a team you run, as one zip.',
+    keywords:
+      'download export data zip backup archive portability gdpr takeout everything copy leave move team admin your data all my data',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
 
   // ---- Developers ----
   {
     slug: 'api-overview',
     title: 'The livediagram API',
     description: 'What the REST API is, the base URL, and how to start calling it with a token.',
-    keywords: 'rest api endpoints base url http programmatic developer integrate',
+    keywords:
+      'rest api endpoints base url http programmatic developer integrate openapi archive presence comments',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -923,7 +944,7 @@ export const articles: Article[] = [
     title: 'Where each tool lives',
     description: 'A map of the palette categories and which elements are in each.',
     keywords:
-      'tools tab category where find text pencil pen table frame chart sticky note image draw write build structure mind node lane timeline components media behaviour collaborate data moved',
+      'tools tab category where find text pencil pen table frame chart sticky note image avatar draw write diagrams concepts layout structure mind node lane timeline embed search behaviour collaborate session participate data moved',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -983,7 +1004,8 @@ export const articles: Article[] = [
   {
     slug: 'components',
     title: 'Components',
-    description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
+    description:
+      'Cards, badges, step numbers, banners, callouts, stat rows, heroes, headers, code and checklists.',
     keywords:
       'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps',
     category: 'Palette',
@@ -1157,9 +1179,10 @@ export const articles: Article[] = [
   {
     slug: 'embed-elements',
     title: 'Embeds on the canvas',
-    description: 'Play a video, or open a Figma file, Google Doc or any website, on the canvas.',
+    description:
+      'Play a video, or open a Figma file, Google Doc, any website or a live file from our apps, on the canvas.',
     keywords:
-      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame',
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame live embed choose a file liveplanner livedocuments livedesign canvas plan page design read-only',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Workshop Kits',
@@ -1226,6 +1249,17 @@ export const articles: Article[] = [
     categorySlug: 'palette',
     group: 'Everyday Elements',
   },
+  {
+    slug: 'library',
+    title: 'The Library',
+    description:
+      'Save elements to your Personal or a team library, then place copies of them on any tab.',
+    keywords:
+      'library save to library reuse reusable saved items personal team shared assets logo component snippet favourites favorites folder place drag copy livedocuments livedesign',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Everyday Elements',
+  },
   // ---- Palette landings: Palette Settings ----
   {
     slug: 'auto-attach-arrows',
@@ -1267,7 +1301,8 @@ export const articles: Article[] = [
   {
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
-    description: 'The palette strip across the top of the canvas, its More and its Search.',
+    description:
+      'The palette strip across the top of the canvas: its categories, the Library and Search.',
     keywords:
       'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element other modes',
     category: 'Palette',
@@ -1325,7 +1360,7 @@ export const articles: Article[] = [
     slug: 'editor-modes',
     title: 'Editor Modes',
     description:
-      'Diagram, Draw and Workshop: what each mode is for, choosing one on an empty tab, and Opens in.',
+      'Diagram, Draw and Workshop: what each mode is for, switching from the mode switch on any tab, and Opens in.',
     keywords:
       'editor mode editor modes mode switch switch mode change mode choose mode new tab modes diagram draw workshop session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch boards kanban phone mobile view only read only kind template workflow way of working slides articles documents livedocuments plan planning boards kanban sheets spreadsheet forms liveplanner',
     category: 'Canvas',
@@ -1356,9 +1391,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'draw-tour',
-    title: 'The Draw Tour',
+    title: 'Watch It Built in Draw',
     description:
-      "A short, optional walkthrough of Draw mode's dock, offered the first time you work in Draw and replayable from Settings.",
+      "Short replays of Draw mode's dock from the Get Started button: pick a topic and watch a cursor draw, nothing saved.",
     keywords:
       'draw tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn draw mode whiteboard sketch pen pens marker markers highlighter eraser path tool shapes sticky dock settings background cursor shape recognition replay rerun settings accessibility',
     category: 'Canvas',
@@ -1367,9 +1402,9 @@ export const articles: Article[] = [
   },
   {
     slug: 'workshop-tour',
-    title: 'The Workshop Tour',
+    title: 'Watch It Built in Workshop',
     description:
-      'A short, optional walkthrough of Workshop mode, offered once after the welcome tour and replayable from Settings.',
+      'Short replays of Workshop mode from the Get Started button: a cursor adds votes, stickies and reactions and runs a timer, nothing saved.',
     keywords:
       'workshop tour facilitate tour tour walkthrough onboarding intro introduction show me around getting started guide tutorial first time learn workshop mode session retro workshop timer vote poll session strip collaborate share participant replay rerun settings accessibility',
     category: 'Canvas',
@@ -1453,9 +1488,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, a draw.io diagram (a tab per page), or a wrangler.toml or docker-compose file drawn as an architecture diagram into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, a draw.io diagram (a tab per page), a Visio or Lucidchart diagram (.vsdx), or a wrangler.toml or docker-compose file drawn as an architecture diagram into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
     keywords:
-      'import json mermaid markdown excalidraw drawio wrangler toml docker compose yaml infrastructure architecture cloudflare workers services draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
+      'import json mermaid markdown excalidraw drawio visio vsdx lucidchart lucid wrangler toml docker compose yaml infrastructure architecture cloudflare workers services draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from canvas',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1518,7 +1553,7 @@ export const articles: Article[] = [
     title: 'Links and Link Cards',
     description: 'Link elements across tabs or to URLs, and bookmark cards.',
     keywords:
-      'url hyperlink bookmark card website jump navigate external resources add link edit link remove link',
+      'url hyperlink bookmark card website jump navigate external resources add link edit link remove link link card set link change link',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1529,16 +1564,16 @@ export const articles: Article[] = [
     description:
       "The full-page library every liveworkspace app shares: Canvases or All Apps, the sidebar's Overview, Spaces and More, views and search.",
     keywords:
-      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree canvas',
+      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree canvas walkthroughs search panel ctrl k',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
   },
   {
     slug: 'shape-libraries',
-    title: 'Shape libraries',
+    title: 'Shape Libraries',
     description:
-      "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
+      "Your own named sets of reusable shapes from draw.io, placed from the palette's Library and managed on the Explorer page.",
     keywords:
       'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
     category: 'Explorer',
@@ -1549,9 +1584,9 @@ export const articles: Article[] = [
     slug: 'drawio-import',
     title: 'Importing draw.io files',
     description:
-      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own canvas with a tab per page.',
+      'Bring draw.io diagrams across: one into the tab you are on, or many at once from Shape Libraries, each its own canvas with a tab per page, libraries too.',
     keywords:
-      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop document',
+      'drawio draw.io diagrams.net diagrams net mxfile visio vsdx lucidchart lucid import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Assets and Imports',
@@ -1560,7 +1595,7 @@ export const articles: Article[] = [
     slug: 'microsoft-whiteboard-import',
     title: 'Importing Microsoft Whiteboard boards',
     description:
-      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated canvas: ink with pressure, colours, notes, text, shapes and images.',
+      'Bring a Microsoft Whiteboard board into a tab from its start screen: ink with pressure, colours, notes, text, shapes and images.',
     keywords:
       'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue document',
     category: 'Explorer',
@@ -1606,7 +1641,7 @@ export const articles: Article[] = [
     description:
       'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser canvas',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies reply resolve mark done reading pane keyboard pending work queue what needs me badge count all diagrams local only offline browser storage canvas agent',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1657,7 +1692,7 @@ export const articles: Article[] = [
     description:
       'Narrow any canvas list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective edited date last week recent people me others owner space team shared unfiled root lens results pages document',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in edited date last week recent people me others owner space team shared unfiled root lens results pages document',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1756,18 +1791,29 @@ export const articles: Article[] = [
   {
     slug: 'snapshots',
     title: 'Snapshots',
-    description: 'Save points for the whole document: take one, keep five, revert to one.',
+    description:
+      'Save points for the whole canvas, in History: take one, keep five, revert to one.',
     keywords:
-      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history tools',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
   {
     slug: 'walkthroughs',
     title: 'Walkthroughs',
-    description: 'Record a narrated tour of the canvas and let others play it back over it.',
+    description:
+      'Record a video of yourself talking through the canvas, and share it with a public link.',
     keywords:
-      'walkthrough record recording narrate narration voice video camera webcam loom talktrack async tour explain play playback',
+      'walkthrough record recording narrate narration voice video screen recording share tab camera webcam loom talktrack async tour explain play playback public link share rename',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'webhooks',
+    title: 'Webhooks',
+    description: 'Post what happens to a canvas to Slack, Microsoft Teams or your own service.',
+    keywords:
+      'webhook webhooks slack microsoft teams channel integration notify notification post http https endpoint json signed hmac automation zapier events send test pause resume deliveries',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1883,7 +1929,8 @@ export const articles: Article[] = [
     title: 'Element Shadows',
     description:
       'Lift an element with a drop shadow: None or four presets, plus offset/blur sliders.',
-    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video',
+    keywords:
+      'shadow drop depth elevation blur offset lift float soft hard card 3d shade video image picture appearance',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -1924,7 +1971,7 @@ export const articles: Article[] = [
     description:
       'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
     keywords:
-      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy map settings editor color colour',
+      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden mind map edit outline tidy map settings editor color colour resources',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2078,7 +2125,7 @@ export const articles: Article[] = [
     title: 'Images',
     description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
     keywords:
-      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
+      'picture photo upload png jpg insert logo screenshot avatar caption layout search find stock free openverse creative commons licence license credit attribution',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -2339,7 +2386,8 @@ export const articles: Article[] = [
     slug: 'multi-select',
     title: 'Marquee and Multi-Select',
     description: 'Select many elements at once and act on them together.',
-    keywords: 'lasso rubber band shift click select all several box',
+    keywords:
+      'lasso rubber band shift click select all several box save to library filter duplicate',
     category: 'Canvas',
     categorySlug: 'canvas/selecting-and-grouping',
     parentSlug: 'selecting-and-grouping',
@@ -2370,7 +2418,7 @@ export const articles: Article[] = [
   {
     slug: 'changing-theme',
     title: 'Changing the Theme',
-    description: 'Open the Tab Style dialog and browse themes by category.',
+    description: 'Open the Tab Style dialog and pick a look, a mashup or a theme for the tab.',
     keywords:
       'apply browse switch restyle colours colors dialog pick paintbrush look feel looks finish filter flexible professional sketch marker spectrum mashup random surprise shuffle dice billboard patchwork coffeehouse schematic flipchart sketchbook greenboard picnic mural field notes aurora seasonal holiday christmas halloween easter new year snowflakes apply to all tabs every tab all tabs same style match tabs consistent',
     category: 'Canvas',
@@ -2416,7 +2464,7 @@ export const articles: Article[] = [
     description:
       'Who did what in a team, for its admins: members, shares, moves, deletes and webhooks.',
     keywords:
-      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance',
+      'audit log history who shared joined removed role changed webhook export csv admin activity record compliance approval approved changes requested',
     category: 'Collaboration',
     categorySlug: 'collaboration/teams',
     parentSlug: 'teams',
@@ -2476,7 +2524,7 @@ export const articles: Article[] = [
   {
     slug: 'share-passwords',
     title: 'Share Passwords',
-    description: 'Gate view or edit access behind a password.',
+    description: 'Gate every share link to a canvas behind one password.',
     keywords: 'protect lock secure gate private restrict access remember',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -2628,7 +2676,8 @@ export const articles: Article[] = [
     slug: 'pie-chart',
     title: 'Pie Chart',
     description: 'An editable pie chart built from label and value rows.',
-    keywords: 'circle graph percentages segments donut proportions data',
+    keywords:
+      'circle graph percentages segments donut doughnut proportions data chart type liveplanner sheet link linked',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -2639,7 +2688,7 @@ export const articles: Article[] = [
     description:
       'Column and bar charts from label and value rows, and line, area and scatter charts from a grid or a CSV import, each switchable to any chart type.',
     keywords:
-      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type',
+      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type right axis second axis liveplanner sheet link linked range live data',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -2678,7 +2727,7 @@ export const articles: Article[] = [
   {
     slug: 'auto-layout',
     title: 'Auto Layout',
-    description: 'Tidy Up the arrow graph as a flowchart, tree, or mindmap.',
+    description: 'Lay a tab out again from its arrows: smart, flowchart, tree or mindmap.',
     keywords:
       'arrange flowchart tree mindmap tidy up automatic graph preview hover try before greyed out disabled already tidy lanes swimlane route arrows',
     category: 'Tools',
@@ -2699,7 +2748,7 @@ export const articles: Article[] = [
   {
     slug: 'search-documents',
     title: 'Finding Canvases and Folders',
-    description: 'Search across your canvases, folders, and the canvases shared with you.',
+    description: 'Find your canvases by name, and shared and team canvases under Every App.',
     keywords: 'find lookup locate files library open diagrams document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -2708,8 +2757,9 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and canvases from the search panel.',
-    keywords: 'find team shared folders lookup locate document',
+    description:
+      'Find the teams you belong to from the search panel, with team canvases under Every App.',
+    keywords: 'find team lookup locate team page every app',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
     parentSlug: 'the-search-panel',

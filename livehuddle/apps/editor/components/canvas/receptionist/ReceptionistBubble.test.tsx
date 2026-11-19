@@ -16,6 +16,7 @@ import {
 import { Space3DOverlayProvider } from '@/components/canvas/space-3d/Space3DOverlay';
 import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { SPEECH_TOP_CLEAR } from '@livehuddle/avatar/speech';
 import { ReceptionistBubble } from './ReceptionistBubble';
 
 const track = vi.hoisted(() => vi.fn());
@@ -212,6 +213,164 @@ describe('ReceptionistBubble', () => {
     expect(overlay.contains(dialog())).toBe(true);
     expect(dialog().style.top).toBe('100px');
     spy.mockRestore();
+  });
+
+  // receptionist.md "His bubble": in 3D, with no room over his head for the whole card, it stands beside him, level with
+  // his head, on the side with room, its tail dropped, rather than capped to a sliver with no topics showing.
+  it('stands beside him in 3D when there is no room over his head', () => {
+    const root = document.body.appendChild(document.createElement('div'));
+    root.setAttribute('data-canvas-root', '');
+    const spy = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this === root) return { left: 0, right: 1200, top: 0, bottom: 800 } as DOMRect;
+        const x = Number(/translateX\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        const y = Number(/translateY\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        // Centred on his head (x 350), its foot just over it (y 210), 200 px tall: more than the room above.
+        return {
+          left: 200 + x,
+          right: 500 + x,
+          top: 10 + y,
+          bottom: 210 + y,
+          width: 300,
+          height: 200,
+        } as DOMRect;
+      });
+    openReceptionist('welcome');
+    render(
+      <Space3DOverlayProvider value={{ on: true, node: null }}>
+        <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+      </Space3DOverlayProvider>,
+      { container: root },
+    );
+    const card = screen.getByRole('dialog', { name: 'Receptionist' })
+      .firstElementChild as HTMLElement;
+    // To his right (more room there), 12 px off his head; its middle level with his head (216: its foot plus the tail),
+    // so its top at 116, but never above the top edge's clearance; it stood with its top at 10.
+    const lift = Math.max(116, SPEECH_TOP_CLEAR) - 10;
+    expect(card.style.transform).toBe(`translateX(162px) translateY(${lift}px)`);
+    // No tail: it points at nothing beside him.
+    expect(card.querySelector('.rotate-45')).toBeNull();
+    spy.mockRestore();
+  });
+
+  // receptionist.md "His bubble" (Work Tracker 1256): on a 390 x 844 phone his head stood near the top, so the card went
+  // under his feet over the desk's Welcome, or in 3D was capped to a sliver. The view pans to make room over his head,
+  // the card never covers a Welcome under his feet, and a capped card keeps 160 px of its topics.
+  describe('on a phone with no room over his head', () => {
+    // The card 300 px wide and 200 tall, its foot over his head, moved down by the view's pan (offset y, zoom 1).
+    let root: HTMLElement;
+    let welcome: HTMLElement;
+    let store: ReturnType<typeof createViewportStore>;
+    let spy: MockInstance<(this: HTMLElement) => DOMRect>;
+    // In 3D the camera's depth scales the card by 1.5, times the dialog's own scale.
+    let depth = 1;
+    const dialog = () => screen.getByRole('dialog', { name: 'Receptionist' });
+    const list = () => dialog().querySelector<HTMLElement>('.flex.min-h-0.flex-col') as HTMLElement;
+    const frame = () => act(() => new Promise((done) => setTimeout(done, 40)));
+    beforeEach(() => {
+      depth = 1;
+      store = createViewportStore(1);
+      root = document.body.appendChild(document.createElement('div'));
+      root.setAttribute('data-canvas-root', '');
+      // A desk's Welcome under his feet (his feet at 296 before any pan), moved with the view.
+      welcome = document.body.appendChild(document.createElement('div'));
+      welcome.setAttribute('data-bubble-keep-clear', '');
+      spy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+        this: HTMLElement,
+      ) {
+        if (this === root) return { left: 0, right: 390, top: 0, bottom: 844 } as DOMRect;
+        const y = store.get().offset.y;
+        if (this === welcome)
+          return {
+            left: 114,
+            right: 276,
+            top: 310 + y,
+            bottom: 346 + y,
+            width: 162,
+            height: 36,
+          } as DOMRect;
+        const scale = Number(
+          /scale\(([\d.]+)\)/.exec(this.parentElement?.style.transform ?? '')?.[1] ?? 1,
+        );
+        const w = 300 * depth * scale;
+        const h = 200 * depth * scale;
+        const shift = Number(/translateX\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        // Its foot over his head (x 190, y 210 + pan).
+        return {
+          left: 190 - w / 2 + shift,
+          right: 190 + w / 2 + shift,
+          top: 210 + y - h,
+          bottom: 210 + y,
+          width: w,
+          height: h,
+        } as DOMRect;
+      });
+      openReceptionist('welcome');
+    });
+    afterEach(() => spy.mockRestore());
+
+    it('pans the view down so the card stands over his head at its own height', async () => {
+      render(
+        <ViewportStoreProvider store={store}>
+          <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+        </ViewportStoreProvider>,
+        { container: root },
+      );
+      await frame();
+      // Room over his head: 216 - 6 - SPEECH_TOP_CLEAR; the card is 200 tall, so the view pans by the shortfall.
+      expect(store.get().offset.y).toBe(200 - (216 - 6 - SPEECH_TOP_CLEAR));
+      expect(dialog().style.top).toBe('100px');
+      expect(list().style.maxHeight).toBe('');
+    });
+
+    it('never goes under his feet over a Welcome where the view cannot pan, and keeps 160 px of topics', () => {
+      render(<ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />, {
+        container: root,
+      });
+      // Under his feet it would cover the Welcome on a 390 px screen with no side to move to: over his head, capped.
+      expect(dialog().style.top).toBe('100px');
+      expect(list().style.maxHeight).toBe('160px');
+    });
+
+    it('still goes under his feet where nothing there is kept clear', () => {
+      welcome.remove();
+      render(<ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />, {
+        container: root,
+      });
+      expect(dialog().style.top).toBe('180px');
+    });
+
+    it('in 3D pans too, and reads at its own size however near the camera', async () => {
+      depth = 1.5;
+      const width = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetWidth');
+      Object.defineProperty(HTMLElement.prototype, 'offsetWidth', {
+        configurable: true,
+        get: () => 300,
+      });
+      try {
+        render(
+          <ViewportStoreProvider store={store}>
+            <Space3DOverlayProvider value={{ on: true, node: null }}>
+              <ReceptionistBubble head={{ x: 100, y: 100 }} feet={{ x: 100, y: 180 }} zoom={1} />
+            </Space3DOverlayProvider>
+          </ViewportStoreProvider>,
+          { container: root },
+        );
+        await frame();
+        // Scaled back by the depth: 300 px wide on screen, not 450 past a phone's sides.
+        const card = dialog().firstElementChild as HTMLElement;
+        expect(Math.round(card.getBoundingClientRect().width)).toBe(300);
+        // The view panned to make room over his head, and it stands there whole, with its tail, never beside him.
+        expect(store.get().offset.y).toBeGreaterThan(0);
+        expect(dialog().style.top).toBe('100px');
+        expect(list().style.maxHeight).toBe('');
+        expect(card.style.transform).not.toContain('translateY');
+        expect(card.querySelector('.rotate-45')).not.toBeNull();
+      } finally {
+        if (width) Object.defineProperty(HTMLElement.prototype, 'offsetWidth', width);
+      }
+    });
   });
 
   // Work Tracker 912: on a 390 px phone the welcome ran off the screen's right edge. His head's canvas point and the

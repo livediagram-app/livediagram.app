@@ -53,6 +53,53 @@ describe('useLongPress', () => {
     expect(fired).toHaveBeenCalledWith(50, 50);
   });
 
+  it('keeps a press through a wobble inside the slop, and lets go of one that moves past it', () => {
+    const { fired, hook } = setup();
+    const move = (x: number, y: number) =>
+      window.dispatchEvent(Object.assign(new Event('pointermove'), { clientX: x, clientY: y }));
+    act(() => hook.result.current.onPointerDown(press(30, 40)));
+    move(34, 44);
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(fired).toHaveBeenCalledTimes(1);
+    act(() => hook.result.current.onPointerDown(press(30, 40)));
+    move(30, 60);
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(fired).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the innermost hold claim a press: an outer one it bubbles to stands aside', () => {
+    vi.useFakeTimers();
+    const inner = vi.fn();
+    const outer = vi.fn();
+    const hook = renderHook(() => ({ inner: useLongPress(inner), outer: useLongPress(outer) }));
+    const nativeEvent = new Event('pointerdown');
+    const e = { pointerType: 'touch', clientX: 5, clientY: 6, nativeEvent } as ReactPointerEvent;
+    act(() => {
+      hook.result.current.inner.onPointerDown(e);
+      hook.result.current.outer.onPointerDown(e);
+    });
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(inner).toHaveBeenCalledWith(5, 6);
+    expect(outer).not.toHaveBeenCalled();
+    // A new press is a new claim: the outer hold still fires for a press only it sees.
+    act(() =>
+      hook.result.current.outer.onPointerDown({
+        ...e,
+        nativeEvent: new Event('pointerdown'),
+      } as ReactPointerEvent),
+    );
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(outer).toHaveBeenCalledTimes(1);
+  });
+
   it('takes its window listeners off when unmounted mid-hold', () => {
     const { fired, hook } = setup();
     const off = vi.spyOn(window, 'removeEventListener');

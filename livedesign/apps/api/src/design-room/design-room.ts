@@ -428,8 +428,8 @@ export class DesignRoom extends DurableObject<Env> {
     );
   }
 
-  anonymise(designId: string, personId: string): Promise<number> {
-    return anonymise(this, designId, personId);
+  anonymise(designId: string, personId: string, guestIds: readonly string[] = []): Promise<number> {
+    return anonymise(this, designId, personId, guestIds);
   }
 
   // Take the owner and team a grant names as the design's own copy. A failure is logged, never the caller's: the

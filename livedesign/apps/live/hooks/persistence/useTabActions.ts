@@ -69,6 +69,9 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Notes an import's view and elements, so its undo can bring the view back
+  // (@liveworkspace/workbench/hooks/canvas/useImportUndoView).
+  noteImport?: (tabId: string, elements: readonly { id: string }[]) => void;
   // Re-pulls the owner's design list after a cross-design tab link.
   refreshDesignList: (ownerId: string) => void;
   confirm: ReturnType<typeof useConfirm>;
@@ -93,6 +96,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport,
     refreshDesignList,
     confirm,
     toast,
@@ -127,6 +131,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId,
     setImportError,
     requestFit,
+    noteImport,
   });
 
   const toggleActiveTabLock = () => {

@@ -33,6 +33,7 @@
 @source inline("dark:fill-slate-700");
 @source inline("dark:fill-slate-800/70");
 @source inline("dark:focus-visible:ring-brand-400");
+@source inline("dark:focus:ring-slate-400/30");
 @source inline("dark:from-emerald-500/10");
 @source inline("dark:hover:bg-slate-800/40");
 @source inline("dark:hover:bg-slate-800/70");

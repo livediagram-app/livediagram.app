@@ -50,8 +50,9 @@ function SpaceGlyph({
 }
 
 // The meeting palette's category bar, as many of its categories as the figure has room for beside the Edit | Walk
-// toggle, in order: category names, and '|' for the divider between the bands.
-const BAR: readonly string[] = ['Write', '|', 'Rooms', 'Seats', '|', 'Travel'];
+// toggle, in order: category names, '…' for the band's categories left out for room (Perks, Play, Garden and Meet,
+// apps/editor/components/palette/space-categories.tsx), and '|' for the divider between the bands.
+const BAR: readonly string[] = ['Write', '|', 'Rooms', 'Seats', '…', '|', 'Travel'];
 // A name's width at the strip's 8.5px type, and the padding either side of it. Tight enough that the whole
 // strip, Search included, fits a 420-wide scene beside the menu card (the figure scan in help-pages.md).
 const charW = 4.5;

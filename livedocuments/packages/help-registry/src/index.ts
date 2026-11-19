@@ -49,8 +49,8 @@ export const categories: Category[] = [
     slug: 'account-and-data',
     title: 'Account and Data',
     description:
-      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email notifications work.',
-    articleCount: 9,
+      'Stay in control of your work: how guest access, signing in, syncing, exporting, deletion, API tokens, connecting AI tools, and email and phone notifications work.',
+    articleCount: 10,
   },
   {
     slug: 'privacy-and-security',
@@ -119,7 +119,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: one library, shared by every liveworkspace app, that keeps your documents, folders, teams and images easy to find and manage.',
-    articleCount: 13,
+    articleCount: 14,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -136,7 +136,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on a page: every element and palette setting explained.',
-    articleCount: 20,
+    articleCount: 21,
     kind: 'feature',
     groups: ['Everyday Elements', 'Page Blocks', 'Palette Settings'],
   },
@@ -197,9 +197,10 @@ export const articles: Article[] = [
   {
     slug: 'toolbar',
     title: 'The Toolbar',
-    description: 'The contextual toolbar that appears when you select one or more elements.',
+    description:
+      'The toolbar that appears when you select several elements; one element uses its right-click menu.',
     keywords:
-      'selection bar buttons floating contextual duplicate lock delete comment filter export more',
+      'selection bar buttons floating contextual duplicate lock delete comment filter export more save to library',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -214,7 +215,8 @@ export const articles: Article[] = [
   {
     slug: 'zoom-controls',
     title: 'Zoom Controls',
-    description: 'Zoom in and out, fit the canvas to the screen, and reset to 100%.',
+    description:
+      'Zoom in and out, fit the page you are on to the screen, and jump to a preset level.',
     keywords: 'zoom in out magnify fit screen percentage scale reset view dock',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -242,9 +244,9 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description:
-      'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
+      'The always-available Tools (Search, History and more), Settings and appearance controls at the end of the bottom bar.',
     keywords:
-      'corner buttons actions settings search github bottom bar cluster appearance light dark',
+      'corner buttons actions settings search tools history webhooks walkthroughs get started github bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -261,9 +263,10 @@ export const articles: Article[] = [
   {
     slug: 'title-bar',
     title: 'The Title Bar',
-    description: 'Rename the document, see who can see it, preview as a viewer, and Share or Copy.',
+    description:
+      "Where the title bar's controls went: the logo top left, and Copy, Present, Share and your account in a card top right.",
     keywords:
-      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
+      'header top bar title bar logo corner card share copy make a copy present account sign in',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -273,9 +276,9 @@ export const articles: Article[] = [
     slug: 'what-is-livedocuments',
     title: 'What is livedocuments?',
     description:
-      'An overview of the real-time, multiplayer editor for articles, decks and infographics.',
+      'An overview of the real-time, multiplayer editor for articles, decks, infographics and flashcards.',
     keywords:
-      'overview intro introduction about product articles slides deck infographics presenting app',
+      'overview intro introduction about product articles slides deck infographics flashcards presenting app',
     category: 'About livedocuments',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -284,7 +287,8 @@ export const articles: Article[] = [
     slug: 'who-is-it-for',
     title: 'Who is livedocuments For?',
     description: 'The teams and use cases that get the most out of livedocuments.',
-    keywords: 'audience use cases teams developers designers educators students',
+    keywords:
+      'audience use cases teams writers presenters speakers talks flashcards marketing infographics',
     category: 'About livedocuments',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -393,7 +397,7 @@ export const articles: Article[] = [
     title: 'The Format Painter',
     description: 'Copy the look of one element onto others in two clicks.',
     keywords:
-      'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the',
+      'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the page background',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -455,9 +459,9 @@ export const articles: Article[] = [
     slug: 'exporting-documents',
     title: 'Exporting Documents',
     description:
-      'Take your pages with you as a PDF, images, a GIF, PowerPoint, Word or a portable file, or embed a live view.',
+      'Take your pages with you as a PDF, images, a GIF, PowerPoint, Word, Markdown or a portable file, download everything as one zip, or embed a live view.',
     keywords:
-      'export download png svg pdf gif animated image save picture screenshot json embed backup powerpoint pptx word docx',
+      'export download png svg pdf gif animated image save picture screenshot json embed backup powerpoint pptx word docx markdown md print zip download all my data your data takeout gdpr portability team data',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -465,7 +469,8 @@ export const articles: Article[] = [
     slug: 'deleting-your-data',
     title: 'Deleting Your Data',
     description: 'How to delete a document or your whole account, and what each removes.',
-    keywords: 'delete remove erase gdpr clear account wipe forget close trash',
+    keywords:
+      'delete remove erase gdpr clear account wipe forget close trash download your data copy before deleting',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -521,6 +526,16 @@ export const articles: Article[] = [
     description: 'The optional emails we send, and how to turn each kind off in Settings.',
     keywords:
       'emails unsubscribe opt out notification preferences turn off welcome mention comment settings',
+    category: 'Account and Data',
+    categorySlug: 'account-and-data',
+  },
+  {
+    slug: 'phone-notifications',
+    title: 'Phone Notifications',
+    description:
+      'A notification on your phone or computer for a mention, an assignment, a reply or a comment.',
+    keywords:
+      'phone push mobile notification notifications notify alert device iphone ipad android install add to home screen app web push browser mention assigned reply comment',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -876,7 +891,7 @@ export const articles: Article[] = [
     slug: 'presenter-controls',
     title: "The Presenter's Controls",
     description:
-      'The strip in the corner of a running deck, and the eleven settings behind its cog.',
+      'The strip in the corner of a running deck, its cog, and the presenter settings in Settings.',
     keywords:
       'hud controls strip corner position counter slide name jump to slide list grid notes button popover elapsed time clock budget minutes over amber pacing settings cog transition speed auto advance autoadvance loop click to advance fill screen actual size show position keep controls visible hide pointer cursor kiosk unattended',
     category: 'Selection Modes',
@@ -917,7 +932,8 @@ export const articles: Article[] = [
   {
     slug: 'write',
     title: 'Write Elements',
-    description: 'Text, Sticky note and Pointer note: the elements made of words.',
+    description:
+      'The text styles (Title to Quote), Sticky note and Pointer note: the elements made of words.',
     keywords:
       'write writing text words wordy label caption title heading sticky note post-it remark comment copy typing type compose pointer note leader',
     category: 'Palette',
@@ -941,6 +957,17 @@ export const articles: Article[] = [
       'Cards, badges, step numbers and web components: banners, callouts, big numbers, quotes and more.',
     keywords:
       'banner callout stat row stat rows kpi big number count up change quote quotes testimonial pull quote badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Everyday Elements',
+  },
+  {
+    slug: 'library',
+    title: 'The Library',
+    description:
+      'Save elements to your own or a team’s Library, and place them in any document, in every app.',
+    keywords:
+      'library save to library team library personal saved shapes components reuse reusable assets brand kit logo symbols snippets folder place drag drop share across apps',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -999,9 +1026,10 @@ export const articles: Article[] = [
   {
     slug: 'embed-elements',
     title: 'Embeds on the canvas',
-    description: 'Play a video, or open a Figma file, Google Doc or any website, on the canvas.',
+    description:
+      'Play a video, or open a Figma file, Google Doc, any website or a live file from our apps, on the canvas.',
     keywords:
-      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame pages',
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame pages live embed live file choose a file canvas plan design read-only share link',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -1032,7 +1060,7 @@ export const articles: Article[] = [
     title: 'Icons',
     description: 'A searchable catalogue of single-colour glyphs.',
     keywords:
-      'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape',
+      'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape stickers search icons and stickers',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1108,7 +1136,8 @@ export const articles: Article[] = [
   {
     slug: 'toolbar-layout',
     title: 'Toolbar Layout',
-    description: 'The palette strip across the top of the canvas, its category bar and its Search.',
+    description:
+      'The palette strip across the top of the canvas: its category bar, the Library and Search.',
     keywords:
       'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind slide article',
     category: 'Palette',
@@ -1199,9 +1228,9 @@ export const articles: Article[] = [
     slug: 'pages-tour',
     title: 'The Pages Tour',
     description:
-      'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
+      'A short, optional walkthrough for each kind of page, started from Get Started at the bottom of the editor or Show Me, and replayable from Settings.',
     keywords:
-      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article show me replay rerun settings accessibility',
+      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page slides slide deck add to slides present presentation infographic article show me replay rerun settings accessibility flashcards get started',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1230,7 +1259,8 @@ export const articles: Article[] = [
   {
     slug: 'slide-pages',
     title: 'Slide Pages',
-    description: 'Landscape 16:9 or 4:3 pages with slide layouts, added to the deck in one press.',
+    description:
+      'Landscape 16:9 or 4:3 pages with 64 slide layouts, each in the deck from the moment you make it.',
     keywords:
       'slide slides deck presentation present powerpoint keynote 16:9 4:3 widescreen classic landscape layouts title slide bullets agenda thank you add to slide deck hide show eye presenter',
     category: 'Pages',
@@ -1317,7 +1347,7 @@ export const articles: Article[] = [
     description:
       "Export a tab's pages as PDF, PNG, SVG, GIF, PowerPoint or Word, or as JSON; a selection also as Markdown.",
     keywords:
-      'export download save png svg pdf gif animated json markdown image picture pages powerpoint pptx word docx',
+      'export download save print printer png svg pdf gif animated json markdown image picture pages powerpoint pptx word docx',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1411,10 +1441,21 @@ export const articles: Article[] = [
     group: 'Activity',
   },
   {
+    slug: 'start-a-project',
+    title: 'Starting a Project From a Kit',
+    description:
+      'One press makes every file a project needs, in every app, in a new folder, all connected.',
+    keywords:
+      'start a project kit kits template templates project setup software project product launch team workshop website build connected files folder all apps one click',
+    category: 'Explorer',
+    categorySlug: 'explorer',
+    group: 'Your Library',
+  },
+  {
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every app: actions assigned to you or by you, and open comment threads.',
+      'What is outstanding for you across every app, newest first: actions and open comment threads, with a reading pane to reply, resolve or mark done.',
     keywords:
       'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies mentions pending work queue what needs me badge count all apps document documents',
     category: 'Explorer',
@@ -1475,9 +1516,10 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My Work, with its shared folders, and Manage Teams.',
+    description:
+      'Each team as a space beside My Work, with its shared folders, New Team and the team card where it is run.',
     keywords:
-      'teams team spaces shared workspace library manage teams liveworkspace membership group',
+      'teams team spaces shared workspace library new team team card invite by link accept decline members roles liveworkspace membership group',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1506,7 +1548,7 @@ export const articles: Article[] = [
     slug: 'teams',
     title: 'Teams',
     description:
-      'Your liveworkspace teams, run on liveworkspace.app, and the library every member shares.',
+      'Your liveworkspace teams, made and run in place from the Explorer, and the library every member shares.',
     keywords:
       'workspace organisation organization members invite group company manage teams liveworkspace document',
     category: 'Collaboration',
@@ -1527,16 +1569,17 @@ export const articles: Article[] = [
     title: 'Snapshots',
     description: 'Save points for the whole document: take one, keep five, revert to one.',
     keywords:
-      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history tools',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
   {
     slug: 'walkthroughs',
     title: 'Walkthroughs',
-    description: 'Record a narrated tour of the document and let others play it back over it.',
+    description:
+      'Record a video of yourself talking through the document, then play it or share it by a public link.',
     keywords:
-      'walkthrough record recording narrate narration voice video camera webcam loom talktrack async tour explain play playback',
+      'walkthrough record recording screen recording video narrate narration voice camera webcam loom talktrack async tour explain play playback share public link rename',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1601,7 +1644,7 @@ export const articles: Article[] = [
     title: 'Layer Order and Opacity',
     description: 'Send elements to the front or back layer, and fade them with opacity.',
     keywords:
-      'transparency transparent translucent alpha fade see through bring to front send to back stacking z index overlap behind above',
+      'transparency transparent translucent alpha fade see through bring to front send to back stacking z index overlap behind above layer',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Layers and Locking',
@@ -1679,9 +1722,9 @@ export const articles: Article[] = [
     slug: 'element-indicators',
     title: 'Element Indicators',
     description:
-      'The small icons that show an element has a link, a note, an action or comments, and how to set them to Top, Footer or Off.',
+      'The small icons that show an element has an open action or comments, and how to set them to Top, Footer or Off.',
     keywords:
-      'indicators indicator badges badge icons markers chip pip status metadata link note action comment comments count top footer off hide hidden tidy map settings editor color colour',
+      'indicators indicator badges badge icons markers chip pip status metadata action comment comments count top footer off hide hidden tidy settings editor color colour',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -1903,9 +1946,10 @@ export const articles: Article[] = [
   {
     slug: 'data-elements',
     title: 'Data and Chart Elements',
-    description: 'Charts, legends, progress bars and rings, ratings, and timeline rails.',
+    description:
+      'Charts, legends, progress bars and rings, ratings, and charts linked to a liveplanner sheet.',
     keywords:
-      'chart progress bar ring rating star pie timeline graphs visualisation visualization donut meter',
+      'chart progress bar ring rating star pie timeline graphs visualisation visualization donut meter link to sheet linked chart liveplanner spreadsheet range update unlink live data',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -2120,7 +2164,7 @@ export const articles: Article[] = [
     description:
       'Column and bar charts from label and value rows, and line, area and scatter charts from a grid or a CSV import, each switchable to any chart type.',
     keywords:
-      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type',
+      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type axis show axis right axis second axis gridlines ticks negative values',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -2129,7 +2173,8 @@ export const articles: Article[] = [
     slug: 'legend',
     title: 'Legend',
     description: 'A key of colour-coded rows to explain what your colours mean.',
-    keywords: 'key colour code swatch label caption guide chart key colour key color key',
+    keywords:
+      'key colour code swatch label caption guide chart key colour key color key palette match chart vivid ocean forest sunset berry earth grey contrast',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -2189,7 +2234,8 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find the teams you belong to and open their libraries from the search panel.',
+    description:
+      'Find the teams you belong to, and where their folders and documents turn up in search.',
     keywords: 'find team shared folders lookup locate document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',

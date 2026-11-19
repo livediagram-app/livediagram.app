@@ -159,6 +159,8 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'explorer/drawio-import': 'tabs/import-tabs',
   'explorer/microsoft-whiteboard-import': 'tabs/import-tabs',
   'tools/markdown-import': 'tabs/import-tabs',
+  // Element animations left livehuddle (docs/specs/028-animation/element-animations.md, 2026-11-18).
+  'canvas/animations': 'canvas',
   'selection-modes/laser': 'selection-modes/avatar-mode',
   'selection-modes/spotlight': 'selection-modes/avatar-mode',
   'selection-modes/isometric-mode': 'selection-modes/avatar-mode',

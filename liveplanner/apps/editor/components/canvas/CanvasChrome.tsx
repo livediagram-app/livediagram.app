@@ -46,11 +46,19 @@ import { LayersThemeStrip } from '@/components/canvas/LayersThemeStrip';
 import { FormProblemsButton } from '@/components/forms/FormProblemsButton';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import { Fragment, useState, type Dispatch, type RefObject, type SetStateAction } from 'react';
+import {
+  Fragment,
+  useRef,
+  useState,
+  type Dispatch,
+  type RefObject,
+  type SetStateAction,
+} from 'react';
 import type { ShapeElement } from '@liveplanner/project';
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
+import { useRenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { PANEL_CORNERS, PANEL_IDS, cornerBottomInset, type PanelCorner } from '@/lib/panel-layout';
 import { atLeastInset } from '@liveplanner/ui';
@@ -171,10 +179,23 @@ export function CanvasChrome(props: CanvasChromeProps) {
   });
   // No palette (docs/specs/026-plan/plan-mode.md "No palette"): a board, sheet or dashboard carries its own tools.
   // The Explorer menu button keeps its corner, top-left.
+  // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
+  // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
+  const explorerButtonRef = useRef<HTMLButtonElement>(null);
+  const renameCurrent = useRenameCurrentRequest({
+    nonce: props.renameCurrentNonce ?? 0,
+    explorerOpen: activeDockPanel === 'explorer',
+    available: !zenMode && !props.explorerHidden,
+    openExplorer: () => {
+      const button = explorerButtonRef.current;
+      if (button) handleDockButtonClick('explorer', button);
+    },
+  });
   const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
+      buttonRef={explorerButtonRef}
     />
   );
 
@@ -216,6 +237,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     sessionPopoverEl,
   } = useCanvasChromePanels({
     props,
+    renameCurrent,
     stripTools,
     chromeHidden,
     isMobile,

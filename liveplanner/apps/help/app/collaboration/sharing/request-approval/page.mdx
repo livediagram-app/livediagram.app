@@ -1,0 +1,102 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  ApprovalBadges,
+  ApprovalBanner,
+  ApprovalShareTab,
+  ApprovalRequestOpen,
+} from '@liveworkspace/help-site/art/illustrations/approvals';
+
+export const metadata = helpMetadata({
+  title: 'Request Approval',
+  description:
+    'Ask named people to approve a plan, approve it or request changes, and read the badge that says where it stands.',
+  path: '/help/collaboration/sharing/request-approval/',
+});
+
+<ArticleLayout title="Request Approval" description="Ask named people to sign off on a plan, and see where their answers stand." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "request-approval")}>
+
+Some plans need a sign-off before the work starts: a project plan, a budget, a roadmap. **Request Approval** asks the people you name to approve a plan, each answering **Approve** or **Request Changes**. The plan wears a badge saying where it stands, and keeps saying so after it is approved.
+
+The plan is approved as a whole: its boards, Sheets, Dashboards and Forms together.
+
+## Asking for approval
+
+<Step n={1}>
+  Open the **Share** dialog on the plan and choose its **Approval** tab, beside **Passes**.
+</Step>
+<Step n={2}>
+  Tick the people who should approve it under **Approvers**. The list holds your team's members,
+  then the plan's owner and anyone who came in through a share link that opens every tab; each shows
+  how they reach it (Team, Owner or Link). Once there are more than eight, a **Filter people** field
+  appears.
+</Step>
+<Step n={3}>
+  Add a **Note** about what to look at, and a **Due** day if you hope for an answer by then. The due
+  day is shown, never enforced: when it passes, the badge and the banner say **Overdue**.
+</Step>
+<Step n={4}>
+  Tick **Save this version as a snapshot** to keep the plan as it is now, then press **Request
+  Approval**. The snapshot is named "Sent for approval" and the request points at it, so you can
+  come back to exactly what was asked about ([Snapshots](/help/collaboration/snapshots/)).
+</Step>
+
+<Figure caption="The Approval tab: tick the approvers, add a note and a due day, then press Request Approval.">
+  <ApprovalShareTab noun="plan" />
+</Figure>
+
+Each approver gets an email, "Ada asked you to approve Q3 Plan", with your note, the due day and a button that opens the plan. It goes to people who have **Someone Assigns Me an Action** emails switched on, since an approval asks something of them as an assigned action does. You can name up to 10 people, never yourself, and a request is limited to 10 a day on one plan.
+
+Only an Editor of the whole plan can ask. The tab is not there for plans kept in **This Browser**, in an embed, or opened through a link that covers one tab.
+
+## Approving or requesting changes
+
+An approver opens the plan and sees a banner across the top of the page: who asked, the note and the due day.
+
+- **Approve** records their approval.
+- **Request Changes** opens a field in place, "What needs to change?". Write what you would like different and press **Send**; it stays off until there is a note.
+
+Once they have answered, the banner says so ("You approved this. Waiting on 2 more.") and offers **Change Decision**, so an approver who asked for changes can approve once they are made, and the other way round. Only people named on the request can answer, and a Viewer can: approving is the one write a Viewer has.
+
+<Figure caption="The banner an approver sees, before and after they answer.">
+  <ApprovalBanner noun="plan" />
+</Figure>
+
+When the last approver approves, the banner says "Everyone has approved." and the request closes.
+
+## What the badge says
+
+The badge is the first thing in the card at the top right of the plan, before **Share** and your account. It is there for everyone who can open the plan, and for an Editor of the whole plan it opens the Approval tab. Hover it to see who asked, the due day and who has and hasn't answered. On a phone it shows its symbol alone.
+
+<Figure caption="The four badge states.">
+  <ApprovalBadges />
+</Figure>
+
+- **Awaiting 1 of 3**: waiting on answers; the numbers say how many have approved.
+- **Changes Requested**: at least one approver asked for changes.
+- **Approved**: everyone approved and the plan has not changed since.
+- **Changed Since Approval**: the plan was saved after it was approved, a card moved or a cell typed in. The badge can take **up to a minute** to turn after the first save, because an edit reaches the badge when the editor next reports its changes, at most once a minute. A rename, a move or a share does not count as a change.
+
+The page reads the approval when you open the plan, again when you return to the browser tab (at most every 30 seconds) and after your own changes. Someone else's answer shows on the next read; nothing is pushed live.
+
+## Cancelling or asking again
+
+With a request open, the Approval tab lists each approver with their answer (**Approved**, **Changes Requested** or **Waiting**) and their note. **Cancel Request** asks you to confirm, then ends it. **New Request** opens the form again and replaces the open one, so a plan never has two. A request waits on everyone named, even a person who has since lost access: cancel it and ask again without them.
+
+<Figure caption="An open request: each approver's answer, with Cancel Request and New Request below.">
+  <ApprovalRequestOpen />
+</Figure>
+
+## History and the audit log
+
+Every step is written to the plan's **History** under its **Approvals** filter: Approval Requested, Approved (Approved by everyone on the last one), Changes Requested, and Approval Cancelled (Approval Asked Again when a new request replaced it), each with the note beneath. Open it from the plan's menu in the Explorer; it covers the last 30 days. On a team's plan, the same events are copied to the team's [Audit Log](/help/collaboration/teams/audit-log/), kept for a year, so who asked whom and who approved is a record the team can look back on.
+
+## Who can do what
+
+- **Editors of the whole plan** ask, cancel and see the badge.
+- **Named approvers** approve or request changes, whatever their level: Editor, Participant or Viewer.
+- **Everyone else who can open the plan** sees the badge only.
+- Guests, Community visitors, embeds, plans in This Browser, and AI assistants or scripts using an API token see no approval.
+
+</ArticleLayout>

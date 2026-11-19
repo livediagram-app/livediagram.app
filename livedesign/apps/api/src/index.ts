@@ -49,6 +49,7 @@ import { handleTrash } from './routes/trash';
 import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspace-proxy';
+import { accountsFetch } from '@liveworkspace/auth-client';
 import { announceMediaRefs } from './media';
 import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
@@ -100,6 +101,8 @@ async function routeApiRequest(
           app: 'livedesign',
           origin: env.ACCOUNTS_URL,
           routes: [WORKBENCH_ROUTE],
+          // Over the API's own ACCOUNTS binding, the whole request (Work Tracker 1070); the public route without one.
+          fetch: accountsFetch(env.ACCOUNTS),
         })
       : null;
     // Accounts unreachable is a 503 like any other, not a crash.

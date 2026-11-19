@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Webhooks',
+  description:
+    'Post what happens to a design to a Slack or Microsoft Teams channel, or to a service you run, with webhooks set up from Tools in the editor.',
+  path: '/help/collaboration/webhooks/',
+});
+
+<ArticleLayout
+  title="Webhooks"
+  description="Tell Slack, Microsoft Teams or your own service when a design changes."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('webhooks')}
+>
+
+A **webhook** tells another service when something happens to a design, so your team hears about a new comment or a change in the channel they already watch. Each webhook belongs to one design: what you set up applies to that design only, and each design can have up to **10**.
+
+## Adding a webhook
+
+<Step n={1}>
+  Open **Tools** at the end of the bottom bar and press **Webhooks** (under Automate). The design's
+  webhooks open inside Tools. The same list is on the design's **⋯** menu in the
+  [Explorer](/help/explorer/explorer-page/).
+</Step>
+
+<Step n={2}>
+  Choose **Add Webhook** and pick where it posts: **Slack** (a message in a channel), **Microsoft
+  Teams** (a card in a channel) or **Your Own Service** (signed JSON to an HTTPS address you run).
+  The dialog shows, step by step, how to get the address to paste.
+</Step>
+
+<Step n={3}>
+  Give it a name, such as the channel it posts to, then tick what it should send (none are ticked at
+  first) and **Who Did It**: **Anyone**, or **Only Me** for just your own changes. Press **Add
+  Webhook**.
+</Step>
+
+## Looking after them
+
+Each webhook in the list shows what it sends, and has **Send Test** to post a test message now, **Pause** (and **Resume**) to stop it for a while, **Edit Events** to change what it sends, **Delete**, and its **Recent Deliveries**, so you can see what arrived and what failed.
+
+## Who can set them up
+
+You need to be signed in and able to edit the whole design: its owner, someone in its team, or someone with an Editor link to every tab. Signed in without that access, there is no **Webhooks** row in Tools. Signed out, the row carries a **Sign In** badge, and for a design kept only in [This Browser](/help/privacy-and-security/offline-mode/) a **Sync Design** badge, which saves the design to your account first.
+
+On a team's design, adding or removing a webhook is recorded in the team's [Audit Log](/help/collaboration/teams/audit-log/).
+
+</ArticleLayout>

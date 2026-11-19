@@ -1,5 +1,5 @@
 // User-Interface-category illustrations (docs/specs/018-help/help-app.md): where the editor's
-// panels and fixed controls sit (the bottom bar with its tabs and quick
+// panels and fixed controls sit (the top corner cards, the bottom bar with its tabs and quick
 // controls, the bottom-right corner cluster), the selection toolbars, the
 // element menu and the Map. Labels are the editor's own (apps/editor:
 // TabBar, ChromeControls, CanvasChrome, ZoomMenu, SelectionPopover,
@@ -7,14 +7,7 @@
 // primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import {
-  Scene,
-  Shape,
-  Arrow,
-  SelectionBox,
-  Panel,
-  Label,
-} from '@liveworkspace/help-site/art/primitives';
+import { Scene, Shape, SelectionBox, Panel, Label } from '@liveworkspace/help-site/art/primitives';
 import { MenuCard, Strip } from './toolbar-layout';
 import { PainterGlyph } from './palette-modes-parts';
 import {
@@ -26,24 +19,29 @@ import {
   QuickControlsRow,
   BottomBar,
   CornerCluster,
+  LogoCard,
+  CornerActionsCard,
 } from './user-interface-chrome';
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The whole frame at a glance: the menu button card top-left, the palette strip across the
- *  top, a tool panel (Format, while the Format Painter is on) docked top-right under it, the
- *  Map bottom-left, the corner cluster bottom-right, and the bottom bar. */
+/** The whole frame at a glance, with no title bar: the logo card and the menu button card
+ *  top-left, the palette strip across the top, the Share and account card top-right
+ *  (EditorCornerActions), the Map bottom-left, a tool panel (Format, while the Format Painter is
+ *  on) docked bottom-right above the corner cluster, and the bottom bar. */
 export function PanelLayout() {
   return (
-    <Scene w={420} h={250}>
-      <MenuCard x={12} y={12} />
-      <Strip x={82} y={12} />
-      <Panel x={318} y={56} w={90} h={66} title="FORMAT">
+    <Scene w={480} h={250}>
+      <LogoCard x={12} y={12} />
+      <MenuCard x={44} y={12} menuOnly />
+      <Strip x={84} y={12} />
+      <CornerActionsCard x={404} y={12} />
+      <Panel x={378} y={110} w={90} h={62} title="FORMAT">
         {[0, 1].map((i) => (
           <rect
             key={i}
-            x={328}
-            y={88 + i * 14}
+            x={388}
+            y={140 + i * 14}
             width={i === 0 ? 62 : 44}
             height={6}
             rx={3}
@@ -51,9 +49,8 @@ export function PanelLayout() {
           />
         ))}
       </Panel>
-      <Shape x={146} y={68} w={74} h={38} label="Start" />
-      <Shape x={146} y={134} w={74} h={38} accent label="Ship" />
-      <Arrow connector from={[183, 106]} to={[183, 134]} />
+      <Shape x={170} y={72} w={84} h={42} label="Lobby" />
+      <Shape x={270} y={110} w={74} h={40} accent label="Team Pod" />
       <Panel x={12} y={150} w={92} h={58} title="MAP">
         <rect x={36} y={182} width={14} height={8} rx={2} className="fill-slate-300" />
         <rect x={36} y={194} width={14} height={8} rx={2} className="fill-slate-300" />
@@ -68,23 +65,23 @@ export function PanelLayout() {
           strokeWidth={1.4}
         />
       </Panel>
-      <CornerCluster x={226} y={182} />
-      <BottomBar y={220} w={420} />
+      <CornerCluster x={286} y={182} />
+      <BottomBar y={220} w={480} />
     </Scene>
   );
 }
 
-/** The quick controls, close up: Search, Settings and the appearance switch
- *  at the right-hand end of the bottom bar, each named beside its icon. */
+/** The quick controls, close up: Tools and Settings named beside their icons, then the
+ *  appearance switch's icon, at the right-hand end of the bottom bar. */
 export function QuickControls() {
   return (
     <Scene w={420} h={130}>
       <Shape x={60} y={20} w={80} h={40} label="Idea" />
       <BottomBar y={86} w={420} labelled />
       <rect
-        x={232}
+        x={264}
         y={90}
-        width={182}
+        width={152}
         height={22}
         rx={6}
         fill="none"
@@ -314,28 +311,41 @@ export function MultiSelectToolbar() {
   );
 }
 
-/** The element menu for a shape: collapsible sections, Arrange first, then
- *  Size, Rotation, the Style flyout with the Clear Styles row under it, and
- *  the Text flyout. No quick bar above them (Work Tracker 739). */
+/** The element menu for a shape, as EditorContextMenu draws it: the quick bar across the top with
+ *  Clear Styles' eraser at its right (ElementMenuQuickBar), then the collapsible sections, Arrange
+ *  first, then Size, Rotation and the Appearance flyout (presets, colours, border, shadow and the
+ *  Text flyout). */
 export function ElementContextMenu() {
   const sections: { label: string; flyout?: boolean; action?: boolean }[] = [
     { label: 'Arrange' },
     { label: 'Size' },
     { label: 'Rotation' },
-    { label: 'Style', flyout: true },
-    { label: 'Clear Styles', action: true },
-    { label: 'Text', flyout: true },
+    { label: 'Appearance', flyout: true },
   ];
   const mx = 214;
   const my = 16;
+  // The quick bar's height above the first section.
+  const bar = 28;
   return (
     <Scene w={420} h={196}>
       <Shape x={56} y={60} w={112} h={56} accent label="Order" />
       <SelectionBox x={56} y={60} w={112} h={56} />
-      <Panel x={mx} y={my} w={160} h={8 + sections.length * 25}>
+      <Panel x={mx} y={my} w={160} h={bar + 8 + sections.length * 25}>
+        {/* The quick bar: Clear Styles' eraser at its right, a hairline under it. */}
+        <IconButton x={mx + 130} y={my + 4} size={22}>
+          <path d="M1.5 -5.5 L5.5 -1.5 L-1 5 H-4.5 L-6 3.5 Z M-2 -2 l4 4" {...GLYPH} />
+        </IconButton>
+        <line
+          x1={mx + 1}
+          y1={my + bar + 1}
+          x2={mx + 159}
+          y2={my + bar + 1}
+          className="stroke-slate-200"
+          strokeWidth={1}
+        />
         {sections.map((sec, i) => {
-          const ry = my + 4 + i * 25;
-          const on = sec.label === 'Style';
+          const ry = my + bar + 5 + i * 25;
+          const on = sec.label === 'Appearance';
           return (
             <g key={sec.label}>
               {on && (

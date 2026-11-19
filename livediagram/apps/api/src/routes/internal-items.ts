@@ -29,7 +29,11 @@ import { documentRoom } from '../document-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
-import { closeTokenSessions, closeWorkbenchSessions } from '../room-access-client';
+import {
+  closeArchivedSessions,
+  closeTokenSessions,
+  closeWorkbenchSessions,
+} from '../room-access-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
 import { documentFromTemplate } from './internal-template';
@@ -104,7 +108,7 @@ export function handleInternalItems(
       // every one of them is keyed by any owner id (the media owner of a guest is its hash, `mediaOwner`).
       personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
       // Their name off each canvas of someone else's that names them.
-      anonymise: (id, personId) => documentRoom(env, id).anonymise(personId),
+      anonymise: (id, personId, guestIds) => documentRoom(env, id).anonymise(personId, guestIds),
       // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for the
       // Drive mirror (`exportFile`).
       export: (id, query) =>
@@ -140,6 +144,9 @@ export function handleInternalItems(
       // (docs/specs/013-workspace/trash.md). Nothing else here runs on its own clock for a put-away canvas.
       standing: async (id, standing) => {
         if (standing.trashed) await documentRoom(env, id).trashed();
+        // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
+        // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.
+        else if (standing.archived) await closeArchivedSessions(env, id);
       },
     },
   });

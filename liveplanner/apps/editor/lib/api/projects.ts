@@ -1,5 +1,6 @@
 // Plan-level calls: load, create and save-meta, the shared-tabs summary, the snapshot, and the room ticket. Listing,
 // copying, deleting and sharing plans are the index's (@liveworkspace/workbench/lib/index-client.ts, the shared Explorer).
+import { isPasswordRefusal } from '@liveworkspace/workbench/lib/api/core';
 import type { ItemCreate, ItemTypeCatalogue } from '@liveplanner/items';
 import {
   INDEX_GRANT_HEADER,
@@ -75,7 +76,9 @@ async function _apiLoadProject(ownerId: string, id: string): Promise<Project | n
   const res = await apiFetch(`${API_BASE}/projects/${id}`, {
     headers: await apiHeaders(ownerId),
   });
-  const body = await expectOkOrNull<ProjectResponse>(res, 'load');
+  // A password asked of a link visitor reopening it with no code is the arrival's to handle (the gate), not an
+  // api error (share-password.md "Reopened by its own address").
+  const body = await expectOkOrNull<ProjectResponse>(res, 'load', isPasswordRefusal);
   if (body?.project) indexTitles.set(id, body.project.name);
   return body?.project ?? null;
 }

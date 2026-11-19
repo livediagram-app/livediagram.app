@@ -71,9 +71,9 @@ The feature categories group the feature guides by area. **Pages is the first**:
 
 - **Pages**: the pages a document is made of, in two groups: **Basics** (Working with Pages, page layouts, exporting pages, the Pages tour) and **Kinds of Page** (articles, slides and infographics).
 - **User Interface**: the panels, toolbar, context menus, the Map, zoom and tab bars, and quick controls.
-- **Explorer**: the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row.
+- **Explorer**: the document library: The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Work and folders, Team Spaces and Image Gallery, one guide per sidebar row, plus Starting a Project From a Kit (the Home's Start a Project, under All Apps).
 - **Selection Modes**: one guide per tool-picker mode: Select, Hand, Format Painter, Laser, Spotlight.
-- **Palette**: the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers) and one per palette setting.
+- **Palette**: the palette strip: one guide per palette category (Shapes and arrows, Text, Media and images, Data elements, Concepts, Components, Devices, Icons, Stickers), The Library (Save to Library and placing what you and your teams saved) and one per palette setting.
 - **Canvas**: the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
 - **Tabs**: a document's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (Markdown and JSON) and Exporting, one guide per tab-menu action.
 - **Collaboration**: comments, live presence (live cursors, selections, per-tab presence), following a presenter, teams, sharing and embeds.

@@ -55,7 +55,7 @@ shareable as it is, and the device's own setting applies through System.
 - **Signed out**: the same control, as **Guest**: a neutral disc with a person glyph (not a presence colour, so it
   never passes for someone), the word "Guest" (hidden on a phone) and the chevron, opening "Guest" over "Not signed
   in", then **Sign in**, the menu's primary, which opens `/sign-in` with the page to come back to
-  (`?return=/telemetry`, say), and **Create account** (`/sign-up`, with the same `?return=`). Once signed in, the
+  (`?return=/telemetry`, say), and **Create Account** (`/sign-up`, with the same `?return=`). Once signed in, the
   page goes back there. Only a path on this site is followed, so the link can't send anyone elsewhere. A guest has
   no settings on liveworkspace.app (see the Explorer's bottom bar), so the menu here offers none.
 - **Signed in**: an avatar of the account's Google picture where it has one ([accounts.md](../003-accounts/accounts.md#profile-pictures): `user.image` from `/get-session`, an app's `<prefix>account_picture` cookie), over its initials, which show whenever there is no picture or it fails to load (always two letters: the first
@@ -223,11 +223,19 @@ same builder every app's marketing site uses. Its `Policy` is the repository's s
 (`SECURITY_POLICY_URL`), since every app's policy agrees and this site has no help centre of its own. The fields and
 why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md#securitytxt-on-every-site).
 
-### Help (`/help/google-drive`)
+### Help (`/help/google-drive`, `/help/explorer`)
 
 Each app keeps its own help centre; a feature that is the platform's, the same in every app, is explained once here
-instead. That is Google Drive sync (drive.md): `/help/google-drive`, one page in the site's own chrome, listed
-in the sitemap. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**
+instead, in pages in the site's own chrome (`components/help/HelpArticle.tsx`) listed in the sitemap. One is Google
+Drive sync (drive.md): `/help/google-drive`. The other is the Explorer on liveworkspace.app in no app, where it mixes
+every app's work: `/help/explorer` (the overview, a section each for Home, My Work, Recent, Shared With Me, the Inbox,
+the Trash and Search), `/help/explorer/folders`, `/help/explorer/teams`, `/help/explorer/moving`,
+`/help/explorer/sharing` (sharing across apps) and `/help/explorer/signing-in` (guest or account). In no app the
+Explorer's view Help button opens the article for its view (a folder's and a team's their own, every other view a
+section of the overview), the sign-in banner's Learn more opens `/help/explorer/signing-in`, and Search lists the six
+under **liveworkspace Help**. On an app's address all three keep that app's own help centre. The articles speak of
+files and apps, never of one app's kind; their names and addresses are in `lib/help/platform-help.ts`, checked by
+`components/help/explorer-articles.test.tsx`. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**
 article under Account and Data (`/help/account-and-data/google-drive/`) that points here, so the apps' search,
 links and old addresses still find it. It names every app's file extension (drive.md "The file"), which
 `app/app-lists.test.ts` checks against the listed apps. Change it when drive.md changes what a person sees.
@@ -507,7 +515,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   side of the app the person came from. It works on a move inside the Explorer too, not only on arrival. Signed
   out, an Account category asks them to sign in and come back to the same address; on an app's address a guest's
   app side opens as the guest's panel. `?settings=` is dropped from the address as the panel closes.
-  `?ended=revoked` says, once, in a warning toast, that the link a plan was open through was revoked. `?trashed=<id>&title=` offers Undo
+  `?ended=revoked` says, once, in a warning toast, that the link a plan was open through was revoked. `?ended=archived` says, once, that the item open there was archived by its owner, so it is no longer open to them (an editor whose item was archived elsewhere, one-explorer.md "Archived from elsewhere while open"). `?trashed=<id>&title=` offers Undo
   for an item just moved to the Trash. Each is dropped from the address once read. `?item=<id>` (an editor's door
   from an open item) opens the place that holds the item, with it marked, and the address becomes that place's
   ([one-explorer.md](../004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item").
@@ -836,8 +844,8 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     old id lands on the merged category. On the app's side a category id that another app's rows alone held is gone with them; a link to it
     opens the first category, as any id the panel does not know does. The merge is linear in rows and categories,
     rebuilt only when what it reads changes, the same build for both sides (the app's side passes `only`, which
-    keeps a row after it is merged, so a merged row keeps every app's logo there too); the timed budgets on 40,000
-    rows and on the five apps' catalogues are in `merge-categories.test.tsx`.
+    keeps a row after it is merged, so a merged row keeps every app's logo there too); its growth in categories and in
+    rows a category, its budget on 20,000 rows and the five apps' catalogues are timed in `merge-categories.test.tsx`.
 - **Webhooks** are not in Settings (since 8 November 2026): they are set per document, from a document's ⋯ menu in
   the Explorer (**Webhooks**), see [webhooks.md](../004-index/webhooks.md). The old id `webhooks` is an alias of
   Profile, so an old `?settings=webhooks` link opens Profile.
@@ -923,7 +931,16 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     On an app's own address (the Explorer at `www.livediagram.app/explorer`, signed in with that app's token), Your
     Account has the app's own two rows (Work Tracker 1228): **Sign Out**, which signs out of the app as its editor's
     Sign Out does (`appSignOut`: every liveworkspace app in this browser, through the accounts site's hop, back to this
-    page as a visitor), and **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
+    page as a visitor). It is the editors' sign-out, not a lighter one (Work Tracker 1283): the page posts to the app's
+    own `POST /api/auth/sign-out` on this address (the app's router sends `/api/auth/*` to the app's API, never to
+    liveworkspace.app), whose shared handler (`createAppAuth`) ends the liveworkspace session its refresh token came
+    from, with every app's tokens from that session, and answers the hop through the accounts site that clears its
+    cookie there; so the row's "Sign out of every liveworkspace app in this browser." holds. Only when the accounts
+    site doesn't answer (or there is no refresh token) is it this app alone, remembered by its signed-out mark, as in
+    the editors ([accounts.md](../003-accounts/accounts.md#signing-out)), and then the page it reloads to says so
+    under its account control: "Signed out of livediagram only" (the app's name), with what that means and a Dismiss
+    button (`SignedOutHereNotice`, accounts.md "Signed out of this app only"), so the row's promise is never broken
+    in silence. The header's account menu on this address does the same. And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
     in every liveworkspace app.", whose **Delete Account** button (`AccountHost.deleteAccount`) opens that app's own
     Delete Account dialog, the one its editor opens (`DeleteAccountDialog` in `@liveworkspace/workbench`, with the
     app's name and its This Browser items), its confirmation unchanged: the typed email, then the code emailed to the
@@ -941,7 +958,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     the editor's own copy, in that browser, and the row says so. liveworkspace.app's own panel has no
     Danger Zone: as closing an account, resetting goes from an app.
   - **A guest** (an editor's own Settings, the Explorer on an app's address): Profile shows the header card as a
-    guest (their name, Guest, and their colour where the app has one) with **Sign in** and **Create account**, and
+    guest (their name, Guest, and their colour where the app has one) with **Sign in** and **Create Account**, and
     says what an account adds, rather than empty rows.
   - **Show My Google Picture**, in Name and Colour, for an account with a Google picture: on by default; off, others
     see the initials ([accounts.md](../003-accounts/accounts.md#profile-pictures)). The header card's avatar is the picture

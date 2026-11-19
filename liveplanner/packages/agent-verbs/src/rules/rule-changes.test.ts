@@ -83,7 +83,7 @@ describe('reading the rules', () => {
     const one = await readRuleListing(w.api, DOC_A, { rule: 'Done stamp', runs: true, limit: 5 });
     expect(one).toMatchObject({
       ok: true,
-      listing: { rule: { id: 'r1' }, runs: [{ id: 'run1' }] },
+      listing: { rule: { id: 'r1' }, runs: [{ id: 'run1', card: 'B-12 Basket' }] },
     });
     expect(w.api.calls).toContain(`${base}/runs?rule=r1&limit=5`);
     await readRuleListing(w.api, DOC_A, { runs: true });
@@ -92,6 +92,28 @@ describe('reading the rules', () => {
       ok: false,
       code: 'rule_unknown',
     });
+  });
+
+  // item-types.md "Card number prefixes": a run's card by its type's prefix; one no longer there by its number.
+  it('reads the cards for the runs only when a run names one, and names a gone card by number', async () => {
+    const runsAt = `/projects/${DOC_A}/items`;
+    const noCard = fakeApi({
+      [base]: listOf(),
+      [plan]: PLAN,
+      [`${base}/runs`]: {
+        runs: [run({ card: null }), run({ card: { id: 'gone', key: 7, title: 'Old' } })],
+      },
+      [runsAt]: { items: [], rev: 1 },
+    });
+    const read = await readRuleListing(noCard, DOC_A, { runs: true });
+    expect(read.ok && read.listing.runs!.map((r) => r.card)).toEqual([null, '#7 Old']);
+    const none = fakeApi({
+      [base]: listOf(),
+      [plan]: PLAN,
+      [`${base}/runs`]: { runs: [run({ card: null })] },
+    });
+    await readRuleListing(none, DOC_A, { runs: true });
+    expect(none.calls).not.toContain(runsAt);
   });
 
   it('keeps the runs within 50, and reads a plan with no people', async () => {
@@ -272,11 +294,13 @@ describe('changing the rules', () => {
       { op: 'run', rule: 'r1', card: '#12' },
     ]);
     expect(r.applied).toEqual([
-      '? tested "Done stamp" on #12: Done',
-      '? tested "Draft" on #12: Done',
-      '> ran "Done stamp" on #12: Done',
+      '? tested "Done stamp" on B-12: Done',
+      '? tested "Draft" on B-12: Done',
+      '> ran "Done stamp" on B-12: Done',
     ]);
     expect(r.runs).toHaveLength(3);
+    // Each run names the card by its type's prefix too (item-types.md "Card number prefixes").
+    expect(r.runs[0]!.card).toBe('B-12 Basket');
     expect(r.bodies[0]).toMatchObject({
       item: 'card12',
       ruleId: 'r1',

@@ -27,6 +27,10 @@ Participant level is the middle: take part in the board, never reshape it.
   editing the element it looks at.
 - **Running a session is an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
   editors. A Participant takes part and never runs.
+- **Approving is a Viewer's one write** ([Approvals](approvals.md), the owner's choice, 2026-11-15): a Viewer, a
+  Participant or an Editor named as an approver may **Approve** or **Request Changes** on the plan's open approval
+  request. It writes the decision and nothing else, and only for someone named; asking for approval and cancelling
+  are an Editor's of the whole plan.
 - **A checklist tick is editing**: it is one shared value, not a person's answer.
 
 ## What a Participant changes
@@ -119,7 +123,6 @@ once a plan is open.
   in real time."). Each link shows its level on a chip and can be changed in place.
 - A link visitor's level comes from the grant the index issues for the link (`level`, and `tab` when the link opens
   one tab). The api and the room check it on every request and socket ([API](../015-api/api.md) "Access").
-- The editor's role pill reads Editing, Participating or Viewing.
 - **Losing access is explained, never silent.** A session ended by an access change (a link turned off, a password
   set, a grant whose level or tab changed on renewal) reloads into the access check, and a refusal then reads **No
   Longer Shared With You** ("Your access to this project was removed while you had it open. Ask its owner to share

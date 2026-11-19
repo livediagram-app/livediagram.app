@@ -11,15 +11,13 @@ import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search
 import { track } from '@/lib/telemetry';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
-import { roleToolsItem } from '@liveworkspace/workbench/components/chrome/RoleTool';
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
-import { roleOwnerLabel } from '@/components/chrome/RoleIndicator';
 import { offersHistory, openHistoryFromFooter } from '@/components/versions/history-tools-item';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
-import { resolveOwnerBadge } from '@/lib/presence-rows';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
 import { sameTabExcept } from './editor-chrome-equal';
 
@@ -52,11 +50,12 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const startingDeck = useEditorChrome((s) => s.slideDeck.startingDeck);
   const { isMobileViewport } = view;
   if (hidden) return null;
-  // Experiment: no header bar. The name, its visibility badge and the role pill are gone (the role's switch is the
-  // Editing Mode tool in Tools); Copy, Present, Share and the account float in a card at the top right.
+  // Experiment: no header bar. The name and its visibility badge are gone; Copy, Present, Share and the account float in a
+  // card at the top right.
   return (
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
+        approval={<ApprovalBadge corner />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
         // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
@@ -135,10 +134,6 @@ function EditorViewFooterBar(view: {
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the gate's own slices.
   const hydrated = useEditorChrome((s) => s.hydrated);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
-  // The Editing Mode tool (the header's role pill, moved into Tools).
-  const roleLevel = useEditorChrome((s) => s.can.level);
-  const ownerName = useEditorChrome((s) => resolveOwnerBadge(s)?.name ?? null);
-  const canToggleRole = useEditorChrome((s) => s.canToggleRole);
   const { isOffline, onSelectTab } = view;
   if (hidden) return null;
   // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
@@ -213,15 +208,6 @@ function EditorViewFooterBar(view: {
             chrome.get().setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          extraTools={[
-            roleToolsItem({
-              role: roleLevel,
-              owner: roleOwnerLabel(ownerName, isOwner),
-              noun: 'document',
-              canSwitch: canToggleRole,
-              onPick: (level) => chrome.get().setViewPreview(level),
-            }),
-          ]}
           onOpenSearch={() =>
             openSearchWithPrefetch(chrome.get().setSearchOpen, chrome.get().loadAllTabs)
           }

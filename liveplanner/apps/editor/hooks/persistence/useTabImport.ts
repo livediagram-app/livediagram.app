@@ -80,6 +80,9 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Notes the view the import starts from and the elements it lands, just before its commit, so undoing it brings
+  // the view back (@liveworkspace/workbench/hooks/canvas/useImportUndoView).
+  noteImport?: (tabId: string, elements: readonly { id: string }[]) => void;
   // Adds a JSON export's Plan items to the project (usePlanTabImport, docs/specs/026-plan/items.md).
   importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
 };
@@ -100,6 +103,7 @@ export function useTabImport({
   setEditingId,
   setImportError,
   requestFit,
+  noteImport,
   importPlanItems,
 }: TabImportDeps) {
   // Replace the ACTIVE tab's content with an imported tab — its
@@ -114,6 +118,7 @@ export function useTabImport({
     const { elements, dropped } = savableElements(raw.elements);
     if (dropped > 0) debugLog('[import] dropped unsavable elements', { dropped });
     const imported = { ...raw, elements };
+    noteImport?.(activeId, elements);
     commitTabs((ts) => ts.map((t) => (t.id === activeId ? mergeImportedTab(t, imported) : t)));
     setSelectedId(null);
     setEditingId(null);
@@ -125,14 +130,18 @@ export function useTabImport({
   // path (which reads the file then hands the text here), so both routes run the exact same parse + replace. The
   // parser is lazy-loaded so its code stays out of the editor's initial bundle. Never throws — returns the
   // outcome the dialog renders (close / stay / show error).
-  const importTextIntoActiveTab = async (text: string): Promise<ImportOutcome> => {
+  // `from`: the file path says so, so a refusal names a file; the paste editor's text is pasted text.
+  const importTextIntoActiveTab = async (
+    text: string,
+    from: 'file' | 'paste' = 'paste',
+  ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');
-    const result = parseImportedTab(text);
+    const result = parseImportedTab(text, from);
     if (!result.ok) return { status: 'error', error: result.error };
     // A Dashboard takes only a Dashboard's JSON (docs/specs/026-plan/plan-tabs.md "Import and Export of a Dashboard").
     if (active?.kind === 'dashboard' && result.tab.kind !== 'dashboard') {
@@ -159,7 +168,7 @@ export function useTabImport({
     const { pickTabFile } = await import('@/lib/import-tab');
     const picked = await pickTabFile();
     if (!picked) return { status: 'cancelled' };
-    return importTextIntoActiveTab(picked.text);
+    return importTextIntoActiveTab(picked.text, 'file');
   };
 
   return { replaceActiveTabContent, importIntoActiveTab, importTextIntoActiveTab };

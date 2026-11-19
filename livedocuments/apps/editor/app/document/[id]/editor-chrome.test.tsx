@@ -118,7 +118,8 @@ const { QuickStyleHost } = await import('@/components/canvas/QuickStyleHost');
 const { EditorFindHost } = await import('@/components/find/FindHost');
 const { PagesTourHost } = await import('@/components/tour/PagesTourHost');
 const { ElementTourHost } = await import('@/components/tour/ElementTourHost');
-const { ModifierHint } = await import('@/components/chrome/ModifierHintBanner');
+const { ModifierHint } =
+  await import('@liveworkspace/workbench/components/chrome/ModifierHintBanner');
 const { EditorNewVersionPrompt } = await import('@/components/chrome/NewVersionPrompt');
 const { LandscapeBarsHandle } = await import('@/components/chrome/LandscapeBars');
 const { PageSheetTitleBar } = await import('@/components/canvas/PageSheetTitleBar');
@@ -174,12 +175,9 @@ const base = {
   slideDeck: { runnable: [], startingDeck: false },
   can: { level: 'edit' },
   isOwner: true,
-  canToggleRole: false,
   selfParticipant: self,
   livePresence: [],
-  documentOwnerId: 'me',
   documentOwnerName: null,
-  documentOwnerColor: null,
   // The tab bar.
   tabs: [tab],
   activeId: 't1',

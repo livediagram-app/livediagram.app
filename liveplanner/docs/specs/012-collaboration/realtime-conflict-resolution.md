@@ -106,7 +106,8 @@ kind in the presence set hands read-only visitors a write path), and
 editor actually sends or handles, against the schema, the direction a
 viewport op would slip through.
 
-- The DO keeps a bounded in-memory op log. On reconnect a client sends
+- The DO keeps a bounded in-memory op log, capped at 256 ops and at 4 MiB of their JSON, oldest first
+  ([Item store](../026-plan/blueprints/item-store.md) "Catch-up log cap"). On reconnect a client sends
   `{ epoch, lastSeq }`; the DO replays the delta or answers `resync: true` when
   it can't bridge the gap (behind the trimmed log floor, or a stale epoch), and
   the client re-fetches its loaded tabs from the plan's store in place (`useRoomResync`), with
@@ -367,7 +368,7 @@ verified end-to-end and turned on properly, not carried as dormant code.
   `dashboard-patch.ts` + `dashboard-ledger.ts` (a Dashboard's layout as deltas:
   [Collaboration race hardening](collab-race-hardening.md#a-dashboards-layout-travels-as-deltas)).
 - `apps/api/src/plan-room/plan-room.ts`: the role / class gate, seq + epoch
-  (persisted as `order-state`), the bounded in-memory op log and the
+  (persisted as `order-state`), the bounded in-memory op log (`op-log.ts`) and the
   `sync` → `catchup` handler (`resolveCatchup` in `project-room-rules.ts`). It
   rewrites comment authors in every mutation it relays and keeps collaboration
   state in Durable Object storage: the per-element ledger

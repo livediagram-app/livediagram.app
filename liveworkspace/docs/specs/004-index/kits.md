@@ -41,7 +41,9 @@ The person picks a kit, names the project (the kit's title until they type, at m
 so a part's name, the project's and the part's together, stays short enough for any app's title), and picks the
 **role** the kit's connections give: Editor first and chosen, then Participant and Viewer, as Connect File offers them
 (owner's choice, 2026-11-15). Their words for a screen reader: "Anyone who can open one of these files can edit the
-others." (Participant: "take part in", Viewer: "view"). Then one press, **Create Project**, makes the run:
+others." (Participant: "take part in", Viewer: "view"). Then one press, **Create Project**, makes the run. A
+refusal shows under the button, as wide as it on a phone (Work Tracker 1235), and kept to the button's column beside
+the fields from `md`:
 
 1. **The folder.** A new folder at the top of the person's own My Work, named for the project.
 2. **The items.** Each part, at once, through its app's internal door (below): a new item of the person's own, in

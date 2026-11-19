@@ -1,14 +1,14 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import {
-  IndicatorStylesScene,
-  IndicatorPlacementScene,
-} from '@liveworkspace/help-site/art/illustrations/element-indicators';
+  DocumentIndicatorStylesScene,
+  DocumentIndicatorPlacementScene,
+} from '@/components/illustrations/element-indicators';
 
 export const metadata = helpMetadata({
   title: 'Element Indicators',
   description:
-    'Element indicators show when an element has a link, note, open action or comments. See what each icon does and set them to Top, Footer or Off.',
+    'Element indicators show when an element has an open action or comments. See what each icon does and set them to Top, Footer or Off.',
   path: '/help/canvas/element-indicators/',
 });
 
@@ -20,8 +20,6 @@ Some of what an element carries is invisible on the canvas: an [action](/help/co
 
 An element shows an indicator for each of these it has, always in this order:
 
-- **Link**: the element links to another tab, another document or a web address. Hovering it shows a card naming the destination.
-- **Note**: the element has a note.
 - **Action**: the element has an open assigned action. Hovering it reads **Assigned to** and the person's name. A completed action stops showing.
 - **Comments**: the element has unresolved comments, with the count beside the icon. Resolving the last thread clears it.
 
@@ -34,11 +32,11 @@ A margin note on an article page shows its comments or its action on its own fac
 Open [Settings](/help/user-interface/settings/), go to **Editor** and pick an option for **Element Indicators**. It is your own preference, so it changes what you see and nobody else's view.
 
 - **Top** (the default) prints the icons inside the element along its top, in the element's own text colour at half strength, so they suit any fill, theme or style.
-- **Footer** puts a row along the inside of the element's bottom edge, the way a task card shows its details, with a word beside each icon: **Link**, **Note**, the assignee's initials on a small coloured disc with **Action**, and the comment count. When the words don't fit, the row drops them and keeps the icons, disc and count.
+- **Footer** puts a row along the inside of the element's bottom edge, the way a task card shows its details, with the assignee's initials on a small coloured disc beside **Action**, then the comment count. When the words don't fit, the row drops them and keeps the icons, disc and count.
 - **Off** draws no indicators at all. Everything they open is still in the element's menu (see [With Indicators Off](#with-indicators-off)).
 
-<Figure caption="The same element with a link, a note and two comments, in Top, Footer and Off.">
-  <IndicatorStylesScene />
+<Figure caption="The same element with an open action and two comments, in Top, Footer and Off.">
+  <DocumentIndicatorStylesScene />
 </Figure>
 
 ## Where They Sit
@@ -54,15 +52,13 @@ They look for a spot clear of the element's label and icon first. When there isn
 On an element too small, thin or spiky to hold them (a small pill, a progress bar, a star, an actor, a small diamond), the icons gather in a small **chip on the element's edge** instead, half in and half out, drawn in the element's own fill.
 
 <Figure caption="Top at a box's top-right, centred along a circle's top, and in a chip on the edge of a pill too small to hold it.">
-  <IndicatorPlacementScene />
+  <DocumentIndicatorPlacementScene />
 </Figure>
 
 ## Using Them
 
 Each indicator is a button. Click it to:
 
-- **Link**: follow the link, to the other tab, the other document, or the web page in a new tab.
-- **Note**: open the note.
 - **Action**: open the action, showing who it is assigned to.
 - **Comments**: open the comment thread.
 
@@ -70,19 +66,19 @@ Hovering the element brings its indicators up a little, and the one under the po
 
 ## While an Element Is Selected
 
-Selecting an element brings its own handles, **+** buttons and toolbar onto the same edges, so its indicators **shrink and fade away** while it is selected and come back when you deselect it. Nothing else moves: the label stays exactly where it was. To reach a link, note, action or comments on a selected element, deselect it or use its menu.
+Selecting an element brings its own handles and **+** buttons onto the same edges, so its indicators **shrink and fade away** while it is selected and come back when you deselect it. Nothing else moves: the label stays exactly where it was. To reach the action or comments on a selected element, deselect it or use its menu.
 
 ## With Indicators Off
 
 Turning indicators **Off** hides them on every element. Nothing becomes unreachable:
 
-- Actions, comments, links and notes are the buttons along the top of the element's menu, tinted when the element has one; every open thread and action is also listed in the **Collaborate** panel.
+- **Assign Action** and **Add Comment** sit under **Resources**, the last category of the element's menu, tinted (and reading **View Action** or **View Comments**) when the element has one; every open thread and action is also listed in the **Collaborate** panel.
 
 ## When They Don't Show
 
 - **Zoomed far out**: below 40% zoom, indicators hide, along with the padlock on locked elements and the avatars of collaborators who have an element selected. An overview is for shape, not detail. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
 - **Exports**: indicators are editor chrome, so PNG and SVG exports and document thumbnails never include them.
-- **Viewers and Participants** still see links, notes, actions and comments, and can open each one to read it.
+- **Viewers and Participants** still see actions and comments, and can open each one to read it.
 - **Embeds**: a document [embedded](/help/collaboration/sharing/embeds/) in another page shows no indicators at all, whether the embed is for viewing or editing and whatever style you chose. Open it in livedocuments to see them.
 
 <Tip>

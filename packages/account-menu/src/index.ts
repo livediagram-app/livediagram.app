@@ -12,4 +12,5 @@ export {
   type AppAccount,
 } from './app-account';
 export { initials } from './initials';
+export { SignedOutHereNotice } from './signed-out-notice';
 export type { DeferredMenuProps } from './placeholder';

@@ -5,13 +5,13 @@ import { ImportMenu, ImportWarning } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Importing a Tab',
   description:
-    'Import JSON, Mermaid, Markdown, Excalidraw, draw.io or BPMN diagrams into a tab, or draw a wrangler.toml or Compose file, by pasting text or picking a file.',
+    'Import JSON, Mermaid, Markdown, Excalidraw, draw.io, Visio, Lucidchart or BPMN diagrams into a tab, or draw a wrangler.toml or Compose file from text or a file.',
   path: '/help/tabs/import-tabs/',
 });
 
 <ArticleLayout
   title="Importing a Tab"
-  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, an Excalidraw scene, a draw.io diagram, images included, or a BPMN process into the active tab, or draw your infrastructure from a wrangler.toml or docker-compose file."
+  description="Bring a tab's contents in from pasted text or a file. Import a JSON tab, a Mermaid diagram, a Markdown outline, an Excalidraw scene, a draw.io diagram, images included, a Visio or Lucidchart diagram, or a BPMN process into the active tab, or draw your infrastructure from a wrangler.toml or docker-compose file."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -27,6 +27,7 @@ Open the tab's menu (the **⋯** button on the active tab, or right-click the ta
 - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
 - **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. In [Draw mode](/help/canvas/draw-mode/) it comes in as pen marks; in any other mode as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
 - **draw.io** reads a diagram from [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins): a `.drawio` or `.xml` file, compressed or not, or a PNG or SVG exported with **Include a copy of my diagram** ticked. See [Importing from draw.io](#importing-from-draw-io) below.
+- **Visio** reads a `.vsdx` drawing from Microsoft Visio, or a Lucidchart diagram exported as Visio. See [Importing from Visio or Lucidchart](#importing-from-visio-or-lucidchart) below.
 - **BPMN** reads a `.bpmn` file from a process modeler (Camunda, bpmn.io, Signavio or any BPMN 2.0 tool) and draws every event, task, gateway, pool and flow where the modeler drew it. See [Importing a BPMN file](#importing-a-bpmn-file) below.
 - **Infrastructure** draws an architecture diagram from a Cloudflare `wrangler.toml` or a Docker Compose file (`docker-compose.yml`, `compose.yaml`). See [Drawing your infrastructure](#drawing-your-infrastructure) below.
 
@@ -34,7 +35,7 @@ Open the tab's menu (the **⋯** button on the active tab, or right-click the ta
   <ImportMenu />
 </Figure>
 
-Each format card opens the same panel: **paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses. **All formats** at the top of the panel takes you back to the cards.
+Each format card opens the same panel: **paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses. **All Formats** at the top of the panel takes you back to the cards.
 
 ## Paste from Excalidraw
 
@@ -46,9 +47,9 @@ You don't need a file to bring a drawing across. In Excalidraw, select what you 
 
 When something couldn't come across exactly (Excalidraw groups, for example), a small note at the bottom of the canvas lists what changed. Pasting adds to the tab; it never replaces what is already there.
 
-## Excalidraw files as new canvases
+## Excalidraw From a Start Screen
 
-To bring whole boards across without opening a canvas first, use the [Explorer page](/help/explorer/explorer-page/): next to **Help** at the top right, **Import from** has an **Excalidraw** button (hover it to see its name), beside the ones for [Microsoft Whiteboard](/help/explorer/microsoft-whiteboard-import/) and [draw.io](/help/explorer/drawio-import/). Choose one or more `.excalidraw` files, or PNG or SVG images exported from Excalidraw with **Embed scene** on, or drop them onto the panel. Each file becomes **its own canvas** with one tab that opens in [Draw mode](/help/canvas/draw-mode/), named after the file. A file Excalidraw named for you, such as `Untitled-2026-04-12-1430`, becomes "Excalidraw board, 12 Apr 2026", dated when you saved it. From inside a folder, the new canvases go into that folder. When the import finishes, it lists the new canvases so you can open them, and any file it couldn't read, with the reason.
+On an empty tab's start screen, **Import** offers **Excalidraw** beside the other tools. Picking it opens this Import dialog at the Excalidraw format, and the scene lands in the tab you are on. To bring several boards across, open a new canvas (or add a tab) for each.
 
 ## Images in an imported file
 
@@ -79,6 +80,27 @@ Pictures embedded in the diagram come across like any imported board's [images](
 
 When anything could not come across exactly, the dialog shows one summary before closing, the same one every import uses: how the images came across, then one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), arrowheads livediagram draws differently, labels shortened to fit their shapes, hidden items left out, and so on.
 
+## Importing from Visio or Lucidchart
+
+The **Visio** card takes a `.vsdx` file, the drawing Visio 2013 and later saves. A `.vsdx` is a file rather than text, so there is no box to paste into: drop the file on the panel, or press **Choose a File**.
+
+**From Lucidchart**, open the diagram and choose **File**, **Export**, **Visio (VSDX)**, then import the file it downloads. Lucidchart has no file of its own that other tools can read, so its Visio export is the way across. An older binary `.vsd`, or a Visio 2010 `.vdx`, is turned away with a note: open it in Visio and save it as a `.vsdx` first.
+
+Like a draw.io file, **the first page replaces the active tab and every further page becomes a new tab** named after its page, and one undo takes the whole import back.
+
+What carries over:
+
+- **Common shapes** from Visio's Basic Shapes and Basic Flowchart Shapes stencils map to livediagram's own: rectangles and processes, rounded rectangles, ellipses and circles, diamonds and decisions, start and end, documents, data, databases, hexagons and preparation, triangles, trapezoids, parallelograms and stars. Less common flowchart shapes (predefined process, stored data, manual input, delay and the like) come in as the nearest livediagram shape.
+- **Shapes drawn without a stencil**, which is how Lucidchart's export writes most of its shapes, are read from their outline: boxes, rounded boxes, ellipses and diamonds come in as those shapes.
+- **Every other shape comes in as a text box** holding its words, so nothing you wrote is lost. A shape with no words of its own shows its stencil's name instead, such as "Server".
+- **Text** keeps its size, colour, bold, italic, underline and alignment, and **shapes** keep their position, size, fill, line colour, line style and rotation. Colours left at Visio's defaults take on your tab's theme.
+- **Connectors** stay attached to the shapes they are glued to, bend where Visio bends them, and keep their arrowheads and labels. A loose connector end stays where it was.
+- **Pictures** in the drawing come across like any import's [images](#images-in-an-imported-file). A picture Visio stores in a format livediagram can't read (an EMF, or an embedded document) comes in as a placeholder.
+
+Visio's layers, shape data, hyperlinks, comments, gradients and shadows don't come across. When anything changed on the way in, the dialog shows the same summary every import uses, including how many shapes came in as text boxes and which stencils they were.
+
+To bring many Visio files across at once, each as its own canvas, use [Import from draw.io](/help/explorer/drawio-import/) on the Explorer page: it takes `.vsdx` files too.
+
 ## Importing a BPMN file
 
 The **BPMN** card reads BPMN 2.0 XML, the `.bpmn` file Camunda Modeler, bpmn.io, Signavio and most process tools save. Paste the XML or pick the file (`.bpmn` or `.xml`). It replaces the tab in one undo step, like every import.
@@ -107,7 +129,7 @@ Each import draws a fresh diagram. To draw several Workers as one system, or to 
 
 Importing **replaces the active tab's contents** with what comes in, it does not merge (a multi-page draw.io file also adds a tab for each further page). Because that is destructive, the dialog leads with an amber warning naming the tab about to be overwritten, so you can back out before committing. If you change your mind afterwards, undo (`Cmd` / `Ctrl` + `Z`) brings the previous canvas back. To keep the current canvas as it is, add a new tab first and import into that.
 
-**Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits, and the tab menu isn't offered on a view-only share link.
+**Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits, and the tab menu isn't offered to a Viewer or a Participant.
 
 <Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
   <ImportWarning />

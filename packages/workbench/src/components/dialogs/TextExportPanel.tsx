@@ -53,7 +53,7 @@ export function TextExportPanel({
           style), the same control the New wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
-      <BackBar label="All formats" current={formatTitle} onClick={onBack} />
+      <BackBar label="All Formats" current={formatTitle} onClick={onBack} />
       <p className="mb-3 text-[11px] text-slate-500 dark:text-slate-400">{blurb}</p>
       {/* Named for its format, so a screen reader says what the box holds. */}
       <textarea

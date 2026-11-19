@@ -27,7 +27,7 @@ Paths are relative to `https://www.liveplanner.app/api`. For the exact request a
 
 ## List your plans
 
-A plan **list** returns the plans in your personal library (plans in a team library are not included), as metadata only, not the tab contents:
+A plan **list** returns the plans in your personal library, as metadata only, not the tab contents. Add `?team=all` to include every team you have joined, `q=` to search by name, `limit=` for one page of that many, or `archived=1` for your Archived plans instead:
 
 ```bash
 curl https://www.liveplanner.app/api/projects \
@@ -227,9 +227,10 @@ curl -X POST https://www.liveplanner.app/api/projects/$DOC/share \
 The response includes the share code to build a link from. See [Sharing and Embeds](/help/collaboration/sharing/) for what the different roles allow.
 
 <Note>
-  **Send the `role` explicitly.** Omitting it does not mean "view": a body with no role mints an
-  **edit** link, which is the app's own default. An unrecognised role is rejected outright rather
-  than quietly falling back, so a typo fails loudly, but an absent one does not.
+  **Send the `role` explicitly, and spell it exactly.** Omitting it does not mean "view": a body
+  with no role mints an **edit** link, which is the app's own default. A role the API does not
+  recognise is treated the same as no role, so a typo also mints an edit link. Check the `role` in
+  the answer.
 </Note>
 
 <Tip>

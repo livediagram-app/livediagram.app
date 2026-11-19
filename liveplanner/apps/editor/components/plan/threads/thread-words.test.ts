@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   ANNOUNCE,
-  cardLabel,
   commentCount,
   deleteThreadMessage,
   resolvedByLabel,
@@ -22,16 +21,7 @@ describe('thread words', () => {
     expect(sharedLabel(3)).toBe('On 3 cards');
   });
 
-  it('names a card here and in another plan', () => {
-    const titleOf = (id: string) => (id === 'a' ? 'Basket' : null);
-    expect(cardLabel({ projectId: 'p', itemId: 'a', key: 12 }, 'p', titleOf)).toBe('#12 Basket');
-    expect(cardLabel({ projectId: 'p', itemId: 'b', key: 3 }, 'p', titleOf)).toBe('#3');
-    expect(
-      cardLabel({ projectId: 'q', itemId: 'c', key: 4, projectName: 'Sprint 12' }, 'p', titleOf),
-    ).toBe('#4 in Sprint 12');
-    expect(cardLabel({ projectId: 'q', itemId: 'c', key: null }, 'p', titleOf)).toBe(
-      'A card in another plan',
-    );
+  it('tells whether a thread reaches another plan', () => {
     expect(sharedBeyond({ cards: [{ projectId: 'p', itemId: 'a', key: 1 }] }, 'p')).toBe(false);
     expect(sharedBeyond({ cards: [{ projectId: 'q', itemId: 'a', key: 1 }] }, 'p')).toBe(true);
   });

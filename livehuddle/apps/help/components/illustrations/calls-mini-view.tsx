@@ -1,7 +1,7 @@
 // The Mini View figure (docs/specs/018-help/help-app.md): the small window Pop Out opens, drawn from the editor's own
 // words and tones: apps/editor/components/calls/PopOutSegment.tsx (the dock's last button),
 // calls/mini-view/MiniView.tsx (In the Space and its count, Back to Space, Near You, the rows) and MiniViewControls.tsx
-// (the microphone at the foot). Calls cannot run without the Realtime secrets, so it is drawn rather than shot.
+// (the microphone at the foot), with MiniViewTiles.tsx's camera tiles over the list. Calls cannot run without the Realtime secrets, so it is drawn rather than shot.
 
 import {
   lucideArrowUpRight,
@@ -14,7 +14,7 @@ import {
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
 import { DockRow, Icon, TalkingBars } from './calls-parts';
 
-const WIN = { x: 70, y: 84, w: 280, h: 232 };
+const WIN = { x: 70, y: 84, w: 280, h: 310 };
 const ROW_H = 26;
 
 type Person = {
@@ -82,23 +82,27 @@ function Row({ y, person, you }: { y: number; person: Person; you?: boolean }) {
   );
 }
 
-/** Pop Out ends the Call dock, and the Mini View it opens: a small window on top with who is in the Space (the people
- *  you hear first), Back to Space, and your microphone at the foot. */
+/** Pop Out ends the Call dock, and the Mini View it opens: a small window on top with the cameras of the people you
+ *  hear, who is in the Space (the people you hear first), Back to Space, and your microphone at the foot. */
 export function MiniView() {
   const you: Person = { name: 'You', shirt: 'fill-brand-500', hue: 'brand' };
   const near: Person[] = [
     { name: 'Sam', shirt: 'fill-emerald-500', hue: 'emerald', talking: true },
+    { name: 'Jo', shirt: 'fill-teal-500', hue: 'brand' },
   ];
   const space: Person[] = [
     { name: 'Priya', shirt: 'fill-violet-500', hue: 'violet', hand: true },
     { name: 'Alex', shirt: 'fill-rose-500', hue: 'violet', status: 'Focusing' },
   ];
   const head = WIN.y + 22;
-  const nearTop = head + 34;
-  const spaceTop = nearTop + 16 + ROW_H * 2 + 4;
+  // The camera tiles of the people you hear, two to a row, over the list (MiniViewTiles.tsx).
+  const tilesTop = head + 32;
+  const tileW = (WIN.w - 30) / 2;
+  const nearTop = tilesTop + 54;
+  const spaceTop = nearTop + 16 + ROW_H * (near.length + 1) + 4;
   const foot = WIN.y + WIN.h - 34;
   return (
-    <Scene w={420} h={330} bg="plain">
+    <Scene w={420} h={408} bg="plain">
       <Label x={16} y={20} size={10} weight={600} tone="muted">
         The Call dock ends with Pop Out
       </Label>
@@ -146,7 +150,7 @@ export function MiniView() {
         className="fill-slate-100"
       />
       <Label x={WIN.x + 92} y={head + 12} anchor="middle" size={9.5} weight={600} tone="body">
-        4
+        5
       </Label>
       <Icon
         prims={lucideArrowUpRight}
@@ -166,6 +170,40 @@ export function MiniView() {
         className="stroke-slate-200"
         strokeWidth={1}
       />
+      {near.map((p, i) => {
+        const tx = WIN.x + 10 + i * (tileW + 10);
+        return (
+          <g key={`tile-${p.name}`}>
+            <rect
+              x={tx}
+              y={tilesTop}
+              width={tileW}
+              height={44}
+              rx={6}
+              className={`fill-slate-700 ${p.talking ? 'stroke-emerald-500' : 'stroke-slate-300'}`}
+              strokeWidth={p.talking ? 2 : 1}
+            />
+            <Bust cx={tx + tileW / 2} cy={tilesTop + 20} shirt={p.shirt} />
+            <rect
+              x={tx + 5}
+              y={tilesTop + 31}
+              width={p.name.length * 6 + 10}
+              height={10}
+              rx={5}
+              className="fill-slate-900/60"
+            />
+            <Label
+              x={tx + 10}
+              y={tilesTop + 36.5}
+              size={7.5}
+              weight={600}
+              className="fill-white help-art-as-drawn"
+            >
+              {p.name}
+            </Label>
+          </g>
+        );
+      })}
       <Label x={WIN.x + 12} y={nearTop + 6} size={8.5} weight={700} tone="muted">
         NEAR YOU
       </Label>

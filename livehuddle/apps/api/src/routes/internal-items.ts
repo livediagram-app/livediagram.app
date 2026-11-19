@@ -25,7 +25,7 @@ import { countCommunityCopy } from '../community-service';
 import { deleteAccount, mergeGuest } from '../db/account';
 import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
-import { closeTokenSessions, tellTrashed } from '../room-access-client';
+import { closeArchivedSessions, closeTokenSessions, tellTrashed } from '../room-access-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
 import { notifyFirstShare } from '../email/notifications';
 import { personStore } from '../person-client';
@@ -68,6 +68,9 @@ export function handleInternalItems(
       // closes. Nothing is kept, so a restore reopens as before.
       standing: async (id, standing) => {
         if (standing.trashed) await tellTrashed(env, id, 'document-trashed');
+        // Archived from anywhere (one-explorer.md "Archived from elsewhere while open"): every session ends with 4010,
+        // and each editor leaves for the Explorer. A move or a restore (neither flag) closes nothing.
+        else if (standing.archived) await closeArchivedSessions(env, id);
       },
       // Where Community posts' items stand, as the index reads them, for the Community's sweep.
       communityStates: (posts) => askIndexCommunityStates(indexAppClient(env), posts),
@@ -117,9 +120,10 @@ export function handleInternalItems(
       // id (the media owner of a guest is its hash, `mediaOwner`).
       personMerged: (guestId, intoId) => mergeGuest(env, guestId, intoId),
       // Their name off each canvas of someone else's that names them, and their visits as the guests they signed in
-      // from (docs/specs/012-collaboration/tab-attendance.md "Closing an account").
-      anonymise: async (id, personId) =>
-        documentRoom(env, id).anonymise(personId, await guestKeysOf(personId)),
+      // from (docs/specs/012-collaboration/tab-attendance.md "Closing an account"): the keys this app kept, and the
+      // guests the index names (Work Tracker 1241), whose ids and reactions go as the account's do.
+      anonymise: async (id, personId, guestIds) =>
+        documentRoom(env, id).anonymise(personId, await guestKeysOf(personId), guestIds),
       // The canvas drawn, for liveworkspace's previews (document-room.ts `exportImage`), or its whole file, for the
       // Drive mirror (`exportFile`).
       export: (id, query) =>

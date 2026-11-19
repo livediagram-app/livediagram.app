@@ -47,7 +47,12 @@ The endpoint is **SSRF-safe** (public repo):
 - Blocks non-public hosts before fetching: `localhost` / `*.local`, loopback,
   private ranges (10/8, 172.16/12, 192.168/16, 127/8, CGNAT 100.64/10), and
   link-local / cloud-metadata (`169.254.0.0/16`, incl. `169.254.169.254`), plus
-  IPv6 ULA / link-local. Re-validates the **final** post-redirect URL.
+  IPv6 ULA / link-local. Resolves a name before fetching (DNS over HTTPS) and refuses one
+  that answers with any private address, and follows at most 5 redirects by hand,
+  putting **every hop** through the same check (`checkPublicHop`), so neither a
+  name nor a redirect can step onto a private host. `http` links keep their
+  preview: the same per-hop check in its http variant. A refused or unresolved
+  hop leaves the card on the bare URL.
 - 8s `AbortController` timeout, ~512 KB read cap, HTML-only `Accept`, a
   descriptive `User-Agent`. Parses with **`HTMLRewriter`** (streaming: there's
   no DOMParser in Workers): `<title>`, `og:title|image|site_name|description`,

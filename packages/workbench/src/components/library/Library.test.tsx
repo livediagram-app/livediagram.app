@@ -353,6 +353,63 @@ describe('dragging onto the canvas', () => {
     expect(screen.getByRole('alert').textContent).toBe('That item is no longer in the library.');
   });
 
+  it('hands a failed place to the editor for a canvas toast, with the palette closed', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const api = fakeApi({
+      place: vi.fn(async () => Promise.reject(new LibraryError('not_found', 404))),
+    });
+    const onPlaceFailed = vi.fn();
+    let library: ReturnType<typeof useLibrary> = null;
+    // No palette mounted: only the canvas's drop path, as when the palette is closed.
+    function Canvas({ onLibrary }: { onLibrary: (l: ReturnType<typeof useLibrary>) => void }) {
+      onLibrary(useLibrary());
+      const drop = useLibraryDrop(() => true);
+      return (
+        <button type="button" onClick={() => void drop?.('team-a', { x: 0, y: 0 })}>
+          drop
+        </button>
+      );
+    }
+    render(
+      <LibraryProvider api={api} onPlaceFailed={onPlaceFailed}>
+        <Canvas onLibrary={(l) => (library = l)} />
+      </LibraryProvider>,
+    );
+    act(() => library!.ensureLoaded());
+    await waitFor(() => expect(library!.state.status).toBe('ready'));
+    expect(screen.queryByRole('alert')).toBeNull();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'drop' })));
+    await waitFor(() =>
+      expect(onPlaceFailed).toHaveBeenCalledWith('That item is no longer in the library.'),
+    );
+    expect(onPlaceFailed).toHaveBeenCalledTimes(1);
+    // The same words wait in the Library's notice for when the palette opens.
+    expect(library!.notice).toBe('That item is no longer in the library.');
+  });
+
+  it('tells the editor nothing when a place lands, or when another action is refused', async () => {
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const api = fakeApi({ remove: vi.fn(async () => Promise.reject(new Error('offline'))) });
+    const onPlaceFailed = vi.fn();
+    let library: ReturnType<typeof useLibrary> = null;
+    function Probe({ onLibrary }: { onLibrary: (l: ReturnType<typeof useLibrary>) => void }) {
+      onLibrary(useLibrary());
+      return null;
+    }
+    render(
+      <LibraryProvider api={api} onPlaceFailed={onPlaceFailed}>
+        <Probe onLibrary={(l) => (library = l)} />
+      </LibraryProvider>,
+    );
+    act(() => library!.ensureLoaded());
+    await waitFor(() => expect(library!.state.status).toBe('ready'));
+    const item = library!.state.items[0]!;
+    await act(async () => void (await library!.place(item)));
+    await act(async () => void (await library!.remove(item)));
+    expect(library!.notice).toBe('Couldn’t reach your library. Try again.');
+    expect(onPlaceFailed).not.toHaveBeenCalled();
+  });
+
   it('takes no drop in an editor without the Library', () => {
     let drop: LibraryItemDrop | null | undefined;
     render(

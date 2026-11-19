@@ -15,7 +15,7 @@ export const SPACES_COPY = {
   titleWhereItemsAreSpaces: 'Workspaces',
   myWork: 'My Work',
   createTeam: 'Create a Team',
-  signIn: 'Sign In to Work in Teams',
+  signIn: 'Sign In to Use Teams',
   showFewer: 'Show Fewer',
   failed: 'Couldn’t load what’s in your spaces.',
 } as const;

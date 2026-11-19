@@ -138,7 +138,7 @@ it has no Make a Copy.
   pass, [Community](../025-community/community.md)) sees none, since a version could carry the conversation the
   Community view leaves out.
 - **Naming, restoring and copying are an Editor's**: each writes the document. The api checks the edit gate on every
-  call; the editor gates the buttons on the session's `can.edit`, so an Editor previewing as a Viewer sees none.
+  call; the editor gates the buttons on the session's `can.edit`, so a Viewer or a Participant sees none.
 - **An API token** reads with a read-only token and restores only with a writing one, as for any write.
 
 ## In the editor

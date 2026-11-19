@@ -7,7 +7,7 @@
 import { Button } from '@livedesign/ui';
 import { lucideScaling } from '@liveworkspace/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
-import { FlyoutHeader } from '@/components/palette/CategoryFlyout';
+import { FlyoutHeader } from '@liveworkspace/workbench/components/palette/CategoryFlyout';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { TOOL_BLURBS } from '@/lib/photo-editor/option-guides';
@@ -60,7 +60,17 @@ export function PhotoPhoneHeldBar({ photo }: { photo: PhotoEditorView }) {
       >
         Cancel
       </button>
-      <Button size="sm" onClick={() => (transform ? commitTransform(ctx) : commitCrop(ctx))}>
+      <Button
+        size="sm"
+        onClick={() => {
+          if (transform) commitTransform(ctx);
+          else {
+            // The sheet may be open over the photo: the crop shows at once (photo-pages.md "On a phone").
+            commitCrop(ctx);
+            toolFlyout.close();
+          }
+        }}
+      >
         {transform ? 'Commit' : 'Crop'}
       </Button>
     </div>
@@ -104,7 +114,12 @@ export function PhotoPhoneOptionsSheet({ photo }: { photo: PhotoEditorView }) {
           {transform ? (
             <TransformOptionsBody photo={photo} onPoint={noPoint} />
           ) : (
-            <PhotoToolOptionsBody photo={photo} tool={tool!} onPoint={noPoint} />
+            <PhotoToolOptionsBody
+              photo={photo}
+              tool={tool!}
+              onPoint={noPoint}
+              onCropped={() => toolFlyout.close()}
+            />
           )}
         </div>
       </div>

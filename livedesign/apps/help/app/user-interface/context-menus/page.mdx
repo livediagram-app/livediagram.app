@@ -18,19 +18,19 @@ export const metadata = helpMetadata({
 
 A **context menu** is the menu you get by right-clicking, or by pressing and holding for half a second on touch. Each one is scoped to whatever you clicked, so it only ever offers what makes sense there. On a phone the menus open as a sheet from the bottom of the screen.
 
-<Figure caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, style, animation, text and collaboration.">
+<Figure caption="Right-clicking a shape opens its menu: collapsible sections for layer, size, shape, rotation, style, animation, text and resources.">
   <ElementContextMenu />
 </Figure>
 
 ## On an element
 
-The element menu is where an element is **styled and described**. It is built from collapsible sections, with Style, Animation (when it has text) and Text opening to the side, and which ones appear depends on what you clicked. Along its top, a row of buttons: **Assign Action**, **Add Comment**, **Add Link** and **Add Note** at the left (tinted when the element already has one), and **Clear Styles** at the right. Below them, for a shape:
+The element menu is where an element is **styled and described**. It is built from collapsible sections, with Appearance and Animation (when it has text) opening to the side, and which ones appear depends on what you clicked. Along its top, a slim bar holds **Clear Styles** at the right, while the element has a style to clear. Below it, for a shape:
 
 - **Layer**: **Bring to Front**, **Send to Back**, moving it to another [layer](/help/canvas/layers/), and its opacity.
 - **Size**, **Shape** (change the kind of shape) and **Rotation**.
-- **Style**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text, background and border, with **Reset to Theme**) and **Border**.
+- **Appearance**: one-click [presets](/help/palette/shapes/style-presets/), **Colours** (text, background and border, with **Reset to Theme**), **Border** and, once it has text, **Text** (font, size, padding, alignment and markers).
 - **Animation**: a looping effect for the shape and, separately, for its text, with speed and repeat (see [Animations](/help/canvas/animations/)).
-- **Text** (once it has text): font, size, padding, alignment and markers.
+- **Resources**, last: what attaches to the element, **Assign Action**, **Add Comment**, **Add Link** and **Add Note** (each reads **View** or **Edit** once the element has one).
 
 An arrow's menu has **Line** (straight, curved or angled, pattern and thickness) and **Pointer** (its arrowheads) instead of the shape sections, and images, tables, icons and data elements each add a section of their own.
 
@@ -48,6 +48,8 @@ Right-click a tab in the [tab bar](/help/user-interface/tab-bar/), or use its **
 
 - A row of quick actions: **Rename**, **Duplicate**, **Paste**, **Side by Side** (**Close Side by Side** while a split is open; not on a phone or with only one tab), **Lock Tab** (or **Unlock Tab**), and **Delete**, which asks you to confirm and is unavailable while the tab is locked or when it is the design's only tab.
 - Then full-width rows, in groups split by a line: **Organise in Tab Folder** (a [tab folder](/help/tabs/tab-folders/)) and **Add to Design** (link it into another of your designs, so it stays one live tab and edits show in both places); **Import**, **Export** and **Clear**.
+
+A connected tab, one that stands for another item (in livedesign or another app) and opens it, has a shorter menu: **Organise in Tab Folder** and **Remove Tab** (the other item is left as it is), plus **Connect Again** when it can no longer open that item.
 
 The layout tidiers, Auto Layout and Auto-align, are in the [command palette](/help/search-panel/the-search-panel/command-palette/) rather than this menu. See [Layout Cleanup](/help/tools/layout-cleanup/).
 

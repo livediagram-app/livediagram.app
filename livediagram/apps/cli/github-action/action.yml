@@ -42,6 +42,7 @@ runs:
         REVIEW_HEAD: ${{ inputs.head }}
         REVIEW_BRANCH: ${{ inputs.branch }}
         REVIEW_PR: ${{ github.event.pull_request.number }}
+        REVIEW_EVENT_ACTION: ${{ github.event.action }}
         REVIEW_FORK: ${{ github.event.pull_request.head.repo.full_name != github.repository }}
     - if: steps.review.outputs.fork == 'true'
       uses: actions/upload-artifact@v7

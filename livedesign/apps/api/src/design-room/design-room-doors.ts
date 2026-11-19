@@ -274,6 +274,7 @@ export async function anonymise(
   room: DesignRoom,
   designId: string,
   personId: string,
+  guestIds: readonly string[] = [],
 ): Promise<number> {
   room.bindDesign(designId);
   // A design never started (or purged) holds nothing of anyone: read its storage as it is, without making the
@@ -284,7 +285,7 @@ export async function anonymise(
       .length > 0 &&
     sql.exec('SELECT 1 FROM design WHERE id = ? AND created_at > 0', designId).toArray().length > 0;
   if (!started) return 0;
-  const changed = await anonymiseDesign(room.requireEnv(), designId, personId);
+  const changed = await anonymiseDesign(room.requireEnv(), designId, personId, guestIds);
   // The owner may have been the one anonymised: the next grant reads the stored copy again.
   room.head.forget();
   if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });

@@ -1,15 +1,16 @@
-// The footer's Tools menu (liveworkspace/docs/specs/004-index/footer-tools-menu.md), as the Calendar feed and Email to
-// Board articles show it: the Tools button pressed in the bottom bar and its popover above, its rows under their group
-// headings, one row under the pointer. Composed from the shared primitives so the house style holds.
+// The footer's Tools menu (liveworkspace/docs/specs/004-index/footer-tools-menu.md), as the Calendar feed, Email to
+// Board and Public Roadmap articles show it: the Tools button pressed in the bottom bar and its popover above, its rows
+// under their group headings, one row under the pointer, and (for Quick Controls) the Sign In or Sync Plan badges a
+// tool wears while it needs an account or a synced plan. Composed from the shared primitives so the house style holds.
 
 import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 import { TabBar, TabPill } from '@liveworkspace/help-site/art/illustrations/tabs-parts';
 
 const GROUPS: readonly { title: string; rows: readonly string[] }[] = [
-  { title: 'FIND', rows: ['Search'] },
-  { title: 'AUTOMATE', rows: ['Automations', 'Webhooks', 'Email to Board'] },
-  { title: 'COLLABORATE', rows: ['Subscribe to Calendar'] },
-  { title: 'VERSIONING', rows: ['Snapshots'] },
+  { title: 'FIND', rows: ['Search…'] },
+  { title: 'AUTOMATE', rows: ['Automations…', 'Webhooks', 'Email to Board'] },
+  { title: 'COLLABORATE', rows: ['Subscribe to Calendar', 'Publish as Roadmap'] },
+  { title: 'VERSIONING', rows: ['History'] },
 ];
 
 const W = 420;
@@ -38,8 +39,17 @@ const LAYOUT = GROUPS.reduce<{
   { y: POP_Y + HEAD, groups: [] },
 ).groups;
 
-/** The Tools popover open over the bottom bar, `highlight` the row under the pointer. */
-export function ToolsMenuFigure({ highlight }: { highlight: string }) {
+// A badge's width, near enough for its short words at 7.5px.
+const badgeW = (text: string) => text.length * 4.4 + 10;
+
+/** The Tools popover open over the bottom bar, `highlight` the row under the pointer, `badges` what a row needs first. */
+export function ToolsMenuFigure({
+  highlight,
+  badges = {},
+}: {
+  highlight: string;
+  badges?: Readonly<Record<string, readonly string[]>>;
+}) {
   const rows = LAYOUT.map((g) => {
     const top = g.top;
     const items = g.rows.map(({ r, ry }) => {
@@ -74,6 +84,37 @@ export function ToolsMenuFigure({ highlight }: { highlight: string }) {
           >
             {r}
           </Label>
+          {(badges[r] ?? []).map((b, i, all) => {
+            const bx =
+              POP_X +
+              36 +
+              r.length * 5.6 +
+              6 +
+              all.slice(0, i).reduce((w, a) => w + badgeW(a) + 4, 0);
+            return (
+              <g key={b}>
+                <rect
+                  x={bx}
+                  y={ry + 4}
+                  width={badgeW(b)}
+                  height={12}
+                  rx={6}
+                  className="fill-slate-100 stroke-slate-300"
+                  strokeWidth={0.8}
+                />
+                <Label
+                  x={bx + badgeW(b) / 2}
+                  y={ry + 10}
+                  size={7.5}
+                  weight={600}
+                  tone="muted"
+                  anchor="middle"
+                >
+                  {b}
+                </Label>
+              </g>
+            );
+          })}
           <path
             d={`M${POP_X + POP_W - 22} ${ry + 6.5} l3 3 -3 3`}
             className={on ? 'fill-none stroke-brand-500' : 'fill-none stroke-slate-300'}

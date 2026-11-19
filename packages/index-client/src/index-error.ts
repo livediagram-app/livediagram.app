@@ -10,14 +10,26 @@ export class IndexError extends Error {
   // How long the answer's `Retry-After` asked the caller to wait (ms), or null when it sent none that parses. Raw:
   // the outbox caps it (@liveworkspace/index-app outbox.ts `failureDelayMs`).
   readonly retryAfterMs: number | null;
-  constructor(status: number, code: string, retryAfterMs: number | null = null) {
+  // The share code a `password_required` refusal names, or null: a person reopening an item with no code, whose
+  // editor asks for the link's password (one-explorer-contracts.md "Reopened without the code").
+  readonly link: string | null;
+  constructor(
+    status: number,
+    code: string,
+    retryAfterMs: number | null = null,
+    link: string | null = null,
+  ) {
     super(`index: ${status} ${code}`);
     this.name = 'IndexError';
     this.status = status;
     this.code = code;
     this.retryAfterMs = retryAfterMs;
+    this.link = link;
   }
 }
+
+// The longest share code a refusal's `link` is read as: codes are 14 characters, so anything longer is not one.
+const REFUSAL_LINK_MAX = 64;
 
 // The longest `Retry-After` text read: ten digits of seconds is three centuries, and an HTTP date is 29 characters.
 const RETRY_AFTER_TEXT_MAX = 40;
@@ -43,12 +55,13 @@ export type Query = Record<string, string | number | boolean | null | undefined>
 
 // A refusal's `{ error }` as an IndexError; `unknown` when the body names none. `res` gives its Retry-After.
 export function refusal(res: Response, parsed: unknown): IndexError {
-  const error = (parsed as { error?: unknown } | null)?.error;
+  const { error, link } = (parsed as { error?: unknown; link?: unknown } | null) ?? {};
   return new IndexError(
     res.status,
     typeof error === 'string' ? error : 'unknown',
     // A stand-in response without headers (a test's, a polyfill's) has no Retry-After.
     retryAfterMsOf(res.headers?.get('Retry-After')),
+    typeof link === 'string' && link !== '' && link.length <= REFUSAL_LINK_MAX ? link : null,
   );
 }
 

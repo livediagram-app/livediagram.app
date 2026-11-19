@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Starting a Project From a Kit',
+  description:
+    'Start a whole project in one press: a kit makes every file it needs, across the liveworkspace apps, in a new folder, each one connected to the others.',
+  path: '/help/explorer/start-a-project/',
+});
+
+<ArticleLayout
+  title="Starting a Project From a Kit"
+  description="One press makes every file a project needs, in every app, in a new folder, all connected."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+A **kit** starts a whole project at once. Instead of making a plan, a diagram and a document one by one and linking them up, you pick a kit and it makes every file the project needs, each from a ready-made template in its own app, in one new folder. Every file is [connected](/help/tabs/connected-files/) to every other, so each one opens the rest from a tab.
+
+## The Kits
+
+- **Software Project**: a Plan (liveplanner), an Architecture diagram (livediagram), a Design Doc (livedocuments) and a Team Space (livehuddle).
+- **Product Launch**: a Launch Plan, a Launch Keynote deck (livedocuments), a Roadmap and a Launch Room.
+- **Team Workshop**: a Kick-off Deck (livedocuments), an Affinity Map, a Retro Board and a Workshop Room.
+- **Website Build**: a Build Board, Wireframes (livedesign) and a Site Brief (livedocuments).
+
+## Starting One
+
+<Step n={1}>
+  In the [Explorer](/help/explorer/explorer-page/), choose **All Apps** at the top, then go to
+  [Home](/help/explorer/home/). Press **Start a Project** beside the **What you can make** heading.
+</Step>
+<Step n={2}>Pick a kit. Each card lists the files it makes and their apps.</Step>
+<Step n={3}>
+  Give it a **Project Name** (left empty, it takes the kit's name), and choose the **Role** the
+  connections give: **Editor**, **Participant** or **Viewer**. Anyone who can open one of the files
+  gets that role on the others.
+</Step>
+<Step n={4}>
+  Press **Create Project**. Each file shows a tick as it is made, with **Open** beside it, then the
+  connections between them.
+</Step>
+
+When it reads **Your project is ready.**, press **Open Folder** to see everything together in the Explorer, or **Start Another**.
+
+You need to be signed in to make a project: signed out, the button reads **Sign In to Create**. If some files could not be made, **Retry** makes only what is missing, and **Remove What Was Made** deletes the files that run made.
+
+</ArticleLayout>

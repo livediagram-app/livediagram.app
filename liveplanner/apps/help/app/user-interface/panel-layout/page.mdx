@@ -4,40 +4,40 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Panel Layout',
   description:
-    'Where everything sits in the liveplanner editor: the header, the board header, the bottom-right buttons and the tab bar, and what changes on a phone.',
+    'Where everything sits in the liveplanner editor: the top corners, the board header, the bottom-right buttons and the tab bar, and what changes on a phone.',
   path: '/help/user-interface/panel-layout/',
 });
 
 <ArticleLayout
   title="Panel Layout"
-  description="The header, the board header, the bottom-right buttons and the tab bar that frame your work."
+  description="The top corners, the board header, the bottom-right buttons and the tab bar that frame your work."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-The editor gives most of the screen to the tab you are working on: a Board, a Sheet, a Dashboard or a Form. Around it sit four fixed pieces of chrome, the same on a computer, a tablet and a phone: the header across the top, the tab's own header, a cluster of buttons in the bottom-right corner, and the tab bar along the bottom.
+The editor gives most of the screen to the tab you are working on: a Board, a Sheet, a Dashboard or a Form. There is no bar across the top, so the tab keeps the window's full height. Around it sit a few fixed pieces of chrome, the same on a computer, a tablet and a phone: a card in each top corner, the tab's own header, a cluster of buttons in the bottom-right corner, and the tab bar along the bottom.
 
 ## What sits where
 
-- **Across the top**: the [header](/help/user-interface/title-bar/), with the logo, the plan's name, a pill saying who can see it (**Private**, **Shared**, **Team** or **This Browser**), a pill saying whether you are editing or viewing, and **Share** at the right.
-- **Top-left of the tab**: the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/) (your plans and folders) under it, beside the tab's title. On a board this is the start of the board header.
-- **The board header**: on a [board](/help/plan/boards/), after the title, how much is done (a percentage and a count), the board's WIP state, **Filter cards**, a **+** for adding widgets, and the board's settings cog. A Sheet, a Dashboard and a Form carry their own toolbars in the same place.
-- **Bottom-right**: a fixed cluster of buttons. Reading from the left: **Undo** and **Redo**; the [session tools](/help/collaboration/session-tools/) (**Timer** and **Vote**) on a board made for voting or while a session is running; a strip with **Trash**, **Find** (a card) and **Types** (card types), while the tab shows cards; a comments button, while the tab has a comment; **Style**, which opens the [Tab Style dialog](/help/user-interface/themes/changing-theme/); and, on a Sheet tab only, the [zoom controls](/help/user-interface/zoom-controls/). The buttons open their panels as popovers above them, and close them when you press the button again. See [Undo](/help/user-interface/undo/) and [Redo](/help/user-interface/redo/).
-- **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the plan's tabs and a **+** to add one, and the [quick controls](/help/user-interface/quick-controls/) (**Search**, **Settings** and the appearance switch) at its right-hand end.
+- **Top left**: the liveplanner logo, then the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/) (your plans and folders) under it. When a board or a Sheet fills its tab, or the tab is a Dashboard, its name rides in the same card. See [The Top Corners](/help/user-interface/title-bar/).
+- **Top right**: **Share** if the plan is yours (**Share Form** on a Form tab), **Copy** if it is someone else's, and your account.
+- **The board header**: on a [board](/help/plan/boards/), its title, how much is done (a percentage and a count), the board's WIP state, **Filter cards** and a **+** for adding widgets. A board on a tab of its own is set up from the **Board** button in the bottom-right corner; a board in a Dashboard slot keeps a settings cog at the end of its header. A Sheet, a Dashboard and a Form carry their own toolbars in the same place.
+- **Bottom-right**: a fixed cluster of buttons. Reading from the left: **Undo** and **Redo**; the [session tools](/help/collaboration/session-tools/) (**Timer** and **Vote**) on a board made for voting or while a session is running; a strip with **Trash** and **Types** (card types), while the tab shows cards; a comments button, while the tab has a comment; on a Board tab, **Board**, which opens the board's settings; **Style**, which opens the [Tab Style dialog](/help/user-interface/themes/changing-theme/); and, on a Sheet tab only, the [zoom controls](/help/user-interface/zoom-controls/). The buttons open their panels as popovers above them, and close them when you press the button again. See [Undo](/help/user-interface/undo/) and [Redo](/help/user-interface/redo/).
+- **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the plan's tabs and a **+** to add one, and the [quick controls](/help/user-interface/quick-controls/) (**Tools**, **Settings** and the appearance switch) at its right-hand end. Search is the first row in Tools, or press ⌘K (Ctrl+K).
 
 When a board or a Sheet fills its tab, the bottom-right cluster moves a little in and up so it sits inside the board's frame, clear of its edge and its scrollbar.
 
-Viewers on a shared link see fewer of these buttons: no Undo, Redo, Trash or New, and no **Style**, since they cannot change the tab.
+Participants and Viewers on a shared link see fewer of these buttons: no **Trash**, **Types**, **Board** or **Style**, since they cannot change how the tab is set up. Participants keep **Undo** and **Redo** for their own changes; Viewers have neither. Both get a **Zen mode** button at the end of the cluster.
 
 ## On a phone
 
-On a phone the bottom-right cluster stays on one row, its buttons sharing the width there is, and shows icons without their names. The Trash button is left off a phone, except while the session tools are showing: then the card strip folds into one **More card tools** button, whose menu includes **Trash**. The header drops its pills to make room for the name, and a phone held sideways folds the header and the tab bar away on its own, with a handle to bring them back.
+On a phone the bottom-right cluster stays on one row, its buttons sharing the width there is, and shows icons without their names. The Trash button is left off a phone, except while the session tools are showing: then the card strip folds into one **More card tools** button, whose menu includes **Trash**. The top-left card drops the logo and the top-right card shows its buttons as icons, and a phone held sideways folds the tab bar away on its own, with a handle at the top right to bring it back.
 
 **UI Scale** under **Appearance** in [Settings](/help/user-interface/settings/) makes the panels and corner buttons bigger or smaller on a computer, and **Panel Opacity** under **Panels** lets what is behind a panel show through.
 
 <Tip>
-  Want even less on screen? [Zen mode](/help/tools/zen-mode/) (`Z`) hides the header, the tab bar
-  and the bottom-right buttons, and leaves just your work.
+  Want even less on screen? [Zen mode](/help/tools/zen-mode/) (`Z`) hides the corner cards, the tab
+  bar and the bottom-right buttons, and leaves just your work.
 </Tip>
 
 </ArticleLayout>

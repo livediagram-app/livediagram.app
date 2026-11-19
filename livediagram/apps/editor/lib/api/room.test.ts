@@ -662,7 +662,10 @@ describe('connectRoom when the document is trashed', () => {
     addEventListener(type: string, fn: (e: { code?: number }) => void) {
       (this.listeners[type] ??= []).push(fn);
     }
-    send() {}
+    sent: unknown[] = [];
+    send(data: unknown) {
+      this.sent.push(data);
+    }
     close() {}
     fire(type: string, event: { code?: number } = {}) {
       for (const fn of this.listeners[type] ?? []) fn(event);
@@ -719,6 +722,63 @@ describe('connectRoom when the document is trashed', () => {
     ClosingSocket.all[0]!.fire('open');
     ClosingSocket.all[0]!.fire('close', { code: 1006 });
     expect(onRefused).not.toHaveBeenCalled();
+  });
+
+  // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): close 4010. The
+  // connector stops for good and hands over, so the editor leaves for the Explorer; nothing else is called.
+  // collab-race-hardening.md "Sent before the room client exists" meets one-explorer.md "Archived from elsewhere
+  // while open": what was held before the room existed is handed to this connector's outbox as the room is made. An
+  // archive that closes the room before the socket ever opens drops it: nothing held reaches a later socket.
+  it('drops held sends when the archived close comes before the socket opens', () => {
+    const room = connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onItemArchived: vi.fn() },
+    );
+    const socket = ClosingSocket.all[0]!;
+    socket.readyState = 0;
+    const answer = { kind: 'op', op: { kind: 'poll-answer' } } as never;
+    room.send(answer);
+    socket.fire('close', { code: 4010 });
+    room.send(answer);
+    vi.runAllTimers();
+    expect(ClosingSocket.all).toHaveLength(1);
+    expect(socket.sent).toEqual([]);
+  });
+
+  it('reports an archive once and never reconnects', () => {
+    const onItemArchived = vi.fn();
+    const onDocumentTrashed = vi.fn();
+    const onAccessChanged = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onItemArchived, onDocumentTrashed, onAccessChanged },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 4010 });
+    vi.runAllTimers();
+
+    expect(onItemArchived).toHaveBeenCalledTimes(1);
+    expect(onDocumentTrashed).not.toHaveBeenCalled();
+    expect(onAccessChanged).not.toHaveBeenCalled();
+    expect(ClosingSocket.all).toHaveLength(1);
+  });
+
+  // A trash or an access change is never taken for an archive.
+  it('never reports an archive for the trashed or access-changed close', () => {
+    const onItemArchived = vi.fn();
+    for (const code of [4004, 4005]) {
+      connectRoom(
+        'd1',
+        { id: 'me', name: 'Me', color: '#000' },
+        { onPresence() {}, onOp() {}, onItemArchived },
+      );
+      ClosingSocket.all.at(-1)!.fire('open');
+      ClosingSocket.all.at(-1)!.fire('close', { code });
+    }
+    vi.runAllTimers();
+    expect(onItemArchived).not.toHaveBeenCalled();
   });
 
   // An access change (docs/specs/015-api/api.md "Access changes end the sessions they affect"):

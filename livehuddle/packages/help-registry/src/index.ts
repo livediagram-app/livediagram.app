@@ -135,8 +135,8 @@ export const categories: Category[] = [
     slug: 'canvas',
     title: 'Canvas',
     description:
-      'Master the infinite canvas: place, select, link, add notes to, rotate, animate and theme elements, undo changes, and start from templates.',
-    articleCount: 15,
+      'Master the infinite canvas: place, select, rotate and theme elements, undo changes, and start from templates.',
+    articleCount: 14,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements'],
   },
@@ -160,8 +160,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: light and dark mode, and cleanup.',
-    articleCount: 2,
+      'Do more with less effort using the editor helpers: light and dark mode, cleanup, and webhooks.',
+    articleCount: 3,
     kind: 'feature',
   },
   {
@@ -190,7 +190,7 @@ export const articles: Article[] = [
     title: 'The Toolbar',
     description: 'The contextual toolbar that appears when you select one or more elements.',
     keywords:
-      'selection bar buttons floating contextual duplicate delete comment filter export more',
+      'selection bar buttons floating contextual duplicate delete filter export more rotate turn furniture format painter',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -231,9 +231,9 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description:
-      'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
+      'The always-available Get Started, Tools (with Search), Settings and appearance controls at the end of the bottom bar.',
     keywords:
-      'corner buttons actions settings search github bottom bar cluster appearance light dark',
+      'corner buttons actions settings search tools toolbox history snapshots webhooks get started tour receptionist github bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -242,17 +242,18 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go email api tokens trash delete canvas space spaces',
+      'settings preferences options config configure gear cog toggles panel opacity map minimap welcome tour receptionist notifications toasts join leave sounds desktop notifications hide participant cursors proximity ring audio proximity ring reduce motion accessibility telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale button labels default folders where new spaces go email api tokens delete account space spaces',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
 
   {
     slug: 'title-bar',
-    title: 'The Title Bar',
-    description: 'Rename the canvas, see who can see it, preview as a viewer, and Share or Copy.',
+    title: 'Share, Copy and Your Account',
+    description:
+      "The card at the top right of the editor: Share or Copy and your account, and where the title bar's parts went.",
     keywords:
-      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account canvas untitled auto name automatic name named after first label site switcher logo',
+      'header top bar title bar share copy make a copy account sign in sign out corner card logo visibility rename space',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -264,7 +265,7 @@ export const articles: Article[] = [
     description:
       'An overview of livehuddle, the shared Spaces a team walks into as characters to meet.',
     keywords:
-      'overview intro introduction about product meet meeting virtual office space avatar app',
+      'overview intro introduction about product meet meeting virtual office space avatar app 3d view receptionist calls',
     category: 'About livehuddle',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -303,7 +304,7 @@ export const articles: Article[] = [
     title: 'Your First Space',
     description: 'Open a Space, walk in as your character, say hello and invite your team.',
     keywords:
-      'start begin new create tutorial beginner basics quickstart onboarding wizard document template location canvas space spaces',
+      'start begin new create tutorial beginner basics quickstart onboarding template location canvas space spaces walk avatar sticky note rename',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -344,7 +345,8 @@ export const articles: Article[] = [
     title: 'Accessibility and Keyboard Navigation',
     description:
       'Reach and walk the canvas with the keyboard, with your selection announced to screen readers.',
-    keywords: 'a11y screen reader focus tab navigation aria assistive accessible',
+    keywords:
+      'a11y screen reader focus tab navigation aria assistive accessible f6 regions reduce motion ui scale',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -365,7 +367,7 @@ export const articles: Article[] = [
     description:
       'Switch between Edit and Walk and add sticky notes, text, rooms and more from the palette strip.',
     keywords:
-      'quick add search elements toolbar strip launcher categories dropdown popular edit walk toggle tiles bands',
+      'quick add search elements toolbar strip launcher categories dropdown edit walk toggle tiles bands write rooms seats perks play garden meet travel stickers',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -434,8 +436,7 @@ export const articles: Article[] = [
   {
     slug: 'download-all-my-data',
     title: 'Download All My Data',
-    description:
-      'Download every space you own, a picture of each tab and your comments, as one zip.',
+    description: 'Download every space you own, with a picture of each tab, as one zip.',
     keywords:
       'download all my data zip export backup everything portability gdpr settings your data comments pictures png livehuddle file email link',
     category: 'Account and Data',
@@ -616,7 +617,7 @@ export const articles: Article[] = [
     title: 'Share Link Security',
     description: 'Passwords and expiry for the links you hand out.',
     keywords:
-      'password protect expire lock secure links safety access pass expiry extend revoke participant editor',
+      'password protect expire lock secure links safety access pass expiry extend revoke participant editor link preview previews unfurl slack teams discord imessage whatsapp card thumbnail',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
@@ -746,7 +747,7 @@ export const articles: Article[] = [
     title: 'Avatar Mode',
     description: 'Walk a pixel character around the canvas while you talk through it.',
     keywords:
-      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb need help question lunch sandwich angry steam ears celebrating party hat confetti thinking thought bubble sick ice pack mood change tab switch tab leave avatar mode',
+      'walk walking character habbo person figure sprite avatar presentation present tour narrate arrow keys steer jump hop flag wave space male female right-click read-only customise customize panel gender clothing hair size outfit hoodie suit dress ponytail bald tall small speech bubble message say talk chat enter send words float avatar button status available focusing busy meeting away headphones do not disturb need help question lunch sandwich angry steam ears celebrating party hat confetti thinking thought bubble sick ice pack mood change tab switch tab leave avatar mode 3d view turn left turn right',
     category: 'Edit or Walk',
     categorySlug: 'selection-modes',
   },
@@ -757,6 +758,17 @@ export const articles: Article[] = [
       'The Receptionist walks the Space, greets everyone who arrives on the Avatar Pad, and shows you how the Space works when you ask.',
     keywords:
       'receptionist receptionist host guide ask help welcome avatar tour walkthrough onboarding intro introduction getting started guide tutorial first time learn character walk dress outfit hair behaviour reactions speech bubble message say talk chat push shove replay rerun settings',
+    category: 'Edit or Walk',
+    categorySlug: 'selection-modes/avatar-mode',
+    parentSlug: 'avatar-mode',
+  },
+  {
+    slug: '3d-view',
+    title: 'The 3D View',
+    description:
+      'Walk a Space in 3D: walls stand up, rooms open as you near them, and Turn Left and Turn Right show every side.',
+    keywords:
+      '3d three d view tilt perspective walls stand up rooms open turn left turn right rotate camera bracket keys shift 3 flat 2d plan glow usable pieces arrival default isometric map',
     category: 'Edit or Walk',
     categorySlug: 'selection-modes/avatar-mode',
     parentSlug: 'avatar-mode',
@@ -879,7 +891,7 @@ export const articles: Article[] = [
     description:
       'Rooms of any shape, room types, glass walls, windows, corridors, sliding and revolving doors, a stage, an office pod, a meeting table, a long table, bean bags and a reading nook, a bar, a garden, a recreation corner, a vending machine, a kitchenette, a restroom, a printer, a copier, lockers, a coat rack, a notice board, world clocks, a calendar wall, a suggestion box, a team photo wall, a signpost, stage curtains and a podium, a phone booth, a nap pod, a reception desk with a bell, hot desks, standing desks, a treadmill, a weight bench, an office dog, pillars and columns, a swimming pool, a car park, a bike rack, plants, shelves, drinks and rugs for Avatar mode.',
     keywords:
-      'virtual office room rooms room types presets long table boardroom table change type glass walls glass room meeting booth window windows light boardroom open plan lounge corridor corridors hallway hall junction crossroads sliding door revolving door double door persian kilim runner doormat striped rug round rug room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks printer copier photocopier lockers coat rack coat hook umbrella stand kitchenette kitchen counter sink fridge refrigerator microwave kettle restroom toilet bathroom washroom wc cubicle washbasin basin mirror hand dryer stage curtains drapes podium lectern pillar column swimming pool car park parking bike rack bicycle bean bag beanbag reading nook armchair lamp breakout arcade game moon mail high score high scores leaderboard clear high scores reset scores play recreation phone booth call busy nap pod sleep rest focus reception front desk bell ring welcome hot desk hotdesk standing desk treadmill gym weight bench workout break pet dog pet bed pat calendar wall planner month dates suggestion box ideas anonymous feedback signpost sign post arrows directions team photo wall photos portraits frames team avatar walk sit navigate',
+      'virtual office room rooms room types presets long table boardroom table change type glass walls glass room meeting booth window windows light boardroom open plan lounge corridor corridors hallway hall junction crossroads sliding door revolving door double door persian kilim runner doormat striped rug round rug room builder custom shape l-shaped 45 degree angle draw walls corners door doors doorway stage platform office pod booth meeting table conference plant bookshelf books water cooler coffee machine drink cup rug carpet kitchen lounge reception bar stool drinks cabinet fridge juice soda garden tree outdoor plant path stepping stones grass lawn turf picket fence bench picnic table hammock umbrella parasol fountain pond campfire fireplace fire notice board cork pin note notes world clock time zone timezone jukebox music radio stream ping pong ping-pong table tennis pool table snooker billiards foosball table football darts dartboard vending machine snacks printer copier photocopier lockers coat rack coat hook umbrella stand kitchenette kitchen counter sink fridge refrigerator microwave kettle restroom toilet bathroom washroom wc cubicle washbasin basin mirror hand dryer stage curtains drapes podium lectern pillar column swimming pool car park parking bike rack bicycle bean bag beanbag reading nook armchair lamp breakout arcade game moon mail high score high scores leaderboard clear high scores reset scores play recreation phone booth call busy nap pod sleep rest focus reception front desk bell ring welcome hot desk hotdesk standing desk treadmill gym weight bench workout break pet dog pet bed pat calendar wall planner month dates suggestion box ideas anonymous feedback signpost sign post arrows directions team photo wall photos portraits frames team avatar walk sit navigate floor floors floor type floor colour floor color floorboards tiles carpet stone concrete oak walnut pinned notes walk-up',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -888,9 +900,9 @@ export const articles: Article[] = [
     slug: 'behaviour',
     title: 'Meeting Elements',
     description:
-      'The elements a Space is built from: the Travel, Seats, Rooms and Perks pieces people walk round, Bring Focus and the Avatar button.',
+      'The elements a Space is built from: the Rooms, Seats, Perks, Play, Garden, Meet and Travel pieces people walk round, Bring Focus and the Avatar button.',
     keywords:
-      'behaviour behavior behaviours behaviors interactive button portal mode switch walk in chair seat desk sofa couch fence barrier link card bookmark bring focus look here attention gather meeting travel seating rooms amenities navigate selection mode',
+      'behaviour behavior behaviours behaviors interactive button portal mode switch walk in chair seat desk sofa couch fence barrier bring focus look here attention gather meeting travel seating rooms amenities perks play garden meet navigate avatar button',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Meeting Kits',
@@ -985,9 +997,9 @@ export const articles: Article[] = [
   {
     slug: 'using-tabs',
     title: 'Tabs',
-    description: 'Multiple tabs in one canvas: add, name, reorder, and switch between them.',
+    description: 'Multiple tabs in one space: add, name, reorder, and switch between them.',
     keywords:
-      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start document',
+      'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start document attendance',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1042,7 +1054,8 @@ export const articles: Article[] = [
     title: 'Exporting a Tab',
     description:
       'Export the active tab or a selection as JSON, a Markdown outline, PNG, SVG, or PDF: copy the text formats or set image options.',
-    keywords: 'export download save png svg pdf gif animated json markdown image picture',
+    keywords:
+      'export download save png svg pdf vector selectable text searchable print json markdown image picture',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1066,7 +1079,8 @@ export const articles: Article[] = [
   {
     slug: 'live-presence',
     title: 'Live Presence',
-    description: 'Live cursors, names, selections, and who is on which tab, in real time.',
+    description:
+      'See who is here live: cursors, characters, selections, who is on which tab, chimes and nudges.',
     keywords:
       'cursors online who viewing realtime collaborators avatars multiplayer people participants roster room agent agents ai status working focus sound chime join leave arrive nudge poke ping attention desktop notification',
     category: 'Collaboration',
@@ -1077,7 +1091,7 @@ export const articles: Article[] = [
     title: 'Proximity Audio',
     description: 'Talk with the people your character is near, and see who is talking further off.',
     keywords:
-      'audio voice call calls talk talking speak speaker microphone mic mute unmute listen listen in join audio leave proximity nearby earshot hearing headphones equaliser equalizer bars walk over muted blocked nobody near huddle raise hand lower hand let speak stage podium lectern further reach do not disturb dnd',
+      'audio voice call calls talk talking speak speaker microphone mic mute unmute listen listen in join audio leave proximity nearby earshot hearing headphones equaliser equalizer bars walk over muted blocked nobody near huddle raise hand lower hand let speak stage podium lectern further reach do not disturb dnd hearing ring audio proximity ring range who can hear me everyone can hear you mini view pop out camera tiles',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1086,7 +1100,7 @@ export const articles: Article[] = [
     title: 'Cameras and Screen Sharing',
     description: 'Turn on your camera or share a screen in a bubble above your character.',
     keywords:
-      'camera video webcam face screen share sharing present presenting window tab bubble maximise maximize restore stop sharing video paused call calls',
+      "camera video webcam face screen share sharing present presenting window tab bubble maximise maximize restore stop sharing stop someone's share preview only you video paused call calls mini view",
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1129,7 +1143,7 @@ export const articles: Article[] = [
     description:
       'The Explorer\u2019s landing view: what you use most and last, and what was shared with you recently.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often shared with you recently landing start history last 30 days',
+      'home jump back in within reach new made recently most used last used recent see more grid strip return often shared with you recently landing start history last 30 days start a project kit kits',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1217,9 +1231,9 @@ export const articles: Article[] = [
     slug: 'profile',
     title: 'Your Account',
     description:
-      'Your identity card, email-notification switches, and account deletion, in Settings.',
+      'Your identity card, name and colour, time zone, sign-in, email-notification switches, and account deletion, in Settings.',
     keywords:
-      'account profile settings email delete avatar name preferences identity danger zone menu sign out mentions',
+      'account profile settings email delete avatar name colour color display name time zone sign-in methods signed in devices reset settings preferences identity danger zone menu sign out',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1265,7 +1279,7 @@ export const articles: Article[] = [
     title: 'Snapshots',
     description: 'Save points for the whole Space: take one, keep five, revert to one.',
     keywords:
-      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history tools take snapshot',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1274,6 +1288,16 @@ export const articles: Article[] = [
     title: 'Layout Cleanup',
     description: 'Auto-align: snap notes and pictures onto the grid in one step.',
     keywords: 'tidy up align arrange auto grid organise organize straighten neat auto layout',
+    category: 'Tools',
+    categorySlug: 'tools',
+  },
+  {
+    slug: 'webhooks',
+    title: 'Webhooks',
+    description:
+      "Post a Space's events to a Slack or Microsoft Teams channel, or as signed JSON to your own service.",
+    keywords:
+      'webhook webhooks slack microsoft teams channel notify notification integration automate automation json signed secret hmac events deliveries send test pause tools api',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -1298,21 +1322,11 @@ export const articles: Article[] = [
     group: 'Styling Elements',
   },
   {
-    slug: 'animations',
-    title: 'Animating Elements',
-    description: 'Animate sticky notes, text, link cards, pictures and icons.',
-    keywords:
-      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Styling Elements',
-  },
-  {
     slug: 'shadows',
     title: 'Element Shadows',
     description:
       'Lift an element with a drop shadow: None or four presets, plus offset/blur sliders.',
-    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video',
+    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -1604,7 +1618,7 @@ export const articles: Article[] = [
   {
     slug: 'embeds',
     title: 'Embeds',
-    description: 'Drop a live canvas into another page, read-only or editable by link role.',
+    description: 'Drop a live space into another page, read-only or editable by link role.',
     keywords: 'iframe embed website notion confluence wiki blog integrate document',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -1666,7 +1680,8 @@ export const articles: Article[] = [
   {
     slug: 'search-documents',
     title: 'Finding Spaces and Folders',
-    description: 'Search across your spaces, folders, and the spaces shared with you.',
+    description:
+      'Find your spaces from the editor, and your items and folders from the Explorer page.',
     keywords: 'find lookup locate files library open diagrams document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -1675,7 +1690,8 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and spaces from the search panel.',
+    description:
+      'Find your teams from the search panel, and on the Explorer page their folders and spaces too.',
     keywords: 'find team shared folders lookup locate document',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -1713,7 +1729,7 @@ export const articles: Article[] = [
     slug: 'command-palette',
     title: 'The Command Palette (⌘K)',
     description:
-      'Press Cmd/Ctrl+K to run any editor command by name: undo, auto layout, export, settings and more.',
+      'Press Cmd/Ctrl+K to run any editor command by name: undo, auto-align, export, settings and more.',
     keywords: 'cmd k ctrl k quick actions run commands launcher shortcut',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',

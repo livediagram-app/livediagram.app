@@ -22,15 +22,21 @@ Markdown comes into livedocuments as writing. Import a `.md` file into a tab and
 - **Dividers**: a line of `---`, `***` or `___`.
 - **Inline marks**: bold, italic, strikethrough, inline code and links.
 - **Tables**: a pipe table (a header line, a `|---|` line, then rows) becomes a table.
+- **Footnotes**: a `[^1]` in the text, with its note on a line of its own (`[^1]: The note`), becomes a footnote.
+- **Contents**: `[TOC]` alone on a line becomes a table of contents.
 - **Images**: an imported `![alt](address)` becomes a link named by its alt text. Add the picture itself from **Media**.
 
-Every other line is a paragraph. Pasting into an empty line replaces it with the pasted blocks; pasting into a code block, or pasting a single line with no Markdown in it, puts the text in exactly as typed.
+Everything else is a paragraph: lines that run on together make one paragraph, and a blank line starts the next. Pasting into an empty line replaces it with the pasted blocks; pasting into a code block, or pasting a single line with no Markdown in it, puts the text in exactly as typed.
 
 ## Importing a file into a tab
 
 Markdown always becomes an article, so **Import** offers it on an article tab and on an empty tab (one still showing the start screen), never on a slide deck, infographic or flashcard tab, where it would replace those pages with an article. To bring Markdown into a document of slides, add a new tab first.
 
-Open the tab's menu, choose **Import**, then **Markdown**. Paste the Markdown into the box, or press **Import a file instead** to pick a `.md` file. The tab's contents are replaced by an article holding the writing, flowed onto as many pages as it needs; undo brings the old contents back. See [Importing a Tab](/help/tabs/import-tabs/).
+Open the tab's menu, choose **Import**, then **Markdown**. Paste the Markdown into the box, or press **Import a file instead** to pick a `.md` file. The tab's contents are replaced by an article holding the writing, flowed onto as many pages as it needs; undo brings the old contents back. On a locked tab **Import** is greyed out, so unlock the tab first. See [Importing a Tab](/help/tabs/import-tabs/).
+
+An import can hold up to 400,000 characters, making at most 5,000 blocks, with no single paragraph over 20,000 characters. Past any of these the import stops and says which one, so split the long paragraph with a blank line or bring the rest in on another tab.
+
+Dropping a `.md` file on the canvas does not import it: the canvas only places images, and a note points you to **Import**.
 
 <Tip>
   Writing from scratch? The same Markdown works as shortcuts while you type in an article: start a

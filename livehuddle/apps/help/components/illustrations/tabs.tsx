@@ -29,7 +29,7 @@ export { ImportMenu, ExportMenu, ImportWarning } from './tabs-import-export';
  *  full-width rows in two groups (folders and documents, content), opened from the
  *  active tab's ⋯ button. */
 export function TabMenu() {
-  const barY = 178;
+  const barY = 204;
   const mx = 150;
   const my = 10;
   const mw = 200;
@@ -37,12 +37,14 @@ export function TabMenu() {
     'Organise in Tab Folder',
     'Add to Another Space',
     null,
+    'Attendance',
+    null,
     'Import',
     'Export',
     'Clear',
   ];
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={256}>
       <TabBar y={barY} w={420} />
       <TabPill x={14} y={barY + 8} w={64} label="Draft" />
       <TabPill x={252} y={barY + 8} w={98} label="Overview" active />
@@ -52,7 +54,7 @@ export function TabMenu() {
         x={mx}
         y={my}
         width={mw}
-        height={152}
+        height={178}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}

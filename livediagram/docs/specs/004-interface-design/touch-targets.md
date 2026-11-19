@@ -43,7 +43,7 @@ floor at 24px; the editor aims past it, because a diagram editor is used with a 
 - **Every canvas toolbar pads its items.** The Palette strip's cards and the Draw dock's groups (`DockToolbar`)
   carry `PACKED_TOOLBAR_ITEMS`, the menu button's own card in Draw (`ToolbarExplorerButton`) `PHONE_TOOLBAR_ITEMS`;
   the selection toolbar's 32px buttons (`SelectionPopover`) get `touch-target-y`, as do a tab's name,
-  the role pill (Editing / Viewing), the tour card's buttons and a page's lock and cog.
+  the tour card's buttons and a page's lock and cog.
 - **A tab's presence avatars** (`TabPresenceStack`) draw at 16px and overlap under a mouse. On a touch screen they
   stop overlapping and each one, the `+N` badge too, is 24px wide (4px either side of the face, WCAG 2.5.8's AA
   floor) and padded to 44px tall with `touch-target-y`, so a thumb opens the Collaborators modal on the person it

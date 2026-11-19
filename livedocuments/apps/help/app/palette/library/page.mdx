@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Library',
+  description:
+    'Save an element or a whole selection to your own Library or a team’s, then place it again in any document, in every liveworkspace app.',
+  path: '/help/palette/library/',
+});
+
+<ArticleLayout
+  title="The Library"
+  description="Save what you made once and place it again in any document, for you or your whole team."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("library")}
+>
+
+The **Library** keeps the pieces you reuse: a logo lockup, a styled callout, a set of cards you built once. Save them from the canvas, and they wait in the palette to be placed in any document, and in the other liveworkspace apps too. Save to **Personal** for yourself, or to a team so everyone in it can use them.
+
+## Saving to the Library
+
+<Step n={1}>
+  Select what you want to keep. For one element, right-click it (or long-press on a touch screen).
+  For several, select them all.
+</Step>
+<Step n={2}>
+  Press **Save to Library**: at the left of the element menu's top row, or on the toolbar over a
+  multi-selection, after **Duplicate**.
+</Step>
+<Step n={3}>
+  Give it a **Name**, choose where to **Save to** (**Personal**, only you, or one of your teams),
+  and if you like a **Folder**, such as "Logos". Press **Save**.
+</Step>
+
+What you save is a copy. Changing the elements on the page later leaves the saved one as it was, and changing or deleting the saved one never touches anything already placed.
+
+**Save to Library** is there for Editors. It isn't offered on a locked element, to Participants or Viewers, or on a document kept only in this browser.
+
+## Placing from the Library
+
+Press **Library**, the button just before Search in the [palette strip](/help/palette/toolbar-layout/). It lists **Personal** first, then each of your teams, with their folders and what is in them, and a search over them all.
+
+- **Click** a tile to place a copy in the middle of the view.
+- **Drag** a tile onto the page to place it where you drop it.
+
+Each placed copy is ordinary elements with nothing linking them back, so restyle and edit them freely. Something saved in another app that livedocuments can't draw isn't offered here, and a line under the list says how many were left out.
+
+## Keeping It Tidy
+
+You tidy your Personal library; a team's admins tidy the team's. Hover a tile and press its **More** button to **Rename** it or **Delete** it, or rename a folder with the pencil beside its name. Deleting asks first, and anything already placed keeps its copy. Every member of a team can save to it and place from it.
+
+</ArticleLayout>

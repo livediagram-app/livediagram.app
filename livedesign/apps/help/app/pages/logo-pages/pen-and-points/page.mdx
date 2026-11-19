@@ -1,0 +1,53 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PenEditPointsScene } from '@/components/illustrations/pen-tool';
+
+export const metadata = helpMetadata({
+  title: 'The Pen and Edit Points',
+  description:
+    'Draw precise paths with the Pen on a logo page, clicking for corners and dragging for curves, then reshape any point and handle with Edit Points.',
+  path: '/help/pages/logo-pages/pen-and-points/',
+});
+
+<ArticleLayout title="The Pen and Edit Points" description="Clean curves and corners, placed point by point and reshaped whenever you like." categoryTitle="Pages" categorySlug="pages" parentArticle={{ title: "Logo Pages", slug: "logo-pages" }} subArticles={getSubArticles("logo-pages").filter((a) => a.slug !== "pen-and-points")}>
+
+The **Pen** draws the deliberate line a mark needs: a clean curve, a custom outline traced over a sketch, the contour of a letter. It works the way pens in other vector tools do, and every point stays editable afterwards with **Edit Points**.
+
+## Drawing with the Pen
+
+On a [logo page](/help/pages/logo-pages/), open **Draw** on the palette and pick **Pen** under **Pens**. Then:
+
+- **Click** to place a corner point.
+- **Press and drag** to place a smooth point, pulling out its curve as you drag.
+- Hold **Alt** (Option on a Mac) while dragging to break the curve's mirror, so only the outgoing handle follows.
+- Hold **Shift** to keep the line, or a handle, to 45° steps.
+- Hold **Space** while dragging to move the point you are placing instead of its handle.
+- **Backspace** removes the last point you placed and keeps drawing; **Undo** steps back one point at a time while you draw.
+
+To finish, click the first point to close the shape, or press **Enter** or **Escape** (or double-click) to leave it open. With the Pen in hand, clicking the end of an open path carries on drawing from there. With **Show Guides** on, a click lands on a guide within reach.
+
+## Editing points
+
+Double-click a path, press **Enter** with it selected, or press **Edit Points** on its selection toolbar. Every point shows: corners as squares, smooth points as circles. A toolbar floats over the path.
+
+<Figure caption="Edit Points: the edit toolbar over the path, square corner points, and a selected smooth point with its handles.">
+  <PenEditPointsScene />
+</Figure>
+
+- **Drag** a point to move it, or a handle to reshape its curve. Arrow keys nudge selected points by 1 px, Shift and an arrow by 10 px.
+- **Shift-click** points to select several, or drag a box around them.
+- **Click a segment** to add a point there without changing the curve; **drag a segment** to bend it.
+- **Double-click** or **Alt-click** a point to switch it between corner and smooth.
+- On the toolbar, set the selected points to **Corner**, **Mirrored** (both handles in one line, equal length) or **Aligned** (in one line, lengths free), delete a point, and **Close Path** or **Open Path** (opening cuts the path at the selected point). `J` closes too.
+- Press **Done**, **Escape** or click outside the path to finish.
+
+Every gesture is one undo step. On a phone or tablet, drag points and handles with your finger, and long-press a point to bring the toolbar beside it.
+
+## Other paths
+
+**Edit Points** works on any path, not just the Pen's. A shape made by **Combine** is edited one outline at a time, with the others shown dashed; the shape counter at the start of the toolbar ("Shape 1 of 3") moves to the next, and **Simplify** smooths an outline with many small corners. On a pencil or marker drawing, **Edit Points** first tidies it into a path, then opens its points.
+
+A locked path hides **Edit Points** until you unlock it.
+
+</ArticleLayout>

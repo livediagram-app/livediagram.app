@@ -25,7 +25,6 @@ export function ChromeControls({
   labelled = false,
   github = true,
   appearance = true,
-  extraTools = [],
 }: {
   onOpenSearch?: () => void;
   onOpenSettings?: () => void;
@@ -40,8 +39,6 @@ export function ChromeControls({
   // The Appearance control; withheld where the host sets the scheme itself (a workbench frame,
   // docs/specs/013-workspace/blueprints/workbench-embeds.md, WB15).
   appearance?: boolean;
-  // More rows for Tools (the editor's Editing Mode tool).
-  extraTools?: readonly (ChromeToolsItem | null)[];
 }) {
   const BTN = labelled ? `${CHROME_BTN} ${CHROME_BTN_LABELLED}` : CHROME_BTN;
   // Search, first in Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md).
@@ -64,7 +61,7 @@ export function ChromeControls({
       <TourOfferButton labelled={labelled} />
       {/* Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md): the tools that work on the
           whole item, in one menu, drawn only while it holds one. */}
-      <ChromeToolsMenu labelled={labelled} items={[search, ...extraTools]} />
+      <ChromeToolsMenu labelled={labelled} items={[search]} />
       {github ? (
         <>
           {/* Open-source repo link (the codebase is public + MIT, docs/specs/002-project-scope/open-source-and-business-model.md). An

@@ -23,6 +23,7 @@ Scope, by file:
 | Tombstone     | `purge_tombstones (item_id)`                    | Kept until the app confirms                                             |
 | Person purge  | `person_purges (person_id)`                     | A closed account's purge, run again for 2 hours                         |
 | Person notice | `person_app_notices (person, app, item)`        | What an app must hear about a closed account (`item ''` for the person) |
+| Notice guest  | `person_notice_guests (person, guest)`          | A guest merged into a closed account, named in its notices' `guests`    |
 | Anonymised    | `ANONYMISED_PERSON` `'deleted'`                 | What a closed account's id becomes where it stays                       |
 
 ## Behaviour and state
@@ -85,7 +86,8 @@ first 25 purged items are drained at once, and person notices sent.
 `purgePerson`, every step in chunks of 500 rows and safe to run again:
 
 1. Record person notices: one row per app (`item ''`), and one per item of someone else's that names them (threads,
-   actions, edits), up to 5,000 per source per pass.
+   actions, edits), up to 5,000 per source per pass; and the guests merged into them (`person_aliases`, read before
+   step 4 deletes them) into `person_notice_guests` (Work Tracker 1241).
 2. Items and folders in a team that outlives them: owner becomes `deleted`.
 3. Their own items (including those in teams closed with them): tombstones in, rows out.
 4. Everything else theirs: folders (defaults cascade), opens, use days, Shared with me, placement defaults,
@@ -106,17 +108,20 @@ tombstones never tried or not tried for an hour; then `drainPersonNotices`.
 ### Person notices (`drainPersonNotices`)
 
 Rows older than 7 days are given up (logged). Up to 20 due (person, app) groups a run (never tried, or not for an
-hour); each `POST <app>/api/internal/people/:id/purge { items }` with up to 100 items; confirmed rows go; an app not
-configured counts as confirmed; a failure gets `attempts + 1`.
+hour); each `POST <app>/api/internal/people/:id/purge { items, guests }` with up to 100 items and the person's
+`person_notice_guests` (at most `PERSON_ALIASES_MAX`, 32); confirmed rows go; an app not configured counts as
+confirmed; a failure gets `attempts + 1`. Each run then deletes the `person_notice_guests` of every person with no
+notice left (confirmed or given up).
 
 ## Data and persistence
 
-| Table                | Key                         | Indexes                                          | Written by              | Read by              |
-| -------------------- | --------------------------- | ------------------------------------------------ | ----------------------- | -------------------- |
-| `purge_tombstones`   | `item_id`                   | `purge_tombstones_due (last_attempt_at)`         | every purge             | drains               |
-| `person_purges`      | `person_id`                 |                                                  | purge request; settle   | the frequent cron    |
-| `person_app_notices` | `(person_id, app, item_id)` | `person_app_notices_due (last_attempt_at)`       | `purgePerson`           | `drainPersonNotices` |
-| `items` (Trash)      | `id`                        | `items_trash`, `items_trashed_at`, `items_empty` | delete, restore, sweeps | the Trash, sweeps    |
+| Table                  | Key                         | Indexes                                          | Written by              | Read by              |
+| ---------------------- | --------------------------- | ------------------------------------------------ | ----------------------- | -------------------- |
+| `purge_tombstones`     | `item_id`                   | `purge_tombstones_due (last_attempt_at)`         | every purge             | drains               |
+| `person_purges`        | `person_id`                 |                                                  | purge request; settle   | the frequent cron    |
+| `person_app_notices`   | `(person_id, app, item_id)` | `person_app_notices_due (last_attempt_at)`       | `purgePerson`           | `drainPersonNotices` |
+| `person_notice_guests` | `(person_id, guest_id)`     |                                                  | `purgePerson`           | `drainPersonNotices` |
+| `items` (Trash)        | `id`                        | `items_trash`, `items_trashed_at`, `items_empty` | delete, restore, sweeps | the Trash, sweeps    |
 
 `person_purges.team_ids` is a JSON list (default `'[]'`); `finished_at` null while work remains; `runs` default 0.
 
@@ -132,14 +137,14 @@ configured counts as confirmed; a failure gets `attempts + 1`.
 
 ## Testing
 
-| Test                                                        | Pins                                                                   |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `liveworkspace/apps/index/src/items.test.ts` (35)           | the Trash among items                                                  |
-| `liveworkspace/apps/index/src/app.test.ts` (15)             | the daily purge; the empty clean-up                                    |
-| `liveworkspace/apps/index/src/account-purge.test.ts` (9)    | `POST /internal/purge-person`; telling the apps about a closed account |
-| `packages/index-app/src/purge.test.ts`, `anonymise.test.ts` | each app dropping rooms and anonymising                                |
-| `liveworkspace/apps/index/src/standing.test.ts`             | the app told on trash and restore, once, a failed call retried once    |
-| `packages/index-app/src/standing-door.test.ts`              | the app's `standing` door: the body, no handler, a handler that throws |
+| Test                                                        | Pins                                                                                            |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/src/items.test.ts` (35)           | the Trash among items                                                                           |
+| `liveworkspace/apps/index/src/app.test.ts` (15)             | the daily purge; the empty clean-up                                                             |
+| `liveworkspace/apps/index/src/account-purge.test.ts` (9)    | `POST /internal/purge-person`; telling the apps about a closed account, its merged guests named |
+| `packages/index-app/src/purge.test.ts`, `anonymise.test.ts` | each app dropping rooms and anonymising                                                         |
+| `liveworkspace/apps/index/src/standing.test.ts`             | the app told on trash and restore, once, a failed call retried once                             |
+| `packages/index-app/src/standing-door.test.ts`              | the app's `standing` door: the body, no handler, a handler that throws                          |
 
 ## Constants and configuration
 

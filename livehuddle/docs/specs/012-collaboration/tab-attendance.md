@@ -87,7 +87,8 @@ becomes `anonymised`, its name "Deleted account" and its picture goes. Running i
   account, the collab keys of the guests it took over (each one-way, never a guest id), and closing the account
   anonymises every visit under the account's key or any of those, on every document the index names. Those keys stay
   only as long as the close needs them: 8 days after the account closes (a little past the index's week of retries),
-  then they go too.
+  then they go too. The index's close also names the guests merged into the account (its `guests`), whose keys join
+  these, so a guest the index knows of is covered even when this app never heard of the sign-in (Work Tracker 1241).
 - Nothing about a guest's visit changes while the account is open: nobody who could not see it before sees it now.
 
 ## Where it shows

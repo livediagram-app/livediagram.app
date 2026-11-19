@@ -134,8 +134,8 @@ export const categories: Category[] = [
     slug: 'palette',
     title: 'Palette',
     description:
-      'Your launchpad for everything on a page: every element and palette setting explained.',
-    articleCount: 21,
+      'Your launchpad for everything on a page: every element, your saved Library and every palette setting explained.',
+    articleCount: 22,
     kind: 'feature',
     groups: ['Everyday Elements', 'Page Blocks', 'Palette Settings'],
   },
@@ -160,8 +160,8 @@ export const categories: Category[] = [
     slug: 'collaboration',
     title: 'Collaboration',
     description:
-      'Work together in real time: comments, assigned actions, live presence, teams and sharing.',
-    articleCount: 7,
+      'Work together in real time: comments, assigned actions, live presence, teams, sharing, walkthroughs, history and webhooks.',
+    articleCount: 9,
     kind: 'feature',
   },
   {
@@ -213,7 +213,7 @@ export const articles: Article[] = [
   {
     slug: 'zoom-controls',
     title: 'Zoom Controls',
-    description: 'Zoom in and out, fit the canvas to the screen, and reset to 100%.',
+    description: 'Zoom in and out, frame the page you are on, and reset to 100%.',
     keywords: 'zoom in out magnify fit screen percentage scale reset view dock',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -222,7 +222,7 @@ export const articles: Article[] = [
     slug: 'minimap',
     title: 'Map',
     description:
-      'The bottom-left Map: a zoomed-out overview with a box for your view. Tap or drag to navigate.',
+      'The Map, an overview for a canvas without pages. On Pages tabs, the Contents panel lists the pages instead.',
     keywords: 'minimap mini map overview navigate viewport birds eye locate where am i',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -239,9 +239,9 @@ export const articles: Article[] = [
     slug: 'quick-controls',
     title: 'Quick Controls',
     description:
-      'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
+      'Get Started, Tools (Search, Walkthroughs, Webhooks, History), Settings and the appearance switch at the end of the bottom bar.',
     keywords:
-      'corner buttons actions settings search github bottom bar cluster appearance light dark',
+      'corner buttons actions tools search settings get started tour history snapshots webhooks walkthroughs bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -257,10 +257,11 @@ export const articles: Article[] = [
 
   {
     slug: 'title-bar',
-    title: 'The Title Bar',
-    description: 'Rename the design, see who can see it, preview as a viewer, and Share or Copy.',
+    title: 'Share, Copy and Your Account',
+    description:
+      'The card at the top right of the editor: Share or Copy, Prototype and your account.',
     keywords:
-      'header top bar design name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
+      'title bar header top bar corner card share copy make a copy prototype account sign in sign out design name rename visibility',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -389,7 +390,7 @@ export const articles: Article[] = [
     title: 'The Format Painter',
     description: 'Copy the look of one element onto others in two clicks.',
     keywords:
-      'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the',
+      'copy style paste formatting clone look duplicate appearance brush format panel paint once keep the page background pattern',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -453,7 +454,7 @@ export const articles: Article[] = [
     slug: 'exporting-designs',
     title: 'Exporting Designs',
     description:
-      'Take your pages with you as a PDF, images or a portable file, or embed a live view.',
+      'Export pages as a PDF, PNG or SVG, a logo kit or photo files, keep a tab as JSON, or embed a live view.',
     keywords:
       'export download png svg pdf logo kit image save picture screenshot json embed backup',
     category: 'Account and Data',
@@ -544,7 +545,7 @@ export const articles: Article[] = [
     title: 'Working with Designs',
     description: 'Worked examples: list, read, create, and update designs, tabs, and folders.',
     keywords:
-      'examples curl crud create update list read api requests diagrams outline view text agent',
+      'examples curl crud create update list read api requests designs outline view text agent share link folders trash',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -553,7 +554,7 @@ export const articles: Article[] = [
     title: 'Edit Operations Reference',
     description: 'Every changeset operation, selector, placement, flag and lint finding.',
     keywords:
-      'changeset edit operations ops line form json selector placement flags lint findings vocabulary cli mcp agent',
+      'changeset edit operations ops line form json selector placement flags lint findings label overflow text overflow vocabulary cli mcp agent detach component instance',
     category: 'Developers',
     categorySlug: 'developers/working-with-designs',
     parentSlug: 'working-with-designs',
@@ -561,8 +562,9 @@ export const articles: Article[] = [
   {
     slug: 'images-and-pages',
     title: 'Images, Pages and More',
-    description: 'API examples for images, pages, renders and copies.',
-    keywords: 'images upload pages page logo wireframe photo render svg picture copy duplicate api',
+    description: 'API examples for images, pages, components, renders and copies.',
+    keywords:
+      'images upload pages page logo wireframe photo render svg picture copy duplicate components component main instance api',
     category: 'Developers',
     categorySlug: 'developers/working-with-designs',
     parentSlug: 'working-with-designs',
@@ -581,7 +583,7 @@ export const articles: Article[] = [
     description:
       'Read, build, edit and discuss designs from a terminal: install, sign in, the commands, and profiles.',
     keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile host',
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile host component image gallery share rename',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -670,8 +672,7 @@ export const articles: Article[] = [
     slug: 'telemetry-dashboard',
     title: 'The Public Telemetry Dashboard',
     description: 'Every view on /telemetry, its date windows, timings and Web Vitals.',
-    keywords:
-      'telemetry dashboard analytics stats metrics public transparency charts trends timings percentiles p75 median core web vitals lcp inp cls exceptions search anonymous',
+    keywords: 'telemetry dashboard features pages help health timings web vitals search detail',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security/what-we-collect',
     parentSlug: 'what-we-collect',
@@ -889,9 +890,10 @@ export const articles: Article[] = [
   {
     slug: 'components',
     title: 'Components',
-    description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
+    description:
+      'Cards, badges, web components and your own reusable components, made once and used on every screen.',
     keywords:
-      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages',
+      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages make component reusable instance main overrides detach in this design symbol devices',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -901,7 +903,7 @@ export const articles: Article[] = [
     title: 'Cards and Callouts',
     description: 'One node with a title, a meta line, a body, an icon and tags, plus accent edges.',
     keywords:
-      'card cards node service component title meta line subtitle body tags chips icon badge tile initial header band callout note tip warning accent edge stripe strip colour color coded side border architecture persona title and caption',
+      'card cards node service component title meta line subtitle body tags chips icon badge tile initial header band callout note tip warning accent edge stripe strip colour color coded side border architecture persona title and caption tag colours colour by tag presets compact panel person',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -949,17 +951,18 @@ export const articles: Article[] = [
   },
   {
     slug: 'embed-elements',
-    title: 'Embeds on the canvas',
-    description: 'Play a video, or open a Figma file, Google Doc or any website, on the canvas.',
+    title: 'Embeds on the Canvas',
+    description:
+      'Play a video, or open a Figma file, Google Doc, any website or a live file from our apps, on the canvas.',
     keywords:
-      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame pages',
+      'embed video youtube vimeo loom figma google docs sheets slides play iframe media link website web page site url address browser frame pages live embed connected file canvas plan design read-only',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
   },
   {
     slug: 'website',
-    title: 'Website embeds',
+    title: 'Website Embeds',
     description:
       'Frame any web address on the canvas, for anything the named services do not cover.',
     keywords:
@@ -983,7 +986,7 @@ export const articles: Article[] = [
     title: 'Icons',
     description: 'A searchable catalogue of single-colour glyphs.',
     keywords:
-      'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape',
+      'glyph symbol pictogram line art search catalogue catalog theme colour color tint furniture floor plan weight thin regular bold inline icon in shape food drink shopping money business travel nature weather health learning media stickers',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1015,6 +1018,16 @@ export const articles: Article[] = [
       'Full-colour AWS, Azure, Cloudflare and infrastructure icons, added from the search panel.',
     keywords:
       'aws azure gcp cloud logos tech stack infrastructure brands kubernetes docker cloudflare firebase postgres database lambda s3 architecture brand',
+    category: 'Palette',
+    categorySlug: 'palette',
+    group: 'Everyday Elements',
+  },
+  {
+    slug: 'library',
+    title: 'The Library',
+    description: 'Save elements to your Personal or team Library, then place them in any design.',
+    keywords:
+      'library save to library saved items reuse personal team shared brand assets logo kit components blocks folder folders place drag insert rename delete across apps asset library symbols',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1060,7 +1073,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'quick-add-on-hover',
-    title: 'Quick-add on Hover',
+    title: 'Quick-Add on Hover',
     description: 'Open an element’s + menu by hovering it instead of clicking.',
     keywords: 'plus menu hover add quick connect popup',
     category: 'Palette',
@@ -1072,7 +1085,7 @@ export const articles: Article[] = [
     title: 'Toolbar Layout',
     description: 'The palette strip across the top of the canvas, its More and its Search.',
     keywords:
-      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind wireframe logo',
+      'toolbar strip top bar excalidraw panel layout floating palette compact menu button explorer more tiles recent recently used order reorder search find element per page kind wireframe logo library saved components more categories',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Palette Settings',
@@ -1147,6 +1160,17 @@ export const articles: Article[] = [
     group: 'Kinds of Page',
   },
   {
+    slug: 'pen-and-points',
+    title: 'The Pen and Edit Points',
+    description: 'Draw precise paths with the Pen, then reshape every point and handle.',
+    keywords:
+      'pen path tool bezier curve vector anchor node point handle corner smooth mirrored aligned close path open path edit points reshape trace outline simplify combine logo',
+    category: 'Pages',
+    categorySlug: 'pages/logo-pages',
+    parentSlug: 'logo-pages',
+    group: 'Kinds of Page',
+  },
+  {
     slug: 'wireframe-pages',
     title: 'Wireframe Pages',
     description:
@@ -1184,9 +1208,9 @@ export const articles: Article[] = [
     slug: 'pages-tour',
     title: 'The Pages Tour',
     description:
-      'A short, optional walkthrough for each kind of page, offered the first time you work on one and replayable from Settings or Show Me.',
+      'A short, optional walkthrough for each kind of page, started from Get Started at the bottom of the editor or from Show Me, and replayable from Settings.',
     keywords:
-      'pages tour tour walkthrough onboarding intro introduction getting started guide tutorial first time learn pages page name cog page settings layout background add page logo wireframe show me replay rerun settings accessibility photo photos',
+      'pages tour tour walkthrough onboarding intro introduction getting started get started guide tutorial first time learn pages page name cog page settings layout background add page logo wireframe show me replay rerun settings accessibility photo photos',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1196,7 +1220,7 @@ export const articles: Article[] = [
     title: 'Exporting Pages',
     description: 'Every page or one page as a PDF, PNG or SVG, a logo kit or a photo.',
     keywords:
-      'export download pdf png svg image zip all pages one page import json print printable pages page pages logo kit photo jpeg webp psd',
+      'export download pdf png svg image zip all pages one page import json svg import print printable pages page pages logo kit photo jpeg webp psd',
     category: 'Pages',
     categorySlug: 'pages',
     group: 'Basics',
@@ -1278,7 +1302,8 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description: "Export a tab's pages as PDF, PNG or SVG, or as JSON.",
-    keywords: 'export download save png svg pdf json image picture pages logo kit',
+    keywords:
+      'export download save png svg pdf json image picture pages logo kit photo jpeg webp psd layers vector selectable text',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1367,7 +1392,7 @@ export const articles: Article[] = [
     description:
       'The Explorer\u2019s landing view: what you use most and last, and what was shared with you recently.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often shared with you recently landing start history last 30 days',
+      'home jump back in within reach most used last used recent new see more grid strip return often shared with you recently landing start history last 30 days what you can make logo wireframe photo start a project kit',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1497,16 +1522,35 @@ export const articles: Article[] = [
     title: 'Snapshots',
     description: 'Save points for the whole design: take one, keep five, revert to one.',
     keywords:
-      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy',
+      'snapshot save point restore revert undo backup checkpoint version rollback go back earlier copy history tools',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
   {
     slug: 'walkthroughs',
     title: 'Walkthroughs',
-    description: 'Record a narrated tour of the design and let others play it back over it.',
+    description:
+      'Record a video of yourself talking through the design, then play, rename or share it with a link.',
     keywords:
-      'walkthrough record recording narrate narration voice video camera webcam loom talktrack async tour explain play playback',
+      'walkthrough record recording narrate narration voice video screen recording share tab camera webcam loom talktrack async tour explain play playback public link rename',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'history',
+    title: 'History',
+    description: 'Who changed the design and when, with its snapshots on the same timeline.',
+    keywords:
+      'history timeline activity log who changed what when edits audit events at a glance snapshots versions changes recent activity tools',
+    category: 'Collaboration',
+    categorySlug: 'collaboration',
+  },
+  {
+    slug: 'webhooks',
+    title: 'Webhooks',
+    description: 'Post what happens to a design to Slack, Microsoft Teams or your own service.',
+    keywords:
+      'webhook webhooks slack microsoft teams notify notification integration automation json endpoint signed http post channel events send test deliveries tools',
     category: 'Collaboration',
     categorySlug: 'collaboration',
   },
@@ -1602,7 +1646,8 @@ export const articles: Article[] = [
     slug: 'shadows',
     title: 'Element Shadows',
     description: 'Lift an element with a drop shadow: five presets plus offset/blur sliders.',
-    keywords: 'shadow drop depth elevation blur offset lift float soft hard card 3d shade video',
+    keywords:
+      'shadow drop depth elevation blur offset lift float soft hard card 3d shade video image photo link card appearance',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -1693,7 +1738,8 @@ export const articles: Article[] = [
   {
     slug: 'annotations',
     title: 'Annotations',
-    description: 'Drop a marker with a note that readers hover to read.',
+    description:
+      'A small marker holding a note that readers hover to read. The livedesign palette does not add them.',
     keywords: 'note marker callout tooltip pin footnote comment hover rich text formatting',
     category: 'Canvas',
     categorySlug: 'canvas',
@@ -1795,7 +1841,7 @@ export const articles: Article[] = [
     title: 'Images',
     description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
     keywords:
-      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
+      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution crop mask circle greyscale grayscale black and white',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -1967,7 +2013,7 @@ export const articles: Article[] = [
     title: 'Request Approval',
     description: 'Ask named people to approve a design, and see where their answers stand.',
     keywords:
-      'approve approval sign off review request changes approver badge awaiting approved changed since approval due note audit history',
+      'approve approval sign off review request changes approver awaiting approved changed since approval due note audit history approval tab',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
@@ -2046,7 +2092,8 @@ export const articles: Article[] = [
     slug: 'pie-chart',
     title: 'Pie Chart',
     description: 'An editable pie chart built from label and value rows.',
-    keywords: 'circle graph percentages segments donut proportions data',
+    keywords:
+      'circle graph percentages segments donut proportions data liveplanner sheet link linked spreadsheet',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -2055,9 +2102,9 @@ export const articles: Article[] = [
     slug: 'bar-and-line-charts',
     title: 'Bar and Line Charts',
     description:
-      'Column and bar charts from label and value rows, and line, area and scatter charts from a grid or a CSV import, each switchable to any chart type.',
+      'Column and bar charts from label and value rows, and line, area and scatter charts from a grid, a CSV import or a linked liveplanner Sheet, each switchable to any chart type.',
     keywords:
-      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type',
+      'graph series csv data plot axis columns trends bar chart line chart column chart area chart scatter chart scatter plot xy doughnut donut chart type liveplanner sheet link linked spreadsheet live data range second axis right axis show axis gridlines',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -2066,7 +2113,8 @@ export const articles: Article[] = [
     slug: 'legend',
     title: 'Legend',
     description: 'A key of colour-coded rows to explain what your colours mean.',
-    keywords: 'key colour code swatch label caption guide chart key colour key color key',
+    keywords:
+      'key colour code swatch label caption guide chart key colour key color key palette match chart',
     category: 'Palette',
     categorySlug: 'palette/tools/data-elements',
     parentSlug: 'data-elements',
@@ -2141,7 +2189,7 @@ export const articles: Article[] = [
   {
     slug: 'search-designs',
     title: 'Finding Designs and Folders',
-    description: 'Search across your designs, folders, and the designs shared with you.',
+    description: 'Find your designs from the editor, and your items and folders from the Explorer.',
     keywords: 'find lookup locate files library open diagrams',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -2150,7 +2198,7 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and designs from the search panel.',
+    description: 'Find the teams you belong to, with their folders and designs alongside your own.',
     keywords: 'find team shared folders lookup locate',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -2178,7 +2226,7 @@ export const articles: Article[] = [
   {
     slug: 'search-create-tab',
     title: 'Creating a Tab from Search',
-    description: 'Spin up a new tab straight from the search panel with the Create new tab action.',
+    description: 'Spin up a new tab straight from the search panel with the Create New Tab action.',
     keywords: 'new board page quick create add',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',

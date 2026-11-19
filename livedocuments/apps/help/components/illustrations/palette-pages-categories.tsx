@@ -107,8 +107,8 @@ function Row({
 
 const g = { className: 'fill-none stroke-brand-600', strokeWidth: 1.4 } as const;
 
-/** The Components category as the Pages palette shows it: its Layout group first (Hero, Header, Banner and
- *  the Stack), then Page Blocks, then Code and Lists. */
+/** The Components category as the Pages palette shows it: its Layout group first (Hero, Header, Banner, the
+ *  Stack and the Devices row), then Page Blocks, then Code and Lists. */
 export function ComponentsCategory() {
   const x = PX + 12;
   const groups: [string, [string, string, ReactNode][]][] = [
@@ -134,6 +134,11 @@ export function ComponentsCategory() {
           'Stack',
           'Lines things up with even gaps',
           <path key="s" d="M-6 -3h3v6h-3zM-1.5 -3h3v6h-3zM3 -3h3v6h-3z" {...g} />,
+        ],
+        [
+          'Devices',
+          'Browser, laptop, phone and more',
+          <path key="dv" d="M-7 -5h10v8h-10zM4 -3h3.5v8h-3.5z" {...g} />,
         ],
       ],
     ],

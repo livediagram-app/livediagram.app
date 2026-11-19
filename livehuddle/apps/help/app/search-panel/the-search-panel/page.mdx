@@ -22,27 +22,30 @@ The **search panel** is the fastest way to get anywhere in livehuddle. It is one
 
 ## Opening and closing search
 
-- **Keyboard:** press `Cmd` / `Ctrl` + `K`, or `Cmd` / `Ctrl` + `.`. Both open the same panel. (`K` is the usual command-palette shortcut; `.` is the original binding, kept because browsers reserve `Cmd` + `T` for a new browser tab.) They work in the editor and on the Explorer page alike, including in view-only spaces. While you are typing in a text box (such as the Explorer's filter box) they are left to that box, and they are off when you turn off keyboard shortcuts in Settings.
-- **Button:** click **Search** near the right-hand end of the bottom bar, just before Settings. In the editor it sits to the right of the tabs, just after the Start Tour button while a tour is on offer; on the Explorer page it is the magnifier in the bottom bar. On a phone the button is the magnifier alone.
-- **Explorer panel menu:** inside the editor, the Explorer panel's **⋯** menu also has a **Search** row.
+- **Keyboard:** press `Cmd` / `Ctrl` + `K`, or `Cmd` / `Ctrl` + `.`. Both open the same panel. (`K` is the usual command-palette shortcut; `.` is the original binding, kept because browsers reserve `Cmd` + `T` for a new browser tab.) They work in the editor and on the Explorer page alike, including in view-only spaces. While you are typing in a text box (such as the Explorer's filter box) they are left to that box, and in the editor they are off when you turn off keyboard shortcuts in Settings.
+- **In the editor:** open **Tools** in the bottom bar and choose **Search…**, the first row. The Explorer panel's **⋯** menu also has a **Search** row.
+- **On the Explorer page:** click **Search** in the bottom bar, just before Settings. On a phone it is the magnifier alone.
 
 The panel pops up near the top of the screen and blurs what is behind it so you can focus on the query. Press `Esc`, click the **Esc** chip at the end of the search box, or click outside the panel to close it.
 
 ## What search covers
 
-Type a few letters and matches appear, grouped by what they are. Matching is a simple, case-insensitive "contains" match on the name, so `flow` finds "Checkout flow" and "Workflow". What is in scope depends on where you open it:
+Type a few letters and matches appear, grouped by what they are. Matching is a simple, case-insensitive "contains" match on the name, so `flow` finds "Checkout flow" and "Workflow". What is in scope depends on where you open it.
 
 <Figure caption="One query, with matches grouped by type and the first result preselected.">
   <SearchOverview />
 </Figure>
 
-- **Always:** your **[spaces and folders](/help/search-panel/the-search-panel/search-documents/)**, and the **spaces shared with you**.
-- **When signed in:** your **[teams](/help/search-panel/the-search-panel/search-teams/)** and their shared folders and spaces.
-- **Inside a space:** also the **[tabs and elements](/help/search-panel/the-search-panel/search-tabs-and-elements/)** of the current space.
+**In the editor**, the panel searches:
 
-With an empty box, the panel lists what it can browse (your spaces, folders, teams and, in the editor, the tabs and labelled elements), so you can open it and arrow straight to something. Most groups show at most 8 results (12 for elements, 10 for Actions and Add to canvas, 6 for Settings and Help; Teams shows up to 8 each of teams, team folders and team spaces), so keep typing to narrow a long list.
+- **Spaces:** your [spaces](/help/search-panel/the-search-panel/search-documents/), your own and those in your teams' libraries.
+- **Teams:** when you are signed in, the [teams](/help/search-panel/the-search-panel/search-teams/) you belong to, by name.
+- **Every App:** once you type, what you can open in the other liveworkspace apps (and any of this app's the other groups miss, such as a space shared with you), each marked with its app's logo and name in the app's colour. Picking one opens it in its own app.
+- **Tabs and Elements:** the [tabs and labelled elements](/help/search-panel/the-search-panel/search-tabs-and-elements/) of the space you have open.
 
-The results come in this order: **Spaces**, **Shared with You**, **My Work** (your folders), **Teams**, **Every App**, **Tabs**, **Elements**, then **Actions**, **Add to canvas**, **Settings** and **Help**. Once you type, an **Every App** group also lists what you can open in the other liveworkspace apps (and any of this app's the other groups miss), each marked with its app's logo and name in the app's colour; picking one opens it in its own app.
+The results come in this order: **Spaces**, **Teams**, **Every App**, **Tabs**, **Elements**, then **Actions**, **Add to canvas**, **Settings** and **Help**. With an empty box, the panel lists your spaces, teams, and the space's tabs and labelled elements, so you can open it and arrow straight to something. Most groups show at most 8 results (12 for Elements, 10 for Actions and Add to canvas, 6 for Settings and Help), so keep typing to narrow a long list.
+
+**On the Explorer page**, the panel searches **Items** (what you can open in every app, or only livehuddle's while the Explorer is showing just this app), **Folders** (yours and your teams', a team's marked "in" its name), **Teams**, **Help** and **Settings**, at most 8 of each. Nothing is listed until you type.
 
 ## Beyond navigation
 
@@ -61,19 +64,19 @@ These three only appear once you have typed something, and only inside a space. 
   <SearchSettings />
 </Figure>
 
-The Help group always sits last, so a help article never steals the `Enter` from somewhere you were trying to go.
+In the editor the Help group always sits last, so a help article never steals the `Enter` from somewhere you were trying to go.
 
 ## Picking a result
 
-Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or press the `↑` and `↓` arrow keys to move the highlight and `Enter` to pick it. Picking a result takes you exactly where it points: opening a space or folder, switching to a tab, selecting an element, or jumping to a team. The panel closes as it goes.
+Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or press the `↑` and `↓` arrow keys to move the highlight and `Enter` to pick it. Picking a result takes you exactly where it points: opening a space or folder, switching to a tab, selecting an element, or jumping to a team's page in the Explorer. The panel closes as it goes.
 
 ## Read-only views
 
 Search only navigates, so it works in a view-only space too: you can still find and jump to tabs and elements. **Add to canvas** results are not offered there, and the command palette keeps only the actions that do not change the canvas. See [The Command Palette](/help/search-panel/the-search-panel/command-palette/#in-read-only-views).
 
 <Tip>
-  Looking for a node buried deep in a big canvas? Open search inside the editor and type part of its
-  label, and jump straight to it.
+  Looking for an element buried deep in a big space? Open search inside the editor and type part of
+  its label, and jump straight to it.
 </Tip>
 
 </ArticleLayout>

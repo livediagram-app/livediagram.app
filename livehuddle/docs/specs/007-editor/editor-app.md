@@ -42,7 +42,7 @@ Three regions stacked vertically, filling the viewport:
 └────────────────────────────────────────────────────┘
 ```
 
-- **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links); a plain logo with no [site switcher](../../../../liveworkspace/docs/specs/010-site/site-switcher.md#where-it-shows), which stays on the Explorer and landing pages), document-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the document lives in a team library and has no share links, [Team shared documents](../013-workspace/team-shared-documents.md)), followed by the [role pill](#role-pill). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Community, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer-panel)); the other apps' headers keep the menu.
+- **Header:** brand wordmark (a link to the Explorer home, [Brand mark](../004-interface-design/brand-mark.md#links); a plain logo with no [site switcher](../../../../liveworkspace/docs/specs/010-site/site-switcher.md#where-it-shows), which stays on the Explorer and landing pages), document-name field (click to rename), and the Share button. The private/shared/team badge sits next to the title (Team when the document lives in a team library and has no share links, [Team shared documents](../013-workspace/team-shared-documents.md)). (The full-page `/explorer` library is reached from the AuthControls menu and the **Explorer** link in the marketing site header, and the header logo opens its Home.) The editor header carries no product menu: the product's surfaces (Home, Explorer, Community, Help) are links in the Explorer panel's footer ([The editor's Explorer](../013-workspace/explorer-structure.md#the-editors-explorer-panel)); the other apps' headers keep the menu.
 - **Canvas:** owns most of the viewport. See [09-canvas-and-palette.md](../008-canvas/canvas-and-palette.md) for the full surface: shapes, arrows, marquee, multi-select, the Palette strip, plus the context panels.
 - **Tab bar (status bar):** horizontal row of tabs with `+` to add. Click to switch, double-click to rename (the field is named "Tab name" for a screen reader, a folder's "Folder name", the title's "Space name"), drag to reorder. When the tabs run past the bar it scrolls sideways, the edge with more tabs beyond it fading out (`scroll-edge-fade`, as the strip's rails do) rather than clipping a label mid-word, and **the active tab is always in view**: switching to a tab, or adding one, scrolls the row the least distance that shows all of it (the whole tab, its menu button and avatars included, clear of the edge fade), and so does a tap on the tab already open, and **Add tab** with it when it is the last tab (smoothly, or at once under reduced motion). The row narrowing (a panel closing hands a footer control back its room, or the window shrinks) brings the open tab back into view the same way; widening leaves the scroll alone. To a screen reader the row is a toolbar of buttons named "Tabs", the open tab marked current (`aria-current="page"`), not a tablist, since each tab also holds its avatars and menu button; it is one Tab stop and the arrow keys reach every control in it, the menu button and avatars included ([Tab folders](../006-document/tab-folders.md) "Tab bar rendering"). Its right-hand cluster (`ChromeControls`, shared with the Explorer's bottom bar) holds the **Get Started** button, **Tools** (one button holding Snapshots, drawn only while it holds one: [The footer's Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md)), **Search**, **Settings**, and the appearance toggle. The Get Started button sits left of Tools and is drawn only while a tour is on offer, reading **Start <Name> Tour** (Start Workshop Tour, Start Timeline Tour, or **Ask Receptionist** while you walk on a tab with [the Receptionist](../008-canvas/receptionist.md)): it is the one way into every tour ([Tours](editor-tour.md#where-it-appears)). In the editor each shows a text label beside its icon from `sm` up ("Search", "Start Workshop Tour", "Settings", and the appearance in force: "Light" / "Dark" / "System") and is icon-only on a phone; the Explorer's bar stays icon-only. **Button Labels** in Settings › Appearance (`dockButtonNames`, on by default) turns those labels off on a desktop too; a phone never shows them, whatever it says. There is no keyboard-shortcuts button: the shortcut reference and the per-device on/off switch live in Settings' **Keyboard** category ([User preferences](user-preferences.md)), which the "Keyboard shortcuts" search command opens directly.
 
@@ -62,33 +62,6 @@ The tabs read as tabs, not buttons, and every editor draws them alike from `pack
 - **No `Tabs` label** before the tabs: the row is plainly tabs, and the room goes to them.
 - **No type icon.** A tab shows its name alone, at every width: no mode or kind icon before it. The open tab keeps its menu button.
 - **A connected tab** ([Connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md), the shared `ConnectedTab`) stands the same way, led by its file's app logo; another app's carries a small arrow after the name, a broken one an amber dot. It is never renamed by hand (its name follows its file), dragged and foldered like any tab, and pressing it only shows its page: its file opens from Open under the file's preview, never from the press. Opened, its page stands in the canvas's place (`components/connect/ConnectedTabHost.tsx`): nothing is drawn on it, every edit is shut on it, and no start shows. Its menu keeps Remove Tab (the file stays as it is), Organise in Tab Folder and, when it opens nothing, Connect Again: never Rename, Duplicate, Add to Another Space, Import, Export or Clear. Editors connect, reorder and remove; Participants open only.
-
-## Role pill
-
-The **role pill** says whether you are editing, participating in or viewing this document. Everyone sees it, owner included.
-
-- **Where.** In the title bar, after the visibility badge. From `sm` up, like the visibility badge: a phone's title
-  bar has no room.
-- **What it reads.** "Editing" (emerald), "Participating" (teal) or "Viewing" (amber).
-- **Level with the visibility badge.** Both are 19 px pills centred on the title's line: neither sits higher or lower.
-- **Who owns the document** is disclosed progressively: a Tooltip on the pill reads "Owned by <name>" ("Owned by you"
-  for the owner), and the pill's accessible name carries the same words after its role. There is no separate owner
-  badge. With no known owner (the owner has never joined the room), the pill has no Tooltip. **On a team canvas** (a
-  document in a team library) the team owns it, so the pill names the team for everyone: "Owned by <team name>", or
-  "Owned by a team" where the session does not know the team's name (a visitor outside the team). Who gets the toggle
-  is unchanged: it still follows your role.
-- **A toggle when your role allows editing.** For the owner, and equally for a visitor whose link grants edit, the pill is a
-  button: each click steps between **Editing** and **Participating**, a preview of the document as a Participant sees
-  and works it ([Share roles](../013-workspace/share-roles.md)). There is no Viewing step: livehuddle offers Editor and
-  Participant links only, and Viewer survives only on [legacy links](../013-workspace/share-roles.md#legacy-viewer-links). The preview is local to this tab and this visit: it changes no one's role on
-  the server, nothing other participants see of you, and a reload returns to Editing. Participating works as a
-  Participant does ([A Participant walks](../013-workspace/share-roles.md#a-participant-walks)): no palette, always
-  walking, and nothing added, rewritten, moved or deleted. An Editor has no adder key from the room, so the preview
-  pins notes on a Notice Board with its own (`preview-<participant id>`); no real Participant's key matches it. The pill's accessible description says what a click does ("Switch to participating
-  (as a Participant sees it)" / "Switch to editing").
-- **Not a toggle when your role is view.** A view-link visitor's pill is static text, focusable so its Tooltip
-  can be read by keyboard.
-- Embeds hide it with the rest of the header.
 
 ## What the editor supports today
 
@@ -163,9 +136,9 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 ## Header actions
 
-A long document name truncates with an ellipsis; it never pushes the actions: they keep their full width at every screen size, a phone included, and the name takes what is left. The visibility pill and the role pill beside the name keep their full width too, with a gap between them, at every width and UI scale: the name gives way first.
+The open space has no header bar. Its actions are the top-right corner card's (`EditorCornerActions` in `../packages/workbench/src/components/chrome/`, [Toolbar layout](toolbar-layout.md)): Share (owner), Copy (visitor), and Sign in or the account control. The space is named and renamed in the Explorer panel's Current card, also from the search's Rename command ([one-explorer.md "Rename from the search"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)), and its visibility badge is the Explorer's.
 
-The right edge of the header holds Share (owner), Copy (visitor), and Sign in or the account control as full-height, edge-flush actions, each an icon stacked over a small label (`HEADER_ACTION_BTN` in `../packages/workbench/src/components/chrome/header-action.tsx`); Share fills brand while the document is shared. Pill, gradient, bordered and ink-button restyles were tried and dropped in favour of this simpler look. The header and its visibility pill are one copy for every editor, `EditorHeader` and `SharedBadge` (with the pill's `share-states` and `VisibilityLegend`) in `../packages/workbench/src/components/chrome/`; `apps/editor/components/chrome/EditorHeader.tsx` binds it with only what differs: the logo, the space's nouns, the account control and the logo's way to the Explorer. A fix to the header lands once for all five. So does the account control, `AuthControls` in the same folder (Sign in, or the account's picture and first name opening Account and Sign Out): an editor passes only where Account goes and, where it keeps its own picture store, the picture. The header-fit sweep (`../livedocuments/apps/editor/e2e/editor-header-fit.spec.ts`) checks that the name and the pills never overlap from 320 px up.
+Only the pages that stand in for a space (loading, not found, and a create that failed) keep a bar: `EditorHeader` in `../packages/workbench/src/components/chrome/`, bound in `apps/*/components/chrome/EditorHeader.tsx` with this app's logo and account control. It holds the logo, which goes to the Explorer, and the account control (`AuthControls` in the same folder: Sign in, or the account's picture and first name opening Account and Sign Out), and nothing else.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.
 
@@ -183,7 +156,7 @@ A pass is a card headed by a solid role-coloured band (a stub down the left edge
 
 - **Header band** (full width): the role's glyph beside its word, `EDITOR`, `PARTICIPANT` or `VIEWER`, on a solid role colour: brand for edit, teal for participate, violet for view ([Share roles](../013-workspace/share-roles.md)). The colour is the role at a glance across the whole list.
 - **Body** (below), three lines, the second and third sharing one row from `sm` up (a phone stacks them):
-  1. The link, in a monospaced read-only field (select-on-focus for a manual copy) with the pass's copy button **inside** its right edge: a quiet icon button, the grey copy glyph with no word or fill (brand on hover) (the field is the thing being copied, so the action lives in it), named and tooltipped "Copy link"; for a beat after copying it becomes an emerald check and reads "Copied".
+  1. The link, in a monospaced read-only field (select-on-focus for a manual copy) with the pass's copy button **inside** its right edge: a quiet icon button, the grey copy glyph with no word or fill (brand on hover) (the field is the thing being copied, so the action lives in it), tooltipped "Copy link" and named for its pass ("Copy Editor pass link", so two passes never read alike to a screen reader; its bin is "Revoke Editor pass link", Work Tracker 1060); for a beat after copying it becomes an emerald check and reads "Copied".
   2. What it is printed with: **Opens** the tabs it admits (the rescope picker, [Tab-scoped share links](../013-workspace/tab-scoped-share-links.md), shown only on a multi-tab document; on a single-tab document every pass opens every tab, so the term is left off), **Valid** for how long ("Forever" or the countdown, [Share-link expiry](../013-workspace/share-link-expiry.md)), and a **Password** tag while the document has a share password.
   3. The other ways to hand it over, **Embed** ([Read-only embeds](../013-workspace/embeds.md)) and **Live image** ([Live image](../013-workspace/live-image-share.md), hidden while a password is set), with **Revoke** at the far edge.
 
@@ -299,14 +272,14 @@ upright phone whose layout shrinks for its keyboard (an older Android) from fold
   shrinks to make room again, so nothing covers it or the chrome on it. The button, now under the
   header, turns into **Hide Header and Tabs** (`aria-expanded` says which) and folds them again. So
   what lives in the bars stays one press away: Share or Make a Copy, the document's name and
-  badges, the role pill, the tabs and their menus, Add Tab, Search, Settings and the appearance
+  badges, the tabs and their menus, Add Tab, Search, Settings and the appearance
   toggle. The strip's row keeps the handle's 54px clear on its right (`LANDSCAPE_HANDLE_ROOM`: the
   46px card and the row's 8px gap), so a long strip scrolls short of it rather than under it. The
   choice lasts while the document is open in that window: not saved, not synced, and a
   fresh load starts folded.
 - **The bars come back on their own** when something needs them: a rename asked for elsewhere (the
-  Rename Space and Rename Tab search commands) shows them first, so the name field takes the
-  focus; a tour on screen (any of them) keeps
+  Rename Tab search command) shows them first, so the tab's name field takes the
+  focus (Rename Space renames in the Explorer panel, which a phone held sideways withholds); a tour on screen (any of them) keeps
   them shown; and a bar never folds while focus is inside it, so a layout that changes while a
   name is typed there (the on-screen keyboard resizing it) cannot fold the field away. Pressing
   Hide takes the focus to the handle, which ends a rename as any press outside it does.

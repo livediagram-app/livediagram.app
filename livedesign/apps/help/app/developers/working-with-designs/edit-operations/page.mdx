@@ -16,8 +16,8 @@ A **changeset** changes a tab with a short list of edit operations, applied toge
 The same vocabulary reaches a tab three ways:
 
 - **The API**: `POST /designs/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
-- **The CLI**: `livedesign edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livedesign element add|set|rm|move|connect|insert|wrap` sends one operation. `livedesign guide edit` explains the line form, and `livedesign schema view sticky` lists the fields a kind takes.
-- **The MCP server**: `update_design` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
+- **The CLI**: `livedesign edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livedesign element add|set|rm|move|connect|insert|wrap|detach` sends one operation. `livedesign guide edit` explains the line form, and `livedesign schema sticky` lists the fields a kind takes.
+- **The MCP server**: `update_design` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing an element removes its arrows too. It also takes the line form whole, as `edits`.
 
 ## Two Forms
 
@@ -64,12 +64,14 @@ One parser turns the line form into the JSON form, so both are checked the same 
 | `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`                 | Changes the stacking order; frames always stay behind their contents                                                            |
 | `layout`  | `layout <selector> [style=flow] [direction=down]`                            | Lays out only the selection, keeping its top-left corner; `style` is `flow`, `tree` or `mindmap`, `direction` `down` or `right` |
 | `test`    | `test <selector> key=value…`                                                 | Refuses the whole changeset unless the element still holds these values                                                         |
+| `detach`  | `detach <instance>`                                                          | Turns a component instance into plain elements in its place; its main is never changed                                          |
 
 A few rules hold for every operation:
 
-- **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `table`, `annotation` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images, videos and drawn strokes are not made by name, but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `table`, `annotation` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images, videos, paths and drawn strokes are not made by name, but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Components.** `add instance componentId=<main>` places an instance of one of the design's components, as big as its main unless you give a size, and `detach` turns an instance back into plain elements. A main itself never changes through edit operations: use `livedesign component set` or the components endpoints. `livedesign component ls` lists the mains.
 - **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `arrow`, `arrow-2`).
-- **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
+- **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg`, `scale`, or a pixel size from 6 to 48), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
 - **Comments are not fields.** Comment threads and votes travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
 - **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
 
@@ -196,30 +198,20 @@ nothing was applied
 
 ## Lint Findings
 
-Every changeset lints the whole tab it leaves behind, and `GET /designs/{id}/tabs/{tabId}?view=lint` (or `livedesign tab lint`) lists the findings, each ending with a fix you can send as a changeset:
+Every changeset lints the whole tab it leaves behind, and `GET /designs/{id}/tabs/{tabId}?view=lint` (or `livedesign tab lint`) lists the findings. The lint judges text only: whether each label and text fits where it is drawn. Shapes may overlap by design (a logo's marks, a wireframe's layers), so overlapping boxes are never a finding. The first line gives the drawing's size and how many boxes and texts were checked, then one finding a line, each ending with a fix you can send as a changeset:
 
 ```text
-5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info
-W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
+1440×900 · 12 boxes · 30 texts → 2 warnings
+W label-overflow  b3 needs 2 lines, holds 1  fix: set b3 text=sm
+W text-overflow   t7 prints over t8          fix: move t8 below:t7
 ```
 
-| Code                | Severity | Finding                                                          | Suggested fix                              |
-| ------------------- | -------- | ---------------------------------------------------------------- | ------------------------------------------ |
-| `box-overlap`       | error    | Two boxes that arrows connect partly overlap                     | `move b right-of:a`                        |
-| `arrow-dangling`    | error    | An arrow is pinned to an element that is gone                    | `rm <arrow>`                               |
-| `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect                | `set <arrow> line=angled`                  |
-| `edge-crossings`    | warning  | More crossing arrow pairs than a quarter of the arrows           | `layout type:shape`                        |
-| `label-collision`   | warning  | An arrow's label overlaps a box                                  | A shorter arrow label                      |
-| `label-overflow`    | warning  | A label needs more lines than its box holds                      | `text=sm`, or a shorter label and a `note` |
-| `node-isolated`     | warning  | A shape with no arrows, on a tab that is otherwise a graph       | `connect <ref> -> a`                       |
-| `group-escape`      | warning  | A member lies outside its frame                                  | `move a inside:<frame>`                    |
-| `group-split-edges` | info     | Most of a frame's arrows cross its border                        | `unwrap <frame>`                           |
-| `duplicate-label`   | info     | Two boxes share a label                                          | Rename one                                 |
-| `flow-backwards`    | info     | An arrow points against the drawing's flow                       | `rewire <arrow> from=y to=x`               |
-| `aspect-extreme`    | info     | The drawing is more than 3 times wider than tall, or the reverse | `layout type:shape direction=down`         |
-| `colour-on-themed`  | info     | A fill or stroke the theme would not paint, bound to no swatch   | `set a fill=` to give it back to the theme |
+| Code             | Severity | Finding                                                                                                            | Suggested fix                                                  |
+| ---------------- | -------- | ------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| `label-overflow` | warning  | A box's label (a button, a sticky) needs more lines than the box holds, or a card's title or subtitle is cut short | `set a text=sm`, a shorter label and a `note`, or a wider card |
+| `text-overflow`  | warning  | A text needs more lines than its box holds, a word is wider than its line, or two texts print over each other      | `set a height=…`, `set a width=…`, or `move b below:a`         |
 
-Boxes no arrow connects count as decoration and may overlap; the group checks judge frames. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
+Each code lists at most ten findings, then a line saying how many more there are. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings`. Both codes are warnings, so `tab lint` exits `0` whatever it finds.
 
 <Tip>
   Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer and the lint

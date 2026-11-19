@@ -41,6 +41,11 @@ const desk = {
   width: 120,
   height: 40,
 } as unknown as Element;
+// The 3D view's nudge towards the camera on his figure (AvatarWalker's `--space-seat-lift`), or ''.
+const lift = (container: HTMLElement) =>
+  container
+    .querySelector<HTMLElement>('[data-avatar-stand]')
+    ?.parentElement?.style.getPropertyValue('--space-seat-lift') ?? '';
 const ring = (from: string) =>
   receiveBellOp(from, { kind: 'avatar-bell', tabId: 't1', deskId: 'desk-1' });
 
@@ -210,6 +215,14 @@ describe('ReceptionistLayer', () => {
     expect(getReceptionistState().chat).toMatchObject({ open: true, reason: 'bell' });
     const press = container.querySelector<HTMLElement>('[data-receptionist]')!;
     expect(parseFloat(press.style.left) + parseFloat(press.style.width) / 2).toBe(230);
+    // Behind the desk, the 3D view draws him towards the camera by his height and chip, clear of the wall at its back
+    // (receptionist.md "Behind the desk he is seen whole in the 3D view"); by his pad he was not.
+    expect(lift(container)).toBe('120px');
+  });
+
+  it('is drawn towards the camera only behind a desk', () => {
+    const { container } = render(layer({ elements: [pad, desk] }));
+    expect(lift(container)).toBe('');
   });
 
   it('keeps his bubble open when you ask him from across the room, before he sets off', () => {

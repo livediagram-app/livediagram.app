@@ -1,11 +1,11 @@
 import { useRef, useState } from 'react';
 
 import type { CommunityShareInfo } from '@livediagram/api-schema';
-import { connectRoom, type ShareRole } from '@/lib/api-client';
+import { connectRoom, isOutboxOp, type ShareRole } from '@/lib/api-client';
 import { mayShareDocument } from './editor-page-helpers';
 import { useChangesetSeen } from '@liveworkspace/workbench/hooks/editor/useChangesetSeen';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
-import { createPreRoomOutbox } from './pre-room-outbox';
+import { createPreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 
 // Sharing, session-permission and realtime-room infrastructure for the
 // editor: the shareable / team / share-code flags that decide whether
@@ -27,8 +27,9 @@ export function useEditorRealtime() {
   // Single open room connection for the current document. Re-opens
   // whenever documentId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
-  // What was cast before that connection exists, handed to it as it is made (pre-room-outbox.ts).
-  const [preRoomOutbox] = useState(createPreRoomOutbox);
+  // What was sent before that connection exists (a dot, a poll answer, an element edit), handed to it as it is made
+  // (@liveworkspace/workbench/lib/pre-room-outbox). It holds what the room client's own outbox would.
+  const [preRoomOutbox] = useState(() => createPreRoomOutbox(isOutboxOp));
   // Whether the document is saved on the server, so it has a room (docs/specs/024-agents/
   // agent-changesets.md "Rooms for personal documents"): every server-stored document opens one,
   // personal ones included, since an agent is a second writer. False for an Offline Mode document
@@ -57,14 +58,12 @@ export function useEditorRealtime() {
   // in the room their full Participant row is in `livePresence` and we
   // can show avatar + name; otherwise the badge shows just the role
   // strip (Viewing / Editing) and skips the owner row entirely.
-  const [documentOwnerId, setDocumentOwnerId] = useState<string | null>(null);
   // Owner display info from the document fetch (api worker joins
   // participants on document.ownerId). Lets the top-middle Owner badge
   // render for visitors even when the owner isn't currently in the
   // realtime room — livePresence would otherwise be empty, and the
   // badge would hide.
   const [documentOwnerName, setDocumentOwnerName] = useState<string | null>(null);
-  const [documentOwnerColor, setDocumentOwnerColor] = useState<string | null>(null);
   // Visitor-side "Make a copy" loading flag. Header button disables
   // itself while the api round-trips so a frantic double-click can't
   // produce two copies under the user's account.
@@ -128,12 +127,8 @@ export function useEditorRealtime() {
     setDocumentShareCode,
     isOwner,
     setIsOwner,
-    documentOwnerId,
-    setDocumentOwnerId,
     documentOwnerName,
     setDocumentOwnerName,
-    documentOwnerColor,
-    setDocumentOwnerColor,
     copying,
     setCopying,
     passwordRetry,

@@ -49,7 +49,7 @@ Below the window cards, a row of tabs picks the view: **Dashboard**, **Features*
 
 Browsers never send an exact time, only the range a timing fell in (such as "under one second"). So every number in the **Timings** section is an estimate within its range.
 
-The section opens with **Editor Timings**, one card each for **Canvas Load**, **Tab Switch**, **Save**, **Live Connect** and **Live Reconnect**. Each card leads with the **p75** (three timings in four were at least this quick), shows the **Median** and **p95** beside it, draws how many timings fell in each range, and plots each day's p75 across the last 30 days. A card with fewer than 20 timings in the window says it has too few to read a percentile, rather than showing a misleading number.
+The section opens with **Editor Timings**, one card each for **Document Load** (opening a space), **Warm Paint** (how soon a space this browser opened before shows its last seen copy), **Tab Switch**, **Save**, **Live Connect** and **Live Reconnect**. Each card leads with the **p75** (three timings in four were at least this quick), shows the **Median** and **p95** beside it, draws how many timings fell in each range, and plots each day's p75 across the last 30 days. A card with fewer than 20 timings in the window says it has too few to read a percentile, rather than showing a misleading number.
 
 Below that, **Core Web Vitals** gives one card per app (Marketing, Live, Help, Dashboard and Community) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
 

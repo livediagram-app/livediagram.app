@@ -1,81 +1,40 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TitleBarParts, VisibilityLegendFigure } from '@liveworkspace/help-site/art/illustrations/title-bar';
+import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
-  title: 'The Title Bar',
+  title: 'Share, Copy and Your Account',
   description:
-    'The strip across the top of the editor: the design name, who can see it, whether you are editing or viewing, and Share or Copy at the right.',
+    'The top-right card of the editor: Share or Copy, Prototype on a wireframe tab and your account.',
   path: '/help/user-interface/title-bar/',
 });
 
 <ArticleLayout
-  title="The Title Bar"
-  description="The design's name, who can see it, your role in it, and Share or Copy, in the strip above the canvas."
+  title="Share, Copy and Your Account"
+  description="The card at the top right of the canvas: Prototype, Share or Copy, and your account."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-The **title bar** is the strip across the top of the editor, above the canvas. Reading from left to right, it holds the logo, the design's name, a pill saying who can see the design, a pill saying whether you are editing or viewing it, and at the right edge the button that matters most for this design: **Share** if it is yours, **Copy** if it is someone else's. Your account button sits at the very end.
+livedesign has no title bar: the canvas runs all the way to the top of the window. The design's main actions float in a small card at the **top right** of the canvas, level with the palette strip and the menu button at the top left. Reading from left to right, it holds **Prototype** on a wireframe tab, then **Share** if the design is yours or **Copy** if it is someone else's, and your account at the end.
 
-<Figure caption="The title bar of a shared design, as its owner sees it: the name, the Shared visibility pill, the Editing role pill, a solid Share button and the account button.">
-  <TitleBarParts product="livedesign" noun="design" />
+<Figure caption="The top of a shared design, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
+  <TitleBarParts product="livedesign" />
 </Figure>
 
-## The logo
+On a computer each button shows its name beside its icon. On a phone, or when the top row is too crowded for names, the card shows its icons alone. The card hides in [Zen mode](/help/tools/zen-mode/) and inside an [embed](/help/collaboration/sharing/embeds/).
 
-The logo on the left takes you to the livedesign home page. On a phone it shows without its wordmark. The other parts of livedesign (the **Explorer**, **Help** and more) are links along the foot of the [Explorer panel](/help/explorer/explorer-panel/).
+## Prototype
 
-## The design name
-
-The name sits in the middle of the bar. To rename the design, click the name, type the new one, and press `Enter` (or click away) to keep it. `Escape` leaves the old name in place, and clearing the box and confirming keeps the old name too. Names are capped at 60 characters, the same limit the Explorer uses. You can also start a rename from the [command palette](/help/tips-and-tricks/command-palette/) with **Rename Design**.
-
-Only people who can change the design's structure can rename it: its owner and anyone on an Editor link. On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the name is plain text and clicking it does nothing.
-
-## The visibility pill
-
-Right after the name, a small pill says who can see this design. It reads one of four words:
-
-- **Private**: only you can see it.
-- **Shared**: anyone with one of its [share links](/help/collaboration/sharing/) can open it.
-- **Team**: it lives in a [team library](/help/collaboration/teams/team-shared-designs/) and every member of the team can open it. A team design with a live share link reads **Shared** instead.
-- **This Browser**: it is saved only in this browser, never on our servers (see [Offline Mode](/help/privacy-and-security/offline-mode/)). This wins over all the others.
-
-Hover the pill, or tab to it with the keyboard, and a legend opens beneath it. At the top it shows **Who Can See This** for the current state, with rings around a figure of you lit out as far as the design reaches. Under that the three audiences sit on one scale: Just you (Private), Link (Shared) and Team, filled up to where the design is now. Hover any other stop to see what it would mean (the heading changes to **If It Were**). This Browser sits apart below the scale, since it is the opposite of sharing: the design never leaves this browser.
-
-<Figure caption="The legend under the visibility pill of a Shared design: who can see it, the four audiences from Just you to Everyone, This Browser apart, and the owner's Change Who Can See This button.">
-  <VisibilityLegendFigure />
-</Figure>
-
-If the design is yours, the pill is also a button: clicking it opens the Share dialog, and the legend ends with a **Change Who Can See This** button that does the same. Everyone else gets the legend to read but no button, since only the owner decides who can see a design.
-
-The pill does not show on a phone (the bar has no room for it), while the welcome screen of a new design is open, in [Zen mode](/help/tools/zen-mode/), or inside an [embed](/help/collaboration/sharing/embeds/), which hides the whole title bar.
-
-## The role pill
-
-After the visibility pill comes a second pill saying what you can do here right now: **Editing**, **Participating** or **Viewing**. It follows your [share role](/help/collaboration/sharing/): the owner and anyone on an Editor link see **Editing**, a Participant link shows **Participating**, and a Viewer link shows **Viewing**.
-
-Hover the pill to see who owns the design: **Owned by you** on your own designs, or **Owned by** and the owner's name on someone else's. When the owner's name is not known, the pill has no hover text.
-
-If your role lets you edit, the pill is a switch that steps through all three, so you can check what each kind of link will get before you send it:
-
-- Click **Editing** and it turns to **Participating**: you work the design as someone on a Participant link does, with their palette and their limits. You can add stickies and text and move or delete what you add, but not anyone else's.
-- Click **Participating** and it turns to **Viewing**: the design becomes read-only, exactly as someone on a Viewer link sees it.
-- Click **Viewing** to go back to editing.
-
-The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the design.
-
-For a Participant or a Viewer the pill is just a label. Clicking it does nothing, because their link does not allow editing.
-
-Like the visibility pill, the role pill is hidden on a phone, in Zen mode and in embeds.
+On a [wireframe tab](/help/pages/wireframe-pages/), **Prototype** comes first in the card, for every role, and plays the screens as a clickable prototype.
 
 ## Share or Copy
 
-The right edge of the bar holds one main action, and which one you get depends on whose design it is.
+The card holds one main action, and which one you get depends on whose design it is.
 
-**Share** is for the owner. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid blue once the design has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) design it asks you to save the design to your account first, since there is nothing on a server to share yet.
+**Share** is for the owner, and for a member of the team a [team design](/help/collaboration/teams/team-shared-designs/) belongs to, opening it from the team rather than through a share link. It opens the [Share dialog](/help/collaboration/sharing/), where you create and manage links. The button turns solid once the design has a live link, so you can tell at a glance that it is shared. On a [This Browser](/help/privacy-and-security/offline-mode/) design it asks you to save the design to your account first, since there is nothing on a server to share yet.
 
-**Copy** is for everyone else who has the design open: someone on a share link of any role, or a team member opening a design a teammate owns. It makes a copy of the design that belongs to you:
+**Copy** is for everyone else who has the design open: someone on a share link of any role. It makes a copy of the design that belongs to you:
 
 <Step n={1}>Click **Copy**. It reads **Copying** while the copy is made.</Step>
 <Step n={2}>The editor opens your copy, named "Copy of" and the original name.</Step>
@@ -83,10 +42,16 @@ The right edge of the bar holds one main action, and which one you get depends o
   Find it again later at the top level of My Work in the [Explorer](/help/explorer/explorer-page/).
 </Step>
 
-Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the design through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/).
+Your copy starts **Private**: no share links come with it, and nothing you do to it touches the original. If you opened the design through a link to a single tab, the copy holds just that tab. You do not need an account to copy; as a guest the copy is saved under your [guest identity](/help/account-and-data/guest-identity/). On a design from the [Community](/help/collaboration/sharing/community/), Copy is in the Community bar along the top instead.
 
 ## Your account
 
-At the far right is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the design) and **Sign Out**. Not signed in, it shows **Sign in** instead (see [Signing In](/help/account-and-data/signing-in/)).
+At the end of the card is your account. Signed in, it shows your picture (or your initials) and first name; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the design) and **Sign Out**. Not signed in, it shows **Sign In** instead (see [Signing In](/help/account-and-data/signing-in/)).
+
+## The design's name and who can see it
+
+The editor does not show the design's name: the menu card at the top left shows the open tab's name instead. To rename the design, use **Rename** on its **⋯** menu in the [Explorer](/help/explorer/explorer-page/). Names are capped at 60 characters.
+
+Who can see a design (Private, Shared, Team, Public in the Community, or This Browser) shows as a pill on the design in the Explorer, and the [Share dialog](/help/collaboration/sharing/) is where the owner changes it.
 
 </ArticleLayout>

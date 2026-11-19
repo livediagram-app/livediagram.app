@@ -77,20 +77,35 @@ export async function personMerged(
   return json({ ok: true });
 }
 
+// The most guests a closed account's notice names: the index's PERSON_ALIASES_MAX.
+export const PERSON_GUESTS_MAX = 32;
+
 export async function personClosed(
   request: Request,
   person: string,
   handlers: InternalItemHandlers,
 ) {
   if (!PERSON_ID.test(person)) return notFound();
-  const items = ((await bodyOf(request)) ?? {})['items'] ?? [];
+  const body = (await bodyOf(request)) ?? {};
+  const items = body['items'] ?? [];
   if (!Array.isArray(items) || items.length > PERSON_ITEMS_MAX || !items.every(validId)) {
     return badRequest(`items must be up to ${PERSON_ITEMS_MAX} item ids`);
   }
+  // The guests merged into the account (the index's person_notice_guests, Work Tracker 1241): what they left as a
+  // guest is anonymised as the account's is. Only guest ids, never the person themself.
+  const guests = body['guests'] ?? [];
+  if (
+    !Array.isArray(guests) ||
+    guests.length > PERSON_GUESTS_MAX ||
+    !guests.every((g): g is string => typeof g === 'string' && GUEST_ID.test(g))
+  ) {
+    return badRequest(`guests must be up to ${PERSON_GUESTS_MAX} guest ids`);
+  }
+  const guestIds = [...new Set(guests)].filter((g) => g !== person);
   await handlers.personClosed?.(person);
   const anonymise = handlers.anonymise;
   const { purged, unreached } = anonymise
-    ? await purgeEach([...new Set(items)], (id) => anonymise(id, person))
+    ? await purgeEach([...new Set(items)], (id) => anonymise(id, person, guestIds))
     : { purged: [], unreached: [] };
   // The index asks again (every item is safe to do twice) until each was reached.
   return json(

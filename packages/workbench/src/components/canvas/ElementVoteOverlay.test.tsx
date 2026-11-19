@@ -267,6 +267,8 @@ describe('ElementVoteOverlay at a phone’s full Fit of a large board', () => {
 // a loaded runner's wall clock from failing it.
 describe('ElementVoteOverlay on a 2,000-note board', () => {
   const WALL_TIMEOUT_MS = 30_000;
+  // Timed passes of the Fit's steps, the fastest kept.
+  const STEP_PASSES = 5;
   let r: ReturnType<typeof render>;
   let board: (zoom: number) => ReactElement;
   beforeAll(() => {
@@ -299,9 +301,20 @@ describe('ElementVoteOverlay on a 2,000-note board', () => {
     () => {
       vi.useFakeTimers();
       const frames = [0.3, 0.2, 0.15, 0.13, 0.12, 0.11];
-      const steps = cpuMsOf(() => {
-        for (const z of frames) r.rerender(board(z));
-      });
+      // The Fit's steps, timed alone and back to where it began untimed, the zoom never standing still between.
+      const fit = () => {
+        const ms = cpuMsOf(() => {
+          for (const z of frames) r.rerender(board(z));
+        });
+        r.rerender(board(0.4));
+        return ms;
+      };
+      // The first pass pays the update path's compile and collects what the first draw left (67 ms against 20 warm,
+      // under load); interference only adds CPU time, so the fastest of the timed passes is what a step costs.
+      fit();
+      let steps = Number.POSITIVE_INFINITY;
+      for (let pass = 0; pass < STEP_PASSES; pass++) steps = Math.min(steps, fit());
+      for (const z of frames) r.rerender(board(z));
       // Mid-zoom every stepper rides with the board as it was: nothing has folded or shrunk yet.
       expect(r.container.querySelectorAll('.lvd-vote-dot')).toHaveLength(0);
       const settle = cpuMsOf(() => {

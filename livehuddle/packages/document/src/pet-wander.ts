@@ -1,7 +1,7 @@
 // Where the office dog is (docs/specs/009-elements/workday-pieces.md "Pet Bed and its dog"): the same place on every
-// screen with nothing sent. Time is cut into legs of PET_LEG_MS; each leg's spot comes from the bed's id and the leg's
-// number through a small seeded generator, so any two clocks that agree to a second agree on the dog. Every fourth leg
-// it goes back to its bed. A spot where the dog would stand behind or under a piece, or in another room's walls, is
+// screen with nothing sent. Time is cut into legs of PET_LEG_MS, and the dog walks one leg in PET_WALK_EVERY, resting
+// lying down through the others; each walk's spot comes from the bed's id and the walk's number through a small seeded
+// generator, so any two clocks that agree to a second agree on the dog. Every fourth walk it goes back to its bed. A spot where the dog would stand behind or under a piece, or in another room's walls, is
 // passed over for the generator's next one, the same on every screen. Pure: no React, no DOM, no clock of its own (the caller passes `now`).
 
 import { roomInterior } from '@livehuddle/avatar/office-geometry';
@@ -9,6 +9,13 @@ import { roomInterior } from '@livehuddle/avatar/office-geometry';
 /** One leg: the dog trots to its spot over the first PET_TROT_MS, then sits there. */
 export const PET_LEG_MS = 9_000;
 export const PET_TROT_MS = 3_000;
+/**
+ * The dog walks one leg in this many, then lies down where it got to and rests through the rest, so a still office is
+ * still most of the time (docs/specs/008-canvas/canvas-performance.md "A still Space does nothing", Work Tracker 1257).
+ */
+export const PET_WALK_EVERY = 3;
+/** One walk and its rest. */
+export const PET_WALK_MS = PET_LEG_MS * PET_WALK_EVERY;
 /** How far round a bed in no room its dog wanders, from the bed's middle. */
 export const PET_RADIUS = 240;
 /** How far the dog keeps off its room's walls. */
@@ -147,6 +154,16 @@ export function petArea(bed: Box, rooms: readonly Box[], pieces: readonly Box[] 
 /** The leg `now` falls in. */
 export function petLegAt(now: number): number {
   return Math.floor(now / PET_LEG_MS);
+}
+
+/** The walk `now` falls in: the number its spot comes from (`petLeg`). */
+export function petWalkAt(now: number): number {
+  return Math.floor(now / PET_WALK_MS);
+}
+
+/** The ms until the next walk starts, from `now`: when the dog's one timer next wakes. */
+export function msToNextWalk(now: number): number {
+  return PET_WALK_MS - (((now % PET_WALK_MS) + PET_WALK_MS) % PET_WALK_MS);
 }
 
 /** One spot in the area from the generator's next two numbers. */

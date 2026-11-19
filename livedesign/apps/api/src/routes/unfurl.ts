@@ -27,6 +27,6 @@ export async function handleUnfurl(ctx: RouteContext): Promise<Response> {
   if (!parsed) return badRequest('invalid or disallowed url');
 
   const outcome = await unfurl(parsed, USER_AGENT);
-  if ('disallowed' in outcome) return badRequest('redirected to a disallowed url');
+  if ('disallowed' in outcome) return badRequest('disallowed url');
   return json(outcome.result);
 }

@@ -229,6 +229,7 @@ export async function anonymise(
   documentId: string,
   personId: string,
   guestKeys: readonly string[] = [],
+  guestIds: readonly string[] = [],
 ): Promise<number> {
   room.bindDocument(documentId);
   // A canvas never started (or purged) holds nothing of anyone: read its storage as it is, without making the
@@ -239,7 +240,13 @@ export async function anonymise(
     sql.exec('SELECT 1 FROM document WHERE id = ? AND created_at > 0', documentId).toArray()
       .length > 0;
   if (!started) return 0;
-  const changed = await anonymiseDocument(room.requireEnv(), documentId, personId, guestKeys);
+  const changed = await anonymiseDocument(
+    room.requireEnv(),
+    documentId,
+    personId,
+    guestKeys,
+    guestIds,
+  );
   // The owner may have been the one anonymised: the next grant reads the stored copy again.
   room.head.forget();
   if (changed > 0) console.info('[room] anonymised a closed account', { rows: changed });

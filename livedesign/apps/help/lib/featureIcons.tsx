@@ -8,18 +8,22 @@ import {
   lucideFilePlus,
   lucideFolder,
   lucideGitCommitHorizontal,
+  lucideHistory,
   lucideLayoutGrid,
+  lucideLibrary,
   lucideLink,
   lucideLocateFixed,
   lucideMagnet,
   lucidePanelLeft,
   lucidePanelsTopLeft,
   lucidePencilLine,
+  lucidePenTool,
   lucideRoute,
   lucideSearch,
   lucideSquarePlus,
   lucideStarHalf,
   lucideUsers,
+  lucideWebhook,
 } from '@liveworkspace/icons/lucide';
 import { Prims, Glyph as UiGlyph } from '@livedesign/ui';
 import type { ReactNode } from 'react';
@@ -302,6 +306,30 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     <Glyph>
       <circle cx="12" cy="12" r="8.5" />
       <path d="M10.2 8.8v6.4l5-3.2z" />
+    </Glyph>
+  ),
+  // A clock turning back: who changed what, and when. Not a camera (snapshots') and not a plain clock.
+  history: (
+    <Glyph>
+      <Prims prims={lucideHistory} />
+    </Glyph>
+  ),
+  // The webhook knot: the design telling another service what happened.
+  webhooks: (
+    <Glyph>
+      <Prims prims={lucideWebhook} />
+    </Glyph>
+  ),
+  // Books on a shelf: what you and your teams saved, to place again.
+  library: (
+    <Glyph>
+      <Prims prims={lucideLibrary} />
+    </Glyph>
+  ),
+  // The pen nib with its anchor point: precise paths, point by point.
+  'pen-and-points': (
+    <Glyph>
+      <Prims prims={lucidePenTool} />
     </Glyph>
   ),
   // A camera: a save point taken of the whole item. Not a clock (history's) and not a page (export's).

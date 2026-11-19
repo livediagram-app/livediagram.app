@@ -6,7 +6,7 @@ import { UndoStep } from '@liveworkspace/help-site/art/illustrations/undo-redo';
 export const metadata = helpMetadata({
   title: 'My Changes Are Missing',
   description:
-    'A checklist for recovering apparently lost work in livedesign, using autosave, per-tab storage, and undo.',
+    'A checklist for recovering apparently lost work in livedesign, using autosave, per-tab storage, undo and snapshots.',
   path: '/help/troubleshooting/missing-changes/',
 });
 
@@ -49,6 +49,8 @@ If you have just undone, moved or deleted something by mistake, [Redo](/help/can
 1. **Press Undo** (**Cmd/Ctrl+Z**, or the undo button at the bottom-right) to step back your most recent changes, one at a time.
 2. **Press Redo** (**Cmd/Ctrl+Shift+Z**, or **Ctrl+Y**) if you went back too far.
 3. Undo covers your own recent steps in this session. It is cleared when you reload, and it never reaches into someone else's edits.
+
+For a bigger change that went wrong, such as a clean-up, an import or a teammate's reorganisation, open **Tools** in the bottom bar and press **History** (signed in, on a design saved to your account). It shows who changed what and when and, for an Editor of the whole design, its [snapshots](/help/collaboration/snapshots/): **Revert** to one to put the design back as it was then. Take a snapshot before a big change so there is one to go back to.
 
 A deleted design is not gone either: it waits in the [Trash](/help/account-and-data/trash/) for 30 days until you restore it. A design left empty for 30 days moves there on its own, so look there too.
 

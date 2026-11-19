@@ -328,7 +328,10 @@ account, and never through liveplanner's GitHub App, which is read-only by spec.
    marker and edits it in place on every push; it posts one only when the first push with diagram changes comes.
    When a later push leaves no changed tab, the comment is edited to say so; with no comment yet and nothing
    changed it posts nothing.
-4. **A pull request from a fork** gets a read-only token: the Action uploads the pictures and `comment.md` as a
+4. **Cleanup when a pull request closes** is optional: a workflow that lists `closed` among the `pull_request` types
+   has the Action remove that pull request's `pr-<number>/` folder from the previews branch (and nothing else), so
+   the branch stops growing. Without `closed` nothing is removed.
+5. **A pull request from a fork** gets a read-only token: the Action uploads the pictures and `comment.md` as a
    workflow artifact, names it in the job summary, and passes.
 
 ### Review limits

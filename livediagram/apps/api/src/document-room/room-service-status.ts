@@ -2,9 +2,9 @@ import {
   classifyStatusAnswer,
   STATUS_BIND_DELAY_MS,
   STATUS_BODY_MAX,
-  STATUS_POLL_MS,
   STATUS_SOURCES_MAX,
   STATUS_TIMEOUT_MS,
+  statusWaitMs,
   type ServiceStatus,
   type ServiceStatusOp,
 } from '@livediagram/api-schema';
@@ -20,9 +20,11 @@ import { scopeOf } from './room-sockets';
 // from its alarm, keeps the latest state of each, and sends every session the states of the URLs on the tabs it may
 // see. A document nobody has open fetches nothing and sets no alarm for it, and a deployment without
 // LIVE_STATUS_ENABLED never runs a round. Only the state leaves the room: an answer's bytes are reduced to one of
-// four states (classifyStatusAnswer) and dropped.
+// four states (classifyStatusAnswer) and dropped. A URL whose checks keep timing out is checked less often
+// (statusWaitMs), since each such check holds the room for its whole deadline.
 
-// The storage key holding each checked URL's latest ServiceStatus (at most STATUS_SOURCES_MAX entries).
+// The storage key holding each checked URL's latest ServiceStatus (at most STATUS_SOURCES_MAX entries), each with
+// `timeouts`, its checks in a row that timed out, when there are any. The count never leaves the room.
 export const SERVICE_STATUS_KEY = 'service-status';
 // A round's checks run this many at a time. A Worker holds six connections open at once and queues the rest, and a
 // check holds two while it resolves its host (A and AAAA), so three at a time never queue one behind another, whose
@@ -112,11 +114,17 @@ export function checkStatusUrl(url: string): Promise<PublicFetchResult> {
 const isStatus = (v: unknown): v is ServiceStatus =>
   isRecord(v) && typeof v.state === 'string' && typeof v.checkedAt === 'number';
 
+// A stored entry's timeout count: a positive whole number, or none.
+const timeoutsOf = (v: Record<string, unknown>): number =>
+  Number.isInteger(v.timeouts) && (v.timeouts as number) > 0 ? (v.timeouts as number) : 0;
+
 /** The room's live status checks: its next round (`at`) and each checked URL's latest state. */
 export class RoomServiceStatus {
   // When the next round is due (null: none). The room's alarm (room-lifecycle.ts) takes it with its other times.
   at: number | null = null;
   private statuses = new Map<string, ServiceStatus>();
+  // Each URL's checks in a row that timed out (none: not there). Its wait before the next check is statusWaitMs.
+  private timeouts = new Map<string, number>();
   private running: Promise<void> | null = null;
   private readonly check: (url: string) => Promise<PublicFetchResult>;
   private readonly deps: ServiceStatusDeps;
@@ -129,11 +137,15 @@ export class RoomServiceStatus {
   /** After a wake: the states kept, and, while sessions are still connected, the round they are due. */
   async restore(): Promise<void> {
     const saved = await this.deps.storage.get<Record<string, unknown>>(SERVICE_STATUS_KEY);
-    this.statuses = new Map(
-      Object.entries(isRecord(saved) ? saved : {}).filter(
-        (entry): entry is [string, ServiceStatus] => isStatus(entry[1]),
-      ),
-    );
+    this.statuses = new Map();
+    this.timeouts = new Map();
+    for (const [url, entry] of Object.entries(isRecord(saved) ? saved : {})) {
+      if (!isStatus(entry)) continue;
+      const { timeouts: _, ...status } = entry as ServiceStatus & { timeouts?: unknown };
+      this.statuses.set(url, status);
+      const timeouts = timeoutsOf(entry);
+      if (timeouts > 0) this.timeouts.set(url, timeouts);
+    }
     if (this.statuses.size > 0 && this.live()) this.at = this.nextDue([...this.statuses.keys()]);
   }
 
@@ -174,6 +186,7 @@ export class RoomServiceStatus {
   /** The document is gone: forget every state (its storage goes with the purge). */
   forget(): void {
     this.statuses.clear();
+    this.timeouts.clear();
     this.at = null;
   }
 
@@ -188,14 +201,18 @@ export class RoomServiceStatus {
     this.deps.arm();
   }
 
-  // The earliest a URL is due again: now for one never checked, a minute after its last check otherwise.
+  // When a URL is due again: now for one never checked, its wait after its last check otherwise (a minute, longer
+  // for one that keeps timing out).
+  private dueAt(url: string, now: number): number {
+    const status = this.statuses.get(url);
+    return status ? status.checkedAt + statusWaitMs(this.timeouts.get(url) ?? 0) : now;
+  }
+
+  // The earliest of the URLs is due again.
   private nextDue(urls: readonly string[]): number {
     const now = this.deps.now();
     let next = Infinity;
-    for (const url of urls) {
-      const status = this.statuses.get(url);
-      next = Math.min(next, status ? status.checkedAt + STATUS_POLL_MS : now);
-    }
+    for (const url of urls) next = Math.min(next, this.dueAt(url, now));
     return next;
   }
 
@@ -209,23 +226,28 @@ export class RoomServiceStatus {
     for (const url of this.statuses.keys()) {
       if (!bound.has(url)) {
         this.statuses.delete(url);
+        this.timeouts.delete(url);
         changed = true;
       }
     }
-    const due = sources.checked.filter((url) => {
-      const status = this.statuses.get(url);
-      return status === undefined || status.checkedAt + STATUS_POLL_MS <= now;
-    });
+    const due = sources.checked.filter((url) => this.dueAt(url, now) <= now);
     const results = await pooled(
       due.map((url) => () => this.checkOne(url, now)),
       STATUS_CHECKS_AT_ONCE,
     );
-    due.forEach((url, i) => this.statuses.set(url, results[i]!));
+    due.forEach((url, i) => {
+      const status = results[i]!;
+      this.statuses.set(url, status);
+      // A timeout adds to the URL's count; any other end (an answer, a refusal, a fast failure) clears it.
+      if (status.reason === 'timeout') this.timeouts.set(url, (this.timeouts.get(url) ?? 0) + 1);
+      else this.timeouts.delete(url);
+    });
     if (due.length > 0 || changed) await this.persist();
     if (due.length > 0) {
       console.debug('[service-status] round', {
         checked: due.length,
         down: results.filter((s) => s.state === 'down').length,
+        timedOut: results.filter((s) => s.reason === 'timeout').length,
         overflow: sources.overflow.length,
       });
       for (const ws of this.deps.sockets()) {
@@ -250,7 +272,14 @@ export class RoomServiceStatus {
 
   private async persist(): Promise<void> {
     if (this.statuses.size === 0) await this.deps.storage.delete(SERVICE_STATUS_KEY);
-    else await this.deps.storage.put(SERVICE_STATUS_KEY, Object.fromEntries(this.statuses));
+    else {
+      const record: Record<string, ServiceStatus & { timeouts?: number }> = {};
+      for (const [url, status] of this.statuses) {
+        const timeouts = this.timeouts.get(url);
+        record[url] = timeouts ? { ...status, timeouts } : status;
+      }
+      await this.deps.storage.put(SERVICE_STATUS_KEY, record);
+    }
   }
 
   // The states of the URLs this session may see: every tab's, or its one tab's. Nothing when it may see none.

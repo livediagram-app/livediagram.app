@@ -103,7 +103,8 @@ export async function apiJson<T>(
 
 export type Seeded = { projectId: string; tabId: string; token: string };
 
-// A project of the person's with one labelled square, and an API token, as the CLI holds.
+// A project of the person's with one labelled square, and an API token (seeded through the accounts stand-in,
+// as the CLI holds one).
 export async function seedProjectAndToken(
   request: APIRequestContext,
   person: Person,
@@ -133,11 +134,17 @@ export async function seedProjectAndToken(
     ],
   });
   if (created.status >= 300) throw new Error(`creating the project failed: ${created.status}`);
-  const token = await apiJson<{ token: string }>(request, 'POST', '/tokens', person.jwt, {
-    name: 'liveplanner CLI',
+  // API tokens are made on liveworkspace.app, so the stack's accounts stand-in seeds one for the person.
+  const token = await request.post('/e2e/accounts/__seed/token', {
+    data: {
+      userId: person.userId,
+      email: `${person.userId}@example.test`,
+      name: 'liveplanner CLI',
+    },
   });
-  if (token.status >= 300) throw new Error(`creating the token failed: ${token.status}`);
-  return { projectId, tabId, token: token.body.token };
+  if (!token.ok()) throw new Error(`seeding the token failed: ${token.status()}`);
+  const { secret } = (await token.json()) as { secret: string };
+  return { projectId, tabId, token: secret };
 }
 
 // `liveplanner workbench open`: POST /api/workbench/tickets with the token.

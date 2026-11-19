@@ -1,7 +1,7 @@
 // Every product's PDF export (liveworkspace/docs/specs/013-export/vector-pdf.md): the SVG each page's SVG export already makes, drawn into a
 // PDF as vectors. Shapes and lines are paths, pictures stay pictures, text is drawn as outlines in the faces the SVG
 // embeds with an invisible text layer over them, link areas lie over the page, and an article's headings and
-// paragraphs are tagged. A page the vector path can't draw at all is drawn by the old raster path instead, so no
+// paragraphs, lists, quotes and tables and its described pictures are tagged. A page the vector path can't draw at all is drawn by the old raster path instead, so no
 // export ever comes out worse than a picture of the page.
 import { parseInert } from '@liveworkspace/trusted-types';
 import { bytesOf, defaultFontkit, registerFaces, type OutlineDeps } from '../outline-text/faces';
@@ -101,7 +101,9 @@ export async function svgPagesToPdf(
   const catalog = file.alloc();
   const pagesObj = file.alloc();
   const pageObjs = pages.map(() => file.alloc());
-  const tree = pages.some((p) => p.svg.includes('data-pdf-tag=')) ? new StructTree(file) : null;
+  const tree = pages.some((p) => p.svg.includes('data-pdf-tag=') || p.svg.includes('data-pdf-alt='))
+    ? new StructTree(file)
+    : null;
   const images: SvgContext['images'] = new Map();
   const glyphs: SvgContext['glyphs'] = new Map();
   const host = document.createElement('div');
@@ -161,6 +163,8 @@ export async function svgPagesToPdf(
           glyphs,
           rasterScale: opts.rasterScale ?? DEFAULT_RASTER_SCALE,
           fontCss: css,
+          tags: tree,
+          alts: null,
         };
         await drawElement(ctx, root);
         const drawing = ['q', matrixOps(rootToPage), ...ctx.out, 'Q'].join('\n');
@@ -169,10 +173,13 @@ export async function svgPagesToPdf(
           lines,
           fonts,
           tree ? (line, n) => tree.mark(line, `p${i}-${n}`) : undefined,
+          tree ? (line, n) => tree.declare(line, `p${i}-${n}`) : undefined,
         );
         content = tree ? `/Artifact BMC\n${drawing}\nEMC\n${layer}` : `${drawing}\n${layer}`;
+        tree?.endPage();
       } catch (err) {
         if (!page.raster) throw err;
+        tree?.resetPage();
         console.warn('[pdf] page drawn as a picture', err instanceof Error ? err.message : err);
         const img = putPixels(file, canvasPixels(await page.raster()), true);
         content = `q ${num(mediaW)} 0 0 ${num(mediaH)} 0 0 cm /${res.name('XObject', img)} Do Q`;

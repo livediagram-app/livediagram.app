@@ -54,7 +54,6 @@ import {
   WalkthroughsTools,
 } from '@liveworkspace/walkthrough';
 import { useSelectTab } from './useSelectTab';
-import { useRoleIndicator } from './useRoleIndicator';
 import { UiScaleProvider } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { useEditorUiScales } from '@liveworkspace/workbench/hooks/ui/useEditorUiScales';
@@ -176,7 +175,6 @@ export function EditorView() {
     cancelConnect,
     sessionShareCode,
     setShareDialogOpen,
-    renameDesignNonce,
     renameTabNonce,
     tabs,
     zenMode,
@@ -193,7 +191,6 @@ export function EditorView() {
   });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
-  const role = useRoleIndicator();
 
   const selectTab = useSelectTab();
   // Contextual command palette for the SearchPanel "Actions" group (docs/specs/008-canvas/canvas-and-palette.md):
@@ -248,7 +245,7 @@ export function EditorView() {
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/live-app.md "A phone
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
-  const landscapeBars = useLandscapeBars([renameDesignNonce, renameTabNonce]);
+  const landscapeBars = useLandscapeBars([renameTabNonce]);
 
   // The site header and the tab bar (editor-view-bars.tsx). Side by side (docs/specs/007-editor/split-view.md)
   // lays them across both panes.
@@ -277,7 +274,6 @@ export function EditorView() {
     isOffline,
     selectTab,
     landscapeShown: landscapeBars.shown,
-    role,
   });
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
@@ -351,8 +347,10 @@ export function EditorView() {
                                     </button>
                                   </div>
                                 ) : null}
-                                {headerInColumn}
+                                {/* The approver's banner above the corner card's zero-height layer, so the card floats below it and
+                                    never over its buttons (approvals.md "Where it sits"). */}
                                 <ApprovalBanner />
+                                {headerInColumn}
                                 {sessionCommunity && appChrome && hydrated ? (
                                   <CommunityBar
                                     community={sessionCommunity}

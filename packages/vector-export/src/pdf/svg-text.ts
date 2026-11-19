@@ -12,7 +12,7 @@ import { parsePaint } from './svg-color';
 import type { SvgContext } from './svg-context';
 import { paintPath, type PaintSpec } from './svg-paint';
 import { pathToPdf } from './svg-path';
-import type { Box } from './svg-transform';
+import { parseTransform, type Box } from './svg-transform';
 import type { TextItem } from './text-layer';
 
 /** The text's runs on one baseline each, in PDF points on the page: a new run wherever a character does not start
@@ -119,6 +119,20 @@ export async function drawOutlines(
       );
     } else await paintPath(ctx, pathToPdf(p.d), spec, bbox, drawTile);
   }
+}
+
+/** An empty block's marker (`data-pdf-empty`, as an empty table cell's): a tagged text-layer item with no text, at
+ *  the marker's place, so the PDF's structure keeps the block though there is nothing to read in it. */
+export function addEmptyItem(ctx: SvgContext, el: Element): void {
+  const tag = el.getAttribute('data-pdf-tag');
+  const block = el.getAttribute('data-pdf-block');
+  if (!ctx.text || !tag || block === null) return;
+  const at = multiply(
+    ctx.rootToPage,
+    multiply(ctx.toRoot, parseTransform(el.getAttribute('transform'))),
+  );
+  const [x, y] = apply(at, 0, 0);
+  ctx.text.push({ text: '', x0: x, y0: y, x1: x, y1: y, size: 0, tag, block });
 }
 
 /** Adds the text's characters to the text layer, from the current user space (the text's). */

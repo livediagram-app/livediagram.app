@@ -90,11 +90,11 @@ fallback (livediagram, livehuddle, livedesign; livedocuments and liveplanner kee
 its commit identity through `hooks/persistence/useResolveSelf`; livedocuments, livedesign and liveplanner also back out
 of a restored `/new` through `hooks/ui/useBackOutOnRestore` (livediagram and livehuddle back out their own way).
 
-The editor header (`components/chrome/EditorHeader`, with its visibility pill `SharedBadge`, the pill's
-`share-states` and `VisibilityLegend`) is one copy for every editor: each editor's `components/chrome/EditorHeader.tsx`
-is a thin door that hands in its logo (`app`), the logo's way to the Explorer, its nouns (`words`), its account control
-(`account`) and what is its own (livediagram's and livedocuments' `present`, liveplanner's Share Form as
-`shareAction`), and re-exports `SaveStatus`. The account control it hands in is one copy too
+The open editor has no header bar: its actions are the corner card's (`components/chrome/EditorCornerActions`, with
+`HeaderShareIcon`). `components/chrome/EditorHeader` is only the bar over the pages that stand in for an item (loading,
+not found, a failed create): the app's logo to the Explorer and the account control. Each editor's
+`components/chrome/EditorHeader.tsx` is a thin door that hands in its logo (`app`), the logo's way to the Explorer and
+its account control (`account`), and re-exports `SaveStatus`. The account control is one copy too
 (`components/chrome/AuthControls`, with the `SignInIcon` every sign-in affordance wears): an editor passes only where
 Account goes (`onOpenAccount`) and, for livedocuments and livedesign, the picture from their own-picture store
 (`picture`); Sign Out is tracked through the `track` binding. The Settings panel's host
@@ -106,6 +106,29 @@ signed in, not in a workbench, and preferences not kept only in this browser); e
 `components/dialogs/SettingsDialog.tsx` binds it once at module scope (`EditorSettingsBinding`) and passes its
 catalogue's inputs and the tours it reruns on close (`onClosing`). Whose preferences stay in this browser is one record
 (`lib/preferences-local-only`), written by each editor's `lib/preferences-sync.ts` when the api keeps none.
+
+Three pieces of the editor's chrome are one copy too (Work Tracker 1217). The modifier hint
+(`components/chrome/ModifierHintBanner`, with its selection-bound `ModifierHint`) takes what differs as props: an Alt
+offer (`altHint`, livediagram's insert between, from its `components/chrome/ModifierHintBanner.tsx` binding), a Shift
+message in place of the canvas's (`shiftMessage`, livehuddle's walk), and livedesign binds its drag store in its own
+door. The start-again tray (`components/start/StartAgainTray`) takes the closed start's key and, where the editor has
+one, the dock its pill stands clear of (`dockSelector`, livediagram's Draw). The category bar's state and buttons
+(`components/palette/CategoryBar`: `useCategoryBar`, `CategoryBarButtons`, the flyout widths) are bound by each
+editor's `components/palette/CategoryBar.tsx` to its own flyout widths and strip divider. The bar sends its
+`UI·Changed·ToolbarCategory` through the `track` binding.
+
+The flyout under the bar is one copy too (Work Tracker 1261): `components/palette/CategoryBarFlyout` hangs it and its
+side panel and moves between them by hover and keyboard, `CategoryFlyout` and `CategoryFlyoutSide` draw them,
+`category-flyout-items` their tiles, cards and footer, and `category-flyout-keys` the arrow keys (by position across
+groups, ArrowRight into a side panel, ArrowLeft and Escape back out). Each editor binds its tiles once, in its
+`components/palette/category-flyout-kit.tsx`, as a `FlyoutKit` (`category-flyout-kit`): how a tile places, arms, drags
+and tints, which tiles open a side panel, and how its categories group and lay out. What a side panel holds for a tile
+without presets is the editor's (`sideExtra`: livedesign's opener and Fill colour), and so is a press it takes itself
+(`pressSide`: livedesign's Fill picks up on a desktop). A kit can also frame a group itself (livediagram's optional
+BPMN group, whose closed body is inert so the arrows skip it), wrap a catalogue by its category, carry a piece by the
+pointer (`carryStart`), and set where a side panel stops (`sideFloor`, `sideCoversFlyoutOnPhone`, `sideHidesOnDrag`:
+livehuddle's, clear of its tab bar). `PictureTile` and `CardTile` draw the tiles and cards, and livehuddle's avatar
+palette draws its own with them. Every editor with a category bar uses this flyout.
 
 Never by importing the product: a workbench module that needs `@<product>/…` is not ready to move.
 

@@ -73,7 +73,18 @@ curl -X POST https://www.livedocuments.app/api/documents/$DOC/tabs/$TAB/pages \
   -d '{ "article": { "markdown": "# Release notes\n\nWhat changed this month.", "size": "a4" } }'
 ```
 
-A page change is `add` (a `kind` of `infographic` or `slide`, with an optional `size`, `orientation`, `name`, `background`, `layout` and `at`), `set`, `layout`, `move`, `duplicate` or `delete`; a page is named by its id, its place in the row (from 1) or its name. An article write takes `mode` `replace` (the default) or `append`, and `article` to name an existing one. The answer lists every page with its rectangle on the canvas, which is where a changeset puts elements to land them on that page.
+A page change is one of:
+
+- `add`: a `kind` of `infographic`, `slide` or `flashcard`, with an optional `size`, `orientation`, `name`, `background`, `layout` and `at` (its place in the row). Article pages are not added this way: write an article instead.
+- `set`: a page's `name`, `size`, `orientation`, `background` or `locked`.
+- `layout`, `move` (`to` a place), `duplicate` or `delete`. Deleting or duplicating an article's page acts on the whole article.
+- `apply_background_to_all`: every other page of the same kind takes this page's background; locked pages keep their own.
+
+A page is named by its id, its place in the row (from 1) or its name. A `background` takes one of `color`, `gradient` (two hex colours, with an optional `angle`) or `paper: true`, and may add a `pattern`.
+
+An article write takes `markdown`, `mode` `replace` (the default) or `append`, and `article` (its id or title) to name an existing one, or `new: true` to start another. A new article also takes `size` and `orientation`, and any write can set the article's `look` (`clean`, `classic`, `report`, `notebook` or `bold`), `accent` (a hex colour) and `pageNumbers`. On a tab of flashcards, the write fills a card.
+
+The answer lists every page with its rectangle on the canvas, which is where a changeset puts elements to land them on that page, and every article with its word count and an estimate of how many pages it fills. A refused request answers `400` naming the change it stopped at. An agent's article write that would change a paragraph someone is typing in is refused with `409 paragraphs_held`, naming who holds it, so nothing they are writing is overwritten; try again once they pause (the CLI's `article set --wait-held <seconds>` does this for you).
 
 ## A Tab as a Picture
 

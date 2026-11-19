@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import { embedOpensReadOnly, embedSessionRole } from '@liveworkspace/media/embed-read-only';
-import { previewAdderKey, useViewPreview } from '../useViewPreview';
 import { useParticipantSession } from '../useParticipantSession';
 import { useElementDeltas } from '@/hooks/collab/useElementDeltas';
 import { usePresenceState } from '../usePresenceState';
@@ -32,8 +31,7 @@ export function useEditorCollaboration({
   // `&readonly=1`, read once, so an edit link unfolded into a public page gives its readers no edit rights.
   const [readOnlyEmbed] = useState(() => embedOpensReadOnly(embedMode));
   const { tickTabs } = fromHistory;
-  const { activeId, sessionTabScope, setEditingId, setMultiSelectedIds, setSelectedId } =
-    fromSelection;
+  const { activeId, sessionTabScope } = fromSelection;
   const { holdWalking } = fromTools;
   // Sharing, session-permission and realtime-room infrastructure: the
   // shareable / team / share-code flags that gate the WS room, owner +
@@ -52,9 +50,7 @@ export function useEditorCollaboration({
     setDocumentTeamId,
     setDocumentShareCode,
     setIsOwner,
-    setDocumentOwnerId,
     setDocumentOwnerName,
-    setDocumentOwnerColor,
     copying,
     setCopying,
     passwordRetry,
@@ -68,7 +64,12 @@ export function useEditorCollaboration({
   } = realtime;
   // One tick / comment, applied here and sent to the room as a delta ahead of
   // the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments and the checklist below.
-  const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  const applyElementDelta = useElementDeltas({
+    activeId,
+    tickTabs,
+    roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
+  });
 
   // Realtime presence state (who's connected + their cursors / selections
   // / tab focus). See usePresenceState; the room writes it
@@ -101,23 +102,13 @@ export function useEditorCollaboration({
   // code's role (docs/specs/013-workspace/embeds.md): a view code renders a read-only viewer, an edit
   // code an editable embed. The api enforces the role on every write, so
   // this is presentation-side only.
-  // The role pill's local read-only preview (docs/specs/007-editor/editor-app.md#role-pill).
-  const { viewPreview, previewLevel, canToggleRole, toggleViewPreview, setViewPreview, canEdit } =
-    useViewPreview(embedSessionRole(sessionRole, readOnlyEmbed), () => {
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-      setEditingId(null);
-    });
+  // The level in force (docs/specs/013-workspace/share-roles.md).
+  const level = embedSessionRole(sessionRole, readOnlyEmbed);
+  const canEdit = level === 'edit';
   const isReadOnly = !canEdit;
   // A Participant's adder key, what it may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md).
   // `isReadOnly` stays true for a Participant: its content gestures open through `participant.can` alone.
-  // Previewing as a Participant, an Editor has no adder key of its own (a room ticket carries one only for a
-  // participate session), so the preview stamps what it adds with a local one and handles it as a Participant would.
-  const participant = useParticipantSession(
-    previewLevel,
-    toast.info,
-    previewLevel === 'participate' && canToggleRole ? previewAdderKey() : null,
-  );
+  const participant = useParticipantSession(level, toast.info);
   // A Participant is always walking, on every tab, with no way out (docs/specs/013-workspace/share-roles.md "A
   // Participant walks"). Set while rendering, like the tab change useCanvasTool handles, so no frame draws it otherwise.
   holdWalking(participant.can.alwaysWalks && !embedMode);
@@ -152,8 +143,6 @@ export function useEditorCollaboration({
     sessionShareCode,
     sessionShareCodeRef,
     setCopying,
-    setDocumentOwnerColor,
-    setDocumentOwnerId,
     setDocumentOwnerName,
     setDocumentShareCode,
     setDocumentShareable,
@@ -173,10 +162,6 @@ export function useEditorCollaboration({
     sharePasswordGate,
     view: {
       isStructureReadOnly,
-      viewPreview,
-      canToggleRole,
-      toggleViewPreview,
-      setViewPreview,
       ...realtime,
       canApplyStyleToAllTabs: !isStructureReadOnly,
       isReadOnly,

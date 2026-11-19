@@ -10,6 +10,8 @@ import {
   resolveItem,
   resolveStatus,
   resolveType,
+  personByName,
+  planMembers,
 } from './plan-names';
 import { ALI, SAM, item } from './test-items';
 import { itemAssistantFor } from './assistant';
@@ -401,5 +403,44 @@ describe('the Flag', () => {
       'Bug cards have no field "Nope". Fields: title, status, assignee, flagged, Severity, Blocks, Repro Steps. ' +
         'Add a custom field with change_card_types.',
     );
+  });
+});
+
+// docs/specs/026-plan/plan-agents.md "An assignee": a name finds the plan's member first.
+describe('personByName', () => {
+  const ADA = { id: 'a1a1a1a1a1a1a1a1a1a1a1a1', name: 'Ada Lovelace', color: '#f97316' };
+  const ADA_TOO = { id: 'b2b2b2b2b2b2b2b2b2b2b2b2', name: 'ADA LOVELACE', color: '#16a34a' };
+  const BEA = { id: 'c3c3c3c3c3c3c3c3c3c3c3c3', name: 'Bea', color: '#2563eb' };
+  const cards = [
+    item({}, { createdBy: ADA, updatedBy: SAM }),
+    item({ assignee: BEA }, { createdBy: SAM, updatedBy: ADA }),
+  ];
+
+  it('lists the accounts the cards hold, once each, never a named or test person', () => {
+    expect(planMembers(cards)).toEqual([ADA, BEA]);
+  });
+
+  it('takes the one member with the name, case and spacing aside', () => {
+    expect(personByName(' ada  lovelace ', cards)).toEqual({ ok: true, person: ADA });
+    expect(personByName('bea', cards)).toEqual({ ok: true, person: BEA });
+  });
+
+  it('refuses a name two members share, naming each', () => {
+    const r = personByName('Ada Lovelace', [
+      ...cards,
+      item({}, { createdBy: ADA_TOO, updatedBy: ADA_TOO }),
+    ]);
+    expect(r).toMatchObject({ ok: false, code: 'value_invalid' });
+    expect(!r.ok && r.message).toContain(ADA_TOO.id);
+  });
+
+  it('falls back to a named person, matching one already picked', () => {
+    const picked = [{ id: 'n-zoe', name: 'Zoe', color: '#000000' }];
+    expect(personByName('zoe', cards, picked)).toEqual({ ok: true, person: picked[0] });
+    expect(personByName('Ali', [item({ assignee: ALI })])).toEqual({ ok: true, person: ALI });
+    expect(personByName('Kim', [])).toMatchObject({
+      ok: true,
+      person: { id: 'n-kim', name: 'Kim' },
+    });
   });
 });

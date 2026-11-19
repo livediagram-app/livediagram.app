@@ -8,7 +8,6 @@ import {
   AddIcon,
   CommandIcon,
   ElementIcon,
-  FolderIcon,
   HelpIcon,
   SearchOverlay,
   SharedIcon,
@@ -72,7 +71,7 @@ export function SearchOverview() {
   );
 }
 
-/** Results limited to documents, folders, and shared documents. */
+/** Your own canvases first, then shared and team canvases under Every App. */
 export function SearchDocuments() {
   return (
     <SearchOverlay
@@ -83,19 +82,18 @@ export function SearchDocuments() {
           rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
         },
         {
-          title: 'Shared with You',
-          rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
-        },
-        {
-          title: 'My Work',
-          rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
+          title: 'Every App',
+          rows: [
+            { icon: <SharedIcon />, label: 'Onboarding v2', meta: 'livediagram' },
+            { icon: <DocumentIcon />, label: 'Onboarding checklist', meta: 'liveplanner' },
+          ],
         },
       ]}
     />
   );
 }
 
-/** Results showing teams plus their shared folders and documents. */
+/** A team found by name, with one of its canvases under Every App. */
 export function SearchTeams() {
   return (
     <SearchOverlay
@@ -103,11 +101,11 @@ export function SearchTeams() {
       groups={[
         {
           title: 'Teams',
-          rows: [
-            { icon: <TeamIcon />, label: 'Platform team', active: true },
-            { icon: <FolderIcon />, label: 'Architecture / Services', meta: 'in Platform team' },
-            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform team' },
-          ],
+          rows: [{ icon: <TeamIcon />, label: 'Platform team', active: true }],
+        },
+        {
+          title: 'Every App',
+          rows: [{ icon: <DocumentIcon />, label: 'Platform overview', meta: 'livediagram' }],
         },
       ]}
     />

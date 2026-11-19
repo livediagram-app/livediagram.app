@@ -27,7 +27,11 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { prunePeerDragPreviews } from '@/hooks/collab/peer-drag-previews';
 import { joinRefusedBecauseTrashed } from './room-refusal';
 import { receiveRoomOp } from './room-op-receive';
-import { clearPreRoomOutbox, flushPreRoomOutbox } from './pre-room-outbox';
+import {
+  aimPreRoomOutbox,
+  clearPreRoomOutbox,
+  flushPreRoomOutbox,
+} from '@liveworkspace/workbench/lib/pre-room-outbox';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
 
 // Realtime room: one WebSocket per document, opened for every document saved on
@@ -46,6 +50,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     enabled = true,
     onWorkbenchEnded,
     onRoomFull,
+    onItemArchived,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -183,6 +188,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
   });
   const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
   const roomFull = useEffectEvent(() => onRoomFull?.());
+  const roomItemArchived = useEffectEvent(() => onItemArchived?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
   // answer changes anything.
@@ -211,6 +217,12 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     // viewport, selection, and undo history to fix stale content.
     void resyncFromServer();
   });
+
+  // What is sent before the room exists is held for this document; moving to another drops it (pre-room-outbox).
+  // Declared before the room's own effect, so the hold is aimed before a room made in the same pass flushes it.
+  useEffect(() => {
+    if (preRoomOutbox) aimPreRoomOutbox(preRoomOutbox, documentId);
+  }, [preRoomOutbox, documentId]);
 
   useEffect(() => {
     // Open the realtime room for every server-stored document: shared and team documents for their
@@ -264,6 +276,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       onAccessChanged: () => roomAccessChanged(),
       onWorkbenchEnded: () => roomWorkbenchEnded(),
       onRoomFull: () => roomFull(),
+      onItemArchived: () => roomItemArchived(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };
@@ -302,7 +315,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       roomReadFacilitatorToken,
     );
     roomRef.current = openedRoom;
-    // What was cast before this room existed goes to it now, once (pre-room-outbox.ts): the connector holds it in
+    // What was sent before this room existed goes to it now, once (pre-room-outbox): the connector holds it in
     // its own outbox until the socket has said hello.
     if (preRoomOutbox) flushPreRoomOutbox(preRoomOutbox, openedRoom, documentId);
     return () => {
@@ -310,7 +323,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       presence.cancel();
       openedRoom.close();
       roomRef.current = null;
-      // Leaving the document: anything still held for it goes too.
+      // The room closed: anything still held goes too (it was handed over as the room was made).
       if (preRoomOutbox) clearPreRoomOutbox(preRoomOutbox);
     };
   }, [

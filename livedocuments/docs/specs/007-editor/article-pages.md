@@ -675,7 +675,7 @@ ink").
   from any mode (a page slide presenting outside Pages shows its writing too).
 - **Export**: PDF, PNG and SVG draw an article page's writing exactly as on screen (text as real
   text in SVG output; rasterised in PNG; in PDF, vector letters over real text that selects,
-  searches and reads aloud in reading order, its headings and paragraphs tagged,
+  searches and reads aloud in reading order, its headings, paragraphs, quotes, lists and tables tagged,
   [Vector PDF](../../../../liveworkspace/docs/specs/013-export/vector-pdf.md)), with its zones'
   elements, its tables (split across pages, header rows repeated), its contents with their page
   numbers, its header, footer and page number, and its ruled lines; nothing of the editing chrome.

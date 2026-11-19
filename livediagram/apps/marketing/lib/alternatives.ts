@@ -137,7 +137,7 @@ const LIST: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Import + export',
-        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
+        us: 'Excalidraw, draw.io, Visio, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
         them: 'Broad import + export options',
       },
       {
@@ -371,7 +371,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Import + export',
-        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + .excalidraw out',
+        us: 'Excalidraw, draw.io, Visio, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + .excalidraw out',
         them: '.excalidraw, PNG + SVG; Mermaid flowcharts in',
       },
     ],
@@ -595,7 +595,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Import + export',
-        us: 'Excalidraw, draw.io, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
+        us: 'Excalidraw, draw.io, Visio, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
         them: 'Its own files; image and PDF export',
       },
       {
@@ -701,7 +701,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Import + export',
-        us: 'draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
+        us: 'Visio (Lucidchart exports it too), draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid + Markdown in; PNG, SVG, PDF, JSON, Mermaid + Excalidraw out',
         them: 'Visio, draw.io, Gliffy and Mermaid in; image, PDF and Visio out',
       },
       {
@@ -713,7 +713,7 @@ const LIST: Alternative[] = [
     themBest: [
       'Formal diagramming at scale: very broad shape libraries for UML, network and cloud architecture.',
       'Data linking, which builds or updates diagrams from spreadsheets and other sources.',
-      'Visio import and export, and deep integrations with enterprise suites.',
+      'Visio export, and deep integrations with enterprise suites.',
       'Enterprise admin, security and compliance controls.',
     ],
     usBest: [
@@ -755,7 +755,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Open at the edges',
         paragraphs: [
-          'livediagram imports draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
+          'livediagram imports Visio, draw.io, BPMN, Excalidraw, Microsoft Whiteboard, Mermaid and Markdown, and exports PNG, SVG, PDF, Mermaid, Markdown, Excalidraw or portable JSON. Any share link embeds as a live-updating iframe in Confluence, Notion or any page that allows iframes: an editor link embeds an editable canvas, and a participant or view-only link a read-only one.',
           'For automation there is a free REST API with personal tokens and an MCP server that lets AI assistants read and edit your canvases directly, with their changes shown live and undoable as one unit.',
         ],
       },
@@ -767,7 +767,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I import my Lucidchart diagrams?',
-        a: 'Not directly: there is no Lucidchart importer. draw.io can bring in a Lucidchart diagram (pasted from the Lucidchart editor) and open Visio files, though, and livediagram imports draw.io files with shapes, connections and labels intact, so you can bring a diagram across through draw.io. The import report says what changed on the way.',
+        a: 'Yes, through Visio. In Lucidchart choose File, Export, Visio (VSDX), then import that file into a tab with the Visio format, or many files at once from the Explorer. Pages become tabs, connections stay attached, and common flowchart and basic shapes come in as livediagram shapes; shapes from other libraries come in as text boxes with their words, so nothing you wrote is lost. The import report says what changed on the way.',
       },
       {
         q: 'Does livediagram support UML and architecture diagrams?',

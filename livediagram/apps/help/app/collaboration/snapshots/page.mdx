@@ -5,40 +5,44 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Snapshots',
   description:
-    'Take a snapshot of the whole document before a big change, keep the latest five, and revert to one to put everything back as it was.',
+    'Take a snapshot of the whole canvas from History before a big change, keep the latest five, and revert to one to put everything back as it was.',
   path: '/help/collaboration/snapshots/',
 });
 
 <ArticleLayout
   title="Snapshots"
-  description="Save points for the whole document: take one before a big change, revert to it if the change goes wrong."
+  description="Save points for the whole canvas: take one before a big change, revert to it if the change goes wrong."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles('snapshots')}
 >
 
-A snapshot keeps the whole document as it is right now, so you can try a big change (a reorganisation, an import, a clean-up with a teammate or an AI assistant) knowing you can put everything back in one step.
+A snapshot keeps the whole canvas as it is right now, so you can try a big change (a reorganisation, an import, a clean-up with a teammate or an AI assistant) knowing you can put everything back in one step.
 
-## Taking a snapshot
+## Where Snapshots Are
 
-Press **Snapshots** (the camera) in the bar along the bottom of the editor, just before Settings. Give the snapshot a name if you like, such as "Before the workshop", and press **Take Snapshot**. Without a name it is called by the time it was taken.
+Snapshots live in **History**: open **Tools** in the footer and press **History**. Signed in on your own or your team's canvas, History shows the canvas's timeline with each snapshot pinned on it at the time it was taken, marked **Snapshot**, and a **Take Snapshot** button at its foot. Signed out, or through an edit link, History shows the snapshots on their own.
 
-Each snapshot lists its name, who took it, how long ago and its size. The latest **five** are kept: when five are there, the dialog says which one taking another will remove, and the oldest goes.
+## Taking a Snapshot
 
-## Reverting to a snapshot
+Press **Take Snapshot**. Give the snapshot a name if you like, such as "Before the workshop", and press **Take Snapshot** again. Without a name it is called by the time it was taken, such as "Snapshot of 15 Nov, 14:32".
 
-Press **Revert** on a snapshot's row and confirm. The document goes back to exactly how it was: every tab, its folders and the slide deck. The document's name, its comments and who it is shared with stay as they are.
+Each snapshot lists its name, who took it, how long ago and its size. The latest **five** are kept: when five are there, the form says which one taking another will remove, and the oldest goes.
 
-Reverting replaces everyone's work since that snapshot, so first it takes a snapshot of the document as it is now, marked **Before revert**. If you change your mind, revert to that one.
+## Reverting to a Snapshot
 
-Everyone who has the document open sees it reload onto the reverted version straight away, so nobody keeps working on what was replaced.
+Press **Revert** on a snapshot and confirm. The canvas goes back to exactly how it was: every tab, its folders, its comment threads and the slide deck. A tab made since is removed, and one removed since comes back. The canvas's name and who it is shared with stay as they are.
 
-## Deleting a snapshot
+Reverting replaces everyone's work since that snapshot, so first it takes a snapshot of the canvas as it is now, marked **Before revert**. If you change your mind, revert to that one.
 
-Press the bin on a snapshot's row and confirm. A deleted snapshot can't be brought back.
+Everyone who has the canvas open sees it reload onto the reverted version straight away, so nobody keeps working on what was replaced.
 
-## Who can use snapshots
+## Deleting a Snapshot
 
-Editors of the whole document take, revert and delete snapshots. Participants, Viewers and people with a link to one tab don't see them. Snapshots are there on documents stored on the server: a document kept in **This Browser** has none, and AI assistants and scripts using an API token can't use them.
+Press the bin on a snapshot. It is deleted at once, with no question, and can't be brought back.
+
+## Who Can Use Snapshots
+
+Editors of the whole canvas take, revert and delete snapshots. Participants, Viewers and people with a link to one tab don't see them. Snapshots are there on canvases stored on the server: a canvas kept in **This Browser** has none, and neither does an embed or a canvas open in a workbench. AI assistants and scripts using an API token can't use them.
 
 </ArticleLayout>

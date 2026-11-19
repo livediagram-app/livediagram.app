@@ -1,5 +1,4 @@
 import {
-  ACCESS_CHANGED_CLOSE,
   DOCUMENT_TRASHED_CLOSE,
   ROOM_FULL_CLOSE,
   ROOM_FULL_REASON,
@@ -7,6 +6,7 @@ import {
   SNAPSHOT_REVERTED_CLOSE,
 } from '@livehuddle/api-schema';
 import {
+  accessCloseCode,
   sessionMatchesAccessClose,
   type AccessCloseMatch,
 } from '@liveworkspace/api-kit/room-access';
@@ -147,10 +147,10 @@ export function closeSockets(
 // close code, so the next join meets the gates again. livehuddle has no workbenches, so no session carries a
 // pairing and a `workbench` match closes nobody (docs/specs/002-project-scope/not-in-livehuddle.md).
 export function closeSessionsForAccessChange(room: DocumentRoom, close: AccessCloseMatch): void {
+  // A workbench pairing's 4006, an archive's 4010 (every socket), any other change's 4005.
+  const code = accessCloseCode(close);
   const closed = closeSockets(room, (ws) =>
-    sessionMatchesAccessClose(room.readSession(ws), close)
-      ? [ACCESS_CHANGED_CLOSE, 'access-changed']
-      : null,
+    sessionMatchesAccessClose(room.readSession(ws), close) ? code : null,
   );
   console.info('[room-access] closed', { match: close.match, closed });
 }

@@ -274,7 +274,7 @@ describe('Spaces on Home', () => {
     const index = createFakeIndex({ items: [makeItem(1)] });
     renderHome(index, { signedIn: false, signInHref: '/sign-in' });
     const s = await section();
-    const signIn = await within(s).findByRole('link', { name: /Sign In to Work in Teams/ });
+    const signIn = await within(s).findByRole('link', { name: /Sign In to Use Teams/ });
     expect(signIn.getAttribute('href')).toBe('/sign-in');
     expect(s.querySelectorAll('[data-space-tile]')).toHaveLength(1);
   });

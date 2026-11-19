@@ -255,6 +255,23 @@ describe('the badge', () => {
     fireEvent.click(screen.getByText('probe'));
     expect(started).toBe(false);
   });
+
+  it('takes the corner card’s shape, its words hidden on a phone, a button only for an Editor', async () => {
+    const { unmount } = wrap(
+      doorOf(fakeClient(approvalOf()), { canRequest: true, openShare: vi.fn() }),
+      <ApprovalBadge corner />,
+    );
+    const button = await screen.findByRole('button', { name: /Awaiting 0 of 2/ });
+    expect(button.className).toContain('h-9');
+    expect(button.className).not.toContain('touch-target-y');
+    expect(screen.getByText('Awaiting 0 of 2').className).toContain('phone:sr-only');
+    unmount();
+    wrap(doorOf(fakeClient(approvalOf({ status: 'approved' }))), <ApprovalBadge corner />);
+    const words = await screen.findByText('Approved');
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(words.parentElement?.className).toContain('h-9');
+    expect(words.parentElement?.getAttribute('tabindex')).toBe('0');
+  });
 });
 
 describe('the banner (a Viewer’s one write)', () => {
@@ -371,6 +388,29 @@ describe('the Approval tab', () => {
       { approverIds: ['user_t', 'user_o'], note: 'The dates', due: null, snapshotId: 'snap_9' },
       null,
     );
+  });
+
+  it('links to the Request Approval article under the form and under a request, when the host has one', async () => {
+    const { unmount } = wrap(
+      doorOf(fakeClient(null), { canRequest: true }),
+      <ApprovalPanel helpHref="/help/collaboration/sharing/request-approval/" />,
+    );
+    await screen.findByText(/Nobody else can open this document yet/);
+    const link = screen.getByRole('link', { name: /Learn more/ });
+    expect(link.getAttribute('href')).toBe('/help/collaboration/sharing/request-approval/');
+    unmount();
+    wrap(
+      doorOf(fakeClient(approvalOf()), { canRequest: true }),
+      <ApprovalPanel helpHref="/help/collaboration/sharing/request-approval/" />,
+    );
+    await screen.findByRole('button', { name: 'New Request' });
+    expect(screen.getByRole('link', { name: /Learn more/ })).toBeTruthy();
+  });
+
+  it('shows no help link where the host has no article', async () => {
+    wrap(doorOf(fakeClient(null), { canRequest: true }), <ApprovalPanel />);
+    await screen.findByText(/Nobody else can open this document yet/);
+    expect(screen.queryByRole('link', { name: /Learn more/ })).toBeNull();
   });
 
   it('says so when nobody else can open it, and when the list fails', async () => {
