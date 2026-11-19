@@ -72,7 +72,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'bullet',
-    label: 'Bulleted list',
+    label: 'Bulleted List',
     group: 'Lists',
     keywords: 'ul unordered points dots',
     hint: 'A simple list',
@@ -80,7 +80,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'numbered',
-    label: 'Numbered list',
+    label: 'Numbered List',
     group: 'Lists',
     keywords: 'ol ordered steps 123',
     hint: 'A list with numbers',
@@ -88,7 +88,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'todo',
-    label: 'To-do list',
+    label: 'To-Do List',
     group: 'Lists',
     keywords: 'checklist tasks checkbox tick',
     hint: 'Tasks to tick off',
@@ -120,7 +120,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'pageBreak',
-    label: 'Page break',
+    label: 'Page Break',
     group: 'Blocks',
     keywords: 'new page next',
     hint: 'Start the next page',
@@ -161,7 +161,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
 
   {
     id: 'chart',
-    label: 'Bar chart',
+    label: 'Bar Chart',
     group: 'Insert',
     keywords: 'graph bars data',
     hint: 'Compare values',
@@ -169,7 +169,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'pie',
-    label: 'Pie chart',
+    label: 'Pie Chart',
     group: 'Insert',
     keywords: 'graph slices share donut',
     hint: 'Parts of a whole',
@@ -177,7 +177,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'line',
-    label: 'Line chart',
+    label: 'Line Chart',
     group: 'Insert',
     keywords: 'graph trend time series',
     hint: 'A trend over time',
@@ -201,7 +201,7 @@ const SLASH_ITEMS: readonly SlashItem[] = [
   },
   {
     id: 'sticky',
-    label: 'Sticky note',
+    label: 'Sticky Note',
     group: 'Insert',
     keywords: 'post-it note',
     hint: 'A sticky note',

@@ -137,6 +137,11 @@
   padding-left: calc(28px * (var(--article-level) + 1));
   margin-bottom: calc(0.25 * var(--article-line));
 }
+/* The last item of a run keeps a paragraph's space after it, so the writing after a list stands as clear of it as the
+   writing before it (article-pages.md "Blocks"). */
+.article-flow .article-list:has(+ .article-block:not(.article-list)) {
+  margin-bottom: calc(var(--article-para) * var(--article-line));
+}
 .article-flow .article-list::before {
   position: absolute;
   left: calc(28px * var(--article-level));
