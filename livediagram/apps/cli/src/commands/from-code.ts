@@ -1,5 +1,5 @@
 // `link from-code` (docs/specs/020-import-export/infrastructure-import.md "The CLI"; blueprint "The CLI"):
-// wrangler.toml and Compose files read from the repository, drawn by the shared graph builder, and sent as a new
+// wrangler.toml, Compose, Terraform and Kubernetes files read from the repository, drawn by the shared graph builder, and sent as a new
 // document or a new tab through `document create` / `tab add` themselves, so their requests, refusals and printed
 // line are the ones every other write has.
 
@@ -11,6 +11,7 @@ import {
   infraGraph,
   skippedLine,
   type InfraFile,
+  type InfraFormat,
 } from '@livediagram/document/infra-code';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import type { DebugLog } from '../debug';
@@ -34,6 +35,14 @@ export type FromCodeInput = {
   dryRun?: boolean;
 };
 
+// How each format is named on the `read` line.
+const FORMAT_WORD: Record<InfraFormat, string> = {
+  wrangler: 'wrangler.toml',
+  compose: 'Compose',
+  terraform: 'Terraform',
+  kubernetes: 'Kubernetes',
+};
+
 type FromCodeOutput = { text: string; id: string | null; dryRun: boolean; graph: unknown };
 
 const HINT = 'livediagram link from-code --help';
@@ -45,7 +54,7 @@ async function readFiles(io: CliIo, named: readonly string[] | undefined): Promi
     new CliError({
       exit: EXIT.rejected,
       code: 'too_large',
-      message: `${name} is over 1 MB, larger than any wrangler.toml or Compose file`,
+      message: `${name} is over 1 MB, larger than any infrastructure file`,
       hint: HINT,
     });
   if (named && named.length > 0) {
@@ -65,7 +74,13 @@ async function readFiles(io: CliIo, named: readonly string[] | undefined): Promi
     return files;
   }
   const found: InfraFile[] = [];
-  for (const name of STANDARD_INFRA_FILES) {
+  // The standard names, then every .tf file here in name order: a Terraform module is the folder's .tf files.
+  const listed = (await io.files.list(io.cwd)) ?? [];
+  const terraform = listed
+    .filter((e) => e.kind === 'file' && e.name.endsWith('.tf'))
+    .map((e) => e.name)
+    .sort();
+  for (const name of [...STANDARD_INFRA_FILES, ...terraform]) {
     const text = await io.files.read(at(name));
     if (text === null) continue;
     if (text.length > INFRA_MAX_FILE_BYTES) throw tooBig(name);
@@ -75,7 +90,7 @@ async function readFiles(io: CliIo, named: readonly string[] | undefined): Promi
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: `no ${STANDARD_INFRA_FILES.join(', ')} in ${io.cwd}`,
+      message: `no ${STANDARD_INFRA_FILES.join(', ')} or .tf file in ${io.cwd}`,
       hint: 'livediagram link from-code <file>...',
     });
   return found;
@@ -98,7 +113,7 @@ export async function drawFromCode(io: CliIo, input: FromCodeInput, log: DebugLo
   for (const f of result.files) {
     log(`[from-code] read ${f.name} ${f.format}`);
     io.stderr(
-      `read ${f.name}: ${f.format === 'wrangler' ? 'wrangler.toml' : 'Compose'}, ${f.boxes} box${f.boxes === 1 ? '' : 'es'}\n`,
+      `read ${f.name}: ${FORMAT_WORD[f.format]}, ${f.boxes} box${f.boxes === 1 ? '' : 'es'}\n`,
     );
   }
   if (result.skipped.length > 0) {

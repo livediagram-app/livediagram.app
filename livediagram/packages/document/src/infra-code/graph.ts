@@ -5,30 +5,22 @@
 import type { GraphEdge } from '../graph-authoring';
 import type { GraphInput, GraphInputNode } from '../graph-input';
 import { GRAPH_LAYOUT_MAX_EDGES } from '../graph-limits';
-import { composePart } from './compose';
-import { detectInfraFormat } from './detect';
+import { hasEnv, partOf, readInfraFile, type ParsedFile } from './file-part';
 import { capNodes, groupByPrefix } from './large';
 import { INFRA_GROUP_FROM, INFRA_MAX_FILES, INFRA_MAX_NODES } from './limits';
-import { parseInfraText } from './parse';
 import { mergeSkipped } from './summary';
 import type { InfraFile, InfraFormat, InfraGroup, InfraPart, InfraResult } from './types';
-import { wranglerPart } from './wrangler';
 
-// What a paste is called where a file would be named.
-const PASTE_NAME: Record<InfraFormat, string> = {
+/** What a paste is called where a file would be named. */
+export const PASTE_NAME: Record<InfraFormat, string> = {
   wrangler: 'wrangler.toml',
   compose: 'docker-compose.yml',
+  terraform: 'main.tf',
+  kubernetes: 'manifest.yaml',
 };
 
 // The longest title and subtitle the drawing's header takes.
 const TITLE_MAX = 120;
-
-// The folder a file sits in (`apps/api/wrangler.toml` is `api`), naming a Worker that has no `name`.
-function folderOf(name: string | undefined): string | undefined {
-  if (!name) return undefined;
-  const parts = name.split(/[/\\]/).filter((p) => p !== '' && p !== '.');
-  return parts.length >= 2 ? parts[parts.length - 2] : undefined;
-}
 
 // Several parts' titles as one: up to three named, then a count.
 function titleOf(parts: readonly InfraPart[]): string {
@@ -52,22 +44,32 @@ export function infraGraph(
         message: `Up to ${INFRA_MAX_FILES} files can be drawn at once.`,
       },
     };
+  const parsedFiles: ParsedFile[] = [];
+  for (const file of files) {
+    const read = readInfraFile(file);
+    if (!read.ok) return read;
+    parsedFiles.push(read.parsed);
+  }
+  const { env } = options;
+  // The environment drawn by every wrangler.toml that has it; when none has it, the first one's error says which
+  // environments there are.
+  const anyHasEnv = env !== undefined && parsedFiles.some((p) => hasEnv(p, env));
   const parts: InfraPart[] = [];
   const read: { name: string; format: InfraFormat; boxes: number }[] = [];
-  for (const file of files) {
-    const format = detectInfraFormat(file.name, file.text);
-    const parsed = parseInfraText(format, file.text);
-    if (!parsed.ok)
-      return { ok: false, error: { ...parsed.error, ...(file.name ? { file: file.name } : {}) } };
-    const fallback = folderOf(file.name) ?? (format === 'wrangler' ? 'Worker' : 'Compose');
-    const built =
-      format === 'wrangler'
-        ? wranglerPart(parsed.value, fallback, options.env)
-        : composePart(parsed.value, fallback);
-    if (!built.ok)
-      return { ok: false, error: { ...built.error, ...(file.name ? { file: file.name } : {}) } };
-    parts.push(built.part);
-    read.push({ name: file.name ?? PASTE_NAME[format], format, boxes: built.part.nodes.length });
+  for (const [i, parsed] of parsedFiles.entries()) {
+    const file = files[i]!;
+    const own = env !== undefined && (hasEnv(parsed, env) || !anyHasEnv) ? env : undefined;
+    const built = partOf(parsed, file, own);
+    if (!built.ok) return built;
+    const part = built.part;
+    if (env !== undefined && own === undefined && parsed.format === 'wrangler')
+      part.skipped.push({ key: `env.${env} not in ${part.title}`, count: 1 });
+    parts.push(part);
+    read.push({
+      name: file.name ?? PASTE_NAME[parsed.format],
+      format: parsed.format,
+      boxes: part.nodes.length,
+    });
   }
 
   // Merged by id: a resource two files name is one box, its first file's label, icon and note.
