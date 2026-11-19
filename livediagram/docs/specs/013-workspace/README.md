@@ -31,4 +31,5 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./shape-libraries.md - when working on Shape libraries: named, owner-scoped sets of reusable shapes (draw.io libraries imported, one library per file, never merged), the palette My shapes category, the shared Explorer's Shape Libraries and the previews route that draws its shapes, the `/api/shape-libraries` resource, limits and sign-up migration
 - ./snapshots.md - when working on Snapshots: manual save points of the whole document, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./approvals.md - when working on Approvals: asking named people to approve the canvas, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
+- ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livediagram supplies (the platform's `004-index/inbox-notices.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles, workbench embeds)

@@ -68,7 +68,7 @@ threads, threadsKept, actions, actionsKept }`.
 
 ### The Inbox (`GET /inbox?app=&limit=`)
 
-`limit` default 100, at most 200. One batch of four statements:
+`limit` default 100, at most 200. One batch of five statements:
 
 1. **Threads**: candidates are unresolved threads on items the person owns, unioned with threads they are in
    (`collab_thread_people`); then unresolved, item live, in the app asked, reachable; with `mentionsYou`,
@@ -79,10 +79,14 @@ threads, threadsKept, actions, actionsKept }`.
    (`items_owner`) and their scopes' (`items_live`), joined to `collab_forms` by item: one `WHERE` with the `OR`
    let SQLite walk every form in the index instead.
 
+4. **Access requests**: open requests on items in the person's scopes ([request-access.md](request-access.md)).
+5. **Shares**: the person's own requests granted in the last `INBOX_SHARES_MS` (7 days), still reached through a
+   live link, with the grant's `shared` event's actor and name ([inbox-notices.md](inbox-notices.md#data)).
+
 Reachable: owner of a personal item, one of their scopes, or a live link they opened whose tab is the row's tab (or
 every tab), or for a card the tab of its board (`json_extract(card, '$.board.tabId')`).
 
-Answer: `{ threads: InboxThread[], actions: InboxAction[], forms: InboxForm[] }`.
+Answer: `{ threads: InboxThread[], actions: InboxAction[], forms: InboxForm[], accessRequests: InboxAccessRequest[], shares: InboxShare[] }`.
 
 The Explorer (`packages/explorer/src/explorer/inbox/sections.ts` `inboxEntries`) keeps one row per card thread: two
 rows of one app whose `card.id` is set and whose `elementId` is the same (a thread shared between two plans) are one,
