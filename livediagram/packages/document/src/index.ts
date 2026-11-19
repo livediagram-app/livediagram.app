@@ -407,6 +407,13 @@ export { isSafeColourValue } from '@liveworkspace/element-model/unsafe-colours';
 export * from '@liveworkspace/element-model/exact-start';
 export * from './stored-tab';
 export { settleTabFields } from './tab-fields';
+export {
+  remapSourceIds,
+  tabSourcesOf,
+  type DiagramSourceFile,
+  type DiagramSourceNode,
+  type DiagramSources,
+} from './diagram-sources';
 export { retiredSchemeOf, migrateRetiredScheme } from './retired-schemes';
 // The retired themes' upgrade on its own, for the migration's stored-tab upgrade without the Pages and Plan drops
 // (apps/api/src/migration/upgrade-tab.ts).
