@@ -1,11 +1,12 @@
 // docs/specs/020-import-export/svg-import.md "Bold strokes become filled shapes", blueprint "Stroke outlining": a
 // stroke as the area it paints, caps, joins and miter limit honoured, within 0.25 px, checked against real bold icon
 // sets (Lucide and Tabler shapes) by sampling.
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { loadCombineEngine } from '@/lib/combine/combine';
 import type { Ring } from '@/lib/combine/outline';
-import { SVG_NONZERO_MAX_POINTS } from './constants';
+import { MAX_PATH_NODES } from '@livedesign/design';
+import { SVG_OUTLINE_MAX_POINTS } from './constants';
 import { transformContour, type Contour } from './geometry';
 import { signedArea2, traceContour, type BooleanEngine } from './nonzero';
 import { outlineStroke, strokeRing, traceStroke } from './outline-stroke';
@@ -131,6 +132,10 @@ const LUCIDE = {
   spiral: 'M12 12c0-1 1-2 2-1s1 3-1 4-4 0-4-3 3-5 6-4 5 4 3 7-6 5-9 2',
 };
 
+// Lucide settings: its gear and its middle circle as one path.
+const SETTINGS =
+  'M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z M15 12a3 3 0 1 1-6 0a3 3 0 1 1 6 0z';
+
 describe('outlineStroke: real bold icons', () => {
   for (const [name, d] of Object.entries(LUCIDE))
     it(`outlines ${name} at page size to the area its round stroke paints`, () => {
@@ -230,7 +235,7 @@ describe('outlineStroke: limits and failures', () => {
   it('gives up past the traced point cap, so the stroke stays a stroke', () => {
     // A long zigzag of round joins: far more points than the cap.
     const zig = Array.from(
-      { length: SVG_NONZERO_MAX_POINTS / 4 },
+      { length: SVG_OUTLINE_MAX_POINTS / 4 },
       (_, i) => `L${i * 3} ${i % 2 ? 40 : 0}`,
     );
     expect(outlineStroke(engine, path(`M0 0${zig.join('')}`), 30, ROUND)).toBeNull();
@@ -291,19 +296,47 @@ describe('outlineStroke: limits and failures', () => {
     expect(ring).toHaveLength(4);
   });
 
+  // Bold curves laid out on a 900 px page, each `M ... c ... s ...`, landed at 1.1x with 44 px round strokes.
+  const curves = (n: number) =>
+    path(
+      Array.from(
+        { length: n },
+        (_, i) => `M${(i % 20) * 45} ${Math.floor(i / 20) * 90}c10 -30 30 -30 40 0s30 30 40 0`,
+      ).join(' '),
+      1.1,
+    );
+
+  it('caps the outline at four traced ring points per path node (D23)', () => {
+    expect(SVG_OUTLINE_MAX_POINTS).toBe(4 * MAX_PATH_NODES);
+  });
+
   it('outlines a large bold icon within its CPU budget', () => {
-    // 200 stroked curves in one element, landed 900 px across with 40 px strokes: the import's worst ordinary case.
-    const curves = Array.from(
-      { length: 200 },
-      (_, i) => `M${(i % 20) * 45} ${Math.floor(i / 20) * 90}c10 -30 30 -30 40 0s30 30 40 0`,
-    ).join(' ');
-    const contours = path(curves);
+    // 100 overlapping bold curves in one element (16,600 ring points, under the cap): the largest ordinary case.
+    const contours = curves(100);
     let rings: Ring[] | null = null;
     const ms = cpuMsOf(() => {
-      rings = outlineStroke(engine, contours, 40, ROUND);
+      rings = outlineStroke(engine, contours, 44, ROUND);
     });
     expect(rings).not.toBeNull();
-    // Measured about 0.9 s on a developer machine; a real bold icon (Lucide heart, 900 px) takes about 1 ms.
-    expect(ms).toBeLessThan(cpuBudgetMs(2000));
+    // Measured about 0.5 s on a developer machine; a real bold icon (Lucide heart, 900 px) takes about 13 ms.
+    expect(ms).toBeLessThan(cpuBudgetMs(1500));
+  });
+
+  it('keeps a stroke too detailed to outline a stroke at once, before any union', () => {
+    // 200 bold curves in one path (33,200 ring points): the union took about 2 s to make 7,440 nodes, past a path's
+    // 5,000, only for the stroke to stay a stroke. It now stops before the union.
+    const contours = curves(200);
+    const union = vi.spyOn(engine, 'union');
+    let rings: Ring[] | null = [];
+    const ms = cpuMsOf(() => {
+      rings = outlineStroke(engine, contours, 44, ROUND);
+    });
+    expect(rings).toBeNull();
+    expect(union).not.toHaveBeenCalled();
+    union.mockRestore();
+    expect(ms).toBeLessThan(cpuBudgetMs(200));
+    // Lucide heart and settings, at page size, still outline.
+    for (const d of [LUCIDE.heart, SETTINGS])
+      expect(outlineStroke(engine, path(d, 1024 / 24), 1024 / 12, ROUND)).not.toBeNull();
   });
 });

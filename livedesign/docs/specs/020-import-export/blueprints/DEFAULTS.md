@@ -23,3 +23,4 @@ One row per default applied where a spec is silent or qualitative.
 | D20 | svg-import            | Where a picture fallback lands                       | The drop point, else the middle of the landing page's safe area                     |
 | D21 | svg-import            | SVG 2 joins on an outlined stroke                    | `miter-clip` and `arcs` drawn as `miter`                                            |
 | D22 | svg-import            | When a stroke "passes" 7 px                          | Landed wider than 7 px by more than a thousandth, so rounding never outlines        |
+| D23 | svg-import            | A stroke too detailed to outline                     | Kept a stroke past 20,000 traced ring points (4 per path node), before the union    |

@@ -38,7 +38,9 @@ they may paste. Import to Tab keeps the tab menu's own gate, and refuses a locke
   than 7 px is outlined instead: it becomes a filled path in the stroke's colour, the exact area the stroke paints
   (its line caps, line joins and miter limit honoured), within 0.25 px. The icon lands at the full fit with its
   source proportions. Strokes that land at 7 px or less stay strokes, editable as lines. An element with a fill and an
-  outlined stroke lands as two paths, its fill below its outline.
+  outlined stroke lands as two paths, its fill below its outline. A stroke too detailed to outline as one path (its
+  traced outline would carry more than four points for each node a path may hold) stays a stroke, decided before any
+  outlining work, so a very detailed file imports at once rather than stalling.
 - **One path per SVG element.** Each `<path>`, `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>` and
   `<polygon>` becomes one path element; a `<use>` of one of them inside the file becomes one more.
 - **The file's groups.** livedesign has no groups ([Web components are elements; groups are

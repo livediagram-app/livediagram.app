@@ -6,7 +6,7 @@
 // self-crossing ring nonzero) resolves the rings into clean even-odd rings. Works in landed px.
 import type { Ring } from '@/lib/combine/outline';
 import { simplifyRing } from '@/lib/combine/simplify';
-import { SVG_NONZERO_MAX_POINTS, SVG_OUTLINE_TOLERANCE_PX } from './constants';
+import { SVG_OUTLINE_MAX_POINTS, SVG_OUTLINE_TOLERANCE_PX } from './constants';
 import type { Contour } from './geometry';
 import { cubicInterior, type BooleanEngine } from './nonzero';
 import type { LineStyle } from './walk';
@@ -205,7 +205,7 @@ export function strokeRing(t: Trace, width: number, line: LineStyle, tol: number
 }
 
 /** The stroke of `contours` at `width` (landed px) as even-odd rings; null when it is too detailed to resolve (past
- *  `SVG_NONZERO_MAX_POINTS` traced points) or the engine fails, so the caller keeps the stroke a stroke. */
+ *  `SVG_OUTLINE_MAX_POINTS` traced ring points, checked as each ring is made and before the union) or the engine fails, so the caller keeps the stroke a stroke. */
 export function outlineStroke(
   engine: BooleanEngine,
   contours: readonly Contour[],
@@ -219,7 +219,7 @@ export function outlineStroke(
     const ring = strokeRing(traceStroke(c, tol), width, line, tol);
     if (!ring) continue;
     points += ring.length;
-    if (points > SVG_NONZERO_MAX_POINTS) return null;
+    if (points > SVG_OUTLINE_MAX_POINTS) return null;
     rings.push(ring);
   }
   if (rings.length === 0) return [];

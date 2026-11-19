@@ -64,7 +64,7 @@ Scope, by file (under `apps/live/`):
    A landed stroke wider than `BORDER_STROKE_PX['extra-thick']` times `SVG_OUTLINE_SLACK` is outlined: the engine is
    loaded (the same once per import), `outlineStroke` gives the stroke's area as even-odd rings, and the element lands
    as its fill (stroke removed, when it has one) then the outline (filled in the stroke's colour and alpha, no
-   stroke). An outline that cannot be made (the engine throws, past `SVG_NONZERO_MAX_POINTS` traced points, or its
+   stroke). An outline that cannot be made (the engine throws, past `SVG_OUTLINE_MAX_POINTS` traced ring points, D23, or its
    path past `MAX_PATH_NODES`) leaves the stroke a stroke (snapped to Extra thick).
    `drawnToPath`; a path past `MAX_PATH_NODES` nodes: `picture / too-detailed`.
 7. No paths: `empty` (with the report). Otherwise `shapes`.
@@ -160,7 +160,11 @@ Parsing and walking are linear in the file (2 MB cap). The nonzero check costs r
 whose box holds the sample (`SVG_NONZERO_SAMPLES_PER_RING` = 24), skipped past 50,000 points. Measured in the unit
 tests: a 100,000-segment path parses within a 400 ms CPU budget; a 1,000-icon file imports within 3 s; a bold icon
 of 200 stroked curves outlined at page size within its CPU budget (`outline-stroke.test.ts`). Outlining costs one
-engine union per outlined element over its traced ring, skipped past `SVG_NONZERO_MAX_POINTS` points. The importer
+engine union per outlined element over its traced ring, skipped before the union past `SVG_OUTLINE_MAX_POINTS`
+(20,000) ring points: measured unions keep a fifth to three quarters of their ring points, so past four per
+`MAX_PATH_NODES` node the outline would almost never fit one path, and the union (about 1.2 to 2 s CPU for 200
+overlapping bold curves in one path) is not spent finding that out. That case now keeps its stroke within 200 ms
+(`outline-stroke.test.ts`); under the cap a union costs at most about 0.5 s CPU (16,600 ring points). The importer
 and its engine are dynamic imports: none of it reaches the editor's first bundle.
 
 ## Observability
@@ -205,3 +209,4 @@ One `[svg-import]` `debugLog` per import with `route`, `outcome`, the picture `r
 | `SVG_OUTLINE_TOLERANCE_PX`     | 0.125  | Spec: half the 0.25 px budget (trace, then round parts) |
 | `SVG_OUTLINE_SLACK`            | 1.001  | D22                                                     |
 | `SVG_MITER_LIMIT`              | 4      | SVG's default `stroke-miterlimit`                       |
+| `SVG_OUTLINE_MAX_POINTS`       | 20,000 | D23: four ring points per `MAX_PATH_NODES` node         |
