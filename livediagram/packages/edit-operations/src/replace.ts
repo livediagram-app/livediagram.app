@@ -33,6 +33,7 @@ import {
 } from '@livediagram/templates';
 import { tabRejection } from './finalise';
 import { graphBodyIssue } from './graph-body';
+import { replaceSourcesOf } from './replace-sources';
 import { invalidResult, retiredRefusal, tabLocked } from './rejections';
 import { addedLine, lineNaming, removedLine } from './results';
 import type { ApplyOutcome, EditLog, ReplaceBody, ReplaceOptions } from './types';
@@ -175,7 +176,21 @@ export function applyReplace(
   if (themeId !== undefined && !isBuiltInTheme(themeId)) log('[edit-ops] theme-fallback', {});
   const built = build(body, source, themeId, new Set(tab?.elements.map((el) => el.id) ?? []));
   if ('code' in built) return refuse(built);
-  const next = nextTab(tab, built, options);
+  const drawn = nextTab(tab, built, options);
+  // The record is the replace's alone: one it brings, or none (diagram-sources.md "Writing the record").
+  const { sources: _previous, ...unsourced } = drawn;
+  let next: Tab = unsourced;
+  if (options.sources !== undefined) {
+    const graph = source === 'graph' ? (body as { graph: GraphInput }).graph : undefined;
+    const record = replaceSourcesOf(
+      options.sources,
+      { source, ...(graph ? { graph } : {}) },
+      drawn.elements,
+      options.now ?? Date.now(),
+    );
+    if ('code' in record) return refuse(record);
+    next = { ...unsourced, sources: record };
+  }
   if (!isValidTab(next)) return refuse(tabRejection(next));
   log('[edit-ops] replace', { source, elements: next.elements.length });
   const before = tab?.elements ?? [];

@@ -55,7 +55,7 @@ function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise
       renderGraph(io, inputReader(io), input as { file: string; png?: string; svg?: string }, log),
     );
   // `link from-code --dry-run` only reads and draws: no host (infrastructure-import.md "The CLI").
-  if (verb.id === 'link.from-code' && input.dryRun)
+  if (verb.id === 'link.from-code' && input.dryRun && !input.update)
     return import('./commands/from-code').then(({ linkFromCode }) =>
       linkFromCode(io, null, input as FromCodeInput, log),
     );

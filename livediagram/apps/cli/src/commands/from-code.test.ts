@@ -40,6 +40,33 @@ describe('link from-code --dry-run', () => {
     );
   });
 
+  it('reads the .tf files here after the standard names, and names Kubernetes files', async () => {
+    const io = offline({
+      '/work/compose.yml': 'services:\n  web: {}\n',
+      '/work/queues.tf': 'resource "aws_sqs_queue" "jobs" {}\n',
+      '/work/main.tf': 'resource "aws_s3_bucket" "assets" {}\n',
+      '/work/k8s/web.yaml': 'apiVersion: v1\nkind: Service\nmetadata: { name: web }\n',
+      '/work/notes.md': '# not read',
+    });
+    const found = await cli(io, ['link', 'from-code', '--dry-run']);
+    expect(found.code).toBe(0);
+    // The standard names first, then the .tf files in name order; nothing else in the folder.
+    expect(found.err).toBe(
+      'read compose.yml: Compose, 1 box\nread main.tf: Terraform, 1 box\nread queues.tf: Terraform, 1 box\n',
+    );
+    const named = await cli(
+      offline({
+        '/work/main.tf': 'resource "aws_s3_bucket" "assets" {}\n',
+        '/work/k8s/web.yaml': 'apiVersion: v1\nkind: Service\nmetadata: { name: web }\n',
+      }),
+      ['link', 'from-code', 'main.tf', 'k8s/web.yaml', '--dry-run'],
+    );
+    expect(named.code).toBe(0);
+    expect(named.err).toBe(
+      'read main.tf: Terraform, 1 box\nread k8s/web.yaml: Kubernetes, 1 box\n',
+    );
+  });
+
   it('reads named files, relative or absolute, and draws a chosen environment', async () => {
     const io = offline({
       '/work/apps/api/wrangler.toml': 'name = "api"\n[env.staging]\nname = "api-staging"\n',
@@ -86,7 +113,7 @@ describe('link from-code --dry-run', () => {
     const { code, err } = await cli(io, ['link', 'from-code', '--dry-run']);
     expect(code).toBe(2);
     expect(err).toContain(
-      'no wrangler.toml, docker-compose.yml, docker-compose.yaml, compose.yml, compose.yaml in /work',
+      'no wrangler.toml, docker-compose.yml, docker-compose.yaml, compose.yml, compose.yaml or .tf file in /work',
     );
     const missing = await cli(offline({}), ['link', 'from-code', 'nope.toml', '--dry-run']);
     expect(missing.code).toBe(3);
@@ -149,12 +176,20 @@ describe('link from-code, writing', () => {
       );
     };
     const io = session(route, { '/work/wrangler.toml': WRANGLER });
-    const { code, out } = await cli(io, ['link', 'from-code']);
+    const { code, out, err } = await cli(io, ['link', 'from-code']);
     expect(code).toBe(0);
+    // The tab remembers the files it was drawn from (diagram-sources.md "Writing the record").
     expect(posted[0]).toMatchObject({
       name: 'api',
-      tabs: [{ name: 'api', graph: { title: 'api' } }],
+      tabs: [
+        {
+          name: 'api',
+          graph: { title: 'api' },
+          sources: { bridge: 'infra', files: [{ name: 'wrangler.toml', text: WRANGLER }] },
+        },
+      ],
     });
+    expect(err).toMatch(/update later: livediagram link from-code --doc \S+ --update\n$/);
     expect(out).toMatch(
       /^\+ document \w{8} "api" · 1 tab · https:\/\/www\.livediagram\.app\/document\//,
     );
@@ -200,10 +235,25 @@ describe('link from-code, writing', () => {
       return undefined;
     };
     const io = session(route, { '/work/compose.yml': COMPOSE });
-    const { code, out } = await cli(io, ['link', 'from-code', '--doc', 'Shop', '-q']);
+    const { code, out, err } = await cli(io, ['link', 'from-code', '--doc', 'Shop', '--env', 'x']);
     expect(unrouted).toEqual([]);
     expect(code).toBe(0);
-    expect(sent[0]!.replace).toMatchObject({ name: 'Compose', graph: { title: 'Compose' } });
-    expect(out).toBe('cs_1\n');
+    expect(sent[0]!.replace).toMatchObject({
+      name: 'Compose',
+      graph: { title: 'Compose' },
+      sources: { bridge: 'infra', env: 'x', files: [{ name: 'compose.yml' }] },
+    });
+    expect(out).toMatch(/^\+ tab /);
+    expect(err).toMatch(
+      /update later: livediagram link from-code --doc "Shop" --tab \S+ --update\n$/,
+    );
+    const quiet = await cli(session(route, { '/work/compose.yml': COMPOSE }), [
+      'link',
+      'from-code',
+      '--doc',
+      'Shop',
+      '-q',
+    ]);
+    expect(quiet.out).toBe('cs_1\n');
   });
 });

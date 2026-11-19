@@ -12,3 +12,15 @@ export const INFRA_MAX_NODES = 150;
 
 /** Past this many boxes, with no network groups, services sharing a name prefix are framed together. */
 export const INFRA_GROUP_FROM = 40;
+
+/** How deep HCL blocks may nest: real Terraform nests 3 or 4 deep; this bounds the parser's stack. */
+export const HCL_MAX_DEPTH = 64;
+
+/** The most text a tab's sources record keeps, all its files together: a tenth of a tab's size cap. */
+export const INFRA_SOURCES_MAX_STORED_CHARS = 200_000;
+
+/** The gap an update keeps between a box it places and the drawing (the template look's rank gap). */
+export const PLACE_GAP = 48;
+
+/** The padding a frame keeps round a box an update grows it to hold (the clustered layout's frame padding). */
+export const FRAME_GROW_PAD = 24;

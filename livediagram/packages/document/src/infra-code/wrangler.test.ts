@@ -149,6 +149,27 @@ describe('wranglerPart', () => {
     expect(part.skipped).toEqual([]);
   });
 
+  it("leaves the top level's bindings behind in an environment, as Wrangler does, and inherits routes and name", () => {
+    const part = partOf(
+      'name = "api"\nroutes = ["api.example.com/*"]\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = "main"\n[vars]\nA = "1"\n[env.staging]\nkv_namespaces = [{ binding = "B", id = "2" }]',
+      'staging',
+    );
+    expect(part.nodes.map((n) => n.id).sort()).toEqual([
+      'kv-2',
+      'route-api-staging',
+      'worker-api-staging',
+    ]);
+    expect(part.skipped).toEqual([]);
+  });
+
+  it('draws only the Worker of an environment that declares no bindings', () => {
+    const part = partOf(
+      'name = "api"\n[[d1_databases]]\nbinding = "DB"\ndatabase_name = "main"\n[env.staging]\nname = "s"',
+      'staging',
+    );
+    expect(part.nodes.map((n) => n.id)).toEqual(['worker-s']);
+  });
+
   it('refuses an environment the file does not have, naming those it has', () => {
     const toml = parse('name = "api"\n[env.staging]\nname = "s"');
     expect(wranglerPart(toml, 'x', 'prod')).toMatchObject({

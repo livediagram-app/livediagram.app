@@ -14,6 +14,15 @@ export function textImportOutcome(
   const degraded = report.degraded ?? [];
   const { skipped } = report;
   if (degraded.length === 0 && skipped.length === 0) return { status: 'done' };
+  return {
+    status: 'done',
+    subtitle: report.subtitle,
+    scene: { landed: landedOf(elements), degraded, skipped },
+  };
+}
+
+// What a drawing holds, as a report's "landed" line counts it: boxes, lines and frames.
+export function landedOf(elements: readonly Element[]) {
   let shape = 0;
   let connector = 0;
   let frame = 0;
@@ -22,11 +31,7 @@ export function textImportOutcome(
     else if (el.type === 'shape' && el.shape === 'frame') frame += 1;
     else if (el.type === 'shape') shape += 1;
   }
-  return {
-    status: 'done',
-    subtitle: report.subtitle,
-    scene: { landed: { shape, connector, ...(frame ? { frame } : {}) }, degraded, skipped },
-  };
+  return { shape, connector, ...(frame ? { frame } : {}) };
 }
 
 export const MERMAID_REPORT_SUBTITLE = "Here's how your Mermaid came across.";

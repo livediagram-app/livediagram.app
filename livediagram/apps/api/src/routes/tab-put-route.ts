@@ -124,6 +124,9 @@ export async function writeTabSave(
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent.
     const body: Tab = { ...ledger.tab };
+    // A sources record a changeset wrote after what this editor has seen is newer than the save's copy
+    // (docs/specs/027-repositories/diagram-sources.md "Writing the record"): the stored one stays.
+    if (merge.records > 0 && existingTab?.sources !== undefined) body.sources = existingTab.sources;
     // The name cap (docs/specs/006-document/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');

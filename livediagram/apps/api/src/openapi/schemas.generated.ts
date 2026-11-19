@@ -819,6 +819,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "sources": {
+        "$ref": "#/components/schemas/ChangesetReplaceSources"
+      },
       "template": {
         "type": "string"
       },
@@ -826,6 +829,41 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       }
     },
+    "type": "object"
+  },
+  "ChangesetReplaceSources": {
+    "additionalProperties": false,
+    "properties": {
+      "bridge": {
+        "const": "infra",
+        "type": "string"
+      },
+      "edges": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "env": {
+        "type": "string"
+      },
+      "files": {
+        "items": {
+          "$ref": "#/components/schemas/DiagramSourceFile"
+        },
+        "type": "array"
+      },
+      "nodes": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/DiagramSourceNode"
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "bridge",
+      "files"
+    ],
     "type": "object"
   },
   "ChangesetRequest": {
@@ -1758,6 +1796,93 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "superseded"
     ],
     "type": "string"
+  },
+  "DiagramSourceFile": {
+    "additionalProperties": false,
+    "description": "One source file: its name as given, its format, a fingerprint of its text, and the text while it fits the cap.",
+    "properties": {
+      "format": {
+        "type": "string"
+      },
+      "hash": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "name",
+      "format",
+      "hash"
+    ],
+    "type": "object"
+  },
+  "DiagramSourceNode": {
+    "additionalProperties": false,
+    "description": "What a node became: its element, and the values the source gave the fields a re-read may update.",
+    "properties": {
+      "el": {
+        "type": "string"
+      },
+      "iconId": {
+        "type": "string"
+      },
+      "label": {
+        "type": "string"
+      },
+      "note": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "el"
+    ],
+    "type": "object"
+  },
+  "DiagramSources": {
+    "additionalProperties": false,
+    "properties": {
+      "bridge": {
+        "const": "infra",
+        "type": "string"
+      },
+      "edges": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "env": {
+        "type": "string"
+      },
+      "files": {
+        "items": {
+          "$ref": "#/components/schemas/DiagramSourceFile"
+        },
+        "type": "array"
+      },
+      "nodes": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/DiagramSourceNode"
+        },
+        "type": "object"
+      },
+      "readAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "bridge",
+      "files",
+      "readAt",
+      "nodes",
+      "edges"
+    ],
+    "type": "object"
   },
   "DiffView": {
     "additionalProperties": false,
@@ -6822,6 +6947,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "patternColor": {
         "type": "string"
       },
+      "sources": {
+        "$ref": "#/components/schemas/DiagramSources"
+      },
       "tagColours": {
         "items": {
           "$ref": "#/components/schemas/TagColour"
@@ -6968,6 +7096,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "rev": {
         "type": "number"
+      },
+      "sources": {
+        "$ref": "#/components/schemas/DiagramSources"
       },
       "tagColours": {
         "items": {

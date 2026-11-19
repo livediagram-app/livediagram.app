@@ -6,14 +6,22 @@
 // draw.io, docs/specs/020-import-export/drawio-import.md, and Visio,
 // docs/specs/020-import-export/visio-import.md, whose extra pages become new tabs).
 
-import { remapElementRefs, savableElements, type Element, type Tab } from '@livediagram/document';
+import {
+  remapElementRefs,
+  remapSourceIds,
+  savableElements,
+  tabSourcesOf,
+  type Element,
+  type Tab,
+} from '@livediagram/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
 import type { VisioImportResult } from '@/lib/visio/import';
 import { VISIO_MAX_FILE_BYTES, VISIO_TAB_FILE_ACCEPT } from '@/lib/visio/limits';
 import { IMPORT_FILE_ACCEPT, type ImportFileFormat } from '@/lib/import-file-types';
 import { BPMN_MAX_FILE_BYTES } from '@/lib/bpmn/limits';
-import { INFRA_FILE_MAX_BYTES, infraImportOutcome } from '@/lib/infra-import';
+import { INFRA_FILE_MAX_BYTES, INFRA_TOO_LARGE } from '@/lib/infra-import';
+import { useInfraImport } from './useInfraImport';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { mermaidImportOutcome } from '@/lib/text-import-report';
 import { getTheme } from '@/lib/themes';
@@ -43,9 +51,18 @@ export function remintElements(elements: Element[]): {
   return { elements: remapElementRefs(minted, ids), ids };
 }
 
-// A tab's elements re-minted as above. Shared with useTabActions' Duplicate.
-export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
-  return { ...tab, elements: remintElements(tab.elements).elements };
+// A tab's elements re-minted as above, its remembered files' record following the new ids
+// (infrastructure-import.md "Updating a tab from its files"). Shared with useTabActions' Duplicate.
+export function remintTabElements<T extends Pick<Tab, 'elements'> & { sources?: unknown }>(
+  tab: T,
+): T {
+  const { elements, ids } = remintElements(tab.elements);
+  const sources = tabSourcesOf(tab);
+  if (!sources) {
+    const { sources: _dropped, ...rest } = tab;
+    return { ...(rest as T), elements };
+  }
+  return { ...tab, elements, sources: remapSourceIds(sources, ids) };
 }
 
 export type ImportFormat = ImportFileFormat;
@@ -227,44 +244,19 @@ export function useTabImport({
     );
   };
 
-  // A wrangler.toml or Compose file drawn as an architecture tab (docs/specs/020-import-export/infrastructure-import.md
-  // "The editor"): the parsers load here, the graph builder lays it out as the agents' graphs are, one replace.
-  const importInfra = async (text: string, fileName?: string): Promise<ImportOutcome> => {
-    const active = tabs.find((t) => t.id === activeId);
-    const [infra, { layoutGraph, rederiveColorPresetForTheme }] = await Promise.all([
-      import('@livediagram/document/infra-code'),
-      import('@livediagram/document'),
-    ]);
-    const result = infra.infraGraph([{ ...(fileName ? { name: fileName } : {}), text }]);
-    if (!result.ok) return { status: 'error', error: result.error.message };
-    const theme = getTheme(active?.theme);
-    const elements = layoutGraph(result.graph).map((el) =>
-      el.type === 'shape' && el.colorPreset ? rederiveColorPresetForTheme(el, theme) : el,
-    );
-    replaceActiveTabContent({
-      id: activeId,
-      name: active?.name ?? '',
-      elements,
-      theme: active?.theme,
-    });
-    const format = result.files[0]!.format;
-    track('Tab', 'Imported', format === 'wrangler' ? 'Wrangler' : 'Compose');
-    debugLog('[infra-import]', {
-      format,
-      nodes: result.graph.nodes.length,
-      edges: result.graph.edges.length,
-      skipped: result.skipped.length,
-      leftOut: result.leftOut,
-    });
-    return infraImportOutcome(elements, {
-      skippedLine: infra.skippedLine(result.skipped),
-      skippedKeys: result.skipped.length,
-      leftOut: result.leftOut,
-      maxNodes: infra.INFRA_MAX_NODES,
-      linesLeftOut: result.linesLeftOut,
-      linesKept: result.graph.edges.length,
-    });
-  };
+  // Infrastructure files drawn as an architecture tab that remembers them, and the update from them
+  // (docs/specs/020-import-export/infrastructure-import.md): the parsers load on first use.
+  const { importInfraFiles, updateFromSources } = useInfraImport({
+    tabs,
+    activeId,
+    commitTabs,
+    replaceActiveTabContent,
+    setSelectedId,
+    setEditingId,
+    setFormatSourceId,
+    setImportError,
+    noteImport,
+  });
 
   // A .bpmn file drawn where its modeler drew it (docs/specs/020-import-export/bpmn-import.md): read through the inert
   // parse, one replace.
@@ -305,7 +297,8 @@ export function useTabImport({
     // A .vsdx is a zip: there is nothing to paste (visio-import.md "UI").
     if (format === 'visio') return { status: 'error', error: 'Choose a .vsdx file to import.' };
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
-    if (format === 'infra') return importInfra(text, fileName);
+    if (format === 'infra')
+      return importInfraFiles([{ ...(fileName ? { name: fileName } : {}), text }]);
     if (format === 'bpmn') return importBpmnText(text);
 
     if (format === 'mermaid') {
@@ -396,12 +389,7 @@ export function useTabImport({
     // A .bpmn past its cap is refused unread (bpmn-import.md "Reading the file").
     if (picked.tooBig && format === 'bpmn')
       return { status: 'error', error: 'This file is too large to import (the limit is 5 MB).' };
-    if (picked.tooBig)
-      return {
-        status: 'error',
-        error:
-          'That file is over 1 MB, larger than any wrangler.toml or Compose file. Pick the file itself.',
-      };
+    if (picked.tooBig) return { status: 'error', error: INFRA_TOO_LARGE };
     // A .drawio.png is binary, so draw.io reads the bytes.
     if (format === 'drawio') {
       return importDrawioInput(
@@ -416,5 +404,11 @@ export function useTabImport({
     return importTextIntoActiveTab(format, picked.text, onProgress, picked.name);
   };
 
-  return { replaceActiveTabContent, importIntoActiveTab, importTextIntoActiveTab };
+  return {
+    replaceActiveTabContent,
+    importIntoActiveTab,
+    importTextIntoActiveTab,
+    importInfraFiles,
+    updateFromSources,
+  };
 }

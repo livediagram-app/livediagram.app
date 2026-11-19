@@ -8,7 +8,7 @@ Follow the references below only as needed; never upfront.
 - ./board-scene.md - when implementing or changing the board scene landing, its editor wiring (paste insert, import commit paths, the paste notice) or the element fields it needs
 - ./visio-import.md - when implementing or changing the Visio (.vsdx) import: the package, the shape sheet and masters, the master table, masterless geometry, connectors, images and the Visio card
 - ./ms-whiteboard-import.md - when implementing or changing the Microsoft Whiteboard import: the format ids, replay, pen-stroke decoding and thinning, colour normalisation, scene mapping, board titles and dates, the panel and the Explorer page's Import from toolbar
-- ./infrastructure-import.md - when implementing or changing the infrastructure import: detection, the Wrangler and Compose mappings, grouping and the cap, the summary, `link from-code` and the editor's Infrastructure card
+- ./infrastructure-import.md - when implementing or changing the infrastructure import: detection, the Wrangler, Compose, Terraform and Kubernetes mappings, the HCL tokenizer, grouping and the cap, the summary, the sources record and the update merge, `link from-code` and the editor's Infrastructure panels
 - ./bpmn-import.md - when implementing or changing the .bpmn import (reading, the mapping, flows, caps, the report) or draw.io's BPMN stencil mapping
 - ./DEFAULTS.md - when an import/export blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an import/export blueprint covers

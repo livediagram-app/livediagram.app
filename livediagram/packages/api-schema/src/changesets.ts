@@ -4,7 +4,7 @@
 // rejections of the edit-operations engine travel inside a changeset's answer, so their wire
 // shapes live here too and the engine re-exports them.
 
-import type { Element, ElementOp, Finish, Tab } from '@livediagram/document';
+import type { DiagramSources, Element, ElementOp, Finish, Tab } from '@livediagram/document';
 import type { LintReport } from './lint';
 import { MAX_TAB_BYTES } from '@liveworkspace/api-schema/tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
@@ -175,8 +175,14 @@ export type ResultLine =
 // The revision the agent read and the fingerprint of each element it targets, as read.
 export type ChangesetBase = { rev: number; elements?: Record<string, string> };
 
+// The files a replace was drawn from (docs/specs/027-repositories/diagram-sources.md "Writing the record"): the tab's
+// sources record without `readAt`, which the api stamps. `nodes` and `edges` come with an elements body and are left
+// out with a graph body, where the api works them out from what it drew.
+export type ChangesetReplaceSources = Omit<DiagramSources, 'readAt' | 'nodes' | 'edges'> &
+  Partial<Pick<DiagramSources, 'nodes' | 'edges'>>;
+
 // The whole-tab body: exactly one source; `layout` for elements, `theme` and `name` for a tab it
-// creates (a `name` on an existing tab is ignored).
+// creates (a `name` on an existing tab is ignored); `sources` for a tab drawn from files.
 export type ChangesetReplaceBody = {
   graph?: unknown;
   mermaid?: string;
@@ -187,6 +193,7 @@ export type ChangesetReplaceBody = {
   // The new tab's finish (docs/specs/008-canvas/finish.md).
   finish?: Finish;
   name?: string;
+  sources?: ChangesetReplaceSources;
 };
 
 // `operations` is the JSON form (an array) or the line form (a string), CS8; exactly one of it
@@ -299,4 +306,6 @@ export type ChangesetRoomOp = {
   refetch?: true;
   tab?: Omit<Tab, 'elements'>;
   revertOf?: string;
+  // The tab's sources record when the changeset changed it; null when it cleared it (diagram-sources.md).
+  sources?: DiagramSources | null;
 };

@@ -309,7 +309,7 @@ submit answers the same 200 shape with `dryRun: true`, `changeset: null`; any ot
 type ChangesetBase = { rev: number; elements?: Record<string, string> }; // id -> fingerprint
 type ChangesetRequest = {
   operations?: unknown[] | string; // JSON form (validateEditOperations) or line form (parseEditOperations) (CS8)
-  replace?: ReplaceBody; // { graph | mermaid | template | elements, layout?, theme?, name? }; exactly one of the two
+  replace?: ReplaceBody; // { graph | mermaid | template | elements, layout?, theme?, name?, sources? }; exactly one of the two
   base?: ChangesetBase;
   strict?: boolean;
   summary?: string; // trimmed, control characters removed, at most CHANGESET_SUMMARY_MAX (CS10)
@@ -375,7 +375,8 @@ codes), `cap` (413), `message` (405, CS45). `now` elements pass `redactCommentAu
     author: { name: string; color: string }; agentKey?: string; summary?: string;
     counts: { added: number; changed: number; removed: number };
     elementOps?: ElementOp[]; touched?: string[]; refetch?: true;
-    tab?: Omit<Tab, 'elements'>; revertOf?: string }
+    tab?: Omit<Tab, 'elements'>; revertOf?: string;
+    sources?: DiagramSources | null } // set when the changeset changed the tab's record; null: it cleared it
 | { kind: 'select'; elementId: string | null; tabId?: string; elementIds?: string[] }
 ```
 
@@ -553,6 +554,11 @@ document's object from its alarm once a day (`MAINTENANCE_EVERY_MS`); parts foll
   `selected` resolves to.
 - **E24** Rename to the current name: the tab's revision still advances and the relay still goes; the editor's
   `tab-meta` apply keeps the tab as it is.
+- **E25** `replace.sources` that is not an object, does not read as a record, has `nodes` with a graph body or
+  lacks them with an elements body, or comes with Mermaid or a template: 422 `invalid_value` naming
+  `replace.sources`, nothing written. A replace that changes the record relays it on the op (`sources`, or `null`
+  when the replace cleared one); the editor's changeset apply sets or removes the tab's `sources` before its element
+  ops.
 
 ## Security and trust
 
@@ -673,6 +679,7 @@ type `frontDoorOf(request)`: `Mcp`, `Cli`, `Api` or, for the toast's Undo, `Edit
 | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Id `cs_` + 10 base32, minted by the api                                                                       | `apps/api/src/changesets/changeset-id.test.ts`                                                                |
 | #343 end to end at the route: no token PUT, relayed, kept by a stale save, a save between read and write kept | `apps/api/src/routes/agent-writes.test.ts`                                                                    |
+| A replace writes, clears and relays the sources record; a view link is refused it                             | `apps/api/src/routes/changesets.test.ts` "sources"                                                            |
 | One tab per changeset; a new tab is a replace on a missing id                                                 | `apps/api/src/routes/changesets.test.ts` "creates a tab", "refuses another document's tab"                    |
 | Agent = token; absent for a session                                                                           | `changesets.test.ts` "records the token", "records no token for a session"                                    |
 | Summary up to 80                                                                                              | `packages/api-schema/src/changesets.test.ts`; `changesets.test.ts` "refuses a long summary"                   |

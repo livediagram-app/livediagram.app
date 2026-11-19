@@ -103,3 +103,28 @@ describe('applyRoomOpToTabs: changeset in one pass', () => {
     }
   });
 });
+
+// docs/specs/027-repositories/diagram-sources.md "Writing the record": a changeset that drew the tab from files, or
+// forgot them, sets or removes the record with its elements.
+describe('applyRoomOpToTabs: a changeset carrying a sources record', () => {
+  const record = {
+    bridge: 'infra' as const,
+    files: [{ name: 'wrangler.toml', format: 'wrangler', hash: '0a1b2c3d' }],
+    readAt: 1,
+    nodes: {},
+    edges: {},
+  };
+
+  it('sets the record, then clears it, leaving the tab otherwise as it was', () => {
+    const tabs: Tab[] = [{ id: 't1', name: 'Tab', elements: [] }];
+    const set = applyRoomOpToTabs(tabs, { ...changeset([]), sources: record } as RoomOp);
+    expect(set[0]).toEqual({ id: 't1', name: 'Tab', elements: [], sources: record });
+    const cleared = applyRoomOpToTabs(set, { ...changeset([]), sources: null } as RoomOp);
+    expect(cleared[0]).toEqual({ id: 't1', name: 'Tab', elements: [] });
+  });
+
+  it('leaves the record alone when the changeset says nothing of it', () => {
+    const tabs: Tab[] = [{ id: 't1', name: 'Tab', elements: [], sources: record }];
+    expect(applyRoomOpToTabs(tabs, changeset([]))).toBe(tabs);
+  });
+});

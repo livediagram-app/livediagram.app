@@ -13,7 +13,7 @@ Follow the references below only as needed; never upfront.
 - ./drawio-import.md - when working on draw.io import: .drawio / .xml (compressed or not), Drive saves without an extension, .drawio.svg / .drawio.png and JSON exports into tabs (one per page), libraries into shape libraries, the Explorer import of files and folders as new documents (names, dates, the 2 MB tab limit), the mapping and degradation tables, the shared import report
 - ./visio-import.md - when working on Visio or Lucidchart import: a `.vsdx` (Visio's drawing, also what Lucidchart exports) read through the bounded zip reader and parseInert into draw.io's cell tree, the Basic and Flowchart master table, masterless geometry, everything else as text boxes, connectors from glue, the limits and the refusals
 - ./bpmn-import.md - when working on BPMN import: a `.bpmn` (BPMN 2.0 XML with its BPMNDI layout) into the active tab through Import to Tab, parsed with parseInert under size and element caps, the mapping to the BPMN elements, names under symbols, routed flows and the report
-- ./infrastructure-import.md - when working on drawing an architecture diagram from infrastructure code: the one-shot wrangler.toml and Docker Compose import (what each key draws, grouping and the cap for large systems, the skipped-keys summary), `livediagram link from-code` and the editor's Infrastructure import
+- ./infrastructure-import.md - when working on drawing an architecture diagram from infrastructure code: the wrangler.toml, Docker Compose, Terraform and Kubernetes import (what each draws, several files and the Wrangler environment, grouping and the cap, the skipped-keys summary), updating a tab from its files, `livediagram link from-code` and the editor's Infrastructure import
 - ./blueprints/README.md - when implementing from a blueprint: the import image pipeline, Excalidraw import, draw.io import, Visio import and the infrastructure import
 
 ## The dialogs' header
@@ -36,8 +36,8 @@ isn't valid JSON." (a JSON tab), and an Excalidraw scene, pasted, dropped or pic
 ## File types
 
 Every Import format says which files it takes (owner, 2026-11-19): its card in **All Formats** lists the endings as
-small chips under its description (`.toml` `.yml` `.yaml` for Infrastructure), and its panel repeats them beside
-**Import File** ("Import File takes …"), or under a binary format's drop target. One table
+small chips under its description (`.toml` `.yml` `.yaml` `.tf` for Infrastructure), and its panel repeats them beside
+**Import File** ("Import File takes …"), or under a binary format's or Infrastructure's drop target. One table
 (`apps/editor/lib/import-file-types.ts`) feeds both the picker's `accept` and these words, so they never disagree.
 The warning above reads "This replaces everything on <tab> with the imported content. Undo brings it back.", with no
 keyboard shortcut in the text.

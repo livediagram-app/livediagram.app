@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { INFRA_MAX_FILE_BYTES } from './limits';
-import { isTable, parseError, parseInfraText } from './parse';
+import { isTable, parseError, parseInfraText, parseKubernetesText } from './parse';
 
 describe('parseInfraText', () => {
   it('parses TOML and YAML into plain objects', () => {
@@ -71,6 +71,17 @@ describe('parseInfraText', () => {
   it('builds no functions from YAML tags (the safe schema)', () => {
     const read = parseInfraText('compose', 'a: !!js/function "function () {}"');
     expect(read.ok).toBe(false);
+  });
+
+  it('reads every document of a Kubernetes file, empty ones as null', () => {
+    expect(parseKubernetesText('kind: A\n---\n---\nkind: B')).toEqual({
+      ok: true,
+      docs: [{ kind: 'A' }, null, { kind: 'B' }],
+    });
+    const bad = parseKubernetesText('kind: A\n---\nkind: [');
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(bad.error.message).toMatch(/^Couldn't read the YAML: .+ \(line \d+\)\.$/);
+    expect(parseKubernetesText(' ')).toMatchObject({ ok: false, error: { code: 'empty' } });
   });
 
   it('tells a table from a list or a scalar', () => {

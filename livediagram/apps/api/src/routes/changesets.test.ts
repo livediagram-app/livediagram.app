@@ -593,6 +593,108 @@ describe('reverting', () => {
   });
 });
 
+// docs/specs/027-repositories/diagram-sources.md "Writing the record": a replace writes, clears and relays the tab's
+// sources record; it is an Editor's write like any other.
+describe('sources', () => {
+  const files = [
+    { name: 'wrangler.toml', format: 'wrangler', hash: '0a1b2c3d', text: 'name = "api"' },
+  ];
+  const graph = {
+    nodes: [
+      { id: 'api', label: 'api' },
+      { id: 'db', label: 'db' },
+    ],
+    edges: [{ from: 'api', to: 'db' }],
+  };
+  const tabData = (db: SqliteD1, tab = 't1') =>
+    JSON.parse(db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get(tab)!.data as string) as {
+      sources?: { nodes: Record<string, unknown>; files: unknown[]; readAt: number };
+      elements: Element[];
+    };
+  const relayed = (r: ReturnType<typeof room>) =>
+    r.calls
+      .filter((c) => c.url.endsWith('/mutation'))
+      .map((c) => (c.body as { op: Record<string, unknown> }).op);
+
+  it('writes the record a graph replace brings, works out its nodes, and relays it', async () => {
+    quiet();
+    const { db, room: r } = await setUp();
+    const res = await submit(db, { replace: { graph, sources: { bridge: 'infra', files } } });
+    expect(res.status).toBe(200);
+    const { sources } = tabData(db);
+    expect(sources).toMatchObject({
+      bridge: 'infra',
+      files,
+      nodes: { api: { el: 'api' }, db: { el: 'db' } },
+    });
+    expect(sources!.readAt).toBeGreaterThan(0);
+    expect(relayed(r)[0]).toMatchObject({ kind: 'changeset', sources: { bridge: 'infra', files } });
+  });
+
+  it('writes a record whose drawing is unchanged, and clears it with a replace that brings none', async () => {
+    quiet();
+    const { db, room: r } = await setUp();
+    await submit(db, { replace: { graph, sources: { bridge: 'infra', files } } });
+    const { elements, sources } = tabData(db);
+    const newer = [{ ...files[0]!, hash: 'ffffffff', text: 'name = "api" # v2' }];
+    const same = await submit(db, {
+      replace: {
+        elements,
+        layout: 'preserve',
+        sources: { bridge: 'infra', files: newer, nodes: sources!.nodes, edges: {} },
+      },
+    });
+    expect(same.status).toBe(200);
+    expect(await same.json()).toMatchObject({ changeset: { rev: 3 } });
+    expect(tabData(db).sources!.files).toEqual(newer);
+    await submit(db, { replace: { elements, layout: 'preserve' } });
+    expect(tabData(db)).not.toHaveProperty('sources');
+    expect(relayed(r).at(-1)).toMatchObject({ sources: null });
+  });
+
+  it('refuses a record that does not read, writing nothing', async () => {
+    quiet();
+    const { db } = await setUp();
+    const res = await submit(db, { replace: { graph, sources: { bridge: 'infra', files: 'x' } } });
+    expect(res.status).toBe(422);
+    expect(JSON.stringify(await res.json())).toContain('replace.sources');
+    expect(tabData(db)).not.toHaveProperty('sources');
+    expect(records(db)).toEqual([]);
+  });
+
+  it('lets an edit link write a record, and refuses a view link', async () => {
+    quiet();
+    const { db } = await setUp();
+    testShareLink(db, 'D', 'EDITCODE', 'edit');
+    testShareLink(db, 'D', 'VIEWCODE', 'view');
+    const body = { replace: { graph, sources: { bridge: 'infra', files } } };
+    const view = await submit(db, body, {
+      owner: 'guest-2',
+      headers: { 'X-Share-Code': 'VIEWCODE' },
+    });
+    expect(view.status).toBe(403);
+    expect(tabData(db)).not.toHaveProperty('sources');
+    const edit = await submit(db, body, {
+      owner: 'guest-1',
+      headers: { 'X-Share-Code': 'EDITCODE' },
+    });
+    expect(edit.status).toBe(200);
+    expect(tabData(db).sources).toMatchObject({ bridge: 'infra' });
+  });
+
+  it("writes the record a created document's graph tab brings", async () => {
+    quiet();
+    const { db } = await setUp();
+    const res = await call(db, 'POST', '/api/documents', {
+      id: 'D2',
+      name: 'Infra',
+      tabs: [{ id: 't9', name: 'Infra', graph, sources: { bridge: 'infra', files } }],
+    });
+    expect(res.status).toBe(201);
+    expect(tabData(db, 't9').sources).toMatchObject({ files, nodes: { api: { el: 'api' } } });
+  });
+});
+
 describe('agent presence after a changeset (docs/specs/024-agents/agent-presence.md "Presence")', () => {
   const presenceCalls = (r: { calls: { url: string; body: unknown }[] }) =>
     r.calls.filter((c) => c.url.includes('/presence'));
