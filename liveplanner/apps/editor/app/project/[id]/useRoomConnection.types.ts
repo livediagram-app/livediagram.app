@@ -34,6 +34,9 @@ export type RoomConnectionOptions = {
   onWorkbenchEnded?: () => void;
   // The room turned this connection away, full (docs/specs/015-api/api.md "A room holds 100 connections").
   onRoomFull?: () => void;
+  // The item was archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): the
+  // room closed this session with 4010 and the connector stopped. The editor leaves for the Explorer.
+  onItemArchived?: () => void;
   // The project's team (docs/specs/013-workspace/team-shared-projects.md), null for a personal project. A team
   // project is a live room for its members even without a share link,
   // so presence opens for it the same way a shared project does.

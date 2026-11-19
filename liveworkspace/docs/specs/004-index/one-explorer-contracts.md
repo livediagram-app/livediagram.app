@@ -304,6 +304,14 @@ index nothing while it runs).
   parser are `@liveworkspace/index-client` `standing.ts`. An app without the handler answers `200 {ok: true}` and does
   nothing: livediagram, livedocuments, livedesign and livehuddle keep no clock of their own for an item today, so only
   liveplanner acts on it ([automations.md](../../../../liveplanner/docs/specs/026-plan/automations.md) "Put away").
+- **Open sessions end.** Every app's handler also ends the item's live sessions when the standing puts it away: on
+  `trashed: true` its room sends the product's trashed op and closes each socket with 4004; on `archived: true` (and
+  not trashed) it closes each with **4010** (`ITEM_ARCHIVED_CLOSE`, reason `item-archived`) through the room's
+  `/close-sessions` door (`{match: 'archived'}`, `closeArchivedSessions` in `@liveworkspace/api-kit/room-access-client`),
+  telling nobody anything else (one-explorer.md "Archived from elsewhere while open"). A standing with neither flag (a
+  move out of Archived, a restore) closes nothing. liveplanner's room closes only on a standing newer than the one it
+  kept; the other apps keep no standing, so a late archive that crosses a quick move back can close sessions once, and
+  their next open is admitted by its grant as usual.
   A malformed body is `400`; a handler that throws is `503`, which the index logs as not delivered.
 
 ## Closing an account

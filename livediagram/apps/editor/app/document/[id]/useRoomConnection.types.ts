@@ -34,6 +34,9 @@ export type RoomConnectionOptions = {
   // The room turned this editor away as full (docs/specs/015-api/api.md "A room holds at most 100 connections"),
   // once per streak; the connector keeps trying on its own.
   onRoomFull?: () => void;
+  // The item was archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): the
+  // room closed this session with 4010 and the connector stopped. The editor leaves for the Explorer.
+  onItemArchived?: () => void;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.

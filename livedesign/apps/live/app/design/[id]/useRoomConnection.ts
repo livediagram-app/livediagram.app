@@ -47,6 +47,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     enabled = true,
     onWorkbenchEnded,
     onRoomFull,
+    onItemArchived,
     designTeamId,
     selfParticipant,
     sessionShareCode,
@@ -171,6 +172,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
   });
   const roomWorkbenchEnded = useEffectEvent(() => onWorkbenchEnded?.());
   const roomFull = useEffectEvent(() => onRoomFull?.());
+  const roomItemArchived = useEffectEvent(() => onItemArchived?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
   // answer changes anything.
@@ -246,6 +248,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       onAccessChanged: () => roomAccessChanged(),
       onWorkbenchEnded: () => roomWorkbenchEnded(),
       onRoomFull: () => roomFull(),
+      onItemArchived: () => roomItemArchived(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
     };

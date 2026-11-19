@@ -8,7 +8,7 @@ import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 import { HeaderShareIcon } from './EditorHeader';
 
-// Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (Copy, Present, Share and the account) float in a card of
+// Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (the approval's badge, Copy, Present, Share and the account) float in a card of
 // their own at the canvas's top right, the same card as the menu card at its top left. The account control is the
 // shared AuthControls, drawn as a header action; styles/corner-actions.css redraws it as a button in
 // this card.
@@ -27,11 +27,18 @@ const PHONE_ROW_GAP_PX = 6;
 // Tells the palette strip the card's width (CORNER_CARD_EVENT), or that it has gone. A phone's strip row spans the
 // top and keeps this much room at its right for the card: its width (layout px, the strip's own scale) and the row's
 // gap. Said inside a layout effect, the strip's re-measure lands in the same commit, before paint.
+// `--corner-card-span` is the same room in screen px (the card as drawn, at its UI scale), for chrome not drawn at
+// the toolbar's scale: liveplanner's header band, which the card otherwise covers by the scale's difference.
 function sayCornerCard(card: HTMLElement | null) {
   const root = document.documentElement;
-  if (card)
+  if (card) {
     root.style.setProperty('--corner-card-room', `${card.offsetWidth + PHONE_ROW_GAP_PX}px`);
-  else root.style.removeProperty('--corner-card-room');
+    const drawn = card.getBoundingClientRect().width;
+    root.style.setProperty('--corner-card-span', `${drawn + PHONE_ROW_GAP_PX}px`);
+  } else {
+    root.style.removeProperty('--corner-card-room');
+    root.style.removeProperty('--corner-card-span');
+  }
   window.dispatchEvent(new Event(CORNER_CARD_EVENT));
 }
 
@@ -50,6 +57,9 @@ export type EditorCornerActionsProps = {
   shareAction?: ReactNode;
   // An app's own action ahead of the rest (livedesign's Prototype on a wireframe tab).
   leadAction?: ReactNode;
+  // Where the item's approval stands, first of all (liveworkspace approvals.md "In the editor"): an app inside an
+  // approvals door passes `<ApprovalBadge corner />`. A slot, so an app with no door (livehuddle) never bundles it.
+  approval?: ReactNode;
 };
 
 export function EditorCornerActions({
@@ -63,6 +73,7 @@ export function EditorCornerActions({
   copyDescription,
   shareAction,
   leadAction,
+  approval,
 }: EditorCornerActionsProps) {
   // Drawn at the toolbar's UI scale (docs/specs/007-editor/ui-scale.md), as the palette strip and the menu card are,
   // so the three stand the same height in one row, still 12px from the corner.
@@ -138,6 +149,9 @@ export function EditorCornerActions({
         }
         className="pointer-events-auto absolute right-3 top-3 phone:right-0 phone:rounded-r-none phone:border-r-0 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
+        {/* Where the item's approval stands, first: the badge draws only inside an approvals door with an approval
+            to show, so nothing here for anyone else. */}
+        {approval ?? null}
         {leadAction ?? null}
         {onMakeCopy ? (
           <HoverCard title="Make a Copy" description={copyDescription}>

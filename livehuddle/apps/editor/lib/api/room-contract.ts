@@ -37,6 +37,10 @@ export type RoomHandlers = {
   // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
   onDocumentTrashed?: () => void;
+  // The item was archived from anywhere (liveworkspace/docs/specs/004-index/one-explorer.md "Archived from elsewhere
+  // while open"): the room closed every session with ITEM_ARCHIVED_CLOSE. The connector stops for good, and the
+  // caller leaves for the Explorer.
+  onItemArchived?: () => void;
   // An access change ended this session (docs/specs/015-api/api.md "Access changes end the sessions
   // they affect"): a share password was set, or the member left the document's team. The room
   // closed it with ACCESS_CHANGED_CLOSE; the connector stops, and the caller reloads into the

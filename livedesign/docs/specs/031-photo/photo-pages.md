@@ -189,7 +189,7 @@ screen above the safe area (the **tools row**): every group its own button, scro
 drawn, beside **Layers**. A tap takes a tool; a tap on the tool in hand opens its options as a **bottom sheet** (the
 options flyout's header and body: the Tool section, its sections, its presets). There is no options row and no quick
 panel on a phone. While a crop or Free Transform is under way, a bar over the tools row holds its name, **Options**
-(the sheet), **Cancel**, and **Crop** or **Commit**.
+(the sheet), **Cancel**, and **Crop** or **Commit**. Crop, from that bar or from the sheet, also closes the sheet, so the cropped photo shows at once rather than under it; a tap on Crop in the tools row opens it again, with **Show Crop Box**.
 
 ### The options flyout
 

@@ -1,4 +1,5 @@
 import { useModeDefaultTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
+import { leaveArchivedElsewhere } from '@liveworkspace/workbench/lib/archived';
 import { usePhotoPresence } from '@/hooks/editor/usePhotoPresence';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Element } from '@livedesign/design';
@@ -233,6 +234,16 @@ export function useEditorCollaboration({
     enabled: realtime.sessionCommunity === null && !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
+    // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): its owner leaves for
+    // the Explorer's archived toast, anyone else for the Explorer saying its owner archived it.
+    onItemArchived: () => {
+      if (designId)
+        leaveArchivedElsewhere(
+          'livedesign',
+          { id: designId, title: lastSavedNameRef.current || null },
+          realtime.isOwner,
+        );
+    },
     designTeamId,
     selfParticipant,
     sessionShareCode,

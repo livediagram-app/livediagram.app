@@ -92,6 +92,13 @@ const HELD_AT_100 = [
   'src/components/canvas/VoteStepper.tsx',
   'src/components/canvas/VoteDot.tsx',
   'src/components/canvas/vote-badge.ts',
+  // The assigned-action pieces the four editors kept as near-copies (assigned-actions.md, Work Tracker 1250).
+  'src/components/dialogs/AssignActionAssigneePicker.tsx',
+  'src/hooks/collab/team-member-rows.ts',
+  'src/hooks/collab/useAssigneeOptions.ts',
+  'src/components/panels/ActionPopover.tsx',
+  'src/components/panels/collaborate/CollaborateRows.tsx',
+  'src/lib/identity-fill.ts',
   // The new version prompt all five editors bind (docs/specs/016-platform/new-version-prompt.md).
   'src/components/chrome/NewVersionPrompt.tsx',
   'src/hooks/ui/useNewerEditorLive.ts',

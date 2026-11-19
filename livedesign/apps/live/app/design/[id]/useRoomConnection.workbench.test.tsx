@@ -21,7 +21,10 @@ vi.mock('@/lib/api-client', () => ({
 
 const { useRoomConnection } = await import('./useRoomConnection');
 
-function mount(onWorkbenchEnded?: () => void) {
+function mount(
+  onWorkbenchEnded?: () => void,
+  extra: Partial<Parameters<typeof useRoomConnection>[0]> = {},
+) {
   const fn = new Proxy({} as Record<string, ReturnType<typeof vi.fn>>, {
     get: (t, k: string) => (t[k] ??= vi.fn()),
   });
@@ -33,6 +36,7 @@ function mount(onWorkbenchEnded?: () => void) {
       designServerStored: true,
       enabled: true,
       onWorkbenchEnded,
+      ...extra,
       designTeamId: null,
       selfParticipant: { id: 'user_1', name: 'Webber', color: '#0ea5e9', status: 'online' },
       sessionShareCode: null,
@@ -64,6 +68,22 @@ afterEach(() => {
 });
 
 describe('useRoomConnection under a workbench session', () => {
+  // liveworkspace one-explorer.md "Archived from elsewhere while open": the room's 4010 reaches the editor's handler,
+  // which leaves for the Explorer; nothing reloads or ends the session in its place.
+  it('hands an archive to the editor, in a workbench or not', async () => {
+    for (const ended of [undefined, vi.fn()]) {
+      room.handlers = null;
+      const onItemArchived = vi.fn();
+      const { unmount } = mount(ended, { onItemArchived });
+      await waitFor(() => expect(room.handlers).not.toBeNull());
+      room.handlers!.onItemArchived!();
+      expect(onItemArchived).toHaveBeenCalledTimes(1);
+      expect(reload).not.toHaveBeenCalled();
+      if (ended) expect(ended).not.toHaveBeenCalled();
+      unmount();
+    }
+  });
+
   it('ends the session when the room ends it', async () => {
     const ended = vi.fn();
     mount(ended);

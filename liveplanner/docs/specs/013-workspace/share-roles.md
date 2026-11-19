@@ -27,6 +27,10 @@ Participant level is the middle: take part in the board, never reshape it.
   editing the element it looks at.
 - **Running a session is an Editor's hat**: starting, ending, revealing, clearing and pacing stay with
   editors. A Participant takes part and never runs.
+- **Approving is a Viewer's one write** ([Approvals](approvals.md), the owner's choice, 2026-11-15): a Viewer, a
+  Participant or an Editor named as an approver may **Approve** or **Request Changes** on the plan's open approval
+  request. It writes the decision and nothing else, and only for someone named; asking for approval and cancelling
+  are an Editor's of the whole plan.
 - **A checklist tick is editing**: it is one shared value, not a person's answer.
 
 ## What a Participant changes

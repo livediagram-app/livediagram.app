@@ -16,6 +16,12 @@ syncs to everyone in the realtime room, and is deliberately **not undoable**
 (the carve-out comments already use): Cmd+Z must never silently
 unassign someone's work.
 
+One copy for every editor: the assignee picker (`AssigneePicker`), its dataset (`useAssigneeOptions`), the team's
+people as pickable rows (`teamMemberRows`), the action popover (`ActionPopover`) and the Collaborate Panel's rows
+(`ActionRowItem`, `CommentRowItem`) live in `@liveworkspace/workbench`. Each editor hands in only its own word for
+what it edits (the picker's nudges name the canvas) and its wiring (its team-members read), so a change to how
+they look or behave lands in every editor at once.
+
 ## 1. Data model
 
 At most **one action per element** (mirrors note + link, keeps the panel,

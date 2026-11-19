@@ -16,6 +16,12 @@ syncs to everyone in the realtime room, and is deliberately **not undoable**
 (the carve-out comments already use): Cmd+Z must never silently
 unassign someone's work.
 
+One copy for every editor: the assignee picker (`AssigneePicker`), its dataset (`useAssigneeOptions`), the team's
+people as pickable rows (`teamMemberRows`), the action popover (`ActionPopover`) and the Collaborate Panel's rows
+(`ActionRowItem`, `CommentRowItem`) live in `@liveworkspace/workbench`. Each editor hands in only its own word for
+what it edits (the picker's nudges name the design) and its wiring (its team-members read), so a change to how
+they look or behave lands in every editor at once.
+
 ## 1. Data model
 
 At most **one action per element** (mirrors note + link, keeps the panel,
@@ -142,7 +148,8 @@ Clicking it opens the **Assign Action dialog** (its own component under
   performs the [Team shared designs](../013-workspace/team-shared-designs.md) placement move (the index's item move
   into the team, landing at the team root) right from the dialog and
   reloads the picker with that team's members, no Explorer round-trip; a
-  signed-in user with no teams gets the create-a-team link instead; a
+  signed-in user with no teams gets the create-a-team link instead (the
+  Explorer's Invites, `/explorer/invites`, beside the teams); a
   signed-in user **not a member of the design's team** (a share-link
   editor) gets a plain Myself-only picker; a signed-out user sees Myself
   plus the sign-in nudge (§2).
