@@ -468,6 +468,13 @@ drives it with fake timers.
   build meta against the editor's build id). Each editor's `components/chrome/NewVersionPrompt.tsx` binds it with its
   name, format number, server release store, build meta name and build id (`docs/specs/016-platform/new-version-prompt.md`
   in each product).
+- `@liveworkspace/ui`'s `TextInput` and `TextArea` (`packages/ui/src/TextInput.tsx`, Work Tracker 1171): `invalid`
+  sets `aria-invalid="true"` beside the rose border (left off when valid); `hintId` names the element that says why
+  (or the hint) and joins the field's `aria-describedby`, after any ids the caller passed in it. A caller's own
+  `aria-invalid` wins over `invalid`. Callers that show a line under an invalid field pass its id: liveplanner's
+  `PanelField` hands its children the hint's id with the control's (`children(id, hintId)`), so Email Received's
+  **From** and Add or Remove Label's **Label** are described by their hint, and the sheet's Custom Number Format
+  field by its Preview line (which turns into "That format code can't be read").
 
 ## Testing
 

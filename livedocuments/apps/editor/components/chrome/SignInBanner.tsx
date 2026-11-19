@@ -83,7 +83,7 @@ export function SignInBanner({
           </span>
 
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-semibold sm:text-base">Sign in to access Teams &amp; AI</p>
+            <p className="text-sm font-semibold sm:text-base">Sign In to Use Teams</p>
             {/* A sideways phone has little height to give: the headline and the buttons say enough. */}
             <p className="mt-0.5 text-xs text-white/90 sm:text-sm landscape-phone:hidden">
               Share with your team, build with AI, sync across devices.
@@ -107,7 +107,7 @@ export function SignInBanner({
               className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-sm transition hover:bg-brand-50 dark:text-brand-700"
             >
               <SignInIcon size={14} />
-              Sign in
+              Sign In
             </Link>
             <button
               type="button"

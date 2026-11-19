@@ -317,11 +317,11 @@ function GuestItems({
         className="m-1 flex items-center justify-center gap-2 rounded-lg bg-(--account-ink) px-3 py-2 text-sm font-semibold text-(--account-on-ink) outline-none transition-colors hover:bg-(--account-text) focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--account-ink)"
       >
         <SignInIcon />
-        Sign in
+        Sign In
       </a>
       <PageItem
         href={guest.signUpHref}
-        label="Create account"
+        label="Create Account"
         hint="Free, and one account for every app"
         icon={CreateAccountIcon}
       />

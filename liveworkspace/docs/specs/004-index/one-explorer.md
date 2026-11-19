@@ -308,7 +308,7 @@ panel keeps its own Home without it, and a first run shows its starting points i
   every app's.
 - **No teams yet.** Signed in where teams can be run, a dashed **Create a Team** tile follows My Work ("Work
   together on shared plans."): it opens New Team, and goes to the team once made. A guest has My Work, then a
-  **Sign In to Work in Teams** tile where the host says where signing in is; a deployment without accounts shows My
+  **Sign In to Use Teams** tile where the host says where signing in is; a deployment without accounts shows My
   Work alone.
 - **Loading** draws tile-shaped placeholders in the same grid, one per space known (at most eight). **A failed
   read** keeps every tile, since names and links need nothing from it, without its mosaic or line, and says

@@ -15,6 +15,7 @@ import {
   sourceAfterRead,
   liveChartFields,
   isChart,
+  drawnTable,
   type SheetChart,
 } from './sheet-links';
 
@@ -142,6 +143,31 @@ describe('the words', () => {
       name: 'a plan',
       detail: "Couldn't update, saved 2 hours ago",
       tone: 'warn',
+    });
+  });
+});
+
+// Work Tracker 1212: the Link to Sheet preview shows what Link would write.
+describe('what a preview shows', () => {
+  const table = {
+    categories: ['1', '2'],
+    series: [
+      { name: 'X', values: [3, 4] },
+      { name: 'Y', values: [5, 6] },
+    ],
+  };
+  it('keeps a pie or bar to its first series, counting the rest left out', () => {
+    expect(drawnTable(shape('bar-chart'), table)).toEqual({
+      table: { categories: ['1', '2'], series: [table.series[0]] },
+      leftOut: 1,
+    });
+    expect(drawnTable(shape('pie-chart'), { categories: [], series: [] }).leftOut).toBe(0);
+  });
+  it('keeps every series of a line, and a scatter takes a numbered first column as its x', () => {
+    expect(drawnTable(shape('line-chart'), table)).toEqual({ table, leftOut: 0 });
+    expect(drawnTable({ ...shape('line-chart'), chartVariant: 'scatter' }, table)).toEqual({
+      table: { categories: ['3', '4'], series: [table.series[1]] },
+      leftOut: 0,
     });
   });
 });

@@ -58,7 +58,7 @@ export function ImageExportPanel({
           style), the same control the New Document wizard's location step
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
-      <BackBar label="All formats" current={label} onClick={onBack} disabled={busy} />
+      <BackBar label="All Formats" current={label} onClick={onBack} disabled={busy} />
       {pagePicker ? <div className="mt-3">{pagePicker}</div> : null}
       {/* Live preview — exactly what Download produces under the current
           options. The injected SVG is our own export output (no external

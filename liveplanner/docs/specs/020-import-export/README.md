@@ -22,3 +22,6 @@ two files in the bottom left, a dashed line along the foot to a dashed frame in 
 in over its edge; an arrow into a tray is its mark. Both arts are shared
 (`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike. The steps that bring a
 board in from another tool keep the header, its title naming the tool ("Import from Trello").
+
+An import's refusal names what it read: a picked file is "This file isn't valid JSON.", pasted text "This pasted text
+isn't valid JSON." (a JSON tab); never "File" for text that was pasted (Work Tracker 1060).

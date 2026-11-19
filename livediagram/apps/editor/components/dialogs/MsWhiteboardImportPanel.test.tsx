@@ -58,16 +58,16 @@ describe('MsWhiteboardImportPanel', () => {
     const { unmount } = render(
       <MsWhiteboardImportPanel importScenes={vi.fn()} onClose={vi.fn()} />,
     );
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
     unmount();
     render(
       <MsWhiteboardImportPanel
         importScenes={vi.fn()}
         onClose={vi.fn()}
-        onBack={{ label: 'All formats', onClick: back }}
+        onBack={{ label: 'All Formats', onClick: back }}
       />,
     );
-    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    fireEvent.click(screen.getByRole('button', { name: /All Formats/ }));
     expect(back).toHaveBeenCalled();
   });
 });
