@@ -137,6 +137,15 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 The open document has no header bar. Its actions are the top-right corner card's (`EditorCornerActions` in `../packages/workbench/src/components/chrome/`, [Toolbar layout](toolbar-layout.md)): Present while the deck has a presentable slide, Share (owner), Copy (visitor), and Sign in or the account control. The document is named and renamed in the Explorer panel's Current card, also from the search's Rename command ([one-explorer.md "Rename from the search"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)), and its visibility badge is the Explorer's.
 
+**Share shows who can see the document** (owner, 2026-11-19; `ShareVisibilityButton` in the workbench, the same in every
+app: livediagram's [editor-app.md "Header actions"](../../../../livediagram/docs/specs/007-editor/editor-app.md#header-actions)).
+Its words and glyph wear the document's visibility in the shared visibility tones: Private green, Shared blue, Team violet,
+Public pink, Offline grey. A document can be several at once (Team and Shared for a team document with a share link, Shared and
+Public, Team and Public, or all three; Private and Offline stand alone): the words and glyph then sweep from one hue to
+the next in the scale's order (Shared, Team, Public), every point 4.5:1 on the card in both looks, and the word stays
+Share, its accessible name listing every state ("Share, Shared and Team"). On a computer its hover legend marks every
+state that applies, each stop filled in its own hue, and names them together at its top.
+
 Only the pages that stand in for a document (loading, not found, and a create that failed) keep a bar: `EditorHeader` in `../packages/workbench/src/components/chrome/`, bound in `apps/*/components/chrome/EditorHeader.tsx` with this app's logo and account control. It holds the logo, which goes to the Explorer, and the account control (`AuthControls` in the same folder: Sign in, or the account's picture and first name opening Account and Sign Out), and nothing else.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.

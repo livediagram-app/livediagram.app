@@ -5,22 +5,27 @@
 // the item goes; under it the audiences sit on one scale from Offline to Everyone (Offline first, the
 // narrowest: owner 2026-11-19, it used to stand apart below and read as unrelated), the current stop filled to, and
 // hovering a stop shows that audience in the hero; then, for someone who may share, Change Who Can See This opens
-// Share. For the eye only:
+// Share. An item can be several at once (Team and Shared, Shared and Public: owner 2026-11-19): every stop that applies
+// is filled in its own hue, the track runs to the widest, and the hero names them together. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
 import { useState, type ReactNode } from 'react';
 import { ChevronRightIcon, lucideGlyph, SOLID_BRAND_DARK_CONTROL } from '@liveworkspace/ui';
 import { lucideGlobe, lucideLink, lucideLock, lucideUsers } from '@liveworkspace/icons/lucide';
 import { ThisBrowserIcon } from '../primitives/ThisBrowserPill';
-import { SHARE_STATE_META, type ShareState, type VisibilityActions } from './share-states';
+import {
+  SHARE_LADDER,
+  SHARE_STATE_META,
+  shareStatesLabel,
+  widestShareState,
+  type ShareState,
+  type VisibilityActions,
+} from './share-states';
 import { VISIBILITY_TONE } from '@liveworkspace/explorer/visibility-tones';
 
 const LockGlyph = lucideGlyph(lucideLock, 14);
 const LinkGlyph = lucideGlyph(lucideLink, 14);
 const TeamGlyph = lucideGlyph(lucideUsers, 14);
 const GlobeGlyph = lucideGlyph(lucideGlobe, 14);
-
-// The audiences from narrowest to widest: not even your other devices, just you, a link, your team, everyone.
-const LADDER: readonly ShareState[] = ['offline', 'private', 'shared', 'team', 'community'];
 
 // Each state's look: its glyph, its stop on the scale, the hero's wash, and its ink for the rings.
 const LOOK: Record<
@@ -73,7 +78,7 @@ const LOOK: Record<
 // has no reach past you: the browser window holds you, the rings all dark.
 function ReachRings({ state }: { state: ShareState }) {
   // Offline and Private both stop at you: rings light from Link outwards.
-  const lit = Math.max(0, LADDER.indexOf(state) - 1);
+  const lit = Math.max(0, SHARE_LADDER.indexOf(state) - 1);
   const look = LOOK[state];
   const radii = [14, 22, 30];
   return (
@@ -119,11 +124,17 @@ function ReachRings({ state }: { state: ShareState }) {
   );
 }
 
-function Hero({ state, current }: { state: ShareState; current: boolean }) {
+// What the hero shows: one audience (the item's own, or a hovered stop's), or every one that applies together.
+type HeroShown = ShareState | 'all';
+
+function Hero({ shown, states }: { shown: HeroShown; states: readonly ShareState[] }) {
+  // The combination's wash and rings are the widest's: how far the item reaches.
+  const state = shown === 'all' ? widestShareState(states) : shown;
   const look = LOOK[state];
+  const combined = states.length > 1;
   return (
     <div
-      data-legend-hero={state}
+      data-legend-hero={shown}
       className={`flex items-center gap-3 rounded-t-xl bg-gradient-to-b px-4 pb-3 pt-4 transition-colors duration-short ${look.hero}`}
     >
       <ReachRings state={state} />
@@ -132,14 +143,15 @@ function Hero({ state, current }: { state: ShareState; current: boolean }) {
           one sits level with the rings rather than at the top. */}
       <div className="grid min-w-0 flex-1">
         {HERO_STATES.map((s) => (
-          <HeroText key={s} state={s} current={current} shown={s === state} />
+          <HeroText key={s} state={s} current={states.includes(s)} shown={s === shown} />
         ))}
+        {combined ? <HeroTogether states={states} shown={shown === 'all'} /> : null}
       </div>
     </div>
   );
 }
 
-const HERO_STATES: readonly ShareState[] = LADDER;
+const HERO_STATES: readonly ShareState[] = SHARE_LADDER;
 
 function HeroText({
   state,
@@ -171,21 +183,58 @@ function HeroText({
   );
 }
 
-// The audiences on one scale, the track filled up to the current stop.
+// Every audience that applies, named together: each glyph in its hue, then one line per audience in its hue's dot.
+function HeroTogether({ states, shown }: { states: readonly ShareState[]; shown: boolean }) {
+  const widest = LOOK[widestShareState(states)];
+  return (
+    <div
+      data-legend-together=""
+      className={`min-w-0 self-center [grid-area:1/1] ${shown ? '' : 'invisible'}`}
+      aria-hidden={shown ? undefined : true}
+    >
+      <p className={`text-[10.5px] font-semibold uppercase tracking-wide ${widest.eyebrow}`}>
+        Who Can See This
+      </p>
+      <p className="mt-0.5 flex items-center gap-1.5 text-base font-semibold leading-tight text-slate-900 dark:text-slate-50">
+        <span className="flex items-center gap-0.5">
+          {states.map((s) => (
+            <span key={s} className={LOOK[s].ink}>
+              {LOOK[s].icon}
+            </span>
+          ))}
+        </span>
+        {shareStatesLabel(states)}
+      </p>
+      <ul className="mt-1 space-y-0.5 text-[12px] leading-snug text-slate-600 dark:text-slate-300">
+        {states.map((s) => (
+          <li key={s} className="flex gap-1.5">
+            <span
+              aria-hidden
+              className={`mt-[5px] size-1.5 shrink-0 rounded-full bg-current ${LOOK[s].ink}`}
+            />
+            {SHARE_STATE_META[s].description}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+// The audiences on one scale, the track filled up to the widest that applies, every one that applies marked.
 function ReachScale({
-  current,
+  states,
   peek,
   onPeek,
   actions,
 }: {
-  current: ShareState;
+  states: readonly ShareState[];
   // Pressing a stop moves the item to that audience (VisibilityActions); a stop without one is for reading.
   actions?: VisibilityActions | undefined;
   peek: ShareState | null;
   onPeek: (state: ShareState | null) => void;
 }) {
-  const at = LADDER.indexOf(current);
-  const fill = at <= 0 ? 0 : (at / (LADDER.length - 1)) * 100;
+  const at = SHARE_LADDER.indexOf(widestShareState(states));
+  const fill = at <= 0 ? 0 : (at / (SHARE_LADDER.length - 1)) * 100;
   return (
     <div className="px-4 pb-1 pt-3">
       <p className="mb-2.5 text-[10.5px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
@@ -200,8 +249,8 @@ function ReachScale({
           />
         </span>
         <ol className="relative grid grid-cols-5" onMouseLeave={() => onPeek(null)}>
-          {LADDER.map((s, i) => {
-            const on = s === current;
+          {SHARE_LADDER.map((s, i) => {
+            const on = states.includes(s);
             const reached = at >= 0 && i <= at;
             const peeked = s === peek && !on;
             return (
@@ -248,11 +297,15 @@ function ReachScale({
 
 export function VisibilityLegend({
   current,
+  states: statesIn,
   onManage,
   actions,
   align = 'center',
 }: {
+  // The leading state (shareStateOf).
   current: ShareState;
+  // Every state that applies, in ladder order (shareStatesOf); the leading state alone when absent.
+  states?: readonly ShareState[] | undefined;
   // Centred under the pill (the header), or laid out by a host that places it (`floating`: the Explorer's card portals
   // it over the panel, whose scroll would clip it).
   align?: 'center' | 'floating';
@@ -263,7 +316,8 @@ export function VisibilityLegend({
 }) {
   // A hovered stop shows its audience in the hero; leaving puts the current state back.
   const [peek, setPeek] = useState<ShareState | null>(null);
-  const shown = peek ?? current;
+  const states = statesIn?.length ? statesIn : [current];
+  const shown: HeroShown = peek ?? (states.length > 1 ? 'all' : states[0]!);
   return (
     // The top padding bridges the gap to the pill, so the pointer can cross into the legend.
     <div
@@ -274,8 +328,8 @@ export function VisibilityLegend({
       }`}
     >
       <div className="animate-dialog-in overflow-hidden rounded-xl border border-slate-200 bg-white pb-3 shadow-2xl shadow-slate-900/15 dark:border-slate-700 dark:bg-slate-900 dark:shadow-black/50">
-        <Hero state={shown} current={shown === current} />
-        <ReachScale current={current} peek={peek} onPeek={setPeek} actions={actions} />
+        <Hero shown={shown} states={states} />
+        <ReachScale states={states} peek={peek} onPeek={setPeek} actions={actions} />
         {onManage ? (
           <div className="px-3 pt-3">
             <button

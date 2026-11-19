@@ -14,6 +14,60 @@ import {
 
 export type ShareState = 'private' | 'shared' | 'team' | 'community' | 'offline';
 
+/** The audiences from narrowest to widest: not even your other devices, just you, a link, your team, everyone. The
+ *  legend's scale, the order a combination is listed in, and the way its hues sweep. */
+export const SHARE_LADDER: readonly ShareState[] = [
+  'offline',
+  'private',
+  'shared',
+  'team',
+  'community',
+];
+
+/** What decides an item's visibility, besides a share link. */
+export type ItemVisibility = { team?: boolean; offline?: boolean; community?: boolean };
+
+/** Every state that applies, in ladder order (docs/specs/007-editor/editor-app.md "Header actions", owner
+ *  2026-11-19): an item can be Shared, Team and Public at once, while Offline (it reaches no one) and Private (nothing
+ *  else applies) stand alone. Never empty. */
+export function shareStatesOf(shareable: boolean, v: ItemVisibility): ShareState[] {
+  if (v.offline) return ['offline'];
+  const states: ShareState[] = [];
+  if (shareable) states.push('shared');
+  if (v.team) states.push('team');
+  if (v.community) states.push('community');
+  return states.length ? states : ['private'];
+}
+
+/** The one state that leads where a single value is needed: Offline, then Public, Shared, Team, Private. */
+export function shareStateOf(shareable: boolean, v: ItemVisibility): ShareState {
+  return v.offline
+    ? 'offline'
+    : v.community
+      ? 'community'
+      : shareable
+        ? 'shared'
+        : v.team
+          ? 'team'
+          : 'private';
+}
+
+/** The states' words for reading: "Shared", "Shared and Team", "Shared, Team and Public". */
+export function shareStatesLabel(states: readonly ShareState[]): string {
+  const words = states.map((s) => SHARE_STATE_META[s].label);
+  return words.length < 2
+    ? (words[0] ?? '')
+    : `${words.slice(0, -1).join(', ')} and ${words.at(-1)}`;
+}
+
+/** The widest of the states (the last on the ladder): how far the item reaches. */
+export function widestShareState(states: readonly ShareState[]): ShareState {
+  return states.reduce<ShareState>(
+    (wide, s) => (SHARE_LADDER.indexOf(s) > SHARE_LADDER.indexOf(wide) ? s : wide),
+    states[0] ?? 'private',
+  );
+}
+
 /** What pressing a stop on the visibility legend does, per audience (owner 2026-11-19): Offline takes the item offline,
  *  Private syncs an offline one, Shared opens Share, Team moves it into a team's space, Everyone opens Share on its
  *  Community tab. An absent action leaves its stop for reading only. */

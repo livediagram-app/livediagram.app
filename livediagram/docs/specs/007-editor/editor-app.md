@@ -138,11 +138,28 @@ The open canvas has no header bar. Its actions are the top-right corner card's (
 
 **Share shows who can see the canvas** (owner, 2026-11-19; every app, `ShareVisibilityButton` in the workbench). Its
 words and glyph wear the item's visibility in the visibility tones every app shares (`@liveworkspace/explorer/visibility-tones`, also the Explorer's badge):
-**Private** green, **Shared** (a link) blue, **Team** violet, **Public** (listed in the Community) pink, **Offline** grey; Offline wins, then
-Public, Shared, Team, Private. Its accessible name says it ("Share, Team"). On a computer, resting the pointer on it
+**Private** green, **Shared** (a link) blue, **Team** violet, **Public** (listed in the Community) pink, **Offline** grey.
+
+**A canvas can be several at once** (owner, 2026-11-19): Team and Shared (a team's canvas with a share link), Shared
+and Public, Team and Public, or Team, Shared and Public. Private and Offline stand alone: Private is what a synced
+canvas is when nothing else applies, and an offline canvas reaches no one, so neither combines. When more than one
+applies:
+
+- **The words sweep the hues.** Share's word and glyph run from one state's hue to the next, left to right in the
+  scale's order (Shared, Team, Public): Team and Shared blue into violet, Shared and Public blue into pink, all three
+  blue through violet into pink. Every point of the sweep reads 4.5:1 on the card, resting and hovered, in both
+  looks. Nothing moves, so reduced motion changes nothing. On a phone only the glyph shows, and it sweeps the same.
+- **The word stays Share.** It is the button's action and keeps the card the same width on every canvas; the hues
+  say who can see it. Its accessible name lists every state in the scale's order ("Share, Shared and Team").
+- **One state still leads** where a single value is needed (the button's `data-share-state`, older callers):
+  Offline, then Public, Shared, Team, Private, as before.
+
+On a computer, resting the pointer on it
 opens the **visibility legend** the header badge had (`VisibilityLegend`: the reach rings, one scale from Offline (first,
 the narrowest) through Private, Shared and Team to Everyone with the current stop marked, and Change Who Can See This, which opens Share), under the
-button at its right edge; it closes a beat after the pointer leaves both. Pressing its Offline stop takes the canvas
+button at its right edge. **Every state that applies is marked**: each of its stops is filled in its own hue and its
+name set bold, the track filled to the widest of them, and the top of the legend names them together ("Shared and
+Team"), each with its glyph in its hue and its own sentence, with the rings lit out to the widest; it closes a beat after the pointer leaves both. Pressing its Offline stop takes the canvas
 offline, after Take Offline's usual confirmation, for someone who may take it offline (the owner or a joined team member,
 not through a link or the Community, and not already offline). For the same person the other stops act too
 (`useVisibilityActions`): Private syncs an offline canvas to the account (from a team it opens Change Folder, from the
