@@ -997,9 +997,11 @@ board settings, for switching back.
   **Short of room** (Work Tracker 1288: on a 390 px phone the pill ran on under the top-right corner card, the Share
   icon over "0 responses"), the strip gives way inside the header, which keeps clear of the corner card: the form's
   name truncates first, and on a phone the pill leaves the name out of sight (still its accessible name, and named by
-  Open Form's tooltip), so the glyph, the dot, the count and the buttons stay whole; the count truncates only past that.
-  The board's widgets after it give way too: a widget zone left no room is clipped at its edge, never running on under
-  the corner card ([board widgets](../026-plan/board-widgets.md#more)).
+  Open Form's tooltip) and shows the count alone ("0", the word "responses" kept out of sight; the pill is named
+  "Request Form, 0 responses"), so the glyph, the dot, the count and the buttons stay whole; the count truncates only
+  past that.
+  The board's widgets after it give way too: a widget zone left no room is clipped at its edge, and one left less room
+  than More draws nothing, never running on under the corner card ([board widgets](../026-plan/board-widgets.md#more)).
 - **On the board**: a card made by a response shows a **New** dot (the brand colour, beside its flag, named "New
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,

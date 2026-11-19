@@ -5,7 +5,8 @@
 // count (new ones marked), Copy Link (an Editor's, once published) and Open Form. It reads the count without marking
 // anything seen: only opening the Form tab does. Short of room it gives way inside the header's padding, never under the
 // top-right corner card (Work Tracker 1288): the name truncates first, and on a phone it leaves the name to the pill's
-// accessible name and Open's tooltip, so the count and the buttons stay whole.
+// accessible name and Open's tooltip, and the count stands alone ("0", the pill named "Request Form, 0 responses"), so
+// the count and the buttons stay whole.
 import { useState } from 'react';
 import { CheckIcon, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardList, lucideCopy, lucideExternalLink } from '@liveworkspace/icons/lucide';
@@ -53,6 +54,7 @@ function FormPill({
   const live = link.link?.link ?? null;
   const responses = link.link?.responses ?? 0;
   const unseen = link.link?.unseen ?? 0;
+  const counted = `${responses} ${responses === 1 ? 'response' : 'responses'}`;
   const state = !live ? 'Not Published' : live.open ? 'Accepting' : 'Closed';
   const dot = !live ? palette.muted : live.open ? '#10b981' : palette.muted;
   const url = live?.code ? formUrlFor(window.location.origin, live.code) : null;
@@ -62,7 +64,8 @@ function FormPill({
   return (
     <span
       role="group"
-      aria-label={`${form.heading} form`}
+      // Named with its count, which a phone shows alone ("Request Form, 0 responses").
+      aria-label={`${form.heading}, ${counted}`}
       className={`${WIDGET_PILL_SHRINKS} gap-1 pr-0.5`}
       style={{ borderColor: palette.border, background: palette.surface, color: palette.text }}
       onPointerDown={stop}
@@ -77,7 +80,9 @@ function FormPill({
       <span aria-hidden className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: dot }} />
       <span className="sr-only">{state}.</span>
       <span data-form-strip-count="" className="min-w-0 truncate" style={{ color: palette.muted }}>
-        {responses} {responses === 1 ? 'response' : 'responses'}
+        {responses}
+        {/* On a phone the count stands alone (Work Tracker 1288): the word stays in the pill's name. */}
+        <span className="phone:sr-only"> {responses === 1 ? 'response' : 'responses'}</span>
         {unseen ? <span className="font-semibold"> · {unseen} new</span> : null}
       </span>
       {url && board.canShare ? (

@@ -41,6 +41,7 @@ describe('fitWidgets', () => {
       shown: 0,
       named: true,
       need: 586,
+      bare: false,
     });
   });
 
@@ -140,6 +141,17 @@ describe('fitWidgets', () => {
         shown: 0,
         named: false,
       });
+    });
+
+    // Work Tracker 1288: a 450 px Requests header left the zone less than More, which then showed cut off at its edge.
+    it('goes bare when not even More fits, unless a widget holds a press', () => {
+      expect(fitWidgets({ ...real, controls: [], room: 30 })).toMatchObject({ bare: true });
+      expect(fitWidgets({ ...real, controls: [], room: 30, pressed: due })).toMatchObject({
+        bare: false,
+        named: false,
+      });
+      expect(fitWidgets({ ...real, controls: [], room: 100 })).toMatchObject({ bare: false });
+      expect(fitWidgets({ ...real, room: 600 })).toMatchObject({ bare: false });
     });
 
     it('drops the name on a board without the Filter', () => {

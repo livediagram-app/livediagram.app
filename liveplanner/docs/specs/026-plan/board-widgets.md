@@ -24,7 +24,9 @@ header; they are not in the palette.
   never scrolls. Widgets keep their order; the ones that do not fit go into **More** at the end of the row (Work
   Tracker 880, replacing the sideways scroll of Work Tracker 823). The zone is clipped across at its edge, so one
   squeezed to no room at all (a phone's Requests header beside the Form strip, Work Tracker 1288) shows nothing rather
-  than running on under the top-right corner card:
+  than running on under the top-right corner card. With room for less than More and the buttons (a 450 px Requests
+  header), the zone draws nothing rather than a More cut off at its edge, and comes back as the room does; a widget
+  holding a press keeps More (with its dot), so a filter never narrows the cards with nothing on screen to say so:
   - **More** is a header-sized button after the last widget that fits, before the **+** and Edit Widgets: "More", a
     count of the widgets it holds and a chevron, named "More widgets, 3 more". It shows only while some widget does
     not fit; with room again (the window widened, widgets taken off, a count shrinking) every widget is back in the
