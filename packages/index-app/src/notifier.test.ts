@@ -319,3 +319,87 @@ describe('notifyApprovalRequested', () => {
     expect(deps.recipients).not.toHaveBeenCalled();
   });
 });
+
+describe('notifyAccessRequested', () => {
+  const notice = {
+    type: 'access_requested' as const,
+    requestId: 'req_1',
+    requesterId: 'user_anna',
+    requesterName: 'Anna',
+    recipientIds: ['user_b', 'user_c', 'guest_g'],
+    itemTitle: 'Roadmap',
+    note: 'On the launch team',
+  };
+  const on = { email: true };
+
+  it('emails each manager with an address and the join switch on, never a guest', async () => {
+    const { notifier, deps, sent } = setup({ reachable: { user_b: 'b@x.test' } });
+    deps.emails.accessRequested = (_env, input) => ({
+      subject: `${input.requesterName} asked for access to ${input.item.name}`,
+      html: `${input.note} ${input.requestId} ${input.item.id}`,
+    });
+    await notifier.notifyAccessRequested(on, 'item_1', notice);
+    expect(deps.recipients).toHaveBeenCalledWith(on, ['user_b', 'user_c'], 'notifyItemJoin');
+    expect(sent).toEqual([
+      {
+        subject: 'Anna asked for access to Roadmap',
+        html: 'On the launch team req_1 item_1',
+        to: 'b@x.test',
+      },
+    ]);
+  });
+
+  it('sends nothing with email off, no template or nobody to email', async () => {
+    const { notifier, deps, sent } = setup({ reachable: { user_b: 'b@x.test' } });
+    await notifier.notifyAccessRequested(on, 'item_1', notice);
+    deps.emails.accessRequested = () => ({ subject: 's', html: '' });
+    await notifier.notifyAccessRequested({ email: false }, 'item_1', notice);
+    await notifier.notifyAccessRequested(on, 'item_1', { ...notice, recipientIds: ['guest_g'] });
+    expect(sent).toEqual([]);
+    expect(deps.recipients).not.toHaveBeenCalled();
+  });
+});
+
+describe('notifyAccessGranted', () => {
+  const notice = {
+    type: 'access_granted' as const,
+    requestId: 'req_1',
+    requesterId: 'user_anna',
+    granterId: 'user_b',
+    granterName: 'Bo',
+    level: 'view' as const,
+    itemTitle: 'Roadmap',
+  };
+  const on = { email: true };
+
+  it('emails the requester at their verified address, whatever their switches', async () => {
+    const { notifier, deps, sent } = setup();
+    const addresses = vi.fn(async () => new Map([['user_anna', 'anna@x.test']]));
+    deps.addresses = addresses;
+    deps.emails.accessGranted = (_env, input) => ({
+      subject: `${input.granterName} shared ${input.item.name} with you`,
+      html: `${input.level} ${input.item.id}`,
+    });
+    await notifier.notifyAccessGranted(on, 'item_1', notice);
+    expect(addresses).toHaveBeenCalledWith(on, ['user_anna']);
+    expect(deps.recipients).not.toHaveBeenCalled();
+    expect(sent).toEqual([
+      { subject: 'Bo shared Roadmap with you', html: 'view item_1', to: 'anna@x.test' },
+    ]);
+  });
+
+  it('sends nothing with email off, no template, no address read, a guest or no address', async () => {
+    const { notifier, deps, sent } = setup();
+    await notifier.notifyAccessGranted(on, 'item_1', notice);
+    deps.emails.accessGranted = () => ({ subject: 's', html: '' });
+    await notifier.notifyAccessGranted(on, 'item_1', notice);
+    const addresses = vi.fn(async () => new Map<string, string>());
+    deps.addresses = addresses;
+    await notifier.notifyAccessGranted({ email: false }, 'item_1', notice);
+    await notifier.notifyAccessGranted(on, 'item_1', { ...notice, requesterId: 'guest_g' });
+    expect(addresses).not.toHaveBeenCalled();
+    await notifier.notifyAccessGranted(on, 'item_1', notice);
+    expect(addresses).toHaveBeenCalledTimes(1);
+    expect(sent).toEqual([]);
+  });
+});

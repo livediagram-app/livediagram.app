@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  accountAddresses,
   accountEmails,
   claimMilestone,
   createTeamFor,
@@ -269,6 +270,26 @@ describe('accountEmails', () => {
     const emails = await accountEmails(CREDENTIALS, ids, fetcher);
     expect(Object.keys(emails)).toHaveLength(150);
     expect(calls).toHaveLength(2);
+  });
+});
+
+describe('accountAddresses', () => {
+  it('answers the verified addresses by id, asking only for accounts', async () => {
+    const { fetcher, calls } = fakeFetch((_url, init) => {
+      const { ids } = JSON.parse(String(init.body)) as { ids: string[] };
+      return Response.json({ emails: Object.fromEntries(ids.map((id) => [id, `${id}@x`])) });
+    });
+    const out = await accountAddresses(CREDENTIALS, ['user_1', 'guest_2', 'user_1'], fetcher);
+    expect([...out]).toEqual([['user_1', 'user_1@x']]);
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({ ids: ['user_1'] });
+  });
+
+  it('answers nobody without credentials, accounts or a working read, and never throws', async () => {
+    const { fetcher, calls } = fakeFetch(() => new Response('', { status: 500 }));
+    expect((await accountAddresses(null, ['user_1'], fetcher)).size).toBe(0);
+    expect((await accountAddresses(CREDENTIALS, ['guest_1'], fetcher)).size).toBe(0);
+    expect(calls).toHaveLength(0);
+    expect((await accountAddresses(CREDENTIALS, ['user_1'], fetcher)).size).toBe(0);
   });
 });
 
