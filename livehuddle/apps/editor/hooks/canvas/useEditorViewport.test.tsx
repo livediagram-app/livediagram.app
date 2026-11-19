@@ -196,6 +196,56 @@ describe('useEditorViewport and the Map showing mid-glide', () => {
     expect(now.offset.y).toBeCloseTo(clear.offset.y);
   });
 
+  const expectView = (
+    got: { zoom: number; offset: { x: number; y: number } },
+    want: typeof got,
+  ) => {
+    expect(got.zoom).toBeCloseTo(want.zoom);
+    expect(got.offset.x).toBeCloseTo(want.offset.x);
+    expect(got.offset.y).toBeCloseTo(want.offset.y);
+  };
+
+  // The open's fit settles before the Map has a box (Work Tracker 1125): once it shows, the view fits again, clear of
+  // it, and stays there.
+  it('fits clear of a Map that shows after the first fit has settled', () => {
+    const { view, main, tab } = desktop();
+    const plain = tabFitView(main, tab.elements)!;
+    act(() => view.result.current.fitToScreen());
+    expectView(view.result.current.viewport.get(), plain);
+    showMap();
+    const clear = tabFitView(main, tab.elements)!;
+    expect(clear).not.toEqual(plain);
+    act(() => notifyMapShown());
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expectView(view.result.current.viewport.get(), clear);
+  });
+
+  // Work Tracker 1125: on a busy machine a glide's frames trail its clock. The Map can show when the glide's time is
+  // up but its last frame is still to come; the refit must land then, and that frame must not put back the older fit.
+  it('fits clear of a Map that shows when a glide is out of time but still has a frame to draw', () => {
+    const { view, main, tab } = desktop();
+    act(() => view.result.current.glideToFit(300));
+    act(() => {
+      vi.advanceTimersByTime(100);
+    });
+    showMap();
+    const clear = tabFitView(main, tab.elements)!;
+    act(() => notifyMapShown());
+    // The Map's frame is read when the glide's clock says it has landed, though its frames have not caught up.
+    const now = vi.spyOn(performance, 'now').mockReturnValue(performance.now() + 1000);
+    act(() => {
+      vi.advanceTimersToNextFrame();
+    });
+    now.mockRestore();
+    expectView(view.result.current.viewport.get(), clear);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expectView(view.result.current.viewport.get(), clear);
+  });
+
   it('leaves a view the person moved off a landed fit', () => {
     const { view } = desktop();
     act(() => view.result.current.glideToFit());
