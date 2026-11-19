@@ -656,9 +656,16 @@ describe('StepPanel', () => {
     const from = screen.getByRole('textbox', { name: 'From' });
     fireEvent.change(from, { target: { value: 'ana@' } });
     expect(latest.trigger).toEqual({ kind: 'email_received', board: 'b2', sender: 'ana@' });
-    expect(screen.getByText('Not an email address or a domain.')).toBeTruthy();
+    // Told to a screen reader too (Work Tracker 1171): the field is invalid and described by why.
+    expect(from.getAttribute('aria-invalid')).toBe('true');
+    expect(from.getAttribute('aria-describedby')).toBe(
+      screen.getByText('Not an email address or a domain.').id,
+    );
     fireEvent.change(from, { target: { value: '@example.com' } });
-    expect(screen.getByText(/An address, or a domain like @example.com/)).toBeTruthy();
+    expect(from.hasAttribute('aria-invalid')).toBe(false);
+    expect(from.getAttribute('aria-describedby')).toBe(
+      screen.getByText(/An address, or a domain like @example.com/).id,
+    );
     fireEvent.change(from, { target: { value: ' ' } });
     pick('Board', '');
     expect(latest.trigger).toEqual({ kind: 'email_received' });

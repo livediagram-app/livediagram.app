@@ -215,8 +215,11 @@ screen reader hears only "Image".
   - **SVG**: a `<title>` inside the picture's `<image>`, read by screen readers and shown as a tooltip.
   - **PowerPoint**: the picture's `descr` (PowerPoint's Alt Text pane).
   - **Word**: a drawn zone's `descr` on its `wp:docPr`, the alt texts of the pictures in the zone joined with "; ".
-  - **PNG, GIF and PDF** are pictures of the page and carry no per-element description, so the alt text is not in
-    them. There is no HTML export.
+  - **PDF**: the picture is a tagged Figure whose alt text is its `/Alt`, read by a screen reader where the picture
+    stands ([Vector PDF](../../../../liveworkspace/docs/specs/013-export/vector-pdf.md) "Tags"). A picture with no alt
+    text is decoration a screen reader skips.
+  - **PNG and GIF** are pictures of the page and carry no per-element description, so the alt text is not in them.
+    There is no HTML export.
 - **Undo and sync.** Each write is one undoable step, and undo puts the previous words back (or none). It travels as
   any other field change of the element, so a second client sees it as soon as the room relays it, and its canvas
   name follows.

@@ -41,6 +41,9 @@ export function drawArticleOps(ctx: CanvasRenderingContext2D, ops: readonly Arti
       ctx.lineTo(op.x2, op.y2);
       ctx.stroke();
       ctx.setLineDash([]);
+    } else if (op.k === 'empty') {
+      // An empty cell's marker is for a PDF's tags: nothing to paint.
+      continue;
     } else if (op.k === 'check') {
       const { x, y, size: z } = op;
       ctx.lineWidth = 1.5;

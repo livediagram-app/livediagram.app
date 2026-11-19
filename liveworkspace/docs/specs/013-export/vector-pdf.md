@@ -31,11 +31,21 @@ Word, Canva, Figma, Lucid and draw.io make.
 - **Link areas** the product hands in (livedocuments' contents entries and links in an article's text,
   [article-pages.md](../../../livedocuments/docs/specs/007-editor/article-pages.md) "Everywhere a page goes") lie over
   each page as link annotations: to another page of the PDF, or to an address.
-- **Tags** where the writing knows its structure: an article's headings and paragraphs are written with their block's
-  tag (H1 to H6, P), each line of the text layer marked content of its block's structure element, a block running over
-  two pages keeping one element; the outlines and every other drawing are artifacts. A PDF with no such writing (a
-  diagram, a board) stays untagged. A tagged PDF names its language (the page's `lang`) and every PDF its title (the
-  tab's name), shown by a reader in place of the file name.
+- **Tags** where the page knows its structure, so a screen reader reads it as it reads a web page:
+  - **An article's writing** is tagged block by block: headings H1 to H6, paragraphs P, a quote BlockQuote, a list
+    L of LI items, each holding its marker (Lbl) and its words (LBody), a deeper level's list inside its item's
+    LBody, and a table Table of TR rows of TD cells, a header row's cells TH (column headers, `/Scope /Column`), an empty cell an empty TD or TH, so every row keeps all its cells. Each
+    line of the text layer is marked content of its block's element, a block running over two pages keeping one
+    element.
+  - **A picture with alt text** (an image's **Alt Text**, in any product) is a Figure
+    whose `/Alt` is that text, so a screen reader reads the description where the picture stands: on its page, before
+    the first block that starts below the picture's top edge. A picture with no alt text is decoration, an artifact
+    a screen reader skips, as a web page's `alt=""` is. A picture drawn as part of a fallback picture or a
+    translucent group is still a Figure, the group's described pictures' words joined.
+  - The outlines and every other drawing are artifacts. A PDF with neither (a diagram with no described picture, a
+    board) stays untagged; a page that has a described picture but no article writing is tagged with each line of its
+    text a P. A tagged PDF names its language (the page's `lang`) and every PDF its title (the tab's name), shown by
+    a reader in place of the file name.
 
 ## Pictures and the fallback
 

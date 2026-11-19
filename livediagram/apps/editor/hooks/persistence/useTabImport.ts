@@ -326,7 +326,8 @@ export function useTabImport({
     }
 
     const { parseImportedTab } = await import('@/lib/import-tab');
-    const result = parseImportedTab(text);
+    // A picked file comes with its name; pasted text has none.
+    const result = parseImportedTab(text, fileName === undefined ? 'paste' : 'file');
     if (!result.ok) return { status: 'error', error: result.error };
     replaceActiveTabContent(remintTabElements(result.tab));
     track('Tab', 'Imported', 'JSON');

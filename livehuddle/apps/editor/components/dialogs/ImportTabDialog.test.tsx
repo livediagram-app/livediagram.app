@@ -29,7 +29,7 @@ describe('ImportTabDialog', () => {
     open();
     expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'JSON to import' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
     for (const gone of [/Excalidraw/, /Markdown/, /Mermaid/, /draw\.io/]) {
       expect(screen.queryByRole('button', { name: gone })).toBeNull();
     }

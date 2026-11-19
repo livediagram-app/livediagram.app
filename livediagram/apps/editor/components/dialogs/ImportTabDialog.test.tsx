@@ -86,7 +86,7 @@ describe('ImportTabDialog, offered formats', () => {
     render(<ImportTabDialog {...props} formats={['json']} />);
     expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
     expect(screen.getByRole('textbox')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
   });
 });
 

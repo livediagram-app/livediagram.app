@@ -40,7 +40,8 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
   can make it taller: from `sm` the title and its line are one line each, truncated.
 - **On a phone** (below `sm`) it keeps the desktop look, so a dialog is as pretty there: the same 100px, the 36px
   mark, the 20px title and its visible line, with 16px at either side rather than 24px. A long title may wrap to a
-  second line rather than lose words (it stays inside the 100px), and the line still truncates to one. The dialog
+  second line rather than lose words, and so may the line under it (Work Tracker 1092: the Export panel's "Copy this tab
+  as Markdown, or download a file." lost its end at 390px). Two lines of each still fit inside the 100px. The dialog
   decides whether it is full screen or a sheet; under a sheet's grab handle the band runs up under the handle, so the
   sheet's top is the band's colour and the handle stands over it.
 - **Title mark.** A 36px tile, rounded 11px, in the band's wash with a hairline of its line colour,
@@ -48,7 +49,8 @@ Tools ([footer-tools-menu.md "The popover"](./footer-tools-menu.md)).
 - **Title.** A real `<h2>` whose id the dialog passes to its panel's `aria-labelledby` (a dialog may keep an
   `aria-label` that names more, as Share does), 20px, in the app's heading face (below), in the
   band's ink.
-- **The line.** One line, 13px, in the band's muted ink, truncated with an ellipsis, never wrapping. Words that
+- **The line.** One line from `sm`, 13px, in the band's muted ink, truncated with an ellipsis; on a phone up to two
+  lines, then the ellipsis. Words that
   can run long are said in fewer words, with the full sentence for screen readers, as Share's status does.
 - **Actions, then the close.** The dialog's own controls (a primary button, Show Me, Help) sit at the right, then
   the standard close (`DialogCloseButton`) last. Every control keeps its own look, pointer cursor and hover card.

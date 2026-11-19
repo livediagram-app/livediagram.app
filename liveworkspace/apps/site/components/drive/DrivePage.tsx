@@ -111,7 +111,7 @@ export function useSignedIn(): 'checking' | 'out' | 'in' {
 export function SignInFirst({ here, title, body }: { here: string; title: string; body: string }) {
   return (
     <DriveMessage state="sign-in" title={title} body={body}>
-      <PrimaryLink href={signInHref(here)}>Sign in</PrimaryLink>
+      <PrimaryLink href={signInHref(here)}>Sign In</PrimaryLink>
     </DriveMessage>
   );
 }
