@@ -22,7 +22,7 @@ The dashboard's **Pages** tab opens with the funnel (see Dashboard below).
 Before this the marketing site reported page views and nothing else, so no
 change to the landing page could be judged. "Does the hero convert better
 than the closing CTA?", "do the template gallery's cards create documents?",
-"is Start Blank or Choose Template the stronger button?", "does anyone start
+"is Start Blank or Choose Template the stronger header button?", "does anyone start
 from a comparison page?" had no answer. [Marketing site](marketing-site.md)'s landing page work (a new
 headline, fewer sections, a prompt in the hero) needs a number to move before
 any of it is worth doing.
@@ -81,12 +81,13 @@ ingest drops.
 
 The slots:
 
-- `Header` / `HeaderBlank`: the shared `SiteHeader`'s Choose Template (`/new`) and, outside the marketing
-  pages, Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)); a marketing page's
-  bar has no Start Blank, so its `HeaderBlank` does not fire.
+- `HeaderBlank`: the shared `SiteHeader`'s Start Blank (`/new?start=blank`, [Start Blank](marketing-site.md#start-blank)),
+  outside the marketing pages; a marketing page's bar has no Start Blank, so its `HeaderBlank` never fires.
+- `Header` (**retired** in November 2026, Work Tracker 1317, with the header's Choose Template (`/new`):
+  no header links it now; the slot stays so its stored history still reads).
 - `HeaderDraw` / `HeaderWhiteboard` / `HeaderIllustration` / `HeaderPlan` / `HeaderSession` (**retired** in
   October 2026 with the Start Blank menu, [Start Blank](marketing-site.md#start-blank); the slots
-  stay so their stored history still reads): the menu's five rows beside Choose Template: Blank Diagram
+  stay so their stored history still reads): the menu's five rows beside the header's Choose Template: Blank Diagram
   (`/new?blank=1`, keeping `HeaderDraw` so the old Start Blank series carries on), Blank
   Whiteboard (`/new?template=whiteboard`), Blank Illustration
   (`/new?template=blank-illustration`), Blank Plan (`/new?template=blank-plan`) and Blank Space

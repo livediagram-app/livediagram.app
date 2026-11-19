@@ -325,7 +325,7 @@ Each step is its own PR, and both products build and pass their tests after ever
      token's expiry through `@liveworkspace/index-client`, the others flag a guest whose work has not moved
      to the account: a real difference left for its own change); `EDITOR_MODE_ICONS`, typed on the product's
      modes; `identity-fill`, which needs its model package's `shade`; and the pieces bound to its `api-schema`
-     and `telemetry-client`: `SiteHeader`, `HeaderPrimaryCta` and `StartBlankLink` (its CTA surfaces and
+     and `telemetry-client`: `SiteHeader`, `ExplorerLink` and `StartBlankLink` (its CTA surfaces and
      `ctaHref`), `SiteAccount` and `SiteAccountMenu` (its hint cookie), `PageViewTracker` and `PageViewBoot`,
      and the web-vitals reporter. They follow as those packages move.
    - `edit-operations`, first slice: `@liveworkspace/edit-operations` (`packages/edit-operations`) holds the
