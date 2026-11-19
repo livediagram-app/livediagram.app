@@ -5,6 +5,7 @@
 
 import { continuePurges, FREQUENT_CRON, handlePersonPurge } from './account-purge';
 import { handleApp } from './app-routes';
+import { drainAssistantNotices, handleAssistantRevoked } from './assistant-notices';
 import { handleAccessRequests } from './access-requests';
 import { handleApproval } from './approvals';
 import { callerOf } from './auth';
@@ -142,6 +143,7 @@ const routeLabel = createApiRouteLabel(
     'internal',
     'merge',
     'purge-person',
+    'assistant-revoked',
     'workbench-close',
     'jwks',
     'items',
@@ -219,6 +221,10 @@ async function serve(request: Request, env: Env, ctx: ExecutionContext): Promise
   if (segments[0] === 'internal' && segments[1] === 'purge-person' && segments.length === 2) {
     return handlePersonPurge(request, env, waitUntil);
   }
+  // Accounts telling the apps an AI tool's last token was revoked (assistant-notices.ts).
+  if (segments[0] === 'internal' && segments[1] === 'assistant-revoked' && segments.length === 2) {
+    return handleAssistantRevoked(request, env, waitUntil);
+  }
   // Accounts' workbench service closing the rooms a pairing's sessions joined.
   if (segments[0] === 'internal' && segments[1] === 'workbench-close' && segments.length === 2) {
     return handleWorkbenchClose(request, env);
@@ -289,6 +295,10 @@ const worker = {
           '[index] unconfirmed connections swept',
           await sweepUnconfirmedConnections(env),
         );
+      });
+      // Revoked AI tools the apps have not heard of yet (assistant-notices.ts).
+      await step('assistant notices', async () => {
+        console.info('[index] assistant notices', await drainAssistantNotices(env));
       });
       await step('person merges', async () => {
         console.info('[index] person merges', await drainPersonMerges(env));
