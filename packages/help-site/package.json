@@ -29,8 +29,10 @@
   },
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
+    "@liveworkspace/brand": "workspace:*",
     "@liveworkspace/help-registry": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
+    "@liveworkspace/sites": "workspace:*",
     "@liveworkspace/telemetry-client": "workspace:*",
     "@liveworkspace/ui": "workspace:*"
   },

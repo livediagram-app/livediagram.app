@@ -30,8 +30,45 @@ export const PLATFORM_OWN_TELEMETRY_EVENTS = {
 
 const TYPES = PLATFORM_OWN_TELEMETRY_EVENTS as Record<string, readonly (string | null)[]>;
 
-/** Whether liveworkspace.app could have sent this event in its own name: a known pair with one of its tokens. */
+// The one help centre's All Apps view (liveworkspace/docs/specs/016-help/blueprints/help-centre.md "Telemetry"), at
+// www.liveworkspace.app/help: the events each app's help sends in its own name, here in liveworkspace.app's, so the
+// batch's app is the scope. `View`, `Helpful` and `Unhelpful` carry the article's telemetry id, a bounded token;
+// `Searched` the outcome ('Results' | 'NoResults'), never the query; `Changed` the app switch's move
+// ('Scope.<scope>').
+export const PLATFORM_HELP_TELEMETRY_ACTIONS = [
+  'View',
+  'Searched',
+  'Helpful',
+  'Unhelpful',
+  'Changed',
+] as const;
+
+const HELP_SEARCH_TYPES: readonly string[] = ['Results', 'NoResults'];
+const HELP_SCOPE_TYPE = /^Scope\.(all|livediagram|liveplanner|livedocuments|livedesign|livehuddle)$/;
+const HELP_ARTICLE_TYPE = /^[a-z0-9-]{1,40}$/;
+
+/** Whether the All Apps help could have sent this event: a Help action with its own kind of token. */
+export function isPlatformHelpTelemetryEvent(event: TelemetryWireEvent): boolean {
+  if (event.category !== 'Help') return false;
+  const type = event.type ?? null;
+  switch (event.action) {
+    case 'Searched':
+      return type !== null && HELP_SEARCH_TYPES.includes(type);
+    case 'Changed':
+      return type !== null && HELP_SCOPE_TYPE.test(type);
+    case 'View':
+    case 'Helpful':
+    case 'Unhelpful':
+      return type !== null && HELP_ARTICLE_TYPE.test(type);
+    default:
+      return false;
+  }
+}
+
+/** Whether liveworkspace.app could have sent this event in its own name: a known pair with one of its tokens, or one
+ *  of the All Apps help's events. */
 export function isPlatformOwnTelemetryEvent(event: TelemetryWireEvent): boolean {
+  if (isPlatformHelpTelemetryEvent(event)) return true;
   const types = TYPES[`${event.category}·${event.action}`];
   return types !== undefined && types.includes(event.type ?? null);
 }

@@ -69,7 +69,7 @@ export const TELEMETRY_CATEGORIES = [
   // signed-in via the type. Sign-in / sign-up / sign-out stay under
   // 'Session'.
   'Participant',
-  // Help centre (apps/help, docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): article views +
+  // Help centre (apps/help, docs/specs/017-telemetry/telemetry.md + liveworkspace/docs/specs/016-help/help-centre.md): article views +
   // per-article helpful / not-really feedback. The second app (besides
   // the editor) that emits telemetry. `type` is the article slug.
   'Help',
@@ -233,7 +233,7 @@ export const TELEMETRY_ACTIONS = [
   // Something with a beginning and an end: a presentation or a tour started, a tour ended.
   'Started',
   'Ended',
-  // Help centre (docs/specs/017-telemetry/telemetry.md + docs/specs/018-help/help-app.md): an article was viewed, and the
+  // Help centre (docs/specs/017-telemetry/telemetry.md + liveworkspace/docs/specs/016-help/help-centre.md): an article was viewed, and the
   // reader rated it helpful / not-really via the article feedback widget.
   'View',
   'Helpful',

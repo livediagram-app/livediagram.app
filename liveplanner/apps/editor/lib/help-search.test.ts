@@ -4,7 +4,7 @@ import { HELP_SEARCH_ITEMS } from './help-search';
 import { buildSearchResults } from './search';
 
 // The SearchPanel's Help group is derived from the FULL shared registry
-// (docs/specs/018-help/help-app.md): every help article must be findable from the canvas, matched on
+// (liveworkspace/docs/specs/016-help/help-centre.md): every help article must be findable from the canvas, matched on
 // title + description + keyword synonyms, with a well-formed cross-app href.
 
 describe('HELP_SEARCH_ITEMS', () => {

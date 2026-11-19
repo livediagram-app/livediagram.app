@@ -1,0 +1,386 @@
+// Tools-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): zen mode, light/dark
+// mode, Markdown import, and the two layout tidiers (Auto-Align, Auto Layout).
+// Composed only from the shared primitives so the house style holds.
+
+import { useId } from 'react';
+import { Scene, Shape, Arrow, Label } from '@liveworkspace/help-site/art/primitives';
+import { MenuCard, Strip } from './toolbar-layout';
+
+// --- Zen mode ---------------------------------------------------------------
+
+/** The editor with full chrome (menu card, palette strip, Share card, tab bar, zoom dock) over the
+ *  canvas, before zen mode is turned on. */
+export function ZenBefore() {
+  const grid = `grid-zenbefore-${useId().replace(/:/g, '')}`;
+  return (
+    <Scene w={420} h={240} bg="none">
+      <rect x={0} y={0} width={420} height={240} className="fill-slate-50" />
+      {/* Canvas */}
+      <rect x={0} y={0} width={420} height={218} fill={`url(#${grid})`} />
+      {/* Tab bar, along the bottom */}
+      <rect
+        x={0}
+        y={218}
+        width={420}
+        height={22}
+        className="fill-slate-100 stroke-slate-200"
+        strokeWidth={1}
+      />
+      <rect x={10} y={222} width={64} height={14} rx={4} className="fill-brand-500" />
+      <rect
+        x={80}
+        y={222}
+        width={64}
+        height={14}
+        rx={4}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1}
+      />
+      <defs>
+        <pattern id={grid} width="16" height="16" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="1" className="fill-slate-200" />
+        </pattern>
+      </defs>
+      <Shape x={96} y={108} w={80} h={44} label="A" />
+      <Shape x={232} y={108} w={80} h={44} accent label="B" />
+      <Arrow from={[176, 130]} to={[232, 130]} />
+      {/* The menu card top-left, the palette strip beside it (the selection mode, the category bar, Search), and
+          the Share and account card top-right. */}
+      <MenuCard x={8} y={8} menuOnly />
+      <Strip x={48} y={8} />
+      <rect
+        x={350}
+        y={8}
+        width={62}
+        height={32}
+        rx={9}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect x={355} y={13} width={34} height={22} rx={6} className="fill-brand-500" />
+      <Label x={372} y={24} size={9} weight={600} tone="onAccent" anchor="middle">
+        Share
+      </Label>
+      <circle cx={401} cy={24} r={7} className="fill-slate-200" />
+      {/* Undo / Redo, left of the zoom dock */}
+      <rect
+        x={242}
+        y={186}
+        width={50}
+        height={24}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <path
+        d="M256 198 a5 5 0 1 1 3 4.5 M256 198 l-2.5 -3 M256 198 l3.5 -1.5"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      <path
+        d="M280 198 a5 5 0 1 0 -3 4.5 M280 198 l2.5 -3 M280 198 l-3.5 -1.5"
+        className="fill-none stroke-slate-400"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+      {/* Zoom dock */}
+      <rect
+        x={300}
+        y={186}
+        width={104}
+        height={24}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={314} y={199} size={13} weight={700} tone="muted">
+        −
+      </Label>
+      <Label x={352} y={199} size={10} weight={600} tone="body" anchor="middle">
+        100%
+      </Label>
+      <Label x={388} y={199} size={13} weight={700} tone="muted">
+        +
+      </Label>
+    </Scene>
+  );
+}
+
+/** Zen mode on: every panel hidden, just the canvas and the lone zoom dock
+ *  (now an exit control). */
+export function ZenAfter() {
+  return (
+    <Scene w={420} h={240}>
+      <Shape x={96} y={96} w={80} h={44} label="A" />
+      <Shape x={232} y={96} w={80} h={44} accent label="B" />
+      <Arrow from={[176, 118]} to={[232, 118]} />
+      {/* Lone zoom dock with the exit-zen control */}
+      <rect
+        x={282}
+        y={204}
+        width={122}
+        height={26}
+        rx={8}
+        className="fill-white stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <Label x={296} y={218} size={14} weight={700} tone="muted">
+        −
+      </Label>
+      <Label x={330} y={218} size={10} weight={600} tone="body" anchor="middle">
+        100%
+      </Label>
+      <Label x={362} y={218} size={14} weight={700} tone="muted">
+        +
+      </Label>
+      {/* Compress / exit-zen glyph */}
+      <g transform="translate(388 217)">
+        <path
+          d="M-5 -2 h3 v-3 M2 -5 v3 h3 M5 2 h-3 v3 M-2 5 v-3 h-3"
+          className="stroke-brand-500"
+          strokeWidth={1.6}
+          fill="none"
+          strokeLinecap="round"
+        />
+      </g>
+    </Scene>
+  );
+}
+
+// --- Light / dark mode ------------------------------------------------------
+
+/** The sun glyph the Light setting shows, drawn from its centre. */
+function SunGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <circle r={3.5} className="fill-none stroke-slate-600" strokeWidth={1.5} />
+      <path
+        d="M0 -7.5 v2 M0 5.5 v2 M-7.5 0 h2 M5.5 0 h2 M-5.3 -5.3 l1.4 1.4 M3.9 3.9 l1.4 1.4 M5.3 -5.3 l-1.4 1.4 M-3.9 3.9 l-1.4 1.4"
+        className="stroke-slate-600"
+        strokeWidth={1.4}
+        strokeLinecap="round"
+      />
+    </g>
+  );
+}
+
+/** The moon glyph the Dark setting shows. */
+function MoonGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <path
+        d="M3 -6 a6.5 6.5 0 1 0 3.5 10 a7 7 0 0 1 -3.5 -10 Z"
+        className="fill-none stroke-slate-600"
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+      />
+    </g>
+  );
+}
+
+/** The monitor glyph the System setting shows. */
+function MonitorGlyph({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect
+        x={-7}
+        y={-6}
+        width={14}
+        height={9.5}
+        rx={1.5}
+        className="fill-none stroke-slate-600"
+        strokeWidth={1.5}
+      />
+      <path d="M-3 6.5 h6 M0 3.5 v3" className="stroke-slate-600" strokeWidth={1.5} />
+    </g>
+  );
+}
+
+/** One labelled chrome button (glyph + text) as the tab bar draws it. */
+function ChromeButton({
+  x,
+  y,
+  w,
+  label,
+  glyph,
+  on = false,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  label: string;
+  glyph?: 'sun' | 'moon' | 'monitor';
+  on?: boolean;
+}) {
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={26}
+        rx={7}
+        className={on ? 'fill-brand-50 stroke-brand-300' : 'fill-white stroke-slate-200'}
+        strokeWidth={1.5}
+      />
+      {glyph === 'sun' && <SunGlyph x={x + 15} y={y + 13} />}
+      {glyph === 'moon' && <MoonGlyph x={x + 15} y={y + 13} />}
+      {glyph === 'monitor' && <MonitorGlyph x={x + 15} y={y + 13} />}
+      <Label
+        x={glyph ? x + 27 : x + w / 2}
+        y={y + 14}
+        size={11}
+        weight={600}
+        anchor={glyph ? 'start' : 'middle'}
+      >
+        {label}
+      </Label>
+    </g>
+  );
+}
+
+/** The Appearance button at the end of the tab bar's right-hand cluster, after Tools
+ *  and Settings, drawn as its glyph alone (as the editor draws it), and the
+ *  Light → Dark → System cycle each click steps through. */
+export function LightDarkToggle() {
+  return (
+    <Scene w={420} h={210} bg="canvas">
+      {/* The tab bar along the bottom of the editor. */}
+      <rect
+        x={0}
+        y={150}
+        width={420}
+        height={44}
+        className="fill-slate-50 stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect
+        x={14}
+        y={159}
+        width={70}
+        height={26}
+        rx={7}
+        className="fill-brand-500 stroke-brand-600"
+        strokeWidth={1.5}
+      />
+      <Label x={49} y={173} size={11} weight={600} anchor="middle" tone="onAccent">
+        Tab 1
+      </Label>
+      <ChromeButton x={226} y={159} w={66} label="Tools" />
+      <ChromeButton x={298} y={159} w={70} label="Settings" />
+      <ChromeButton x={374} y={159} w={30} label="" glyph="sun" />
+      {/* The cycle each click walks through. */}
+      <ChromeButton x={58} y={44} w={74} label="Light" glyph="sun" on />
+      <Arrow from={[138, 57]} to={[168, 57]} tone="muted" />
+      <ChromeButton x={174} y={44} w={72} label="Dark" glyph="moon" />
+      <Arrow from={[252, 57]} to={[282, 57]} tone="muted" />
+      <ChromeButton x={288} y={44} w={84} label="System" glyph="monitor" />
+      <path
+        d="M330 76 V96 H95 V82"
+        fill="none"
+        className="stroke-slate-300"
+        strokeWidth={2}
+        strokeDasharray="5 4"
+        strokeLinecap="round"
+      />
+      <path d="M90 84 L95 76 L100 84 Z" className="fill-slate-300" />
+      <Label x={212} y={110} size={10} tone="muted" anchor="middle">
+        Each click moves to the next setting
+      </Label>
+    </Scene>
+  );
+}
+
+// --- Markdown import --------------------------------------------------------
+
+// --- Layout cleanup ---------------------------------------------------------
+
+/** Auto-Align: shapes a few pixels off the grid snapping onto it (the whole tab, no selection). */
+export function AutoAlignGrid() {
+  return (
+    <Scene w={420} h={220}>
+      {/* Faint reference grid lines */}
+      {[80, 160, 240, 320].map((gx) => (
+        <line
+          key={`v${gx}`}
+          x1={gx}
+          y1={28}
+          x2={gx}
+          y2={192}
+          className="stroke-slate-200"
+          strokeWidth={1}
+        />
+      ))}
+      {[64, 128, 192].map((gy) => (
+        <line
+          key={`h${gy}`}
+          x1={48}
+          y1={gy}
+          x2={372}
+          y2={gy}
+          className="stroke-slate-200"
+          strokeWidth={1}
+        />
+      ))}
+      {/* Where each shape sat, a few pixels off: the snap moves it only that far. */}
+      <Shape x={85} y={69} w={80} h={42} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
+      <Shape x={236} y={124} w={80} h={42} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
+      {/* Snapped: corners on the grid, sides on grid lines. */}
+      <Shape x={80} y={64} w={80} h={42} accent label="A" />
+      <Shape x={240} y={128} w={80} h={42} accent label="B" />
+    </Scene>
+  );
+}
+
+/** Auto Layout: a scattered arrow graph relaid into clean left-to-right ranks, shown
+ *  before/after with the command's name. */
+export function AutoLayoutTidy() {
+  return (
+    <Scene w={420} h={230}>
+      {/* Tangled, left */}
+      <Shape x={28} y={40} w={50} h={28} label="1" />
+      <Shape x={118} y={90} w={50} h={28} label="2" />
+      <Shape x={36} y={150} w={50} h={28} label="3" />
+      <Shape x={132} y={32} w={50} h={28} label="4" />
+      {/* The same three arrows as the right (1 to 4, 1 to 2, 2 to 3), scattered. */}
+      <Arrow from={[78, 52]} to={[132, 46]} tone="muted" />
+      <Arrow from={[64, 68]} to={[126, 90]} tone="muted" />
+      <Arrow from={[124, 118]} to={[80, 150]} tone="muted" />
+      {/* Auto Layout arrow */}
+      <g transform="translate(196 108)">
+        <rect
+          x={0}
+          y={-12}
+          width={28}
+          height={24}
+          rx={7}
+          className="fill-brand-500 stroke-brand-600"
+          strokeWidth={1.5}
+        />
+        <path
+          d="M8 0 h12 M15 -5 l5 5 l-5 5"
+          className="stroke-white"
+          strokeWidth={2}
+          fill="none"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </g>
+      <Label x={210} y={86} size={9} weight={700} anchor="middle" tone="accent">
+        Auto Layout
+      </Label>
+      {/* Laid out in layers, right */}
+      {/* Ranks run left to right, the way the shapes were spread: 1, then its children 4 and 2, then 3. */}
+      <Shape x={244} y={100} w={44} h={30} label="1" />
+      <Shape x={312} y={60} w={44} h={30} label="4" />
+      <Shape x={312} y={140} w={44} h={30} accent label="2" />
+      <Shape x={372} y={140} w={44} h={30} label="3" />
+      <Arrow from={[288, 115]} to={[312, 75]} kind="elbow" />
+      <Arrow from={[288, 115]} to={[312, 155]} kind="elbow" />
+      <Arrow from={[356, 155]} to={[372, 155]} />
+    </Scene>
+  );
+}
+
+// --- Markdown import (dialog) ----------------------------------------------

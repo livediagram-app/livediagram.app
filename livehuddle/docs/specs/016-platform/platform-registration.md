@@ -95,7 +95,7 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
   runs, never because a shared package it uses changed; it has no E2E, and none of its Workers deploy, even with
   **all** (docs/ci.md "Deploys").
 - **docs/ci.md**'s group table has the row, and says what held means.
-- **The spec checks run** since the specs were forked (step 4): the help app's repo-paths check over `docs/specs/` and
+- **The spec checks run** since the specs were forked (step 4): the help centre's repo-paths check (`liveworkspace/apps/help/editions/livehuddle/tests/repo-paths-in-docs.test.ts`) over `docs/specs/` and
   `docs/`, and the suites that pin prose to code (the router's routes against `016-platform/router-app.md`, the preferences cap against `015-api/api.md`, and the image cap against
   `009-elements/images.md`). Each cut removes the specs of
   what it removes in the same PR, so these stay green.
@@ -130,8 +130,8 @@ Through CI only, never by hand (docs/ci.md "Deploys"), to the liveworkspace Clou
 pins (`851be7d244b76a6557bcbe6c4ded80f5`):
 
 - First tier (the services and apis): `livehuddle-api` (Durable Objects and their migrations; no D1).
-- Second tier (the sites): `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-help`,
-  `livehuddle-community`.
+- Second tier (the sites): `livehuddle-editor`, `livehuddle-marketing`, `livehuddle-community`
+  (its help is liveworkspace's `liveworkspace-help`, in liveworkspace's group).
 - Third tier (the routers): `livehuddle-router`.
 
 Staging is `staging.livehuddle.app`; production is `www.livehuddle.app`, with the bare domain redirecting to `www.`

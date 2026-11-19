@@ -158,6 +158,16 @@ export function withPrefixedRedirect(res: Response, prefix: string): Response {
   return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
 }
 
+// The one help centre (liveworkspace/docs/specs/016-help/help-centre.md "Where it is shown") serves every app's help
+// from one Worker, liveworkspace-help, and picks the scope from this header: livedocuments's help, on livedocuments's
+// address.
+const HELP_APP_HEADER = 'x-help-app';
+function helpRequest(request: Request): Request {
+  const named = new Request(request);
+  named.headers.set(HELP_APP_HEADER, 'livedocuments');
+  return named;
+}
+
 // Forward to a downstream app.
 //
 // Production (service binding): basePath/assetPrefix apps get `stripPrefix`
@@ -331,9 +341,9 @@ async function route(request: Request, env: Env): Promise<Response> {
     return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, HELP_PATH)) {
-    // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
+    // The help centre (liveworkspace/docs/specs/016-help/help-centre.md), a basePath:'/help' static app — same
     // prefix-strip as the editor app's assets.
-    return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
+    return forward(helpRequest(request), url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
   // Clean live-app page routes (/document, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's

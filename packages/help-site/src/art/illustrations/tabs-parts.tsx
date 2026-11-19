@@ -1,4 +1,4 @@
-// Tab-bar building blocks for the Tabs-category illustrations (docs/specs/018-help/help-app.md), shared by
+// Tab-bar building blocks for the Tabs-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md), shared by
 // every product's help app: a tab on the bar (TabFrame), the + button, folder glyphs and folder groups on the
 // bar, the bar strip, dialog tiles, format cards and the tab menu's rows. Composed only from the shared
 // primitives so the house style holds.

@@ -1,0 +1,67 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { OpenCanvas } from '@/editions/livehuddle/components/illustrations/about';
+import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'Why Use livehuddle?',
+  description:
+    'livehuddle is free, open source, needs no sign-in to start, and is multiplayer from the moment the second person walks in.',
+  path: '/help/about/why-livehuddle/',
+});
+
+<ArticleLayout title="Why Use livehuddle?" description="Free and open source, no sign-in wall, and everyone in the room live from the moment they walk in." categoryTitle="About livehuddle" categorySlug="about">
+
+There are plenty of ways to get a team together online. livehuddle is built around four ideas that make it a comfortable place for a team to meet: it is **free**, it is **open source**, it never puts a **sign-in wall** in front of the Space, and it is **multiplayer from the start**. Here is what each of those actually means for you.
+
+## Free, with no paid tier
+
+livehuddle is **free for everyone**. There is no paid tier, no "Pro" upgrade, no trial that expires, and no plan to introduce any of those. Every feature in the product is available to every user. livehuddle.app costs nothing to use.
+
+## Open source
+
+The whole codebase is **MIT-licensed** and publicly viewable. That has real consequences:
+
+- **You can check the claims.** How a Space is stored and what telemetry records are in the open for anyone to audit.
+- **No lock-in.** Because the code is open and your Spaces export to portable formats, you are never trapped.
+
+## No sign-in wall
+
+The [Space always works without signing in](/help/getting-started/guest-vs-account/). A first-time visitor can open a [new Space](/new), walk round it, share it, and only later be asked to create an account, never blocked by a modal before they have even started. An [account](/help/getting-started/guest-vs-account/) adds cross-device sync and [teams](/help/collaboration/teams/), but it is never a gate in front of the editor.
+
+<Figure caption="You walk straight in, with no sign-in gate in front of the Space.">
+  <OpenCanvas />
+</Figure>
+
+## Multiplayer from the start
+
+Being together is the point, not a bolt-on. Hand someone a [share link](/help/collaboration/sharing/) and they walk into the same Space, where everyone sees each other's characters, cursors and speech bubbles as they happen. While someone has something selected, one element or many, it is gently locked for everyone else, and it stays locked for a moment after they let go, until their change is saved, so two people rarely edit the same thing at once.
+
+<Figure caption="Multiplayer from the start: live cursors and presence the moment someone joins.">
+  <LiveCursors />
+</Figure>
+
+<FeatureGrid>
+  <Feature slug="sharing" title="Real-time sharing">
+    Hand over a link and meet live, even with guests.
+  </Feature>
+  <Feature slug="walking-together" title="Walking together">
+    Everyone's character, name and status on one floor, moving as they move.
+  </Feature>
+  <Feature slug="proximity-audio" title="Calls built in">
+    Walk up to someone to talk, with cameras and screen sharing, and no separate meeting app.
+  </Feature>
+  <Feature slug="themes" title="Themes">
+    Recolour a whole Space to match your style.
+  </Feature>
+  <Feature slug="templates" title="Templates">
+    Start from a Virtual Office, a Team Pod, a Coworking Space or an All-Hands Hall.
+  </Feature>
+</FeatureGrid>
+
+<Tip>
+  The best argument for livehuddle is a Space itself. Open [a new Space](/new) and walk round it, no
+  account needed.
+</Tip>
+
+</ArticleLayout>

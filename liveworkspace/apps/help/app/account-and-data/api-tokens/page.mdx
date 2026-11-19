@@ -1,0 +1,125 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'API Tokens',
+  description: 'Create an API token in Settings to call the liveworkspace APIs from your scripts. Tokens act as your account and last six months.',
+  path: '/help/account-and-data/api-tokens/',
+});
+
+<ArticleLayout title="API Tokens" description="Call the API from your own scripts with a revocable token. A signed-in-only feature for advanced users." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+An API token lets your own scripts and integrations talk to the <AppName /> API as you, outside the editor. Tokens belong to your liveworkspace account, so one token works with the API of every liveworkspace app, <AppName /> included. A token carries your account's **full read and write access** unless you make it read-only, so treat it like a password.
+
+<AppNote app="livediagram,liveplanner,livedocuments,livedesign">
+  The same token also works with the MCP server of every liveworkspace app. To connect an AI tool like Claude rather than write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you. So does [the <AppName /> CLI](/help/developers/cli/) when you sign in with <code><AppName /> auth login</code>.
+</AppNote>
+
+## You need an account
+
+API tokens are a **signed-in-only** feature. The editor, sharing, and real-time collaboration all stay account-free for guests, but tokens require [signing in](/help/account-and-data/signing-in/), the same as [teams](/help/collaboration/teams/).
+
+## Creating a token
+
+In <AppName />, open **Settings** (the sliders icon near the end of the bottom bar), choose **Developers**, then **API Tokens**, and make the token right there. The same list of tokens is in every liveworkspace app's Settings and on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens).
+
+Name the token, switch on **Read-only** if it only needs to look, and create it. Its secret is shown **once**, right after you create it: copy it then, because it is never displayed again. If you lose the secret, revoke the token and create a new one.
+
+<AppNote app="liveplanner">
+  Tick **Read only** if the token only needs to look, and choose **Make Token** to create it.
+</AppNote>
+
+## What a token can do, and for how long
+
+- **Access:** a token has your account's read + write access to <Noun plural /> and folders, including your [teams'](/help/collaboration/teams/) shared libraries, or read access only if it is read-only. It can't manage teams or your account: those are done on liveworkspace.app, signed in.
+- **Lifetime:** every token lasts **six months**, then expires. Rotate by creating a fresh token before the old one lapses.
+- **Limit:** you can have up to **20** tokens at once, across every liveworkspace app. Revoke one to free a slot.
+
+<AppNote app="livedocuments">
+  liveworkspace emails you a week before a token expires.
+</AppNote>
+
+## Using a token
+
+Send the token as a **bearer header** to the API, which lives under `/api` on your <AppName /> host (<code>https://www.<AppName />.app/api</code> on the hosted service). Here is a call that lists your work:
+
+<AppNote app="livediagram">
+
+```bash
+# List your documents
+curl https://www.livediagram.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+# List your documents
+curl https://www.livedocuments.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```bash
+# List your documents
+curl https://www.livehuddle.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+# List your projects
+curl https://www.liveplanner.app/api/projects \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+# List your designs
+curl https://www.livedesign.app/api/designs \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a <Noun />'s last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
+
+For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), worked examples, and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
+
+<AppNote app="livediagram,livedocuments,livehuddle">
+  The worked examples are in [Working with Documents](/help/developers/working-with-documents/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  The worked examples are in [Working with Projects](/help/developers/working-with-projects/).
+</AppNote>
+
+<AppNote app="livedesign">
+  The worked examples are in [Working with Designs](/help/developers/working-with-designs/).
+</AppNote>
+
+## Viewing and revoking tokens
+
+Your tokens are listed in the same place (**Settings**, **Developers**, **API Tokens**, in any liveworkspace app or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)), with when each was created, last used and expires. Revoke one there. <AppName /> stops accepting it within a minute. Deleting your account also removes all of your tokens, along with the rest of your data.
+
+<AppNote app="livediagram,liveplanner,livedocuments,livedesign">
+  Any workbench pairing made with the token ends within a few minutes.
+</AppNote>
+
+<Tip>
+  Keep tokens out of source control and shared logs. If one might have leaked, revoke it and create
+  a replacement, no need to change anything else about your account.
+</Tip>
+
+</ArticleLayout>

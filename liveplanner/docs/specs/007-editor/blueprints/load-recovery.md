@@ -22,7 +22,7 @@ design decision.
 | The identity lines        | `readBrowserIdentity(win)`, `formatBrowserIdentity(id, account)`, `signedInFromCookie` |
 | The guest identity's keys | `GUEST_IDENTITY_KEYS` (`packages/ui/src/browser-repair/kept-keys.ts`)                  |
 | The diagnostics report    | `buildLoadDiagnostics(ownerId)` / pure `formatDiagnostics(input)`                      |
-| The help centre's tool    | `BrowserRepairTool` (`apps/help/components/`)                                          |
+| The help centre's tool    | `BrowserRepairTool` (`liveworkspace/apps/help/editions/liveplanner/components/`)                                          |
 | Offline store gave up     | `OfflineStoreUnavailableError` (`'timeout' \| 'blocked'`)                              |
 
 ## Constants and configuration

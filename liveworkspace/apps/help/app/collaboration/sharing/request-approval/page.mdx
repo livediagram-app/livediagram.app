@@ -1,0 +1,181 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  ApprovalBadges,
+  ApprovalBanner,
+  ApprovalShareTab,
+  ApprovalRequestOpen,
+} from '@liveworkspace/help-site/art/illustrations/approvals';
+
+export const metadata = helpMetadata({
+  title: 'Request Approval',
+  description:
+    'Ask named people to approve it, approve or request changes, and see where the request stands.',
+  path: '/help/collaboration/sharing/request-approval/',
+});
+
+<ArticleLayout title="Request Approval" description="Ask named people to sign off, and see where their answers stand." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "request-approval")}>
+
+Some <Noun plural /> need a sign-off. **Request Approval** asks the people you name to approve a <Noun />, each answering **Approve** or **Request Changes**. The <Noun /> keeps saying where it stands after it is approved.
+
+Think of a decision record, a policy or a review. The <Noun /> wears a badge saying where it stands.
+
+<AppNote app="liveplanner">
+  Think of a project plan, a budget, a roadmap, before the work starts. A plan is approved as a whole: its boards, Sheets, Dashboards and Forms together.
+</AppNote>
+
+## Asking for Approval
+
+<Step n={1}>
+  Open the **Share** dialog on the <Noun /> and choose its **Approval** tab.
+</Step>
+<Step n={2}>
+  Tick the people who should approve it under **Approvers**. The list holds your team's members,
+  then the <Noun />'s owner and anyone who came in through a share link that opens every tab; each
+  shows how they reach it (Team, Owner or Link). Once there are more than eight, a **Filter people**
+  field appears.
+</Step>
+<Step n={3}>
+  Add a **Note** about what to look at, and a **Due** day if you hope for an answer by then. The due
+  day is shown, never enforced: when it passes, the banner says **Overdue**.
+</Step>
+<Step n={4}>
+  Tick **Save this version as a snapshot** to keep the <Noun /> as it is now, then press **Request
+  Approval**. The snapshot is named "Sent for approval" and the request points at it, so you can
+  come back to exactly what was asked about ([Snapshots](/help/collaboration/snapshots/)).
+</Step>
+
+<AppNote app="livediagram">
+  The **Approval** tab is the last tab after **Passes** (and **Community**, on a canvas outside a team). When the due day passes, the badge says **Overdue** too.
+</AppNote>
+
+<AppNote app="livedesign">
+  The **Approval** tab is the last of the dialog's tabs. When the due day passes, the badge says **Overdue** too.
+</AppNote>
+
+<AppNote app="livedocuments,liveplanner">
+  The **Approval** tab sits beside **Passes**. When the due day passes, the badge says **Overdue** too.
+</AppNote>
+
+<AppNote app="livediagram">
+  <Figure caption="The Approval tab: tick the approvers, add a note and a due day, then press Request Approval.">
+    <ApprovalShareTab noun="canvas" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="The Approval tab: tick the approvers, add a note and a due day, then press Request Approval.">
+    <ApprovalShareTab noun="design" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="The Approval tab: tick the approvers, add a note and a due day, then press Request Approval.">
+    <ApprovalShareTab noun="document" />
+  </Figure>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Figure caption="The Approval tab: tick the approvers, add a note and a due day, then press Request Approval.">
+    <ApprovalShareTab noun="plan" />
+  </Figure>
+</AppNote>
+
+Each approver gets an email, "Ada asked you to approve Q3 Plan", with your note, the due day and a button that opens the <Noun />. It goes to people who have **Someone Assigns Me an Action** switched on in their [email notifications](/help/account-and-data/email-notifications/), since an approval asks something of them as an assigned action does. You can name up to 10 people, never yourself, and a request is limited to 10 a day on one <Noun />.
+
+Only an Editor of the whole <Noun /> can ask. The tab is not there for <Noun plural /> kept in **This Browser**, in an embed, or opened through a link that covers one tab.
+
+## Approving or Requesting Changes
+
+An approver opens the <Noun /> and sees a banner across the top of the page: who asked, the note and the due day.
+
+- **Approve** records their approval.
+- **Request Changes** opens a field in place, "What needs to change?". Write what you would like different and press **Send**; it stays off until there is a note.
+
+Once they have answered, the banner says so ("You approved this. Waiting on 2 more.") and offers **Change Decision**, so an approver who asked for changes can approve once they are made, and the other way round. Only people named on the request can answer, and a Viewer can: approving is the one write a Viewer has.
+
+<AppNote app="livediagram">
+  <Figure caption="The banner an approver sees, before and after they answer.">
+    <ApprovalBanner noun="canvas" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="The banner an approver sees, before and after they answer.">
+    <ApprovalBanner noun="design" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="The banner an approver sees, before and after they answer.">
+    <ApprovalBanner noun="document" />
+  </Figure>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Figure caption="The banner an approver sees, before and after they answer.">
+    <ApprovalBanner noun="plan" />
+  </Figure>
+</AppNote>
+
+When the last approver approves, the banner says "Everyone has approved." and the request closes.
+
+## Where It Stands
+
+The badge is the first thing in the card at the top right of the <Noun />, before **Share** and your account. It is there for everyone who can open the <Noun />, and for an Editor of the whole <Noun /> it opens the Approval tab. Hover it to see who asked, the due day and who has and hasn't answered. On a phone it shows its symbol alone.
+
+The **Approval** tab shows the same state at its top, with who asked and when, and the due day.
+
+<Figure caption="The four states a request can be in.">
+  <ApprovalBadges />
+</Figure>
+
+- **Awaiting 1 of 3**: waiting on answers; the numbers say how many have approved.
+- **Changes Requested**: at least one approver asked for changes.
+- **Approved**: everyone approved and the <Noun /> has not changed since.
+- **Changed Since Approval**: the <Noun /> was saved after it was approved. This can take **up to a minute** to show after the first save, because an edit reaches the badge when the editor next reports its changes, at most once a minute. A rename, a move or a share does not count as a change.
+
+<AppNote app="liveplanner">
+  A change here is a card moved or a cell typed in.
+</AppNote>
+
+The page reads the approval when you open the <Noun />, again when you return to the browser tab (at most every 30 seconds) and after your own changes. Someone else's answer shows on the next read; nothing is pushed live.
+
+## Cancelling or Asking Again
+
+With a request open, the Approval tab lists each approver with their answer (**Approved**, **Changes Requested** or **Waiting**) and their note. **Cancel Request** asks you to confirm, then ends it. **New Request** opens the form again and replaces the open one, so a <Noun /> never has two. A request waits on everyone named, even a person who has since lost access: cancel it and ask again without them.
+
+<Figure caption="An open request: each approver's answer, with Cancel Request and New Request below.">
+  <ApprovalRequestOpen />
+</Figure>
+
+## History and the Audit Log
+
+Every step is written to the <Noun />'s **History**: Approval Requested, Approved (Approved by everyone on the last one), Changes Requested, and Approval Cancelled (Approval Asked Again when a new request replaced it), each with the note beneath. It covers the last 30 days. On a team's <Noun />, the same events are copied to the team's [Audit Log](/help/collaboration/teams/audit-log/), kept for a year, so who asked whom and who approved is a record the team can look back on.
+
+<AppNote app="livediagram">
+  Find them under the History's **Approvals** filter, opened from the canvas's menu in the Explorer.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Find them under the History's **Approvals** filter, opened from the document's menu in the Explorer.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Find them under the History's **Approvals** filter, opened from the plan's menu in the Explorer.
+</AppNote>
+
+<AppNote app="livedesign">
+  Open the History from **Tools** in the editor's footer, or from the design's menu in the Explorer.
+</AppNote>
+
+## Who Can Do What
+
+- **Editors of the whole <Noun />** ask and cancel.
+- **Named approvers** approve or request changes, whatever their level: Editor, Participant or Viewer.
+- Guests, Community visitors, embeds, <Noun plural /> in This Browser, and AI assistants or scripts using an API token see no approval.
+
+Editors also see the badge, and everyone else who can open the <Noun /> sees the badge only.
+
+</ArticleLayout>

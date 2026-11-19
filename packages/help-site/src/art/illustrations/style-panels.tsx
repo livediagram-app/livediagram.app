@@ -1,5 +1,5 @@
 // Style-surface illustrations for the Canvas articles on the Quick Style Panel (livediagram) and Quick Style Bar
-// (livedocuments, livedesign), Element Shadows, Size and Rotating Elements (docs/specs/018-help/help-app.md). Each
+// (livedocuments, livedesign), Element Shadows, Size and Rotating Elements (liveworkspace/docs/specs/016-help/help-centre.md). Each
 // draws the real surface with its real labels: the Quick style panel on the left edge (QuickStylePanel.tsx), the Quick
 // Style bar beside a page's title bar (QuickStyleBar.tsx), and the
 // Shadow, Size and Rotation categories of the element menu (ShadowSection.tsx, SizeSection.tsx,

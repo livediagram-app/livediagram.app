@@ -1,0 +1,718 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Edit Operations Reference',
+  description:
+    'Every edit operation, selector, placement and flag: the changeset vocabulary of the API, with the lint findings, the CLI and the MCP server where the app has them.',
+  path: '/help/developers/working-with-documents/edit-operations/',
+});
+
+<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, placement, flags, results and, where the app has them, lint findings." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Files", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "edit-operations")}>
+
+<AppNote app="livediagram,livedocuments">
+
+A **changeset** changes a tab with a short list of edit operations, applied together or not at all. This page lists the whole vocabulary: every operation, how to pick the elements it acts on, where new elements go, and what the answer and the lint tell you. [Working with <Noun plural capital />](/help/developers/working-with-documents/#update-a-tab) shows how to send one.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+A **changeset** changes a tab with a short list of edit operations, applied together or not at all. This page lists the whole vocabulary: every operation, how to pick the elements it acts on, where new elements go, and what the answer tells you. [Working with Spaces](/help/developers/working-with-documents/#update-a-tab) shows how to send one.
+
+It reaches a tab through the API: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+
+The same vocabulary reaches a tab three ways:
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+- **The API**: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
+- **The CLI**: `livediagram edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livediagram element add|set|rm|move|connect|insert|wrap` sends one operation. `livediagram guide edit` explains the line form, and `livediagram schema view sticky` lists the fields a kind takes.
+- **The MCP server**: `update_document` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+- **The API**: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
+- **The CLI**: `livedocuments edit "Launch deck" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livedocuments element add|set|rm|move|connect|insert` sends one operation. `livedocuments guide edit` explains the line form, and `livedocuments schema view sticky` lists the fields a kind takes.
+- **The MCP server**: `update_document` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
+
+</AppNote>
+
+## Two Forms
+
+The **line form** is one operation a line, which is what an agent writes most easily. Values with spaces are quoted (`label="Sign in"`), and blank lines and lines starting with `#` are skipped:
+
+<AppNote app="livediagram,livedocuments">
+
+```text
+# Rename the API box, add a database under it and join them
+set n2 label="Orders API"
+add cylinder id=db label="Orders DB" below:n2
+connect n2 -> db label=writes
+```
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```text
+# Rename the actions note, add a risks note under it and a plant beside it
+set n2 label="Next Steps"
+add sticky id=risks label="Risks" below:n2
+add plant right-of:risks
+```
+
+</AppNote>
+
+The **JSON form** is one object an operation, which is what a script produces. Any line of the text form that starts with `{` is read as JSON, so the two mix:
+
+<AppNote app="livediagram,livedocuments">
+
+```json
+[
+  { "op": "set", "target": "n2", "fields": { "label": "Orders API" } },
+  {
+    "op": "add",
+    "kind": "cylinder",
+    "id": "db",
+    "fields": { "label": "Orders DB" },
+    "place": { "rel": "below", "ref": "n2" }
+  },
+  { "op": "connect", "from": "n2", "to": "db", "fields": { "label": "writes" } }
+]
+```
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```json
+[
+  { "op": "set", "target": "n2", "fields": { "label": "Next Steps" } },
+  {
+    "op": "add",
+    "kind": "sticky",
+    "id": "risks",
+    "fields": { "label": "Risks" },
+    "place": { "rel": "below", "ref": "n2" }
+  },
+  {
+    "op": "add",
+    "kind": "plant",
+    "place": { "rel": "right-of", "ref": "risks" }
+  }
+]
+```
+
+</AppNote>
+
+One parser turns the line form into the JSON form, so both are checked the same way. A changeset holds at most **500** operations, and a line at most 16,384 characters.
+
+## Operations
+
+<AppNote app="livediagram">
+
+| Operation | Line form                                                                    | What it does                                                                                                                    |
+| --------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                              | Creates an element sized for its label                                                                                          |
+| `set`     | `set <selector> key=value… [all]`                                            | Changes only the fields named; `key=` with nothing after it unsets one                                                          |
+| `rm`      | `rm <selector> [all] [keep-arrows]`                                          | Removes elements, and the arrows pinned to them unless `keep-arrows` leaves those with free ends                                |
+| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]`      | Moves elements; pinned arrows follow, and a frame or lane carries its members                                                   |
+| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`                    | Draws an arrow pinned at both ends, anchored on the sides facing each other                                                     |
+| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `rewire <arrow> to=<y>`                | Moves one or both ends of an arrow to other elements                                                                            |
+| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                         | Puts a new element on the arrow from a to b, which becomes two arrows, and makes room for it                                    |
+| `wrap`    | `wrap <selector…> in frame [id=<id>] key=value… [tidy] [absorb] [make-room]` | Draws a frame (or `in lane`, a lane) around the members                                                                         |
+| `unwrap`  | `unwrap <frame>`                                                             | Removes a frame or lane and leaves its members where they are                                                                   |
+| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`                 | Changes the stacking order; frames and lanes always stay behind their contents                                                  |
+| `layout`  | `layout <selector> [style=flow] [direction=down]`                            | Lays out only the selection, keeping its top-left corner; `style` is `flow`, `tree` or `mindmap`, `direction` `down` or `right` |
+| `test`    | `test <selector> key=value…`                                                 | Refuses the whole changeset unless the element still holds these values                                                         |
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+| Operation | Line form                                                               | What it does                                                                                                                    |
+| --------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                         | Creates an element sized for its label                                                                                          |
+| `set`     | `set <selector> key=value… [all]`                                       | Changes only the fields named; `key=` with nothing after it unsets one                                                          |
+| `rm`      | `rm <selector> [all] [keep-arrows]`                                     | Removes elements, and the arrows pinned to them unless `keep-arrows` leaves those with free ends                                |
+| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]` | Moves elements; pinned arrows follow, and a stack carries its members                                                           |
+| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`               | Draws an arrow pinned at both ends, anchored on the sides facing each other                                                     |
+| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `rewire <arrow> to=<y>`           | Moves one or both ends of an arrow to other elements                                                                            |
+| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                    | Puts a new element on the arrow from a to b, which becomes two arrows, and makes room for it                                    |
+| `unwrap`  | `unwrap <stack>`                                                        | Removes a stack and leaves its members where they are                                                                           |
+| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`            | Changes the stacking order; stacks always stay behind their contents                                                            |
+| `layout`  | `layout <selector> [style=flow] [direction=down]`                       | Lays out only the selection, keeping its top-left corner; `style` is `flow`, `tree` or `mindmap`, `direction` `down` or `right` |
+| `test`    | `test <selector> key=value…`                                            | Refuses the whole changeset unless the element still holds these values                                                         |
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+| Operation | Line form                                                               | What it does                                                                 |
+| --------- | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                         | Creates an element sized for its label                                       |
+| `set`     | `set <selector> key=value… [all]`                                       | Changes only the fields named; `key=` with nothing after it unsets one       |
+| `rm`      | `rm <selector> [all]`                                                   | Removes elements                                                             |
+| `move`    | `move <selector> <placement> [all]` or `move <selector> by=dx,dy [all]` | Moves elements                                                               |
+| `order`   | `order <selector> front`, `back`, `above=<x>` or `below=<x>`            | Changes the stacking order                                                   |
+| `layout`  | `layout <selector>`                                                     | Sweeps only the selection into tidy rows, below the elements it leaves alone |
+| `test`    | `test <selector> key=value…`                                            | Refuses the whole changeset unless the element still holds these values      |
+
+</AppNote>
+
+A few rules hold for every operation:
+
+<AppNote app="livediagram">
+
+- **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `table`, `annotation` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images, videos and drawn strokes are not made by name, but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `arrow`, `arrow-2`).
+- **Fields.** `label`, `note`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
+- **Comments are not fields.** Comment threads, votes and ideas travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
+- **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+- **Kinds.** `add` and `insert` take a shape kind (`square`, `circle`, `diamond`, `cylinder`, `stadium`, `hexagon` and the rest) or `text`, `sticky`, `table` or `link-card`. A shape kind it does not know is turned into the nearest one, with a `shape_coerced` warning. Arrows are made with `connect`; images, videos and drawn strokes are not made by name, but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `arrow`, `arrow-2`).
+- **Fields.** `label`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg`, `scale`, or a whole px within the element's Size range), `font` and `line` (`straight`, `angled` or `curved`) work on the kinds that have them, beside any stored field of the element. Element notes and links are retired, so `note` is refused (a link card's and a video's own link still work). `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
+- **Comments are not fields.** Comment threads travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
+- **Locks.** A changeset on a locked tab, or one that would change a locked element or an element on a locked layer, is refused with `element_locked`.
+- **Flashcards.** A flashcard holds text only: a changeset that would add an element onto a card, or move one onto it, is refused with `text_only`. Write a card's text with an article write instead (`write_article` over MCP, `article set` in the CLI, or the [pages endpoint](/help/developers/working-with-documents/images-and-pages/#pages-and-articles)).
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+- **Kinds.** `add` takes `text`, `sticky` or `link-card`, or a Space piece by its kind (`chair`, `desk`, `plant`, `room`, `door` and the rest). A kind livehuddle does not have is refused as `invalid_value`, naming the kinds `add` takes; so are `shape` and the diagram shapes (`square`, `circle`, `diamond` and the rest), which livehuddle no longer supports: add a sticky instead. Images are not made by name; `video`, `table`, `arrow`, `line`, `freehand`, `path` and `annotation` are refused (livehuddle no longer supports them, and a space saved with one keeps it as a placeholder), but an `add` in the JSON form can carry a whole element (`{ "op": "add", "element": { … } }`), which is how an uploaded image goes on a tab.
+- **Ids.** `id=` names a new element so later operations in the same changeset can use it. It is a short slug: a lowercase letter, then up to 23 lowercase letters, digits, `-` or `_`. Without one, the element takes the slug of its label (or of its kind, as `sticky`, `sticky-2`).
+- **Fields.** `label`, `shape`, `fill`, `stroke`, `text-color`, `border`, `text` (a size: `sm`, `md`, `lg` or `scale`) and `font` work on the kinds that have them, beside any stored field of the element. `fill=` takes a colour slot of the tab's theme by name (such as `theme`), which follows a theme change; a hex colour works too, with a `colour_overrides_theme` warning. A sticky takes its own colour names instead. A number, `true` or `false` is read as JSON, and a value starting with `[` or `{` is read as JSON as written.
+- **No notes.** livehuddle shows no element notes, so `note=` or `noteRich=` with a value is refused (an `add` with a whole element that carries one too), and a long label is never moved into one. `note=` on its own removes a note an element saved from before. A replace keeps each kept element's saved note as it was and gives a new one none.
+- **Placeholders stay as saved.** An element livehuddle no longer has (a chart, a table, an arrow, a lane and the rest, drawn as a placeholder) keeps its kind and every saved field: `set` on one is refused, naming `move` and `rm`, which work on it as on any element. A `set … all` that matches live elements too passes it by. A replace that sends one back keeps it exactly as saved.
+- **Nothing holds.** No element holds others. A lane, stack or boundary saved before livehuddle dropped them is a kind livehuddle does not know: it moves on its own, takes no space when something new is placed, and can be removed.
+- **Comments are not fields.** Comment threads and ideas travel live between people, so edit operations never change them; comments have their own [endpoints](/help/developers/agent-comments-presence/).
+
+</AppNote>
+
+## Selectors
+
+A selector picks the elements an operation acts on. It is a ref, a quoted label, or `key:value` terms joined by spaces, every one of which must match:
+
+<AppNote app="livediagram">
+
+| Selector                     | Matches                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| `n3`, `146b`, `orders`       | The element with that ref, id or unique start of an id                            |
+| `"Orders service"`           | The element whose label is exactly that, ignoring case                            |
+| `label~orders`               | Elements whose label contains `orders`                                            |
+| `type:sticky`                | Elements of that kind, as the outline prints it, or of that element type          |
+| `shape:diamond`              | Shapes of that shape kind                                                         |
+| `in:f2`                      | The members of a frame or lane, at any depth (not arrows)                         |
+| `n3->n4`, `"Sign in"->"Pay"` | The arrow pinned from one element to the other                                    |
+| `from:n3`, `to:n4`           | Arrows pinned from, or to, an element                                             |
+| `downstream:n3`              | Every element reachable from n3 by following arrows forwards (n3 itself left out) |
+| `upstream:n4`                | Every element that reaches n4 by following arrows                                 |
+| `selected`                   | What the token's owner has selected in an editor open on that tab                 |
+
+Terms combine: `type:sticky in:f2` is the stickies inside frame `f2`, and `from:n3 label~retry` is the arrows leaving n3 whose label mentions retry.
+
+- A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found` with the nearest labels; several is refused as `target_ambiguous`, listing them.
+- `wrap` and `layout` act on many by nature. Each ref or quoted label you give names one element, and the other terms together add whatever they match.
+- `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
+- Membership (for `in:`, `wrap` and moving a frame) is the smallest frame or lane holding an element's centre, the same rule the editor uses when you drag a frame.
+- The words `selected`, `all`, `again`, `tidy`, `absorb`, `make-room`, `keep-arrows`, `between`, `in`, `frame`, `lane`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+| Selector                     | Matches                                                                           |
+| ---------------------------- | --------------------------------------------------------------------------------- |
+| `n3`, `146b`, `orders`       | The element with that ref, id or unique start of an id                            |
+| `"Orders service"`           | The element whose label is exactly that, ignoring case                            |
+| `label~orders`               | Elements whose label contains `orders`                                            |
+| `type:sticky`                | Elements of that kind, as the outline prints it, or of that element type          |
+| `shape:diamond`              | Shapes of that shape kind                                                         |
+| `in:s2`                      | The members of a stack, at any depth (not arrows)                                 |
+| `n3->n4`, `"Sign in"->"Pay"` | The arrow pinned from one element to the other                                    |
+| `from:n3`, `to:n4`           | Arrows pinned from, or to, an element                                             |
+| `downstream:n3`              | Every element reachable from n3 by following arrows forwards (n3 itself left out) |
+| `upstream:n4`                | Every element that reaches n4 by following arrows                                 |
+| `selected`                   | What the token's owner has selected in an editor open on that tab                 |
+
+Terms combine: `type:sticky in:s2` is the stickies inside stack `s2`, and `from:n3 label~retry` is the arrows leaving n3 whose label mentions retry.
+
+- A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found` with the nearest labels; several is refused as `target_ambiguous`, listing them.
+- `layout` acts on many by nature. Each ref or quoted label you give names one element, and the other terms together add whatever they match.
+- `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
+- Membership (for `in:` and moving a stack) is the smallest stack holding an element's centre, the same rule the editor uses when you drag a stack.
+- The words `selected`, `all`, `again`, `keep-arrows`, `between`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+| Selector               | Matches                                                                  |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `n3`, `146b`, `orders` | The element with that ref, id or unique start of an id                   |
+| `"Orders service"`     | The element whose label is exactly that, ignoring case                   |
+| `label~orders`         | Elements whose label contains `orders`                                   |
+| `type:sticky`          | Elements of that kind, as the outline prints it, or of that element type |
+| `shape:chair`          | Space pieces of that kind                                                |
+| `selected`             | What the token's owner has selected in an editor open on that tab        |
+
+Terms combine: `type:sticky label~orders` is the stickies whose label mentions orders.
+
+- A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found` with the nearest labels; several is refused as `target_ambiguous`, listing them.
+- `layout` acts on many by nature. Each ref or quoted label you give names one element, and the other terms together add whatever they match.
+- `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
+- The words `selected`, `all`, `front` and `back` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
+
+</AppNote>
+
+## Placement
+
+<AppNote app="livediagram,livedocuments">
+
+`add` and `move` take one placement; `insert` places itself on its arrow.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+`add` and `move` take one placement.
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+| Placement        | Puts the element                                                            |
+| ---------------- | --------------------------------------------------------------------------- |
+| `right-of:<x>`   | To the right of x                                                           |
+| `left-of:<x>`    | To the left of x                                                            |
+| `above:<x>`      | Above x                                                                     |
+| `below:<x>`      | Below x                                                                     |
+| `after:<x>`      | Along the flow of x's outgoing arrows                                       |
+| `inside:<frame>` | In the next free slot inside a frame or lane                                |
+| `align:<x>`      | Sharing x's centre, on the axis the element is already nearer               |
+| `at:x,y`         | At that point, relative to the tab's content origin                         |
+| `gap:<n>`        | Beside a side, `after` or `align` placement: the space to leave, 0 to 2,000 |
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+| Placement        | Puts the element                                                            |
+| ---------------- | --------------------------------------------------------------------------- |
+| `right-of:<x>`   | To the right of x                                                           |
+| `left-of:<x>`    | To the left of x                                                            |
+| `above:<x>`      | Above x                                                                     |
+| `below:<x>`      | Below x                                                                     |
+| `after:<x>`      | Along the flow of x's outgoing arrows                                       |
+| `inside:<stack>` | In the next free slot inside a stack                                        |
+| `align:<x>`      | Sharing x's centre, on the axis the element is already nearer               |
+| `at:x,y`         | At that point, relative to the tab's content origin                         |
+| `gap:<n>`        | Beside a side, `after` or `align` placement: the space to leave, 0 to 2,000 |
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+| Placement      | Puts the element                                                   |
+| -------------- | ------------------------------------------------------------------ |
+| `right-of:<x>` | To the right of x                                                  |
+| `left-of:<x>`  | To the left of x                                                   |
+| `above:<x>`    | Above x                                                            |
+| `below:<x>`    | Below x                                                            |
+| `align:<x>`    | Sharing x's centre, on the axis the element is already nearer      |
+| `at:x,y`       | At that point, relative to the tab's content origin                |
+| `gap:<n>`      | Beside a side or `align` placement: the space to leave, 0 to 2,000 |
+
+</AppNote>
+
+Without a placement, a new element goes beside the last one added, or to the right of everything. A spot already taken moves along the placement's direction until it is free. In the JSON form a placement is `{ "rel": "below", "ref": "n2", "gap": 40 }` or `{ "rel": "at", "x": 0, "y": 200 }`, and `by=dx,dy` is `"by": [dx, dy]`.
+
+What you did not ask to change stays put. `set` moves nothing except a box that grows around its centre to fit a longer label (reported). Only `layout` and a whole-tab `replace` lay out many elements, and only the ones they name.
+
+## Flags
+
+<AppNote app="livehuddle">
+
+| Flag  | On                  | Means                                                   |
+| ----- | ------------------- | ------------------------------------------------------- |
+| `all` | `set`, `rm`, `move` | Act on every element the selector matches, not only one |
+
+In the JSON form, a flag is a member set to `true`: `"all"`.
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+| Flag          | On                  | Means                                                                                                         |
+| ------------- | ------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `all`         | `set`, `rm`, `move` | Act on every element the selector matches, not only one                                                       |
+| `keep-arrows` | `rm`                | Leave arrows pinned to the removed elements in place, with free ends, instead of removing them                |
+| `again`       | `connect`           | Draw a second arrow from a to b when one already exists (otherwise `arrow_exists`)                            |
+| `tidy`        | `wrap`              | Lay the members out compactly before drawing the frame round them                                             |
+| `absorb`      | `wrap`              | Let the new frame take in elements that are not members but fall inside it                                    |
+| `make-room`   | `wrap`              | Move those bystanders out of the way instead (without one of these two, `wrap` refuses with `frame_captures`) |
+
+In the JSON form, a flag is a member set to `true`: `"all"`, `"keepArrows"`, `"again"`, `"tidy"`, `"absorb"`, `"makeRoom"`.
+
+`insert` always makes room: everything beyond the new element along the flow, within the same frame or lane (or the same connected group, outside them), shifts by its size and the gap, and those moves are reported. A frame holding shifted members grows with them.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+| Flag          | On                  | Means                                                                                          |
+| ------------- | ------------------- | ---------------------------------------------------------------------------------------------- |
+| `all`         | `set`, `rm`, `move` | Act on every element the selector matches, not only one                                        |
+| `keep-arrows` | `rm`                | Leave arrows pinned to the removed elements in place, with free ends, instead of removing them |
+| `again`       | `connect`           | Draw a second arrow from a to b when one already exists (otherwise `arrow_exists`)             |
+
+In the JSON form, a flag is a member set to `true`: `"all"`, `"keepArrows"`, `"again"`.
+
+`insert` always makes room: everything beyond the new element along the flow, within the same stack (or the same connected group, outside them), shifts by its size and the gap, and those moves are reported. A stack holding shifted members grows with them.
+
+</AppNote>
+
+## The Answer
+
+<AppNote app="livediagram,livedocuments">
+
+A changeset answers with one line per element, the same for a dry run (`?dryRun=1`, or `--dry-run` on the CLI) and a write:
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+A changeset answers with one line per element, the same for a dry run (`?dryRun=1`) and a write:
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+```text
+~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
++ verify  square "Verify email" @45,300 131×120
+~ a3  to n4→verify
++ arrow  verify→n4 (style of a3)
+» n4 n5 n6  +0,+160 (make room)
+f2  +verify
+rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```text
+~ n3  label "Login"→"Sign in" · shape square→stadium · widened 140→160
++ verify  square "Verify email" @45,300 131×120
+~ a3  to n4→verify
++ arrow  verify→n4 (style of a3)
+» n4 n5 n6  +0,+160 (make room)
+s2  +verify
+rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livedocuments changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+```
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```text
+~ n3  label "Actions"→"Next Steps"
++ risks  sticky "Risks" @240,240 200×200
+» n4 n5 n6  +0,+160 (layout)
+rev 41→42 · cs_8k2m4q7d1x · revert: livehuddle changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+```
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+| Mark          | Means                                                     |
+| ------------- | --------------------------------------------------------- |
+| `+`           | Added                                                     |
+| `~`           | Changed, each field before→after                          |
+| `-`           | Removed, with the reason when it went with another        |
+| `»`           | Moved without being named (made room, carried by a frame) |
+| `f2  +verify` | A frame or lane's membership changed                      |
+| `!`           | A warning                                                 |
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+| Mark          | Means                                                     |
+| ------------- | --------------------------------------------------------- |
+| `+`           | Added                                                     |
+| `~`           | Changed, each field before→after                          |
+| `-`           | Removed, with the reason when it went with another        |
+| `»`           | Moved without being named (made room, carried by a stack) |
+| `s2  +verify` | A stack's membership changed                              |
+| `!`           | A warning                                                 |
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+| Mark | Means                                              |
+| ---- | -------------------------------------------------- |
+| `+`  | Added                                              |
+| `~`  | Changed, each field before→after                   |
+| `-`  | Removed, with the reason when it went with another |
+| `»`  | Moved without being named (by `layout`)            |
+| `!`  | A warning                                          |
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+
+The last line carries the tab's new revision, the changeset's id, the lint verdict and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+The last line carries the tab's new revision, the changeset's id and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, `arrows_freed` (from `keep-arrows`), and `no_base` (sent without a `base` revision).
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+**Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's or an arrow's label over 40 characters kept its heading and the rest was cut), `colour_overrides_theme`, `arrows_freed` (from `keep-arrows`), and `no_base` (sent without a `base` revision).
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+**Warnings** do not stop a changeset: `value_coerced`, `label_capped` (a Space piece's label over 40 characters kept its heading and the rest was cut: put longer text in a text element or a sticky), `colour_overrides_theme`, and `no_base` (sent without a `base` revision).
+
+</AppNote>
+
+## Refusals
+
+A refused changeset applies nothing. It names the operation, the code and the way out. Lines that do not parse are all reported together (up to ten), so a batch of typos is fixed in one round:
+
+<AppNote app="livediagram">
+
+```text
+error target_ambiguous · op 2 · set "Pay" fill=green
+  "Pay" matches 3 elements:
+    n7  square "Pay" in f2
+    n9  sticky "Pay"
+    a4  arrow n3→n7 "Pay"
+  hint: use a ref, narrow with type:square, or add all
+nothing was applied
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```text
+error target_ambiguous · op 2 · set "Pay" fill=green
+  "Pay" matches 3 elements:
+    n7  square "Pay" in s2
+    n9  sticky "Pay"
+    a4  arrow n3→n7 "Pay"
+  hint: use a ref, narrow with type:square, or add all
+nothing was applied
+```
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```text
+error target_ambiguous · op 2 · set "Pay" fill=green
+  "Pay" matches 3 elements:
+    n7  sticky "Pay"
+    n9  text "Pay"
+    n12 room "Pay"
+  hint: use a ref, narrow with type:sticky, or add all
+nothing was applied
+```
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+| Code                 | When                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| `parse_error`        | A line does not parse; names the column and what was expected |
+| `unknown_operation`  | The first word is not an operation                            |
+| `target_not_found`   | A selector matches nothing                                    |
+| `target_ambiguous`   | A selector matches several without `all`                      |
+| `unknown_field`      | A field the kind does not have; lists the kind's fields       |
+| `invalid_value`      | A value outside what the field takes; lists what it takes     |
+| `id_taken`           | An `id=` already in use; suggests a free one                  |
+| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`    |
+| `not_connected`      | `insert … between a b` with no a→b arrow                      |
+| `frame_captures`     | `wrap` would take in elements that are not members            |
+| `element_locked`     | The tab, a target or its layer is locked                      |
+| `test_failed`        | A `test` does not hold; shows expected and actual             |
+| `changeset_conflict` | A target changed since the `base` revision you sent           |
+| `elements_held`      | Someone has a target selected in the editor                   |
+| `invalid_result`     | The result would not be a valid tab                           |
+| `too_large`          | Over 500 operations, or the tab's size cap                    |
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+| Code                 | When                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| `parse_error`        | A line does not parse; names the column and what was expected |
+| `unknown_operation`  | The first word is not an operation                            |
+| `target_not_found`   | A selector matches nothing                                    |
+| `target_ambiguous`   | A selector matches several without `all`                      |
+| `unknown_field`      | A field the kind does not have; lists the kind's fields       |
+| `invalid_value`      | A value outside what the field takes; lists what it takes     |
+| `id_taken`           | An `id=` already in use; suggests a free one                  |
+| `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`    |
+| `not_connected`      | `insert … between a b` with no a→b arrow                      |
+| `element_locked`     | The tab, a target or its layer is locked                      |
+| `text_only`          | An element added or moved onto a flashcard                    |
+| `test_failed`        | A `test` does not hold; shows expected and actual             |
+| `changeset_conflict` | A target changed since the `base` revision you sent           |
+| `elements_held`      | Someone has a target selected in the editor                   |
+| `invalid_result`     | The result would not be a valid tab                           |
+| `too_large`          | Over 500 operations, or the tab's size cap                    |
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+| Code                 | When                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| `parse_error`        | A line does not parse; names the column and what was expected |
+| `unknown_operation`  | The first word is not an operation                            |
+| `target_not_found`   | A selector matches nothing                                    |
+| `target_ambiguous`   | A selector matches several without `all`                      |
+| `unknown_field`      | A field the kind does not have; lists the kind's fields       |
+| `invalid_value`      | A value outside what the field takes; lists what it takes     |
+| `id_taken`           | An `id=` already in use; suggests a free one                  |
+| `test_failed`        | A `test` does not hold; shows expected and actual             |
+| `changeset_conflict` | A target changed since the `base` revision you sent           |
+| `elements_held`      | Someone has a target selected in the editor                   |
+| `invalid_result`     | The result would not be a valid tab                           |
+| `too_large`          | Over 500 operations, or the tab's size cap                    |
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+
+**Lint Findings**
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` (or `livediagram tab lint`) lists the findings, each ending with a fix you can send as a changeset:
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` (or `livedocuments tab lint`) lists the findings, each ending with a fix you can send as a changeset:
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+
+```text
+5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info
+W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
+```
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+| Code                | Severity | Finding                                                          | Suggested fix                              |
+| ------------------- | -------- | ---------------------------------------------------------------- | ------------------------------------------ |
+| `box-overlap`       | error    | Two boxes that arrows connect partly overlap                     | `move b right-of:a`                        |
+| `arrow-dangling`    | error    | An arrow is pinned to an element that is gone                    | `rm <arrow>`                               |
+| `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect                | `set <arrow> line=angled`                  |
+| `edge-crossings`    | warning  | More crossing arrow pairs than a quarter of the arrows           | `layout type:shape`                        |
+| `label-collision`   | warning  | An arrow's label overlaps a box                                  | A shorter arrow label                      |
+| `label-overflow`    | warning  | A label needs more lines than its box holds                      | `text=sm`, or a shorter label and a `note` |
+| `node-isolated`     | warning  | A shape with no arrows, on a tab that is otherwise a graph       | `connect <ref> -> a`                       |
+| `group-escape`      | warning  | A member lies outside its frame                                  | `move a inside:<frame>`                    |
+| `group-split-edges` | info     | Most of a frame's arrows cross its border                        | `unwrap <frame>`                           |
+| `duplicate-label`   | info     | Two boxes share a label                                          | Rename one                                 |
+| `flow-backwards`    | info     | An arrow points against the drawing's flow                       | `rewire <arrow> from=y to=x`               |
+| `aspect-extreme`    | info     | The drawing is more than 3 times wider than tall, or the reverse | `layout type:shape direction=down`         |
+| `colour-on-themed`  | info     | A fill or stroke the theme would not paint, bound to no swatch   | `set a fill=` to give it back to the theme |
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+| Code               | Severity | Finding                                                                                | Suggested fix                                          |
+| ------------------ | -------- | -------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| `box-overlap`      | error    | Two boxes that arrows connect partly overlap                                           | `move b right-of:a`                                    |
+| `arrow-dangling`   | error    | An arrow is pinned to an element that is gone                                          | `rm <arrow>`                                           |
+| `arrow-behind-box` | warning  | An arrow passes through a box it does not connect                                      | `set <arrow> line=angled`                              |
+| `edge-crossings`   | warning  | More crossing arrow pairs than a quarter of the arrows                                 | `layout type:shape`                                    |
+| `label-collision`  | warning  | An arrow's label overlaps a box                                                        | A shorter arrow label                                  |
+| `label-overflow`   | warning  | A label needs more lines than its box holds                                            | `text=sm`, or a shorter label                          |
+| `node-isolated`    | warning  | A shape with no arrows, on a tab that is otherwise a graph                             | `connect <ref> -> a`                                   |
+| `text-overflow`    | warning  | A text needs more lines than its box holds, breaks a word, or prints over another text | `set <ref> height=…` or `width=…`, or `move b below:a` |
+| `duplicate-label`  | info     | Two boxes share a label                                                                | Rename one                                             |
+| `flow-backwards`   | info     | An arrow points against the drawing's flow                                             | `rewire <arrow> from=y to=x`                           |
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+Boxes no arrow connects count as decoration and may overlap; the group checks judge frames, not lanes. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+Boxes no arrow connects count as decoration and may overlap. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+
+<Tip>
+  Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer and the lint
+  are exactly what a write would give, and nothing changes.
+</Tip>
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+<Tip>
+  Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer is exactly what
+  a write would give, and nothing changes.
+</Tip>
+
+</AppNote>
+
+
+</ArticleLayout>

@@ -1,0 +1,387 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ImportMenu as LivediagramImportMenu, ImportWarning as LivediagramImportWarning } from '@/editions/livediagram/components/illustrations/tabs';
+import { ImportMenu as LiveplannerImportMenu, ImportWarning as LiveplannerImportWarning } from '@/editions/liveplanner/components/illustrations/tabs';
+import { ImportMenu as LivedocumentsImportMenu, ImportWarning as LivedocumentsImportWarning } from '@/editions/livedocuments/components/illustrations/tabs';
+import { ImportMenu as LivedesignImportMenu, ImportWarning as LivedesignImportWarning } from '@/editions/livedesign/components/illustrations/tabs';
+import { ImportMenu as LivehuddleImportMenu, ImportWarning as LivehuddleImportWarning } from '@/editions/livehuddle/components/illustrations/tabs';
+import { ImportChooser, TrackerImportPreview } from '@/editions/liveplanner/components/illustrations/tabs';
+
+export const metadata = helpMetadata({
+  title: 'Importing into a Tab',
+  description: 'Bring content into a tab from pasted text or a file: the formats each app reads, and what an import replaces.',
+  path: '/help/tabs/import-tabs/',
+});
+
+<ArticleLayout title="Importing into a Tab" description="Bring content into a tab from pasted text or a file, and know what an import replaces." categoryTitle="Tabs" categorySlug="tabs">
+
+**Import** brings content into the active tab from pasted text or a file. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one <Noun />, import it into a tab somewhere else.
+
+## Import formats
+
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and choose **Import**. You can also run **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/). The **Import to Tab** dialog opens with a card per format, **JSON** first: it reads the app's own tab export (a `.<AppName />-tab.json` file) and restores it exactly, the highest-fidelity round trip. The other formats depend on the app.
+
+<AppNote app="livediagram">
+  <Figure caption="The tab menu holds Import, beside Export and Clear.">
+    <LivediagramImportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="The tab menu holds Import, beside Export and Clear.">
+    <LivedocumentsImportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="The tab menu holds Import, beside Export and Clear.">
+    <LivedesignImportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="The tab menu holds Import, beside Export and Clear.">
+    <LivehuddleImportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Figure caption="The tab menu's one Import… row, beside Export and Clear.">
+    <LiveplannerImportMenu />
+  </Figure>
+</AppNote>
+
+Pick a format, then **paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses. **All Formats** at the top of the panel takes you back to the cards.
+
+<AppNote app="livediagram">
+  - **JSON** reads a livediagram tab export (a `.livediagram-tab.json` file) and restores its elements exactly, the highest-fidelity round trip.
+  - **Mermaid** reads a [Mermaid](https://mermaid.js.org/) flowchart (`graph` / `flowchart`), state diagram (`stateDiagram`), or ER diagram (`erDiagram`, its relationships drawn with crow's-foot ends at each table, and an entity's alias in square brackets, like `BOOK_AUTHOR[Book author]`, used as its title) and lays it out on the canvas, keeping every connection, its style (dashed, thick, two-headed, headless), `click` links, and any `subgraph` or composite-state blocks, which come in as frames drawn around their nodes. Other Mermaid diagram types (sequence, gantt, pie and so on) aren't supported.
+  - **Markdown** turns a Markdown outline into a themed tree diagram, the same conversion as [Markdown Import](/help/tools/markdown-import/), so you can draft structure in text and bring it onto the canvas.
+  - **Excalidraw** reads a `.excalidraw` scene (what [excalidraw.com](https://excalidraw.com/)'s Save to disk produces) and keeps its shapes, labels, arrow connections, freehand drawings, sticky notes, frames, and images. In [Draw mode](/help/canvas/draw-mode/) it comes in as pen marks; in any other mode as diagram elements. It also reads a PNG or SVG exported from Excalidraw with **Embed scene** switched on (a `.excalidraw.png` or `.excalidraw.svg` file), which carries the whole scene inside the picture. The hand-drawn look flattens to clean strokes, and groups come apart into separate items.
+  - **draw.io** reads a diagram from [draw.io](https://www.drawio.com/) (diagrams.net, the desktop app, or its Confluence and VS Code plugins): a `.drawio` or `.xml` file, compressed or not, or a PNG or SVG exported with **Include a copy of my diagram** ticked. See Importing from draw.io below.
+  - **Visio** reads a `.vsdx` drawing from Microsoft Visio, or a Lucidchart diagram exported as Visio. See Importing from Visio or Lucidchart below.
+  - **BPMN** reads a `.bpmn` file from a process modeler (Camunda, bpmn.io, Signavio or any BPMN 2.0 tool) and draws every event, task, gateway, pool and flow where the modeler drew it. See Importing a BPMN file below.
+  - **Infrastructure** draws an architecture diagram from a Cloudflare `wrangler.toml` or a Docker Compose file (`docker-compose.yml`, `compose.yaml`). See Drawing your infrastructure below.
+
+  Each format card opens the same panel: **paste or write** the content into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses. **All Formats** at the top of the panel takes you back to the cards.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Paste from Excalidraw**
+
+  You don't need a file to bring a drawing across. In Excalidraw, select what you want and copy it (Ctrl+C, or Cmd+C on a Mac), then click into a livediagram tab and paste (Ctrl+V or Cmd+V). The drawing lands where your pointer is, or in the middle of the view, and stays selected so you can move or restyle it at once. One undo takes the whole paste back.
+
+  - In **Draw mode**, strokes become pen strokes, text becomes text boxes that fit their words, and Excalidraw's black ink follows the board: dark on a light board, light on a dark one. Its blue, green, red and orange become the matching pen colours.
+  - In any other mode, such as **Diagram**, the drawing comes in as diagram elements, just as importing the file would.
+  - You can also **drag** a `.excalidraw` file, or a PNG or SVG exported from Excalidraw with **Embed scene** on, straight onto the canvas.
+
+  When something couldn't come across exactly (Excalidraw groups, for example), a small note at the bottom of the canvas lists what changed. Pasting adds to the tab; it never replaces what is already there.
+
+  **Excalidraw From a Start Screen**
+
+  On an empty tab's start screen, **Import** offers **Excalidraw** beside the other tools. Picking it opens this Import dialog at the Excalidraw format, and the scene lands in the tab you are on. To bring several boards across, open a new canvas (or add a tab) for each.
+
+  **Images in an imported file**
+
+  When an imported file carries images, they come across with it. Each one is resized in your browser (to at most 2048 pixels on its longest side) and saved to your [image gallery](/help/explorer/image-gallery/), so it counts towards the gallery's space like any image you add yourself. An image you already have is recognised and reused rather than stored twice.
+
+  While the images save, the panel counts them ("Importing images 3 of 12…"). When it finishes, the dialog tells you how many were imported, how many were already in your gallery, and how many were left as placeholders and why: the file didn't include the image, its format couldn't be read, it was too large, or your gallery is full. The rest of the file always imports. Double-click a placeholder to add its image later.
+
+  In a [canvas in This Browser](/help/privacy-and-security/offline-mode/), images are kept inside the canvas in this browser instead of your gallery, up to a limit for each import.
+
+  **Importing from draw.io**
+
+  To bring many draw.io files across at once, each as its own canvas, use [Import from draw.io](/help/explorer/drawio-import/) on the Explorer page.
+
+  A draw.io file can hold several pages. **The first page replaces the active tab, and every further page becomes a new tab** right after it, named after its page, so a three-page file arrives as three tabs. One undo takes the whole import back, new tabs included, and links between pages become links between the tabs.
+
+  What carries over:
+
+  - **Shapes** keep their kind, size, position, colours, borders, rounded corners, rotation, opacity and shadow. Flowchart shapes (process, decision, terminator, document, database, data) map one to one; less common ones come in as the nearest livediagram shape.
+  - **Text** keeps its formatting: bold, italic, underline, colours, links, headings and lists in rich labels, plus font size and alignment.
+  - **Connections** follow the route draw.io itself draws: the same corners, curves and shared trunks, attached to the shapes (or other connections) they join at the nearest connection point, with their arrowheads, line style and labels where draw.io puts them.
+  - **Swimlanes** become lanes, with an upright title down the side where draw.io writes it upright, **UML classes and ER entities** become records with one row per field, **tables** become tables, and draw.io **layers** become the tab's layers, hidden and locked ones included.
+  - **BPMN shapes** (events, tasks, gateways, data objects and data stores) become livediagram's [BPMN elements](/help/palette/bpmn/), markers included, with an event's or gateway's name as text under it.
+  - **Cloud and network icons** (AWS, Azure, Kubernetes, servers, users and more) become the matching livediagram icon where there is a clear match. A stencil with no match comes in as a labelled box, so nothing disappears.
+  - **Colours left at draw.io's default** take on your tab's theme, like anything drawn in livediagram, and so do near-black text and near-white panels, which draw.io's own dark mode turns too. Other colours you picked in draw.io stay as they were.
+  - **Text keeps its room.** livediagram's text is a little larger than draw.io's, so the whole page is scaled up to match, and every label fits its shape as it did in draw.io.
+
+  Pictures embedded in the diagram come across like any imported board's images: resized and saved to your gallery. Pictures linked from the web, or from draw.io's own icon library, are never fetched; they come in as placeholders.
+
+  When anything could not come across exactly, the dialog shows one summary before closing, the same one every import uses: how the images came across, then one line per kind of change with its count: shapes that came in as labelled boxes (with the stencil names), arrowheads livediagram draws differently, labels shortened to fit their shapes, hidden items left out, and so on.
+
+  **Importing from Visio or Lucidchart**
+
+  The **Visio** card takes a `.vsdx` file, the drawing Visio 2013 and later saves. A `.vsdx` is a file rather than text, so there is no box to paste into: drop the file on the panel, or press **Choose a File**.
+
+  **From Lucidchart**, open the diagram and choose **File**, **Export**, **Visio (VSDX)**, then import the file it downloads. Lucidchart has no file of its own that other tools can read, so its Visio export is the way across. An older binary `.vsd`, or a Visio 2010 `.vdx`, is turned away with a note: open it in Visio and save it as a `.vsdx` first.
+
+  Like a draw.io file, **the first page replaces the active tab and every further page becomes a new tab** named after its page, and one undo takes the whole import back.
+
+  What carries over:
+
+  - **Common shapes** from Visio's Basic Shapes and Basic Flowchart Shapes stencils map to livediagram's own: rectangles and processes, rounded rectangles, ellipses and circles, diamonds and decisions, start and end, documents, data, databases, hexagons and preparation, triangles, trapezoids, parallelograms and stars. Less common flowchart shapes (predefined process, stored data, manual input, delay and the like) come in as the nearest livediagram shape.
+  - **Shapes drawn without a stencil**, which is how Lucidchart's export writes most of its shapes, are read from their outline: boxes, rounded boxes, ellipses and diamonds come in as those shapes.
+  - **Every other shape comes in as a text box** holding its words, so nothing you wrote is lost. A shape with no words of its own shows its stencil's name instead, such as "Server".
+  - **Text** keeps its size, colour, bold, italic, underline and alignment, and **shapes** keep their position, size, fill, line colour, line style and rotation. Colours left at Visio's defaults take on your tab's theme.
+  - **Connectors** stay attached to the shapes they are glued to, bend where Visio bends them, and keep their arrowheads and labels. A loose connector end stays where it was.
+  - **Pictures** in the drawing come across like any import's images. A picture Visio stores in a format livediagram can't read (an EMF, or an embedded document) comes in as a placeholder.
+
+  Visio's layers, shape data, hyperlinks, comments, gradients and shadows don't come across. When anything changed on the way in, the dialog shows the same summary every import uses, including how many shapes came in as text boxes and which stencils they were.
+
+  To bring many Visio files across at once, each as its own canvas, use [Import from draw.io](/help/explorer/drawio-import/) on the Explorer page: it takes `.vsdx` files too.
+
+  **Importing a BPMN file**
+
+  The **BPMN** card reads BPMN 2.0 XML, the `.bpmn` file Camunda Modeler, bpmn.io, Signavio and most process tools save. Paste the XML or pick the file (`.bpmn` or `.xml`). It replaces the tab in one undo step, like every import.
+
+  - **Every shape lands where the modeler drew it**, at its size, as a [BPMN element](/help/palette/bpmn/): start, intermediate and end events with their message, timer, error and terminate markers, tasks with their user, service, script, manual, send, receive and business rule markers, collapsed sub-processes, gateways, data objects and data stores.
+  - **Pools and lanes** become lanes, their titles upright down the left side.
+  - **Flows** stay attached to the shapes they join and bend where the modeler bent them: sequence flows as arrows with their names, message flows dashed with an open circle and an open arrowhead, associations dotted.
+  - **Names** of events, gateways and data sit under the symbol as their own text, where the modeler put them; a task's name is inside it. Text annotations become text, and groups become dashed frames.
+  - **Colours** set in the modeler (BPMN in Color) carry over.
+
+  Only the file's first diagram is drawn. Anything livediagram has no symbol for yet (a signal or escalation event, a choreography) comes in as the nearest symbol or a labelled box, and the dialog's summary says what changed. A file over 5 MB, or with no diagram layout saved in it, is refused with a message saying why.
+
+  **Drawing your infrastructure**
+
+  The **Infrastructure** card reads the files that describe what you deploy and draws them as a laid-out architecture diagram, each box wearing its technology's icon. Paste a file or pick one; livediagram tells a `wrangler.toml` from a Compose file by its name, or by what it holds.
+
+  - **A `wrangler.toml`** becomes the Worker, with a box for each binding joined to it: KV namespaces, R2 buckets, D1 databases, queues (producers and consumers), Durable Objects, service bindings to other Workers, Workers AI, Images, static assets, Vectorize indexes, Hyperdrive, Analytics Engine datasets, Workflows and Browser Rendering. Routes and cron triggers point into the Worker. The top-level environment is drawn; `[env.…]` tables are named in the summary.
+  - **A Compose file** becomes a box for each service, its icon picked from its image (Postgres, MySQL, Redis, MongoDB, Kafka, NGINX, RabbitMQ, Elasticsearch and more, Docker for the rest), with its image and ports in its note. `depends_on` and `links` become arrows, named volumes become cylinders, and networks frame their services (or become hexagons when a service sits on two).
+  - **Big systems stay readable.** Past 40 boxes, services that share a name prefix (`billing-api`, `billing-worker`) are framed together, and past 150 the rest fold into one last box that lists them.
+
+  Keys that aren't drawn, such as `vars` or `observability`, are never an error: once the tab is drawn, the dialog lists them in one line so you know what was left out. A file that can't be read says why, with the line to look at, and your paste stays in the box to fix.
+
+  Each import draws a fresh diagram. To draw several Workers as one system, or to draw straight from your repository, use the command line: `livediagram link from-code` reads every `wrangler.toml` and Compose file you name into one tab.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The **Import to Tab** dialog offers the formats that suit the tab:
+
+  - **JSON**: a livedocuments tab export (a `.livedocuments-tab.json` file), pages and all, restored exactly, the highest-fidelity round trip.
+  - **Markdown**: a `.md` document, written into an [article](/help/pages/articles/). Headings, lists, to-dos, quotes and code become the article's blocks; see [Markdown Import](/help/tools/markdown-import/).
+  - **Word**: a `.docx` file from Word or Google Docs, written into an article. See **Importing from Word or Google Docs** below.
+  - **PowerPoint**: a `.pptx` file from PowerPoint or Google Slides, each slide a slide page. See **Importing from PowerPoint or Google Slides** below.
+
+  | Tab                               | Formats offered                  |
+  | --------------------------------- | -------------------------------- |
+  | Empty (still on the start screen) | JSON, Markdown, Word, PowerPoint |
+  | Article                           | JSON, Markdown, Word             |
+  | Slide deck                        | JSON, PowerPoint                 |
+  | Infographic or flashcards         | JSON                             |
+
+  On an empty tab, Markdown and Word make it an article and PowerPoint makes it a slide deck. A tab that takes JSON alone opens straight at the JSON box.
+
+  For JSON and Markdown, **paste or write** the text into the box and press **Import**, or press **Import a file instead** to pick one from disk. Either way the tab updates once it parses.
+
+  Dropping a `.json`, `.md`, `.docx` or `.pptx` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab, or, when this tab doesn't take that file, says which tabs do.
+
+  **Importing from Word or Google Docs**
+
+  Choose **Word**, then drop a `.docx` file on the panel or press **Choose a File**. The document becomes an [article](/help/pages/articles/):
+
+  - Title, Subtitle and Heading 1 to 3 styles become those paragraph styles (deeper headings become Heading 3).
+  - Bulleted and numbered lists keep their nesting, up to five levels.
+  - A paragraph that starts with a check box (☐, or ☒ when ticked) becomes a to-do, so a Word file exported from livedocuments comes back with its to-dos.
+  - Quotes, code (a code style or a monospaced font), links, bold, italic, underline, strikethrough, superscript and subscript come across.
+  - Page breaks become the article's page breaks.
+  - Pictures are saved to the document's images and placed in the article where they sat.
+  - A table comes across as a [table in the article](/help/pages/articles/article-tables/), its header row on when Word marks the first row as a repeating header.
+
+  For a **Google Doc**, open it and choose **File › Download › Microsoft Word (.docx)**, then import the downloaded file.
+
+  **Importing from PowerPoint or Google Slides**
+
+  Choose **PowerPoint**, then drop a `.pptx` file on the panel or press **Choose a File**. Each slide becomes a slide page, in order, with the deck's 16:9 or 4:3 shape:
+
+  - Text boxes and placeholders become text where they sat on the slide, with their size, bold, italic and bullets.
+  - Pictures are saved to the document's images and placed where they sat.
+  - Speaker notes and hidden slides come across in the [Slide Deck](/help/selection-modes/slide-deck/) with each page, each slide's notes as one note card you can split up afterwards.
+
+  For **Google Slides**, open the deck and choose **File › Download › Microsoft PowerPoint (.pptx)**, then import the downloaded file.
+
+  **What doesn't come across**
+
+  The file is read in your browser; nothing is sent anywhere except its pictures, which are saved like any image you add. When something can't come across (charts, SmartArt, equations, embedded objects, comments, tracked changes, more than 100 pictures), the dialog says what was left out once the import lands. Macros and embedded files are never run.
+
+  A file needs to be under 50 MB, a deck at most 100 slides. Older `.doc` and `.ppt` files need saving as `.docx` or `.pptx` first: open them in Word or PowerPoint and choose **Save As**.
+</AppNote>
+
+<AppNote app="livedesign">
+  The **Import to Tab** dialog offers two formats. **JSON** reads a livedesign tab export (a `.livedesign-tab.json` file) and restores it exactly, pages and all, the highest-fidelity round trip.
+
+  **Importing an SVG**
+
+  **SVG** brings a logo, icon or brand mark in as **shapes you can edit**: every shape in the file becomes a path you can recolour, reshape with the [Pen](/help/palette/tools/drawing/) and combine. Paste the SVG markup or pick a `.svg` file. Unlike JSON, an SVG **adds** to the tab instead of replacing it: the shapes land on the page you are on, scaled to fit inside its margins, and stay selected so your next move takes them all. A bold line icon fills the page too: any line that would land thicker than Extra thick (the thickest line preset) becomes a filled shape in the line's colour, keeping its rounded or square ends and corners. Thinner lines stay lines you can restyle.
+
+  You can skip the dialog too: **drop** an `.svg` file on a page, or **paste** one (or SVG markup copied from a design tool or code editor) onto the canvas.
+
+  - Shapes keep their colours, outlines and opacity. Outline widths snap to the nearest of the five line weights.
+  - A letter or mark with holes, such as an O, comes in as one shape with its holes.
+  - What a shape can't carry is listed when the import finishes: text (outline it before exporting, or retype it), masks, filters and clip paths, embedded pictures and pattern fills. A gradient fill takes its first colour.
+  - A very large file (over 2 MB, or over 5,000 shapes) is placed as a picture instead, and a note says so.
+
+  Dropping a `.json` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Import reads livehuddle's own tab export (a `.livehuddle-tab.json` file) and restores its elements exactly, so you can back a tab up and restore it, or move it from one space to another. A Space is for meeting, so livehuddle reads no other tool's files: to bring in a board from Excalidraw, draw.io, Mermaid or Markdown, use livediagram, livehuddle's sister app for diagrams.
+
+  **Images in an imported tab**
+
+  When an imported tab carries images, they come across with it. Each one is resized in your browser (to at most 2048 pixels on its longest side) and saved to your [image gallery](/help/explorer/image-gallery/), so it counts towards the gallery's space like any image you add yourself. An image you already have is recognised and reused rather than stored twice.
+
+  While the images save, the panel counts them ("Importing images 3 of 12…"). When it finishes, the dialog tells you how many were imported, how many were already in your gallery, and how many were left as placeholders and why: the file didn't include the image, its format couldn't be read, it was too large, or your gallery is full. The rest of the tab always imports. Double-click a placeholder to add its image later.
+
+  In a [space in This Browser](/help/privacy-and-security/offline-mode/), images are kept inside the space in this browser instead of your gallery, up to a limit for each import.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Every import goes through one dialog. Open it with **Import…** in the tab's menu (the **⋯** button on the active tab, or right-click the tab), **Import…** from the [command palette](/help/search-panel/the-search-panel/command-palette/), or, on a new empty tab, **Import** at the bottom of Start Planning's sidebar, just above Connect File (search "Trello" or "Jira" there to find it too). The **Import** dialog lists everything that can come in, with the first choice ready to press. It is the counterpart to [exporting](/help/tabs/export-tabs/).
+
+  The list has up to three parts:
+
+  - **Into This Tab**: what the tab you are on takes. A Board or Sheet takes a **CSV** file, and a Dashboard or Form a liveplanner tab's **JSON** export (the **liveplanner Tab** row).
+  - **A Board from Another Tool**: **Trello**, **Asana**, **Jira** and **Linear**, each with a line saying which file to bring and where the tool keeps it.
+  - **A Whole Plan**: the **liveplanner Plan** row, for a plan's own `.liveplanner` file from Export's [Whole Plan](/help/tabs/export-tabs/).
+
+  <Figure caption="The Import dialog on a Board tab: its own CSV, the four tools, each with the file to bring, and A Whole Plan, the liveplanner Plan row.">
+    <ImportChooser />
+  </Figure>
+
+  You can also **drop a file** on the dialog, whichever step it shows. liveplanner works out what it is and sends it to the right place: a tab's JSON to the liveplanner Tab import, a plan's `.liveplanner` file to its preview, a Trello, Asana, Jira or Linear export to its preview, and any other CSV into a Board or Sheet tab. If nothing takes it, the dialog says why, and what you were looking at stays as it was.
+
+  **A CSV onto a Board**
+
+  On a Board tab, press **CSV** in the Import dialog (or drop the file on it). Pick a `.csv` or `.tsv` file and each row after the first becomes a **new card** on the board, added to what is already there:
+
+  - The first row names the columns. **Title** is required; **Type**, **Status**, **Assignee**, **Priority**, **Estimate**, **Start**, **Due**, **Labels**, **Description** and your card types' own fields are read when present, and any column it doesn't know is skipped.
+  - A Status that names one of the board's columns puts the card there; otherwise it goes in the first column that fits.
+  - The board then says what happened, for example "Added 12 cards; skipped 3 rows". The whole import is one step, so Undo takes it back.
+
+  Files up to 5 MB are read. A board's own **Export** › **CSV** reads straight back in. See [Boards](/help/plan/boards/).
+
+  **A CSV into a Sheet**
+
+  On a Sheet tab, the Import dialog's **CSV** row reads a `.csv` or `.tsv` file into the sheet's cells, values read as if you had typed them. If the sheet already has something in it, you choose first: **Replace Sheet**, **Insert at Selection** or **Cancel**. See [Sheets](/help/plan/sheets/).
+
+  **A Dashboard or Form from JSON**
+
+  On a Dashboard or Form tab, press **liveplanner Tab** in the Import dialog. **Paste** a tab's JSON export into the box and press **Import**, or press **Import a file instead** to pick a `.liveplanner-tab.json` file. A tab's JSON dropped on the dialog lands in the box, ready for **Import**. A large one (over 1 MB) is shown as the file instead, with its name and size: press **Import** to bring it in straight from the file, or **Remove** to paste instead. **All Imports** at the top takes you back to the list.
+
+  - A **Dashboard** takes only a Dashboard's own export (**Export** › **JSON** on a Dashboard tab): it replaces the dashboard's rows, slots and what they hold. Anything else is turned away with a message, and the dashboard is left as it was. A slot that showed one of the plan's other tabs reads as deleted when the file comes from another plan; clear it or fill it again.
+  - A **Form** takes a tab's JSON export, such as a Form exported from another plan.
+
+  Cards carried in the file are added to this plan, along with any card types it doesn't have yet. Cards the plan already holds are left as they are, so importing a tab back into its own plan never doubles them. If some cards can't be added, the dialog says so before it closes.
+
+  **JSON import replaces the tab**
+
+  Importing JSON **replaces the tab's contents** with what comes in, it does not merge. Because that is destructive, the dialog leads with an amber warning naming the tab about to be overwritten, so you can back out first. If you change your mind afterwards, Undo (`Cmd` / `Ctrl` + `Z`) brings the previous tab back. To keep the current tab as it is, add a new tab first and import into that.
+
+  <Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the box for the export.">
+    <ImportWarning />
+  </Figure>
+
+  **A Board from Another Tool**
+
+  Moving a team over from **Trello**, **Asana**, **Jira** or **Linear**? Open **Import…** and press the tool's row, then choose its export (or drop the file on the dialog). Each row says where the tool keeps it:
+
+  - **Trello**: the board's menu, then Print, export and share, then Export as JSON.
+  - **Asana**: the project's name menu, then Export/Print, then CSV.
+  - **Jira**: issue search, then Export, then Export CSV (all fields).
+  - **Linear**: Settings, then Import / Export, then Export CSV.
+
+  The file says which tool it came from, so a Jira file chosen from the Trello row is still read as Jira's. The dialog reads it and shows what it will make before anything is written: the board's columns with their cards, how each of the tool's fields becomes a card field (built in, such as Due or Labels, or a **New Field** on the card type), the people, the comments and anything left out, such as archived cards. Then choose **New Board Tab in This Plan** or **New Plan**, and press **Import**.
+
+  <Figure caption="The preview: the board read from the file, its columns, and where it goes. All Imports goes back to the list.">
+    <TrackerImportPreview />
+  </Figure>
+
+  - Lists or statuses become the board's **columns**, in the tool's order; a board takes up to 12, and the rest share an **Other** column.
+  - The cards are one new card type per tool (Trello Card, Asana Task, Jira Issue or Linear Issue), so they keep their own fields. Importing from the same tool again reuses it.
+  - Each card keeps its title, description, labels, dates, checklist, priority and estimate. Its **comments** go into one **Imported comments** thread on the card, each starting with who wrote it and when. They mention nobody and send no emails.
+  - People are matched by email to the plan's team, then by name to people already on the plan; anyone else is added by name.
+  - Attachments are not copied. Each one's link is added to the end of the card's description instead.
+
+  A file reads up to 20 MB and 5,000 cards, and an import is never made in part: when the plan has no room for every card, the tab choice is greyed out with the reason, and the board goes into a new plan instead. Into this plan, Undo takes the cards, the tab and the card type back a step at a time. It is a one-off copy: nothing links back to the other tool, and a second import makes a second board. Making a tab, columns and a card type is an Editor's, so only an Editor sees the A Board from Another Tool rows. Agents can do the same with [`import_board`](/help/account-and-data/connect-ai-mcp/).
+
+  While a tab is [locked](/help/tabs/locking-tabs/), its Into This Tab row is greyed out with the reason; a board from another tool still comes in, as a new tab. The tab menu isn't offered on a view-only share link.
+
+  **A Whole Plan**
+
+  Press **liveplanner Plan** and pick a `.liveplanner` file saved with Export's **Whole Plan** (or drop it on the dialog). Before anything is made, a preview shows the plan's name and how many tabs, cards, card types, comment threads and rules it holds. **Import as New Plan** makes a new plan in My Work with all of it, and opens it:
+
+  - Every tab, in the same order and folders, with links between them pointing at the new copies.
+  - Every card, with the same numbers and fields, and the card types, Sheets and comment threads.
+  - The Automations rules, turned **off**: turn on the ones you want in Automations.
+  - Pictures stay with the plan they came from. The file names them but carries no image bytes, so in the new plan a picture shows only to whoever uploaded it.
+
+  A file reads up to 20 MB, enough for a full plan of 5,000 cards. One that isn't a plan, comes from a newer liveplanner, or is damaged is refused with the reason, and nothing is made. Like the tools, the row is an Editor's. You don't need to sign in: a guest's new plan is saved on our servers under their guest id, as when they turn on **Sync Plan to Server**. You do need to be online, since the new plan is made on the server.
+</AppNote>
+
+## Import replaces the tab
+
+Importing **replaces the active tab's contents** with what comes in, it does not merge. Because that is destructive, the dialog leads with an amber warning naming the tab about to be overwritten, so you can back out before committing. If you change your mind afterwards, undo (`Cmd` / `Ctrl` + `Z`) brings the previous content back. To keep the current tab as it is, add a new tab first and import into that.
+
+<AppNote app="livediagram">
+  A multi-page draw.io file also adds a tab for each further page.
+</AppNote>
+
+<AppNote app="livedesign">
+  A JSON import replaces the tab; an SVG adds to the page instead (above). The warning is worded for JSON.
+</AppNote>
+
+The tab menu, and **Import** with it, isn't offered on a view-only share link.
+
+<AppNote app="livediagram,livedocuments,livedesign,liveplanner">
+  **Import** is greyed out while a tab is [locked](/help/tabs/locking-tabs/), since a locked tab is protected from edits.
+</AppNote>
+
+<AppNote app="livehuddle">
+  livehuddle has no tab lock. **Import** is for Editors: it isn't offered on a Viewer's or a Participant's share link.
+</AppNote>
+
+<AppNote app="liveplanner">
+  While a tab is locked, its Into This Tab row is greyed out with the reason; a board from another tool still comes in, as a new tab.
+</AppNote>
+
+<AppNote app="livediagram">
+  <Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
+    <LivediagramImportWarning />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
+    <LivedocumentsImportWarning />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
+    <LivedesignImportWarning />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
+    <LivehuddleImportWarning />
+  </Figure>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Figure caption="Because importing overwrites the tab, the Import to Tab dialog leads with a warning naming the tab, above the format cards.">
+    <LiveplannerImportWarning />
+  </Figure>
+</AppNote>
+
+<Tip>
+  Want to combine tabs instead of replacing one? Import into a fresh tab, then copy the elements you want across to your working tab.
+</Tip>
+
+<AppNote app="liveplanner">
+  Coming from a tool that isn't listed? Export its cards as a CSV with a Title column, then import it on a Board tab with the Import dialog's **CSV** row.
+</AppNote>
+
+</ArticleLayout>

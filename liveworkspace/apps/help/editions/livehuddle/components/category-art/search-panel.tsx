@@ -1,0 +1,34 @@
+import {
+  SEARCH_GLYPHS,
+  SearchPanelArt as Scene,
+} from '@liveworkspace/help-site/art/scenes/search-panel';
+
+// Search Panel: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"). "roadmap" finds a space, a
+// tab, a sticky note on a canvas and a help guide.
+export function SearchPanelArt() {
+  return (
+    <Scene
+      query="roadmap"
+      groups={[
+        {
+          heading: 'SPACES',
+          rows: [{ glyph: SEARCH_GLYPHS.document, title: 'Product Roadmap', where: 'Team Space' }],
+        },
+        {
+          heading: 'TABS',
+          rows: [{ glyph: SEARCH_GLYPHS.tab, title: 'Roadmap Q3', where: 'Launch plan' }],
+        },
+        {
+          heading: 'ELEMENTS',
+          rows: [{ glyph: SEARCH_GLYPHS.sticky, title: 'Roadmap review', where: 'Sticky note' }],
+        },
+        {
+          heading: 'HELP',
+          rows: [
+            { glyph: SEARCH_GLYPHS.help, title: 'Timelines and Roadmaps', where: 'Help Centre' },
+          ],
+        },
+      ]}
+    />
+  );
+}

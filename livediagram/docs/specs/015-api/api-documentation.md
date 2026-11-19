@@ -7,7 +7,7 @@
 > handlers. The recommended approach in this spec is what shipped; the
 > "As built" note at the end records the concrete file layout. A
 > human-facing reference in the help centre links to this document
-> (`apps/help`, the **Developers** category; see [Help app](../018-help/help-app.md)).
+> (`liveworkspace/apps/help`, the **Developers** category; see [One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)).
 
 ## Why
 

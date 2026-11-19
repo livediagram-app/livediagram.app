@@ -9,7 +9,11 @@ import { TableOfContents } from './TableOfContents';
 // The hrefs alone, not lib/articles: that would bundle the whole article registry (about 300 articles with their
 // descriptions and keywords) into every article's JavaScript.
 import { articleHref } from '@liveworkspace/help-registry/hrefs';
-import type { Article } from '@liveworkspace/help-registry';
+import type { AppId, Article, HelpScope } from '@liveworkspace/help-registry';
+import { AppMark } from './AppMarks';
+import { useSiteHref } from './SiteLink';
+import { HELP_APPLIES_ATTR } from './AppSwitch';
+import { AppliesTo } from './ScopeWords';
 import { JsonLd, GlyphDisc } from '@liveworkspace/ui';
 import { useHelpClient } from '../client';
 import { articleCrumbs, routeHref } from '../lib/article-route';
@@ -22,12 +26,19 @@ import { ArticlePager, StillNeedHelp } from './ArticlePager';
 
 /** Sidebar card: shows the TOC and/or a "Learn more" list of related
  *  guides. Renders nothing visible if both are empty (CSS hides it). */
-function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
+function SidebarCard({
+  subArticles,
+  readIn,
+}: {
+  subArticles?: Article[];
+  readIn?: readonly ReadInLink[];
+}) {
   const hasSubArticles = !!subArticles && subArticles.length > 0;
 
   return (
     <div className="sidebar-card rounded-xl border border-slate-200 bg-white p-5 dark:border-slate-800 dark:bg-slate-900">
       <TableOfContents />
+      {readIn && readIn.length > 1 && <ReadItIn links={readIn} />}
       {hasSubArticles && (
         <>
           <div className="toc-divider my-4 border-t border-slate-200 dark:border-slate-800" />
@@ -61,6 +72,50 @@ function SidebarCard({ subArticles }: { subArticles?: Article[] }) {
   );
 }
 
+/** One row of the Contents card's Read It In list (liveworkspace/docs/specs/016-help/help-centre.md "Read It
+ *  In"): an app the article applies to, linked to the article on that app's address. */
+export interface ReadInLink {
+  app: AppId;
+  href: string;
+  current: boolean;
+}
+
+function ReadItIn({ links }: { links: readonly ReadInLink[] }) {
+  // Each app's address in the page's deployment: staging links stay on staging (lib/site-href.ts).
+  const to = useSiteHref();
+  return (
+    <div data-read-it-in="">
+      <div className="toc-divider my-4 border-t border-slate-200 dark:border-slate-800" />
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
+        Read It In
+      </h3>
+      <ul className="space-y-0.5">
+        {links.map((l) => (
+          <li key={l.app}>
+            <a
+              href={to(l.href)}
+              aria-current={l.current ? 'page' : undefined}
+              className={`flex items-center gap-2.5 rounded-md py-1 text-sm transition-colors pointer-coarse:min-h-11 ${
+                l.current
+                  ? 'font-medium text-slate-900 dark:text-slate-100'
+                  : 'text-slate-600 hover:text-brand-700 dark:text-slate-300 dark:hover:text-brand-200'
+              }`}
+            >
+              <AppMark app={l.app} size={16} />
+              <span className="flex-1">{l.app}</span>
+              {l.current && (
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  Reading
+                </span>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /** What every article's MDX passes its layout. */
 export interface ArticleLayoutProps {
   title: string;
@@ -78,9 +133,16 @@ export interface ArticleShellProps extends ArticleLayoutProps {
   category?: ArticleLink;
   prev?: ArticleLink;
   next?: ArticleLink;
+  /** The one help centre's view of the article (help-centre.md "Articles and the apps they apply to"): the apps it
+   *  applies to, for the Applies To row and the app switch; Read It In's links; and what the layout places after
+   *  the body (the other apps' notes folded, the Works The Same In line). */
+  apps?: readonly AppId[];
+  scope?: HelpScope;
+  readIn?: readonly ReadInLink[];
+  afterContent?: React.ReactNode;
 }
 
-// The client half of an article page (docs/specs/018-help/help-pages.md "Article pages"): the header, the reading
+// The client half of an article page (liveworkspace/docs/specs/016-help/help-centre.md "Article pages"): the header, the reading
 // time, the sidebar and its mobile drawer, the vote and the telemetry. ArticleLayout (the server half, which every
 // article's MDX renders) looks the article up in the registry and passes only the links this needs, so the
 // registry never ships to the browser.
@@ -93,6 +155,10 @@ export function ArticleShell({
   category,
   prev,
   next,
+  apps,
+  scope,
+  readIn,
+  afterContent,
   children,
 }: ArticleShellProps) {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -132,12 +198,12 @@ export function ArticleShell({
     parentTitle: parentArticle?.title,
   });
 
-  // Article structured data (docs/specs/018-help/help-app.md). The Breadcrumb component already emits
+  // Article structured data (liveworkspace/docs/specs/016-help/help-centre.md). The Breadcrumb component already emits
   // the BreadcrumbList, so this only adds the TechArticle node, at this
   // page's own URL (selfHref, above).
 
   return (
-    <div>
+    <div {...(apps && { [HELP_APPLIES_ATTR]: apps.join(',') })}>
       <JsonLd
         data={articleJsonLd(facts, { title, description: description ?? '', appPath: selfHref })}
       />
@@ -153,6 +219,7 @@ export function ArticleShell({
         }
         title={title}
         lede={description}
+        aside={scope && apps ? <AppliesTo apps={apps} scope={scope} /> : undefined}
       >
         {/* The row keeps its height before the time is counted, so nothing below it moves. */}
         <div className="mt-5 flex min-h-5 items-center gap-4 text-xs text-(--hero-muted)">
@@ -193,7 +260,7 @@ export function ArticleShell({
                 <CloseIcon size={20} className="h-5 w-5" />
               </button>
             </div>
-            <SidebarCard subArticles={subArticles} />
+            <SidebarCard subArticles={subArticles} readIn={readIn} />
           </div>
         </div>
       )}
@@ -204,6 +271,7 @@ export function ArticleShell({
             <div ref={contentRef}>
               <SectionedContent>{children}</SectionedContent>
             </div>
+            {afterContent}
 
             <ArticlePager prev={prev} next={next} />
 
@@ -251,7 +319,7 @@ export function ArticleShell({
 
           <aside className="hidden shrink-0 lg:block lg:w-80">
             <div className="sticky top-[128px] max-h-[calc(100vh-148px)] overflow-y-auto rounded-xl">
-              <SidebarCard subArticles={subArticles} />
+              <SidebarCard subArticles={subArticles} readIn={readIn} />
             </div>
           </aside>
         </div>

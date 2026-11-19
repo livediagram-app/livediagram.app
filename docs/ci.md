@@ -34,7 +34,7 @@ Prettier files.
 ### Suites that read other workspaces
 
 Some suites read files outside their own workspace from disk: the site's telemetry checks scan every
-product's apps and packages, each help app's guards read its whole product, the shared marketing guards
+product's apps and packages, the help centre's edition guards (`liveworkspace/apps/help/editions/<app>/tests`) read each whole product, the shared marketing guards
 read every marketing app, and livedesign's naming guard (`@livedesign/design`) reads all of `livedesign/`,
 the apps that depend on it included. Turbo's package graph can't see those reads, so before 2026-10-31 a
 pull request touching only `liveplanner/` never ran the site's suite: it passed, and `main` went red at
@@ -457,7 +457,7 @@ several agents share, and timed out tests the change never touched.
     one, and a changed test itself), then its guard tests, which scan files and so are never "related":
     the tests at its root and in `app/`, `lib/small-text-contrast.test.ts` and an api's `src/openapi`
     tests (stale generated schemas);
-  - when the push deletes or renames a file: every help app's `repo-paths-in-docs` test.
+  - when the push deletes or renames a file: every help edition's `repo-paths-in-docs` test (`liveworkspace/apps/help/editions/<app>/tests`).
 - When half the cores are already busy, each test run is capped at two workers, so a starved CPU
   doesn't fail timing tests.
 - It checks only a push of the checked-out `HEAD` (`git push origin HEAD:<branch>` included); a push of any other commit, a tag or a deletion
@@ -525,6 +525,9 @@ accepts the issuer it signs with, and liveworkspace's bare-domain redirect with 
 
 **Jobs.** A tier's Workers deploy in a few jobs, not one each: the services and apis in one job, the
 sites in one job per product (liveworkspace's site and accounts together), and the routers in one job.
+Each product's Sites job holds three Workers (its editor, marketing and MCP Workers). Every app's help is
+liveworkspace's one help Worker (`liveworkspace-help`), which deploys in Sites (liveworkspace) and builds
+six static exports, one per scope (`builds: 6` in the plan), so its job's limit counts it as six site builds.
 The plan names each Worker's group (`deploy-group.mjs`), and each group's job checks out and installs
 once, then deploys its Workers one after another (`node .github/scripts/deploy-group.mjs`). The plan and
 the group jobs run the deploy workflows' own `.github/scripts` (from `github.workflow_sha`, the newest
@@ -535,7 +538,7 @@ groups and failed until main's CI caught up. Before
 waiting for a runner behind pull requests' CI (a median 8.4 minutes, up to 25, measured that day), and
 half of each job was the same checkout and install. Now a full deploy's Workers queue for a runner 8
 times (1 job, then 6 side by side, then 1) instead of about 40, and each group's job has a limit sized from the
-measured step times: 10 minutes, plus 6 per Worker that builds a site and 2 per other Worker, plus 4
+measured step times: 10 minutes, plus 6 per site build and 2 per other Worker, plus 4
 per Worker for its deploy's retries (below), with 15 minutes for any one command.
 
 - **Each Worker is visible.** Its output is a log group of its own, named for it, and the job's summary
@@ -551,7 +554,7 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
   failure (auth, validation, build, config) fails at once, as before, and a D1 migration step never
   retries. Wrangler's own retries run within seconds, inside the same blip: on
   2026-11-12 two production deploys failed that way (a 524 on livediagram's MCP Worker's version
-  upload, and asset uploads for liveplanner's editor and livedesign's help), each costing a rerun and
+  upload, and asset uploads for liveplanner's editor and livedesign's former help Worker), each costing a rerun and
   another approval of the gate. A deploy that runs out of its 15 minutes is a plain failure too, and
   the limit runs on wrangler itself (under coreutils `timeout`), so it never outlives its step. The
   step's output still streams to the log (through `tee`), and the
@@ -563,7 +566,7 @@ per Worker for its deploy's retries (below), with 15 minutes for any one command
   vars again, and `wrangler d1 migrations apply` skips the migrations already applied.
 
 **What a deploy writes.** Code and plain vars: a static site's build (with its build id and its
-product's hosted build vars, and on staging its product's staging MCP address), built from full history for a help site, whose sitemap dates each article by its last commit, and a product api's
+product's hosted build vars, and on staging its product's staging MCP address), built from full history for the help centre, whose sitemap dates each article by its last commit, and a product api's
 hosted vars (`apps/api/hosted-vars.json`, checked on the live deployment afterwards). Secrets are not
 written: each Worker's were set on it with `wrangler secret put` and survive a deploy. The only
 credential is the repository secret **`CLOUDFLARE_API_TOKEN`**: a token for the liveworkspace account

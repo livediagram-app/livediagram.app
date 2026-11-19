@@ -35,7 +35,7 @@ service = "livedesign-api"
 
 [[services]]
 binding = "HELP"
-service = "livedesign-help"
+service = "liveworkspace-help"
 
 # liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
 # Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").
@@ -96,7 +96,7 @@ API_ORIGIN = "http://127.0.0.1:8989"
 # /telemetry redirects to the central dashboard (liveworkspace/docs/specs/008-telemetry/telemetry.md), run locally by
 # liveworkspace/apps/site; production's needs no var.
 TELEMETRY_DASHBOARD_URL = "http://localhost:3000/telemetry"
-HELP_ORIGIN = "http://127.0.0.1:3404"
+HELP_ORIGIN = "http://127.0.0.1:3020"
 # The central index `/api/index/*` forwards to (liveworkspace/docs/specs/004-index/one-explorer.md), run locally by
 # liveworkspace/apps/index; production's (https://www.liveworkspace.app) needs no var.
 INDEX_ORIGIN = "http://127.0.0.1:8793"
@@ -142,7 +142,7 @@ service = "livedesign-api-staging"
 
 [[env.staging.services]]
 binding = "HELP"
-service = "livedesign-help-staging"
+service = "liveworkspace-help-staging"
 
 # liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
 # Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").

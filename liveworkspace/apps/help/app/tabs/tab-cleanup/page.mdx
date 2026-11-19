@@ -1,0 +1,106 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SearchCommandPalette as LivediagramPalette } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchCommandPalette as LivedocumentsPalette } from '@/editions/livedocuments/components/illustrations/search-panel';
+import { SearchCommandPalette as LivedesignPalette } from '@/editions/livedesign/components/illustrations/search-panel';
+import { SearchCommandPalette as LivehuddlePalette } from '@/editions/livehuddle/components/illustrations/search-panel';
+import { CleanupBeforeAfter } from '@liveworkspace/help-site/art/illustrations/tabs-scenes';
+import { CleanupBeforeAfter as LivehuddleCleanup } from '@/editions/livehuddle/components/illustrations/tools';
+
+export const metadata = helpMetadata({
+  title: 'Cleaning Up a Tab',
+  description: 'Tidy a tab from the command palette: snap elements to a grid, or lay the whole tab out again from its arrows.',
+  path: '/help/tabs/tab-cleanup/',
+});
+
+<ArticleLayout title="Cleaning Up a Tab" description="Tidy a messy tab in one click: snap everything to a tidy grid, or recompute the whole layout from the arrows between elements." categoryTitle="Tabs" categorySlug="tabs">
+
+A <Noun /> that grew organically can end up slightly misaligned or tangled. The layout tidiers clean up the active tab in one step, so you do not have to nudge elements into place by hand.
+
+<AppNote app="livehuddle">
+  A board that filled up fast in a meeting can end up slightly ragged: notes dropped in a hurry, pictures pulled to roughly the right size. Tidying cleans up the active tab in one step.
+</AppNote>
+
+## Tidying from the command palette
+
+Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`) and type **Auto-align**. The tidiers appear under **Actions**:
+
+- **Auto-align to Grid** snaps the current positions and sizes onto a tidy grid, straightening rows and columns while keeping your overall arrangement. Reach for it when the layout is basically right but a little ragged.
+
+<AppNote app="livediagram">
+  In Diagram mode, the quickest way is the **Tidy** button in the bottom-right corner, just left of Layers. It shows each layout style as a small picture, and resting the mouse on one previews it on the canvas before you click.
+</AppNote>
+
+<AppNote app="livediagram,livedesign">
+  You can also type **Auto Layout**, which lists these under **Actions**: **Auto Layout (tidy up)** recomputes positions from the arrows, laying the diagram out from scratch based on how its elements connect, in the arrangement that best fits its current rough flow; reach for it when you want the structure rebuilt rather than nudged. **Auto Layout: Flowchart (down)**, **Auto Layout: Flowchart (right)**, **Auto Layout: Tree** and **Auto Layout: Mindmap** run Auto Layout in that particular style: a flowchart running down or to the right, a tree with parents centred over their children, or a mindmap radiating from a central topic.
+</AppNote>
+
+<AppNote app="livedocuments">
+  You can also type **Auto Layout**: **Auto Layout (tidy up)** recomputes positions from the arrows, laying the shapes out from scratch based on how its elements connect; **Auto Layout: Layered (down)**, **Auto Layout: Layered (right)**, **Auto Layout: Tree** and **Auto Layout: Radial** run it in layers running down or to the right, a tree with parents centred over their children, or radially. To straighten just one infographic or slide page, press **Tidy** (the broom) in that page's title bar instead; see [Working with Pages](/help/pages/working-with-pages/).
+</AppNote>
+
+<AppNote app="livediagram">
+  <Figure caption="Typing layout in the command palette lists the Auto Layout commands under Actions.">
+    <LivediagramPalette />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="Typing layout in the command palette lists the Auto Layout commands under Actions.">
+    <LivedocumentsPalette />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="Typing layout in the command palette lists the Auto Layout commands under Actions.">
+    <LivedesignPalette />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="Typing layout in the command palette lists Auto-align under Actions.">
+    <LivehuddlePalette />
+  </Figure>
+</AppNote>
+
+Every tidier acts on the whole tab at once, and each is a single step you can undo (`Cmd` / `Ctrl` + `Z`) if the result is not what you wanted.
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  <Figure caption="Cleanup takes a scattered, misaligned piece of work and snaps it into tidy rows and columns in one click.">
+    <CleanupBeforeAfter />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="Auto-align takes a scattered handful of notes and snaps them into tidy rows on the grid in one step.">
+    <LivehuddleCleanup />
+  </Figure>
+</AppNote>
+
+## More on layout
+
+These are the [Layout Cleanup](/help/tools/layout-cleanup/) tools. See that guide for the details of how [Auto-Align](/help/tools/layout-cleanup/auto-align/) decides where things go.
+
+The tidiers are for Editors: they aren't offered to a Participant or on a view-only share link.
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  [Auto Layout](/help/tools/layout-cleanup/auto-layout/) has its own guide too. A [locked tab](/help/tabs/locking-tabs/) can't be tidied until you unlock it.
+</AppNote>
+
+<AppNote app="livediagram">
+  The Tidy panel says so when the tab is locked.
+</AppNote>
+
+<AppNote app="livehuddle">
+  livehuddle has only Auto-align (no Auto Layout), and has no tab lock. Tidying is for Editors: it isn't offered on a Viewer's or a Participant's share link.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  **Tip:** try **Auto-align** first, it is the gentler of the two and keeps your layout recognisable. Fall back to **Auto Layout** when a <Noun /> needs rebuilding from its connections.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Tip:** Auto-align is safe to run often: it never moves anything far, and running it again on a tidy tab changes nothing.
+</AppNote>
+
+</ArticleLayout>

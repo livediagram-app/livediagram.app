@@ -1,5 +1,5 @@
 // The label editing toolbar, for the Canvas article on Formatting Label Text
-// (docs/specs/018-help/help-app.md). Draws the real toolbar with its real labels
+// (liveworkspace/docs/specs/016-help/help-centre.md). Draws the real toolbar with its real labels
 // (canvas/RichTextToolbar.tsx): Bold, Italic, Underline and Strikethrough, the block type dropdown
 // open on its six entries (rich-text/block-type.ts), the alignment dropdown and the text colour
 // swatch, floating above the shape whose label is being edited. Composed from the shared primitives.

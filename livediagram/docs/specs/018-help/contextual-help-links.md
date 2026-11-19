@@ -4,7 +4,7 @@ Status: accepted
 
 ## Problem
 
-The help centre ([Help app](help-app.md)) holds 130+ articles, but the editor only exposes
+The help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md), this app's scope of it) holds 130+ articles for livediagram, but the editor only exposes
 **one** entry point to it: the global Help icon in the editor header
 (`EditorHeader.tsx`, to the right of the Share button). A user looking at a specific dialog (Share expiry, password
 gate, export formats) or a specific toggle (auto-attach arrows, alignment guides)
@@ -72,8 +72,8 @@ named keys -> nested article slug (the path under `/help`, e.g.
 source for help slugs on surfaces that deep-link ONE article, and keys are
 referenced symbolically so a slug change is a one-line edit. (Search is
 different: the SearchPanel's Help group derives from the full
-`@livediagram/help-registry` catalogue, see [Help app](help-app.md).) Slugs here must match a
-real page under `apps/help/app/.../page.mdx` (and its registry entry) - a key
+`@livediagram/help-registry` catalogue, livediagram's slice of the one catalogue, see [One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md) "Search".) Slugs here must match a
+real page under `liveworkspace/apps/help/app/.../page.mdx` whose registry entry applies to livediagram (its `apps` names it) - a key
 pointing at a missing article is a bug, the same way an unregistered article
 is.
 
@@ -129,7 +129,7 @@ key and never introduce a second linking pattern.
 
 The public sites link the Community's two articles through one shared component, `CommunityHelpLink`
 (`packages/ui/src/community/CommunityHelpLink.tsx`, this site's telemetry bound to `@liveworkspace/community-ui/links`), keyed by `COMMUNITY_HELP`
-(`packages/help-registry/src/community.ts`, checked against the registry by `apps/help/lib/community-help.test.ts`).
+(`packages/help-registry/src/community.ts`, checked against the registry by `liveworkspace/apps/help/editions/livediagram/tests/community-help.test.ts`).
 A click sends the same `UI·Opened·<article id>` as an editor help link.
 
 - Community gallery hero -> `finding-community-documents` ("How the Community Works", an inline link ending the

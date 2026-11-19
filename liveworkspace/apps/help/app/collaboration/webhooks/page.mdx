@@ -1,0 +1,72 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Webhooks',
+  description:
+    'Post what happens to your work to a Slack or Microsoft Teams channel, or to a service you run, with webhooks set up from Tools in the editor.',
+  path: '/help/collaboration/webhooks/',
+});
+
+<ArticleLayout
+  title="Webhooks"
+  description="Tell a Slack or Microsoft Teams channel, or your own service, what happens as it happens."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('webhooks')}
+>
+
+A **webhook** tells another service when something happens to a <Noun />, so your team hears about a new comment or a change in the channel they already watch. Each webhook belongs to one <Noun /> and only ever reports on that <Noun />, and each <Noun /> can have up to **10**.
+
+<AppNote app="livediagram">
+  A webhook keeps the people who aren't in the canvas in the loop. When someone comments, assigns an action or makes a share link, a message lands in your team's channel straight away, with a link back to the canvas.
+</AppNote>
+
+## Opening Webhooks
+
+In the editor, open **Tools** at the end of the bottom bar and press **Webhooks**. In the Explorer, choose **Webhooks** from the <Noun />'s **⋯** menu. Both open the same list of the <Noun />'s webhooks.
+
+<AppNote app="livedesign">
+  **Webhooks** is under Automate in Tools, and the list opens inside Tools.
+</AppNote>
+
+## Adding a Webhook
+
+Press **Add Webhook**, pick where it posts, connect it, choose what it sends and who it hears about, then press **Add Webhook** again to finish. Where it posts is **Slack**, **Microsoft Teams** or **Your Own Service**. Paste the address your service gives you: for Slack and Microsoft Teams, the dialog shows how to get one. Give the webhook a name, such as the channel it posts to. **Who Did It** is **Anyone**, or **Only Me** to send only your own changes. For your own service, each change arrives as a signed JSON POST.
+
+<AppNote app="livediagram">
+  The dialog has four steps: **Where Should It Post?**, **Connect It**, **What Should It Send?** and **Who Did It?**. Tick the changes it should hear about: **Canvas Renamed**, **Canvas Moved**, **Canvas Moved to the Trash**, **Share Link Made**, **Comment Added**, **Action Assigned** and **Action Done**. **Select All** ticks them all. The secret that signs a message to your own service is shown once, when you add the webhook, so copy it then.
+</AppNote>
+
+<AppNote app="livedesign">
+  Slack gets a message in a channel, Microsoft Teams gets a card in a channel, and Your Own Service gets signed JSON at an HTTPS address you run. None of the events are ticked at first.
+</AppNote>
+
+## Managing Webhooks
+
+Each webhook in the list shows what it sends, and has these controls:
+
+- **Send Test** sends a test message, so you can check the channel or service receives it.
+- **Pause** stops it sending, and **Resume** starts it again.
+- **Edit Events** changes what it sends (and **Who Did It**).
+- **Recent Deliveries** lists what it sent lately and whether each one arrived, so you can see what arrived and what failed.
+- **Delete** removes it.
+
+<AppNote app="livediagram">
+  The list also shows where it posts and who added it. The buttons are named **Pause Webhook**, **Resume Webhook** and **Delete Webhook**, and deleting asks first. A webhook that keeps failing pauses itself and says why, so a broken address never fills up with retries.
+</AppNote>
+
+## Who Can Use Webhooks
+
+You need to be signed in and able to edit the whole <Noun />: its owner, someone in its team, or someone with an Editor link to every tab. On a team's <Noun />, adding or removing a webhook is recorded in the team's [Audit Log](/help/collaboration/teams/audit-log/).
+
+<AppNote app="livediagram">
+  Anyone who can do that manages every webhook on the canvas, whoever added it. Participants, Viewers and Editors of a single tab don't, and a canvas kept in **This Browser** needs to be synced first.
+</AppNote>
+
+<AppNote app="livedesign">
+  Signed in without that access, there is no **Webhooks** row in Tools. Signed out, the row carries a **Sign In** badge, and for a design kept only in [This Browser](/help/privacy-and-security/offline-mode/) a **Sync Design** badge, which saves the design to your account first.
+</AppNote>
+
+</ArticleLayout>

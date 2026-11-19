@@ -10,12 +10,12 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | ---------------- | ---------------------- | ----------------------------------------------------------------------------- |
 | `apps/marketing` | `livedesign-marketing` | Static assets only (Next.js `output: 'export'`).                              |
 | `apps/live`      | `livedesign-live`      | Static assets + a tiny path-rewrite worker.                                   |
-| `apps/help`      | `livedesign-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
+| `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `livedesign` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)). |
 | `apps/api`       | `livedesign-api`       | Worker (Durable Objects + R2; no database of its own).                        |
 | `apps/mcp`       | `livedesign-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `livedesign-router`    | Worker (service bindings to marketing, live, api and help).                   |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/design/<id>` request to the single statically-built `/design/placeholder/` page ([New design route](../007-editor/new-design-route.md)). The help worker is static-assets-only too, served under `/help` ([Help app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer ([API](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedesign.app` (it binds to the api worker, not the router; [MCP server](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/design/<id>` request to the single statically-built `/design/placeholder/` page ([New design route](../007-editor/new-design-route.md)). `/help` is liveworkspace's one help centre: the router's `HELP` binding goes to `liveworkspace-help` (staging `liveworkspace-help-staging`) with `x-help-app: livedesign` ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)). The api worker holds the REST + WebSocket layer ([API](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.livedesign.app` (it binds to the api worker, not the router; [MCP server](../015-api/mcp-server.md)). The router holds **no application logic**: only `MARKETING`, `LIVE`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, R2 buckets, Durable Object bindings and their `[[migrations]]` tags, the account it deploys to (`account_id`, the liveworkspace account) and its public hostnames (see [Custom domain](#custom-domain)). Secrets **never** go in `wrangler.toml` ([Secrets policy](../002-project-scope/secrets-policy.md)).
 
@@ -78,7 +78,7 @@ moves only when every tier succeeded, so a failed Worker is retried
 next time.
 
 **Order.** Three tiers, each waiting for the one before: the services and apis (`livedesign-api`), then the sites
-and the MCP Worker (`livedesign-marketing`, `livedesign-live`, `livedesign-help`, `livedesign-mcp`, which bind to the
+and the MCP Worker (`livedesign-marketing`, `livedesign-live`, `livedesign-mcp`, which bind to the
 api), then the router in front (`livedesign-router`, which binds to all four). A failing tier stops the ones after it.
 
 **One Worker** (the root `deploy-group.mjs`, run by `deploy-group.yml` for each group of Workers: the api with the

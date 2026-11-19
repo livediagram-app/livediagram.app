@@ -1,0 +1,292 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SearchOverview as LivediagramSearchOverview } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchOverview as LivedocumentsSearchOverview } from '@/editions/livedocuments/components/illustrations/search-panel';
+import { SearchOverview as LivedesignSearchOverview } from '@/editions/livedesign/components/illustrations/search-panel';
+import { SearchOverview as LivehuddleSearchOverview } from '@/editions/livehuddle/components/illustrations/search-panel';
+import { SearchSettings } from '@/editions/livediagram/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'The Search Panel',
+  description:
+    'Search everything from one box: your work, teams, tabs, settings and help, then run commands.',
+  path: '/help/search-panel/the-search-panel/',
+});
+
+<ArticleLayout
+  title="The Search Panel"
+  description="One box to jump anywhere: your work, teams, tabs, settings and help, plus actions like creating a tab."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  subArticles={getSubArticles('the-search-panel')}
+>
+
+The **search panel** is the fastest way to get anywhere in <AppName />. It is one box that searches across everything you can reach and runs commands too. The scope adapts to where you are.
+
+<AppNote app="livedesign,livedocuments,livehuddle">
+  When you are in the editor it can act on the canvas too, so the same panel finds a <Noun /> from the Explorer and an element on the canvas.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The same panel finds a plan from the Explorer and a tab inside the plan you have open.
+</AppNote>
+
+<AppNote app="livediagram">
+  It is opened from inside a canvas, where it searches your canvases and teams and that canvas's tabs and elements, and can act on the canvas too. (The [Explorer](/help/explorer/explorer-page/) page has a search panel of its own, over your items, folders, teams, help and settings; this article is about the one in the editor.)
+</AppNote>
+
+## Opening and closing search
+
+- **Keyboard:** press `Cmd` / `Ctrl` + `K`, or `Cmd` / `Ctrl` + `.`. Both open the same panel. (`K` is the usual command-palette shortcut; `.` is the original binding, kept because browsers reserve `Cmd` + `T` for a new browser tab.)
+- **Button:** open **Tools** and choose **Search…**, its first row.
+- **Explorer panel menu:** the Explorer panel's **⋯** menu also has a **Search** row.
+
+<AppNote app="livedesign,livedocuments,livehuddle,liveplanner">
+  The shortcuts work in the editor and on the Explorer page alike. While you are typing in a text box (such as the Explorer's filter box) they are left to that box; in the editor they are off when you turn off keyboard shortcuts in Settings.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments,liveplanner">
+  They also work in [zen mode](/help/tools/zen-mode/) and in view-only <Noun plural />, and are left alone while a dialog is open.
+</AppNote>
+
+<AppNote app="liveplanner">
+  On the Explorer page the keyboard shortcuts setting does not turn them off.
+</AppNote>
+
+<AppNote app="livediagram">
+  The shortcuts work in [zen mode](/help/tools/zen-mode/) and in view-only canvases. While you are typing in a text box they are left to that box, and they are off while a slide deck is running and when you turn off keyboard shortcuts in Settings.
+</AppNote>
+
+<AppNote app="livehuddle">
+  They also work in view-only spaces.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  **Button:** in the editor, **Tools** is near the right-hand end of the bottom bar. On the Explorer page the **Search** button is in the bottom bar. On a phone each button is its icon alone.
+</AppNote>
+
+<AppNote app="liveplanner">
+  **Button:** **Tools** is near the right-hand end of the bottom bar. The Explorer page's bottom bar has Tools too, with Search in it. See [Quick Controls](/help/user-interface/quick-controls/).
+</AppNote>
+
+<AppNote app="livediagram">
+  **Button:** click **Tools** in the bottom bar, then **Search…**, its first row. On a phone the Tools button is its toolbox icon alone.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Button:** in the editor, open **Tools** in the bottom bar and choose **Search…**, the first row. On the Explorer page, click **Search** in the bottom bar, just before Settings. On a phone it is the magnifier alone.
+</AppNote>
+
+The panel pops up near the top of the screen and blurs what is behind it so you can focus on the query. Press `Esc`, click the **Esc** chip at the end of the search box, or click outside the panel to close it.
+
+<AppNote app="livediagram">
+  On a touch screen the chip is a **×**.
+</AppNote>
+
+## What search covers
+
+Type a few letters and matches appear, grouped by what they are. Matching is a simple, case-insensitive "contains" match on the name, so `flow` finds "Checkout flow" and "Workflow". What is in scope depends on where you open it.
+
+<AppNote app="liveplanner">
+  In plans, `plan` finds "Sprint plan" and "Planning".
+</AppNote>
+
+<AppNote app="livediagram">
+  Actions, settings and help articles also match on related words, and when you type several words each one only has to appear somewhere, so "export png" finds **Export…**.
+</AppNote>
+
+<Figure app="livedesign" caption="One query, with matches grouped by type and the first result preselected.">
+  <LivedesignSearchOverview />
+</Figure>
+<Figure app="livediagram" caption="One query, with matches grouped by type and the first result preselected.">
+  <LivediagramSearchOverview />
+</Figure>
+<Figure app="livedocuments" caption="One query, with matches grouped by type and the first result preselected.">
+  <LivedocumentsSearchOverview />
+</Figure>
+<Figure app="livehuddle" caption="One query, with matches grouped by type and the first result preselected.">
+  <LivehuddleSearchOverview />
+</Figure>
+
+<AppNote app="livedesign,livedocuments">
+  **In the editor**, the groups come in this order:
+
+  - **<Noun plural capital />**: your <Noun plural /> and your teams', by name.
+  - **[Teams](/help/search-panel/the-search-panel/search-teams/)**: the teams you belong to, when you are signed in.
+  - **Every App**: once you type, what you can open anywhere in liveworkspace that the groups above miss, such as a <Noun /> shared with you or work in another app. Each is marked with its app's logo and name in the app's colour, and picking one opens it in its own app.
+  - **[Tabs and Elements](/help/search-panel/the-search-panel/search-tabs-and-elements/)** of the current <Noun />, including text inside table cells.
+  - Then **Actions**, **Add to canvas**, **Settings** and **Help** (see below).
+
+  With an empty box, the panel lists what it can browse (your <Noun plural />, teams, and the tabs and labelled elements of this <Noun />), so you can open it and arrow straight to something. Most groups show at most 8 results (12 for Elements, 10 for Actions and Add to canvas, 6 for Settings and Help), so keep typing to narrow a long list.
+</AppNote>
+
+<AppNote app="livedesign">
+  The first group is covered in [Designs](/help/search-panel/the-search-panel/search-designs/).
+</AppNote>
+
+<AppNote app="livedocuments">
+  The first group is covered in [Documents](/help/search-panel/the-search-panel/search-documents/).
+</AppNote>
+
+<AppNote app="livediagram">
+  **In the editor**, the panel searches:
+
+  - **Your [canvases](/help/search-panel/the-search-panel/search-documents/)**, by name.
+  - **Your [teams](/help/search-panel/the-search-panel/search-teams/)**, when you are signed in.
+  - **Every App:** once you type, what else you can open anywhere in liveworkspace: canvases shared with you, your teams' canvases, and items in the other liveworkspace apps. Each row carries its app's logo and name in the app's colour, and picking one opens it in its own app.
+  - **The [tabs and elements](/help/search-panel/the-search-panel/search-tabs-and-elements/)** of the canvas you have open, including text inside table cells.
+
+  With an empty box, the panel lists what it can browse (your canvases, your teams, and the canvas's tabs and labelled elements), so you can open it and arrow straight to something. Most groups show at most 8 results (12 for Elements, 10 for Actions and Add to canvas, 6 for Settings and Help), so keep typing to narrow a long list. The results come in this order: **Canvases**, **Teams**, **Every App**, **Tabs**, **Elements**, then **Actions**, **Add to canvas**, **Settings** and **Help**.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **In the editor**, the panel searches:
+
+  - **Spaces:** your [spaces](/help/search-panel/the-search-panel/search-documents/), your own and those in your teams' libraries.
+  - **Teams:** when you are signed in, the [teams](/help/search-panel/the-search-panel/search-teams/) you belong to, by name.
+  - **Every App:** once you type, what you can open in the other liveworkspace apps (and any of this app's the other groups miss, such as a space shared with you), each marked with its app's logo and name in the app's colour. Picking one opens it in its own app.
+  - **Tabs and Elements:** the [tabs and labelled elements](/help/search-panel/the-search-panel/search-tabs-and-elements/) of the space you have open.
+
+  The results come in this order: **Spaces**, **Teams**, **Every App**, **Tabs**, **Elements**, then **Actions**, **Add to canvas**, **Settings** and **Help**. With an empty box, the panel lists your spaces, teams, and the space's tabs and labelled elements, so you can open it and arrow straight to something. Most groups show at most 8 results (12 for Elements, 10 for Actions and Add to canvas, 6 for Settings and Help), so keep typing to narrow a long list.
+</AppNote>
+
+<AppNote app="liveplanner">
+  **In the editor**, the panel searches:
+
+  - your **[plans](/help/search-panel/the-search-panel/search-projects/)**;
+  - when signed in, your **[teams](/help/search-panel/the-search-panel/search-teams/)**;
+  - the current plan's **[tabs, boards and cards](/help/search-panel/the-search-panel/search-tabs-and-elements/)**: a card by its number (`12`, `#12` or `WI-12`), its card type's prefix (`WI`) or the words of its title.
+
+  With an empty box, the editor's panel lists what it can browse (your plans, teams and the plan's tabs), so you can open it and arrow straight to something. Most groups show at most 8 results (10 for Actions, 6 for Settings and Help), so keep typing to narrow a long list. The results come in this order: **Plans**, **Teams**, **Every App**, **Tabs**, **Boards**, **Cards**, then **Actions**, **Settings** and **Help**. Once you type, an **Every App** group also lists what you can open in the other liveworkspace apps (and any of this app's the other groups miss), each marked with its app's logo and name in the app's colour; picking one opens it in its own app.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  **On the Explorer page**, the panel searches everything you can open: **Items** (your work in every liveworkspace app, including what is shared with you and your teams' work), **Folders** (yours and your teams', a team's marked "in" its name), **Teams**, **Help** (this help centre's Explorer articles) and, when you are signed in, **Settings**. Nothing is listed until you type, and each group shows at most 8 results.
+
+  <Noun plural capital /> kept in [This Browser](/help/privacy-and-security/offline-mode/) are not searched in either place: find them under **This Browser** in the Explorer.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **On the Explorer page**, the panel searches **Items** (what you can open in every app, or only this app's while the Explorer is showing just this app), **Folders** (yours and your teams', a team's marked "in" its name), **Teams**, **Help** and **Settings**, at most 8 of each. Nothing is listed until you type.
+</AppNote>
+
+<AppNote app="liveplanner">
+  **On the Explorer page**, the panel searches your library once you type: **Items** (every plan you can open: your own, your teams' and those shared with you, and with **All Apps** chosen every app's items), **Folders** (your own and your teams'), **Teams**, **Help** (the Explorer's own articles), then **Settings**. An empty box lists nothing.
+</AppNote>
+
+## Beyond navigation
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  In the editor the panel does more than jump around:
+
+  - **[Add to the canvas](/help/search-panel/the-search-panel/search-add-to-canvas/):** search the palette and drop a shape or icon straight onto the canvas.
+  - **[Create a new tab](/help/search-panel/the-search-panel/search-create-tab/):** an action result that spins up a fresh tab.
+  - **[Run any command](/help/search-panel/the-search-panel/command-palette/):** type an action's name (undo, export, settings) and run it. The panel doubles as a command palette on `⌘K`.
+
+  These only appear once you have typed something, and only inside a <Noun />.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  Commands include auto layout, and you can also pick up a canvas tool.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Commands include auto-align, and you can also switch between Edit and Walk.
+</AppNote>
+
+<AppNote app="liveplanner">
+  In the editor the panel does more than jump around:
+
+  - **[Create a new tab](/help/search-panel/the-search-panel/search-create-tab/):** an action result that adds a fresh tab and opens Start Planning on it.
+  - **[Run a command](/help/search-panel/the-search-panel/command-palette/):** type an action's name (undo, rename, export, settings) and run it. The panel doubles as a command palette on `⌘K`.
+
+  These only appear once you have typed something, and only inside a plan.
+</AppNote>
+
+Two more groups help you find your way:
+
+- **Jump to a setting:** a **Settings** group matches the rows of the [Settings](/help/user-interface/settings/) dialog, by name and by the words people use for them, so "dark mode" finds **Theme**. Each result says which category it lives in ("in Appearance"), and picking it opens Settings on that row with the row highlighted.
+- **Find the help for it:** a **Help** group lists matching articles from this help centre, so the explanation of a feature is reachable from the same box as the feature. Articles match on their search synonyms too. Picking one opens the article in a new browser tab, so you do not lose your place.
+
+<AppNote app="livedesign,livedocuments,livehuddle">
+  On the Explorer page, signed in, the Settings group lists the sections of your account's Settings and each app's settings instead, and the Help group offers the Explorer's own articles.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  In the editor, "transparency" finds Opacity.
+</AppNote>
+
+<AppNote app="liveplanner">
+  On the Explorer page, signed in, the Settings group matches the sections of Settings instead (an **Account Settings** section, or an app's own, such as **liveplanner Settings**) and opens Settings there. "kanban" finds Boards.
+</AppNote>
+
+<Figure caption="A Settings result names the category it opens on, with matching help articles listed last.">
+  <SearchSettings />
+</Figure>
+
+<AppNote app="livedesign,livediagram">
+  The Help group always sits last, so a help article never steals the `Enter` from somewhere you were trying to go.
+</AppNote>
+
+<AppNote app="livedocuments,livehuddle,liveplanner">
+  In the editor the Help group always sits last, so a help article never steals the `Enter` from somewhere you were trying to go.
+</AppNote>
+
+## Picking a result
+
+Results are ordered by group, and the very first match is preselected, so for the common case you can just type and press `Enter`. Otherwise click a row, or press the `↑` and `↓` arrow keys to move the highlight and `Enter` to pick it. Picking a result takes you exactly where it points. The panel closes as it goes.
+
+<AppNote app="livedesign,livedocuments,livehuddle">
+  That means opening a <Noun /> or folder, switching to a tab, selecting an element, or jumping to a team.
+</AppNote>
+
+<AppNote app="livediagram">
+  That means opening a canvas, switching to a tab, selecting an element, or opening a team's page in the Explorer.
+</AppNote>
+
+<AppNote app="liveplanner">
+  That means opening a plan or folder, switching to a tab, or jumping to a team.
+</AppNote>
+
+## Read-only views
+
+Search only navigates, so it works in a view-only <Noun /> too: you can still find and jump to tabs. The command palette keeps only the actions that do not change the <Noun />.
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  You can still find and jump to elements. **Add to canvas** results are not offered there. See [The Command Palette](/help/search-panel/the-search-panel/command-palette/#in-read-only-views).
+</AppNote>
+
+<AppNote app="liveplanner">
+  See [The Command Palette](/help/search-panel/the-search-panel/command-palette/#in-read-only-views).
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  <Tip>
+    Looking for something buried deep in a long <Noun />? Open search inside the editor and type part of
+    its label, even a word from a table cell, and jump straight to it.
+  </Tip>
+</AppNote>
+
+<AppNote app="livediagram">
+  <Tip>
+    Looking for a node buried deep in a big canvas? Open search inside the editor and type part of its
+    label, even a word from a table cell, and jump straight to it.
+  </Tip>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Tip>
+    Looking for an element buried deep in a big space? Open search inside the editor and type part of
+    its label, and jump straight to it.
+  </Tip>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Tip>
+    A plan with lots of tabs? Press `⌘K`, type part of a tab's name and press `Enter` to switch to it,
+    quicker than scanning the tab bar.
+  </Tip>
+</AppNote>
+
+</ArticleLayout>

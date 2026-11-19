@@ -80,7 +80,7 @@ TypeScript 7.0 ships no classic compiler API (`import ts from 'typescript'` find
 - **Linting** is oxlint, which parses TypeScript itself ([Linting](../specs/003-system-architecture/linting.md)).
 - **The repo's static guards** (the palette tests, the telemetry emitter scan, the optical guard) parse with `parseSourceFiles` from `@liveworkspace/source-ast`, which asks TypeScript 7's native compiler through `typescript/unstable/sync` and hands back `typescript/unstable/ast` trees: the same nodes, `is*` guards and `SyntaxKind` the classic API had, with `node.forEachChild(visit)` in place of `ts.forEachChild(node, visit)` ([Source scanners](../specs/003-system-architecture/source-scanners.md)).
 
-`apps/help/lib/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
+`liveworkspace/apps/help/editions/livedesign/tests/typescript-version.test.ts` holds every workspace to the root manifest's `typescript` and rejects any alias to another TypeScript, so a second compiler cannot creep back in.
 
 The one exception is `ts-json-schema-generator` (the api's OpenAPI schema generator), which bundles its own TypeScript 5.9 to read the api-schema types; it runs only in `pnpm --filter @livedesign/api gen:openapi` and its drift test.
 
@@ -126,7 +126,7 @@ Those ports are defaults, not fixtures. Four environment variables move them, wh
 
 `E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. `E2E_BASE_URL` and `E2E_LIVE_PORT` are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_LIVE_PORT`, so moving the live app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 
-The optical audit also opens the help centre and the marketing site: build them (`pnpm --filter @livedesign/help --filter @livedesign/marketing build`), or point `E2E_HELP_URL` and `E2E_MARKETING_URL` at their dev servers.
+The optical audit also opens the help centre and the marketing site: build them (`HELP_SCOPE=livedesign corepack pnpm --filter @liveworkspace/help build:scope`, then `corepack pnpm --filter @livedesign/marketing build`), or point `E2E_HELP_URL` and `E2E_MARKETING_URL` at their dev servers.
 
 Keep the suite tiny: add a focused smoke for a browser-risky change, not a broad suite; depth belongs in unit tests where it's cheap.
 

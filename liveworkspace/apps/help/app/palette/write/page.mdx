@@ -1,0 +1,236 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { WriteRows as DiagramWriteRows } from '@/editions/livediagram/components/illustrations/palette-categories';
+import { TextStyleMenu as DesignTextStyleMenu, WriteTextStyles as DesignWriteTextStyles } from '@/editions/livedesign/components/illustrations/text-styles';
+import { WriteRows as HuddleWriteRows } from '@/editions/livehuddle/components/illustrations/palette-categories';
+
+export const metadata = helpMetadata({
+  title: 'Write Elements',
+  description:
+    'Pick the right Write element: a text label or style, a Sticky note, a Pointer note or an Image, by what the words are and where they belong.',
+  path: '/help/palette/write/',
+});
+
+<ArticleLayout
+  title="Write Elements"
+  description="The elements whose content is words (and, in livehuddle, pictures) rather than a shape."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('write')}
+>
+
+The palette's **Write** category holds the elements whose content is yours. What is in it differs in each app, so read the part for yours.
+
+<AppNote app="livediagram">
+
+The **Write** elements (the palette's **Write** category in every mode with a palette strip) hold the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
+
+They differ mostly in **how much you have to say**. A Page holds paragraphs, a Sticky note holds a thought, a Text label holds a line, an Annotation holds a remark you have to hover to read, and a Pointer note holds a remark about one spot, joined to it by a line. The Page sits first because it is the largest writing surface on the canvas.
+
+**What the category contains**
+
+- A **Page** is a paper-shaped surface for prose, and the largest writing surface on the canvas. Double-click to write. Reach for it when the diagram needs a paragraph rather than a caption: a brief beside the boxes, a summary at the top of the canvas. See [Pages](/help/palette/tools/pages/).
+- A **Text** element is a free-standing label with no box around it: just words on the canvas. `T` drops one. Use it for titles, column headings, and anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See [Text and Fonts](/help/canvas/text-and-fonts/).
+- A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. It is what retros, brainstorms and dot votes are made of, and it is what an [idea box](/help/palette/collaborate/idea-boxes/) scatters into. See [Sticky Notes](/help/palette/tools/sticky-notes/).
+- An **Annotation** is a small marker you drop on the canvas that holds a note. Hover it to read, double-click to edit. It is the one that keeps its text _out_ of the way: the remark lives inside the marker instead of taking up canvas. See [Annotations](/help/canvas/annotations/).
+- A **Pointer note** is a short note with a line out to a dot. Drag the dot onto a corner or edge of a shape and the note follows that shape wherever it moves: use it for "this is where it fails" remarks. See [Pointer Notes](/help/palette/pointer-notes/).
+
+**In other editor modes**
+
+In Diagram mode, Write holds these five, then the **Callout**, the **Comment panel** and the **Action card**. Each editor mode keeps its palette to what suits it:
+
+- In [Workshop](/help/canvas/workshop-mode/) mode, Write holds Text, Note and Pointer note, then Table and Checklist: no Page and no Annotation.
+
+Any of the five is still a search away in another mode, and works there once placed.
+
+<Note>
+  Looking for the coloured workshop stickies? The Event Storming notation has [its own palette
+  category](/help/palette/event-storming/).
+</Note>
+
+**Picking between them**
+
+Three of the five are surfaces you compose on; the annotation is not, and the pointer note sits between. That is the line worth knowing.
+
+A Page, a Text label and a Sticky note all put their words **on the canvas**, where everyone reads them without doing anything. An Annotation puts a **marker** on the canvas and hides its words until somebody hovers it. So the question is whether the text is part of what the diagram says, or a side remark about it.
+
+If the diagram is incomplete without the words, use one of the three surfaces. If the words are commentary (a caveat, a reminder, a "we should revisit this"), an annotation says exactly that by being small.
+
+<Note>
+  There is a fourth way to attach words, and it is not in this category: any element can carry a
+  [note](/help/canvas/notes/) or a [comment](/help/collaboration/comments/) of its own. Those belong
+  to the element they are on and move with it, which an annotation dropped nearby does not.
+</Note>
+
+**Cards, not pictures**
+
+Shapes show as a grid of pictures, because the picture is the explanation. The five writing elements are all rectangles with text in them, so at tile size they would look nearly alike. In their [palette panel](/help/palette/toolbar-layout/) each one is a card with a one-line description instead, the text surfaces (Page, Text) first, then the notes (Note, Annotation, Pointer note), because "a paper-shaped page for prose" against "a marker that holds a note" is what you are actually choosing between.
+
+<Figure caption="The Write elements as their panel lists them: Page, Text, Note, Annotation and Pointer note, each with the line that tells them apart.">
+  <DiagramWriteRows />
+</Figure>
+
+**Working with them**
+
+Each behaves like any other element once placed: select, restyle, lock and move it freely, and each can carry a [link](/help/canvas/links/) like anything else on the canvas. The one exception is [rotation](/help/canvas/rotation/), which Page, Text and Note allow and Annotation and Pointer note do not: the annotation is a round marker, so turning it would change nothing worth seeing, and a pointer note's line is pinned to a point, so turning the note would swing it off that point.
+
+Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style a shape's label. See [Text and Fonts](/help/canvas/text-and-fonts/).
+
+<Tip>
+  `T` and `N` drop a text label and a sticky note without opening the palette at all, which is the
+  fast way through a brainstorm: type, `N`, type, `N`.
+</Tip>
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+The palette's **Write** category holds the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
+
+There is no Page element among them: on a tab of pages the page itself is the canvas. Write holds the words you put _on_ a page.
+
+**What the category contains**
+
+- The **text styles** are free-standing text with no box around it, already set as the kind of text it is: **Title**, **Subtitle**, **Heading**, **Subheading**, **Paragraph**, **Quote** and **Caption**. `T` drops a Paragraph. Use them for a screen's words, and for anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See Text Styles below and [Text and Fonts](/help/canvas/text-and-fonts/).
+- A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. See [Sticky Notes](/help/palette/tools/sticky-notes/).
+- A **Pointer note** is a short note with a line out to a dot. Drag the dot onto a corner or edge of a shape and the note follows that shape wherever it moves: use it for "this is where it fails" remarks. See [Pointer Notes](/help/palette/pointer-notes/).
+
+On a logo page, Write holds the **Title**, for a wordmark, the **Subtitle**, for its tagline, and the Sticky note, for a comment on the design.
+
+**Text Styles**
+
+Each text style drops a text already set as that kind of text, so a wireframe's headings, body copy and small print take one step each and read as a hierarchy from the start. Every style starts left aligned, with its own name as the words, selected so you can type straight over it.
+
+| Style      | Size  | Look    | Box             |
+| ---------- | ----- | ------- | --------------- |
+| Title      | 40 px | Bold    | Fits its words  |
+| Subtitle   | 24 px | Regular | Fits its words  |
+| Heading    | 32 px | Bold    | Fits its words  |
+| Subheading | 20 px | Bold    | Fits its words  |
+| Paragraph  | 16 px | Regular | Wraps at 320 px |
+| Quote      | 20 px | Italic  | Wraps at 320 px |
+| Caption    | 12 px | Regular | Fits its words  |
+
+Click the page to drop a style at its own size, or drag across it to set the width it wraps at. The sizes are a screen's: a Paragraph wraps at a phone's column, so it reads as a block on any device.
+
+<Figure caption="Write's text styles, and a phone screen set in them from Title to Caption.">
+  <DesignWriteTextStyles />
+</Figure>
+
+To switch a text to another style, right-click it, open **Appearance**, then **Text**, and pick one under **Text Style**. Each row shows the style in its own weight with its size beside it; rest the pointer on a row to see the text change, and click to keep it. The words, colour, font and alignment stay as they were, and undo takes the change back in one step. The row of the style a text wears is highlighted; a text you have resized or restyled by hand wears none until you pick one. Select several texts to restyle them all at once: with more than one selected, **Text** sits on the menu itself.
+
+<Figure caption="Right-click a text, open Appearance, then Text, and pick a style under Text Style; the one it wears is highlighted.">
+  <DesignTextStyleMenu />
+</Figure>
+
+**Picking between them**
+
+All three put their words **on the page**, where everyone reads them without doing anything. The question is what the words belong to.
+
+A Text label belongs to the page: it is part of what the page says. A Sticky note belongs to whoever wrote it: it reads as a remark or an idea rather than the finished design. A Pointer note belongs to one spot: it says something about a particular element and stays joined to it.
+
+<Note>
+  There is another way to attach words, and it is not in this category: any element can carry a
+  [note](/help/canvas/notes/) or a [comment](/help/collaboration/comments/) of its own. Those belong
+  to the element they are on and move with it.
+</Note>
+
+**Cards, not pictures**
+
+Shapes show as a grid of pictures, because the picture is the explanation. The Write elements are all text, so at tile size they would look nearly alike. In their [palette panel](/help/palette/toolbar-layout/) each one is a card with a one-line description instead, because "a free-standing text label" against "a note with a line to one spot" is what you are actually choosing between.
+
+**Working with them**
+
+Each behaves like any other element once placed: select, restyle, lock, [rotate](/help/canvas/rotation/) and move it freely, and each can carry a [link](/help/canvas/links/) like anything else on the page.
+
+Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style a shape's label. See [Text and Fonts](/help/canvas/text-and-fonts/).
+
+<Tip>
+  `T` and `N` drop a Paragraph and a sticky note without opening the palette at all: type, `N`,
+  type, `N`.
+</Tip>
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+The palette's **Write** category holds the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
+
+There is no Page element among them: on a tab of pages the page itself is where you write, and an [article](/help/pages/articles/) is the place for paragraphs. Write holds the words you put _on_ a page.
+
+**What the category contains**
+
+- The **text styles**, **Title**, **Subtitle**, **Heading**, **Subheading**, **Paragraph** and **Quote**, each add a free-standing text element with no box around it, already set as that style: a Title is large and bold, a Paragraph is body copy that wraps at its width, a Quote is italic. `T` drops a Paragraph. Use them for titles, column headings, body copy, and anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. A style is only a starting point: restyle the text like any other. See [Text and Fonts](/help/canvas/text-and-fonts/).
+- A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. See [Sticky Notes](/help/palette/tools/sticky-notes/).
+- A **Pointer note** is a short note with a line out to a dot. Drag the dot onto a corner or edge of a shape and the note follows that shape wherever it moves: use it for "this is where it fails" remarks. See [Pointer Notes](/help/palette/pointer-notes/).
+
+**Picking between them**
+
+All of them put their words **on the page**, where everyone reads them without doing anything. The question is what the words belong to.
+
+Text in one of the styles belongs to the page: it is part of what the page says. A Sticky note belongs to whoever wrote it: it reads as a remark or an idea rather than the finished design. A Pointer note belongs to one spot: it says something about a particular element and stays joined to it.
+
+<Note>
+  There is another way to attach words, and it is not in this category: any element can carry a
+  [comment](/help/collaboration/comments/) thread of its own. It belongs to the element it is on and
+  moves with it.
+</Note>
+
+**Cards, not pictures**
+
+Shapes show as a grid of pictures, because the picture is the explanation. The Write elements are all text, so at tile size they would look nearly alike. In their [palette panel](/help/palette/toolbar-layout/) each one is a card with a one-line description instead, because "the name at the top of a page" against "a note that points at a spot" is what you are actually choosing between.
+
+**Working with them**
+
+Each behaves like any other element once placed: select, restyle, lock, [rotate](/help/canvas/rotation/) and move it freely, like anything else on the page.
+
+Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style a shape's label. See [Text and Fonts](/help/canvas/text-and-fonts/).
+
+<Tip>
+  `T` and `N` drop a Paragraph and a sticky note without opening the palette at all: type, `N`,
+  type, `N`.
+</Tip>
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+The **Write** elements are the ones whose content is _yours_: words, and pictures. Everywhere else in the palette you place a piece of furniture or a room and then maybe label it; here what you write or bring is the point, and the element is just what carries it.
+
+The two writing elements differ mostly in **whose words they are**. A Text label is the board's own structure: a title, a heading, the name of a room. A Sticky note is somebody's contribution: an idea, a question, a point to raise. An **Image** is the picture that makes a Space yours: your logo on the reception wall, a team photo by the door, a floor plan by the lifts.
+
+**What the category contains**
+
+- A **Text** element is a free-standing label with no box around it: just words on the canvas. `T` drops one. Use it for titles, headings, and anything that labels a _region_ rather than an element. See [Text and Fonts](/help/canvas/text-and-fonts/).
+- A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. It is what brainstorms are made of. See [Sticky Notes](/help/palette/tools/sticky-notes/).
+- An **Image** places a picture you upload. Pick it, then click the canvas for a default size or drag out the size you want: the image lands as an empty frame, and its **Select Image** button (or a double-click) opens the picker, where you upload a file, reuse one from your gallery or search for an openly licensed picture.
+
+**Pasting or dropping a picture**
+
+You don't need the palette to add a picture. Copy one (a screenshot, or an image from a web page) and press `⌘V` (`Ctrl+V` on Windows) on the canvas, or drag an image file from your computer onto the canvas. It uploads to your image gallery and lands as an image of its own shape, in the middle of the screen for a paste or where you let go for a drop. PNG, JPEG, WebP and GIF pictures work: a picture in another format says which ones to use, and any other file is turned away with a short note.
+
+Adding a picture is for editors: on a Participant or view-only [share link](/help/collaboration/sharing/) there is no palette and a paste or a drop does nothing, but everybody in the Space sees the pictures that are there.
+
+**Rows, not pictures**
+
+Text and Note are both rectangles with words in them, so at tile size they would look nearly alike. In their [palette panel](/help/palette/toolbar-layout/) each Write element is a row with a one-line description instead: "a free-standing text label" against "a coloured note card" is what you are actually choosing between.
+
+<Figure caption="The Write elements as their panel lists them: Text, Note and Image, each with the line that tells them apart.">
+  <HuddleWriteRows />
+</Figure>
+
+**Working with them**
+
+Each behaves like any other element once placed: select, restyle, rotate and move it freely, like anything else on the canvas.
+
+Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style any label. See [Text and Fonts](/help/canvas/text-and-fonts/).
+
+<Tip>
+  `T` and `N` drop a text label and a sticky note without opening the palette at all, which is the
+  fast way through a brainstorm: type, `N`, type, `N`.
+</Tip>
+
+</AppNote>
+
+</ArticleLayout>

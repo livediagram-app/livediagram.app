@@ -1,0 +1,96 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { Minimap } from '@/editions/livediagram/components/illustrations/user-interface';
+import { Minimap as LivehuddleMinimap } from '@/editions/livehuddle/components/illustrations/user-interface';
+
+export const metadata = helpMetadata({
+  title: 'Map',
+  description:
+    'A zoomed-out overview of the canvas in the bottom-left with a box for your view: tap or drag it to jump around, and scroll it to zoom. Where an app has no Map, Contents and the page navigator take its place.',
+  path: '/help/user-interface/minimap/',
+});
+
+<ArticleLayout
+  title="Map"
+  description="A zoomed-out overview of the whole canvas in the corner, with a box marking where you are: tap or drag to navigate."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+<AppNote app="livedesign">
+  The Map is for a canvas without pages. Every <AppName /> tab is laid out as pages, so the Map never shows: [Contents](/help/pages/working-with-pages/#contents) lists the pages instead, and the [zoom controls](/help/user-interface/zoom-controls/) frame the page nearest the middle. [Settings](/help/user-interface/settings/) still lists **Panels › Map**, but its rows have no effect.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Some canvas apps keep a zoomed-out **Map** of the whole canvas in a corner. <AppName /> doesn't show one: every tab is laid out in [pages](/help/pages/working-with-pages/), and the pages themselves are the overview.
+
+  **Finding your way round a tab.**
+
+  - **Contents** lists every page in the tab with a picture of it, its number and its name, and highlights the one you are on. Press a page to glide there. On a computer it sits as a sidebar down the left once a tab has more than one page; on a phone it is a button in the bottom-right corner. See [Contents](/help/pages/working-with-pages/#contents).
+  - **The page navigator** in the bottom-right corner, beside Undo and Redo, shows "2 of 5" between **Previous page** and **Next page**, each fitting that page to the screen. On a stack of pages (flashcards, or any tab you stack), the page in front has its own **Previous** and **Next** instead.
+  - **Fit** in the bottom-right corner fits the page you are nearest. The [zoom controls](/help/user-interface/zoom-controls/) zoom in and out.
+  - With nothing selected, the **arrow keys** move to the next or previous page.
+
+  **The Map settings.** [Settings](/help/user-interface/settings/) still lists **Panels › Map** (**Enable Map**, **Dim Outside the View** and **Map Size**). Because a <AppName /> tab always has pages, the Map never shows and these rows have no effect.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  When the canvas grows past one screenful, the **Map** in the bottom-left corner keeps the whole thing in view. It draws a zoomed-out miniature of every element in its real colours (labels left out), with a coloured rectangle marking the part of the canvas you're currently looking at, so you always know where you are and what's off-screen.
+</AppNote>
+
+<AppNote app="livediagram">
+  Arrows are drawn too.
+</AppNote>
+
+<Figure app="livediagram" caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there.">
+  <Minimap />
+</Figure>
+<Figure app="livehuddle" caption="The Map mirrors the canvas; the outlined box is your current view. Tap or drag it to move there.">
+  <LivehuddleMinimap />
+</Figure>
+
+<AppNote app="livediagram,livehuddle">
+  **Navigating with it.**
+
+  - **Tap** anywhere on the Map to re-centre the canvas on that spot.
+  - **Drag** across it to pan continuously: the view box follows your pointer.
+  - **Scroll** on the Map to zoom the canvas in or out, centred where you scroll.
+
+  The view box updates live as you pan and zoom by any means, so the Map doubles as a constant "you are here" indicator.
+</AppNote>
+
+<AppNote app="livediagram">
+  The shapes use their real outlines (a circle reads as a circle), and arrows show as connecting lines, so the overview is a faithful miniature rather than a grid of blocks.
+</AppNote>
+
+<AppNote app="livediagram">
+  Elements on a hidden [layer](/help/canvas/layers/) drop out of the Map too, so it always matches the canvas.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The elements use their real outlines (a round rug reads as round), so the overview is a faithful miniature rather than a grid of blocks.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  **When it shows, and turning it off.** The Map appears once a tab has **four or more elements** to map, and it sits in the bottom-left corner. It's a desktop convenience, so it stays hidden on phones where the canvas is already edge-to-edge.
+</AppNote>
+
+<AppNote app="livediagram">
+  It steps aside in [Zen mode](/help/tools/zen-mode/).
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  Like the other corner panels, it can be collapsed from its header or dragged to another corner (see [Panel Layout](/help/user-interface/panel-layout/)).
+
+  Its settings live in [Settings](/help/user-interface/settings/), under **Panels › Map**:
+
+  - **Enable Map**: switch it off to hide the Map, and on again to bring it back.
+  - **Dim Outside the View**: shades the part of the Map outside what you are looking at, so the view box stands out. On by default.
+  - **Map Size**: **Short**, **Medium** (the default) or **Tall**.
+
+  <Tip>
+    On a big canvas, scroll on the Map to zoom straight into a far corner, instead of panning all the way there and zooming separately.
+  </Tip>
+</AppNote>
+
+</ArticleLayout>

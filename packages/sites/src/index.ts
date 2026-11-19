@@ -480,3 +480,6 @@ export {
 // The label every footer gives the platform-wide terms (liveworkspace/docs/specs/010-site/site.md "Privacy and
 // terms"): one document for liveworkspace.app and every app, so each footer names it the same way.
 export const TERMS_LABEL = 'Terms of Use';
+
+/** The one public contact form every app's help and site links (a liveplanner form, filled in without an account). */
+export const CONTACT_FORM_URL = 'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj';

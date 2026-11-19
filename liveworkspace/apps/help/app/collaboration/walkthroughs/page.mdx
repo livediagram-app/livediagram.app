@@ -1,0 +1,91 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Walkthroughs',
+  description:
+    'Record yourself talking someone through the work, camera bubble and all, and let them play it back over it, pausing to look around.',
+  path: '/help/collaboration/walkthroughs/',
+});
+
+<ArticleLayout
+  title="Walkthroughs"
+  description="A recorded tour: your voice, your camera and where you went, played back over the work as it is now."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('walkthroughs')}
+>
+
+A walkthrough is a recording of you talking someone through the <Noun />. It keeps your voice, your camera if you leave it on (shown as a round bubble in a corner), your pointer, and every pan, zoom and tab change you make. Whoever plays it watches it over the <Noun /> itself, not in a video, so they can pause, look around and resume.
+
+<AppNote app="livediagram">
+  It also keeps every slide step you make.
+</AppNote>
+
+<AppNote app="livedocuments">
+  It also keeps every slide step you make.
+</AppNote>
+
+## Recording a Walkthrough
+
+<Step n={1}>
+  Open **Tools** in the footer, press **Walkthroughs**, then **Record Walkthrough**. The recording
+  dock opens at the bottom of the <Noun />.
+</Step>
+
+<Step n={2}>
+  Pick your **Microphone**. The **Camera** switch starts off, so a walkthrough records your voice
+  alone and the browser asks only for the microphone; turn it on to pick a camera and show yourself
+  in a round bubble. The dock remembers your choice in this browser. If the browser hasn't been
+  allowed to list your devices yet, press **Allow Microphone** (or **Allow Camera**) to ask it. The
+  level meter shows the microphone hears you.
+</Step>
+
+<Step n={3}>
+  Press **Start Recording**. After a 3, 2, 1 countdown, talk and move around the <Noun /> as you
+  would with someone beside you. Press **Finish** when you are done.
+</Step>
+
+<Step n={4}>
+  Give it a **Title** and press **Save**. It is listed under Walkthroughs in Tools for everyone who
+  can open the <Noun />.
+</Step>
+
+A walkthrough can run for up to ten minutes; the bar turns amber with a minute left and finishes on its own at ten. If saving is refused (it is too large, or you have reached your limit), the dock says why and offers **Download a Copy** so the recording isn't lost.
+
+## Hiding Elements From the Recording
+
+Press **Hide From Recording** in the dock, then press each element viewers shouldn't see: a private note, an unfinished corner. **Hide Selection** hides what is already selected, and **Done** or `Esc` leaves the mode. You still see hidden elements, faded inside a dashed outline; people playing the walkthrough never do, and presses and pointer moves over them are left out of what is stored. They stay on the <Noun /> itself for anyone who opens it.
+
+<AppNote app="liveplanner">
+  What a press picks depends on the tab: an element on a plan tab (a card on a board drawn there is the card), a card on a **Board** tab, a widget on a **Dashboard** tab. **Hide Selection** also hides the cards you have selected on a board. A **Sheet** or **Form** tab has nothing to hide, so the dock leaves Hide From Recording out there.
+</AppNote>
+
+## Playing a Walkthrough
+
+Open **Tools** in the footer, press **Walkthroughs**, and press one to play it. The view follows the recording, fitted to your screen, with the presenter's pointer and, in the corner, their camera bubble, or a small chip with their name when they recorded without the camera.
+
+- **Pause, look around, resume.** Pan, zoom or press on the <Noun /> and it pauses, leaving the view with you. **Resume** puts the view back where the recording is and plays on.
+- **Keys.** `Space` plays and pauses, `←` and `→` skip five seconds, `Esc` closes. The bar also has a scrubber and a speed of 1x, 1.5x or 2x.
+- **Edited since recording.** If the <Noun /> has changed since, a line says so and it still plays over the <Noun /> as it is now.
+
+<AppNote app="livediagram">
+  Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the presentation at the slide you were on, moves through the slides as you did, and leaves it when you left it.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Recorded while you present the slide deck, a walkthrough replays the deck too: it starts the presentation at the slide you were on, moves through the slides as you did, and leaves it when you left it.
+</AppNote>
+
+Closing puts you back where you were.
+
+## Who Can Record and Delete
+
+Editors record walkthroughs and can delete any of them. Everyone who can open the <Noun /> can play them, and anyone can delete one they recorded. Walkthroughs aren't offered on a phone, in an embed, for a <Noun /> kept in **This Browser**, or through a link to one tab.
+
+## Privacy
+
+Calls are never recorded. A walkthrough is only made when you press Start Recording, and it is stored with the <Noun /> for the people who can open it. Deleting a walkthrough, purging its <Noun /> from the Trash or deleting your account deletes it. See the [privacy policy](https://www.liveworkspace.app/privacy).
+
+</ArticleLayout>

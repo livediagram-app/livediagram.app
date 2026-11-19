@@ -445,7 +445,7 @@ hardening landed first:
    - A new help article (e.g. `account-and-data/api-tokens`) covering what
      tokens are, creating/revoking them **from the Explorer**, the **6-month
      expiry + manual rotation**, and the **signed-in-only** limitation:
-     registered in `apps/help/lib/articles.ts`.
+     registered in `liveworkspace/apps/help/lib/articles.ts`.
    - Add API tokens to the "what signing in unlocks" list in the
      `account-and-data/signing-in` article (next to teams + cross-device sync).
    - `docs/` updates: note the new `/api/tokens` surface + its account
@@ -454,7 +454,7 @@ hardening landed first:
    - ✅ Public API reference for the existing routes. Two layers, both
      shipped: the machine-readable `GET /api/openapi.json`
      ([API documentation (OpenAPI)](api-documentation.md)), and a human-facing **Developers**
-     category in the help centre ([Help app](../018-help/help-app.md)) whose API
+     category in the help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)) whose API
      reference links out to it. The `account-and-data/api-tokens` article
      cross-links the reference as the next step after minting a token.
 

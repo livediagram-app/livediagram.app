@@ -1,0 +1,150 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { WorkStorage, AccessControl } from '@liveworkspace/help-site/art/illustrations/privacy';
+
+export const metadata = helpMetadata({
+  title: 'Data Privacy',
+  description:
+    'Where your work lives, what is stored, and the control you have over your own data.',
+  path: '/help/privacy-and-security/data-privacy/',
+});
+
+<ArticleLayout title="Data Privacy" description="Where your work lives, what gets stored, and how you stay in control of your own data." categoryTitle="Privacy and Security" categorySlug="privacy-and-security">
+
+Your <Noun plural /> are the whole point, so it helps to know exactly where they live and who can reach them. <AppName /> stores <Noun plural /> on Cloudflare infrastructure behind an authenticated API, never in a third-party analytics product, and you keep control of them whether you sign in or stay a guest. This page explains how it works; the [Privacy Policy](https://www.liveworkspace.app/privacy), which covers every liveworkspace app, is the formal statement for the hosted service.
+
+## Where Your Work Lives
+
+<Noun plural capital /> are saved through a single Cloudflare Worker API. The browser never talks to storage directly.
+
+<AppNote app="livediagram">
+  - **Durable storage** is one Cloudflare Durable Object per canvas, reached only through the API: the canvas's tabs, comments and the images it places are stored there. Where it is filed, its folders, share links and its History events (the last 30 days) are kept by liveworkspace's index, the shared library behind every liveworkspace app.
+  - **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, the canvas's room. It also keeps a working record of collaborative input (answers, ideas, ticks, votes, comments and live polls) in its own storage, so that saves made at the same moment can be merged.
+  - **Images** you add are kept by liveworkspace's media service, and a cached picture of each canvas, used for its thumbnail and live image, in Cloudflare R2 object storage; both are served back through the same API. Location and camera details are stripped from a JPEG before it is stored.
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Durable storage** is one Cloudflare Durable Object per document, reached only through the API: the document's tabs, pages, comments and the images it places are stored there. Where it is filed, its folders, share links and its History events (the last 30 days) are kept by liveworkspace's index, the shared library behind every liveworkspace app.
+  - **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, the document's room. It also keeps a working record of collaborative input (such as comments), so that saves made at the same moment can be merged.
+  - **Images** you add are kept by liveworkspace's media service, and a cached picture of each document, used for its thumbnail and live image, in Cloudflare R2 object storage; both are served back through the same API. Location and camera details are stripped from a JPEG before it is stored.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Durable storage** is one Cloudflare Durable Object per space, reached only through the API: the space's tabs and the images it places are stored there. Where it is filed, its folders, share links and its History events (the last 30 days) are kept by liveworkspace's index, the shared library behind every liveworkspace app.
+  - **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, the space's room. It also keeps a working record of collaborative input (reactions and the like) in its own storage, so that saves made at the same moment can be merged.
+  - **Images** you add are kept by liveworkspace's media service, and a cached picture of each space, used for its thumbnail and live image, in Cloudflare R2 object storage; both are served back through the same API. Location and camera details are stripped from a JPEG before it is stored.
+</AppNote>
+
+<AppNote app="livedesign">
+  - **Each design's content** (its tabs and everything on them) lives in its own Cloudflare Durable Object, one per design, with its own storage. The same object runs the design's real-time room (who is in it, live cursors, in-flight edits) and keeps a working record of collaborative input (such as comments), so that saves made at the same moment can be merged.
+  - **Where each design is filed and who may open it** (its folder, team, share links, Trash, and its History events for the last 30 days) is kept by liveworkspace's index, the service every liveworkspace app shares. Your account, settings and teams are kept by liveworkspace's accounts service.
+  - **Images** you add are kept by liveworkspace's media service, in Cloudflare R2 object storage, and served back through the same API, which checks who may see them. Location and camera details are stripped from a JPEG before it is stored. A cached picture of each design, used for its thumbnail and live image, is kept in the API's own R2 storage.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Durable storage**: each plan lives in its own Cloudflare Durable Object, which keeps its tabs, cards, sheets and forms in its own storage. Where a plan is filed, its folders, its share links and its History (the last 30 days) are kept by liveworkspace's index, the service every liveworkspace app files its work in.
+  - **Real-time state** (who is in the room, live cursors, in-flight edits) is handled by the same Durable Object, one room per plan. The room also keeps a working record of collaborative input (answers, ideas, ticks, votes and comments) in its own storage, so that saves made at the same moment can be merged.
+  - **A cached picture of each plan**, used for its thumbnail, live image and share-link card, is stored in Cloudflare R2 object storage and served back through the same API. The only pictures liveplanner stores are the ones you add yourself: to a card's Image field, or to a form as its cover or a Picture block. A form's **Search** tab sends your search words from your browser straight to Openverse, the open image search engine, which sees them and your IP address under its own privacy policy; our servers never see the search.
+</AppNote>
+
+**Or nowhere but your own machine.** A <Noun /> created in [Offline Mode](/help/privacy-and-security/offline-mode/) lives only in this browser's IndexedDB. It is never stored by the API, so none of the storage above holds a copy of it, and it stays that way until you choose **Sync <Noun capital />** to move it to the cloud.
+
+<AppName /> runs on Cloudflare. Your <Noun /> content goes to another company only when you use a feature that needs one:
+
+- **Emails** about your work go through the email provider. They name the <Noun />.
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  A mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)).
+</AppNote>
+
+<AppNote app="livehuddle">
+  Emails never quote what is in the Space (see [Email Notifications](/help/account-and-data/email-notifications/)).
+</AppNote>
+
+<AppNote app="liveplanner">
+  liveplanner's email goes out through Cloudflare Email Service too. A mention or an assigned action quotes a little of the comment or action (see [Email Notifications](/help/account-and-data/email-notifications/)). **AI tools you connect** yourself, through [MCP](/help/account-and-data/connect-ai-mcp/) or the [CLI](/help/developers/cli/), read the plans you let them reach, under their own terms.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Reading sticky notes from a photo** sends small crops of the notes, never the whole photo, to the reading model the deployment uses (Google's Gemini on livediagram.app). On a deployment without a reading model the notes are read in your browser and nothing is sent. Nothing is sent until you import a photo.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  **[Google Drive](/help/account-and-data/google-drive/)**, if you connect it, gets a copy of your <Noun plural /> in your own Drive, written by liveworkspace's Drive service (it holds your Google grant, sealed, and never hands it to your browser). **Image search** sends what you type in the image picker's **Search** tab straight from your browser to Openverse, the open image search engine; no <AppName /> server sees it.
+</AppNote>
+
+<Figure app="liveplanner" caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to storage.">
+  <WorkStorage blobs="Snapshots" />
+</Figure>
+
+<Figure app="livediagram,livedocuments,livehuddle" caption="Your edits travel through one API to Cloudflare storage, never straight from the browser to storage.">
+  <WorkStorage />
+</Figure>
+
+<Figure app="livedesign" caption="Your edits travel through one API to Cloudflare storage, never straight from the browser.">
+  <WorkStorage />
+</Figure>
+
+## What Is Stored, and Who Can Read It
+
+A <Noun /> is owned by an identity. That identity is either a signed-in account or, for guests, a guest identity that liveworkspace gives your browser, which is the same in every liveworkspace app. Only the owner, people holding a valid [share link](/help/collaboration/sharing/), and the members of the [team](/help/collaboration/teams/) whose library the <Noun /> is in can read a <Noun />. Opening a <Noun /> you cannot access returns a plain "not found", so its contents and name are never revealed.
+
+<AppNote app="livediagram">
+  A canvas you [share to the Community](/help/collaboration/sharing/community/) is public until you remove it.
+</AppNote>
+
+<Figure app="livediagram" caption="A canvas is tied to its owner, so a request from anyone without access comes back as a plain not found.">
+  <AccessControl noun="canvas" />
+</Figure>
+
+<Figure app="livedocuments" caption="A document is tied to its owner, so a request from anyone without access comes back as a plain not found.">
+  <AccessControl noun="document" />
+</Figure>
+
+<Figure app="livedesign" caption="A design is tied to its owner, so a request from anyone without access comes back as a plain not found.">
+  <AccessControl noun="design" />
+</Figure>
+
+<Figure app="livehuddle" caption="A space is tied to its owner, so a request from anyone without access comes back as a plain not found.">
+  <AccessControl noun="space" />
+</Figure>
+
+<Figure app="liveplanner" caption="A plan is tied to its owner, so a request from anyone without access comes back as a plain not found.">
+  <AccessControl noun="plan" />
+</Figure>
+
+<AppNote app="livehuddle">
+  **Calls, cameras and screens.** What you say, show on camera or share from your screen in a Space is never stored. It travels from your browser through Cloudflare's realtime service to the people who can hear you, and nowhere else: livehuddle's server sets up each connection but never receives the sound or picture, and nothing is recorded or transcribed.
+
+  - **Only when you choose.** The microphone opens the first time you unmute (it starts muted), the camera when you turn it on, and a screen when you pick it, each after your browser asks. A muted microphone is released after 15 seconds with nobody else on your tab, and a screen share carries no sound.
+  - **A preview stays with you.** A camera or screen turned on with no call joined shows only to you, marked **Only You**; nothing is sent.
+  - **Who receives it.** The people in earshot, or in the same room, hear you and see your camera and screen. From a stage, the whole tab hears you, and sees you only if the stage shows cameras. Everyone on the tab can see that you are talking, never what you say.
+  - **Never peer to peer.** Your browser connects to Cloudflare, not to anyone else's browser, so other people never see your IP address.
+  - **Your character's moves, messages, status, raised hand and knocks** go live to the people in the Space and are never stored.
+
+  The [Privacy Policy](https://www.liveworkspace.app/privacy#livehuddle-calls) says the same, formally.
+</AppNote>
+
+## Staying in Control
+
+- **Guest by default.** You can build and share <Noun plural /> without ever creating an account. See [working as a guest](/help/getting-started/guest-vs-account/).
+- **Keep it in the browser.** [Offline Mode](/help/privacy-and-security/offline-mode/) keeps a <Noun /> off the server entirely.
+- **Share on your terms.** Add a [share password](/help/privacy-and-security/share-link-security/) to a <Noun /> or an expiry to a share link, and revoke links at any time.
+- **Delete what you own.** Deleting a <Noun /> moves it to the [Trash](/help/account-and-data/trash/) for 30 days, then removes it with its tabs, comments and share links; you can delete it permanently from the Trash sooner. Signed-in users can [delete their whole account](/help/account-and-data/deleting-your-data/#deleting-your-account), which removes their personal <Noun plural />, folders, tokens and preferences straight away.
+- **Opt out of analytics.** The anonymous usage events have a switch in Settings. See [What We Collect](/help/privacy-and-security/what-we-collect/).
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  Deleting your account also removes your images.
+</AppNote>
+
+<AppNote app="livediagram,livedesign,livehuddle,liveplanner">
+  <Noun plural capital /> in a team library stay with the team when you delete your account.
+</AppNote>
+
+<Note>
+  <AppName /> does not claim end-to-end encryption. Work is protected by authentication and access
+  controls, not by client-side encryption. Found a way around them? Please [report it
+  privately](/help/policies/report-a-vulnerability/).
+</Note>
+
+</ArticleLayout>

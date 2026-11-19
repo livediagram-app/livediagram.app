@@ -52,7 +52,7 @@ Scope, by file:
 | `apps/editor/components/canvas/whiteboard/WhiteboardDock.tsx`           | The Path tool button (`ShapePenIcon`); Select's edit-mode glyph (`EditPointsIcon`)                                                |
 | `apps/editor/components/palette/palette-icons.tsx`                      | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts | Sentences for the four events                                                                                                     |
-| `apps/help/app/canvas/draw-mode/page.mdx`                               | The Path tool section                                                                                                             |
+| `liveworkspace/apps/help/app/canvas/draw-mode/page.mdx`                               | The Path tool section                                                                                                             |
 
 ## Domain and naming
 

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import type { ArticleLink } from '../types';
 import { ArrowLeftIcon, ArrowRightIcon, MessageIcon } from './chrome-icons';
 
-// The foot of an article (docs/specs/018-help/help-pages.md "Article pages"): the previous and next articles in
+// The foot of an article (liveworkspace/docs/specs/016-help/help-centre.md "Article pages"): the previous and next articles in
 // its reading order, and the way on for a reader the article did not help.
 
 const PAGER_CARD = 'card-glow group flex flex-col rounded-xl bg-white px-5 py-4 dark:bg-slate-900';

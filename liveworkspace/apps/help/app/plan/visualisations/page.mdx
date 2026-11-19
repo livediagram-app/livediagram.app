@@ -1,0 +1,121 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  PlanGanttSwimlanesScene,
+  PlanVisualisationsPickerScene,
+} from '@/editions/liveplanner/components/illustrations/plan-visualisations';
+import { PlanGanttClashScene } from '@/editions/liveplanner/components/illustrations/plan-gantt-clash';
+
+export const metadata = helpMetadata({
+  title: 'Charts of Your Cards',
+  description:
+    'Chart your Plan cards on visualisation tabs: a Gantt chart, calendars, Cards by Field, Card Search, and Cycle Time, Throughput and Cumulative Flow, all live.',
+  path: '/help/plan/visualisations/',
+});
+
+<ArticleLayout
+  title="Charts of Your Cards"
+  description="A Gantt chart, calendars and more, each filling a tab and drawn live from every card in the plan."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+A **Visualisation tab** is a tab of your plan given over to one chart of your cards (see [Planning Basics](/help/plan/planning-basics/)): a Gantt chart of what runs when, a calendar of what is due, or a breakdown of who has what. The chart reads every card in the plan, whichever board it sits on, and changes as the cards do, for everyone at once. The same charts can also sit in the slots of a [Dashboard](/help/plan/dashboards/), beside your boards and sheets.
+
+## Start a Visualisation Tab
+
+On a new tab, **Start Planning** shows in the middle. Choose **Visualisations** in its rail ("One chart filling the tab, read live from every card"), then press a chart's card. The tab becomes a Visualisation tab of that chart, and a tab still on its default name takes the chart's name. Typing a chart's name in the search box finds it too.
+
+<Figure caption="Start Planning on its Visualisations category: one card per chart, each with a small picture of how it looks.">
+  <PlanVisualisationsPickerScene />
+</Figure>
+
+Only people who can edit the plan see **Start Planning**. To get a new tab, press the **+** in the tab bar.
+
+## The Charts
+
+- **Gantt Chart**: a row per card with a **Start** and a **Due** date, drawn as a bar from one to the other in the card's colour (or its type's colour), filled to the share of its child cards that are done, with a line for today. A card with only a due date is a diamond. Pick **Month**, **Quarter** or **Year** in its header, step with the arrows, and press **Today** to come back to now. Drag either end of a bar to change that date, or the middle to move both, and press **Add Card** under the last row for a new card that starts today and is due a week on.
+- **Due Calendar**: this month, each day listing the cards due then. Step through months with the arrows. Drag a card to another day to change its due date, or focus it and press **Alt+←** and **Alt+→** to move it a day, **Alt+↑** and **Alt+↓** a week.
+- **Start Calendar**: the same month, each day listing the cards that start then. Moving a card here changes its start date.
+- **Cards by Field**: a bar per person to start with, each split Not Started, In Progress and Done. Group it by a priority, a type, a state or any field of your own instead; its heading says which ("Cards by Assignee", "Cards by Severity").
+- **Priority by Status** (its card in Start Planning is **Priority Matrix**): how many cards of each priority are not started, in progress and done.
+- **Card Search**: the cards that match the filters along its top, such as **Card Type: Project** or **Assignee: No assignee**, laid out as a board draws them. **Add Filter** offers only fields and values some of the remaining cards hold, so a filter never leaves you with nothing. The filters are saved with the chart, so everyone sees the same search.
+- **Cycle Time**, **Throughput** and **Cumulative Flow**: how work moves over time, read from your cards' history. See [See How Work Flows](#see-how-work-flows) below.
+
+A card counts as done when its status is one of a board's done columns. Press a row, bar or entry to open its card. On a Visualisation tab the chart fills the tab, and its name sits in the menu box at the top left: an editor can click it to rename the chart and the tab together.
+
+## Change What a Chart Shows
+
+Press the cog at the end of the chart's header to open **Chart Settings**. Its sections open one at a time:
+
+- **Range** (the flow charts): **Last 14 Days**, **Last 30 Days** (the default), **Last 90 Days** or **Last 180 Days**, each ending today.
+- **Card Types**: which card types the chart shows. Only types with the fields it reads are listed (a **Due** field for the Due Calendar, both **Start** and **Due** for the Gantt Chart), and at least one stays picked. Add those fields to a type in [Card Types](/help/plan/card-types/) to bring it onto the chart.
+- **Group By** (Cards by Field): the field it gives a bar to each value of, a Person or Labels field of your own included.
+- **Count By** (Cards by Field): what each bar adds up. **Cards** counts them; **Estimate** or a Number field of your own (say **Story Points**) adds up their values, so the header reads `34 points`.
+- **Dates** (Gantt Chart and the calendars): the date field the chart reads. A Gantt chart has **Starts On** and **Due On**, a calendar the one it places cards by. Each starts on **Start Date** or **Due Date**; pick a Date field of your own (say **Kickoff**) and the chart draws, drags and adds cards by it instead.
+- **Statuses** (Cards by Field and Priority by Status): untick a status to leave its cards out.
+- **Swimlanes** (Gantt Chart): group the rows by **Assignee**, **Type**, **Priority**, **Status** or any field your card types have, or **None**. Each lane has a header with its name and count; click it to fold the lane away (just for you).
+- **Row Order** (Gantt Chart): rows run by start date until you drag them. Once you have, **Sort by Date** puts them back in date order.
+
+When a chart sits in a Dashboard slot, its cog holds the same settings, with the slot's own settings after them.
+
+<Figure caption="A Gantt chart in swimlanes by Assignee, a row's grip showing Drag to Reorder, and Chart Settings open on Swimlanes.">
+  <PlanGanttSwimlanesScene />
+</Figure>
+
+## See How Work Flows
+
+Every other chart is a picture of today. The three **flow charts** show how work has moved over a range of days, read from each card's history, so a team can see whether it is getting work done faster or slower and where it piles up. A card is **started** when it first moves into an In Progress column (a column between a board's first column and its done columns) and **finished** when it moves into a done column.
+
+- **Cycle Time**: a dot for each card finished in the range, at the day it finished and how many days it took from started to finished. Two lines cross it: the **50%** line, half the cards were done within it, and the **85%** line, the time most cards get done within. The line above the chart says both, such as "85% in 6 days or less · 50% in 3". Hover a dot to see its card, press it to open the card. On the keyboard, focus the chart, step through the dots with **←** and **→**, and press **Enter** to open one.
+- **Throughput**: a bar for each week (each day over the last 14 days) of how many cards were finished in it, the week still running drawn lighter, and a dashed line at the average over the whole weeks ("8 a week on average").
+- **Cumulative Flow**: a band for each status, stacked with Done at the bottom and the first column on top, showing how many cards stood in each at the end of each day. A band that keeps widening is where work is piling up. Hover a day to see each status's count. The plan counts its cards from the day this arrived, so a newer range starts there and says "Counting since 15 Nov".
+
+The flow charts need a plan saved to your account: plans kept in **This Browser** keep no history, and show **Flow Needs a Cloud Plan**. History is kept for 180 days, so no range is longer. Days run midnight to midnight UTC. A card in the Trash is never counted; an archived card still counts where it stood, so the Done band never drops when you archive finished cards.
+
+## Dependency Clashes on a Gantt Chart
+
+A Gantt chart draws an arrow from each card to the cards it blocks (their **Blocked By** links, see [Card Types](/help/plan/card-types/)). When a blocked card starts on or before the day an unfinished blocker is due, the two **clash**:
+
+- The arrow turns **amber**.
+- The blocked card's bar (or diamond) gets a small amber **!** at its left end. Hover or focus it to read the clash, such as "Starts 3 days before #4 Design is due", worst first when it has more than one blocker.
+- The card's panel says the same under that blocker in its **Blocked By** list.
+- A done blocker, or a done card, never clashes. The mark follows a bar as you drag it, so you see the clash come and go.
+
+### Move the Cards That Follow
+
+When you drag or draw a bar so that cards which follow it now clash, a message offers to put them right: "2 cards that follow #4 Design now start before it is due." Press **Move 2 Cards** to push each one later, just far enough to start the day after its latest open blocker is due, keeping its length, then on down the chain. Press **Leave Them** to keep the dates as they are.
+
+The move never shifts a card earlier, a done card, or the card you dragged, and it is one step of [Undo](/help/user-interface/undo/). It is worked out again when you press it, so a teammate's change in between is respected.
+
+<Figure caption="Design runs late: the arrow to Build turns amber, Build's mark names the clash, and the message offers to move the cards that follow.">
+  <PlanGanttClashScene />
+</Figure>
+
+## Reorder the Gantt Rows
+
+Hover a row's name to show a six-dot grip at its left edge. Drag the grip up or down: a line marks where the row will land, and letting go puts it there for everyone. Press Escape mid-drag to leave it where it was. With a row's name focused, **Alt+↑** and **Alt+↓** move it one place. In swimlanes, a row moves only within its own lane. A new card joins at the end, in date order.
+
+## Maximise a Chart
+
+A chart in a Dashboard slot has **Maximise View** in its header, beside the cog. It fills the screen with the chart, laid out at that size, and everything works as before: the Gantt's scale and date drags, the calendar's months, opening a card. Press **Restore View** in the same place, or Escape, to put it back. Maximising is just for you and nothing is saved. A Visualisation tab has no Maximise, since its chart already fills the tab.
+
+## In a Dashboard
+
+Every chart here can be one slot of a [Dashboard](/help/plan/dashboards/): press **Add to Slot** in an empty slot and choose **Visualisations**. In a slot the chart sizes its bars, cells and cards to the room it has, and its cog holds the slot's own settings after the chart's. The [suggested dashboards](/help/plan/dashboards/#dashboards-made-from-your-work) Start Planning makes from your boards come with charts already in place.
+
+## Who Can Do What
+
+- **Editors** change a chart's settings (a flow chart's Range among them), rename it, reorder Gantt rows, drag Gantt bars (and so get the offer to move the cards that follow), set Card Search filters, and do everything a Participant can.
+- **Participants** can open cards, move cards on the Due and Start Calendars, and add cards with the Gantt's **Add Card**. They see no cog.
+- **Viewers** see the charts live, the flow charts included, step through months and scales, and open cards to read them, but change nothing.
+
+Stepping through months, picking a Gantt scale, folding a lane and maximising are your own view, so they never change anyone else's.
+
+## Good to Know
+
+- Exported images of a Visualisation tab, or of a Dashboard with a chart on it, draw the chart as it looks. A flow chart draws its frame and name only, since an image has no history to read. See [Exporting tabs](/help/tabs/export-tabs/#export-formats).
+- Archived cards and cards in the Trash are left out of every chart, except that the flow charts still count an archived card where it stood (above).
+- A **Status Breakdown** chart (a donut of cards by status) placed in the past still draws as it did, but nothing offers a new one; use **Cards by Field** grouped by **Status** instead.
+
+</ArticleLayout>

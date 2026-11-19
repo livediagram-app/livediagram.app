@@ -7,7 +7,10 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const ACTION = join(import.meta.dirname, '../../github-action');
-const HELP = join(import.meta.dirname, '../../../help/app/developers/repositories/page.mdx');
+const HELP = join(
+  import.meta.dirname,
+  '../../../../../liveworkspace/apps/help/app/developers/repositories/page.mdx',
+);
 const BRANCH = 'livediagram-previews';
 
 const git = (cwd: string, ...args: string[]) =>

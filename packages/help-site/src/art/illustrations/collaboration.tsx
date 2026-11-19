@@ -1,4 +1,4 @@
-// Collaboration-category illustrations (docs/specs/018-help/help-app.md): comments, live presence,
+// Collaboration-category illustrations (liveworkspace/docs/specs/016-help/help-centre.md): comments, live presence,
 // sharing (links, passwords, expiry, embeds), teams, and session tools.
 // Composed only from the shared primitives so the house style holds.
 import { Scene, Shape, Arrow, Cursor, Avatar, Button, Label, BarTab, TextBar } from '../primitives';

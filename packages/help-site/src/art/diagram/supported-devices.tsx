@@ -51,7 +51,7 @@ function Diagram({ x, y, w, h }: ScreenBox) {
   );
 }
 
-// Supported Devices: the shared scene (docs/specs/018-help/help-pages.md "Category art"), one diagram on a
+// Supported Devices: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), one diagram on a
 // computer, a tablet and a phone.
 export function SupportedDevicesArt() {
   return <Scene screen={(box) => <Diagram {...box} />} />;

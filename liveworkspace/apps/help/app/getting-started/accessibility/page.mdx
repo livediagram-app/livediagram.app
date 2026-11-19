@@ -1,0 +1,142 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Accessibility and Keyboard Navigation',
+  description:
+    'Use the keyboard and a screen reader: reach the work, move through it, hear your selection announced and edit with keyboard verbs.',
+  path: '/help/getting-started/accessibility/',
+});
+
+<ArticleLayout
+  title="Accessibility and Keyboard Navigation"
+  description="Reach your work, move through it, and edit with the keyboard, with changes announced to screen readers."
+  categoryTitle="Getting Started"
+  categorySlug="getting-started"
+>
+
+You can work without a mouse. This page covers the keyboard-navigation and screen-reader baseline: reaching your work, moving through it, and hearing what changes. For the everyday shortcuts, see [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  On the canvas, that means reaching it, moving through its elements, and hearing what's selected. The everyday shortcuts cover tools, panning and zen mode.
+</AppNote>
+
+<AppNote app="livehuddle">
+  On the canvas, that means reaching it, moving through its elements, and hearing what's selected. The everyday shortcuts cover tools and panning.
+</AppNote>
+
+<AppNote app="liveplanner">
+  In liveplanner, that means getting round the editor, working a board and a sheet, and hearing what changes.
+</AppNote>
+
+## Moving Around
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  **Reaching the canvas.** The canvas is a focus stop in the normal `Tab` order, labelled **"Canvas"**. Tab to it from the page and you'll see a focus ring (only when navigating by keyboard, so mouse users see nothing new). The [Palette](/help/tips-and-tricks/command-palette/) strip and the [Explorer](/help/explorer/explorer-page/) behind the menu button stay reachable by the keyboard too.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  The panels such as the [Map](/help/user-interface/minimap/) are reachable by the keyboard as well.
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+  The panels such as [Contents](/help/pages/working-with-pages/#contents) are reachable by the keyboard as well.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Because `Tab` on the canvas walks its elements, **`F6`** jumps between the editor's regions instead: the header controls (Share and your account), the palette strip, the canvas, the bottom-right controls and the tab bar, in screen order, and round again. **`Shift`+`F6`** goes back the other way. A region that isn't on screen is skipped, and while a dialog is open F6 stays inside it.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  **Walking the elements.** Once focus is on the canvas:
+
+  - **`Tab`** selects the **next** element, **`Shift`+`Tab`** the **previous**, in the order they're stacked on the canvas. The canvas scrolls each selected element into view as you go.
+  - There's **no wrap and no trap**: pressing `Tab` past the last element (or `Shift`+`Tab` before the first) moves focus out of the canvas to the next thing on the page, so you can always keyboard your way onward.
+  - The **selection ring is the focus indicator**: there's one highlighted element, not two competing outlines.
+  - Elements **locked by someone else** are skipped, the same as when you click.
+
+  This works even in read-only views, since it's just navigation. It is part of the editor's keyboard shortcuts, so it pauses while a dialog is open, and it is off if you have switched **Keyboard Shortcuts** off in Settings.
+</AppNote>
+
+<AppNote app="livediagram">
+  Elements on a hidden or locked [layer](/help/canvas/layers/) are skipped too (arrows are selected without scrolling). On a [mind map](/help/palette/mind-maps/) node or a flowchart step you selected yourself, `Tab` grows it instead (a child node, or the next step), and `Enter` adds a sibling. One you reached by `Tab` is walked past, so `Tab` never traps you on it. Walking also pauses while a slide deck is presenting.
+</AppNote>
+
+<AppNote app="liveplanner">
+  **Getting round the editor.** Every button, tab and field is in the normal **Tab** order, with a focus ring when you navigate by keyboard (mouse users see nothing new). To skip a long run of controls, press **`F6`** to jump to the next part of the screen (the header, the work in the middle, the bottom-right controls and the tab bar) and **`Shift+F6`** to go back. Open dialogs keep focus inside them until you close them with **Escape**.
+
+  **`Cmd+K`** (**`Ctrl+K`** on Windows and Linux) opens [search](/help/search-panel/), which reaches plans, tabs, cards, settings and commands from the keyboard.
+
+  **Working a board.** Tab to a card on a board, then use the **arrow keys** to move between cards. **Enter** (or **Space**) opens the card's panel, **Shift** with the arrow keys moves the card to another column or up and down its column, **N** adds a card to its column, and **Delete** moves it to the Trash. **Shift+Space** adds the focused card to a selection (or takes it out), so **Shift+Left** and **Shift+Right** move every selected card a column at once; **Escape** clears the selection.
+
+  Screen readers hear every move, for example "#12 Fix login moved to In Progress, position 4 of 4", and when a card goes to the Trash. On a sorted board, **Shift+Up** and **Shift+Down** move nothing and say why. Viewers can move between and open cards, but not change them; Participants can add and move cards, and moving one to the Trash is an Editor's. See [Boards](/help/plan/boards/).
+
+  **Working a sheet.** A sheet takes the keys of any spreadsheet: the arrow keys move between cells, **Shift** with them selects, **Enter** and **Tab** move down and across, typing replaces a cell, and **F2** edits it. **Alt+Down** opens a cell's dropdown, and the **menu key** (or **Shift+F10**) opens the cell's menu. See [Sheets](/help/plan/sheets/).
+</AppNote>
+
+## Hearing What Changes
+
+Every element carries a name, so a screen reader can describe it. A polite live region announces changes as they happen. These announcements are separate from the on-screen notifications, so you'll hear them even if you've turned notifications off. **Undo** and **Redo** are announced too (`Undid the last change`, `Redid the last change`).
+
+<AppNote app="livediagram,livedocuments">
+  Names read like `Square "Login"`, `Sticky note`, or `Arrow "yes"`.
+
+  - **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label; tables and images are always named by their type). An arrow is named by its type, its label and the labelled elements it joins, such as `Selected an Arrow 'yes' from 'Login' to 'Home'`. Several selected give a short summary (`Selected 2 Squares & an Arrow`), and clearing the selection says `Selection cleared`.
+  - **Editing:** deleting an element (`Deleted 'Login'`) is announced too.
+</AppNote>
+
+<AppNote app="livedesign">
+  Names read like `Square "Login"`, `Sticky note`, or `Arrow "yes"`.
+
+  - **Selection:** `Selected 'Login'` for a labelled element (or `Selected a Square` when it has no label; arrows, tables and images are always named by their type, such as `Selected an Arrow`), a short summary when several are selected (`Selected 2 Squares & an Arrow`), or `Selection cleared`.
+  - **Editing:** deleting an element (`Deleted 'Login'`) is announced too.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Names read like `Sticky note "Agenda"`, `Text`, or `Image`.
+
+  - **Selection:** `Selected 'Agenda'` for a labelled element (or `Selected a Sticky note` when it has no label; images are always named by their type, such as `Selected an Image`), a short summary when several are selected (`Selected 2 Sticky notes & an Image`), or `Selection cleared`.
+  - **Editing:** deleting an element (`Deleted 'Agenda'`) is announced too.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Mode:** switching editor mode with `Shift`+`D` announces the new one, for example `Draw mode`.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Pictures carry the words a screen reader says for them too. Right-click an image and fill in **Alt Text**; it goes with the picture into SVG, PowerPoint and Word exports. See [Alt text](/help/palette/tools/images/#adding-an-image).
+</AppNote>
+
+<AppNote app="liveplanner">
+  **Undo** and **Redo** (**`Cmd+Z`** and **`Cmd+Shift+Z`**) work from anywhere in the editor.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  **Editing from the keyboard.** With an element selected by keyboard, the usual keyboard verbs apply: arrow keys nudge it, `Delete` / `Backspace` removes it, `Space` edits its label, and `⌘`/`Ctrl`+`Z` undoes. The editing verbs are disabled in read-only views and while you're typing in a field. `⌘`/`Ctrl`+`K` opens [search](/help/search-panel/), which reaches <Noun plural />, tabs, elements and commands from the keyboard. See [Keyboard Essentials](/help/getting-started/keyboard-essentials/) and the full [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) reference.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The editing verbs are also disabled while you walk as your character.
+</AppNote>
+
+## Reducing Motion
+
+If animation is uncomfortable, turn on **Reduce Motion** in [Settings](/help/user-interface/settings/), under **Accessibility**. It turns off the editor's decorative animations and transitions so panels and popovers appear instantly instead of sliding or popping. Your device's own reduce-motion preference is always respected as well, and the setting follows you to your other devices.
+
+## Larger Controls
+
+If the panels and buttons are too small to read or hit comfortably, **UI Scale** in Settings, under **Appearance**, makes the panels, the toolbar and the corner buttons smaller or bigger (80% to 120%), with a separate scale for each underneath (the toolbar's goes up to 140%). Desktop only.
+
+<AppNote app="liveplanner">
+  On a Sheet tab, the zoom controls in the bottom-right corner make the cells themselves bigger, from 50% to 200%.
+
+  **Turning shortcuts off.** If you dictate into your browser, or another tool needs the keys, switch off **Keyboard Shortcuts** in Settings, under **Keyboard**. It is saved on this device only.
+</AppNote>
+
+<Tip>
+  This is a baseline, honest but not exhaustive. If something you rely on is hard to reach with the
+  keyboard or a screen reader, [tell us](/help/contact/): it helps us prioritise what to improve
+  next.
+</Tip>
+
+</ArticleLayout>

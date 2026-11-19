@@ -48,5 +48,5 @@ the raw position, so the override needed no new clearing path. The separate
 "alignment guides off" preference (`alignmentGuidesRef`) is unrelated: it hides
 the guide lines but keeps snapping; this hides both.
 
-Documented for users in the help centre at `canvas/snapping` ([Help app](../018-help/help-app.md)), with a
+Documented for users in the help centre at `canvas/snapping` ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)), with a
 `SnappingGuides` illustration.

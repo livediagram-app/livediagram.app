@@ -1,0 +1,102 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { GuestIdentity } from '@liveworkspace/help-site/art/illustrations/account';
+
+export const metadata = helpMetadata({
+  title: 'How Guest Identity Works',
+  description: 'How the app knows you as a guest: a liveworkspace guest identity, the same in every liveworkspace app, and what it means for your work.',
+  path: '/help/account-and-data/guest-identity/',
+});
+
+<ArticleLayout title="How Guest Identity Works" description="The editor works without signing in. Here is how the app knows which work is yours when you are a guest." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+<AppName /> always works without signing in. You can land on [a new <Noun />](/new), build something real, and only later decide whether you want an account. To make that possible, <AppName /> gives every guest a quiet identity, kept per browser, that owns whatever you put on the server.
+
+## Your per-browser id
+
+The first time you visit, your browser takes a quick trip to the liveworkspace accounts site and comes back with a guest token, which it keeps in `localStorage`. The token names your guest id and lasts 45 days, renewed when you visit in its last 15 days. Everything of yours on the server as a guest (<Noun plural /> you share or sync, folders, images) is owned by that id, which is how the app knows which content to show you when you come back. The editor sends the token with each request; you never see or type it.
+
+The trip to liveworkspace.app is a redirect you may glimpse for a moment, with nothing to fill in. liveworkspace.app remembers which guest this browser is, so a fresh token names the same guest, and a guest who comes back now and then keeps their identity.
+
+Your guest id is liveworkspace's, so the other liveworkspace apps you use in the same browser know you as the same guest: a <Noun /> you make in <AppName /> and one you make in another liveworkspace app belong to the same guest, and both appear in the [Explorer](/help/explorer/explorer-page/) when you choose **All Apps**.
+
+New <Noun plural /> you make as a guest start [offline](/help/privacy-and-security/offline-mode/), saved only in this browser, so nothing you try out is sent to our servers until you choose to. To share one, open **Share** and press **Sync <Noun capital />**: it uploads under your guest id and the Share options appear. A <Noun /> you create inside a folder goes to the server straight away.
+
+<AppNote app="livediagram,livedesign">
+  A <Noun /> you import from the Explorer goes to the server straight away too.
+</AppNote>
+
+<AppNote app="livedocuments">
+  New documents start in this browser ([This Browser](/help/privacy-and-security/offline-mode/)), listed under **Browser Storage** in the Explorer. Everything you put on livedocuments as a guest is owned by that identity: the documents you sync or make in a folder, your folders and your Shared With Me list.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Your new plans start in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)). Everything you put on liveplanner as a guest is owned by that identity: the plans you sync or make in a folder, your folders and your Shared With Me list.
+</AppNote>
+
+<AppNote app="livediagram">
+
+<Figure caption="A per-browser guest id owns the canvases you sync or share, with no sign-in required.">
+  <GuestIdentity product="livediagram" />
+</Figure>
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+<Figure caption="A per-browser guest id owns the designs you sync or share, with no sign-in required.">
+  <GuestIdentity product="livedesign" />
+</Figure>
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+<Figure caption="A per-browser guest id owns the spaces you sync or share, with no sign-in required.">
+  <GuestIdentity product="livehuddle" />
+</Figure>
+
+</AppNote>
+
+Two things follow from this:
+
+- **It is per browser, not per person.** The id lives in one browser on one device. Open <AppName /> in a different browser or on another device and you get a fresh guest id, so your earlier <Noun plural /> will not appear there.
+- **It is not cross-device.** Guest content does not sync between devices, because there is no account tying them together yet.
+
+As a guest you still get the core of <AppName />: saving, share links and real-time collaboration all work, once a <Noun /> is synced. A few things need an address or an account to attach to, so they ask you to sign in: [teams](/help/collaboration/teams/), [API tokens](/help/account-and-data/api-tokens/), [email notifications](/help/account-and-data/email-notifications/) and the [Google Drive](/help/account-and-data/google-drive/) mirror.
+
+<AppNote app="livediagram,liveplanner,livedocuments,livedesign">
+  [Connecting an AI tool](/help/account-and-data/connect-ai-mcp/) asks you to sign in too.
+</AppNote>
+
+## What this means for your data
+
+Because your guest content is tied to a single browser, clearing that browser's storage, or using private browsing that discards it, deletes your <Noun plural /> in This Browser and means the app can no longer recognise you as the owner of the ones on the server. Those are still there, until they are [deleted after 400 days](#how-long-guest-work-is-kept), but nothing in a fresh browser can claim them back. Treat your guest <Noun plural /> as living in that browser.
+
+<AppNote app="livedocuments,liveplanner">
+  Clearing this browser's data for liveworkspace.app and <code><AppName />.app</code> removes the identity.
+</AppNote>
+
+Share links are the exception: anyone holding one, including you in another browser, can still open that <Noun /> with the link's role. They just won't be its owner there.
+
+## How long guest work is kept
+
+Your guest id stays alive for as long as you keep using any liveworkspace app in this browser. If 400 days (about 13 months) go by without a visit, the id can never be handed back to you, so everything it owns on the server is deleted for good: your <Noun plural />, your folders and your Trash. That includes <Noun plural /> you shared, so their links stop working too. <Noun plural capital /> in This Browser are not touched, because they were never on the server.
+
+<AppNote app="liveplanner">
+  Plans kept in **Browser Storage** are not touched, because they were never on the server.
+</AppNote>
+
+To keep your work for longer, [sign in](/help/account-and-data/signing-in/). Your <Noun plural /> move into the account, and an account's <Noun plural /> are never deleted this way.
+
+If you want your <Noun plural /> to follow you across browsers and devices, [signing in](/help/account-and-data/signing-in/) is the answer. When you sign in, whether to a new account or an existing one, the <Noun plural /> of yours on the server move into it automatically, and we offer to move the ones in This Browser too, so you do not lose the work you have already done.
+
+<AppNote app="livedocuments,liveplanner">
+  Everything your guest identity owns in this browser moves into the account, in every liveworkspace app at once.
+</AppNote>
+
+<Tip>
+  Doing serious work as a guest? Create an account before clearing your browser data, and move your <Noun plural /> in This Browser across when we offer, so nothing is left behind.
+</Tip>
+
+</ArticleLayout>

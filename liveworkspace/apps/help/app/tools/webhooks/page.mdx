@@ -1,0 +1,74 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { WebhooksDialog } from '@/editions/livehuddle/components/illustrations/webhooks';
+
+export const metadata = helpMetadata({
+  title: 'Webhooks',
+  description:
+    "Post a Space's events to a Slack or Microsoft Teams channel, or as signed JSON to a service you run: what to send, whose changes, tests and deliveries.",
+  path: '/help/tools/webhooks/',
+});
+
+<ArticleLayout
+  title="Webhooks"
+  description="Tell a Slack or Microsoft Teams channel, or a service you run, when something happens to a Space."
+  categoryTitle="Tools"
+  categorySlug="tools"
+>
+
+A webhook posts what happens to a Space to somewhere else: a **Slack** channel, a **Microsoft Teams** channel, or **Your Own Service**, which receives signed JSON. A webhook belongs to one Space. What you set up applies to that Space only, and each Space can have up to **10**.
+
+<Figure caption="A Space's Webhooks: one webhook posting to Slack, what it sends, Send Test, and Add Webhook at the foot.">
+  <WebhooksDialog />
+</Figure>
+
+## Opening Webhooks
+
+- **In the editor**: press **Tools** in the bar along the bottom, then **Webhooks**, under **Automate**. It opens the Space's Webhooks dialog. See [Quick Controls](/help/user-interface/quick-controls/).
+- **In the Explorer**: open a Space's **⋯** menu (or right-click it) and choose **Webhooks**. See [The Explorer Page](/help/explorer/explorer-page/#an-item-s-menu).
+
+Signed out, **Webhooks** is still listed in Tools and asks you to sign in.
+
+## Adding a Webhook
+
+<Step n={1}>Press **Add Webhook** at the foot of the list.</Step>
+
+<Step n={2}>
+  Under **Where Should It Post?**, pick **Slack**, **Microsoft Teams** or **Your Own Service**.
+</Step>
+
+<Step n={3}>
+  Under **Connect It**, paste the address and give the webhook a name. The form shows how to get a
+  Slack webhook URL or a Teams Workflows URL. Your own service needs an `https://` address.
+</Step>
+
+<Step n={4}>
+  Under **What Should It Send?**, tick the events to post. They're grouped, starting with **This
+  Space** (Space Renamed, Space Moved, Space Moved to the Trash) and sharing (Share Link Made). None
+  are ticked at first; **Select All** and **Clear** help.
+</Step>
+
+<Step n={5}>
+  Under **Who Did It?**, choose **Anyone** for everyone's changes, or **Only Me** for just your own.
+  Then press **Add Webhook**.
+</Step>
+
+For **Your Own Service**, the webhook's signing secret shows once, as soon as it's added. Copy it then: each delivery is signed with it, so your service can check it came from livehuddle.
+
+## Managing a Webhook
+
+Each webhook in the list shows where it posts, who added it, whether it is **Active**, and what it **Sends**.
+
+- **Send Test** posts a test delivery and shows whether it arrived.
+- **Pause Webhook** stops it sending until you resume it. A webhook also pauses itself if 20 deliveries in a row fail, if the address says it is gone, or if whoever added it can no longer edit the Space.
+- **Edit Events** changes what it sends and whose changes it reports.
+- **Recent Deliveries** lists what it sent and whether each one landed. A failed delivery is tried again for about a day before it is given up.
+- **Delete Webhook** removes it.
+
+## Who Can Use Webhooks
+
+You need to be signed in and able to edit the whole Space: its owner, someone in its team, or someone with an Editor link to every tab. Participants, Viewers and people with a link to one tab can't see or manage its webhooks. Everyone who can manage them sees every webhook on the Space, whoever added it, and the owner can delete any of them.
+
+A team Space's webhooks also show in the team's [Audit Log](/help/collaboration/teams/audit-log/) when one is added or removed.
+
+</ArticleLayout>

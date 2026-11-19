@@ -1,0 +1,110 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SearchTabsAndElements } from '@/editions/livediagram/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'Finding Tabs and Elements',
+  description:
+    'Inside your work, search also covers its tabs and the labelled elements or cards on them, and jumps straight to them.',
+  path: '/help/search-panel/the-search-panel/search-tabs-and-elements/',
+});
+
+<ArticleLayout
+  title="Finding Tabs and Elements"
+  description="The in-work scope of search: jump to any tab, or straight to an element by its label."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel"
+  parentArticle={{ title: 'The Search Panel', slug: 'the-search-panel' }}
+  subArticles={getSubArticles('the-search-panel').filter(
+    (a) => a.slug !== 'search-tabs-and-elements',
+  )}
+>
+
+When you open the [search panel](/help/search-panel/the-search-panel/) from inside a <Noun />, its scope grows to include that <Noun />'s own contents: its [tabs](/help/tabs/using-tabs/) and what is on them. This is what turns search into a quick way around the <Noun /> you are in, not just a way to open a different one. It works in view-only <Noun plural /> too, since it only moves you around.
+
+<AppNote app="liveplanner">
+  In a plan, search covers its tabs, its boards and its cards, and it works on view-only links.
+</AppNote>
+
+## Tabs
+
+The **Tabs** group matches the <Noun />'s tabs by name, and marks the one you are on with **current** so you can tell a jump from a no-op. Picking a tab switches to it. On a <Noun /> with many tabs (or [tab folders](/help/tabs/tab-folders/)) this is quicker than scanning the tab bar.
+
+<AppNote app="liveplanner">
+  A tab matches whether it holds a Board, a Sheet, a Dashboard or a Form. With an empty box the panel lists every tab in the plan, so you can open it and arrow straight down to one. The Tabs group shows up to 8 matches; type more of a name to narrow a long list.
+</AppNote>
+
+## Elements
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  The **Elements** group matches elements by their label: the text on a shape, a sticky note, a text box, and so on. Each result shows which tab it is on ("on Payments"), and picking one switches to that tab and selects the element.
+</AppNote>
+
+<AppNote app="liveplanner">
+  In a plan the elements are its boards and its cards. **Boards:** the **Boards** group matches the titles of the plan's boards, each marked with the tab it is on, so a board titled "Release Train" on the Sprint tab is one search away. Picking one switches to its tab. A board titled the same as its tab shows only under Tabs.
+
+  **Cards:** the **Cards** group finds the plan's cards that aren't archived or in the Trash. Type a card's number (`12` or `#12`) to go straight to it, or words from its title or description. The card whose number you typed comes first, then cards whose title matches, then those that match only in their description, the most recently changed first. Each shows its number, its title and the tab of the board it sits on.
+
+  Picking a card opens it in the card panel, on that tab: search switches to the tab first if you are elsewhere. A card that no board shows (its status has no column anywhere) opens where you are. The group shows up to 8 cards; type more of a title, or the number, to reach the one you want.
+
+  To browse every card, or to narrow them by type or field, use **Find** in the bottom-right corner (shown on a tab with a board on it). See [Items](/help/plan/items/) for how cards are stored and found, and [Cards](/help/plan/cards/) for working with them. To narrow what one board shows, use **Filter cards** in the board's header. See [Boards](/help/plan/boards/).
+</AppNote>
+
+Search covers **every tab**, not only the ones you have visited. Tabs load lazily as you open them, so whenever you open search the editor fetches the rest of the <Noun />'s tabs in the background; on a large <Noun />, matches from those tabs can join the list a moment later. On a link shared for a single tab, only that tab's elements are searched.
+
+<AppNote app="livedesign,livediagram">
+  You can open search from **Tools**, the Explorer panel's menu or the keyboard, and the fetch starts whichever you use.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  **Text inside tables.** Tables do not have a single label, their text lives in the cells. So a table matches through its **cells**: the first cell whose text matches your query becomes the result's label, and picking it takes you to that table. That means you can find a value tucked inside a table without remembering which table, or which tab, it is on.
+</AppNote>
+
+<Figure app="livedesign,livediagram,livedocuments,livehuddle" caption="Scope inside a work item: tabs and elements, each element tagged with the tab it is on.">
+  <SearchTabsAndElements />
+</Figure>
+
+## What it does not search
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  - **Unlabelled elements:** an element with no text (a bare shape, an arrow with no label, a picture or drawing) has nothing to match, so it never appears.
+  - **Comments, notes and links** on elements, and the names of people in the <Noun />.
+  - **Other <Noun plural />' contents:** element text is only searched in the <Noun /> you have open. From anywhere, other <Noun plural /> are found by name.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Unlabelled elements:** an element with no text (a bare shape, or a table, arrow or drawing saved before livehuddle stopped supporting them) has nothing to match, so it never appears.
+  - **The names of people** in the space.
+  - **Other spaces' contents:** element text is only searched in the space you have open. From anywhere, other spaces are found by name.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **A board's column names, a sheet's cells, a dashboard's contents and a form's questions:** use a sheet's own find (`⌘F`) for its cells. See [Sheets](/help/plan/sheets/).
+  - **Archived cards and cards in the Trash:** see [Items](/help/plan/items/).
+  - **Comments** and the names of people in the plan.
+  - **Other plans' contents:** from anywhere, other plans are found by name only.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  The Elements group lists up to 12 matches across the whole <Noun />. If the one you want is missing, type more of its label.
+</AppNote>
+
+<Tip>
+  This scope only appears inside a <Noun />. From the Explorer page, search covers your items, folders,
+  teams, help and settings instead.
+</Tip>
+
+<AppNote app="livedesign">
+  See [Finding Designs and Folders](/help/search-panel/the-search-panel/search-designs/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  See [Finding Plans](/help/search-panel/the-search-panel/search-projects/).
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livehuddle">
+  See [Finding Your Work and Folders](/help/search-panel/the-search-panel/search-documents/).
+</AppNote>
+
+</ArticleLayout>

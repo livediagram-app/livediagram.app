@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { EmailDialog, EmailCardFooter } from '@/editions/liveplanner/components/illustrations/email-to-board';
+import { ToolsMenuFigure } from '@/editions/liveplanner/components/illustrations/tools-menu';
+
+export const metadata = helpMetadata({
+  title: 'Email to Board',
+  description:
+    'Give a board its own secret email address: forwarded mail becomes a card, the subject its title, the message its description, pictures and PDFs attached.',
+  path: '/help/plan/email-to-board/',
+});
+
+<ArticleLayout
+  title="Email to Board"
+  description="Forward a request, a bug report or a to-do straight onto a board."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+**Email to Board** gives a board its own secret email address. Forward a message to it and it becomes a card in the board's first column: the subject as the card's title, the message as its description, and any pictures and PDFs attached. The card shows who sent it.
+
+## Who Can Set It Up
+
+An Editor of the whole plan, signed in: its owner, the members of its team, or someone who opened it from an Editor share link. The plan must be saved to the server. Participants, Viewers and links to a single tab don't see Email to Board. A guest sees it with a **Sign In** badge, and a plan saved only in this browser with a **Sync Plan** badge: press it to sign in or sync first.
+
+## Turn On an Address
+
+1. Open the tab holding the board.
+2. Press **Tools** in the bottom bar.
+3. Choose **Email to Board**, under Automate. On a tab with several boards, pick one at the top.
+4. Choose **Who Can Send** (below), then press **Turn On**.
+
+<Figure caption="Email to Board sits in Tools, under Automate.">
+  <ToolsMenuFigure highlight="Email to Board" />
+</Figure>
+
+The board's address appears, with **Copy Address**. Under it, a line says what the address has done so far: cards made, messages refused or dropped, and when the last card came in.
+
+<Figure caption="Once on: the board's address, what it has done, and who may send to it.">
+  <EmailDialog />
+</Figure>
+
+## Who Can Send
+
+- **Plan Members** (the default): only the plan's owner and the people in its team, sending from the address their account uses. Mail from anyone else is refused and counted.
+- **Anyone with the Address**: anyone who knows it. Keep the address private, as you would a password.
+
+Either way, anyone who can send from an allowed address can add cards to the board. You can change Who Can Send at any time; the address stays the same.
+
+## What a Message Becomes
+
+- **Title**: the subject. With no subject, "Email from" and the sender's address.
+- **Description**: the message's text. The earlier messages a reply quotes ("On … wrote:" and what follows) and a signature after a "--" line are left out.
+- **Pictures and PDFs**: PNG, JPEG, WebP and GIF pictures and PDFs up to 10 MB each join the card's Attachments, up to 20 a card. A PDF opens in your browser's own viewer from the card, and downloads under its name. Other files (a Word or Excel file, a zip), and bigger ones, are listed at the end of the description ("Not attached: …") and left out.
+- **From email**: the card's details show **From email** with the sender's address, and its Activity starts with "Created this card from an email".
+
+<Figure caption="A card an email made says who it came from.">
+  <EmailCardFooter />
+</Figure>
+
+Nothing else of the message is kept: no other recipients, no headers.
+
+## Act on Email Cards with Automations
+
+Each email card starts the plan's rules once, as any new card does. To act only on cards that came in by email, make a rule on the **Email Received** trigger: pick the board, and optionally who it's from (an address or a whole domain), then label it, assign it or reply in a comment with the sender's address (**From Email**). See [Automations](/help/plan/automations/#start-a-rule-from-an-email).
+
+## Spam and Forged Mail
+
+Every message must pass the sender's email checks (SPF, DKIM and DMARC). One that fails is dropped without a reply, so a forged sender learns nothing, and the address's line counts it as dropped.
+
+Each address takes up to 100 cards an hour, and up to 20 an hour from any one sender. Past that, mail is refused and the sender's mail server tells them to try again later.
+
+## New Address and Turn Off
+
+- **New Address** makes a fresh address for the same board. The old one stops taking mail at once, so use it if the address has leaked.
+- **Turn Off** ends the address. Mail sent to it is refused from then on. Turning it on again makes a new address.
+
+Both ask you to confirm first. Deleting the board or its tab, archiving the plan or moving it to the Trash stops the address too.
+
+</ArticleLayout>

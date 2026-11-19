@@ -1,0 +1,122 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { TabBar } from '@/editions/livediagram/components/illustrations/user-interface';
+import { TabBar as LivehuddleTabBar } from '@/editions/livehuddle/components/illustrations/user-interface';
+
+export const metadata = helpMetadata({
+  title: 'The Tab Bar',
+  description:
+    'The tab bar runs along the bottom of the editor and lets you switch between the tabs, add, rename and reorder them, and group them into folders.',
+  path: '/help/user-interface/tab-bar/',
+});
+
+<ArticleLayout
+  title="The Tab Bar"
+  description="Switch between tabs, add new ones, and group them into folders."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+<AppNote app="livedesign,livedocuments">
+  A <Noun /> can hold many tabs, each a row of pages, and the **tab bar** is how you move between them; the bar runs along the bottom of the editor and shows them in a row, so the whole <Noun /> is one click wide.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  A <Noun /> can hold many boards, and the **tab bar** is how you move between them. Each tab is its own canvas; the bar runs along the bottom of the editor and shows them in a row, so the whole <Noun /> is one click wide.
+</AppNote>
+
+<AppNote app="liveplanner">
+  A <Noun /> can hold many tabs, each filled by a Board, a Sheet, a Dashboard or a Form, and the **tab bar** is how you move between them. The bar runs along the bottom of the editor and shows them in a row, so the whole <Noun /> is one click wide.
+</AppNote>
+
+The [quick controls](/help/user-interface/quick-controls/) sit at its right-hand end.
+
+<AppNote app="livedesign">
+  They are Get Started, Tools, Settings and the appearance switch.
+</AppNote>
+
+<AppNote app="livediagram">
+  They are Get Started when a tour is on offer, Tools with Search, Settings and the appearance switch.
+</AppNote>
+
+<AppNote app="livedocuments,livehuddle,liveplanner">
+  They are Tools, Settings and the appearance switch.
+</AppNote>
+
+<Figure app="livedesign,livediagram,livedocuments" caption="The bottom bar: the active tab, a tab folder, the + button, and the quick controls at the far end.">
+  <TabBar />
+</Figure>
+<Figure app="livehuddle" caption="The bottom bar: the active tab, a tab folder, the + button, and the quick controls at the far end.">
+  <LivehuddleTabBar />
+</Figure>
+
+## What you can do here
+
+- **Switch** between tabs by clicking one. A small stack of initials avatars on a tab shows who else is on it right now.
+
+<AppNote app="liveplanner">
+  Each tab also shows a small icon for what fills it.
+
+  - **Add** a new tab with the **+** button straight after the last tab. It arrives numbered ("Tab 2", "Tab 3"), wearing the current tab's theme, and opens on **Start Planning**, where you pick a board, sheet, form or dashboard for it. See [Planning Basics](/help/plan/planning-basics/).
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  - **Add** a new tab with the **+** button straight after the last tab. It arrives numbered ("Tab 2", "Tab 3"), wearing the current tab's theme, background and font, on **Start Making Pages**, so you can begin from a [template](/help/canvas/templates/) or close it to leave the tab blank.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Add** a new tab with the **+** button straight after the last tab. It arrives numbered ("Tab 2", "Tab 3"), wearing the current tab's theme, background and font, in the same mode, on that mode's start, so you can begin from a [template](/help/canvas/templates/) or close it to leave the tab blank.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Add** a new tab with the **+** button straight after the last tab. It arrives numbered ("Tab 2", "Tab 3"), wearing the current tab's theme, background and font, opening on **Start a Space**, so you can begin from a [template](/help/canvas/templates/) or close it to leave the tab blank, with an [Avatar Pad](/help/palette/avatar-pads/) where people arrive.
+</AppNote>
+
+- **Rename** a tab by double-clicking the active one, or from its menu.
+- **Reorder** tabs by dragging them along the bar; a caret shows where the tab will land.
+
+<AppNote app="livedesign,livedocuments">
+  - **Manage** a tab from its menu: right-click any tab (it becomes the active one), or click the **⋯** button on the active tab. The menu holds **Rename**, **Duplicate**, **Paste**, **Lock Tab** and **Delete**, plus **Organise in Tab Folder**, **Add to <Noun capital />** (link it into another <Noun />), import, export and more. See [Context Menus](/help/user-interface/context-menus/#on-a-tab).
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Manage** a tab from its menu: right-click any tab (it becomes the active one), or click the **⋯** button on the active tab. The menu holds **Rename**, **Duplicate**, **Paste**, **Lock Tab** and **Delete**, plus **Organise in Tab Folder**, **Add to Another Canvas** (link it into another canvas), import, export and more. See [Context Menus](/help/user-interface/context-menus/#on-a-tab).
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Manage** a tab from its menu: right-click any tab (it becomes the active one), or click the **⋯** button on the active tab. The menu holds **Rename**, **Duplicate**, **Paste** and **Delete**, plus **Organise in Tab Folder**, **Add to Another Space** (link it into another space), **Attendance**, import, export and more. See [Context Menus](/help/user-interface/context-menus/#on-a-tab).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Manage** a tab from its menu: right-click any tab (it becomes the active one), or click the **⋯** button on the active tab. Along its top are **Rename**, **Duplicate**, **Paste**, **Side by Side**, **Lock Tab** and **Delete**; below them **Organise in Tab Folder**, **Import**, **Export** and **Clear**. See [Using Tabs](/help/tabs/using-tabs/).
+</AppNote>
+
+- **Group** related tabs into one-level folders with **Organise in Tab Folder** when a <Noun /> grows. See [Tab Folders](/help/tabs/tab-folders/).
+
+<AppNote app="livediagram">
+  A [connected file](/help/tabs/connected-files/)'s tab gets a shorter menu: **Remove Tab**, **Organise in Tab Folder** and, if the connection has broken, **Connect Again**.
+
+  On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the bar still switches tabs, but there is no **+** button, no renaming and no tab menu.
+</AppNote>
+
+<AppNote app="liveplanner">
+  A [connected file](/help/tabs/connected-files/), a tab that stands for a file from another liveworkspace app or another plan, has a shorter menu: **Organise in Tab Folder** and **Remove Tab** (the file itself stays as it is), plus **Connect Again** when it no longer opens.
+
+  On a Participant or Viewer link, or a link to a single tab, the bar still switches tabs, but there is no **+** button, no tab menu, and tabs cannot be renamed or dragged.
+</AppNote>
+
+<AppNote app="livedesign">
+  On a Participant or Viewer link, the bar still switches tabs, but there is no **+** button, no renaming or reordering, and no tab menu. A [link to a single tab](/help/collaboration/sharing/one-tab/) is the same, and its other tabs show as **Not shared**.
+</AppNote>
+
+<AppNote app="livedocuments">
+  On a Participant or Viewer link, or a [link to a single tab](/help/collaboration/sharing/one-tab/), the bar still switches tabs, but there is no **+** button and no tab menu.
+</AppNote>
+
+<AppNote app="livehuddle">
+  On a Participant or Viewer link the bar still switches tabs, but there is no **+** button and tabs cannot be renamed or dragged. A Participant's tab menu holds **Attendance** alone; a Viewer has no tab menu.
+</AppNote>
+
+For the depth, see [Tabs](/help/tabs/): this bar is just the control surface for them.
+
+</ArticleLayout>

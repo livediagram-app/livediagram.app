@@ -18,12 +18,10 @@ on:
         description: The editor app's folder inside the product (apps/editor, or apps/live).
         type: string
         required: true
-      sites:
-        description: The other sites the audit builds beside the editor, as pnpm filters (marketing comes after).
-        type: string
-        required: true
       sites-cache:
-        description: Their `.next/cache` folders inside the product, one per line.
+        description: >-
+          The editor's and the other sites' `.next/cache` folders, relative to the product, one per line
+          (the one help centre's is ../liveworkspace/apps/help/.next/cache).
         type: string
         required: true
       smoke-explorer:
@@ -217,12 +215,19 @@ jobs:
 
       # The audit needs the other sites' exports, and the stack serves help (and the Community) on the
       # editor's origin, so the editor is built beside them. Marketing comes last: its licences page
-      # runs Next's analyzer in every other app, on that app's Turbopack cache, and beside the app's own
-      # build the two corrupt it.
-      - name: Build the editor and the other sites
+      # runs Next's analyzer in every other app of the product, on that app's Turbopack cache, and beside
+      # the app's own build the two corrupt it.
+      - name: Build the editor
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} ${{ inputs.sites }} build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter ${{ inputs.editor }} build
+
+      # The one help centre (liveworkspace/apps/help), built once as this product's scope into its out/, which the
+      # stack serves under /help (scripts/e2e-stack/stack.mjs).
+      - name: Build the help centre for this product
+        env:
+          HELP_SCOPE: ${{ inputs.product }}
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @liveworkspace/help build:scope
 
       - name: Build marketing
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @${{ inputs.product }}/marketing build

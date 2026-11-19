@@ -1,0 +1,105 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { TabletLandscape } from '@liveworkspace/help-site/art/illustrations/devices';
+import { TabletLandscape as DocumentsTabletLandscape } from '@/editions/livedocuments/components/illustrations/devices';
+
+export const metadata = helpMetadata({
+  title: 'Tablet',
+  description:
+    'Use the app on a tablet: the full layout with touch gestures, shortcuts once a keyboard is paired, and when the compact phone layout applies.',
+  path: '/help/supported-devices/tablet/',
+});
+
+<ArticleLayout title="Tablet" description="A tablet has room for the full layout, with touch for direct editing." categoryTitle="Supported Devices" categorySlug="supported-devices">
+
+A tablet is a great middle ground: a big enough screen for real work, with touch for quick, direct editing. <AppName /> runs in the tablet's browser, no app needed, and adapts to how much screen room it has at the moment.
+
+## It Adapts to Your Screen
+
+<AppName /> chooses its layout from the size of the screen it has, not from the kind of device:
+
+- On a screen at least 640 pixels wide (which includes almost every tablet, upright as well as sideways) you get the **full layout**, the same as a [computer](/help/supported-devices/desktop/).
+- Only a narrower window (<AppName /> in a narrow split-screen pane, say) switches to the **compact layout** described in the [Mobile](/help/supported-devices/mobile/) guide.
+
+So rotating a tablet usually keeps the same layout; sideways just gives you more room.
+
+<AppNote app="livediagram">
+  The full layout includes the [Map](/help/user-interface/minimap/), and the [Spotlight](/help/selection-modes/spotlight/) and [Slide Deck](/help/selection-modes/slide-deck/) tools. On a smaller tablet held upright (768 pixels wide or less), an empty tab also opens zoomed out to 60% so you start with an overview (a tab with content opens fitted to it). The compact layout is touch-first, where the menu button gets a card of its own and the [palette strip](/help/palette/toolbar-layout/)'s tiles swipe sideways. In [Draw mode](/help/canvas/draw-mode/), **Dock Position** in Settings can move the drawing dock to the bottom, closer to hand.
+</AppNote>
+
+<AppNote app="livedesign">
+  The full layout includes the [Contents](/help/pages/working-with-pages/#contents) sidebar and the [Spotlight](/help/selection-modes/spotlight/) tool. On a smaller tablet held upright (768 pixels wide or less), an empty tab also opens zoomed out to 60% so you start with an overview (a tab with content opens fitted to it). The compact layout is touch-first, where the menu button gets a card of its own and the [palette strip](/help/palette/toolbar-layout/)'s tiles swipe sideways.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The full layout includes the [Contents](/help/pages/working-with-pages/#contents) sidebar, and the [Spotlight](/help/selection-modes/spotlight/) tool. On a smaller tablet held upright (768 pixels wide or less), an empty tab also opens zoomed out to 60% so you start with an overview (a tab with content opens fitted to it). The compact layout is touch-first, where the menu button gets a card of its own and the [palette strip](/help/palette/toolbar-layout/)'s tiles swipe sideways.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The full layout includes the [Map](/help/user-interface/minimap/). On a smaller tablet held upright (768 pixels wide or less), an empty tab also opens zoomed out to 60% so you start with an overview (a tab with content opens fitted to it). The compact layout is touch-first, where the menu button gets a card of its own and the [palette strip](/help/palette/toolbar-layout/)'s tiles swipe sideways.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The full layout has boards with their columns side by side and their header widgets, dashboards in rows, and labels beside the buttons. In the compact layout a board shows one column a screen and a dashboard stacks its slots.
+</AppNote>
+
+<Figure app="livediagram,livedesign,livehuddle" caption="A tablet has room for the full layout, the same palette strip and panels as a computer.">
+  <TabletLandscape />
+</Figure>
+
+<Figure app="livedocuments" caption="A tablet has room for the full layout, the same palette strip and panels as a computer.">
+  <DocumentsTabletLandscape />
+</Figure>
+
+## Touch Works Everywhere
+
+<AppNote app="livediagram,livedesign,livedocuments,livehuddle">
+  However the tablet is held, pinch to zoom, tap to select, drag an element to move it, and press and hold for its menu. Drag handles get extra padding on touch so they are easy to hit.
+</AppNote>
+
+<AppNote app="livediagram">
+  Because the screen is large, the editor starts on the **Select** tool, as on a computer, so dragging empty canvas draws a selection box. To move around, switch to **Hand** in the Palette's selection-mode dropdown and drag, or tap or drag on the [Map](/help/user-interface/minimap/).
+</AppNote>
+
+<AppNote app="livedesign">
+  Because the screen is large, the editor starts on the **Select** tool, as on a computer, so dragging empty canvas draws a selection box. To move around, switch to **Hand** in the Palette's selection-mode dropdown and drag, or tap a page in [Contents](/help/pages/working-with-pages/#contents).
+</AppNote>
+
+<AppNote app="livedocuments">
+  Because the screen is large, the editor starts on the **Select** tool, as on a computer, so dragging empty canvas draws a selection box. To move around, switch to **Hand** in the Palette's selection-mode dropdown and drag, or tap a page in [Contents](/help/pages/working-with-pages/#contents) to glide there.
+</AppNote>
+
+<AppNote app="livehuddle">
+  To move around, drag one finger across empty canvas, or tap or drag on the [Map](/help/user-interface/minimap/). The [Edit | Walk toggle](/help/selection-modes/select/) at the start of the palette switches between building the Space and walking it as your character.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **On a board**, a finger on a card picks it up so you can drag it to another column; a finger on the board's empty space moves you round. Press and hold a card for its menu (when you can edit), the touch version of a right-click.
+  - **On a sheet**, tap a cell to select it and drag to scroll. To select a range, hold a finger still on a cell until it grabs, then drag. Hold and let go without moving to open the cell's menu.
+  - **On a dashboard**, the handles for moving slots and resizing rows are always shown, since a finger can't hover, and are sized for a fingertip.
+  - **On a form**, you build the questions in place, just as on a computer.
+</AppNote>
+
+Touch has no hover, so hover previews don't appear: a tap applies the change, and undo takes it back, and you press and hold a button that shows only an icon to see its name.
+
+## Add a Keyboard for More
+
+Pair a keyboard with your tablet and the [keyboard shortcuts](/help/getting-started/keyboard-essentials/) come back. Without a keyboard you can still do all of this with the on-screen controls; a keyboard just adds the faster way.
+
+<AppNote app="livediagram,livedesign,livedocuments,livehuddle">
+  A few things are built for a physical keyboard: **keyboard shortcuts** for tools and actions like undo, copy, and duplicate, and **held-key shortcuts**, like Shift to keep an element's proportions while resizing, or to add to a selection.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The shortcuts that come back are undo and redo, search, moving cards with the arrow keys, and the spreadsheet keys in a sheet.
+</AppNote>
+
+<Tip>
+  Holding the tablet sideways gives you the most room, the most comfortable way to do detailed work.
+</Tip>
+
+<AppNote app="liveplanner">
+  Sideways shows the most columns of a board, or the widest rows of a dashboard, at once.
+</AppNote>
+
+</ArticleLayout>

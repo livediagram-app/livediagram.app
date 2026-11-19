@@ -1,0 +1,299 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CommandPalette as DiagramCommandPalette } from '@/editions/livediagram/components/illustrations/tips';
+import { CommandPalette as HuddleCommandPalette } from '@/editions/livehuddle/components/illustrations/tips';
+
+export const metadata = helpMetadata({
+  title: 'Palette Tools',
+  description:
+    'Where each element lives in the palette: its categories, what each kind of page or mode offers, and the pieces only search adds.',
+  path: '/help/palette/tools/',
+});
+
+<ArticleLayout
+  title="Where each tool lives"
+  description="A map of the palette's categories, and where each tool lives."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("tools")}
+>
+
+The palette's elements are grouped into **categories**, each one press away on the palette strip. This page is a map of where each one lives.
+
+<AppNote app="livediagram">
+
+The categories sit along the strip by name, in groups with a thin line between each: **Common**, **Structure** and **Decorate**, plus the session kit and **Dynamic** (the charts) in Workshop mode. Rest on one, or click it, to see its elements.
+
+<Figure caption="The palette strip in Diagram mode: the selection mode, the categories by name, and Search.">
+  <DiagramCommandPalette />
+</Figure>
+
+**Which categories each mode offers**
+
+The palette is laid out per editor mode, so not every category appears everywhere:
+
+- **Diagram** (the default): Shapes (with the BPMN notation), Write (pages, text, notes, annotations, pointer notes, the Callout, the Comment panel and the Action card), Draw (the pens and arrows), **Diagrams** (mind nodes, org charts, flowcharts, sequence diagrams, tables, entities and the C4 model's elements), **Concepts** (the concept graphics, the Timeline among them, and the Sankey), **Layout** (lanes, frames, stacks, boundaries, the diagram key, cards, badges and step numbers, then Image and Avatar), Icons and Tech. **Library** (your shape libraries) joins Common once you have [imported a shape library](/help/explorer/shape-libraries/), and **Event Storming** joins Structure on an [Event Storming board](/help/canvas/event-storming-boards/).
+- **[Workshop](/help/canvas/workshop-mode/)**: Shapes, Write (text, notes and pointer notes, then tables and checklists), Draw (the pens and arrows), Layout (as in Diagram, with the Timeline), then the session kit, **Ask**, and **Session**, which holds Tools, Record, React, Selection Mode and Navigate, then Icons (with a Stickers side) and Data. It leaves out what a session does not need: Page and Annotation from Write, the Shape Pen and Polygon from Draw, and the Diagrams, Concepts and Tech categories.
+- **[Draw mode](/help/canvas/draw-mode/)** swaps the palette for the whiteboard's own pens and shapes.
+
+Anything a mode leaves out is still one search away: the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) can add any palette element by name, whatever the mode.
+
+**Where each tool lives**
+
+**Diagrams** (Diagram mode) holds the structures that grow as you type: **Mind Node** (Tab adds a child, Enter a sibling), **Org Chart**, **Flowchart**, **Sequence Diagram**, **Table** (an editable grid of cells), **Entity**, and the C4 model's elements. **Layout** (both modes) holds what a diagram or board is arranged in: **Lane** (a titled band that carries its steps), **Frame** (a labelled box that groups a section, `F`), **Stack** and **Boundary**, then the **Diagram Key**, **Card**, **Badge** and **Step Number**, and at its end **Image** and **Avatar**. The **Timeline** is a [concept graphic](/help/palette/concept-graphics/timeline-rail/), in **Concepts** (in Workshop, which has no Concepts, it sits in Layout).
+
+**Write** holds the wordy elements: **Page** is a paper-sized sheet you write into, **Text** drops a free-standing label (`T`), **Note** is a coloured sticky note card (`N`), **Annotation** is a small marker that holds a note, and **Pointer Note** is a note with a line out to the spot it is about. See [Write Elements](/help/palette/write/). The coloured Event Storming workshop stickies live in [their own category](/help/palette/event-storming/), which appears on an Event Storming board.
+
+**Draw** holds the gesture tools: **Freehand** (`P`) sketches a stroke and keeps it exactly as drawn, the **Shape Pen** (`6`) turns a rough sketch into a real shape, the **Highlighter** lays one wide translucent marker stroke, **Polygon** places straight-edged outlines point by point, **Arrow** (`A`) drops a connector with a pointer at its end that you position by hand, and **Line** drops the same without the pointer. See [Drawing and Sketch](/help/palette/tools/drawing/) and [Highlighter](/help/palette/tools/highlighter/).
+
+**On no strip.** A few pieces are not in any category: the strip's Search and the search panel add them in any mode. They are the page blocks (**Hero**, **Header**, **Banner**, **Stat Row** and **Process**; Hero needs image uploads, like Image and Avatar), the **Code** block, the device frames (Browser, Monitor, Laptop, Phone, Tablet, Foldable and Watch) and the embeds. The **Checklist** is in Workshop's Write; in Diagram mode, search for it.
+
+**Data** (Workshop) holds the charts and meters: Pie, Column, Line, Legend, Progress, Donut and Rating. See [Data and Chart Elements](/help/palette/tools/data-elements/).
+
+**Collaborate** (Workshop) is the elements that do something when somebody interacts with them, or that ask the room something, in six groups: **Ask** on the strip (dot vote, poll, quiz, estimate card, temperature check, idea box, Q&A board), and inside **Session**: **Tools** (timer, stopwatch, reveal zone, done check, picker), **Record** (comment panel, action panel, agenda, decision record, roll call), **React** (the five reaction pads), **Selection Mode** buttons, and **Navigate** (portal, bring focus, link card). See [Collaborate](/help/palette/behaviour/) and [Collaborate Elements](/help/palette/collaborate/).
+
+**Pictures and embeds.** **Image** (`9`) and **Avatar** sit at the end of Layout, and only appear where image uploads are available. The [embeds](/help/palette/embed-elements/) for YouTube, Vimeo, Loom, Figma, Google Docs, any website, and the **Live Embed** (a canvas, plan, page or design from our other apps, shown live) are added from the strip's Search or the search panel.
+
+Each behaves like any other element once placed: select it, restyle it, multi-select it with others, and move it freely. Pick a tile and tap the canvas to drop the element at its default size, or drag to draw it at the size you want.
+
+<Note>
+  The palette is hidden for people with view-only access, since they can't add anything. A
+  Participant gets a single **Participate** category instead, holding the Sticky Note, Text and
+  Image tiles (on an Event Storming board, the notation's notes and Image). See [Toolbar
+  Layout](/help/palette/toolbar-layout/) for how the strip shows the categories and opens each one.
+</Note>
+
+**Guides for these tools**
+
+Several tools have their own walkthroughs, listed below and linked here:
+
+- [Drawing and Sketch](/help/palette/tools/drawing/) covers Freehand, the Shape Pen, and the Polygon tool.
+- [Highlighter](/help/palette/tools/highlighter/) covers the translucent marker and its colours and widths.
+- [Images](/help/palette/tools/images/) covers uploading, searching for and reusing pictures, and avatars.
+- [Pages](/help/palette/tools/pages/) covers the paper-sized sheet for prose.
+- [Tables](/help/palette/tools/tables/) covers the editable grid: adding one, filling cells, and rows/columns.
+- [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short annotations.
+- [Code Blocks](/help/palette/tools/code-blocks/) covers the monospace card for syntax-highlighted snippets.
+- [Checklists](/help/palette/tools/checklists/) covers the card of checkable to-do rows you tick on the canvas.
+- [Portals](/help/palette/tools/portals/) covers linking two portals and travelling between them, including across tabs.
+- [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie, Column and Line charts (each any of seven chart types), Legend, Progress, Donut and Rating.
+- [Collaborate](/help/palette/behaviour/) covers the **Collaborate** categories' interactive elements: Selection Mode buttons, Reveal zones, Done checks, Pickers, Bring Focus, the Timer and Stopwatch, and Reaction pads.
+
+Arrows are deep enough to deserve their own guide: see [Arrows](/help/palette/arrows/).
+
+<Tip>
+  Reach for a Frame when a diagram grows past one screen: it keeps a section labelled and easy to
+  move as a unit.
+</Tip>
+
+<FeatureGrid>
+  <Feature slug="arrows" title="Arrows">
+    Connect elements with arrows of every style, with draggable curve and elbow handles.
+  </Feature>
+  <Feature slug="shapes" title="Shapes">
+    The plain rectangles, circles, and more, in their own Shapes category.
+  </Feature>
+</FeatureGrid>
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+There is no **Tools** tab: every element sits in a palette category of its own.
+
+The categories sit along the strip by name, in groups with a thin line between each. Rest on one, or click it, to see its elements.
+
+**The categories on a page**
+
+On a blank page (one whose kind is not chosen yet), the palette offers these categories, in this order:
+
+- **[Shapes](/help/palette/shapes/)**: the plain rectangles, circles and the rest.
+- **[Write](/help/palette/write/)**: Text, Sticky Note and Pointer Note.
+- **[Concepts](/help/palette/concept-graphics/)**: the concept graphics, the [Timeline](/help/palette/concept-graphics/timeline-rail/) and the [Sankey](/help/palette/concept-graphics/sankey-diagram/).
+- **[Components](/help/palette/components/)**: the Hero, Header, Banner, [Stack](/help/palette/stacks/) and the [Devices](/help/palette/devices/) row (browser, monitor, laptop, phone, tablet, foldable and watch frames), then the Card, Badge, Step Number, Callout, Stat Row and Process, then the [Code Block](/help/palette/tools/code-blocks/) and the [Checklist](/help/palette/tools/checklists/).
+- **[Icons](/help/palette/icons/)**: a searchable catalogue of glyphs, with the colour emoji and badges of [Stickers](/help/palette/stickers/) on its Stickers side.
+- **Media**: [Image](/help/palette/tools/images/) (`9`), the [embeds](/help/palette/embed-elements/) (YouTube, Vimeo, Loom, Figma, Google Docs, any website, and a Live Embed of a file from one of our apps), then the Avatar and the Link Card. Image, Avatar and the Hero only appear where image uploads are available.
+- **[Data](/help/palette/tools/data-elements/)**: the charts and meters (Pie, Column, Line, Legend, Progress, Donut and Rating), then the [Table](/help/palette/tools/tables/).
+
+After the categories, the **Library** button opens the shapes and components you and your teams saved, to place in any of the apps.
+
+**On other kinds of page**
+
+The palette follows the page you are working on, offering what that page is made of:
+
+- A **wireframe** leads with Components and **Elements**, a screen's own parts (buttons, fields, a search box, chips, badges, pictures, avatars, cards, checklists and dividers). Then come Shapes, Write, Icons (with the stickers), Media and Data, and the Library. There is no Concepts, and Components has no Devices row: the page is its device already.
+- A **logo** page leads with **Draw**, which holds the Pen for precise paths, the Freehand pencil for a stroke kept as drawn, the Shape Pen that turns a rough sketch into the real shape, and the Polygon for outlines placed point by point, then your markers. Then come Shapes, Write (the Title, the Subtitle and the Sticky Note), Icons, and Media with just the Image, for a picture to trace, and the Library.
+- A **photo** page swaps the categories for the photo tools: Move, Marquee, Brush, Eraser, Crop and Text, then **Select**, **Paint**, **Retouch** and **Shapes**, with your colours at the end. See [Photo Pages](/help/pages/photo-pages/#the-tools).
+
+See [Working with Pages](/help/pages/working-with-pages/) for the kinds of page.
+
+**Elements the strip does not show**
+
+Some elements are not in any of the strip's categories, but the editor's [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) adds them by name, under **Add to canvas**:
+
+- [Frames](/help/palette/frames/), labelled sections that carry what sits in them (`F` also drops one).
+- [Technology](/help/palette/technology/) icons, the full-colour marks for architecture pictures.
+- The [Polygon](/help/palette/tools/drawing/), which a logo page's **Draw** category holds.
+- The Arrow (`A`) and the Line: see [Arrows](/help/palette/arrows/).
+
+**Working with what you place**
+
+Each element behaves like any other once placed: select it, restyle it, multi-select it with others, and move it freely. Pick a tile and tap the canvas to drop the element at its default size, or drag to draw it at the size you want. `T` drops a Paragraph and `N` a sticky note without opening the palette at all.
+
+<Note>
+  The palette is hidden for Viewers, since they can't add anything; a Participant's strip holds only
+  the Participate tiles. See [Toolbar Layout](/help/palette/toolbar-layout/) for how the strip shows
+  the categories and opens each one.
+</Note>
+
+**Guides for these tools**
+
+Several tools have their own walkthroughs:
+
+- [Images](/help/palette/tools/images/) covers uploading, searching for and reusing pictures, and avatars.
+- [Tables](/help/palette/tools/tables/) covers the editable grid: adding one, filling cells, and rows/columns.
+- [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short remarks.
+- [Code Blocks](/help/palette/tools/code-blocks/) covers the monospace card for syntax-highlighted snippets.
+- [Checklists](/help/palette/tools/checklists/) covers the card of checkable to-do rows you tick on the page.
+- [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie, Column and Line charts (each any of seven chart types), Legend, Progress, Donut and Rating.
+- [Drawing with the Polygon](/help/palette/tools/drawing/) covers placing outlines point by point.
+
+Arrows have their own guide too: see [Arrows](/help/palette/arrows/).
+
+<FeatureGrid>
+  <Feature slug="arrows" title="Arrows">
+    Connect elements with arrows of every style, with draggable curve and elbow handles.
+  </Feature>
+  <Feature slug="shapes" title="Shapes">
+    The plain rectangles, circles, and more, in their own Shapes category.
+  </Feature>
+</FeatureGrid>
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+There is no **Tools** tab: every element sits in a palette category of its own.
+
+The categories sit along the strip by name, in groups with a thin line between each. Rest on one, or click it, to see its elements.
+
+**The categories on a page**
+
+On an infographic or any other design page, the palette offers these categories, in this order (an article page shows its formatting on the strip instead, and its Search finds all of these):
+
+- **[Shapes](/help/palette/shapes/)**: the plain rectangles, circles and the rest.
+- **[Write](/help/palette/write/)**: the text styles (Title, Subtitle, Heading, Subheading, Paragraph and Quote), Sticky Note and Pointer Note.
+- **[Concepts](/help/palette/concept-graphics/)**: the concept graphics, the [Timeline](/help/palette/concept-graphics/timeline-rail/) and the [Sankey](/help/palette/concept-graphics/sankey-diagram/).
+- **[Components](/help/palette/components/)**: the Hero, Header, Banner, [Stack](/help/palette/stacks/) and the [Devices](/help/palette/devices/) row (browser, monitor, laptop, phone, tablet, foldable and watch frames), then the Card, Badge, Step Number, Callout, Stat Row, Big Number, Quote and Process, then the [Code Block](/help/palette/tools/code-blocks/) and the [Checklist](/help/palette/tools/checklists/).
+- **[Icons](/help/palette/icons/)**: a searchable catalogue of glyphs, with the colour emoji and badges of [Stickers](/help/palette/stickers/) on its Stickers side.
+- **Media**: [Image](/help/palette/tools/images/) (`9`), the [embeds](/help/palette/embed-elements/) (YouTube, Vimeo, Loom, Figma, Google Docs, any website, and a Live Embed of a file from our apps), Avatar, the [Logo Strip](/help/palette/tools/images/), and the Link Card. Image, Avatar, the Logo Strip and the Hero only appear where image uploads are available.
+- **[Data](/help/palette/tools/data-elements/)**: the charts and meters (Pie, Column, Line, Legend, Progress, Donut and Rating), the [Map](/help/palette/tools/maps/), then the [Table](/help/palette/tools/tables/).
+
+Beside Search at the end of the strip, the **Library** button holds what you and your teams saved, to place in any document, in every app.
+
+**On other kinds of page**
+
+The palette follows the page you are working on, offering what that page is made of:
+
+- A **slide** puts Write first, then Shapes, Media, Data, Concepts, Components (without the Header, with the Devices row) and Icons (with the stickers).
+
+See [Working with Pages](/help/pages/working-with-pages/) for the kinds of page.
+
+**Elements the strip does not show**
+
+Some elements are not in any of the strip's categories, but the editor's [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) adds them by name, under **Add to canvas**:
+
+- [Technology](/help/palette/technology/) icons, the full-colour marks for architecture pictures.
+- The [Polygon](/help/palette/tools/drawing/), for outlines placed point by point.
+- The Arrow (`A`) and the Line: see [Arrows](/help/palette/arrows/).
+
+**Working with what you place**
+
+Each element behaves like any other once placed: select it, restyle it, multi-select it with others, and move it freely. Pick a tile and tap the canvas to drop the element at its default size, or drag to draw it at the size you want. `T` drops a Paragraph and `N` a sticky note without opening the palette at all.
+
+<Note>
+  The palette is hidden for people with view-only access, since they can't add anything. See
+  [Toolbar Layout](/help/palette/toolbar-layout/) for how the strip shows the categories and opens
+  each one.
+</Note>
+
+**Guides for these tools**
+
+Several tools have their own walkthroughs:
+
+- [Images](/help/palette/tools/images/) covers uploading, searching for and reusing pictures, and avatars.
+- [Tables](/help/palette/tools/tables/) covers the editable grid: adding one, filling cells, and rows/columns.
+- [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short remarks.
+- [Code Blocks](/help/palette/tools/code-blocks/) covers the monospace card for syntax-highlighted snippets.
+- [Checklists](/help/palette/tools/checklists/) covers the card of checkable to-do rows you tick on the page.
+- [Data and Chart Elements](/help/palette/tools/data-elements/) covers the **Data** category: Pie, Column and Line charts (each any of seven chart types), Legend, Progress, Donut and Rating. [Maps](/help/palette/tools/maps/) covers the Map.
+- [Drawing with the Polygon](/help/palette/tools/drawing/) covers placing outlines point by point.
+
+Arrows have their own guide too: see [Arrows](/help/palette/arrows/).
+
+<FeatureGrid>
+  <Feature slug="arrows" title="Arrows">
+    Connect elements with arrows of every style, with draggable curve and elbow handles.
+  </Feature>
+  <Feature slug="shapes" title="Shapes">
+    The plain rectangles, circles, and more, in their own Shapes category.
+  </Feature>
+</FeatureGrid>
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+The categories sit along the strip by name, with a thin line between each group: **Write**; then **Rooms**, **Seats**, **Perks**, **Play**, **Garden** and **Meet**; then **Travel** on its own. Rest on one, or click it, to see its elements.
+
+<Figure caption="The palette strip: the Edit | Walk toggle, the categories by name, and Search.">
+  <HuddleCommandPalette />
+</Figure>
+
+**The categories**
+
+The palette opens on **Popular**: Sticky note and Text, then, behind a divider, Room, Meeting Table, Chair, Bring Focus and Avatar Pad. Popular is the palette's landing page rather than a category on the strip; every other category is one level deep.
+
+Anything you cannot see is still one search away: the strip's Search and the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) add any palette element by name.
+
+**Where each tool lives**
+
+**Write** holds the words and pictures: **Text** drops a free-standing label (`T`), **Note** is a coloured sticky note card (`N`) and **Image** places a picture you upload, such as your logo. See [Write Elements](/help/palette/write/).
+
+**Rooms** holds what a floor is laid out with. It opens on **Build**: the [Room](/help/palette/virtual-office/), the Room Builder, the Corridor, the Door and the Window, the pieces a room is made with. The Room, Corridor and Door each open their types beside the panel, and so does the Rug. Under **Floor** come the [Fence](/help/palette/fences/), the [Stage](/help/palette/virtual-office/stage/), the Stage Curtains, the Podium, the Office Pod, the Phone Booth, the Nap Pod, the Reception Desk, the Rug, the Pillar and the Column.
+
+**Seats** holds what people sit at: the [Chair, Desk and Sofa](/help/palette/chairs/), and the [Meeting Table, Long Table, Bean Bag, Reading Nook, Hot Desk and Standing Desk](/help/palette/virtual-office/).
+
+**Perks** holds what makes a Space feel like a place, in three groups: **Office** (the Plant, Bookshelf, Printer, Copier, Lockers, Coat Rack and Umbrella Stand), **Kitchen** (the Water Cooler, Coffee Machine, Vending Machine, Kitchen Counter, Kitchen Sink, Fridge, Microwave and Kettle) and **Restroom** (a whole Restroom, or its Toilet Cubicle, Washbasin and Hand Dryer). See [Virtual Office Elements](/help/palette/virtual-office/).
+
+**Play** holds somewhere to unwind, in four groups: **Bar** (the Bar, Bar Stool, Drinks Cabinet and Drinks Fridge), **Games** (the Ping-Pong Table, Pool Table, Foosball Table, Arcade Machine and Dartboard), **Gym** (the Treadmill and Weight Bench) and **Lounge** (the Jukebox, Fireplace and Pet Bed).
+
+**Garden** holds the outdoor pieces, in five groups: **Plants** (the Outdoor Plant, Tree and Grass), **Paths and Fences** (the Garden Path and Garden Fence), **Furniture** (the Bench, Picnic Table, Hammock and Garden Umbrella), **Features** (the Fountain, Pond, Swimming Pool and Campfire) and **Parking** (the Car Park and Bike Rack).
+
+**Meet** holds what a meeting room and a team need: the [Screen](/help/palette/screen/), the [Room Sign](/help/palette/room-sign/), the Notice Board, World Clock, Calendar Wall, Suggestion Box and Team Photo Wall, and the [Timer and Stopwatch](/help/collaboration/session-tools/timer/).
+
+**Travel**, set apart on the strip, holds what takes people somewhere: the [Portal](/help/palette/tools/portals/), [Bring Focus](/help/palette/behaviour/bring-focus/), the [Avatar Pad](/help/palette/avatar-pads/), the [Directory](/help/palette/directory/), the Signpost, the [Elevator](/help/palette/elevator/), the [Stairs](/help/palette/stairs/) and the [Avatar Button](/help/palette/behaviour/mode-buttons/).
+
+**Stickers** are for decoration: die-cut colour emoji and word badges. They aren't on the strip: open **Search** (press **S**) and type a name, like "heart" or "approved". See [Stickers](/help/palette/stickers/).
+
+There is no **Media** category: pictures come from **Write**'s Image, and a Space does not add link cards. A link card already in a Space still shows, moves and deletes, and its address can still be changed.
+
+Each behaves like any other element once placed: select it, restyle it, multi-select it with others, and move it freely. Pick a tile and tap the canvas to drop the element at its default size, or drag to draw it at the size you want.
+
+<Note>
+  The palette is hidden for Participants and Viewers, since they can't add anything. See [Toolbar
+  Layout](/help/palette/toolbar-layout/) for how the strip shows the categories and opens each one.
+</Note>
+
+**Guides for these tools**
+
+Several tools have their own walkthroughs, listed below and linked here:
+
+- [Sticky Notes](/help/palette/tools/sticky-notes/) covers the coloured note card for short notes.
+- [Portals](/help/palette/tools/portals/) covers linking two portals and travelling between them, including across tabs.
+- [Meeting Elements](/help/palette/behaviour/) covers the Rooms, Seats, Perks, Play, Garden, Meet and Travel categories: Bring Focus, the furniture and the Avatar button.
+
+</AppNote>
+
+</ArticleLayout>

@@ -1,0 +1,124 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
+import * as HuddleCanvasBasics from '@/editions/livehuddle/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Changing the Canvas Background',
+  description:
+    "Restyle a tab's backdrop, with patterns or floors and colours, from the Tab Style dialog.",
+  path: '/help/canvas/the-canvas/changing-the-background/',
+});
+
+<ArticleLayout
+  title="Changing the Canvas Background"
+  description="Give each tab its own backdrop that suits what is on the canvas."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: "The Canvas", slug: "the-canvas" }}
+  subArticles={getSubArticles("the-canvas").filter((a) => a.slug !== "changing-the-background")}
+>
+
+Each tab has its own backdrop, stored per tab. You change it from the **Tab Style** dialog, a focused modal that gives these controls plenty of room.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  A backdrop is a pattern, a canvas colour, a pattern colour, an opacity and a pattern size.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Each tab is a floor you walk around on, and each has its own: the floor itself, a canvas colour, a strength and a size.
+</AppNote>
+
+
+## Opening the Dialog
+
+Open the **Tab Style** dialog. It opens on its home; press **Canvas** under **Fine-tune** to open the backdrop controls, and the **Tab Style** bar across the panel's top to return. You can also run **Open Canvas Options** from the [command palette](/help/search-panel/the-search-panel/command-palette/), which opens the dialog straight on the Canvas panel.
+
+<AppNote app="livediagram,livedesign,livehuddle">
+  Click the **Theme & canvas** button in the bottom-right corner of the editor, beside the zoom controls (it is there on every screen size, phones included, and named **Style** on a wide screen).
+</AppNote>
+
+<AppNote app="livedocuments">
+  Click the **Style** button on a page's title bar (top right of every page; on an article page, **Style** then **Tab Style**); it is there on every screen size, phones included.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The panel is called **Room** here: press **Room** under **Fine-tune** to open the floor and wall controls, and **Open Canvas Options** opens the dialog straight on the Room panel.
+</AppNote>
+
+
+The button is only there for people who can edit the tab, so it does not appear for a Participant or a Viewer on a shared link, or in an embed.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  It is hidden in zen mode too.
+</AppNote>
+
+<AppNote app="livediagram">
+  It is hidden in [Draw mode](/help/canvas/draw-mode/) as well.
+</AppNote>
+
+<AppNote app="livehuddle">
+  It also steps aside while you walk the Space; switch back to **Edit** to bring it back.
+</AppNote>
+
+
+Every control applies to the active tab as you click, so the canvas updates behind the dialog. There is no Apply or Cancel step: the dialog is an editor, not a wizard, and closing it with the X, Escape, or a click outside it simply dismisses it. Each change is an ordinary edit, so undo takes it back.
+
+## The Backdrop Panel
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  The Canvas panel gathers the backdrop controls:
+
+  - **Patterns** come in two carousels, each tile drawn in the pattern itself (nine to a page on a wider screen, six on a phone). **Static** holds thirteen: Grid, Blank, Lines, Graph, Crosshatch, Confetti, Stripes, Diagonal, Waves, Bricks, Checkerboard, Hexagonal and Engineering. **Animated** holds five (Flow, Drift, Aurora, Ripple, Ribbons) that bring the canvas to life with soft ambient motion.
+  - **Colours** offers a **Canvas** swatch (the backdrop fill) and a **Pattern** swatch (the dots, lines or marks drawn on top). Each opens the colour picker: the theme's palette, the house colours (soft and strong for the canvas, strong only for the pattern), the colours already used in the <Noun />, and **Add a custom colour** (four coloured dots) for one of your own. Confetti is multi-coloured, so it ignores the pattern colour.
+  - **Opacity** is a slider with a percentage readout that fades the canvas colour and the pattern together.
+  - **Size** is a slider (50% to 200%) that scales each pattern tile, so you can make a grid finer or coarser. Blank has nothing to scale.
+  - **Speed** appears only while an animated pattern is selected: a slider from 25% to 300% that sets how briskly the motion runs, from a barely-there drift to a lively stream.
+
+  The animated patterns are theme-matched and reduced-motion safe: if you prefer reduced motion, each one simply freezes on a pleasant still frame.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Static** holds a fourteenth pattern, **Isometric**, between Bricks and Checkerboard.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The Room panel gathers the floor and wall controls:
+
+  - **Floor** is a carousel of fifteen choices, each tile drawn in the floor itself (nine to a page on a wider screen, six on a phone). **None** leaves the plain canvas colour. Then the indoor floors: **Carpet**, **Carpet Tiles**, **Wood Floor**, **Parquet**, **Tiles**, **Marble**, **Terrazzo** and **Concrete**; and the outdoor ones: **Decking**, **Stone Paving**, **Cobbles**, **Grass**, **Sand** and **Mud**. Hover a tile to see what it is for.
+  - **Colours** offers a **Canvas** swatch: the colour under the floor, which is all you see with None and shows through a floor below full strength. It opens the colour picker: the theme's palette, the house colours, the colours already used in the canvas, and **Add a custom colour** (four coloured dots) for one of your own. A tab on a seasonal motif floor (see [Seasonal Looks](/help/canvas/themes/changing-theme/#seasonal-looks)) also gets a **Pattern** swatch for the motif's colour.
+  - **Strength** is a slider with a percentage readout that fades the floor into the canvas colour, from the full floor at 100% to the plain canvas at 0%.
+  - **Size** is a slider (50% to 200%) that scales the floor, so the planks, tiles or cobbles read larger or smaller. None has nothing to scale.
+  - **Walls** is a swatch for the colour of the walls round your rooms in the [3D view](/help/selection-modes/avatar-mode/). They start as warm plaster; pick a colour to paint them, and press **Plaster** to put the plaster back. On a dark canvas the walls are the same colour in evening light, a little deeper.
+
+  A floor brings its own colours (grass is green, oak is honey), in a light version and a dark one: a dark canvas, such as a theme's dark half when you use dark mode, gets the dark floor. Every floor is kept quiet, so furniture, avatars and text stay easy to read on top of it, and it stays put under your pieces as you pan and zoom.
+</AppNote>
+
+<Figure app="livediagram,livedesign,livedocuments" caption="The Canvas panel of the Tab Style dialog: the Static and Animated pattern carousels, the two colours, and the Opacity and Size sliders.">
+  <DiagramCanvasBasics.LookAndFeelCanvas />
+</Figure>
+
+<Figure app="livehuddle" caption="The Room panel of the Tab Style dialog: the floors carousel, the canvas colour, and the Strength and Size sliders.">
+  <HuddleCanvasBasics.LookAndFeelCanvas />
+</Figure>
+
+## The Other Panels
+
+The same dialog also hosts the **Colours** panel, where every built-in theme but the seasonal ones (worn through the seasonal looks) sits in one list to recolour the whole tab. Picking a theme repaints the backdrop to match, but keeps any colour you set yourself on the backdrop, the same way it keeps hand-set element colours. Learn more in [Themes](/help/canvas/themes/). The **Text** panel sets the tab's default typeface and text size, and the **Looks** on the dialog's home set the theme, finish, font and pattern (or floor) together in one click; see [Choosing Fonts](/help/canvas/text-and-fonts/choosing-fonts/).
+
+<Tip>
+  Background style is per tab, so different tabs in one <Noun /> can carry different backdrops. A new
+  tab starts with the backdrop of the tab you added it from.
+</Tip>
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  For instance, a clean grid for an overview and a darker backdrop for a detail view. A new tab starts with the pattern, colours and opacity of the tab you added it from.
+</AppNote>
+
+<AppNote app="livehuddle">
+  For instance, carpet tiles for the office and grass for the garden out the back. A new tab starts with the floor, colour and strength of the tab you added it from.
+</AppNote>
+
+
+</ArticleLayout>

@@ -1,4 +1,4 @@
-// The editor's fixed chrome as the User Interface help figures draw it (docs/specs/018-help/help-app.md):
+// The editor's fixed chrome as the User Interface help figures draw it (liveworkspace/docs/specs/016-help/help-centre.md):
 // the glyphs, the bottom bar with its tab card, tab pill and quick controls, and the bottom-right
 // corner cluster (Undo / Redo, Layers, the Theme & canvas paintbrush, zoom). Drawn once for the help
 // apps whose editors lay it out the same way; each app's user-interface.tsx composes its scenes from it.

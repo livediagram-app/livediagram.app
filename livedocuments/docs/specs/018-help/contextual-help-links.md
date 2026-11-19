@@ -2,7 +2,7 @@
 
 ## Problem
 
-The help centre ([Help app](help-app.md)) holds 130+ articles, but the editor only exposes
+The help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md), this app's scope of it) holds 130+ articles for livedocuments, but the editor only exposes
 **one** entry point to it: the global Help icon in the editor header
 (`EditorHeader.tsx`, to the right of the Share button). A user looking at a specific dialog (Share expiry, password
 gate, export formats) or a specific toggle (auto-attach arrows, alignment guides)
@@ -70,8 +70,8 @@ named keys -> nested article slug (the path under `/help`, e.g.
 source for help slugs on surfaces that deep-link ONE article, and keys are
 referenced symbolically so a slug change is a one-line edit. (Search is
 different: the SearchPanel's Help group derives from the full
-`@livedocuments/help-registry` catalogue, see [Help app](help-app.md).) Slugs here must match a
-real page under `apps/help/app/.../page.mdx` (and its registry entry) - a key
+`@livedocuments/help-registry` catalogue, livedocuments's slice of the one catalogue, see [One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md) "Search".) Slugs here must match a
+real page under `liveworkspace/apps/help/app/.../page.mdx` whose registry entry applies to livedocuments (its `apps` names it) - a key
 pointing at a missing article is a bug, the same way an unregistered article
 is.
 

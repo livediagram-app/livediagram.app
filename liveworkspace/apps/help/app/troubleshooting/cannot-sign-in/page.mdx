@@ -1,0 +1,41 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: "Can't Sign In",
+  description:
+    'A checklist for sign-in problems: the email code, the right address, Google, cookies, and a reminder that the editor always works as a guest.',
+  path: '/help/troubleshooting/cannot-sign-in/',
+});
+
+<ArticleLayout title="Can't Sign In" description="A checklist for sign-in problems, and how to keep working while you sort them out." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+Before anything else, the good news: **you do not need to sign in to use <AppName />**. The editor always works without an account, so a sign-in problem never blocks you from building or sharing a <Noun />. You can continue as a guest and sort the account out later. With that safety net in mind, here is how to get sign-in working.
+
+## First, Keep Working
+
+If sign-in is failing and you just want to get on with it, leave the sign-in page and head straight to a [new <Noun />](/new) or [the Explorer](/explorer). Everything works: persistence, sharing by link, and real-time collaboration. When you sign up or sign in later, the <Noun plural /> you built as a guest move into your account automatically, so nothing is lost, and you're offered the chance to move any <Noun plural /> in This Browser. See [working as a guest](/help/getting-started/guest-vs-account/).
+
+<AppNote app="livediagram,livehuddle">
+  Only publishing to the Community needs an account.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Sometimes sign-in is simply not turned on. This is a fully supported mode, not an error.
+</AppNote>
+
+## Sign-In Checklist
+
+1. **Check the email code.** Sign-in uses a 6-digit code sent to your email from liveworkspace. A code lasts 10 minutes and allows three tries. Look in spam, and ask for a fresh code on the sign-in page if the first is slow, has expired or has run out of tries.
+2. **Use the same email** you originally signed up with. A new email makes a new, empty account.
+3. **Signed up with Google?** Choose **Continue with Google** on the sign-in page. Signing in with Google on an address that already has an account joins that account, as long as Google has verified the address.
+4. **Start again from <AppName />.** If the sign-in page says the sign-in had expired or did not finish, choose **Try again**. This happens when a sign-in sat open for more than ten minutes, or was started in another tab.
+5. **Allow cookies for both sites.** Signing in passes between the app's own address and liveworkspace.app in the same tab. A browser set to block all cookies, or a privacy extension, can stop it finishing. Try an incognito window with extensions off.
+
+If sign-in still will not complete after the checklist above, [contact us](/help/contact/) with the email address you are using and the error you see. Keep working as a guest in the meantime, your <Noun plural /> are safe.
+
+<AppNote app="liveplanner">
+  If you are on the hosted site and expected sign-in to work, contact us the same way.
+</AppNote>
+
+</ArticleLayout>

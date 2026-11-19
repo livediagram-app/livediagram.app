@@ -1,0 +1,10 @@
+import { SupportedDevicesArt as Scene } from '@liveworkspace/help-site/art/scenes/supported-devices';
+import { MiniBoard } from '@liveworkspace/help-site/art/work';
+
+// Supported Devices: the shared scene (liveworkspace/docs/specs/016-help/help-centre.md "Category art"), one board of cards on a
+// computer, a tablet and a phone.
+export function SupportedDevicesArt() {
+  return (
+    <Scene screen={({ x, y, w, h }) => <MiniBoard x={x + 3} y={y + 3} w={w - 6} h={h - 6} />} />
+  );
+}

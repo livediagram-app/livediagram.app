@@ -55,7 +55,7 @@ to the top of the scroll area, so the way back never leaves the screen.
 ## Not the back bar
 
 - The help centre's and marketing pages' site breadcrumb (home, then the section, then the page), a page trail with
-  its structured data (`BreadcrumbTrail`, [Help app](../018-help/help-app.md)).
+  its structured data (`BreadcrumbTrail`, [One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md)).
 - The editor chrome's **Back**, which leaves the plan for the page that opened it: a toolbar button.
 - Step controls: a setup wizard's footer **Back**, a tour's **Back**, a presentation's previous slide.
 

@@ -211,9 +211,13 @@ for (const spec of GROUPS) {
 // (D1 migrations apply before each Worker's code, in any tier); tier 2: the routers in front of the
 // rest; tier 1: the sites between. Two exceptions (liveworkspace/docs/specs/003-accounts/accounts.md "The move to www."):
 // accounts goes in tier 1, after every Worker that checks its tokens has learned to accept the issuer
-// it is about to sign with, and liveworkspace's bare-domain redirect in tier 2, once www. answers.
+// it is about to sign with, and liveworkspace's bare-domain redirect in tier 2, once www. answers. The one help
+// centre is a liveworkspace Worker deployed as a site, in tier 1.
 const TIER_OF = new Map([
   ['liveworkspace/apps/accounts', 1],
+  // The one help centre (liveworkspace/docs/specs/016-help/help-centre.md) is a site, built like one (six static
+  // exports, from full history), so it deploys with the sites; every product router (tier 2) binds to it.
+  ['liveworkspace/apps/help', 1],
   ['liveworkspace/apps/redirect', 2],
 ]);
 // A held product's Workers never deploy: its first deploy is its launch card's.
@@ -251,6 +255,8 @@ function deployOf(p) {
     // A help site dates each article by its last commit (packages/help-site article-dates.ts), so it
     // builds from full history; every other Worker builds from the one commit.
     history: app === 'help',
+    // The one help centre builds once per scope (its scripts/build-scopes.mjs): six static exports.
+    ...(existsSync(`${p.path}/scripts/build-scopes.mjs`) && { builds: 6 }),
     hosted,
   };
 }

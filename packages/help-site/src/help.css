@@ -1,4 +1,4 @@
-/* The help centre's own styles (docs/specs/018-help/help-app.md), shared by every product's help app. Each app's
+/* The help centre's own styles (liveworkspace/docs/specs/016-help/help-centre.md), shared by every product's help app. Each app's
  * app/globals.css imports Tailwind, its theme and its hero band, then this file, and sets the two print colours:
  *
  *   --help-print-link     links on paper (the product's default-theme brand-700)
@@ -91,7 +91,8 @@ body {
 }
 
 /* Hide the divider in sidebar card when TOC is empty (first child) */
-.sidebar-card > .toc-divider:first-child {
+.sidebar-card > .toc-divider:first-child,
+.sidebar-card > [data-read-it-in]:first-child > .toc-divider {
   display: none;
 }
 .sidebar-card:empty {

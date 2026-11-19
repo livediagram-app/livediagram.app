@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { AnnotationScene } from '@liveworkspace/help-site/art/illustrations/canvas-annotations-locking';
+
+export const metadata = helpMetadata({
+  title: 'Annotations',
+  description:
+    'A small themed marker that holds a note: hover to read it, double-click to edit it.',
+  path: '/help/canvas/annotations/',
+});
+
+<ArticleLayout title="Annotations" description="A lightweight way to attach an explanatory note to a spot without cluttering it." categoryTitle="Canvas" categorySlug="canvas" subArticles={getSubArticles("annotations")}>
+
+An annotation is a small themed circle holding a fixed note symbol, a way to pin a piece of explanation to a spot on the <Noun /> without adding a box of text that gets in the way. The note itself stays hidden until you want it: hover the marker to read it, double-click it to edit. It's perfect for footnotes, callouts, and reviewer comments that should be available but not in the foreground.
+
+<Figure caption="An annotation pinned beside a shape: a themed circle with the note marker, its note floating above it on hover.">
+  <AnnotationScene />
+</Figure>
+
+## What It is
+
+- A fixed-size circle (around 44 pixels) themed like a shape, with fill and stroke from the active theme and a single note symbol centred inside, tinted by the stroke colour.
+- It's a marker, not a box: it doesn't resize and has no corner or rotate handles, so a <Noun /> full of annotations stays tidy and uniform. The symbol is always the same note marker, not pickable per annotation.
+- You can still move it, recolour it (via the Colours controls), bring it to front or send it to back, lock it, group it, link it, and delete it like any other element.
+
+## Adding One
+
+A new annotation drops at the centre of the view, already selected, in one undoable step. It inherits the active theme's colours, so it matches your <Noun /> out of the box.
+
+<AppNote app="livediagram">
+  In Diagram mode, open the palette's **Write** category, where **Annotation** comes after Page, Text and Note, just before **Pointer Note**. Workshop's Write has no annotation, and Draw mode's dock has no palette, so switch the tab to Diagram first.
+</AppNote>
+
+<AppNote app="livedesign">
+  The palette has no Annotation tile, and the palette's own Search doesn't list one. To add one, open the [search panel](/help/search-panel/the-search-panel/), type **Annotation** and pick it under **Add to canvas**. For a note that points at a spot on a shape, the palette's Write category offers the [Pointer Note](/help/palette/pointer-notes/) on design and wireframe pages, and any element can carry a [note](/help/canvas/notes/) of its own.
+</AppNote>
+
+## Reading and Editing the Note
+
+- **Hover to read.** Pointing at an annotation that has note text floats a read-only preview of the note above every canvas element, so it's legible even when other shapes are painted on top of the marker. The preview vanishes when you move away. An annotation with no note yet shows nothing on hover.
+- **Double-click to edit.** A plain click just selects the marker; a double-click opens the editable note popover (the same one [notes](/help/canvas/notes/) use on every other element). It's a small rich-text editor: a formatting toolbar sits above the writing area with bold, italic, underline, a block-type picker (paragraph, three heading levels, bullet and numbered points), and links, so a note can hold a properly structured few paragraphs rather than one run-on line. Type, then press **Cmd-Enter** (or click away) to save, or **Esc** to cancel; the change goes through history like any other edit. Clicking anywhere outside the popover, the marker included, saves and closes it. Dragging moves the marker and never opens the editor.
+- **Viewers and Participants** can hover to read the note and open it read-only, but can't edit, move, or delete the annotation, the same as every other element.
+
+## Exporting
+
+In visual exports (PNG and SVG) an annotation renders as its themed circle; the note text isn't drawn, since it's a hover affordance rather than page content.
+
+<AppNote app="livediagram">
+  Markdown export lists a labelled annotation under Elements with an `(annotation)` tag.
+</AppNote>
+
+<Tip>
+  Use annotations for review notes and caveats you want available on demand without crowding the
+  <Noun />. They keep a consistent size, so a dozen of them still look neat.
+</Tip>
+
+</ArticleLayout>

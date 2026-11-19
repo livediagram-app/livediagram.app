@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
 
-// When each help page last changed, for the sitemap's <lastmod> (docs/specs/018-help/help-app.md "SEO"). Read from
+// When each help page last changed, for the sitemap's <lastmod> (liveworkspace/docs/specs/016-help/help-centre.md "SEO"). Read from
 // git at build time: one `git log` pass over the app folder, newest commit first, so the first date seen for a page
 // is its latest. Keyed by route (`canvas/themes`, '' for the home), the page.mdx / page.tsx folder under app/.
 //

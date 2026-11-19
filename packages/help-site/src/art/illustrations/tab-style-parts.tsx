@@ -1,4 +1,4 @@
-// The Tab Style dialog's shared bits, for every product's canvas-basics scenes (docs/specs/018-help/help-app.md):
+// The Tab Style dialog's shared bits, for every product's canvas-basics scenes (liveworkspace/docs/specs/016-help/help-centre.md):
 // captions, option boxes, sliders, carousel headings and page dots, and the panel a Tab Style pane opens in
 // under its back bar (CanvasThemeDialog.tsx, BackBar.tsx). Composed from the shared primitives.
 

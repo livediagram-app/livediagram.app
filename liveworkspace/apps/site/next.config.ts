@@ -20,6 +20,9 @@ const INDEX_DEV = process.env.INDEX_DEV_ORIGIN ?? 'http://localhost:8793';
 const MEDIA_DEV = process.env.MEDIA_DEV_ORIGIN ?? 'http://localhost:8792';
 const STATUS_DEV = process.env.STATUS_DEV_ORIGIN ?? 'http://localhost:3010';
 const DRIVE_DEV = process.env.DRIVE_DEV_ORIGIN ?? 'http://localhost:3011';
+// The one help centre (liveworkspace/apps/help, `pnpm dev` on 3020), which www.liveworkspace.app/help* routes to in
+// production (liveworkspace/docs/specs/016-help/help-centre.md). It serves its own /help basePath.
+const HELP_DEV = process.env.HELP_DEV_ORIGIN ?? 'http://localhost:3020';
 
 // The build's assets under a path of their own (@liveworkspace/sites/workspace-proxy SITE_ASSET_PREFIX), because the
 // sign-in pages and the Explorer are also served under each app's own address, whose `/_next` is the app's. The
@@ -56,7 +59,12 @@ const nextConfig: NextConfig = {
     ? {}
     : {
         async rewrites() {
-          return [
+          // The help centre goes before the site's own files, as its route does in production.
+          const beforeFiles = [
+            { source: '/help', destination: `${HELP_DEV}/help` },
+            { source: '/help/:path*', destination: `${HELP_DEV}/help/:path*` },
+          ];
+          const afterFiles = [
             { source: '/api/auth/:path*', destination: `${ACCOUNTS_DEV}/api/auth/:path*` },
             { source: '/api/account/:path*', destination: `${ACCOUNTS_DEV}/api/account/:path*` },
             // Only accounts' two discovery documents, as in production: security.txt is the site's own.
@@ -84,6 +92,7 @@ const nextConfig: NextConfig = {
             { source: '/api/status/:path*', destination: `${STATUS_DEV}/api/status/:path*` },
             { source: '/api/drive/:path*', destination: `${DRIVE_DEV}/api/drive/:path*` },
           ];
+          return { beforeFiles, afterFiles, fallback: [] };
         },
       }),
 };

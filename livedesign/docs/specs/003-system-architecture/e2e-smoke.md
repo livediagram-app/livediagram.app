@@ -168,7 +168,7 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
      (`@liveworkspace/sites/workspace-proxy`) does; the live app has no Explorer pages of its own. Without the build
      they answer a logged 404, so only the specs that open the Explorer page need it (CI builds it once for the smoke
      shards);
-   - serve `apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
+   - serve `liveworkspace/apps/help/out` under `/help/*`, its basePath, as the router mounts it (the telemetry dashboard is liveworkspace's, a page of `../liveworkspace/apps/site`); a missing build answers a logged 404;
    - cache as production does ([Stale builds](../016-platform/stale-builds.md) "Caching rules"): every
      file goes out as Cloudflare's asset server sends it (`public, max-age=0, must-revalidate`, an
      ETag, 304 on a match), then through the router's rules, run from the router's own

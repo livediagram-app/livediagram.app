@@ -13,7 +13,7 @@ inside a package, or a work compiled into a binary asset. The page lists exactly
 reach a deployed artefact, and nothing else.
 
 - **Bundle truth.** What ships is read from the bundler, not inferred from `package.json`. The
-  static apps (live, marketing, help, telemetry) are analysed with Next's `experimental-analyze`
+  static apps (live, marketing, telemetry) are analysed with Next's `experimental-analyze`
   (Turbopack), and only the modules it places in client output count: a static export has no server
   at runtime, so server chunks never leave the build. The workers (api, mcp, router) are bundled
   with `wrangler deploy --dry-run --metafile`, and every module in the metafile counts.
@@ -64,8 +64,8 @@ reach a deployed artefact, and nothing else.
   claims). One page rather than one per app: most works ship in several apps, the router serves them
   all under one origin, and a visitor looking for "what is in liveplanner" should not need to know
   the app boundaries. Each entry names the apps that ship it.
-- **Two sections.** "In your browser" lists the works sent to people's browsers by the editor, the
-  website and the help centre. "On our servers" lists the works bundled
+- **Two sections.** "In your browser" lists the works sent to people's browsers by the editor and the
+  website (the help centre is liveworkspace's one, listed on liveworkspace.app/licences). "On our servers" lists the works bundled
   into the api, MCP and router workers; they run on Cloudflare, not on anyone's device, and are
   listed in full all the same. A work shipped on both sides appears in both, with each side's apps.
 - **Entries are collapsed.** Each is a native disclosure showing the name, version, licence id and

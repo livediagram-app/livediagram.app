@@ -1,4 +1,4 @@
-// The help home page's structure (docs/specs/018-help/help-pages.md "Home page"): which categories each section
+// The help home page's structure (liveworkspace/docs/specs/016-help/help-centre.md "Home page"): which categories each section
 // shows, in order, and the popular topics under the search. The layout is the product's (its lib/home-sections.ts);
 // the shape, and the check that holds it to the registry, are the same for every product.
 

@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { HistoryScene } from '@/editions/livedesign/components/illustrations/history';
+
+export const metadata = helpMetadata({
+  title: 'History',
+  description:
+    'See who changed a design and when, at a glance and event by event, with its snapshots pinned on the same timeline, from Tools in the editor.',
+  path: '/help/collaboration/history/',
+});
+
+<ArticleLayout
+  title="History"
+  description="Who changed what and when, with the design's snapshots on the same timeline."
+  categoryTitle="Collaboration"
+  categorySlug="collaboration"
+  subArticles={getSubArticles('history')}
+>
+
+**History** answers "what happened to this design?" without leaving the editor. It shows who worked on the design and when, and it is where the design's [snapshots](/help/collaboration/snapshots/) live, each one pinned on the timeline at the moment it was taken.
+
+## Opening History
+
+Open **Tools** at the end of the bottom bar and press **History**. It opens inside the Tools menu; the back bar at its top returns to the rest of Tools. The same History is on the design's **⋯** menu in the [Explorer](/help/explorer/explorer-page/).
+
+<Figure caption="History inside Tools: the At a Glance card, the timeline with a snapshot pinned on it, and Take Snapshot.">
+  <HistoryScene />
+</Figure>
+
+## What it shows
+
+- **At a glance**: a card that says when the design last changed, with the faces of the people who worked on it, when it was made and how many events there are, and a bar for each of the last 14 days so you can see the shape of the work.
+- **The timeline**: newest first, under a heading for each day. Each entry says what happened (made, edited, renamed, moved, shared, sent to the Trash and back), who did it ("You" for your own), and when.
+- **Filters**: when the timeline holds more than one kind of event, chips over it narrow it to one kind, with **All** to show everything again.
+- **Show older events** at the foot loads the next page.
+
+## Snapshots on the timeline
+
+If you can take snapshots, **Take Snapshot** sits at the foot of History and each snapshot appears on the timeline, with **Revert** and **Delete** in place. See [Snapshots](/help/collaboration/snapshots/) for how they work.
+
+## Who sees it
+
+The timeline is there when you are signed in and reach the design directly: one in your own space, or a team's design for a team you are in. A design opened through a share link has no timeline. An Editor on a link still gets History for the design's snapshots, shown on their own.
+
+Signed out, or for a design kept only in [This Browser](/help/privacy-and-security/offline-mode/), the **History** row carries a **Sign In** or **Sync Design** badge, and pressing it asks you to do that first.
+
+</ArticleLayout>

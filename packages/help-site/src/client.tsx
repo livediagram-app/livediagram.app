@@ -1,6 +1,6 @@
 'use client';
 
-import type { Article } from '@liveworkspace/help-registry';
+import type { SearchEntry } from '@liveworkspace/help-registry';
 import { createContext, useContext, useEffect, type ReactNode } from 'react';
 import type { HelpFacts } from './types';
 
@@ -11,23 +11,30 @@ import type { HelpFacts } from './types';
 // around every page, and these components read what it hands over. Each of the three was already on every
 // page (the page-view boot, the header's search box), so the provider ships nothing a page did not have.
 
-/** The telemetry events the help centre's components send, through the product's siteTrack. */
+/** The telemetry events the help centre's components send, through the product's siteTrack. `Changed` is the app
+ *  switch's move to another scope (`Scope.<scope>`, liveworkspace/docs/specs/016-help/blueprints/help-centre.md
+ *  "Telemetry"). */
 export type HelpTrack = (
   category: 'Help',
-  action: 'View' | 'Searched' | 'Helpful' | 'Unhelpful',
+  action: 'View' | 'Searched' | 'Helpful' | 'Unhelpful' | 'Changed',
   type?: string,
 ) => void;
 
-/** A search over the product's catalogue, best match first (the registry's searchArticles). */
-export type HelpSearch = (query: string) => Article[];
+/** A search over an index of articles, best match first (the registry's rankArticles). */
+export type HelpSearch = (query: string) => SearchEntry[];
 
 export interface HelpClient {
   facts: HelpFacts;
   track: HelpTrack;
   /** The product's article telemetry id for a help path (its help-registry's helpPathTelemetryId). */
   helpPathTelemetryId: (path: string) => string;
-  /** Loads the search on first use: the catalogue is too big for every page's JavaScript. */
+  /** Loads the scope's search on first use: its own articles only (every article under All Apps), since the
+   *  catalogue is too big for every page's JavaScript. */
   loadSearch: () => Promise<HelpSearch>;
+  /** Loads the search over every app's articles, for an app's "From Other Apps" group: fetched only once the
+   *  scope's results show (liveworkspace/docs/specs/016-help/help-centre.md "Search"). Absent under All Apps, whose
+   *  own search is already every article. */
+  loadSearchAll?: () => Promise<HelpSearch>;
 }
 
 const HelpClientContext = createContext<HelpClient | null>(null);

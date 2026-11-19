@@ -1,0 +1,82 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Inbox',
+  description: 'The Explorer Inbox lists what is outstanding for you in every liveworkspace app: actions assigned to you or by you, and open comment threads.',
+  path: '/help/explorer/activity/',
+});
+
+<ArticleLayout title="Inbox" description="What is waiting on you right now: actions assigned to you or by you, and the comment threads you are part of." categoryTitle="Explorer" categorySlug="explorer">
+
+The **Inbox** sits under [Home](/help/explorer/home/) in the Explorer sidebar's Overview group. It lists what is still _open_ for you, in one place for every liveworkspace app: the actions waiting on you, the ones you handed to someone else, and the [comment](/help/collaboration/comments/) threads nobody has resolved yet.
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  See [Assigned Actions](/help/collaboration/assigned-actions/) for how actions work.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Beside actions, it lists open cards assigned to you and forms with new responses.
+</AppNote>
+
+## What lands here
+
+The Inbox is one list, newest first, under **Today**, **Earlier This Week** and **Older**. Each row has a status that says why it is there:
+
+- **To do:** an open action assigned to you, until it is done. An action you assigned to yourself lives here too, so the page doubles as your to-do list.
+- **Waiting on** a teammate (for example **Waiting on Bo**): an open action you gave to someone else, so you can follow it up.
+- An unresolved [comment](/help/collaboration/comments/) thread you are part of: **Mentioned you** when someone [mentioned you](/help/collaboration/comments/#mentioning-a-teammate), **On your <Noun />** for a thread on your own <Noun />, **Replied to you** or **You replied** for a thread you wrote in, and **Your agent wrote** for a thread an AI tool working as you wrote in.
+
+**On your <Noun />** is for a thread on your own <Noun /> that you have not replied to yet.
+
+<AppNote app="liveplanner">
+  An open plan card whose Assignee is you is a **To do** row too (with its number, title, type, board and the column it is in now), and one you assigned to someone else reads **Waiting on**. A form in a plan you own or reach through a team that has responses you haven't seen yet reads, for example, **3 new responses**; opening the form marks them seen. Threads on plan cards are listed with the rest.
+</AppNote>
+
+The filter menu at the top of the page, beside the app switch, narrows it to one kind, each with its count: **All**, **My Actions**, **Assigned by Me**, **Comments** and **Form Responses** (forms with new responses, from liveplanner). Your choice is remembered on this device. Done actions and resolved threads are not listed: the Inbox is a list of what is outstanding, not a history. When nothing is waiting, the page says **You’re all caught up**.
+
+<AppNote app="liveplanner">
+  The filter is a row of chips above the list. Done actions and cards are not listed either, and the empty page links to how actions work.
+</AppNote>
+
+With **<AppName />** chosen at the top of the page, the Inbox lists only what comes from your <Noun plural />; with **All Apps**, it lists every app's, and each row names its app.
+
+## Reading and answering a row
+
+Each row names the <Noun /> it is from and the thing it is about, with the latest change, and on the right the person behind it with how long ago. Click a row and it opens in the **reading pane** beside the list: where it is (the <Noun />, the tab and the element), who wrote and why, a picture of the <Noun />, then the whole thread or the action's note.
+
+From the pane you can act without leaving the Inbox:
+
+- **Reply** to a thread, in the field under it, and **Resolve** it.
+- **Mark Done** on an action.
+- **Open in <AppName />** takes you to the <Noun /> at that spot, with the action or thread ready. A row from another app opens in that app.
+
+<AppNote app="liveplanner">
+  Opening a row goes to its spot: an action with its popover, a thread with its comments, a card on its board with the card open, and a form's responses on the board they land on. A row shows the action's note, or the latest comment with its writer's initials. Come back to a page that has been open a while and the Inbox reads itself again, so it is never a day out of date.
+</AppNote>
+
+On a phone, and in the editor's narrow [Explorer panel](/help/explorer/explorer-panel/), the pane takes the list's place, with **Back** to return.
+
+<AppNote app="livedesign,liveplanner">
+  The way back is the **Inbox** bar at the top of the pane (in liveplanner also the browser's Back, or `Escape`).
+</AppNote>
+
+With the keyboard, **J** and **K** (or the arrow keys) move through the list and show each row in the pane, **Enter** opens it in its app, **R** jumps to the reply field and **E** resolves the thread or marks the action done.
+
+## The badge
+
+The Inbox row in the sidebar shows a count of what **waits on you**: the open actions assigned to you, and the comment threads that ask something of you (a mention, or a thread on your own item you haven't answered), so you can tell from any other page whether something needs you. Work you handed out and threads you replied in are listed but not counted.
+
+<AppNote app="liveplanner">
+  The count also includes open cards assigned to you and a question an agent asked with your token. Form responses are listed but not counted. It shows **0** when nothing waits, and nothing while the Inbox is still loading.
+</AppNote>
+
+## Saved Only in This Browser
+
+On <AppName />'s own Explorer page, and in the editor's [Explorer panel](/help/explorer/explorer-panel/), the Inbox also lists the open actions and comment threads of <Noun plural /> saved only in Browser Storage ([Offline Mode](/help/privacy-and-security/offline-mode/)), with everything else. Each of their rows carries a **Browser Storage** pill, because the <Noun /> is kept in this browser and nowhere else. Nobody else sees those rows, and another browser or device won't list them. Open those <Noun plural /> to reply or mark them done: the reading pane can't change them. The Explorer on liveworkspace.app can't read this browser's storage, so it lists only what your account or guest identity holds.
+
+## Guests and signing in
+
+The Inbox works without an account, like the rest of <AppName />. When you sign in, what you did as a guest moves to your account with your <Noun plural />.
+
+</ArticleLayout>

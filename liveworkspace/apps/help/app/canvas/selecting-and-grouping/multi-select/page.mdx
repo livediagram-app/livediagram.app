@@ -1,0 +1,137 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
+import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
+import * as DesignCanvasBasics from '@/editions/livedesign/components/illustrations/canvas-basics';
+import * as DocumentsCanvasBasics from '@/editions/livedocuments/components/illustrations/canvas-basics';
+import * as HuddleCanvasBasics from '@/editions/livehuddle/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Marquee and Multi-Select',
+  description:
+    'Drag a selection rectangle or build a selection click by click, then move, copy, or restyle many elements at once.',
+  path: '/help/canvas/selecting-and-grouping/multi-select/',
+});
+
+<ArticleLayout
+  title="Marquee and Multi-Select"
+  description="Gather several elements into one selection with a drag or a series of clicks, then act on them together."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: "Selecting Many Elements", slug: "selecting-and-grouping" }}
+  subArticles={getSubArticles("selecting-and-grouping").filter((a) => a.slug !== "multi-select")}
+>
+
+Selecting one element is easy: you click it. The interesting part is grabbing several at once so you can move, copy, or restyle a whole region of the canvas in a single action. <AppName /> offers two complementary ways to do this, and they work together.
+
+## The Marquee
+
+The marquee is a selection rectangle you drag across the canvas. Start the drag on an empty patch of background, pull a box around the elements you want, and release: every element that sits entirely inside the rectangle becomes selected together, while anything the box only clips is left out. It is the fastest way to scoop up a cluster of shapes, a row of cards, or an entire section of the <Noun />.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  Have the Select tool active first. Arrows count too, as long as both of their ends are inside the box.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Have **Edit** on first (the Edit | Walk toggle at the start of the palette). A tilted element counts by its drawn corners.
+</AppNote>
+
+
+Because the marquee starts on empty canvas, it never conflicts with dragging an element. Press directly on a shape and you move that shape; press on the background and you draw a marquee instead. A drag of only a few pixels counts as a click, so it simply clears the selection.
+
+<Figure app="livediagram,livedesign,livedocuments,livehuddle" caption="A marquee drag sweeps a rectangle across the canvas, selecting every element it fully encloses.">
+  <DiagramCanvas.MultiSelect />
+</Figure>
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  On a phone the canvas starts on the [Hand tool](/help/selection-modes/hand/), where a drag pans instead. Switch to [Select](/help/selection-modes/select/) from the canvas tool menu (or press `V` on a keyboard) to draw a marquee.
+</AppNote>
+
+<AppNote app="livehuddle">
+  On a touch screen a one-finger drag on empty canvas pans the view instead of drawing a marquee. See [Edit and Walk](/help/selection-modes/select/).
+</AppNote>
+
+## Building a Selection by Hand
+
+When the elements you want are not neatly boxed together, build the selection one at a time. Click the first element, then **hold Shift and click** more to add them without dropping what you already have. You can keep extending the selection across the canvas, picking out exactly the elements you need and leaving their neighbours untouched. Shift-clicking an element that is already selected removes it again, so you can fine-tune the set as you go.
+
+Only Shift adds to a selection. A plain click, without Shift, always starts over: click an element outside the selection and it becomes the only one selected, and click an element inside the selection to keep just that one. Clicking the only selected element again deselects it.
+
+To take everything on the tab at once, press `Cmd` / `Ctrl` + `A`.
+
+<Note>
+  Shift + drag on an element drops a duplicate of it.
+</Note>
+
+<AppNote app="livediagram">
+  In [Draw mode](/help/canvas/draw-mode/), holding Shift while you drag always draws a marquee that adds to the selection, even when the drag starts on top of an element.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  Shift + drag on an element drops a duplicate of it, rather than adding to the selection.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Shift + drag that starts on an element drops a duplicate of it rather than drawing a marquee.
+</AppNote>
+
+
+
+## Acting on a Selection
+
+However you gathered it, a multi-selection behaves as one. Press any part of it and drag, and the whole set moves together, keeping its relative spacing. A small toolbar floats above the selection with **More** (the full selection menu), a funnel that narrows the selection to one kind of element (shown only when the selection mixes kinds), **Duplicate**, **Export** and **Delete**.
+
+<AppNote app="livediagram">
+  The toolbar also has **Save to Library**, and **Lock** (**Unlock** when every one of them is locked), which sits between Export and Delete.
+</AppNote>
+
+<AppNote app="livedesign">
+  The toolbar also has **Save to Library**, **Combine** (when the shapes can be merged into one, as on a [logo page](/help/pages/logo-pages/)) and **Lock** (**Unlock** once all of them are locked). The toolbar is for Editors: Viewers and Participants don't get it.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The toolbar also has [**Save to Library**](/help/palette/library/) (to place the set again in any document) and **Lock** (**Unlock** when every one of them is locked). A single selected element has no toolbar: right-click it (or long-press on a touch screen) for its menu.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The toolbar also has **Rotate Left** and **Rotate Right** (when the selection holds furniture that turns, such as chairs or desks, each piece turning about its own centre).
+</AppNote>
+
+
+<Figure app="livediagram" caption="The multi-selection toolbar: More, the kind filter, Duplicate, Export, Lock and Delete.">
+  <DiagramCanvasBasics.MultiSelectionBar />
+</Figure>
+
+<Figure app="livedesign" caption="The multi-selection toolbar: More, the kind filter, Duplicate, Export, Lock and Delete.">
+  <DesignCanvasBasics.MultiSelectionBar />
+</Figure>
+
+<Figure app="livedocuments" caption="The multi-selection toolbar: More, the kind filter, Duplicate, Export, Lock and Delete.">
+  <DocumentsCanvasBasics.MultiSelectionBar />
+</Figure>
+
+<Figure app="livehuddle" caption="The multi-selection toolbar: More, the kind filter, Duplicate, Export and Delete.">
+  <HuddleCanvasBasics.MultiSelectionBar />
+</Figure>
+
+You can also copy and paste the selection, delete it with Delete or Backspace, nudge it with the arrow keys (hold Shift for 10 pixels at a time), or open the right-click menu to restyle the lot at once.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  Locked members are kept when you delete.
+</AppNote>
+
+To give them all one element's look, use the [format painter](/help/selection-modes/format-painter/), which paints one element per click.
+
+<AppNote app="livehuddle">
+  The [format painter](/help/selection-modes/format-painter/) paints one element per click, so to give a whole row one look, leave it on **Keep the brush** and click each element in turn.
+</AppNote>
+
+
+<Tip>
+  Clicking an empty patch of canvas clears the current selection (a right-click there does too, as
+  it opens the canvas menu), and so does Escape, so you always have a quick way to start fresh
+  before drawing a new marquee.
+</Tip>
+
+</ArticleLayout>

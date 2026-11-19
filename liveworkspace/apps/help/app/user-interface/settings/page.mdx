@@ -1,0 +1,466 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SettingsDialogScene } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
+
+export const metadata = helpMetadata({
+  title: 'Settings',
+  description:
+    'Every setting explained: editor behaviour, appearance, shortcuts, panels, accessibility, explorer, account, API tokens, privacy and what syncs.',
+  path: '/help/user-interface/settings/',
+});
+
+<ArticleLayout
+  title="Settings"
+  description="Every category in the Settings dialog, what each setting does, and which ones follow you to another device."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+**Settings** opens from the **Settings** button (the sliders icon) in the [quick controls](/help/user-interface/quick-controls/) at the end of the bottom bar, in the editor and in the Explorer. It holds the preferences that are about _you_ rather than about any particular <Noun />, which is why there is one set of them and not one per <Noun />.
+
+<AppNote app="livediagram,livehuddle">
+  Signed in, the dialog's header has a **<AppName />** / **All** switch. **All** shows every setting your liveworkspace account keeps, in one list of categories; **<AppName />** shows only the ones that apply to <AppName />. Under **All**, to the left of each setting are the logos of the apps it applies to, or the liveworkspace logo when it applies to every app, so you can see when changing it here changes it in another app too; the **<AppName />** side shows no logos, since everything there applies to <AppName />. Both list the categories under three headings: **Account** (**Profile**, with **Name and Colour**, **Time Zone**, **Sign-in Methods**, **Where You’re Signed In**, **Sign Out** and **Cloud Sync**, then **Notifications**, **Privacy**, **Accessibility** and **Your Data**), **Apps** (the app's own categories) and **Developers** (**API Tokens**). A guest sees this app's settings only.
+</AppNote>
+
+The dialog lists its categories down the left, with a **Search settings** field above them, and shows one category at a time on the right. Type into the search to find a setting by name or by a word it is about ("transparency" finds **Panel Opacity**). On a phone, the list and the category take turns: tap a category to open it, and go back for the list.
+
+<Figure app="livedesign" caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
+  <SettingsDialogScene noun="design" />
+</Figure>
+<Figure app="livediagram" caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
+  <SettingsDialogScene noun="canvas" />
+</Figure>
+<Figure app="livedocuments" caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
+  <SettingsDialogScene noun="document" />
+</Figure>
+<Figure app="livehuddle" caption="Settings lists its categories on the left and shows the open one on the right, here Editor.">
+  <SettingsDialogScene noun="space" />
+</Figure>
+
+<AppNote app="livedesign">
+  Only a guest sees **sub-categories**: Account holds Notifications, API Tokens and Your Data, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livehuddle">
+  Only a guest sees **sub-categories**: Account holds Notifications and API Tokens, which are categories of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Only a guest sees **sub-categories**: Account holds Notifications, API Tokens and Your Data, which are listed under headings of their own once you sign in. Everything else in a category is in its sections, so nothing is hidden behind another level. On a computer, click Account (or its arrow) to show them beneath it, and again to fold them away. On a phone, tap Account and they are listed at the bottom of its page.
+</AppNote>
+
+Each category groups its settings into cards, one card per section, with a short line under each setting saying what it does. A setting that only matters while another is on sits indented beneath it, and shows only while that switch is on.
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  A panel's own options sit under its switch.
+</AppNote>
+
+<AppNote app="livedesign">
+  **Editor.** Under **Canvas**:
+
+  - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
+  - **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
+  - **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+
+  Under **Mouse**:
+
+  - **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
+  - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
+
+  Under **Pages**:
+
+  - **Contents**: where the list of pages sits on a computer, docked down the left (**Sidebar**) or tucked into its button (**Button**). A phone always has the button.
+
+  Under **Logo Pages**:
+
+  - **Logo Guides**: shows a [logo page](/help/pages/logo-pages/)'s construction guides, which the artwork snaps to while they show. On by default; a page you switch them on or off for keeps its own choice.
+  - **Logo Guide Strength**, beneath it: how strongly the guides show, **Faint**, **Medium** (the default) or **Strong**.
+  - **Guides Shown**, beneath it: one chip per guide, **Centre Lines**, **Diagonals**, **Safe Area**, **Circles**, **Square** and **Grid**, all on by default. Tap a chip to hide or show that guide.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Editor.** Under **Canvas**:
+
+  - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
+  - **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
+  - **Element Indicators**: how an element shows that it has a link, a note, an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+
+  Under **Mouse**:
+
+  - **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
+  - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
+
+  Under **Draw**:
+
+  - **Dock Position**: where [Draw mode](/help/canvas/draw-mode/)'s dock of pens, shapes and tools sits, **Top** or **Bottom** (closer to hand when drawing on a tablet). **Top** by default. Only Draw mode has a dock, so Diagram mode is unaffected.
+
+  **Presenting.** How a [slide deck](/help/selection-modes/slide-deck/) runs when you present it. See [Presenter Controls](/help/selection-modes/slide-deck/presenter-controls/).
+
+  - Under **Slides**: **Transition** (**Slide**, the default, **Fade** or **None**), **Speed** (**Quick**, **Normal**, the default, or **Slow**) and **Slide Size** (**Fill Screen**, the default, or **Actual Size**, which never zooms past 100%).
+  - Under **Playback**: **Auto-Advance** (**Off**, the default, or every 5s, 10s, 30s or 60s), **Click to Advance** (on by default) and **Loop the Deck** (off by default).
+  - Under **While Presenting**: **Show Position** (the slide counter and name, on by default), **Keep Controls Visible** (off), **Hide the Pointer** (on), **Show Elapsed Time** (off) and **Show Slide Budget** (off). The last two are also in the cog you get while presenting.
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Editor.** Under **Canvas**:
+
+  - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
+  - **Auto-Attach Arrows**: when a move leaves an arrow running through a shape it connects, its end moves to the side facing the other end. On by default. See [Auto-Attach Arrows](/help/palette/auto-attach-arrows/).
+  - **Element Indicators**: how an element shows that it has an action or comments. **Top** (the default) puts small icons near its top, **Footer** puts a labelled row along its bottom edge, and **Off** hides them. See [Element Indicators](/help/canvas/element-indicators/).
+
+  Under **Mouse**:
+
+  - **Quick-Add on Hover**: opens an element's quick-add **+** menu when you hover it, instead of waiting for a click; the **+** buttons still only appear on the selected element. Off by default. See [Quick-Add on Hover](/help/palette/quick-add-on-hover/).
+  - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
+
+  Under **Pages**:
+
+  - **Contents**: where the list of pages sits on a computer, docked down the left (**Sidebar**) or tucked into its button (**Button**). A phone always has the button.
+
+  **Presenting.** How [presenting](/help/selection-modes/slide-deck/presenting/) a deck behaves: **Transition** and its **Speed**, **Slide Size**, **Auto-Advance**, **Click to Advance**, **Loop the Deck**, **Show Position**, **Keep Controls Visible**, **Hide the Pointer**, **Show Elapsed Time** and **Show Slide Budget**.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Editor.** Under **Canvas**:
+
+  - **Alignment Guides**: snap lines while you move or resize, so elements line up with their neighbours. On by default. See [Alignment Guides](/help/palette/alignment-guides/).
+
+  Under **Mouse**:
+
+  - **Middle-Mouse Pan**: hold the middle mouse button and drag to pan from anywhere, whatever tool is active. On by default; turn it off to leave the middle button to your browser.
+</AppNote>
+
+## Appearance
+
+<AppNote app="livedesign,livedocuments">
+  - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a tab's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a diagram's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a board's [theme](/help/canvas/themes/), although a tab on the Default theme follows it. The same control sits in the bottom bar. Saved on this device only (see below). See [Dark Mode](/help/tools/dark-mode/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Theme**: **Light**, **Dark** or **System**, which follows your device. This is the editor's own chrome, not a tab's [theme](/help/user-interface/themes/), although every tab theme has a light and a dark half that follows it. The same control sits at the end of the tab bar. Saved on this device only (see below). See [Appearance](/help/tools/dark-mode/).
+</AppNote>
+
+<AppNote app="livedesign">
+  - **Button Labels**: names the buttons along the bottom (such as **Get Started**, **Tools** and **Settings**) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Button Labels**: names the buttons along the bottom (such as **Get Started**, **Tools**, **Settings**, **Layers**, **Style** and **Tidy**) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Button Labels**: names the buttons along the bottom (such as **Tools** and **Settings** in the bottom bar, and the buttons in the bottom-right corner) beside their icons, on a screen wide enough for them. The appearance switch is always an icon. On by default; turn it off for icons alone. A phone always shows icons alone.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Button Labels**: names the buttons along the bottom (such as **Get Started**, **Tools** and **Settings** in the bottom bar, and **Style** in the bottom-right corner) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Button Labels**: names the buttons along the bottom (**Get Started**, **Tools**, **Settings** and the appearance switch in the bottom bar, and **Trash**, **Types**, **Board** and **Style** in the bottom-right corner) beside their icons, on a screen wide enough for them. On by default; turn it off for icons alone. A phone always shows icons alone.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments,livehuddle">
+  - **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own (**Toolbar Scale** goes up to 140%); moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **UI Scale**: makes the panels, the toolbar and the buttons in the bottom-right corner (zoom, undo and redo, layers) bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. The canvas, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** and **Corner Buttons Scale** size each of those on its own (**Toolbar Scale**, which also sizes Draw's dock and its flyouts, goes up to 140%); moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **UI Scale**: makes the panels, the menu button and the buttons in the bottom-right corner bigger or smaller, from 80% to 120%, with 100% in the middle of the slider. Your boards, sheets, dialogs and menus stay as they are, so it is not the same as your browser's zoom. Beneath it, **Panel Scale**, **Toolbar Scale** (which goes up to 140%) and **Corner Buttons Scale** size each of those on its own; moving **UI Scale** again sets all three back to the same size. The chrome resizes as you drag. Desktop only: a phone always uses 100%.
+</AppNote>
+
+## Keyboard
+
+- **Keyboard Shortcuts**: the switch that turns the editor's keyboard shortcuts on and off. Off means all of them, chords like undo included, not just the single-letter keys. Saved on this device only (see below).
+- **All Shortcuts**: the full shortcut reference, in collapsible groups. The **Keyboard Shortcuts** command in [search](/help/search-panel/) opens Settings straight on this category. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+
+## Panels
+
+<AppNote app="livedesign,livedocuments">
+  - **Panel Opacity**: fades every panel and the toolbar, from 30% to 100%, so the canvas shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  - **Panel Opacity**: fades every panel and the toolbar, from 30% to 100% (100% by default), so the canvas shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it. See [Panel Opacity](/help/palette/panel-opacity/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Panel Opacity**: fades the panels, from 30% to 100%, so what is behind them shows through (buttons and the Explorer stay opaque); a panel snaps back to fully opaque while you hover or focus it.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  Below it, **Panels** has a section per panel, in the order below. Each starts with a switch that turns its panel on or off; the panel's other settings show beneath it only while it is on.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Below it, the **Collaborate** section holds **Enable Collaborate Panel**: the list of a tab's comment threads and actions, behind a button in the bottom-right corner that only appears while the tab has a comment. With it off, comments still work where they were left. See [Comments](/help/collaboration/comments/).
+
+  On a Dashboard tab, where other people's cursors are drawn, the section also holds **Hide Participant Cursors**: it stops drawing their cursors and names on your screen, while their avatars and Follow stay. Saved on this device only.
+</AppNote>
+
+<AppNote app="livedesign">
+  - **Quick Style**: **Enable Quick Style Bar**, the bar of common styles that shows beside the page's title bar for a selected shape or arrow, or a marker in hand. With it off, every style is still in the element's right-click menu. See [Quick Style Bar](/help/canvas/quick-style-panel/).
+  - **Map**: **Enable Map**, **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. The Map is an overview for a canvas without pages, and every <AppName /> tab is made of pages, which [Contents](/help/pages/working-with-pages/) lists instead, so these settings change nothing you see here.
+  - **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/). Beneath it, **Hide Participant Cursors** stops drawing other people's cursors and names on your screen; their avatars and Follow stay. Saved on this device only.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Layers**: **Enable Layers Panel**, then **Layer Thumbnails**, **Layer Element Counts** and **Preview Layer on Hover**. Turning the panel off also hides its button and the **Move to layer** choices in the element menu; your layers keep working. See [Layers](/help/canvas/layers/).
+  - **Quick Style**: **Enable Quick Style Panel**, the panel of common styles that opens beside a selected shape or arrow. With it off, every style is still in the element's right-click menu. See [Quick Style Panel](/help/canvas/quick-style-panel/).
+  - **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
+  - **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/). Beside it, where the tab draws other people's cursors, **Hide Participant Cursors** stops drawing their cursors and names on your screen; their avatars and Follow stay. Saved on this device only.
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Quick Style**: **Enable Quick Style Bar**, the bar of common styles that appears above the page beside a selected shape or arrow. With it off, every style is still in the element's right-click menu. See [Quick Style Bar](/help/canvas/quick-style-panel/).
+  - **Map**: **Enable Map**, **Dim Outside the View** and **Map Size**. Every <AppName /> tab is laid out in pages, which you find your way round with [Contents](/help/pages/working-with-pages/#contents), so the Map never shows and these rows have no effect. See [Map](/help/user-interface/minimap/).
+  - **Collaborate**: **Enable Collaborate Panel**, the list of a tab's comment threads and actions. It only appears while the tab has a comment or an action. With it off, comments and actions still work from the elements. See [Comments](/help/collaboration/comments/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Map**: **Enable Map** (the small overview of the whole tab in the bottom-left corner, once a tab has a few elements), **Dim Outside the View**, and **Map Size** (**Short**, **Medium** or **Tall**). Desktop only. See [Map](/help/user-interface/minimap/).
+
+  Then **Collaborate**:
+
+  - **Hide Participant Cursors**: stops drawing other people's cursors and names on your screen; their avatars and Follow stay. The same switch sits at the foot of the Collaborators window. Saved on this device only (see below).
+  - **Audio Proximity Ring**: while you talk, a ring round your character shows where people can hear you. On by default; turning it off changes nothing else about your microphone or the call. See [Proximity Audio](/help/collaboration/proximity-audio/).
+</AppNote>
+
+## Accessibility
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  - **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, the snap guides) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Reduce Motion**: turns off the decorative animations and transitions (panels, popovers, dialogs) so the interface appears instantly instead of sliding. Your device's own reduce-motion setting is always respected; this lets you force it on even where the device doesn't ask for it. See [Accessibility](/help/getting-started/accessibility/).
+</AppNote>
+
+## Getting Started
+
+<AppNote app="livedesign">
+  The Pages tour has one tour for each kind of page: **Pages Tours** switches them all at once, with **Wireframe Tour**, **Logo Tour** and **Photo Tour** beneath it. Tours never start on their own: you start one from **Get Started** in the bar at the bottom of the editor, just left of **Tools**, which lists the tours on offer. A switch here turns itself off once you've started, finished or skipped that tour. Switch one back on and close Settings while you're in Pages, and the tour starts straight away. See [The Pages Tour](/help/pages/pages-tour/).
+
+  Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Sankey Diagram](/help/palette/concept-graphics/sankey-diagram/), have a tour of their own: select one and **Get Started** offers its tour. **Show Me on Every Element** switches them all; beneath it, one switch per element (such as **Sankey Diagram**, **Timeline** and **Stack**) shows whether you've taken that one. Once you've taken one, it leaves the button until you switch it back on here.
+</AppNote>
+
+<AppNote app="livediagram">
+  Watch It Built has a section per mode, **Watch It Built in Diagram**, **Watch It Built in Draw** and **Watch It Built in Workshop**, each closed until you open it and saying how many of its topics are on. Inside is the mode's switch over all its topics, then a switch per topic. Tours never start on their own: each one starts from the **Get Started** button at the start of the controls at the right of the bottom bar, just left of **Tools**. A topic's switch turns itself off once you have watched it, and a mode's switch once you have watched all its topics. Switch one back on and close Settings to watch again: the topic list opens straight away if you are in that mode, or the button is there when you get to it. See [Watch It Built](/help/getting-started/diagram-tour/), [Watch It Built in Draw](/help/canvas/draw-mode/draw-tour/) and [Watch It Built in Workshop](/help/canvas/workshop-mode/workshop-tour/).
+
+  Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Sankey Diagram](/help/palette/build/sankey-diagram/), have a tour of their own, on the same **Get Started** button while one is selected. **Show Me on Every Element** switches them all; beneath it, one switch per element that has a tour (**Sankey Diagram**, **Layer Stack**, **Pyramid**, **Funnel**, **Cycle**, **Hub and Spoke**, **Onion**, **Chevrons**, **Timeline**, **Mind Map**, **Flowchart**, **Org Chart**, **Sequence**, **Chart**, **Stack**, **Entity**, **Lane**, **Boundary** and **Diagram Key**) shows whether you have taken that one. Once you've taken one, it leaves the button until you switch it back on here.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The Pages tour has one tour for each kind of page: **Pages Tours** switches them all at once, with **Slides Tour**, **Infographic Tour**, **Article Tour** and **Flashcards Tour** beneath it. Tours never start on their own: you start one from the **Get Started** button in the bar at the bottom of the editor, just left of **Tools**, until you've taken every kind of page on the tab, when the button makes room for other tours. A switch here turns itself off once you've finished or skipped that tour. Switch one back on and close Settings while a <Noun /> is open, and the tour starts straight away. See [The Pages Tour](/help/pages/pages-tour/).
+
+  Below them, **Show Me** is closed until you open it, and says how many are on. Some elements, such as the [Sankey Diagram](/help/palette/concept-graphics/sankey-diagram/), have a tour of their own: select one and the **Get Started** button at the bottom offers its tour. **Show Me on Every Element** switches them all; beneath it, one switch per element (such as **Sankey Diagram**, **Timeline** and **Stack**) shows whether you've taken that one. Once you've taken one, it leaves the button until you switch it back on here.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Receptionist's Welcome**: the Space's Receptionist welcomes you the first time you arrive on his Avatar Pad, and the switch turns itself off once he has. Switch it back on and close Settings to hear his welcome again, or ask him any time while you walk on his tab: press **Get Started** at the left of the [quick controls](/help/user-interface/quick-controls/) and choose **Ask Receptionist**. See [The Receptionist](/help/selection-modes/avatar-mode/avatar-tour/).
+
+  Below them, **Show Me** is closed until you open it, and says how many are on. The Portal has a tour of its own, in the same **Get Started** list while one is selected, and its switch, **Portal**, shows whether you have taken it. Once you've taken it, it leaves the list until you switch it back on here.
+</AppNote>
+
+<AppNote app="liveplanner">
+  One switch per guided tour. **Plan Tours** switches the planning tours all at once, with **Boards Tour**, **Card Types Tour**, **Board Setup Tour**, **Sheets Tour** and **Dashboards Tour** beneath it, and **Forms Tour** sits on its own. Every tour starts from the **Get Started** button in the bottom bar, just left of **Tools**, which offers it whenever the tour can run, until you've taken it. A tour's switch turns itself off once you have finished or skipped it. Switch one back on and close Settings to take that tour again: it starts straight away if you are where it belongs; otherwise use the button when you get there. See [The Plan Tour](/help/plan/plan-tour/).
+</AppNote>
+
+## Explorer
+
+Once called <Noun plural capital />.
+
+- **Automatically Open Explorer**: off by default. While it's on and you're signed in, opening the app takes you straight to your Explorer instead of the homepage. A link to the homepage from inside <AppName /> still shows it, and so does `/?home` on the app's address. It's one setting for every app: each other app picks up a change the next time you open its Explorer or an item in it.
+
+<AppNote app="livedesign,livedocuments">
+  - **Show Home Banner**: the greeting, status pills and large search at the top of Explorer Home. Closing the banner turns it off; this brings it back.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  - **Show Home Banner**: the greeting, status pills and large search at the top of Explorer Home. On by default; with it off, Home's search sits in the header, as on every other Explorer page.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Show Home Banner**: the greeting, status pills and large search at the top of the Explorer's [Home](/help/explorer/home/). On by default. When it is off, Home's search sits in the header, as on every other Explorer page; closing the banner on Home turns this off too.
+</AppNote>
+
+<AppNote app="livedesign">
+  - **Where New Designs Go**, under **Default Folders**: the folder new designs go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Default Folders**: the folder new diagrams, drawings and workshops each go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Default Folders**: the folder new documents go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Default Folders**: **Where New Spaces Go**, the folder your new spaces go to when you create one without choosing a place, with **Change** and **Clear**. See [Default Folders](/help/explorer/folders/default-folders/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Where New Plans Go**, under **Default Folders**: the folders new plans are saved in when you make one without choosing a place, with a separate entry for Kanban and Retrospective plans. Each entry has **Change** and **Clear**. See [Folders](/help/explorer/folders/).
+</AppNote>
+
+## Account
+
+<AppNote app="livedesign,livedocuments">
+  **Account** shows who you are (a guest, or your name and email when signed in), **Reset All Settings** and **Delete Account**. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. It holds two sub-categories:
+</AppNote>
+
+<AppNote app="livediagram">
+  **Account** shows who you are (a guest, or your name and email when signed in), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, **Reset All Settings** and **Delete Account**. When this browser still holds pages, boards or designs that belong in livedocuments, liveplanner or livedesign, **Pages and Boards in This Browser** lists them until you move them there. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. It holds two sub-categories:
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Account** shows who you are (a guest, or your name and email when signed in), **Cloud Sync** to [Google Drive](/help/account-and-data/google-drive/) where the deployment offers it, **Reset All Settings** and **Delete Account**. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. **Delete Account** permanently deletes your liveworkspace account and everything you own in every liveworkspace app, then signs you out; a guest has no account to delete, so it offers **Sign In** instead. For a guest it holds Notifications and API Tokens, below, and Your Data, a prompt to sign in:
+</AppNote>
+
+<AppNote app="liveplanner">
+  **Account** shows who you are (a guest, or your name and email when signed in), and under **Danger Zone**, **Reset All Settings** and **Delete Account**, which removes your <AppName /> plans, folders and settings and signs you out, with no undo. **Reset All Settings** puts every setting back to its default once you confirm. Signed in, that is every setting in every liveworkspace app; your profile, API tokens, webhooks and sign-ins stay as they are, and so does your choice about anonymous usage events. As a guest, it is this app's settings in this browser. Tours offer themselves again afterwards. It holds three sub-categories:
+</AppNote>
+
+### Notifications
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  - **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a <Noun /> to a folder or linking a tab. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **In-Editor Notifications**: the brief confirmation shown when you do something whose result isn't on screen, like moving a plan to a folder. **Errors and warnings are always shown**, whatever this is set to, so a failure is never silently swallowed. A notification stays put while you point at it or tab into it, and Escape closes the one you are on.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Join and Leave Sounds**: a soft chime when someone arrives in the space you have open, and a softer one when they leave, even while the browser tab is in the background. On by default. See [Live Presence](/help/collaboration/live-presence/).
+  - **Desktop Notifications**: when someone nudges you while the browser tab is in the background, your computer shows a notification. Your browser asks for permission the first time you switch it on.
+</AppNote>
+
+<AppNote app="livedesign">
+  - **Email**: once signed in, one switch per email (in this order: someone comments on your work, mentions you or assigns you an action, someone responds to a team invite, someone joins your design, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+  - **Email**: once signed in, one switch per email (in this order: someone comments on your work, mentions you or assigns you an action, someone responds to a team invite, someone joins your <Noun />, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Email**: once signed in, one switch per email (in this order: someone responds to a team invite, someone joins your space, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Email**: once signed in, one switch per email (in this order: someone comments on your work, mentions you or assigns you an action, someone responds to a team invite, someone joins your plan, then someone fills in your form, then tips and check-ins and milestones last). A guest sees a sign-in prompt instead. See [Email Notifications](/help/account-and-data/email-notifications/).
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Phone**: once signed in, **Turn On** sends this device a notification for a comment on your work, a mention, an action assigned to you or a reply in your thread, with a switch for each. See [Phone Notifications and Installing the App](/help/account-and-data/phone-notifications/).
+</AppNote>
+
+### API Tokens
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  - **API Tokens** is where you make, see and revoke the tokens your own scripts and connected AI tools use to call <AppName /> as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. The same tokens show in every liveworkspace app's Settings and on liveworkspace.app. Below them, the workbenches paired with your tokens are listed, each with **Unpair**. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **API Tokens** is where you make, see and revoke the tokens your own scripts use to call <AppName /> as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. The same tokens show in every liveworkspace app's Settings and on liveworkspace.app. Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **API Tokens** is where you make, see and revoke the tokens your own scripts and connected AI tools use to call <AppName /> as you, right here in Settings: name a token (switch on **Read-only** if it only needs to look), copy its secret while it is shown (only once), and revoke one with **Revoke**. Tokens belong to your liveworkspace account, so one works in every liveworkspace app, and the same list shows in each one's Settings and on liveworkspace.app. Each expires six months after it is created. Below them, **Paired workbenches** lists the developer tools your CLI sign-in has paired, each with **Unpair** ([Workbenches](/help/developers/workbenches/)). Signed-in only, and absent on a deployment without accounts. See [API Tokens](/help/account-and-data/api-tokens/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  **Your Data.**
+
+  - **Your Data** downloads everything you own in every app, or everything a team you run owns, as one zip. A guest sees a sign-in prompt here instead.
+</AppNote>
+
+<AppNote app="livedesign">
+  Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per design: choose **Webhooks** in **Tools** in the editor's bottom bar, or on the design's ⋯ menu in the Explorer. With your profile are your **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+</AppNote>
+
+<AppNote app="livediagram">
+  Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip (see [Download Your Data](/help/account-and-data/download-your-data/)), and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per canvas: choose **Webhooks** in **Tools** in the bottom bar, or in the canvas's ⋯ menu in the Explorer (see [Webhooks](/help/collaboration/webhooks/)). With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per document: open the document's ⋯ menu in the Explorer and choose **Webhooks**, or choose **Webhooks** in **Tools** at the end of the editor's bottom bar. With your profile are your **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per space: open **Tools** in the bottom bar while the space is open, or the space's ⋯ menu in the Explorer, and choose **Webhooks**. With your profile are your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Signed in, the list has an **Account** heading over **Profile** (in Account's place), Notifications, Privacy, Accessibility and **Your Data**, where you download everything you own, and each team's you run, as one zip, and a **Developers** heading over API Tokens alone. Webhooks, which post what happens to your work to Slack, Microsoft Teams or a service you run, are set per plan: open **Tools** in the editor's bottom bar and choose **Webhooks**, or choose **Webhooks** on the plan's ⋯ menu in the Explorer. With your profile are your **Time Zone** (when the emails that can wait arrive; **Automatic** follows your browser), your **Sign-in Methods** (**Email Code**, always on, and **Google**, which you can **Connect**) and **Where You’re Signed In**, each browser you are signed in on, with **Sign Out** for one and **Sign Out Others** for the rest. These are the same as in liveworkspace.app's Settings, right here.
+</AppNote>
+
+Anywhere Settings says something needs an account, it ends with a **Sign In** link that brings you back to where you were.
+
+## Privacy
+
+- **Send Anonymous Usage Events**: the small first-party events listed on the public [telemetry dashboard](/telemetry): no user content, no third-party trackers. Turn it off to keep everything you do on your device. See [What We Collect](/help/privacy-and-security/what-we-collect/).
+
+## Settings follow you, most of them
+
+<AppNote app="livedesign,livediagram,livehuddle">
+  Settings are **stored against your identity, not your browser**, and apply to every <Noun /> you open on every device you sign in from. For a guest, "your identity" is the per-browser id, so the preferences last as long as that browser does and [migrate with your <Noun plural />](/help/getting-started/guest-vs-account/) if you later sign up.
+</AppNote>
+
+<AppNote app="livedocuments,liveplanner">
+  Settings are **stored against your identity, not your browser**, and apply to every <Noun /> you open on every device you sign in from. For a guest, "your identity" is the [guest identity](/help/account-and-data/guest-identity/) liveworkspace gives this browser, so the preferences last as long as that does.
+</AppNote>
+
+A few things deliberately stay on the device you are using:
+
+- **Theme** (light, dark or system) in **Appearance**.
+- The **Keyboard Shortcuts** switch, so you can keep shortcuts on where you have a full keyboard and off where you don't.
+
+<AppNote app="livedesign,livediagram,livehuddle,liveplanner">
+  - **Hide Participant Cursors** in **Panels**.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  - **Panel positions**: which corner each panel docks into.
+</AppNote>
+
+- **Explorer view**: List, Card or Details.
+
+<AppNote app="livedesign">
+  - **Tool settings**: the laser's pen and the spotlight.
+
+  The canvas-behaviour toggles ([auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/)) live here, under **Editor** and **Panels**, so every setting has one home.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Tool settings**: the eraser's brush, the laser's pen, the spotlight and Draw mode's pens.
+
+  The **Presenting** settings follow your account like the rest. The canvas-behaviour toggles ([auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/)) all live here, under **Editor** and **Panels**, so every setting has one home.
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Tool settings**: the laser's pen, the spotlight and the presenter's settings.
+
+  The canvas-behaviour toggles ([auto-attach arrows](/help/palette/auto-attach-arrows/), [alignment guides](/help/palette/alignment-guides/), [quick-add on hover](/help/palette/quick-add-on-hover/) and [panel opacity](/help/palette/panel-opacity/)) used to sit in the palette's own gear menu. They now live here, under **Editor** and **Panels**, so every setting has one home.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Tool settings**: the Format Painter's choices and the avatar.
+
+  The canvas-behaviour toggles ([alignment guides](/help/palette/alignment-guides/) and [panel opacity](/help/palette/panel-opacity/)) all live here, under **Editor** and **Panels**, so every setting has one home.
+</AppNote>
+
+</ArticleLayout>

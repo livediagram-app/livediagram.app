@@ -1,4 +1,4 @@
-// Supported-devices illustrations (docs/specs/018-help/help-app.md): the editor framed inside a desktop
+// Supported-devices illustrations (liveworkspace/docs/specs/016-help/help-centre.md): the editor framed inside a desktop
 // monitor, a tablet, and a phone, each with the chrome that screen size brings
 // (the full strip and corner controls on desktop, the swiping strip on mobile). Composed only
 // from the shared primitives so the house style holds.

@@ -21,7 +21,7 @@ export interface HelpSiteSuiteOptions {
   appDir: string;
 }
 
-/** A category with more cards than this is split into named groups (help-pages.md "Groups"). */
+/** A category with more cards than this is split into named groups (liveworkspace/docs/specs/016-help/help-centre.md "Groups"). */
 export const MAX_UNGROUPED = 12;
 
 export function describeHelpSite(
@@ -31,7 +31,7 @@ export function describeHelpSite(
   const { articles, categories, getCategoryGroups } = site.catalogue;
   const featureSlugs = new Set(categories.filter((c) => c.kind === 'feature').map((c) => c.slug));
 
-  // help-app.md: `articleCount` is hand-maintained, and a stale one only shows as a wrong number on a card.
+  // liveworkspace/docs/specs/016-help/help-centre.md: `articleCount` is hand-maintained, and a stale one only shows as a wrong number on a card.
   describe('category articleCount', () => {
     it('matches the articles registered under each category, sub-articles included', () => {
       const wrong = categories
@@ -63,7 +63,7 @@ export function describeHelpSite(
     });
   });
 
-  // help-pages.md "Groups": a category with more than a dozen cards is split into named groups, every card in it
+  // liveworkspace/docs/specs/016-help/help-centre.md "Groups": a category with more than a dozen cards is split into named groups, every card in it
   // belongs to one, and the category's `groups` names exactly the groups its cards use, in order.
   describe('category groups', () => {
     it.each(categories.map((c) => c.slug))('%s is grouped once it outgrows one grid', (slug) => {
@@ -80,7 +80,7 @@ export function describeHelpSite(
     );
   });
 
-  // help-pages.md "Home page": every category appears on the home page exactly once, and every popular topic is a
+  // liveworkspace/docs/specs/016-help/help-centre.md "Home page": every category appears on the home page exactly once, and every popular topic is a
   // real article.
   describe('home page sections', () => {
     it('shows every category exactly once', () => {
@@ -111,7 +111,7 @@ export function describeHelpSite(
     );
   });
 
-  // help-pages.md "Article pages": an article's previous and next are its neighbours in the order its listing page
+  // liveworkspace/docs/specs/016-help/help-centre.md "Article pages": an article's previous and next are its neighbours in the order its listing page
   // shows, and every article page finds itself in the registry.
   describe('article neighbours', () => {
     it('finds every article by its title', () => {
@@ -127,7 +127,7 @@ export function describeHelpSite(
     });
   });
 
-  // help-app.md "SEO": the breadcrumb's parent crumb links to the route one level up, so every article that names a
+  // liveworkspace/docs/specs/016-help/help-centre.md "SEO": the breadcrumb's parent crumb links to the route one level up, so every article that names a
   // parent must sit directly under a real page.
   describe('sub-article parents', () => {
     const withParent = readdirSync(appDir, { recursive: true })
@@ -154,7 +154,7 @@ export function describeHelpSite(
     });
   });
 
-  // help-app.md "SEO": every article and category landing has its own social card, drawable without a font fetch.
+  // liveworkspace/docs/specs/016-help/help-centre.md "SEO": every article and category landing has its own social card, drawable without a font fetch.
   describe('help social cards', () => {
     it('has a card for every article and every category landing', () => {
       for (const a of articles)
@@ -173,7 +173,7 @@ export function describeHelpSite(
 
     it('uses only characters the card font carries, so the build never fetches one', () => {
       // Printable Latin (to Latin Extended-B) plus the typographic punctuation the copy uses.
-      const outside = /[^ -ɏ‘’“”…–—]/u;
+      const outside = /[^ -ɏ‘’“”…–\u2014]/u;
       for (const [route, card] of site.cards) {
         for (const text of [card.kicker, card.title, card.subtitle]) {
           expect(outside.exec(text)?.[0], `${route}: ${text}`).toBeUndefined();
@@ -189,7 +189,7 @@ export function describeHelpSite(
     });
   });
 
-  // help-pages.md "Category art": every category with a card has its own scene, and every scene is decorative art
+  // liveworkspace/docs/specs/016-help/help-centre.md "Category art": every category with a card has its own scene, and every scene is decorative art
   // on the help-art stage (so the dark appearance reaches it).
   describe('category art', () => {
     const withCards = categories.filter((c) => c.slug !== 'contact');
@@ -215,7 +215,7 @@ export function describeHelpSite(
     });
   });
 
-  // help-app.md: a support card's glyph is its own entry, then a feature glyph sharing its slug, then one generic
+  // liveworkspace/docs/specs/016-help/help-centre.md: a support card's glyph is its own entry, then a feature glyph sharing its slug, then one generic
   // document glyph. Nothing at runtime tells "no icon yet" from "icon on purpose", so a card reaching the generic
   // glyph fails here. A numbered category's cards lead with a step badge instead, read off the route files so moving
   // the numbering moves the exemption with it.
@@ -225,7 +225,8 @@ export function describeHelpSite(
         .filter((e) => e.isDirectory())
         .filter((e) => {
           try {
-            return /<SupportCategoryPage[^>]*\snumbered\b/.test(
+            // A landing that draws the page itself, or the one help centre's (`supportLanding(slug, { numbered: true })`).
+            return /<SupportCategoryPage[^>]*\snumbered\b|numbered:\s*true/.test(
               readFileSync(join(appDir, e.name, 'page.tsx'), 'utf8'),
             );
           } catch {

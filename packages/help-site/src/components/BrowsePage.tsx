@@ -30,20 +30,22 @@ export function BrowsePage({
 }: {
   site: HelpSite;
   title: string;
-  /** The label above the title (docs/specs/018-help/help-pages.md "Shared look"). */
+  /** The label above the title (liveworkspace/docs/specs/016-help/help-centre.md "Shared look"). */
   eyebrow?: string;
   lede: string;
   // A category landing's own path and the registry articles it lists, for its CollectionPage
-  // structured data (docs/specs/018-help/help-app.md "SEO"). Pages that list something else leave it out.
+  // structured data (liveworkspace/docs/specs/016-help/help-centre.md "SEO"). Pages that list something else leave it out.
   listing?: { appPath: string; articles: Article[] };
   children: ReactNode;
 }) {
   // A category landing shows its category's scene; its slug is the first segment of its path.
-  const Art = listing
-    ? site.art.categoryArt[listing.appPath.split('/').filter(Boolean)[0] ?? '']
-    : undefined;
+  const slug = listing ? (listing.appPath.split('/').filter(Boolean)[0] ?? '') : '';
+  const Art = listing ? site.art.categoryArt[slug] : undefined;
+  // The apps the landing holds articles for, read by the app switch (AppSwitch, HELP_APPLIES_ATTR) to send a reader
+  // to another app's home when that app has none here.
+  const apps = site.scope ? site.catalogue.categories.find((c) => c.slug === slug)?.apps : undefined;
   return (
-    <div>
+    <div {...(apps && { 'data-help-applies': apps.join(',') })}>
       {listing && (
         <JsonLd
           data={site.collectionJsonLd({

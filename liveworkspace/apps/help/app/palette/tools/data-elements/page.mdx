@@ -1,0 +1,140 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { DataElementsOverview } from '@liveworkspace/help-site/art/illustrations/palette-data';
+import { PaletteRows } from '@liveworkspace/help-site/art/illustrations/palette-rows';
+import { PaletteRows as DocumentsPaletteRows } from '@/editions/livedocuments/components/illustrations/palette-rows';
+
+export const metadata = helpMetadata({
+  title: 'Data and Chart Elements',
+  description:
+    'Show numbers visually with pie, column, bar, line, area and scatter charts, legends, progress bars, donut rings, and star ratings.',
+  path: '/help/palette/tools/data-elements/',
+});
+
+<ArticleLayout title="Data and Chart Elements" description="Turn plain numbers into something you can read at a glance, right on the canvas." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Tools", slug: "tools" }} subArticles={getSubArticles("data-elements")}>
+
+Shapes and text go a long way, but sometimes you want to show a value: how far along a project is, how good something scored, how a total splits up, or where milestones fall on a line. <AppName /> has a small family of data elements for exactly that. They behave like any other element once they land, so you can move, resize, recolour, lock, and theme them as usual.
+
+<Figure caption="The data elements at a glance: a progress bar and ring, a star rating, and a pie chart.">
+  <DataElementsOverview />
+</Figure>
+
+## Where to find them
+
+The charts and meters live in the palette's **Data** category. The **Timeline** is a [concept graphic](/help/palette/concept-graphics/timeline-rail/): it sits in **Concepts**.
+
+<AppNote app="livediagram">
+  **Data** is on the palette strip in [Workshop](/help/canvas/workshop-mode/). Diagram mode has no Data category: open the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`), type the element's name, such as "pie" or "rating", and pick it under **Add to canvas**. The Timeline sits in **Concepts** in Diagram mode, and in **Layout** in Workshop mode.
+
+<Figure caption="The Data category in Workshop: each chart and meter as a row, with a line on what it is for.">
+  <PaletteRows category="Data" />
+</Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  **Data** is on the palette strip, followed by the [Table](/help/palette/tools/tables/). A logo page has no Data category: open the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`), type the element's name, such as "pie" or "rating", and pick it under **Add to canvas**.
+
+<Figure caption="The Data category: each chart and meter as a row, with a line on what it is for.">
+  <PaletteRows category="Data" />
+</Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Data** is on the palette strip, followed by the [Map](/help/palette/tools/maps/) and the [Table](/help/palette/tools/tables/).
+
+<Figure caption="The Data category: each chart and meter as a row, with a line on what it is for.">
+  <DocumentsPaletteRows category="Data" />
+</Figure>
+</AppNote>
+
+## What you can add
+
+- **Pie chart** splits a total into slices you edit as label and value rows, drawn in your theme's colours. See [Pie Chart](/help/palette/tools/data-elements/pie-chart/).
+- **Column, bar and line charts**: a column or bar chart compares one value per category, and a line, area or scatter chart plots one or more series across categories, from an editable grid or a CSV import. See [Bar and Line Charts](/help/palette/tools/data-elements/bar-and-line-charts/).
+- **Legend** is a key of coloured rows that says what each colour means. See [Legend](/help/palette/tools/data-elements/legend/).
+- **Progress** and **Donut** show a single 0 to 100 percentage as a filling bar or a ring, with optional fill, pulse, or stripe animations. See [Progress Bars and Rings](/help/palette/tools/data-elements/progress-elements/).
+- **Rating** shows a one to five score as a row of stars, in an amber accent, with star-specific animations. See [Rating](/help/palette/tools/data-elements/rating/).
+
+<AppNote app="livediagram">
+  **Linked charts:** any pie, column, bar or line chart can take its numbers from a range of a liveplanner Sheet and keep in step with it. See [Bar and Line Charts](/help/palette/tools/data-elements/bar-and-line-charts/#link-a-chart-to-a-liveplanner-sheet).
+</AppNote>
+
+<AppNote app="livedesign">
+  Any chart can also take its numbers from a liveplanner Sheet and keep in step with it. See [Bar and Line Charts](/help/palette/tools/data-elements/bar-and-line-charts/).
+</AppNote>
+
+## Take the tour
+
+Select a chart and start its tour for a short walkthrough on your own chart: reading it, a preview of the Grow animation, the chart's menu (Chart Type, Data and Chart), and on a line, area or scatter chart its data grid, which the tour opens for you and closes when you finish. To take it again after you've taken it, switch it back on in **Settings**, under **Getting Started** (**Show Me**). Element tours aren't offered on a phone.
+
+<AppNote app="livediagram,livedesign">
+  Press Start Chart Tour in the bar at the bottom of the editor, just left of **Search**. Once you've taken it, the button makes room for other tours.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Press **Get Started** in the bar at the bottom of the editor, just left of **Tools**, then **Chart Tour**. Once you've taken it, the button makes room for other tours.
+</AppNote>
+
+## How they work
+
+Pick a tile, then tap the canvas to drop the element with sensible sample values, or drag to draw it at a size, so you always start from something that looks finished. From there you tune it in the element's context menu: right-click (or long-press on a touch screen).
+
+<AppNote app="livediagram">
+  A chart's **Tools** holds its **Chart Type**, **Data** and **Chart** sections; a progress bar or ring, a rating and a legend show their one section (a percentage slider, a star picker or the key's rows) straight in the menu.
+</AppNote>
+
+<AppNote app="livedesign">
+  You'll find a section for that element's data, whether that's a percentage slider (**Progress**), a star picker (**Rating**), the rows of a **Legend**, or a chart's **Chart Type**, **Data** and **Chart** sections, which sit together under **Tools**.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Open its own section, **Progress**, **Rating** or **Legend**; a chart gathers its **Chart Type**, **Data** and **Chart** sections under **Tools**. There you'll find a percentage slider, a star picker or editable value rows.
+</AppNote>
+
+Because they are ordinary canvas elements underneath, everything you already know carries over. Charts and meters take their colours from the active theme (a rating keeps its amber stars), so they read as part of the <Noun /> out of the box, and animations respect your system's reduce-motion setting and freeze when you export, so a still image looks right.
+
+<AppNote app="livedocuments">
+
+**Charts linked to a sheet.**
+
+A chart can take its numbers from a range of a liveplanner Sheet and keep in step with it, so a weekly report or a deck never goes stale. It stays a native chart: drawn in your theme, styled and exported like any other, with only its numbers coming from the sheet.
+
+<Step n={1}>
+  Right-click the chart, open **Tools**, then **Data**, and press **Link to Sheet**.
+</Step>
+<Step n={2}>
+  Pick one of your plans (search them with **Search your plans**), one of its sheets, and type a
+  **Range** as in a spreadsheet, such as `B2:E9`. The first row names each series and the first
+  column labels each slice, bar or point.
+</Step>
+<Step n={3}>
+  Check the **Preview** of what the chart will draw, then press **Link**. It is one step to undo.
+</Step>
+
+While the document is open, a linked chart reads the sheet again whenever the sheet changes, with no refresh needed. Hover or select it and a line under it says which plan it follows and when it was last updated. While it is linked, its **Data** section shows a Sheet row in place of the rows, naming the sheet and range, and offers **Update** (read again now), **Change** (pick another range) and **Unlink**, which keeps the last values. If the range is deleted from the sheet, the chart keeps its values and says the linked range is gone.
+
+The values are saved in the document, so everyone who can open it sees them. Someone who can open the plan sees its numbers as they are now; someone who can't sees the values last saved. Only Editors can link, update or unlink a chart. Exports draw the saved values.
+
+  <Tip>
+    Mix data elements with regular shapes and text to build an infographic: drop a progress ring next
+    to a service to show its rollout, or a rating beside an option you're comparing.
+  </Tip>
+
+</AppNote>
+
+<AppNote app="livediagram">
+  <Tip>
+    Mix data elements with regular shapes and arrows to annotate a system map: drop a progress ring
+    next to a service to show its rollout, or a rating beside an option you're comparing.
+  </Tip>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Tip>
+    Mix data elements with regular shapes and text to fill a screen: drop a chart into a dashboard
+    wireframe, a progress ring beside an upload, or a rating beside a product.
+  </Tip>
+</AppNote>
+
+</ArticleLayout>

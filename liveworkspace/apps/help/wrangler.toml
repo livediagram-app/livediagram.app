@@ -1,0 +1,37 @@
+name = "liveworkspace-help"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+compatibility_date = "2026-05-29"
+# The one help centre (liveworkspace/docs/specs/016-help/help-centre.md, blueprint "The Worker"): six static
+# exports in ./dist (one per scope, written by scripts/build-scopes.mjs) behind a small Worker that picks the scope
+# (the x-help-app header an app's router sends, else All Apps), answers the redirect map and the 308 for an article
+# outside the scope, and serves the scope's files.
+main = "src/worker.ts"
+# www.liveworkspace.app/help is All Apps. The product routers reach this Worker over their HELP service binding,
+# never a public address, so there is no workers.dev copy (it would skip the zone's WAF and rate-limit rules).
+routes = [
+  { pattern = "www.liveworkspace.app/help*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app/help*", zone_name = "liveworkspace.app" },
+]
+workers_dev = false
+preview_urls = false
+
+# The Worker runs first on every request, so a scope's path is chosen before a file is looked up; it serves through
+# ASSETS. not_found_handling stays off: the Worker answers a missing page with the scope's own 404 page.
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = true
+
+# Staging (docs/specs/016-platform/staging-environment.md in each product): the same Worker, its own build.
+# Named explicitly: the routers' staging HELP bindings name this exact string.
+[env.staging]
+name = "liveworkspace-help-staging"
+routes = [{ pattern = "staging.liveworkspace.app/help*", zone_name = "liveworkspace.app" }]
+workers_dev = false
+preview_urls = false
+
+[env.staging.assets]
+directory = "./dist"
+binding = "ASSETS"
+run_worker_first = true

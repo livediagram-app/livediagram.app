@@ -34,7 +34,8 @@ The liveworkspace monorepo. Read README.md and docs/structure.md first.
   | livehuddle                    | 3500 onward |
 
   Each product's router (or the liveworkspace site) takes the first port of its block, and its
-  other apps the next ones. If a port is taken, find what holds it rather than shifting into
+  other apps the next ones. The one help centre (`liveworkspace/apps/help`) serves every product's
+  `/help` from 3020, in liveworkspace's block (`HELP_SCOPE=<app>` picks whose help it shows). If a port is taken, find what holds it rather than shifting into
   another product's block.
 
 - This monorepo is the one home of every product: their work, CI and deploys happen here. The product

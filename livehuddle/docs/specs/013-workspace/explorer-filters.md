@@ -227,5 +227,5 @@ restored by Back, counts for nothing. `Kind` is a retired type.
 
 ## Help
 
-The help centre's [Search and Filter](../../../apps/help/app/explorer/filters/page.mdx) article describes the
+The help centre's [Search and Filter](../../../../liveworkspace/apps/help/app/explorer/filters/page.mdx) article describes the
 field, the chips and the typed filters; Search results opens it from its Help button.

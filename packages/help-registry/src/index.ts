@@ -1,7 +1,57 @@
-// The help centre's shared shapes and lookups (docs/specs/018-help/help-app.md in each product). Each product's
-// @<product>/help-registry holds its catalogue and binds these to it; nothing here holds articles.
+// The help centre's shared shapes and lookups (liveworkspace/docs/specs/016-help/help-centre.md). The one catalogue
+// is its own entry (`@liveworkspace/help-registry/catalogue`) and each app's slice another (`/slice/<app>`), so a
+// page that only needs these never loads the articles.
 
-export { articleHref, categoryHref } from './hrefs';
-export { createHelpRegistry, type HelpRegistry } from './registry';
-export { articlePath, createHelpTelemetryIds, type HelpTelemetryIds } from './telemetry';
-export { topCategorySlug, type Article, type Category } from './types';
+export {
+  APP_ORDER,
+  appList,
+  HELP_SCOPES,
+  inAppOrder,
+  isAppId,
+  isHelpScope,
+  SCOPE_WORDS,
+  scopeLabel,
+  scopeName,
+  type AppId,
+  type AppWords,
+  type HelpScope,
+} from './apps';
+export {
+  appliesTo,
+  articleHref,
+  canonicalArticleUrl,
+  canonicalScope,
+  categoryHref,
+  helpUrl,
+  QUERY_MAX,
+  scopeHref,
+  siteOfScope,
+  switchHref,
+  withQuery,
+} from './hrefs';
+export { createHelpRegistry, rankArticles, type HelpRegistry, type SearchEntry } from './registry';
+export {
+  allAppsCategories,
+  articlesIn,
+  inReadingOrder,
+  mergeOrders,
+  searchIndex,
+  withCounts,
+  wordedArticle,
+  wordedCategory,
+  type AllAppsCategory,
+  type AppCatalogue,
+} from './scope';
+export {
+  articlePath,
+  createHelpTelemetryIds,
+  HELP_TELEMETRY_OVERRIDES,
+  type HelpTelemetryIds,
+} from './telemetry';
+export {
+  topCategorySlug,
+  type Article,
+  type ArticleWording,
+  type Category,
+  type CategoryWording,
+} from './types';

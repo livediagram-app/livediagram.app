@@ -36,9 +36,9 @@ Scope, by file:
 | `apps/editor/lib/insert-between.ts`                              | The slot's `atY` is a lane centre; the row is the cursor's lane           |
 | `packages/document/src/tab-builders.ts`, `apps/mcp/src/tools.ts` | `landWorkshopArrivals` in `update_document`                               |
 | `packages/sticky-vision/scripts/placement-check.ts`              | Private harness: photo placement over the labelled walls                  |
-| `apps/help/app/canvas/event-storming-boards/page.mdx`            | Help: lanes section                                                       |
-| `apps/help/app/canvas/snapping/page.mdx`                         | Help: Cmd/Ctrl is the way off a lane                                      |
-| `apps/help/app/palette/event-storming/page.mdx`                  | Help: drop the retired lanes switch                                       |
+| `liveworkspace/apps/help/app/canvas/event-storming-boards/page.mdx`            | Help: lanes section                                                       |
+| `liveworkspace/apps/help/app/canvas/snapping/page.mdx`                         | Help: Cmd/Ctrl is the way off a lane                                      |
+| `liveworkspace/apps/help/app/palette/event-storming/page.mdx`                  | Help: drop the retired lanes switch                                       |
 
 ## Domain and naming
 

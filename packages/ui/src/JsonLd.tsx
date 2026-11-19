@@ -2,7 +2,7 @@
 
 import { htmlProps, jsonScript } from '@liveworkspace/trusted-types';
 // Renders a schema.org payload as an inline `<script type="application/ld+json">`.
-// Marketing and the help centre both emit structured data (docs/specs/019-marketing/marketing-site.md, docs/specs/018-help/help-app.md)
+// Marketing and the help centre both emit structured data (docs/specs/019-marketing/marketing-site.md, liveworkspace/docs/specs/016-help/help-centre.md)
 // and each had grown its own copy of this component.
 //
 // The two copies had diverged on the thing that matters: marketing replaced

@@ -1,5 +1,5 @@
 // Layer illustrations for the Canvas articles on Layers, Organising and Merging Layers, Hiding,
-// Locking and Dimming Layers, and Layer Order and Opacity (docs/specs/018-help/help-app.md). Each
+// Locking and Dimming Layers, and Layer Order and Opacity (liveworkspace/docs/specs/016-help/help-centre.md). Each
 // draws the real surface with its real labels: the Layers panel's rows and footer
 // (panels/LayersPanel.tsx, panels/LayerRow.tsx), a row's menu (panels/LayerRowMenu.tsx), and the
 // element menu's Layer category (palette/EditorContextMenu.tsx, palette/MoveToLayerRow.tsx).

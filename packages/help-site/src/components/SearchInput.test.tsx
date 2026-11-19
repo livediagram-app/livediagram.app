@@ -6,7 +6,7 @@ import { HelpClientProvider } from '../client';
 import { CLIENT } from '../test/fixture';
 import { SearchInput } from './SearchInput';
 
-// docs/specs/018-help/help-pages.md "Search": `/` focuses the page's search box (the large one where a page has
+// liveworkspace/docs/specs/016-help/help-centre.md "Search": `/` focuses the page's search box (the large one where a page has
 // it), never while the reader is typing elsewhere, and Escape leaves the box.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -91,7 +91,7 @@ describe('search keys', () => {
   });
 });
 
-// docs/specs/018-help/help-pages.md "Search": what the dropdown holds is announced, since nothing else tells a screen
+// liveworkspace/docs/specs/016-help/help-centre.md "Search": what the dropdown holds is announced, since nothing else tells a screen
 // reader results came.
 const type = (input: HTMLInputElement, value: string) => {
   // React reads a change from the native value setter and an input event.

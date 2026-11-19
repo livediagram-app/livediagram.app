@@ -1,5 +1,5 @@
 // Illustrations for the Canvas articles on Following someone, Notes, Links and Link Cards, and
-// Event Storming Boards (docs/specs/018-help/help-app.md). Each draws the real surface with its
+// Event Storming Boards (liveworkspace/docs/specs/016-help/help-centre.md). Each draws the real surface with its
 // real labels: the Following pill at the top of the canvas (chrome/TopCenterChrome.tsx), the note
 // popover (notes/NotePopover.tsx), the Link element dialog (dialogs/LinkPickerDialog.tsx), and an
 // event storming board making room for a note dragged into a gap with Alt held.

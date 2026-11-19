@@ -1,7 +1,19 @@
 import type { ReactNode } from 'react';
+import { isHelpScope, type HelpScope } from '@liveworkspace/help-registry';
+
+/** Whether a figure variant shows in `scope` (liveworkspace/docs/specs/016-help/help-centre.md "Figures"): a figure
+ *  with no `app` shows everywhere; `app="liveplanner"` (or a comma list) only in those apps' helps; `app="all"`
+ *  only under All Apps, for the shared figure in liveworkspace's slate. A help centre with no scope shows all. */
+export function figureShowsIn(app: string | undefined, scope: HelpScope | undefined): boolean {
+  if (app === undefined || !scope) return true;
+  const names = app.split(',').map((n) => n.trim());
+  for (const name of names)
+    if (!isHelpScope(name)) throw new Error(`[help] <Figure app="${name}">: not an app id or "all"`);
+  return names.includes(scope);
+}
 
 /**
- * Frames an in-article illustration (docs/specs/018-help/help-app.md). Wraps an SVG scene from
+ * Frames an in-article illustration (liveworkspace/docs/specs/016-help/help-centre.md). Wraps an SVG scene from
  * `components/illustrations/*` in a soft "editor viewport" card (rounded,
  * subtle border + shadow, brand-tinted backdrop) and renders an optional
  * caption beneath it. One frame for every illustration so the help centre's

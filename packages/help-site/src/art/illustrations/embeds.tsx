@@ -1,4 +1,4 @@
-// Embed scenes for the Embeds and Website embeds articles (docs/specs/018-help/help-app.md, drawing
+// Embed scenes for the Embeds and Website embeds articles (liveworkspace/docs/specs/016-help/help-centre.md, drawing
 // docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md and
 // docs/specs/009-elements/website-embed.md).
 //

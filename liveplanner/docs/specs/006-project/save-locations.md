@@ -172,7 +172,7 @@ SaveLocationId`.
 `Cloud` for liveplanner and `Offline` for This Browser. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
-## Help centre ([Help app](../018-help/help-app.md))
+## Help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md))
 
 The Offline Mode article says a guest's new plans start in this browser and a signed-in person's on liveplanner,
 and how to move one either way. No article of its own: each location's article (offline today) is where the substance
@@ -191,4 +191,4 @@ is.
 See [Dedicated route for new-project creation](../007-editor/new-project-route.md) (the wizard),
 [Offline Mode](offline-mode.md) (the browser-only store),
 [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
-[Help app](../018-help/help-app.md) (help).
+[One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md) (help).

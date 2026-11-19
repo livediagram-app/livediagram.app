@@ -1,0 +1,159 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ZoomControls } from '@/editions/livediagram/components/illustrations/user-interface';
+import { ZoomControls as LiveplannerZoomControls } from '@/editions/liveplanner/components/illustrations/user-interface';
+import { ZoomControls as LivedocumentsZoomControls } from '@/editions/livedocuments/components/illustrations/user-interface';
+import { ZoomControls as LivehuddleZoomControls } from '@/editions/livehuddle/components/illustrations/user-interface';
+
+export const metadata = helpMetadata({
+  title: 'Zoom Controls',
+  description:
+    'The zoom controls let you zoom in and out, fit your work to the screen, and jump to a preset zoom level.',
+  path: '/help/user-interface/zoom-controls/',
+});
+
+<ArticleLayout
+  title="Zoom Controls"
+  description="Zoom in and out, fit your work to the screen, and jump to a preset level."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+<AppNote app="livedesign">
+  The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo, the page navigator, **Contents** and **Collaborate**, and the **Theme & canvas** button, and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+</AppNote>
+
+<AppNote app="livediagram">
+  The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo, the session tools, **Collaborate**, and the strip of **Tidy** (in Diagram mode), Layers and the **Theme & canvas** button, and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo, the page navigator, **Contents** and **Collaborate**, and govern how close you are to what is on it. A tab's row of pages can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo and the **Theme & canvas** button (or the **3D View** switch while you walk), and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The **zoom controls** appear in the bottom-right corner on a [Sheet](/help/plan/sheets/) tab, at the end of the cluster, after **Undo**, **Redo** and **Style**. They make the sheet's cells larger or smaller. Boards, Dashboards and Forms fit their tab, so those tabs have no zoom controls.
+</AppNote>
+
+<Figure app="livedesign,livediagram" caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
+  <ZoomControls />
+</Figure>
+<Figure app="liveplanner" caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
+  <LiveplannerZoomControls />
+</Figure>
+<Figure app="livedocuments" caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
+  <LivedocumentsZoomControls />
+</Figure>
+<Figure app="livehuddle" caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
+  <LivehuddleZoomControls />
+</Figure>
+
+## The controls
+
+- **Zoom out** / **Zoom in**: step 10% at a time.
+
+<AppNote app="livedesign">
+  - **The percentage button**: shows the current level. **Click it to fit**: it frames the page nearest the middle of the screen, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels (25%, 50%, 75%, 100%, 125% and 150%, plus **Fit to screen**) and pick one to jump straight there (100% is true size). With the keyboard, `Enter` fits and the arrow keys open the presets.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  - **The percentage button**: shows the current level. **Click it to fit the whole canvas** in view at once, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels (25%, 50%, 75%, 100%, 125% and 150%, plus **Fit to screen**) and pick one to jump straight there (100% is true size).
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **The percentage button**: shows the current level. **Click it to fit the page you are nearest** to the screen, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels (25%, 50%, 75%, 100%, 125% and 150%, plus **Fit to screen**) and pick one to jump straight there (100% is true size).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **The percentage button**: shows the current level. **Click it to go back to 100%**. **Hover it** for a popover of preset levels (50%, 75%, 100%, 125% and 150%) and pick one to jump straight there.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  Zoom runs from 10% to 500%.
+</AppNote>
+
+<AppNote app="livedesign">
+  On a [photo page](/help/pages/photo-pages/) you can zoom in further, far enough to see its single pixels.
+</AppNote>
+
+<AppNote app="livedocuments">
+  To fit everything on the tab at once, run **Fit to Screen** from the [command palette](/help/search-panel/the-search-panel/command-palette/).
+</AppNote>
+
+<AppNote app="livediagram">
+  With the [Isometric](/help/selection-modes/isometric-mode/) tool in hand, an orbit button joins the cluster: drag it to turn the view, or click it to reset the angle. On a Participant or Viewer link the cluster also carries a **Zen mode** button.
+</AppNote>
+
+<AppNote app="liveplanner">
+  A sheet zooms from 50% to 200%. The column letters, row numbers and cells grow and shrink together, while the toolbar and formula bar keep their size, and everything works as it does at 100%. Zoom is your own view: it is never saved or shared, and the sheet opens at 100% next time.
+</AppNote>
+
+## From the keyboard and trackpad
+
+<AppNote app="livedesign,livedocuments">
+  | Keys                     | Does                              |
+  | ------------------------ | --------------------------------- |
+  | `⌘+` / `⌘-`              | Zoom in / out                     |
+  | `⌘0`                     | Reset the zoom to 100%            |
+  | `⇧1`                     | Frame the page nearest the middle |
+  | `⌘` + scroll, or a pinch | Zoom in or out                    |
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  | Keys                     | Does                              |
+  | ------------------------ | --------------------------------- |
+  | `⌘+` / `⌘-`              | Zoom in / out                     |
+  | `⌘0`                     | Reset the zoom to 100%            |
+  | `⇧1`                     | Zoom to fit everything on the tab |
+  | `⌘` + scroll, or a pinch | Zoom in or out                    |
+</AppNote>
+
+<AppNote app="liveplanner">
+  - `⌘` `+` and `⌘` `-` (Ctrl on Windows and Linux) step 10% larger or smaller, and `⌘` `0` puts the sheet back to 100%.
+  - Hold `⌘` (Ctrl) and scroll, or pinch on a trackpad, to zoom smoothly within the same range.
+  - With the percentage button focused, the Up or Down arrow opens the preset levels.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  `⌘` is Ctrl on Windows and Linux. A plain two-finger scroll pans rather than zooms, and so do the [Hand tool](/help/selection-modes/hand/), `Space` + drag, and a middle-button drag.
+</AppNote>
+
+<AppNote app="livehuddle">
+  `⌘` is Ctrl on Windows and Linux. A plain two-finger scroll pans rather than zooms, and so do `Space` + drag, a middle-button drag, and a one-finger drag on a touch screen.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  Zoom never changes the <Noun />, so it works on a view-only link too. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+</AppNote>
+
+## On a Phone
+
+On a phone the zoom buttons and the percentage are dropped to save space: pinch to zoom, and a dedicated **Fit** button stands in for fit-to-screen.
+
+<AppNote app="liveplanner">
+  The **Fit** button puts the sheet back to 100%.
+</AppNote>
+
+## In Zen Mode
+
+<AppNote app="livedesign,livediagram,livedocuments,liveplanner">
+  In [Zen mode](/help/tools/zen-mode/) everything else hides but the zoom controls stay, joined by an **Exit zen mode** button.
+</AppNote>
+
+<AppNote app="livediagram">
+  Any session tools in use stay too.
+</AppNote>
+
+<AppNote app="livedesign">
+  On a Participant or Viewer link, a **Zen mode** button also sits at the end of the zoom controls, so you can enter it from there.
+</AppNote>
+
+<AppNote app="livehuddle">
+  <AppName /> has no zen mode: the zoom controls are always in the corner.
+</AppNote>
+
+</ArticleLayout>

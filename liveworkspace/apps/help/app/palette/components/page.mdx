@@ -1,0 +1,151 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ComponentsCategory as DesignComponentsCategory } from '@/editions/livedesign/components/illustrations/palette-pages-categories';
+import { ComponentsCategory as DocumentsComponentsCategory } from '@/editions/livedocuments/components/illustrations/palette-pages-categories';
+
+export const metadata = helpMetadata({
+  title: 'Components',
+  description:
+    'Add cards, badges, step numbers and ready-made components (banners, callouts, stat rows, heroes, headers) that re-flow as you resize, with every line of text editable.',
+  path: '/help/palette/components/',
+});
+
+<ArticleLayout
+  title="Components"
+  description="Ready-made web components that lay themselves out as you resize them, with every line of text editable in place."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("components")}
+>
+
+The **Components** category holds ready-made web components. Instead of building a banner or a KPI row shape by shape, you drop one element that already knows how to lay itself out, then fill in your own words.
+
+## Finding them
+
+<AppNote app="livediagram">
+  No mode's palette strip shows the Components category, but every component works in every mode: search for it by name in the **Search** at the end of the palette strip ([Toolbar Layout](/help/palette/toolbar-layout/#search)), or in the editor's [Search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) under **Add to canvas**. The components are the **Hero**, **Header** and **Banner**, the **Card**, **Badge**, **Step Number**, **Callout**, **Stat Row** and **Process**, **Code** (a syntax-highlighted code card) and the **Checklist** of tickable to-do rows.
+
+  Several of them are on the Diagram and Workshop palettes too: the **Layout** category has the Card, Badge and Step Number ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), Diagram mode's **Write** has the Callout, and Workshop mode's **Write** has the Checklist.
+</AppNote>
+
+<AppNote app="livedesign">
+  Rest on **Components** on the palette strip, or click it, to see its groups. For an Editor, **In This Design** comes first, with your own components (below). **Layout** follows, with the **Hero**, **Header** and **Banner** a page is laid out with, the **Stack** that lines blocks up, and the [Devices](/help/palette/devices/) row of device frames. **Page Blocks** holds the **Card**, **Badge** and **Step Number** ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), the **Callout**, the **Stat Row** and **Process**. **Code and Lists** holds **Code** (a syntax-highlighted code card) and the **Checklist** (tickable to-do rows). Tap one to add it, or drag it to where you want it.
+
+  On a wireframe page, Components comes straight after **Popular**, before **Elements**. The Card, the Badge and the Checklist are in Elements there, so Components leaves them out, and it has no Devices row, since a wireframe is its device already.
+
+<Figure caption="The Components category: Layout, then Page Blocks, then Code and Lists.">
+  <DesignComponentsCategory />
+</Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  Rest on **Components** on the palette strip, or click it, to see its three groups. **Layout** comes first, with the **Hero**, **Header** and **Banner** a page is laid out with, the **Stack** that lines blocks up, and the **Devices** row of screen frames ([Devices](/help/palette/devices/)). **Page Blocks** holds the **Card**, **Badge** and **Step Number** ([Cards and Callouts](/help/palette/cards-and-callouts/), [Badges and Step Numbers](/help/palette/badges-and-step-numbers/)), the **Callout**, the **Stat Row**, the **Big Number**, the **Quote** and **Process**. **Code and Lists** holds **Code** (a syntax-highlighted code card) and the **Checklist** (tickable to-do rows). Tap one to add it, or drag it to where you want it.
+
+  A slide's Components leaves out the Header.
+
+<Figure caption="The Components category: Layout, then Page Blocks, then Code and Lists.">
+  <DocumentsComponentsCategory />
+</Figure>
+</AppNote>
+
+## What the category contains
+
+- **Banner** is a themed title block: an accent bar with a title and a subtitle.
+- **Callout** is a soft note box with an icon badge, a heading, and a body. It is a [card](/help/palette/cards-and-callouts/) underneath, so it can take tags and a meta line too.
+- **Stat Row** is a row of KPI cards, each a big number over a caption.
+- **Process** is a row of numbered circles joined by arrows, with a caption under each.
+- **Hero** is a large image with a caption card over it.
+- **Header** is a website-style bar with a logo, a brand name, and navigation links.
+
+<AppNote app="livedocuments">
+  A **Stat Row** also takes an optional change line under each caption. Two more components sit beside it:
+
+  - **Big Number** is a stat row of one: a large figure, its label and a change such as "▲ 24% on last year".
+  - **Quote** is a large quote with its source: a name, a role and a portrait. Its opener offers the **Testimonial** (in a card, with a portrait) and the **Pull Quote** (large words on the page, signed by a name).
+</AppNote>
+
+Hero builds on an image, so it only appears when image upload is available.
+
+<AppNote app="livediagram">
+  The [Entity](/help/palette/entities/) also belongs to this category; in Diagram mode it is in **Diagrams**.
+</AppNote>
+
+## Editing the text
+
+Every piece of text on a component is editable where it sits:
+
+<Step n={1}>Click the component once to select it.</Step>
+<Step n={2}>
+  Click the line you want to change, such as a stat's number, a step's caption or a nav link, and
+  type.
+</Step>
+<Step n={3}>Press **Enter** to keep the change, or **Escape** to put the old text back.</Step>
+
+Before the component is selected its text ignores clicks, so the first click always selects (and lets you drag) the whole component.
+
+The main text (a banner's title, a callout's body, a header's brand name) is the element's ordinary label, so double-clicking edits it like any shape's label, with the usual bold, size and alignment controls.
+
+## Adding and removing rows
+
+A Stat row, a Process and a Header carry rows: stats, steps and links. To add one, select the component, open any of the quick-add **+** buttons around it and choose **Add Stat**, **Add Step** or **Add Link**. To remove, reorder or retype rows in one place, right-click the component and open its **Stats**, **Steps** or **Links** section.
+
+Each has limits, so the layout stays readable: a stat row holds 1 to 6 stats, a process 2 to 8 steps, and a header up to 6 links.
+
+<AppNote app="livedocuments">
+
+**Changes and counting up.**
+
+A stat can carry a change line under its caption. Type it in the **Stats** section's third box, or click under the caption of a row that already has one. The first character sets its colour: **▲**, **↑** or **+** reads as up and turns green, **▼**, **↓** or **-** reads as down and turns rose, and anything else keeps the caption's colour. Both colours stay readable on light and dark slides.
+
+When you present a slide, its stat numbers count up from zero, keeping their prefix, decimals and commas ("$1,250.5" counts as money with one decimal place). A value that isn't one number, such as "24/7", simply shows. Turn **Count Up When Presented** off in the **Stats** section to keep a row still. If your system asks for reduced motion, or you turn motion down in the editor, the numbers show at once.
+
+**Quotes and testimonials.**
+
+A quote is one element: its words are its label, so double-click to edit them. Once it is selected, click the name or role under it to change them.
+
+Right-click a quote and open its **Quote** section to change it:
+
+- **Look**: **Card** draws the quote in its own rounded box. **Plain** sets the words straight on the page, for a pull quote.
+- **Name** and **Role** turn the lines under the words on or off.
+- **Portrait**: none, the name's **Initial** in a disc, or a **Photo**. Picking Photo opens your pictures; **Change Photo** and **Remove Photo** follow.
+
+A small quote drops its role first, then its portrait, then its quote mark, so the words always have room.
+
+</AppNote>
+
+## Resizing
+
+Each component is one element that lays itself out, so resizing changes the room it has rather than zooming it:
+
+- Banner and callout text re-wraps to the new width.
+- Stat cards share the width, and their numbers grow as you make the row taller.
+- Process steps spread across the width, and the circles shrink rather than overlap when you add more.
+- A header keeps its logo and brand on the left and its links on the right. Links that no longer fit a narrowed header are hidden from the end until you widen it again.
+
+## Colours and images
+
+Components follow the tab theme when you drop them. A banner and a header paint their bar in the theme's accent and keep white text through a theme change; pick a **Background** colour in the right-click menu to use your own: under **Style → Colours** in livediagram, under **Appearance**, then **Colours**, in livedesign and livedocuments. A callout, a stat row and a process are ordinary cards that use the accent for the badge, the numbers and the step circles.
+
+Drop an icon on a header to make it the logo, or on a callout to replace its badge. To set a hero's picture, double-click the image; its caption card can be turned off (or added to any image) with **Caption Card** in the image's right-click menu, under **Image**.
+
+<AppNote app="livedesign">
+
+**Your own components.**
+
+Make a nav bar, a tab bar or a footer once and use it on every screen. Select the elements and choose **Make Component** from the right-click menu (`⌥⌘K`, or `Ctrl+Alt+K` on Windows and Linux). The selection becomes one **instance** of the new component, and the component joins **In This Design** at the top of this category, on every tab of the design. Press its tile to place another copy.
+
+- **Change it once, change it everywhere.** Double-click an instance, or pick **Edit Component** in its menu, to lay its parts out on the canvas and edit them with the usual tools. A bar reads "Editing" with the component's name; every copy redraws as you go, for everyone on the design. Press **Done**, or Escape with nothing selected, to finish.
+- **Change one copy only.** The instance's menu section, named after the component, lists **Overrides**: a copy's text, colours and icon, each with a reset arrow back to the component's own. **Reset Overrides** clears them all. An override survives later changes to the component.
+- **Detach** (`⌥⌘B`) turns a copy back into plain elements, leaving the component alone. **Rename** it in the same section, and **Remove from Library** takes it out of In This Design while placed copies keep drawing.
+
+Images, videos, embeds, link cards and tab windows can't go in a component yet. A component holds up to 200 elements. Only an Editor makes, places, edits or overrides components; a Participant or a Viewer sees the copies.
+
+</AppNote>
+
+<Tip>
+  Drop a component to get the structure right, then retype the placeholder text in place. It is
+  faster than arranging the pieces from scratch.
+</Tip>
+
+</ArticleLayout>

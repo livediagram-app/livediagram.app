@@ -223,27 +223,25 @@ same builder every app's marketing site uses. Its `Policy` is the repository's s
 (`SECURITY_POLICY_URL`), since every app's policy agrees and this site has no help centre of its own. The fields and
 why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md#securitytxt-on-every-site).
 
-### Help (`/help/google-drive`, `/help/explorer`)
+### Help (`/help`)
 
-Each app keeps its own help centre; a feature that is the platform's, the same in every app, is explained once here
-instead, in pages in the site's own chrome (`components/help/HelpArticle.tsx`) listed in the sitemap. One is Google
-Drive sync (drive.md): `/help/google-drive`. The other is the Explorer on liveworkspace.app in no app, where it mixes
-every app's work: `/help/explorer` (the overview, a section each for Home, My Work, Recent, Shared With Me, the Inbox,
-the Trash and Search), `/help/explorer/folders`, `/help/explorer/teams`, `/help/explorer/moving`,
-`/help/explorer/sharing` (sharing across apps) and `/help/explorer/signing-in` (guest or account). In no app the
-Explorer's view Help button opens the article for its view (a folder's and a team's their own, every other view a
-section of the overview), the sign-in banner's Learn more opens `/help/explorer/signing-in`, and Search lists the six
-under **liveworkspace Help**. On an app's address all three keep that app's own help centre. The articles speak of
-files and apps, never of one app's kind; their names and addresses are in `lib/help/platform-help.ts`, checked by
-`components/help/explorer-articles.test.tsx`. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**
-article under Account and Data (`/help/account-and-data/google-drive/`) that points here, so the apps' search,
-links and old addresses still find it. It names every app's file extension (drive.md "The file"), which
-`app/app-lists.test.ts` checks against the listed apps. Change it when drive.md changes what a person sees.
+`www.liveworkspace.app/help*` is the one help centre's ([Help centre](../016-help/help-centre.md)): All Apps' help,
+built from `liveworkspace/apps/help` and served by its Worker, which takes the route before the site's own files (a
+dev server forwards `/help*` to it on 3020, `next.config.ts`). The site has no help pages of its own: the platform's
+features that are the same in every app (Google Drive sync, the Explorer in no app, teams, sharing across apps,
+guest or account) are articles that apply to every app, read in each app's help and under All Apps. The old
+addresses (`/help/google-drive`, `/help/explorer/teams`, `/help/explorer/moving`, `/help/explorer/sharing`,
+`/help/explorer/signing-in`) redirect to them (`packages/help-registry/src/catalogue/redirects.ts`). In no app the
+Explorer's view Help button opens the article for its view, the sign-in banner's Learn more opens
+`/help/account-and-data/signing-in/`, and Search lists the Explorer articles under **liveworkspace Help**; their
+names and addresses are in `lib/help/platform-help.ts`. On an app's address all three keep that app's own help.
+Settings › Profile › Cloud Sync links to the Google Drive article.
 
 ### Licences (`/licences`)
 
-The third-party licences of this website and the platform's services (accounts, Community, index,
-media, status, telemetry), linked from the footer and listed in the sitemap. It is each product's page
+The third-party licences of this website, the one help centre (`apps/help`, analysed as its checked-in
+livediagram scope's build) and the platform's services (accounts, Community, index, media, status,
+telemetry), linked from the footer and listed in the sitemap. It is each product's page
 ([Third-party licences](../../../../livediagram/docs/specs/002-project-scope/third-party-licences.md)) on
 liveworkspace's own tables: the same generator (`@liveworkspace/licences`) and page body
 (`@liveworkspace/marketing-site`), with the site's apps, overrides and embedded works in
