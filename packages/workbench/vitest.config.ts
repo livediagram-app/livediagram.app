@@ -131,6 +131,10 @@ const HELD_AT_100 = [
   // (docs/specs/004-interface-design/colour-picker.md "Reading on its ground", Work Tracker 1108).
   'src/components/colour/ContrastHint.tsx',
   'src/components/colour/useJudgedSwatch.ts',
+  // The open and the unload flush every editor bound a copy of (each product's 006-*/offline-mode.md and
+  // per-tab-storage.md "Saving", Work Tracker 1243).
+  'src/hooks/persistence/useIdentityBootstrapCore.ts',
+  'src/hooks/persistence/useUnloadFlushCore.ts',
 ];
 
 export default defineProject({

@@ -720,6 +720,8 @@
     "./hooks/persistence/usePerTabLoad": "./src/hooks/persistence/usePerTabLoad.ts",
     "./hooks/persistence/useResolveSelf": "./src/hooks/persistence/useResolveSelf.ts",
     "./hooks/persistence/useAfterApiWrite": "./src/hooks/persistence/useAfterApiWrite.ts",
+    "./hooks/persistence/useIdentityBootstrapCore": "./src/hooks/persistence/useIdentityBootstrapCore.ts",
+    "./hooks/persistence/useUnloadFlushCore": "./src/hooks/persistence/useUnloadFlushCore.ts",
     "./lib/canvas-backgrounds": "./src/lib/canvas-backgrounds.ts",
     "./components/canvas/element-label-views": "./src/components/canvas/element-label-views.tsx",
     "./components/canvas/EmptyTextPrompt": "./src/components/canvas/EmptyTextPrompt.tsx",
