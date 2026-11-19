@@ -500,7 +500,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
         )}
       </div>
       {configuredElement ? (
-        <BoardConfigureDialog element={configuredElement} onClose={() => setBoardConfiguring(false)} />
+        <BoardConfigureDialog
+          element={configuredElement}
+          onClose={() => setBoardConfiguring(false)}
+        />
       ) : null}
     </>
   );

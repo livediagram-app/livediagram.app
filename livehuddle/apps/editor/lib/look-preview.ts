@@ -77,7 +77,10 @@ function entry(look: TabLook): Built {
 /** The tiny Space with the look applied, as a tab of its own. */
 export function lookPreviewTab(look: TabLook): Tab {
   const hit = entry(look);
-  hit.tab ??= withLookApplied({ id: `look-${look.id}`, name: look.label, elements: lookPreviewScene() }, look);
+  hit.tab ??= withLookApplied(
+    { id: `look-${look.id}`, name: look.label, elements: lookPreviewScene() },
+    look,
+  );
   return hit.tab;
 }
 

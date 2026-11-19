@@ -358,10 +358,7 @@ export type LookSettings = Pick<
 
 // The lookup, apply and match are the shared ones (@liveworkspace/workbench/lib/tab-looks), over every named look,
 // year-round and seasonal: a tab wearing a seasonal look reads as that look too.
-const shared = createTabLooks<
-  Tab,
-  TabLook
->({
+const shared = createTabLooks<Tab, TabLook>({
   looks: [...TAB_LOOKS, ...SEASONAL_LOOKS],
   withThemeApplied,
   // A pattern matches by the floor it draws as, so a retired diagram pattern reads as the floor it draws.
@@ -376,5 +373,5 @@ export function withLookApplied(tab: Tab, look: TabLook): Tab {
   if (look.wallColor) return { ...dressed, wallColor: look.wallColor };
   if (dressed.wallColor === undefined) return dressed;
   const { wallColor: _plaster, ...rest } = dressed;
-  return rest as Tab;
+  return rest;
 }

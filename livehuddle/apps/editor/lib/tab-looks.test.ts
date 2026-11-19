@@ -125,7 +125,16 @@ describe('TAB_LOOKS', () => {
     for (const look of TAB_LOOKS) expect(isFloorPattern(look.pattern), look.id).toBe(true);
     const painted = TAB_LOOKS.filter((l) => l.wallColor).map((l) => l.label);
     expect(painted.sort()).toEqual(
-      ['Atelier', 'Cabin', 'Classroom', 'Gallery', 'Lab', 'Meeting Room', 'Playroom', 'Potting Shed'].sort(),
+      [
+        'Atelier',
+        'Cabin',
+        'Classroom',
+        'Gallery',
+        'Lab',
+        'Meeting Room',
+        'Playroom',
+        'Potting Shed',
+      ].sort(),
     );
     for (const look of TAB_LOOKS) expect(look.wallColor ?? '#000000').toMatch(/^#[0-9a-f]{6}$/);
   });

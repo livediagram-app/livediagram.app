@@ -30,6 +30,8 @@ describe('roomPreviewSvg', () => {
     expect(roomPreviewSvg('flexible', { ...tab, textSize: 'lg' })).not.toBe(
       roomPreviewSvg('flexible', tab),
     );
-    expect(roomPreviewSvg('flexible', { ...tab, patternColor: '#123456', floor: 'sparkles' })).toBeTruthy();
+    expect(
+      roomPreviewSvg('flexible', { ...tab, patternColor: '#123456', floor: 'sparkles' }),
+    ).toBeTruthy();
   });
 });

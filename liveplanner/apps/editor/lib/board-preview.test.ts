@@ -4,7 +4,8 @@ import { getTheme } from './themes';
 
 // docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile": a plan's tab previews its
 // finish and font on a small board, its columns in the theme's colours as a real board's are.
-const fills = (svg: string) => [...svg.matchAll(/fill="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1]!.toLowerCase());
+const fills = (svg: string) =>
+  [...svg.matchAll(/fill="(#[0-9a-fA-F]{6})"/g)].map((m) => m[1]!.toLowerCase());
 
 describe('boardPreviewSvg', () => {
   it('draws three columns of cards under their names, in the finish and font', () => {

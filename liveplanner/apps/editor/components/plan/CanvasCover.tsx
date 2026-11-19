@@ -112,7 +112,9 @@ export function CanvasCover({
       }}
       onWheel={stop}
     >
-      {pattern && !opaque && isAnimatedPattern(pattern.pattern) ? <TabPatternLayer {...pattern} /> : null}
+      {pattern && !opaque && isAnimatedPattern(pattern.pattern) ? (
+        <TabPatternLayer {...pattern} />
+      ) : null}
       <div
         {...marker}
         {...(band ? { 'data-header-band': '' } : row ? { 'data-shared-row': '' } : {})}

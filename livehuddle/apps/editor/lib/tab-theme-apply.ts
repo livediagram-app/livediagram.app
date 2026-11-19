@@ -105,7 +105,7 @@ export function withStyleOfTab(target: Tab, source: Tab): Tab {
   if (source.wallColor === undefined) {
     if (styled.wallColor === undefined) return styled;
     const { wallColor: _cleared, ...rest } = styled;
-    return rest as Tab;
+    return rest;
   }
   return { ...styled, wallColor: source.wallColor };
 }

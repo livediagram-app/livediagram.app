@@ -32,8 +32,10 @@ export function boardPreviewSvg(
   const sample = tab.textSize
     ? LOOK_PREVIEW_ELEMENTS.map((el) => ({ ...el, textSize: tab.textSize }))
     : [...LOOK_PREVIEW_ELEMENTS];
-  const themed = withThemeApplied({ id: 'board-preview', name: '', elements: sample }, tab.theme)
-    .elements;
+  const themed = withThemeApplied(
+    { id: 'board-preview', name: '', elements: sample },
+    tab.theme,
+  ).elements;
   // Every card in the first card's colours: a board's cards are alike whatever the theme.
   const first = themed.find(isCard)!;
   const theme = getTheme(tab.theme);
@@ -62,7 +64,7 @@ export function boardPreviewSvg(
     }
     // The rest are the cards (the sample is names and cards only).
     elements.push({
-      ...(el as ShapeElement),
+      ...el,
       fillColor: first.fillColor,
       strokeColor: first.strokeColor,
       textColor: first.textColor,

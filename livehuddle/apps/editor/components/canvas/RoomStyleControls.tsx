@@ -13,9 +13,7 @@ export function RoomStyleControls(props: TabStyleCanvasPanelProps<BackgroundPatt
   return (
     <CanvasStyleControls
       {...props}
-      walls={
-        editor ? { color: editor.activeTab.wallColor, onSet: editor.setWallColor } : undefined
-      }
+      walls={editor ? { color: editor.activeTab.wallColor, onSet: editor.setWallColor } : undefined}
     />
   );
 }

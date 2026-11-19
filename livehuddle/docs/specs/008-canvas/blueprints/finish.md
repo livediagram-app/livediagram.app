@@ -387,7 +387,7 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
 - `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; the shared `FinishPanel` (`packages/workbench/src/components/dialogs/tab-style/FinishPanel.tsx`: four tiles, two columns, four from `sm`) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
   `withTabFinish` (`lib/tab-style-transforms.ts`): the tab's finish, every element's own cleared, one `commit`.
 - Preview: `lib/room-preview.ts` `roomPreviewSvg(finish, { background, theme, font, textSize, floor, floorOpacity,
-  patternColor })` renders the look cards' scene (`lookPreviewScene`, `lib/look-preview.ts`: a room with its door, a
+patternColor })` renders the look cards' scene (`lookPreviewScene`, `lib/look-preview.ts`: a room with its door, a
   desk, a plant and a sticky, fixed ids `look-preview-*`) on the active tab's floor through `renderTabToSvg`, its
   pattern id `lvd-room-preview-bg`.
   `TabStylePreview` (`components/dialogs/TabStylePreview.tsx`) memoises it on finish, background, theme, font, text size and floor and inlines it

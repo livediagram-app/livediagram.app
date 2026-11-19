@@ -388,7 +388,7 @@ describes it on each.
   a room on it (its walls and door) and a desk with its chair and a sticky, in the Finish and Text panels, so the
   preview shows the Space the person is styling rather than a diagram.
 - **Copy.** The shared lines, but the Canvas panel is named Room, its line "The floor under the Space and the walls
-  round its rooms.", and the home's "Pick a look for the Space, then fine-tune any part of it." 
+  round its rooms.", and the home's "Pick a look for the Space, then fine-tune any part of it."
 - **Frame.** The shared modal, its Show Me bound in `apps/editor/components/tour/TabStyleTour.tsx`. Apply to All Tabs
   names no locked tabs (livehuddle has no tab locks).
 

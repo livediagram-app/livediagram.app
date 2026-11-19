@@ -273,7 +273,9 @@ describe('CanvasThemeDialog Room panel', () => {
   it('is named Room, with a Walls swatch on the plaster until a colour is set', () => {
     const setWallColor = vi.fn();
     inEditor({ id: 't', name: 'T', elements: [] }, setWallColor);
-    expect(screen.getByText('The floor under the Space and the walls round its rooms.')).toBeTruthy();
+    expect(
+      screen.getByText('The floor under the Space and the walls round its rooms.'),
+    ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Walls colour' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Plaster' })).toBeNull();
   });

@@ -26,7 +26,12 @@ export type RoomPreviewTab = {
 export function roomPreviewSvg(finish: Finish, tab: RoomPreviewTab): string {
   const scene = lookPreviewScene();
   const sample = tab.textSize
-    ? scene.map((el) => (el.type === 'shape' || el.type === 'sticky' ? { ...el, textSize: tab.textSize } : el) as Element)
+    ? scene.map(
+        (el) =>
+          (el.type === 'shape' || el.type === 'sticky'
+            ? { ...el, textSize: tab.textSize }
+            : el) as Element,
+      )
     : scene;
   const themed = withThemeApplied({ id: 'room-preview', name: '', elements: sample }, tab.theme);
   const previewTab = {
