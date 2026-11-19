@@ -4,16 +4,21 @@ import {
   AnimatedIconsArt,
   AnimatedShapesArt,
   ApiArt,
+  ApprovalArt,
   ArrowsArt,
   AssignedActionsArt,
   BoardImportArt,
+  BpmnArt,
   BorderStyleArt,
   BringFocusArt,
+  C4Art,
   CanvasBackdropArt,
   CanvasChartsArt,
   CodeBlockArt,
+  CodeReviewArt,
   CommentsArt,
   ComponentsArt,
+  DoneCheckArt,
   DragDuplicateArt,
   DrawDockArt,
   EmbedArt,
@@ -35,10 +40,13 @@ import {
   LanesArt,
   LaserArt,
   LayersArt,
+  LibraryArt,
   LinkCardArt,
   LiveImageArt,
+  LiveStatusArt,
   LivingBackgroundArt,
   LockArt,
+  MeetingRecordArt,
   MarkdownImportArt,
   MarkersArt,
   MarqueeArt,
@@ -65,6 +73,7 @@ import {
   ShapesArt,
   ShareLinksArt,
   ShortcutsArt,
+  SnapshotsArt,
   SideBySideArt,
   SlideDeckArt,
   SlideTimingArt,
@@ -80,6 +89,7 @@ import {
   ThemesArt,
   UndoRedoArt,
   UnlimitedTabsArt,
+  WalkthroughArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
@@ -124,14 +134,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, and Workshop, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
+      'Share a link and your team is on the canvas with you: live cursors, comments on any element, actions handed to teammates, recorded walkthroughs, and Workshop, a mode for running a workshop, with timers, votes and a spotlight on the thing you mean.',
     metaDescription:
-      'Share a link and your team is on the canvas with you: live cursors, comments, assigned actions and workshop tools, from timers and votes to polls.',
+      'Share a link and your team is on the canvas with you: live cursors, comments, recorded walkthroughs, assigned actions, and workshop timers, votes and polls.',
     highlights: [
       'Live presence',
       'Comments on any element',
       'Run the session: timer + voting',
-      'Assign actions to teammates',
+      'Record a walkthrough',
     ],
     items: [
       {
@@ -191,6 +201,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo rewinds your own edits, not a teammate's.",
       },
       {
+        art: <SnapshotsArt />,
+        href: '/help/collaboration/snapshots/',
+        group: 'Work together live',
+        title: 'Snapshots and history',
+        description:
+          'Take a snapshot before a big change and revert to it in one step if the change goes wrong. Reverting first saves a Before revert snapshot, so even that can be undone. Snapshots sit in History, under Tools, on a timeline of who changed what and when.',
+      },
+      {
+        art: <WalkthroughArt />,
+        href: '/help/collaboration/walkthroughs/',
+        group: 'Present & workshop',
+        title: 'Record a walkthrough',
+        description:
+          'Talk someone through the canvas without booking a meeting. Open Tools, then Walkthroughs, and record your voice, an optional camera bubble and every pan, zoom and tab change. Viewers play it over the canvas itself, pausing to look around, and Hide From Recording keeps an unfinished corner out of it.',
+      },
+      {
         art: <SessionToolsArt />,
         href: '/help/collaboration/session-tools/',
         group: 'Present & workshop',
@@ -215,7 +241,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Hand someone the facilitator baton and the tools that run the session answer to them alone: the timer, the votes, the polls, the reveals. No two people starting timers over each other. Nobody holds it by default, anybody can be given it, and the owner can always take it back.',
       },
       {
-        art: <SessionToolsArt />,
+        art: <DoneCheckArt />,
         href: '/help/palette/behaviour/',
         group: 'Present & workshop',
         title: 'Ask the room if they are done',
@@ -231,7 +257,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Drop a Bring Focus element, press it, and everyone else is offered a jump to it: your tab, the thing you mean, centred on their screen. It asks rather than drags, so nobody loses the place they were working in.',
       },
       {
-        art: <FacilitatorArt />,
+        art: <MeetingRecordArt />,
         href: '/help/palette/collaborate/agendas/',
         group: 'Present & workshop',
         title: 'Keep the record of the meeting',
@@ -319,6 +345,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Create an editor link for collaborators, a participant link for a team who should add stickies, write and vote without reshaping the board, or a view-only link for stakeholders who should watch, not touch. Run as many links as you like, side by side, and point one at a single tab to keep the rest of the canvas private.',
       },
       {
+        art: <ApprovalArt />,
+        href: '/help/collaboration/sharing/request-approval/',
+        group: 'Share & access',
+        title: 'Request approval',
+        description:
+          'Name the people who should sign off, add a note and a due day, and each answers Approve or Request Changes. Each approver answers from a banner on the canvas, the Share dialog\u2019s Approval tab says where it stands, and a snapshot can keep the version they were asked about.',
+      },
+      {
         art: <LiveImageArt />,
         href: '/help/collaboration/sharing/live-image/',
         group: 'Share & access',
@@ -332,7 +366,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of canvases they can all open and edit. Admins manage membership and roles; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
+          'Create a team, invite people by email, and everyone gets a shared folder of canvases they can all open and edit. Admins manage membership and roles, and read the team\u2019s Audit Log, filtered or exported as CSV; members just get to work. Sign in to set one up, the canvas itself never needs an account.',
       },
       {
         art: <ExpiryArt />,
@@ -359,13 +393,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore diagrams',
     title: 'Diagrams that look designed, not dragged',
     description:
-      'Shapes that snap into line, arrows that follow them, and icons, tables and components when boxes are not enough. Start from a template, recolour it with a theme, or describe it to your AI and let it build the diagram for you.',
+      'Shapes that snap into line, arrows that follow them, and icons, tables, BPMN and C4 when boxes are not enough. Start from a template, recolour it with a theme, or describe it to your AI and let it build the diagram for you.',
     metaDescription:
       'Shapes that snap into line, arrows that follow them, templates and one-click themes, and an AI that can build the diagram from a description.',
     highlights: [
       'Arrows that bend your way',
-      'Guides that line things up',
       'Mind maps from the keyboard',
+      'BPMN process diagrams',
       'Build diagrams with AI',
     ],
     items: [
@@ -399,7 +433,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Shapes & connectors',
         title: 'Rich text in any label',
         description:
-          'Style text right where you type it: bold, italic, underline, and strikethrough, with per-word colours and sizes and bullet or numbered lists. Select a run and a floating toolbar formats just that part, so a label reads exactly how you mean it.',
+          'Style text right where you type it: bold, italic, underline, and strikethrough, with per-word colours and sizes and bullet or numbered lists. Select a run and a floating toolbar formats just that part, so a label reads exactly how you mean it. Pick a text colour too faint for its background and the picker says so, offering a readable shade of the same hue.',
       },
       {
         art: <NotesArt />,
@@ -442,12 +476,28 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'List who talks to whom and it draws the lifelines, arrows, activation bars and loops for you. Type a conversation straight down, one message per line, or paste it as text (A -> B: words). Calls, async messages and dashed replies, numbered on request so a review can say \u201cstep 4\u201d.',
       },
       {
+        art: <BpmnArt />,
+        href: '/help/palette/bpmn/',
+        group: 'More than boxes and arrows',
+        title: 'BPMN process diagrams',
+        description:
+          'Draw business processes in BPMN 2.0: start, intermediate and end events, typed tasks, exclusive, parallel and inclusive gateways, data, pools and lanes, with message flows between them. Start from the BPMN Process template, or import a .bpmn file from Camunda or bpmn.io with its layout intact.',
+      },
+      {
+        art: <C4Art />,
+        href: '/help/palette/build/',
+        group: 'More than boxes and arrows',
+        title: 'The C4 model, level by level',
+        description:
+          'Person, Software System, Container, Component, External System and Database cards in C4\u2019s own colours, which they keep under every theme. The System Context, Container and Component templates link up as tabs: the system opens its containers, a container opens its components, and each boundary leads back out.',
+      },
+      {
         art: <CanvasChartsArt />,
         href: '/help/palette/tools/data-elements/',
         group: 'More than boxes and arrows',
         title: 'Charts and meters on the canvas',
         description:
-          'Show the number, not just the box: column, bar, line, area and scatter charts from an editable grid or a CSV, a pie, progress bars and rings, a star rating and a timeline rail. They take the theme\u2019s colours and move, lock and export like any other element.',
+          'Show the number, not just the box: column, bar, line, area and scatter charts from an editable grid or a CSV, a pie, progress bars and rings, a star rating and a timeline rail. Link a pie, bar or line chart to a liveplanner Sheet and it updates when the numbers change. They take the theme\u2019s colours and move, lock and export like any other element.',
       },
       {
         art: <CodeBlockArt />,
@@ -514,12 +564,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Drop a bookmark and paste a URL: it unfurls into a tidy card with the page title, favicon, and preview image. Click through any time. Turn a reference, a doc, or a related diagram into a card your whole team can follow.',
       },
       {
+        art: <LiveStatusArt />,
+        href: '/help/canvas/links/live-status/',
+        group: 'More than boxes and arrows',
+        title: 'Live service status',
+        description:
+          'Bind a shape to a service\u2019s public status page or health check, and a badge on it reads Up, Degraded or Down while the canvas is open, checked about once a minute. The architecture diagram doubles as the status board.',
+      },
+      {
         art: <EmbedArt />,
         href: '/help/palette/embed-elements/',
         group: 'More than boxes and arrows',
         title: 'Videos, Figma, Docs, or any website',
         description:
-          'Paste a YouTube or Vimeo link, a Loom recording, a Figma file, a Google Doc, or any web address at all, and it sits on the canvas where the discussion is. Nothing loads until somebody presses play, and the player never steals the pointer, so the board stays draggable while it runs.',
+          'Paste a YouTube or Vimeo link, a Loom recording, a Figma file, a Google Doc, or any web address at all, and it sits on the canvas where the discussion is. Nothing loads until somebody presses play, and the player never steals the pointer, so the board stays draggable while it runs. A Live Embed shows a plan, page, design or another canvas from your liveworkspace apps, live and read-only, each reader seeing it with their own access.',
       },
       {
         art: <ComponentsArt />,
@@ -530,12 +588,19 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Drop in a polished component and skip the busywork: a banner, a hero, a website-style header, an annotated callout, a row of KPI stats, or numbered process steps. Tap to place it or drag to size it; each one is a single element that follows the tab theme, re-flows as you resize it, and lets you retype any line in place.',
       },
       {
+        art: <LibraryArt />,
+        group: 'More than boxes and arrows',
+        title: 'Your own Library of parts',
+        description:
+          'Select the pieces you draw again and again and choose Save to Library on the selection toolbar. They wait in the palette\u2019s Library, Personal or your team\u2019s, to click or drag onto any canvas, and onto a page in livedocuments or a design in livedesign too.',
+      },
+      {
         art: <TemplatesArt />,
         href: '/help/canvas/templates/',
         group: 'Templates & themes',
-        title: 'Ninety starter templates',
+        title: 'Ninety-one starter templates',
         description:
-          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and roadmaps, org charts and timelines, meeting agendas and risk matrices, pub quizzes and icebreakers, architecture and UML. Browse them by the job to be done in the picker, edit one, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and roadmaps, org charts and timelines, meeting agendas and risk matrices, pub quizzes and icebreakers, architecture and UML. Browse them by the job to be done in the picker, where search forgives a typo, edit one, or start blank. Clear Example Content empties the sample notes, rows and figures and keeps the board\u2019s structure and look.',
       },
       {
         art: <ThemesArt />,
@@ -647,7 +712,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Tabs',
         title: 'Unlimited tabs per canvas',
         description:
-          'Add as many tabs as a canvas needs. Each has its own theme, and nothing slows down as the stack grows.',
+          'Add as many tabs as a canvas needs. Each has its own theme, and nothing slows down as the stack grows. A connected tab stands for a plan, document or design in another liveworkspace app, with a preview and one press to open it, so a whole project sits in one tab bar.',
       },
       {
         art: <TabsArt />,
@@ -727,7 +792,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Build diagrams with AI',
         description:
-          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your canvases for you. Point it at a system and ask for the diagram; it lands in your account. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
+          'Hook livediagram up to Claude or any MCP client at mcp.livediagram.app and let it find, read, create, edit, and share your canvases for you. Point it at a system and ask for the diagram; it lands in your account. In Claude the canvas opens as a live view beside the answer, and with edit access you can rename and move boxes without leaving the chat. Signed in, and it runs on the same revocable token (read-only if you prefer), so you can disconnect any time.',
       },
       {
         art: <MermaidArt />,
@@ -751,7 +816,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Bring your boards from other tools',
         description:
-          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a canvas you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page.',
+          'Import draw.io diagrams, Excalidraw scenes and Microsoft Whiteboard boards from the Explorer, a whole folder at a time, and each lands as a canvas you can edit: shapes, arrows, ink, notes and images, with a tab per draw.io page. draw.io\u2019s BPMN shapes arrive as real BPMN elements.',
       },
       {
         art: <ExportArt />,
@@ -759,7 +824,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Export as PNG, SVG, or PDF',
         description:
-          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown or Excalidraw. What you exported is what you drew: same sizes, same colours, same marks, in the same places.',
+          'Take any tab out as an image for a doc, a PDF to print, or JSON to move it elsewhere. A diagram or whiteboard tab also goes out as Markdown or Excalidraw. What you exported is what you drew: same sizes, same colours, same marks, in the same places. A PDF keeps real text you can select, search and copy, crisp at any zoom.',
+      },
+      {
+        art: <CodeReviewArt />,
+        href: '/help/developers/repositories/',
+        group: 'AI & your tools',
+        title: 'Diagrams from your code, shown in review',
+        description:
+          'Draw a deployment diagram straight from a wrangler.toml or a Docker Compose file, from the import dialog or with livediagram link from-code. Add the GitHub workflow and every pull request gets before and after pictures of each changed tab, with additions, changes and removals outlined, on private repositories too.',
       },
       {
         art: <ApiArt />,

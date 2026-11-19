@@ -4,7 +4,7 @@ import { SITE_URL } from '@livediagram/ui';
 // livediagram's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livediagram"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-10');
+const UPDATED = new Date('2026-11-18');
 
 const LIST: Alternative[] = [
   {
@@ -59,6 +59,7 @@ const LIST: Alternative[] = [
       'For a class: quizzes with a countdown and a reveal of who got it right, live polls, an anonymous idea box and a shared timer.',
       'Run the lesson on the board: an agenda that starts the timer for each segment, a roll call, and a picker that chooses someone at random so nobody has to volunteer.',
       'Around 190 emoji stickers and 32 word badges like APPROVED and WIP, for reacting to work and marking it.',
+      'Record a walkthrough of the board, your voice and every pan and zoom, so a student who missed the lesson can replay it over the live board.',
       'Switch the same tab to Diagram mode when a sketch needs to become a tidy flowchart, org chart or plan, and draw it in the Marker finish so it still looks like it came off the whiteboard.',
       '91 templates, including retrospectives, Lean Coffee, town hall Q&A and event storming boards.',
       'Free and MIT-licensed, with every board exportable, so no future retirement can take your boards away.',
@@ -142,7 +143,7 @@ const LIST: Alternative[] = [
       {
         label: 'Programmatic access',
         us: 'REST API and an MCP server for AI tools, both free',
-        them: 'Developer platform + marketplace',
+        them: 'Developer platform, marketplace and an MCP server',
       },
       {
         label: 'Focus',
@@ -163,11 +164,13 @@ const LIST: Alternative[] = [
       'Three ways to work one tab: Diagram for structure, Draw for freehand whiteboarding, and Workshop for running a session with your team.',
       'Participant links let a workshop add stickies, write and vote without being able to reshape the board.',
       'Assign action items to teammates on the canvas itself, tracked beside comments in the Collaborate panel.',
-      'Workshop tools built in: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
+      'Workshop tools built in and free: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Run the meeting itself on the board: an agenda that starts the timer for each segment, a roll call, a random picker, reveal zones that cover work until the room is ready, and decision records that keep what was agreed.',
       '91 templates, 25 one-click whole-canvas themes and ready-made looks turn a blank canvas into a polished diagram fast, drawn clean, crisp and Professional, or by hand in Sketch or Marker.',
       'Guide the room without pulling anyone away: Bring Focus offers everyone a jump to what you mean, anyone can follow anyone’s view, even on a view-only link, and reaction pads throw confetti or applause.',
       'Present a canvas as a slide deck built from its own elements, with a laser pointer and spotlight, no export needed.',
+      'Record a walkthrough, your voice, an optional camera bubble and every pan, zoom and tab change, and anyone who can open the canvas replays it over the live board, free for everyone.',
+      'Save any selection to your Personal or team Library and drop it on any canvas, and embed a live view of a plan, document or design from the other liveworkspace apps.',
       'Bring boards across from Excalidraw, draw.io and Microsoft Whiteboard; export PNG, SVG, PDF, Mermaid or Excalidraw.',
     ],
     sections: [
@@ -183,6 +186,7 @@ const LIST: Alternative[] = [
         heading: 'Free means free, not a free tier',
         paragraphs: [
           "Miro's free tier is real, but it's the top of a pricing funnel: board limits and gated features exist to move teams onto paid seats. livediagram has no paid tier and no plan to introduce one. The hosted version at livediagram.app is free, every user gets every feature, and there is nothing to upgrade to.",
+          'That includes the meeting basics: Miro keeps its timer and voting for paid plans and caps Talktrack recordings on its free plan, while in livediagram the timer, dot votes and polls come with Workshop mode, and walkthroughs come with every canvas.',
           'The whole codebase is MIT-licensed and public, so anyone can read exactly how it works.',
         ],
       },
@@ -238,7 +242,7 @@ const LIST: Alternative[] = [
       {
         label: 'Real-time multiplayer',
         us: 'Yes, share a link, no account needed',
-        them: 'Yes, for maps in its cloud; how many depends on the plan',
+        them: 'Yes, on its Premium plan',
       },
       {
         label: 'Price',
@@ -259,7 +263,7 @@ const LIST: Alternative[] = [
       {
         label: 'Export',
         us: 'PNG, SVG, PDF, Mermaid, Markdown, JSON, all free',
-        them: 'Multiple formats',
+        them: 'PNG on the free plan; SVG, PDF, Markdown and Office on paid plans',
       },
       {
         label: 'Beyond mind maps',
@@ -281,13 +285,14 @@ const LIST: Alternative[] = [
       'Bring existing maps across: export Markdown from XMind and import it as a themed diagram.',
       'Sketch with the Freehand pen, or the Shape Pen to have a rough shape tidied into a clean one.',
       '91 templates (three mind-map styles among them), 25 one-click themes and ready-made looks make a map look polished instantly, clean or hand-drawn in the Sketch and Marker finishes.',
+      'Present the map as a slide deck, or record a narrated walkthrough that a teammate replays over the live map.',
       'Free and open source, with no paid tier.',
     ],
     sections: [
       {
         heading: 'No install, no account, no subscription',
         paragraphs: [
-          'XMind has grown well beyond the desktop: it now has a web version and real-time co-editing for maps kept in its cloud, with the number of shared maps set by your plan. Where livediagram still differs is the friction before the first idea. It opens on any machine with a browser, including locked-down work laptops where you cannot install anything, and you can start a map without creating an account at all.',
+          'XMind has grown well beyond the desktop: it now has a web version and real-time co-editing for maps kept in its cloud, on its Premium plan. Where livediagram still differs is the friction before the first idea. It opens on any machine with a browser, including locked-down work laptops where you cannot install anything, and you can start a map without creating an account at all.',
           'Collaboration works the same way: send the link to a teammate and you are both on the map at the same time, with live cursors showing who is where, whether or not they have signed up. Comments and assigned actions live on the elements themselves, so feedback lands where the idea is, not in a separate chat thread.',
         ],
       },
@@ -295,7 +300,7 @@ const LIST: Alternative[] = [
         heading: 'Bring your existing maps with you',
         paragraphs: [
           "You don't have to start over. XMind exports maps as Markdown outlines, and livediagram imports Markdown directly: the outline becomes a real, themed node-and-link diagram, laid out for you, in place of the tab's contents (add a new tab first to keep what is there). Or paste the outline into a mind map's Edit Outline and every line becomes a mind node you can keep growing. Mermaid text imports too.",
-          'Going the other direction is just as open: export a map as PNG, SVG, or PDF for documents, or as Mermaid or Markdown text to keep the structure portable. Nothing about export sits behind a subscription.',
+          'Going the other direction is just as open: export a map as PNG, SVG, or PDF for documents, or as Mermaid or Markdown text to keep the structure portable. Where XMind’s free plan exports a watermarked PNG, nothing about export here sits behind a subscription.',
         ],
       },
       {
@@ -362,7 +367,7 @@ const LIST: Alternative[] = [
       {
         label: 'Presentations',
         us: 'Free: slides from your canvas, presenter notes, transitions',
-        them: 'On the Excalidraw+ hosted plan, with a presenter view',
+        them: 'On the Excalidraw+ hosted plan: frames as slides, PDF and PPTX export',
       },
       {
         label: 'Import + export',
@@ -374,11 +379,11 @@ const LIST: Alternative[] = [
       'The signature hand-drawn aesthetic that made it famous, with its own Excalifont lettering: one look, tuned over years.',
       'A huge community, shared shape libraries, and integrations that embed it in other tools.',
       'Dead-simple, single-canvas freeform sketching.',
-      'Excalidraw+ adds presentations with a presenter view, and AI features that can run on your own model keys, on top of the free editor.',
+      'Excalidraw+ adds presentations built from frames, with a phone remote and PDF or PPTX export, and AI features that can run on your own model keys, on top of the free editor.',
     ],
     usBest: [
       'The hand-drawn look on any tab: the Sketch finish draws wobbly double strokes, pencil-shaded fills and handwriting, Marker draws one bold felt-tip stroke, and switching back to clean changes nothing about the diagram.',
-      'Start from a real template (flowchart, retro, roadmap, org chart…) instead of a blank page: ninety of them.',
+      'Start from a real template (flowchart, retro, roadmap, org chart…) instead of a blank page: 91 of them.',
       'Keep a whole project together: several tabs in one canvas, organised in folders, with per-tab layers.',
       '25 themes recolour the whole canvas, shapes and arrows, in one click, and ready-made looks such as Doodle, Notebook and Flipchart set the theme, finish, font and canvas pattern together.',
       'Draw mode is a plain whiteboard: pressure-sensitive markers, an eraser and shapes on a plain, dotted or grid board, light or dark.',
@@ -422,7 +427,7 @@ const LIST: Alternative[] = [
       {
         heading: 'A workspace, not just a canvas',
         paragraphs: [
-          'The free Excalidraw editor deliberately stays a single board, and its paid Excalidraw+ plan adds the workspace around it. livediagram ships that workspace to everyone for free: an explorer with folders, thumbnail previews and a details list, teams with shared libraries any member can manage, a 30-day Trash, and share links that can carry a password or an expiry date.',
+          'The free Excalidraw editor deliberately stays a single board, and its paid Excalidraw+ plan adds the workspace around it. livediagram ships that workspace to everyone for free: an explorer with folders, thumbnail previews and a details list, teams whose shared canvases any member can work in, a Personal and team Library for reusable pieces, a 30-day Trash, and share links that can carry a password or an expiry date.',
           'Collaboration is more than co-drawing, too: comments attach to elements, action items can be assigned to teammates and tracked in the Collaborate panel.',
         ],
       },
@@ -475,7 +480,7 @@ const LIST: Alternative[] = [
       { label: 'Start without an account', us: 'Yes', them: 'Yes' },
       {
         label: 'Shape libraries',
-        us: 'Core shapes, device frames, technology icons + your own imported libraries',
+        us: 'Core shapes, BPMN, C4, device frames, technology icons + your own imported libraries',
         them: 'Vast (AWS, UML, network…)',
       },
       {
@@ -508,6 +513,9 @@ const LIST: Alternative[] = [
       'Full-colour technology icons (AWS, Azure, Kubernetes, databases…) for architecture diagrams.',
       'BPMN for business processes: events, tasks, gateways, data and pools, and draw.io’s BPMN shapes import as editable BPMN.',
       'Tidy Up lays out a tangle of shapes and arrows as a flowchart, tree or mind map, and the UML theme colours each shape by its meaning.',
+      'The C4 model at three levels: Context, Container and Component tabs link level to level, and C4 tiles keep their colours under every theme.',
+      'Architecture diagrams that stay current: bind a shape to a public status URL and it shows the service as Up, Degraded or Down, or draw the diagram from a wrangler.toml or Docker Compose file.',
+      'Diagrams kept in a repository get before and after pictures of each changed tab on a pull request, from one GitHub workflow.',
       'Four finishes per tab: Professional for crisp, print-ready diagrams with square corners and thin lines, Sketch or Marker for a hand-drawn review, switched without touching the diagram.',
       'Database schemas with keys and field-to-field relationships, sequence diagrams, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks for a deck.',
       'Bring your diagrams with you: .drawio files import page by page, whole folders import as canvases, and draw.io libraries become shape libraries.',
@@ -593,7 +601,7 @@ const LIST: Alternative[] = [
       {
         label: 'Programmatic access',
         us: 'REST API and an MCP server for AI tools, both free',
-        them: 'A plugin and widget platform, and the Figma API',
+        them: 'A plugin and widget platform, the Figma API and an MCP server',
       },
     ],
     themBest: [
@@ -612,6 +620,7 @@ const LIST: Alternative[] = [
       'Workshop tools built in: Workshop mode, a facilitator role, a shared timer, dot-voting, live polls, planning-poker estimate cards, temperature checks, quizzes, an anonymous idea box and a Q&A board.',
       'Participant links: the room adds stickies, writes and votes, and nobody can reshape the board by accident.',
       'Run the meeting on the board: an agenda that starts the timer for each segment, a roll call, a random picker and decision records, plus around 190 emoji stickers and 32 word badges.',
+      'Record a walkthrough, your voice, an optional camera bubble and every pan and zoom, and the team replays it over the live board when it suits them.',
       'Diagrams as code: Mermaid flowcharts import as editable diagrams and export back out.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
       'MIT-licensed, with portable exports, so your boards never depend on one vendor.',
@@ -687,7 +696,7 @@ const LIST: Alternative[] = [
       { label: 'Real-time multiplayer', us: 'Yes', them: 'Yes' },
       {
         label: 'Shape libraries',
-        us: 'Core shapes, technology and line-art icons, UML, BPMN and charts',
+        us: 'Core shapes, technology and line-art icons, UML, BPMN, C4 and charts',
         them: 'Very broad professional libraries (UML, network, cloud, and more)',
       },
       {
@@ -698,7 +707,7 @@ const LIST: Alternative[] = [
       {
         label: 'Programmatic access',
         us: 'REST API and an MCP server for AI tools, both free',
-        them: 'Developer platform and integrations',
+        them: 'Developer platform, integrations and an MCP server',
       },
     ],
     themBest: [
@@ -717,6 +726,9 @@ const LIST: Alternative[] = [
       'BPMN for business processes: events, tasks, gateways, data, pools and message flows, and .bpmn files from Camunda or bpmn.io import with their layout.',
       'Diagrams that tidy themselves: a new arrow curves around shapes in its way, Tidy Up lays a graph out as a flowchart or tree, and the UML theme colours each shape by its meaning.',
       'Database schemas with keys and field-to-field relationships, Sankey flows, and an Isometric view that tilts an architecture diagram into 3D blocks.',
+      'The C4 model at three levels, Context, Container and Component, each tab linked to the next.',
+      'Live service status on an architecture diagram: bind a shape to a public status URL and it shows Up, Degraded or Down, with no cloud account to connect.',
+      'Draw a deployment diagram from a wrangler.toml or Docker Compose file, and see before and after pictures of a changed diagram on each pull request.',
       'A free REST API and an MCP server, so scripts and AI assistants can read and edit your canvases.',
       'MIT-licensed, with portable exports, so your diagrams never depend on one vendor.',
     ],
