@@ -1,5 +1,15 @@
 # Editor blueprint completeness
 
+## share-visibility
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Accessibility
+- [x] Testing
+
 ## appearance
 
 - [x] Domain and naming
