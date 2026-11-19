@@ -8,6 +8,10 @@ import {
   listSnapshots,
   readGeneration,
   readSnapshotText,
+  renameSnapshot,
+  rewriteSnapshotText,
+  SNAPSHOT_SCHEMA,
+  snapshotId,
   takeSnapshot,
   utf8Bytes,
 } from './store';
@@ -190,6 +194,112 @@ describe('the store', () => {
       .prepare('INSERT INTO snapshot_chunks (snapshot_id, seq, data) VALUES (?, 5, ?)')
       .run(taken.snapshot.id, 'z');
     expect(await readSnapshotText(db, 'p1', taken.snapshot.id)).toBeNull();
+  });
+});
+
+// SN31 to SN33: save points of one part of an item (livedocuments' named versions, scoped `tab:<id>`).
+describe('a scoped take', () => {
+  it('takes its own id, keeps every one and runs its statements in the same batch', async () => {
+    const { db, sql } = testDb();
+    sql.exec('CREATE TABLE beside (snapshot_id TEXT PRIMARY KEY)');
+    const ids: string[] = [];
+    for (let i = 0; i < SNAPSHOTS_KEPT + 2; i += 1) {
+      const id = snapshotId();
+      const taken = await takeSnapshot(db, {
+        itemId: 'tab:t1',
+        text: `v${i}`,
+        name: `n${i}`,
+        kind: 'manual',
+        author,
+        now: i,
+        id,
+        keep: null,
+        alongside: (sid) => [db.prepare('INSERT INTO beside (snapshot_id) VALUES (?)').bind(sid)],
+      });
+      expect(taken.ok && taken.snapshot.id).toBe(id);
+      ids.push(id);
+    }
+    expect(await listSnapshots(db, 'tab:t1')).toHaveLength(SNAPSHOTS_KEPT + 2);
+    const beside = sql.prepare('SELECT snapshot_id FROM beside ORDER BY rowid').all() as {
+      snapshot_id: string;
+    }[];
+    expect(beside.map((r) => r.snapshot_id)).toEqual(ids);
+    // The item's own snapshots keep their five, untouched by the scope.
+    for (let i = 0; i < SNAPSHOTS_KEPT + 1; i += 1) {
+      await takeSnapshot(db, {
+        itemId: 'D',
+        text: 'd',
+        name: null,
+        kind: 'manual',
+        author,
+        now: i,
+      });
+    }
+    expect(await listSnapshots(db, 'D')).toHaveLength(SNAPSHOTS_KEPT);
+    expect(await listSnapshots(db, 'tab:t1')).toHaveLength(SNAPSHOTS_KEPT + 2);
+  });
+
+  it('writes nothing when a statement alongside fails', async () => {
+    const { db } = testDb();
+    await expect(
+      takeSnapshot(db, {
+        itemId: 'tab:t1',
+        text: 'x',
+        name: 'n',
+        kind: 'manual',
+        author,
+        keep: null,
+        alongside: () => [db.prepare('INSERT INTO no_such_table VALUES (1)')],
+      }),
+    ).rejects.toThrow();
+    expect(await listSnapshots(db, 'tab:t1')).toEqual([]);
+  });
+
+  it('renames in place, within its item only', async () => {
+    const { db } = testDb();
+    const taken = await takeSnapshot(db, {
+      itemId: 'tab:t1',
+      text: 'x',
+      name: 'One',
+      kind: 'manual',
+      author,
+    });
+    if (!taken.ok) throw new Error('not taken');
+    expect(await renameSnapshot(db, 'tab:t1', taken.snapshot.id, 'Two')).toBe(true);
+    expect((await getSnapshot(db, 'tab:t1', taken.snapshot.id))!.name).toBe('Two');
+    expect(await renameSnapshot(db, 'D', taken.snapshot.id, 'Three')).toBe(false);
+    expect(await renameSnapshot(db, 'tab:t1', 'missing', 'Three')).toBe(false);
+  });
+
+  it('rewrites its text whole, chunked, and refuses what a take would', async () => {
+    const { db, sql } = testDb();
+    const taken = await takeSnapshot(db, {
+      itemId: 'tab:t1',
+      text: 'short',
+      name: null,
+      kind: 'manual',
+      author,
+    });
+    if (!taken.ok) throw new Error('not taken');
+    const id = taken.snapshot.id;
+    const long = `${'a'.repeat(SNAPSHOT_CHUNK_CHARS)}é`;
+    expect(await rewriteSnapshotText(db, 'tab:t1', id, long)).toBe('ok');
+    expect(await readSnapshotText(db, 'tab:t1', id)).toBe(long);
+    const head = sql.prepare('SELECT bytes, chunks FROM snapshots WHERE id = ?').get(id) as {
+      bytes: number;
+      chunks: number;
+    };
+    expect(head).toEqual({ bytes: SNAPSHOT_CHUNK_CHARS + 2, chunks: 2 });
+    expect(await rewriteSnapshotText(db, 'D', id, 'x')).toBe('missing');
+    expect(await rewriteSnapshotText(db, 'tab:t1', id, 'x'.repeat(SNAPSHOT_MAX_BYTES + 1))).toBe(
+      'too_large',
+    );
+    expect(await readSnapshotText(db, 'tab:t1', id)).toBe(long);
+  });
+
+  it('exports the schema it runs', () => {
+    expect(SNAPSHOT_SCHEMA).toContain('CREATE TABLE IF NOT EXISTS snapshots');
+    expect(SNAPSHOT_SCHEMA).toContain('CREATE TABLE IF NOT EXISTS snapshot_chunks');
   });
 });
 
