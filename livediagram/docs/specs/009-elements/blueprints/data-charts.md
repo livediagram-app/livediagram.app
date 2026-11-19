@@ -219,6 +219,13 @@ can.level === 'edit' && !isReadOnly`, `commit = commitElements`, `tick = tickEle
 5. **Unlink**: commits the chart without `chartSheetSource`, telemetry `ChartSheetUnlink`.
 6. **Freezing**: `withoutSheetSources(elements)` in the file export (`apps/api/src/document-room/document-file.ts`); the
    Community copy and visitor's read drop the link in `@liveworkspace/community` `redactElementsForCommunity`.
+7. **Not linked yet** (`chartSheetPending: true`, a boolean in `CHART_LOOK_CHECKS`): `svgPieChart`, `svgBarChart` and
+   `svgLineChart` (`@liveworkspace/element-model/svg-render-charts`) wrap the marks in
+   `<g opacity="SHEET_PENDING_FADE">` (0.3) and add the chip (`svgSheetPendingChip`), so every export, thumbnail and
+   the read-only renderers say it. On the canvas `SheetPendingChart` (workbench `sheet-links/SheetPendingChart.tsx`)
+   wraps the chart's view in ShapeContentRouter the same way, with no context needed. The Data section's note and its
+   **Link to Sheet** / **Use These Numbers** (`SheetLinks.usePending`, one commit dropping the field) are
+   `SheetLinkSection`'s; `link` drops the field in its own commit.
 
 ## Interfaces and contracts
 

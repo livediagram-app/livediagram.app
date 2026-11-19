@@ -658,6 +658,16 @@ standing in its zone on the first page; the editor settles the zone where the wr
 anyone who may edit ([Article pages](../007-editor/article-pages.md) "Only the writer of a change"), and the chart
 moves with it. A written template with a chart does not open with it selected: the writing is what it is for.
 
+A figure kept in a spreadsheet comes from one (Work Tracker 1281): Status Report's spend by month is meant to be
+linked to a liveplanner sheet, so it lands **not linked yet** ([Data charts](../009-elements/pie-chart.md) "Not linked
+yet"): faded, saying so, with its sample numbers until a sheet is linked or an Editor keeps them. A template's chart
+says so with `sheetPending: true` in its `charts` entry.
+
+Design Doc and Status Report describe work a plan tracks, so they offer **Make a plan beside it**
+([connected tabs](../../../../liveworkspace/docs/specs/004-index/connected-tabs.md) "A file made beside it"): the
+Connect File list of a document holding either shows it, and only pressing it makes the plan. Which templates offer
+what is `BESIDE_TEMPLATE_OFFERS` (`packages/templates/src/beside-offers.ts`), read from the article flow each writes.
+
 ### Template categories
 
 livedocuments' categories are its own: they need not match the other products'. They are grouped by **what the document is for** (the use case), never by page kind, so a deck, an article and a stack of flashcards for the same job sit together. Every template but the blanks has one primary category and may be cross-listed where people would genuinely look for it too (`packages/templates/src/template-categories.ts` holds both; a template does not compile until it has a home). Every picker shows them alphabetically by label.

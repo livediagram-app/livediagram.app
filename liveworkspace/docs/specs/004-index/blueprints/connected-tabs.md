@@ -21,6 +21,8 @@ Built in five parts, each its own PR that leaves main working, nothing reachable
 | ----------------------------------------------------------- | ---------------------------------------------- | ---- |
 | `packages/index-client/src/connections.ts`                  | the shapes and readers every side shares       | 1    |
 | `liveworkspace/apps/index/src/connections.ts`               | the routes: make, open, take back              | 2    |
+| `liveworkspace/apps/index/src/beside.ts`                    | a file made beside the host, then connected    | 1281 |
+| `packages/index-client/src/beside.ts`                       | the offers' catalogue and the request's reader | 1281 |
 | `liveworkspace/apps/index/src/connection-doors.ts`          | the app's confirm and removal doors, the sweep | 2    |
 | `liveworkspace/apps/index/src/connection-rows.ts`           | dropping connections, purges' statements, href | 2    |
 | `liveworkspace/apps/index/src/own-grants.ts`                | checking a grant the index signed              | 2    |
@@ -84,6 +86,29 @@ Body `ConnectionInput { targetId, tabId, level?, both? }` (`readConnectionInput`
    anything else (or a reverse the caps refused) deletes the reverse row and pass: `reverse: { state: 'unreached' }`.
 10. The app's first-share notice (`tellApp`, `shared`) for the target, and for the host when the reverse was made.
 11. `201 ConnectionMade { connection, name: target title, level, reverse }`.
+
+### Making beside it (`POST /items/:id/beside`, the person's token and the host's grant)
+
+Spec "A file made beside it" (Work Tracker 1281). Body `BesideInput { offer, tabId, level?, both? }`
+(`readBesideInput`, `packages/index-client` `beside.ts`; else `400 invalid_body`). `liveworkspace/apps/index/src/beside.ts`.
+
+1. A person, by their own token (`401`); an app acting for one `403 forbidden`; a guest `403 sign_in_required`.
+2. Over `KIT_RUN_LIMITER` (key `beside:<person>`): `429 rate_limited`, `Retry-After: 60`, before anything is read.
+3. The host's grant and the host as Making's steps 3 (`hostForConnect`, shared with Making).
+4. The offer's app's template door (`POST <app>/api/internal/items/from-template`, `KIT_CREATE_TIMEOUT_MS`):
+   `{ owner: person, folderId, name: besideTitle(host title, offer), template }`, `folderId` the host's folder when
+   the host is the person's own and in no team, else null. The answer's item must be live, the person's own, in no
+   team, of the offer's app: else `503 unavailable`, nothing made.
+5. Making's steps 5 to 11 with that item as the target (`connectTo`, shared with Making). An answer other than `201`
+   purges the made item (`purgeRows`, as Remove What Was Made) and is passed on.
+6. `201 ConnectionMade`, as Making answers: the editor's add then runs as for Connect File (`connectFile`'s take-back).
+
+The editor's side: `ConnectFilePanel`'s `offer` (a `BesideOffer`) shows `ConnectPicker`'s Suggested row
+(`ConnectOfferRow`); its press calls `makeBeside` (`connect-file.ts`), which is `connectFile` with
+`client.makeBeside` in place of `makeConnection`. A failure's words: `connectErrorWords` (`unavailable`: "The plan could
+not be made just now. Try again."). livedocuments' `useConnectStart` passes the offer from `besideOfferOf(tabs)`
+(`@livedocuments/templates`), which reads the article flows the offering templates write (`art-design-doc`,
+`art-status`), and none while a tab is connected to the offer's app.
 
 ### Confirming (`PUT /app/items/:id/connections/:cid?tab=` with the host app's key)
 
@@ -358,6 +383,7 @@ Migration `0010_connections.sql`, local only (`wrangler d1 migrations apply --lo
 | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `packages/index-client/src/connections.test.ts`         | the id, the readers keep exactly their fields and refuse the malformed, the column's round trip, the default role, paths                                                                                                                                                 |
 | `liveworkspace/apps/index/src/connections.test.ts`      | making (each refusal; roles: a link Editor or Viewer of the host, and a link Editor of the target, may not), both ways (made, unreached, the caps), Connect Again, opening (item, link, gone, removed, copies, scoped and public grants, agents, the limit), taking back |
+| `liveworkspace/apps/index/src/beside.test.ts`           | making beside it: who may (a guest, an agent, a host Viewer), the limit, the template door's call and folder, a failed door, a refused connection purging the made item, both ways |
 | `liveworkspace/apps/index/src/connection-doors.test.ts` | the confirm and removal doors (wrong app, host, tab; twice), the pair kept, the sweep, purges of host and target, the Share dialog's mark                                                                                                                                |
 
 | `packages/index-app/src/connected-tabs.test.ts` | the reverse write (appended once, the cap, a fresh id), the column, what a save keeps, the confirm call, the removal's outbox key (written only for a connected tab that left) and its drain (sent, retried, unreadable dropped), the door's answers |
