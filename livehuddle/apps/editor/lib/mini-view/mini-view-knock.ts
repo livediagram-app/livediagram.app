@@ -3,7 +3,7 @@
 // answer the toast's buttons call, gone after the toast's own answer timeout. Memory only.
 import { useSyncExternalStore } from 'react';
 import type { KnockAnswer } from '@livehuddle/api-schema';
-import { TOAST_ANSWER_TIMEOUT_MS } from '@liveworkspace/workbench/components/toast/toast-queue';
+import { TOAST_ANSWER_TIMEOUT_MS } from '@liveworkspace/ui/toast';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 export type MiniKnock = {

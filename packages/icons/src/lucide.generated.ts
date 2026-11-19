@@ -76,6 +76,7 @@ export { lucideBanknote } from './lucide/banknote';
 export { lucideBaseline } from './lucide/baseline';
 export { lucideBean } from './lucide/bean';
 export { lucideBeer } from './lucide/beer';
+export { lucideBell } from './lucide/bell';
 export { lucideBetweenHorizontalEnd } from './lucide/between-horizontal-end';
 export { lucideBetweenHorizontalStart } from './lucide/between-horizontal-start';
 export { lucideBetweenVerticalEnd } from './lucide/between-vertical-end';

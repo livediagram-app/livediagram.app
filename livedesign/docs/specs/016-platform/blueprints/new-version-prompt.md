@@ -134,10 +134,10 @@ Transitions:
 - `offered` | `unsaved` | `arriving` → `saving`: Reload. Fires `track('UI', 'Used', 'NewVersionPrompt')`.
 - `saving` → reload: `hasUnsavedChanges()` false within `RELOAD_SAVE_WAIT_MS` (checked every
   `RELOAD_SAVE_POLL_MS`, immediately first), then `checkLiveEditor` answers `newer` or `unknown`.
-- `saving` → `arriving`: saved, but `checkLiveEditor` answers `same`. Both buttons stay enabled;
-  Reload runs the same steps again.
+- `saving` → `arriving`: saved, but `checkLiveEditor` answers `same`. Reload stays enabled and
+  runs the same steps again.
 - `saving` → `unsaved`: still unsaved at the deadline.
-- `offered` | `unsaved` | `arriving` → `hidden`: Not now, remembering the dismissed server format; a higher
+- `offered` | `unsaved` | `arriving` → `hidden`: the toast closed (its close button or Escape, `onDismiss`), remembering the dismissed server format; a higher
   one offers again.
 
 `hasUnsavedChanges()` (useAutosave): false when read-only or not hydrated; else true while a save
@@ -146,26 +146,19 @@ current when called.
 
 ## Presentation and UX
 
-- Fixed, bottom centre, `CORNER_CLUSTER_CLEARANCE` (`bottom-[135px]`, `@liveworkspace/workbench/components/chrome/corner-cluster-clearance`)
-  above the viewport edge: clear of the bottom tab bar and of the canvas's bottom-right cluster (undo, redo, the theme
-  brush, zoom) at the largest UI scale, the offset the accounts-outage notice takes (Work Tracker 1193; at 80 px it sat
-  over the zoom bar on a phone and at 450 px), on the chrome layer (`z-[var(--z-chrome)]`, below dialogs), lifted one above the overlay
-  layer (`z-[calc(var(--z-overlay)+1)]`, still below `--z-canvas-modal` and dialogs) on a phone and a
-  short window while a start panel is open (`useStartPanelOpen`), whose sheet sits on the overlay layer there, and
-  standing on the sheet's foot row (`[data-start-footer]`, measured by `useChromeFloor` as the toasts measure theirs,
-  into `--start-clear`; `bottom: max(135px, --start-clear)`, never lower than the cluster's clearance); max width 28rem,
-  never wider than the viewport less 2rem; rounded panel, chrome surface colours (`bg-white` /
-  `dark:bg-slate-900`, border `slate-200` / `slate-700`), shadow.
-- Text: "A new version of livedesign is ready." In `saving`: "Saving your changes…" with the
-  buttons disabled. In `unsaved`: "Your latest changes aren't saved yet. Reload once they are." In `arriving`:
-  "The new version is still on its way. Try again in a minute."
-- Buttons: primary "Reload", secondary "Not now" (the shared `Button` primitive).
+- A standing action toast (`toast.action` under `NEW_VERSION_TOAST_KEY`, `sticky`, `important`; the shared toast,
+  `liveworkspace/docs/specs/016-notifications/blueprints/toasts.md`), upserted in place as the phase changes and
+  dismissed (`dismissAction`) when it is no longer visible or on unmount. The component draws nothing itself. Placement,
+  layer, the floor over the bottom chrome and a start sheet's foot row (`[data-start-footer]`) are the stack's.
+- Text: "A new version of livedesign is ready." In `saving`: "Saving your changes…" with Reload disabled. In
+  `unsaved`: "Your latest changes aren't saved yet. Reload once they are." In `arriving`: "The new version is still
+  on its way. Try again in a minute."
+- Its one action: "Reload". Closing the toast is the old "Not now".
 
 ## Accessibility
 
-- Container `role="status"` (polite); not focused on appearance; buttons keyboard reachable with
-  the shared focus ring; contrast as the shared chrome (AA in both themes); no animation, so
-  reduced motion is honoured by construction.
+- The toast's `role="status"` (polite); not focused on appearance; its buttons keyboard reachable with the shared
+  focus ring; the toast's motion honours reduced motion.
 
 ## Web experience
 

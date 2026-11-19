@@ -9,7 +9,7 @@ import {
   type ItemFields,
   type ItemTypeDef,
 } from '@liveplanner/items';
-import type { ToastOffer } from '@liveworkspace/workbench/components/toast/toast-queue';
+import type { ToastOffer } from '@liveworkspace/ui/toast';
 import { PlanProvider, type PlanContextValue } from '../PlanContext';
 import { PlanViewView } from './PlanViewView';
 import { shiftsAfter, useGanttMoveFollowing } from './gantt-clash';

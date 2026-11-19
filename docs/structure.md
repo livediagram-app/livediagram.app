@@ -146,7 +146,7 @@ liveworkspace/
 │  ├─ templates, template-previews
 │  ├─ help-site                    the help centre's pages, components and checks around each product's articles
 │  ├─ marketing-site               the marketing pages every product shares (hero, Build with AI, FAQ, licences)
-│  ├─ ui                           design system: buttons, menus, dialogs, tokens
+│  ├─ ui                           design system: buttons, menus, dialogs, tokens, the one toast
 │  ├─ workbench                    NEW: the editor shell lifted out of apps/editor:
 │  │                               tabs, explorer, panels, chrome, split view, start
 │  │                               screen, toasts, providers. A product hands it the tab
@@ -507,9 +507,8 @@ Each step is its own PR, and both products build and pass their tests after ever
      row from `components/palette/MenuToggleRow` (each product's module re-exports what it held). The Collaborate
      rules (`collaborate-model`), the context-menu scaffold, the chart legend and surface and the element
      indicator style take the structural part of the product's rows, props or preferences they read, so each
-     product's own types pass in as they are. `useToast` reads Show Notifications through `readPreferences`,
-     and livediagram, livedocuments and livehuddle keep a one-line door at `hooks/ui/useToast.tsx` for their many
-     importers. `useMovablePanelMeasure` is livediagram's copy in every editor: its extra selector, the Draw dock,
+     product's own types pass in as they are. `useToast` (the shared toast in `@liveworkspace/ui/toast`) reads Show Notifications through
+     `readPreferences`, and every editor keeps a one-line door at `hooks/ui/useToast.tsx` for its many importers. `useMovablePanelMeasure` is livediagram's copy in every editor: its extra selector, the Draw dock,
      matches nothing where there is no dock. Left, and why: tests, e2e harness files and scripts (as in the first
      sweep); route files; the hooks that send telemetry (the Format and Spotlight config hooks, the debounced canvas
      telemetry, `trackOrganise`), since the telemetry dashboard's emitter scan reads each product's own folders and

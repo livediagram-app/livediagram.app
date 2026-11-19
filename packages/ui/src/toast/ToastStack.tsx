@@ -1,22 +1,23 @@
 'use client';
 
-// The toast stack (docs/specs/004-interface-design/toasts.md "Placement" and "Keyboard and screen
+// The toast stack (liveworkspace/docs/specs/016-notifications/toasts.md "Placement" and "Keyboard and screen
 // readers"): an always-mounted "Notifications" region at the bottom centre, the newest toast nearest the
 // edge, standing on whatever bottom chrome sits beneath it (useToastFloor). Each toast here owns its timer
 // (paused on hover, focus and a hidden page), its Escape and its exit.
 import {
   useEffect,
+  useLayoutEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type AnimationEvent,
   type FocusEvent,
 } from 'react';
-import { Portal, atLeastInset, safeInset } from '@liveworkspace/ui';
+import { Portal } from '../Portal';
+import { atLeastInset, safeInset } from '../safe-area';
 import { ToastCard, type ToastCardAction } from './ToastCard';
-import {
-  toastTimeout,
-  type ToastEntry,
-} from './toast-queue';
+import { TOAST_COLLAPSE_MS, collapseIntoBell } from './toast-collapse';
+import { toastTimeout, type ToastEntry } from './toast-queue';
 import { useToastFloor } from './useToastFloor';
 import { useToastTimer } from './useToastTimer';
 
@@ -76,13 +77,29 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
   const [focused, setFocused] = useState(false);
   const hidden = useSyncExternalStore(subscribeVisibility, pageHidden, onServer);
   const leaving = toast.leaving === true;
+  const card = useRef<HTMLDivElement>(null);
+  // Collapsing into the footer's bell (toast-collapse.ts): its own animation decides when the toast is removed, and
+  // the card's `toast-out` ending first is ignored.
+  const collapsing = useRef(false);
   useToastTimer(leaving ? null : toastTimeout(toast), hovered || focused || hidden, () =>
     on.expire(toast.id),
   );
-  // The fallback for an exit whose animationend never comes (a hidden tab, a test environment).
+  useLayoutEffect(() => {
+    if (!leaving || !card.current) return;
+    const motion = collapseIntoBell(card.current);
+    if (!motion) return;
+    collapsing.current = true;
+    motion.finished.then(
+      () => on.remove(toast.id),
+      () => {},
+    );
+    return () => motion.cancel();
+  }, [leaving, on, toast.id]);
+  // The fallback for an exit whose end never comes (a hidden tab, a test environment).
   useEffect(() => {
     if (!leaving) return;
-    const id = setTimeout(() => on.remove(toast.id), TOAST_EXIT_HOLD_MS);
+    const hold = collapsing.current ? TOAST_COLLAPSE_MS + TOAST_EXIT_HOLD_MS : TOAST_EXIT_HOLD_MS;
+    const id = setTimeout(() => on.remove(toast.id), hold);
     return () => clearTimeout(id);
   }, [leaving, on, toast.id]);
 
@@ -96,6 +113,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
 
   return (
     <ToastCard
+      ref={card}
       tone={toast.tone}
       message={toast.message}
       actions={actions}
@@ -116,7 +134,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
         on.close(toast);
       }}
       onAnimationEnd={(e: AnimationEvent<HTMLDivElement>) => {
-        if (leaving && e.target === e.currentTarget) on.remove(toast.id);
+        if (leaving && !collapsing.current && e.target === e.currentTarget) on.remove(toast.id);
       }}
     />
   );

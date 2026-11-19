@@ -52,7 +52,7 @@ import { useMenuCardClearance } from './useMenuCardClearance';
 import { useCornerCardClearance } from './useCornerCardClearance';
 import { useDockRoom } from './useDockRoom';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
-import { announceToastFloorChange } from '@liveworkspace/workbench/components/toast/toast-floor';
+import { announceToastFloorChange } from '@liveworkspace/ui/toast';
 import { useMediaQuery } from '@livediagram/ui';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';

@@ -61,9 +61,9 @@ describe('ChromeControls History', () => {
   // Version History is a row in Tools now (footer-tools-menu.md), never a button of its own in the bar.
   it('adds no button to the bar, the editor offering it or not', () => {
     render(<Bar onOpenHistory={() => {}} />);
-    expect(controls()).toEqual(['Tools', 'Settings']);
+    expect(controls()).toEqual(['Tools', 'Settings', 'Notifications']);
     cleanup();
     render(<Bar />);
-    expect(controls()).toEqual(['Tools', 'Settings']);
+    expect(controls()).toEqual(['Tools', 'Settings', 'Notifications']);
   });
 });

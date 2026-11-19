@@ -29,7 +29,7 @@ import {
   useSheetDrag,
 } from '@liveworkspace/ui';
 import { lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
-import { useChromeFloor } from '../toast/useToastFloor';
+import { useChromeFloor } from '@liveworkspace/ui/toast';
 import { ConnectRailEntry } from '../connect/ConnectRailEntry';
 import { usePalettePopoverOpen } from '../../lib/palette-popover-open';
 import { focusIsFree } from '../../lib/focus-is-free';
@@ -614,7 +614,7 @@ export function createStartPanel<
           </div>
           {footer ? (
             <footer
-              // The new version prompt stands above it on a phone (start-panel-open.ts START_FOOTER_SELECTOR).
+              // The toasts stand above it on a phone (toast-floor.ts TOAST_FLOOR_SELECTOR).
               data-start-footer=""
               // Gone while what it holds draws nothing (no Sync to Server switch), so no rule sits over nothing.
               className="shrink-0 border-t px-4 py-1.5 empty:hidden sm:px-6"

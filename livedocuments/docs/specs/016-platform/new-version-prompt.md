@@ -42,34 +42,33 @@ facts.
   hidden (back in view, it asks at once if a minute has passed), and shows the prompt as soon as
   the build differs. After 30 checks (half an hour) it shows the prompt anyway, so the prompt never
   vanishes for good.
-- Once seen, it stays shown for the page's life; "Not now" hides it until the page is next
+- Once seen, it stays shown for the page's life; closing it hides it until the page is next
   reloaded or a newer number arrives.
 - Only the document editor (`/document/…`, the shared and embedded views included) shows it: it is
   the page that holds unsaved work and renders stored shapes.
 
 ## The prompt
 
-- A small panel at the bottom centre of the screen, above the canvas, in the app's chrome
-  colours, light and dark. It stands clear of the canvas's bottom-right controls (undo, redo, the theme brush, zoom),
-  which it covered on a phone and in a narrow window, at the same height as every bottom-centre notice. It never covers the dialogs and never takes focus. On a phone or a short window, where an
-  empty tab's start panel is a sheet over the canvas, it stands over that sheet (still under
-  every dialog), above the sheet's foot row (the Save switch) so both stay in reach, and Reload is
-  there before anything is picked.
-- Copy: **"A new version of livedocuments is ready."** with two buttons, **"Reload"** and
-  **"Not now"**.
-- `role="status"`, so a screen reader announces it once, politely; both buttons are in the tab
-  order and work from the keyboard; it honours reduced motion (no slide-in).
+- A standing info toast (the shared toast,
+  [Toasts](../../../../liveworkspace/docs/specs/016-notifications/toasts.md) "Timing"): in the toast stack at the
+  bottom centre, clear of the bottom chrome and a phone start sheet's foot row (the Save switch), over every dialog. It
+  never times out and never takes focus, and is shown even with In-Editor Notifications off.
+- Copy: **"A new version of livedocuments is ready."** with **"Reload"** as its action. Closing it (its close button or
+  Escape) is "not now": it stays away until a still newer version arrives. Like every toast it collapses into the
+  footer's bell as it leaves and is kept in the notification list.
+- `role="status"`, so a screen reader announces it once, politely; its buttons are in the tab order and work from the
+  keyboard; it honours reduced motion.
 - **Never reloads by itself.**
 - **Never loses work.** "Reload" first waits until everything edited has been saved (no
   difference left between the editor's tabs and its last saved copy, and no save in flight),
-  showing **"Saving your changes…"** meanwhile, then reloads. If that has not happened within
+  showing **"Saving your changes…"** meanwhile (Reload held), then reloads. If that has not happened within
   ten seconds (`RELOAD_SAVE_WAIT_MS`), it does not reload and says **"Your latest changes aren't
-  saved yet. Reload once they are."**, keeping both buttons. A read-only view has nothing to save
+  saved yet. Reload once they are."**, keeping Reload. A read-only view has nothing to save
   and reloads at once.
 - **Never reloads into the same editor.** Once everything is saved, "Reload" asks the page once
   more which editor it serves (the same check). If it still serves this editor's build (the
   prompt showed after its 30 checks), it does not reload and says **"The new version is still on
-  its way. Try again in a minute."**, keeping both buttons.
+  its way. Try again in a minute."**, keeping Reload.
 
 ## Telemetry
 
@@ -92,4 +91,4 @@ of the page's head and stopped there.
 
 The troubleshooting article "My Changes Are Missing" explains the prompt under "How saving works":
 what it means, that Reload saves first, that it says so when the new version is still on its
-way, and that Not now is always safe.
+way, and that closing it is always safe.

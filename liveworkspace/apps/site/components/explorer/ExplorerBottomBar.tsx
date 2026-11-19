@@ -2,13 +2,14 @@
 
 // The Explorer's bottom bar (liveworkspace/docs/specs/010-site/site.md "The Explorer", The bottom bar): stuck to the foot of the
 // page, as the apps' own Explorers had it, its controls on the right: Search, Settings (a guest's too, on an app's
-// address) and Appearance, each with its name beside its icon on a wide screen, icons alone on a narrow one. Its
+// address), Notifications (the bell, an icon alone) and Appearance, each with its name beside its icon on a wide screen, icons alone on a narrow one. Its
 // hints are portalled and open upward.
 // The toasts and a guest's sign-in banner stand on it (`--explorer-floor`, EXPLORER_FLOOR).
 
 import { SearchIcon, SettingsIcon } from '@livediagram/ui';
 import { SiteAppearanceToggle } from '@/lib/appearance/appearance-hooks';
 import { HoverCard } from '@liveworkspace/ui';
+import { ToastBell } from '@liveworkspace/ui/toast';
 
 /** The bar's height, which the page hands the Explorer as `--explorer-floor`. */
 export const EXPLORER_FLOOR = '3rem';
@@ -47,6 +48,8 @@ export function ExplorerBottomBar({
   return (
     <div
       data-explorer-bottom-bar=""
+      // The toast stack stands on it (liveworkspace/docs/specs/016-notifications/toasts.md "Placement").
+      data-toast-floor=""
       className="sticky bottom-0 z-30 flex h-12 shrink-0 items-center justify-end gap-2 border-t border-slate-200 bg-white px-3 dark:border-slate-800 dark:bg-slate-900"
     >
       <HoverCard title="Search" description="Find items, folders, teams, help and settings.">
@@ -99,6 +102,9 @@ export function ExplorerBottomBar({
           )}
         </HoverCard>
       ) : null}
+      {/* The notification list (liveworkspace/docs/specs/016-notifications/toasts.md): an icon alone, right of
+          Settings; the Explorer's toasts collapse into it as they leave. */}
+      <ToastBell className={BTN} />
       <SiteAppearanceToggle look="rail" labelFrom="md" />
     </div>
   );

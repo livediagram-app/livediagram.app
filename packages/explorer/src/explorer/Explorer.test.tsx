@@ -370,7 +370,10 @@ describe('<Explorer>', () => {
         trashedOnArrival={trashed}
       />,
     );
-    expect(screen.queryAllByText('Moved “\u2068Roadmap\u2069” to the Trash.')).toHaveLength(0);
+    // The answered toast plays its exit, then is gone for good: the rerender does not offer it again.
+    await waitFor(() =>
+      expect(screen.queryAllByText('Moved “\u2068Roadmap\u2069” to the Trash.')).toHaveLength(0),
+    );
   });
 
   it('says once that the item the host archived on the way in went to Archived, with no Undo', async () => {

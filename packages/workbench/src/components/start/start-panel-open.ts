@@ -2,9 +2,10 @@
 // that waits holds its offer until it has gone, so the welcome card never lands over the panel. One panel shows at a
 // time (the active tab's). liveplanner's tours never wait (start-panel.md there): its panel shows only on an empty
 // tab, where no tour has a subject. Walking waits too (docs/specs/008-canvas/avatar-mode.md "Not over a start"): the
-// character never moves behind a start. The new version prompt stands over it where it is a phone sheet
-// (new-version-prompt.md "The prompt"), so liveplanner's Start Planning says it is open too.
+// character never moves behind a start. The toasts (the new version one among them) stand above its foot row where it
+// is a phone sheet, so it tells them when it comes or goes; liveplanner's Start Planning says it is open too.
 import { useSyncExternalStore } from 'react';
+import { announceToastFloorChange } from '@liveworkspace/ui/toast';
 import { createListeners } from '../../lib/listeners';
 
 let open = false;
@@ -14,6 +15,7 @@ export function setStartPanelOpen(next: boolean): void {
   if (open === next) return;
   open = next;
   listeners.notify();
+  announceToastFloorChange();
 }
 
 // The same, read once, for window-level listeners that run outside React (the walk's keys and clicks,
@@ -21,9 +23,6 @@ export function setStartPanelOpen(next: boolean): void {
 export function startPanelIsOpen(): boolean {
   return open;
 }
-
-/** The start panel's foot row (StartPanel's footer, the Save switch): the new version prompt stands above it. */
-export const START_FOOTER_SELECTOR = '[data-start-footer]';
 
 export function useStartPanelOpen(): boolean {
   return useSyncExternalStore(

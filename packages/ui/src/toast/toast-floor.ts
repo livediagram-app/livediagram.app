@@ -1,4 +1,4 @@
-// Where the toast stack stands (docs/specs/004-interface-design/toasts.md "Placement"): 16px off the
+// Where the toast stack stands (liveworkspace/docs/specs/016-notifications/toasts.md "Placement"): 16px off the
 // bottom edge, or 8px above the highest bottom chrome that overlaps its column (the editor's tab bar,
 // bottom-right cluster and a whiteboard dock where the editor has one, the Explorer's bottom bar, the sign-in banner). Pure: the
 // hook measures, this decides.
@@ -11,8 +11,9 @@
 export const BOTTOM_CHROME_SELECTOR =
   '[data-editor-tabbar], [data-zoom-cluster], [data-whiteboard-dock]';
 
-/** Bottom chrome the stack clears: the editor's, plus anything that opts in with `data-toast-floor`. */
-export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], ${BOTTOM_CHROME_SELECTOR}`;
+/** Bottom chrome the stack clears: the editor's, a template start's foot row (the Save switch, on a phone sheet), plus
+ *  anything that opts in with `data-toast-floor`. */
+export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], ${BOTTOM_CHROME_SELECTOR}`;
 
 /** The stack's distance from the bottom edge with nothing beneath it, and from the screen's sides on a phone. */
 export const TOAST_EDGE_PX = 16;

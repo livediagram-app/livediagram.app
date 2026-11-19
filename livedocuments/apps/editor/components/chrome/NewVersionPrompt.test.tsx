@@ -7,6 +7,7 @@ import {
   noteServerDocumentFormat,
   resetServerReleaseForTests,
 } from '@/lib/server-release';
+import { ToastProvider } from '@liveworkspace/ui/toast';
 import { NewVersionPrompt } from './NewVersionPrompt';
 
 // docs/specs/016-platform/new-version-prompt.md: this editor's binding of the shared prompt, whose
@@ -28,7 +29,9 @@ describe('NewVersionPrompt', () => {
     expect(EDITOR_BUILD_ID).toBeNull();
     const reload = vi.fn();
     const { container } = render(
-      <NewVersionPrompt hasUnsavedChanges={() => false} reload={reload} />,
+      <ToastProvider>
+        <NewVersionPrompt hasUnsavedChanges={() => false} reload={reload} />
+      </ToastProvider>,
     );
     act(() => noteServerDocumentFormat(DOCUMENT_FORMAT));
     await act(async () => vi.advanceTimersByTimeAsync(0));

@@ -4,7 +4,7 @@ import { act, renderHook } from '@testing-library/react';
 import { useToastFloor } from './useToastFloor';
 import { TOAST_EDGE_PX, TOAST_FLOOR_GAP_PX, announceToastFloorChange } from './toast-floor';
 
-// docs/specs/004-interface-design/toasts.md "Placement": the stack stands on the bottom chrome under it,
+// liveworkspace/docs/specs/016-notifications/toasts.md "Placement": the stack stands on the bottom chrome under it,
 // measured while it shows and again when that chrome comes, goes or moves.
 function chrome(attr: string, top: number, height = 48) {
   const el = document.createElement('div');

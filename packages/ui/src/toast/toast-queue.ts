@@ -1,9 +1,9 @@
-// The toast queue's writes (docs/specs/004-interface-design/toasts.md "Timing"), pure so the provider
+// The toast queue's writes (liveworkspace/docs/specs/016-notifications/toasts.md "Timing"), pure so the provider
 // stays a thin shell around them: dedupe, upsert in place by key, and the three-toast limit.
 
 export type ToastTone = 'info' | 'success' | 'warning' | 'error';
 
-// An offer (docs/specs/004-interface-design/toasts.md): a toast that asks something, so it carries two
+// An offer (liveworkspace/docs/specs/016-notifications/toasts.md): a toast that asks something, so it carries two
 // answers. It stays up longer than a plain toast (TOAST_ANSWER_TIMEOUT_MS), then leaves unanswered. Closing it is
 // the decline; timing out is neither answer.
 export type ToastOffer = {
@@ -26,8 +26,14 @@ export type ToastActionSpec = {
   key: string;
   message: string;
   actions: ToastAction[];
+  // Info unless said (a standing warning: the account not answering).
+  tone?: ToastTone;
   // Shown even with In-Editor Notifications off: it explains why something the person did had no effect.
   important?: boolean;
+  // A standing toast: no timeout; it leaves when closed, answered or dismissed by its key.
+  sticky?: boolean;
+  // Closed by the person (the close button or Escape), not by its action or a timeout.
+  onDismiss?: () => void;
 };
 
 export type ToastEntry = {
@@ -37,6 +43,8 @@ export type ToastEntry = {
   offer?: ToastOffer;
   key?: string;
   actions?: ToastAction[];
+  sticky?: boolean;
+  onDismiss?: () => void;
   // Dismissed, still playing its exit before the stack removes it.
   leaving?: boolean;
   // Arrived on a full stack and retired an older toast: it enters with a bolder pop, so the change is seen.
@@ -66,8 +74,12 @@ export function toastAnswers(entry: Pick<ToastEntry, 'offer' | 'actions'>): bool
   return entry.offer !== undefined || (entry.actions?.length ?? 0) > 0;
 }
 
-/** How long a toast stays up: its tone's time, or the longer answer time for one with buttons. */
-export function toastTimeout(entry: Pick<ToastEntry, 'offer' | 'actions' | 'tone'>): number {
+/** How long a toast stays up: its tone's time, the longer answer time for one with buttons, or null (no timeout) for
+ *  a standing toast. */
+export function toastTimeout(
+  entry: Pick<ToastEntry, 'offer' | 'actions' | 'tone' | 'sticky'>,
+): number | null {
+  if (entry.sticky) return null;
   return toastAnswers(entry) ? TOAST_ANSWER_TIMEOUT_MS : TOAST_TIMEOUT_MS[entry.tone];
 }
 
@@ -78,13 +90,15 @@ function appendToast(list: ToastEntry[], entry: ToastEntry): ToastEntry[] {
   return retired ? next.map((t) => (t.id === entry.id ? { ...t, full: true } : t)) : next;
 }
 
-// Retire (mark leaving) the oldest toast past the limit: the oldest without answers first, else the oldest of all.
+// Retire (mark leaving) the oldest toast past the limit: the oldest without answers first, then the oldest that is not
+// standing, else the oldest of all.
 function applyLimit(list: ToastEntry[]): ToastEntry[] {
   let next = list;
   for (;;) {
     const live = next.filter((t) => !t.leaving);
     if (live.length <= TOAST_LIMIT) return next;
-    const victim = live.find((t) => !toastAnswers(t)) ?? live[0]!;
+    const victim =
+      live.find((t) => !toastAnswers(t) && !t.sticky) ?? live.find((t) => !t.sticky) ?? live[0]!;
     next = next.map((t) => (t.id === victim.id ? { ...t, leaving: true } : t));
   }
 }
@@ -92,7 +106,14 @@ function applyLimit(list: ToastEntry[]): ToastEntry[] {
 /** Add a plain toast or an offer; the same tone and message already up is not shown twice. */
 export function pushToast(
   list: ToastEntry[],
-  input: { message: string; tone: ToastTone; offer?: ToastOffer },
+  input: {
+    message: string;
+    tone: ToastTone;
+    offer?: ToastOffer;
+    actions?: ToastAction[];
+    sticky?: boolean;
+    onDismiss?: () => void;
+  },
   id: number,
 ): ToastEntry[] {
   if (!input.message) return list;
@@ -109,11 +130,13 @@ export function upsertActionToast(
   id: number,
 ): ToastEntry[] {
   if (!spec.message) return list;
-  const entry = {
+  const entry: Omit<ToastEntry, 'id'> = {
     message: spec.message,
-    tone: 'info' as const,
+    tone: spec.tone ?? 'info',
     key: spec.key,
     actions: spec.actions,
+    sticky: spec.sticky,
+    onDismiss: spec.onDismiss,
   };
   const at = list.findIndex((t) => !t.leaving && t.key === spec.key);
   if (at === -1) return appendToast(list, { id, ...entry });

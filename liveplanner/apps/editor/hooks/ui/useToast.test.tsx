@@ -4,11 +4,12 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { useEffect } from 'react';
 import { ToastProvider, useToast, type ToastOffer } from './useToast';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
-import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/workbench/components/toast/ToastStack';
-import {
-  TOAST_ANSWER_TIMEOUT_MS,
-  TOAST_TIMEOUT_MS,
-} from '@liveworkspace/workbench/components/toast/toast-queue';
+import { bindWorkbench } from '@/lib/workbench-bindings';
+import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/ui/toast';
+import { TOAST_ANSWER_TIMEOUT_MS, TOAST_TIMEOUT_MS } from '@liveworkspace/ui/toast';
+
+// The door reads Show Notifications through the workbench's bindings, as the app wires them at start.
+bindWorkbench();
 
 // A toast leaves by playing its exit; jsdom never fires animationend, so the exit hold removes it.
 function afterExit() {

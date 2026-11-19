@@ -1,17 +1,18 @@
 'use client';
 
-// One toast (docs/specs/004-interface-design/toasts.md "One line by default" and "Look"): icon, message,
+// One toast (liveworkspace/docs/specs/016-notifications/toasts.md "One line by default" and "Look"): icon, message,
 // actions, close, on one row. The message's flex basis is its own width, so a short one shares the row
 // with its buttons; one too long for the row takes it whole, and the buttons drop to a row of their own at
 // its end. The close stays in the top row's corner. Presentational: the stack owns timing and leaving.
-import type { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode, Ref } from 'react';
 import {
   lucideCircleAlert,
   lucideCircleCheck,
   lucideInfo,
   lucideTriangleAlert,
 } from '@liveworkspace/icons/lucide';
-import { CloseIcon, lucideGlyph } from '@liveworkspace/ui';
+import { CloseIcon } from '../icons/actions';
+import { lucideGlyph } from '../icons/lucide-glyph';
 import type { ToastTone } from './toast-queue';
 
 /** The toast's card look, shared with the notices that are not in the stack (the new-version prompt). */
@@ -25,14 +26,15 @@ const BORDER: Record<ToastTone, string> = {
   error: 'border-rose-200 dark:border-rose-500/40',
 };
 
-const ICON_TINT: Record<ToastTone, string> = {
+/** Each tone's icon colour and glyph, shared with the notification list's rows. */
+export const TOAST_ICON_TINT: Readonly<Record<ToastTone, string>> = {
   info: 'text-brand-700 dark:text-brand-400',
   success: 'text-emerald-600 dark:text-emerald-400',
   warning: 'text-amber-600 dark:text-amber-400',
   error: 'text-rose-600 dark:text-rose-400',
 };
 
-const ICONS: Record<ToastTone, ReturnType<typeof lucideGlyph>> = {
+export const TOAST_ICONS: Readonly<Record<ToastTone, ReturnType<typeof lucideGlyph>>> = {
   info: lucideGlyph(lucideInfo, 16),
   success: lucideGlyph(lucideCircleCheck, 16),
   warning: lucideGlyph(lucideTriangleAlert, 16),
@@ -62,8 +64,10 @@ export function ToastCard({
   leaving = false,
   full = false,
   className = '',
+  ref,
   ...rest
 }: {
+  ref?: Ref<HTMLDivElement>;
   tone: ToastTone;
   message: ReactNode;
   actions?: readonly ToastCardAction[];
@@ -72,15 +76,16 @@ export function ToastCard({
   // Arrived on a full stack: the bolder entrance (toast-in-full), so a new toast on a busy stack is seen.
   full?: boolean;
 } & Omit<HTMLAttributes<HTMLDivElement>, 'role' | 'children'>) {
-  const Icon = ICONS[tone];
+  const Icon = TOAST_ICONS[tone];
   return (
     <div
+      ref={ref}
       role={tone === 'error' ? 'alert' : 'status'}
       data-toast-tone={tone}
       className={`flex w-full items-start gap-3 py-1.5 pl-3 pr-1.5 sm:w-auto sm:max-w-[36rem] ${TOAST_SURFACE} ${BORDER[tone]} ${leaving ? 'pointer-events-none animate-toast-out' : full ? 'pointer-events-auto animate-toast-in-full' : 'pointer-events-auto animate-toast-in'} ${className}`}
       {...rest}
     >
-      <span className={`flex h-8 shrink-0 items-center ${ICON_TINT[tone]}`} aria-hidden>
+      <span className={`flex h-8 shrink-0 items-center ${TOAST_ICON_TINT[tone]}`} aria-hidden>
         <Icon />
       </span>
       <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-0.5">

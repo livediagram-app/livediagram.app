@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { useToastTimer } from './useToastTimer';
 
-// docs/specs/004-interface-design/toasts.md "Timing".
+// liveworkspace/docs/specs/016-notifications/toasts.md "Timing".
 beforeEach(() => {
   vi.useFakeTimers();
 });

@@ -2,7 +2,7 @@
 // its counts (kept per viewer), choosing a row and reading it, the keys, the phone's list-to-pane-to-Back, the verbs
 // the host can carry out (and only those, with Open always there), the host's Offline rows, the re-read on
 // returning to the tab, and the telemetry it reports.
-import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   IndexError,
@@ -151,7 +151,8 @@ function everyKind() {
 const options = () => within(screen.getByRole('listbox')).getAllByRole('option');
 const listbox = () => screen.getByRole('listbox');
 const titles = () => options().map((o) => o.querySelector('[data-inbox-title]')!.textContent);
-const pane = () => screen.getByRole('region', { name: /./ });
+// The toast stack is a region too ("Notifications"); the pane is the other one.
+const pane = () => screen.getByRole('region', { name: /^(?!Notifications$)./ });
 
 // A phone: narrower than the Inbox's two columns.
 function asPhone() {
@@ -328,7 +329,8 @@ describe('the filter dropdown', () => {
 });
 
 function cleanupRender() {
-  document.body.innerHTML = '';
+  // Unmount, not wipe: the toast stack is portalled into the body, and a wiped body strands it.
+  cleanup();
 }
 
 describe('choosing a row', () => {

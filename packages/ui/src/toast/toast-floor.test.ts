@@ -7,7 +7,7 @@ import {
   type FloorRect,
 } from './toast-floor';
 
-// docs/specs/004-interface-design/toasts.md "Placement".
+// liveworkspace/docs/specs/016-notifications/toasts.md "Placement".
 const rect = (left: number, top: number, width: number, height: number): FloorRect => ({
   left,
   top,
@@ -60,6 +60,7 @@ describe('toastFloor', () => {
   it('names the editor and Explorer bottom chrome', () => {
     for (const hook of [
       'data-toast-floor',
+      'data-start-footer',
       'data-editor-tabbar',
       'data-zoom-cluster',
       'data-whiteboard-dock',
