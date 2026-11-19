@@ -92,8 +92,10 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   useEffect(() => {
     if (!arrived) return;
     setSearchQuery(arrived);
+    // null, not history.state: Next copies its own state across and sees the new address (history-state.test.js);
+    // the box still holds the query, as arrivalQuery keeps what this page arrived with.
     try {
-      window.history.replaceState(window.history.state, '', locationWithQuery(location.href, ''));
+      window.history.replaceState(null, '', locationWithQuery(location.href, ''));
     } catch {
       // A sandboxed frame may refuse; the box holds the query either way.
     }
