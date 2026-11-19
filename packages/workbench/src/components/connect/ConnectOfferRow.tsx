@@ -35,7 +35,7 @@ export function ConnectOfferRow({
   const errorId = useId();
   const inert = state !== 'open';
   return (
-    <div className="-mx-2.5">
+    <div>
       <button
         type="button"
         data-connect-offer={app}

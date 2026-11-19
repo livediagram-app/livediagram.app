@@ -7,7 +7,7 @@
 // every other menu item that opens a dialog does: left open, its flyout sat over the dialog, and on a phone its sheet
 // covered the dialog's Link button.
 import type { ReactNode } from 'react';
-import { RefreshIcon, SheetLinkIcon } from '@liveworkspace/ui';
+import { CheckIcon, RefreshIcon, SheetLinkIcon } from '@liveworkspace/ui';
 import { useRelativeNow } from '../../lib/relative-now';
 import { useSheetLinks } from './SheetLinkedCharts';
 import { sheetLinkLine, type SheetChart } from './sheet-links';
@@ -65,11 +65,8 @@ export function SheetLinkSection({
                 <SheetLinkIcon size={13} />
                 Link to Sheet…
               </button>
-              <button
-                type="button"
-                className={`${ACTION} ml-auto`}
-                onClick={() => links.keepNumbers(chart.id)}
-              >
+              <button type="button" className={ACTION} onClick={() => links.keepNumbers(chart.id)}>
+                <CheckIcon size={13} />
                 Use These Numbers
               </button>
             </div>
