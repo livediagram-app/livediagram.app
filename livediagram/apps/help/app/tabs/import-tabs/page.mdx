@@ -137,7 +137,9 @@ A tab drawn by the Infrastructure card remembers the files it came from. Open **
 - **Update Diagram** keeps your work. Boxes stay where you put them, at their size, in their colours, and a label, note or icon you changed stays yours. A box new in the files is placed beside the box it joins, clear of everything else, and its frame grows to hold it. A box the files no longer name is removed with its lines. A box you deleted stays deleted, and anything you added yourself is never touched.
 - It is one undo step, and the summary says how many boxes and lines were added, removed and kept, and how many of your edits were kept.
 
-Any other import onto the tab (Mermaid, JSON and the rest) replaces it with something no file drew, so the tab forgets its files. Updating is for Editors; it isn't offered on a locked tab.
+On the command line, `livediagram link from-code --doc <document> --tab <tab> --update` does the same from the files in your repository, and prints the command for each tab it makes. In a repository linked with `livediagram.toml`, list each tab's files under `[[sources]]` and a plain `livediagram link from-code` updates them all.
+
+Any other import onto the tab (Mermaid, JSON and the rest) replaces it with something no file drew, so the tab forgets its files. Updating is for Editors; it isn't offered on a locked tab, and from the command line it needs edit access.
 
 ## Import replaces the tab
 
