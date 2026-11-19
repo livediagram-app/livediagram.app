@@ -3,7 +3,7 @@
 // ACCEPTED_IMAGE_TYPES, and an app can run it to label bytes whose stored type is missing. Pure, so it
 // runs in Workers and browsers alike.
 
-import type { AcceptedImageType } from './limits';
+import type { AcceptedFileType, AcceptedImageType } from './limits';
 
 export function sniffImageType(buf: Uint8Array): AcceptedImageType | null {
   if (buf.length < 12) return null;
@@ -47,4 +47,17 @@ export function sniffImageType(buf: Uint8Array): AcceptedImageType | null {
     return 'image/webp';
   }
   return null;
+}
+
+// A PDF starts "%PDF-" (ISO 32000-1 7.5.2). Only the start counts: a reader that looks further in would take a
+// polyglot whose first bytes are something else.
+const PDF_MAGIC = [0x25, 0x50, 0x44, 0x46, 0x2d];
+
+export function sniffPdf(buf: Uint8Array): boolean {
+  return buf.length >= PDF_MAGIC.length && PDF_MAGIC.every((b, i) => buf[i] === b);
+}
+
+/** A stored file's type by its first bytes: a picture's, a PDF's, or null for anything else. */
+export function sniffMediaType(buf: Uint8Array): AcceptedImageType | AcceptedFileType | null {
+  return sniffImageType(buf) ?? (sniffPdf(buf) ? 'application/pdf' : null);
 }

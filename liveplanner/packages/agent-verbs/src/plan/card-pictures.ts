@@ -22,7 +22,7 @@ import {
   fieldKeyOf,
   holdsSeveralImages,
   imageFieldValue,
-  isAcceptedAttachmentType,
+  isPictureAttachmentType,
   normaliseAttachments,
   withAttachmentsAdded,
   withImagesAdded,
@@ -196,7 +196,8 @@ export async function checkPictureGrants(
 // An Attachments entry for a granted picture, made from its upload's record; undefined when the upload is one an
 // entry cannot hold (a type or size the card's rules refuse).
 function attachmentFor(image: GrantedImage): ItemAttachment | undefined {
-  if (!isAcceptedAttachmentType(image.type)) return undefined;
+  // An agent adds pictures only (items.md "Attachments"): a PDF reaches a card by email alone.
+  if (!isPictureAttachmentType(image.type)) return undefined;
   if (!Number.isInteger(image.size) || image.size < 1 || image.size > ITEM_ATTACHMENT_BYTES_MAX)
     return undefined;
   return {

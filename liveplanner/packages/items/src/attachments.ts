@@ -1,5 +1,5 @@
-// A card's Attachments (docs/specs/026-plan/items.md "Attachments"): pictures at liveworkspace's media service, kept on
-// the card as `{ id, name, size, type, cover? }` entries, at most one of them its cover. The value's rules (validated
+// A card's Attachments (docs/specs/026-plan/items.md "Attachments"): pictures (and PDFs an email brought) at
+// liveworkspace's media service, kept on the card as `{ id, name, size, type, cover? }` entries, at most one of them its cover. The value's rules (validated
 // for every door by fields.ts) and the pure edits the card panel and a card's drop make.
 import type { Item, ItemFieldValue } from './item';
 import {
@@ -13,7 +13,16 @@ import { isObj } from './validate';
 export const ATTACHMENTS_FIELD = 'attachments';
 
 // The types a picture may be: the media service's ACCEPTED_IMAGE_TYPES (never SVG).
-export const ATTACHMENT_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'] as const;
+export const PICTURE_ATTACHMENT_TYPES = [
+  'image/png',
+  'image/jpeg',
+  'image/webp',
+  'image/gif',
+] as const;
+export type PictureAttachmentType = (typeof PICTURE_ATTACHMENT_TYPES)[number];
+// The file an email may attach beside its pictures (email-to-board.md "What a message makes"): never a cover.
+export const PDF_ATTACHMENT_TYPE = 'application/pdf';
+export const ATTACHMENT_TYPES = [...PICTURE_ATTACHMENT_TYPES, PDF_ATTACHMENT_TYPE] as const;
 export type AttachmentType = (typeof ATTACHMENT_TYPES)[number];
 
 export type ItemAttachment = {
@@ -26,6 +35,10 @@ export type ItemAttachment = {
 
 export const isAcceptedAttachmentType = (v: unknown): v is AttachmentType =>
   typeof v === 'string' && (ATTACHMENT_TYPES as readonly string[]).includes(v);
+
+/** Whether a type is a picture's: what an upload from the panel or an agent may add, and what may be a cover. */
+export const isPictureAttachmentType = (v: unknown): v is PictureAttachmentType =>
+  typeof v === 'string' && (PICTURE_ATTACHMENT_TYPES as readonly string[]).includes(v);
 
 /** A file name as an entry keeps it: trimmed, cut to ITEM_ATTACHMENT_NAME_MAX characters, "Image" when blank. */
 export function attachmentName(name: string): string {
@@ -42,7 +55,7 @@ function attachmentOf(v: unknown): ItemAttachment | undefined {
     return undefined;
   if (typeof size !== 'number' || !Number.isInteger(size) || size < 1) return undefined;
   if (size > ITEM_ATTACHMENT_BYTES_MAX || !isAcceptedAttachmentType(type)) return undefined;
-  if (cover !== undefined && cover !== true) return undefined;
+  if (cover !== undefined && (cover !== true || !isPictureAttachmentType(type))) return undefined;
   return { id, name: attachmentName(name), size, type, ...(cover ? { cover: true as const } : {}) };
 }
 
@@ -89,9 +102,11 @@ export function withAttachmentsAdded(
   return { list: out, skipped };
 }
 
-/** `list` with `id` as its cover (null: none). */
+/** `list` with `id` as its cover (null: none). A PDF is never one: naming it clears the cover. */
 export function withCover(list: readonly ItemAttachment[], id: string | null): ItemAttachment[] {
-  return list.map(({ cover: _cover, ...a }) => (a.id === id ? { ...a, cover: true as const } : a));
+  return list.map(({ cover: _cover, ...a }) =>
+    a.id === id && isPictureAttachmentType(a.type) ? { ...a, cover: true as const } : a,
+  );
 }
 
 /** `list` without picture `id`. */

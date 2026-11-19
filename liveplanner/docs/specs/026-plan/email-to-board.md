@@ -57,7 +57,7 @@ A centred dialog (a bottom sheet on a phone) titled **Email to Board**, subtitle
 states:
 
 - **Off**: "Forward an email to this board's own address and it becomes a card in **<first column>**: the subject as
-  its title, the message as its description, pictures attached." Then **Who Can Send** and **Turn On**.
+  its title, the message as its description, pictures and PDFs attached." Then **Who Can Send** and **Turn On**.
 - **On**: the address in a read-only field with **Copy Address**, then a quiet line of what it has done: "3 cards
   made · 1 refused · Last card 2 hours ago" (or "No mail yet."), then **Who Can Send**, which saves as it changes
   (the address kept). The footer holds **New Address** and **Turn Off**, each behind a confirm, and **Done**:
@@ -90,14 +90,19 @@ made by no person:
 - **Description**: the message's text (its plain text part, or its HTML as text), with the **quoted reply removed**
   (the earlier message a reply carries, `On … wrote:` and what follows, a signature) as the platform's reader does it.
   Cut to the description's limit.
-- **Attachments**: pictures (PNG, JPEG, WebP, GIF) of up to **10 MB** each join the card's Attachments, at most
-  the card's 20, stored with the plan's owner's uploads at the media service and granted to the plan. Everything
-  else (another type, a bigger file, one past the twentieth, any the media service refuses) is **listed and
-  dropped**: a line at the end of the description, "Not attached: report.pdf (2.1 MB, not a picture), photo.png
-  (14 MB, over 10 MB)."
+- **Attachments**: pictures (PNG, JPEG, WebP, GIF) and **PDFs** of up to **10 MB** each join the card's Attachments,
+  at most the card's 20, stored with the plan's owner's uploads at the media service and granted to the plan. What a
+  file is comes from its bytes alone, never its name or the type the email claims: a picture by its format's first
+  bytes, a PDF by its `%PDF-` start. A file is never opened or run here; the card serves a PDF as a download,
+  sandboxed (blueprint "Security and trust"). Everything else (another type, a bigger file, one
+  past the twentieth, any the media service refuses) is **listed and dropped**: a line at the end of the
+  description, "Not attached: notes.docx (2.1 MB, not a picture or PDF), photo.png (14 MB, over 10 MB)." The
+  coordinator's answer (2026-11-19) set this: PDFs only beside pictures, capped as pictures are, through the storage
+  already paid for; the owner may widen it later.
 - **From email**: the card keeps the sender's address in its `fromEmail` field, and its panel's footer says
   **From email alice@example.com** with a mail glyph, beside Created by (which names the same address). Its history
-  starts "Created this card from an email in <column>".
+  starts "Created this card from an email in <column>". Like any card as made, it has no Edited by row until someone really
+  edits it ([Created and Last Edited](items.md#created-and-last-edited)).
 - **Rules**: the card starts the plan's [Automations](automations.md) once, as any new card does: **Card Created**
   rules hear it, and so do **[Email Received](automations.md#email-received)** rules, which hear only email cards,
   narrowed by the board and by the sender (an address or a domain), and can write the sender as `{{from}}`.

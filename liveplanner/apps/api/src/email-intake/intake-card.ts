@@ -1,6 +1,6 @@
 // The card a message makes (docs/specs/026-plan/email-to-board.md "What a message makes"; blueprint email-to-board.md
 // "Behaviour and state"): the subject as its title, the text as its description with what was not attached listed at
-// the end, the pictures as its Attachments and the sender in its From email field. Pure.
+// the end, the pictures and PDFs as its Attachments and the sender in its From email field. Pure.
 import {
   ATTACHMENTS_FIELD,
   FROM_EMAIL_FIELD,
@@ -15,11 +15,11 @@ import {
 } from '@liveplanner/items';
 
 /** Why an attachment was left off the card. */
-export type DropReason = 'not_picture' | 'too_big' | 'too_many' | 'not_saved';
+export type DropReason = 'not_attachable' | 'too_big' | 'too_many' | 'not_saved';
 export type DroppedAttachment = { name: string; size: number; reason: DropReason };
 
 const REASON_WORDS: Record<DropReason, string> = {
-  not_picture: 'not a picture',
+  not_attachable: 'not a picture or PDF',
   too_big: 'over 10 MB',
   too_many: 'over 20 attachments',
   not_saved: "couldn't be saved",

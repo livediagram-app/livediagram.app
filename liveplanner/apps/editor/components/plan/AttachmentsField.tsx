@@ -2,12 +2,13 @@
 
 // A card's Attachments in the card panel (docs/specs/026-plan/items.md "Attachments"): its pictures as rows (a
 // thumbnail, the name, the size, a Cover tag), each opening the picture whole on a press and holding Open, Download,
-// Set as Cover and Remove in its ⋯ menu; then a dashed Add Images zone that takes the file picker, a drop and a paste.
+// Set as Cover and Remove in its ⋯ menu (a PDF an email brought: a file glyph, never a cover); then a dashed Add Images zone that takes the file picker, a drop and a paste.
 // A reader sees the rows and opens or saves them; adding and changing are an Editor's and a Participant's.
 import { useEffect, useId, useRef, useState, type DragEvent } from 'react';
 import {
   attachmentSizeText,
   attachmentsValue,
+  isPictureAttachmentType,
   normaliseAttachments,
   withCover,
   withoutAttachment,
@@ -18,6 +19,7 @@ import { Button, lucideGlyph, Tooltip, TrashIcon } from '@liveplanner/ui';
 import {
   lucideDownload,
   lucideExternalLink,
+  lucideFileText,
   lucideImage,
   lucideImagePlus,
   lucidePanelTop,
@@ -40,6 +42,7 @@ import { UploadRing } from './UploadRing';
 
 const AddIcon = lucideGlyph(lucideImagePlus, 18);
 const BrokenIcon = lucideGlyph(lucideImage, 16);
+const PdfIcon = lucideGlyph(lucideFileText, 18);
 const OpenIcon = lucideGlyph(lucideExternalLink, 14);
 const DownloadIcon = lucideGlyph(lucideDownload, 14);
 const CoverIcon = lucideGlyph(lucidePanelTop, 14);
@@ -242,7 +245,9 @@ function AttachmentRow({
   onRemove: () => void;
 }) {
   const [ref, seen] = useSeen<HTMLLIElement>();
-  const shown = useImageUrl(scope, a.id, IMAGE_ROW_EDGE, seen);
+  // A PDF has no thumbnail: nothing is fetched to draw its row (items.md "Attachments").
+  const picture = isPictureAttachmentType(a.type);
+  const shown = useImageUrl(scope, a.id, IMAGE_ROW_EDGE, seen && picture);
   const [open, setOpen] = useState(false);
   const [button, setButton] = useState<HTMLButtonElement | null>(null);
   const run = (fn: () => void) => () => {
@@ -259,7 +264,7 @@ function AttachmentRow({
         <button
           type="button"
           disabled={!scope}
-          aria-label={`Open ${a.name}, ${size}${a.cover ? ', the cover' : ''}`}
+          aria-label={`Open ${a.name}, ${picture ? '' : 'PDF, '}${size}${a.cover ? ', the cover' : ''}`}
           onClick={() => scope && void openAttachment(scope, a)}
           className="flex min-w-0 flex-1 cursor-pointer items-center gap-3 px-2 py-2 text-left transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand-400/60 disabled:cursor-default motion-reduce:transition-none pointer-coarse:min-h-11 dark:hover:bg-slate-800/60"
         >
@@ -267,7 +272,9 @@ function AttachmentRow({
             aria-hidden
             className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md bg-slate-100 text-slate-400 ring-1 ring-inset ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700"
           >
-            {shown.state === 'shown' ? (
+            {!picture ? (
+              <PdfIcon />
+            ) : shown.state === 'shown' ? (
               <img
                 src={shown.url}
                 alt=""
@@ -285,7 +292,7 @@ function AttachmentRow({
               {a.name}
             </span>
             <span className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] text-slate-500 dark:text-slate-400">
-              <span className="whitespace-nowrap">{size}</span>
+              <span className="whitespace-nowrap">{picture ? size : `PDF · ${size}`}</span>
               {a.cover ? (
                 <span className="rounded bg-brand-50 px-1.5 py-px text-[10px] font-semibold uppercase tracking-wide text-brand-700 dark:bg-brand-500/15 dark:text-brand-200">
                   Cover
@@ -320,12 +327,14 @@ function AttachmentRow({
           {canEdit ? (
             <>
               <MenuGroupSeparator />
-              <MenuActionRow
-                plain
-                label={a.cover ? 'Remove Cover' : 'Set as Cover'}
-                icon={<CoverIcon />}
-                onClick={run(() => onCover(!a.cover))}
-              />
+              {picture ? (
+                <MenuActionRow
+                  plain
+                  label={a.cover ? 'Remove Cover' : 'Set as Cover'}
+                  icon={<CoverIcon />}
+                  onClick={run(() => onCover(!a.cover))}
+                />
+              ) : null}
               <MenuActionRow plain label="Remove" icon={<TrashIcon />} onClick={run(onRemove)} />
             </>
           ) : null}

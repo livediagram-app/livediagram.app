@@ -195,7 +195,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/email-to-board/',
         title: 'Email straight to the board',
         description:
-          'Give a board its own secret address and forward a request or a bug report to it: it lands as a card in the first column, the subject as its title and the pictures attached. Who Can Send keeps it to plan members, or opens it to anyone with the address.',
+          'Give a board its own secret address and forward a request or a bug report to it: it lands as a card in the first column, the subject as its title and its pictures and PDFs attached. Who Can Send keeps it to plan members, or opens it to anyone with the address.',
       },
       {
         art: <HiddenVotesArt />,
