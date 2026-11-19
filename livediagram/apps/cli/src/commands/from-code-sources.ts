@@ -11,7 +11,6 @@ import { nearestLink } from '../link/find-links';
 import { sameHost, type LinkFile } from '../link/link-file';
 import { CliError, formatError, type CliFailure } from '../output/cli-error';
 import { failureOf } from '../output/failure-of';
-import type { FromCodeInput } from './from-code';
 import { updateFromCode } from './from-code-update';
 
 export type LinkSource = { files: string[]; doc: string; tab: string; env?: string };
@@ -78,12 +77,8 @@ async function linkHere(io: CliIo): Promise<LinkFile | null> {
 }
 
 /** Every tab the nearest link binds to files, updated; null when no link here binds any (the caller reads this directory). */
-export async function runLinkSources(
-  io: CliIo,
-  ctx: VerbContext,
-  input: Pick<FromCodeInput, 'dryRun'>,
-  log: DebugLog,
-) {
+// Only a run with no `--dry-run` comes here (blueprint "The CLI": a dry run is offline), so every update is sent.
+export async function runLinkSources(io: CliIo, ctx: VerbContext, log: DebugLog) {
   const link = await linkHere(io);
   const entries = link ? linkSourcesOf(link) : [];
   if (!link || entries.length === 0) return null;
@@ -111,7 +106,6 @@ export async function runLinkSources(
           doc: entry.doc,
           tab: entry.tab,
           ...(entry.env !== undefined ? { env: entry.env } : {}),
-          ...(input.dryRun ? { dryRun: true } : {}),
         },
         log,
       );
@@ -129,5 +123,5 @@ export async function runLinkSources(
       code: first.code,
       message: `${failed} of ${entries.length} sources in ${link.path} were not updated`,
     });
-  return { text: texts.join('\n'), id: null, dryRun: Boolean(input.dryRun), graph: null };
+  return { text: texts.join('\n'), id: null, dryRun: false, graph: null };
 }

@@ -44,6 +44,7 @@ describe('linkSourcesOf', () => {
     ],
     [{ files: ['/etc/a.tf'], tab: `${DOC}/t1` }, 'outside /work'],
     [{ files: ['a.tf'], tab: DOC }, 'sources[0].tab must be <document>/<tab>'],
+    [{ files: ['a.tf'] }, 'sources[0].tab must be <document>/<tab>'],
     [{ files: ['a.tf'], tab: `${DOC}/t1`, env: 1 }, 'sources[0].env must be a string'],
   ])('refuses %j', (entry, message) => {
     expect(() => linkSourcesOf(link([entry]))).toThrow(message);
@@ -86,7 +87,7 @@ describe('link from-code in a link with [[sources]]', () => {
       if (request.method === 'GET' && tab)
         return new Response(JSON.stringify({ tab: tabs[tab] }), { headers: { ETag: 'W/"3"' } });
       if (url.pathname.endsWith('/changesets')) {
-        sent.push(url.pathname);
+        sent.push(url.pathname + url.search);
         return Response.json({
           dryRun: false,
           changeset: { id: 'cs_5', tabId: 't1', rev: 4, previousRev: 3, rebasedOver: 0 },
@@ -104,10 +105,10 @@ describe('link from-code in a link with [[sources]]', () => {
   const linkFile = (entries: string) =>
     `[covers]\ndocuments = ["${DOC}"]\n\n[mirror]\nlevel = "none"\n${entries}`;
 
-  async function cli(route: Route, files: Record<string, string>, cwd = '/work/apps') {
+  async function cli(route: Route, files: Record<string, string>, argv: string[] = []) {
     const io = fakeIo({ env: { LIVEDIAGRAM_TOKEN: TOKEN }, routes: [capabilities, route], files });
-    Object.assign(io, { cwd });
-    const code = await run(['link', 'from-code'], io);
+    Object.assign(io, { cwd: '/work/apps' });
+    const code = await run(['link', 'from-code', ...argv], io);
     return { code, out: io.out(), err: io.err() };
   }
 
@@ -140,5 +141,45 @@ describe('link from-code in a link with [[sources]]', () => {
     expect(err).toContain('tab "Notes" was not drawn from files');
     expect(err).toContain('1 of 2 sources in /work/livediagram.toml were not updated');
     expect(sent).toEqual([`/api/documents/${DOC}/tabs/tab-one-0000/changesets`]);
+  });
+
+  it('reads an entry in its own environment', async () => {
+    const { sent, route } = api();
+    const { code, err } = await cli(route, {
+      '/work/livediagram.toml': linkFile(
+        `\n[[sources]]\nfiles = ["wrangler.toml"]\ntab = "${DOC}/tab-one-0000"\nenv = "staging"\n`,
+      ),
+      '/work/wrangler.toml': `${WRANGLER}[env.staging]\n[[env.staging.r2_buckets]]\nbinding = "B"\nbucket_name = "b"\n`,
+      '/work/apps/keep.txt': '',
+    });
+    expect(code).toBe(0);
+    // The staging Worker and its bucket in place of the top level's Worker and KV.
+    expect(err).toContain('updated: added 2 boxes, removed 2');
+    expect(sent).toEqual([`/api/documents/${DOC}/tabs/tab-one-0000/changesets`]);
+  });
+
+  it('refuses a link to another host, and sends nothing', async () => {
+    const { sent, route } = api();
+    const { code, err } = await cli(route, {
+      '/work/livediagram.toml': `host = "https://other.example"\n${linkFile(
+        `\n[[sources]]\nfiles = ["wrangler.toml"]\ntab = "${DOC}/tab-one-0000"\n`,
+      )}`,
+      '/work/wrangler.toml': WRANGLER,
+      '/work/apps/keep.txt': '',
+    });
+    expect(code).toBe(2);
+    expect(err).toContain('/work/livediagram.toml links https://other.example; this profile is');
+    expect(sent).toEqual([]);
+  });
+
+  it('names a link file it cannot read, rather than reading this directory', async () => {
+    const { sent, route } = api();
+    const { code, err } = await cli(route, {
+      '/work/livediagram.toml': 'mirror = [',
+      '/work/apps/keep.txt': '',
+    });
+    expect(code).not.toBe(0);
+    expect(err).toContain('/work/livediagram.toml');
+    expect(sent).toEqual([]);
   });
 });

@@ -3,13 +3,36 @@
 
 import { describe, expect, it } from 'vitest';
 import { layoutGraph, type Element, type Tab } from '@livediagram/document';
-import { drawnRecord, infraGraph, sourceFiles } from '@livediagram/document/infra-code';
+import {
+  drawnRecord,
+  INFRA_MAX_FILE_BYTES,
+  infraGraph,
+  sourceFiles,
+} from '@livediagram/document/infra-code';
 import { run } from '../main';
 import { capabilities, fakeIo, NOW, TOKEN, type Route } from '../testing/fake-io';
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
 const V1 = 'name = "api"\n[[kv_namespaces]]\nbinding = "CACHE"\nid = "k1"\n';
 const V2 = `${V1}[[d1_databases]]\nbinding = "DB"\ndatabase_name = "main"\n`;
+
+// The tab as the import drew it from these files, untouched since.
+function tabFrom(files: { name: string; text: string }[]): Tab {
+  const result = infraGraph(files);
+  if (!result.ok) throw new Error(result.error.message);
+  const drawn = layoutGraph(result.graph);
+  return {
+    id: 't1',
+    name: 'Infra',
+    elements: drawn,
+    sources: {
+      bridge: 'infra',
+      files: sourceFiles(files),
+      readAt: 1,
+      ...drawnRecord(drawn, result.graph),
+    },
+  };
+}
 
 // The tab as the import drew it from V1, then a person moved the KV box and renamed the Worker.
 function drawnTab(env?: string): Tab {
@@ -45,7 +68,7 @@ type Sent = {
   };
 };
 
-function api(tab: Tab, answer?: Response) {
+function api(tab: Tab, answer?: Response, etag: string | null = 'W/"7"') {
   const sent: Sent[] = [];
   const route: Route = async (request, url) => {
     if (url.pathname === '/api/documents')
@@ -56,7 +79,7 @@ function api(tab: Tab, answer?: Response) {
         document: { id: DOC, name: 'Shop', tabs: [{ id: 't1', name: 'Infra' }] },
       });
     if (request.method === 'GET' && url.pathname === `/api/documents/${DOC}/tabs/t1`)
-      return new Response(JSON.stringify({ tab }), { headers: { ETag: 'W/"7"' } });
+      return new Response(JSON.stringify({ tab }), { headers: etag ? { ETag: etag } : {} });
     if (url.pathname.endsWith('/changesets')) {
       sent.push({ url: url.search, body: JSON.parse(await request.text()) as Sent['body'] });
       return (
@@ -191,8 +214,67 @@ describe('link from-code --update', () => {
     const noDoc = await cli(route, {}, ['--update']);
     expect(noDoc.code).toBe(2);
     expect(noDoc.err).toContain('--update needs --doc');
+    const tabNoDoc = await cli(route, {}, ['--tab', 'Infra']);
+    expect(tabNoDoc.code).toBe(2);
+    expect(tabNoDoc.err).toContain('--tab needs --doc');
     const noUpdate = await cli(route, {}, ['--doc', 'Shop', '--tab', 'Infra']);
     expect(noUpdate.code).toBe(2);
     expect(noUpdate.err).toContain('--tab names the tab --update updates');
+  });
+
+  it('reads a remembered file by its absolute name, and keeps the theme of a box the drawing tones', async () => {
+    const v1 = 'apiVersion: networking.k8s.io/v1\nkind: Ingress\nmetadata: { name: edge }\n';
+    const v2 = `${v1}---\napiVersion: v1\nkind: PersistentVolumeClaim\nmetadata: { name: data }\n`;
+    const { sent, route } = api(tabFrom([{ name: '/srv/k8s.yaml', text: v1 }]));
+    const { code, err } = await cli(route, { '/srv/k8s.yaml': v2 }, ['--doc', 'Shop', '--update']);
+    expect(code).toBe(0);
+    expect(err).toContain('updated: added 1 box');
+    const { replace } = sent[0]!.body;
+    expect(replace.sources).toMatchObject({ files: [{ name: '/srv/k8s.yaml', text: v2 }] });
+    const edge = replace.elements.find((el) => el.type === 'shape' && el.label === 'edge');
+    expect(edge).toHaveProperty('colorPreset');
+  });
+
+  it('refuses a remembered file over 1 MB, and a tab read without a revision', async () => {
+    const big = api(drawnTab());
+    const large = await cli(
+      big.route,
+      { '/work/wrangler.toml': 'x'.repeat(INFRA_MAX_FILE_BYTES + 1) },
+      ['--doc', 'Shop', '--update'],
+    );
+    expect(large.code).toBe(1);
+    expect(large.err).toContain('wrangler.toml is over 1 MB');
+    const bare = api(drawnTab(), undefined, null);
+    const norev = await cli(bare.route, { '/work/wrangler.toml': V2 }, [
+      '--doc',
+      'Shop',
+      '--update',
+    ]);
+    expect(norev.code).not.toBe(0);
+    // A defect, not a refusal: the CLI names it an internal error.
+    expect(norev.err).toContain('internal error');
+    expect([...big.sent, ...bare.sent]).toEqual([]);
+  });
+
+  it('answers no changeset id when the api sends none', async () => {
+    const { sent, route } = api(
+      drawnTab(),
+      Response.json({
+        dryRun: true,
+        changeset: null,
+        results: [],
+        text: 'dry run',
+        warnings: [],
+        lint: null,
+      }),
+    );
+    const { code, out } = await cli(route, { '/work/wrangler.toml': V2 }, [
+      '--doc',
+      'Shop',
+      '--update',
+    ]);
+    expect(code).toBe(0);
+    expect(out).toContain('dry run');
+    expect(sent).toHaveLength(1);
   });
 });

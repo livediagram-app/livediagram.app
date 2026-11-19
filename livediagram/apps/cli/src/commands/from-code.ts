@@ -176,7 +176,7 @@ export async function linkFromCode(
   }
   if (ctx !== null && !input.files?.length && input.doc === undefined) {
     const { runLinkSources } = await import('./from-code-sources');
-    const ran = await runLinkSources(io, ctx, input, log);
+    const ran = await runLinkSources(io, ctx, log);
     if (ran) return ran;
   }
   const { graph, files } = await drawFromCode(io, input, log);
