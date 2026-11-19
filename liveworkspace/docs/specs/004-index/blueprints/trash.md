@@ -12,6 +12,7 @@ Scope, by file:
 | `liveworkspace/apps/index/src/purge.ts`                                                                  | `purgeRows`, `drainTombstones`, `drainTombstonesSoon`, `sweepEmpty`, `sweep`, `sweepLooseEvents`            |
 | `liveworkspace/apps/index/src/account-purge.ts`                                                          | `POST /internal/purge-person`, `purgePerson`, `continuePurges`                                              |
 | `liveworkspace/apps/index/src/person-notices.ts`                                                         | `recordPersonNotices`, `drainPersonNotices`                                                                 |
+| `liveworkspace/apps/index/src/assistant-notices.ts`                                                      | `POST /internal/assistant-revoked`, `recordAssistantNotices`, `drainAssistantNotices` (Work Tracker 1294)   |
 | `packages/index-app/src/purge.ts`, `anonymise.ts`                                                        | Each app's side: drop an item's room, anonymise a closed account in its items                               |
 
 ## Domain and naming
@@ -24,6 +25,7 @@ Scope, by file:
 | Person purge  | `person_purges (person_id)`                     | A closed account's purge, run again for 2 hours                         |
 | Person notice | `person_app_notices (person, app, item)`        | What an app must hear about a closed account (`item ''` for the person) |
 | Notice guest  | `person_notice_guests (person, guest)`          | A guest merged into a closed account, named in its notices' `guests`    |
+| Tool notice   | `assistant_notices (person, client, app, item)` | What an app must hear about a revoked AI tool's token                   |
 | Anonymised    | `ANONYMISED_PERSON` `'deleted'`                 | What a closed account's id becomes where it stays                       |
 
 ## Behaviour and state
@@ -113,15 +115,29 @@ hour); each `POST <app>/api/internal/people/:id/purge { items, guests }` with up
 confirmed; a failure gets `attempts + 1`. Each run then deletes the `person_notice_guests` of every person with no
 notice left (confirmed or given up).
 
+### AI tool notices (`assistant-notices.ts`)
+
+[One Explorer contracts "Revoking an AI tool's token"](../one-explorer-contracts.md#revoking-an-ai-tools-token).
+`POST /internal/assistant-revoked {personId, client, teamIds}` (merge key; `personId` a `user_` id, `client` 1 to 80
+characters, `teamIds` at most 200 ids, else `400`) records one row per item of `ASSISTANT_APPS` (`['liveplanner']`)
+in one batch, `INSERT OR IGNORE`, each source capped at `RECORD_MAX` (5,000): `items` by `owner_id` (`items_owner`),
+the teams' live items by `scope` and `app` (`items_live_app`), `shared_with`, `opens` and `events` by the person
+(`events_actor`). It answers `200 { items }` (the rows the batch added) and drains in `waitUntil`; the frequent cron
+drains too (`step('assistant notices')`). A drain gives up rows older than 7 days (logged), then takes up to 20 due
+(person, client, app) groups (never tried, or not for an hour); each
+`POST <app>/api/internal/people/:id/assistant-revoked { client, items }` with up to 100 items; confirmed rows go; an
+app not configured counts as confirmed; a failure gets `attempts + 1` and `last_attempt_at`.
+
 ## Data and persistence
 
-| Table                  | Key                         | Indexes                                          | Written by              | Read by              |
-| ---------------------- | --------------------------- | ------------------------------------------------ | ----------------------- | -------------------- |
-| `purge_tombstones`     | `item_id`                   | `purge_tombstones_due (last_attempt_at)`         | every purge             | drains               |
-| `person_purges`        | `person_id`                 |                                                  | purge request; settle   | the frequent cron    |
-| `person_app_notices`   | `(person_id, app, item_id)` | `person_app_notices_due (last_attempt_at)`       | `purgePerson`           | `drainPersonNotices` |
-| `person_notice_guests` | `(person_id, guest_id)`     |                                                  | `purgePerson`           | `drainPersonNotices` |
-| `items` (Trash)        | `id`                        | `items_trash`, `items_trashed_at`, `items_empty` | delete, restore, sweeps | the Trash, sweeps    |
+| Table                  | Key                                 | Indexes                                          | Written by               | Read by                 |
+| ---------------------- | ----------------------------------- | ------------------------------------------------ | ------------------------ | ----------------------- |
+| `purge_tombstones`     | `item_id`                           | `purge_tombstones_due (last_attempt_at)`         | every purge              | drains                  |
+| `person_purges`        | `person_id`                         |                                                  | purge request; settle    | the frequent cron       |
+| `person_app_notices`   | `(person_id, app, item_id)`         | `person_app_notices_due (last_attempt_at)`       | `purgePerson`            | `drainPersonNotices`    |
+| `person_notice_guests` | `(person_id, guest_id)`             |                                                  | `purgePerson`            | `drainPersonNotices`    |
+| `assistant_notices`    | `(person_id, client, app, item_id)` | `assistant_notices_due (last_attempt_at)`        | `recordAssistantNotices` | `drainAssistantNotices` |
+| `items` (Trash)        | `id`                                | `items_trash`, `items_trashed_at`, `items_empty` | delete, restore, sweeps  | the Trash, sweeps       |
 
 `person_purges.team_ids` is a JSON list (default `'[]'`); `finished_at` null while work remains; `runs` default 0.
 

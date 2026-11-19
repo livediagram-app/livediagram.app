@@ -6,13 +6,14 @@ are relative to the repository root.
 
 Scope, by file:
 
-| File                                                  | Role                                                                                    |
-| ----------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/accounts/src/tokens.ts`           | Mint, list, revoke, verify, revoke by secret, live ids                                  |
-| `liveworkspace/apps/accounts/src/token-expiry.ts`     | The week-ahead email                                                                    |
-| `liveworkspace/apps/accounts/src/bench-accounts.ts`   | `POST /api/auth/internal/bench-accounts` (development)                                  |
-| `liveworkspace/apps/accounts/src/workbench/revoke.ts` | `endTokenWorkbench`: a revoked token's pairings end                                     |
-| `packages/auth-client/src/account.ts`                 | Each app's side: `verifyApiToken` (cached 60 s valid, 10 s invalid), mint, revoke, live |
+| File                                                   | Role                                                                                    |
+| ------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/accounts/src/tokens.ts`            | Mint, list, revoke, verify, revoke by secret, live ids                                  |
+| `liveworkspace/apps/accounts/src/token-expiry.ts`      | The week-ahead email                                                                    |
+| `liveworkspace/apps/accounts/src/bench-accounts.ts`    | `POST /api/auth/internal/bench-accounts` (development)                                  |
+| `liveworkspace/apps/accounts/src/workbench/revoke.ts`  | `endTokenWorkbench`: a revoked token's pairings end                                     |
+| `liveworkspace/apps/accounts/src/assistant-revoked.ts` | `tellAssistantRevoked`: a revoked AI tool's signal to the index (Work Tracker 1294)     |
+| `packages/auth-client/src/account.ts`                  | Each app's side: `verifyApiToken` (cached 60 s valid, 10 s invalid), mint, revoke, live |
 
 ## Domain and naming
 
@@ -46,6 +47,13 @@ A secret passes `isApiTokenFormat` when it has either prefix and more than 24 ch
 - Mint: one statement, `INSERT … SELECT … WHERE (live count) < 20`, so two at once can't pass the cap.
 - Revoke: one statement, `UPDATE … SET revokedAt` where not revoked (by id and owner, or by the secret's hash).
 - No event goes to the index for a token: they were the Timeline's, which is gone.
+- After a revoke (both routes), `tellAssistantRevoked` runs in `waitUntil` ([accounts.md "Revoking a token tells
+  the apps"](../accounts.md#revoking-a-token-tells-the-apps)): one read of the revoked row (`name`, `readOnly`) by
+  id and owner, one of the owner's live writable tokens' names (`api_token_user_idx`), and, when none matches the
+  name (`lower(trim(name))`), the account's team ids (`teamsClaim`) and one `POST {INDEX_URL}/internal/assistant-revoked`
+  with `INDEX_MERGE_KEY` (through the `INDEX` binding where there is one). A read-only token, a name some live token
+  still holds, or no index configured sends nothing; any failure is logged (`[tokens] assistant revoke signal`) and
+  never reaches the revoke's answer.
 - Verify: an indexed lookup by hash, joined to the user; `lastUsedAt` stamped only when older than a minute (`AND
 (lastUsedAt IS NULL OR lastUsedAt < ?)`); the email only when verified.
 
