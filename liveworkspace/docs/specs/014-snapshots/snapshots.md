@@ -64,6 +64,26 @@ snapshots by a scoped item id. livedocuments' named versions (Name This Version,
   account's name taken off it), under the same size cap and chunking as a take.
 - **Gone with their part.** The app removes a part's save points when the part goes (livedocuments: with the tab).
 
+## When an account closes
+
+Closing an account deletes the person's own items in every app, and their snapshots go with them
+([sign-in.md](../003-accounts/sign-in.md#closing-an-account)). A snapshot they took in someone else's item (as an
+Editor of a colleague's plan, say) is the item's, and stays: its content is the owner's, and only the person's name
+comes off it. Their id becomes `deleted` and their name "Deleted account", as team member lists and comments already
+read (Work Tracker 1310). The colour stays, as it names no one.
+
+- **Every snapshot in the item**, the whole item's five and the save points of one part alike (livedocuments' named
+  versions), taken under the account's id or a guest id merged into it.
+- **Only the author.** The snapshot's content, name, kind, size and time are left as they are, and so is every
+  snapshot anyone else took.
+- **Through the index's notice.** The index tells each app which of its items may name the person
+  ([one-explorer-contracts.md](../004-index/one-explorer-contracts.md) "Closing an account", the items they opened or
+  reached by a link among them) and each item's room clears the author as it takes their name off the item's
+  comments. A room nobody has open is woken by that call, so the next person to open it, however much later, finds
+  the name gone; a room the call could not reach is asked again an hour later.
+- **Safe to run twice.** A second run finds no snapshot under their ids and changes nothing. A room that never took a
+  snapshot has no snapshot tables, and none are made for it.
+
 ## Revert
 
 Revert replaces the item's content in place with the snapshot's. Its steps, in order, all inside the item's object:

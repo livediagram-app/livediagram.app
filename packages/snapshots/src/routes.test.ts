@@ -11,6 +11,7 @@ import {
 } from './routes';
 import {
   advanceGeneration,
+  clearSnapshotAuthors,
   listSnapshots,
   readGeneration,
   readSnapshotText,
@@ -318,7 +319,7 @@ describe('answerSnapshotRoute', () => {
 });
 
 describe('the store over a database that answers no rows', () => {
-  it('reads empty lists, an unknown generation as 1 after an advance, and a list with no results', async () => {
+  it('reads empty lists, an unknown generation as 1 after an advance, and a list or a clear with no results', async () => {
     const statement = {
       bind: () => statement,
       first: async () => null,
@@ -327,6 +328,9 @@ describe('the store over a database that answers no rows', () => {
     };
     const bare = { prepare: () => statement, batch: async () => [], exec: async () => ({}) };
     expect(await listSnapshots(bare, 'p1')).toEqual([]);
+    expect(
+      await clearSnapshotAuthors(bare, ['user_a'], { id: 'deleted', name: 'Deleted account' }),
+    ).toBe(0);
     statement.first = (async () => ({ chunks: 0 })) as never;
     expect(await readSnapshotText(bare, 'p1', 's')).toBe('');
     statement.first = async () => null;

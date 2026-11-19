@@ -304,6 +304,31 @@ export async function rewriteSnapshotText(
   return 'ok';
 }
 
+/** SN34: a closed account's name off every snapshot it took in this database, the item's own and every scoped save
+ *  point alike: `author_id` and `author_name` become `as` where `author_id` is one of `personIds`. Nothing else
+ *  changes, and no table is made where none is. Returns how many rows changed; a second run changes none. */
+export async function clearSnapshotAuthors(
+  db: SnapshotDb,
+  personIds: readonly string[],
+  as: { id: string; name: string },
+): Promise<number> {
+  if (personIds.length === 0) return 0;
+  if (!ready.has(db)) {
+    const table = await db
+      .prepare("SELECT 1 AS found FROM sqlite_master WHERE type = 'table' AND name = 'snapshots'")
+      .first<{ found: number }>();
+    if (table === null) return 0;
+  }
+  const res = await db
+    .prepare(
+      `UPDATE snapshots SET author_id = ?1, author_name = ?2
+        WHERE author_id IN (SELECT value FROM json_each(?3)) RETURNING id`,
+    )
+    .bind(as.id, as.name, JSON.stringify(personIds))
+    .all<{ id: string }>();
+  return (res.results ?? []).length;
+}
+
 // SN9: the generation each database handle has read, per item. An object holds one item and every revert goes through
 // advanceGeneration, so the kept value is the stored one.
 const generations = new WeakMap<SnapshotDb, Map<string, number>>();

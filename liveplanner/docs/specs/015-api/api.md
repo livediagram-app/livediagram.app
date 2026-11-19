@@ -592,6 +592,7 @@ This is the one list of columns that hold an owner id (a guest id or an account 
 | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `plan.owner_id`              | In each plan's own store: the account's own plans are deleted for good through the index first, which purges each store |
 | `agent_changesets.author_id` | In each plan's own store: those on someone else's plan stay until the 30-day changeset retention ages them out          |
+| `snapshots.author_id`        | In each plan's own store: on someone else's plan the name comes off each snapshot they took (`anonymisePlan`), it stays |
 
 **The pictures they uploaded** for Image fields are in liveworkspace's media service: account deletion asks it to delete every image the owner uploaded (`forgetOwner`) before anything else, so a failure leaves the account to delete again. **Workbench pairings and sessions** are liveworkspace's, which ends them when the account closes there. Account deletion runs on `DELETE /api/account` and whenever the index says an account closed (`POST /api/internal/people/:id/purge {items, guests}`), wherever it was closed. The same door takes their name off up to 100 listed plans of other people's (`anonymisePlan`): the account's and each guest's in `guests` (the guests merged into it, at most 32) alike, by raw id and by hashed `itemPersonId` (Work Tracker 1241).
 

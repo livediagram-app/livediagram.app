@@ -1,6 +1,6 @@
 # Snapshots blueprint
 
-Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN33 are cited from the code.
+Derived from [snapshots.md](../snapshots.md). Codes SN1 to SN34 are cited from the code.
 
 ## Domain and naming
 
@@ -93,6 +93,15 @@ SN32. `renameSnapshot(db, itemId, id, name)`: sets `name`; `false` for no such s
 SN33. `rewriteSnapshotText(db, itemId, id, text)`: the text measured as SN4 measures it (`too_large` writes nothing),
 then one batch that drops the old chunks, writes the new ones and sets `bytes` and `chunks`; `missing` for no such
 snapshot of the item.
+
+SN34. `clearSnapshotAuthors(db, personIds, as)` (spec "When an account closes"): one `UPDATE snapshots SET author_id,
+author_name` to `as` (the caller's `ANONYMISED_PERSON` and `ANONYMISED_NAME`, from `@liveworkspace/index-app`, which
+this package does not import) where `author_id` is one of `personIds` (one JSON parameter through `json_each`, so any
+number of ids is one statement), over every row in the database: the item's own five and every scoped save point.
+`author_color`, the name, the kind, the body and every other row are left alone. Returns how many rows it changed.
+When the database has no `snapshots` table (one `sqlite_master` lookup, skipped once SN3 has run on the handle) it
+answers 0 and makes none. Each app's anonymise step (`anonymiseDocument`, `anonymisePlan`, `anonymiseDesign`) calls it
+with `closedPersonIds`, after its own batch.
 
 ## Behaviour and state
 
@@ -218,7 +227,11 @@ out only as the viewer's own ("You").
 A take exports the item once (the same work as a Drive mirror push) and writes at most `32 MiB / 600,000` = 56 chunk
 rows. A list reads summaries only. The fence costs one kept integer per request after the first; the first read per
 object is one `sqlite_master` lookup. Five snapshots at the cap are 160 MiB, inside the object's storage. A revert
-writes every tab once in one batch, then deletes the extra tabs one by one.
+writes every tab once in one batch, then deletes the extra tabs one by one. The author clear (SN34) is one statement
+per room that scans the `snapshots` summaries, never the chunks; `author_id` has no index, as a room holds five rows
+plus livedocuments' named versions (25 a tab), and an index would cost every take a write. Measured on node:sqlite:
+0.04 ms over 130 rows, 0.44 ms over 2,505, 4.6 ms over 25,005 (a second run 1.8 ms); the store test holds 25,005 rows
+under a 100 ms CPU budget.
 
 ## Observability
 
@@ -234,11 +247,15 @@ charts them (`apps/site/app/telemetry/_shared/snapshot-walkthrough-metrics.ts`).
 ## Testing
 
 - `packages/snapshots`: store (chunking at the limit and a surrogate pair at a cut, the cap at six, unreadable bodies,
-  the generation cache, a scoped take with its own id, no prune and a statement alongside, rename, rewrite), routes (every row of SN10 and SN11, the revert's order with a door that fails at each step),
+  the generation cache, a scoped take with its own id, no prune and a statement alongside, rename, rewrite, the
+  author clear over several ids, a second run, another author's row and a database with no table), routes (every row of SN10 and SN11, the revert's order with a door that fails at each step),
   fence (each SN16 branch), client fence (stamp and note), the UI (the History host's gating, take, revert confirm,
   delete confirm, empty, error, busy, pins on the timeline and their rail).
 - Each app's api: snapshot, edit, revert gives the snapshot back; a sixth drops the oldest; Editor, Participant,
   Viewer, tab-scoped link and token gates; a stale write after a revert is refused.
+- Each app's room store: an account closed through the index's people purge reads "Deleted account" on the snapshots
+  it took in someone else's item, read back through the snapshots route when the item is next opened; another
+  author's snapshot and every body are unchanged.
 - `@liveworkspace/index-app`: `replaceTabs` writes, reorders, re-folders, re-creates and removes tabs, revisions move
   forward.
 

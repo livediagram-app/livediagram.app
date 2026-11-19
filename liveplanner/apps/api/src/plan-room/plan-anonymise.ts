@@ -21,6 +21,7 @@ import {
 import { itemPersonId } from '@liveplanner/items';
 import { ANONYMISED_ITEM_PERSON } from '../db/items';
 import { FORGET_ASSISTANTS_SQL } from './known-assistants';
+import { clearSnapshotAuthors } from '@liveworkspace/snapshots/server';
 import type { PlanEnv } from '../types';
 
 // A closed account as a card, its history and a sheet name them.
@@ -247,5 +248,11 @@ export async function anonymisePlan(
       .bind(ANONYMISED_PERSON, planId, idList),
   );
   const results = await db.batch(writes);
-  return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);
+  // The snapshots they took here (liveworkspace/docs/specs/014-snapshots "When an account closes", Work Tracker 1310):
+  // the author only; the snapshot is the item's and stays.
+  const snapshots = await clearSnapshotAuthors(db, ids, {
+    id: ANONYMISED_PERSON,
+    name: ANONYMISED_NAME,
+  });
+  return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0) + snapshots;
 }

@@ -21,6 +21,7 @@ import {
 import { collabKeyFor, reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { MERGED_GUESTS_MAX } from '../person-store/merged-guests';
+import { clearSnapshotAuthors } from '@liveworkspace/snapshots/server';
 import type { DocumentEnv } from '../types';
 
 export async function anonymiseDocument(
@@ -93,5 +94,11 @@ export async function anonymiseDocument(
       .bind(ANONYMISED_PERSON, ANONYMISED_NAME, JSON.stringify(keys)),
   );
   const results = await db.batch(writes);
-  return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);
+  // The snapshots they took here (liveworkspace/docs/specs/014-snapshots "When an account closes", Work Tracker 1310):
+  // the author only; the snapshot is the item's and stays.
+  const snapshots = await clearSnapshotAuthors(db, ids, {
+    id: ANONYMISED_PERSON,
+    name: ANONYMISED_NAME,
+  });
+  return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0) + snapshots;
 }

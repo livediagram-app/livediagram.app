@@ -545,14 +545,14 @@ API tokens are liveworkspace's alone ([Public API and API tokens](public-api-and
 
 This is the one list of columns that hold an owner id (a guest id or an account userId), and what **account deletion** (`deleteAccount` in `apps/api/src/db/account.ts`) does with each. Account deletion runs on `DELETE /api/account` and whenever the index says an account closed (`POST /api/internal/people/:id/purge`, the `personClosed` door), wherever it was closed. A guest's items move to the account in the index when they sign in ([Auth + guest access → Guest → account](../014-identity/auth-and-guest-access.md#guest--account)), and the index's merge door (`POST /api/internal/people/:guest/merge`, `personMerged`) moves the guest's images to the account at the media service (`mergeOwner`). A column holding an owner id is named `owner_id` (`author_id` on `agent_changesets`); `apps/api/src/db/account-owner-columns.test.ts` finds every such column in the document schema, fails until it is listed there, and proves each against a real SQLite database.
 
-| Column                       | Account deletion                                                                                                                                        |
-| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `document.owner_id`          | In each document's own store: the account's own documents are deleted for good through the index first, which purges each store                         |
-| `agent_changesets.author_id` | In each document's own store: those on someone else's document stay until the 30-day changeset retention ages them out                                  |
-| `image_owners.owner_id`      | In each document's own store, the media service's answer cached: the service deletes the account's images, and a document then serves nothing of theirs |
-| `notify_claims.sender`       | In each document's own store: dropped from each document the index names when the account closes (`anonymise`), and past the dedupe window otherwise    |
-| `tab_versions.author_id`     | In each document's own store: the name comes off each version (`anonymise`), and unnamed versions age out after 30 days                                 |
-| `snapshots.author_id`        | In each document's own store: the name comes off each named version a tab keeps there (`anonymise`), its content too                                    |
+| Column                       | Account deletion                                                                                                                                           |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `document.owner_id`          | In each document's own store: the account's own documents are deleted for good through the index first, which purges each store                            |
+| `agent_changesets.author_id` | In each document's own store: those on someone else's document stay until the 30-day changeset retention ages them out                                     |
+| `image_owners.owner_id`      | In each document's own store, the media service's answer cached: the service deletes the account's images, and a document then serves nothing of theirs    |
+| `notify_claims.sender`       | In each document's own store: dropped from each document the index names when the account closes (`anonymise`), and past the dedupe window otherwise       |
+| `tab_versions.author_id`     | In each document's own store: the name comes off each version (`anonymise`), and unnamed versions age out after 30 days                                    |
+| `snapshots.author_id`        | In each document's own store: the name comes off each snapshot and named version they took (`anonymise`, Work Tracker 1310), a named version's content too |
 
 **The person's images** go first, at liveworkspace's media service (`forgetOwner`, every image the account uploaded, in any app), so a failure leaves the account whole to delete again. **The person's workbench** is liveworkspace's, which ends every pairing (closing the rooms its sessions had open) when the account closes ([liveworkspace/docs/specs/011-workbench/workbench.md](../../../../liveworkspace/docs/specs/011-workbench/workbench.md) "Ending access").
 

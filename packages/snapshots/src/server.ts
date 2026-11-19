@@ -12,6 +12,7 @@ export { fenceStaleWrite, requestGeneration, stampGeneration } from './fence';
 export {
   advanceGeneration,
   chunkText,
+  clearSnapshotAuthors,
   deleteSnapshot,
   listSnapshots,
   readGeneration,
