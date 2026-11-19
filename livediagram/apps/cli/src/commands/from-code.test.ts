@@ -176,12 +176,20 @@ describe('link from-code, writing', () => {
       );
     };
     const io = session(route, { '/work/wrangler.toml': WRANGLER });
-    const { code, out } = await cli(io, ['link', 'from-code']);
+    const { code, out, err } = await cli(io, ['link', 'from-code']);
     expect(code).toBe(0);
+    // The tab remembers the files it was drawn from (diagram-sources.md "Writing the record").
     expect(posted[0]).toMatchObject({
       name: 'api',
-      tabs: [{ name: 'api', graph: { title: 'api' } }],
+      tabs: [
+        {
+          name: 'api',
+          graph: { title: 'api' },
+          sources: { bridge: 'infra', files: [{ name: 'wrangler.toml', text: WRANGLER }] },
+        },
+      ],
     });
+    expect(err).toMatch(/update later: livediagram link from-code --doc \S+ --update\n$/);
     expect(out).toMatch(
       /^\+ document \w{8} "api" · 1 tab · https:\/\/www\.livediagram\.app\/document\//,
     );
@@ -227,10 +235,25 @@ describe('link from-code, writing', () => {
       return undefined;
     };
     const io = session(route, { '/work/compose.yml': COMPOSE });
-    const { code, out } = await cli(io, ['link', 'from-code', '--doc', 'Shop', '-q']);
+    const { code, out, err } = await cli(io, ['link', 'from-code', '--doc', 'Shop', '--env', 'x']);
     expect(unrouted).toEqual([]);
     expect(code).toBe(0);
-    expect(sent[0]!.replace).toMatchObject({ name: 'Compose', graph: { title: 'Compose' } });
-    expect(out).toBe('cs_1\n');
+    expect(sent[0]!.replace).toMatchObject({
+      name: 'Compose',
+      graph: { title: 'Compose' },
+      sources: { bridge: 'infra', env: 'x', files: [{ name: 'compose.yml' }] },
+    });
+    expect(out).toMatch(/^\+ tab /);
+    expect(err).toMatch(
+      /update later: livediagram link from-code --doc "Shop" --tab \S+ --update\n$/,
+    );
+    const quiet = await cli(session(route, { '/work/compose.yml': COMPOSE }), [
+      'link',
+      'from-code',
+      '--doc',
+      'Shop',
+      '-q',
+    ]);
+    expect(quiet.out).toBe('cs_1\n');
   });
 });

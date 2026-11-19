@@ -147,15 +147,14 @@ export const linkFromCode = defineVerb({
   id: 'link.from-code',
   summary: 'Draw wrangler.toml, Compose, Terraform or Kubernetes files as a tab',
   description:
-    'Reads wrangler.toml, Docker Compose, Terraform (.tf) and Kubernetes manifest files (the ones named, else the wrangler.toml, Compose and .tf files in this directory) and draws them as one laid-out architecture tab: a new document, or a tab added to --doc. Keys it does not draw are named on stderr. --dry-run prints the graph as JSON instead, without signing in.',
+    "Draws wrangler.toml, Compose, .tf and Kubernetes files (named, else this directory's) as one architecture tab that remembers them: a new document, or a tab on --doc. --update redraws that tab from its files, keeping layout and edits; in a repository link with nothing named, each tab its [[sources]] bind. --dry-run prints the graph as JSON.",
   behaviour: 'write',
   local: true,
   input: z.object({
-    files: z
-      .array(z.string())
-      .optional()
-      .describe("wrangler.toml, Compose, .tf or Kubernetes files; this directory's by default"),
-    doc: z.string().optional().describe('A document to add the tab to; a new document by default'),
+    files: z.array(z.string()).optional().describe("The files; this directory's by default"),
+    doc: z.string().optional().describe('The document for the tab; a new one by default'),
+    tab: z.string().optional().describe('The tab --update redraws; the first by default'),
+    update: z.boolean().optional().describe('Redraw a tab on --doc from its files'),
     name: z
       .string()
       .min(1)
@@ -165,7 +164,10 @@ export const linkFromCode = defineVerb({
       .string()
       .optional()
       .describe('A wrangler.toml environment to draw in place of the top level'),
-    dryRun: z.boolean().optional().describe('Print the graph as JSON; create nothing'),
+    dryRun: z
+      .boolean()
+      .optional()
+      .describe('Write nothing: print the graph, or with --update the counts'),
   }),
   output: z.object({
     text: z.string(),
@@ -180,10 +182,10 @@ export const linkFromCode = defineVerb({
     positionals: ['...files'],
     examples: [
       'livediagram link from-code',
-      'livediagram link from-code apps/*/wrangler.toml infra/*.tf --doc "Architecture"',
+      'livediagram link from-code --doc "Architecture" --tab Infra --update',
     ],
     prints:
-      'the document or tab line, as document create or tab add prints it; with --dry-run, the graph as JSON',
+      'the document or tab line; with --update, the counts and changeset; with --dry-run, the graph',
   },
 });
 

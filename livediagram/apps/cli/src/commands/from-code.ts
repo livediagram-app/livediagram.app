@@ -10,6 +10,7 @@ import {
   INFRA_MAX_NODES,
   infraGraph,
   skippedLine,
+  sourceFiles,
   type InfraFile,
   type InfraFormat,
 } from '@livediagram/document/infra-code';
@@ -30,6 +31,8 @@ export const STANDARD_INFRA_FILES = [
 export type FromCodeInput = {
   files?: string[];
   doc?: string;
+  tab?: string;
+  update?: boolean;
   name?: string;
   env?: string;
   dryRun?: boolean;
@@ -96,9 +99,17 @@ async function readFiles(io: CliIo, named: readonly string[] | undefined): Promi
   return found;
 }
 
-/** The files read, drawn as one graph, with the summary on stderr. Throws a CliError naming the file at fault. */
-export async function drawFromCode(io: CliIo, input: FromCodeInput, log: DebugLog) {
-  const files = await readFiles(io, input.files);
+/**
+ * The files read (or `given`, already read), drawn as one graph, with the summary on stderr. Throws a CliError naming
+ * the file at fault.
+ */
+export async function drawFromCode(
+  io: CliIo,
+  input: Pick<FromCodeInput, 'files' | 'env'>,
+  log: DebugLog,
+  given?: InfraFile[],
+) {
+  const files = given ?? (await readFiles(io, input.files));
   const result = infraGraph(files, input.env !== undefined ? { env: input.env } : {});
   if (!result.ok) {
     const { code, message, file } = result.error;
@@ -130,23 +141,61 @@ export async function drawFromCode(io: CliIo, input: FromCodeInput, log: DebugLo
     io.stderr(
       `left out: ${result.linesLeftOut} lines past the first ${result.graph.edges.length}\n`,
     );
-  return result.graph;
+  return { graph: result.graph, files };
 }
 
-/** `link from-code`: the graph printed (`--dry-run`, no `ctx`), or sent as a new document or a tab on `--doc`. */
+/**
+ * `link from-code`: the graph printed (`--dry-run`, no `ctx`), sent as a new document or a tab on `--doc` with the
+ * files it came from, a tab updated from its files (`--update`), or every tab a link file binds to files.
+ */
 export async function linkFromCode(
   io: CliIo,
   ctx: VerbContext | null,
   input: FromCodeInput,
   log: DebugLog,
 ): Promise<FromCodeOutput> {
-  const graph = await drawFromCode(io, input, log);
+  if (input.update || input.tab !== undefined) {
+    if (input.doc === undefined)
+      throw new CliError({
+        exit: EXIT.usage,
+        code: 'usage',
+        message: `${input.update ? '--update' : '--tab'} needs --doc, the document the tab is on`,
+        hint: 'livediagram link from-code --doc <doc> --tab <tab> --update',
+      });
+    if (!input.update)
+      throw new CliError({
+        exit: EXIT.usage,
+        code: 'usage',
+        message: '--tab names the tab --update updates; a new tab is added with --doc alone',
+        hint: 'livediagram link from-code --doc <doc> --tab <tab> --update',
+      });
+  }
+  if (ctx !== null && input.update) {
+    const { updateFromCode } = await import('./from-code-update');
+    return updateFromCode(io, ctx, { ...input, doc: input.doc! }, log);
+  }
+  if (ctx !== null && !input.files?.length && input.doc === undefined) {
+    const { runLinkSources } = await import('./from-code-sources');
+    const ran = await runLinkSources(io, ctx, input, log);
+    if (ran) return ran;
+  }
+  const { graph, files } = await drawFromCode(io, input, log);
   // No context is `--dry-run`, run offline (main.ts).
   if (ctx === null) return { text: JSON.stringify(graph, null, 2), id: null, dryRun: true, graph };
+  // The files the tab was drawn from travel with it, so it can be updated from them (diagram-sources.md "Writing the
+  // record"); the api works out what each node became.
+  const sources = {
+    bridge: 'infra' as const,
+    files: sourceFiles(files),
+    ...(input.env !== undefined ? { env: input.env } : {}),
+  };
   // The drawing's title names what is made unless --name does (I5); infraGraph always titles it.
   const name = input.name ?? String(graph.title);
   // The graph handed to the write verbs as the file they read, so the request is theirs.
-  const withGraph: VerbContext = { ...ctx, readInput: async () => JSON.stringify(graph) };
+  const withGraph: VerbContext = {
+    ...ctx,
+    readInput: async () => JSON.stringify({ replace: { graph, sources } }),
+  };
   // Each through its own schema, so its defaults (the write flags) are set as on its command line.
   if (input.doc === undefined) {
     const verb = verbById('document.create')!;
@@ -154,6 +203,7 @@ export async function linkFromCode(
       text: string;
       id: string;
     };
+    io.stderr(`update later: livediagram link from-code --doc ${out.id} --update\n`);
     return { text: out.text, id: out.id, dryRun: false, graph };
   }
   const verb = verbById('tab.add')!;
@@ -161,5 +211,10 @@ export async function linkFromCode(
     withGraph,
     verb.input.parse({ doc: input.doc, name, file: 'infra' }),
   )) as { text: string; changeset: { id: string } };
+  const tabId = /^\+ tab (\S+)/.exec(out.text)?.[1];
+  if (tabId)
+    io.stderr(
+      `update later: livediagram link from-code --doc ${JSON.stringify(input.doc)} --tab ${tabId} --update\n`,
+    );
   return { text: out.text, id: out.changeset.id, dryRun: false, graph };
 }
