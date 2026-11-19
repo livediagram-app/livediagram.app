@@ -116,7 +116,8 @@ type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
 
 export function pickTabFile(
   accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
-  opts: { maxBytes?: number } = {},
+  // `binary`: the file is handed over unread (a .vsdx is read as bytes by its importer).
+  opts: { maxBytes?: number; binary?: boolean } = {},
 ): Promise<PickedTabFile | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
@@ -154,6 +155,10 @@ export function pickTabFile(
       // Past the caller's limit the file is never read: reading a huge file would hang the tab before it is refused.
       if (opts.maxBytes !== undefined && file.size > opts.maxBytes) {
         finish({ name: file.name, text: '', file, tooBig: true });
+        return;
+      }
+      if (opts.binary) {
+        finish({ name: file.name, text: '', file });
         return;
       }
       try {
