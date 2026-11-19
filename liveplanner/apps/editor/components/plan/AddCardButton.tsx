@@ -1,6 +1,6 @@
 'use client';
 
-// A cell's Add card (docs/specs/026-plan/plan-board.md "Working on a board"): a quiet button at the
+// A cell's Add Card (docs/specs/026-plan/plan-board.md "Working on a board"): a quiet button at the
 // foot of the column that opens the Add a Card menu. The board's N key opens it for the focused
 // card's cell (`open`). On a slot board (`compact`) it is a column head's + instead (docs/specs/026-plan/plan-tabs.md
 // "A board in a slot is simplified").
@@ -13,7 +13,7 @@ import type { PlanPalette } from './plan-palette';
 export function AddCardButton({
   palette,
   types,
-  label = 'Add card',
+  label = 'Add Card',
   open: openNow = false,
   onClosed,
   onAdd,

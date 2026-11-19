@@ -183,7 +183,7 @@ Stored on the element, shared by everyone, undone like any element edit:
 
 Where each is set, so a setting lives with what it changes, never in one central panel:
 
-- **A column's own settings** sit on the column: a cog at the far right of its head (always shown, for an Editor) opens a small popover (a sheet on a phone). A **right-click on the column's empty background** (anywhere in its cell that is not a card, its + Add card row included) opens the same settings, anchored to that column's cog as a press on the cog does, never the board's element menu, the tab's menu or the browser's; a right-click on a card keeps the card's menu. Only for someone who may change the board's set-up (where the cog shows); for anyone else a right-click there does what it did before (the board's element menu, or the tab's on a maximised or tab-filling board). On top is a **toolbar**: **Move Left** and **Move Right** at its start, one
+- **A column's own settings** sit on the column: a cog at the far right of its head (always shown, for an Editor) opens a small popover (a sheet on a phone). A **right-click on the column's empty background** (anywhere in its cell that is not a card, its + Add Card row included) opens the same settings, anchored to that column's cog as a press on the cog does, never the board's element menu, the tab's menu or the browser's; a right-click on a card keeps the card's menu. Only for someone who may change the board's set-up (where the cog shows); for anyone else a right-click there does what it did before (the board's element menu, or the tab's on a maximised or tab-filling board). On top is a **toolbar**: **Move Left** and **Move Right** at its start, one
   segmented control of two chevrons (each named by a tooltip; Move Left off on the first column, Move Right on the
   last), and **Remove** (a column glyph and the word; named Remove Column, rose on hover) at its end, apart from them
   as it takes the column away. A move glides: the column slides to its new place over 240 ms (a quick start, a soft
@@ -245,7 +245,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   picker's telemetry. Editor only: someone who may not edit sees no cog and no menu.
 - **Card types a board shows**: the Cards menu's **Card Types** row, a row per card type ticked on or off in an [option list](#option-lists) (none
   named is every type). The last one can be turned off too: the board then takes no type, shows no cards, and each
-  cell's Add card says so ("No card types on this board yet. Turn one on in Board, Supported Cards.", stored as an
+  cell's Add Card says so ("No card types on this board yet. Turn one on in Board, Supported Cards.", stored as an
   empty `addTypes`). A board shows only cards of those types, and takes only those:
   Add Card offers only them, a palette card of another type gets the red refused zone, and a card of another type
   dragged from another board is refused, each saying so ("This board shows Note, Idea and Action cards"). A card it
@@ -520,11 +520,11 @@ In Plan mode:
   - **No gap where the card already is**: dropping a card where it already is changes nothing, so no placeholder
     opens there. Over its own cell, at its own place (just before the card after it, or at the cell's end when it
     is the last), no gap shows; so a card alone in its column shows no drop zone anywhere in that cell, and the
-    cell's + Add card row stays as it is. On a sorted board, where the sort decides a card's place, its own cell shows
+    cell's + Add Card row stays as it is. On a sorted board, where the sort decides a card's place, its own cell shows
     no drop zone at all. Letting go there does nothing: no write, no undo step, no announcement. A group carried
     together is not held to this (its cards may come from several places).
-  - **Add card steps aside**: while a placeholder shows in a cell (a card dragged there, a card from another board,
-    a new card dragged from the Cards panel), the cell's **+ Add card** row fades and folds away, giving
+  - **Add Card steps aside**: while a placeholder shows in a cell (a card dragged there, a card from another board,
+    a new card dragged from the Cards panel), the cell's **+ Add Card** row fades and folds away, giving
     its room to the placeholder, and comes back the same way once the placeholder leaves: one smooth motion of its
     room opening as it fades up, on the placeholder's own 180 ms and easing, so the placeholder closing and the row
     returning move together, and the row is clipped to its opening room (never drawn whole before its room is there). It folds by its row
@@ -536,7 +536,7 @@ In Plan mode:
 - **Drag a card off the board** onto the canvas to leave a Plan card there; the item stays on the board too.
   **Drag a Plan card onto a board** to move its item to the end of the column it lands on; the Plan card goes
   away.
-- **Add a card**: each cell ends in a quiet **+ Add card** ("Add your first card" on an empty board). It opens
+- **Add a card**: each cell ends in a quiet **+ Add Card** ("Add Your First Card" on an empty board). It opens
   the **Add a Card** menu (the shared anchored menu with an option list under a small "Add a Card" heading; a bottom
   sheet titled "Add a Card" on a phone), in the board's own colours (the tab's theme: its column colour, border and
   text, as the cells it opens from): a row per card type the board shows, each drawn as the header's chips draw
@@ -547,7 +547,7 @@ In Plan mode:
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
 - <a id="card-type-chips"></a>**Card type chips**: the board's header holds, right after its title, a **chip per
-  card type the board takes** (its Add card types, in the project's order), so a card is one press or one drag away
+  card type the board takes** (its Add Card types, in the project's order), so a card is one press or one drag away
   from the top of the page. Each chip is a small card drawn in its type's colour (a stripe of it down its left edge,
   the type's glyph on the card), then the type's name; while the header holds the top row (maximised or filling its
   tab), the board's name rides in the menu box and the chips lead the header straight after it, so they sit to
@@ -561,7 +561,7 @@ In Plan mode:
   over "Click to add one, or drag it onto the board.", and its accessible name is "Add a Task".
   - **A click** (or Enter or Space on a focused chip) adds a card of the type at the end of the column of the type's
     starting status (its Default State, as New {Type} uses) when the board has one, else the board's first column,
-    in the first row (taking that row's field), and opens it in its panel to be named, exactly as Add card does.
+    in the first row (taking that row's field), and opens it in its panel to be named, exactly as Add Card does.
     For a type with [card templates](item-types.md#the-add-card-picker), the press opens the Add a Card menu hung from
     the chip with that type alone (blank first, then its templates), and the card goes to that same place. The chip's
     hover card then reads "Click to start one from a template, or drag it onto the board."
@@ -571,7 +571,7 @@ In Plan mode:
     with the reason. Letting go there adds the card in that place, sets the row's field, and opens it to be named
     ("Task added to To Do" is announced). Let go anywhere else, over a refused cell (the reason is announced), or
     pressing Escape adds nothing. Any board on screen takes the drop, not only the chip's own, while it shows the type.
-  - **Who sees them**: anyone who may add cards, an Editor or a Participant (the share roles' card rule, as Add card
+  - **Who sees them**: anyone who may add cards, an Editor or a Participant (the share roles' card rule, as Add Card
     and Duplicate are), in Plan mode. A Viewer sees none. **Not on a phone** (below 640 px, where the header has no
     room), not on an Archive board (it takes no new cards), not on a board in a Dashboard slot (simplified), not on
     a board not set up yet (no columns), and not on a board that takes no card types.

@@ -21,7 +21,7 @@ export type Mission<Ctx> = {
   // What was just learned, shown once it is done.
   lesson: string;
   hints: readonly MissionHint[];
-  // The control the mission names (Types, Add card), ringed for as long as it is the mission, as livehuddle's
+  // The control the mission names (Types, Add Card), ringed for as long as it is the mission, as livehuddle's
   // Receptionist rings what he talks about: selectors, the most specific first (the first on screen is ringed), so
   // the ring follows the person in (Types, then Add Card Type, then the editor's name field). A hint's ring wins.
   points?: readonly string[];

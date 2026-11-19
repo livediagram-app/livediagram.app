@@ -46,7 +46,7 @@ export function CardTypesTrack({
   if (made && first?.id !== made.id) setFirst({ id: made.id, shape: typeShape(made) });
 
   // A card of the new type added on this board is a practice card (plan-tour.md "Add a Card"); a board that names its
-  // types takes the new one too, so its Add card offers it.
+  // types takes the new one too, so its Add Card offers it.
   const madeId = made?.id ?? null;
   const statuses = useMemo(
     () => new Set((startSetup?.columns ?? []).map((c) => c.status)),

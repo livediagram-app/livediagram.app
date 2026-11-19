@@ -165,7 +165,7 @@ describe('a board in a Dashboard slot', () => {
     expect(screen.getByText('Write the plan')).toBeTruthy();
     expect(screen.getAllByLabelText(/of a WIP limit of 3/).length).toBeGreaterThan(0);
     expect(screen.getByLabelText('1 card')).toBeTruthy();
-    // Add card is each column head's +, not a row under the cards.
+    // Add Card is each column head's +, not a row under the cards.
     expect(screen.getByRole('button', { name: 'Add a card to To Do' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: /^Add (your first )?card$/ })).toBeNull();
     // No column cogs, no Board Settings: the slot's own cog instead.
@@ -247,7 +247,7 @@ describe('a board in a Dashboard slot', () => {
     expect(cells()).toHaveLength(columns * 2);
     cleanup();
     draw({ dashboard: true, element: laned, value: plan({ items: twoCards() }) });
-    // In a slot, one row, and the column heads' + rather than a row's Add card.
+    // In a slot, one row, and the column heads' + rather than a row's Add Card.
     expect(cells()).toHaveLength(columns);
     expect(screen.getByRole('button', { name: 'Add a card to To Do' })).toBeTruthy();
   });

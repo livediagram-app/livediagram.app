@@ -148,7 +148,7 @@ a Plan board, a Plan card element and a board in a Dashboard slot follow **one r
 
 - **Headings take the tab's font**: the board's title, its column and swimlane names, and each card's title.
 - **Everything else is the editor's own face** (the UI sans): the type chip, number and priority, labels, the
-  description, every field pill and value, dates, counts, Add card and the board's controls.
+  description, every field pill and value, dates, counts, Add Card and the board's controls.
 
 So a board keeps the voice its tab picked, and its small text reads the same whatever that voice is. Three details
 keep the headings themselves readable:

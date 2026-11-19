@@ -911,7 +911,7 @@ card and read one card at a time).
 - The Plan strip has **no New Card button**: a card is added where it will live, from a board's
   [card type chips](plan-board.md#card-type-chips) (a click, or a drag into a column and row) or a cell's **Add
   card**. A card made off any board in the strip made people go and find it again, and a button that adds without
-  placing was the least convenient way in. On a phone, where the header has no chips, each cell's **Add card** is
+  placing was the least convenient way in. On a phone, where the header has no chips, each cell's **Add Card** is
   the way in; a Sheet's card table adds rows of its own, and a linked card's **New {Type}** makes one beside the card
   it links to.
 

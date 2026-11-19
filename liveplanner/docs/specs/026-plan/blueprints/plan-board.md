@@ -56,7 +56,7 @@ editor views.
 PlanContext.tsx          context: items, types, item types slice, status, self, people, canEdit,
                          canEditCards, canVote, presence, actions
 PlanBoardView.tsx        board body (ShapeContentRouter branch): projection, themed palette, radius and font,
-                         columns and rows grid, cards, keyboard, Add card per cell, the card menu. The scroll body
+                         columns and rows grid, cards, keyboard, Add Card per cell, the card menu. The scroll body
                          has no top padding (a scroll box's padding insets where `sticky top-0` sticks); the grid
                          carries the heads' 12 px rest gap as `pt-3` (not in a slot), so it scrolls away and a stuck
                          head sits flush (spec "Column heads stick flush"); pure CSS, no scroll listener
@@ -255,7 +255,7 @@ PlanBoardHeader.tsx      title, count, progress, unplaced chip and its tray, vot
 BoardTitle.tsx           the title, or while renaming an input (`BOARD_TITLE_MAX` 80, selected on open);
                          Enter or blur saves the trimmed non-empty name through onSetup(..., 'Title'),
                          Escape cancels, a `closed` ref keeps the trailing blur from saving a cancel
-AddCardButton.tsx        a cell's + Add card; opens AddCardPopover (or when the N key asks)
+AddCardButton.tsx        a cell's + Add Card; opens AddCardPopover (or when the N key asks)
 header-arrival.ts        the header's fan-in (spec "The header arrives laid out, then fans in"): a chip, widget or
                          zone button takes `HEADER_ARRIVAL_CLASS` (`[[data-header-arriving]_&]:animate-header-in
                          stagger-enter`) and `headerArrivalIndex(i)` (`--stagger-i`); `headerArrivalRow` sets
@@ -323,7 +323,7 @@ phone-swipe.ts           pure: a phone board's sideways swipe (plan-board.md "A 
                          keeps Add Card Type off; the projection and usePlanBoardDrop run over
                          `slotSetup(setup)` (slot-board.ts: one row, so a lane-free move) with no quick filter (`applied`
                          is NO_QUICK); SlotBoardHeader replaces PlanBoardHeader and SlotColumnHeader replaces
-                         PlanColumnHeader; ExampleCardsNotice and each cell's Add card row are not drawn. Maximised
+                         PlanColumnHeader; ExampleCardsNotice and each cell's Add Card row are not drawn. Maximised
                          from the slot all of it returns, the cog SlotBoardCog (PlanBoardSectionsPanel + slot
                          sections) for an Editor. Cards, drag, the card menu, SetupBoardHost and counts keep
                          `canEdit`/`canEditCards` as on a Board tab
@@ -772,7 +772,7 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   sets `default` on the board body, which otherwise inherits the canvas's `cursor-grab`.
 - WIP over: count chip uses `--warning` tokens, column head text "Over WIP limit".
 - Empty board: first column shows the open add field with "Add your first item".
-- Copy: "Add card", "Add your first card", "Add a Card", "Or type a title and press Enter", "Open",
+- Copy: "Add Card", "Add Your First Card", "Add a Card", "Or type a title and press Enter", "Open",
   "Duplicate", "Delete", "Card duplicated", "Card deleted", "Not on this board", "Move to", "Hidden until reveal", "Reveal", "Votes left: 3",
   "Item not found", "Remove card", "Only mine", "Column", "WIP Limit", "Counts as Done",
   "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Remove", "Column actions", "Columns",
@@ -1039,7 +1039,7 @@ Setup Board's Suggested States sends `ColumnAddedSuggested` once a press.
 | Card address: push, back, replace, arrive, Back/Forward        | `apps/editor/app/project/[id]/useCardAddress.test.tsx`                                                                                                         |
 | Capture stops at hydration; tab pin keeps the mark             | `apps/editor/app/project/[id]/useCollabDeepLink.test.tsx`, `useTabEntryEffects.test.tsx`                                                                       |
 | Copy Card Link: every role, before Help; toasts                | `apps/editor/components/plan/ItemPanelMenu.test.tsx`, `copy-card-link.test.ts`                                                                                 |
-| Drag, Add card, card menu, item panel                          | checked by hand against the dev stack (screenshots in the PR)                                                                                                  |
+| Drag, Add Card, card menu, item panel                          | checked by hand against the dev stack (screenshots in the PR)                                                                                                  |
 | Linked Cards tab: shown, hidden, sections off Overview, count  | `apps/editor/components/plan/ItemPanel.linked.test.tsx`, `ItemPanel.navigation.test.tsx`                                                                       |
 | Maximise Card: desktop only, toggles, sizes, aria-pressed      | `apps/editor/components/plan/ItemPanel.maximise.test.tsx`, `item-panel-size.test.ts`                                                                           |
 | Maximised preference: read, write, tracked first, owner id     | `apps/editor/hooks/plan/useCardPanelMaximised.test.tsx`                                                                                                        |

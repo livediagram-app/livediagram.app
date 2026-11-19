@@ -2385,7 +2385,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepBoard':
     'The Plan tour reached its "Your Board" step, highlighting the person\'s board (placing an example board until October 2026).',
   'UI|View|PlanTourStepAddCards':
-    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add card (adding example cards until October 2026).',
+    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add Card (adding example cards until October 2026).',
   'UI|View|PlanTourStepMoveCard':
     'The Plan tour\'s Practice Sprint reached its "Move One On" mission, asking the person to drag a practice card into the next column (a "Move Work Along" step card until November 2026).',
   'UI|View|PlanTourStepOpenCard':
@@ -2393,7 +2393,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepDueDate':
     'The Plan tour\'s Practice Sprint reached its "Give It a Date" mission, asking for a due date on a practice card.',
   'UI|View|PlanTourStepAddCard':
-    'The Plan tour\'s Practice Sprint reached its "Add a Card" mission, asking the person to add a card from a column\'s Add card (it becomes a practice card).',
+    'The Plan tour\'s Practice Sprint reached its "Add a Card" mission, asking the person to add a card from a column\'s Add Card (it becomes a practice card).',
   'UI|View|PlanTourStepMakeType':
     'The Plan tour\'s Card Types track reached its "Make a Card Type" mission, asking the person to add a card type from Types.',
   'UI|View|PlanTourStepEditType':

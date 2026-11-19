@@ -520,7 +520,7 @@ Twenty general-purpose and device shape kinds are covered here, all rendered as 
 | `hexagon`       | SVG overlay drawing `polygon points="25,0 75,0 100,50 75,100 25,100 0,50"` (flat-top). Preparation / labelled milestone.                                                                                                           | Free        |
 | `document`      | SVG overlay drawing a rectangle with a wavy bottom edge (two cubic curves). Output document in flowcharts.                                                                                                                         | Free        |
 
-A cylinder's label sits on the front of its body, from under the lid (27% down the box) to over the base (97%), so more lines grow down the body, never up over the lid: on the canvas, while editing and in every export (`labelBodyInset`).
+A cylinder's label sits on the front of its body, from under the lid (27% down the box) to over the base (97%), so more lines grow down the body, never up over the lid: on the canvas, while editing and in every export (`labelBodyInset`). A parallelogram's label keeps a tenth of the box in from each side and a trapezoid's 12%, where their slanted sides cross the middle, so a long label wraps inside the outline instead of running over its slants.
 
 Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same colours for every kind; only the geometry differs. Fill / stroke colours can be overridden per element via the element's right-click context menu (Colours category).
 

@@ -317,9 +317,9 @@ export function describeBoxedExport(
         text: el.label,
         x:
           alignX === 'right'
-            ? el.x + el.width - pad
+            ? el.x + el.width - pad - body.side
             : alignX === 'left'
-              ? el.x + pad + bodyInset
+              ? el.x + pad + bodyInset + body.side
               : el.x + el.width / 2,
         y:
           alignY === 'top'

@@ -285,7 +285,7 @@ export function FormPage({
                   >
                     <div
                       ref={scrollRef}
-                      className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-24 max-sm:pb-[calc(6rem+env(safe-area-inset-bottom))]"
+                      className="h-full min-w-0 flex-1 overflow-y-auto overscroll-contain pb-24 [scrollbar-gutter:stable_both-edges] max-sm:pb-[calc(6rem+env(safe-area-inset-bottom))]"
                     >
                       <div className="mx-auto flex w-full flex-col gap-3" style={{ maxWidth }}>
                         <FormStatusBar

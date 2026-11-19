@@ -104,7 +104,7 @@ describe('the Plan strip folded on a phone', () => {
 });
 
 // docs/specs/026-plan/items.md "No New Card button": a card is added where it lives (a board's card type chips, a
-// cell's Add card), so the strip offers no New Card, open or folded, to anyone.
+// cell's Add Card), so the strip offers no New Card, open or folded, to anyone.
 describe('the Plan strip without New Card', () => {
   it('has no New Card button or row', () => {
     dock.names = false;

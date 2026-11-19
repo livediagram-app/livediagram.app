@@ -233,7 +233,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   - **What it shows**: a slim header (the board's title and how many cards it shows), then the columns, then the
     cards. Each column's head is its colour dot, its name, its count (against its WIP limit, in the warning colour
     when over it) and, for someone who may add cards, a **+** (**Add a card to <column>**, opening the Add a Card
-    menu, without **Add Card Type**). There is no Add card row under the cards (but an All Cards board's
+    menu, without **Add Card Type**). There is no Add Card row under the cards (but an All Cards board's
     rows by status, below, keep theirs).
   - **Working the cards**: drag a card between columns and within one, click (or Enter) to open it, right-click or
     hold for its menu, add one from a column's **+** (or the N key). The share roles are a Board tab's: an Editor and
@@ -258,7 +258,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
     A failed load still shows **Couldn't load items · Retry**, and a board not set up yet still offers **Set Up
     Board**, so a new board can be started from its slot.
   - **Maximised** from its slot the board is the whole board again, as on its tab: its own card size, swimlanes, the
-    widgets and their **+**, reordering and ×, the example cards' notice, column cogs and adding a column, Add card
+    widgets and their **+**, reordering and ×, the example cards' notice, column cogs and adding a column, Add Card
     under each cell, the form strip, renaming, Reveal, Add Card Type and, for an Editor, the **Board Settings**
     cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the simplified slot board.
     Focus stays off (a slot has no place on the canvas to glide to).

@@ -37,7 +37,7 @@ const cardOf = ({ type, fields }: NewCard): Item => ({
   updatedBy: PERSON,
 });
 
-// A cell's Add card and the panel a card just made opens in, as the board wires them: choosing a type adds the card
+// A cell's Add Card and the panel a card just made opens in, as the board wires them: choosing a type adds the card
 // and opens it fresh (openNewItem, which arms the typing ahead), the panel a render later.
 function Board({ onSave }: { onSave: (field: string, value: unknown) => void }) {
   const [made, setMade] = useState<Item | null>(null);
@@ -93,7 +93,7 @@ describe('typing into Add Card straight after choosing a type', () => {
   it('keeps every character of the title, however fast the typing starts', async () => {
     const onSave = vi.fn();
     render(<Board onSave={onSave} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
     fireEvent.click(firstChoice());
     // Typed in the same moment as the pick: the title has not taken focus yet.
     const title = screen.getByLabelText<HTMLTextAreaElement>('Title');
@@ -110,7 +110,7 @@ describe('typing into Add Card straight after choosing a type', () => {
 
   it('keeps the new card’s title selected when nothing was typed ahead', async () => {
     render(<Board onSave={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
     fireEvent.click(firstChoice());
     await nextFrame();
     const title = screen.getByLabelText<HTMLTextAreaElement>('Title');
@@ -123,7 +123,7 @@ describe('typing into Add Card straight after choosing a type', () => {
   it('holds nothing back on a phone, where the title takes no focus', async () => {
     viewport.mobile = true;
     render(<Board onSave={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Add card' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Add Card' }));
     fireEvent.click(firstChoice());
     await nextFrame();
     // The panel let go as it opened: a key now reaches the page.

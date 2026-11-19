@@ -5,6 +5,7 @@
 import { labelFontPx } from '@liveworkspace/model-core/label-font';
 import type { TextSize } from '@liveworkspace/model-core/basics';
 import type { BoxedElement } from './element';
+import { labelBodyInset } from './label-body';
 
 // XML-escape for both text nodes and attribute values. Re-exported rather
 // than defined here: @liveworkspace/icons owns the one escaper the monorepo's
@@ -30,7 +31,8 @@ export function fontSizeFor(textSize: TextSize | undefined, multiline = false): 
 // inset each side — the element's padding when the caller resolves it,
 // else the historical ~8px), so long labels wrap inside the element.
 export function labelMaxWidth(el: BoxedElement, pad = 8): number {
-  return Math.max(8, el.width - pad * 2);
+  // Inside a slanted kind's slants too (labelBodyInset).
+  return Math.max(8, el.width - pad * 2 - labelBodyInset(el).side * 2);
 }
 
 // A word's characters as a reader counts them (grapheme clusters: a flag or a joined emoji is one), else its code

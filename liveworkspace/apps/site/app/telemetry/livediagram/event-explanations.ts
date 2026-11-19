@@ -2499,7 +2499,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepBoard':
     'The Plan tour reached its "Your Board" step, highlighting the person\'s board (placing an example board until October 2026).',
   'UI|View|PlanTourStepAddCards':
-    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add card (adding example cards until October 2026).',
+    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add Card (adding example cards until October 2026).',
   'UI|View|PlanTourStepMoveCard':
     'The Plan tour reached its "Move Work Along" step, pointing at a card on the board (moving an example card until October 2026).',
   'UI|View|PlanTourStepCardPanel':

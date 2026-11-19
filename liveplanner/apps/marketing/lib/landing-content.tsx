@@ -139,7 +139,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/plan/card-templates/',
         title: 'Start a card from a template',
         description:
-          'Save the cards your team files again and again, such as a bug report with its steps to reproduce or a release with its checklist, as card templates. A new card then starts filled in, from Add card, a chip or New.',
+          'Save the cards your team files again and again, such as a bug report with its steps to reproduce or a release with its checklist, as card templates. A new card then starts filled in, from Add Card, a chip or New.',
       },
       {
         art: <CardActivityArt />,

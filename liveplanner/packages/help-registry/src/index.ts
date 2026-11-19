@@ -705,7 +705,7 @@ export const articles: Article[] = [
     slug: 'card-templates',
     title: 'Card Templates',
     description:
-      'Start a card already filled in from a template on its card type: from Add card, a chip or New.',
+      'Start a card already filled in from a template on its card type: from Add Card, a chip or New.',
     keywords:
       'card template templates task template issue template preset prefill pre-fill prefilled starting values boilerplate default values bug report checklist release onboarding reuse repeat new card from template add card chip',
     category: 'Plan',

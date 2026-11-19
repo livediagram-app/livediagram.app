@@ -1,7 +1,7 @@
 'use client';
 
 // A Plan board's grid (PlanBoardView.tsx): its column heads, a phone's snap points, and a row per lane of cells, each
-// a column's cards in that lane with its Add card (docs/specs/026-plan/plan-board.md "What the board shows").
+// a column's cards in that lane with its Add Card (docs/specs/026-plan/plan-board.md "What the board shows").
 import { isDoneColumn, type LaneHead, type ProjectedColumn } from '@liveplanner/items';
 import { DropGap, LaneRow } from './PlanBoardCells';
 import { PlanBoardCellCards } from './PlanBoardCellCards';
@@ -85,7 +85,7 @@ export function planBoardGrid(v: PlanBoardViewValues) {
   );
 }
 
-// One lane's cell of a column: a collapsed column's strip, or the column's cards in the lane and its Add card.
+// One lane's cell of a column: a collapsed column's strip, or the column's cards in the lane and its Add Card.
 function planBoardLaneCell(
   v: PlanBoardViewValues,
   lane: LaneHead,
@@ -176,7 +176,7 @@ function planBoardLaneCell(
       // "A column's own settings"); anyone else's does what it always did.
       onContextMenu={setUpHere ? columnBackgroundMenu(col.column.id) : undefined}
     >
-      {/* The cards are the list; the column's Add card button follows it rather than sitting in it,
+      {/* The cards are the list; the column's Add Card button follows it rather than sitting in it,
                                 since a list holds only its items. Empty, it takes no room, so the button sits where it
                                 always did. */}
       <div
@@ -216,12 +216,12 @@ function planBoardLaneCell(
         />
       ) : null}
       {mayAdd && !addInHead ? (
-        // It folds away while a drop gap shows here (plan-board.md "Add card steps aside").
+        // It folds away while a drop gap shows here (plan-board.md "Add Card steps aside").
         <CellAddRow folded={!!slotHere} gap={simplified ? 6 : 8}>
           <AddCardButton
             palette={palette}
             types={cellTypes}
-            label={firstEmpty ? 'Add your first card' : 'Add card'}
+            label={firstEmpty ? 'Add Your First Card' : 'Add Card'}
             open={isAdding}
             onClosed={closeAdding}
             onAdd={addInto(col.column.status, lane, cell)}

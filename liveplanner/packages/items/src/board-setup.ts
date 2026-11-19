@@ -81,7 +81,7 @@ export function boardShowsType(
 }
 
 // The types a board shows and takes, in the catalogue's order: its own, or every one. A board can take none (an
-// empty list, set by turning its last type off: Add card then offers only Create Card Type); a board whose every
+// empty list, set by turning its last type off: Add Card then offers only Create Card Type); a board whose every
 // named type has since been deleted takes every type again (docs/specs/026-plan/plan-board.md "Card types a board
 // shows").
 export function boardAddTypes<T extends { id: string }>(

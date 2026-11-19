@@ -54,7 +54,7 @@ function draw(
   );
 }
 
-const band = (node: Element | null) => node?.closest<HTMLElement>('.inset-x-0') ?? null;
+const band = (node: Element | null) => node?.closest<HTMLElement>('[data-label-body]') ?? null;
 
 describe('a cylinder label', () => {
   it('sits on the body: from under the lid (27%) to over the base (97%)', () => {
@@ -76,12 +76,27 @@ describe('a cylinder label', () => {
     expect(clearingInset({ top: 30, bottom: 0 }, { top: 54, bottom: 6 })).toEqual({
       top: 54,
       bottom: 6,
+      side: 0,
     });
     expect(clearingInset({ top: 70, bottom: 12 }, { top: 54, bottom: 6 })).toEqual({
       top: 70,
       bottom: 12,
+      side: 0,
     });
-    expect(clearingInset(undefined, { top: 0, bottom: 0 })).toEqual({ top: 0, bottom: 0 });
+    expect(clearingInset(undefined, { top: 0, bottom: 0 })).toEqual({ top: 0, bottom: 0, side: 0 });
+  });
+
+  it('keeps a parallelogram label inside its slants: a tenth of the box in from each side', () => {
+    const shape = {
+      ...createShape('parallelogram', 0, 0),
+      width: 220,
+      height: 72,
+      label: 'Enter card details',
+    } as BoxedElement;
+    const body = band(draw(shape).getByText('Enter card details'));
+    expect(body).not.toBeNull();
+    expect(parseFloat(body!.style.left)).toBeCloseTo(22, 6);
+    expect(parseFloat(body!.style.right)).toBeCloseTo(22, 6);
   });
 
   it('leaves a square its whole box', () => {

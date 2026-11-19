@@ -68,7 +68,7 @@ A Participant changes the board's **content**, never its **shape**.
   element (a long-press on a touch screen) opens its element menu for every role, holding only what the role may do:
   an Editor's is the full menu; a Participant's offers **Edit Text** on what it may write on, and **Open Link**,
   **View Note** and **Copy Text** where the element has them; a Viewer's the same without **Edit Text** ([Element menu for Participants and Viewers](../008-canvas/element-menu-quick-bar.md#element-menu-for-participants-and-viewers)). A stored comment panel reads its thread for every role, writable by none. A Participant
-  adds Plan cards from a board's card type chips and Add card, as it may.
+  adds Plan cards from a board's card type chips and Add Card, as it may.
 - **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
   one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or
   delete is refused. A stale screen therefore never writes an old copy of the board over a newer one.

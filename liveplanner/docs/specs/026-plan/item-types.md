@@ -1137,7 +1137,7 @@ card and cleaning it up.
   from then on, editing it never changes the template, and editing or removing the template never changes a card made
   from it.
 - <a id="the-add-card-picker"></a>**Where a card is added, its templates are offered.** Every place a person picks a
-  card type to add (a cell's **+ Add card** and the board's **N** key, a slot column's +, a Gantt chart's **Add
+  card type to add (a cell's **+ Add Card** and the board's **N** key, a slot column's +, a Gantt chart's **Add
   Card**) opens the **Add a Card** menu ([Plan board](plan-board.md#working-on-a-board)), which lists each type's
   templates right under the type, so a template is one press away, as the type is. The type's own row still adds a
   blank card (its new-card title). Each template row is indented under its type: a template glyph on a tint of the
@@ -1874,7 +1874,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
 ## Where types show
 
-- **Boards** offer the types they show as their header's card type chips and in Add card, to add a card of one
+- **Boards** offer the types they show as their header's card type chips and in Add Card, to add a card of one
   (Plan mode has [no palette](plan-mode.md#no-palette), so no Cards category lists them).
 - **Cards** draw a type's colour (behind the card number) and glyph (an item's own [Colour](items.md#colour) is a dot beside them,
   never in their place); the item panel's type picker lists the catalogue; the Add a

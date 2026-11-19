@@ -771,7 +771,7 @@ export const PLAN_CARD_TEMPLATES_USED = chart(
   'Plan',
   'Used',
   'Cards From Templates',
-  'A card started from one of its card type’s templates in Add a Card (a column’s Add card, a chip, New {Type} or a Gantt chart’s Add Card).',
+  'A card started from one of its card type’s templates in Add a Card (a column’s Add Card, a chip, New {Type} or a Gantt chart’s Add Card).',
   { types: ['CardTemplate'] },
 );
 

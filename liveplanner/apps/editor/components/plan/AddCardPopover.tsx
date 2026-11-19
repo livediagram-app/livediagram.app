@@ -1,6 +1,6 @@
 'use client';
 
-// "Add a card" (docs/specs/026-plan/plan-board.md "Working on a board"): a cell's Add card button
+// "Add a card" (docs/specs/026-plan/plan-board.md "Working on a board"): a cell's Add Card button
 // opens this menu, as Pages mode's + opens "Add a page". It offers the card types the board shows,
 // each a tile with its glyph on its colour; choosing one adds a card of it (titled "New task"...) at
 // the end of the cell, to be titled in place or in its panel. Built on the shared PortalMenu and
@@ -47,7 +47,7 @@ export function AddCardPopover({
   palette,
   onClose,
 }: {
-  // The Add card button the menu hangs from.
+  // The Add Card button the menu hangs from.
   anchor: HTMLElement | null;
   // The types this board shows, in the project's order.
   types: readonly ItemTypeDef[];
@@ -71,7 +71,7 @@ export function AddCardPopover({
     return () => document.removeEventListener('wheel', onWheel, { capture: true });
   }, [mobile, close]);
   // The sheet keeps its own Escape and outside tap (BottomSheet leaves both to its menu), and starts on its first
-  // choice, as the desktop menu does. A tap on its own Add card button is that button's toggle.
+  // choice, as the desktop menu does. A tap on its own Add Card button is that button's toggle.
   const sheet = useRef<HTMLDivElement>(null);
   const dismiss = () => {
     close.current();

@@ -49,7 +49,7 @@ function Tick({ x, y, on }: { x: number; y: number; on: boolean }) {
   );
 }
 
-/** Start a card from a template: Add card offers the Bug Report template, and the new card arrives filled in. */
+/** Start a card from a template: Add Card offers the Bug Report template, and the new card arrives filled in. */
 export function CardTemplateArt() {
   return (
     <Scene>

@@ -135,7 +135,7 @@ The catalogue below still lists, per tab, the metrics, charts and rail it brings
   Board's.
 - **Every board takes only the card types its work is made of.** A board of a template names its card types
   (its **Card Types**), never "every type": a Pipeline takes Candidates, a Retro takes Retro Notes and Ideas to Try.
-  A board's Add card offers only those types ([Plan mode](plan-mode.md#no-palette)).
+  A board's Add Card offers only those types ([Plan mode](plan-mode.md#no-palette)).
 - **A template's boards choose the project's card types.** A project made from a template has exactly the
   types its boards take, in the order they name them, and no others: a Hiring Pipeline has Role, Candidate and
   Onboarding Step, never a Project or a Note ([Item types](item-types.md#the-type-catalogue)). Added to a project
@@ -258,7 +258,7 @@ its Detailed cards add Under the Title.
 
 ### Card templates the ready-made types hold
 
-Eight ready-made types come with [card templates](item-types.md#card-templates), so a board preset that brings one offers its kinds of card already filled in from **Add card**'s menu. They are the type's
+Eight ready-made types come with [card templates](item-types.md#card-templates), so a board preset that brings one offers its kinds of card already filled in from **Add Card**'s menu. They are the type's
 own, as a person's are: renamed, changed or deleted in the type editor, and never put back. Each holds only what a
 template may (a description, a checklist, labels and the type's own text, choice and long text fields); none holds a
 title, so its card takes the type's new-card title.

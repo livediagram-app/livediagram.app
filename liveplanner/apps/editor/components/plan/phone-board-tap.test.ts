@@ -17,7 +17,7 @@ function board(): HTMLElement {
       <div data-plan-column="todo" id="head"><span id="name">To Do</span><button id="cog">cog</button></div>
       <div data-plan-column="todo" id="cell">
         <div role="list"><div data-plan-card="c1"><span id="title">A card</span></div></div>
-        <button id="add">Add card</button>
+        <button id="add">Add Card</button>
         <input id="field" />
       </div>
       <div id="outside"></div>
