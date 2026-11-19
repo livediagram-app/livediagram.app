@@ -399,8 +399,8 @@ writing and no more:
 
 - **Panels:** Colours and New Page Background only; no Finish, no Text, and the panel's patterns are left out (an
   article's ruling is its Style's; the surround takes its colour alone).
-- **The header** says what Tab Style changes here: the home "On an article, Tab Style sets the colours and the page
-  background; its text has its own Style." ("On a card, ..." on a card), Colours "The colours the article's accents
+- **The header** says what Tab Style changes here, short enough for the header's one line: the home "The colours and
+  page background. Its text has its own Style." (an article's and a card's alike), Colours "The colours the article's accents
   and the tab's elements draw in.", New Page Background "The background new pages start on, and the colour around the
   pages."
 - **The Article Style row** sits between the looks and Fine-tune (`ArticleStyleRow`: a brand icon tile, **Article

@@ -63,15 +63,27 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
     (l) => !lookFilter || lookFilter(l),
   );
   const looks = finish === 'all' ? pool : pool.filter((l) => l.finish === finish);
+  // The finishes this surface's looks wear: the filter offers only those. When the surface's filter keeps a finish out
+  // (a logo page keeps hand-drawn looks out), the Mashup card rolls within the ones left, never a Marker mashup there.
+  const finishes = FINISHES.filter((f) => pool.some((l) => l.finish === f));
+  const narrowed = FINISHES.some(
+    (f) => !finishes.includes(f) && catalogue.all.some((l) => l.finish === f),
+  );
+  const roll = (options: { finish?: Finish; previous?: Look }) =>
+    catalogue.rollMashup(
+      options.finish || !narrowed
+        ? options
+        : { ...options, finish: finishes[Math.floor(Math.random() * finishes.length)] },
+    );
   // The Mashup card rolls everyday ingredients, so it leads the everyday looks only.
   const cards: Card<Look>[] = seasonal ? [...looks] : [MASHUP_CARD, ...looks];
   // The card's mashup: rolled on open, not applied until pressed, so the first press applies what the card shows.
-  const [mashup, setMashup] = useState(() => catalogue.rollMashup());
+  const [mashup, setMashup] = useState(() => roll({}));
   const wearingMashup = catalogue.matches(settings, mashup);
   const pickMashup = () => {
     // While the tab wears the card's mashup, a press rolls the next one; otherwise it applies the one on show.
     const next = wearingMashup
-      ? catalogue.rollMashup({ finish: finish === 'all' ? undefined : finish, previous: mashup })
+      ? roll({ finish: finish === 'all' ? undefined : finish, previous: mashup })
       : mashup;
     setMashup(next);
     onPickLook(next);
@@ -128,6 +140,7 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
             <Select
               size="sm"
               variant="ghost"
+              className="shrink-0"
               aria-label="Filter looks by finish"
               value={finish}
               onChange={(e) => {
@@ -135,12 +148,11 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
                 workbench.track('UI', 'Changed', 'LooksFinishFilter');
                 setFinish(next);
                 // The card's mashup rolls within the chosen finish.
-                if (next !== 'all' && mashup.finish !== next)
-                  setMashup(catalogue.rollMashup({ finish: next }));
+                if (next !== 'all' && mashup.finish !== next) setMashup(roll({ finish: next }));
               }}
             >
               <option value="all">All finishes</option>
-              {FINISHES.map((f) => (
+              {finishes.map((f) => (
                 <option key={f} value={f}>
                   {finishLabels[f]}
                 </option>

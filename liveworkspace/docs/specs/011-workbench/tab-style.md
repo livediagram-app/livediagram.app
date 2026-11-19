@@ -76,7 +76,9 @@ The surface settings say, for a surface:
 - **Hidden controls**: controls a panel leaves out: the default text size (the Text panel's Size of New Text, and the
   size in the Text row's summary), the animation speed, the pattern scale and the pattern colour (the Canvas panel's).
 - **Looks**: a filter over the catalogue. A look the filter drops shows on no page; a tab wearing one shows no card
-  selected. The Mashup card is not filtered.
+  selected. The Finish filter offers only the finishes the surface's looks wear, and the Mashup card rolls within them
+  (a livedesign logo page, which keeps hand-drawn looks out, never shows a Marker mashup); with no filter, every
+  finish.
 - **The Canvas panel**: its title (the copy below) and its content, which the product draws (livediagram's patterns,
   livehuddle's floors, the Pages editors' New Page Background). It is handed the tab's canvas settings, their setters
   and the hidden controls. The Fine-tune row's value is the pattern's name unless the editor hands the dialog a

@@ -59,7 +59,11 @@ export function boardPreviewSvg(
         fillColor: multi ? branches[column % branches.length]!.stroke : ink,
         strokeColor: 'transparent',
       };
-      elements.push(el, bar);
+      // A column's name reads in the board's one text ink, as on a real board, never a branch colour of its own (the
+      // theme walk gives each loose name the next palette colour, which on a multi-colour theme sat a maroon "Doing"
+      // over a green bar).
+      const name = multi ? { ...el, textColor: theme.rootColor?.text ?? first.textColor } : el;
+      elements.push(name, bar);
       continue;
     }
     // The rest are the cards (the sample is names and cards only).

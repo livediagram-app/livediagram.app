@@ -52,7 +52,7 @@ const written = (what: string): TabStyleSurfaceChanges<TabLook, BackgroundPatter
   renderHomeExtra: () => <ArticleStyleRow />,
   copy: {
     viewLines: {
-      looks: `On ${what}, Tab Style sets the colours and the page background; its text has its own Style.`,
+      looks: 'The colours and page background. Its text has its own Style.',
       theme: `The colours ${what === 'a card' ? 'the card' : 'the article'}’s accents and the tab’s elements draw in.`,
       canvas: 'The background new pages start on, and the colour around the pages.',
     },

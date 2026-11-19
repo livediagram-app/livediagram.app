@@ -306,6 +306,23 @@ describe('the looks', () => {
     expect(cardNames()).toEqual(['Mashup', 'Everyday', 'Sketchy']);
   });
 
+  it("offers only the finishes the surface's looks wear, and rolls the mashup within them", () => {
+    const profile = profileWith({
+      base: { ...profileWith().base, lookFilter: (l) => l.finish !== 'sketch' },
+    });
+    rollMashup.mockClear();
+    open({ profile });
+    const filter = screen.getByRole('combobox', { name: 'Filter looks by finish' });
+    const offered = [...filter.querySelectorAll('option')].map((o) => o.value);
+    expect(offered).toEqual(['all', 'flexible', 'professional']);
+    const rolled = rollMashup.mock.calls[0]![0]!.finish!;
+    expect(['flexible', 'professional']).toContain(rolled);
+    // Narrowing to the finish the mashup already wears keeps it.
+    const before = rollMashup.mock.calls.length;
+    fireEvent.change(filter, { target: { value: rolled } });
+    expect(rollMashup.mock.calls.length).toBe(before);
+  });
+
   it('narrows by finish, tracked, the mashup rolling within it', () => {
     open();
     const filter = screen.getByRole('combobox', { name: 'Filter looks by finish' });

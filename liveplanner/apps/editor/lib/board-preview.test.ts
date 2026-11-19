@@ -23,6 +23,17 @@ describe('boardPreviewSvg', () => {
     for (const branch of palette.slice(0, 3)) expect(seen).toContain(branch.stroke.toLowerCase());
   });
 
+  it("letters every column's name in one ink on a multi-colour theme, never a branch colour", () => {
+    const svg = boardPreviewSvg('professional', { background: '#ffffff', theme: 'gemstone' });
+    const inkOf = (name: string) =>
+      svg.match(
+        new RegExp(`<text[^>]*fill="(#[0-9a-fA-F]{6})"[^>]*>(?:(?!</text>).)*${name}`, 's'),
+      )?.[1];
+    const inks = ['To do', 'Doing', 'Done'].map(inkOf);
+    expect(inks[0]).toBeDefined();
+    expect(new Set(inks).size).toBe(1);
+  });
+
   it('bars every column in one ink on a single-colour theme', () => {
     const svg = boardPreviewSvg('professional', { background: '#ffffff', theme: 'brand' });
     expect(fills(svg).filter((f) => f === '#64748b')).toHaveLength(3);
