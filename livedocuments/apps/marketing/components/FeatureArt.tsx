@@ -11,14 +11,19 @@
 export * from './feature-art/canvas';
 export * from './feature-art/together';
 export * from './feature-art/sharing';
+// Review & history: Version History, Request Approval, Walkthroughs and a Live Embed of another app's file.
+export * from './feature-art/review';
 export * from './feature-art/foundations';
-export * from '@liveworkspace/marketing-site/components/feature-art/features';
+// Undo and redo, on this product's own surface.
+export * from './feature-art/undo';
 export * from './feature-art/reach';
 export * from './feature-art/versatility-more';
 // Presentation mode (docs/specs/012-collaboration/presentation-mode.md): decks, the full-screen slide, notes, and the
 // fact that presenting is yours alone.
 export * from './feature-art/present';
 export * from './feature-art/slide-layouts';
+// Builds: a slide's points numbered by step, brought in one press at a time while presenting.
+export * from './feature-art/slide-builds';
 // Flashcards (docs/specs/007-editor/flashcards.md): the stack, flipped one card at a time.
 export * from './feature-art/flashcards';
 // Infographic pages (docs/specs/007-editor/pages-mode.md): pages, layouts, backgrounds, export.

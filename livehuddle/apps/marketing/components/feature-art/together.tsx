@@ -8,7 +8,6 @@
 import type { CSSProperties } from 'react';
 import {
   ALEX,
-  AWAY,
   Avatar,
   Box,
   JORDAN,
@@ -27,7 +26,7 @@ import {
 
 /* ───────────────────────── Working together live ───────────────────────── */
 
-// A status dot on an avatar: online, away, idle.
+// A status dot on an avatar: Online, Away or Offline.
 function Status({
   cx,
   cy,
@@ -54,18 +53,22 @@ function Status({
   );
 }
 
-const IDLE = '#94a3b8';
+// The tab avatars' status rings, as the editor colours them (apps/editor/lib/identity.ts statusRingColor): Online, Away
+// after five quiet minutes, Offline after an hour.
+const ONLINE = '#22c55e';
+const AWAY = '#f97316';
+const OFFLINE = '#ef4444';
 
 /** Live presence: who is on each tab, in their colour, with a status ring. */
 export function PresenceArt() {
   return (
     <Scene>
       <Panel x={12} y={22} w={276} h={38} />
-      {/* Overview: Sam. */}
-      <Tab x={16} w={58} name="Overview" color={SAM} y={33} />
+      {/* A Hotel and Suites Space, a tab per floor. The Lobby: Sam. */}
+      <Tab x={16} w={58} name="Lobby" color={SAM} y={33} />
       <Avatar cx={69} cy={41} r={5.5} color={SAM} initials="S" />
-      <Status cx={73.2} cy={45} color={SAM} />
-      {/* Backend, the active tab: you, and Jordan arriving. */}
+      <Status cx={73.2} cy={45} color={ONLINE} />
+      {/* The Suites, the active tab: you, and Jordan arriving. */}
       <rect
         className="fill-sky-50 dark:fill-sky-500/15"
         x="82"
@@ -74,27 +77,25 @@ export function PresenceArt() {
         height="24"
         rx="5"
       />
-      <Tab x={84} w={40} name="Backend" color={YOU} y={33} />
+      <Tab x={84} w={40} name="Suites" color={YOU} y={33} />
       <Avatar cx={133} cy={41} r={5.5} color={YOU} initials="TM" />
       <g className="fa-a-pop" style={at(0.8)}>
         <Avatar cx={147} cy={41} r={5.5} color={JORDAN} initials="JR" />
-        <Status cx={151.2} cy={45} color={SAM} />
+        <Status cx={151.2} cy={45} color={ONLINE} />
       </g>
-      {/* Data: Alex, stepping away. */}
-      <Tab x={168} w={30} name="Data" color={ALEX} y={33} />
-      <Avatar cx={208} cy={41} r={5.5} color={ALEX} initials="A" />
-      <Status cx={212.2} cy={45} color={SAM} className="fa-a-out" style={at(0.6)} />
-      <Status cx={212.2} cy={45} color={AWAY} className="fa-a-late" style={at(0.6)} />
-      {/* Docs: someone who left it open and wandered off. */}
-      <Tab x={222} w={34} name="Docs" color={JORDAN} y={33} />
-      <Avatar cx={268} cy={41} r={5.5} color="#64748b" initials="R" />
-      <Status cx={272.2} cy={45} color={IDLE} />
+      {/* The Rooftop: Alex, stepping away, and someone who left it open and wandered off an hour ago. */}
+      <Tab x={176} w={40} name="Rooftop" color={ALEX} y={33} />
+      <Avatar cx={226} cy={41} r={5.5} color={ALEX} initials="A" />
+      <Status cx={230.2} cy={45} color={ONLINE} className="fa-a-out" style={at(0.6)} />
+      <Status cx={230.2} cy={45} color={AWAY} className="fa-a-late" style={at(0.6)} />
+      <Avatar cx={240} cy={41} r={5.5} color="#64748b" initials="R" />
+      <Status cx={244.2} cy={45} color={OFFLINE} />
       {/* The legend. */}
       {(
         [
-          [106, SAM, 'Online'],
+          [106, ONLINE, 'Online'],
           [146, AWAY, 'Away'],
-          [180, IDLE, 'Idle'],
+          [180, OFFLINE, 'Offline'],
         ] as const
       ).map(([x, c, label]) => (
         <g key={label}>

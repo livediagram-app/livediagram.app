@@ -1,8 +1,10 @@
 import type { HeroSceneKey } from '@/components/hero-scene-data';
 import {
   ApiArt,
+  ApprovalArt,
   AssignedActionsArt,
   CommentsArt,
+  ComponentsArt,
   ContentsSidebarArt,
   ExpiryArt,
   FollowAlongArt,
@@ -10,9 +12,12 @@ import {
   InspectArt,
   PrototypeArt,
   LaserArt,
+  LibraryArt,
+  LiveEmbedArt,
   LiveImageArt,
   LogoLayoutsArt,
   LogoPageArt,
+  MakeSizesArt,
   McpArt,
   PagesArt,
   PagesBackgroundsArt,
@@ -21,16 +26,19 @@ import {
   PhotoLayersArt,
   PhotoPsdArt,
   PhotoRetouchArt,
+  PictureMaskArt,
   PresenceArt,
   RealtimeArt,
   RevokeArt,
   SearchPaletteArt,
   SelectionGlowArt,
   ShareLinksArt,
+  SnapshotsArt,
   SpotlightArt,
   TeamsArt,
   ThemesArt,
   UndoRedoArt,
+  WalkthroughArt,
   WireframePagesArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
@@ -76,13 +84,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore logos and wireframes',
     title: 'Design a logo, sketch the screens',
     description:
-      'A logo page is a square artboard with construction guides: start from a layout, draw with Mirror for a symmetrical mark, then download every size you need. Wireframe pages put a phone, a tablet or a browser round the screens you are planning, and Inspect hands their sizes, spacing and colours to whoever builds them.',
+      'A logo page is a square artboard with construction guides: start from a layout, draw with Mirror for a symmetrical mark, then download every size you need. Wireframe pages put a phone, a tablet or a browser round the screens you are planning, link them into a prototype to click through, and Inspect hands their sizes, spacing and colours to whoever builds them.',
     metaDescription:
-      'Design a logo on an artboard with guides and Mirror, download a logo kit, sketch app and website screens, and inspect them for developer handoff.',
+      'Design a logo with guides and Mirror, download a Logo Kit, wireframe app and website screens, click through them as a prototype and inspect them for handoff.',
     highlights: [
       'Design a logo',
-      'Start from a logo layout',
       'Wireframe the screens',
+      'Click through the screens',
       'Hand the screens to developers',
     ],
     items: [
@@ -92,7 +100,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Logos',
         title: 'Design a logo',
         description:
-          'A logo page is a square artboard with construction guides to build on. Draw with Mirror and one side mirrors the other, or round the centre; combine shapes into one and refine its points an outline at a time, fill a hand-drawn loop with the paint bucket, and set the name in wordmark type. Then export a Logo Kit: an SVG, PNGs from 16 to 1024 pixels and a favicon, in one .zip.',
+          'A logo page is a square artboard with construction guides to build on. Draw with Mirror and one side mirrors the other, or round the centre; combine shapes into one and refine its points an outline at a time, fill a hand-drawn loop with the paint bucket, and set the name in one of ninety display faces. Bring an SVG in and it lands as shapes you can edit. Then export a Logo Kit: an SVG with its text outlined, PNGs from 16 to 1024 pixels and a favicon, in one .zip.',
       },
       {
         art: <LogoLayoutsArt />,
@@ -108,7 +116,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Wireframes',
         title: 'Wireframe the screens',
         description:
-          'A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning. Start from a ready-made screen, a sign-in, a feed or a checkout, and lay out the flow page by page.',
+          'A wireframe page draws a phone, a tablet, a browser, a laptop or a watch round the screen you are planning. Start from a ready-made flow, a sign-in, a feed or a checkout, already linked screen to screen, and Clear Example Content empties its sample words but keeps the layout.',
+      },
+      {
+        art: <ComponentsArt />,
+        group: 'Wireframes',
+        title: 'Build once with components',
+        description:
+          'Select a nav bar or a tab bar and Make Component. Place it on every screen of every tab, change the main and each instance redraws, for everyone, live. Override an instance’s text or colours, or Detach it to go your own way.',
       },
       {
         art: <InspectArt />,
@@ -120,11 +135,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <PrototypeArt />,
-        href: '/help/pages/wireframe-pages/',
+        href: '/help/pages/wireframe-pages/prototypes/',
         group: 'Wireframes',
         title: 'Click through the screens',
         description:
-          'Link a button or any other element to another screen of the tab, or back to the one before, with a Slide or Dissolve. Press Prototype and the screens play one at a time in their device frame, a press following each link, then share the walk-through as a link.',
+          'Drag an element’s link handle onto another screen, or link it Back, with an Instant, Slide or Dissolve change. Press Prototype to click through in the device frame, or full screen on a phone, and send it with Copy Prototype Link. The Flow view draws every link as an arrow.',
       },
       {
         art: <PagesArt />,
@@ -133,6 +148,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'A page for each logo and screen',
         description:
           'A square artboard for a logo; a phone, tablet, laptop, browser or watch for a screen; a photo the size of its picture. Each page is its own size, and everything on it moves with it.',
+      },
+      {
+        art: <PictureMaskArt />,
+        group: 'Pages',
+        title: 'Crop and mask your pictures',
+        description:
+          'Crop a picture in place, cut it to a circle, an arch, a star or one of five more masks, and turn it greyscale. Put a picture behind a page and blur it so the words on top stand out. SVG, PNG and PDF exports keep every cut.',
       },
       {
         art: <ContentsSidebarArt />,
@@ -148,7 +170,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Pages',
         title: 'Backgrounds from your theme',
         description:
-          'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page.',
+          'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page, and the text colour picker warns when words would be too faint to read.',
       },
       {
         art: <PagesExportArt />,
@@ -156,7 +178,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Pages',
         title: 'Every page, print-ready',
         description:
-          'Export every page as one PDF at true print size, or one page as a PNG or SVG, and keep any tab as a livedesign JSON file.',
+          'Export every page as one vector PDF at true print size, its text real words you can select and search, or one page as a PNG or SVG, and keep any tab as a livedesign JSON file.',
       },
       {
         art: <ThemesArt />,
@@ -183,9 +205,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore photo editing',
     title: 'Edit the photos in layers',
     description:
-      'A photo page is a picture to edit in layers, with masks, blend modes, adjustments and filters, the tools to select, paint and retouch, and PSD files in and out.',
+      'A photo page is a picture to edit in layers, with masks, blend modes, adjustments and filters, the tools to select, paint and retouch, PSD files in and out, and every social size made from one photo.',
     metaDescription:
-      'Edit photos in layers with masks, blend modes, adjustments, 44 filters and retouching tools, then export PNG, JPEG, WebP or PSD.',
+      'Edit photos in layers with masks, blend modes, adjustments, 44 filters and retouching, make every social size, then export PNG, JPEG, WebP or PSD.',
     highlights: [
       'Edit a photo in layers',
       'Adjustments and filters',
@@ -225,6 +247,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         description:
           'Drop a PSD onto a photo page and its layers come in with their names, opacity, blend modes and masks. Export the photo as a PNG, a JPEG, a WebP, or a PSD with its layers kept.',
       },
+      {
+        art: <MakeSizesArt />,
+        href: '/help/pages/photo-pages/make-sizes/',
+        group: 'Tools',
+        title: 'Every social size from one photo',
+        description:
+          'Make Sizes turns the photo you are on into a page for each format you tick, from an Instagram Story to a YouTube Thumbnail, every layer kept and the picture filling the frame. Export All Sizes downloads them in one .zip.',
+      },
     ],
   },
   {
@@ -234,13 +264,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Or hand the work to your AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments and walkthroughs. Take a snapshot before a big change, ask for approval when it is done, keep your best parts in a Library, or hand the work to your AI.',
     metaDescription:
-      'Share a link and your team is on the pages with you: live cursors, comments, assigned actions, expiring links, teams and an MCP server for AI.',
+      'Work on designs together: live cursors, comments, recorded walkthroughs, snapshots, approvals, a shared Library, expiring links and an MCP server for AI.',
     highlights: [
       'Live presence',
       'Comments on anything',
-      'Assign actions to teammates',
+      'Record a walkthrough',
       'Make designs with AI',
     ],
     items: [
@@ -301,6 +331,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo rewinds your own edits, not a teammate's.",
       },
       {
+        art: <SnapshotsArt />,
+        href: '/help/collaboration/snapshots/',
+        group: 'Work together live',
+        title: 'Snapshots and History',
+        description:
+          'Open History in Tools to see who changed what. Take a named snapshot before a big change, and revert the whole design to it in one step if the change goes wrong. The latest five are kept, pinned on the timeline.',
+      },
+      {
+        art: <WalkthroughArt />,
+        href: '/help/collaboration/walkthroughs/',
+        group: 'Point and focus',
+        title: 'Record a walkthrough',
+        description:
+          'Talk someone through the design without a meeting. Record your voice, and your camera if you like, as you move round the pages, hiding anything private first. They play it over the design itself, and can pause, look around and resume.',
+      },
+      {
         art: <LaserArt />,
         href: '/help/selection-modes/laser/',
         group: 'Point and focus',
@@ -338,15 +384,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Share & access',
         title: 'Live in your wiki, docs or README',
         description:
-          'Copy an iframe from the Share dialog and the design sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save.',
+          'Paste a share link into Notion, Medium or Ghost and it unfolds into a live, read-only view, or copy an iframe from the Share dialog for your own site. Where iframes are blocked, like a GitHub README, paste a live image: a picture URL that shows the latest version after every save.',
       },
       {
         art: <TeamsArt />,
         href: '/help/collaboration/teams/',
         group: 'Share & access',
-        title: 'Teams with a shared library',
+        title: 'Teams with shared designs',
         description:
           'Create a team, invite people by email, and everyone gets a shared folder of designs they can all open and edit. Admins manage membership and roles; members just get to work.',
+      },
+      {
+        art: <LibraryArt />,
+        group: 'Share & access',
+        title: 'A Library for your best parts',
+        description:
+          'Select a mark, a lock-up or a screen part and Save to Library. It waits in the palette of every design, in your Personal library or your team’s, sorted into folders, ready to place with a click or a drag. livediagram and livedocuments share the same Library.',
+      },
+      {
+        art: <ApprovalArt />,
+        href: '/help/collaboration/sharing/request-approval/',
+        group: 'Share & access',
+        title: 'Ask for approval',
+        description:
+          'Name the people who should sign a design off, with a note and a due day. Each answers Approve or Request Changes from a banner, and a badge says where it stands, down to Changed Since Approval.',
       },
       {
         art: <ExpiryArt />,
@@ -370,7 +431,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Make designs with AI',
         description:
-          'Connect Claude or any MCP client and let it find, read, create, edit and share your designs for you. It runs on a revocable token, read-only if you prefer.',
+          'Connect Claude or any MCP client and let it find, read, create, edit and share your designs for you. In Claude, each design it makes or reads opens as a live view beside the answer, to flip through page by page. It runs on a revocable token, read-only if you prefer.',
+      },
+      {
+        art: <LiveEmbedArt />,
+        group: 'AI & your tools',
+        title: 'Live files from your other apps',
+        description:
+          'Add a Live Embed and a diagram, a plan or a document from another liveworkspace app sits on your page, live and read-only, each viewer seeing it with their own access. Link a chart to a liveplanner sheet and it redraws as the sheet changes.',
       },
       {
         art: <ApiArt />,

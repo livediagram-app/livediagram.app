@@ -5,11 +5,11 @@ import { COLUMNS, MOVES, QUICK, QUICK_COLUMN, QUICK_TITLE, QUICK_TYPED } from '.
 
 // The hero's Plan window (docs/specs/019-marketing/marketing-site.md "Hero"): a launch board in Plan mode
 // (docs/specs/026-plan/plan-board.md) filling its tab, as a board does in the editor. Five columns land, Backlog
-// (scrolled half out of view), To do, In progress (its WIP limit as `2 / 3`), Review (`2 / 2`) and Done, each with its grey head (name, count, the
+// (scrolled half out of view), To Do, In Progress (its WIP limit as `2 / 3`), Review (`2 / 2`) and Done, each with its grey head (name, count, the
 // column's sliders) and an Add Card row at its foot, and the cards land in the board's Detailed face
 // (hero-plan-card.tsx). A teammate picks up a card in Review and carries it to Done, ringed in their colour and
-// tilted while they hold it, a dashed slot waiting where it will drop; you carry one from To do into In progress;
-// each count ticks over and the Add Card rows make room. Last, a card is quick-added to To do: its title typed
+// tilted while they hold it, a dashed slot waiting where it will drop; you carry one from To Do into In Progress;
+// each count ticks over and the Add Card rows make room. Last, a card is quick-added to To Do: its title typed
 // with `@sam #docs`, which become the assignee's avatar and a label. Every piece plays at its own --d
 // (hero-mode-animations.css, hero-scenes/plan.css); a phone draws narrower cards, the board running on past
 // the screen's edge as a phone scrolls it.
@@ -35,8 +35,8 @@ type Layout = {
 };
 
 // Five columns, as a board scrolled a little to the right: Backlog half off the left edge of the wide
-// window's canvas (wider than the viewBox, as the canvas is), To do to Done across it, and the board's
-// Add Column lane after them. On a phone narrower cards from To do, Done half past the screen's edge.
+// window's canvas (wider than the viewBox, as the canvas is), To Do to Done across it, and the board's
+// Add Column lane after them. On a phone narrower cards from To Do, Done half past the screen's edge.
 const LANDSCAPE: Layout = { x0: -241, colW: 172, gap: 10, head: -44, narrow: false };
 const PORTRAIT: Layout = { x0: -168, colW: 116, gap: 8, head: -34, narrow: true };
 
@@ -176,7 +176,7 @@ export function PlanBoard({ portrait = false }: { portrait?: boolean }) {
         );
       })}
 
-      {/* Quick add, in To do's free slot once Beta invites has moved on: the title typed with `@sam
+      {/* Quick add, in To Do's free slot once Beta invites has moved on: the title typed with `@sam
           #docs`, then the card as it lands, its label and assignee in place. */}
       <g className="hm-pop" style={at(T.quickAdd)}>
         <g className="hm-out" style={at(T.chips)}>

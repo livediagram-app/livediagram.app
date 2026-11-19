@@ -21,9 +21,12 @@ import {
 } from './hero-space-floor-cast';
 import {
   BUBBLE_HEIGHT,
+  CHIP_HEIGHT,
   beatsLength,
   bubbleBox,
   bubbleWidth,
+  chipTopOf,
+  chipWidthOf,
   figureRect,
   floorCss,
   positionAt,
@@ -59,13 +62,13 @@ function furnitureRects(stage: FloorStage): Rect[] {
   });
 }
 
-/** The name chip under a character's feet: about 7 px a letter, its dot and padding. */
+/** The name chip over a character's head (HeroSpaceStage), a little wider than its estimate. */
 function chipRect(walker: Walker, at: { x: number; y: number }): Rect {
-  const width = walker.name.length * 7 + 28;
-  return { x: at.x - width / 2, y: at.y + 4, width, height: 18 };
+  const width = chipWidthOf(walker) + 4;
+  return { x: at.x - width / 2, y: at.y + chipTopOf(walker), width, height: CHIP_HEIGHT };
 }
 
-/** Every box a character covers over the loop: its figure along each stretch, and its name chip under it. */
+/** Every box a character covers over the loop: its figure along each stretch, and its name chip over it. */
 function walkerRects(walker: Walker): Rect[] {
   return timelineOf(walker).flatMap((seg) => {
     const a = figureRect(walker, seg.from);
@@ -82,9 +85,9 @@ function walkerRects(walker: Walker): Rect[] {
     const to = chipRect(walker, seg.to);
     const chip = {
       x: Math.min(from.x, to.x),
-      y: Math.max(from.y, to.y),
+      y: Math.min(from.y, to.y),
       width: Math.abs(seg.to.x - seg.from.x) + from.width,
-      height: from.height,
+      height: Math.abs(seg.to.y - seg.from.y) + from.height,
     };
     return [swept, chip];
   });

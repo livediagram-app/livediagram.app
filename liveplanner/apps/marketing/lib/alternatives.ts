@@ -4,7 +4,7 @@ import { SITE_URL } from '@liveplanner/ui';
 // liveplanner's comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "liveplanner"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-11-10');
+const UPDATED = new Date('2026-11-18');
 
 // Facts liveplanner states on more than one page, kept in one place so every comparison says them
 // the same way.
@@ -13,9 +13,19 @@ const GUEST_START =
 const SHARE_LINKS =
   'A share link is an Editor, Participant or view-only link (a Participant can work on cards and cells, comment and vote without changing how the plan is set up), and it can carry a password or an expiry date.';
 const AGENTS =
-  'An MCP server, a REST API with personal tokens and a command-line tool let scripts and AI agents read the plan and add, edit and move cards, sheets and forms, with their changes shown live.';
+  'An MCP server, a REST API with personal tokens and a command-line tool let scripts and AI agents read the plan and add, edit and move cards, sheets and forms, with their changes shown live. In AI tools that support MCP Apps, a plan opens as a live board view in the chat.';
 const FREE =
-  'liveplanner is free for everyone, with no paid tier, no ads and no third-party trackers. A board exports as CSV, an image, a PDF or a Markdown outline and a sheet as CSV, so your work is never locked in.';
+  'liveplanner is free for everyone, with no paid tier, no ads and no third-party trackers. A board exports as CSV, an image, a PDF or a Markdown outline, a sheet as CSV, and the whole plan as one .liveplanner file that imports back, so your work is never locked in.';
+const ACCOUNT =
+  'Signing in is optional and free. It adds teams with shared folders, and the tools that keep working while nobody has the plan open: Automations, Email to Board and calendar feeds.';
+const AUTOMATIONS_ROW = {
+  label: 'Automation',
+  us: 'Rules on card, form, email, time and GitHub triggers, free with a sign-in',
+};
+const GANTT_CLASHES =
+  'A Gantt chart that catches clashes: a Blocked By arrow turns amber when dates overlap, and Move N Cards shifts the clashing cards that follow in one undo step.';
+const FLOW_CHARTS =
+  'Cycle Time, Throughput and Cumulative Flow charts read from card history, on a tab of their own or in a Dashboard slot.';
 const CSV_IN =
   'A board imports a CSV or TSV file: each row becomes a card, landing in the column its Status names and with the person its Assignee names. Only a title is required, and one undo takes the whole import back.';
 const TRACKER_IN =
@@ -32,13 +42,14 @@ const LIST: Alternative[] = [
     h1: 'The free Trello alternative',
     lede: 'Trello made the kanban board familiar to everyone: lists, cards, drag and drop. liveplanner keeps that simplicity and puts more beside it in one plan: Sheets with real formulas, Dashboards of live slots and Forms whose answers arrive as cards, all free and ready without an account.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans' },
+      { label: 'Price', us: 'Free, every feature', them: 'Free plan, then paid plans per user' },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
         them: 'An account to create a board',
       },
       { label: 'Kanban boards', us: 'Yes, with WIP limits and swimlanes', them: 'Yes, its core' },
+      { ...AUTOMATIONS_ROW, them: 'Butler rules and buttons built in' },
       {
         label: 'Custom fields',
         us: 'Card types with fields of your own',
@@ -46,8 +57,8 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Beyond the board',
-        us: 'Sheets, Dashboards, Forms and Gantt and calendar charts in the same plan',
-        them: 'Further views and Power-Ups for integrations',
+        us: 'Sheets, Dashboards, Forms and Gantt and calendar charts in the same plan, all free',
+        them: 'Timeline, calendar and table views on paid plans, and Power-Ups for integrations',
       },
     ],
     themBest: [
@@ -58,8 +69,10 @@ const LIST: Alternative[] = [
     usBest: [
       'Boards with WIP limits: a column’s count turns amber the moment it goes over, and swimlanes split the board by assignee, type, priority or any field.',
       'One card, every board: the same card can sit on the sprint board and the roadmap, and moving it on one moves it on both.',
-      'Card types of your own, with text, number, date, choice and linked-card fields, beside five built-in types.',
+      'Card types of your own, with text, number, date, choice, person, formula and linked-card fields, and card templates that start a card already filled in.',
       'A Sheet tab with over 150 functions next to the board, reading its cards or listing them as rows that stay linked both ways.',
+      'A Gantt chart and due and start calendars drawn from the cards, free for everyone, with bars you drag to change dates.',
+      'Publish a board as a public roadmap: visitors upvote cards and send ideas through a form, with no account needed.',
       'Forms on a public link: each answer becomes a card on the board, ready to move along, and no account is needed to answer.',
       'Dashboards that bring boards, sheets, charts and notes onto one page, all live.',
       'Free, with no ads, no trackers and no sign-up to start.',
@@ -98,7 +111,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Do my teammates need an account?',
-        a: 'No. Share a link and anyone who opens it works on the board with you, live, without signing up. Signing in is optional and adds teams with shared folders.',
+        a: `No. Share a link and anyone who opens it works on the board with you, live, without signing up. ${ACCOUNT}`,
       },
     ],
   },
@@ -120,8 +133,8 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Views of the work',
-        us: 'Boards, Gantt chart, due and start calendars, charts by field',
-        them: 'List, board, timeline and calendar views',
+        us: 'Boards, Gantt chart, due and start calendars, charts by field, all free',
+        them: 'List, board and calendar views, with timeline and Gantt on paid plans',
       },
       {
         label: 'Spreadsheets',
@@ -131,8 +144,9 @@ const LIST: Alternative[] = [
       {
         label: 'Forms',
         us: 'Public forms whose answers become cards or rows',
-        them: 'Forms that create tasks',
+        them: 'Forms that create tasks, on paid plans',
       },
+      { ...AUTOMATIONS_ROW, them: 'Rules on paid plans' },
     ],
     themBest: [
       'You need portfolio and goal tracking across many teams, with workload and reporting built for managers.',
@@ -142,6 +156,8 @@ const LIST: Alternative[] = [
     usBest: [
       'No seats and no paid tier: everyone gets every feature, and nobody needs an account to start.',
       'A Gantt chart, due and start calendars and charts by field, all drawn live from the cards, with bars you drag to change dates.',
+      GANTT_CLASHES,
+      'Automations free with a sign-in: rules that move, assign and label cards on card, form, time and email triggers, and post to Slack or Microsoft Teams.',
       'Card types of your own with the fields your team tracks, from text and numbers to a link to another card.',
       'Sheet tabs beside the board, with formulas that read the cards or list them as rows linked both ways.',
       'Dashboards of live slots: a board you can work on, a sheet you can edit, a chart, a figure like Completion, or a note.',
@@ -158,7 +174,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Charts that are never out of date',
         paragraphs: [
-          'Every chart in liveplanner is drawn from the cards themselves. The Gantt chart draws a bar from each card’s start to its due date, filled to the share of its child cards that are done; drag an end to change the date. The calendars list what is due or starting each day, and Cards by Field breaks the work down by person, priority or any field of your own. Put any of them in a Dashboard slot beside the board and the sheet, and the page stays current as the cards move.',
+          'Every chart in liveplanner is drawn from the cards themselves. The Gantt chart draws a bar from each card’s start to its due date, filled to the share of its child cards that are done; drag an end to change the date. The calendars list what is due or starting each day, and Cards by Field breaks the work down by person, priority or any field of your own. Cycle Time, Throughput and Cumulative Flow read each card’s history to show how fast work moves and where it piles up. Put any of them in a Dashboard slot beside the board and the sheet, and the page stays current as the cards move.',
         ],
       },
       {
@@ -213,8 +229,8 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Automation',
-        us: 'Rules from ready-made templates, plus an API, MCP and CLI for scripts and AI agents',
-        them: 'Built-in automation recipes and integrations',
+        us: 'Rules on card, form, email, time and GitHub triggers, plus an API, MCP and CLI for scripts and AI agents',
+        them: 'Automation recipes and integrations, on paid plans',
       },
     ],
     themBest: [
@@ -228,6 +244,7 @@ const LIST: Alternative[] = [
       'Dashboards whose slots are live: work on the board, edit the sheet, and watch the chart redraw, all on one page.',
       'Sheet tabs with over 150 functions, conditional formatting, dropdowns and charts from any cells.',
       'Forms on a public link, with sections, a closing date or a response limit, and each answer landing as a card or a row.',
+      'Automations free for anyone signed in, with no paid tier to unlock before a rule can run.',
       'No account needed to start, and share links at three levels for the people you work with.',
     ],
     sections: [
@@ -241,7 +258,7 @@ const LIST: Alternative[] = [
       {
         heading: 'Where Monday.com goes further',
         paragraphs: [
-          'Monday.com has invested heavily in no-code automation and integrations, and in products built for particular teams. liveplanner’s Automations work inside the plan, moving, assigning, labelling and stamping dates, and post to Slack, Microsoft Teams, email or a webhook, but there is no catalogue of recipes for outside tools. Past that, a REST API, an MCP server and a command-line tool let a script or an AI agent do the rest.',
+          'Monday.com has invested heavily in no-code automation and integrations, and in products built for particular teams. liveplanner’s Automations work inside the plan, moving, assigning, labelling and stamping dates, start from mail sent to a board, a GitHub pull request or another tool’s webhook, and post to Slack, Microsoft Teams, email or a webhook, but there is no catalogue of recipes for outside tools. Past that, a REST API, an MCP server and a command-line tool let a script or an AI agent do the rest.',
         ],
       },
       {
@@ -260,7 +277,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner have automations?',
-        a: 'Yes. Rules act when a card moves, a field changes, a form response lands or a due date nears, from a ready-made template or your own, and can post to Slack, Microsoft Teams, email or a webhook. A REST API, an MCP server and a command-line tool let your own scripts and AI agents change cards, sheets and forms too, with their edits shown live to everyone.',
+        a: 'Yes. Rules act when a card moves, a field changes, a form response lands or a due date nears, from a ready-made template or your own, and can post to Slack, Microsoft Teams, email or a webhook. Rules run on our servers, so writing one needs a free sign-in. A REST API, an MCP server and a command-line tool let your own scripts and AI agents change cards, sheets and forms too, with their edits shown live to everyone.',
       },
       {
         q: 'Do guests need an account?',
@@ -299,6 +316,7 @@ const LIST: Alternative[] = [
         us: 'Rich-text card descriptions and notes on dashboards',
         them: 'Its core strength',
       },
+      { ...AUTOMATIONS_ROW, them: 'Buttons on the free plan, database automations on paid plans' },
     ],
     themBest: [
       'You want one home for docs, wikis and notes as well as plans, with databases woven through the pages.',
@@ -310,6 +328,7 @@ const LIST: Alternative[] = [
       'A real spreadsheet on its own tab, with cell references, over 150 functions, conditional formatting and charts over the cells.',
       'Gantt and calendar charts you can drag cards across, drawn live from the cards.',
       'Forms on a public link whose answers land as cards on a board or rows in a sheet.',
+      'Automations on every board, free: rules that move, assign and label cards when they change, a form answer lands or a due date nears.',
       'Real-time editing with live cursors and each person’s selection in their colour, cell by cell in a Sheet.',
       'Free, with no ads, no trackers and no sign-up to start.',
     ],
@@ -376,6 +395,7 @@ const LIST: Alternative[] = [
         us: 'Columns you name, and card types with your own fields',
         them: 'Configurable workflows, issue types and permissions',
       },
+      { ...AUTOMATIONS_ROW, them: 'Project automation rules, with monthly limits by plan' },
       {
         label: 'Developer integrations',
         us: 'GitHub pull requests on cards and in rules, plus a REST API, MCP server and CLI',
@@ -390,7 +410,9 @@ const LIST: Alternative[] = [
     usBest: [
       'Open a board in a click, with nothing to configure and no account needed.',
       'A Bug Triage template and a Bug Report form: reports from anyone with the link arrive as cards, ready to triage.',
-      'Card types such as Bug or Task with the fields your team tracks, and a Cards list that filters by any of them.',
+      'Card types such as Bug or Task with the fields your team tracks, and an All Cards board that filters by any of them.',
+      FLOW_CHARTS,
+      'Publish a board as a public roadmap: customers upvote what they want and suggest ideas through a form, with no account.',
       'Boards, sheets, dashboards and forms in one plan, so the plan, the numbers and the intake sit together.',
       AGENTS,
       'Free, with no seats, no ads and no trackers.',
@@ -459,6 +481,11 @@ const LIST: Alternative[] = [
         them: 'Custom fields and task types',
       },
       { label: 'Real-time multiplayer', us: 'Yes, live cursors on every tab', them: 'Yes' },
+      {
+        label: 'Timelines, dashboards and time tracking',
+        us: 'Gantt chart, Dashboard tabs and Time Tracking fields, free for everyone',
+        them: 'Trials on the free plan, with dashboards in full from Business',
+      },
     ],
     themBest: [
       'You want tasks, docs, goals, time tracking and chat in one product, and are happy to configure it.',
@@ -470,6 +497,7 @@ const LIST: Alternative[] = [
       'Edits land live for everyone, with live cursors on boards and each person’s selection outlined in a Sheet.',
       'Card types with fields of your own, and one card on as many boards as need it.',
       'A Gantt chart and due and start calendars you can drag cards across.',
+      'Time Tracking fields with timers anyone can start, adding up on the card and in the board’s Time widget.',
       'Forms whose answers arrive as cards or rows, with no account needed to answer.',
       'Free, with no ads, no trackers and no sign-up to start.',
     ],
@@ -603,7 +631,11 @@ const LIST: Alternative[] = [
     h1: 'A free Smartsheet alternative',
     lede: 'Smartsheet brings spreadsheet-style work management to large organisations, with grid, Gantt, card and calendar views, reports and dashboards. liveplanner offers the everyday parts of that, sheets, boards, a Gantt chart of the cards, live dashboards and forms, in a free planner you can start without an account.',
     rows: [
-      { label: 'Price', us: 'Free, every feature', them: 'Commercial, priced by plan' },
+      {
+        label: 'Price',
+        us: 'Free, every feature',
+        them: 'Paid plans per member, after a free trial',
+      },
       {
         label: 'Start without an account',
         us: 'Yes, create and edit as a guest',
@@ -633,6 +665,7 @@ const LIST: Alternative[] = [
     usBest: [
       'No seats or tiers: every feature is free for everyone.',
       'A Gantt chart drawn from the cards, with bars you drag to change dates, swimlanes by any field and a line for today.',
+      GANTT_CLASHES,
       'Sheet tabs beside the board, reading its cards or listing them as rows linked both ways.',
       'Dashboards whose slots stay live: work on the board, edit the sheet and watch the chart redraw.',
       'Forms on a public link whose answers land as cards or rows the moment they are sent.',
@@ -667,7 +700,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Does liveplanner have a Gantt chart?',
-        a: 'Yes. A Gantt chart can fill a tab of its own or sit in a Dashboard slot. It draws each card with a start and a due date as a bar, shows swimlanes by any field, and lets you drag a bar to change its dates.',
+        a: 'Yes. A Gantt chart can fill a tab of its own or sit in a Dashboard slot. It draws each card with a start and a due date as a bar, shows swimlanes by any field, and lets you drag a bar to change its dates. Blocked By links draw as arrows, turning amber when two cards’ dates clash, and one press moves the clashing cards that follow.',
       },
       {
         q: 'Can I work with people outside my organisation?',

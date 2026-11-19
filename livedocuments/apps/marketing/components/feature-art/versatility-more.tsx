@@ -5,12 +5,9 @@
 
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
-  ArrowHead,
   Chip,
-  LINK,
   MONO,
   MUTED_TEXT,
-  Node,
   PANEL,
   PANEL_TEXT,
   STAGE,
@@ -21,14 +18,11 @@ import {
 /* ──────────────── Zen, fonts ──────────────── */
 
 // Zen mode: the whole editor (header, palette strip, Explorer, the panel on the right and the tab
-// bar) melts away around the diagram, leaving it, the zoom controls and the way back.
+// bar) melts away around the pages, leaving them, the zoom controls and the way back.
 export function ZenModeArt() {
   return (
     <Frame canvas>
       <svg viewBox={STAGE} className="absolute inset-0 h-full w-full">
-        <defs>
-          <ArrowHead id="fac-zen-head" />
-        </defs>
         <g className="fa-c-before">
           {/* Header. */}
           <rect
@@ -114,12 +108,81 @@ export function ZenModeArt() {
           />
         </g>
 
-        {/* What stays: the diagram. */}
-        <Node x={78} y={39} w={40} h={20} label="Idea" tone="amber" size={7} />
-        <Node x={130} y={39} w={40} h={20} label="Draft" tone="sky" size={7} />
-        <Node x={182} y={39} w={40} h={20} label="Ship" tone="emerald" size={7} />
-        <path className={LINK} d="M118 49 H129" strokeWidth="1.3" markerEnd="url(#fac-zen-head)" />
-        <path className={LINK} d="M170 49 H181" strokeWidth="1.3" markerEnd="url(#fac-zen-head)" />
+        {/* What stays: the pages of the article. */}
+        <g>
+          <g>
+            <rect
+              className="fill-slate-900/10 dark:fill-black/40"
+              x="106.8"
+              y="30.6"
+              width="40"
+              height="52"
+              rx="1.4"
+            />
+            <rect
+              className="fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-600"
+              x="106"
+              y="29"
+              width="40"
+              height="52"
+              rx="1.4"
+              strokeWidth="0.7"
+            />
+            <text className={PANEL_TEXT} x="111" y="39" fontSize="5" fontWeight="700">
+              Field notes
+            </text>
+            {[0, 1, 2, 3, 4, 5, 6].map((r) => (
+              <rect
+                key={r}
+                className="fill-slate-200 dark:fill-slate-600"
+                x="111"
+                y={43 + r * 4.6}
+                width={r === 6 ? 18 : 30}
+                height="1.5"
+                rx="0.75"
+              />
+            ))}
+            <text className={MUTED_TEXT} x="126" y="78.4" fontSize="3" textAnchor="middle">
+              1
+            </text>
+          </g>
+          <g>
+            <rect
+              className="fill-slate-900/10 dark:fill-black/40"
+              x="154.8"
+              y="30.6"
+              width="40"
+              height="52"
+              rx="1.4"
+            />
+            <rect
+              className="fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-600"
+              x="154"
+              y="29"
+              width="40"
+              height="52"
+              rx="1.4"
+              strokeWidth="0.7"
+            />
+            <text className={PANEL_TEXT} x="159" y="39" fontSize="4.4" fontWeight="700">
+              2. Demo day
+            </text>
+            {[0, 1, 2, 3, 4, 5, 6].map((r) => (
+              <rect
+                key={r}
+                className="fill-slate-200 dark:fill-slate-600"
+                x="159"
+                y={43 + r * 4.6}
+                width={r === 6 ? 18 : 30}
+                height="1.5"
+                rx="0.75"
+              />
+            ))}
+            <text className={MUTED_TEXT} x="174" y="78.4" fontSize="3" textAnchor="middle">
+              2
+            </text>
+          </g>
+        </g>
 
         {/* Zen: the zoom controls and the way out. */}
         <g className="fa-c-after">
@@ -142,7 +205,7 @@ export function ZenModeArt() {
         <kbd className="rounded border border-slate-300 px-1 font-mono text-[7px] dark:border-slate-600">
           Z
         </kbd>
-        Zen mode
+        Zen
       </Chip>
     </Frame>
   );

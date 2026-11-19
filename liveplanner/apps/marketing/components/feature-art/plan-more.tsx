@@ -284,9 +284,9 @@ export function FindCardArt() {
 export function BoardCsvArt() {
   const csv = [
     'Title,Status,Assignee',
-    'Fix footer,To do,Sam',
-    'New logo,Doing,Ana',
-    'Alt text,To do,Jo',
+    'Fix footer,To Do,Sam',
+    'New logo,In Progress,Ana',
+    'Alt text,To Do,Jo',
   ];
   return (
     <Frame canvas>
@@ -313,8 +313,8 @@ export function BoardCsvArt() {
         ))}
         <path className="stroke-(--art-arrow)" d="M128 45 H146" strokeWidth="1.1" />
         <path className="fill-(--art-arrow)" d="M150 45 l-5 -3 v6z" />
-        <ColumnHead x={158} y={14} name="To do" count="2" />
-        <ColumnHead x={226} y={14} name="Doing" count="1" />
+        <ColumnHead x={158} y={14} name="To Do" count="2" />
+        <ColumnHead x={226} y={14} name="In Progress" count="1" />
         <g className="fa-d-land">
           <PlanCard x={156} y={20} w={62} title="Fix footer" id="#61" who={SM} />
         </g>

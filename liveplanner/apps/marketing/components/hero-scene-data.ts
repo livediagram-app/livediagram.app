@@ -6,6 +6,7 @@
 // The data alone, without the boards: a page that shows one scene (FeatureScene) loads only that
 // scene's board, never all six. hero-scenes.tsx pairs each with its board for the hero stage.
 
+import { TEAMMATE, YOU } from './art-tokens';
 import type { TabDef } from './hero-editor-window';
 import type { HeroMode } from './hero-mode-palette';
 import type { PlanTab } from './hero-plan-bars';
@@ -50,7 +51,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
     label: 'Plan: move cards across a board together, with WIP limits and quick add',
     mode: 'plan',
     planTab: 'board',
-    // To do (from x -59) to Done (to x 659) with a margin either side, so a beat's narrower canvas never
+    // To Do (from x -59) to Done (to x 659) with a margin either side, so a beat's narrower canvas never
     // clips them; Backlog stays just off the left, as on a board scrolled a little right.
     landscapeViewBox: '-74 -60 748 400',
     tabs: [
@@ -139,8 +140,19 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
       'Together: three people on one board, a comment thread on a card and a card moving, all live',
     mode: 'plan',
     planTab: 'board',
+    // Presence on a Board is in the tab bar and on the cards, never a pointer: the Sprint tab's stack shows
+    // you, Sam and Maya, the three people the board's rings and tags name (hero-together-board.tsx).
     tabs: [
-      { name: 'Sprint', color: '#8b5cf6', active: true },
+      {
+        name: 'Sprint',
+        color: '#8b5cf6',
+        active: true,
+        people: [
+          { initials: 'TM', color: YOU },
+          { initials: 'SM', color: '#f59e0b' },
+          { initials: 'MK', color: TEAMMATE },
+        ],
+      },
       { name: 'Overview', color: '#10b981' },
     ],
     shared: true,

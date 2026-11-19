@@ -4,7 +4,7 @@ import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor
 // The Dashboards scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): a product launch's
 // Dashboard tab (docs/specs/026-plan/plan-tabs.md) filling its tab, rows of live slots side by side. Its slots
 // land row by row: three figures (Completion, Due this week, Budget left), then the launch board beside a chart
-// of cards by status, then a checklist and the key date. A teammate carries a card from Doing to Done on the
+// of cards by status, then a checklist and the key date. A teammate carries a card from In Progress to Done on the
 // board slot and the chart's Done bar grows to match; you tick the last open item on the checklist, and
 // Completion ticks over. Every piece plays at its own --d (hero-mode-animations.css); a phone draws the same
 // dashboard smaller.
@@ -172,7 +172,7 @@ function Figures() {
 
 // Row 2, left: the launch board, live in its slot, three columns of cards.
 const BOARD = { x: X0, w: 400 };
-const COLS = ['To do', 'Doing', 'Done'] as const;
+const COLS = ['To Do', 'In Progress', 'Done'] as const;
 const COL_W = (BOARD.w - 24 - 2 * 8) / 3;
 const colX = (c: number) => BOARD.x + 12 + c * (COL_W + 8);
 const CARD_H = 26;
@@ -186,7 +186,7 @@ const CARDS: { col: number; slot: number; title: string; tone: string }[] = [
   { col: 2, slot: 0, title: 'Beta invites', tone: '#10b981' },
   { col: 2, slot: 1, title: 'Help articles', tone: '#10b981' },
 ];
-// The card the teammate carries: Doing's second, over to Done's third slot.
+// The card the teammate carries: In Progress's second, over to Done's third slot.
 const CARRIED = { col: 1, slot: 1, title: 'Release notes', tone: '#f59e0b' };
 
 function Card({ x, y, title, tone }: { x: number; y: number; title: string; tone: string }) {
@@ -288,8 +288,8 @@ function BoardSlot() {
 // Row 2, right: cards by status, drawn from the same cards, so Done grows when the card lands.
 const CHART = { x: X0 + BOARD.w + GAP, w: W - BOARD.w - GAP };
 const BARS = [
-  { name: 'To do', n: 3, colour: '#94a3b8' },
-  { name: 'Doing', n: 2, colour: '#f59e0b' },
+  { name: 'To Do', n: 3, colour: '#94a3b8' },
+  { name: 'In Progress', n: 2, colour: '#f59e0b' },
   { name: 'Done', n: 2, colour: '#10b981' },
 ] as const;
 const UNIT = 30;
@@ -308,8 +308,8 @@ function ChartSlot() {
         strokeWidth="0.8"
       />
       {BARS.map((bar, i) => {
-        // Doing's top unit is the carried card: it leaves as the card lands in Done.
-        const leaving = bar.name === 'Doing';
+        // In Progress's top unit is the carried card: it leaves as the card lands in Done.
+        const leaving = bar.name === 'In Progress';
         const h = (leaving ? bar.n - 1 : bar.n) * UNIT;
         return (
           <g key={bar.name}>

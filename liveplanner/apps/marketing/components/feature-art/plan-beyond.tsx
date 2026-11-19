@@ -211,7 +211,7 @@ export function EmbedBoardArt() {
         className="fill-slate-50 stroke-brand-300 dark:fill-slate-900/60 dark:stroke-brand-500/50"
         strokeWidth="0.8"
       />
-      {['To do', 'Doing', 'Done'].map((col, i) => (
+      {['To Do', 'In Progress', 'Done'].map((col, i) => (
         <g key={col}>
           <text className={MUTED} x={32 + i * 82} y={51} fontSize="5.2" fontWeight="700">
             {col}

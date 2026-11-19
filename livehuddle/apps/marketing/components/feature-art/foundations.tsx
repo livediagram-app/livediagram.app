@@ -19,7 +19,7 @@ const TERM = {
   dim: '#64748b',
 };
 
-/** The API: a curl call with a bearer token, and the documents it returns. */
+/** The API: a curl call with a bearer token, and the Spaces it lists (apps/help developers/working-with-documents). */
 export function ApiArt() {
   const mono = {
     fontFamily: MONO,
@@ -52,7 +52,7 @@ export function ApiArt() {
         <text x="32" y="33" {...mono}>
           <tspan fill={EMERALD}>$ </tspan>
           <tspan fill={TERM.text}>curl </tspan>
-          <tspan fill={TERM.string}>https://www.livehuddle.app/api/documents</tspan>
+          <tspan fill={TERM.string}>https://livehuddle.app/api/documents</tspan>
           <tspan fill={TERM.dim}> \</tspan>
         </text>
         <text x="42" y="43" {...mono}>
@@ -67,26 +67,31 @@ export function ApiArt() {
             200 OK
           </text>
           <text x="32" y="69" {...mono}>
-            <tspan fill={TERM.dim}>[{'{'} </tspan>
-            <tspan fill={TERM.key}>&quot;title&quot;</tspan>
+            <tspan fill={TERM.dim}>{'{'} </tspan>
+            <tspan fill={TERM.key}>&quot;documents&quot;</tspan>
+            <tspan fill={TERM.dim}>: [{'{'} </tspan>
+            <tspan fill={TERM.key}>&quot;id&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.string}>&quot;Auth flow&quot;</tspan>
+            <tspan fill={TERM.string}>&quot;k3f9q2&quot;</tspan>
             <tspan fill={TERM.dim}>, </tspan>
-            <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
+            <tspan fill={TERM.key}>&quot;name&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.flag}>3</tspan>
+            <tspan fill={TERM.string}>&quot;Team Office&quot;</tspan>
             <tspan fill={TERM.dim}> {'}'},</tspan>
           </text>
           <text x="38" y="79" {...mono}>
             <tspan fill={TERM.dim}>{'{'} </tspan>
-            <tspan fill={TERM.key}>&quot;title&quot;</tspan>
+            <tspan fill={TERM.key}>&quot;id&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.string}>&quot;Q3 roadmap&quot;</tspan>
+            <tspan fill={TERM.string}>&quot;p7d2m8&quot;</tspan>
             <tspan fill={TERM.dim}>, </tspan>
-            <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
+            <tspan fill={TERM.key}>&quot;name&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.flag}>5</tspan>
-            <tspan fill={TERM.dim}> {'}'}]</tspan>
+            <tspan fill={TERM.string}>&quot;All-Hands Hall&quot;</tspan>
+            <tspan fill={TERM.dim}>
+              {' '}
+              {'}'}] {'}'}
+            </tspan>
           </text>
         </g>
         {/* The caret, waiting while the call is in flight. */}

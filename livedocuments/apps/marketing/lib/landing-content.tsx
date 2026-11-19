@@ -3,10 +3,12 @@ import {
   ApiArt,
   ArticleFlowArt,
   ArticleContentsArt,
+  ArticleExportArt,
   ArticleLooksArt,
   ArticlePagesArt,
   ArticleTableArt,
   ArticleWrapArt,
+  ApprovalArt,
   AssignedActionsArt,
   CommentsArt,
   ContentsSidebarArt,
@@ -18,6 +20,7 @@ import {
   FullScreenSlideArt,
   InfographicLayoutArt,
   LaserArt,
+  LiveEmbedArt,
   LiveImageArt,
   MarginCommentsArt,
   McpArt,
@@ -34,6 +37,7 @@ import {
   SearchPaletteArt,
   SelectionGlowArt,
   ShareLinksArt,
+  SlideBuildsArt,
   SlideLayoutsArt,
   SlideTimingArt,
   SpotlightArt,
@@ -41,6 +45,8 @@ import {
   ThemesArt,
   TidyPageArt,
   UndoRedoArt,
+  VersionHistoryArt,
+  WalkthroughArt,
   WordImportArt,
   ZenModeArt,
 } from '@/components/FeatureArt';
@@ -86,7 +92,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore articles',
     title: 'Write it up on pages',
     description:
-      'Write on pages like a doc: headings, lists and tables from the keyboard, a table of contents, headers and footers, pictures and charts in the text, comments in the margin, and five looks to match your house style. The writing flows onto a new page as it grows.',
+      'Write on pages like a doc: headings, lists and tables from the keyboard, a table of contents, headers, footers and footnotes, pictures and charts in the text, comments in the margin, and five looks to match your house style. The writing flows onto a new page as it grows.',
     metaDescription:
       'Write articles on pages like a doc: tables across pages, a table of contents, headers and footers, margin comments, and Word import and export.',
     highlights: [
@@ -102,7 +108,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Write',
         title: 'Write like a doc',
         description:
-          'Type straight onto a page with Markdown shortcuts and a / menu for every block, and paste cleanly from web pages, Google Docs and Word. A formatting toolbar sits on the page for styles, colour, links and lists.',
+          'Type straight onto a page with Markdown shortcuts and a / menu for every block, and paste cleanly from web pages, Google Docs and Word. A formatting toolbar sits on the page for styles, colour, links and lists, its More Formatting menu ending on the word count, the reading time and how easily it reads.',
       },
       {
         art: <ArticleFlowArt />,
@@ -118,7 +124,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Write',
         title: 'Pictures and charts in the text',
         description:
-          'Pictures and charts sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text.',
+          'Pictures and charts sit in the line, wrap left or right, or float free. Drop a shape into the writing and a drawing area opens right there in the text. Give a picture alt text for screen readers, and link a chart to a liveplanner sheet to keep it in step.',
       },
       {
         art: <ArticleTableArt />,
@@ -134,7 +140,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Write',
         title: 'Contents, headers and footers',
         description:
-          'A table of contents lists your headings with their page numbers and keeps itself up to date as you write. Give every page a header and footer with the page number, the page count, the document name or the date.',
+          'A table of contents lists your headings with their page numbers and keeps itself up to date as you write. Give every page a header and footer with the page number, the page count, the document name or the date, and add footnotes that number themselves at the foot of their page.',
       },
       {
         art: <WordImportArt />,
@@ -177,12 +183,12 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'A Contents sidebar lists every page with a picture of it, its number and its name, and highlights the one you are reading. Press a row to glide there, or type to find a page by its name or any words on it.',
       },
       {
-        art: <PagesExportArt />,
+        art: <ArticleExportArt />,
         href: '/help/pages/exporting-pages/',
         group: 'Review',
         title: 'A PDF at true page size',
         description:
-          'Export the article as one PDF, each page exactly its sheet, ready to print or attach, its contents linked to their pages. Or export it as a Word document to keep editing, tables and headers included.',
+          'Export the article as one PDF, each page exactly its sheet, ready to print or attach, its contents linked to their pages. Or export it as a Word document to keep editing, tables and headers included, or as Markdown that Import reads straight back.',
       },
     ],
   },
@@ -193,13 +199,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore slide decks',
     title: 'Build the deck, then present it',
     description:
-      'Start a slide from one of 64 ready-made layouts and fill it in, then present the deck full screen on your screen alone, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
+      'Start a slide from one of 64 ready-made layouts and fill it in, then present the deck full screen on your screen alone, each point building in on a click, your notes behind a button, with a laser and a spotlight to point the room at what you mean.',
     metaDescription:
-      'Slide decks from 64 ready-made layouts, presented full screen with private notes, a timer, a laser pointer and a spotlight.',
+      'Slide decks from 64 ready-made layouts, presented full screen with builds, private notes, a timer, a laser pointer and a spotlight.',
     highlights: [
       'Slide pages, ready-made layouts',
+      'Builds, one point at a time',
       'Notes only you open',
-      'Laser pointer for presenting',
       'Your screen, not everyone else’s',
     ],
     items: [
@@ -217,7 +223,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Build',
         title: 'Flashcards to speak from',
         description:
-          'Rather hold notes than show slides? Make a stack of flashcards: a title and a couple of paragraphs on each, text only. Flip through them as you speak, each card telling you its place and how long its words take to say, and start from a conference talk, a wedding toast or a product pitch.',
+          'Rather hold notes than show slides? Make a stack of flashcards: a title and a couple of paragraphs on each, text only. Flip through them as you speak, each card telling you its place and how long its words take to say, Contents adding up the whole talk, and start from a conference talk, a wedding toast or a product pitch.',
       },
       {
         art: <PowerPointImportArt />,
@@ -236,12 +242,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Any page can be a slide: a slide page, an infographic, a page of an article. Order them in the Slide Deck panel: drag to rearrange, rename, duplicate, or hide a slide you might want next week without deleting it. The deck is saved with the document, so a teammate opens it and sees the same talk.',
       },
       {
+        art: <SlideBuildsArt />,
+        href: '/help/selection-modes/slide-deck/slide-builds/',
+        group: 'Present',
+        title: 'Builds, one point at a time',
+        description:
+          'Give a slide’s points a build and they come in one click at a time while you present: Appear, Fade or Rise, in the order you set. Each built point wears a numbered badge as you edit, so the order reads at a glance.',
+      },
+      {
         art: <PresenterNotesArt />,
         href: '/help/selection-modes/slide-deck/presenting/',
         group: 'Present',
         title: 'Notes only you open',
         description:
-          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, so nothing about your script is on screen until you ask for it.',
+          'Write what you mean to say over each slide. During the presentation they sit behind a button in the corner, as note cards you step through with the arrow keys, so nothing about your script is on screen until you ask for it.',
       },
       {
         art: <SlideTimingArt />,
@@ -328,7 +342,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/pages/working-with-pages/',
         title: 'Backgrounds from your theme',
         description:
-          'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page.',
+          'Paint a page in a tint of your theme, a solid colour or a gradient, with dots, a grid or ruled lines over it. Text keeps reading on a dark page, because the ink follows the page, and a text colour too faint to read comes with a readable shade one press away.',
       },
       {
         art: <PagesExportArt />,
@@ -369,13 +383,13 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore collaboration',
     title: 'Work on it together, live',
     description:
-      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Or hand the work to your AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments on anything, and actions handed to teammates. Ask for sign-off, record a walkthrough, go back to any version, or hand the work to your AI.',
     metaDescription:
-      'Share a link and your team is on the pages with you: live cursors, comments, assigned actions, expiring links, teams and an MCP server for AI.',
+      'Share a link and your team is on the pages with you: live cursors, comments, approvals, version history, walkthroughs and an MCP server for AI.',
     highlights: [
       'Live presence',
       'Comments on anything',
-      'Assign actions to teammates',
+      'Every version kept',
       'Make documents with AI',
     ],
     items: [
@@ -393,7 +407,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Edits land live',
         description:
-          'The moment someone makes a change, everyone sees it. In an article the paragraph you are typing in is held for you, your name in its margin for everyone else, so nobody types over you.',
+          'The moment someone makes a change, everyone sees it. In an article the paragraph or table cell you are typing in is held for you, your name in its margin for everyone else, so nobody types over you.',
       },
       {
         art: <SelectionGlowArt />,
@@ -436,6 +450,30 @@ export const LANDING_SECTIONS: LandingSection[] = [
           "Back out a recent edit with Cmd-Z, or bring it back with Cmd-Shift-Z. A whole drag is one step, and your undo rewinds your own edits, not a teammate's.",
       },
       {
+        art: <VersionHistoryArt />,
+        href: '/help/tabs/version-history/',
+        group: 'Review & history',
+        title: 'Every version kept',
+        description:
+          'Each tab keeps its earlier versions as you work: automatic ones, one before every AI edit, and the ones you name. Preview a version with its changes outlined, then restore it or copy it into a new tab. Before a big change, take a snapshot of the whole document and revert to it in one step.',
+      },
+      {
+        art: <ApprovalArt />,
+        href: '/help/collaboration/sharing/request-approval/',
+        group: 'Review & history',
+        title: 'Ask for sign-off',
+        description:
+          'Request Approval from the people you name, with a note and a due day. Each answers Approve or Request Changes from a banner on the document, and Share says where it stands: Awaiting, Changes Requested, Approved, or Changed Since Approval.',
+      },
+      {
+        art: <WalkthroughArt />,
+        href: '/help/collaboration/walkthroughs/',
+        group: 'Review & history',
+        title: 'Walkthroughs to watch later',
+        description:
+          'Record yourself talking the document through, your voice and an optional camera bubble, and hide anything private from the recording. Teammates play it back over the document itself, slides and all, pausing to look around whenever they like.',
+      },
+      {
         art: <ShareLinksArt />,
         href: '/help/collaboration/sharing/',
         group: 'Share & access',
@@ -452,12 +490,20 @@ export const LANDING_SECTIONS: LandingSection[] = [
           'Copy an iframe from the Share dialog and the document sits inside your wiki, Notion or site, live as people edit it. Where iframes are blocked, like a GitHub README, paste a live image instead: a plain picture URL that shows the latest version after every save.',
       },
       {
+        art: <LiveEmbedArt />,
+        href: '/help/palette/embed-elements/',
+        group: 'Share & access',
+        title: 'Your other work, live on the page',
+        description:
+          'Add a Live Embed and a canvas, plan or design from livediagram, liveplanner or livedesign sits on the page, live and read-only. Everyone sees it with their own access, and someone without access sees only a blurred picture.',
+      },
+      {
         art: <TeamsArt />,
         href: '/help/collaboration/teams/',
         group: 'Share & access',
         title: 'Teams with a shared library',
         description:
-          'Create a team, invite people by email, and everyone gets a shared folder of documents they can all open and edit. Admins manage membership and roles; members just get to work.',
+          'Create a team, invite people by email, and everyone gets a shared folder of documents they can all open and edit. Save shapes and components to the team’s Library and drag them from the palette onto any page, in every app. Admins manage membership and roles; members just get to work.',
       },
       {
         art: <ExpiryArt />,
@@ -481,7 +527,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'AI & your tools',
         title: 'Make documents with AI',
         description:
-          'Connect Claude or any MCP client and let it find, read, create, edit and share your documents for you. Ask for a brief and it writes an article from Markdown; ask for a deck and it adds the slides. It runs on a revocable token, read-only if you prefer.',
+          'Connect Claude or any MCP client and let it find, read, create, edit and share your documents for you. Ask for a brief and it writes an article from Markdown; ask for a deck and it adds the slides. In Claude, a view of the document opens beside the answer and keeps up as it changes. It runs on a revocable token, read-only if you prefer.',
       },
       {
         art: <ApiArt />,

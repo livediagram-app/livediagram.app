@@ -287,8 +287,8 @@ describe('the kanban wall', () => {
     const lanes = container.querySelector('.hero-kanban-lanes')!;
     expect([...lanes.children].map((l) => l.textContent)).toEqual([
       'Backlog7',
-      'To do4',
-      'Doing2/3',
+      'To Do4',
+      'In Progress2/3',
       'Review1',
       'Done12',
     ]);

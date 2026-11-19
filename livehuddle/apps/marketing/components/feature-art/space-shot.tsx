@@ -6,7 +6,9 @@
 
 import type { CSSProperties, ReactNode } from 'react';
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import type { AvatarStatus } from '@livehuddle/avatar/status';
 import { avatarBox } from '@livehuddle/avatar/walk';
+import { AvatarChip, CHIP_CLEARANCE } from '../avatar-chip';
 import { FONT } from '../art-tokens';
 import { RoomArt } from '../room-art';
 import {
@@ -26,7 +28,17 @@ const BOX = avatarBox(SPACE_AVATAR_SCALE);
 export const at = (seconds: number) => ({ '--d': `${seconds}s` }) as CSSProperties;
 
 /** One character in a shot: who (a cast member of the shot's Space), which still, and where if not at rest. */
-export type ShotCast = { name: string; still?: StillKey; x?: number; y?: number; chip?: boolean };
+export type ShotCast = {
+  name: string;
+  still?: StillKey;
+  x?: number;
+  y?: number;
+  // No chip (a character the card labels its own way); the status inside it (Focusing for anyone in headphones,
+  // unless the card gives another); the chip nudged sideways.
+  chip?: boolean;
+  status?: AvatarStatus;
+  chipDx?: number;
+};
 
 function member(spec: SpaceSceneSpec, name: string): CastMember {
   const found = spec.cast.find((m) => m.name === name);
@@ -40,31 +52,8 @@ export function shotPoint(spec: SpaceSceneSpec, cast: ShotCast) {
   return { x: cast.x ?? rest.x, y: cast.y ?? rest.y };
 }
 
-/** The name under a character, as the canvas labels one: a small pill in the person's colour. */
-export function NameChip({ name, colour }: { name: string; colour: string }) {
-  const width = name.length * 7 + 22;
-  return (
-    <g transform={`translate(${-width / 2} 10)`}>
-      <rect
-        width={width}
-        height={20}
-        rx={10}
-        className="fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-700"
-      />
-      <circle cx={10} cy={10} r={4} fill={colour} />
-      <text
-        x={18}
-        y={14.5}
-        fontFamily={FONT}
-        fontSize={12}
-        fontWeight={600}
-        className="fill-slate-700 dark:fill-slate-200"
-      >
-        {name}
-      </text>
-    </g>
-  );
-}
+/** The name chip over a character's head, as the canvas labels a peer: their colour, their status inside. */
+export { AvatarChip as NameChip } from '../avatar-chip';
 
 /** A speech bubble, its tail at (0, 0): a white card edged in the speaker's colour, as the editor draws one. */
 export function SpeechBubble({
@@ -110,9 +99,18 @@ export function SpeechBubble({
   );
 }
 
-/** The height of a character's drawn figure above its feet, for whatever a card hangs over its head. */
-export function headOf(spec: SpaceSceneSpec, name: string) {
-  return (member(spec, name).sits ? 19 : 24) * 2.5 * SPACE_AVATAR_SCALE;
+/**
+ * The height of a character's drawn figure above its feet, where its name chip stands: a sitter's at rest (its
+ * `stand` still is seated) is five rows lower.
+ */
+export function headOf(spec: SpaceSceneSpec, name: string, still: StillKey = 'stand') {
+  const seated = member(spec, name).sits && still === 'stand';
+  return (seated ? 19 : 24) * 2.5 * SPACE_AVATAR_SCALE;
+}
+
+/** How far above a character's feet whatever a card hangs over its head starts: over the head and its name chip. */
+export function overHeadOf(spec: SpaceSceneSpec, name: string, still?: StillKey) {
+  return headOf(spec, name, still) + CHIP_CLEARANCE;
 }
 
 /**
@@ -162,7 +160,15 @@ export function SpaceShot({
               width={BOX.width}
               height={BOX.height}
             />
-            {c.chip === false ? null : <NameChip name={m.name} colour={m.colour} />}
+            {c.chip === false ? null : (
+              <AvatarChip
+                name={m.name}
+                colour={m.colour}
+                head={headOf(spec, c.name, c.still)}
+                status={c.status ?? (m.headphones ? 'focus' : undefined)}
+                dx={c.chipDx}
+              />
+            )}
           </g>
         ))}
         {children}

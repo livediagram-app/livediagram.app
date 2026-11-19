@@ -196,7 +196,7 @@ export function Pill({
   y: number;
   w: number;
   label: string;
-  tone?: 'slate' | 'sky' | 'pink' | 'green' | 'amber' | 'red' | 'solid';
+  tone?: 'slate' | 'sky' | 'pink' | 'green' | 'amber' | 'red' | 'solid' | 'brand';
   className?: string;
   style?: CSSProperties;
 }) {
@@ -208,6 +208,8 @@ export function Pill({
     amber: 'fill-amber-100 dark:fill-amber-500/25',
     red: 'fill-rose-100 dark:fill-rose-500/25',
     solid: 'fill-sky-500',
+    // The editor's primary button (@liveworkspace/ui Button variant primary): brand-700, brand-600 in dark.
+    brand: 'fill-brand-700 dark:fill-brand-600',
   }[tone];
   const ink = {
     slate: 'fill-slate-600 dark:fill-slate-300',
@@ -217,6 +219,7 @@ export function Pill({
     amber: 'fill-amber-700 dark:fill-amber-200',
     red: 'fill-rose-700 dark:fill-rose-200',
     solid: 'fill-white',
+    brand: 'fill-white',
   }[tone];
   return (
     <g className={className} style={style}>

@@ -9,6 +9,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { avatarBox } from '@livehuddle/avatar/walk';
 import { FONT } from './art-tokens';
+import { AvatarChip, CHIP_CLEARANCE } from './avatar-chip';
 import {
   CHEER_LIFTS,
   SPACE_AVATAR_SCALE,
@@ -30,7 +31,7 @@ import { RoomArt } from './room-art';
 
 const BOX = avatarBox(SPACE_AVATAR_SCALE);
 // The drawn figure's height above its feet (its 24 grid rows; five fewer seated, Avatar mode's drop and folded legs),
-// for the bubbles.
+// for the name chips and the bubbles over them.
 const ROW = 2.5 * SPACE_AVATAR_SCALE;
 const figureHeight = (member: CastMember) => (member.sits ? 19 : 24) * ROW;
 
@@ -50,24 +51,16 @@ function Still({ member, still, sheet }: { member: CastMember; still: StillKey; 
   );
 }
 
-/** The name under a character, as the canvas labels one: a small pill in the person's colour. */
-function NameChip({ member }: { member: CastMember }) {
-  const width = member.name.length * 7 + 22;
+/** The name chip over a character's head, as the canvas labels a peer (avatar-chip.tsx). Headphones on is Focusing,
+ *  the status that draws them, so its chip says so. */
+function NameChip({ member, head }: { member: CastMember; head: number }) {
   return (
-    <g transform={`translate(${-width / 2} 10)`}>
-      <rect width={width} height={20} rx={10} className="hs-chip-card" />
-      <circle cx={10} cy={10} r={4} fill={member.colour} />
-      <text
-        x={18}
-        y={14.5}
-        fontFamily={FONT}
-        fontSize={12}
-        fontWeight={600}
-        className="hs-chip-text"
-      >
-        {member.name}
-      </text>
-    </g>
+    <AvatarChip
+      name={member.name}
+      colour={member.colour}
+      head={head}
+      status={member.headphones ? 'focus' : undefined}
+    />
   );
 }
 
@@ -142,9 +135,23 @@ function Walker({ member, sheet }: { member: CastMember; sheet: string }) {
       <g className="hs-stand" style={vars({ '--d': s(arrival) })}>
         <Resting member={member} sheet={sheet} />
       </g>
-      <g className={waiting ? undefined : 'hs-arrive'} style={vars({ '--d': s(member.start) })}>
-        <NameChip member={member} />
-      </g>
+      {member.sits ? (
+        // Over the standing head while it walks in, over the seated one once it sits.
+        <>
+          <g className="hs-arrive" style={vars({ '--d': s(member.start) })}>
+            <g className="hs-idle" style={vars({ '--d': s(arrival) })}>
+              <NameChip member={member} head={24 * ROW} />
+            </g>
+          </g>
+          <g className="hs-stand" style={vars({ '--d': s(arrival) })}>
+            <NameChip member={member} head={figureHeight(member)} />
+          </g>
+        </>
+      ) : (
+        <g className={waiting ? undefined : 'hs-arrive'} style={vars({ '--d': s(member.start) })}>
+          <NameChip member={member} head={figureHeight(member)} />
+        </g>
+      )}
     </g>
   );
   for (const leg of [...legs].reverse()) {
@@ -181,7 +188,8 @@ function Bubble({
   // Text runs about 7.2 px a character at 13 px; an emoji is about two.
   const width = Math.round([...text].length * 7.2 + 28);
   const height = 46;
-  const top = y - figureHeight(member) - height - 14;
+  // Over the head and its name chip, the tail's tip a short gap above the chip.
+  const top = y - figureHeight(member) - CHIP_CLEARANCE - height - 8;
   // The place is the outer group's; the inner one rises in and drifts off (a CSS transform would replace it).
   return (
     <g transform={`translate(${x - width / 2} ${top})`}>

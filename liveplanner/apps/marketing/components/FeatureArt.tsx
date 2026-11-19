@@ -33,3 +33,9 @@ export * from './feature-art/automations-more';
 // Card templates, card Activity, Describe a Plan, GitHub, the calendar feed and connected files.
 export * from './feature-art/plan-extras';
 export * from './feature-art/plan-beyond';
+// Publish as Roadmap, Email to Board and Configure Board's presets.
+export * from './feature-art/plan-reach';
+// The flow charts and the Gantt chart's dependency clashes.
+export * from './feature-art/plan-flow';
+// Walkthroughs, Snapshots and changes that wait out a dropped connection.
+export * from './feature-art/together-safety';

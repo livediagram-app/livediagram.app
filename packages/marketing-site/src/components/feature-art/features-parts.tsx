@@ -1,5 +1,5 @@
-// The drawing parts livedocuments's and livedesign's editor-feature, tab and connection illustrations (./features,
-// and each app's components/feature-art/foundations) are built from: a collaborator's pointer with its name tag, a small editor
+// The drawing parts livedocuments's and livedesign's editor-feature, tab and connection illustrations (each
+// app's components/feature-art/foundations and undo) are built from: a collaborator's pointer with its name tag, a small editor
 // window, a node on the canvas, an arrow between nodes, and a key cap. Every part reads the
 // canvas palette (--art-*) or pairs its light colour with a dark: one, so a card reads the same
 // in either appearance.
@@ -170,9 +170,8 @@ export function MiniWindow({
   );
 }
 
-// ── Scene-specific parts for ./features: the tab bar's pills, a window's tabs and its roadmap,
-// the undo cluster, a photograph and its selection
-// handles, and a palette tile with its key.
+// ── Scene-specific parts: the undo cluster and the tooltip its button shows. Each app draws its own
+// undo scene round them (components/feature-art/undo), on the surface that product edits.
 
 // The canvas cluster's undo and redo buttons, bottom right, as the editor draws them.
 export function UndoCluster({ x, y }: { x: number; y: number }) {
@@ -203,6 +202,32 @@ export function UndoCluster({ x, y }: { x: number; y: number }) {
         <path d="M35 6.5 H30.5 a3 3 0 0 0 0 6 H35.5" />
         <path d="M33.5 4.3 L35.8 6.5 L33.5 8.7" />
       </g>
+    </g>
+  );
+}
+
+// The tooltip over the undo button while it is pressed (fa-b-tip), its top left at (x, y).
+export function UndoTip({ x, y }: { x: number; y: number }) {
+  return (
+    <g className="fa-b-tip">
+      <rect
+        className="fill-slate-800 dark:fill-slate-100"
+        x={x}
+        y={y}
+        width="50"
+        height="11"
+        rx="3"
+      />
+      <text
+        className="fill-white dark:fill-slate-900"
+        x={x + 25}
+        y={y + 7.4}
+        textAnchor="middle"
+        fontSize="5.5"
+        fontWeight="600"
+      >
+        Undo ⌘Z
+      </text>
     </g>
   );
 }
