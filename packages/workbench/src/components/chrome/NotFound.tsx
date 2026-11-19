@@ -83,9 +83,9 @@ function bodyOf(reason: NotFoundReason, noun: string, embed: boolean): string {
         ? `This ${noun} is no longer shared at this link. Ask whoever shared it for a new one.`
         : 'This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared it for a new one.';
     case 'sign-in':
-      return `This ${noun} doesn’t exist, or you need to sign in to open it.`;
+      return `This ${noun} doesn’t exist, or you need to sign in to open it. If you are joining a colleague on this ${noun}, ask them to share a URL via the Share button.`;
     default:
-      return `This ${noun} doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.`;
+      return `This ${noun} doesn’t exist or isn’t yours. Open one from the Explorer or start fresh. If you are joining a colleague on this ${noun}, ask them to share a URL via the Share button.`;
   }
 }
 

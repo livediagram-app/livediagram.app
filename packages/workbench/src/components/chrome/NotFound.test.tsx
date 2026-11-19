@@ -24,7 +24,7 @@ describe('NotFound', () => {
     expect(screen.getByRole('heading', { name: 'Plan Not Found' })).toBeTruthy();
     expect(
       screen.getByText(
-        'This plan doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.',
+        'This plan doesn’t exist or isn’t yours. Open one from the Explorer or start fresh. If you are joining a colleague on this plan, ask them to share a URL via the Share button.',
       ),
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'New Plan' })).toBeTruthy();
@@ -96,7 +96,9 @@ describe('NotFound', () => {
     expect(screen.getByRole('heading', { name: 'Canvas Not Found' })).toBeTruthy();
     expect(screen.getByText('404')).toBeTruthy();
     expect(
-      screen.getByText('This canvas doesn’t exist, or you need to sign in to open it.'),
+      screen.getByText(
+        'This canvas doesn’t exist, or you need to sign in to open it. If you are joining a colleague on this canvas, ask them to share a URL via the Share button.',
+      ),
     ).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')).toBe(
       '/sign-in/?redirect_url=%2Fdocument%2Fd1',

@@ -69,9 +69,9 @@ fits wins (`notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`, th
 - **Link Not Valid** ("This link isn’t valid. It may have been turned off or copied incompletely. Ask whoever shared
   it for a new one."): the address carries a share code (`?s=`) the api refused, unknown, revoked or expired alike.
   No "404" line.
-- **Design Not Found** with **Sign In** ("This design doesn’t exist, or you need to sign in to open it."): a signed-out
+- **Design Not Found** with **Sign In** ("This design doesn’t exist, or you need to sign in to open it. If you are joining a colleague on this design, ask them to share a URL via the Share button."): a signed-out
   visitor. Sign In comes back to the same address.
-- **Design Not Found** ("This design doesn’t exist or isn’t yours."): anyone else.
+- **Design Not Found** ("This design doesn’t exist or isn’t yours. If you are joining a colleague on this design, ask them to share a URL via the Share button."): anyone else.
 
 In an embed a refused share code reads **No Longer Shared** ("This design is no longer shared at this link. Ask whoever
 shared it for a new one.") with no buttons, and the embed's browser tab names the card ("No Longer Shared | livedesign").
