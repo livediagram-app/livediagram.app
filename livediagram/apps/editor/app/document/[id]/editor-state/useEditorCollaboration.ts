@@ -62,12 +62,18 @@ export function useEditorCollaboration({
   // One answer / idea / tick / comment, applied here and sent to the room as
   // a delta ahead of the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments, the
   // checklist and the collaboration elements below.
-  const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  const applyElementDelta = useElementDeltas({
+    activeId,
+    tickTabs,
+    roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
+  });
   // Idea posts held until the room answers them (docs/specs/012-collaboration/idea-box.md "Racing for the last card").
   const ideaPosts = useIdeaPosts({
     tabs,
     tickTabs,
     roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
     onRefused: (message) => toast.error(message),
   });
 

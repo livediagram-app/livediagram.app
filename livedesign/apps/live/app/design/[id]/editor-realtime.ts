@@ -1,6 +1,11 @@
 import { useRef, useState } from 'react';
 
-import type { CommunityShareInfo } from '@livedesign/api-schema';
+import {
+  isMutationOpKind,
+  type CommunityShareInfo,
+  type RoomOutgoing,
+} from '@livedesign/api-schema';
+import { createPreRoomOutbox, holdsOpKinds } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import { connectRoom, type ShareRole } from '@/lib/api-client';
 import { mayShareDesign } from './editor-page-helpers';
 import { useChangesetSeen } from '@liveworkspace/workbench/hooks/editor/useChangesetSeen';
@@ -27,6 +32,11 @@ export function useEditorRealtime() {
   // Single open room connection for the current design. Re-opens
   // whenever designId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
+  // What was sent before that connection exists (an element edit), handed to it as it is made
+  // (@liveworkspace/workbench/lib/pre-room-outbox). It holds what the room client's own outbox would.
+  const [preRoomOutbox] = useState(() =>
+    createPreRoomOutbox<RoomOutgoing>(holdsOpKinds(isMutationOpKind)),
+  );
   // Whether the design is saved on the server, so it has a room (docs/specs/024-agents/
   // agent-changesets.md "Rooms for personal designs"): every server-stored design opens one,
   // personal ones included, since an agent is a second writer. False for an Offline Mode design
@@ -114,6 +124,7 @@ export function useEditorRealtime() {
     sessionCommunity,
     setSessionCommunity,
     roomRef,
+    preRoomOutbox,
     designServerStored,
     setDesignServerStored,
     changesetSeen,

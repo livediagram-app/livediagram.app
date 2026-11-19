@@ -137,6 +137,7 @@ export function useEditorRoom({
   const pollSelfKeyRef = useLatest(voteSelfId);
   const livePoll = useLivePoll({
     roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
     sessionBlockedRef,
     collaboratorsRef: pollCollaboratorsRef,
     selfKeyRef: pollSelfKeyRef,

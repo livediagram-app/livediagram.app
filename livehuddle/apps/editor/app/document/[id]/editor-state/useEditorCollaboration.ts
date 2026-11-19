@@ -64,7 +64,12 @@ export function useEditorCollaboration({
   } = realtime;
   // One tick / comment, applied here and sent to the room as a delta ahead of
   // the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments and the checklist below.
-  const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  const applyElementDelta = useElementDeltas({
+    activeId,
+    tickTabs,
+    roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
+  });
 
   // Realtime presence state (who's connected + their cursors / selections
   // / tab focus). See usePresenceState; the room writes it

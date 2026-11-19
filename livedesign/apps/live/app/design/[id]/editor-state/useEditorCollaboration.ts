@@ -224,6 +224,7 @@ export function useEditorCollaboration({
   });
 
   useRoomConnection({
+    preRoomOutbox: realtime.preRoomOutbox,
     onAdderKey: participant.setAdderKey,
     hydrated,
     designId,

@@ -205,6 +205,7 @@ export function useEditorRoom({
     [lastPersistedSelfRef, selfParticipantRef, setSelfParticipant],
   );
   useRoomConnection({
+    preRoomOutbox: realtime.preRoomOutbox,
     onAdderKey: participant.setAdderKey,
     roomNameSync: realtime.roomNameSync,
     adoptRoomName,
