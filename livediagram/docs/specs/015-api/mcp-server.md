@@ -1559,8 +1559,12 @@ cards, each from the same shared viewer (their mcp-server.md "Interactive view (
   kept from the model like `view_tab` (the model edits with `update_document`): each edit names an element by
   id and gives a new `label` (up to 500 characters), a move (`dx`, `dy`, rounded to whole pixels, each within
   ±100000), or both; one with neither, or an element not on the tab, is refused before anything is sent. Its
-  answer is `view_tab`'s for the tab as stored after the edit, with `changesetId`; its text block is one line
-  (`Saved 1 edit from the interactive view.`). A refusal is an error result with the api's reason.
+  answer is `view_tab`'s for the tab as stored after the edit, with `changesetId`; its text block is
+  `Saved 1 edit from the interactive view.` and a sentence telling the model the diagram changed and to call
+  `read_diagram` before describing or editing it again (the model holds only the last picture, so without it
+  its next turn would describe stale content). **Decision:** this is the whole mechanism; no `ui/update-model-context`
+  is sent from the view, since no host in this repository's tests is known to apply it, and the sentence costs
+  nothing where a host does pass the result on. A refusal is an error result with the api's reason.
 - **Cost.** `view_tab` renders SVG only, no resvg: the Worker CPU of a view is the SVG build and the image fetch the
   PNG path already pays, not the rasterise. Measured on the 100-element service blueprint: the SVG builds in about
   2 ms of CPU and weighs 26 KB, where the PNG takes about 214 ms; a test holds the SVG build to a CPU budget.
