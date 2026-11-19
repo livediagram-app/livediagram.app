@@ -6,7 +6,6 @@
 // (text-hug-measure.ts), handed in as a function, so the numbers here are exact to the font.
 
 import {
-  labelFontPx,
   PADDING_PX,
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
@@ -14,20 +13,24 @@ import {
   type TextElement,
 } from '@liveplanner/project';
 import type { DragMode, ShapeBounds } from '@/lib/canvas';
+import type {
+  BlockSize,
+  MeasureTextBlock,
+} from '@liveworkspace/workbench/components/label-editor/text-hug-font';
 
 // Canvas px around the text's line box, left and right, then top and bottom.
 const TEXT_HUG_PAD_X = 4;
 const TEXT_HUG_PAD_Y = 2;
 // A click-placed box widens with its text up to this, then wraps.
 export const TEXT_HUG_MAX_WIDTH = 480;
-// The single-line label's leading (`leading-tight`), shared by display, editor and measurer.
-export const TEXT_HUG_LEADING = 1.25;
-
-export type BlockSize = { width: number; height: number };
-
-// Measures the text block at a width: `fixed` lays it out at exactly `width`; otherwise it takes
-// its natural width, capped at `width`. Returns the block's own size, padding excluded.
-export type MeasureTextBlock = (width: number, fixed: boolean) => BlockSize;
+// The leading, the px and the measure's shape, which the label editor's hug measurer reads too (one copy in the
+// workbench, liveworkspace/docs/specs/011-workbench/label-editor.md).
+export {
+  TEXT_HUG_LEADING,
+  textHugFontPx,
+  type BlockSize,
+  type MeasureTextBlock,
+} from '@liveworkspace/workbench/components/label-editor/text-hug-font';
 
 // Whether this element hugs its text: a text box whose sizing fits or wraps. Read off the element,
 // never the editor mode, so every viewer draws the same box.
@@ -48,12 +51,6 @@ export function textHugPadding(el: TextElement): { x: number; y: number } {
 export function textHugPaddingCss(el: TextElement): string {
   const pad = textHugPadding(el);
   return `${pad.y}px ${pad.x}px`;
-}
-
-// The label px a hugging text box draws at: its size preset (a hugging box draws 'scale' at the
-// preset's fixed px rather than fitting it to the box) times its Shift-resize scale.
-export function textHugFontPx(el: TextElement): number {
-  return labelFontPx(el.textSize ?? 'scale') * (el.textScale ?? 1);
 }
 
 // The box that hugs the measured text. A 'fit' box takes the text's width (up to the wrap
