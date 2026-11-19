@@ -184,6 +184,26 @@ describe('connectRoomClient', () => {
     expect(FakeSocket.all).toHaveLength(1);
   });
 
+  // collab-race-hardening.md "Sent before the room client exists" meets one-explorer.md "Archived from elsewhere while
+  // open": what the editor held before its room existed is handed to the client's outbox as the room is made. An
+  // archive that closes the room before the socket ever opens drops it: nothing held reaches a later socket.
+  it('drops held sends when the archived close comes before the socket opens', () => {
+    const room = connectRoomClient(
+      wireFor(),
+      'r1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onItemArchived: vi.fn() },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.readyState = 0;
+    room.send({ kind: 'op', op: { kind: 'change' } } as Op);
+    socket.fire('close', { code: 4010 });
+    room.send({ kind: 'op', op: { kind: 'change' } } as Op);
+    vi.advanceTimersByTime(120_000);
+    expect(FakeSocket.all).toHaveLength(1);
+    expect(socket.sent).toEqual([]);
+  });
+
   it('never calls onItemArchived for another close: a lapsed grant reconnects', () => {
     const onItemArchived = vi.fn();
     connectRoomClient(
