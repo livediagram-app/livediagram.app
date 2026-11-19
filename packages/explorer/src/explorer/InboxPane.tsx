@@ -10,6 +10,9 @@
 // The list is a listbox: focus stays on it while j/k or the arrows move the choice, Enter opens the row (its app, or
 // the pane where the pane stands in for the list), r replies and e resolves or marks done where the page can.
 // Rows are in ./inbox/InboxRows, the pane in ./inbox/InboxReader, the model in ./inbox/sections.
+//
+// Arriving from an editor's notice (`?at=<row key>`, inbox-notices.md) chooses that row once it is listed, and while
+// the list is on screen its rows count as read for the notices (./inbox/useInboxArrival).
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -35,6 +38,7 @@ import {
   type InboxEntry,
   type InboxFilter,
 } from './inbox/sections';
+import { useInboxAt, useListedSeen } from './inbox/useInboxArrival';
 import { PaneHeader } from './PaneHeader';
 import { HeaderIconButton } from '../ui/HeaderIconButton';
 import { useNow } from '../time';
@@ -184,6 +188,14 @@ export function InboxPane({
     },
     [stacked, openPane],
   );
+  // A notice's row: shown under All when the saved filter hides it, chosen, and brought into view.
+  useInboxAt(entries, (entry) => {
+    if (!visible.includes(entry)) setChosen({ viewer: viewerId, filter: 'all' });
+    onPick(entry.key);
+    const at = (visible.includes(entry) ? visible : entries).indexOf(entry);
+    if (at >= 0) scrollTo.current = at;
+  });
+  useListedSeen(entries, viewerId);
 
   const move = (to: number) => {
     if (visible.length === 0) return;

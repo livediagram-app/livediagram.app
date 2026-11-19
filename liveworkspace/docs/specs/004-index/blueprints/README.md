@@ -27,5 +27,7 @@ Follow the references below only as needed; never upfront.
 - ./guest-merge.md - when a guest becomes an account, or on the migration's handoff
 - ./dialog-hero-header.md - when implementing the dialog hero header: its files, the frame's and the art's API, the tokens, the tests
 - ./footer-tools-menu.md - when implementing the footer's Tools menu: its files, the item shape, the trigger and the rows
+- ./inbox-notices.md - when implementing Inbox notices: the watch, the rows that notify, seen rows, the notice and its
+  card, the editor's door, the `shares` read
 - ./DEFAULTS.md - when you need a default the index specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories each index blueprint covers

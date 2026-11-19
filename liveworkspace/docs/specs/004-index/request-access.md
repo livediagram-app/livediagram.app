@@ -111,6 +111,11 @@ the reader, so it counts in the Inbox's badge.
 - Each row's verbs, for a manager: **Share** (one click, at the default level above; a menu beside it picks another
   offered level) and **Decline**. Open in the app goes to the item, as every row's does.
 
+A grant is also in the requester's Inbox read, as `shares` (a grant of the last 7 days, while they reach the item):
+not a row of the list, but what an open editor's notice says, "<Granter> shared <item> with you"
+([inbox-notices.md](inbox-notices.md#shares-in-the-inbox-read)). The grant's `shared` event keeps the granter's name
+as accounts gave it, read before the grant is written, so the notice can say who.
+
 ## The emails
 
 The index sends no email ([one-explorer-contracts.md "Notices"](one-explorer-contracts.md#notices)). After the change
