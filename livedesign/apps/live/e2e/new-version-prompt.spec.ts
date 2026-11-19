@@ -5,7 +5,7 @@ import { expect, expectNoPageErrors, onPage, openBlankPage, paletteTile, test } 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
 // the "older editor", and the server is made "newer" by raising the design format number every
 // api response carries. The prompt offers a reload, reloads only once the edits are saved, never
-// over unsaved changes, and steps aside on "Not now".
+// over unsaved changes, and steps aside when closed (its close button is "Not now").
 
 const CANVAS = '[data-canvas-a11y-root]';
 const prompt = (page: Page) =>
@@ -125,12 +125,12 @@ test.describe('new version prompt', () => {
     await expect(squares(page)).toHaveCount(1);
   });
 
-  test('steps aside on Not now', async ({ page, pageErrors }) => {
+  test('steps aside when closed', async ({ page, pageErrors }) => {
     await openBlank(page);
     await serveNewerFormat(page);
     await addSquare(page);
     await expect(prompt(page)).toBeVisible();
-    await prompt(page).getByRole('button', { name: 'Not now' }).click();
+    await prompt(page).getByRole('button', { name: 'Dismiss' }).click();
     await expect(prompt(page)).toHaveCount(0);
     await addSquare(page);
     await page.waitForTimeout(1_500);
