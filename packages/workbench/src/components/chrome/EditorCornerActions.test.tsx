@@ -1,10 +1,15 @@
 // @vitest-environment jsdom
 // The corner card leads with the item's approval badge (liveworkspace/docs/specs/004-index/approvals.md "In the
-// editor"): inside an editor's approvals door with an approval to show, and nowhere else (livehuddle, which has no door).
+// editor"): an app with an approvals door passes it in the `approval` slot, and it draws only with an approval to show.
+// An app with no door (livehuddle) passes nothing, so the card draws none and the app never bundles the badge.
 import { act, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { Approval } from '@liveworkspace/index-client';
-import { ApprovalDoorProvider, type ApprovalDoor } from '@liveworkspace/explorer/approvals';
+import {
+  ApprovalBadge,
+  ApprovalDoorProvider,
+  type ApprovalDoor,
+} from '@liveworkspace/explorer/approvals';
 import { EditorCornerActions } from './EditorCornerActions';
 
 vi.mock('./AuthControls', () => ({ AuthControls: () => <span>Account</span> }));
@@ -42,8 +47,9 @@ function door(approval: Approval | null): ApprovalDoor {
   };
 }
 
-const card = () => (
+const card = (withBadge = true) => (
   <EditorCornerActions
+    approval={withBadge ? <ApprovalBadge corner /> : undefined}
     showShare
     shareable={false}
     onOpenShare={() => {}}
@@ -61,6 +67,14 @@ describe('the corner card’s approval badge', () => {
     const buttons = within(actions).getAllByRole('button');
     expect(buttons[0]).toBe(badge);
     expect(buttons[1]?.textContent).toContain('Share');
+  });
+
+  it('draws nothing when the app passes no badge, even inside a door', async () => {
+    const d = door(awaiting);
+    render(<ApprovalDoorProvider door={d}>{card(false)}</ApprovalDoorProvider>);
+    await waitFor(() => expect(d.client.getApproval).toHaveBeenCalled());
+    await act(async () => {});
+    expect(document.querySelector('[data-approval-status]')).toBeNull();
   });
 
   it('draws nothing without a door, or with no approval', async () => {

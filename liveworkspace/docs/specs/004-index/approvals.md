@@ -201,7 +201,8 @@ host builds a door from its gate and hands it to the provider; nothing is read f
   a flag), Approved (green, a checked page), Changed Since Approval (amber outline, a pencil). Its tooltip names the
   requester, the due day (and Overdue) and who has and hasn't answered. For an Editor of the whole item it opens the
   Share dialog on its Approval tab. With no header bar it leads the editor's corner card (`EditorCornerActions`,
-  before Share and the account), 36 px tall like the card's buttons, its glyph alone on a phone or wherever the card
+  before Share and the account; the app passes it in the card's `approval` slot, so an app with no door never bundles
+  it), 36 px tall like the card's buttons, its glyph alone on a phone or wherever the card
   drops its names, its words in its label and tooltip.
 - **The banner**, a strip across the top of the editor, above the floating corner card and menu card (never under
   them), for a named approver of the open request: "<Requester> asked you to approve this
