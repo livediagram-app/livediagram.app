@@ -7,7 +7,10 @@
 // (`subscribeLocal`). Coming back to the browser tab reads it again, keeping
 // what it had if that read fails: a slightly stale list beats an alarm. A row done from the pane (`settle`) leaves
 // `data` at once, so the sidebar's badge, the rail and Home drop with the list, and stays out while a read still
-// lists it as it was (the index lists it until the app's next push).
+// lists it as it was (the index lists it until the app's next push). It also hears the page's Inbox watch
+// (../inbox-notices/watch, inbox-notices.md "The Explorer's Inbox listens too"): with the All filter a newer answer
+// that lists other rows becomes the list, with no read of its own; with this app's, one whose rows for this app differ
+// reads the list again. So the badge and the list move as the editor's count does, live.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type {
@@ -22,6 +25,7 @@ import type { AppFilter } from '../words';
 import { settledOf, withoutSettled, type InboxEntry } from '../explorer/inbox/sections';
 import { isAbort } from './errors';
 import { useReturnToTab } from './useReturnToTab';
+import { inboxSignature, inboxWatchFor } from '../inbox-notices/watch';
 
 /** The Inbox as the Explorer holds it: the index's rows and the host's, the host's marked `local`. */
 export type InboxData = Omit<InboxResponse, 'actions' | 'threads'> & {
@@ -112,9 +116,13 @@ export function useInbox(
   const hostRef = useRef(host);
   hostRef.current = host;
   const key = `${filter}:${attempt}`;
+  // When this hook's latest read started: an answer of the watch's from before it never replaces it.
+  const readAt = useRef(0);
   useEffect(() => {
     if (!enabled) return;
     const controller = new AbortController();
+    readAt.current = Date.now();
+    inboxWatchFor(client).touch();
     const localFrom = hostRef.current?.localRows;
     Promise.all([
       client.inbox(filter === 'app' ? { app } : {}, { signal: controller.signal }),
@@ -134,6 +142,24 @@ export function useInbox(
     return () => controller.abort();
   }, [client, app, filter, key, refresh, enabled]);
   useReturnToTab(() => setRefresh((n) => n + 1));
+  // The page's watch: its newer answers keep the list live.
+  const held = useRef(state);
+  held.current = state;
+  useEffect(() => {
+    if (!enabled) return;
+    const watch = inboxWatchFor(client);
+    return watch.subscribe(() => {
+      const { data: answer, at } = watch.current();
+      const prev = held.current;
+      if (!answer || !prev.raw || prev.key !== key || at < readAt.current) return;
+      if (filter === 'all') {
+        if (inboxSignature(prev.raw) === inboxSignature(answer)) return;
+        setState((p) => (p.key === key && p.raw ? { ...p, raw: answer, error: false } : p));
+      } else if (inboxSignature(prev.raw, app) !== inboxSignature(answer, app)) {
+        setRefresh((n) => n + 1);
+      }
+    });
+  }, [client, app, filter, key, enabled]);
   // The host's rows alone, read again: the latest read wins, and the index's rows stay as they are.
   const localReads = useRef(0);
   const rereadLocal = useCallback(() => {

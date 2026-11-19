@@ -37,11 +37,15 @@ with its last. State: `data` (the last answer, or null), `at` (its time).
 - **Turns.** One `setTimeout` at a time, only while the tab is visible and was used (`pointerdown`, `keydown`,
   passive, on `window`) in the last `INBOX_WATCH_IDLE_MS` (10 min). Hidden, or idle at the turn: no timer.
   `visibilitychange` to visible, `focus`, or the first press after idling read at once when the last read (any
-  tab's) is over `INBOX_WATCH_RETURN_MS` (15 s) old, else set the turn for 30 s after it.
+  tab's) is over `INBOX_WATCH_RETURN_MS` (15 s) old and an eager listener is subscribed, else set the turn for 30 s
+  after it. A page of passive listeners only (the Explorer, which reads for itself on coming back) waits at least
+  `INBOX_WATCH_RETURN_MS` before its turn.
 - **Hearing another tab.** An `answer` with a newer `at` replaces `data` and is given to the subscribers; the turn
   moves to 30 s after it.
-- `start({ readNow })`: the editor's notices read at once (they need the reader's Inbox as it is); `useInbox` starts
-  it without, having just read the Inbox itself.
+- `subscribe(listener, { readNow })`: the first listener starts the watch, the last one gone stops it (timer,
+  listeners, channel, any read still out). The editor's notices subscribe eager (`readNow`, they need the reader's
+  Inbox as it is); `useInbox` subscribes passive, having just read the Inbox itself, and its own reads call
+  `touch()`, which counts as this page's last read so the watch's next turn waits 30 s from it.
 
 `inboxSignature(data, app)`: each row's key and time (threads `latestAt`, actions `updatedAt`, access requests
 `askedAt`, shares `sharedAt`, forms `latestAt` and `unseen`), sorted, joined; with `app`, that app's rows only. Two
@@ -56,7 +60,7 @@ answers with one signature list the same Inbox.
   (**replied**). A card thread read through two items is one row (`c:<app>:<elementId>`), the newer.
 - Actions, open, `assigneeId` the reader, `assignerId` not the reader: `assigned` (**assigned you a card** with
   the card's key and title, or **assigned you an action** with its name).
-- `accessRequests`: `access` (**asked for access**). `shares`: `share` (**shared <item> with you**).
+- `accessRequests`: `access` (**asked for access**). `shares`: `share` (**shared it with you**, the item named on the place line).
 
 Keys are the Inbox list's (`threadKey`, `actionKey`), `r:<id>` for a request, `s:<id>` for a share. A row's `href`:
 a thread or action, `<app's address>/explorer/inbox?at=<key>` (this app's own path when it is this app); a request or
@@ -87,7 +91,8 @@ workbench's `indexClient`. It answers `{ count, label, notices }`: `count` is `i
 names the button ("Explorer, 3 in Inbox"), `notices` is the layer (a `Portal`) to draw beside the button.
 
 The card is placed from `[data-corner-actions]`'s bottom (8 px below it, read when it shows and on resize), else
-12 px from the top. Under 640 px wide it spans `left: 16px; right: 16px`. `z-index: var(--z-modal)`, under dialogs'
+12 px from the top. On a phone (the editors' `phone:` variant: under 640 px wide, or a touch screen under 500 px
+tall) it spans `left: 16px; right: 16px`. `z-index: var(--z-modal)`, under dialogs'
 own layers drawn later. Motion: `motion-safe` slide and fade (`translate-y-2`, 160 ms); `.reduce-motion` and
 `prefers-reduced-motion` keep the fade only.
 
@@ -135,8 +140,7 @@ past the first quiet ten minutes.
 | ------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
 | `packages/explorer/src/inbox-notices/watch.test.ts`                | one read across tabs, turns, hidden and idle pauses, coming back, the hour budget   |
 | `packages/explorer/src/inbox-notices/rows.test.ts`                 | each kind, own moves never, the 24 h cut, the first watch, card threads once        |
-| `packages/explorer/src/inbox-notices/seen.test.ts`                 | marks, pruning, the cap, other tabs hearing                                         |
-| `packages/explorer/src/inbox-notices/center.test.ts`               | grouping, the timer and holding it, dismissal across tabs                           |
+| `packages/explorer/src/inbox-notices/seen-center.test.ts`          | marks, pruning, the cap, other tabs hearing; grouping, the timer, holding, forget   |
 | `packages/explorer/src/inbox-notices/notices-ui.test.tsx`          | the card for one row and a group, links, Dismiss, Escape, reduced motion, the badge |
 | `packages/explorer/src/data/useInbox-watch.test.tsx`               | the list taking the watch's answers                                                 |
 | `packages/explorer/src/explorer/inbox-at.test.tsx`                 | `?at=` choosing the row; the list marking rows seen                                 |

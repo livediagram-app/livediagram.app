@@ -27,7 +27,7 @@ before. Each kind, and what it says:
 | Comment        | a thread on the reader's item, or one they are in, where someone else wrote last                            | **Priya commented** or **Priya replied**, its first line | the Inbox at the row |
 | Assigned       | an open action or card assigned to the reader by someone else                                               | **Bo assigned you a card**, its number and title         | the Inbox at the row |
 | Access request | someone asks for access to an item the reader manages ([request-access.md](request-access.md#in-the-inbox)) | **Ana asked for access**, the item                       | the item             |
-| Share          | a manager granted the reader's own request in the last 7 days (`shares`, below)                             | **Ana shared Budget with you**                           | the item             |
+| Share          | a manager granted the reader's own request in the last 7 days (`shares`, below)                             | **Ana shared it with you**, the item named below         | the item             |
 
 Each notice also names the item (and the tab, for a thread). Form responses, work the reader handed out and threads
 whose latest comment is their own never notify: the reader's own actions are never news. A row older than 24 hours
