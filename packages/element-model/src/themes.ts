@@ -57,14 +57,6 @@ export type ThemeId =
   | 'rainbow'
   | 'pastel'
   | 'tropical'
-  // Board themes: multi-colour themes made for colour-coding board columns, offered by liveplanner only
-  // (BOARD_THEMES in ./themes-data).
-  | 'office'
-  | 'earth'
-  | 'gemstone'
-  | 'harbour'
-  | 'sorbet'
-  | 'nightfall'
   // Formal: standard notations. UML paints each shape kind its
   // conventional colour (docs/specs/011-theme/canvas-and-theme-dialog.md).
   | 'uml'
@@ -76,6 +68,11 @@ export type ThemeId =
   | 'yuletide'
   | 'frost'
   | 'evergreen';
+
+// The board themes: multi-colour themes made for colour-coding board columns (BOARD_THEMES in ./themes-data). Their
+// own union, kept out of ThemeId, because only liveplanner offers them: a product's Record<ThemeId, ...> (its theme
+// blurbs) stays exactly its own catalogue.
+export type BoardThemeId = 'office' | 'earth' | 'gemstone' | 'harbour' | 'sorbet' | 'nightfall';
 
 // One branch colour for a multi-colour theme: the fill / stroke / text
 // triple a single limb of the hierarchy is painted with. Unlike the
@@ -95,7 +92,7 @@ export type ThemePaletteEntry = {
 type ShapeColourOverride = { fill?: string; stroke?: string; text?: string };
 
 export type ThemeDefinition = {
-  id: ThemeId;
+  id: ThemeId | BoardThemeId;
   label: string;
   // Backdrop.
   backgroundColor: string;
