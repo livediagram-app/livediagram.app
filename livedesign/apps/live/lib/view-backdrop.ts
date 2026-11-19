@@ -1,13 +1,11 @@
-// The backdrop a viewer's canvas paints (docs/specs/011-theme/light-and-dark.md): the tab's own
-// colour (its theme's canvas, or the custom colour). Pages are the paper, so the surround is plain while the
-// tab's pattern is still its theme's: a pattern someone picked always shows. Exports and thumbnails use the
-// tab's backdrop (resolveTabBackdrop).
-import type { Appearance, BackgroundPattern, Tab } from '@livedesign/design';
+// The backdrop a viewer's canvas paints (docs/specs/011-theme/light-and-dark.md): the tab's own colour (its theme's
+// canvas, or the custom colour) and its pattern, the theme's own included, around the pages. It used to paint blank
+// while the tab kept its theme's pattern, which hid every look whose pattern was its theme's; a look or a pattern
+// picked in Tab Style now always shows, as in liveplanner. Exports and thumbnails use the tab's backdrop too
+// (resolveTabBackdrop).
+import type { Appearance, Tab } from '@livedesign/design';
 import { getResolvedAppearance } from '@livedesign/ui';
-import { getTheme, resolveTabBackdrop, type ResolvedBackdrop } from './themes';
-
-// The surround's own pattern, shown while the tab's pattern is untouched.
-export const PAGES_PATTERN: BackgroundPattern = 'blank';
+import { resolveTabBackdrop, type ResolvedBackdrop } from './themes';
 
 export function resolveViewBackdrop(
   tab: Pick<
@@ -16,8 +14,5 @@ export function resolveViewBackdrop(
   >,
   appearance: Appearance = getResolvedAppearance(),
 ): ResolvedBackdrop {
-  const backdrop = resolveTabBackdrop(tab, appearance);
-  const themes = getTheme(tab.theme, appearance).backgroundPattern;
-  const untouched = tab.backgroundPattern === undefined || tab.backgroundPattern === themes;
-  return untouched ? { ...backdrop, backgroundPattern: PAGES_PATTERN } : backdrop;
+  return resolveTabBackdrop(tab, appearance);
 }

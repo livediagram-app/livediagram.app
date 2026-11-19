@@ -32,8 +32,10 @@ page is and offers; this section is the basics.
     page, in its legacy `pageOrientation` (portrait when absent); the legacy
     field is dropped the first time the pages change. At most **100** pages
     (`MAX_PAGES`).
-- **The surround** is the tab's own canvas: its colour, and every canvas setting, apply behind the pages. Its
-  pattern is **plain** while the tab keeps its theme's pattern; a pattern someone picked shows behind the pages.
+- **The surround** is the tab's own canvas: its colour, its pattern (the theme's own included) and every canvas
+  setting apply behind the pages (`lib/view-backdrop.ts`). It used to paint plain while the tab kept its theme's
+  pattern, which hid every look whose pattern was its theme's while its card drew one; as in liveplanner, a look or a
+  pattern picked in Tab Style always shows (2026-11-19).
 - **Each page's label** sits above its top-left corner (**1024 x 1024 · Logo** on a logo page,
   **iPhone · Wireframe** on a wireframe page, its name first when it has one), and
   **its settings cog** above its top-right, both held at one screen size at any

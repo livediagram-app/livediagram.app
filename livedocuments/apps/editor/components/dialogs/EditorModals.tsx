@@ -1,11 +1,20 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@livedocuments/document';
+import { useMemo } from 'react';
+import {
+  DEFAULT_BACKGROUND_COLOR,
+  DEFAULT_PATTERN_COLOR,
+  newPageBackgroundOf,
+  pageUnits,
+  pagesOf,
+} from '@livedocuments/document';
 
 import { useEditorChrome, useEditorContext } from '@/app/document/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
-import { useCurrentPageKind } from '@/lib/current-page-kind';
+import { currentPageIdNow, useCurrentPageKind } from '@/lib/current-page-kind';
+import { requestStylePanel } from '@/lib/article/article-editor-store';
+import type { TabStylePages } from './tab-style-pages';
 
 const SettingsDialog = dynamic(
   () => import('@/components/dialogs/SettingsDialog').then((m) => m.SettingsDialog),
@@ -60,9 +69,40 @@ function OpenEditorModals() {
     applyStyleToAllTabs,
     applyingStyleToAllTabs,
     canApplyStyleToAllTabs,
+    setNewPageBackground,
+    applyNewPageBackgroundToEveryPage,
   } = useEditorContext();
   // The page someone is on is the Tab Style surface; a tab with no pages yet is the canvas.
   const pageKind = useCurrentPageKind();
+  // What the dialog knows of the tab's pages (tab-style-pages.ts), worked out when the tab or the page kind changes.
+  const pages = useMemo<TabStylePages>(() => {
+    const own = newPageBackgroundOf(activeTab);
+    const written = pageKind === 'article' || pageKind === 'flashcard';
+    return {
+      kind: pageKind,
+      newPageBackground: own,
+      themeId: activeTab.theme ?? 'brand',
+      units: activeTab.pages?.length ? pageUnits(pagesOf(activeTab)).length : 0,
+      onSet: setNewPageBackground,
+      onApplyToEveryPage: applyNewPageBackgroundToEveryPage,
+      ...(written
+        ? {
+            // The Style beside the page's cog, for the page someone is on, once the dialog has gone.
+            onOpenArticleStyle: () => {
+              const pageId = currentPageIdNow();
+              setCanvasThemeTab(null);
+              if (pageId) requestStylePanel(pageId);
+            },
+          }
+        : {}),
+    };
+  }, [
+    activeTab,
+    pageKind,
+    setNewPageBackground,
+    applyNewPageBackgroundToEveryPage,
+    setCanvasThemeTab,
+  ]);
 
   return (
     <>
@@ -89,6 +129,7 @@ function OpenEditorModals() {
       ) : null}
       {canvasThemeTab !== null && !isReadOnly ? (
         <CanvasThemeDialog
+          pages={pages}
           tab={canvasThemeTab}
           surface={pageKind ?? 'canvas'}
           onTabChange={setCanvasThemeTab}
