@@ -116,6 +116,21 @@ describe('useLabelToolbarPlacement', () => {
     expect(result.current.shift.x).toBe(-68);
   });
 
+  it('settles on a whole-px slide when the rect comes back a hair off it', () => {
+    // A slid box's rect is off its slide by a few hundred-thousandths of a px, differently on each read: an exact
+    // answer would change on every measure and render without end.
+    const { result, state } = mount({ left: 186.7344, top: 340, width: 354.53, height: 44 });
+    let reads = 0;
+    const exact = state.natural;
+    Object.defineProperty(state, 'natural', {
+      get: () => ({ ...exact, left: exact.left + (reads++ % 2 ? 0.00004 : -0.00003) }),
+    });
+    act(() => {
+      window.dispatchEvent(new Event('resize'));
+    });
+    expect(result.current.shift).toEqual({ x: -159, y: 0 });
+  });
+
   it('flips below the element near the top of the screen', () => {
     const { result } = mount({ left: 40, top: 400, width: 300, height: 44 }, FLIP_BELOW_TOP - 1);
     expect(result.current.placeBelow).toBe(true);

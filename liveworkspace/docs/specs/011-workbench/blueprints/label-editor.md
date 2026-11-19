@@ -115,8 +115,10 @@ export type LabelEditorBinding = {
   (`measuredBox` from `useEdgeAwarePlacement`, the caption being the shared `FloatingTitle` with its
   `data-floating-title`) goes to `clampToViewport` with the slide in force, which works from the box's natural spot
   (the live rect less that slide) and answers the slide that keeps it 8 px (`VIEWPORT_EDGE_MARGIN`) inside
-  `window.innerWidth` and `innerHeight`. A box with no size (not laid out) slides nothing. The state only changes when
-  the answer does, so a measure that agrees renders nothing.
+  `window.innerWidth` and `innerHeight`. A box with no size (not laid out) slides nothing. The slide is rounded to whole
+  px and only changes when it moves by more than one: a slid box's rect comes back a few hundred-thousandths of a px
+  off its slide, differently on each read, and an exact answer changed on every measure and rendered without end
+  (React's update depth limit, seen at 450 px before it shipped). A measure that agrees renders nothing.
 - `clampToViewport` keeps the start (left or top) of a box longer than the room inside, rather than its end: a fix for
   every caller, whose boxes are never that long but would have lost their first item.
 - The slide is in screen px. `labelToolbarTransform(shift, zoom)` writes
@@ -159,7 +161,7 @@ First-load JS of each editor's document page (gzip of the scripts `placeholder.h
   second line is painted a line at a time and stays `isolate`; a keystroke in 100,000 characters stays inside its
   CPU-time budget, flat and line by line.
 - `useLabelToolbarPlacement.test.tsx`: a toolbar that fits stays put; off the left edge and off the right edge it slides
-  back 8 px inside; wider than the screen it keeps its start in view; a caption over the top slides it down; the slide
+  back 8 px inside; wider than the screen it keeps its start in view; a rect a hair off its slide settles on a whole px; a caption over the top slides it down; the slide
   relaxes on a resize once the label is clear and a scroll measures again; the flip below near the top; nothing
   slides while the toolbar has no size or before the editor and toolbar mount; the listeners go on unmount; the
   transform's slide in editor units at zoom 0.5, 1 and 2. `lib/clamp-to-viewport.test.ts` pins the start edge of a

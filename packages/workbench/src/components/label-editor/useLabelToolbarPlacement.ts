@@ -37,7 +37,11 @@ export function useLabelToolbarPlacement(
       // Not laid out (hidden, or a DOM with no layout): nothing to slide.
       if (box.width === 0 && box.height === 0) return;
       const next = clampToViewport(box, shift);
-      if (next.x !== shift.x || next.y !== shift.y) setShift(next);
+      const x = Math.round(next.x);
+      const y = Math.round(next.y);
+      // Whole px, kept unless it moves by more than one: a slid box's rect comes back a few hundred-thousandths of a
+      // px off its slide, so an exact answer changed on every measure and re-rendered without end (seen at 450 px).
+      if (Math.abs(x - shift.x) > 1 || Math.abs(y - shift.y) > 1) setShift({ x, y });
     };
     measure();
     window.addEventListener('scroll', measure, true);
