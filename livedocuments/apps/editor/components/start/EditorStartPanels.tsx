@@ -2,7 +2,8 @@
 
 import dynamic from 'next/dynamic';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
-import { StartAgainTray } from '@/components/start/StartAgainTray';
+import { StartAgainTray } from '@liveworkspace/workbench/components/start/StartAgainTray';
+import { startClosedKey } from '@/components/start/start-closed-key';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { templateStartShownOf } from '@/components/start/useTemplateStartShown';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
@@ -40,7 +41,7 @@ export function EditorStartPanels() {
         }}
       />
       {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
-      <StartAgainTray key={`tray:${tabId}`} tabId={tabId} tabName={tabName} />
+      <StartAgainTray key={`tray:${tabId}`} closedKey={startClosedKey(tabId)} tabName={tabName} />
     </>
   ) : (
     // A template's example content, once it has landed: Clear Example Content or Keep It.

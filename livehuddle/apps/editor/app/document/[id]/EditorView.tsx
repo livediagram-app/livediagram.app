@@ -36,7 +36,7 @@ import { TabAttendanceHost } from '@/components/dialogs/TabAttendanceHost';
 import { EditorElementDialogs } from '@/components/dialogs/EditorElementDialogs';
 import { EditorContextMenuHost } from '@/components/palette/EditorContextMenuHost';
 import { EditorTours } from '@/components/tour/EditorTours';
-import { ModifierHintBanner } from '@/components/chrome/ModifierHintBanner';
+import { ModifierHintBanner } from '@liveworkspace/workbench/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
@@ -436,7 +436,7 @@ export function EditorView() {
                         <ModifierHintBanner
                           drag={drag}
                           hasElements={activeTab.elements.length > 0}
-                          walking={canvasTool === 'avatar'}
+                          shiftMessage={canvasTool === 'avatar' ? 'Running' : null}
                           suppressed={
                             canvasTool === 'format' ||
                             formatSourceId !== null ||
