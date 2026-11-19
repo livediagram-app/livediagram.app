@@ -28,8 +28,7 @@ export const sheetPendingChipWidth = (words: string): number =>
 export function sheetPendingWords(width: number, chartHeight: number): string | null {
   if (chartHeight < height + 4) return null;
   return (
-    [SHEET_PENDING_WORDS, SHEET_PENDING_SHORT].find(
-      (w) => sheetPendingChipWidth(w) <= width - 8,
-    ) ?? null
+    [SHEET_PENDING_WORDS, SHEET_PENDING_SHORT].find((w) => sheetPendingChipWidth(w) <= width - 8) ??
+    null
   );
 }

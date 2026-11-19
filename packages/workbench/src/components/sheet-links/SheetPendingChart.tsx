@@ -42,7 +42,7 @@ export function SheetPendingChart({
         >
           <span className="flex h-[22px] items-center gap-1.5 rounded-full border border-slate-300 bg-white/95 pr-2.5 pl-2 text-[11px] leading-none font-medium whitespace-nowrap text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900/95 dark:text-slate-200">
             <SheetLinkIcon size={11} className="shrink-0 text-slate-500 dark:text-slate-400" />
-            {words}
+            <span className="text-optical-centre">{words}</span>
           </span>
         </div>
       ) : null}

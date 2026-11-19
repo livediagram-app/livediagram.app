@@ -265,7 +265,11 @@ export function svgBarChart(
     : '';
   return asLinkedOrNot(
     el,
-    axis + baseline + rects + values + svgChartLegend(el, data, colorAt, legend, textColor, fontFamily),
+    axis +
+      baseline +
+      rects +
+      values +
+      svgChartLegend(el, data, colorAt, legend, textColor, fontFamily),
     fontFamily,
   );
 }
@@ -355,7 +359,11 @@ export function svgLineChart(
     : '';
   return asLinkedOrNot(
     el,
-    axes + marks + values + labels + svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily),
+    axes +
+      marks +
+      values +
+      labels +
+      svgChartLegend(el, legendItems, colorAt, legend, textColor, fontFamily),
     fontFamily,
   );
 }

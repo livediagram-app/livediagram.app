@@ -2,10 +2,10 @@
 // Tracker 1281) in this product's export: its marks faded under a chip that says so, every chart kind; a linked or
 // plain chart drawn as it always was.
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement, Tab } from './index';
+import type { ShapeElement } from './index';
 import { renderElementsToSvg } from './svg-render';
 
-const chart = (shape: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
+const chart = (shape: ShapeElement['shape'], o: Partial<ShapeElement> = {}): ShapeElement => ({
   id: 'c1',
   type: 'shape',
   shape,
@@ -21,10 +21,10 @@ const chart = (shape: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
 });
 
 const svgOf = (el: ShapeElement) =>
-  renderElementsToSvg({ id: 't', name: 'T', elements: [el] } as Tab, { padding: 0 });
+  renderElementsToSvg({ id: 't', name: 'T', elements: [el] }, { padding: 0 });
 
 describe('a chart not linked to a sheet yet, exported', () => {
-  it.each(['bar-chart', 'pie-chart', 'line-chart'])(
+  it.each(['bar-chart', 'pie-chart', 'line-chart'] as const)(
     'fades a %s under the chip and says so',
     (shape) => {
       const svg = svgOf(chart(shape, { chartSheetPending: true }));
