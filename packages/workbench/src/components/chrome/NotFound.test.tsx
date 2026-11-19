@@ -30,6 +30,25 @@ describe('NotFound', () => {
     expect(screen.getByRole('button', { name: 'New Plan' })).toBeTruthy();
   });
 
+  it('tells a colleague to ask for a share link on a line of its own', () => {
+    const hint =
+      'If you are joining a colleague on this plan, ask them to share a URL via the Share button.';
+    const { unmount } = render(<NotFound noun="plan" onCreateNew={() => {}} />);
+    const line = screen.getByText(hint);
+    expect(line.tagName).toBe('P');
+    expect(line.previousElementSibling?.textContent).toBe(
+      'This plan doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.',
+    );
+    unmount();
+    render(<NotFound noun="plan" reason="sign-in" signInHref="/auth/sign-in" />);
+    expect(screen.getByText(hint)).toBeTruthy();
+  });
+
+  it('leaves the share line off where a share link would not help', () => {
+    render(<NotFound noun="plan" reason="access-ended" />);
+    expect(screen.queryByText(/joining a colleague/)).toBeNull();
+  });
+
   it('names a page, not a file, for an address with no file', () => {
     render(
       <NotFound noun="design" reason="page" onCreateNew={() => {}} onOpenExplorer={() => {}} />,
@@ -96,7 +115,7 @@ describe('NotFound', () => {
     expect(screen.getByRole('heading', { name: 'Canvas Not Found' })).toBeTruthy();
     expect(screen.getByText('404')).toBeTruthy();
     expect(
-      screen.getByText('This canvas doesn’t exist, or you need to sign in to open it.'),
+      screen.getByText('This canvas doesn’t exist, or you don’t have access to it.'),
     ).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')).toBe(
       '/sign-in/?redirect_url=%2Fdocument%2Fd1',
