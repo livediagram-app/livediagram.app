@@ -170,7 +170,7 @@ export function SignInReasonsModal({
             >
               <ButtonContent>
                 <SignInIcon size={14} />
-                Sign in
+                Sign In
               </ButtonContent>
             </Link>
           </div>

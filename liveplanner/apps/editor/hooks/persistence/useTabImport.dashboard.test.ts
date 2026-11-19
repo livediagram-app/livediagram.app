@@ -99,7 +99,7 @@ describe('importing into a Dashboard tab', () => {
     const { api, deps } = setup(dashboard);
     expect(await api.importTextIntoActiveTab('flowchart TD\n A-->B')).toEqual({
       status: 'error',
-      error: "File isn't valid JSON.",
+      error: "This pasted text isn't valid JSON.",
     });
     expect(deps.commitTabs).not.toHaveBeenCalled();
   });

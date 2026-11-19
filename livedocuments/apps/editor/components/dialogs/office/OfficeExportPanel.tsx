@@ -55,7 +55,7 @@ export default function OfficeExportPanel({
 
   return (
     <div>
-      <BackBar label="All formats" current={card.title} onClick={onBack} disabled={making} />
+      <BackBar label="All Formats" current={card.title} onClick={onBack} disabled={making} />
       <div className="mt-3 mb-4 flex h-48 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-900">
         {previewSvg ? (
           <div

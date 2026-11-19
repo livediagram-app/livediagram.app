@@ -386,11 +386,11 @@ describe('ImportTabDialog: a file dropped on the liveplanner Tab step', () => {
   });
 
   it('says a held file’s refusal in a paste’s words, and Remove brings the box back', async () => {
-    open({ outcome: { status: 'error', error: "File isn't valid JSON." } });
+    open({ outcome: { status: 'error', error: "This file isn't valid JSON." } });
     dropOnStep(new File([largeTab()], 'big.json'));
     await screen.findByTestId('held-file');
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
-    expect((await screen.findByRole('alert')).textContent).toBe("File isn't valid JSON.");
+    expect((await screen.findByRole('alert')).textContent).toBe("This file isn't valid JSON.");
     fireEvent.click(screen.getByRole('button', { name: 'Remove big.json' }));
     expect(screen.getByRole('textbox')).toHaveProperty('value', '');
     expect(screen.getByRole('button', { name: 'Import' })).toHaveProperty('disabled', true);

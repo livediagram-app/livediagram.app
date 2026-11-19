@@ -3,7 +3,8 @@
 import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/design/[id]/EditorContext';
 import { closeStartForBlank } from '@/components/start/close-start-for-blank';
-import { StartAgainTray } from '@/components/start/StartAgainTray';
+import { StartAgainTray } from '@liveworkspace/workbench/components/start/StartAgainTray';
+import { startClosedKey } from '@/components/start/start-closed-key';
 import { ExampleContentTray } from '@/components/start/ExampleContentTray';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
 import { useTemplateStartShown } from '@/components/start/useTemplateStartShown';
@@ -46,8 +47,7 @@ export function EditorStartPanels() {
       {/* Closed, it can be brought back from the palette tray (StartAgainTray). */}
       <StartAgainTray
         key={`tray:${activeTab.id}:${templateStart}`}
-        mode={templateStart}
-        tabId={activeTab.id}
+        closedKey={startClosedKey(activeTab.id, templateStart)}
         tabName={activeTab.name}
       />
     </>

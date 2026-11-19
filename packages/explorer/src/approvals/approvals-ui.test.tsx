@@ -255,6 +255,23 @@ describe('the badge', () => {
     fireEvent.click(screen.getByText('probe'));
     expect(started).toBe(false);
   });
+
+  it('takes the corner card’s shape, its words hidden on a phone, a button only for an Editor', async () => {
+    const { unmount } = wrap(
+      doorOf(fakeClient(approvalOf()), { canRequest: true, openShare: vi.fn() }),
+      <ApprovalBadge corner />,
+    );
+    const button = await screen.findByRole('button', { name: /Awaiting 0 of 2/ });
+    expect(button.className).toContain('h-9');
+    expect(button.className).not.toContain('touch-target-y');
+    expect(screen.getByText('Awaiting 0 of 2').className).toContain('phone:sr-only');
+    unmount();
+    wrap(doorOf(fakeClient(approvalOf({ status: 'approved' }))), <ApprovalBadge corner />);
+    const words = await screen.findByText('Approved');
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(words.parentElement?.className).toContain('h-9');
+    expect(words.parentElement?.getAttribute('tabindex')).toBe('0');
+  });
 });
 
 describe('the banner (a Viewer’s one write)', () => {

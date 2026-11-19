@@ -25,7 +25,7 @@ A tab with no page yet, and an export of a selection, show neither card.
 
 ## The panel
 
-The card opens a panel with the shared back bar ("All formats" › PowerPoint / Word) and the dialog's subtitle
+The card opens a panel with the shared back bar ("All Formats" › PowerPoint / Word) and the dialog's subtitle
 "Download the tab as a PowerPoint deck." / "Download the article as a Word document.":
 
 - **What the file holds**, one line: "12 slides, one a page, with the speaker notes of 3." (counting slides with a

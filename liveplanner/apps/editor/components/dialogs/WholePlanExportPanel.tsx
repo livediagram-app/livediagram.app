@@ -61,7 +61,7 @@ export function WholePlanExportPanel({
 
   return (
     <div>
-      <BackBar label="All formats" current="Whole Plan" onClick={onBack} />
+      <BackBar label="All Formats" current="Whole Plan" onClick={onBack} />
       <p className="mb-3 text-[12px] leading-relaxed text-slate-600 dark:text-slate-300">
         The whole plan in one .liveplanner file, to keep a copy or to import back as a new plan from
         Import › A Whole Plan.
