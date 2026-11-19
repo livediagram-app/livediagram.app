@@ -69,7 +69,7 @@ describe('PlanViewMenuSection', () => {
     expect(screen.queryByRole('checkbox', { name: 'Task' })).toBeNull();
     expect(screen.queryByRole('checkbox', { name: 'Note' })).toBeNull();
     expect(screen.getAllByRole('note').map((n) => n.textContent)).toContain(
-      'iThe card types this view charts; only those with Start and Due fields are listed.',
+      'The card types this view charts; only those with Start and Due fields are listed.',
     );
   });
 
@@ -187,7 +187,7 @@ describe('PlanViewMenuSection', () => {
     show({ view: 'gantt', startField: 'f-kick' }, { types: sprint });
     // The Card Types note names the picked field.
     expect(screen.getAllByRole('note').map((n) => n.textContent)).toContain(
-      'iThe card types this view charts; only those with Kickoff and Due fields are listed.',
+      'The card types this view charts; only those with Kickoff and Due fields are listed.',
     );
     fireEvent.click(
       within(screen.getByRole('radiogroup', { name: 'Starts On' })).getByRole('radio', {
@@ -205,7 +205,7 @@ describe('PlanViewMenuSection', () => {
       'true',
     );
     expect(screen.getAllByRole('note').map((n) => n.textContent)).toContain(
-      'iThe date field this chart reads. Add a Date field to a card type to chart it here.',
+      'The date field this chart reads. Add a Date field to a card type to chart it here.',
     );
     cleanup();
     show({ view: 'calendar', dueField: 'f-kick' }, { types: sprint });
