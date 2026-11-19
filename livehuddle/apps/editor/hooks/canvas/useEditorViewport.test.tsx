@@ -234,7 +234,8 @@ describe('useEditorViewport and the Map showing mid-glide', () => {
     const clear = tabFitView(main, tab.elements)!;
     act(() => notifyMapShown());
     // The Map's frame is read when the glide's clock says it has landed, though its frames have not caught up.
-    const now = vi.spyOn(performance, 'now').mockReturnValue(performance.now() + 1000);
+    // wall-clock: only the glide's clock jumps ahead of its frames; advancing the fake timers would run the frames too.
+    const now = vi.spyOn(performance, 'now').mockReturnValue(performance.now() + 1000); // wall-clock: faked, not timed
     act(() => {
       vi.advanceTimersToNextFrame();
     });
