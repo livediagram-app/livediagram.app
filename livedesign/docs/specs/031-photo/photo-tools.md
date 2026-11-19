@@ -105,7 +105,7 @@ Cropped Pixels** (on: pixels outside are dropped; off: layers keep them off the 
 (draw a line that should be level). Choosing a Ratio fits the largest box of that ratio inside the photo, centred as
 near where the box was as the photo allows (1:1 on an 800 x 600 photo is 600 x 600), so a ratio never makes the page
 bigger than the photo; only dragging the box past the photo's edges does. A straightened box takes the largest box of
-the ratio inside itself, about its centre. Free leaves the box as it is. Enter crops (one edit; the page takes the new size); Escape leaves it.
+the ratio inside itself, about its centre. Free leaves the box as it is. Enter crops (one edit; the page takes the new size); Escape leaves it. On a phone, Crop closes the options sheet as it crops ([Photo pages](photo-pages.md)); Show Crop Box stays one tap on Crop in the tools row away.
 
 ## Painting and erasing
 

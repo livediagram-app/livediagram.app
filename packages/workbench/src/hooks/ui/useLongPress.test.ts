@@ -53,6 +53,24 @@ describe('useLongPress', () => {
     expect(fired).toHaveBeenCalledWith(50, 50);
   });
 
+  it('keeps a press through a wobble inside the slop, and lets go of one that moves past it', () => {
+    const { fired, hook } = setup();
+    const move = (x: number, y: number) =>
+      window.dispatchEvent(Object.assign(new Event('pointermove'), { clientX: x, clientY: y }));
+    act(() => hook.result.current.onPointerDown(press(30, 40)));
+    move(34, 44);
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(fired).toHaveBeenCalledTimes(1);
+    act(() => hook.result.current.onPointerDown(press(30, 40)));
+    move(30, 60);
+    act(() => {
+      vi.advanceTimersByTime(LONG_PRESS_MS);
+    });
+    expect(fired).toHaveBeenCalledTimes(1);
+  });
+
   it('lets the innermost hold claim a press: an outer one it bubbles to stands aside', () => {
     vi.useFakeTimers();
     const inner = vi.fn();
@@ -71,7 +89,10 @@ describe('useLongPress', () => {
     expect(outer).not.toHaveBeenCalled();
     // A new press is a new claim: the outer hold still fires for a press only it sees.
     act(() =>
-      hook.result.current.outer.onPointerDown({ ...e, nativeEvent: new Event('pointerdown') }),
+      hook.result.current.outer.onPointerDown({
+        ...e,
+        nativeEvent: new Event('pointerdown'),
+      } as ReactPointerEvent),
     );
     act(() => {
       vi.advanceTimersByTime(LONG_PRESS_MS);

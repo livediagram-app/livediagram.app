@@ -190,10 +190,13 @@ export function PhotoToolOptionsBody({
   photo,
   tool,
   onPoint,
+  onCropped,
 }: {
   photo: PhotoEditorView;
   tool: PhotoToolId;
   onPoint: (p: Pointed) => void;
+  // After its Crop button crops: a phone closes its sheet so the cropped photo shows (photo-pages.md "On a phone").
+  onCropped?: () => void;
 }) {
   'use no memo'; // It reads the mutable photo session as it renders (PhotoSession).
   const { options } = usePhotoTools();
@@ -301,7 +304,13 @@ export function PhotoToolOptionsBody({
               <button type="button" className={SECONDARY} onClick={() => cancelCrop(ctx)}>
                 Cancel
               </button>
-              <Button size="sm" onClick={() => commitCrop(ctx)}>
+              <Button
+                size="sm"
+                onClick={() => {
+                  commitCrop(ctx);
+                  onCropped?.();
+                }}
+              >
                 Crop
               </Button>
             </>
