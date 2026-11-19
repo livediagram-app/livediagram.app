@@ -287,8 +287,8 @@ Docs, Website), keeping Image and Avatar; it spreads Build's tiles over two cate
 **Infrastructure** tile whose popover offers the C4 tiles and the **Entity**, all in its Parts group: [The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
 [The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), so what is built
 sits apart from what it is laid out in ([Toolbar layout](toolbar-layout.md#the-category-bar)); and its **Write**
-adds the **Callout** from Components (a headed note belongs to a diagram as much as a page) ahead of the Comment
-panel and Action card, which close it as their own Comments group. Workshop's **Write** holds Text, Sticky note and Pointer note, then Table and Checklist (no Page or Annotation), its
+closes with the Comment panel and Action card as their own Comments group (the **Callout** left Write for the
+Card's presets on 2026-11-19, owner). Workshop's **Write** holds Text, Sticky note and Pointer note, then Table and Checklist (no Page or Annotation), its
 **Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them, and it shares Diagram's **Layout**. Workshop offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
 ("Collaborate's six" below), and offers **Data**: every chart and meter, since a session reads results

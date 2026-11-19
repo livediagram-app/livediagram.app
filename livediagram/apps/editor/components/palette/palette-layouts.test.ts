@@ -50,10 +50,14 @@ describe('palette layouts', () => {
     ]);
   });
 
-  // A headed note belongs to a diagram as much as a page (docs/specs/007-editor/editor-modes.md).
-  it("puts the Callout in Diagram's Write, before the Comment panel", () => {
+  // The Callout is a Card preset, not a Write tile (owner, 2026-11-19; docs/specs/007-editor/toolbar-layout.md).
+  it("leaves the Callout out of Diagram's Write, the Card's presets offering it", () => {
     const write = paletteCategoriesFor('diagram').find((c) => c.id === 'write')!;
-    expect(write.tiles!.slice(-3)[0]!.id).toBe('components:callout');
+    expect(write.tiles!.map((t) => t.id)).not.toContain('components:callout');
+    const card = paletteCategoriesFor('diagram')
+      .flatMap((c) => c.tiles ?? [])
+      .find((t) => t.id === 'components:card')!;
+    expect(card.variants?.map((v) => v.id).join(' ')).toMatch(/callout/);
   });
 
   it('offers every Data tile in Workshop', () => {
