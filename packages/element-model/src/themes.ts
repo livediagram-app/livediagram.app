@@ -9,8 +9,13 @@ import type { Element } from './element';
 import { themeHalf } from './theme-halves';
 import { rederiveColorPresetForTheme, rederiveTablePresetForTheme } from './theme-presets';
 import { isAccentBarShape } from './web-components';
-import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
-export { THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
+import { BOARD_THEMES, DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
+export { BOARD_THEMES, THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
+
+// Every built-in theme the engine resolves: the shared catalogue and the board themes, which only liveplanner offers
+// but which draw wherever a tab on one is read.
+const BUILT_IN: readonly ThemeDefinition[] = [...THEMES, ...BOARD_THEMES];
+const builtInById = (id: string): ThemeDefinition | undefined => BUILT_IN.find((t) => t.id === id);
 
 // A preset theme bundles a canvas backdrop (background colour + pattern +
 // pattern colour) with the default colours used for newly added boxed
@@ -52,6 +57,14 @@ export type ThemeId =
   | 'rainbow'
   | 'pastel'
   | 'tropical'
+  // Board themes: multi-colour themes made for colour-coding board columns, offered by liveplanner only
+  // (BOARD_THEMES in ./themes-data).
+  | 'office'
+  | 'earth'
+  | 'gemstone'
+  | 'harbour'
+  | 'sorbet'
+  | 'nightfall'
   // Formal: standard notations. UML paints each shape kind its
   // conventional colour (docs/specs/011-theme/canvas-and-theme-dialog.md).
   | 'uml'
@@ -167,7 +180,7 @@ export function isDefaultSchemeBackdrop(backdrop: {
 // scheme", or a tab saved in one appearance looks hand-coloured to a viewer in the other and freezes.
 function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
   if (scheme.id === DEFAULT_SCHEME_ID) return [DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK];
-  const written = THEMES.find((t) => t.id === scheme.id);
+  const written = builtInById(scheme.id);
   return [
     scheme,
     ...(written ? [written, themeHalf(written, 'light'), themeHalf(written, 'dark')] : []),
@@ -189,7 +202,7 @@ export function getBuiltInTheme(
 ): ThemeDefinition {
   if (id === undefined || id === DEFAULT_SCHEME_ID) return defaultScheme(appearance);
   // Every theme in the viewer's half (docs/specs/011-theme/light-and-dark.md).
-  const theme = THEMES.find((t) => t.id === id);
+  const theme = builtInById(id);
   return theme ? themeHalf(theme, appearance) : defaultScheme(appearance);
 }
 
@@ -465,7 +478,7 @@ export function themedForTab<E extends Element>(
   { dark = false }: { dark?: boolean } = {},
 ): E[] {
   const found =
-    themeId && themeId !== DEFAULT_SCHEME_ID ? THEMES.find((t) => t.id === themeId) : undefined;
+    themeId && themeId !== DEFAULT_SCHEME_ID ? builtInById(themeId) : undefined;
   if (!found) return [...elements];
   const theme = themeHalf(found, dark ? 'dark' : 'light');
   return elements.map((el) => {
