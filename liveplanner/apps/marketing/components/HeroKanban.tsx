@@ -9,15 +9,15 @@ import { createLabelPrefix } from '@/lib/create-label';
 
 // The landing hero's kanban wall (docs/specs/019-marketing/marketing-site.md "Hero"): five lanes down the
 // band at every width, fading behind the copy, headed from `md`; from `xl` six template cards in them, one
-// being dragged from Doing to Review. The lanes are one flex row (a size container), so the drag moves by
+// being dragged from In Progress to Review. The lanes are one flex row (a size container), so the drag moves by
 // exactly one lane at any width (`--pitch`, in container units) and is a transform only. The static HTML is a
 // fixed opening hand, hidden once script runs (<html data-hero-deal>) until this visit's shuffled six replace
 // it; after that it holds still. It sits behind the copy.
 
 const LANES = [
   { name: 'Backlog', count: '7' },
-  { name: 'To do', count: '4' },
-  { name: 'Doing', count: '2/3' },
+  { name: 'To Do', count: '4' },
+  { name: 'In Progress', count: '2/3' },
   { name: 'Review', count: '1' },
   { name: 'Done', count: '12' },
 ] as const;

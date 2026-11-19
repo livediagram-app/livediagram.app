@@ -9,10 +9,8 @@ import {
   ALEX,
   AWAY,
   Avatar,
-  Box,
   JORDAN,
   MUTED,
-  ON_CANVAS,
   Panel,
   Pointer,
   RULE,
@@ -24,25 +22,7 @@ import {
   at,
   from,
 } from './canvas-parts';
-
-// A row of cards: [x, width, label], all 24 high at y.
-function CardRow({ cards, y = 36 }: { cards: [number, number, string][]; y?: number }) {
-  return (
-    <g>
-      {cards.map(([x, w, label]) => (
-        <Box key={label} x={x} y={y} w={w} h={24} label={label} />
-      ))}
-    </g>
-  );
-}
-
-// Where the four cards sit.
-const ROW: [number, number, string][] = [
-  [14, 50, 'Brief'],
-  [86, 52, 'Design'],
-  [160, 52, 'Build'],
-  [234, 52, 'Launch'],
-];
+import { AK, JR, PlanCard, SM, TM } from './plan-parts';
 
 /* ───────────────────────── Working together live ───────────────────────── */
 
@@ -127,138 +107,239 @@ export function PresenceArt() {
   );
 }
 
-/** Edits land live: change a card in your window and it changes in Jordan's a beat later. */
+/** Edits land live: you move a card to Done and it moves in Jordan's window a beat later. */
 export function RealtimeArt() {
-  const pane = (x: number, name: string, color: string, initials: string, lag: number) => (
+  const pane = (
+    x: number,
+    name: string,
+    color: string,
+    initials: string,
+    lag: number,
+    you: boolean,
+  ) => (
     <g>
-      <Panel x={x} y={12} w={112} h={72} />
-      <Avatar cx={x + 11} cy={22} r={4.5} color={color} initials={initials} />
-      <text className={TEXT} x={x + 19} y="24.4" fontSize="7" fontWeight="700">
+      <Panel x={x} y={8} w={128} h={80} />
+      <Avatar cx={x + 11} cy={18} r={4.5} color={color} initials={initials} />
+      <text className={TEXT} x={x + 19} y="20.4" fontSize="6.6" fontWeight="700">
         {name}
       </text>
-      <path className={RULE} d={`M${x} 31.5 H ${x + 112}`} strokeWidth="1" />
-      <rect className="fill-(--art-paper)" x={x + 1} y="32" width="110" height="51" rx="5" />
-      <g className="fa-a-out" style={at(lag)}>
-        <Box x={x + 26} y={46} w={60} h={24} label="Draft" />
-      </g>
-      <g className="fa-a-late" style={at(lag)}>
-        <rect
-          className="fill-emerald-100 stroke-emerald-500 dark:fill-emerald-500/20 dark:stroke-emerald-300"
-          x={x + 26}
-          y="46"
-          width="60"
-          height="24"
-          rx="5"
-          strokeWidth="1.75"
-        />
-        <text
-          className="fill-emerald-800 dark:fill-emerald-100"
-          x={x + 56}
-          y="60.6"
-          fontSize="7.5"
-          fontWeight="600"
-          textAnchor="middle"
-        >
-          Shipped
-        </text>
+      <path className={RULE} d={`M${x} 27.5 H ${x + 128}`} strokeWidth="1" />
+      {['In Progress', 'Done'].map((col, i) => (
+        <g key={col}>
+          <rect
+            className="fill-slate-100 dark:fill-slate-900/70"
+            x={x + 5 + i * 60}
+            y={31}
+            width={58}
+            height={53}
+            rx="3"
+          />
+          <text className={TEXT} x={x + 9 + i * 60} y={39} fontSize="5" fontWeight="700">
+            {col}
+          </text>
+        </g>
+      ))}
+      <PlanCard x={x + 8} y={43} w={52} title="Beta invites" id="TSK-16" who={SM} />
+      <PlanCard x={x + 68} y={43} w={52} title="Logo refresh" id="TSK-3" type="idea" who={AK} />
+      {/* The card that moves, from In Progress into Done. */}
+      <g className="fa-a-move" style={from(-60, 0, lag)}>
+        <PlanCard x={x + 68} y={64} w={52} title="Pricing page" id="TSK-14" who={TM} />
+        {you ? <Pointer x={x + 97} y={78} color={YOU} /> : null}
       </g>
     </g>
   );
   return (
     <Scene>
-      {pane(16, 'You', YOU, 'TM', 0)}
-      {pane(172, 'Jordan', JORDAN, 'JR', 0.35)}
+      {pane(10, 'You', YOU, 'TM', 0, true)}
+      {pane(162, 'Jordan', JORDAN, 'JR', 0.5, false)}
       {/* The change, crossing the wire. */}
       <path
         className="stroke-slate-300 dark:stroke-slate-600"
-        d="M128 58 H 172"
+        d="M139 48 H 161"
         strokeWidth="1.2"
         strokeDasharray="2 2"
       />
       <circle
         className="fa-a-move fill-brand-500"
-        style={from(-40, 0, 2.5)}
-        cx="168"
-        cy="58"
-        r="2.4"
+        style={from(-20, 0, 0.3)}
+        cx="159"
+        cy="48"
+        r="2.2"
       />
-      <text className={MUTED} x="150" y="52" fontSize="6.5" fontWeight="600" textAnchor="middle">
-        live
-      </text>
-      <Pointer x={76} y={62} color={YOU} />
     </Scene>
   );
 }
 
-/** See what others are working on: each person's selection glows in their colour, with their initials. */
+/** A teammate's colour round what they are in: a card's ring with their first name on a Board, and outlined cells
+ *  with a name tag on a Sheet (help: collaboration/live-presence "On a Board", "On a Sheet"). */
 export function SelectionGlowArt() {
-  const glow = (x: number, w: number, color: string, initials: string) => (
+  const tag = (x: number, y: number, name: string, color: string) => (
     <g>
-      <rect
-        x={x - 4.5}
-        y="31.5"
-        width={w + 9}
-        height="33"
-        rx="9"
-        fill="none"
-        stroke={color}
-        strokeOpacity="0.25"
-        strokeWidth="4"
-      />
-      <rect
-        x={x - 2.5}
-        y="33.5"
-        width={w + 5}
-        height="29"
-        rx="7"
-        fill="none"
-        stroke={color}
-        strokeWidth="1.5"
-      />
-      <rect x={x + w - 12} y="25" width="16" height="10" rx="3" fill={color} />
-      <text x={x + w - 4} y="32.2" fontSize="6.5" fontWeight="700" textAnchor="middle" fill="#fff">
-        {initials}
+      <rect x={x} y={y} width={name.length * 3.2 + 6} height="8" rx="2" fill={color} />
+      <text x={x + 3} y={y + 5.7} fontSize="5" fontWeight="700" fill="#fff">
+        {name}
       </text>
     </g>
   );
+  const cells = [
+    ['Venue', '1,200'],
+    ['Catering', '860'],
+    ['Travel', '540'],
+  ];
   return (
     <Scene>
-      <CardRow cards={ROW.map(([x, w], i) => [x, w, ['Brief', 'Design', 'Build', 'Launch'][i]!])} />
-      {glow(14, 50, YOU, 'TM')}
-      {glow(234, 52, ALEX, 'A')}
-      <g className="fa-a-pop" style={at(1.7)}>
-        {glow(86, 52, JORDAN, 'JR')}
+      {/* A Board: Jordan has Checkout flow open, so it wears their ring and name. */}
+      <Panel x={10} y={8} w={140} h={80} />
+      {['To Do', 'In Progress'].map((col, i) => (
+        <g key={col}>
+          <rect
+            className="fill-slate-100 dark:fill-slate-900/70"
+            x={15 + i * 67}
+            y={13}
+            width={63}
+            height={70}
+            rx="3"
+          />
+          <text className={TEXT} x={19 + i * 67} y={21} fontSize="5" fontWeight="700">
+            {col}
+          </text>
+        </g>
+      ))}
+      <PlanCard x={18} y={26} w={57} title="Press kit" id="TSK-31" who={SM} />
+      <PlanCard x={18} y={49} w={57} title="Release notes" id="TSK-23" type="note" />
+      <PlanCard x={85} y={49} w={57} title="Login bug" id="BUG-21" type="bug" who={AK} />
+      <PlanCard x={85} y={26} w={57} title="Checkout flow" id="TSK-27" who={JR} />
+      <g className="fa-a-pop" style={at(0.6)}>
+        <rect
+          x={83}
+          y={24}
+          width={61}
+          height={23}
+          rx="3.5"
+          fill="none"
+          stroke={JORDAN}
+          strokeWidth="1.3"
+        />
+        {tag(121, 18.5, 'Jordan', JORDAN)}
       </g>
-      <Pointer
-        x={124}
-        y={56}
-        color={JORDAN}
-        name="Jordan"
-        className="fa-a-move"
-        style={from(56, 20, 0)}
+      {/* A Sheet: Alex's selected cells outlined in their colour, their name on a tag. */}
+      <Panel x={158} y={8} w={132} h={80} />
+      <rect
+        className="fill-slate-50 dark:fill-slate-900/60"
+        x={158.5}
+        y={8.5}
+        width={131}
+        height={12}
+        rx="5.5"
       />
+      {['A', 'B', 'C'].map((c, i) => (
+        <text
+          key={c}
+          className={MUTED}
+          x={196 + i * 40}
+          y={16.6}
+          fontSize="5"
+          fontWeight="600"
+          textAnchor="middle"
+        >
+          {c}
+        </text>
+      ))}
+      <g className="stroke-slate-200 dark:stroke-slate-700" strokeWidth="0.6">
+        {[20.5, 37.5, 54.5, 71.5].map((y) => (
+          <path key={y} d={`M158 ${y} H290`} />
+        ))}
+        <path d="M170 8 V88 M216 8 V88 M256 8 V88" />
+      </g>
+      {['1', '2', '3', '4'].map((r, i) => (
+        <text key={r} className={MUTED} x={164} y={31.6 + i * 17} fontSize="5" textAnchor="middle">
+          {r}
+        </text>
+      ))}
+      <text className={TEXT} x={174} y={31.6} fontSize="5.4" fontWeight="700">
+        Item
+      </text>
+      <text className={TEXT} x={252} y={31.6} fontSize="5.4" fontWeight="700" textAnchor="end">
+        Cost
+      </text>
+      {cells.map(([item, cost], i) => (
+        <g key={item}>
+          <text className={TEXT} x={174} y={48.6 + i * 17} fontSize="5.4">
+            {item}
+          </text>
+          <text className={TEXT} x={252} y={48.6 + i * 17} fontSize="5.4" textAnchor="end">
+            {cost}
+          </text>
+        </g>
+      ))}
+      <g className="fa-a-pop" style={at(1.4)}>
+        <rect
+          x={216}
+          y={37.5}
+          width={40}
+          height={34}
+          fill={ALEX}
+          fillOpacity="0.08"
+          stroke={ALEX}
+          strokeWidth="1.3"
+        />
+        {tag(216, 72.5, 'Alex', ALEX)}
+      </g>
     </Scene>
   );
 }
 
-/** Comments where the work is: a badge on the card, and its thread open beside it. */
+/** Comments where the work is: the comments pill on the card, and its thread open beside it. */
 export function CommentsArt() {
   return (
     <Scene>
-      <Box x={34} y={38} w={64} h={28} label="Pricing" />
+      <rect
+        className="fill-slate-100 dark:fill-slate-900/70"
+        x={12}
+        y={10}
+        width={108}
+        height={76}
+        rx="4"
+      />
+      <text className={TEXT} x={17} y={18} fontSize="5.4" fontWeight="700">
+        Review
+      </text>
+      <PlanCard x={16} y={22} w={100} title="Pricing page" id="TSK-14" who={AK} ring={JORDAN} />
+      {/* The card's comments pill: a speech bubble and the count, in the card's quiet meta ink. */}
+      <g className="fa-a-pop" style={at(0.2)}>
+        <rect
+          x={50}
+          y={32.4}
+          width="15"
+          height="6.4"
+          rx="1.6"
+          className="fill-slate-100 dark:fill-slate-700"
+        />
+        <path
+          d="M52.6 33.9h5a0.8 0.8 0 0 1 0.8 0.8v1.8a0.8 0.8 0 0 1 -0.8 0.8h-3.2l-1.6 1v-1h-0.2a0.8 0.8 0 0 1 -0.8 -0.8v-1.8a0.8 0.8 0 0 1 0.8 -0.8z"
+          fill="none"
+          className="stroke-slate-500 dark:stroke-slate-300"
+          strokeWidth="0.55"
+        />
+        <text
+          x={60.8}
+          y={37.4}
+          fontSize="4.2"
+          fontWeight="700"
+          className="fill-slate-600 dark:fill-slate-300"
+        >
+          2
+        </text>
+      </g>
+      <PlanCard x={16} y={43} w={100} title="Hero copy" id="TSK-21" who={TM} />
+      <PlanCard x={16} y={64} w={100} title="Onboarding emails" id="TSK-11" who={SM} />
       <path
         className="stroke-pink-300 dark:stroke-pink-400/60"
-        d="M104 36 C 116 28, 126 24, 138 22"
+        d="M117 31 C 124 28, 130 25, 138 22"
         fill="none"
         strokeWidth="1"
         strokeDasharray="2 2"
       />
-      <g className="fa-a-pop" style={at(0.2)}>
-        <circle className={ON_CANVAS} cx="98" cy="38" r="6" fill={JORDAN} strokeWidth="1.5" />
-        <text x="98" y="40.4" fontSize="6.5" fontWeight="700" textAnchor="middle" fill="#fff">
-          2
-        </text>
-      </g>
       <g className="fa-a-in" style={at(0.5)}>
         <Panel x={138} y={8} w={150} h={80} />
         <Avatar cx={149} cy={20} r={5} color={JORDAN} initials="JR" />

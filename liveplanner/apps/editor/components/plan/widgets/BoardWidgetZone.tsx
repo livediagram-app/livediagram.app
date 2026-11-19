@@ -430,9 +430,14 @@ export function BoardWidgetZone({
       data-widget-zone-pinned={pinned ? '' : undefined}
       // Packed to the end while some widgets are in More, so the + and Edit Widgets keep their place at the header's
       // edge however many widgets the row holds (a press can move one into More), the slack going before the Filter.
-      className={`relative flex h-9 min-w-0 flex-1 items-center gap-1.5 rounded-md ${
+      // Clipped across: squeezed to no room (a phone's Requests header, the Form strip beside it, Work Tracker 1288)
+      // the fit keeps its last row, which would otherwise run on under the top-right corner card. Clipped on x only,
+      // so a widget's × and focus ring still show above and below. Bare (not even More fits, zone-overflow.ts), it is
+      // out of sight but still laid out, so it is measured again as the room comes back.
+      data-widget-zone-bare={fit.bare ? '' : undefined}
+      className={`relative flex h-9 min-w-0 flex-1 items-center gap-1.5 overflow-x-clip rounded-md ${
         hidden.length > 0 ? 'justify-end' : ''
-      }`}
+      } ${fit.bare ? 'invisible' : ''}`}
       // The widgets, then the + and Edit Widgets, fan in as the header mounts (header-arrival.ts). It asks for every
       // widget's width, so in a header band (sized by its content, up to its cap) it is given the room it could have.
       style={{ ...headerArrivalRow, width: fit.need > 0 ? fit.need : undefined }}

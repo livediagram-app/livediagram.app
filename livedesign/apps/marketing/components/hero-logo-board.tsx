@@ -185,7 +185,15 @@ function Kit({ x, y }: { x: number; y: number }) {
           </text>
         </g>
       ))}
-      <rect x={x + 14} y={y + 116} width="162" height="22" rx="5" fill={SKY} />
+      <rect
+        className="fill-brand-700 dark:fill-brand-600"
+        x={x + 14}
+        y={y + 116}
+        width="162"
+        height="22"
+        rx="5"
+        fill="#be123c"
+      />
       <text
         x={x + 95}
         y={y + 131}

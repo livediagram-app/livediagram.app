@@ -1,7 +1,8 @@
 'use client';
 
 // The recording dock (liveworkspace/docs/specs/006-media/walkthroughs.md "Recording"): the count, the compact recording
-// bar and the save card, one at a time (the set-up is a page inside Tools, RecordSetup.tsx). The count and the bar sit
+// bar and the save card, one at a time (the set-up is a page inside Tools, RecordSetup.tsx), and before them the picking
+// bar while the set-up picks what to hide (PickingBar, "Picking steps aside"). The picking bar, the count and the bar sit
 // under the palette strip where the palette tray goes (owner, 2026-11-17, as "Click to drop" does); without a strip,
 // and for the save card, at the bottom centre of the canvas.
 
@@ -26,6 +27,7 @@ import type { Walkthroughs } from '../useWalkthroughs';
 import { LevelBar } from './Bubble';
 import { Problem } from './record-parts';
 import { DownloadIcon, StopIcon } from './icons';
+import { PickingBar } from './PickingBar';
 
 const CARD =
   'pointer-events-auto rounded-2xl border border-slate-200 bg-white/95 shadow-2xl shadow-slate-900/15 backdrop-blur dark:border-slate-700 dark:bg-slate-900/95 dark:shadow-black/40';
@@ -34,7 +36,8 @@ const LAST_MINUTE_MS = WALKTHROUGH_MAX_MS - 60_000;
 export function RecordDock({ walkthroughs }: { walkthroughs: Walkthroughs }) {
   const { recorder } = walkthroughs;
   const phase = recorder.phase;
-  const slim = phase.kind === 'countdown' || phase.kind === 'recording';
+  const picking = phase.kind === 'setup' && walkthroughs.hiding.picking;
+  const slim = picking || phase.kind === 'countdown' || phase.kind === 'recording';
   const strip = usePaletteStripBox(slim);
   if (phase.kind === 'off') return null;
   if (slim && strip && typeof document !== 'undefined') {
@@ -58,8 +61,10 @@ export function RecordDock({ walkthroughs }: { walkthroughs: Walkthroughs }) {
           >
             Recording starts in {phase.n}
           </div>
-        ) : (
+        ) : phase.kind === 'recording' ? (
           <RecordingBar walkthroughs={walkthroughs} elapsed={phase.elapsed} />
+        ) : (
+          <PickingBar walkthroughs={walkthroughs} card={CARD} />
         )}
       </div>,
       host.node,
@@ -81,6 +86,7 @@ export function RecordDock({ walkthroughs }: { walkthroughs: Walkthroughs }) {
         <RecordingBar walkthroughs={walkthroughs} elapsed={phase.elapsed} />
       ) : null}
       {phase.kind === 'review' ? <SaveCard walkthroughs={walkthroughs} /> : null}
+      {picking ? <PickingBar walkthroughs={walkthroughs} card={CARD} /> : null}
     </div>
   );
 }

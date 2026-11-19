@@ -17,10 +17,12 @@ import {
   type FloorStage,
   type Walker,
 } from './hero-space-floor-cast';
+import { identityPaint } from './avatar-chip';
 import {
   BUBBLE_HEIGHT,
   FRAME,
   bubbleBox,
+  chipTopOf,
   floorClass,
   stillId,
   stillKeysOf,
@@ -34,7 +36,7 @@ const stageOf = (key: FloorStage['key']) => FLOOR_STAGES.find((s) => s.key === k
 type Shown = 'hsf-lg-only' | 'hsf-below-lg' | '';
 type Placed = { stage: FloorStage; walker: Walker; shown: Shown };
 
-/** One character: its film strip in a one-still window, its feet on the box's origin, its name chip under it. */
+/** One character: its film strip in a one-still window, its feet on the box's origin, its name chip over its head. */
 function Character({ stage, walker, shown }: Placed) {
   const keys = stillKeysOf(walker);
   return (
@@ -59,8 +61,11 @@ function Character({ stage, walker, shown }: Placed) {
           ))}
         </svg>
       </div>
-      <span className="hsf-chip">
-        <span className="hsf-chip-dot" style={{ background: walker.colour }} />
+      {/* Over the head, in the person's colour, as Avatar mode draws a peer's chip (avatar-chip.tsx). */}
+      <span
+        className="hsf-chip bg-(--identity) text-(--identity-ink) dark:bg-(--identity-deep) dark:text-white"
+        style={{ ...identityPaint(walker.colour), top: chipTopOf(walker) }}
+      >
         {/* The name's cap band, not its line box, sits on the chip's middle (optical-alignment.md). */}
         <span className="text-optical-line">{walker.name}</span>
       </span>

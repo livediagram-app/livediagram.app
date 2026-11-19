@@ -117,6 +117,15 @@ the dock draws: false leaves Hide From Recording out and the picking mode off. `
 `canHide()` for a Board tab from the cards its board draws after its filter: the board filling the tab registers that
 count (`useRegisterShownCards`, `board-shown-store.ts`), and until it has, the plan's card count stands in.
 
+Picking steps aside (Work Tracker 1287): while `hiding.picking`, `WalkthroughsTools` marks its Tools row `stepAside`
+(and `keepOpen`), so `ChromeToolsMenu` passes `hidden` to `PopoverOrSheet`, whose `AnchoredPopover` (or drawer) draws
+its panel, arrow and scrim `invisible`; the view stays mounted, so Record Walkthrough's button keeps anchoring the set-up.
+`WalkthroughsView` closes the set-up's `ResponsivePopover` while picking (the devices live in the recorder, not the
+set-up, so they stay open), and `RecordDock` draws `PickingBar` (`ui/PickingBar.tsx`) in the recording bar's place: the
+palette tray's slot under the strip, else the bottom centre. The bar is `role="toolbar"` named "Hide From Recording",
+with the hint, a hidden count (`CountBadge`, none at zero), Hide Selection and Done; Done focuses on mount, and Done or
+Escape (`useHidden`) clears `picking`, which reopens the set-up with its first control focused.
+
 The camera switch: `useRecorder` holds `cameraOn` (from `localStorage['liveworkspace:walkthrough-camera'] === 'on'`,
 false when absent or throwing) and writes it on each flip; `getUserMedia` gets `video: false` while it is off. A
 camera that fails turns it off in state only. `allow(kind)` (the pickers' Allow buttons) asks again by bumping the

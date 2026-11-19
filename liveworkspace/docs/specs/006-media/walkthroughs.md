@@ -141,6 +141,14 @@ outside while picking what to hide does not. Start Recording closes Tools for th
 a press outside like any tool (owner, 2026-11-17: only Slide Deck stays open while you work), except while picking
 what to hide, whose presses land on the canvas.
 
+**Picking steps aside** (Work Tracker 1287). While picking what to hide, Tools and the set-up both step out of the
+way, so every part of the tab can be pressed (Tools covered a Dashboard tab's right-hand slots and a board's right-hand
+columns). Tools stays open but out of sight (the tool's `stepAside`, footer-tools-menu.md "Sizes"), and the set-up gives
+way to the **picking bar**: "Press elements to hide them", the hidden count, **Hide Selection** and **Done**, a slim card
+where the recording bar goes (under the palette strip, in the palette tray's slot; at the bottom centre of the canvas
+without a strip). Done, or Escape, ends picking and brings Tools and the set-up back as they were, the devices still
+open.
+
 **Edited since recording.** `fingerprints` holds each visited tab's content fingerprint when the recording began
 (the app's own; any string up to 128 characters). A player that finds a tab's fingerprint changed says the
 walkthrough was **edited since recording** and still plays it over the canvas as it is now.

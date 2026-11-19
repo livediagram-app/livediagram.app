@@ -69,7 +69,7 @@ under the pointer as a category is switched.
 
 - **Names fit or go.** The bar shows its names while the strip, named, fits the room the centred strip may take
   (the editor's width less the top-left menu card, measured, on both sides); otherwise the glyphs alone
-  (`useBarLabels`). Measured, not estimated: the menu card is wider in a mode that shows the tab's name, and an
+  (`useBarLabels`). Measured, not estimated: the menu card is wider with the named mode switch, and an
   estimate let a long bar run under it. **Too wide even bare**, as on a tablet (768px) where Diagram's glyphs
   need about 425px of the 382px centring leaves, the strip sits at the right instead, 12px from the edge, clear of
   the card (`useStripCrowded`, measured the same way); it centres again once there is room. A phone always shows the names (owner, 2026-11-09: "on mobile, show the labels on the palette categories, its okay, we can scroll"), and the bar swipes
@@ -345,34 +345,21 @@ so a new page load starts on the mode's landing.
 
 ## The tab's name
 
-- **Not in the menu box** (owner, 2026-11-17): the menu box holds the Explorer button and the mode switch alone; the
-  tab strip and the window title name the tab. What follows is how the name sat there before, kept for the other
-  canvas apps, which still show it (livedocuments, livedesign).
+- **Not in the menu box** (owner, 2026-11-17, the no-header-bar experiment): the menu box holds the Explorer
+  button and the mode switch alone. The tab strip and the window title name the open tab, and the tab is renamed there.
+  Nothing publishes the name to the box any more: the shared `TabNameInBox` and `active-tab-name-store` went
+  (Work Tracker 1289).
+- **Never under the strip.** Where the strip in the same row leaves the box less room than it wants (a tablet or
+  a narrow window, 640 to 1024px), the box steps down to the room it has up to a strip's gap (8px) short of the strip
+  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves;
+  `useMenuCardFit`, `menu-card-form.ts`), never capped:
+  - **Whole** wherever the whole box fits.
+  - **Icon** below that: the mode switch drops to its icon alone, as a phone draws it, its name in its tooltip
+    and accessible name.
+  - **Bare** below that; the menu button keeps its size at every width, never capped or cut.
 
-- On a desktop, the menu box (the Explorer button and the mode switch, top left) ends with the open tab's name, after a
-  hairline, in every mode: Diagram, Draw and Workshop alike
-  (The name rides in the menu box). It is the chrome's ink, 14 px at regular weight (never bold), cut short
-  with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
-- **Never under the strip.** Where the strip in the same row leaves the box less room than it wants (a tablet or a
-  narrow window, 640 to 1024px, where even the crowded strip at the right reached back over a long name), the box
-  ends a strip's gap (8px) short of the strip and the name gives way first, cut short with its ellipsis sooner
-  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves). The menu
-  button and the mode switch keep their size at every width, never capped or cut; only the name truncates. Shorter
-  still, the box steps down (`useMenuCardFit`, `menu-card-form.ts`):
-  - **Whole** while the button, the named mode switch and a readable name slot (4rem) fit, or the whole box does (a
-    short name needs no more than its own width), so the box is whole wherever the strip stays centred beside it.
-  - **Icon** below that: the mode switch drops to its icon alone, as a phone draws it, its name in its tooltip and
-    accessible name, so the tab's name keeps its slot.
-  - **Bare** where even then no readable slot is left: the name and its hairline hide (the name stays in the tab
-    strip and the window title), never a sliver, and nothing is capped.
-
-  The strip still decides where it goes from the box as it would stand whole (`menuNaturalRight`, kept while the box
-  is compact), so neither the cap nor a compact form un-crowds the strip and pulls it back over the box; a wide
-  window still moves a crowded strip right and shows a long name. With room to spare, as usual, nothing changes.
-
-- A click (a tap) on it renames the tab in place, for someone who may change the
-  document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
-- Not on a phone: the top row is the strip's there.
+  The strip decides where it goes from the box as it stands whole (`menuNaturalRight`, its width kept while the
+  box is compact), so a compact form never un-crowds the strip and pulls it back over the box.
 
 ## The Explorer and the other panels
 

@@ -42,7 +42,7 @@ type Column = { name: string; cards: CardDef[] };
 // The board as it opens; each carried card is the last in its column, so nothing closes up behind it.
 const COLUMNS: Column[] = [
   {
-    name: 'In progress',
+    name: 'In Progress',
     cards: [
       {
         title: 'Onboarding',

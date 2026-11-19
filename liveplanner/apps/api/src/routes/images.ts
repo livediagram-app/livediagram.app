@@ -245,6 +245,12 @@ async function read(ctx: RouteContext, media: MediaClient, imageId: string): Pro
   headers.set('Cache-Control', 'private, max-age=86400');
   // The stored type is the sniffed one; never let a browser re-guess it.
   headers.set('X-Content-Type-Options', 'nosniff');
+  // Anything not a picture (a PDF an email brought) is a download, sandboxed should it be opened at its address: it
+  // never runs as this origin's page (email-to-board blueprint "Security and trust").
+  if (!object.contentType.startsWith('image/')) {
+    headers.set('Content-Disposition', 'attachment');
+    headers.set('Content-Security-Policy', 'sandbox');
+  }
   return new Response(object.body, { headers });
 }
 

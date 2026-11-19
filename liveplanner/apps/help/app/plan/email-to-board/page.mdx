@@ -6,7 +6,7 @@ import { ToolsMenuFigure } from '@/components/illustrations/tools-menu';
 export const metadata = helpMetadata({
   title: 'Email to Board',
   description:
-    'Give a board its own secret email address: forwarded mail becomes a card with the subject as its title, the message as its description and pictures attached.',
+    'Give a board its own secret email address: forwarded mail becomes a card, the subject its title, the message its description, pictures and PDFs attached.',
   path: '/help/plan/email-to-board/',
 });
 
@@ -17,7 +17,7 @@ export const metadata = helpMetadata({
   categorySlug="plan"
 >
 
-**Email to Board** gives a board its own secret email address. Forward a message to it and it becomes a card in the board's first column: the subject as the card's title, the message as its description, and any pictures attached. The card shows who sent it.
+**Email to Board** gives a board its own secret email address. Forward a message to it and it becomes a card in the board's first column: the subject as the card's title, the message as its description, and any pictures and PDFs attached. The card shows who sent it.
 
 ## Who Can Set It Up
 
@@ -51,7 +51,7 @@ Either way, anyone who can send from an allowed address can add cards to the boa
 
 - **Title**: the subject. With no subject, "Email from" and the sender's address.
 - **Description**: the message's text. The earlier messages a reply quotes ("On … wrote:" and what follows) and a signature after a "--" line are left out.
-- **Pictures**: PNG, JPEG, WebP and GIF pictures up to 10 MB each join the card's Attachments, up to 20 a card. Other files, and bigger pictures, are listed at the end of the description ("Not attached: …") and left out.
+- **Pictures and PDFs**: PNG, JPEG, WebP and GIF pictures and PDFs up to 10 MB each join the card's Attachments, up to 20 a card. A PDF opens in your browser's own viewer from the card, and downloads under its name. Other files (a Word or Excel file, a zip), and bigger ones, are listed at the end of the description ("Not attached: …") and left out.
 - **From email**: the card's details show **From email** with the sender's address, and its Activity starts with "Created this card from an email".
 
 <Figure caption="A card an email made says who it came from.">

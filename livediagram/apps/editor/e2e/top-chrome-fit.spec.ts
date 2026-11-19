@@ -19,8 +19,6 @@ for (const width of [640, 700, 768, 900, 1024, 1440]) {
     await startBlankDocument(page);
     const menu = page.locator('[data-toolbar-menu]').first();
     await expect(menu).toBeVisible();
-    // No tab name in the box, at any width.
-    await expect(menu.locator('[data-tab-name-in-box]')).toHaveCount(0);
     await page.setViewportSize({ width, height: 900 });
     const strip = page.locator('[data-toolbar-palette] [data-tour-id="palette"]');
     // The strip settles (crowded to the right, or centred) clear of the box.

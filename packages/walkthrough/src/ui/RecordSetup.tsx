@@ -77,23 +77,21 @@ export default function RecordSetup({
       {recorder.deviceProblem ? <Problem>{recorder.deviceProblem}</Problem> : null}
       <footer className="flex items-center justify-between gap-2 border-t border-slate-100 pt-4 dark:border-slate-800">
         <HideControls walkthroughs={walkthroughs} />
-        {walkthroughs.hiding.picking ? null : (
-          <Button
-            variant="primary"
-            size="sm"
-            disabled={!ready}
-            onClick={() => {
-              recorder.start();
-              onStarted();
-            }}
-            className="ml-auto"
-          >
-            <span className="inline-flex items-center gap-1.5">
-              <RecordIcon size={10} className="text-rose-300" />
-              Start Recording
-            </span>
-          </Button>
-        )}
+        <Button
+          variant="primary"
+          size="sm"
+          disabled={!ready}
+          onClick={() => {
+            recorder.start();
+            onStarted();
+          }}
+          className="ml-auto"
+        >
+          <span className="inline-flex items-center gap-1.5">
+            <RecordIcon size={10} className="text-rose-300" />
+            Start Recording
+          </span>
+        </Button>
       </footer>
     </section>
   );
@@ -133,34 +131,13 @@ function CornerPicker({
   );
 }
 
-// Hide From Recording, before the recording only (owner, 2026-11-17): once it runs, what is hidden is settled.
+// Hide From Recording, before the recording only (owner, 2026-11-17): once it runs, what is hidden is settled. Picking
+// itself runs from the picking bar (PickingBar), the set-up giving way to it.
 function HideControls({ walkthroughs }: { walkthroughs: Walkthroughs }) {
-  const { hiding, host } = walkthroughs;
+  const { hiding } = walkthroughs;
   const count = hiding.hidden.size;
   // Nothing on this tab can be hidden (a Sheet, a Form, an empty canvas): no control rather than a dead one.
   if (!hiding.canHide) return null;
-  if (hiding.picking) {
-    return (
-      <div className="flex items-center gap-1.5">
-        <span className="text-[12px] text-slate-600 dark:text-slate-300">
-          Press elements to hide them
-        </span>
-        <Button
-          variant="secondary"
-          size="xs"
-          onClick={() =>
-            // The canvas's selection, then what the app picks elsewhere (a board's cards).
-            hiding.hideAll([...host.selection(), ...(host.hideable?.selection?.() ?? [])])
-          }
-        >
-          Hide Selection
-        </Button>
-        <Button variant="primary" size="xs" onClick={() => hiding.setPicking(false)}>
-          Done
-        </Button>
-      </div>
-    );
-  }
   return (
     <HoverCard
       title="Hide From Recording"

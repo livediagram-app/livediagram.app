@@ -4,7 +4,7 @@
 //
 // Split from FeatureArt.tsx; see ./shared for Frame and the colour constants.
 
-import { MiniWindow, Node, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
+import { MiniWindow, PANEL, PanelShadow, STRONG, SUBTLE } from './features-parts';
 import {
   EMERALD,
   Frame,
@@ -13,6 +13,7 @@ import {
 } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 const VIEW = '0 0 300 96';
+const SKY = '#0ea5e9';
 
 // Terminal colours: the window is a terminal in both appearances, so these are fixed.
 const TERM = {
@@ -111,8 +112,11 @@ function Sparkle({ x, y, r = 4 }: { x: number; y: number; r?: number }) {
   );
 }
 
-/** MCP: you ask your AI tool to add cards; it calls liveplanner and they land on the board. */
-export function McpArt() {
+/** MCP: you ask your AI tool for something; it calls liveplanner's tool for it and the result lands in the plan:
+ *  cards on a board, a Dashboard tab of slots, or an automation rule (the MCP server's change_items, add_tab and
+ *  change_rules tools, apps/mcp/src). */
+export function McpArt({ lands = 'cards' }: { lands?: keyof typeof MCP_ASKS }) {
+  const ask = MCP_ASKS[lands];
   return (
     <Frame>
       <svg viewBox={VIEW} className="absolute inset-0 h-full w-full">
@@ -136,7 +140,7 @@ export function McpArt() {
         {/* You ask. */}
         <rect x="62" y="32" width="92" height="14" rx="7" fill={VIOLET} />
         <text x="108" y="41.2" textAnchor="middle" fontSize="6" fontWeight="600" fill="#fff">
-          Add the launch tasks
+          {ask.say}
         </text>
 
         {/* The tool call, running then done. */}
@@ -157,7 +161,7 @@ export function McpArt() {
           fontWeight="600"
           fontFamily={MONO}
         >
-          liveplanner.change_items
+          {ask.tool}
         </text>
         <g className="fa-b-early">
           <circle
@@ -193,36 +197,189 @@ export function McpArt() {
           <rect className={SUBTLE} x="20" y="78" width="64" height="3" rx="1.5" opacity="0.4" />
         </g>
 
-        {/* What lands in liveplanner: three new cards in the board's To do column. */}
-        <MiniWindow x={176} y={8} w={112} h={80} title="Launch board">
-          {[
-            [182, 'To do'],
-            [218, 'Doing'],
-            [254, 'Done'],
-          ].map(([x, name]) => (
-            <g key={name}>
-              <rect
-                className="fill-slate-100 dark:fill-slate-800/70"
-                x={x as number}
-                y="26"
-                width="30"
-                height="56"
-                rx="3"
-              />
-              <text className={SUBTLE} x={(x as number) + 3} y="33" fontSize="4.6" fontWeight="700">
-                {name}
-              </text>
-            </g>
-          ))}
-          <Node x={221} y={37} w={24} h={11} r={2} />
-          <Node x={257} y={37} w={24} h={11} r={2} />
-          <g className="fa-b-late">
-            <Node x={185} y={37} w={24} h={11} r={2} />
-            <Node x={185} y={51} w={24} h={11} r={2} />
-            <Node x={185} y={65} w={24} h={11} r={2} />
-          </g>
-        </MiniWindow>
+        {lands === 'cards' ? <McpCards /> : lands === 'dashboard' ? <McpDashboard /> : <McpRule />}
       </svg>
     </Frame>
+  );
+}
+
+// What each card asks for, and the tool the AI tool calls to do it.
+const MCP_ASKS = {
+  cards: { say: 'Add the launch tasks', tool: 'liveplanner.change_items' },
+  dashboard: { say: 'Make a sprint dashboard', tool: 'liveplanner.add_tab' },
+  rule: { say: 'Assign new bugs in turn', tool: 'liveplanner.change_rules' },
+};
+
+/** A card as a small board draws it: its type's stripe and its title. */
+function MiniCard({
+  x,
+  y,
+  w,
+  title,
+  stripe,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  title: string;
+  stripe: string;
+}) {
+  return (
+    <g>
+      <rect className={PANEL} x={x} y={y} width={w} height="11" rx="1.8" strokeWidth="0.6" />
+      <rect x={x} y={y} width="1.6" height="11" rx="0.8" fill={stripe} />
+      <text className={STRONG} x={x + 4} y={y + 7.2} fontSize="4.6" fontWeight="600">
+        {title}
+      </text>
+    </g>
+  );
+}
+
+/** Three new cards land in the Launch board's To Do column, beside the work already under way. */
+function McpCards() {
+  return (
+    <MiniWindow x={176} y={8} w={112} h={80} title="Launch board">
+      {[
+        [181, 'To Do', 50],
+        [235, 'In Progress', 48],
+      ].map(([x, name, w]) => (
+        <g key={name as string}>
+          <rect
+            className="fill-slate-100 dark:fill-slate-800/70"
+            x={x as number}
+            y="24"
+            width={w as number}
+            height="60"
+            rx="3"
+          />
+          <text className={SUBTLE} x={(x as number) + 3} y="31" fontSize="4.6" fontWeight="700">
+            {name}
+          </text>
+        </g>
+      ))}
+      <MiniCard x={237.5} y={35} w={43} title="Pricing page" stripe={SKY} />
+      <MiniCard x={237.5} y={49} w={43} title="Beta invites" stripe={SKY} />
+      <g className="fa-b-late">
+        <MiniCard x={183.5} y={35} w={45} title="Press kit" stripe={SKY} />
+        <MiniCard x={183.5} y={49} w={45} title="Launch email" stripe={SKY} />
+        <MiniCard x={183.5} y={63} w={45} title="Status page" stripe={SKY} />
+      </g>
+    </MiniWindow>
+  );
+}
+
+/** A new Dashboard tab, laid out in slots: two figures, then cards by person and a Throughput chart. */
+function McpDashboard() {
+  return (
+    <MiniWindow x={176} y={8} w={112} h={80} title="Sprint Overview">
+      <g className="fa-b-late">
+        {[
+          [181, 'Completion', '68%'],
+          [234, 'Due Soon', '4'],
+        ].map(([x, label, value]) => (
+          <g key={label}>
+            <rect
+              className={PANEL}
+              x={x as number}
+              y="23"
+              width="49"
+              height="18"
+              rx="2.5"
+              strokeWidth="0.6"
+            />
+            <text className={SUBTLE} x={(x as number) + 4} y="29" fontSize="4.2" fontWeight="600">
+              {label}
+            </text>
+            <text className={STRONG} x={(x as number) + 4} y="38" fontSize="7.4" fontWeight="700">
+              {value}
+            </text>
+          </g>
+        ))}
+        <rect className={PANEL} x="181" y="44" width="49" height="40" rx="2.5" strokeWidth="0.6" />
+        <text className={SUBTLE} x="185" y="50" fontSize="4.2" fontWeight="600">
+          Cards by Assignee
+        </text>
+        {[
+          ['AK', 30, VIOLET],
+          ['SM', 22, EMERALD],
+          ['JR', 14, '#ec4899'],
+        ].map(([who, w, fill], i) => (
+          <g key={who as string}>
+            <text className={SUBTLE} x="185" y={59 + i * 8} fontSize="3.8" fontWeight="600">
+              {who}
+            </text>
+            <rect
+              x="193"
+              y={56 + i * 8}
+              width={w as number}
+              height="3.6"
+              rx="1.2"
+              fill={fill as string}
+            />
+          </g>
+        ))}
+        <rect className={PANEL} x="234" y="44" width="49" height="40" rx="2.5" strokeWidth="0.6" />
+        <text className={SUBTLE} x="238" y="50" fontSize="4.2" fontWeight="600">
+          Throughput
+        </text>
+        {[7, 9, 6, 10, 8, 4].map((n, i) => (
+          <rect
+            key={i}
+            x={239 + i * 7}
+            y={80 - n * 2.2}
+            width="5"
+            height={n * 2.2}
+            rx="0.8"
+            fill="#3b82f6"
+            fillOpacity={i === 5 ? 0.4 : 1}
+          />
+        ))}
+      </g>
+    </MiniWindow>
+  );
+}
+
+/** A new rule on the Automations tab: When a card is created, If its type is Bug, Then assign it in turn. */
+function McpRule() {
+  const steps = [
+    ['WHEN', 'Card Created', '#f59e0b'],
+    ['IF', 'Card Type is Bug', '#0ea5e9'],
+    ['THEN', 'Assign in Turn', EMERALD],
+  ];
+  return (
+    <MiniWindow x={176} y={8} w={112} h={80} title="Automations">
+      <text className={STRONG} x="182" y="27" fontSize="5.2" fontWeight="700">
+        Triage New Bugs
+      </text>
+      <g className="fa-b-late">
+        {steps.map(([kind, label, colour], i) => (
+          <g key={kind}>
+            <rect
+              className={PANEL}
+              x="182"
+              y={32 + i * 17}
+              width="100"
+              height="14"
+              rx="2.5"
+              strokeWidth="0.6"
+            />
+            <circle cx="189" cy={39 + i * 17} r="3" fill={colour} fillOpacity="0.9" />
+            <text
+              className={SUBTLE}
+              x="195"
+              y={37.4 + i * 17}
+              fontSize="3.4"
+              fontWeight="700"
+              letterSpacing="0.3"
+            >
+              {kind}
+            </text>
+            <text className={STRONG} x="195" y={43 + i * 17} fontSize="4.8" fontWeight="600">
+              {label}
+            </text>
+          </g>
+        ))}
+      </g>
+    </MiniWindow>
   );
 }

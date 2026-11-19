@@ -434,6 +434,13 @@ export function ScheduleArt() {
 }
 
 /** People in turn: each new card goes to the next person on triage, so the work is shared out evenly. */
+// The new bugs the rule shares out, one each.
+const BUGS = [
+  { title: 'Login fails', id: 'BUG-31' },
+  { title: 'Slow search', id: 'BUG-32' },
+  { title: 'Broken link', id: 'BUG-33' },
+];
+
 export function AssignTurnArt() {
   const people = [
     { color: ALEX, initials: 'AK' },
@@ -465,30 +472,30 @@ export function AssignTurnArt() {
             <g className="fa-a-pop" style={at(0.2 + i * 0.5)}>
               <Panel x={x} y={30} w={48} h={36} />
               <rect
-                x={x + 6}
-                y={36}
-                width="10"
-                height="4"
-                rx="1.5"
+                x={x + 5}
+                y={35}
+                width="13"
+                height="6"
+                rx="3"
                 fill="#ef4444"
-                fillOpacity="0.8"
+                fillOpacity="0.15"
               />
-              <rect
-                className="fill-slate-300 dark:fill-slate-600"
-                x={x + 6}
-                y={45}
-                width="30"
-                height="3"
-                rx="1.5"
-              />
-              <rect
-                className="fill-slate-200 dark:fill-slate-700"
-                x={x + 6}
-                y={51}
-                width="20"
-                height="3"
-                rx="1.5"
-              />
+              <text
+                x={x + 11.5}
+                y={39.4}
+                fontSize="4.2"
+                fontWeight="700"
+                textAnchor="middle"
+                fill="#dc2626"
+              >
+                Bug
+              </text>
+              <text className={TEXT} x={x + 5} y={49} fontSize="5.4" fontWeight="600">
+                {BUGS[i]!.title}
+              </text>
+              <text className={MUTED} x={x + 5} y={56} fontSize="4.4">
+                {BUGS[i]!.id}
+              </text>
             </g>
             <g className="fa-a-move" style={from(0, -16, 0.5 + i * 0.5)}>
               <Avatar cx={x + 40} cy={58} r={5.5} color={p.color} initials={p.initials} />

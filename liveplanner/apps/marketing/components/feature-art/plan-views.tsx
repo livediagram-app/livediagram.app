@@ -228,7 +228,7 @@ export function BoardWidgetsArt() {
         WIP alerts
       </text>
       <text className={MUTED} x={171} y={26} fontSize="5.2" fontWeight="500" fill="#64748b">
-        Doing is over
+        In Progress
       </text>
       <rect className={SURFACE} x="224" y="6" width="64" height="30" rx="4" strokeWidth="0.8" />
       <circle cx="234" cy="18.5" r="2.4" fill={TEAMMATE} />

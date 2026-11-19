@@ -70,6 +70,36 @@ Who may connect:
 The index checks every one of these itself when the connection is made, from the person's token and the host's
 grant, never from what the editor says it may do.
 
+## A file made beside it
+
+A template can offer a fitting file in another app to sit beside what it makes: livedocuments' Design Doc and Status
+Report offer a liveplanner plan, since a design and a status report both describe work that a plan tracks (Work
+Tracker 1281). An offer is only ever a choice: nothing is made in another app until the person presses it.
+
+- **Where.** While the item holds a tab made from a template with an offer, its Connect File list shows one more row
+  under the role and both-ways switches, under a **Suggested** heading, above Find a file: **Make a plan beside it**,
+  the target app's logo on a tile with a small plus, and the line "New liveplanner Project Planner, connected to this
+  <host kind>". It shows only while none of the item's tabs is connected to that app: one plan beside it is enough,
+  and Connect File still lists any other. The rest of the list is unchanged.
+- **Pressed**, one request makes the file and connects it (`POST /items/:id/beside`): the index makes a new item of
+  the person's own through the target app's template door ([kits.md](kits.md) "The apps' door"), named
+  "<host title> Plan" (capped as any title), from the offered template, in the host's folder when the host is the
+  person's own in their My Work, else at the top of their My Work. It then connects that item to the host as
+  Connecting does, at the role chosen above and both ways when the switch is on. The host's tab goes in and becomes
+  the open tab, as for any connection. The row shows "Making" while it runs, and the rest of the list waits.
+- **Who may.** As for connecting (Editor on the host, both ways only for who manages it), signed in: a guest cannot
+  keep the file it would make. The person owns the new item, so they may always make its pass.
+- **When it fails.** Nothing is made when the template door fails, and the row says "The plan could not be made just
+  now. Try again." When the connection is refused (the host's or the plan's limits), the plan just made is deleted
+  for good (an empty starter, made a moment ago) and the row says why, as a file's row does. When the host's tab add
+  fails afterwards, the connection is taken back as for any connect, and the plan stays in the person's My Work.
+- **Limits.** Each press makes an item, so it counts against the same per-person limit as starting a kit
+  (`KIT_RUN_LIMITER`, 10 a minute, kits.md "Limits").
+- **The catalogue.** The offers are data in `packages/index-client` (`BESIDE_OFFERS`), read by the editors (to show
+  the row) and by the index (to make the file), and the index makes only these: today one, `plan`, liveplanner's
+  `project-planner` named "Plan". A test in liveplanner checks the template exists, as for kits' parts.
+- **Telemetry.** It is a connection: `Tab·Added·Connected` or `Tab·Added·ConnectedBoth`, as Connecting counts it.
+
 A connection stands once its tab is in the host. The host app tells the index when it has put the tab in (it
 **confirms** the connection), and the index's reverse write confirms the reverse once the target app answers. When the
 editor's add fails after the index made the connection, the editor takes it back at once, and its pass goes with it.

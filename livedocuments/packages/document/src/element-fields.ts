@@ -85,6 +85,7 @@ export const ELEMENT_FIELD_NAMES = {
     'lineCategories',
     'lineSeries',
     'chartSheetSource',
+    'chartSheetPending',
     'legendItems',
     'sankeyFlows',
     'mapRegion',

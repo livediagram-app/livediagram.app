@@ -269,3 +269,29 @@ export function stillKeysOf(member: CastMember): StillKey[] {
 
 // The cheer's three heights (Avatar mode's hop, arms up): on the ground, rising and at the top.
 export const CHEER_LIFTS = [0, 12, 20] as const;
+
+// ── The Space's host ──────────────────────────────────────────────────────────────────────────────────────────────
+
+// The Receptionist (docs/specs/008-canvas/receptionist.md "Where he is"), as the editor draws him
+// (apps/editor/lib/receptionist/receptionist-look.ts): a man in a waistcoat with curly dark brown hair and an amber
+// shirt, his name chip The Receptionist in amber. Not in any scene: the cards that show him draw him from his own
+// sheet (lib/hero-space-room.test.tsx writes it), standing and waving.
+export const RECEPTIONIST: CastMember = {
+  name: 'Receptionist',
+  colour: '#f59e0b',
+  config: {
+    gender: 'male',
+    clothing: 'vest',
+    hair: 'curly',
+    size: 'regular',
+    hairColour: 'dark-brown',
+  },
+  from: { x: 0, y: 0 },
+  start: 0,
+  path: [],
+  rest: 'down',
+  reaction: { kind: 'wave', at: 0 },
+};
+
+/** The Receptionist's sprite sheet: his stand and his wave. */
+export const RECEPTIONIST_SHEET = '/hero/receptionist-cast.svg';

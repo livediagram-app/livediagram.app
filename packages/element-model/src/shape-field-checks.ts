@@ -193,6 +193,8 @@ export const CHART_LOOK_CHECKS: readonly FieldCheck[] = [
     valid: (v) => isChartPaletteId(v as string),
     rule: oneOfRule(CHART_PALETTE_IDS_RULE),
   },
+  // A chart meant to come from a sheet, not linked yet (pie-chart.md "Not linked yet").
+  flag('chartSheetPending'),
   {
     field: 'embedProvider',
     valid: (v) => (EMBED_PROVIDERS as readonly unknown[]).includes(v),

@@ -3,7 +3,7 @@
 // source `template`. Every kit part of liveplanner names a template this file builds, so a renamed or retired template
 // fails here, never in a person's run.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { kitPartsOf } from '@liveworkspace/index-client';
+import { BESIDE_OFFERS, kitPartsOf } from '@liveworkspace/index-client';
 import { parseProjectEnvelope } from '@liveplanner/project';
 
 // The index as the owner reaches it with this app's key: the items it is asked to make.
@@ -74,6 +74,16 @@ describe('the template file', () => {
       expect(tabs[0]!.templateChosen, part.template).toBe(true);
       expect(file!.length, part.template).toBeGreaterThan(1500);
       expect(readProjectFile(file!).ok, part.template).toBe(true);
+    }
+  });
+
+  it('builds every template a file made beside an item asks of liveplanner (Work Tracker 1281)', () => {
+    const offers = Object.values(BESIDE_OFFERS).filter((offer) => offer.app === 'liveplanner');
+    expect(offers.length).toBeGreaterThan(0);
+    for (const offer of offers) {
+      const file = templateProjectFile(offer.template, `Offline Sync ${offer.name}`);
+      expect(file, offer.template).not.toBeNull();
+      expect(readProjectFile(file!).ok, offer.template).toBe(true);
     }
   });
 

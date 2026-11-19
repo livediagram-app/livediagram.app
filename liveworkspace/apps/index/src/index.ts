@@ -11,6 +11,7 @@ import { callerOf } from './auth';
 import { sendDriveSignals, type DriveTouched } from './drive';
 import { API_PATH, JWKS_MAX_AGE_S } from './config';
 import { sweepUnconfirmedConnections } from './connection-doors';
+import { makeBeside } from './beside';
 import { handleConnection, makeConnection } from './connections';
 import type { PersonContext, RouteContext } from './context';
 import { indexEnabled, type Env } from './env';
@@ -104,6 +105,10 @@ async function route(ctx: RouteContext): Promise<Response> {
     if (segments[2] === 'connections') {
       return segments.length === 3 ? makeConnection(ctx, id) : notFound();
     }
+    // A file made beside the item from a template's offer, then connected (beside.ts).
+    if (segments[2] === 'beside') {
+      return segments.length === 3 ? makeBeside(ctx, id) : notFound();
+    }
     // A chart's range read on the person's own access, and the plan's Sheets for its picker (sheet-sources.ts).
     if (segments[2] === 'sheets' && segments.length === 3) return handleSheetList(ctx, id);
     if (segments[2] === 'sheet-range' && segments.length === 3) return handleSheetRange(ctx, id);
@@ -184,6 +189,7 @@ const routeLabel = createApiRouteLabel(
     'card-moves',
     'automation-sends',
     'connections',
+    'beside',
     'sheets',
     'sheet-range',
     'sheet-changed',

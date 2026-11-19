@@ -39,3 +39,23 @@ describe('counts on the comparisons', () => {
     for (const n of counts) expect(n).toBe(offered);
   });
 });
+
+// Claims the comparisons once made that left livehuddle: comments, mentions and assigned actions went on
+// 2026-11-11 (docs/specs/002-project-scope/not-in-livehuddle.md "Comments, actions, links and notes"), the
+// facilitator baton no longer runs a clock ("The Session strip's Timer"), and an avatar's Reactions burst on
+// your own screen only (docs/specs/008-canvas/avatar-mode.md), so no page says the room sees them.
+describe('the comparisons offer nothing that left livehuddle', () => {
+  const GONE = [
+    /\bcomments?\b/i,
+    /\bmentions?\b/i,
+    /assigned actions?/i,
+    /baton/i,
+    /(?:everyone|whole (?:hall|room)) can throw/i,
+  ];
+  it.each(COMPARISONS.alternatives.map((a) => [a.slug, JSON.stringify(a)] as const))(
+    '%s',
+    (_slug, text) => {
+      expect(GONE.filter((p) => p.test(text)).map(String)).toEqual([]);
+    },
+  );
+});

@@ -12,7 +12,8 @@ export * from './feature-art/canvas';
 export * from './feature-art/together';
 export * from './feature-art/sharing';
 export * from './feature-art/foundations';
-export * from '@liveworkspace/marketing-site/components/feature-art/features';
+// Undo and redo, on this product's own surface.
+export * from './feature-art/undo';
 export * from './feature-art/reach';
 export * from './feature-art/versatility-more';
 // Pages (docs/specs/007-editor/pages-mode.md): pages, backgrounds, export.
@@ -23,5 +24,10 @@ export * from './feature-art/pages-more';
 export * from './feature-art/logo';
 export * from './feature-art/logo-more';
 export * from './feature-art/prototype';
+export * from './feature-art/wireframe-more';
 // Photo pages (docs/specs/031-photo/photo-pages.md).
 export * from './feature-art/photo';
+export * from './feature-art/photo-sizes';
+// Keeping and handing over the work, and what travels between apps.
+export * from './feature-art/history';
+export * from './feature-art/library';

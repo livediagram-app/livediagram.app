@@ -9,7 +9,7 @@ import {
   TEXT_MUTED,
   TEXT_STRONG,
 } from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
-import { Frame, VIOLET } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import { Frame, SKY, VIOLET } from '@liveworkspace/marketing-site/components/feature-art/shared';
 
 /** A page as the canvas shows it: a white sheet with a soft shadow. */
 function Sheet({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
@@ -111,10 +111,65 @@ export function ContentsSidebarArt() {
             3
           </text>
         </g>
-        <g transform="translate(196 8)" opacity="0.6">
+        {/* The next page along, Checkout: its order lines, the total and the pay button. */}
+        <g transform="translate(196 8)">
           <Sheet x={0} y={0} w={64} h={82} />
           <text className={TEXT_STRONG} x="7" y="13" fontSize="6.4" fontWeight="800">
             Checkout
+          </text>
+          {[0, 1, 2].map((r) => (
+            <g key={r}>
+              <rect
+                className="fill-slate-100 stroke-slate-200 dark:fill-slate-700 dark:stroke-slate-600"
+                x="7"
+                y={20 + r * 11}
+                width="8"
+                height="8"
+                rx="1"
+                strokeWidth="0.5"
+              />
+              <rect
+                className="fill-slate-200 dark:fill-slate-600"
+                x="18"
+                y={21.5 + r * 11}
+                width={[24, 18, 21][r]}
+                height="2"
+                rx="1"
+              />
+              <rect
+                className="fill-slate-200 dark:fill-slate-600"
+                x="49"
+                y={21.5 + r * 11}
+                width="8"
+                height="2"
+                rx="1"
+              />
+            </g>
+          ))}
+          <path
+            className="stroke-slate-200 dark:stroke-slate-600"
+            d="M7 54.5H57"
+            strokeWidth="0.6"
+          />
+          <rect
+            className="fill-slate-300 dark:fill-slate-500"
+            x="7"
+            y="58"
+            width="16"
+            height="2.4"
+            rx="1.2"
+          />
+          <rect
+            className="fill-slate-300 dark:fill-slate-500"
+            x="45"
+            y="58"
+            width="12"
+            height="2.4"
+            rx="1.2"
+          />
+          <rect x="7" y="64" width="50" height="7" rx="3.5" fill={SKY} />
+          <text className={TEXT_MUTED} x="32" y="77" fontSize="4.6" textAnchor="middle">
+            4
           </text>
         </g>
         <rect

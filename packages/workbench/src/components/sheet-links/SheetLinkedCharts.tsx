@@ -46,7 +46,16 @@ export type SheetLinks = {
   openLink: (elementId: string) => void;
   update: (source: ChartSheetSource) => void;
   unlink: (elementId: string) => void;
+  // A chart not linked yet: its sample numbers kept as its own, the mark dropped (pie-chart.md "Not linked yet").
+  keepNumbers: (elementId: string) => void;
 };
+
+// The chart with its not-linked-yet mark dropped, or the same chart when it has none.
+function withoutPending<E extends SheetLinkElement>(e: E): E {
+  if (!('chartSheetPending' in e)) return e;
+  const { chartSheetPending: _gone, ...kept } = e as E & SheetChart;
+  return kept as unknown as E;
+}
 
 export const SheetLinksContext = createContext<SheetLinks | null>(null);
 
@@ -109,16 +118,23 @@ export function SheetLinksHost<E extends SheetLinkElement>({
         );
         onTrack('ChartSheetUnlink');
       },
+      keepNumbers: (id) =>
+        commit((els) => els.map((e) => (e.id === id && isChart(e) ? withoutPending(e) : e))),
     }),
     [statusOf, canEdit, update, commit, onTrack],
   );
 
-  // A link made: the read's values and the link in one undo step, and that read kept as the chart's first.
+  // A link made: the read's values and the link in one undo step, and that read kept as the chart's first. A chart not
+  // linked yet loses that mark in the same step.
   const link = (id: string, source: ChartSheetSource, read: SheetRangeRead) => {
     commit((els) =>
       els.map((e) =>
         e.id === id && isChart(e)
-          ? { ...e, ...chartFieldsFromTable(e, read.table), chartSheetSource: source }
+          ? {
+              ...withoutPending(e),
+              ...chartFieldsFromTable(e, read.table),
+              chartSheetSource: source,
+            }
           : e,
       ),
     );

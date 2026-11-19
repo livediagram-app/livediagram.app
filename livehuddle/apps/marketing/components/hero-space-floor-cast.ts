@@ -104,11 +104,11 @@ const WIDE: FloorStage = {
   key: 'wide',
   width: 1600,
   height: 1152,
-  clear: { x: 380, y: 470, width: 840, height: 376 },
+  clear: { x: 380, y: 470, width: 840, height: 366 },
   furniture: [
     // The back of the office, one row standing on y 280: a bookshelf, the jukebox and the arcade machine on the
     // left, the notice board, the ping-pong table and the fireplace in the middle, an office pod, a drinks fridge and
-    // a plant on the right, wholly inside BACK_ROW_SPAN with its players (their bubbles from y 150, chips to 298).
+    // a plant on the right, wholly inside BACK_ROW_SPAN with its players (their bubbles from y 144, feet on 290).
     { kind: 'bookshelf', x: 104, y: 174 },
     { kind: 'jukebox', x: 226, y: 190 },
     { kind: 'arcade-machine', x: 300, y: 190 },
@@ -152,9 +152,9 @@ const WIDE: FloorStage = {
       beats: [
         { stay: 0.5, face: 'right' },
         { stay: 3, face: 'right', say: 'Got a minute?' },
-        { stay: 9.1, face: 'right' },
+        { stay: 9.3, face: 'right' },
         { stay: 3, face: 'down', say: 'Morning, Jo!' },
-        { stay: 1.4, face: 'right' },
+        { stay: 1.2, face: 'right' },
         { stay: 3, face: 'right', say: 'Stand-up in 5' },
         { stay: 10, face: 'right' },
       ],
@@ -180,7 +180,7 @@ const WIDE: FloorStage = {
       colour: '#8b5cf6',
       config: tee('female', 'long', 'suit'),
       holding: 'coffee',
-      from: { x: 290, y: 684 },
+      from: { x: 290, y: 704 },
       beats: [
         { stay: 7.6, face: 'right' },
         { stay: 3, face: 'right', say: 'Coffee?' },
@@ -197,7 +197,7 @@ const WIDE: FloorStage = {
       beats: [
         { stay: 1.9, face: 'up' },
         { to: { x: 355, y: 1072 } },
-        { to: { x: 355, y: 684 } },
+        { to: { x: 355, y: 704 } },
         { stay: 4.3, face: 'left' },
         { stay: 3, face: 'left', say: 'Always ☕' },
         { stay: 3.4, face: 'left' },
@@ -224,7 +224,7 @@ const WIDE: FloorStage = {
       name: 'Noor',
       colour: '#6366f1',
       config: tee('female', 'bun', 'varsity'),
-      from: { x: 700, y: 276 },
+      from: { x: 700, y: 290 },
       lean: 'left',
       beats: [
         { stay: 2, face: 'right' },
@@ -238,7 +238,7 @@ const WIDE: FloorStage = {
       name: 'Ravi',
       colour: '#f97316',
       config: tee('male', 'buzz', 'turtleneck'),
-      from: { x: 900, y: 276 },
+      from: { x: 900, y: 290 },
       lean: 'right',
       beats: [
         { stay: 6, face: 'left' },
@@ -285,11 +285,11 @@ const WIDE: FloorStage = {
       from: { x: 1220, y: 1052 },
       beats: [
         { stay: 4, face: 'left' },
-        { to: { x: 1220, y: 1128 } },
-        { to: { x: 800, y: 1128 } },
+        { to: { x: 1220, y: 1148 } },
+        { to: { x: 800, y: 1148 } },
         { stay: 3, face: 'down', say: 'Morning all!', wave: true },
         { stay: 3, face: 'up' },
-        { to: { x: 1220, y: 1128 } },
+        { to: { x: 1220, y: 1148 } },
         { to: { x: 1220, y: 1052 } },
         { stay: 2, face: 'left' },
       ],
@@ -343,12 +343,12 @@ const PHONE: FloorStage = {
       name: 'Jo',
       colour: '#ef4444',
       config: tee('female', 'afro', 'stripes'),
-      from: { x: 480, y: 274 },
+      from: { x: 480, y: 294 },
       beats: [
         { stay: 5, face: 'left' },
-        { to: { x: 320, y: 274 } },
+        { to: { x: 320, y: 294 } },
         { stay: 3, face: 'down', say: 'Morning all!', wave: true },
-        { to: { x: 480, y: 274 } },
+        { to: { x: 480, y: 294 } },
         { stay: 2, face: 'left' },
       ],
     },

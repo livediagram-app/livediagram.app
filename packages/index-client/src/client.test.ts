@@ -206,12 +206,15 @@ describe('createIndexClient connected tabs', () => {
     await client.makeConnection('h/1', { targetId: 't1', tabId: 'tab1', both: true }, 'g1');
     await client.openConnection('cn_abc', 'g2');
     await client.takeBackConnection('cn_abc', 'g3');
+    await client.makeBeside('h/1', { offer: 'plan', tabId: 'tab2' }, 'g4');
     expect(seen.map((s) => `${s.method} ${s.url}`)).toEqual([
       'POST /api/index/items/h%2F1/connections',
       'GET /api/index/connections/cn_abc',
       'DELETE /api/index/connections/cn_abc',
+      'POST /api/index/items/h%2F1/beside',
     ]);
-    expect(seen.map((s) => s.headers.get('X-Index-Grant'))).toEqual(['g1', 'g2', 'g3']);
+    expect(seen.map((s) => s.headers.get('X-Index-Grant'))).toEqual(['g1', 'g2', 'g3', 'g4']);
+    expect(seen[3]!.body).toEqual({ offer: 'plan', tabId: 'tab2' });
     expect(seen[0]!.headers.get('Authorization')).toBe('Bearer tok');
     expect(seen[0]!.body).toEqual({ targetId: 't1', tabId: 'tab1', both: true });
   });

@@ -121,6 +121,14 @@ describe('the written templates with charts', () => {
     expect(chart.y - before.y).toBe(nowPages[2]!.rect.y + 300 - was.y);
   });
 
+  it("lands Status Report's spend as a chart not linked to a sheet yet, and the others as plain charts", () => {
+    const pending = (kind: 'status-report' | 'research-report' | 'case-study') =>
+      (tabOf(kind).elements[0] as { chartSheetPending?: boolean }).chartSheetPending;
+    expect(pending('status-report')).toBe(true);
+    expect(pending('research-report')).toBeUndefined();
+    expect(pending('case-study')).toBeUndefined();
+  });
+
   it('leave the other written templates without elements', () => {
     expect(buildTemplate('design-doc', 0, 0)).toEqual([]);
     expect(buildTemplate('meeting-notes', 0, 0)).toEqual([]);

@@ -22,7 +22,7 @@ export const COLUMNS: Column[] = [
     ],
   },
   {
-    name: 'To do',
+    name: 'To Do',
     cards: [
       {
         title: 'Pricing page',
@@ -45,7 +45,7 @@ export const COLUMNS: Column[] = [
     ],
   },
   {
-    name: 'In progress',
+    name: 'In Progress',
     wip: 3,
     cards: [
       {
@@ -105,7 +105,7 @@ export const MOVES = [
   { from: 1, to: 2, who: YOU, name: 'TM' },
 ] as const;
 
-// Typed into To do's quick add; `@sam` and `#docs` become the assignee and a label.
+// Typed into To Do's quick add; `@sam` and `#docs` become the assignee and a label.
 export const QUICK_TITLE = 'Release notes';
 export const QUICK_TYPED = `${QUICK_TITLE} @sam #docs`;
 export const QUICK: CardDef = {

@@ -105,7 +105,7 @@ export function PhotoLayersArt() {
         </Page>
         <Panel x={156} y={8} w={110} h={80} title="Layers">
           {layers.map((layer, i) => {
-            const y = 17 + i * 21;
+            const y = 21 + i * 20;
             return (
               <g
                 key={layer.name}
@@ -169,9 +169,9 @@ export function PhotoAdjustArt() {
   const tiles = [
     { name: 'Levels', tone: SKY },
     { name: 'Curves', tone: VIOLET },
-    { name: 'Hue/Sat', tone: ROSE },
-    { name: 'Warmth', tone: AMBER },
-    { name: 'B & W', tone: '#475569', active: true },
+    { name: 'Exposure', tone: ROSE },
+    { name: 'Photo Filter', tone: AMBER },
+    { name: 'Black & White', tone: '#475569', active: true },
     { name: 'Vibrance', tone: EMERALD },
   ];
   return (
@@ -236,23 +236,58 @@ export function PhotoAdjustArt() {
 
 /** Retouch: the tools down the side, the subject selected, a blemish healed away under the brush. */
 export function PhotoRetouchArt() {
-  const tools = [SKY, VIOLET, ROSE, EMERALD, AMBER];
+  // Five of the tool rail's groups in its order (lib/photo-editor/tool-state.ts TOOL_GROUPS): Marquee, Lasso,
+  // Smart Select (Magic Wand), Brush and Heal (Spot Heal, chosen), each drawn in a 9-unit box at its slot.
+  const tools: { name: string; d: string; dashed?: boolean }[] = [
+    { name: 'Marquee', d: 'M1.5 1.5h6v6h-6z', dashed: true },
+    {
+      name: 'Lasso',
+      d: 'M4.5 1.6c2.4 0 3.6 1.1 3.6 2.4s-1.6 2.3-3.6 2.3S1 5.3 1 4s1.1-2.4 3.5-2.4zM3.2 6.2c-.3 1.2.2 1.8 1 2.2',
+    },
+    { name: 'Magic Wand', d: 'M1.4 7.8 5.6 3.6M6.4 1v1.4M7.8 2.4h1.2M6.4 4.2v1.2M8.2 4.6l-.8-.8' },
+    {
+      name: 'Brush',
+      d: 'M8 1 4.4 4.8M3.8 5.4c-1.2 0-2 .8-2 2.1 0 .4-.2.6-.6.8 1.6.4 3.6 0 3.6-1.6z',
+    },
+    {
+      name: 'Spot Heal',
+      d: 'M2.2 5.8 5.8 2.2a1.4 1.4 0 0 1 2 2L4.2 7.8a1.4 1.4 0 0 1-2-2zM4.3 4.4h.01M5 5h.01',
+    },
+  ];
   return (
     <Frame canvas>
       <svg viewBox="0 0 300 96" className="absolute inset-0 h-full w-full">
-        {/* The photo tools, the heal tool chosen. */}
+        {/* The photo tools, Spot Heal chosen. */}
         <Panel x={46} y={14} w={16} h={68}>
-          {tools.map((c, i) => (
-            <rect
-              key={c}
-              x="49.5"
-              y={18 + i * 12.5}
-              width="9"
-              height="9"
-              rx="2"
-              fill={c}
-              fillOpacity={i === 2 ? 0.9 : 0.25}
-            />
+          {tools.map((t, i) => (
+            <g key={t.name}>
+              {i === 4 ? (
+                <rect
+                  className="fill-brand-100 dark:fill-brand-500/25"
+                  x="48.5"
+                  y={17 + i * 12.5}
+                  width="11"
+                  height="11"
+                  rx="2"
+                  fill="#ffe4e6"
+                />
+              ) : null}
+              <path
+                className={
+                  i === 4
+                    ? 'stroke-brand-700 dark:stroke-brand-200'
+                    : 'stroke-slate-500 dark:stroke-slate-400'
+                }
+                transform={`translate(49.5 ${18 + i * 12.5})`}
+                d={t.d}
+                fill="none"
+                stroke="#64748b"
+                strokeWidth="0.8"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeDasharray={t.dashed ? '1.4 1' : undefined}
+              />
+            </g>
           ))}
         </Panel>
         <Page x={74} y={10} w={152} h={76}>
@@ -295,7 +330,7 @@ export function PhotoRetouchArt() {
   );
 }
 
-/** PSD in and out: the photo's export panel set to PSD, the layers listed as kept, and the file it makes. */
+/** PSD in and out: the photo's export panel set to PSD, and the file it makes with its layers kept. */
 export function PhotoPsdArt() {
   return (
     <Frame canvas>
@@ -303,64 +338,100 @@ export function PhotoPsdArt() {
         <Page x={30} y={20} w={78} h={52}>
           <Picture id="pp" x={30} y={20} w={78} h={52} warm />
         </Page>
-        <Panel x={122} y={8} w={96} h={80} title="Export photo">
+        {/* The Export Tab dialog's Photo panel (apps/live PhotoExportPanel): the back bar with its Photo chip,
+            the format cards with PSD chosen, the size it saves at, and Download. */}
+        <Panel x={122} y={8} w={96} h={80} title="Export Tab">
           <rect
-            className="fill-slate-100 dark:fill-slate-800"
+            className="fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-700"
             x="127"
-            y="19"
+            y="20"
             width="86"
-            height="11"
-            rx="3"
+            height="10"
+            rx="2.5"
+            fill="#ffffff"
+            stroke="#e2e8f0"
+            strokeWidth="0.6"
+          />
+          <path
+            className="stroke-slate-400"
+            d="M132.4 23.2 L130.6 25 L132.4 26.8"
+            fill="none"
+            stroke="#94a3b8"
+            strokeWidth="0.7"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <text x="135.5" y="26.6" fontSize="4.2" fontWeight="600" className={INK} fill="#1e293b">
+            All formats
+          </text>
+          <rect
+            className="fill-slate-100 dark:fill-slate-700"
+            x="194"
+            y="22"
+            width="17"
+            height="6"
+            rx="1.5"
             fill="#f1f5f9"
           />
+          <text
+            x="202.5"
+            y="26.3"
+            textAnchor="middle"
+            fontSize="3.8"
+            fontWeight="700"
+            className={INK_SOFT}
+            fill="#64748b"
+          >
+            Photo
+          </text>
+          {['PNG', 'JPEG', 'WebP', 'PSD'].map((f, i) => {
+            const on = i === 3;
+            const fx = 127 + (i % 2) * 44;
+            const fy = 33 + Math.floor(i / 2) * 12;
+            return (
+              <g key={f}>
+                <rect
+                  className={
+                    on
+                      ? 'fill-brand-50 stroke-brand-500 dark:fill-brand-500/15'
+                      : 'fill-white stroke-slate-200 dark:fill-slate-900 dark:stroke-slate-700'
+                  }
+                  x={fx}
+                  y={fy}
+                  width="42"
+                  height="10"
+                  rx="2"
+                  fill={on ? '#fff1f2' : '#ffffff'}
+                  stroke={on ? '#f43f5e' : '#e2e8f0'}
+                  strokeWidth="0.7"
+                />
+                <text
+                  x={fx + 4}
+                  y={fy + 6.6}
+                  fontSize="4.4"
+                  fontWeight="700"
+                  className={INK}
+                  fill="#1e293b"
+                >
+                  {f}
+                </text>
+              </g>
+            );
+          })}
+          <text x="127" y="65" fontSize="3.8" className={INK_SOFT} fill="#64748b">
+            1600 x 1200 px, at its pixel size.
+          </text>
           <rect
-            className="fill-white dark:fill-slate-700"
-            x="190"
-            y="20"
-            width="22"
-            height="9"
-            rx="2.4"
-            fill="#ffffff"
+            className="fill-brand-700 dark:fill-brand-600"
+            x="181"
+            y="70"
+            width="32"
+            height="11"
+            rx="3"
+            fill="#be123c"
           />
-          {['PNG', 'JPEG', 'WebP', 'PSD'].map((f, i) => (
-            <text
-              key={f}
-              x={137.5 + i * 21.5}
-              y={26.2}
-              textAnchor="middle"
-              fontSize="4.2"
-              fontWeight="700"
-              className={i === 3 ? INK : INK_SOFT}
-              fill={i === 3 ? '#1e293b' : '#64748b'}
-            >
-              {f}
-            </text>
-          ))}
-          {[
-            ['Layers', 'Kept, 4'],
-            ['Masks', 'Kept'],
-            ['Blend modes', 'Kept'],
-          ].map(([k, v], i) => (
-            <g key={k}>
-              <text x="127" y={41 + i * 9} fontSize="4.4" className={INK_SOFT} fill="#64748b">
-                {k}
-              </text>
-              <text
-                x="213"
-                y={41 + i * 9}
-                textAnchor="end"
-                fontSize="4.4"
-                fontWeight="600"
-                className={INK}
-                fill="#1e293b"
-              >
-                {v}
-              </text>
-            </g>
-          ))}
-          <rect x="127" y="69" width="86" height="12" rx="3" fill={SKY} />
-          <text x="170" y="76.8" textAnchor="middle" fontSize="4.8" fontWeight="700" fill="#ffffff">
-            Export PSD
+          <text x="197" y="77.3" textAnchor="middle" fontSize="4.6" fontWeight="700" fill="#ffffff">
+            Download
           </text>
         </Panel>
         {/* The file it makes. */}

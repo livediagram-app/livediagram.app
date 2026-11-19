@@ -10,7 +10,7 @@ import {
 } from './intake-card';
 import { codeOfRecipient, isIntakeCode, newIntakeCode, senderHash } from './intake-code';
 import { readDirectoryEntry, writeDirectoryEntry } from './intake-directory';
-import { attachPictures } from './intake-pictures';
+import { attachPictures, attachableType } from './intake-pictures';
 
 const auth = vi.hoisted(() => ({
   credentials: { accountsUrl: 'https://a.test', clientId: 'c', clientSecret: 's' } as unknown,
@@ -56,7 +56,7 @@ describe('intake-code', () => {
 
 describe('intake-card', () => {
   const dropped: DroppedAttachment[] = [
-    { name: 'report.pdf', size: 2_200_000, reason: 'not_picture' },
+    { name: 'notes.docx', size: 2_200_000, reason: 'not_attachable' },
     { name: 'big.png', size: 14 * 1024 * 1024, reason: 'too_big' },
     { name: 'x.png', size: 10, reason: 'too_many' },
     { name: 'y.png', size: 10, reason: 'not_saved' },
@@ -73,7 +73,7 @@ describe('intake-card', () => {
   it('lists what was dropped, and keeps that line whole when the text is cut', () => {
     expect(droppedLine([])).toBe('');
     expect(droppedLine(dropped)).toBe(
-      "Not attached: report.pdf (2.1 MB, not a picture), big.png (14 MB, over 10 MB), x.png (1 KB, over 20 attachments), y.png (1 KB, couldn't be saved).",
+      "Not attached: notes.docx (2.1 MB, not a picture or PDF), big.png (14 MB, over 10 MB), x.png (1 KB, over 20 attachments), y.png (1 KB, couldn't be saved).",
     );
     const long = descriptionOf('w'.repeat(ITEM_DESCRIPTION_MAX), dropped);
     expect(long.length).toBe(ITEM_DESCRIPTION_MAX);
@@ -216,6 +216,64 @@ describe('intake-pictures', () => {
       'not_saved',
       'not_saved',
       'too_many',
+    ]);
+    vi.unstubAllGlobals();
+  });
+
+  const PDF = new TextEncoder().encode('%PDF-1.7\n1 0 obj << >> endobj\n%%EOF');
+
+  it('reads a PDF by its %PDF- bytes alone, never its name or declared type', () => {
+    expect(attachableType({ name: 'q.pdf', type: 'application/pdf', bytes: PDF })).toBe(
+      'application/pdf',
+    );
+    // A PDF whatever its mail app called it.
+    expect(attachableType({ name: 'scan', type: 'application/octet-stream', bytes: PDF })).toBe(
+      'application/pdf',
+    );
+    expect(attachableType({ name: 'q.bin', type: 'text/html', bytes: PDF })).toBe(
+      'application/pdf',
+    );
+    // Named and declared a PDF, but not one: HTML, a Word file, %PDF- after a leading byte.
+    const html = new TextEncoder().encode('<html><script>x</script></html>');
+    expect(attachableType({ name: 'q.pdf', type: 'application/pdf', bytes: html })).toBeNull();
+    const docx = new TextEncoder().encode('PK\u0003\u0004 word');
+    expect(attachableType({ name: 'q.pdf', type: 'application/pdf', bytes: docx })).toBeNull();
+    const late = new TextEncoder().encode(' %PDF-1.7');
+    expect(attachableType({ name: 'q.pdf', type: 'application/pdf', bytes: late })).toBeNull();
+    // A picture goes by its bytes, whatever it was called.
+    expect(attachableType({ name: 'shot.pdf', type: 'application/pdf', bytes: PNG })).toBe(
+      'image/png',
+    );
+  });
+
+  it('uploads an allowed PDF 0 by 0, and drops one over the cap and a refused type', async () => {
+    const sent: Headers[] = [];
+    vi.stubGlobal('fetch', async (_url: string, init: RequestInit) => {
+      sent.push(new Headers(init.headers));
+      return Response.json({ image: { id: `img_${sent.length}` }, deduped: false });
+    });
+    const granted: string[] = [];
+    const big = new Uint8Array(10 * 1024 * 1024 + 1);
+    big.set(PDF);
+    const out = await attachPictures(
+      { MEDIA_KEY: 'k' },
+      plan,
+      [
+        { name: 'Quote.pdf', type: 'application/pdf', bytes: PDF },
+        { name: 'huge.pdf', type: 'application/pdf', bytes: big },
+        { name: 'notes.docx', type: 'application/msword', bytes: new Uint8Array(40) },
+      ],
+      (id) => granted.push(id),
+    );
+    expect(out.attached).toEqual([
+      { id: 'img_1', name: 'Quote.pdf', size: PDF.byteLength, type: 'application/pdf' },
+    ]);
+    expect(granted).toEqual(['img_1']);
+    expect(sent[0]!.get('Content-Type')).toBe('application/pdf');
+    expect(sent[0]!.get('X-Image-Width')).toBe('0');
+    expect(out.dropped).toEqual([
+      { name: 'huge.pdf', size: big.byteLength, reason: 'too_big' },
+      { name: 'notes.docx', size: 40, reason: 'not_attachable' },
     ]);
     vi.unstubAllGlobals();
   });

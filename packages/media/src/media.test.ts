@@ -1,8 +1,10 @@
 import { REGISTERED_APP_SITES } from '@liveworkspace/sites';
 import { describe, expect, it } from 'vitest';
 import {
+  ACCEPTED_FILE_TYPES,
   ACCEPTED_IMAGE_TYPES,
   createMediaClient,
+  isAcceptedFileType,
   isGuestOwner,
   isMediaApp,
   MEDIA_APPS,
@@ -11,6 +13,8 @@ import {
   MEDIA_DOCUMENT_HEADER,
   mediaGuestOwner,
   sniffImageType,
+  sniffMediaType,
+  sniffPdf,
 } from './index';
 
 describe('MEDIA_APPS', () => {
@@ -48,6 +52,27 @@ describe('sniffImageType', () => {
       sniffImageType(new TextEncoder().encode('<svg xmlns="http://www.w3.org/2000/svg">')),
     ).toBe(null);
     expect(sniffImageType(new Uint8Array([0xff, 0xd8, 0xff]))).toBe(null);
+  });
+});
+
+describe('PDFs', () => {
+  const pdf = new TextEncoder().encode('%PDF-1.7\n%\xe2\xe3\n1 0 obj');
+
+  it('accepts a PDF beside the pictures, and nothing else', () => {
+    expect(ACCEPTED_FILE_TYPES).toEqual(['application/pdf']);
+    expect(isAcceptedFileType('application/pdf')).toBe(true);
+    expect(isAcceptedFileType('application/msword')).toBe(false);
+    expect(isAcceptedFileType(undefined)).toBe(false);
+  });
+
+  it('reads a PDF by its %PDF- start alone, never a later one', () => {
+    expect(sniffPdf(pdf)).toBe(true);
+    expect(sniffMediaType(pdf)).toBe('application/pdf');
+    expect(sniffPdf(new TextEncoder().encode('%PDF'))).toBe(false);
+    expect(sniffMediaType(new TextEncoder().encode(' %PDF-1.7 a polyglot'))).toBe(null);
+    expect(sniffMediaType(new Uint8Array([0xff, 0xd8, 0xff, ...Array(16).fill(0)]))).toBe(
+      'image/jpeg',
+    );
   });
 });
 

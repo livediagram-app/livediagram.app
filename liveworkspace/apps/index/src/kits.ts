@@ -126,10 +126,10 @@ async function makePart(
   return null;
 }
 
-// Over KIT_RUN_LIMITER: per person, a Retry counting as a run.
-async function overRunLimit(env: Env, person: Person): Promise<Response | null> {
+// Over KIT_RUN_LIMITER, per person (`key`): a kit run, a Retry counting as one, or a file made beside an item.
+export async function overRunLimit(env: Env, key: string): Promise<Response | null> {
   if (!env.KIT_RUN_LIMITER) return null;
-  const { success } = await env.KIT_RUN_LIMITER.limit({ key: `kit:${person.id}` });
+  const { success } = await env.KIT_RUN_LIMITER.limit({ key });
   if (success) return null;
   console.info('[kits] rate limited');
   return json(
@@ -140,7 +140,7 @@ async function overRunLimit(env: Env, person: Person): Promise<Response | null> 
 
 async function startKit(ctx: PersonContext): Promise<Response> {
   const { env, person } = ctx;
-  const limited = await overRunLimit(env, person);
+  const limited = await overRunLimit(env, `kit:${person.id}`);
   if (limited) return limited;
   const input = readKitStartInput(await readObject(ctx.request));
   if (!input) return badRequest();

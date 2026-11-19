@@ -546,6 +546,31 @@ describe('GET /api/images/{id}', () => {
     expect(room.servesImage).toHaveBeenCalledWith(PLAN, id, null);
   });
 
+  it('serves a PDF an email brought as a sandboxed download, a picture inline', async () => {
+    const pdf = new TextEncoder().encode('%PDF-1.7\nbody');
+    stored.set('pdf-1', {
+      id: 'pdf-1',
+      owner: 'someone',
+      bytes: pdf,
+      contentType: 'application/pdf',
+    });
+    const res = await read('pdf-1', { person: 'bob', grant: grantOf('bob', 'view') });
+    expect(res.status).toBe(200);
+    expect(res.headers.get('Content-Type')).toBe('application/pdf');
+    expect(res.headers.get('Content-Disposition')).toBe('attachment');
+    expect(res.headers.get('Content-Security-Policy')).toBe('sandbox');
+    expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
+    // The same role checks as a picture's: no access, or a plan that doesn't serve it, is 404.
+    expect((await read('pdf-1', { person: 'eve' })).status).toBe(404);
+    serves = false;
+    expect((await read('pdf-1', { person: 'bob', grant: grantOf('bob', 'view') })).status).toBe(
+      404,
+    );
+    serves = true;
+    const picture = await read(await uploaded());
+    expect(picture.headers.get('Content-Disposition')).toBeNull();
+  });
+
   // docs/specs/026-plan/items.md "Who sees the bytes": the plan decides by the tab the grant is confined to.
   it("asks the plan with a tab-scoped grant's tab, and 404s when no card on that tab holds it", async () => {
     const id = await uploaded();

@@ -6,10 +6,11 @@
 // tab add; the editor then moves to the new tab. Times read "Opened 2 minutes ago" against one minute's clock, cleared
 // when the list goes.
 import { useEffect, useState } from 'react';
-import type { ConnectionMade, IndexClient, Item } from '@liveworkspace/index-client';
+import type { BesideOffer, ConnectionMade, IndexClient, Item } from '@liveworkspace/index-client';
 import { indexClient } from '../../lib/index-client';
 import { workbench } from '../../bindings';
-import { connectFile } from './connect-file';
+import { connectFile, makeBeside } from './connect-file';
+import { besideOfferWords } from './connect-words';
 import { ConnectPicker, type ConnectChoice, type ConnectInk } from './ConnectPicker';
 
 // How often "Opened 2 minutes ago" is measured again while the list shows. Safe range: 15 s to 5 minutes.
@@ -45,7 +46,9 @@ export type ConnectFilePanelProps = {
   onConnected: (tabId: string, made: ConnectionMade) => void;
   onGoTo: (tabId: string) => void;
   onOpenExplorer?: () => void;
-  client?: Pick<IndexClient, 'listItems' | 'makeConnection' | 'takeBackConnection'>;
+  // A template's offer (connected-tabs.md "A file made beside it"): Make a plan beside it, shown above Find a file.
+  offer?: BesideOffer;
+  client?: Pick<IndexClient, 'listItems' | 'makeConnection' | 'makeBeside' | 'takeBackConnection'>;
 };
 
 export function ConnectFilePanel({
@@ -60,13 +63,36 @@ export function ConnectFilePanel({
   onConnected,
   onGoTo,
   onOpenExplorer,
+  offer,
   client = indexClient,
 }: ConnectFilePanelProps) {
   const now = useTickingNow();
-  const onConnect = async (item: Item, choice: ConnectChoice) => {
+  const heldGrant = async () => {
     const held = await grant();
     // connectErrorWords' network line: the grant is the index's, so a missing one is the index out of reach.
     if (!held) throw new Error('no grant');
+    return held;
+  };
+  // Make a plan beside it: the index makes the plan and its connection, then the tab goes in as for any connect. It
+  // counts as the connection it is.
+  const makeOffer = async (offer: BesideOffer, choice: ConnectChoice) => {
+    const held = await heldGrant();
+    const tabId = newTabId();
+    const made = await makeBeside({
+      client,
+      hostId,
+      grant: held,
+      tabId,
+      offer: offer.id,
+      level: choice.level,
+      both: choice.both,
+      addTab: (answer) => addTab(answer, tabId),
+    });
+    workbench.track('Tab', 'Added', choice.both ? 'ConnectedBoth' : 'Connected');
+    onConnected(tabId, made);
+  };
+  const onConnect = async (item: Item, choice: ConnectChoice) => {
+    const held = await heldGrant();
     const tabId = newTabId();
     const made = await connectFile({
       client,
@@ -103,6 +129,12 @@ export function ConnectFilePanel({
         onConnect={onConnect}
         onGoTo={onGoTo}
         {...(onOpenExplorer ? { onOpenExplorer } : {})}
+        {...(offer
+          ? {
+              offer: { app: offer.app, ...besideOfferWords(offer, hostKind) },
+              onMakeOffer: (choice: ConnectChoice) => makeOffer(offer, choice),
+            }
+          : {})}
       />
     </section>
   );

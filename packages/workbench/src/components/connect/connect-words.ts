@@ -4,6 +4,7 @@ import {
   IndexError,
   linkLevelOffered,
   type App,
+  type BesideOffer,
   type Item,
   type Level,
 } from '@liveworkspace/index-client';
@@ -73,9 +74,25 @@ export function connectErrorWords(error: unknown, hostKind: string): string {
       return 'Too many tries just now. Wait a moment and try again.';
     case 'not_found':
       return 'This file is no longer there.';
+    // A file made beside it whose app could not make it (connected-tabs.md "A file made beside it").
+    case 'unavailable':
+      return 'The plan could not be made just now. Try again.';
+    case 'sign_in_required':
+      return 'Sign in to make a plan beside it.';
     default:
       return 'Could not connect it. Check your connection and try again.';
   }
+}
+
+/** A template's offer in the Connect list (connected-tabs.md "A file made beside it"): its title and its line. */
+export function besideOfferWords(
+  offer: Pick<BesideOffer, 'app' | 'noun' | 'templateTitle'>,
+  hostKind: string,
+): { title: string; line: string } {
+  return {
+    title: `Make a ${offer.noun} beside it`,
+    line: `New ${appName(offer.app)} ${offer.templateTitle}, connected to this ${hostKind}`,
+  };
 }
 
 /** The screen reader's phrase after a connected tab's name. Pressing the tab opens nothing (its page's Open does,

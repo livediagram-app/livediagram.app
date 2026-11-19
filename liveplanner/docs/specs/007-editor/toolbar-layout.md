@@ -8,20 +8,19 @@ The editor's one panel layout, on every device (see "One layout"). Plan shows **
 ([Plan mode](../026-plan/plan-mode.md#no-palette)), so the editor shows no palette strip and no category bar: the menu
 button keeps the top-left corner, and Undo/Redo, the Plan strip and zoom sit in the bottom-right cluster.
 
-- **Top left: the menu button**, in a card with the tab's name. No mode switch sits there: every tab is in Plan
+- **Top left: the menu button**, in a card of its own (with an element's name while one fills the tab). No mode switch sits there: every tab is in Plan
   ([Editor mode](editor-modes.md)).
 
 ## The tab's name
 
-- On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
-  hairline, as a board's name rides there
-  ([The name rides in the menu box](../026-plan/plan-board.md)). It is the chrome's ink, 14 px at regular weight (never bold), cut short
-  with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
-- While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,
-  so the box never shows two.
-- A click (a tap) on it renames the tab in place, for someone who may change the
-  project's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
-- Every name in the box renames on a single click, whichever it is (the tab's, a board's, a Sheet's, a chart's, a
+- The menu box (the Explorer button, top left) shows no tab name of its own since the header bar went (#1936): the
+  open tab's name is in the tab strip and the window title, and is renamed there (Work Tracker 1289 removed the
+  unused `TabNameInBox`).
+- While a board, Sheet, view or Dashboard fills the tab (or is maximised), its own name rides in the box
+  ([The name rides in the menu box](../026-plan/plan-board.md)): the chrome's ink, 14 px at regular weight (never
+  bold), cut short with an ellipsis past 16rem (`IN_BOX_TITLE_CLASS`, `menu-name-slot.tsx`), a name alone, never an
+  icon beside it.
+- Every name in the box renames on a single click, whichever it is (a board's, a Sheet's, a chart's, a
   Dashboard's): in the box a click has nothing else to do. In an element's own header a press moves the element, so
   there a double-click renames, as before.
 

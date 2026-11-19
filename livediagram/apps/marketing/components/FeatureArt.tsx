@@ -45,3 +45,11 @@ export * from './feature-art/reach';
 // Draw's dock.
 export * from './feature-art/whiteboard-dock';
 export * from './feature-art/whiteboard-fill';
+// BPMN, the C4 model, live service status and diagrams from code on a pull request.
+export * from './feature-art/process';
+// Walkthroughs, Request Approval, History with its snapshots, and the Library.
+export * from './feature-art/keeping';
+export * from './feature-art/library';
+export * from './feature-art/live-code';
+// The Done check, and the Agenda and Decision record that keep the record of a meeting.
+export * from './feature-art/meeting';

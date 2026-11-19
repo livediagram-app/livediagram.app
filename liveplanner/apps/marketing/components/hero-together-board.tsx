@@ -1,22 +1,22 @@
 import { capBandBaselineY } from '@liveworkspace/icons';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
-import { CursorMark } from '@liveworkspace/marketing-site/components/hero-cursor';
 
 // The collaboration scene (docs/specs/019-marketing/marketing-site.md "Feature scenes"): a sprint board
 // (docs/specs/026-plan/plan-board.md) with three people on it at once. The columns and their twelve cards
-// land; Sam arrives on Demo video, outlined in their colour with their name beside it
-// (docs/specs/012-collaboration/), and the card's comment thread opens with their question. Maya picks up
-// Onboarding emails and carries it from In progress to Done, each count ticking over. Last, you reply in
-// the thread, @mentioning Maya, and the card's comment count goes from 1 to 2. Every piece plays at its
-// own --d (hero-mode-animations.css); a phone draws the same board smaller. The board rests with 4 of its
-// 12 cards in Done, as the board bar over it says (PlanBoardBar, "33% done · 4/12").
+// land; Sam opens Demo video, and the card wears their presence as the editor's card face draws it (PlanCardFace,
+// docs/specs/012-collaboration/): a ring in their colour and their first name on a tag hanging from the card's top
+// edge. A Board shows no one's pointer, so neither does the scene: the rings and tags say who is where, and the
+// window's Sprint tab carries everyone's initials (hero-scene-data.ts). The card's comment thread opens with Sam's
+// question. Maya picks up Onboarding emails, which takes her ring and tag, lifts, and carries it from In Progress to
+// Done, each count ticking over. Last, you reply in the thread, @mentioning Maya to trim the intro, and the card's
+// comment count goes from 1 to 2. Every piece plays at its own --d (hero-mode-animations.css); a phone draws the
+// same board smaller. The board rests with 4 of its 12 cards in Done.
 
 // The script, in seconds.
 const T = {
   surface: 0.1,
   heads: 0.3,
   cards: 0.6, // the first card; the rest follow 0.05s apart
-  sam: 1.8,
   ring: 2.5,
   thread: 2.9,
   question: 3.1,
@@ -58,10 +58,11 @@ const P = { who: 'SM', colour: SAM };
 const M = { who: 'MK', colour: TEAMMATE };
 const U = { who: 'TM', colour: YOU };
 
-// The columns as they start; Onboarding emails (In progress, last) is the one Maya carries.
+// The columns as they start, under the editor's default names (@liveplanner/items presets); Onboarding emails
+// (In Progress, last) is the one Maya carries.
 const COLUMNS: { name: string; cards: CardDef[] }[] = [
   {
-    name: 'To do',
+    name: 'To Do',
     cards: [
       { title: 'Pricing page', id: 'TSK-21', tone: '#8b5cf6', ...U },
       { title: 'Release notes', id: 'TSK-24', tone: '#0ea5e9', ...M },
@@ -70,7 +71,7 @@ const COLUMNS: { name: string; cards: CardDef[] }[] = [
     ],
   },
   {
-    name: 'In progress',
+    name: 'In Progress',
     cards: [
       { title: 'Demo video', id: 'TSK-18', tone: '#8b5cf6', ...P },
       { title: 'Status page', id: 'TSK-19', tone: '#0ea5e9', ...U },
@@ -87,7 +88,7 @@ const COLUMNS: { name: string; cards: CardDef[] }[] = [
   },
 ];
 const CARRIED: CardDef = { title: 'Onboarding emails', id: 'TSK-16', tone: '#0ea5e9', ...M };
-// The card the thread is on: In progress's first.
+// The card the thread is on: In Progress's first.
 const THREAD_CARD = { col: 1, slot: 0 } as const;
 
 // A count that ticks over: each value lands at its `from` and gives way at the next one's.
@@ -251,53 +252,56 @@ function Cards() {
   );
 }
 
-// Sam on Demo video: their cursor arrives, and the card wears their colour and name, as a selection does.
-function SamOnCard() {
-  const x = cardX(THREAD_CARD.col);
-  const y = slotY(THREAD_CARD.slot);
+// Someone's presence on a card, as PlanCardFace draws it: a 2px ring in their colour just outside the card's
+// border, and their first name in white on a tag in that colour hanging from the top edge near its right
+// (PresenceTag, `-top-px right-2 rounded-b`).
+const TAG_H = 8.5;
+const TAG_R = 2;
+function Presence({ x, y, name, colour }: { x: number; y: number; name: string; colour: string }) {
+  const w = name.length * 3.9 + 8;
+  const tx = x + CARD_W - 8 - w;
+  const ty = y - 1;
   return (
     <>
-      <g className="hm-fade" style={at(T.ring)}>
-        <rect
-          x={x - 2}
-          y={y - 2}
-          width={CARD_W + 4}
-          height={CARD_H + 4}
-          rx="7.5"
-          fill="none"
-          stroke={SAM}
-          strokeWidth="1.6"
-        />
-        <rect x={x + CARD_W - 30} y={y - 9} width="30" height="11" rx="3" fill={SAM} />
-        <text
-          x={x + CARD_W - 15}
-          y={y - 1}
-          textAnchor="middle"
-          fontFamily={FONT}
-          fontSize="7.5"
-          fontWeight="700"
-          fill="white"
-        >
-          Sam
-        </text>
-      </g>
-      <g
-        className="hm-cursor"
-        style={at(T.sam, {
-          '--sx': '-80px',
-          '--sy': '260px',
-          '--cx': `${x + 60}px`,
-          '--cy': `${y + 18}px`,
-        })}
-        aria-hidden
+      <rect
+        x={x - 1}
+        y={y - 1}
+        width={CARD_W + 2}
+        height={CARD_H + 2}
+        rx="7"
+        fill="none"
+        stroke={colour}
+        strokeWidth="2"
+      />
+      <path
+        d={`M${tx} ${ty}h${w}v${TAG_H - TAG_R}a${TAG_R} ${TAG_R} 0 0 1 -${TAG_R} ${TAG_R}h-${w - 2 * TAG_R}a${TAG_R} ${TAG_R} 0 0 1 -${TAG_R} -${TAG_R}z`}
+        fill={colour}
+      />
+      <text
+        x={tx + w / 2}
+        y={capBandBaselineY(ty + TAG_H / 2, 6.5)}
+        textAnchor="middle"
+        fontFamily={FONT}
+        fontSize="6.5"
+        fontWeight="600"
+        fill="white"
       >
-        <CursorMark colour={SAM} label="Sam" badge="name" />
-      </g>
+        {name}
+      </text>
     </>
   );
 }
 
-// The card's thread, opened under the board below In progress and Done, so it covers no card: Sam's
+// Sam opens Demo video: the card wears their ring and name while they have it open.
+function SamOnCard() {
+  return (
+    <g className="hm-fade" style={at(T.ring)}>
+      <Presence x={cardX(THREAD_CARD.col)} y={slotY(THREAD_CARD.slot)} name="Sam" colour={SAM} />
+    </g>
+  );
+}
+
+// The card's thread, opened under the board below In Progress and Done, so it covers no card: Sam's
 // question, then your reply typed in.
 const THREAD = { x: cardX(1), y: HEAD_Y + WELL_H + 10, w: 2 * COL_W + GAP - 16, h: 104 };
 
@@ -347,7 +351,7 @@ function Thread() {
           <tspan fill={TEAMMATE} fontWeight="600">
             @Maya
           </tspan>{' '}
-          yes, I’ll trim the intro
+          can you trim the intro?
         </text>
       </g>
       <rect
@@ -362,69 +366,42 @@ function Thread() {
       <text x={x + 15} y={y + h - 8.5} fontFamily={FONT} fontSize="6.5" className={MUTED}>
         Reply…
       </text>
+      {/* You click into the reply: its box takes your focus ring before the reply types in above it. */}
+      <rect
+        className="hm-fade"
+        style={at(T.you)}
+        x={x + 10}
+        y={y + h - 16}
+        width={w - 20}
+        height="10"
+        rx="3"
+        fill="none"
+        stroke={YOU}
+        strokeWidth="1"
+      />
     </g>
   );
 }
 
-// Maya carries Onboarding emails from In progress to Done, ringed in her colour while she holds it.
+// Maya picks up Onboarding emails: it takes her ring and name, lifts and tilts as a held card does (hp-lift,
+// app/hero-scenes/plan.css), and lands in Done, where she lets it go and her presence leaves it.
 function Carried() {
   const from = { c: 1, s: 3 };
   const dx = colX(2) - colX(1);
   const x = cardX(from.c);
   const y = slotY(from.s);
   return (
-    <>
-      <g className="hm-pop" style={at(T.cards + 10 * 0.05)}>
-        <g className="hm-move" style={at(T.carry, { '--dx': `${dx}px`, '--dy': '0px' })}>
+    <g className="hm-pop" style={at(T.cards + 10 * 0.05)}>
+      <g className="hm-move" style={at(T.carry, { '--dx': `${dx}px`, '--dy': '0px' })}>
+        <g className="hp-lift" style={at(T.carry - 0.2)}>
           <Card x={x} y={y} card={CARRIED} />
-          <g className="hm-out" style={at(T.done)}>
-            <rect
-              className="hm-fade"
-              style={at(T.maya + 0.6)}
-              x={x - 2}
-              y={y - 2}
-              width={CARD_W + 4}
-              height={CARD_H + 4}
-              rx="7.5"
-              fill="none"
-              stroke={TEAMMATE}
-              strokeWidth="1.6"
-            />
+          <g className="hm-out" style={at(T.done + 0.15)}>
+            <g className="hm-fade" style={at(T.maya + 0.4)}>
+              <Presence x={x} y={y} name="Maya" colour={TEAMMATE} />
+            </g>
           </g>
         </g>
       </g>
-      <g
-        className="hm-cursor"
-        style={at(T.maya, {
-          '--sx': '200px',
-          '--sy': '320px',
-          '--cx': `${x + 120}px`,
-          '--cy': `${y + 20}px`,
-        })}
-        aria-hidden
-      >
-        <g className="hm-move" style={at(T.carry, { '--dx': `${dx}px`, '--dy': '0px' })}>
-          <CursorMark colour={TEAMMATE} label="Maya" badge="wide-name" />
-        </g>
-      </g>
-    </>
-  );
-}
-
-// Your cursor comes to the thread's reply.
-function You() {
-  return (
-    <g
-      className="hm-cursor"
-      style={at(T.you, {
-        '--sx': '640px',
-        '--sy': '300px',
-        '--cx': `${THREAD.x + 150}px`,
-        '--cy': `${THREAD.y + 84}px`,
-      })}
-      aria-hidden
-    >
-      <CursorMark colour={YOU} label="You" badge="name" />
     </g>
   );
 }
@@ -447,7 +424,6 @@ function Board() {
         <Carried />
         <SamOnCard />
         <Thread />
-        <You />
       </g>
     </>
   );

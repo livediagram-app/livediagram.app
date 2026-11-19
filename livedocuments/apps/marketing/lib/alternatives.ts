@@ -4,7 +4,7 @@ import { SITE_URL } from '@livedocuments/ui';
 // livedocuments' comparisons, drawn by @liveworkspace/comparisons (packages/comparisons/README.md
 // "livedocuments"). The hub, every page, their metadata and the sitemap read this list, so adding a
 // competitor is a one-place change. Bump the date with any change to them.
-const UPDATED = new Date('2026-10-18');
+const UPDATED = new Date('2026-11-18');
 
 const LIST: Alternative[] = [
   {
@@ -32,8 +32,18 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Presenting',
-        us: 'Presenter notes, per-slide time budgets, transitions, auto-advance and loop, laser and spotlight',
+        us: 'Click-by-click builds, presenter notes, per-slide time budgets, transitions, auto-advance and loop, laser and spotlight',
         them: 'Speaker notes, presenter view, audience Q&A, animations and transitions',
+      },
+      {
+        label: 'Rehearsing',
+        us: 'Flashcards to speak from, each with how long it takes to say',
+        them: 'Speaker notes and a timer in presenter view',
+      },
+      {
+        label: 'Review and history',
+        us: 'Version history per tab, whole-document snapshots and Request Approval, free',
+        them: 'Version history with named versions; Drive approvals on some Workspace plans',
       },
       {
         label: 'Export',
@@ -48,7 +58,7 @@ const LIST: Alternative[] = [
     ],
     themBest: [
       'Everyone in your organisation already lives in Google Workspace, with Drive, Meet and Docs around the deck.',
-      'A full presentation suite: click-by-click builds within a slide, a presenter view, audience Q&A and a large template gallery.',
+      'A full presentation suite: a wider range of object animations, a presenter view, audience Q&A and a large template gallery.',
       'Charts, tables and animations that stay native when a deck goes to PowerPoint and back.',
       'Gemini in Slides drafts a whole, editable deck from a prompt, styled from your files, on eligible Workspace and Google AI plans.',
     ],
@@ -57,6 +67,9 @@ const LIST: Alternative[] = [
       'One document for the whole story: the write-up as an article, the one-pager as an infographic, and the deck that presents them, side by side as tabs.',
       'Any page can be a slide, from any tab, ordered in one deck that is saved with the document.',
       'Present with presenter notes, a time budget per slide, transitions, a laser pointer and a spotlight; your screen moves, nobody else’s.',
+      'Builds bring a slide’s points in one click at a time, with Appear, Fade or Rise, in the order you set.',
+      'Rehearse from Flashcards: each card shows how long it takes to say, and Contents adds up the whole talk.',
+      'Review a deck before it goes out: ask named people to approve it, keep named versions of each tab, and snapshot the whole document to revert in one step.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
       'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
@@ -75,8 +88,8 @@ const LIST: Alternative[] = [
       {
         heading: 'Presenting, built for the room',
         paragraphs: [
-          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the document open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget you can watch as you talk. A laser pointer and a spotlight guide the room.',
-          'Nothing on a slide can be changed by a stray click, so a projector is safe, and a deck can advance on its own and loop for a screen in a lobby.',
+          'Presenting runs full screen on your screen alone: nobody is dragged into your slide, and collaborators with the document open carry on working. Each slide carries its own presenter notes behind a button, and an optional time budget you can watch as you talk. Builds bring a slide’s points in one click at a time, and a laser pointer and a spotlight guide the room.',
+          'Nothing on a slide can be changed by a stray click, so a projector is safe, and a deck can advance on its own and loop for a screen in a lobby. To rehearse, write the talk on Flashcards: each card shows how long it takes to say, and Contents shows how long the whole talk runs.',
         ],
       },
       {
@@ -95,7 +108,7 @@ const LIST: Alternative[] = [
     faqs: [
       {
         q: 'Can livedocuments replace Google Slides?',
-        a: 'For many decks, yes: slide pages from ready-made layouts, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need click-by-click builds within a slide or audience Q&A, Google Slides is still the deeper presentation suite.',
+        a: 'For many decks, yes: slide pages from ready-made layouts, click-by-click builds, presenter notes, time budgets, transitions, a laser pointer and a spotlight, all edited live with your team. If you need a wider range of animations, audience Q&A or offline editing, Google Slides is still the deeper presentation suite.',
       },
       {
         q: 'Can I import or export PowerPoint files?',

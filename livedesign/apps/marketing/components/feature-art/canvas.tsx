@@ -16,6 +16,7 @@ const THEMES = [
     fill: 'fill-(--art-ink-fill)',
     stroke: 'stroke-(--art-ink-stroke)',
     text: 'fill-(--art-ink-text)',
+    accent: 'fill-(--art-ink-stroke)',
     swatch: '#0ea5e9',
   },
   {
@@ -24,6 +25,7 @@ const THEMES = [
     fill: 'fill-emerald-100 dark:fill-emerald-900',
     stroke: 'stroke-emerald-600 dark:stroke-emerald-400',
     text: 'fill-emerald-900 dark:fill-emerald-100',
+    accent: 'fill-emerald-600 dark:fill-emerald-400',
     swatch: '#16a34a',
   },
   {
@@ -32,20 +34,19 @@ const THEMES = [
     fill: 'fill-orange-100 dark:fill-orange-900',
     stroke: 'stroke-orange-500 dark:stroke-orange-400',
     text: 'fill-orange-900 dark:fill-orange-100',
+    accent: 'fill-orange-500 dark:fill-orange-400',
     swatch: '#f97316',
   },
 ];
 // Each theme's turn in the 6s cycle (.fa-a-cycle): a third each.
 const TURN = [0, -4, -2];
-// The themed screen flow: [x, y, width, label].
-const THEMED: [number, number, number, string][] = [
-  [30, 37, 40, 'Sign in'],
-  [86, 37, 40, 'Home'],
-  [142, 24, 40, 'Cart'],
-  [142, 50, 40, 'Profile'],
+// The themed phone screens: [x, title].
+const SCREENS: [number, string][] = [
+  [92, 'Sign in'],
+  [142, 'Home'],
 ];
 
-/** One click recolours everything: the same screen flow in Default, Forest and Sunset in turn. */
+/** One click recolours every page: a logo and two screens in Default, Forest and Sunset in turn. */
 export function ThemesArt() {
   return (
     <Scene>
@@ -57,36 +58,54 @@ export function ThemesArt() {
           style={at(TURN[i]!)}
         >
           <rect className={t.paper} x="17" y="13" width="180" height="70" rx="4" />
-          <g
-            className={`${t.stroke} fill-none`}
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M70 47 H 84 M126 47 C 134 47, 134 34, 140 34 M126 47 C 134 47, 134 60, 140 60" />
-            <path d="M81 44 l3 3 l-3 3" />
-          </g>
-          {THEMED.map(([x, y, w, label]) => (
-            <g key={label}>
+          {/* The logo page: the theme's tint, its ink on the mark and the wordmark. */}
+          <rect
+            className={`${t.fill} ${t.stroke}`}
+            x="30"
+            y="24"
+            width="48"
+            height="48"
+            rx="2"
+            strokeWidth="1"
+          />
+          <circle className={`${t.stroke} fill-none`} cx="54" cy="43" r="9" strokeWidth="3" />
+          <circle className={t.accent} cx="54" cy="43" r="3.4" />
+          <text className={t.text} x="54" y="65" fontSize="7" fontWeight="800" textAnchor="middle">
+            Bloom
+          </text>
+          {/* Two phone screens: a tinted header, wireframe blocks and the button in the theme's ink. */}
+          {SCREENS.map(([x, title]) => (
+            <g key={title}>
               <rect
-                className={`${t.fill} ${t.stroke}`}
+                className={`fill-white dark:fill-slate-900 ${t.stroke}`}
                 x={x}
-                y={y}
-                width={w}
-                height="20"
-                rx="5"
-                strokeWidth="1.6"
+                y="18"
+                width="38"
+                height="60"
+                rx="6"
+                strokeWidth="1"
               />
-              <text
-                className={t.text}
-                x={x + w / 2}
-                y={y + 12.6}
-                fontSize="7.5"
-                fontWeight="600"
-                textAnchor="middle"
-              >
-                {label}
+              <rect className={t.fill} x={x + 1} y="27" width="36" height="12" />
+              <text className={t.text} x={x + 5} y="35.6" fontSize="5.6" fontWeight="800">
+                {title}
               </text>
+              <rect
+                className="fill-slate-200 dark:fill-slate-700"
+                x={x + 5}
+                y="44"
+                width="28"
+                height="3"
+                rx="1.5"
+              />
+              <rect
+                className="fill-slate-200 dark:fill-slate-700"
+                x={x + 5}
+                y="50"
+                width="20"
+                height="3"
+                rx="1.5"
+              />
+              <rect className={t.accent} x={x + 5} y="64" width="28" height="7" rx="3.5" />
             </g>
           ))}
         </g>

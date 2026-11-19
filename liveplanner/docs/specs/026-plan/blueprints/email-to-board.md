@@ -36,7 +36,7 @@ domain)`.
 - `apps/api/src/email-intake/intake-members.ts`: `planMemberAddresses`.
 - `apps/api/src/email-intake/intake-card.ts` (pure): `emailCardCreate`, `droppedLine`, `cardTitleOf`.
 - `apps/api/src/email-intake/intake-pictures.ts`: `attachPictures(env, planId, ownerId, attachments)` → `{ attached,
-dropped }`.
+dropped }`; `attachableType(attachment)` → a picture's type, `application/pdf`, or null.
 - `apps/api/src/email-intake/intake-delivery.ts` (in the room): `deliverIntake(room, planId, delivery, now)`.
 - `apps/api/src/email-intake/email-handler.ts` (the Worker): `handleIntakeEmail(message, env, ctx)`; `index.ts`'s
   default export gains `email`.
@@ -123,9 +123,11 @@ sender, board: board.id } })` (the one created event Card Created and Email Rece
   (collapsed, cut to `ITEM_TITLE_MAX` characters; empty → `Email from <sender>`); description the text trimmed, then
   `droppedLine(dropped)` after a blank line, cut to `ITEM_DESCRIPTION_MAX` (text cut first so the dropped line stays
   whole); `attachments` when any; `fromEmail` the sender. Read through `readItemCreate`.
-- `attachPictures`: no media client → every picture dropped `not_saved`. Each attachment in order: type not one of
-  `ATTACHMENT_TYPES` → `not_picture`; bytes over `INTAKE_PICTURE_MAX` → `too_big`; past `ITEM_ATTACHMENTS_MAX`
-  attached → `too_many`; else `media.upload` as the plan owner (`mediaOwner`), claimed for the plan; a refusal →
+- `attachPictures`: no media client → every file dropped `not_saved`. Each attachment in order: `attachableType`
+  null (`sniffMediaType` of the bytes alone: neither a picture's nor a PDF's `%PDF-` start; the name and declared
+  type are never read) → `not_attachable`; bytes over `INTAKE_PICTURE_MAX` (a
+  PDF's `INTAKE_FILE_MAX`) → `too_big`; past `ITEM_ATTACHMENTS_MAX`
+  attached → `too_many`; else `media.upload` as the plan owner (`mediaOwner`), claimed for the plan (a PDF at 0 by 0); a refusal →
   `not_saved`; success → `grantImage` (the room's `recordImageGrant`) and an attachment entry.
 - The email person: `{ id: 'email:' + first 12 hex of sha256(sender), name: sender (cut to 80), color
 EMAIL_PERSON_COLOR }`.
@@ -162,14 +164,18 @@ boards: EmailIntakeBoard[] }`; `EmailIntakeBoard` `{ id, title, tabId, tabName, 
   DMARC-aligned header `From:` (or the envelope sender when they match) with addresses accounts has verified.
 - Rejections never echo anything back to the sender; nothing is ever sent from the address.
 - The card's text is plain text through the item store's checks; no HTML is kept. Pictures go through the media
-  service's sniffing like any upload.
+  service's sniffing like any upload; a PDF is sniffed there too (`%PDF-`), never opened, and served by
+  `GET /api/images/{id}` with its stored `Content-Type: application/pdf`, `X-Content-Type-Options: nosniff`,
+  `Content-Disposition: attachment` and `Content-Security-Policy: sandbox` (a picture stays inline, as before). The
+  read keeps its role checks: the uploader, or a reader of a plan that holds a grant for it and a card holding it.
+  The editor reads it with `fetch` and opens the blob in the browser's own PDF viewer, never at the api's address.
 - The routes refuse Participants, Viewers, tab links, tokens, workbench sessions and Community grants.
 
 ## Performance and limits
 
 - The Worker: one directory read, one parse (linear, bounded by `INTAKE_MESSAGE_MAX`; the reader's CPU test), one
   room call. The room: one plan read, the tab walk for the board, two accounts calls for Plan Members, up to 20 media
-  uploads (pictures only), one item write.
+  uploads (pictures and PDFs), one item write.
 - Worst case CPU: a 20 MB message of text is parsed in one pass; the reader's budget test covers 1 MB in 50 ms, so
   20 MB stays inside a Worker's 30 s CPU limit by two orders of magnitude.
 
@@ -184,7 +190,7 @@ verdict's reason, `made`, `gone`, `refused_sender`, `busy`, `unavailable`), each
 - `packages/items` `from-email.test.ts`; the `email` tag's activity words in the editor.
 - `apps/api` `email-intake/intake-parts.test.ts` (the code and recipient; the card: title, no subject, description
   cut with the dropped line whole, attachments; the directory entry; plan members: owner, joined members only,
-  accounts down; pictures: each drop reason, the cap, grants), `email-handler.test.ts` (every refusal and the drop
+  accounts down; pictures and PDFs: each drop reason, a PDF by its bytes alone, an over-cap PDF, a refused type, the cap, grants), `email-handler.test.ts` (every refusal and the drop
   through a fake message, the hour cap for one sender, made cards end to end through the room),
   `routes/email-intake-routes.test.ts` (owner, team member, guest owner and Editor link manage; tab link, Participant,
   Viewer, tokens, workbench and link visitor refused with nothing changed; new address stops the old at once; turn
@@ -200,6 +206,7 @@ verdict's reason, `made`, `gone`, `refused_sender`, `busy`, `unavailable`), each
 | `INTAKE_CODE_BYTES`           | 16                   | 128 bits, 26 base32 characters, case-proof in an address        |
 | `INTAKE_MESSAGE_MAX`          | 20 MB                | Under Email Routing's 25 MiB; ten full-size pictures and text   |
 | `INTAKE_PICTURE_MAX`          | 10 MB                | The media service's `MAX_IMAGE_BYTES`                           |
+| `INTAKE_FILE_MAX`             | 10 MB                | The media service's `MAX_FILE_BYTES`, as a picture's            |
 | `INTAKE_CARDS_PER_HOUR`       | 100                  | A busy shared inbox; a flood stops at once (safe range 20..500) |
 | `INTAKE_SENDER_PER_HOUR`      | 20                   | One person forwarding a backlog (safe range 5..100)             |
 | sender rate                   | 60/min               | `FORM_RATE_LIMITER`'s window, keyed `mail:<hash>`               |
@@ -215,7 +222,8 @@ verdict's reason, `made`, `gone`, `refused_sender`, `busy`, `unavailable`), each
   rolled back with "Couldn't save. Try again."), the note, footer New Address and Turn Off (`ConfirmPopover` each)
   and Done.
 - Item panel footer: `MetaRow` with the mail glyph, "From email" and the address in `META_NAME`, the full address in
-  its tooltip.
+  its tooltip. The Edited by row (every card's) is left out while the card's Last Edited By is its maker and its Last Edited At is its
+  Created At (`ItemMeta`'s `unedited`).
 
 ## Accessibility
 

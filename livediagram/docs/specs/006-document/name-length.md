@@ -96,7 +96,7 @@ An Offline Mode document never reaches the server until it syncs, so for it
 these editor points are the enforcement until it does; the sync is a create,
 so the server cap applies to it like any other.
 
-The text inputs (`NameEditor`, `InlineRenameInput`, `TabNameInBox`) also
+The text inputs (`NameEditor`, `InlineRenameInput`) also
 carry `maxLength={NAME_MAX_LENGTH}`. That is a **third** line of defence, not
 the enforcement: it makes the limit visible while typing instead of silently
 eating the end of what someone wrote.

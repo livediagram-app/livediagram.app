@@ -12,6 +12,8 @@ import { avatarBox, type AvatarFacing } from '@livehuddle/avatar/walk';
 import { SpaceScene } from '@/components/hero-space-scene';
 import {
   CHEER_LIFTS,
+  RECEPTIONIST,
+  RECEPTIONIST_SHEET,
   SAY_S,
   LOOP_S,
   SPACE_AVATAR_SCALE,
@@ -142,7 +144,7 @@ function spriteFor(member: CastMember, key: StillKey) {
 }
 
 /** Every still of every character, one <symbol> each in the sprite's own box. */
-function castSheet(spec: SpaceSceneSpec): string {
+function castSheet(spec: Pick<SpaceSceneSpec, 'cast'>): string {
   const symbols = spec.cast.flatMap((member) =>
     stillKeysOf(member).map((key) => {
       const sprite = renderToStaticMarkup(<AvatarSprite {...spriteFor(member, key)} />);
@@ -217,6 +219,16 @@ describe.each(SCENES.map((spec) => [spec.id, spec] as const))('the %s scene', (_
       const next = lines[i + 1]?.at ?? lines[0]!.at + LOOP_S;
       expect(line.at + SAY_S, `${line.text} clears before the next`).toBeLessThanOrEqual(next);
     });
+  });
+});
+
+describe('the Receptionist', () => {
+  it('has his stand and his wave drawn by the sprite as committed, in his own look', () => {
+    expect(stillKeysOf(RECEPTIONIST)).toEqual(['stand', 'wave-0', 'wave-1']);
+    const sheet = castSheet({ cast: [RECEPTIONIST] });
+    const path = publicPath(RECEPTIONIST_SHEET);
+    write(path, sheet);
+    expect(readFileSync(path, 'utf8')).toBe(sheet);
   });
 });
 

@@ -18,11 +18,6 @@ import {
   type RefObject,
 } from 'react';
 import { createPortal } from 'react-dom';
-import {
-  IN_BOX_TITLE_CLASS,
-  TabNameInBox as SharedTabNameInBox,
-} from '@liveworkspace/workbench/components/chrome/TabNameInBox';
-import { NAME_MAX_LENGTH } from '@liveplanner/project';
 import { createListeners } from '@liveworkspace/workbench/lib/listeners';
 
 let slot: HTMLElement | null = null;
@@ -70,18 +65,6 @@ export function MenuNameSlot() {
   );
 }
 
-// The open tab's name in the menu box (docs/specs/007-editor/toolbar-layout.md "The tab's name"), in every mode on a
-// desktop, as a board's name rides there: right after the slot, and hidden by CSS while the slot holds an element's
-// name (a board, Sheet or view filling the tab or maximised), so the box never shows two.
-export function TabNameInBox() {
-  return (
-    <SharedTabNameInBox
-      maxLength={NAME_MAX_LENGTH}
-      className="[[data-menu-name-slot]:not(:empty)+&]:hidden"
-    />
-  );
-}
-
 // The element's name: in the menu box while its header holds the top row (and the box is there), in place otherwise.
 // `render` is told which, so the name can take the box's size and ink.
 // Whether the element holding `marker` is in a header band, looked at again whenever a band comes or goes.
@@ -109,5 +92,7 @@ export function InMenuBox({ render }: { render: (inBox: boolean) => ReactNode })
   );
 }
 
-// The name's look in the box (the shared tab name's), for an element's name riding there.
-export { IN_BOX_TITLE_CLASS };
+// The name's look in the box, for an element's name riding there: the chrome's text at regular weight (never bold), a
+// little smaller than a header's, truncating.
+export const IN_BOX_TITLE_CLASS =
+  'min-w-0 max-w-[16rem] truncate text-[14px] font-normal leading-tight';
