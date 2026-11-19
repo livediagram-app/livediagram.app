@@ -7,6 +7,7 @@ import {
   drainAssistantNotices,
 } from './assistant-notices';
 import { body, call, h, settle, useHarness } from './test-support';
+import { cpuBudgetMs, cpuNowMs } from '@liveworkspace/vitest-config/cpu-time';
 
 useHarness();
 
@@ -124,6 +125,29 @@ describe('POST /internal/assistant-revoked', () => {
     await settle();
     expect(warn).toHaveBeenCalledWith('[index] assistant notices', 'Error: down');
     expect(count('SELECT COUNT(*) AS n FROM assistant_notices')).toBe(5);
+  });
+
+  it('records a person with thousands of plans in one batch, within a CPU budget', async () => {
+    const insert = h.db.sql.prepare(
+      `INSERT INTO items (id, app, kind, owner_id, team_id, scope, title, created_at, updated_at)
+       VALUES (?, 'liveplanner', 'plan', ?, NULL, ?, 'x', 1, 1)`,
+    );
+    const open = h.db.sql.prepare(
+      'INSERT INTO opens (person_id, item_id, last_opened_at) VALUES (?, ?, 1)',
+    );
+    for (let i = 0; i < 3_000; i++) {
+      insert.run(`own-${i}`, ADA, `p:${ADA}`);
+      insert.run(`seen-${i}`, BEA, `p:${BEA}`);
+      open.run(ADA, `seen-${i}`);
+    }
+    // The apps answer slowly or not at all: the revoke's answer never waits for them.
+    h.appAnswer = () => new Promise<Response>(() => {});
+    const started = cpuNowMs();
+    const res = await revoked({ personId: ADA, client: 'Claude' });
+    const spent = cpuNowMs() - started;
+    expect(await body(res)).toEqual({ items: 6_000 });
+    expect(spent).toBeLessThan(cpuBudgetMs(1_000));
+    h.pending.length = 0;
   });
 
   it('refuses a caller without accounts’ key, another method and a body it cannot read', async () => {
