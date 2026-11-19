@@ -75,7 +75,9 @@ unmarked: an agent fills a template with real content.
 as) draws a standing palette tray: the sparkles glyph, "Example content shows how this works.", **Clear Example
 Content** (the brand-toned `PaletteTrayAction`) and **Keep It**. It steps aside while a mode's message takes the
 slot (`data-yields-to-mode`). Without a strip (the floating palette, Draw's dock) it is the same card at the top centre, placed clear of Draw's dock (`pillPlace`, shared with StartAgainTray).
-Below `sm` the sentence is screen-reader only, so the two actions fit the strip's width.
+Its slot is at least `TEMPLATE_EXAMPLE_TRAY_MIN_WIDTH_PX` (520 px) wide, centred under the strip, so the whole sentence
+and both actions fit under a narrow strip (a slide deck's, livediagram's) rather than the sentence being cut to "how
+this ...". Below `sm` the sentence is screen-reader only, so the two actions fit the strip's width.
 The Pages editors frame a page below it while it shows: `topStripInset` (`packages/workbench/src/lib/top-strip-inset.ts`,
 shared by livedocuments and livedesign, and by their Fit to Screen in `lib/tab-fit-view.ts`) reaches down to a standing
 tray (`data-palette-tray` with `data-yields-to-mode`), under the strip or as the pill, so the page's header is never under
