@@ -30,6 +30,7 @@
   "dependencies": {
     "@liveworkspace/api-schema": "workspace:*",
     "@liveworkspace/brand": "workspace:*",
+    "@liveworkspace/cli-kit": "workspace:*",
     "@liveworkspace/help-registry": "workspace:*",
     "@liveworkspace/icons": "workspace:*",
     "@liveworkspace/sites": "workspace:*",

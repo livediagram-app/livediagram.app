@@ -7204,6 +7204,9 @@ importers:
       '@liveworkspace/brand':
         specifier: workspace:*
         version: link:../brand
+      '@liveworkspace/cli-kit':
+        specifier: workspace:*
+        version: link:../cli-kit
       '@liveworkspace/help-registry':
         specifier: workspace:*
         version: link:../help-registry
