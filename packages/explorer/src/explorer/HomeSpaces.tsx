@@ -11,7 +11,7 @@ import { useId, useMemo, useState, type ReactNode } from 'react';
 import { APP_KINDS, type SpacePreview } from '@liveworkspace/index-client';
 import { useSpacePreviews } from '../data/useSpacePreviews';
 import { usePersonName } from '../data/usePeople';
-import { initialsOf } from '../teams/TeamCard';
+import { initialsOf } from '../teams/team-details';
 import { useTeams } from '../teams/context';
 import { NewTeamDialog } from '../teams/NewTeamDialog';
 import { useNow } from '../time';

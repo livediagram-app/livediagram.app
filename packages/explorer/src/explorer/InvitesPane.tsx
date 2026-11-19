@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { teamErrorMessage, type PendingInvitation } from '../data/teams';
 import { useTeams } from '../teams/context';
-import { initialsOf } from '../teams/TeamCard';
+import { initialsOf } from '../teams/team-details';
 import { NewTeamDialog } from '../teams/NewTeamDialog';
 import { Button, ButtonContent, buttonClassName } from '@liveworkspace/ui';
 import { EmptyState } from '@liveworkspace/ui';

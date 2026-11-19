@@ -215,6 +215,15 @@ rows, filters and CSV export, which only a team's admins ever draw. It is now a 
 History and Webhooks are (`Dialogs.tsx`). Measured the same way: 389,241 to 379,814 bytes (380.1 to 370.9 KiB), the
 same 19 scripts. The budget stays at 380 KiB.
 
+**The team card loads with the team view (2026-11-19, Work Tracker 1315).** Holding the Inbox's done rows across a
+reload (`packages/explorer/src/data/inbox-settled.ts`) took `/explorer` to 380.5 KiB, over its budget. The team view
+imported the team card (`packages/explorer/src/teams/TeamCard.tsx`) statically, and Home's spaces and Invites took
+`initialsOf` from the same module, so every first load carried the card's member rows, menus and Invite by Link
+dialog. What the view needs before the card (`useTeamDetails`, `teamHeadline`, `initialsOf`) is now
+`teams/team-details.ts`, and the card is a `lazy` import inside `Suspense`, its members skeleton standing in, fetched
+by the Explorer's idle preload with the lazy sections. Measured the same way: 380.5 to 377.5 KiB (386,555 bytes), the
+same 19 scripts. `panes-lazy-load.test.ts` keeps the card out of a static import. The budget stays at 380 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from
