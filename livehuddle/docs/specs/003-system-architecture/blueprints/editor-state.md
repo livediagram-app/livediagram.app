@@ -17,7 +17,7 @@ All under `apps/editor/app/document/[id]/`.
 | `app/document/[id]/editor-state/useEditorSelection.ts`                       | Tab scope and `useEditorUiState` (active tab, selection, editing, format source)                                                                                      |
 | `app/document/[id]/editor-state/useEditorDialogs.ts`                         | Panel layout, dialogs, context menu, the join screen flags                                                                                                            |
 | `app/document/[id]/editor-state/useEditorTools.ts`                           | Format settings, the canvas tool (walking included), the Format tool, the shortcuts switch, `pickCanvasTool`, `pressModeButton`, `startFormatPainter`                 |
-| `app/document/[id]/editor-state/useEditorCollaboration.ts`                   | `useEditorRealtime`, element deltas, presence state, the role preview, the Participant session and its held walk                                                      |
+| `app/document/[id]/editor-state/useEditorCollaboration.ts`                   | `useEditorRealtime`, element deltas, presence state, the Participant session and its held walk                                                                        |
 | `app/document/[id]/editor-state/useEditorPersistence.ts`                     | Preferences, the persistence slice, share state, document list, Trash, `tabsRef`, autosave, Sync and Take Offline in place, identity bootstrap, the self-save effects |
 | `app/document/[id]/editor-state/useEditorRoom.ts`                            | Resync, changeset feed, avatar pushes, facilitator, `useRoomConnection`, presence broadcast, per-tab load, `retryActiveTabLoad`                                       |
 | app/document/[id]/editor-state/useEditorComments.ts (deleted, Work Item 714) | Comment threads, teams, mentions, `activeTab`, comment reactions, comment rows, assigned actions, action rows                                                         |
@@ -52,7 +52,7 @@ Hooks were moved out of their old position only where they have no effects or ef
 they now precede touch:
 
 - no effects: `useConfirm`, `useToast`, `useEditorContextMenu`, `useEditorComments`, `useEditorActions`,
-  `useViewPreview`, `useParticipantSession` (with the held walk set while rendering), and plain `useState` /
+  `useParticipantSession` (with the held walk set while rendering), and plain `useState` /
   `useRef` / `useMemo` / `useCallback`;
 - independent effects: `usePresenceState` (its roster ref and idle tick) now runs before `useEditorPreferences` and
   `useEditorPersistence` (preference storage, the document title, the import-error timer).

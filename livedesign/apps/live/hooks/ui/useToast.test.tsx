@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useEffect } from 'react';
 import { ToastProvider, useToast, type ToastOffer } from './useToast';
+import { useToast as useWorkbenchToast } from '@liveworkspace/workbench/hooks/ui/useToast';
+import { bindWorkbench } from '@/lib/workbench-bindings';
 import { readUserPreferences, writeUserPreferences } from '@/lib/user-preferences';
 import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/workbench/components/toast/ToastStack';
 import {
@@ -42,7 +44,30 @@ function renderOffer() {
 }
 
 beforeEach(() => {
+  // This editor's facts for the workbench, as the app binds them at startup: the toast gate reads its preferences.
+  bindWorkbench();
   vi.useFakeTimers();
+});
+
+// The workbench's own code raises toasts through the workbench's useToast (a failed Library place, an item action).
+// This editor's ToastProvider is that same provider, so they land on its stack rather than in a silent default.
+describe('toasts raised by workbench code', () => {
+  function FromWorkbench() {
+    const toast = useWorkbenchToast();
+    useEffect(() => toast.error('Couldn’t reach your library. Try again.'), [toast]);
+    return null;
+  }
+
+  it('show on this editor’s stack', () => {
+    render(
+      <ToastProvider>
+        <FromWorkbench />
+      </ToastProvider>,
+    );
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Couldn’t reach your library. Try again.',
+    );
+  });
 });
 
 afterEach(() => {

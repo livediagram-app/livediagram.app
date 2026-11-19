@@ -10,23 +10,13 @@
 //   formatRelativeTimeCompact  — ultra-compact ("2m ago"), comment threads.
 // The first two share their ladder, in @livedocuments/ui (relative-time.ts).
 
-// The verbose and short ladders (and relativeSince) live in @livedocuments/ui.
-export { formatRelativeTime, formatRelativeTimeShort, relativeSince } from '@livedocuments/ui';
-
-// Ultra-compact ("2m ago" / "3h ago" / "5d ago"), used in the comment
-// thread where each row is tiny. Coarser than the others on purpose: no
-// seconds and no "yesterday", since comment timestamps are usually
-// minutes-to-days old and the row has no room to spare.
-export function formatRelativeTimeCompact(deltaMs: number): string {
-  const seconds = Math.floor(deltaMs / 1000);
-  if (seconds < 60) return 'just now';
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
+// The verbose, short and compact ladders (and relativeSince) live in @livedocuments/ui.
+export {
+  formatRelativeTime,
+  formatRelativeTimeCompact,
+  formatRelativeTimeShort,
+  relativeSince,
+} from '@livedocuments/ui';
 
 // The clock relative-time strings read (one shared 30 s tick, so every row on a page agrees): one copy for every
 // editor, in @liveworkspace/workbench, which the shared surfaces read too.

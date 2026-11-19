@@ -306,29 +306,10 @@ back into This Browser's list.
 
 ## "This Browser" badge + Explorer
 
-- **Editor header badge.** The status pill reads Private / Shared / Team
-  (the `SharedBadge` in `EditorHeader`). For an offline document it reads
-  **"This Browser"** (a state that supersedes "Private" for these documents),
-  matching the [This Browser pill](#this-browser-pill): the same words, the same
-  browser-window icon, the same teal tone and contrast, and the same sentence,
-  "Lives only in this browser. Clearing this browser's site data deletes it.",
-  shown in the badge's visibility legend on hover and focus and given to
-  assistive technology as the badge's description. It stays a status, not a
-  link: the legend explains it in place.
-- **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus, closing 120 ms after the
-  pointer leaves): a hero in the current state's tone, eyebrow **Who Can See This**, the state's icon and
-  name, its sentence, and its **reach** drawn as rings around you, lit out to how far the document goes
-  (Private: none; Shared: one, with people on it; Team: two; Public: all three); the words sit level with the
-  rings, centred, and the hero keeps one height whichever audience it shows. Under it, **From Just You
-  to Everyone**: the audiences on one scale, **Just you** (a lock), **Link** (a link), **Team** (people),
-  **Everyone** (a globe), the track filled to the current stop, which is larger, filled in its tone and
-  bold. Hovering a stop shows that audience in the hero, eyebrow **If It Were**, and tints the stop;
-  leaving the scale puts the current state back. **This Browser** (its browser-window icon, teal) stands
-  apart below as "Or This Browser: never leaves this browser." (when current: "This Browser: saved only here,
-  never on our servers.", tinted teal). For someone who may share, **Change Who Can See This** at the
-  foot opens Share, and the badge itself is a button that opens Share; for anyone else it is a focusable
-  pill and the legend has no button. For the eye only: the badge carries the current state's words for
-  assistive technology.
+- **Visibility badge.** The open item's badge is the Explorer panel's Current card's (the open editor has no
+  header bar, and its legend went with it): Private / Shared / Team from the index, and, for an item kept only
+  here, the [This Browser pill](#this-browser-pill) with its words, browser-window icon, teal tone and sentence
+  (one-explorer.md "The Current card").
 - **Explorer.** Offline documents never reach liveworkspace's index, so none of the index's lists holds them. They are
   the Explorer's **This Browser** view, in the page (`/explorer/offline`) and the editor's Explorer panel alike: every
   one, newest first, read from this browser alone, each opening in the editor, with **Sync Space** for a signed-in
@@ -660,7 +641,6 @@ Track adoption without content, reusing the closed vocabulary:
 - New Space wizard (`TemplatePicker` / `template-picker-settings.tsx`,
   [Dedicated route for new-document creation](../007-editor/new-document-route.md)): the **Settings** step's Save location chooser ([Save Locations](save-locations.md), the
   This Browser tile) + data-loss warning + contextual help link.
-- `EditorHeader` (`SharedBadge`): the **This Browser** badge state.
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
   show the **This Browser** pill wherever an offline document is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.

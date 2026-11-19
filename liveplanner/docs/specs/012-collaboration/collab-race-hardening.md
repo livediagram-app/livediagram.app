@@ -207,6 +207,13 @@ and the next save from anybody repairs it.
   client keeps an outbox of project ops (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.
   Cursors, selections and other presence ops are not held.
+- **Sent before the room client exists, held too.** A shared project can be on screen a moment before its room
+  client is made (the project is still being confirmed as saved on the server), and a dot or an element edit (an answer, a checklist tick, a comment change) sent then once reached
+  nobody. Such a send is held for the project it was made on (`@liveworkspace/workbench/lib/pre-room-outbox`, at most 100) and handed to the client the moment it is made, whose outbox carries it over the hello. The hold is emptied as
+  it is handed over, so each send reaches the room once whatever reopens it; leaving the project drops what it holds,
+  and so does age: a send more than 30 seconds old when the room is made is dropped, since the save has carried the
+  change to the server by then. It holds only what the outbox would: cursors, lasers, viewports, reactions and other
+  presence ops from that moment are dropped.
 
 Residual, stated plainly: comment names are the sender's own choice, as on any participant record; a comment
 carries the name of the session that posted it rather than of whoever saved first.

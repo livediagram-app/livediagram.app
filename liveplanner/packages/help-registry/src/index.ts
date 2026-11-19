@@ -190,7 +190,7 @@ export const articles: Article[] = [
     description:
       'The always-available Tools (with Search), Settings and appearance controls at the end of the bottom bar.',
     keywords:
-      'corner buttons actions tools toolbox search settings bottom bar cluster appearance light dark automations webhooks history walkthroughs editing mode sign in sync plan badge get started tour',
+      'corner buttons actions tools toolbox search settings bottom bar cluster appearance light dark automations webhooks history walkthroughs sign in sync plan badge get started tour',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -209,7 +209,7 @@ export const articles: Article[] = [
     description:
       'The logo and the menu at the top left, and Share or Copy and your account at the top right.',
     keywords:
-      'title bar header top bar corners logo menu button explorer project name rename role editing mode viewing participating owner preview read only share share form copy make a copy account plan',
+      'title bar header top bar corners logo menu button explorer project name rename share share form copy make a copy account plan',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

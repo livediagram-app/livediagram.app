@@ -353,6 +353,8 @@ export type CanvasProps = {
   currentShareCode?: string | null;
   // The open design renamed from the Explorer panel: the editor's title follows at once.
   onRenameCurrentDesign?: (name: string) => void;
+  // useEditorDialogs' Rename <Kind> nonce: each bump opens the Explorer panel on the open item's name field.
+  renameCurrentNonce?: number;
   onNewDesign: () => void;
   // The Explorer panel's ⋯ menu verbs beyond new / open (docs/specs/013-workspace/folders.md).
   explorerMenuActions?: import('@/components/panels/Explorer.types').ExplorerMenuActions;

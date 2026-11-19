@@ -34,8 +34,12 @@ import {
 import { FONTS } from '@livedesign/design';
 import { lucideGlyph } from '@livedesign/ui';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
-import { FlyoutHeader, onFlyoutArrowKey } from '@/components/palette/CategoryFlyout';
-import { FlyoutFooter, Kbd } from '@/components/palette/category-flyout-items';
+import { FlyoutHeader } from '@liveworkspace/workbench/components/palette/CategoryFlyout';
+import { onFlyoutArrowKey } from '@liveworkspace/workbench/components/palette/category-flyout-keys';
+import {
+  FlyoutFooter,
+  Kbd,
+} from '@liveworkspace/workbench/components/palette/category-flyout-items';
 import { CHOICE_BLURBS, choiceSections, OPTION_GUIDES } from '@/lib/photo-editor/option-guides';
 import { choicePicture, pictureFills } from './option-pictures';
 

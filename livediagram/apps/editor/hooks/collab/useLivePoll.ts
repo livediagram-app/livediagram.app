@@ -21,6 +21,7 @@ import { pollCollaboratorOptions, type PollCandidate } from '@/lib/poll-collabor
 import { ensureCollabSecret } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';
 import { announce } from '@liveworkspace/workbench/lib/announcer';
+import { sendOrHold, type PreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 
 type RoomHandle = { send: (msg: RoomOutgoing) => void };
 
@@ -45,6 +46,9 @@ export function pollHostFor(input: {
 
 export function useLivePoll(deps: {
   roomRef: React.RefObject<RoomHandle | null>;
+  // Holds a poll op sent before the room client exists, for the room about to open (pre-room-outbox): a poll
+  // started, answered or ended as the page opens still reaches the room.
+  preRoomOutbox: PreRoomOutbox<RoomOutgoing>;
   // The people currently in the document, for a `collaborators` poll (docs/specs/012-collaboration/live-poll.md).
   // A ref for the same reason as `sessionBlockedRef` below — the roster changes
   // constantly and is only ever read at the instant a poll starts — and because
@@ -59,7 +63,7 @@ export function useLivePoll(deps: {
   // Our collab key (docs/specs/012-collaboration/collab-race-hardening.md); see `selfKey` below.
   selfKeyRef?: React.RefObject<string>;
 }) {
-  const { roomRef, sessionBlockedRef, collaboratorsRef, selfKeyRef } = deps;
+  const { roomRef, preRoomOutbox, sessionBlockedRef, collaboratorsRef, selfKeyRef } = deps;
   // Our collab key (docs/specs/012-collaboration/collab-race-hardening.md): what our own answer is keyed by, and how a poll
   // we started is known as ours after a refresh. Read at call time: identity
   // hydrates after this hook, and its handlers must stay stable.
@@ -189,10 +193,13 @@ export function useLivePoll(deps: {
       if (!next) return;
       setHostedPollId(next.id);
       openPoll(next);
-      roomRef.current?.send({ kind: 'op', op: { kind: 'poll-start', poll: next } });
+      sendOrHold(preRoomOutbox, roomRef.current, {
+        kind: 'op',
+        op: { kind: 'poll-start', poll: next },
+      });
       track('Tab', 'Started', 'Poll');
     },
-    [roomRef, openPoll, sessionBlockedRef, collaboratorsRef, selfKey],
+    [roomRef, preRoomOutbox, openPoll, sessionBlockedRef, collaboratorsRef, selfKey],
   );
 
   // Answer (or skip, with `null`). Applied locally under our own key: the room
@@ -205,7 +212,7 @@ export function useLivePoll(deps: {
       const clean = sanitisePollAnswer(current, value);
       setMyAnswer({ value: clean });
       setAnswers((prev) => new Map(prev).set(selfKey(), clean));
-      roomRef.current?.send({
+      sendOrHold(preRoomOutbox, roomRef.current, {
         kind: 'op',
         // `proof` lets the room know the key is ours; it never relays it (docs/specs/012-collaboration/vote-integrity.md).
         op: {
@@ -221,17 +228,20 @@ export function useLivePoll(deps: {
         track('Tab', 'Voted', 'Poll');
       }
     },
-    [roomRef, selfKey],
+    [roomRef, preRoomOutbox, selfKey],
   );
 
   const endPoll = useCallback(() => {
     if (sessionBlockedRef?.current) return;
     const current = pollRef.current;
     if (!current) return;
-    roomRef.current?.send({ kind: 'op', op: { kind: 'poll-end', pollId: current.id } });
+    sendOrHold(preRoomOutbox, roomRef.current, {
+      kind: 'op',
+      op: { kind: 'poll-end', pollId: current.id },
+    });
     clearPoll();
     track('Tab', 'Ended', 'Poll');
-  }, [roomRef, sessionBlockedRef, clearPoll]);
+  }, [roomRef, preRoomOutbox, sessionBlockedRef, clearPoll]);
 
   // Hide our own panel without ending the poll for anyone else. The
   // escape hatch for a participant whose host vanished mid-poll.

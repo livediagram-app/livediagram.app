@@ -6,7 +6,7 @@ import { useQuizElements } from '@/hooks/canvas/useQuizElements';
 import { track } from '@/lib/telemetry';
 import { pollResultElement } from '@/lib/poll-capture';
 import { useTabSession } from '@/hooks/persistence/useTabSession';
-import { sendOrHold } from '../pre-room-outbox';
+import { sendOrHold } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
 import type { EditorSelectionSlice } from './useEditorSelection';
@@ -38,7 +38,7 @@ export function useEditorSessionTools({
   fromEditing: EditorEditingSlice;
   fromLayers: EditorLayersSlice;
 }) {
-  const { documentId, selfParticipant, voteSelfId } = fromDocument;
+  const { selfParticipant, voteSelfId } = fromDocument;
   const { commitTabs, tickTabs } = fromHistory;
   const { activeId } = fromSelection;
   const { applyElementDelta, ideaPosts, livePresence, realtime, roomRef } = fromCollaboration;
@@ -81,9 +81,9 @@ export function useEditorSessionTools({
     selfId: voteSelfId,
     // Straight down the socket, ahead of the autosave (docs/specs/012-collaboration/session-tools.md). Cast before
     // the room exists (the first moment after the page opens), it is held and sent as the room is made
-    // (pre-room-outbox.ts), so the room still hears it; with no document there is nobody to tell.
+    // (pre-room-outbox), so the room still hears it; with no document there is nobody to tell.
     emitVote: (tabId, elementId, delta, round) =>
-      sendOrHold(realtime.preRoomOutbox, roomRef.current, documentId, {
+      sendOrHold(realtime.preRoomOutbox, roomRef.current, {
         kind: 'op',
         op: {
           kind: 'vote',

@@ -795,6 +795,15 @@ through the package's `useOpenItem`.
   editor's header, a collaborator's or an agent's (which reach the editor through its live room) shows on the card at
   once, while the panel is open or the next time it opens, with no read of the index (Work Tracker 1028). A rename
   from the card or a menu lays the Explorer's overlay over it while the index takes it, as on every row.
+- **Rename from the search.** Each editor's command palette offers **Rename <Kind>** (Rename Canvas, Plan, Design,
+  Document, Space). The editors have no header bar, so the card's name is where the open item is renamed: the command
+  opens the panel from its menu button (left open when it already is) and the card's name field opens with the name
+  selected, as a click on the name does. The editor hands the panel a request (`renameCurrentRequest`, a number, 0 for
+  none) and clears it once the card took it (`onRenameCurrentHandled`), so the field opens once per command, including
+  when the panel's code is still loading. A request the panel closes on before the card shows is dropped, never kept
+  for a later opening. Someone who may not rename the item gets the panel open on its card and no field. The command
+  is left out where the panel cannot open: in Zen mode and in a workspace frame, where an app has them (on a phone held sideways, which
+  withholds the panel, it opens nothing).
 
 #### Opening on the Explorer
 

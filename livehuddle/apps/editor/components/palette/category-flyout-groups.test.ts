@@ -4,7 +4,6 @@ import {
   flyoutCardColumns,
   flyoutColumns,
   flyoutGroups,
-  flyoutKeyTarget,
   flyoutLayout,
   SHORT_CARD_LIST,
 } from './category-flyout-groups';
@@ -135,40 +134,5 @@ describe('a flyout’s groups', () => {
     expect(flyoutGroups('write', [])).toEqual([]);
     // One group: no heading, whatever its first tile is called.
     expect(flyoutGroups('write', [tile('tools:text')])[0]!.title).toBeNull();
-  });
-});
-
-describe('arrow keys in a flyout', () => {
-  // Two rows of three, then a lone fourth row item under the middle.
-  const points = [
-    { x: 0, y: 0 },
-    { x: 100, y: 0 },
-    { x: 200, y: 0 },
-    { x: 0, y: 60 },
-    { x: 100, y: 60 },
-    { x: 200, y: 60 },
-    { x: 110, y: 140 },
-  ];
-
-  it('steps through the list with Left and Right, stopping at the ends', () => {
-    expect(flyoutKeyTarget('ArrowRight', 0, points)).toBe(1);
-    expect(flyoutKeyTarget('ArrowRight', 6, points)).toBeNull();
-    expect(flyoutKeyTarget('ArrowLeft', 3, points)).toBe(2);
-    expect(flyoutKeyTarget('ArrowLeft', 0, points)).toBeNull();
-  });
-
-  it('moves a row with Up and Down, to the nearest item, across groups', () => {
-    expect(flyoutKeyTarget('ArrowDown', 1, points)).toBe(4);
-    expect(flyoutKeyTarget('ArrowDown', 5, points)).toBe(6);
-    expect(flyoutKeyTarget('ArrowUp', 6, points)).toBe(4);
-    expect(flyoutKeyTarget('ArrowUp', 0, points)).toBeNull();
-    expect(flyoutKeyTarget('ArrowDown', 6, points)).toBeNull();
-  });
-
-  it('jumps to the ends with Home and End, and ignores other keys', () => {
-    expect(flyoutKeyTarget('Home', 4, points)).toBe(0);
-    expect(flyoutKeyTarget('End', 0, points)).toBe(6);
-    expect(flyoutKeyTarget('Enter', 0, points)).toBeNull();
-    expect(flyoutKeyTarget('ArrowRight', 0, [])).toBeNull();
   });
 });

@@ -13,12 +13,13 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { useAssigneeOptions } from '@/hooks/collab/useAssigneeOptions';
+import { useAssigneeOptions } from '@liveworkspace/workbench/hooks/collab/useAssigneeOptions';
 import {
   AssigneePicker,
   type PickableMember,
-} from '@/components/dialogs/AssignActionAssigneePicker';
+} from '@liveworkspace/workbench/components/dialogs/AssignActionAssigneePicker';
 import { track } from '@/lib/telemetry';
+import { apiTeamMembers } from '@/lib/api-client';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { presenceColourOf } from '@liveworkspace/settings/presence';
 
@@ -60,10 +61,9 @@ type AssignActionDialogProps = {
   selfName: string | null;
   // The assigner's participant colour, as their cursor wears it (the Myself row's disc).
   selfColor?: string | null;
-  // The document's id + team-library team (null team for a personal
-  // document). Drive the access check: picking a teammate asks the server
-  // whether they can actually open this document (docs/specs/012-collaboration/assigned-actions.md §4).
-  documentId: string | null;
+  // The document's team-library team (null for a personal document). Drives the access check: picking a
+  // teammate asks the server whether they can actually open this document
+  // (docs/specs/012-collaboration/assigned-actions.md §4).
   documentTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a deployment
   // without the EMAIL binding (never advertise a send we can't perform).
@@ -87,7 +87,6 @@ export function AssignActionDialog({
   selfUserId,
   selfName,
   selfColor,
-  documentId,
   documentTeamId,
   emailEnabled,
   onSubmit,
@@ -110,7 +109,7 @@ export function AssignActionDialog({
   // The assignee dataset (Myself row, team members incl. invited, the
   // preselect-on-edit, the per-pick access check, and the by-team
   // grouping) lives in useAssigneeOptions.
-  const { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess } = useAssigneeOptions({
+  const { selfRow, members, grouped, memberOfItemTeam, assigneeAccess } = useAssigneeOptions({
     open,
     existing,
     teams,
@@ -118,10 +117,10 @@ export function AssignActionDialog({
     selfUserId,
     selfName,
     selfColor,
-    documentId,
-    documentTeamId,
+    itemTeamId: documentTeamId,
     assignee,
     setAssignee,
+    loadTeamMembers: apiTeamMembers,
   });
   // Re-seed per open: a reopened dialog must show the CURRENT action (or
   // the create defaults), never the previous attempt. Creating defaults
@@ -290,8 +289,9 @@ export function AssignActionDialog({
             selfRow={selfRow}
             grouped={grouped}
             members={members}
-            memberOfDocumentTeam={memberOfDocumentTeam}
-            documentTeamId={documentTeamId}
+            noun="document"
+            memberOfItemTeam={memberOfItemTeam}
+            itemTeamId={documentTeamId}
             assignee={assignee}
             onPick={setAssignee}
             signInHref={signInHref}

@@ -11,7 +11,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { AccessLevel } from '@livediagram/api-schema';
 import { EDITOR_MODES, editorModeLabel, type EditorMode, type Tab } from '@livediagram/document';
 import { useEditorMode, type EditorModeState } from '@/hooks/editor/useEditorMode';
-import { useViewPreview } from '@/app/document/[id]/useViewPreview';
 import { EditorModeProvider } from './editor-mode-context';
 import { MenuCardFormContext } from '@liveworkspace/workbench/components/chrome/menu-card-form';
 import { EditorModeSwitch } from './EditorModeSwitch';
@@ -181,7 +180,7 @@ describe('EditorModeSwitch slot', () => {
   });
 });
 
-// The switch as the editor drives it: the session role through useViewPreview's one `canEdit`, the tab through
+// The switch as the editor drives it: the session role through its one `canEdit` (useEditorCollaboration), the tab through
 // useEditorMode, a switch committing onto the tab.
 describe('EditorModeSwitch in the editor, by share role', () => {
   let seq = 0;
@@ -210,7 +209,7 @@ describe('EditorModeSwitch in the editor, by share role', () => {
 
   function Host({ tab: initial, role }: { tab: Tab; role: AccessLevel }) {
     const [tabs, setTabs] = useState([initial]);
-    const { canEdit } = useViewPreview(role, () => {});
+    const canEdit = role === 'edit';
     const editorMode = useEditorMode(tabs[0], {
       canEdit,
       commitTabs: (map) => setTabs((ts) => map(ts)),

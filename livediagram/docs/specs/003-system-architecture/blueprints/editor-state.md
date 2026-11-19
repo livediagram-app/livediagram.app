@@ -16,7 +16,7 @@ All under `apps/editor/app/document/[id]/`.
 | `app/document/[id]/editor-state/useEditorSelection.ts`     | Tab scope and `useEditorUiState` (active tab, selection, editing, format source)                                                                                      |
 | `app/document/[id]/editor-state/useEditorDialogs.ts`       | Panel layout, dialogs, context menu, the join screen flags                                                                                                            |
 | `app/document/[id]/editor-state/useEditorTools.ts`         | Laser, eraser and format settings, the canvas tool, the Format tool, the shortcuts switch, `pickCanvasTool`, `pressModeButton`                                        |
-| `app/document/[id]/editor-state/useEditorCollaboration.ts` | `useEditorRealtime`, element deltas, idea posts, presence state, the role preview, the Participant session                                                            |
+| `app/document/[id]/editor-state/useEditorCollaboration.ts` | `useEditorRealtime`, element deltas, idea posts, presence state, the Participant session                                                                              |
 | `app/document/[id]/editor-state/useEditorPersistence.ts`   | Preferences, the persistence slice, share state, document list, Trash, `tabsRef`, autosave, Sync and Take Offline in place, identity bootstrap, the self-save effects |
 | `app/document/[id]/editor-state/useEditorRoom.ts`          | Live poll, resync, changeset feed, reaction bursts, facilitator, Q&A board, `useRoomConnection`, presence broadcast, per-tab load, `retryActiveTabLoad`               |
 | `app/document/[id]/editor-state/useEditorComments.ts`      | Comment threads, teams, mentions, `activeTab`, comment reactions, comment rows, assigned actions, action rows                                                         |
@@ -57,7 +57,7 @@ presentation's view capture before the slide fit). Hooks were moved out of their
 no effects or effects that touch nothing the hooks they now precede touch:
 
 - no effects: `useConfirm`, `useToast`, `useEditorContextMenu`, `useEditorComments`, `useEditorActions`,
-  `useViewPreview`, `useParticipantSession`, and plain `useState` / `useRef` / `useMemo` / `useCallback`;
+  `useParticipantSession`, and plain `useState` / `useRef` / `useMemo` / `useCallback`;
 - independent effects: `usePresenceState` (its roster ref and idle tick) now runs before `useEditorPreferences` and
   `useEditorPersistence` (preference storage, the document title, the import-error timer).
 

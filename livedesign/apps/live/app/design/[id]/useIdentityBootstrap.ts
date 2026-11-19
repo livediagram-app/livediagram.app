@@ -132,8 +132,6 @@ export function useIdentityBootstrap(opts: {
     noteChangesetSeen,
     setActiveId: s.setActiveId,
     setDesignName: s.setDesignName,
-    setDesignOwnerColor: s.setDesignOwnerColor,
-    setDesignOwnerId: s.setDesignOwnerId,
     setDesignOwnerName: s.setDesignOwnerName,
     setDesignShareable: s.setDesignShareable,
     setDesignShareCode: s.setDesignShareCode,

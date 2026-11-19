@@ -225,7 +225,6 @@ export function EditorView() {
     cancelConnect,
     sessionShareCode,
     setShareDialogOpen,
-    renameDocumentNonce,
     renameTabNonce,
     tabs,
     zenMode,
@@ -277,7 +276,7 @@ export function EditorView() {
 
   // A phone held sideways folds the header and the tab bar (docs/specs/007-editor/editor-app.md "A phone
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
-  const landscapeBars = useLandscapeBars([renameDocumentNonce, renameTabNonce]);
+  const landscapeBars = useLandscapeBars([renameTabNonce]);
 
   // The site header and the tab bar (editor-view-bars.tsx). Side by side (docs/specs/007-editor/split-view.md)
   // lays them across both panes.

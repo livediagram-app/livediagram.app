@@ -238,7 +238,7 @@ does (no zones, no page breaks are new to it); adding or splitting a card is a p
   at a time (`useEditorChrome(select, equal)` over `useStoreSlice`), its handlers reading `useEditorChromeStore().get()`
   when they run:
   - `EditorViewHeader` (memo) and `EditorViewFooter` (`withStableEventProps`) in `editor-view-bars.tsx`: the header
-    and the role pill from slices; the tab bar's `tabs` compared by `sameTabsForBar` (a tab whose only change is its
+    from slices; the tab bar's `tabs` compared by `sameTabsForBar` (a tab whose only change is its
     `elements` or `articles` is the same tab to the bar).
   - The hosts are made once at module scope in `EditorView.tsx` (`TAB_DIALOGS`, `COLLABORATORS`, `PRESENTATION`,
     `MODALS`, `TOURS`, `START_PANELS`), so the view's render passes them over. `EditorTabDialogs`, `CollaboratorsHost`,

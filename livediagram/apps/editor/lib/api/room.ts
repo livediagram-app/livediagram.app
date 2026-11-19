@@ -141,7 +141,7 @@ export const ROOM_FULL_NOTICE = `${ROOM_FULL_MESSAGE}. Your changes still save, 
 // outage can't grow it without end; past the bound, newer ops are dropped
 // and the next save still carries the state to the canvas.
 const OUTBOX_MAX = 500;
-function isOutboxOp(msg: RoomOutgoing): boolean {
+export function isOutboxOp(msg: RoomOutgoing): boolean {
   if (msg.kind !== 'op') return false;
   const kind = (msg.op as { kind?: unknown }).kind;
   return kind === 'poll-answer' || isMutationOpKind(kind);

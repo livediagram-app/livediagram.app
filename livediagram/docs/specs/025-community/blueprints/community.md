@@ -276,8 +276,7 @@ Editor (`apps/editor`):
   check reads) it disables the button beside `communityCodeMessage('empty_document')`. A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
   Remove.
 - Public badge: `apps/editor/lib/community-state-store.ts` (an external store, seeded from the document fetch and
-  updated by the Community section on publish or remove) feeds `SharedBadge`'s `community` state, labelled **Public**,
-  which wins over Private, Shared and Team (only This Browser beats it).
+  updated by the Community section on publish or remove) is read by the editor's corner card and Share dialog (the open editor has no header badge).
 - `resolveDocumentSession` (`apps/editor/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
   link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
   Open Canvas can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Canvas in the bar.
@@ -497,7 +496,6 @@ page's api errors read `[community] api <status> <code>`. Telemetry per the spec
 | Post row mapping (Anonymous, state)        | liveworkspace/apps/community/src/posts.test.ts                                                                                                 |
 | Community links, sync state                | `apps/api/src/routes/community-routes.test.ts`                                                                                                 |
 | Service routes, keys, CORS                 | liveworkspace/apps/community/src/index.test.ts                                                                                                 |
-| Public badge                               | `../packages/workbench/src/components/chrome/SharedBadge.test.tsx`                                                                             |
 | Community bar                              | `apps/editor/components/chrome/CommunityBar.test.tsx`                                                                                          |
 | Share dialog with Community, switched off  | packages/community-ui/src/share/useCommunityShareTab.test.tsx, `apps/editor/components/dialogs/community/ShareDialogWithCommunity.test.tsx`    |
 | Community section, focus follows           | packages/community-ui/src/share/CommunitySection.test.tsx                                                                                      |

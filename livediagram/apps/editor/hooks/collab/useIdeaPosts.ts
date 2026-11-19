@@ -4,6 +4,8 @@ import type { connectRoom } from '@/lib/api-client';
 import { applyDeltaToTabs, type PendingIdeaIds } from '@/app/document/[id]/room-op-apply';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
+import type { RoomOutgoing } from '@livediagram/api-schema';
+import { sendOrHold, type PreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 
 // This Browser's idea posts, from the press until the room answers them
 // (docs/specs/012-collaboration/idea-box.md "Racing for the last card", blueprint idea-box-race.md).
@@ -30,12 +32,14 @@ export function useIdeaPosts(deps: {
   tabs: Tab[];
   tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   roomRef: RefObject<ReturnType<typeof connectRoom> | null>;
+  // Holds an idea posted before the room client exists, for the room about to open (pre-room-outbox).
+  preRoomOutbox: PreRoomOutbox<RoomOutgoing>;
   onRefused: (message: string) => void;
 }): {
   post: (tabId: string, element: ShapeElement, text: string) => Promise<boolean>;
   pendingIdeaIds: PendingIdeaIds;
 } {
-  const { tabs, tickTabs, roomRef } = deps;
+  const { tabs, tickTabs, roomRef, preRoomOutbox } = deps;
   const pending = useRef(new Map<string, IdeaPost>());
   const onRefused = useLatest(deps.onRefused);
 
@@ -55,15 +59,22 @@ export function useIdeaPosts(deps: {
         pending.current.set(id, { tabId, elementId: element.id, round, seen: false, resolve });
         tickTabs((ts) => applyDeltaToTabs(ts, tabId, element.id, delta));
         const room = roomRef.current;
-        // No live room, nobody to race: the card is in.
-        if (!room) return settle(id, true);
+        // No room client yet, nobody to race: the card is in, and the idea is held for the room about to open
+        // (pre-room-outbox), so peers already there still see it.
+        if (!room) {
+          sendOrHold(preRoomOutbox, null, {
+            kind: 'op',
+            op: { kind: 'el-delta', tabId, elementId: element.id, delta },
+          });
+          return settle(id, true);
+        }
         // Answered, or never reached the room (a dropped socket, no answer in time): either way it is no
         // longer this browser's to give up.
         void room
           .sequence({ kind: 'el-delta', tabId, elementId: element.id, delta })
           .then(() => settle(id, true));
       }),
-    [tickTabs, roomRef, settle],
+    [tickTabs, roomRef, preRoomOutbox, settle],
   );
 
   const pendingIdeaIds = useCallback<PendingIdeaIds>((tabId, elementId) => {

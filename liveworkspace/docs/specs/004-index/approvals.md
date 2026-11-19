@@ -197,7 +197,7 @@ Four events, written in the batch that makes the change, with the actor named as
 Three surfaces, the same in every app that offers approvals, from `@liveworkspace/explorer`'s approvals kit: the app's
 host builds a door from its gate and hands it to the provider; nothing is read for anyone without a door.
 
-- **The badge**, in the header's pills after the role pill: Awaiting n of m (amber, a clock), Changes Requested (rose,
+- **The badge**, first in the editor's corner card: Awaiting n of m (amber, a clock), Changes Requested (rose,
   a flag), Approved (green, a checked page), Changed Since Approval (amber outline, a pencil). Its tooltip names the
   requester, the due day (and Overdue) and who has and hasn't answered. For an Editor of the whole item it opens the
   Share dialog on its Approval tab. With no header bar it leads the editor's corner card (`EditorCornerActions`,

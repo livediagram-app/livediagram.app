@@ -46,7 +46,6 @@ const props = (over: Partial<Props>): Props => ({
   ownerId: 'u_ada',
   selfUserId: 'u_ada',
   selfName: 'Ada',
-  documentId: 'd1',
   documentTeamId: 'team_1',
   emailEnabled: false,
   onSubmit: vi.fn(),

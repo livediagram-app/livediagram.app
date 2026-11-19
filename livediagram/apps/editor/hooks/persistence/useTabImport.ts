@@ -3,12 +3,14 @@
 // replace, and the format-dispatched importer (JSON / DSL / Markdown)
 // with its lazy-loaded parser cluster (JSON / Markdown / Mermaid /
 // Excalidraw, docs/specs/020-import-export/excalidraw-import-export.md, and
-// draw.io, docs/specs/020-import-export/drawio-import.md, whose extra pages
-// become new tabs).
+// draw.io, docs/specs/020-import-export/drawio-import.md, and Visio,
+// docs/specs/020-import-export/visio-import.md, whose extra pages become new tabs).
 
 import { remapElementRefs, savableElements, type Element, type Tab } from '@livediagram/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
+import type { VisioImportResult } from '@/lib/visio/import';
+import { VISIO_MAX_FILE_BYTES, VISIO_TAB_FILE_ACCEPT } from '@/lib/visio/limits';
 import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
 import { BPMN_FILE_ACCEPT, BPMN_MAX_FILE_BYTES } from '@/lib/bpmn/limits';
 import { INFRA_FILE_ACCEPT, INFRA_FILE_MAX_BYTES, infraImportOutcome } from '@/lib/infra-import';
@@ -47,7 +49,7 @@ export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
 }
 
 export type ImportFormat =
-  'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio' | 'bpmn' | 'infra';
+  'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio' | 'visio' | 'bpmn' | 'infra';
 type ImportProgressListener = (progress: ImportImageProgress) => void;
 
 const EXCALIDRAW_TELEMETRY_TYPE = {
@@ -153,24 +155,21 @@ export function useTabImport({
     return outcome;
   };
 
-  // draw.io (docs/specs/020-import-export/drawio-import.md): the first page replaces the active
-  // tab, every further page becomes a new tab after it, all in ONE commit so a single undo takes
-  // the whole import back. Embedded images go through the import image pipeline BEFORE the tabs
+  // draw.io (docs/specs/020-import-export/drawio-import.md) and Visio (visio-import.md, built on draw.io's converter):
+  // the first page replaces the active tab, every further page becomes a new tab after it, all in ONE commit so a
+  // single undo takes the whole import back. Embedded images go through the import image pipeline BEFORE the tabs
   // change, for the same reason, in one pass across every page.
-  const importDrawioInput = async (
-    input: DrawioInput,
+  const importPages = async (
+    read: (tabIdForPage: (index: number) => string) => Promise<VisioImportResult>,
+    telemetryType: 'Drawio' | 'Visio',
     onProgress?: ImportProgressListener,
   ): Promise<ImportOutcome> => {
-    const [{ importDrawio }, { applyDrawioPages }, { attachDrawioImages }, { drawioOutcome }] =
-      await Promise.all([
-        import('@/lib/drawio/import'),
-        import('./drawio-apply'),
-        import('@/lib/drawio/images'),
-        import('@/lib/drawio/report'),
-      ]);
-    const result = await importDrawio(input, {
-      tabIdForPage: (index) => (index === 0 ? activeId : crypto.randomUUID()),
-    });
+    const [{ applyDrawioPages }, { attachDrawioImages }, { drawioOutcome }] = await Promise.all([
+      import('./drawio-apply'),
+      import('@/lib/drawio/images'),
+      import('@/lib/drawio/report'),
+    ]);
+    const result = await read((index) => (index === 0 ? activeId : crypto.randomUUID()));
     if (!result.ok) return { status: 'error', error: result.error };
     const { pages, images } = await attachDrawioImages(
       result.pages,
@@ -192,14 +191,41 @@ export function useTabImport({
     setEditingId(null);
     setFormatSourceId(null);
     if ((pages[0]?.elements.length ?? 0) > 0) requestFit();
-    track('Tab', 'Imported', 'Drawio');
-    debugLog('[drawio-import] applied', {
+    track('Tab', 'Imported', telemetryType);
+    debugLog(telemetryType === 'Visio' ? '[visio-import] applied' : '[drawio-import] applied', {
       pages: result.report.pages,
       elements: result.report.elements,
       notes: Object.fromEntries(result.report.notes.map((n) => [n.kind, n.count])),
       ...(images ? { images } : {}),
     });
     return drawioOutcome(result.report, pages, images);
+  };
+
+  const importDrawioInput = (input: DrawioInput, onProgress?: ImportProgressListener) =>
+    importPages(
+      async (tabIdForPage) =>
+        (await import('@/lib/drawio/import')).importDrawio(input, { tabIdForPage }),
+      'Drawio',
+      onProgress,
+    );
+
+  // A .vsdx, picked or dropped (docs/specs/020-import-export/visio-import.md). Past the limit it is never read:
+  // reading it would hang the tab before it is refused.
+  const importVisioFile = async (
+    file: Blob,
+    onProgress?: ImportProgressListener,
+  ): Promise<ImportOutcome> => {
+    if (file.size > VISIO_MAX_FILE_BYTES) {
+      const { visioRefusalMessage } = await import('@/lib/visio/refusals');
+      return { status: 'error', error: visioRefusalMessage('too-large') };
+    }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    return importPages(
+      async (tabIdForPage) =>
+        (await import('@/lib/visio/import')).importVisio(bytes, { tabIdForPage }),
+      'Visio',
+      onProgress,
+    );
   };
 
   // A wrangler.toml or Compose file drawn as an architecture tab (docs/specs/020-import-export/infrastructure-import.md
@@ -277,6 +303,8 @@ export function useTabImport({
     }
 
     if (format === 'drawio') return importDrawioInput({ kind: 'text', text }, onProgress);
+    // A .vsdx is a zip: there is nothing to paste (visio-import.md "UI").
+    if (format === 'visio') return { status: 'error', error: 'Choose a .vsdx file to import.' };
     if (format === 'excalidraw') return importExcalidraw(text, onProgress);
     if (format === 'infra') return importInfra(text, fileName);
     if (format === 'bpmn') return importBpmnText(text);
@@ -337,14 +365,22 @@ export function useTabImport({
   // Import a FILE into the active tab (docs/specs/020-import-export/markdown-import.md). Picks a file for the
   // chosen format, then hands its text to importTextIntoActiveTab so the
   // file and paste paths converge on one parser. Returns the dialog
-  // outcome; 'cancelled' when the file picker is dismissed.
+  // outcome; 'cancelled' when the file picker is dismissed. A file already in hand (dropped on a binary format's
+  // panel, visio-import.md "UI") skips the picker.
   const importIntoActiveTab = async (
     format: ImportFormat,
     onProgress?: ImportProgressListener,
+    dropped?: File,
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
+    }
+    if (format === 'visio') {
+      if (dropped) return importVisioFile(dropped, onProgress);
+      const { pickTabFile } = await import('@/lib/import-tab');
+      const picked = await pickTabFile(VISIO_TAB_FILE_ACCEPT, { binary: true });
+      return picked ? importVisioFile(picked.file, onProgress) : { status: 'cancelled' };
     }
     const accept =
       format === 'markdown'

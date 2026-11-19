@@ -38,6 +38,7 @@ import {
 import type { DockAnchor, DockPanel } from '@/hooks/canvas/useDockPopovers';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import { PanelSnapSlot } from '@liveworkspace/workbench/components/canvas/PanelSnapSlot';
+import { useRenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor/useRenameCurrentRequest';
 import { useCanvasChromePanels } from './useCanvasChromePanels';
 import { StripMorph } from '@/components/palette/StripMorph';
 import { usePaletteDragGuides } from '@/hooks/canvas/usePaletteDragGuides';
@@ -251,10 +252,23 @@ export function CanvasChrome(props: CanvasChromeProps) {
       walkBlockedReason={startOpen ? 'Pick a template or close Start a Space to walk.' : undefined}
     />
   ) : undefined;
+  // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
+  // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
+  const explorerButtonRef = useRef<HTMLButtonElement>(null);
+  const renameCurrent = useRenameCurrentRequest({
+    nonce: props.renameCurrentNonce ?? 0,
+    explorerOpen: activeDockPanel === 'explorer',
+    available: !props.explorerHidden,
+    openExplorer: () => {
+      const button = explorerButtonRef.current;
+      if (button) handleDockButtonClick('explorer', button);
+    },
+  });
   const explorerMenuButton = props.explorerHidden ? null : (
     <ToolbarExplorerButton
       open={activeDockPanel === 'explorer'}
       onToggle={(button) => handleDockButtonClick('explorer', button)}
+      buttonRef={explorerButtonRef}
       inline={menuInStrip}
     />
   );
@@ -262,6 +276,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // Panel elements + their wiring live in useCanvasChromePanels.
   const { panelEls, explorerEl, paletteTint } = useCanvasChromePanels({
     props,
+    renameCurrent,
     chromeHidden,
     isMobile,
     panelWiringFor,

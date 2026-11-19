@@ -297,12 +297,16 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     keywords: 'rename tab title name relabel',
     run: h.renameTab,
   });
-  out.push({
-    id: 'rename-design',
-    name: 'Rename Design',
-    keywords: 'rename design diagram title name relabel',
-    run: h.renameDesign,
-  });
+  // It renames in the Explorer panel (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the
+  // search"), which neither Zen mode nor a workspace frame shows.
+  if (!ctx.zenMode && !ctx.workbench) {
+    out.push({
+      id: 'rename-design',
+      name: 'Rename Design',
+      keywords: 'rename design diagram title name relabel',
+      run: h.renameDesign,
+    });
+  }
   if (!ctx.workbench) {
     out.push({
       id: 'delete-design',
