@@ -67,6 +67,9 @@ type LibraryProviderProps = {
   onSaved?: (scope: 'personal' | 'team') => void;
   // Told after each place the door answered (a click or a drop), with whose library it came from (the same).
   onPlaced?: (scope: 'personal' | 'team') => void;
+  // Told when a place the door refused or failed, with the same words the Library's notice shows: the editor shows them
+  // as an error toast on the canvas, so the failure is seen with the palette closed (libraries.md "Placing").
+  onPlaceFailed?: (message: string) => void;
   // Where the editor shows a picture from, so a save sends its small copies for the tile (libraries.md "Pictures").
   pictures?: LibraryPictureSource;
   children: React.ReactNode;
@@ -83,6 +86,7 @@ function LoadedLibraryProvider({
   localItems,
   onSaved,
   onPlaced,
+  onPlaceFailed,
   pictures,
   children,
 }: LibraryProviderProps) {
@@ -139,7 +143,11 @@ function LoadedLibraryProvider({
 
   // Each action clears the last notice, and a refusal sets the next.
   const attempt = useCallback(
-    async <T,>(run: () => Promise<T>, reloads = true): Promise<T | null> => {
+    async <T,>(
+      run: () => Promise<T>,
+      reloads = true,
+      onRefused?: (message: string) => void,
+    ): Promise<T | null> => {
       setNotice(null);
       try {
         const value = await run();
@@ -147,7 +155,9 @@ function LoadedLibraryProvider({
         return value;
       } catch (error) {
         console.warn('[library] action refused', { error: String(error) });
-        setNotice(libraryErrorMessage(error));
+        const message = libraryErrorMessage(error);
+        setNotice(message);
+        onRefused?.(message);
         return null;
       }
     },
@@ -160,12 +170,12 @@ function LoadedLibraryProvider({
       const placed = held
         ? { width: item.width, height: item.height, elements: held.elements }
         : api
-          ? await attempt(() => api.place(item.id), false)
+          ? await attempt(() => api.place(item.id), false, onPlaceFailed)
           : null;
       if (placed) onPlaced?.(item.scope);
       return placed;
     },
-    [api, attempt, local, onPlaced],
+    [api, attempt, local, onPlaced, onPlaceFailed],
   );
 
   const value = useMemo<LibraryContextValue | null>(
