@@ -12,6 +12,7 @@ import {
   AUTOMATION_RULE_MAX,
   AUTOMATION_SENDS_MAX,
   AUTOMATION_TEXT_MAX,
+  cardRefFor,
   WEBHOOK_PENDING_MAX,
   WEBHOOK_URL_MAX,
   type App,
@@ -70,8 +71,10 @@ function parseSend(env: Env, app: App, value: unknown, now: number): Parsed | nu
     if (!Number.isInteger(c.key) || typeof c.title !== 'string' || typeof c.url !== 'string') {
       return null;
     }
+    const ref = cardRefFor(c.ref, c.key as number);
     card = {
       key: c.key as number,
+      ...(ref ? { ref } : {}),
       title: cut(c.title.trim(), CARD_TITLE_MAX) || 'Untitled',
       url: cardUrl(env, app, c.url),
     };

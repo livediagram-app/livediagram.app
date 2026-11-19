@@ -159,6 +159,17 @@ describe('queuing a send', () => {
       send(named.id, { key: 'c', card: { key: 3, title: 'Bad', url: 'not a url' } }),
       send(named.id, { key: 'd', card: null }),
     ]);
+    // Its prefixed ref, kept only when it names the card's number (Work Tracker 1295).
+    await results(plan.id, [
+      send(named.id, {
+        key: 'e',
+        card: { key: 48, ref: 'WI-48', title: 'Ref', url: 'https://liveplanner.app/project/p' },
+      }),
+      send(named.id, {
+        key: 'f',
+        card: { key: 49, ref: 'WI-48', title: 'Off', url: 'https://liveplanner.app/project/p' },
+      }),
+    ]);
     const details = deliveries().map((d) => JSON.parse(d.detail as string));
     expect(details[0].rule).toBe('r'.repeat(60));
     expect(details[0].text).toHaveLength(2000);
@@ -173,6 +184,8 @@ describe('queuing a send', () => {
     });
     expect(details[2].card.url).toBeNull();
     expect(details[3].card).toBeNull();
+    expect(details[4].card).toMatchObject({ key: 48, ref: 'WI-48' });
+    expect(details[5].card).not.toHaveProperty('ref');
   });
 
   it('keeps no card link while the app has no origin set', async () => {
