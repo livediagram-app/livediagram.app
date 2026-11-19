@@ -972,4 +972,39 @@ describe('<ExplorerPanel> Inbox filter', () => {
     fireEvent.change(select, { target: { value: 'waiting' } });
     expect(select.value).toBe('waiting');
   });
+
+  // Work Tracker 1315: the rail's badge counts this app's rows, as the editor's menu button does, whichever filter
+  // the list shows; another app's row stays listed under All.
+  it("counts this app's rows in the rail's badge, the list showing every app's", async () => {
+    const index = createFakeIndex({ items: [] });
+    const mine = (app: 'liveplanner' | 'livediagram', id: string) => ({
+      app,
+      itemId: `i-${id}`,
+      itemTitle: 'Plan',
+      itemTeamId: null,
+      tabId: 't1',
+      tabName: 'Board',
+      elementId: id,
+      actionId: id,
+      elementLabel: '',
+      name: `Action ${id}`,
+      description: '',
+      status: 'open' as const,
+      assigneeId: 'user_me',
+      assigneeName: 'Me',
+      assignerId: 'user_ada',
+      assignerName: 'Ada',
+      teamId: null,
+      card: null,
+      createdAt: 1,
+      updatedAt: 2,
+    });
+    index.inbox.actions.push(
+      mine('liveplanner', 'a1'),
+      mine('livediagram', 'a2'),
+      mine('livediagram', 'a3'),
+    );
+    renderPanel(index, { viewerId: 'user_me', filter: 'all' });
+    expect(await within(rail()).findByRole('button', { name: 'Inbox (1)' })).toBeTruthy();
+  });
 });
