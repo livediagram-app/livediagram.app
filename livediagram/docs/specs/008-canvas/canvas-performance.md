@@ -289,9 +289,10 @@ large move rides as one layer").
   for the length of the text: in a 100,000-character text box it stays under 100 ms in a production build. The
   browser lays a label out line by line in its own direction (`unicode-bidi: plaintext`, canvas-and-palette.md
   "Labels"), which costs the square of a line's length: a 100,000-character line took 45 ms to lay out again on
-  every keystroke. So the editor lays its text out that way only when the direction could differ from line to
-  line (right-to-left letters and more than one line); otherwise it is one isolated run in the direction of its
-  first letter, which draws the same. A text box that hugs its text measures a copy of the editor on every
+  every keystroke. So the editor never lays its text out that way: when the direction could differ from line to
+  line (right-to-left letters and more than one line) each line is its own isolated run in the direction of its
+  own first letter, and otherwise the whole text is one isolated run in the direction of its first letter. Both
+  draw the same as line by line, and neither costs more for a longer line. A text box that hugs its text measures a copy of the editor on every
   keystroke; the copy is edited where the text changed rather than made afresh, so the browser lays out the
   change, not the whole text again.
 

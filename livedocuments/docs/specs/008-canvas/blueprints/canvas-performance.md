@@ -413,12 +413,14 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   a `'\n'` and a strong right-to-left letter (`hasRightToLeftLetter`: Hebrew, Arabic, Syriac, Thaana, NKo,
   Samaritan, Mandaic and their presentation forms, and the astral right-to-left blocks), else `'isolate'`. One
   left-to-right scan, no backtracking.
-- The label editor (`apps/*/components/canvas/RichTextEditor.tsx`) sets it as its inline `unicodeBidi` from the
-  session's `liveText`, over the stylesheet's `plaintext` (`app/label-bidi.css`). With `dir="auto"`, `isolate`
-  takes the direction of the first strong letter of the whole text, which is the first line's, so a text that
-  cannot differ line by line draws the same either way.
+- The label editor (`../packages/workbench/src/components/label-editor/LabelEditor.tsx`, bound by each editor's
+  `components/canvas/RichTextEditor.tsx`) is always `isolate` with `dir="auto"`, over the stylesheet's `plaintext`
+  (`app/label-bidi.css`). When `labelEditorBidi` answers `'plaintext'`, the runs machine paints a line at a time
+  (`rich-text-lines.ts`): each line's runs inside a `dir="auto"` isolate, each newline outside them. It paints again
+  only when the lines run together or the answer changes, so typing within a line paints nothing
+  (`../liveworkspace/docs/specs/011-workbench/blueprints/label-editor.md` "Mixed-direction lines").
 - `listStyleOfText` reads only the first line (up to the first `'\n'`), never splitting the whole text.
-- The hug measurer (`apps/*/components/canvas/text-hug-measure.ts`) copies the live editor with
+- The hug measurer (`../packages/workbench/src/components/label-editor/text-hug-measure.ts`) copies the live editor with
   `mirrorChildren(measurer, editor)` (`../packages/workbench/src/lib/mirror-children.ts`): while both hold the same
   nodes (same elements, same attributes, same text nodes) it replaces only the changed middle of each changed text
   (`Text.replaceData` between the common start and end), so the browser keeps the shaping it already did; any other
@@ -430,9 +432,9 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
   74 characters: 72 ms before and 48 ms after with the CPU slowed four times.
 - Tests: `label-bidi.test.ts` (the rule, and a CPU-time budget on a 100,000-character text);
   `mirror-children.test.ts` (edits in place, falls back to clones, and a CPU-time budget on a keystroke into
-  100,000 characters); `RichTextEditor.long-text.test.tsx` (the editor takes `isolate` for long left-to-right text
-  and `plaintext` once right-to-left text has a second line, and a keystroke's work on 100,000 characters stays
-  inside a CPU-time budget).
+  100,000 characters); `LabelEditor.long-text.test.tsx` in the workbench (the editor takes `isolate` for long
+  left-to-right text and paints right-to-left text a line at a time once it has a second line, and a keystroke's
+  work on 100,000 characters stays inside a CPU-time budget, flat and line by line).
 
 ### At rest
 

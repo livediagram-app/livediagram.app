@@ -6,5 +6,7 @@ Follow the references below only as needed; never upfront.
   session checks, allowances and ending access
 - ./tab-style.md - when implementing the shared Tab Style dialog: its files, the profile's types, the resolve,
   constants and tests
+- ./label-editor.md - when implementing the shared label editor: its files, the binding, the mixed-direction lines,
+  measurements and tests
 - ./DEFAULTS.md - when you need a default the workbench specs leave open
 - ./COMPLETENESS.md - when checking which completeness categories the workbench blueprint covers
