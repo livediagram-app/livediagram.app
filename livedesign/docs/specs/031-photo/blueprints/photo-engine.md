@@ -104,7 +104,9 @@ not design: where a spec is silent the default is in [DEFAULTS.md](DEFAULTS.md).
     - Crop: `PhotoCanvasOverlays` calls `beginCrop` when Crop is taken in hand on an editable photo (no box open),
       so the box and grid show at once. `fittedBox(photo, ratio)` is the largest box of the ratio centred in a
       rectangle; `reshapeCrop` gives a level box `fittedBox(photo, r)` clamped inside the photo about the old centre,
-      and a straightened box `fittedBox(itself, r)` about its centre. Free returns early.
+      and a straightened box `fittedBox(itself, r)` about its centre. Free returns early. On a phone the Crop
+      button of `PhotoPhoneHeldBar` and of the sheet (`PhotoToolOptionsBody`'s `onCropped`, passed by
+      `PhotoPhoneOptionsSheet`) call `commitCrop` and then `toolFlyout.close()`; the desktop card stays open.
     - Export: `photo-export.ts` (with `allSizesZip` and `sizeFileNames` for All Sizes).
   - `components/photo/`: `PhotoPagesLayer.tsx` and `PhotoSurface.tsx` (the page's canvas), `PhotoChrome.tsx`,
     `PhotoCanvasOverlays.tsx` and `PhotoToolOverlay.tsx` (presses, the cursor, marching ants, boxes),
