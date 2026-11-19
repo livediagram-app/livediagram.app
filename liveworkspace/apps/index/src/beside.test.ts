@@ -1,5 +1,5 @@
 // A file made beside an item over HTTP (liveworkspace/docs/specs/004-index/connected-tabs.md "A file made beside it",
-// Work Tracker 1281): who may (a guest, an agent, a host Viewer or Editor by link), the limit, the template door's call
+// Work Tracker 1281): who may (a guest, an agent, a host Viewer, Participant or Editor by link), the limit, the template door's call
 // and folder, a failed door, a refused connection taking the made file away, and both ways.
 import {
   CONNECTIONS_PER_ITEM,
@@ -173,7 +173,7 @@ describe('who may make one', () => {
     expect(doorCalls()).toEqual([]);
   });
 
-  it("refuses a Viewer of the host, another item's grant, a malformed body and another method", async () => {
+  it("refuses a Viewer or Participant of the host, another item's grant, a malformed body and another method", async () => {
     const { ada, doc, grant } = await host();
     const bob = await person('user_b');
     const code = (await link(ada.auth, doc.id, { level: 'view' })).code;
@@ -182,6 +182,12 @@ describe('who may make one', () => {
     expect((await beside(bob.auth, doc.id, { offer: 'plan', tabId: 't' }, viewer)).status).toBe(
       403,
     );
+    const cara = await person('user_c');
+    const joinCode = (await link(ada.auth, doc.id, { level: 'participate' })).code;
+    const participant = await grantFor(cara.auth, doc.id, joinCode);
+    expect(
+      (await beside(cara.auth, doc.id, { offer: 'plan', tabId: 't' }, participant)).status,
+    ).toBe(403);
     const other = await makeItem(ada.auth, { app: 'livedocuments' });
     expect((await beside(ada.auth, other.id, { offer: 'plan', tabId: 't' }, grant)).status).toBe(
       403,
