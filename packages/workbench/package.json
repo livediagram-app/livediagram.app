@@ -102,7 +102,6 @@
     "./components/chrome/TabFolderGroup": "./src/components/chrome/TabFolderGroup.tsx",
     "./components/chrome/ConnectedTab": "./src/components/chrome/ConnectedTab.tsx",
     "./components/chrome/TabFrame": "./src/components/chrome/TabFrame.tsx",
-    "./components/chrome/TabNameInBox": "./src/components/chrome/TabNameInBox.tsx",
     "./components/chrome/TabStrip": "./src/components/chrome/TabStrip.tsx",
     "./components/chrome/TrashedCard": "./src/components/chrome/TrashedCard.tsx",
     "./components/chrome/auth-lines": "./src/components/chrome/auth-lines.ts",

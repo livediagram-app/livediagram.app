@@ -1,7 +1,8 @@
 'use client';
 
 // The open tab's name, for the menu box (docs/specs/007-editor/toolbar-layout.md "The tab's name"): published by the
-// editor through usePublishTabName as the tab opens or is renamed, read by TabNameInBox. A module store, so only the
+// editor through usePublishTabName as the tab opens or is renamed. No menu box reads it since the shared TabNameInBox went
+// (Work Tracker 1289); it goes with every editor's publish once nothing else is changing them. A module store, so only the
 // name re-renders when it changes.
 import { useLayoutEffect, useSyncExternalStore } from 'react';
 import { useLatest } from '../ui/useLatest';

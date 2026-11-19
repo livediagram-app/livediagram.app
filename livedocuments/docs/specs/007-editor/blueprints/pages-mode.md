@@ -728,8 +728,7 @@ joinedMenuCardWidth(joinedWidth, toolbarScale)` (the sidebar less the card's 12 
   `useStripCrowding` returns that crowding with `clear` (the box's right edge less the editor's left, plus
   `STRIP_MENU_GAP_PX`); crowded with the article dock, `ToolbarPalette` pads its row's left by
   `max(clear, besideWidth)` and draws the card as a phone's (`CardWidth` `flex min-w-0 max-w-full`, the card
-  `min-w-0`, all but the `data-strip-rail` dock `shrink-0`), so the dock's rail scrolls beside the box. `TabNameInBox` lets its name and its rename
-  box shrink (`min-w-0`) inside the fixed width.
+  `min-w-0`, all but the `data-strip-rail` dock `shrink-0`), so the dock's rail scrolls beside the box.
   - The strip's room (toolbar-layout.md "The strip's room"): `useBarFold` (`../packages/workbench/src/components/palette/useBarFold.ts`,
     on while the bar is bare and off on a phone) measures the whole bare bar once (`BarMeasure`: each
     `[data-category-bar-button]`'s end, the card past the last, the narrowest button) and `barFold(measure, room)`
