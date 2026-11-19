@@ -215,7 +215,8 @@ verdict's reason, `made`, `gone`, `refused_sender`, `busy`, `unavailable`), each
   rolled back with "Couldn't save. Try again."), the note, footer New Address and Turn Off (`ConfirmPopover` each)
   and Done.
 - Item panel footer: `MetaRow` with the mail glyph, "From email" and the address in `META_NAME`, the full address in
-  its tooltip.
+  its tooltip. The Edited by row is left out while the card's Last Edited By is its maker and its Last Edited At is its
+  Created At (`ItemMeta`'s `unedited`).
 
 ## Accessibility
 

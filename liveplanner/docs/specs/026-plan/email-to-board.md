@@ -97,7 +97,9 @@ made by no person:
   (14 MB, over 10 MB)."
 - **From email**: the card keeps the sender's address in its `fromEmail` field, and its panel's footer says
   **From email alice@example.com** with a mail glyph, beside Created by (which names the same address). Its history
-  starts "Created this card from an email in <column>".
+  starts "Created this card from an email in <column>". The footer has no Edited by row while the card is as it was
+  made (its Last Edited By is the sender and its Last Edited At is when it was made, which a picture attached as the
+  card is made does not change): only Created by, until someone really edits it.
 - **Rules**: the card starts the plan's [Automations](automations.md) once, as any new card does: **Card Created**
   rules hear it, and so do **[Email Received](automations.md#email-received)** rules, which hear only email cards,
   narrowed by the board and by the sender (an address or a domain), and can write the sender as `{{from}}`.
