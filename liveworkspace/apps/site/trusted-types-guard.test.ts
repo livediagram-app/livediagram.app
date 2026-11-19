@@ -46,12 +46,13 @@ const text = (f: string) => read(`${root}${f}`);
 const htmlExpressions = (source: string) => [...source.matchAll(/\{\.\.\.htmlProps\(/g)];
 
 // Markup fed in unsanitised through the escape hatch (trustedConstant, builtMarkup) outside a layout: the random
-// UUID boot script, and the editors' face-finish ink (built from geometry and stored colours that dropUnsafeColours
-// checked). The Explorer's silent sign-in script comes from its layout, and the JSON-LD block is jsonScript's
+// UUID boot script, the editors' face-finish ink (built from geometry and stored colours that dropUnsafeColours
+// checked), and the Tab Style look cards' sample previews (the product's exporter, drawing its own sample). The Explorer's silent sign-in script comes from its layout, and the JSON-LD block is jsonScript's
 // (JSON with < escaped). Everything else goes through sanitizedHtml.
 const BUILDER_MARKUP = [
   'packages/ui/src/random-uuid-boot.ts',
   'packages/workbench/src/components/canvas/face-finish-ink.ts',
+  'packages/workbench/src/components/dialogs/tab-style/LooksCarousel.tsx',
 ];
 
 describe('Trusted Types sinks', () => {

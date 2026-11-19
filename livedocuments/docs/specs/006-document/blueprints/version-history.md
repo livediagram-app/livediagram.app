@@ -4,16 +4,17 @@ Derived from [Version history](../version-history.md). Rules are numbered `VH<n>
 
 ## Domain and naming
 
-| Spec term         | Identifier                                                                                     |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| version           | a `tab_versions` row; `VersionSummary` on the wire (`@livedocuments/api-schema` `versions.ts`) |
-| kind              | `VersionKind` = `'idle' \| 'agent' \| 'restore' \| 'manual'`                                   |
-| named version     | a row whose `name` is not NULL                                                                 |
-| automatic version | a row whose `name` is NULL                                                                     |
-| restore           | `restoreVersion` (`apps/api/src/versions/restore.ts`)                                          |
-| make a copy       | `copyVersion` (`apps/api/src/versions/copy.ts`)                                                |
-| what changed      | `versionChanges(version, now)` (`@livedocuments/document` `version-changes.ts`)                |
-| Version History   | `VersionHistoryPanel` (`apps/editor/components/versions/`)                                     |
+| Spec term         | Identifier                                                                                                                                             |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| version           | a `tab_versions` row, or a `tab_named_versions` row with its `snapshots` row; `VersionSummary` on the wire (`@livedocuments/api-schema` `versions.ts`) |
+| kind              | `VersionKind` = `'idle' \| 'agent' \| 'restore' \| 'manual'`                                                                                           |
+| named version     | a `tab_versions` row whose `name` is not NULL, or a version in the snapshots' store (always named)                                                     |
+| the two stores    | `tab_versions` (the old store) and the snapshots' store (`db/named-versions.ts` over `@liveworkspace/snapshots/server`)                                |
+| automatic version | a row whose `name` is NULL                                                                                                                             |
+| restore           | `restoreVersion` (`apps/api/src/versions/restore.ts`)                                                                                                  |
+| make a copy       | `copyVersion` (`apps/api/src/versions/copy.ts`)                                                                                                        |
+| what changed      | `versionChanges(version, now)` (`@livedocuments/document` `version-changes.ts`)                                                                        |
+| Version History   | `VersionHistoryPanel` (`apps/editor/components/versions/`)                                                                                             |
 
 ## Data and persistence
 
@@ -61,6 +62,47 @@ VERSION_AUTO_MAX_DAYS`, and unnamed rows whose running byte total from the newes
   `instr(data, person)`, and sets `author_id`/`author_name` to the anonymised person.
 - **VH8 copies.** A document copy (`exportCopy`) reads `tabs` only: no versions travel.
 
+Schema step 11 (`document-schema.ts` `V11`, from `versions/named-store-schema.ts`), additive and idempotent: the
+platform's `SNAPSHOT_SCHEMA` (SN3, `CREATE ... IF NOT EXISTS`, the same SQL its store runs on first use), then
+
+```sql
+CREATE TABLE IF NOT EXISTS tab_named_versions (
+  snapshot_id   TEXT    PRIMARY KEY,          -- the snapshots row ('s_' + 16 hex), item_id 'tab:' || tab_id
+  tab_id        TEXT    NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
+  rev           INTEGER NOT NULL,             -- the tab revision it holds
+  tab_name      TEXT    NOT NULL,             -- the tab's name then
+  element_count INTEGER NOT NULL,
+  saved_at      INTEGER NOT NULL              -- tabs.updated_at as it was
+);
+CREATE INDEX IF NOT EXISTS tab_named_versions_by_tab ON tab_named_versions (tab_id, rev);
+CREATE TRIGGER IF NOT EXISTS tab_named_versions_gone AFTER DELETE ON tab_named_versions
+BEGIN
+  DELETE FROM snapshot_chunks WHERE snapshot_id = OLD.snapshot_id;
+  DELETE FROM snapshots WHERE id = OLD.snapshot_id;
+END;
+```
+
+- **VH20 Name This Version through the snapshots' store.** `keepNamedVersion` reads the tab row once (`rev`, `name`,
+  `data`, `element_count`, `updated_at`) and calls `takeSnapshot` (SN31) with item id `tab:<tabId>`, kind `manual`,
+  `keep: null`, and `alongside` the `tab_named_versions` insert guarded `NOT EXISTS` for `(tab_id, rev)` followed by a
+  delete of the snapshot row when no revision row names it (a lost race keeps nothing; the route names what holds the
+  revision on the next try). A throw falls back to `copyTabStatement` (kind `manual`), logged `[versions] refused`
+  `store`.
+- **VH21 read both.** `listVersions` runs one query per store (`tab_versions` by `(tab_id, saved_at)`; `tab_named_versions`
+  joined to `snapshots` by `tab_id`), merges by `saved_at DESC, rev DESC`, and drops an unnamed `tab_versions` row whose
+  revision a snapshots' store version holds. `getVersion`, `versionAtRev` (the snapshots' store first) and
+  `namedVersionCount` (the sum) read both. A throw from the snapshots' store reads as empty, logged `[versions] refused`
+  `store`; `tab_versions` is always read on its own.
+- **VH22 names in the snapshots' store.** A rename is `renameSnapshot` (SN32). Removing the name inserts the version
+  into `tab_versions` (its id, kind `manual`, name NULL, its author, tab name, body, bytes, element count, saved and
+  created times) guarded `NOT EXISTS` for `(tab_id, rev)`, and deletes its `tab_named_versions` row, in one batch; the
+  trigger drops its snapshot rows. The answer is the `tab_versions` row now holding the revision.
+- **VH23 gone with the tab.** Deleting a tab cascades to `tab_named_versions`, whose trigger deletes the snapshot and
+  its chunks; the document's own snapshots (item id the document's) are never touched.
+- **VH24 anonymise both.** `anonymiseDocument` also sets `author_id`/`author_name` on the snapshots rows a
+  `tab_named_versions` row names, and rewrites each such version's text through `anonymiseJsonText` with
+  `rewriteSnapshotText` (SN33) where it mentions the person.
+
 ## Interfaces and contracts
 
 `@livedocuments/api-schema` `versions.ts`: the constants of the spec's table, `VERSION_NAME_MAX` (= the name cap),
@@ -73,9 +115,12 @@ Routes (`apps/api/src/routes/versions.ts`, `handleVersionRoutes`, dispatched fir
   body through `rowToTab` (migrated) with the tab's id and the version's tab name, comment author ids redacted for a
   non-owner as the tab read does.
 - **VH10 name current** gate `gateEdit`; body `{ name }` trimmed and capped (`truncateName`); empty is `400
-invalid_name`. Names the row for the stored revision or inserts a `manual` row; `409 too_many_names` when 25 named
-  rows exist and this one is not already named.
-- **VH11 rename** gate `gateEdit`; `{ name: string | null }`; null or blank unnames.
+invalid_name`. Renames the named version holding the stored revision (either store), or keeps a new one in the
+  snapshots' store (VH20); `409 too_many_names` when 25 named versions exist across both stores and none holds the
+  revision.
+- **VH11 rename** gate `gateEdit`; `{ name: string | null }`; null or blank unnames. In `tab_versions` it sets
+  `name` in place; in the snapshots' store see VH22. The editor replaces the row it renamed with the answer, by the id
+  it sent, so an answer of another id (VH22's automatic version standing) replaces it too.
 - **VH12 restore** gate `gateEdit`; see Behaviour.
 - **VH13 copy** gate `gateEdit`, refused 403 for a tab link; `{ name? }`.
 - Every route answers 404 for a tab the document lacks or a version of another tab.
@@ -127,7 +172,11 @@ invalid_name`. Names the row for the stored revision or inserts a `manual` row; 
 ## Performance and limits
 
 - The idle trigger's WHEN is two integer reads on the hot autosave path; the copy is a row copy in SQLite.
-- The list reads summaries only (no `data`), by the `(tab_id, saved_at)` index: at most 75 rows.
+- The list reads summaries only (no `data`): one query per store, `tab_versions` by its `(tab_id, saved_at)` index and
+  the snapshots' store by `tab_named_versions (tab_id, rev)` joined on the snapshot's primary key: at most 75 rows
+  between them (50 automatic, 25 named), merged in memory.
+- Name This Version reads the tab body into the api once (at most the 2 MB tab cap) to write it as chunks; the old store
+  copied it inside SQLite. Measured on node:sqlite with a 1.9 MB tab: 5.8 ms to keep a named version (2.2 ms for the old copy), 0.8 ms to open one (0.5 ms), and 0.4 ms to list 60 versions from both stores.
 - Storage per tab is bounded by VH2 plus 25 named versions (spec "What it costs").
 - The editor reads one version body per selection, keeps 8, and renders its pages once per version (memoised); the
   change summary is one pass over each side's elements by id.
@@ -151,19 +200,21 @@ idle and agent captures inside SQL are logged by the restore and copy that read 
 
 ## Testing
 
-| Rule         | Test                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------ |
-| VH1-VH3      | `apps/api/src/db/versions.test.ts`                                                               |
-| VH4          | `apps/api/src/db/versions.test.ts`, `apps/api/src/routes/versions.test.ts` (agent burst)         |
-| VH5, VH15    | `apps/api/src/routes/versions.test.ts` (restore)                                                 |
-| VH6          | `apps/api/src/db/versions.test.ts` (upkeep)                                                      |
-| VH7          | `apps/api/src/document-room/document-room-store.test.ts`                                         |
-| VH9-VH13     | `apps/api/src/routes/versions.test.ts` (roles: Viewer, Participant, Editor, tab link, Community) |
-| VH14, VH16   | `apps/api/src/versions/restore-tab.test.ts`                                                      |
-| VH17         | `apps/api/src/routes/versions.test.ts` (copy)                                                    |
-| VH18, VH19   | `apps/editor/components/versions/*.test.tsx`                                                     |
-| what changed | `packages/document/src/version-changes.test.ts`                                                  |
-| storage      | `apps/api/src/versions/version-storage.test.ts` (typical and large tab bytes)                    |
+| Rule         | Test                                                                                                              |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| VH1-VH3      | `apps/api/src/db/versions.test.ts`                                                                                |
+| VH4          | `apps/api/src/db/versions.test.ts`, `apps/api/src/routes/versions.test.ts` (agent burst)                          |
+| VH5, VH15    | `apps/api/src/routes/versions.test.ts` (restore)                                                                  |
+| VH6          | `apps/api/src/db/versions.test.ts` (upkeep)                                                                       |
+| VH7          | `apps/api/src/document-room/document-room-store.test.ts`                                                          |
+| VH9-VH13     | `apps/api/src/routes/versions.test.ts` (roles: Viewer, Participant, Editor, tab link, Community)                  |
+| VH14, VH16   | `apps/api/src/versions/restore-tab.test.ts`                                                                       |
+| VH17         | `apps/api/src/routes/versions.test.ts` (copy)                                                                     |
+| VH18, VH19   | `apps/editor/components/versions/*.test.tsx`                                                                      |
+| VH20-VH23    | `apps/api/src/db/named-versions.test.ts`, `apps/api/src/routes/versions.test.ts` (old store only, new only, both) |
+| VH24         | `apps/api/src/document-room/document-room-store.test.ts`                                                          |
+| what changed | `packages/document/src/version-changes.test.ts`                                                                   |
+| storage      | `apps/api/src/versions/version-storage.test.ts` (typical and large tab bytes)                                     |
 
 ## Constants and configuration
 

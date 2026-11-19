@@ -6,7 +6,11 @@
 // editor binds it once, in its components/tour/TabStyleTour.tsx, with its own Show Me parts and its own `track`.
 import { useState, type ReactNode } from 'react';
 import { useLatest } from '../../hooks/ui/useLatest';
-import { tabStyleTourSteps, type TabStyleTourApi } from './tab-style-tour-steps';
+import {
+  tabStyleTourSteps,
+  type TabStyleTourApi,
+  type TabStyleTourBinding,
+} from './tab-style-tour-steps';
 import { useTourEngine, type TourEngine } from './useTourEngine';
 
 type Tour = TourEngine<TabStyleTourApi>;
@@ -20,7 +24,11 @@ export type TabStyleTourDeps = {
   track: (category: 'UI', action: 'Started' | 'Ended', type: string) => void;
 };
 
-export function createTabStyleTour({ ShowMeButton, ShowMeStage, track }: TabStyleTourDeps) {
+export function createTabStyleTour({
+  ShowMeButton,
+  ShowMeStage,
+  track,
+}: TabStyleTourDeps): TabStyleTourBinding {
   function useTabStyleTour(api: TabStyleTourApi): Tour {
     const apiRef = useLatest<TabStyleTourApi>(api);
     const [steps] = useState(tabStyleTourSteps);

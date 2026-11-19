@@ -488,3 +488,141 @@ export const THEMES: ThemeDefinition[] = [
     seasonal: true,
   },
 ];
+
+// --- Board themes (liveplanner docs/specs/011-theme/multicolour-themes.md "Board themes") --------------------------
+// Multi-colour themes made for colour-coding board columns: each column takes the next hue, so the hues are distinct,
+// nameable and read apart side by side, the first three or four most of all (a board's To do, Doing, Done). Kept out
+// of THEMES, so no product's picker, Mashup or agent schema offers them unless it adds them to its own catalogue
+// (liveplanner does, after Tropical); the engine resolves them everywhere, so a tab on one draws wherever it is read.
+// Each is written in one half, like every theme, and the other derived (docs/specs/011-theme/light-and-dark.md).
+export const BOARD_THEMES: ThemeDefinition[] = [
+  {
+    id: 'office',
+    label: 'Office',
+    // Muted, grown-up tones for work tracking, in a status order: blue for what waits, amber for what moves,
+    // violet for review, green for done, then brick and teal. Quiet enough for a board read all day.
+    backgroundColor: '#f8fafc',
+    backgroundPattern: 'grid',
+    patternColor: '#e2e8f0',
+    elementFill: '#ffffff',
+    elementStroke: '#475569',
+    elementText: '#0f172a',
+    rootColor: { fill: '#ffffff', stroke: '#475569', text: '#0f172a' },
+    palette: [
+      { fill: '#e3eaf5', stroke: '#3b65a3', text: '#1e3a5f' },
+      { fill: '#f6edd9', stroke: '#a16a14', text: '#5c3a0a' },
+      { fill: '#ebe5f4', stroke: '#6e54a0', text: '#3d2a5e' },
+      { fill: '#e2efe4', stroke: '#3f7d4f', text: '#1d4228' },
+      { fill: '#f5e3e1', stroke: '#a84b45', text: '#5e211d' },
+      { fill: '#dff0ee', stroke: '#2e7b74', text: '#134e4a' },
+    ],
+    extra: true,
+  },
+  {
+    id: 'earth',
+    label: 'Earth',
+    // Clay, ochre, olive, moss, dusk blue and heather on warm paper: natural pigments, calm and warm.
+    backgroundColor: '#faf7f2',
+    backgroundPattern: 'grid',
+    patternColor: '#e7dfd3',
+    elementFill: '#fffdf9',
+    elementStroke: '#6b5d4f',
+    elementText: '#292524',
+    rootColor: { fill: '#fffdf9', stroke: '#6b5d4f', text: '#292524' },
+    palette: [
+      { fill: '#f5e3da', stroke: '#b0532c', text: '#5c2410' },
+      { fill: '#f4ebd2', stroke: '#9a7012', text: '#553c06' },
+      { fill: '#e9ecd6', stroke: '#66762a', text: '#363f12' },
+      { fill: '#dfebe2', stroke: '#467a5a', text: '#1f3d2b' },
+      { fill: '#dfe8ee', stroke: '#4a718e', text: '#1f3a4d' },
+      { fill: '#efe1ea', stroke: '#8a4f74', text: '#4a1f3c' },
+    ],
+    extra: true,
+  },
+  {
+    id: 'gemstone',
+    label: 'Gemstone',
+    // Bold jewel tones: sapphire, emerald, amethyst, ruby, topaz and turquoise, deep and saturated on a cool canvas.
+    backgroundColor: '#f8f8fc',
+    backgroundPattern: 'grid',
+    patternColor: '#e2e2ef',
+    elementFill: '#ffffff',
+    elementStroke: '#334155',
+    elementText: '#0f172a',
+    rootColor: { fill: '#ffffff', stroke: '#334155', text: '#0f172a' },
+    palette: [
+      { fill: '#dde6fb', stroke: '#1d4ed8', text: '#1e3a8a' },
+      { fill: '#d5f3e5', stroke: '#047857', text: '#064e3b' },
+      { fill: '#efe0fa', stroke: '#9333ea', text: '#581c87' },
+      { fill: '#fbdde4', stroke: '#be123c', text: '#881337' },
+      { fill: '#fdebc8', stroke: '#b45309', text: '#78350f' },
+      { fill: '#d3f1f4', stroke: '#0e7490', text: '#164e63' },
+    ],
+    extra: true,
+  },
+  {
+    id: 'harbour',
+    label: 'Harbour',
+    // A cool seaside set: navy, coral, sea glass, sand, dusk violet and slate, like boats along a quay.
+    backgroundColor: '#f5f8fb',
+    backgroundPattern: 'grid',
+    patternColor: '#d5dee9',
+    elementFill: '#ffffff',
+    elementStroke: '#475569',
+    elementText: '#0f172a',
+    rootColor: { fill: '#ffffff', stroke: '#475569', text: '#0f172a' },
+    palette: [
+      { fill: '#dfe6f1', stroke: '#24408a', text: '#172554' },
+      { fill: '#fde3dc', stroke: '#c94f33', text: '#6f2210' },
+      { fill: '#d8efe7', stroke: '#23866d', text: '#0f4a3b' },
+      { fill: '#f5ecd8', stroke: '#9c7634', text: '#57400f' },
+      { fill: '#ebe4f3', stroke: '#6f5596', text: '#3b2759' },
+      { fill: '#e5e9ef', stroke: '#5b6b82', text: '#1e293b' },
+    ],
+    extra: true,
+  },
+  {
+    id: 'sorbet',
+    label: 'Sorbet',
+    // Soft fruit scoops on cream: raspberry, peach, lemon, pistachio, mint and blueberry. Gentler than Rainbow,
+    // juicier than Pastel.
+    backgroundColor: '#fffaf5',
+    backgroundPattern: 'grid',
+    patternColor: '#f3e3d6',
+    elementFill: '#fffdfb',
+    elementStroke: '#78716c',
+    elementText: '#292524',
+    rootColor: { fill: '#fffdfb', stroke: '#78716c', text: '#292524' },
+    palette: [
+      { fill: '#fde2ea', stroke: '#d6456f', text: '#8a1538' },
+      { fill: '#ffe7d6', stroke: '#de7434', text: '#83360c' },
+      { fill: '#fcf2c2', stroke: '#c0950e', text: '#634804' },
+      { fill: '#e3f4d8', stroke: '#5ba33b', text: '#2f5a17' },
+      { fill: '#d6f3ee', stroke: '#2fa391', text: '#0f5249' },
+      { fill: '#e1e6fb', stroke: '#5a70d6', text: '#2b3a8f' },
+    ],
+    extra: true,
+  },
+  {
+    id: 'nightfall',
+    label: 'Nightfall',
+    // The dark multi-colour scheme: bright blue, teal, amber, pink, violet and green, each on a deep tint of its own
+    // hue, over an ink-blue night. Its light half is derived like every dark theme's.
+    backgroundColor: '#141a2b',
+    backgroundPattern: 'grid',
+    patternColor: '#252d45',
+    elementFill: '#1e2536',
+    elementStroke: '#94a3b8',
+    elementText: '#e2e8f0',
+    rootColor: { fill: '#1e2536', stroke: '#94a3b8', text: '#e2e8f0' },
+    palette: [
+      { fill: '#1d2a4a', stroke: '#60a5fa', text: '#dbeafe' },
+      { fill: '#12353a', stroke: '#2dd4bf', text: '#ccfbf1' },
+      { fill: '#382b12', stroke: '#fbbf24', text: '#fef3c7' },
+      { fill: '#3a1b31', stroke: '#f472b6', text: '#fce7f3' },
+      { fill: '#272050', stroke: '#a78bfa', text: '#ede9fe' },
+      { fill: '#183320', stroke: '#4ade80', text: '#dcfce7' },
+    ],
+    extra: true,
+  },
+];

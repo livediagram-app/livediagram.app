@@ -332,18 +332,22 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.deleteDocument,
     });
   }
-  out.push({
-    id: 'open-theme',
-    name: 'Open Theme',
-    keywords: 'theme colour color scheme style appearance palette',
-    run: h.openTheme,
-  });
-  out.push({
-    id: 'open-canvas',
-    name: 'Open Canvas Options',
-    keywords: 'canvas background pattern grid options style backdrop',
-    run: h.openCanvasOptions,
-  });
+  // Tab Style is not offered on a whiteboard (its dock holds no Theme & canvas button, CanvasCornerCluster), so search
+  // does not open it there either (docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile").
+  if (!ctx.whiteboard) {
+    out.push({
+      id: 'open-theme',
+      name: 'Open Theme',
+      keywords: 'theme colour color scheme style appearance palette',
+      run: h.openTheme,
+    });
+    out.push({
+      id: 'open-canvas',
+      name: 'Open Canvas Options',
+      keywords: 'canvas background pattern grid options style backdrop',
+      run: h.openCanvasOptions,
+    });
+  }
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',

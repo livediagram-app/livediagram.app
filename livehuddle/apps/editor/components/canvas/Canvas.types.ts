@@ -47,6 +47,8 @@ export type CanvasProps = {
   tabBackgroundOpacity: number;
   // Pattern tile scale (the canvas pattern-size slider); defaults to 1.
   tabBackgroundPatternScale: number;
+  // The 3D view's wall colour (docs/specs/008-canvas/3d-view.md "Themes"); unset = the plaster.
+  tabWallColor?: string | undefined;
   tabPatternColor: string;
   // The active tab's default font id (docs/specs/004-interface-design/fonts.md). Elements without their
   // own `font` render in this; undefined = the editor default. Used by

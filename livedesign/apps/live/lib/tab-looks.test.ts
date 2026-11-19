@@ -2,7 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { FONTS, type Element, type Tab } from '@livedesign/design';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { resolveTheme } from '@/lib/themes';
-import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
+import {
+  LOOKS_PER_PAGE,
+  TAB_LOOKS,
+  activeLookId,
+  suitsFinishedArt,
+  tabLookById,
+  withLookApplied,
+} from './tab-looks';
 import { withThemeApplied } from './tab-theme-apply';
 
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts over a tab's existing settings.
@@ -24,39 +31,21 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
 });
 
 describe('TAB_LOOKS', () => {
-  it('fills five pages of six after the Mashup card, in order, each built only from settings that exist', () => {
+  it('fills two pages of six after the Mashup card, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
-      'Textbook',
+      'Blueprint',
       'Spectrum',
-      'Whiteboard',
+      'Wireframe',
       'Boardroom',
-      'Notebook',
-      'Seaside',
-      'Doodle',
-      'Editorial',
-      'Midnight',
-      'Poster',
       'Workshop',
-      'Graph Paper',
+      'Midnight',
       'Daydream',
-      'Engineer',
+      'Editorial',
       'Lagoon',
-      'Studio',
-      'Garden',
-      'Billboard',
-      'Patchwork',
-      'Northern Lights',
-      'Coffeehouse',
-      'Schematic',
-      'Flipchart',
-      'Sketchbook',
-      'Greenboard',
-      'Picnic',
-      'Mural',
-      'Field Notes',
+      'Graph Paper',
     ]);
-    expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 5);
+    expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 2);
     for (const look of TAB_LOOKS) {
       expect(resolveTheme(look.theme), look.id).toBeTruthy();
       expect(
@@ -83,9 +72,9 @@ describe('TAB_LOOKS', () => {
     shown.slice(i * LOOKS_PER_PAGE, (i + 1) * LOOKS_PER_PAGE).filter((l) => l !== null),
   );
 
-  it('opens on Everyday and has eight multi-colour looks, one or two on every page', () => {
+  it('opens on Everyday and has three multi-colour looks, one or two on every page', () => {
     expect(TAB_LOOKS[0]!.id).toBe('everyday');
-    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(8);
+    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(3);
     for (const page of pages) {
       const count = page.filter((l) => multicolour(l.theme)).length;
       expect(count).toBeGreaterThanOrEqual(1);
@@ -102,21 +91,15 @@ describe('TAB_LOOKS', () => {
       }
   });
 
-  // Marker (docs/specs/008-canvas/finish.md) has looks of its own across the carousel, not a single one.
-  it('offers every finish, Marker on five looks', () => {
-    expect(TAB_LOOKS.filter((l) => l.finish === 'marker').map((l) => l.id)).toEqual([
-      'whiteboard',
+  // Every finish is offered; the hand-drawn ones (Sketch, Marker) stay off a logo or a photo page.
+  it('offers every finish, one look each drawn by hand, and leaves those off finished art', () => {
+    expect(new Set(TAB_LOOKS.map((l) => l.finish))).toEqual(
+      new Set(['flexible', 'professional', 'sketch', 'marker']),
+    );
+    expect(TAB_LOOKS.filter((l) => !suitsFinishedArt(l)).map((l) => l.id)).toEqual([
+      'wireframe',
       'workshop',
-      'flipchart',
-      'greenboard',
-      'mural',
     ]);
-  });
-
-  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): its two looks wear Mono.
-  it('dresses Textbook and Schematic in Mono, and no look in UML', () => {
-    expect(tabLookById('textbook')!.theme).toBe('mono');
-    expect(tabLookById('schematic')!.theme).toBe('mono');
     expect(TAB_LOOKS.map((l) => l.theme)).not.toContain('uml');
   });
 
@@ -139,8 +122,15 @@ describe('withLookApplied', () => {
   });
 
   it('clears the tab font for a look without one', () => {
-    const out = withLookApplied(tab({ font: 'lora' }), tabLookById('whiteboard')!);
+    const out = withLookApplied(tab({ font: 'lora' }), tabLookById('wireframe')!);
     expect('font' in out).toBe(false);
+  });
+
+  it('with Element Colours kept, recolours no element yet still takes the theme', () => {
+    const own = tab({ elements: [shape({ fill: '#123456' }), shape({ id: 'u' })] });
+    const out = withLookApplied(own, tabLookById('graph-paper')!, { keepElementColours: true });
+    expect(out.theme).toBe('indigo');
+    expect(out.elements).toEqual(own.elements);
   });
 
   it('then reads as that look', () => {
@@ -154,11 +144,11 @@ describe('activeLookId', () => {
   });
 
   it('is undefined once any one setting differs', () => {
-    const base = withLookApplied(tab(), tabLookById('notebook')!);
-    expect(activeLookId(base)).toBe('notebook');
+    const base = withLookApplied(tab(), tabLookById('midnight')!);
+    expect(activeLookId(base)).toBe('midnight');
     expect(activeLookId({ ...base, finish: 'flexible' })).toBeUndefined();
     expect(activeLookId({ ...base, font: 'inter' })).toBeUndefined();
-    expect(activeLookId({ ...base, backgroundPattern: 'grid' })).toBeUndefined();
+    expect(activeLookId({ ...base, backgroundPattern: 'lines' })).toBeUndefined();
     expect(activeLookId({ ...base, theme: 'rose' })).toBeUndefined();
   });
 
@@ -182,9 +172,9 @@ describe('activeLookId', () => {
 describe('pattern strength', () => {
   it('counts only for a look that sets one: a template’s softened grid is still Everyday', () => {
     expect(activeLookId({ backgroundOpacity: 0.4 })).toBe('everyday');
-    const garden = withLookApplied(tab(), tabLookById('garden')!);
+    const garden = withLookApplied(tab(), tabLookById('lagoon')!);
     expect(garden.backgroundOpacity).toBe(0.4);
-    expect(activeLookId(garden)).toBe('garden');
+    expect(activeLookId(garden)).toBe('lagoon');
     expect(activeLookId({ ...garden, backgroundOpacity: 1 })).toBeUndefined();
   });
 

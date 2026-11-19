@@ -53,6 +53,11 @@ the lazy per-tab load (`hooks/persistence/usePerTabLoad`'s `createPerTabLoad`, a
 timing), the canvas backdrop (`lib/canvas-backgrounds`'s `createCanvasBackgrounds`, around the seasonal motifs) and
 the Looks' lookup and match (`lib/tab-looks`'s `createTabLooks`, over the editor's own catalogue).
 
+The Tab Style dialog (`components/dialogs/tab-style/TabStyleDialog`) is one component that takes a profile instead:
+each editor's `components/dialogs/tab-style-profile.tsx` holds its parts (its looks, themes, finishes, patterns, Text
+Size control, Show Me and help) and what each surface shows, and its `CanvasThemeDialog` hands it over
+(liveworkspace/docs/specs/011-workbench/tab-style.md).
+
 The canvas surface's press routing (`hooks/canvas/useCanvasSurfaceGestures`) is one hook that takes the editor's
 arguments and a small module-scope options object: livedocuments, livedesign and liveplanner each bind it in their
 `hooks/canvas/useCanvasSurfaceGestures.ts` (livedesign ignores a portal's press on `<main>`, liveplanner a press on

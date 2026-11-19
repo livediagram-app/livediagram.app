@@ -17,3 +17,16 @@
 - [x] Constants and configuration
 - [ ] Assets and external resources
 - [x] Defaults ledger
+
+## tab-style
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Performance and limits
+- [x] Presentation and UX
+- [ ] Accessibility
+- [x] Observability
+- [x] Testing
+- [x] Constants and configuration
+- [x] Defaults ledger

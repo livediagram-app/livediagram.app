@@ -69,6 +69,8 @@ export function PlanSheetView({
       tint={planBandTint(element)}
       blend={{ surface: palette.surface, line: palette.border }}
       fill={filled}
+      // Opaque: no moving pattern is drawn under it (CanvasCover).
+      opaque
       placeholder={{
         backgroundColor: palette.surface,
         borderColor: palette.border,

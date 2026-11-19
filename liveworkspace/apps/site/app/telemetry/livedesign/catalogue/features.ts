@@ -297,6 +297,10 @@ export const PAGE_SETUP = chart(
       'PageBackgroundAnimatedSpeed',
       'PageBackgroundAppliedToAll',
       'PageBackgroundPainted',
+      // Tab Style's New Page Background (docs/specs/011-theme/canvas-and-theme-dialog.md).
+      'NewPageBackground',
+      'NewPageBackgroundCarried',
+      'NewPageBackgroundToEveryPage',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',
@@ -640,6 +644,16 @@ export const TOOLBAR_CATEGORY = chart(
   { types: ['ToolbarCategory'] },
 );
 
+// Tab Style's Element Colours row (docs/specs/011-theme/canvas-and-theme-dialog.md): whether a look or theme pick
+// recolours the design's elements or leaves them as they are.
+export const TAB_STYLE_ELEMENT_COLOURS = chart(
+  'UI',
+  'Changed',
+  'Tab Style Element Colours',
+  "Tab Style's Element Colours row switched between following the theme and keeping a design's colours as they are.",
+  { types: ['TabStyleElementColours'] },
+);
+
 export const PALETTE_USE: MetricStack = {
   stack: true,
   title: 'Palette Use',
@@ -947,6 +961,7 @@ export const LOOK_AND_FEEL: MetricStack = {
     CANVAS_CONTROLS_TWEAKED,
     CUSTOM_SWATCHES,
     LOOKS_FILTERED,
+    TAB_STYLE_ELEMENT_COLOURS,
     HIGHLIGHTER_SETTINGS,
   ],
   headline: [THEMES_CHOSEN, CANVAS_STYLES_PICKED],

@@ -28,7 +28,15 @@ describe('lookPreviewSvg', () => {
   });
 
   it("colours the cards from a multi-colour look's palette, keeping every card", () => {
-    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster']) {
+    for (const id of [
+      'spectrum',
+      'stand-up',
+      'terracotta',
+      'crown-jewels',
+      'quayside',
+      'gelato',
+      'night-shift',
+    ]) {
       const els = lookPreviewTab(tabLookById(id)!).elements as Array<
         Element & { fillColor?: string }
       >;
@@ -39,10 +47,10 @@ describe('lookPreviewSvg', () => {
     }
   });
 
-  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook and Schematic wear Mono.
-  it('still draws Textbook and Schematic, now in Mono', () => {
+  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook wears Mono.
+  it('still draws Textbook, now in Mono', () => {
     const ink = resolveTheme('mono')!.elementStroke!;
-    for (const id of ['textbook', 'schematic']) {
+    for (const id of ['textbook']) {
       const look = tabLookById(id)!;
       expect(lookPreviewTab(look).theme, id).toBe('mono');
       expect(lookPreviewSvg(look).toLowerCase(), id).toContain(ink.toLowerCase());

@@ -17,13 +17,13 @@ describe('lookPreviewSvg', () => {
   });
 
   it('scopes the pattern id to the look, so cards on one page never share a pattern', () => {
-    const graph = lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'graph-paper')!);
-    expect(graph).toContain('lvd-look-graph-paper-bg');
+    const graph = lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'textbook')!);
+    expect(graph).toContain('lvd-look-textbook-bg');
     expect(graph).not.toContain('lvd-export-bg');
   });
 
   it('shows two palette colours on a multi-colour look, the arrow still on its pins', () => {
-    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster']) {
+    for (const id of ['spectrum', 'daydream', 'lagoon', 'classroom']) {
       const els = lookPreviewTab(tabLookById(id)!).elements as Array<
         Element & { fillColor?: string }
       >;
@@ -45,10 +45,10 @@ describe('lookPreviewSvg', () => {
     expect(fills('lagoon')).toEqual([palette('tropical')[0], palette('tropical')[3]]);
   });
 
-  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook and Schematic wear Mono.
-  it('still draws Textbook and Schematic, now in Mono', () => {
+  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook wears Mono.
+  it('still draws Textbook, now in Mono', () => {
     const ink = resolveTheme('mono')!.elementStroke!;
-    for (const id of ['textbook', 'schematic']) {
+    for (const id of ['textbook']) {
       const look = tabLookById(id)!;
       expect(lookPreviewTab(look).theme, id).toBe('mono');
       expect(lookPreviewSvg(look).toLowerCase(), id).toContain(ink.toLowerCase());
@@ -59,7 +59,7 @@ describe('lookPreviewSvg', () => {
     expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'notebook')!)).toContain(
       'data-finish="sketch"',
     );
-    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'whiteboard')!)).toContain(
+    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'workshop')!)).toContain(
       'data-finish="marker"',
     );
   });

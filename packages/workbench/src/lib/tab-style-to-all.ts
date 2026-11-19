@@ -3,7 +3,7 @@
 // one history-pushing commit and undo puts every tab back at once.
 
 // The style a tab carries besides its theme (which each editor applies through its own theme switch, recolouring
-// the tab's elements as picking that theme does): the canvas, the text defaults and the finish.
+// the tab's elements as picking that theme does): the canvas, the text defaults, the finish and new pages' background.
 export const TAB_STYLE_KEYS = [
   'backgroundPattern',
   'backgroundColor',
@@ -14,6 +14,8 @@ export const TAB_STYLE_KEYS = [
   'font',
   'defaultTextSize',
   'finish',
+  // The background new pages start on (a Pages editor's New Page Background); absent in an editor without pages.
+  'newPageBackground',
 ] as const;
 
 export type TabStyleKey = (typeof TAB_STYLE_KEYS)[number];

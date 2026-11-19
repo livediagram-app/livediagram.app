@@ -159,6 +159,9 @@ const HELD_AT_100 = [
   'src/hooks/canvas/useImportUndoView.ts',
   // The editor's door to Inbox notices (liveworkspace/docs/specs/004-index/inbox-notices.md, Work Tracker 1309).
   'src/components/chrome/useEditorInbox.tsx',
+  // The Tab Style dialog the five editors kept as near-copies, one home with each editor's profile
+  // (liveworkspace/docs/specs/011-workbench/tab-style.md).
+  'src/components/dialogs/tab-style/*.{ts,tsx}',
 ];
 
 export default defineProject({

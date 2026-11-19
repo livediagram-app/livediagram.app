@@ -765,7 +765,7 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   face to `DataChartView`, so axis ticks, Show Values and the legend inherit the UI face, or the chart's own
   `element.font`, on a canvas tab and on a Sheet alike.
 - Font pickers: `PLANNER_FONTS` (`@liveplanner/project` `planner-fonts.ts`, `FONTS` less
-  `PLANNER_EXCLUDED_FONT_IDS`) feeds `TextTab`, `TypographySections` and `SheetToolbarMenus`; labels of a stored
+  `PLANNER_EXCLUDED_FONT_IDS`) feeds the Tab Style Text panel (its profile's `fonts`), `TypographySections` and `SheetToolbarMenus`; labels of a stored
   font still read from `FONTS`, so an excluded face already set keeps its name.
 - Cursors (`components/plan/board-cursors.ts`): `planCardCursor(interactive, canEditCards)` is `grab` for an
   Editor or a Participant, `pointer` for a Viewer, nothing out of Plan mode; `planBoardBodyCursor(interactive)`

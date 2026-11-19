@@ -21,7 +21,9 @@ export interface SnapshotDb {
   exec(query: string): Promise<unknown>;
 }
 
-const SCHEMA = `
+/** SN3, SN31: the tables, every statement IF NOT EXISTS; an app's schema step may run it before its own trigger
+ *  names them. */
+export const SNAPSHOT_SCHEMA = `
 CREATE TABLE IF NOT EXISTS snapshots (
   id           TEXT    PRIMARY KEY,
   item_id      TEXT    NOT NULL,
@@ -51,7 +53,7 @@ CREATE TABLE IF NOT EXISTS snapshot_state (
 const ready = new WeakSet<SnapshotDb>();
 async function ensureSchema(db: SnapshotDb): Promise<void> {
   if (ready.has(db)) return;
-  await db.exec(SCHEMA);
+  await db.exec(SNAPSHOT_SCHEMA);
   ready.add(db);
 }
 
@@ -155,6 +157,12 @@ export type TakeInput = {
   kind: SnapshotKind;
   author: SnapshotAuthor | null;
   now?: number;
+  /** SN31: the id, minted by the caller with `snapshotId()`; one is minted when absent. */
+  id?: string;
+  /** SN31: how many of the item's snapshots stay; `null` keeps every one (the app bounds them). */
+  keep?: number | null;
+  /** SN31: statements run in the take's own batch after its chunks, given the snapshot's id. */
+  alongside?: (id: string) => SnapshotStatement[];
 };
 
 export type TakeResult =
@@ -166,8 +174,9 @@ export async function takeSnapshot(db: SnapshotDb, input: TakeInput): Promise<Ta
   const bytes = utf8Bytes(input.text);
   if (bytes > SNAPSHOT_MAX_BYTES) return { ok: false, reason: 'too_large' };
   await ensureSchema(db);
-  const id = snapshotId();
+  const id = input.id ?? snapshotId();
   const now = input.now ?? Date.now();
+  const keep = input.keep === undefined ? SNAPSHOTS_KEPT : input.keep;
   const chunks = chunkText(input.text);
   const statements: SnapshotStatement[] = [
     db
@@ -189,15 +198,20 @@ export async function takeSnapshot(db: SnapshotDb, input: TakeInput): Promise<Ta
         .prepare('INSERT INTO snapshot_chunks (snapshot_id, seq, data) VALUES (?, ?, ?)')
         .bind(id, seq, data),
     ),
-    db
-      .prepare(
-        `DELETE FROM snapshots WHERE item_id = ?1 AND id NOT IN (
-           SELECT id FROM snapshots WHERE item_id = ?1 ORDER BY created_at DESC, rowid DESC LIMIT ?2)`,
-      )
-      .bind(input.itemId, SNAPSHOTS_KEPT),
-    // A database without foreign keys on (a test's) keeps no orphan chunk either.
-    db.prepare('DELETE FROM snapshot_chunks WHERE snapshot_id NOT IN (SELECT id FROM snapshots)'),
+    ...(input.alongside?.(id) ?? []),
   ];
+  if (keep !== null) {
+    statements.push(
+      db
+        .prepare(
+          `DELETE FROM snapshots WHERE item_id = ?1 AND id NOT IN (
+             SELECT id FROM snapshots WHERE item_id = ?1 ORDER BY created_at DESC, rowid DESC LIMIT ?2)`,
+        )
+        .bind(input.itemId, keep),
+      // A database without foreign keys on (a test's) keeps no orphan chunk either.
+      db.prepare('DELETE FROM snapshot_chunks WHERE snapshot_id NOT IN (SELECT id FROM snapshots)'),
+    );
+  }
   await db.batch(statements);
   return {
     ok: true,
@@ -243,6 +257,51 @@ export async function deleteSnapshot(db: SnapshotDb, itemId: string, id: string)
   if (!row) return false;
   await db.prepare('DELETE FROM snapshot_chunks WHERE snapshot_id = ?').bind(id).run();
   return true;
+}
+
+/** SN32: the snapshot's name set (null for none); false when the item holds no such snapshot. */
+export async function renameSnapshot(
+  db: SnapshotDb,
+  itemId: string,
+  id: string,
+  name: string | null,
+): Promise<boolean> {
+  await ensureSchema(db);
+  const row = await db
+    .prepare('UPDATE snapshots SET name = ? WHERE id = ? AND item_id = ? RETURNING id')
+    .bind(name, id, itemId)
+    .first<{ id: string }>();
+  return row !== null;
+}
+
+/** SN33: the snapshot's text replaced whole, measured and chunked as a take is, in one batch. */
+export async function rewriteSnapshotText(
+  db: SnapshotDb,
+  itemId: string,
+  id: string,
+  text: string,
+): Promise<'ok' | 'too_large' | 'missing'> {
+  const bytes = utf8Bytes(text);
+  if (bytes > SNAPSHOT_MAX_BYTES) return 'too_large';
+  await ensureSchema(db);
+  const head = await db
+    .prepare('SELECT id FROM snapshots WHERE id = ? AND item_id = ?')
+    .bind(id, itemId)
+    .first<{ id: string }>();
+  if (!head) return 'missing';
+  const chunks = chunkText(text);
+  await db.batch([
+    db.prepare('DELETE FROM snapshot_chunks WHERE snapshot_id = ?').bind(id),
+    ...chunks.map((data, seq) =>
+      db
+        .prepare('INSERT INTO snapshot_chunks (snapshot_id, seq, data) VALUES (?, ?, ?)')
+        .bind(id, seq, data),
+    ),
+    db
+      .prepare('UPDATE snapshots SET bytes = ?, chunks = ? WHERE id = ? AND item_id = ?')
+      .bind(bytes, chunks.length, id, itemId),
+  ]);
+  return 'ok';
 }
 
 // SN9: the generation each database handle has read, per item. An object holds one item and every revert goes through

@@ -220,6 +220,10 @@ type Display editor, a view's cards) keep scale 1.
 
 Exports, thumbnails and agent images already draw a board in the system sans, so they are unchanged.
 
+Only a board (and a diagram tab's elements) reads the size, so the Tab Style dialog offers Size of New Text on Board
+and diagram tabs only: a Sheet's cells are a fixed 13 px, a Form has no size of its own and a Dashboard keeps scale 1
+([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md) "One dialog, this editor's profile").
+
 ### Not offered in liveplanner
 
 A face that still does not read on a card heading is left out of every liveplanner font picker (the Tab Style
@@ -269,7 +273,7 @@ sign-in and the Explorer included, by a full round trip to Google.
 
 Both pickers **preview each face**: the per-element font menu shows an
 `Aa` glyph in the font beside its name, and the per-tab picker
-(Tab Style's Text panel, `components/dialogs/TextTab.tsx`) shows each face as a
+(Tab Style's Text panel, the shared `TextPanel`, `packages/workbench/src/components/dialogs/tab-style/TextPanel.tsx`) shows each face as a
 **specimen card**, "Aa" and its name in its own typeface, six to a carousel page
 (a native `<select>` can't: browsers / macOS ignore `font-family` on `<option>`,
 so the names would all look alike). Picking one letters the whole tab at once.
@@ -301,7 +305,7 @@ SVG / PDF paint the same typeface the canvas did.
   mid-swap would bake the fallback into the file.
 
 Implementation: `../packages/model-core/src/fonts.ts` (catalogue + resolver),
-`components/dialogs/TextTab.tsx` (the per-tab typeface cards; element fonts use the
+`packages/workbench/src/components/dialogs/tab-style/TextPanel.tsx` (the per-tab typeface cards; element fonts use the
 rich-text toolbar's own font grid in `RichTextToolbar.tsx`),
 the label renderers (`element-labels.tsx`), `TableView`, and `ArrowView`
 apply the resolved stack; `setFontSelected` (`useTextStyleSetters.ts`) and

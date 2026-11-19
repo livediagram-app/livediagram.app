@@ -5,13 +5,13 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                | Role                                                              |
-| --------------------------------------------------- | ----------------------------------------------------------------- |
-| `packages/project/src/hierarchy.ts`                 | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH` |
-| `packages/project/src/theme-graph.ts`               | The four wrappers and the per-element branch resolution           |
-| `packages/project/src/themes-data.ts`               | The five built-in multi-colour themes                             |
-| `packages/project/src/colors.ts`                    | `contrastRatio`, the WCAG contrast helper (D3)                    |
-| `apps/editor/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
+| File                                                | Role                                                                                    |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `packages/project/src/hierarchy.ts`                 | The branch walk: `assignBranches`, `branchOfArrow`, `ROOT_BRANCH`                       |
+| `packages/project/src/theme-graph.ts`               | The four wrappers and the per-element branch resolution                                 |
+| `packages/project/src/themes-data.ts`               | This product's catalogue: the shared one less UML, plus the board themes after Tropical |
+| `packages/project/src/colors.ts`                    | `contrastRatio`, the WCAG contrast helper (D3)                                          |
+| `apps/editor/components/primitives/ThemeSwatch.tsx` | The card preview                                                                        |
 
 ## Domain and naming
 
@@ -133,8 +133,12 @@ null. A `NaN` fails every `>=` comparison, so the contrast test cannot pass on a
 
 ## Data and persistence
 
-- **Static data.** The `palette` and `rootColor` of built-in themes live in
-  `packages/project/src/themes-data.ts` and ship in the bundle.
+- **Static data.** The `palette` and `rootColor` of built-in themes live in the shared
+  `@liveworkspace/element-model/themes-data` and ship in the bundle: Rainbow, Pastel and Tropical in `THEMES`, the six
+  board themes in `BOARD_THEMES`. The engine (`@liveworkspace/element-model/themes`) resolves an id over both
+  (`getBuiltInTheme`, `themedForTab` and the preserve-customs backdrop check), so a tab on a board theme draws
+  wherever it is read; `packages/project/src/themes-data.ts` builds this product's `THEMES` by splicing
+  `BOARD_THEMES` in after Tropical, and every picker, the Mashup and the agent schema read that.
 - **Never persisted.** The branch map is derived on every apply and never stored. An element stores
   only the resolved colours the wrapper wrote.
 
@@ -227,8 +231,9 @@ Each spec rule maps to one test, and every test is deterministic.
 | Switch shares one map (D6)                                                                                                                     | `switchThemeElements` result equals two-map result                                          | `theme-graph.test.ts`                             |
 | O1 logged once per palette call, never for single-colour                                                                                       | spy `console.info`                                                                          | `theme-graph.test.ts`                             |
 | `contrastRatio`                                                                                                                                | black/white = 21; equal = 1; order-independent; malformed = NaN                             | `colors.test.ts`                                  |
-| Built-in contrast ≥ 4.5                                                                                                                        | every palette entry + `rootColor` of every built-in                                         | `themes-data.test.ts` (new)                       |
-| Five built-ins, 26 total                                                                                                                       | counts                                                                                      | `apps/editor/lib/themes.test.ts` (exists)         |
+| Built-in contrast ≥ 4.5                                                                                                                        | every palette entry + `rootColor` of every built-in, board themes included                  | `themes-data.test.ts` (shared)                    |
+| Board themes: hues 25 degrees apart in both halves; never in the shared `THEMES`                                                               | every pair of chromatic strokes, light and dark half                                        | `themes-data.test.ts` (shared)                    |
+| Nine multi-colour built-ins, 30 year-round total                                                                                               | counts, board themes straight after Tropical                                                | `apps/editor/lib/themes.test.ts` (exists)         |
 | Colours reach the canvas + O1 in the browser                                                                                                   | Rainbow on a mind map: ≥ 3 palette hues, switch log                                         | `apps/editor/e2e/multicolour-theme.spec.ts`       |
 
 ## Constants and configuration

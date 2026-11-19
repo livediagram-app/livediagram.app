@@ -2,10 +2,11 @@
 
 import { builtMarkup, htmlProps } from '@livehuddle/ui';
 
-// The sample diagram the Tab Style panels preview their setting on (docs/specs/011-theme/canvas-and-theme-dialog.md
-// "Finish panel", "Text panel"): a step, a decision, the arrow between and a sticky, drawn by the export renderer
-// (lib/finish-preview.ts) in the tab's theme, finish and font, on the tab's paper, so it is exactly what the canvas
-// will show. Rebuilt only when one of those changes.
+// The small room the Tab Style panels preview their setting on (docs/specs/011-theme/canvas-and-theme-dialog.md
+// "One dialog, this editor's profile"): a room with its door, a desk, a plant and a sticky on a slice of the tab's
+// floor, drawn by the export renderer (lib/room-preview.ts) in the tab's theme, finish and font, so it is exactly
+// what the Space will show. The floor is the editor's active tab's (none outside an editor). Rebuilt only when one of
+// those changes.
 
 import { useMemo } from 'react';
 import {
@@ -15,7 +16,8 @@ import {
   type TextSize,
 } from '@livehuddle/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { finishPreviewSvg } from '@/lib/finish-preview';
+import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
+import { roomPreviewSvg } from '@/lib/room-preview';
 import { resolveTabBackdrop } from '@/lib/themes';
 
 export function TabStylePreview({
@@ -44,15 +46,22 @@ export function TabStylePreview({
     : surface === 'dark'
       ? DARK_CANVAS_BACKGROUND_COLOR
       : DEFAULT_BACKGROUND_COLOR;
+  const tab = useOptionalEditorContext()?.activeTab;
+  const floor = tab?.backgroundPattern;
+  const floorOpacity = tab?.backgroundOpacity;
+  const patternColor = tab?.patternColor;
   const markup = useMemo(
     () =>
-      finishPreviewSvg(finish, {
+      roomPreviewSvg(finish, {
         background,
         theme: themeId,
         font: font ?? undefined,
         textSize,
+        floor,
+        floorOpacity,
+        patternColor,
       }),
-    [finish, background, themeId, font, textSize],
+    [finish, background, themeId, font, textSize, floor, floorOpacity, patternColor],
   );
   return (
     <div
