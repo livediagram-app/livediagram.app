@@ -431,6 +431,14 @@ describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)'
     expect(ids(base)).toContain('tool:format');
   });
 
+  // docs/specs/011-theme/canvas-and-theme-dialog.md: the dock hides Tab Style on a whiteboard, so search does too.
+  it('offers neither Open Theme nor Open Canvas Options', () => {
+    const onBoard = ids({ ...base, whiteboard: true });
+    expect(onBoard).not.toContain('open-theme');
+    expect(onBoard).not.toContain('open-canvas');
+    expect(ids(base)).toEqual(expect.arrayContaining(['open-theme', 'open-canvas']));
+  });
+
   // docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile.
   it('never offers the highlighter as a tool', () => {
     expect(ids(base)).not.toContain('tool:highlighter');

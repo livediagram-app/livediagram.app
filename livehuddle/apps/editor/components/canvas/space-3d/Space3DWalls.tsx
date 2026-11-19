@@ -31,18 +31,24 @@ import { Space3DRoofs } from './Space3DRoofs';
 import { spaceRoofs } from '@/lib/space-3d/space-3d-roofs';
 import { useSpace3DTurn } from './useSpace3DView';
 import { runsAway, seenFromBehind, turnQuarter } from '@/lib/space-3d/space-3d-turn';
+import { wallColourVars } from '@/lib/space-3d/space-3d-wall-colour';
 
 export function Space3DWalls({
   elements,
   poseStore,
   size,
   floor,
+  wallColor,
+  darkCanvas = false,
 }: {
   elements: readonly Element[];
   poseStore: ReadableStore<AvatarPose>;
   size: { width: number; height: number };
   // The tab's background, its pattern in canvas px, laid on the floor under the pieces (3d-view.md "What it shows").
   floor?: CSSProperties;
+  // The tab's wall colour, unset for the plaster, and whether the canvas is dark (evening light: 3d-view.md "Themes").
+  wallColor?: string | undefined;
+  darkCanvas?: boolean;
 }) {
   const walls = useMemo(() => spaceWalls(elements), [elements]);
   // The rooms you can stand in, whose walls facing you fade while you are inside (3d-view.md "Walls in front of you
@@ -67,6 +73,10 @@ export function Space3DWalls({
     return viewport.subscribe(check);
   }, [viewport, size]);
   const drawn = useMemo(() => wallsInArea(walls, area), [walls, area]);
+  const walls3DStyle = useMemo(
+    () => wallColourVars(wallColor, darkCanvas) as CSSProperties | undefined,
+    [wallColor, darkCanvas],
+  );
   // The pieces in the same area stand up (3d-view.md "Pieces stand up"), marked on their own boxes.
   const layer = useRef<HTMLDivElement>(null);
   useStandingPieces(layer, elements, area, walls);
@@ -93,6 +103,8 @@ export function Space3DWalls({
       aria-hidden
       data-space-walls=""
       className="pointer-events-none absolute left-0 top-0"
+      // The walls' own properties, over space-3d.css's plaster: one style write for every wall.
+      style={walls3DStyle}
     >
       {floor ? (
         <div

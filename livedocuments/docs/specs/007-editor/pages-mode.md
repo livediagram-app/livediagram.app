@@ -31,8 +31,10 @@ page is and offers; this section is the basics.
     page, in its legacy `pageOrientation` (portrait when absent); the legacy
     field is dropped the first time the pages change. At most **100** pages
     (`MAX_PAGES`).
-- **The surround** is the tab's own canvas: its colour, and every canvas setting, apply behind the pages. Its
-  pattern is **plain** while the tab keeps its theme's pattern; a pattern someone picked shows behind the pages.
+- **The surround** is the tab's own canvas: its colour, its pattern (the theme's own included) and every canvas
+  setting apply behind the pages (`lib/view-backdrop.ts`). It used to paint plain while the tab kept its theme's
+  pattern, which hid every look whose pattern was its theme's while its card drew one; as in liveplanner, a look or a
+  pattern picked in Tab Style always shows (2026-11-19).
 - **Each page's label** sits above its top-left corner (**A4 · Portrait** on an infographic page, or
   **A4 · Landscape · Article**, its name first when it has one, never "Page n": the page
   navigator shows its place; see "Page names" below for the name an unnamed page goes by), and
@@ -204,6 +206,14 @@ slide added to a deck carries over the slide before it, as every page does. A ne
 starts on the plain paper as before, and a template that comes with content keeps the paper it
 was designed on. Every path that makes a page lands the same: adding
 one, choosing the first page's kind, the template picker and an AI tool's template.
+
+**The tab's own New Page Background** (Tab Style's New Page Background,
+[Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#new-page-background)): a tab may hold a background its new
+pages start on (`Tab.newPageBackground`, a fill and a pattern, never a picture; `{}` is the plain paper chosen).
+While it has one, **every page made on it starts on that** instead of carrying over the page before or taking its
+kind's default: an added page of any kind, a page added like another, the first page's kind chosen (an article and a
+card included), and an agent's added page. A page keeps its own from then on; a duplicate copies its source as
+ever. Without one, the rules above stand (`newPageBackgroundOf`, `packages/document/src/tab-new-page-background.ts`).
 
 A tab with no pages stored starts with one page, its kind unchosen.
 

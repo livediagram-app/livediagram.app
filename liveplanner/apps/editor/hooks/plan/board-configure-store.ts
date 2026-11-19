@@ -33,3 +33,20 @@ export function useRegisterConfigurableBoard(elementId: string, on: boolean): vo
 export function useConfigurableBoard(): string | null {
   return useSyncExternalStore(subscribe, read, () => null);
 }
+
+// Whether Configure's screen is open: the cluster's Configure button toggles it, and Tab Style's Board Configure row
+// opens it (docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile").
+let configuring = false;
+const readConfiguring = () => configuring;
+
+/** Opens or closes Configure over the tab's board. */
+export function setBoardConfiguring(on: boolean): void {
+  if (configuring === on) return;
+  configuring = on;
+  emit();
+}
+
+/** Whether Configure is open. */
+export function useBoardConfiguring(): boolean {
+  return useSyncExternalStore(subscribe, readConfiguring, () => false);
+}

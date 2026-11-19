@@ -183,3 +183,31 @@ describe('useTabCanvas tidiers', () => {
     expect(notify).not.toHaveBeenCalled();
   });
 });
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "New Page Background".
+describe('useTabCanvas New Page Background', () => {
+  const mint = { kind: 'solid' as const, color: '#ccfbf1' };
+
+  it('sets and clears the background new pages start on, one step each', () => {
+    const h = setup([]);
+    h.api.setNewPageBackground({ fill: mint });
+    expect(h.tabs()[0]!.newPageBackground).toEqual({ fill: mint });
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'NewPageBackground');
+    h.api.setNewPageBackground(null);
+    expect('newPageBackground' in h.tabs()[0]!).toBe(false);
+    expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'NewPageBackgroundCarried');
+  });
+
+  it('applies it to every page and says so, and refuses a blocked session', () => {
+    const notify = vi.fn();
+    const h = setup([], false, notify);
+    h.api.applyNewPageBackgroundToEveryPage();
+    expect(notify).toHaveBeenCalledWith(
+      expect.stringMatching(/^Background applied to \d+ pages?\.$/),
+    );
+    const blocked = setup([], true);
+    blocked.api.setNewPageBackground({ fill: mint });
+    blocked.api.applyNewPageBackgroundToEveryPage();
+    expect(blocked.commitTabs).not.toHaveBeenCalled();
+  });
+});

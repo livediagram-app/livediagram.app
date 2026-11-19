@@ -11,10 +11,10 @@ Derived from [Retired colour schemes, UML](../retired-schemes.md#uml). Scope, by
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/element-model/src/retired-themes.ts`     | `bindRetiredThemes(retired, deps?)`, the role-by-role rewrite; `UML_AS_RETIRED`, frozen                                          |
 | `packages/element-model/src/retired-uml.ts`        | `RETIRED_THEME_IDS` (`uml`), `THEMES` (the shared catalogue less UML), `RETIRED_THEMES` (`uml` to `mono`), `migrateRetiredTheme` |
-| `packages/project/src/themes-data.ts`, `themes.ts` | Re-export `THEMES` (and `RETIRED_THEME_IDS`) from `retired-uml` over the shared modules                                          |
+| `packages/project/src/themes-data.ts`, `themes.ts` | `THEMES` is `retired-uml`'s with the board themes spliced in after Tropical; `RETIRED_THEME_IDS` re-exported from `retired-uml`  |
 | `packages/project/src/retired-themes.ts`           | `packages/project/src/retired-themes.ts` re-exports `migrateRetiredTheme` and `RETIRED_THEMES`                                   |
 | `packages/project/src/stored-tab.ts`               | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
-| `apps/editor/lib/tab-looks.ts`                     | Textbook and Schematic wear `mono`; Textbook sits before Spectrum, Whiteboard after it                                           |
+| `apps/editor/lib/tab-looks.ts`                     | Textbook wears `mono`; no look wears UML                                                                                         |
 | `../packages/workbench/src/lib/themes-taxonomy.ts` | `THEME_DESCRIPTIONS` is `Record<Exclude<ThemeId, 'uml'>, string>`: UML has no blurb                                              |
 
 Behaviour, `migrateRetiredTheme(tab)`:
@@ -51,5 +51,5 @@ Testing:
 | Role-by-role rewrite, halves, arrowheads, kept colours, deps | `packages/element-model/src/retired-themes.test.ts`                         |
 | The catalogue less UML, every retired id migrated            | `packages/element-model/src/retired-uml.test.ts`                            |
 | UML gone here, a stored tab moves to Mono on read            | `packages/project/src/retired-themes.test.ts`                               |
-| No look wears UML; Textbook and Schematic draw in Mono       | `apps/editor/lib/tab-looks.test.ts`, `apps/editor/lib/look-preview.test.ts` |
+| No look wears UML; Textbook draws in Mono                    | `apps/editor/lib/tab-looks.test.ts`, `apps/editor/lib/look-preview.test.ts` |
 | The editor resolves no theme from `uml`                      | `apps/editor/lib/themes.test.ts`                                            |

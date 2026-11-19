@@ -48,8 +48,8 @@ import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import {
   Fragment,
+  useEffect,
   useRef,
-  useState,
   type Dispatch,
   type RefObject,
   type SetStateAction,
@@ -71,7 +71,11 @@ import { panelEnabled } from '@/lib/user-preferences';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@liveworkspace/workbench/lib/ui-scale';
 import { useSnapGuides } from '@/hooks/canvas/useSnapGuideState';
-import { useConfigurableBoard } from '@/hooks/plan/board-configure-store';
+import {
+  setBoardConfiguring,
+  useBoardConfiguring,
+  useConfigurableBoard,
+} from '@/hooks/plan/board-configure-store';
 import { track } from '@/lib/telemetry';
 
 // Values the Canvas computes (selection projection + layout/dock/zoom
@@ -206,7 +210,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
   // A Board tab's board, for the cluster's Configure (plan-board.md "Configure").
   const configurableBoard = useConfigurableBoard();
   // Configure's screen (docs/specs/026-plan/plan-board.md "Configure"), over the board it sets up.
-  const [configuring, setConfiguring] = useState(false);
+  const configuring = useBoardConfiguring();
+  // Leaving the editor closes it, so it never reopens on the next visit.
+  useEffect(() => () => setBoardConfiguring(false), []);
   const configuredElement =
     configuring && configurableBoard
       ? elements.find((e): e is ShapeElement => e.id === configurableBoard && e.type === 'shape')
@@ -471,7 +477,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onConfigure={
                   configurableBoard
                     ? () => {
-                        setConfiguring((on) => !on);
+                        setBoardConfiguring(!configuring);
                         track('Plan', 'Opened', 'BoardSettings');
                       }
                     : undefined
@@ -494,7 +500,10 @@ export function CanvasChrome(props: CanvasChromeProps) {
         )}
       </div>
       {configuredElement ? (
-        <BoardConfigureDialog element={configuredElement} onClose={() => setConfiguring(false)} />
+        <BoardConfigureDialog
+          element={configuredElement}
+          onClose={() => setBoardConfiguring(false)}
+        />
       ) : null}
     </>
   );

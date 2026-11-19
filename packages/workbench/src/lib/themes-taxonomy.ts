@@ -2,14 +2,15 @@
 // shown on the theme cards. Pure catalogue data plus its lookup, split out of each editor's themes.ts (the recolouring engine), this
 // is consumed by the theme-picker UI, not by element recolouring, so it stands
 // on its own.
-import type { ThemeId } from '@liveworkspace/element-model/themes';
+import type { BoardThemeId, ThemeId } from '@liveworkspace/element-model/themes';
 
 // Short, user-facing blurb per built-in theme, shown under the label on
 // the picker's theme cards (the editor's new route spec, docs/specs/007-editor). A `Record<ThemeId, string>` so the
 // compiler forces every theme to carry one: add a ThemeId without a line
 // here and the build fails, which is how this can't drift from THEMES.
-// UML is a shared ThemeId these editors retired (docs/specs/011-theme/retired-schemes.md "UML"), so it has no blurb.
-const THEME_DESCRIPTIONS: Record<Exclude<ThemeId, 'uml'>, string> = {
+// UML is a shared ThemeId these editors retired (docs/specs/011-theme/retired-schemes.md "UML"), so it has no blurb;
+// the board themes (BoardThemeId) are liveplanner's alone, and the others never look one up.
+const THEME_DESCRIPTIONS: Record<Exclude<ThemeId, 'uml'> | BoardThemeId, string> = {
   // The one scheme whose blurb describes a BEHAVIOUR rather than a palette:
   // Default is the same entry in both halves, and which you see is your own
   // appearance (docs/specs/007-editor/editor-app.md, live-app.md in livedesign).
@@ -37,6 +38,12 @@ const THEME_DESCRIPTIONS: Record<Exclude<ThemeId, 'uml'>, string> = {
   rainbow: 'A different hue per branch.',
   pastel: 'Soft multi-colour, a hue per branch.',
   tropical: 'Bright, summery hues per branch.',
+  office: 'Muted work tones, a hue per column.',
+  earth: 'Clay, ochre and moss, a hue per column.',
+  gemstone: 'Bold jewel tones, a hue per column.',
+  harbour: 'Navy, coral and sea glass per column.',
+  sorbet: 'Soft fruit colours, a hue per column.',
+  nightfall: 'Bright hues per column on a dark night.',
   sparkle: 'Gold on a midnight navy.',
   spring: 'Painted-egg pastels, a hue per branch.',
   pumpkin: 'Orange, purple and green on a moonless night.',

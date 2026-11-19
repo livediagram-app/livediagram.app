@@ -14,12 +14,27 @@ import {
   type TabLook,
 } from '@/lib/tab-looks';
 import { track } from '@/lib/telemetry';
-import { LooksCarousel } from './LooksCarousel';
+import { LooksCarousel as SharedLooksCarousel } from '@liveworkspace/workbench/components/dialogs/tab-style/LooksCarousel';
+import { WORKBENCH_DEFAULTS, configureWorkbench } from '@liveworkspace/workbench/bindings';
+import type { BackgroundPattern } from '@livehuddle/document';
+import { TAB_STYLE_PROFILE } from './tab-style-profile';
 import { acrossPages } from '@liveworkspace/workbench/components/primitives/paged-carousel-testing';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 afterEach(() => cleanup());
+
+// The shared carousel over this editor's catalogue and renderers, as its Tab Style home draws it; its telemetry goes
+// through the workbench's track, bound to this editor's.
+configureWorkbench({ ...WORKBENCH_DEFAULTS, track });
+function LooksCarousel(props: {
+  settings: LookSettings;
+  activeLook: string | undefined;
+  onPickLook: (look: string | TabLook) => void;
+  headingClass: string;
+}) {
+  return <SharedLooksCarousel<TabLook, BackgroundPattern> profile={TAB_STYLE_PROFILE} {...props} />;
+}
 
 const MASHUP = 'Mashup: a random look, press for another';
 const UNTOUCHED: LookSettings = { theme: undefined, finish: undefined, font: undefined };

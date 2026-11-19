@@ -45,6 +45,8 @@ export const CANVAS_CONTROLS: Readonly<Record<string, string>> = {
   PatternColor: 'pattern colour',
   BackgroundPatternScale: 'pattern scale',
   BackgroundAnimationSpeed: 'background animation speed',
+  // livehuddle's Room panel (docs/specs/008-canvas/3d-view.md "Themes").
+  WallColor: 'wall colour',
 };
 
 export function typeLabel(type: string): string {

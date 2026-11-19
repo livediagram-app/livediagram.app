@@ -32,8 +32,10 @@ page is and offers; this section is the basics.
     page, in its legacy `pageOrientation` (portrait when absent); the legacy
     field is dropped the first time the pages change. At most **100** pages
     (`MAX_PAGES`).
-- **The surround** is the tab's own canvas: its colour, and every canvas setting, apply behind the pages. Its
-  pattern is **plain** while the tab keeps its theme's pattern; a pattern someone picked shows behind the pages.
+- **The surround** is the tab's own canvas: its colour, its pattern (the theme's own included) and every canvas
+  setting apply behind the pages (`lib/view-backdrop.ts`). It used to paint plain while the tab kept its theme's
+  pattern, which hid every look whose pattern was its theme's while its card drew one; as in liveplanner, a look or a
+  pattern picked in Tab Style always shows (2026-11-19).
 - **Each page's label** sits above its top-left corner (**1024 x 1024 · Logo** on a logo page,
   **iPhone · Wireframe** on a wireframe page, its name first when it has one), and
   **its settings cog** above its top-right, both held at one screen size at any
@@ -204,6 +206,14 @@ A new logo page is the 1024 x 1024 artboard, a new wireframe page the device of 
 kind, a new page **carries over the background** of the page before it (the last page): its fill
 and pattern, a logo page taking the fill alone (it takes no pattern). It is the new page's own
 from then on.
+
+**The tab's own New Page Background.** A tab may name the background every new page starts on
+(`Tab.newPageBackground`, set in [Tab Style](../011-theme/canvas-and-theme-dialog.md) "New Page Background"): a
+fill and a pattern, never a picture, or `{}` for the plain paper. With one, a new page (added, added like another, or
+the first page as its kind is chosen, unless it already wears one) starts on it rather than on the page before's, a
+logo page on its fill alone; a photo page takes none. Absent, the carry-over above. Read via `newPageBackgroundOf`
+(`packages/design/src/tab-new-page-background.ts`); Apply to Every Page is `pagesGivenNewPageBackground`
+(`pages-background-copy.ts`). It rides the tab like any tab setting, so no storage changes.
 
 **A new page's background.** A new page with nothing to carry over starts on the plain paper, and a
 template that comes with content keeps the paper it was designed on. Every path that makes a page

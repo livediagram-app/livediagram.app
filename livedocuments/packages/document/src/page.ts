@@ -147,6 +147,11 @@ function parseFill(v: unknown): PageFill | undefined {
   return parseColourFill(v);
 }
 
+/** A stored page background, keeping what is valid (a fill, a pattern) and undefined when neither is. */
+export function parsePageBackground(v: unknown): PageBackground | undefined {
+  return parseBackground(v);
+}
+
 function parseBackground(v: unknown): PageBackground | undefined {
   const b = v as Record<string, unknown> | null;
   if (!b || typeof b !== 'object') return undefined;

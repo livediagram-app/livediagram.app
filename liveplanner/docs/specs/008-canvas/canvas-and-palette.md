@@ -1437,7 +1437,8 @@ which knows no pattern by name, so the product's `isBackgroundPattern` refuses i
   a `[tab-migrate] retired-pattern` log. Crosshatch is the nearest pattern: a lattice of diagonal lines in the same
   colour, so the tab keeps the look of line paper rather than turning to dots. The next save writes Crosshatch. A
   pattern that reached the canvas without that read would draw as the default dot grid, as any unknown pattern does.
-- The **Studio** look wears Crosshatch.
+- No look wears Crosshatch: Studio, the look that did, retired in the 2026-11-19 looks rework
+  ([Tab Style dialog](../011-theme/canvas-and-theme-dialog.md) "Looks").
 
 ## Icon and Text live in Appearance (owner, 2026-11-16)
 

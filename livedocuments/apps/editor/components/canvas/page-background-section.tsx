@@ -135,8 +135,14 @@ export function BackgroundSection({
   themePresets,
   onBackground,
   onPreview,
+  only,
+  noPattern = false,
 }: {
   page: Page;
+  // The categories offered, narrowing the page kind's own (Tab Style's New Page Background takes no picture).
+  only?: readonly BackgroundCategory[];
+  // No Pattern section (Tab Style's New Page Background on an article, whose ruling is its Style's).
+  noPattern?: boolean;
   // The tab theme's own gradients (themeBackgroundPresets), offered first among the gradients.
   themePresets: readonly ThemeBackgroundPreset[];
   onBackground: (patch: Partial<PageBackground>) => void;
@@ -146,9 +152,10 @@ export function BackgroundSection({
   const pattern = page.background?.pattern;
   // A slide's or a flashcard's background moves (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
   const moves = pageKindOf(page) === 'slide' || pageKindOf(page) === 'flashcard';
-  const categories: BackgroundCategory[] = moves
+  const offered: BackgroundCategory[] = moves
     ? ['solid', 'gradient', 'image', 'animated']
     : ['solid', 'gradient', 'image'];
+  const categories = only ? offered.filter((c) => only.includes(c)) : offered;
   // Opens on the current fill's category; choosing another changes nothing on the page.
   const [chosen, setChosen] = useState<BackgroundCategory | null>(null);
   const opened = backgroundCategoryOf(fill);
@@ -261,36 +268,38 @@ export function BackgroundSection({
           </>
         )}
       </PanelSection>
-      <PanelSection title="Pattern">
-        <div role="radiogroup" aria-label="Pattern" className="grid grid-cols-4 gap-1">
-          {(['none', ...PAGE_PATTERNS] as const).map((p) => {
-            const on = (pattern ?? 'none') === p;
-            const value = p === 'none' ? undefined : p;
-            return (
-              <button
-                key={p}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                onClick={() => onBackground({ pattern: value })}
-                onPointerEnter={() => onPreview({ pattern: value })}
-                onFocus={() => onPreview({ pattern: value })}
-                className={tileClass(on)}
-              >
-                <span
-                  aria-hidden
-                  className="h-6 w-9 rounded-sm bg-white text-slate-900/25 ring-1 ring-inset ring-slate-900/10 dark:bg-slate-900 dark:text-white/25 dark:ring-white/15"
-                  style={{
-                    ...pageSheetStyle(PATTERN_PREVIEW[p]),
-                    backgroundSize: p === 'lines' ? '100% 6px' : '6px 6px',
-                  }}
-                />
-                {PAGE_PATTERN_LABEL[p]}
-              </button>
-            );
-          })}
-        </div>
-      </PanelSection>
+      {noPattern ? null : (
+        <PanelSection title="Pattern">
+          <div role="radiogroup" aria-label="Pattern" className="grid grid-cols-4 gap-1">
+            {(['none', ...PAGE_PATTERNS] as const).map((p) => {
+              const on = (pattern ?? 'none') === p;
+              const value = p === 'none' ? undefined : p;
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  onClick={() => onBackground({ pattern: value })}
+                  onPointerEnter={() => onPreview({ pattern: value })}
+                  onFocus={() => onPreview({ pattern: value })}
+                  className={tileClass(on)}
+                >
+                  <span
+                    aria-hidden
+                    className="h-6 w-9 rounded-sm bg-white text-slate-900/25 ring-1 ring-inset ring-slate-900/10 dark:bg-slate-900 dark:text-white/25 dark:ring-white/15"
+                    style={{
+                      ...pageSheetStyle(PATTERN_PREVIEW[p]),
+                      backgroundSize: p === 'lines' ? '100% 6px' : '6px 6px',
+                    }}
+                  />
+                  {PAGE_PATTERN_LABEL[p]}
+                </button>
+              );
+            })}
+          </div>
+        </PanelSection>
+      )}
     </div>
   );
 }

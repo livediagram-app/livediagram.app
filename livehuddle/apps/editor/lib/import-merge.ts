@@ -25,6 +25,7 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     backgroundOpacity: imported.backgroundOpacity ?? receiving.backgroundOpacity,
     patternColor: imported.patternColor ?? receiving.patternColor,
     backgroundPatternScale: imported.backgroundPatternScale ?? receiving.backgroundPatternScale,
+    wallColor: imported.wallColor ?? receiving.wallColor,
     // Tab-level typography rides the export too (docs/specs/006-document/per-tab-storage.md): without these an
     // exported tab using a tab font came back rendering in the default face.
     font: imported.font ?? receiving.font,

@@ -128,6 +128,10 @@ export const PAGE_SETUP = chart(
       'PageBackgroundAnimatedSpeed',
       'PageBackgroundAppliedToAll',
       'PageBackgroundPainted',
+      // Tab Style's New Page Background (docs/specs/011-theme/canvas-and-theme-dialog.md).
+      'NewPageBackground',
+      'NewPageBackgroundCarried',
+      'NewPageBackgroundToEveryPage',
       'PagePattern',
       'PageLocked',
       'PageUnlocked',

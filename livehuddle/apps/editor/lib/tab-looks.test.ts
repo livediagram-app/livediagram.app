@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FONTS, type Element, type Tab } from '@livehuddle/document';
+import { FONTS, isFloorPattern, type Element, type Tab } from '@livehuddle/document';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { resolveTheme } from '@/lib/themes';
 import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
@@ -27,18 +27,18 @@ describe('TAB_LOOKS', () => {
   it('fills five pages of six after the Mashup card, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
-      'Textbook',
+      'Gallery',
       'Spectrum',
-      'Whiteboard',
+      'Meeting Room',
       'Boardroom',
-      'Notebook',
+      'Cabin',
       'Seaside',
-      'Doodle',
+      'Playroom',
       'Editorial',
       'Midnight',
       'Poster',
       'Sandstone',
-      'Graph Paper',
+      'Lab',
       'Daydream',
       'Engineer',
       'Lagoon',
@@ -50,11 +50,11 @@ describe('TAB_LOOKS', () => {
       'Coffeehouse',
       'Schematic',
       'Flipchart',
-      'Sketchbook',
-      'Greenboard',
+      'Atelier',
+      'Classroom',
       'Picnic',
       'Mural',
-      'Field Notes',
+      'Potting Shed',
     ]);
     expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 5);
     for (const look of TAB_LOOKS) {
@@ -114,10 +114,29 @@ describe('TAB_LOOKS', () => {
   });
 
   // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): its two looks wear Mono.
-  it('dresses Textbook and Schematic in Mono, and no look in UML', () => {
+  it('dresses the Gallery and Schematic in Mono, and no look in UML', () => {
     expect(tabLookById('textbook')!.theme).toBe('mono');
     expect(tabLookById('schematic')!.theme).toBe('mono');
     expect(TAB_LOOKS.map((l) => l.theme)).not.toContain('uml');
+  });
+
+  // docs/specs/011-theme/canvas-and-theme-dialog.md "Rooms, not paper": every look stands on a floor, room-named.
+  it('stands every look on a real floor, the renamed rooms painting their walls', () => {
+    for (const look of TAB_LOOKS) expect(isFloorPattern(look.pattern), look.id).toBe(true);
+    const painted = TAB_LOOKS.filter((l) => l.wallColor).map((l) => l.label);
+    expect(painted.sort()).toEqual(
+      [
+        'Atelier',
+        'Cabin',
+        'Classroom',
+        'Gallery',
+        'Lab',
+        'Meeting Room',
+        'Playroom',
+        'Potting Shed',
+      ].sort(),
+    );
+    for (const look of TAB_LOOKS) expect(look.wallColor ?? '#000000').toMatch(/^#[0-9a-f]{6}$/);
   });
 
   it('gives every look a distinct mix, so at most one reads as selected', () => {
@@ -141,6 +160,18 @@ describe('withLookApplied', () => {
   it('clears the tab font for a look without one', () => {
     const out = withLookApplied(tab({ font: 'lora' }), tabLookById('whiteboard')!);
     expect('font' in out).toBe(false);
+  });
+
+  it("paints the look's walls, and puts the plaster back for a look without", () => {
+    const cabin = withLookApplied(tab(), tabLookById('notebook')!);
+    expect(cabin.wallColor).toBe(tabLookById('notebook')!.wallColor);
+    expect('wallColor' in withLookApplied(cabin, tabLookById('everyday')!)).toBe(false);
+    expect('wallColor' in withLookApplied(tab(), tabLookById('everyday')!)).toBe(false);
+  });
+
+  it('keeps a look selected when only its walls are repainted', () => {
+    const cabin = { ...withLookApplied(tab(), tabLookById('notebook')!), wallColor: '#123456' };
+    expect(activeLookId(cabin)).toBe('notebook');
   });
 
   it('then reads as that look', () => {

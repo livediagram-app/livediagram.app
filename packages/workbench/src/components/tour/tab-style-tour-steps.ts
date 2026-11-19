@@ -3,7 +3,9 @@
 // control into view; the Finish steps open the Finish panel, and one of them really redraws the tab in another finish,
 // putting the person's own back as it ends, however it ends.
 import type { Finish } from '@liveworkspace/element-model/finish';
+import type { ReactNode } from 'react';
 import type { TourStepOf } from './tour-step';
+import type { TourEngine } from './useTourEngine';
 
 export type TabStyleTourApi = {
   // Brings the home (the looks and the Fine-tune rows) forward.
@@ -98,3 +100,11 @@ const OUTRO: TabStyleTourStep = {
 export function tabStyleTourSteps(): TabStyleTourStep[] {
   return [LOOKS, MASHUP, PAGES, FINE_TUNE, FINISH, TRY_FINISH, OUTRO];
 }
+
+/** An editor's bound Show Me (createTabStyleTour in TabStyleTour.tsx), as the dialog's profile holds it. Typed here so
+ *  a profile names it without importing the module that sends the tour's events. */
+export type TabStyleTourBinding = {
+  useTabStyleTour: (api: TabStyleTourApi) => TourEngine<TabStyleTourApi>;
+  TabStyleShowMeButton: (props: { tour: TourEngine<TabStyleTourApi> }) => ReactNode;
+  TabStyleTourStage: (props: { tour: TourEngine<TabStyleTourApi> }) => ReactNode;
+};
