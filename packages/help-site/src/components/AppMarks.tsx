@@ -6,6 +6,11 @@ import { APP_MARK_CLASS, appMarkStyle, appRingStyle } from '../lib/app-palette';
 // app's Living Prism glyph (BrandGlyph, stateless, no gradients, no motion), in its own colour. A row puts the
 // current app first and rings it in its accent; under All Apps the row keeps the registry's order.
 
+// The prism's top face is its faintest, so its ink sits low of its box: 0.63px at 22px on dark, past the optical
+// audit's 0.5px (each product's docs/specs/004-interface-design/optical-alignment.md). Lifting the glyph by 1/44 of
+// its size (0.5px at 22px, two device pixels at 4x) puts its ink on the centre of its ring and its row.
+export const PRISM_INK_LIFT = 1 / 44;
+
 /** One app's mark, `size` pixels square. `ringed` circles it in the app's accent, for the current app. */
 export function AppMark({
   app,
@@ -21,7 +26,12 @@ export function AppMark({
   const glyph = (
     <BrandGlyph
       className={`block shrink-0 ${APP_MARK_CLASS} ${ringed ? '' : className}`}
-      style={{ ...appMarkStyle(app), width: size, height: size }}
+      style={{
+        ...appMarkStyle(app),
+        width: size,
+        height: size,
+        transform: `translateY(-${size * PRISM_INK_LIFT}px)`,
+      }}
     />
   );
   if (!ringed) return glyph;

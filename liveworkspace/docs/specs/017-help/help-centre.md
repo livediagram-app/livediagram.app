@@ -58,7 +58,9 @@ only the articles that apply to it; All Apps shows every article.
 - **The logos.** An article's header shows, at its top right, an **Applies To** row of the apps' marks (the Living
   Prism, `BrandGlyph` from `@liveworkspace/brand`, stateless and without motion), the current app's first and ringed
   in its accent, with a line under it ("Every liveworkspace app", or the apps' names). An article for one app shows
-  that app's mark alone. A category card's illustration carries the same row, small, in its top right corner, with
+  that app's mark alone. Each mark is lifted by 1/44 of its size (0.5px at the row's 22px), so it reads centred in
+  its ring: the prism's top face is its faintest, so its ink sits low of its box (0.63px at 22px on dark, past the
+  optical audit's 0.5px). A category card's illustration carries the same row, small, in its top right corner, with
   "All apps", "N apps" or "+N", when the category holds shared articles. Search results show it at the row's end.
 - **App notes.** Inside an article, an `<AppNote app="…">` block holds what is true for one app only (or for some
   of the apps, `app="livediagram,liveplanner"`). It is drawn as
