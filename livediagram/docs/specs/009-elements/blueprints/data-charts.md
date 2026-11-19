@@ -222,7 +222,7 @@ can.level === 'edit' && !isReadOnly`, `commit = commitElements`, `tick = tickEle
 7. **Not linked yet** (`chartSheetPending: true`, a boolean in `CHART_LOOK_CHECKS`): `svgPieChart`, `svgBarChart` and
    `svgLineChart` (`@liveworkspace/element-model/svg-render-charts`) wrap the marks in
    `<g opacity="SHEET_PENDING_FADE">` (0.3, `chart-sheet-pending.ts`) and add the chip (`svgSheetPendingChip`), so every export, thumbnail and
-   the read-only renderers say it. On the canvas `SheetPendingChart` (workbench `sheet-links/SheetPendingChart.tsx`)
+   the read-only renderers say it. On the canvas `SheetPendingChart` (`../packages/workbench/src/components/sheet-links/SheetPendingChart.tsx`)
    wraps the chart's view in ShapeContentRouter the same way, with no context needed. The Data section's note and its
    **Link to Sheet** / **Use These Numbers** (`SheetLinks.keepNumbers`, one commit dropping the field) are
    `SheetLinkSection`'s; `link` drops the field in its own commit.
