@@ -34,6 +34,8 @@ The spec decides; this file only adds engineering precision. Defaults applied wh
 | `packages/document/src/infra-code/index.ts`                 | The subpath `@livediagram/document/infra-code` (kept out of the package root so no other app loads the parsers)  |
 | `packages/agent-verbs/src/verbs/link.ts`                    | The `link.from-code` verb: input, output, text, CLI projection                                                   |
 | `apps/cli/src/commands/from-code.ts`                        | `linkFromCode`: finds and reads the files, prints the summary, creates the document or adds the tab              |
+| `apps/cli/src/commands/from-code-update.ts`                 | `updateFromCode`: reads a tab and its record, merges the files over it, writes the replace with its record       |
+| `apps/cli/src/commands/from-code-sources.ts`                | `linkSourcesOf(link)`: a link file's infrastructure `[[sources]]` entries, checked; `runLinkSources`             |
 | `apps/editor/hooks/persistence/useInfraImport.ts`           | `importInfraFiles(files, env)` and `updateFromSources(files, env)`: lazy parsers, layout, merge, one commit      |
 | `apps/editor/hooks/persistence/useTabImport.ts`             | Routes the `infra` format to `useInfraImport`; other imports clear `sources`; Duplicate remaps them              |
 | `apps/editor/lib/infra-import.ts`                           | File types and cap, `infraImportOutcome`, `infraUpdateOutcome`, `infraUpdateOffered(tab, level)`                 |
@@ -292,6 +294,34 @@ past the first 149, listed in the last box` (count: left out) and `Lines left ou
   is true while an entry is `needed`, or none is left; `matchDropped(entries, files)` replaces the first `kept`,
   `needed` or `replaced` entry of the same base name, else adds a `new` one.
 
+### The CLI
+
+- **Create** (`linkFromCode`, no `--update`): the graph as before, sent as `{ replace: { graph, sources } }` to
+  `document create` / `tab add`, `sources` `{ bridge: 'infra', files: sourceFiles(files), env? }` (the api works out
+  `nodes` and `edges`). Then stderr `update later: livediagram link from-code --doc <document id> --tab <tab id>
+--update` (the tab id from `tab add`'s `+ tab <id>` line; a new document's only tab is its first, so `--tab` is
+  left out).
+- **Update** (`updateFromCode(io, ctx, input)`): `--update` without `--doc` is a usage error (exit 2).
+  1. `tabOf(doc, tab)`, then `GET` the tab: `{ tab, rev }`. `tabSourcesOf(tab)` null: `not_drawn_from_files` (exit 1),
+     `tab "<name>" was not drawn from files`, hint `livediagram link from-code <file>... --doc <doc>`.
+  2. The files: those named, else each remembered `files[].name`, read relative to the working directory (a link
+     entry's: the link's root); one missing is `not_found`, `can't read <name>, which the tab was drawn from`.
+  3. `infraGraph(files, { env: input.env ?? record.env })`, errors as a create's; `layoutGraph`, presets rederived
+     for the tab's theme (`getBuiltInTheme`); `mergeSourceGraph({ tab: tab.elements, record, fresh, graph })`.
+  4. stderr `updated: added <a> box(es), removed <r>, kept <k>, <e> edit(s) kept; lines +<la> -<lr>`; debug
+     `[from-code] update <tab> <a> <r> <k> <e>`.
+  5. `submitChangeset` (as a dry run with `--dry-run`, so nothing is written) with `{ replace: { elements, layout: 'preserve', sources: { bridge,
+files: sourceFiles(files), env?, nodes, edges } } }`, `base: rev` and `strict` (a tab changed since the read is
+     refused, to be run again); prints the changeset's text.
+- **Link entries** (`linkSourcesOf(link)`): each `[[sources]]` table with `files`: `files` a non-empty array of
+  strings, each normalised inside the link root (`invalid_dir`-style refusal `<path>: sources[<i>].files holds
+"<value>", outside <root>`), `tab` `<doc>/<tab>` (`<path>: sources[<i>].tab must be <document>/<tab>`), `env` a
+  string; any other key `unknown_key` naming `sources[<i>].<key>`. Tables with `path` and no `files` are skipped.
+  `runLinkSources` runs `updateFromCode` per entry with `cwd` the link root, prints `<tab>:` before each, carries on
+  past a refusal (printed as the CLI prints one) and exits with the first failure's code.
+- `main.ts`: with no files, no `--doc` and no `--dry-run`, `findLink(cwd)`; entries found run as above, else the
+  standard discovery.
+
 ## Errors and copy
 
 | Error             | Copy (editor names the file first; the CLI prefixes it the same way)                                                          |
@@ -344,7 +374,8 @@ past the first 149, listed in the last box` (count: left out) and `Lines left ou
 
 ## Observability
 
-- CLI debug: `[from-code] read <file> <format>`, `[from-code] skipped <n>`, `[from-code] capped <n>`.
+- CLI debug: `[from-code] read <file> <format>`, `[from-code] skipped <n>`, `[from-code] capped <n>`,
+  `[from-code] update <tab> <added> <removed> <kept> <editsKept>`, `[from-code] link <n> sources`.
 - Editor: `debugLog('[infra-import]', { formats, files, nodes, edges, skipped, leftOut })`;
   `debugLog('[infra-update]', { files, added, removed, kept, editsKept, linesAdded, linesRemoved })`.
 
@@ -364,6 +395,9 @@ past the first 149, listed in the last box` (count: left out) and `Lines left ou
 | Re-run merge over an edited tab, every row of the table    | `packages/document/src/infra-code/merge.test.ts`            |
 | The record's reader and id remap                           | `packages/document/src/diagram-sources.test.ts`             |
 | CLI discovery (`.tf` too), dry run, create, add, errors    | `apps/cli/src/commands/from-code.test.ts`                   |
+| CLI update: merge, remembered files and env, refusals, 403 | `apps/cli/src/commands/from-code-update.test.ts`            |
+| Link `[[sources]]` entries: checks, runs, failure carries  | `apps/cli/src/commands/from-code-sources.test.ts`           |
+| A replace's `sources`: graph, elements, refusals           | `packages/edit-operations/src/replace-sources.test.ts`      |
 | Editor outcomes, reports, roles                            | `apps/editor/lib/infra-import.test.ts`                      |
 | Panel rules (entries, drop matching, blocked)              | `apps/editor/lib/infra-files.test.ts`                       |
 | Import and update commits, one undo, locked                | `apps/editor/hooks/persistence/useTabImport.infra.test.ts`  |

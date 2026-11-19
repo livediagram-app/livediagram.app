@@ -459,6 +459,11 @@ On the working state, in order:
 - Existing tab: every tab field kept, `elements` replaced, then `landWorkshopArrivals(tab, elements, 'replace')`.
   A locked tab is `element_locked`. New tab (`tab === null`): `buildTab` / `buildGraphTab` / `buildTemplateTab`
   with `options.tabId`, `options.name` and the theme, as `add_tab` does.
+- `options.sources` (`ChangesetReplaceSources`): with a `graph` body, `nodes` and `edges` must be absent and are
+  `drawnRecord(next.elements, graph)`; with `elements` they must be present; with `mermaid` or `template` it is
+  refused. The record, `readAt` set to `options.now ?? Date.now()`, must read back whole through `tabSourcesOf`
+  (no entry dropped) and its stored texts fit `INFRA_SOURCES_MAX_STORED_CHARS`, else `invalid_value` naming
+  `replace.sources`. It becomes `next.sources`; without `options.sources` the next tab has no `sources`.
 - Validation, `elementOps` and `inverse` as for operations; the results are one line per added and removed element
   and no `»` lines; `targets` is empty; `createdIds` lists every element of the new tab not in the old one.
 

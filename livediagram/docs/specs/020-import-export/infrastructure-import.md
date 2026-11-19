@@ -159,7 +159,7 @@ Every other key not drawn is named in the **summary**: each key once with how of
 
 ### The CLI
 
-`livediagram link from-code [<file>...] [--doc <d>] [--name <n>] [--env <e>] [--dry-run]`
+`livediagram link from-code [<file>...] [--doc <d>] [--tab <t>] [--update] [--name <n>] [--env <e>] [--dry-run]`
 
 - With no files it reads, from the working directory, whichever of `wrangler.toml`, `docker-compose.yml`,
   `docker-compose.yaml`, `compose.yml` and `compose.yaml` exist, and every `.tf` file there; none is a usage error
@@ -169,8 +169,19 @@ Every other key not drawn is named in the **summary**: each key once with how of
   document's line as `document create` does. With `--doc` it adds the tab to that document, as `tab add` does.
 - `--dry-run` reads and prints the graph as JSON on stdout, which `graph render -f -` or `document create -f -` take,
   and needs no sign-in.
-- Each run makes a new tab: the CLI does not yet update a tab from its files (that waits for the repository binding,
-  [diagram sources](../027-repositories/diagram-sources.md) "Binding").
+- The tab it makes remembers its files, as the editor's import does (the changeset carries the record,
+  [diagram sources](../027-repositories/diagram-sources.md) "Writing the record"), and stderr ends with the command
+  that updates it: `update later: livediagram link from-code --doc <d> --tab <t> --update`.
+- **`--update`** updates the tab `--doc` and `--tab` name (the document's first tab without `--tab`) from its files,
+  with the same merge as the editor's Update From Files ("Updating a tab from its files" below): the files named, else
+  the ones the tab remembers, read again by the names it remembers them by; `--env`, else the environment remembered.
+  It prints the counts the editor's report shows (`added 1 box, removed 1, kept 6, 2 edits kept; lines +1 -2`), then
+  the changeset's lines. A tab not drawn from files is refused (exit 1, `not_drawn_from_files`) with the command that
+  draws one; a remembered file missing on disk is refused naming it; `--update` without `--doc` is a usage error.
+  `--dry-run` prints the counts and sends the changeset as a dry run, so nothing is written.
+- **A link's `[[sources]]`.** With no files and no `--doc`, inside a repository link whose `livediagram.toml` binds
+  infrastructure files to tabs, it updates each of those tabs from its files, the paths relative to the link file
+  ([diagram sources](../027-repositories/diagram-sources.md) "Infrastructure sources in the link file").
 - It lives under `link` because it is the repository's side of livediagram: the same files a
   [repository link](../027-repositories/repository-link.md) mirrors beside.
 
@@ -249,6 +260,8 @@ was drawn as.
 capped <count>`.
 - Editor: `[infra-import]` with the formats, file, node, edge and skipped counts; `[infra-update]` with the files and
   the added, removed, kept and edits-kept counts.
+- CLI `--debug` on an update: `[from-code] update <tab> <added> <removed> <kept> <editsKept>`; `[from-code] link
+<n> sources` when a link file's entries run.
 - Telemetry: `Cli·Used·LinkFromCode`; `Tab·Imported·Wrangler`, `Tab·Imported·Compose`, `Tab·Imported·Terraform` or
   `Tab·Imported·Kubernetes` from the editor, by the first file's format; `Tab·Imported·InfraUpdate` for an update (the existing pair, so no new action).
 
@@ -256,4 +269,6 @@ capped <count>`.
 
 Importing and updating replace or change the tab, an edit: an Editor may import and update; a Participant and a
 Viewer never see the Import dialog or its From Its Files card, as for every other
-import ([Share roles](../013-workspace/share-roles.md)). A locked tab refuses both until it is unlocked.
+import ([Share roles](../013-workspace/share-roles.md)). A locked tab refuses both until it is unlocked. The CLI
+writes through a changeset, so its create and `--update` are an Editor's too: a view or participate link, or a token
+without edit access, is refused `403` and nothing is written.

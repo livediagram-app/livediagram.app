@@ -1,10 +1,12 @@
 # Diagram sources
 
 **Status: Partly built.** Built: the tab's sources record and the re-read that merges a changed source into an edited
-tab ([The tab's sources](#the-tabs-sources), [Re-reading a source](#re-reading-a-source)), used by the
-[infrastructure import](../020-import-export/infrastructure-import.md) in the editor. Planned: the repository binding
-(adopt, markers, the link file's `[[sources]]`, which it still accepts and leaves unread, strict sources and two-way
-sync).
+tab ([The tab's sources](#the-tabs-sources), [Re-reading a source](#re-reading-a-source)), for the
+[infrastructure import](../020-import-export/infrastructure-import.md) in the editor and from the command line, the
+changeset that writes a tab's record ([Writing the record](#writing-the-record)), and the link file's infrastructure
+`[[sources]]` ([Infrastructure sources in the link file](#infrastructure-sources-in-the-link-file)). Planned: the
+rest of the repository binding (adopt, markers, `[[sources]]` for other formats, which it still accepts and leaves
+unread, strict sources and two-way sync).
 
 Most repositories already hold diagrams as text: Mermaid in READMEs, PlantUML beside the code, Graphviz written by
 generators such as code2flow. A **source** is one such diagram, a file or a fenced block in Markdown, **bound** to a
@@ -30,8 +32,8 @@ naming what the format can express. Bridges reuse the existing importers ([Merma
 
 - **Infrastructure code** is the first `in` bridge built: [Infrastructure code import](../020-import-export/infrastructure-import.md)
   draws its files into a tab whose sources record remembers them, and the editor's **Update From Files** re-reads
-  them into that tab, its node ids (slugs of the resources) the identity below. The CLI's `link from-code` still makes
-  a new tab each run, until the repository binding lets it name the tab it feeds.
+  them into that tab, its node ids (slugs of the resources) the identity below. The CLI's `link from-code` writes the
+  same record, and `link from-code --update` (or a `[[sources]]` entry) re-reads the files into the tab it names.
 - **Direction** is per binding: `two-way` (the default where the format allows), `in` (the file feeds livediagram
   and is never written: generated files, formats without a serialiser) or `out` (livediagram writes the file and
   never reads it: a published Mermaid copy of a richer diagram).
@@ -94,6 +96,46 @@ A re-read is a three-way merge: the **base** is what the record says was drawn, 
 - The record is rewritten from the result: every node the source names, the element it is now (or the one deleted),
   and the source's own values for its fields, so a field once edited stays the person's on every later re-read.
 - The merge is one commit, so one undo takes back the tab and its record together.
+
+## Writing the record
+
+The editor saves the record with the tab. Anything else writes it through a changeset whose `replace` carries it
+([Agent changesets](../024-agents/agent-changesets.md)), so it lands in one revision with the elements it describes:
+
+- `replace.sources` is the record without `readAt` (the api stamps the time it wrote it): the bridge, the files, the
+  options, and `nodes` and `edges`.
+- With a `graph` body the api draws the tab and works out `nodes` and `edges` from what it drew, so a first write
+  sends only the files and options. With an `elements` body (a re-read merged by the caller) `nodes` and `edges` are
+  sent, since only the caller knows what each element was drawn from.
+- A `replace` without `sources` replaces the tab with something no source drew, so the tab forgets its record, as
+  another import in the editor does. Edit operations never touch it: they are edits on top of the drawing.
+- A record that does not read as one, texts past the bridge's cap, or `sources` with a Mermaid or template body is
+  refused `422 invalid_value`, naming `replace.sources`, and nothing is written.
+- Writing is an edit, so the changeset's own gate applies: an Editor (a person, an edit link or a token on their
+  behalf) may write it; a Participant or a Viewer is refused `403`, as for every changeset.
+- Editors with the tab open hear the new record with the changeset, so their next save keeps it; a save that arrives
+  behind changesets its editor had not yet seen keeps the stored record over the copy it carries.
+- Reverting such a changeset takes the elements back and leaves the record as the re-read wrote it; the next re-read
+  then treats what the revert brought back as the person's own.
+
+## Infrastructure sources in the link file
+
+A [repository link](repository-link.md)'s `[[sources]]` table binds infrastructure files to the tab they feed:
+
+```toml
+[[sources]]
+files = ["wrangler.toml", "infra/main.tf"]   # relative to livediagram.toml
+tab = "doc_3h9x2a/0b34"                      # <document>/<tab>
+env = "staging"                              # optional: the Wrangler environment
+```
+
+- An entry with `files` is an infrastructure source: `files` a non-empty array of paths inside the link's directory,
+  `tab` the document and tab, `env` optional. Any other key in such an entry is refused by name.
+- An entry with `path` (a draw.io or Excalidraw file, for the bridges still planned) is accepted and left unread.
+- `livediagram link from-code` with no files and no `--doc`, inside a link with infrastructure entries, updates each
+  entry's tab from its files in turn, as `--update` does, and prints each tab's report. A tab that was not drawn from
+  files is a refusal naming it, and the entries after it still run; the exit code is the first failure's.
+- Without such entries it reads the working directory as it always has.
 
 ## Compatibility
 
