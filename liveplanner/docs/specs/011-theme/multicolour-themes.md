@@ -18,17 +18,17 @@ A theme with no `palette` is a single-colour theme and behaves exactly as before
 The catalogue ships nine multi-colour themes, all extra: the three shared with the other products, and six
 **board themes** of this product's own (below).
 
-| Theme     | Feel                                                                      |
-| --------- | ------------------------------------------------------------------------- |
-| Rainbow   | Saturated six-hue spectrum (red → orange → … → purple)                    |
-| Pastel    | Soft, low-saturation version of the same wheel                            |
-| Tropical  | Vivid teal / cyan / lime / orange / pink / violet                         |
-| Office    | Muted work tones in a status order: blue, amber, violet, green, brick, teal |
+| Theme     | Feel                                                                         |
+| --------- | ---------------------------------------------------------------------------- |
+| Rainbow   | Saturated six-hue spectrum (red → orange → … → purple)                       |
+| Pastel    | Soft, low-saturation version of the same wheel                               |
+| Tropical  | Vivid teal / cyan / lime / orange / pink / violet                            |
+| Office    | Muted work tones in a status order: blue, amber, violet, green, brick, teal  |
 | Earth     | Natural pigments on warm paper: clay, ochre, olive, moss, dusk blue, heather |
-| Gemstone  | Bold jewel tones: sapphire, emerald, amethyst, ruby, topaz, turquoise     |
-| Harbour   | A cool seaside set: navy, coral, sea glass, sand, dusk violet, slate      |
-| Sorbet    | Soft fruit on cream: raspberry, peach, lemon, pistachio, mint, blueberry  |
-| Nightfall | The dark one: bright blue, teal, amber, pink, violet, green on ink blue   |
+| Gemstone  | Bold jewel tones: sapphire, emerald, amethyst, ruby, topaz, turquoise        |
+| Harbour   | A cool seaside set: navy, coral, sea glass, sand, dusk violet, slate         |
+| Sorbet    | Soft fruit on cream: raspberry, peach, lemon, pistachio, mint, blueberry     |
+| Nightfall | The dark one: bright blue, teal, amber, pink, violet, green on ink blue      |
 
 ### Board themes
 

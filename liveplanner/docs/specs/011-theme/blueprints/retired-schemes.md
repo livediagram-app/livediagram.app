@@ -11,7 +11,7 @@ Derived from [Retired colour schemes, UML](../retired-schemes.md#uml). Scope, by
 | -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/element-model/src/retired-themes.ts`     | `bindRetiredThemes(retired, deps?)`, the role-by-role rewrite; `UML_AS_RETIRED`, frozen                                          |
 | `packages/element-model/src/retired-uml.ts`        | `RETIRED_THEME_IDS` (`uml`), `THEMES` (the shared catalogue less UML), `RETIRED_THEMES` (`uml` to `mono`), `migrateRetiredTheme` |
-| `packages/project/src/themes-data.ts`, `themes.ts` | `THEMES` is `retired-uml`'s with the board themes spliced in after Tropical; `RETIRED_THEME_IDS` re-exported from `retired-uml` |
+| `packages/project/src/themes-data.ts`, `themes.ts` | `THEMES` is `retired-uml`'s with the board themes spliced in after Tropical; `RETIRED_THEME_IDS` re-exported from `retired-uml`  |
 | `packages/project/src/retired-themes.ts`           | `packages/project/src/retired-themes.ts` re-exports `migrateRetiredTheme` and `RETIRED_THEMES`                                   |
 | `packages/project/src/stored-tab.ts`               | `migrateStoredTab` runs `migrateRetiredTheme` on every read                                                                      |
 | `apps/editor/lib/tab-looks.ts`                     | Textbook wears `mono`; no look wears UML                                                                                         |

@@ -474,8 +474,7 @@ export function themedForTab<E extends Element>(
   themeId: string | undefined,
   { dark = false }: { dark?: boolean } = {},
 ): E[] {
-  const found =
-    themeId && themeId !== DEFAULT_SCHEME_ID ? builtInById(themeId) : undefined;
+  const found = themeId && themeId !== DEFAULT_SCHEME_ID ? builtInById(themeId) : undefined;
   if (!found) return [...elements];
   const theme = themeHalf(found, dark ? 'dark' : 'light');
   return elements.map((el) => {

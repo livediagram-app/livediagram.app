@@ -44,7 +44,10 @@ describe('board themes', () => {
     for (const t of BOARD_THEMES) {
       expect(t.palette!.length, t.id).toBeGreaterThanOrEqual(5);
       expect(t.rootColor, t.id).toBeTruthy();
-      expect(THEMES.some((s) => s.id === t.id), t.id).toBe(false);
+      expect(
+        THEMES.some((s) => s.id === t.id),
+        t.id,
+      ).toBe(false);
     }
   });
 
@@ -58,7 +61,9 @@ describe('board themes', () => {
         strokes.forEach((a, i) =>
           strokes.slice(i + 1).forEach((b, j) => {
             if (a.c < 0.06 || b.c < 0.06) return;
-            expect(gap(a.h, b.h), `${t.id} ${appearance} ${i}|${i + j + 1}`).toBeGreaterThanOrEqual(25);
+            expect(gap(a.h, b.h), `${t.id} ${appearance} ${i}|${i + j + 1}`).toBeGreaterThanOrEqual(
+              25,
+            );
           }),
         );
       }
