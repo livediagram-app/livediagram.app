@@ -133,6 +133,26 @@ describe('a live embed', () => {
     expect(slotWanted.at(-1)).toBe(false);
   });
 
+  it('offers a signed-in reader Request Access on the no-access card', async () => {
+    const { DeferredAuthContext, DEFERRED_AUTH_DEFAULT } =
+      await import('../providers/deferred-auth');
+    frame = { state: 'no-access' };
+    render(
+      <DeferredAuthContext.Provider
+        value={{ ...DEFERRED_AUTH_DEFAULT, isSignedIn: true, userId: 'user_me' }}
+      >
+        <LiveEmbedView
+          liveItem={ITEM}
+          liveName="Roadmap"
+          livePoster={POSTER}
+          hostName="h"
+          canChoose
+        />
+      </DeferredAuthContext.Provider>,
+    );
+    expect(screen.getByRole('button', { name: 'Request Access' })).toBeTruthy();
+  });
+
   it('only dims, never obscures, a snapshot for a reader who can open the file', () => {
     expect(view().container.querySelector('img')!.dataset.snapshot).toBe('clear');
     cleanup();

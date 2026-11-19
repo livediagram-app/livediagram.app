@@ -228,6 +228,9 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
         <NotFound
           reason={reason}
           signInHref={signInHref}
+          // Signed in on the app's own address, the Missing card offers Request Access for the item it names
+          // (liveworkspace/docs/specs/004-index/request-access.md "On screen").
+          requestAccess={state.accountUserId && archivedId ? { itemId: archivedId } : null}
           onCreateNew={() => window.location.assign(`${window.location.origin}/new`)}
           onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
         />
