@@ -128,6 +128,19 @@ export const AUTOMATION_EMAILS = email(
   "A teammate emailed by a rule's Send Email action. The kind only, never the text.",
 );
 
+// liveworkspace request-access.md "The emails".
+export const ACCESS_REQUESTED_EMAILS = email(
+  'AccessRequested',
+  'Access Requests',
+  'A manager was emailed because someone asked for access to a plan they run.',
+);
+
+export const ACCESS_GRANTED_EMAILS = email(
+  'AccessGranted',
+  'Access Granted',
+  'Someone who asked for access was emailed that a manager shared the plan with them.',
+);
+
 export const MENTION_EMAILS = email(
   'Mentioned',
   'Mention Notifications',
@@ -180,6 +193,8 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   ACTION_EMAILS,
   APPROVAL_EMAILS,
   AUTOMATION_EMAILS,
+  ACCESS_REQUESTED_EMAILS,
+  ACCESS_GRANTED_EMAILS,
   MENTION_EMAILS,
   FORM_RESPONSE_EMAILS,
   FORM_SUSPENDED_EMAILS,

@@ -7,8 +7,12 @@
 // Like every docs/specs/014-identity/transactional-email.md send these never throw — sendEmail swallows failures — so
 // a notification problem can't break the request that triggered it.
 
-import type { TeamPerson } from '@liveworkspace/auth-client';
-import type { ApprovalNotice } from '@liveworkspace/index-client';
+import { accountAddresses, type TeamPerson } from '@liveworkspace/auth-client';
+import type {
+  AccessGrantedNotice,
+  AccessRequestedNotice,
+  ApprovalNotice,
+} from '@liveworkspace/index-client';
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import { accountCredentials } from '../auth/accounts';
 import { isAccountIdShape } from '@livediagram/api-schema';
@@ -21,6 +25,8 @@ import type { DocumentEnv, Env } from '../types';
 import { emailEnabled, sendEmail } from './client';
 import { ownerEmailCoveredByMention, type MentionedComment } from './comment-owner-email';
 import {
+  accessGrantedEmail,
+  accessRequestedEmail,
   actionAssignedEmail,
   approvalRequestedEmail,
   commentNotificationEmail,
@@ -77,12 +83,15 @@ const notifier = createNotifier<Env, RenderedEmail>({
   allowance: (env) => accountsAllowance(accountCredentials(env)),
   nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
   teamPeople,
+  addresses: (env, ids) => accountAddresses(accountCredentials(env), ids),
   settings: { join: 'notifyDocumentJoin' },
   emails: {
     milestone: milestoneEmail,
     firstShare: firstShareEmail,
     joined: documentJoinedEmail,
     actionAssigned: actionAssignedEmail,
+    accessRequested: accessRequestedEmail,
+    accessGranted: accessGrantedEmail,
     approvalRequested: approvalRequestedEmail,
     mentioned: (env, authorName, canvas, text) =>
       mentionedEmail(env, authorName, canvas.name, canvas.id, text),
@@ -104,6 +113,22 @@ export const notifyApprovalRequested = (
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
 export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>
   notifier.notifyFirstShare(env, actorId);
+
+// Someone asked for access to a canvas these managers run (the index's `access_requested` notice,
+// routes/internal-items.ts; liveworkspace request-access.md "The emails"). Opt-out with the join switch.
+export const notifyAccessRequested = (
+  env: Env,
+  id: string,
+  notice: AccessRequestedNotice,
+): Promise<void> => notifier.notifyAccessRequested(env, id, notice);
+
+// A manager shared a canvas with the person who asked (the index's `access_granted` notice): their email, which no
+// switch holds back.
+export const notifyAccessGranted = (
+  env: Env,
+  id: string,
+  notice: AccessGrantedNotice,
+): Promise<void> => notifier.notifyAccessGranted(env, id, notice);
 
 // A signed-in person opened one of an owner's canvases through a share link for the first time (the index's `joined`
 // notice, run inside the canvas's Durable Object). Opt-out (notifyDocumentJoin).

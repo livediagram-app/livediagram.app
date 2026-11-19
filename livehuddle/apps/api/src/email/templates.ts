@@ -12,6 +12,8 @@ import {
   subjectText,
   type EmailSection,
 } from '@liveworkspace/email/layout';
+import { accessGrantedParts, accessRequestedParts } from '@liveworkspace/email/access-request';
+import type { AccessGrantedEmailInput, AccessRequestedEmailInput } from '@liveworkspace/index-app';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
@@ -50,6 +52,8 @@ export type EmailKind =
   | 'DocumentJoined'
   | 'CommentNotification'
   | 'ActionAssigned'
+  | 'AccessRequested'
+  | 'AccessGranted'
   | 'Mentioned'
   | 'FormResponse'
   | 'FormSuspended'
@@ -348,5 +352,50 @@ export function callsBudgetEmail(
       footer:
         'You’re receiving this because this address is set as livehuddle’s calls budget contact.',
     }),
+  };
+}
+
+// Request Access (liveworkspace/docs/specs/004-index/request-access.md "The emails"), worded once
+// (@liveworkspace/email/access-request) in this app's look: someone asked for access to a space the recipient manages
+// (opt-out with the join switch), and a manager shared it with the person who asked (no switch: they asked for it).
+const ACCESS_WORDS = { noun: 'space', escape: xmlEscape };
+
+export function accessRequestedEmail(env: Env, input: AccessRequestedEmailInput): RenderedEmail {
+  // livehuddle has no Inbox of its own: the request is answered from liveworkspace.app's (INDEX_ORIGIN), or,
+  // with no such origin set, the Explorer here.
+  const inbox = env.INDEX_ORIGIN
+    ? `${env.INDEX_ORIGIN.replace(/\/+$/, '')}/explorer/inbox?at=${encodeURIComponent(`r:${input.requestId}`)}`
+    : `${appBaseUrl(env)}/explorer`;
+  const parts = accessRequestedParts(
+    {
+      requesterName: input.requesterName,
+      itemTitle: input.item.name,
+      note: input.note,
+      href: inbox,
+    },
+    ACCESS_WORDS,
+  );
+  return {
+    kind: 'AccessRequested',
+    subject: parts.subject,
+    html: shell(env, { ...parts.section, footer: manageNotificationsFooter(env, parts.reason) }),
+    unsubscribeUrl: profilePath(env),
+  };
+}
+
+export function accessGrantedEmail(env: Env, input: AccessGrantedEmailInput): RenderedEmail {
+  const parts = accessGrantedParts(
+    {
+      granterName: input.granterName,
+      itemTitle: input.item.name,
+      level: input.level,
+      href: `${appBaseUrl(env)}/document/${encodeURIComponent(input.item.id)}`,
+    },
+    ACCESS_WORDS,
+  );
+  return {
+    kind: 'AccessGranted',
+    subject: parts.subject,
+    html: shell(env, { ...parts.section, footer: parts.reason }),
   };
 }

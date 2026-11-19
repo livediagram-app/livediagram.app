@@ -14,6 +14,21 @@ const recording = () =>
 const ENVS = [{}, { APP_BASE_URL: 'https://www.example.app/' }] as unknown as Env[];
 
 const FIXTURES: Record<string, unknown[][]> = {
+  accessRequestedEmail: [
+    [
+      {
+        requestId: 'req 1',
+        requesterName: 'Ana <a>',
+        item: { id: 'a b', name: 'N<' },
+        note: 'on & in',
+      },
+    ],
+    [{ requestId: 'r2', requesterName: null, item: { id: 'x', name: ' ' }, note: null }],
+  ],
+  accessGrantedEmail: [
+    [{ granterName: 'Bo <b>', item: { id: 'a b', name: 'N<' }, level: 'view' }],
+    [{ granterName: null, item: { id: 'x', name: '' }, level: 'edit' }],
+  ],
   accountDeletedEmail: [[]],
   documentJoinedEmail: [
     ['Q3 <plan> & "x"', 'Ann'],
@@ -52,6 +67,8 @@ const FIXTURES: Record<string, unknown[][]> = {
 };
 
 const EXPECTED: Record<string, string> = {
+  accessRequestedEmail: '5ddbec2ccb8eb6b87038f9155805b7a826b31a68394c73def2dc4a2b8d75fc88',
+  accessGrantedEmail: 'dc2de57b76e92043bd264a82d700c9c63666231a4b2d1c685fba8b78bbc7bbc1',
   approvalRequestedEmail: '3ba2c270959aed8ea4624df95bd6086da6195a1752f6dfde25da60658d064294',
   accountDeletedEmail: '4a524c2cdb03309bef0ebe1bcb5bab5a97d79b8150603f531ba3155450036b04',
   actionAssignedEmail: '83e7f2a50de6f0fb44320b6a3a9c2aad47b114c6e6a2f27c789ce325eb05fde5',

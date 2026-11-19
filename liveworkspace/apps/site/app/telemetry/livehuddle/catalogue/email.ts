@@ -114,6 +114,19 @@ export const ACTION_EMAILS = email(
   'A teammate was emailed about work assigned to them.',
 );
 
+// liveworkspace request-access.md "The emails".
+export const ACCESS_REQUESTED_EMAILS = email(
+  'AccessRequested',
+  'Access Requests',
+  'A manager was emailed because someone asked for access to a space they run.',
+);
+
+export const ACCESS_GRANTED_EMAILS = email(
+  'AccessGranted',
+  'Access Granted',
+  'Someone who asked for access was emailed that a manager shared the space with them.',
+);
+
 export const MENTION_EMAILS = email(
   'Mentioned',
   'Mention Notifications',
@@ -173,6 +186,8 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   DOCUMENT_JOINED_EMAILS,
   COMMENT_EMAILS,
   ACTION_EMAILS,
+  ACCESS_REQUESTED_EMAILS,
+  ACCESS_GRANTED_EMAILS,
   MENTION_EMAILS,
   FORM_RESPONSE_EMAILS,
   FORM_SUSPENDED_EMAILS,
