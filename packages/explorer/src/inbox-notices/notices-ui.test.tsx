@@ -3,6 +3,7 @@
 // one tab never shows in another, the Inbox list reading a row closes its notice, and the count.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import type { InboxResponse, InboxThread } from '@liveworkspace/index-client';
 import { createNoticeCenter, NOTICE_SHOW_MS } from './center';
 import { InboxCountBadge, inboxButtonLabel } from './InboxCountBadge';
@@ -382,5 +383,22 @@ describe('where it hangs', () => {
     expect(notice()!.style.top).toBe('12px');
     // The animation class carries the motion; reduced motion fades it only (explorer.css).
     expect(notice()!.className).toContain('lw-inbox-notice');
+  });
+});
+
+describe('cost', () => {
+  it('an answer of 200 rows, shown as one grouped notice, stays within budget', () => {
+    const t = setup();
+    const many = Array.from({ length: 200 }, (_, i) =>
+      thread({ elementId: `p${i}`, latestAt: NOW - 1 - i, mentionedBy: null }),
+    );
+    const per =
+      cpuMsOf(() => {
+        for (let i = 0; i < 10; i++) {
+          t.answer({ threads: many.map((r) => ({ ...r, latestAt: r.latestAt + i * 1000 })) });
+        }
+      }) / 10;
+    expect(notice()!.querySelectorAll('li a')).toHaveLength(3);
+    expect(per).toBeLessThan(cpuBudgetMs(40));
   });
 });
