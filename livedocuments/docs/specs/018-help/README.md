@@ -2,6 +2,8 @@
 
 Follow the references below only as needed; never upfront.
 
+Moving to the platform's one help centre, which every app shares: [016-help](../../../../liveworkspace/docs/specs/016-help/README.md). Until the move ships, these specs describe this app's help as it runs today.
+
 - ./help-app.md - when working on Help app: Standalone `/help` help centre (MDX articles + client search), in livedocuments's light brand; article registry + search keywords shared via `@livedocuments/help-registry` (also feeds editor search)
 - ./contextual-help-links.md - when working on Contextual help links: Reusable `HelpArticleLink` deep-linking editor surfaces to their help article; `HELP_ARTICLES` slug source
 - ./help-pages.md - when working on Help pages: the home page's sections, category art, grouped category pages, article previous/next, search keys
