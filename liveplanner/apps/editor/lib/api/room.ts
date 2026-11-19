@@ -21,6 +21,7 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@liveplanner/api-schema';
+import { ITEM_ARCHIVED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import { reloadAfterRevert } from '@liveworkspace/snapshots/client';
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { opForTheWire } from '@liveplanner/project';
@@ -42,6 +43,10 @@ export type RoomHandlers = {
   // closed this socket with PROJECT_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
   onProjectTrashed?: () => void;
+  // The item was archived from anywhere (liveworkspace/docs/specs/004-index/one-explorer.md "Archived from elsewhere
+  // while open"): the room closed every session with ITEM_ARCHIVED_CLOSE. The connector stops for good, and the
+  // caller leaves for the Explorer.
+  onItemArchived?: () => void;
   // An access change ended this session (docs/specs/015-api/api.md "Access changes end the sessions
   // they affect"): a share password was set, or the member left the project's team. The room
   // closed it with ACCESS_CHANGED_CLOSE; the connector stops, and the caller reloads into the
@@ -371,6 +376,12 @@ export function connectRoom(
       }
       // A snapshot's revert replaced the content in place (docs/specs/013-workspace/snapshots.md): stop, and reload
       // onto the reverted content.
+      if (event?.code === ITEM_ARCHIVED_CLOSE) {
+        closed = true;
+        settleTimings(false);
+        handlers.onItemArchived?.();
+        return;
+      }
       if (event?.code === SNAPSHOT_REVERTED_CLOSE) {
         closed = true;
         settleTimings(false);

@@ -239,6 +239,16 @@ describe('the view following a document live', () => {
     expect(f2.calls('view_live')).toHaveLength(1);
   });
 
+  // one-explorer.md "Archived from elsewhere while open": the room closes every session with 4010.
+  it('stops for good when the document is archived, and never reconnects', async () => {
+    const f = await following();
+    FakeSocket.all[0]!.onopen!();
+    FakeSocket.all[0]!.onclose!({ code: 4010 });
+    expect(f.live().title).toContain('was archived');
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(f.calls('view_live')).toHaveLength(1);
+  });
+
   it('holds nothing in the room while hidden, and catches up when shown', async () => {
     const f = await following();
     FakeSocket.all[0]!.onopen!();

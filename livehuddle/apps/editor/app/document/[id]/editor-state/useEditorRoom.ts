@@ -1,5 +1,6 @@
 'use client';
 
+import { leaveArchivedElsewhere } from '@liveworkspace/workbench/lib/archived';
 import { ROOM_FULL_NOTICE } from '@/lib/api/room';
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { useFacilitator } from '@/hooks/collab/useFacilitator';
@@ -213,6 +214,16 @@ export function useEditorRoom({
     enabled: realtime.sessionCommunity === null,
     // docs/specs/015-api/api.md "A room holds at most 100 connections": said once; editing carries on alone.
     onRoomFull: () => toast.warning(ROOM_FULL_NOTICE),
+    // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): its owner leaves for
+    // the Explorer's archived toast, anyone else for the Explorer saying its owner archived it.
+    onItemArchived: () => {
+      if (documentId)
+        leaveArchivedElsewhere(
+          'livehuddle',
+          { id: documentId, title: lastSavedNameRef.current || null },
+          realtime.isOwner,
+        );
+    },
     documentTeamId,
     selfParticipant,
     sessionShareCode,

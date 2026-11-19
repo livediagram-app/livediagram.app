@@ -18,6 +18,7 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@livehuddle/api-schema';
+import { ITEM_ARCHIVED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import { reloadAfterRevert } from '@liveworkspace/snapshots/client';
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { opForTheWire } from '@livehuddle/document';
@@ -327,6 +328,12 @@ export function connectRoom(
       }
       // A snapshot's revert replaced the content in place (docs/specs/013-workspace/snapshots.md): stop, and reload
       // onto the reverted content.
+      if (event?.code === ITEM_ARCHIVED_CLOSE) {
+        closed = true;
+        settleTimings(false);
+        handlers.onItemArchived?.();
+        return;
+      }
       if (event?.code === SNAPSHOT_REVERTED_CLOSE) {
         closed = true;
         settleTimings(false);
