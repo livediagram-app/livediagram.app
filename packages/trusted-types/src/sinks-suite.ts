@@ -132,7 +132,7 @@ export function describeTrustedTypesSinks(options: TrustedTypesSinkOptions): voi
         // A shared package's component reaches whatever server page renders it, so it must be a client module itself.
         if (f.startsWith('packages/')) return false;
         // A route file is where a server render starts.
-        if (/\/app\/(.+\/)?(page|template|layout)\.tsx$/.test(f)) return false;
+        if (/\/app\/(?:[^/]+\/)*(page|template|layout)\.tsx$/.test(f)) return false;
         if (seen.has(f)) return true;
         seen.add(f);
         // No importer at all means no page renders it.
