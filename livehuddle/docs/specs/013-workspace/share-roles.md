@@ -202,6 +202,21 @@ chooses it.
   with the server's key, so peers see them as its person's; a reload, which the new-version prompt offers, brings it
   in line.
 
+## Approvals: not offered
+
+livehuddle has no **Request Approval**: no Approval tab in the Share dialog, no approval badge and no approver's
+banner ([liveworkspace approvals](../../../../liveworkspace/docs/specs/004-index/approvals.md), which livediagram,
+livedocuments, livedesign and liveplanner offer; Work Tracker 1145 decided it). A Space is a place to meet, not a piece
+of work that goes out for sign-off ([Purpose](../001-project-vision/purpose.md)): nothing in it is handed to a manager
+or a client for a yes. Its walls change in every meeting (a sticky added, a Notice Board's note, a Door opened), so an
+approval would read **Changed Since Approval** within a minute of the next meeting and say nothing true. So no role
+gains or loses anything here: a Viewer still only looks.
+
+The index's approval routes are the platform's and take any item they can open, so a script could still ask for one
+on a Space; the editor draws none of it, and livehuddle's api sends no approval email (its index notice handler has no
+`approvalRequested`). Should livehuddle ever hold work meant for sign-off, it gains the editor's door as the others
+did, and this section becomes its share-role rows.
+
 ## Future features
 
 Audio, video and screen sharing get their own rows when they are specified
