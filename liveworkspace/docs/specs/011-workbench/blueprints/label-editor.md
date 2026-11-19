@@ -9,7 +9,8 @@ Scope, by file (all under `packages/workbench/src/components/label-editor/`):
 | ----------------------------- | --------------------------------------------------------------------------------------------------- |
 | `LabelEditor.tsx`             | The `contentEditable`, its handlers and the toolbar's frame; the product's toolbar is a render prop |
 | `LabelEditor.types.ts`        | `LabelEditorProps`, `LabelEditorBinding`, `LabelToolbarProps`                                       |
-| `useRichTextSession.ts`       | The label session: run style, auto-fit, mount caret, toolbar flip, focus guards, commit lifecycle   |
+| `useRichTextSession.ts`       | The label session: run style, auto-fit, mount caret, focus guards, commit lifecycle                 |
+| `useLabelToolbarPlacement.ts` | The toolbar's flip below near the top and its slide back on screen at every edge                    |
 | `useRichTextRuns.ts`          | The runs machine (was each product's `useRichTextDocument`, livedesign's `useRichTextDesign`)       |
 | `useRichTextFormatActions.ts` | Command dispatch and the collapsed-caret scope rule                                                 |
 | `rich-text-dom.ts`            | DOM read-back, selection offsets, `insertTextAtCaret`, the trailing newline                         |
@@ -107,6 +108,21 @@ export type LabelEditorBinding = {
   the line spans' own `dir`), and the caret at the end of a right-to-left line drew at its right. A caret moved up or
   down onto a line of the other direction can land at that line's other end from where `plaintext` put it.
 
+### The toolbar's place (`useLabelToolbarPlacement.ts`)
+
+- After every render, and on a scroll (captured, so a scroll inside the page counts) or a resize, one measure: the
+  editor's top under `FLIP_BELOW_TOP` (52 px) sets `placeBelow`; then the toolbar's box with its caption
+  (`measuredBox` from `useEdgeAwarePlacement`, the caption being the shared `FloatingTitle` with its
+  `data-floating-title`) goes to `clampToViewport` with the slide in force, which works from the box's natural spot
+  (the live rect less that slide) and answers the slide that keeps it 8 px (`VIEWPORT_EDGE_MARGIN`) inside
+  `window.innerWidth` and `innerHeight`. A box with no size (not laid out) slides nothing. The state only changes when
+  the answer does, so a measure that agrees renders nothing.
+- `clampToViewport` keeps the start (left or top) of a box longer than the room inside, rather than its end: a fix for
+  every caller, whose boxes are never that long but would have lost their first item.
+- The slide is in screen px. `labelToolbarTransform(shift, zoom)` writes
+  `translate(calc(-50% + x/zoom px), y/zoom px) scale(1/zoom)`: the translate comes before the counter-scale, in the
+  editor's own units, where one unit is `zoom` screen px, so the slide is the same on screen at any zoom.
+
 ## Performance and limits
 
 ### Measured
@@ -142,6 +158,12 @@ First-load JS of each editor's document page (gzip of the scripts `placeholder.h
 - `LabelEditor.long-text.test.tsx`: long left-to-right text is one isolated run; right-to-left text that gains a
   second line is painted a line at a time and stays `isolate`; a keystroke in 100,000 characters stays inside its
   CPU-time budget, flat and line by line.
+- `useLabelToolbarPlacement.test.tsx`: a toolbar that fits stays put; off the left edge and off the right edge it slides
+  back 8 px inside; wider than the screen it keeps its start in view; a caption over the top slides it down; the slide
+  relaxes on a resize once the label is clear and a scroll measures again; the flip below near the top; nothing
+  slides while the toolbar has no size or before the editor and toolbar mount; the listeners go on unmount; the
+  transform's slide in editor units at zoom 0.5, 1 and 2. `lib/clamp-to-viewport.test.ts` pins the start edge of a
+  box wider or taller than the viewport.
 - `LabelEditor.escape.test.tsx`, `LabelEditor.cap.test.tsx`, `useRichTextSession.test.tsx`,
   `useRichTextRuns.test.tsx`, `rich-text-dom.test.ts`, `block-type.test.ts`, `same-active-format.test.ts`,
   `label-style.test.ts`, `fit-multiline-text.test.ts` and `text-hug-measure.test.ts`: the products' tests, moved.
