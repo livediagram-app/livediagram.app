@@ -66,6 +66,8 @@ describe('a rule on its trigger', () => {
     expect((await card(task.id)).fields['labels']).toBeUndefined();
     expect((await card(bug.id)).fields['labels']).toEqual(['shipped']);
     expect(await runs()).toMatchObject([{ result: 'done', card: { id: bug.id } }]);
+    // A plan with no card types gives no prefix: the run keeps no ref and reads #N.
+    expect((await runs())[0]!.card).not.toHaveProperty('ref');
   });
 });
 
@@ -237,6 +239,10 @@ describe('runs, limits and loops', () => {
     await room().alarm();
     const made = (await w.items('A')).find((i) => i.fields['title'] === 'Follow up Talk');
     expect(made).toMatchObject({ createdBy: { id: 'automation' }, fields: { status: 'todo' } });
+    // Its card's prefixed ref as it ran, kept for the Audit Trail and agents once the card is gone
+    // (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+    const [run] = await runs();
+    expect(run!.card).toMatchObject({ id: c.id, ref: `T-${c.key}` });
   });
 
   it('answers a burst past the queue with one Skipped line', async () => {

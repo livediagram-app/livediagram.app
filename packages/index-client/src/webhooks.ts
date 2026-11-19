@@ -178,8 +178,9 @@ export type AutomationSend = {
   webhookId: string;
   // The rule's name.
   rule: string;
-  // The card the rule ran on (its number, title and link in liveplanner), or null for none.
-  card: { key: number; title: string; url: string } | null;
+  // The card the rule ran on (its number, its prefixed ref "WI-48" when its type has a prefix, title and link in
+  // liveplanner), or null for none.
+  card: { key: number; ref?: string; title: string; url: string } | null;
   // The message, the rule's values filled in.
   text: string;
   at: number;

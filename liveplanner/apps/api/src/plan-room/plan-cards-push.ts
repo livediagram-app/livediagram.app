@@ -19,6 +19,7 @@ import {
   itemStatus,
   itemTitle,
   notifiedPeople,
+  prefixedCardRef,
   typesOf,
   type Item,
   type ItemTypeCatalogue,
@@ -144,7 +145,8 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
       elements: parseElements(t.data),
     })),
   );
-  const types = new Map(typesOf(parseTypes(plan.item_types)).map((t) => [t.id, t]));
+  const catalogue = typesOf(parseTypes(plan.item_types));
+  const types = new Map(catalogue.map((t) => [t.id, t]));
   // Each card's threads, oldest link first, so a thread on two cards is pushed on the first (cardsCollabPush).
   const threadsByCard = new Map<string, InboxCardThread[]>();
   for (const t of threads) {
@@ -162,6 +164,9 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
     const status = itemStatus(item);
     if (status === 'trash') continue;
     const type = types.get(item.type);
+    // Its number as the plan shows it ("WI-100"), for places that list cards from several plans and so have no
+    // plan's types (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans"); none for no number.
+    const ref = prefixedCardRef(item, catalogue);
     // A custom person (an `n-` named person) is nobody the index could name: never listed, never counted as
     // unmatched (docs/specs/026-plan/items.md "Custom assignees"); notifiedPeople leaves them out.
     const told = notifiedPeople(type ?? FALLBACK_ITEM_TYPE, item);
@@ -174,6 +179,7 @@ export async function cardsPushOf(env: PlanEnv, planId: string): Promise<CardsPu
       id: item.id,
       card: {
         key: item.key,
+        ...(ref ? { ref } : {}),
         type: item.type,
         typeLabel: type?.label ?? item.type,
         title: itemTitle(item) || 'Untitled',

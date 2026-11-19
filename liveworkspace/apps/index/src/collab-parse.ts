@@ -1,6 +1,7 @@
 // Reading an item's collab push (./collab-push): each card, column, thread and action an app sends, checked and
 // clipped to its limits before anything is written. Re-exported from ./collab-push.
 import {
+  cardRefFor,
   COLLAB_PEOPLE_MAX,
   COLLAB_TEXT_MAX,
   type CardColumn,
@@ -59,9 +60,12 @@ export function parseCard(value: unknown): CollabCard | null | undefined {
     board = { tabId: b.tabId, elementId: b.elementId, title: boardTitle, tabName };
   }
   const column = parseColumn(c.column);
+  // Its prefixed number ("WI-100"): kept only as a ref of this card's number, else dropped, never the push refused.
+  const ref = cardRefFor(c.ref, key);
   return {
     ...(c.id !== undefined ? { id: c.id as string } : {}),
     key,
+    ...(ref ? { ref } : {}),
     type,
     typeLabel,
     title,

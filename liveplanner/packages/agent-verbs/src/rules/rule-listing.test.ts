@@ -5,6 +5,7 @@ import {
   listedRuleBody,
   listedRun,
   resolveRule,
+  runCardRefs,
   runResultWords,
   sentenceText,
 } from './rule-listing';
@@ -110,6 +111,15 @@ describe('a run as agents read it', () => {
     expect(
       listedRun(run({ card: null, result: 'skipped', reason: 'Chain stopped' })),
     ).toMatchObject({ card: null, reason: 'Chain stopped' });
+  });
+
+  // Card prefixes across plans (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans"): a run keeps
+  // its card's ref as it ran, so a card since deleted still reads WI-12; a run stored before refs reads #12.
+  it('names a gone card by the ref the run kept, #N for a run from before refs', () => {
+    const kept = run({ card: { id: 'gone', key: 12, ref: 'WI-12', title: 'Basket' } });
+    expect(listedRun(kept).card).toBe('WI-12 Basket');
+    expect(listedRun(kept, runCardRefs([], [])).card).toBe('WI-12 Basket');
+    expect(listedRun(run(), runCardRefs([], [])).card).toBe('#12 Basket');
   });
 
   it('words a result as its pill, with the reason', () => {

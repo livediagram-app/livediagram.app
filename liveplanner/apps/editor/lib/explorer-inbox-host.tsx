@@ -62,9 +62,12 @@ const itemOf = (p: Place) => ({
   itemTeamId: p.teamId,
 });
 
-function cardOf(c: Pick<ActivityCard, 'key' | 'type' | 'title' | 'board' | 'column'>): CollabCard {
+function cardOf(
+  c: Pick<ActivityCard, 'key' | 'ref' | 'type' | 'title' | 'board' | 'column'>,
+): CollabCard {
   return {
     key: c.key,
+    ...(c.ref ? { ref: c.ref } : {}),
     type: c.type,
     typeLabel: typeLabel(c.type),
     title: c.title,

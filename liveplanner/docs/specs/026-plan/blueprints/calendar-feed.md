@@ -305,9 +305,10 @@ Feed//EN`, `CALSCALE:GREGORIAN`, `METHOD:PUBLISH`, `X-WR-CALNAME:<name> · livep
 ### Files
 
 - `apps/api/src/plan-room/plan-cards-push.ts`: an assigned card's `card` carries `start` and `due` (`YYYY-MM-DD`
-  only) when listed for someone.
+  only) when listed for someone, and every card its `ref` (`cardRef(item, types)`, left out for a card with no
+  number).
 - `apps/api/src/calendar/feed-span.ts`: `dayOf`, `spanOf(start, due)`, `capEvents(events, now)`, `cutText`.
-- `apps/api/src/calendar/my-work-events.ts`: `myWorkEventsOf(cards, base, now)`, the index's cards as a `FeedRead`.
+- `apps/api/src/calendar/my-work-events.ts`: `myWorkEventsOf(cards, base, now)`, the index's cards as a `FeedRead`, each titled by `cardNumber(card)` (`@liveworkspace/index-client`: the `ref`, else `#key`).
 - `apps/api/src/calendar/feed-answer.ts`: `refuseFeed(reason)`, `feedGate(request, limiter, hash)` (the method and
   the rate limit), `answerFeed(request, read, filename)` (headers, ETag, 304), `matchesEtag`, `FEED_MAX_AGE_S`, shared
   by both links; `calendar-feed-route.ts` re-exports them.

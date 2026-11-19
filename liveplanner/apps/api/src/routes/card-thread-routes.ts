@@ -467,7 +467,12 @@ async function addToCard(ctx: PlanRouteContext, r: Reached, threadId: string): P
   };
   const linked = await linkThread(ctx.env, here, link);
   if (!linked.ok) return refusal(linked.error);
-  const card: CardRef = { projectId: here, itemId, key: linked.key };
+  const card: CardRef = {
+    projectId: here,
+    itemId,
+    key: linked.key,
+    ...(linked.ref ? { ref: linked.ref } : {}),
+  };
   const actor = await actorOf(ctx, r.caller, false);
   const out = await throughHome(ctx, r, threadId, {
     kind: 'change',

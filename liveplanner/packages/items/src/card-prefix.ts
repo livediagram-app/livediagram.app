@@ -106,6 +106,16 @@ export function cardRef(
   return prefix ? `${prefix}-${item.key}` : `#${item.key}`;
 }
 
+// Its ref when its type has a prefix ("WI-100"), else undefined: what a card carries to places that list cards from
+// several plans, which show "#100" for none (item-types.md "Card number prefixes" "Across plans").
+export function prefixedCardRef(
+  item: { key: number; type: string },
+  types: readonly ItemTypeDef[] | undefined,
+): string | undefined {
+  const ref = cardRef(item, types);
+  return ref && !ref.startsWith('#') ? ref : undefined;
+}
+
 // Its ref, or "#0" for a card of no number: where a card is always named (a rule's run line, an agent's listing).
 export function cardRefOrKey(
   item: { key: number; type: string },

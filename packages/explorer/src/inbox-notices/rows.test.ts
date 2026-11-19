@@ -197,6 +197,22 @@ describe('each kind', () => {
     ]);
   });
 
+  // Card prefixes across plans (liveplanner/docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+  it('names a card by its prefixed ref, #N from a push before prefixes, the title alone with no number', () => {
+    const card = action().card!;
+    const rows = noticeRows(
+      inbox({
+        actions: [
+          action({ card: { ...card, ref: 'T-12' } }),
+          action({ actionId: 'a2', card: { ...card, key: null }, updatedAt: NOW - 450 }),
+        ],
+      }),
+      ME,
+      'liveplanner',
+    );
+    expect(rows.map((r) => r.detail)).toEqual(['T-12 Fix login', 'Fix login']);
+  });
+
   it('a share opens the item and an access request its Inbox row, on its own app’s address', () => {
     const rows = noticeRows(
       inbox({ accessRequests: [request()], shares: [share()] }),

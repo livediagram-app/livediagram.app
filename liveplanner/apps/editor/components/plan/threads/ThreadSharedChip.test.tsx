@@ -12,6 +12,8 @@ const SHARED = thread('th-a', {
     { projectId: PLAN, itemId: 'card-1', key: 1 },
     { projectId: PLAN, itemId: 'card-2', key: 2 },
     { projectId: 'plan-b', itemId: 'x1', key: 4, projectName: 'Sprint 12' },
+    // Added from another plan after card prefixes: it carries its ref (item-types.md "Card number prefixes").
+    { projectId: 'plan-c', itemId: 'x2', key: 9, ref: 'WI-9', projectName: 'Roadmap' },
   ],
 });
 
@@ -32,24 +34,35 @@ describe('the shared chip', () => {
   it('counts the cards, saying when some are in other plans', () => {
     chip();
     expect(
-      screen.getByRole('button', { name: 'On 3 cards, some in other plans: show them' }),
+      screen.getByRole('button', { name: 'On 4 cards, some in other plans: show them' }),
     ).toBeTruthy();
   });
 
   it('lists the cards: this one marked, this plan’s in the panel, another plan’s in a new tab', () => {
     const ctx = chip();
     const opened = vi.spyOn(window, 'open').mockImplementation(() => null);
-    fireEvent.click(screen.getByRole('button', { name: /^On 3 cards/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^On 4 cards/ }));
     expect(screen.getByRole('menuitem', { name: '#1 Basket, this card' })).toBeTruthy();
     fireEvent.click(screen.getByRole('menuitem', { name: '#2 Promo code' }));
     expect(ctx.openCard).toHaveBeenCalledWith('card-2');
-    fireEvent.click(screen.getByRole('button', { name: /^On 3 cards/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^On 4 cards/ }));
     fireEvent.click(screen.getByRole('menuitem', { name: '#4 in Sprint 12, opens in a new tab' }));
     expect(opened).toHaveBeenCalledWith(
       '/project/plan-b#item=x1&thread=th-a',
       '_blank',
       'noopener',
     );
+  });
+
+  it('names a card from another plan by the ref it carries, #N for one added before refs', () => {
+    chip();
+    fireEvent.click(screen.getByRole('button', { name: /^On 4 cards/ }));
+    expect(
+      screen.getByRole('menuitem', { name: 'WI-9 in Roadmap, opens in a new tab' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('menuitem', { name: '#4 in Sprint 12, opens in a new tab' }),
+    ).toBeTruthy();
   });
 
   it('builds another plan’s link on the card and the thread', () => {

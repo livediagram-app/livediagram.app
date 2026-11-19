@@ -403,7 +403,8 @@ export interface AutomationRun {
   ruleId: string;
   ruleName: string;
   // The card the trigger was about (null for a dropped burst line).
-  card: { id: string; key: number; title: string } | null;
+  // `ref`, its prefixed number as it ran ("WI-12"), absent from a run stored before refs or for a type of no prefix.
+  card: { id: string; key: number; ref?: string; title: string } | null;
   at: number;
   result: AutomationResult;
   // Why a run was skipped or failed, in a sentence; `gone`, what the reason names that the plan lacks.

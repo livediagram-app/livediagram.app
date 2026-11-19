@@ -2,7 +2,7 @@
 // "Part 3"): the open, dated cards the index lists as assigned to the person across their plans, each one all-day
 // event titled and linked as a plan feed's, capped at FEED_EVENTS_MAX nearest today. Pure.
 
-import type { CalendarCard } from '@liveworkspace/index-client';
+import { cardNumber, type CalendarCard } from '@liveworkspace/index-client';
 import type { FeedRead } from './feed-events';
 import { capEvents, spanOf, summaryOf } from './feed-span';
 import type { FeedEvent } from './ics';
@@ -33,11 +33,8 @@ export function myWorkEventsOf(
       // The newest change first among ties: the index lists them newest first.
       order: events.length,
       uid,
-      summary: summaryOf(
-        c.card.key === null ? null : `#${c.card.key}`,
-        c.card.title,
-        span.startOnly,
-      ),
+      // Its number as its plan shows it ("WI-100", pushed with the card), "#100" for a card pushed before prefixes.
+      summary: summaryOf(cardNumber(c.card), c.card.title, span.startOnly),
       url,
       description: where ? `${where}\n${url}` : url,
       startDay: span.startDay,

@@ -48,3 +48,24 @@ describe('parseCard column', () => {
     }
   });
 });
+
+// The card's prefixed number (Work Tracker 1295): kept when it names this card, dropped (never the push refused)
+// when not, so the reader shows "#12"; an older push without one lands as before.
+describe('parseCard ref', () => {
+  const base = { key: 12, type: 'bug', typeLabel: 'Bug', title: 'Login fails', board: null };
+
+  it('keeps a ref of the card’s number', () => {
+    expect(parseCard({ ...base, ref: 'B-12' })).toEqual({ ...base, ref: 'B-12' });
+  });
+
+  it('drops a ref of another number, a malformed one, or one on a card of no number', () => {
+    expect(parseCard({ ...base, ref: 'B-13' })).toEqual(base);
+    expect(parseCard({ ...base, ref: '<b>-12' })).toEqual(base);
+    expect(parseCard({ ...base, ref: 12 })).toEqual(base);
+    expect(parseCard({ ...base, key: null, ref: 'B-12' })).toEqual({ ...base, key: null });
+  });
+
+  it('lands a push from before refs unchanged', () => {
+    expect(parseCard(base)).toEqual(base);
+  });
+});

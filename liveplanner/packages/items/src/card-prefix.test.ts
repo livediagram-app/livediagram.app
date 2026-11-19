@@ -11,6 +11,7 @@ import {
   cardRefTitle,
   normalPrefix,
   prefixOf,
+  prefixedCardRef,
   prefixOwner,
   prefixTaken,
   prefixesOf,
@@ -153,6 +154,13 @@ describe('cardRef', () => {
     expect(cardRefTitle({ key: 0, type: 'wi' }, 'Practice', types)).toBe('Practice');
     expect(cardRefOrKey({ key: 0, type: 'wi' }, types)).toBe('#0');
     expect(cardRefOrKey({ key: 5, type: 'wi' }, types)).toBe('WI-5');
+  });
+
+  it('gives the prefixed ref a card carries across plans, none without a prefix or a number', () => {
+    expect(prefixedCardRef({ key: 100, type: 'wi' }, types)).toBe('WI-100');
+    expect(prefixedCardRef({ key: 3, type: 'gone' }, types)).toBeUndefined();
+    expect(prefixedCardRef({ key: 3, type: 'wi' }, undefined)).toBeUndefined();
+    expect(prefixedCardRef({ key: 0, type: 'wi' }, types)).toBeUndefined();
   });
 });
 

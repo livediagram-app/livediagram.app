@@ -4,7 +4,7 @@
 // an action, a card, an element's thread, a card's thread and a form's new responses, each three lines:
 //
 //   who (semibold when it needs you)                                  when
-//   what: the action, the card's #number and title, the element a thread is on, the form's heading
+//   what: the action, the card's number (WI-100, else #100) and title, the element a thread is on, the form's heading
 //   why (a status icon and its words) · the app's Living Prism and the item · Offline
 //
 // A row is an option of the list's listbox: choosing it shows it in the reading pane (./InboxReader), and the pane
@@ -15,7 +15,7 @@
 // time alone, so a tick re-renders the times and not the rows.
 
 import { memo, type ReactNode } from 'react';
-import type { CardColumn, InboxThread } from '@liveworkspace/index-client';
+import { cardNumber, type CardColumn, type InboxThread } from '@liveworkspace/index-client';
 import { PictureDisc } from '@liveworkspace/ui';
 import { DAY_MONTH, MEDIUM_DATE_TIME } from '@liveworkspace/ui/date-format';
 import { usePersonPicture } from '../../data/usePeople';
@@ -62,7 +62,8 @@ export type EntryFacts = {
   who: string;
   /** It asks something of the person: theirs to do, a mention, a thread on their item, new responses. */
   needsYou: boolean;
-  cardKey: number | null;
+  /** The card's number as its plan shows it ("WI-100"; "#100" from a push before prefixes); null off a card. */
+  cardNumber: string | null;
   title: string;
   reason: InboxReason | null;
   /** The item's title, then the tab and the element or board, outermost first. */
@@ -93,7 +94,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         person: { id: self ? null : other, name: self ? null : otherName },
         who: self ? 'You' : (otherName ?? 'A teammate'),
         needsYou: e.forMe,
-        cardKey: card?.key ?? null,
+        cardNumber: card ? cardNumber(card) : null,
         title: card ? card.title || 'Card' : r.name || 'Action',
         reason: actionReason(r, e.forMe),
         item,
@@ -134,7 +135,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         needsYou: threadNeedsYou(reason),
         // One of a card's threads (card.id set) is titled by the thread, and placed on its card; a row from before
         // threads was the card's one conversation, titled by the card.
-        cardKey: card && !card.id ? card.key : null,
+        cardNumber: card && !card.id ? cardNumber(card) : null,
         title: card?.id
           ? r.elementLabel || 'Comment thread'
           : card
@@ -145,7 +146,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         where: card
           ? [
               ...(card.board ? [card.board.tabName, card.board.title] : []),
-              ...(card.id ? [card.key !== null ? `#${card.key} ${card.title}` : card.title] : []),
+              ...(card.id ? [[cardNumber(card), card.title].filter(Boolean).join(' ')] : []),
             ].filter(Boolean)
           : [r.tabName].filter(Boolean),
         cardType: card ? { type: card.type, label: card.typeLabel || 'Card' } : null,
@@ -160,7 +161,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         person: null,
         who: 'Form responses',
         needsYou: true,
-        cardKey: null,
+        cardNumber: null,
         title: r.heading || 'Form',
         reason: formReason(r.unseen),
         item,
@@ -179,7 +180,7 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         person: { id: r.requesterId, name },
         who: name ?? 'Someone',
         needsYou: true,
-        cardKey: null,
+        cardNumber: null,
         title: 'Asked for access',
         reason: ACCESS_REASON,
         item,
@@ -264,7 +265,7 @@ export const InboxRow = memo(function InboxRow({
 }) {
   const f = entryFacts(entry, viewerId);
   const compact = density === 'compact';
-  const fullTitle = f.cardKey == null ? f.title : `#${f.cardKey} ${f.title}`;
+  const fullTitle = f.cardNumber == null ? f.title : `${f.cardNumber} ${f.title}`;
   const path = [f.item, ...f.where].join(' › ');
   // One sentence for a screen reader: what, why, who, where.
   const label = [
@@ -310,9 +311,9 @@ export const InboxRow = memo(function InboxRow({
             title={fullTitle}
             className="block min-w-0 truncate text-[13px] font-medium leading-5 text-slate-900 dark:text-slate-100"
           >
-            {f.cardKey == null ? null : (
+            {f.cardNumber == null ? null : (
               <span className="mr-1 tabular-nums text-slate-500 dark:text-slate-400">
-                #{f.cardKey}
+                {f.cardNumber}
               </span>
             )}
             {f.title}

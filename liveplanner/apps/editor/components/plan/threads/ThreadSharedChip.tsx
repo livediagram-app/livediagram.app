@@ -103,13 +103,13 @@ function SharedCardRow({
 }) {
   const { itemProps } = useMenuItemProps({ disabled: current });
   const refById = useCardRefById();
-  // Its prefixed number here ("WI-12"); a card in another plan by its number alone.
+  // Its prefixed number here ("WI-12"); a card in another plan by the ref it carries, else its number alone.
   const num =
     card.key === null
       ? 'A card'
       : here
         ? refById({ id: card.itemId, key: card.key })
-        : `#${card.key}`;
+        : (card.ref ?? `#${card.key}`);
   const name = here ? title || 'Untitled' : card.projectName || 'Another plan';
   return (
     <button
