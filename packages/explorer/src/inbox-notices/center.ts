@@ -12,6 +12,8 @@ export const NOTICE_LINES_MAX = 3;
 
 export type Notice = { id: number; rows: readonly NoticeRow[] };
 
+export type NoticeHold = 'pointer' | 'dialog';
+
 export type NoticeCenter = {
   current: () => Notice | null;
   subscribe: (listener: () => void) => () => void;
@@ -21,8 +23,10 @@ export type NoticeCenter = {
   dismiss: () => void;
   /** Drops the rows these say are seen; the notice closes once none is left. */
   forget: (seen: (row: NoticeRow) => boolean) => void;
-  /** While held the notice never goes on its own; let go, it has its full time again. */
-  hold: (held: boolean) => void;
+  /** While held the notice never goes on its own; let go, it has its full time again. Each reason holds on its own
+   *  (the pointer or focus on it, `pointer`; a dialog open over the page, `dialog`), so one letting go never ends
+   *  another's hold. */
+  hold: (held: boolean, reason?: NoticeHold) => void;
 };
 
 export function createNoticeCenter(
@@ -37,7 +41,7 @@ export function createNoticeCenter(
   let notice: Notice | null = null;
   let nextId = 1;
   let timer: unknown = null;
-  let held = false;
+  const holds = new Set<NoticeHold>();
   const listeners = new Set<() => void>();
   const give = () => {
     for (const l of listeners) l();
@@ -54,7 +58,7 @@ export function createNoticeCenter(
   };
   const arm = () => {
     clear();
-    if (notice && !held) timer = timers.setTimeout(close, NOTICE_SHOW_MS);
+    if (notice && holds.size === 0) timer = timers.setTimeout(close, NOTICE_SHOW_MS);
   };
   return {
     current: () => notice,
@@ -85,10 +89,11 @@ export function createNoticeCenter(
       notice = { id: notice.id, rows };
       give();
     },
-    hold(next) {
-      if (held === next) return;
-      held = next;
-      if (held) clear();
+    hold(next, reason = 'pointer') {
+      if (holds.has(reason) === next) return;
+      if (next) holds.add(reason);
+      else holds.delete(reason);
+      if (holds.size > 0) clear();
       else arm();
     },
   };

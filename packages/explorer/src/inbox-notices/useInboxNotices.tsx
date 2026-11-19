@@ -11,6 +11,7 @@ import { appHasInbox } from '../inbox-apps';
 import { inboxCount } from '../explorer/inbox/sections';
 import type { InboxData } from '../data/useInbox';
 import { createNoticeCenter, type NoticeCenter } from './center';
+import { dialogOpenNow, subscribeDialogs } from './dialog-open';
 import { InboxNotice } from './InboxNotice';
 import { freshRows, noticeRows } from './rows';
 import { seenStoreFor, type SeenStore } from './seen';
@@ -23,6 +24,8 @@ export type InboxNoticesOptions = {
   app: App;
   /** The signed-in account; null for a guest or before sign-in is known, which hears nothing. */
   viewerId: string | null;
+  /** The reader's display name, so a quote naming their `@handle` reads their name. */
+  viewerName?: string | null;
   /** False where the editor draws no notices (an embed, a workbench frame). */
   enabled?: boolean;
   onTelemetry?: (event: InboxNoticeEvent) => void;
@@ -80,6 +83,7 @@ export function useInboxNotices({
   client,
   app,
   viewerId,
+  viewerName = null,
   enabled = true,
   onTelemetry,
   watch: givenWatch,
@@ -102,17 +106,25 @@ export function useInboxNotices({
   );
   const visible = useSyncExternalStore(subscribeVisibility, visibleNow, () => true);
   const notice = useSyncExternalStore(center.subscribe, center.current, () => null);
+  // A dialog open over the page: the notice waits, its time held, and shows when the dialog closes.
+  const waiting = on && notice !== null;
+  const dialog = useSyncExternalStore(
+    waiting ? subscribeDialogs : noSubscribe,
+    () => waiting && dialogOpenNow(),
+    () => false,
+  );
+  useEffect(() => center.hold(dialog, 'dialog'), [dialog, center]);
 
   // Each answer, while this tab is in view: what is news here joins the notice, seen at once.
   useEffect(() => {
     if (!seen || !data || !visible) return;
-    const rows = noticeRows(data, viewerId!, app);
+    const rows = noticeRows(data, viewerId!, app, viewerName);
     seen.prune(new Set(rows.map((r) => r.key)));
     const fresh = freshRows(rows, seen, now());
     if (fresh.length === 0) return;
     seen.mark(fresh);
     center.offer(fresh);
-  }, [seen, data, visible, viewerId, app, center, now]);
+  }, [seen, data, visible, viewerId, viewerName, app, center, now]);
 
   // Dismissed or read elsewhere (another tab, the Inbox list): those rows leave the notice.
   useEffect(() => {
@@ -143,7 +155,7 @@ export function useInboxNotices({
     notices:
       on && owner ? (
         <InboxNotice
-          notice={notice}
+          notice={dialog ? null : notice}
           inboxHref="/explorer/inbox"
           onDismiss={onDismiss}
           onFollow={onFollow}

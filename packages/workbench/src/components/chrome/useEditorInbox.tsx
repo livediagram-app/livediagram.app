@@ -16,7 +16,7 @@ import {
 } from '@liveworkspace/explorer/inbox-notices';
 import { workbench } from '../../bindings';
 import { indexClient } from '../../lib/index-client';
-import { useDeferredAuth } from '../providers/deferred-auth';
+import { useDeferredAuth, type DeferredAuthState } from '../providers/deferred-auth';
 
 export type EditorInbox = {
   /** The Inbox's count, undefined until read or for a guest. */
@@ -29,17 +29,25 @@ export type EditorInbox = {
   notices: ReactNode;
 };
 
+// The name a teammate's `@handle` for this person is made from (model-core's assignHandles): their profile name.
+const displayName = (user: DeferredAuthState['user']): string | null =>
+  user?.fullName?.trim() ||
+  [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() ||
+  user?.username ||
+  null;
+
 const track = (event: InboxNoticeEvent) => workbench.track('UI', event, 'InboxNotice');
 
 export function useEditorInbox(
   app: App,
   { enabled = true }: { enabled?: boolean } = {},
 ): EditorInbox {
-  const { isSignedIn, userId } = useDeferredAuth();
+  const { isSignedIn, userId, user } = useDeferredAuth();
   const { count, notices } = useInboxNotices({
     client: indexClient,
     app,
     viewerId: isSignedIn ? userId : null,
+    viewerName: displayName(user),
     enabled,
     onTelemetry: track,
   });

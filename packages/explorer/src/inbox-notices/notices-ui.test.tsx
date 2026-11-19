@@ -402,3 +402,56 @@ describe('cost', () => {
     expect(per).toBeLessThan(cpuBudgetMs(40));
   });
 });
+
+describe('under a dialog', () => {
+  it('waits while one is open, its time held, and shows when it closes', async () => {
+    vi.useFakeTimers();
+    const dialog = document.createElement('div');
+    dialog.setAttribute('aria-modal', 'true');
+    document.body.appendChild(dialog);
+    const t = setup();
+    t.answer({ threads: [thread()] });
+    expect(notice()).toBeNull();
+    expect(t.center.current()).not.toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(NOTICE_SHOW_MS * 2);
+    });
+    expect(t.center.current()).not.toBeNull();
+    dialog.remove();
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(notice()).not.toBeNull();
+    act(() => {
+      vi.advanceTimersByTime(NOTICE_SHOW_MS);
+    });
+    expect(notice()).toBeNull();
+  });
+
+  it('an open <dialog> holds it too, and one opening while it shows hides it', async () => {
+    const t = setup();
+    t.answer({ threads: [thread()] });
+    expect(notice()).not.toBeNull();
+    const dialog = document.createElement('dialog');
+    document.body.appendChild(dialog);
+    await act(async () => {
+      dialog.setAttribute('open', '');
+      await Promise.resolve();
+    });
+    expect(notice()).toBeNull();
+    await act(async () => {
+      dialog.removeAttribute('open');
+      await Promise.resolve();
+    });
+    expect(notice()).not.toBeNull();
+    dialog.remove();
+  });
+});
+
+describe('a mention of the reader', () => {
+  it('quotes their name, not their handle', () => {
+    const t = setup({ viewerName: 'Ada Quinn' });
+    t.answer({ threads: [thread({ latestText: '@ada-quinn can you check?' })] });
+    expect(notice()!.textContent).toContain('“@Ada Quinn can you check?”');
+  });
+});

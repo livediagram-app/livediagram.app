@@ -14,6 +14,7 @@ import {
   freshRows,
   inboxRowHref,
   itemHref,
+  nameMentions,
   noticeHeadline,
   noticeRows,
 } from './rows';
@@ -328,5 +329,45 @@ describe('what is news here', () => {
 
   it('never a row more than a day old', () => {
     expect(freshRows(rows, seen(0), NOW + NOTICE_MAX_AGE_MS - 350)).toHaveLength(1);
+  });
+});
+
+describe('a mention in the quote reads as a name', () => {
+  it('the reader’s own handle, the mentioner’s and the author’s, as the comment’s chips match them', () => {
+    const [row] = noticeRows(
+      inbox({
+        threads: [
+          thread({
+            mentionsYou: true,
+            mentionedBy: { id: 'user_q', name: 'Quinn Ó Brien' },
+            latestText:
+              '@ada-quinn and @quinn-o-brien, see @priya: not @someone-else or ada@ada-quinn.io',
+          }),
+        ],
+      }),
+      ME,
+      'livediagram',
+      'Ada Quinn',
+    );
+    expect(row!.quote).toBe(
+      '@Ada Quinn and @Quinn Ó Brien, see @Priya: not @someone-else or ada@ada-quinn.io',
+    );
+  });
+
+  it('a second person of one name, by their suffixed handle; nothing to name, the text as it is', () => {
+    expect(nameMentions('Hi @Ada-Quinn-2!', ['Ada Quinn'])).toBe('Hi @Ada Quinn!');
+    expect(nameMentions('Hi @ada-quinn', [null, '', undefined, '!!!'])).toBe('Hi @ada-quinn');
+    expect(nameMentions('@ada-quinn @ada', ['Ada Quinn', 'Ada Quinn', 'Ada'])).toBe(
+      '@Ada Quinn @Ada',
+    );
+  });
+
+  it('without the reader’s name, their handle stays as written', () => {
+    const [row] = noticeRows(
+      inbox({ threads: [thread({ mentionsYou: true, latestText: '@ada-quinn look' })] }),
+      ME,
+      'livediagram',
+    );
+    expect(row!.quote).toBe('@ada-quinn look');
   });
 });

@@ -11,6 +11,7 @@ Scope, by file:
 | `packages/explorer/src/inbox-notices/rows.ts`                 | `noticeRows`, `freshRows`, `noticeHeadline`: which rows notify and what each says                        |
 | `packages/explorer/src/inbox-notices/seen.ts`                 | `createSeenStore`, `seenStoreFor`: rows shown, dismissed or read here, per person, across tabs           |
 | `packages/explorer/src/inbox-notices/center.ts`               | `createNoticeCenter`: the notice on screen, grouping, its timer, dismissal                               |
+| `packages/explorer/src/inbox-notices/dialog-open.ts`          | `dialogOpenNow`, `subscribeDialogs`: whether a dialog is open over the page                              |
 | `packages/explorer/src/inbox-notices/InboxNotice.tsx`         | The card                                                                                                 |
 | `packages/explorer/src/inbox-notices/useInboxNotices.tsx`     | `useInboxNotices`: the watch, the seen rows and the center for one reader; the count; the layer          |
 | `packages/explorer/src/inbox-notices/InboxCountBadge.tsx`     | The Explorer button's count                                                                              |
@@ -53,11 +54,15 @@ answers with one signature list the same Inbox.
 
 ### Which rows notify (`rows.ts`)
 
-`noticeRows(data, viewerId)`: every row that would notify, each `{ key, at, kind, who, what, quote, place, href }`:
+`noticeRows(data, viewerId, here, viewerName)`: every row that would notify, each `{ key, at, kind, who, what, quote, place, href }`:
 
 - Threads, unresolved, whose `latestAuthorId` is set and is not the reader: `mention` when `mentionsYou` (who is
   `mentionedBy.name`, else the latest author), else `comment` when `onYourItem` (**commented**) or `youCommented`
-  (**replied**). A card thread read through two items is one row (`c:<app>:<elementId>`), the newer.
+  (**replied**). A card thread read through two items is one row (`c:<app>:<elementId>`), the newer. The quote is
+  the latest comment's first line through `nameMentions`: each whole-token `@handle` (the rule of model-core's
+  `mentionSegments`) that is `mentionHandle` of the reader's name (`viewerName`, the deferred auth's profile
+  name), `mentionedBy.name` or `latestAuthorName`, with or without a `-N` suffix, becomes `@<name>`; any other
+  stays as written. The thread carries no list of its mentions, so these three are the names it knows.
 - Actions, open, `assigneeId` the reader, `assignerId` not the reader: `assigned` (**assigned you a card** with
   the card's key and title, or **assigned you an action** with its name).
 - `accessRequests`: `access` (**asked for access**). `shares`: `share` (**shared it with you**, the item named on the place line).
@@ -80,7 +85,8 @@ cannot be made (private mode, full) keeps the marks in memory for the page.
 ### The notice (`center.ts`)
 
 One per page. `offer(rows)`: rows not on screen join the notice (newest first) and its timer restarts
-(`NOTICE_SHOW_MS`, 15 s, held while `hold(true)`); each joins `seen` at once, so no other tab shows it. `dismiss()`
+(`NOTICE_SHOW_MS`, 15 s, held while any `hold(true, reason)` stands: `pointer` for the pointer or focus on it,
+`dialog` while a dialog is open); each joins `seen` at once, so no other tab shows it. `dismiss()`
 clears it; `forget(keys)` drops rows another tab or the Inbox marked seen, closing the notice when none is left. A
 notice is offered only by a visible tab; a hidden tab offers what is still fresh when it becomes visible.
 
@@ -92,8 +98,12 @@ names the button ("Explorer, 3 in Inbox"), `notices` is the layer (a `Portal`) t
 
 The card is placed from `[data-corner-actions]`'s bottom (8 px below it, read when it shows and on resize), else
 12 px from the top. On a phone (the editors' `phone:` variant: under 640 px wide, or a touch screen under 500 px
-tall) it spans `left: 16px; right: 16px`. `z-index: var(--z-modal)`, under dialogs'
-own layers drawn later. Motion: `motion-safe` slide and fade (`translate-y-2`, 160 ms); `.reduce-motion` and
+tall) it spans `left: 16px; right: 16px`. `z-index: var(--z-modal)`, but it is never drawn over a dialog: while
+`[aria-modal="true"]` (the shared Dialog, workbench and canvas modals) or `dialog[open]` is in the page, the layer
+draws nothing and holds the timer (`hold(true, 'dialog')`). A `MutationObserver` on `document.body` (child lists,
+and the `aria-modal` and `open` attributes) watches for that only while a notice is waiting or showing, so the
+canvas's own DOM changes cost nothing otherwise. Lowering the card to `--z-overlay` instead would still draw it over
+a dialog's backdrop. Motion: `motion-safe` slide and fade (`translate-y-2`, 160 ms); `.reduce-motion` and
 `prefers-reduced-motion` keep the fade only.
 
 ### The Inbox page (`InboxPane.tsx`, `useInbox.ts`)

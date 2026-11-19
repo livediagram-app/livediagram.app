@@ -73,7 +73,8 @@ a computer; on a phone and at 450 px it spans the screen under the top row with 
 palette strip, the menu card or the corner card, and takes no focus.
 
 - **One row**: the kind's icon, who and what in one line (**Priya mentioned you**), the comment's first line in quotes
-  where there is one, the item (› the tab › the element, or › the card, as its Inbox row names them, so rows on one
+  where there is one (an `@handle` of the reader, of who mentioned them or of who wrote it reads as that person's
+  name, **@Ada Quinn**, not **@ada-quinn**; anyone else's handle stays as written, as in the comment's chips), the item (› the tab › the element, or › the card, as its Inbox row names them, so rows on one
   canvas tell apart) in small text, and one action: **Open in Inbox** (or **Open** for an access request or a share).
   A close button (**Dismiss**, with its tooltip) at the top right.
 - **Several rows** that arrive in one read, or while a notice is still on screen, are one notice: **3 New in Your
@@ -83,11 +84,14 @@ palette strip, the menu card or the corner card, and takes no focus.
   shadow). It slides down 8 px and fades in over 160 ms, and only fades with reduced motion (the system setting or
   the app's Reduce Motion).
 - Announced politely (`role="status"`): a screen reader hears the notice's first line once, never twice.
+- **Never over a dialog.** While a dialog is open over the page (a modal such as Share, or a canvas modal such as
+  livedesign's Start Making Pages), a notice waits: it is not drawn and its 15 seconds do not run. It shows when the
+  dialog closes, with its full time.
 
 ## How a notice goes away
 
 - **Dismiss**, Escape while it has focus, or following one of its links.
-- **On its own** after 15 seconds, held while the pointer is on it or focus is in it.
+- **On its own** after 15 seconds, held while the pointer is on it, focus is in it, or a dialog is open.
 - **Opening the Inbox**: while the Inbox list is on screen (the Explorer page or the editor's panel), every row it
   lists counts as read, and an open notice closes.
 

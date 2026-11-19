@@ -186,6 +186,19 @@ describe('the notice', () => {
     expect(c.current()).toBeNull();
   });
 
+  it('a dialog’s hold and the pointer’s are each their own', () => {
+    const c = createNoticeCenter();
+    c.offer([row('a', 1)]);
+    c.hold(true, 'dialog');
+    c.hold(true);
+    c.hold(false);
+    vi.advanceTimersByTime(NOTICE_SHOW_MS * 2);
+    expect(c.current()).not.toBeNull();
+    c.hold(false, 'dialog');
+    vi.advanceTimersByTime(NOTICE_SHOW_MS);
+    expect(c.current()).toBeNull();
+  });
+
   it('dismisses, and forgets rows seen elsewhere, closing once none is left', () => {
     const c = createNoticeCenter();
     c.forget(() => true);

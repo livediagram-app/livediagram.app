@@ -72,4 +72,22 @@ describe('useEditorInbox', () => {
     expect(screen.getByRole('button', { name: 'Explorer' })).toBeTruthy();
     expect(document.querySelector('[data-inbox-count]')).toBeNull();
   });
+
+  it('passes the reader’s display name, so their @handle reads as it', () => {
+    const user = (u: Record<string, string | null>) =>
+      ({ firstName: null, lastName: null, fullName: null, username: null, ...u }) as never;
+    const cases: [Record<string, string | null>, string | null][] = [
+      [{ fullName: ' Ada Quinn ' }, 'Ada Quinn'],
+      [{ firstName: 'Ada', lastName: 'Quinn' }, 'Ada Quinn'],
+      [{ username: 'adaq' }, 'adaq'],
+      [{}, null],
+    ];
+    for (const [u, name] of cases) {
+      const view = renderAs({ isSignedIn: true, userId: 'user_1', user: user(u) });
+      expect(seen.options.at(-1)!.viewerName).toBe(name);
+      view.unmount();
+    }
+    renderAs({ isSignedIn: true, userId: 'user_1', user: null });
+    expect(seen.options.at(-1)!.viewerName).toBeNull();
+  });
 });

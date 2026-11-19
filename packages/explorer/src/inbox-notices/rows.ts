@@ -5,6 +5,7 @@
 // reach, so a notice says nothing the Inbox row does not.
 
 import type { App, InboxResponse, InboxThread } from '@liveworkspace/index-client';
+import { mentionHandle } from '@liveworkspace/model-core/comment-mentions';
 import { APP_ITEMS, siteOfApp } from '@liveworkspace/sites';
 import { actionKey, threadKey } from '../explorer/inbox/sections';
 import type { SeenStore } from './seen';
@@ -44,6 +45,26 @@ const firstLine = (text: string): string | null => {
   return line.length > QUOTE_MAX ? `${line.slice(0, QUOTE_MAX - 1).trimEnd()}…` : line;
 };
 
+// An `@handle` as a whole token, the rule the comment's own chips use (model-core's mentionSegments).
+const MENTION = /(^|[^\w@])@([a-z0-9]+(?:-[a-z0-9]+)*)(?![\w-])/gi;
+
+/** A quote's `@handles` as the names they stand for, where the row says whose they are (the reader, who mentioned
+ *  them, who wrote it): "@ada-quinn" reads "@Ada Quinn", and so does the "-2" a second Ada Quinn's handle carries.
+ *  A handle of anyone else stays as written. */
+export function nameMentions(text: string, names: readonly (string | null | undefined)[]): string {
+  const byHandle = new Map<string, string>();
+  for (const name of names) {
+    const handle = name ? mentionHandle(name) : '';
+    if (handle && !byHandle.has(handle)) byHandle.set(handle, name!);
+  }
+  if (byHandle.size === 0) return text;
+  return text.replace(MENTION, (whole, before: string, handle: string) => {
+    const lower = handle.toLowerCase();
+    const name = byHandle.get(lower) ?? byHandle.get(lower.replace(/-\d+$/, ''));
+    return name ? `${before}@${name}` : whole;
+  });
+}
+
 /** The Inbox at a row, on the row's app's own address (this app's on this address), so its Explorer lists it. */
 export function inboxRowHref(rowApp: App, key: string, here: App): string {
   const origin = rowApp === here ? '' : siteOfApp(rowApp).url;
@@ -56,7 +77,12 @@ export function itemHref(rowApp: App, itemId: string, here: App): string {
   return `${origin}${APP_ITEMS[rowApp].itemPath}${encodeURIComponent(itemId)}`;
 }
 
-function threadRow(t: InboxThread, viewerId: string, here: App): NoticeRow | null {
+function threadRow(
+  t: InboxThread,
+  viewerId: string,
+  here: App,
+  viewerName: string | null,
+): NoticeRow | null {
   if (t.resolved || !t.latestAuthorId || t.latestAuthorId === viewerId) return null;
   let kind: NoticeKind;
   let verb: string;
@@ -90,7 +116,9 @@ function threadRow(t: InboxThread, viewerId: string, here: App): NoticeRow | nul
     app: t.app,
     who,
     verb,
-    quote: firstLine(t.latestText),
+    quote: firstLine(
+      nameMentions(t.latestText, [viewerName, t.mentionedBy?.name, t.latestAuthorName]),
+    ),
     place: t.itemTitle,
     detail: label,
     href: inboxRowHref(t.app, key, here),
@@ -98,13 +126,18 @@ function threadRow(t: InboxThread, viewerId: string, here: App): NoticeRow | nul
 }
 
 /** Every row of an Inbox read that would notify this reader, newest first. A card thread read through two plans is
- *  one row, the newer. */
-export function noticeRows(data: InboxResponse | null, viewerId: string, here: App): NoticeRow[] {
+ *  one row, the newer. `viewerName`, the reader's display name, names their own `@handle` in a quote. */
+export function noticeRows(
+  data: InboxResponse | null,
+  viewerId: string,
+  here: App,
+  viewerName: string | null = null,
+): NoticeRow[] {
   if (!data) return [];
   const out: NoticeRow[] = [];
   const cardThreads = new Map<string, number>();
   for (const t of data.threads) {
-    const row = threadRow(t, viewerId, here);
+    const row = threadRow(t, viewerId, here, viewerName);
     if (!row) continue;
     if (t.card?.id) {
       const shared = `${t.app}:${t.elementId}`;
