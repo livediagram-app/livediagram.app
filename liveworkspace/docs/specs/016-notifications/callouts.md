@@ -14,12 +14,12 @@ rose and red, at least eight ambers, borders, rings or none, text from 10px to 1
 
 The toast's four tones, with the same icons and inks:
 
-| Tone        | Means                                                     | Surface                       |
-| ----------- | --------------------------------------------------------- | ----------------------------- |
-| **Info**    | Something worth knowing here (the Trash keeps 30 days)    | Slate tint, brand icon        |
-| **Success** | It worked, said where it happened (a code was resent)     | Emerald tint and icon         |
-| **Warning** | It may not do what you expect (a link has lapsed, locked) | Amber tint and icon           |
-| **Error**   | It failed, or can't be done (couldn't reach the server)   | Rose tint and icon (not red)  |
+| Tone        | Means                                                     | Surface                      |
+| ----------- | --------------------------------------------------------- | ---------------------------- |
+| **Info**    | Something worth knowing here (the Trash keeps 30 days)    | Slate tint, brand icon       |
+| **Success** | It worked, said where it happened (a code was resent)     | Emerald tint and icon        |
+| **Warning** | It may not do what you expect (a link has lapsed, locked) | Amber tint and icon          |
+| **Error**   | It failed, or can't be done (couldn't reach the server)   | Rose tint and icon (not red) |
 
 Each tone has a light and a dark surface, its border a shade of its tint, its text the tone's ink at AA contrast on
 that surface in both themes.
