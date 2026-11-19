@@ -135,8 +135,8 @@ const KBD =
 const FOCUS =
   'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:opacity-60';
 // The split button's halves: one brand pill, the chevron set off by a hairline.
-const HALF = `inline-flex min-h-9 cursor-pointer items-center gap-1.5 bg-brand-700 text-sm font-medium text-white transition-colors duration-micro hover:bg-brand-800 active:bg-brand-900 motion-reduce:transition-none dark:bg-brand-600 dark:hover:bg-brand-500 dark:active:bg-brand-700 max-md:min-h-11 ${FOCUS}`;
-const SECONDARY = `inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 active:bg-slate-100 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:active:bg-slate-600 max-md:min-h-11 ${FOCUS}`;
+const HALF = `inline-flex min-h-9 cursor-pointer items-center gap-1.5 bg-brand-700 text-sm font-medium text-white transition-colors duration-micro hover:bg-brand-800 hover:active:bg-brand-900 motion-reduce:transition-none dark:bg-brand-600 dark:hover:bg-brand-500 dark:hover:active:bg-brand-700 max-md:min-h-11 ${FOCUS}`;
+const SECONDARY = `inline-flex min-h-9 cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors duration-micro hover:border-slate-300 hover:bg-slate-50 hover:active:bg-slate-100 motion-reduce:transition-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700 dark:hover:active:bg-slate-600 max-md:min-h-11 ${FOCUS}`;
 
 /** Share as <level> with its level menu, and Decline, for the pane's verbs row. */
 export function AccessRequestVerbs({

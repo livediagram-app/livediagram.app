@@ -40,7 +40,7 @@ export function RequestAccessButton({ itemId, ask }: { itemId: string; ask?: Ask
             e.stopPropagation();
             void send(null);
           }}
-          className="pointer-events-auto mt-1 inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 aria-disabled:cursor-wait aria-disabled:opacity-70 motion-reduce:transition-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:active:bg-slate-600"
+          className="pointer-events-auto mt-1 inline-flex cursor-pointer items-center gap-1 rounded-md border border-slate-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 hover:active:bg-slate-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 aria-disabled:cursor-wait aria-disabled:opacity-70 motion-reduce:transition-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 dark:hover:bg-slate-700 dark:hover:active:bg-slate-600"
         >
           <KeyGlyph />
           {sending ? 'Sending…' : 'Request Access'}
