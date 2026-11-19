@@ -8,10 +8,13 @@ import {
   DrawioSourceIcon,
   ExcalidrawSourceIcon,
   MsWhiteboardSourceIcon,
+  VisioSourceIcon,
 } from './import-source-icons';
 import type { ImportHost, ImportSource } from './types';
 
-export { DrawioSourceIcon, ExcalidrawSourceIcon, MsWhiteboardSourceIcon };
+// Visio is no Explorer source (it imports into a tab, and through draw.io's Explorer import); its mark is here
+// with the others so every tool's mark lives in one place.
+export { DrawioSourceIcon, ExcalidrawSourceIcon, MsWhiteboardSourceIcon, VisioSourceIcon };
 
 /** Each source's button, by its registry id. */
 export const IMPORT_SOURCE_ICONS: Readonly<Record<string, ReactNode>> = {

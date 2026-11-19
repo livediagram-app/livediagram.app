@@ -18,6 +18,7 @@ import type { ImportedPage } from './import';
 /** Each draw.io note's rule: final copy, the count shown before it. */
 export const DRAWIO_RULES: Readonly<Record<ImportNoteKind, string>> = {
   'shape-unmatched': 'Shapes with no livediagram match came in as labelled boxes',
+  'shape-as-text': 'Shapes with no livediagram match came in as text boxes',
   'shape-approximated': 'Shapes came in as the nearest livediagram shape',
   'icon-substituted': 'Vendor icons came in as the matching livediagram icon',
   'image-unavailable': 'Images linked outside the diagram came in as placeholders or were left out',

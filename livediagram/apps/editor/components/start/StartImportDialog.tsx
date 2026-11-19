@@ -14,13 +14,23 @@ import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { IMPORT_SOURCES, type ImportSourceId } from '@/app/import/import-sources';
+import { VisioSourceIcon } from '@liveworkspace/explorer/imports';
+
+// What the start screen imports from: the Explorer's sources, then Visio, which comes into a tab only
+// (docs/specs/020-import-export/visio-import.md "UI").
+export type StartImportSourceId = ImportSourceId | 'visio';
+
+const START_SOURCES: readonly { id: StartImportSourceId; name: string; icon: React.ReactNode }[] = [
+  ...IMPORT_SOURCES,
+  { id: 'visio', name: 'Visio', icon: <VisioSourceIcon /> },
+];
 
 const HEADING =
   'text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';
 const NOTE = 'text-[12px] leading-relaxed text-slate-500 dark:text-slate-400';
 
 // Each tool's file type and where its file comes from.
-const ROW_COPY: Readonly<Record<ImportSourceId, { file: string; hint: string }>> = {
+const ROW_COPY: Readonly<Record<StartImportSourceId, { file: string; hint: string }>> = {
   'microsoft-whiteboard': {
     file: 'ZIP',
     hint: 'A board folder, a folder of boards, or their .zip from Microsoft Whiteboard',
@@ -32,6 +42,10 @@ const ROW_COPY: Readonly<Record<ImportSourceId, { file: string; hint: string }>>
   drawio: {
     file: '.drawio',
     hint: 'A diagram from draw.io or diagrams.net',
+  },
+  visio: {
+    file: '.vsdx',
+    hint: 'A Visio drawing, or a Lucidchart Visio export',
   },
 };
 
@@ -55,7 +69,7 @@ function Mark({ children }: { children: React.ReactNode }) {
   );
 }
 
-const ROWS: readonly OptionRow[] = IMPORT_SOURCES.map((s) => ({
+const ROWS: readonly OptionRow[] = START_SOURCES.map((s) => ({
   id: s.id,
   label: s.name,
   icon: <Mark>{s.icon}</Mark>,
@@ -71,7 +85,7 @@ export function StartImportDialog({
   onPick,
   onClose,
 }: {
-  onPick: (source: ImportSourceId) => void;
+  onPick: (source: StartImportSourceId) => void;
   onClose: () => void;
 }) {
   const titleId = useId();
@@ -108,7 +122,7 @@ export function StartImportDialog({
           kind="action"
           label="A Board from Another Tool"
           rows={ROWS}
-          onPick={(id) => onPick(id as ImportSourceId)}
+          onPick={(id) => onPick(id as StartImportSourceId)}
         />
         <p className={NOTE}>{START_IMPORT_NOTE}</p>
       </div>
