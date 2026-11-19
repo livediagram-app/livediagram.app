@@ -105,7 +105,8 @@ event. Naming neither keeps `a:<owner>` whatever the title. A move out tells the
   The editors' room clients treat 4010 as final (like 4004): no reconnect, `onItemArchived`, and the editor calls
   `leaveArchivedElsewhere(app, item, isOwner)`: the owner to `?archived=<id>&title=<name>`, anyone else to
   `?ended=archived` (the site's `arrivalNotice`). The MCP viewer stops with "This <noun> was archived."; each CLI's
-  room stream settles `archived`.
+  room stream asks for a ticket again at once, saying nothing, and ends on the api's `409 archived` refusal (a ticket
+  means the item is back, and the stream goes on).
 
 ## Interfaces and contracts
 
@@ -163,6 +164,8 @@ one `items_live` range: pinned by `lists.test.ts` "query plans".
 | `packages/workbench/src/lib/archived.test.ts`      | `leaveArchivedElsewhere`: the owner's handoff and toast address, anyone else's `?ended=archived`     |
 | each app's `routes/internal-items.test.ts`         | archived closes with 4010; trashed, a move and a restore never do                                    |
 | each editor's room client test                     | 4010 stops the connector, calls `onItemArchived` once, never reconnects                              |
+| each CLI's `room/room-stream.test.ts`              | 4010 asks for a ticket at once, saying nothing; the archived refusal ends it, a ticket goes on       |
+| `packages/mcp-kit/src/app-viewer-live.test.ts`     | 4010 stops the live view for good: "This document was archived."                                     |
 
 ## Constants and configuration
 
