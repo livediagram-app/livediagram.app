@@ -8,7 +8,7 @@ import type { ReactNode } from 'react';
 import type { Finish } from '@liveworkspace/element-model/finish';
 import type { TextSize, TextSizePreset } from '@liveworkspace/model-core/basics';
 import { Glyph, lucideGlyph } from '@liveworkspace/ui';
-import { lucideChevronRight } from '@liveworkspace/icons/lucide';
+import { lucideChevronRight, lucideSlidersHorizontal } from '@liveworkspace/icons/lucide';
 import type { TabLookSettings } from '../../../lib/tab-looks';
 import { LooksCarousel } from './LooksCarousel';
 import { tabStyleFontLabel } from './tab-style-fonts';
@@ -45,6 +45,7 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
   defaultTextSize,
   pattern,
   onOpenPanel,
+  onOpenLink,
 }: {
   profile: TabStyleProfile<Look, Pattern>;
   surface: TabStyleSurface<Look, Pattern>;
@@ -59,6 +60,8 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
   defaultTextSize: TextSize | undefined;
   pattern: Pattern;
   onOpenPanel: (panel: TabStylePanel) => void;
+  // A link row's press: the dialog closes, then the product's setting opens.
+  onOpenLink: (open: () => void) => void;
 }) {
   const { label: themeLabel, swatch } = profile.themeSummary(themeId);
   const { FinishSwatch } = profile;
@@ -108,6 +111,16 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
               onOpen={() => onOpenPanel(panel)}
             />
           ))}
+          {surface.links?.map((link) => (
+            <FineTuneRow
+              key={link.id}
+              linkId={link.id}
+              label={link.label}
+              value={link.value}
+              icon={<SettingsGlyph />}
+              onOpen={() => onOpenLink(link.onOpen)}
+            />
+          ))}
         </div>
       </section>
     </div>
@@ -115,11 +128,14 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
 }
 
 function FineTuneRow({
+  linkId,
   label,
   value,
   icon,
   onOpen,
 }: {
+  // A link row's id (a setting outside the dialog), unset on a panel's row.
+  linkId?: string;
   label: string;
   value: string;
   icon: ReactNode;
@@ -129,6 +145,7 @@ function FineTuneRow({
     <button
       type="button"
       onClick={onOpen}
+      data-tab-style-link={linkId}
       aria-label={`${label}: ${value}`}
       className="flex min-h-12 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-left transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800/60 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
     >
@@ -151,6 +168,8 @@ function FineTuneRow({
 
 // The row's chevron and the Canvas row's glyph (a dotted tile), on the shared icon grid.
 const ChevronIcon = lucideGlyph(lucideChevronRight, 16);
+// A link row's glyph: the settings it opens live elsewhere.
+const SettingsGlyph = lucideGlyph(lucideSlidersHorizontal, 18);
 
 function CanvasGlyph() {
   return (

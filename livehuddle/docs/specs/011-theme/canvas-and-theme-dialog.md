@@ -216,7 +216,7 @@ and the user can keep pressing it to regenerate.
 ### Fine-tune
 
 Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
-**Finish**, **Text** (the tab font and the default size) and **Canvas** (the floor). Two columns, one on a phone.
+**Finish**, **Text** (the tab font and the default size) and **Room** (the floor). Two columns, one on a phone.
 Pressing a row opens that setting's panel **in place**, sliding in from the right (back slides from the left; a fade
 with reduced motion), under the shared [back bar](../004-interface-design/back-bar.md) (the one Import and Export use: **Tab Style** then the panel's name), which stays pinned to the top as the panel scrolls.
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
@@ -384,7 +384,7 @@ describes it on each.
 - **Looks.** Every look in `apps/editor/lib/tab-looks.ts`, the seasonal ones from `apps/editor/lib/seasonal-looks.ts`.
 - **Canvas panel.** The Room panel (`CanvasStyleControls`): the floors drawn for real, the canvas colour, a seasonal
   motif's colour, Strength, Size and the Walls.
-- **Preview.** A small room (`TabStylePreview`, `apps/editor/lib/finish-preview.ts`): a slice of the tab's floor,
+- **Preview.** A small room (`TabStylePreview`, `apps/editor/lib/room-preview.ts`): a slice of the tab's floor,
   a room on it (its walls and door) and a desk with its chair and a sticky, in the Finish and Text panels, so the
   preview shows the Space the person is styling rather than a diagram.
 - **Copy.** The shared lines, but the Canvas panel is named Room, its line "The floor under the Space and the walls

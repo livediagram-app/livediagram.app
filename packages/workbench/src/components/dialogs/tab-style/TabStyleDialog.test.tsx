@@ -234,6 +234,25 @@ describe('the home', () => {
     expect(button('Writing: Editor default')).toBeTruthy();
   });
 
+  it("ends Fine-tune with the surface's links, each closing the dialog before it opens its setting", () => {
+    const calls: string[] = [];
+    const onOpen = vi.fn(() => calls.push('open'));
+    const profile = profileWith({
+      surfaces: {
+        board: { links: [{ id: 'configure', label: 'Board Configure', value: 'Columns', onOpen }] },
+      },
+    });
+    const onClose = vi.fn(() => calls.push('close'));
+    open({ profile, surface: 'board', onClose });
+    const row = button('Board Configure: Columns');
+    expect(row.getAttribute('data-tab-style-link')).toBe('configure');
+    fireEvent.click(row);
+    expect(calls).toEqual(['close', 'open']);
+    cleanup();
+    open({ profile });
+    expect(document.querySelector('[data-tab-style-link]')).toBeNull();
+  });
+
   it('opens on the home when asked for a panel the surface leaves out', () => {
     const profile = profileWith({ surfaces: { article: { panels: ['theme'] } } });
     open({ profile, surface: 'article', tab: 'canvas' });

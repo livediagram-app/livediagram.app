@@ -386,10 +386,11 @@ is. `svgChecklistShape` and `svgLegendShape` letter in the element's face.
   `EditorContextMenuHost` and `EditorContextMenu.types.ts` as `onPreviewFinish` / `onCommitFinish`.
 - `CanvasThemeDialog`: `CanvasThemeTab` gains `'finish'`; the shared `FinishPanel` (`packages/workbench/src/components/dialogs/tab-style/FinishPanel.tsx`: four tiles, two columns, four from `sm`) with help link `choosingAFinish` (`canvas/finish`); `useTabCanvas.setTabFinish` commits
   `withTabFinish` (`lib/tab-style-transforms.ts`): the tab's finish, every element's own cleared, one `commit`.
-- Preview: `lib/finish-preview.ts` `finishPreviewSvg(finish, { background, theme, font })` renders
-  `FINISH_PREVIEW_ELEMENTS` (fixed ids `finish-preview-*`: a 180 x 70 square "Plan the work", a 130 x 100 diamond
-  "Ready?", a pinned arrow e → w, a 110 x 100 sticky "Ship it") through `renderElementsToSvg` (padding 16).
-  `TabStylePreview` (`components/dialogs/TabStylePreview.tsx`) memoises it on finish, background, theme and font and inlines it
+- Preview: `lib/room-preview.ts` `roomPreviewSvg(finish, { background, theme, font, textSize, floor, floorOpacity,
+  patternColor })` renders the look cards' scene (`lookPreviewScene`, `lib/look-preview.ts`: a room with its door, a
+  desk, a plant and a sticky, fixed ids `look-preview-*`) on the active tab's floor through `renderTabToSvg`, its
+  pattern id `lvd-room-preview-bg`.
+  `TabStylePreview` (`components/dialogs/TabStylePreview.tsx`) memoises it on finish, background, theme, font, text size and floor and inlines it
   (`role="img"`, `aria-label` naming the finish). The background is the tab's own, else the surface default
   (`DARK_CANVAS_BACKGROUND_COLOR` / `DEFAULT_BACKGROUND_COLOR`), passed as `canvasBackground` from `EditorModals`.
 
@@ -517,7 +518,7 @@ per command letter.
 | Professional new arrows angled; avoidance per finish         | `livediagram/apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                         |
 | which palette tiles take the finish                          | `packages/workbench/src/components/palette/palette-tile-finish.test.ts`                                      |
 | applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                      |
-| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                     |
+| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/room-preview.test.ts`                                                                       |
 | dialog tab sets, previews, Apply to All clears               | `apps/editor/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/editor/hooks/canvas/useTabCanvas.test.ts` |
 | Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                     |
 | which elements split their face                              | `packages/document/src/finish.test.ts`                                                                       |

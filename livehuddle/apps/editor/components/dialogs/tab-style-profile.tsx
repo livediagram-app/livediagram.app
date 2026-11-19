@@ -3,16 +3,17 @@
 // livehuddle's Tab Style profile (docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's
 // profile"; liveworkspace/docs/specs/011-workbench/tab-style.md "The profile"): the parts only this editor knows (its
 // looks, themes, finishes, floors, Text Size control, Show Me and help) and what each surface shows. A Space shows every
-// panel; its Canvas panel is the Floor one (components/canvas/CanvasStyleControls.tsx). It has no tab locks.
+// panel; its Canvas panel is the Room one, floor and walls (components/canvas/RoomStyleControls.tsx), and its preview a
+// small room (TabStylePreview). It has no tab locks.
 // Imported only by CanvasThemeDialog, so it loads with the dialog.
 
 import type { BackgroundPattern } from '@livehuddle/document';
 import {
-  TAB_STYLE_COPY,
   TAB_STYLE_PANELS,
+  tabStyleCopy,
   type TabStyleProfile,
 } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
-import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
+import { RoomStyleControls } from '@/components/canvas/RoomStyleControls';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { patternLabel } from '@/components/palette/palette-patterns';
 import { TextSizeControl } from '@/components/palette/TextSizeControl';
@@ -60,7 +61,7 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
   base: {
     panels: TAB_STYLE_PANELS,
     hiddenControls: [],
-    renderCanvasPanel: (canvas) => <CanvasStyleControls {...canvas} />,
+    renderCanvasPanel: (canvas) => <RoomStyleControls {...canvas} />,
     renderPreview: (kind, p) => (
       <TabStylePreview
         finish={p.finish}
@@ -70,11 +71,18 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
         textSize={kind === 'text' ? p.textSize : undefined}
         label={
           kind === 'finish'
-            ? `A sample diagram drawn in the ${p.finishLabel} finish`
-            : `A sample diagram lettered in ${p.fontLabel}`
+            ? `A sample room drawn in the ${p.finishLabel} finish`
+            : `A sample room lettered in ${p.fontLabel}`
         }
       />
     ),
-    copy: TAB_STYLE_COPY,
+    // A Space is rooms on a floor, so its Canvas panel is the Room.
+    copy: tabStyleCopy({
+      viewLines: {
+        looks: 'Pick a look for the Space, then fine-tune any part of it.',
+        canvas: 'The floor under the Space and the walls round its rooms.',
+      },
+      panelTitles: { canvas: 'Room' },
+    }),
   },
 };

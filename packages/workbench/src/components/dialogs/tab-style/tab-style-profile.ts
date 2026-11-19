@@ -136,6 +136,16 @@ export type TabStyleFrame =
     }
   | { kind: 'custom'; render: (parts: TabStyleFrameParts) => ReactNode };
 
+/** A Fine-tune row for a setting outside the dialog that styles the surface (a board's Configure, say). */
+export type TabStyleLink = {
+  id: string;
+  label: string;
+  // The row's line: what the setting holds.
+  value: string;
+  // Opens the product's setting; the dialog has closed by then.
+  onOpen: () => void;
+};
+
 /** What a surface shows. */
 export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> = {
   // The Fine-tune panels, in order.
@@ -146,6 +156,8 @@ export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> =
   renderCanvasPanel: (props: TabStyleCanvasPanelProps<Pattern>) => ReactNode;
   renderPreview: (kind: TabStylePreviewKind, props: TabStylePreviewProps) => ReactNode;
   copy: TabStyleCopy;
+  // Rows after the panels' in Fine-tune; none when unset.
+  links?: readonly TabStyleLink[];
 };
 
 /** A surface's changes to the base: any setting, and only the copy lines it words differently. */

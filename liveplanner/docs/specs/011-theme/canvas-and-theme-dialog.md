@@ -356,9 +356,10 @@ controls that change what it draws, says so in its header, and links to the sett
   pattern, its colour, Opacity and Size, but offers the **static** patterns only and no Speed (a moving canvas under
   cards is a distraction, and costs a frame's work every frame); the looks are the calm ones (every look without an
   animated pattern, so Northern Lights and the moving seasonal motifs are left out). The Text panel keeps Size of New
-  Text, which reaches the board's cards ([Fonts](../004-interface-design/fonts.md)). The preview is a small board
-  (three columns of cards under their headings), its columns in the theme's colours on a multi-colour theme as a real
-  board's are ([Columns in the theme's colours](../026-plan/plan-board.md)). Fine-tune ends with a **Board
+  Text, which reaches the board's cards ([Fonts](../004-interface-design/fonts.md)). The preview, on this and every
+  plan kind below, is a small board (`apps/editor/lib/board-preview.ts`: three columns of alike cards under their
+  names, each column's bar in the next of the theme's colours on a multi-colour theme as a real board's are,
+  [Columns in the theme's colours](../026-plan/plan-board.md)), drawn by the export renderer. Fine-tune ends with a **Board
   Configure** row ("Columns, cards and density"), which closes the dialog and opens the board's Configure.
 - **A Sheet tab** (`sheet`). The sheet fills the tab with an opaque surface, the canvas showing only in the narrow rim
   round it: the Canvas panel keeps the static patterns, the canvas colour and Opacity, without Size, Speed or the

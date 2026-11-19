@@ -75,6 +75,7 @@ export function CanvasStyleControls({
   onSetBackgroundAnimationSpeed,
   showAllPatterns = false,
   previewTiles = false,
+  staticOnly = false,
   hidden = NONE_HIDDEN,
 }: {
   backgroundPattern: BackgroundPattern;
@@ -98,6 +99,9 @@ export function CanvasStyleControls({
   // Each pattern drawn for real in this tab's colours, in carousels (the dialog's Canvas panel), instead of the
   // compact icon grid the narrow accordion uses.
   previewTiles?: boolean;
+  // The static patterns only: a plan's tab (a board, a Sheet, a form, a dashboard) offers no moving canvas
+  // (docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile").
+  staticOnly?: boolean;
   // The controls the Tab Style surface leaves out (liveworkspace/docs/specs/011-workbench/tab-style.md "The profile").
   hidden?: ReadonlySet<TabStyleControl>;
 }) {
@@ -123,15 +127,17 @@ export function CanvasStyleControls({
             backgroundColor={backgroundColor}
             patternColor={patternColor}
           />
-          <PatternCarousel
-            heading="Animated"
-            patterns={ANIMATED_PATTERNS}
-            animated
-            active={backgroundPattern}
-            onPick={onSetBackgroundPattern}
-            backgroundColor={backgroundColor}
-            patternColor={patternColor}
-          />
+          {staticOnly ? null : (
+            <PatternCarousel
+              heading="Animated"
+              patterns={ANIMATED_PATTERNS}
+              animated
+              active={backgroundPattern}
+              onPick={onSetBackgroundPattern}
+              backgroundColor={backgroundColor}
+              patternColor={patternColor}
+            />
+          )}
         </div>
       ) : (
         <>
@@ -145,15 +151,19 @@ export function CanvasStyleControls({
           {!showAllPatterns && staticList.hasMore && !staticList.showAll ? (
             <ShowMoreButton label="Show More Patterns" onClick={staticList.reveal} />
           ) : null}
-          <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            Animated
-          </p>
-          <PatternGrid
-            patterns={ANIMATED_PATTERNS}
-            gridClass={patternGridClass}
-            active={backgroundPattern}
-            onPick={onSetBackgroundPattern}
-          />
+          {staticOnly ? null : (
+            <>
+              <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                Animated
+              </p>
+              <PatternGrid
+                patterns={ANIMATED_PATTERNS}
+                gridClass={patternGridClass}
+                active={backgroundPattern}
+                onPick={onSetBackgroundPattern}
+              />
+            </>
+          )}
         </>
       )}
       <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">

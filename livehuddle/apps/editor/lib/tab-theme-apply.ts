@@ -99,5 +99,13 @@ const viewedCanvas = (colour: string, map: ReadonlyMap<string, string>): string 
 /** `target` restyled from `source` for Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): `source`'s
  *  theme applied as picking it does, then its canvas, text defaults and finish exactly (withTabStyleOf). */
 export function withStyleOfTab(target: Tab, source: Tab): Tab {
-  return withTabStyleOf(withThemeApplied(target, source.theme ?? 'brand'), source);
+  const styled = withTabStyleOf(withThemeApplied(target, source.theme ?? 'brand'), source);
+  // The walls are livehuddle's own part of a tab's style (docs/specs/008-canvas/3d-view.md "Themes"): copied, or
+  // cleared to the plaster, as the shared keys are.
+  if (source.wallColor === undefined) {
+    if (styled.wallColor === undefined) return styled;
+    const { wallColor: _cleared, ...rest } = styled;
+    return rest as Tab;
+  }
+  return { ...styled, wallColor: source.wallColor };
 }

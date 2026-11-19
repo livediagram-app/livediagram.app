@@ -180,6 +180,17 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     scheduleCanvasTelemetry('backgroundPatternScale', 'BackgroundPatternScale');
   };
 
+  // The 3D view's walls (docs/specs/008-canvas/3d-view.md "Themes"): a colour, or undefined for the plaster.
+  const setWallColor = (color: string | undefined) => {
+    if (editsBlocked) return;
+    patchActiveTabDebounced('wallColor', (t) => {
+      const next = { ...t, wallColor: color };
+      if (color === undefined) delete next.wallColor;
+      return next;
+    });
+    scheduleCanvasTelemetry('wallColor', 'WallColor');
+  };
+
   return {
     autoAlignTab,
     setTabFont,
@@ -192,5 +203,6 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     setBackgroundOpacity,
     setPatternColor,
     setBackgroundPatternScale,
+    setWallColor,
   };
 }

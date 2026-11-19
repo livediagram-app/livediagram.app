@@ -171,6 +171,10 @@ function TabStyleViewBody<Look extends TabStyleLook, Pattern extends string>({
           defaultTextSize={defaultTextSize}
           pattern={backgroundPattern}
           onOpenPanel={go}
+          onOpenLink={(open) => {
+            props.onClose();
+            open();
+          }}
         />
         {props.allTabs ? (
           <div className="mt-5 empty:hidden">

@@ -3,9 +3,9 @@
 import { builtMarkup, htmlProps } from '@liveplanner/ui';
 
 // The sample diagram the Tab Style panels preview their setting on (docs/specs/011-theme/canvas-and-theme-dialog.md
-// "Finish panel", "Text panel"): a step, a decision, the arrow between and a sticky, drawn by the export renderer
-// (lib/finish-preview.ts) in the tab's theme, finish and font, on the tab's paper, so it is exactly what the canvas
-// will show. Rebuilt only when one of those changes.
+// "Finish panel", "Text panel"): a step, a decision, the arrow between and a sticky (lib/finish-preview.ts), or on a
+// plan's tab a small board (lib/board-preview.ts), drawn by the export renderer in the tab's theme, finish and font, on
+// the tab's paper, so it is exactly what the canvas will show. Rebuilt only when one of those changes.
 
 import { useMemo } from 'react';
 import {
@@ -15,6 +15,7 @@ import {
   type TextSize,
 } from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
+import { boardPreviewSvg } from '@/lib/board-preview';
 import { finishPreviewSvg } from '@/lib/finish-preview';
 import { resolveTabBackdrop } from '@/lib/themes';
 
@@ -24,6 +25,7 @@ export function TabStylePreview({
   themeId,
   font,
   textSize,
+  scene = 'diagram',
   label,
 }: {
   finish: Finish;
@@ -33,6 +35,8 @@ export function TabStylePreview({
   font: string | null;
   // The size new text takes, drawn on the sample's labels (the Text panel); omitted, labels keep their size.
   textSize?: TextSize;
+  // The sample drawn: the diagram (a diagram tab), or a board (a plan's tab).
+  scene?: 'diagram' | 'board';
   // What the preview shows, for a screen reader.
   label: string;
 }) {
@@ -44,16 +48,10 @@ export function TabStylePreview({
     : surface === 'dark'
       ? DARK_CANVAS_BACKGROUND_COLOR
       : DEFAULT_BACKGROUND_COLOR;
-  const markup = useMemo(
-    () =>
-      finishPreviewSvg(finish, {
-        background,
-        theme: themeId,
-        font: font ?? undefined,
-        textSize,
-      }),
-    [finish, background, themeId, font, textSize],
-  );
+  const markup = useMemo(() => {
+    const tab = { background, theme: themeId, font: font ?? undefined, textSize };
+    return scene === 'board' ? boardPreviewSvg(finish, tab) : finishPreviewSvg(finish, tab);
+  }, [scene, finish, background, themeId, font, textSize]);
   return (
     <div
       role="img"

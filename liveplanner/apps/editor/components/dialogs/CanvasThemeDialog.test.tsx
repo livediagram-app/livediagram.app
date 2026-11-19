@@ -278,3 +278,72 @@ describe('CanvasThemeDialog header', () => {
     expect(screen.getByRole('button', { name: 'Close' })).toBeTruthy();
   });
 });
+
+// docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile": each kind of tab shows only
+// what changes how it draws, says so, and links to the settings that style it.
+describe('CanvasThemeDialog per tab kind', () => {
+  const open = (
+    surface: string | undefined,
+    over: Partial<ComponentProps<typeof CanvasThemeDialog>> = {},
+  ) => render(<CanvasThemeDialog {...props} surface={surface} {...over} />);
+  const carousel = (heading: string) => screen.queryByText(heading, { selector: 'p' });
+
+  it('offers a diagram tab every pattern, the sample diagram and no links', () => {
+    open('canvas');
+    expect(carousel('Animated')).not.toBeNull();
+    cleanup();
+    open('canvas', { tab: 'finish' });
+    expect(screen.getByRole('img', { name: /sample diagram/ })).toBeTruthy();
+    cleanup();
+    open('canvas', { tab: 'looks' });
+    expect(document.querySelector('[data-tab-style-link]')).toBeNull();
+  });
+
+  it('offers a board the static patterns with their size and colour, a board preview and Board Configure', () => {
+    open('board', { backgroundPattern: 'aurora' });
+    expect(carousel('Static')).not.toBeNull();
+    expect(carousel('Animated')).toBeNull();
+    expect(screen.queryByText('Speed')).toBeNull();
+    expect(screen.getByText('Size')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Pattern/ })).toBeTruthy();
+    expect(screen.getByText('The pattern and colours the board sits on.')).toBeTruthy();
+    cleanup();
+    open('board', { tab: 'font', defaultTextSize: 'lg' });
+    expect(screen.getByRole('img', { name: /sample board/ })).toBeTruthy();
+    expect(screen.getByText('Size of New Text')).toBeTruthy();
+    cleanup();
+    const onClose = vi.fn();
+    open('board', { tab: 'looks', onClose });
+    expect(screen.queryByRole('button', { name: /^Northern Lights/ })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /^Board Configure:/ }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('leaves a sheet only the canvas colour and strength, no size of new text, and links Sheet Settings', () => {
+    open('sheet');
+    expect(screen.queryByText('Size')).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Pattern/ })).toBeNull();
+    expect(screen.getByText('Opacity')).toBeTruthy();
+    expect(screen.getByText('The colour and pattern in the rim round the sheet.')).toBeTruthy();
+    cleanup();
+    open('sheet', { tab: 'looks', defaultTextSize: 'lg' });
+    expect(screen.getByRole('button', { name: 'Text: Editor default' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Sheet Settings:/ })).toBeTruthy();
+    expect(
+      screen.getByText('Colours, the frame’s finish and the title’s font for the sheet.'),
+    ).toBeTruthy();
+    cleanup();
+    open('sheet', { tab: 'font' });
+    expect(screen.queryByText('Size of New Text')).toBeNull();
+  });
+
+  it('gives a form its own lines and no link, and a dashboard Dashboard Settings', () => {
+    open('form', { tab: 'looks' });
+    expect(screen.getByText('Colours, finish and font for the whole form.')).toBeTruthy();
+    expect(document.querySelector('[data-tab-style-link]')).toBeNull();
+    cleanup();
+    open('dashboard', { tab: 'looks', defaultTextSize: 'lg' });
+    expect(screen.getByRole('button', { name: /^Dashboard Settings:/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Text: Editor default' })).toBeTruthy();
+  });
+});

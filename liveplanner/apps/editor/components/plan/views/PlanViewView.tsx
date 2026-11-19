@@ -180,6 +180,8 @@ export function PlanViewView({
       maximised={maximised}
       fill={filled}
       tint={planBandTint(element)}
+      // Opaque: no moving pattern is drawn under it (CanvasCover).
+      opaque
       blend={{ surface: palette.surface, line: palette.border }}
       placeholder={{
         backgroundColor: palette.surface,
