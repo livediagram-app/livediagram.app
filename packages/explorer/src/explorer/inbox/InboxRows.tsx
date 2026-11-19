@@ -28,6 +28,7 @@ import {
   ClockIcon,
   FileTextIcon,
   FormIcon,
+  KeyIcon,
   ReplyIcon,
   SparkleIcon,
   UserIcon,
@@ -38,6 +39,7 @@ import { ThisBrowserPill } from '../ThisBrowser';
 import { useExplorer } from '../context';
 import { useExtras } from '../extras';
 import {
+  ACCESS_REASON,
   actionReason,
   formReason,
   threadNeedsYou,
@@ -169,6 +171,25 @@ export function entryFacts(e: InboxEntry, viewerId: string | null): EntryFacts {
         latest: null,
       };
     }
+    case 'AccessRequest': {
+      // Request Access (request-access.md "In the Inbox"): who asks, as accounts named them then, else Someone.
+      const r = e.row;
+      const name = nameOf(r.requesterName);
+      return {
+        person: { id: r.requesterId, name },
+        who: name ?? 'Someone',
+        needsYou: true,
+        cardKey: null,
+        title: 'Asked for access',
+        reason: ACCESS_REASON,
+        item,
+        where: [],
+        cardType: null,
+        column: null,
+        local: false,
+        latest: null,
+      };
+    }
   }
 }
 
@@ -205,6 +226,8 @@ export function reasonIcon(kind: InboxReason['kind'], size = 12): ReactNode {
       return <SparkleIcon size={size} />;
     case 'responses':
       return <FormIcon size={size} />;
+    case 'access':
+      return <KeyIcon size={size} />;
   }
 }
 
