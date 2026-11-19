@@ -20,6 +20,9 @@ follow each other.
 - **Style** (`boundaryStyle`), one of three:
   - **Tab** (the default): the title in a small tab sitting on the top edge, filled with the accent, with the icon
     before it. The cloud-vendor look.
+    The tab hugs its title: on the canvas its width is the title's measured width, as it is being typed, so it grows
+    with each key instead of wrapping until the edit ends (owner, 2026-11-19); an export without a DOM estimates it
+    from the title's characters.
   - **Inset**: the title inside the top-left corner in the accent's colour, with the icon before it and the meta
     line after it. The look for a zone nested in another, so the titles do not stack up on the edges.
   - **C4**: no tab; the title bold in the bottom-left corner with the meta line under it in brackets

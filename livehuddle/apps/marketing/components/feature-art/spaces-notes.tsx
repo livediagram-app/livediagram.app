@@ -175,7 +175,7 @@ function Panel({ children }: { children: ReactNode }) {
   );
 }
 
-/** Keep a Space in This Browser: the Team Pod, kept here, with its This Browser badge. */
+/** Keep a Space kept Offline: the Team Pod, kept here, with its Offline badge. */
 export function BrowserSpaceArt() {
   return (
     <Panel>
@@ -198,7 +198,7 @@ export function BrowserSpaceArt() {
           textAnchor="middle"
           className="fill-white dark:fill-slate-900"
         >
-          This Browser
+          Offline
         </text>
       </g>
     </Panel>

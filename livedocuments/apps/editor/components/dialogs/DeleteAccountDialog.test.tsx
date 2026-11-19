@@ -30,7 +30,7 @@ describe('DeleteAccountDialog', () => {
     const onDeleted = vi.fn();
     render(<DeleteAccountDialog open onClose={() => {}} onDeleted={onDeleted} />);
     expect(screen.getByText(/not just livedocuments/)).toBeTruthy();
-    expect(screen.getByText(/Documents in This Browser stay on this device/)).toBeTruthy();
+    expect(screen.getByText(/Documents kept Offline stay on this device/)).toBeTruthy();
     fireEvent.change(screen.getByRole('textbox'), { target: { value: 'a@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Email Me a Code' }));
     const first = await screen.findByRole('textbox', { name: 'Digit 1' });

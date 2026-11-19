@@ -1,4 +1,4 @@
-// This Browser in the Inbox (this-browser-inbox.ts): the app's snapshot of its offline items' Inbox rows, for the
+// Offline in the Inbox (this-browser-inbox.ts): the app's snapshot of its offline items' Inbox rows, for the
 // Explorer page on its address. Listed only to the person it names, bounded, heard as it changes, dropped with the
 // last offline item, and kept fresh by the app's debounced keeper.
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -71,7 +71,7 @@ const rows = (actions: InboxAction[], threads: InboxThread[] = []): InboxLocalRo
   threads,
 });
 
-describe("the Inbox's This Browser snapshot", () => {
+describe("the Inbox's Offline snapshot", () => {
   it('is read back as written, under the shared key', () => {
     writeInboxSnapshot(
       'liveplanner',

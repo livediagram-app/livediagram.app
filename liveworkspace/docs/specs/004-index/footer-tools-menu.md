@@ -13,7 +13,7 @@ Settings, the appearance and one way into the rest.
   icon-only on a phone (a 40 px target, named "Tools"). It has no hover card: its label says what it is, and the
   popover says the rest.
 - It is drawn only while it holds at least one tool. Someone who may use none of them (a Viewer, a Community visitor,
-  a workbench frame, an item in **This Browser** without Automations) sees no Tools button at all, never an empty popover.
+  a workbench frame, an item kept **Offline** without Automations) sees no Tools button at all, never an empty popover.
 - The Explorer's bottom bar has it too, holding Search alone.
 
 ## What it holds
@@ -68,7 +68,7 @@ what used to be three tools:
   a share link), the History row opens Version History straight away and closes Tools, as its own row did.
 
 Its line reads "Snapshots, and who changed what." where snapshots are in it, "Who changed what, and when." otherwise.
-Signed out or in This Browser with no snapshots to take, History keeps its badges and its gate (Always there, below).
+Signed out or Offline with no snapshots to take, History keeps its badges and its gate (Always there, below).
 
 - Opening it focuses its first control. Up and down walk the rows, Home and End go to the first and last, Tab
   moves through them; Escape or a press outside closes it and focus goes back to Tools.
@@ -160,7 +160,7 @@ both on its item menus.
 A tool that would work for this person but for an account or for where the item lives **always shows** in Tools
 (owner, 2026-11-16), so everyone can find it, with small badges beside its name saying everything it needs, in order:
 **Sign In** (it needs an account), then **Sync Plan** (the app's own noun: Sync Canvas, Sync Document, Sync Design,
-Sync Space; it needs the item saved to the server). Signed out on an item in This Browser, it wears both. A press opens
+Sync Space; it needs the item saved to the server). Signed out on an item kept Offline, it wears both. A press opens
 that tool's gate in its place, in Automations' shape, on the first thing it needs: Sign In leaves for the sign-in page
 and comes back with the tool open; Sync syncs in place and goes on to the tool. Where neither would help (a share-link holder for a tool only an
 owner has, a Viewer for an Editor's tool, an embed) the row stays out. In liveplanner: Automations, Subscribe to Calendar and Email to Board; everywhere: History and Webhooks (each Sign In,
@@ -168,7 +168,7 @@ then Sync), and in the four canvas apps Walkthroughs (owner, 2026-11-17), when i
 badges and opens their gate through the Tools door (`usePublishToolGate` / `useToolGate`, blueprint FM10), and once
 synced Tools opens at its own row.
 
-Signed out, or on an item in This Browser, **History** and **Webhooks** still show in Tools (owner, 2026-11-16), so
+Signed out, or on an item kept Offline, **History** and **Webhooks** still show in Tools (owner, 2026-11-16), so
 everyone can find them, badged **Sign In** and **Sync <Item>** as they need. A press
 opens a small dialog in that tool's hero header (its art, name and line), a sentence on what signing in gives, and
 **Sign In** (to the app's sign-in page, coming back here) beside **Not Now**. Signed in, they behave as above: History for

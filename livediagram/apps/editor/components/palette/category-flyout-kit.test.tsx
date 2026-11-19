@@ -18,9 +18,13 @@ const tiles = (id: string): PaletteTileDef[] =>
   paletteCategoriesFor('diagram').find((c) => c.id === id)?.tiles ?? [];
 
 describe('the flyout kit', () => {
-  it('draws BPMN, and only BPMN, as an optional group: a header row over a closed, inert body', () => {
+  it('draws Flowchart, More Shapes and BPMN as optional groups: a header row over a closed, inert body', () => {
     const groups = flyoutKit('diagram').groups('shapes', tiles('shapes'));
-    expect(groups.filter((g) => g.frame).map((g) => g.title)).toEqual(['BPMN']);
+    expect(groups.filter((g) => g.frame).map((g) => g.title)).toEqual([
+      'Flowchart',
+      'More Shapes',
+      'BPMN',
+    ]);
     const { container } = render(<>{groups.at(-1)!.frame!(<button data-flyout-item="" />)}</>);
     expect(container.querySelector('[data-optional-group="BPMN"]')).not.toBeNull();
     // Closed until opened, so the arrows skip its tiles (onFlyoutArrowKey).

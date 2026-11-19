@@ -784,7 +784,7 @@ dots }` under the field's id. `votesFieldsOf(type)` lists the type's Votes field
   api's reporting is `plan-room/image-refs.ts` (schema step V11: `media_refs` and the `outbox_images_*` triggers;
   `pushImageRefs` from the outbox's drain, never `complete` and nothing past `MEDIA_REFS_SYNC_MAX`; `forgetImageRefs`
   from the room's purge). `routes/images.ts` names the plan as the upload's `document`, so the media service claims
-  the picture for it (none for a This Browser upload).
+  the picture for it (none for an offline upload).
   A copy's pictures are vouched for by its source (items.md "Images in use", Work Tracker 1190) in
   `plan-room/copy-image-claims.ts`: schema step V37 makes `copy_image_claims (plan_id, copy_id, images, noted_at)`, keyed by the two ids.
   `internal-items.ts`'s `copy` passes the target id to the source's `exportCopy(tabId, copier, copyId)`, whose door

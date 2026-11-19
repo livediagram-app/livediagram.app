@@ -360,18 +360,10 @@ Taken up only when the rules above leave the budget unmet; each is a change to t
   the page. On the hosted runner each of those scripts took 35 to 120 ms of the main thread, which
   the probe would read as the board's work. So the probe's runs record no trace, and a drag,
   marquee or stroke is sent straight to the browser's input.
-- **It runs nightly on its own**, in a scheduled workflow, against the head of `main`; a night with
-  no new commit on `main` since the last run is skipped, so it spends no CI minutes on an unchanged
-  build. Each run writes the budget table to the job summary and keeps the raw traces as an
-  artefact for 14 days.
-- **It reports, it never blocks**: timings on shared runners are too noisy to fail a build on. A
-  run with a failing row opens one issue, **Canvas performance budget: livediagram**, or comments on it if open,
-  with the table and the commits since the previous run (the latest 30, then how many more, so a long
-  gap never outgrows GitHub's 65,536-character body); the first all-pass run closes it. No
-  one has to remember to run or read it.
-- **A branch can be measured on demand**: the same workflow, started by hand on any branch, runs
-  the same probe and writes the same job summary, and leaves the issue alone; only a run on `main`
-  reports to it.
+- **It runs by hand, never in CI**: `pnpm perf:canvas` against a local build, before and after a change
+  that touches the canvas, and the table it prints is the reading. Timings on shared runners are too noisy
+  to fail a build on, and the nightly run that opened an issue per product on a miss went red every night
+  without anyone acting on it, so it was removed (owner, 2026-11-19).
 
 ## Observability
 

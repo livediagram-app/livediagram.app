@@ -1,4 +1,4 @@
-// This Browser's filter lens (livediagram/docs/specs/013-workspace/explorer-filters.md "Views"): the index never
+// Offline's filter lens (livediagram/docs/specs/013-workspace/explorer-filters.md "Views"): the index never
 // sees what is kept only in this browser, so the Explorer narrows the list itself, with the same compiled lens it
 // runs over a row the reader just changed. Pure: the pane hands in the list and the parsed lens.
 

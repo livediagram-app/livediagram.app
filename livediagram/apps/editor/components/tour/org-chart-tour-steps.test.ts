@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
 import { orgChartTourSteps, type OrgChartTourContext } from './org-chart-tour-steps';
+import { kindToolSelector } from './concept-element-tour-steps';
 
 const ctxOf = (over: Partial<OrgChartTourContext> = {}): OrgChartTourContext => ({
   elementId: 'ak',
@@ -34,8 +35,8 @@ describe('orgChartTourSteps', () => {
     const sel = (id: string) => steps.find((s) => s.id === id)!.selector!(api);
     expect(sel('role')).toBe('[data-element-id="ak"] [data-tour-part="person-role"]');
     expect(sel('initials')).toBe('[data-element-id="ak"] [data-tour-part="person-initials"]');
-    expect(sel('report')).toBe('[data-testid="selection-popover"] button[aria-label="Add Child"]');
-    expect(sel('peer')).toBe('[data-testid="selection-popover"] button[aria-label="Add Sibling"]');
+    expect(sel('report')).toBe(kindToolSelector('Add Child'));
+    expect(sel('peer')).toBe(kindToolSelector('Add Sibling'));
   });
 
   it('calls a child a report and a sibling a peer, with keys on a keyboard only', () => {

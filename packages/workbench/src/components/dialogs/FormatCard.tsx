@@ -24,11 +24,14 @@ export function FormatCard({
   title,
   description,
   onClick,
+  fileTypes,
   children,
 }: {
   title: string;
   description: string;
   onClick: () => void;
+  // An import format's file endings (owner 2026-11-19: a reader should not have to guess what a format takes).
+  fileTypes?: readonly string[];
   children: ReactNode;
 }) {
   return (
@@ -48,7 +51,30 @@ export function FormatCard({
         <p className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
           {description}
         </p>
+        {fileTypes?.length ? <FileTypes types={fileTypes} className="mt-1.5" /> : null}
       </div>
     </button>
+  );
+}
+
+/** A format's file endings as small chips (".toml .yml .yaml"): on its card, and beside its panel's Import File. */
+export function FileTypes({
+  types,
+  className = '',
+}: {
+  types: readonly string[];
+  className?: string;
+}) {
+  return (
+    <ul aria-label="File types" className={`flex flex-wrap gap-1 ${className}`}>
+      {types.map((t) => (
+        <li
+          key={t}
+          className="rounded bg-slate-100 px-1 py-px font-mono text-[10px] leading-4 text-slate-600 dark:bg-slate-700/60 dark:text-slate-300"
+        >
+          {t}
+        </li>
+      ))}
+    </ul>
   );
 }

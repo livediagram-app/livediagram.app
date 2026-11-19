@@ -329,7 +329,7 @@ describe('the Suggestion Box', () => {
     expect(screen.queryByText(words)).toBeNull();
   });
 
-  it('shows a Viewer the box shut, and a This Browser Space the way to collect', () => {
+  it('shows a Viewer the box shut, and an offline Space the way to collect', () => {
     state.ctx = editor('view');
     const { unmount } = render(<SuggestionBoxPanel element={box()} size="popover" />);
     expect(screen.queryByLabelText('Suggestion')).toBeNull();

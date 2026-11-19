@@ -79,7 +79,7 @@ export function Rail({
   selected: PanelSection;
   onPick: (s: PanelSection) => void;
   phone: boolean;
-  // How many items this browser keeps only for itself: This Browser's count.
+  // How many items this browser keeps only for itself: Offline's count.
   offlineCount: number;
   // Above New in the sidebar: the item open in the editor (the panel's current card, compact).
   top?: ReactNode;

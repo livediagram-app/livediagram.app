@@ -121,7 +121,7 @@ livediagram"), never "Untitled canvas".
 
 A canvas its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Canvas Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
+**Canvas Not Found**), or this browser holds it archived ([offline-mode.md "Archived Offline"](../006-document/offline-mode.md#archived-offline)).
 Either way the editor shows the same card in place of the canvas, titled **Canvas Archived** ("This canvas is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
@@ -243,9 +243,9 @@ templates the answer leads to.
 - **`/new?start=blank`** (the public sites' and Explorer Home's Start Blank) opens it with its start closed
   (`closeStartForBlank`), so whoever asked for a blank is not shown templates. Only the exact value `blank` counts.
 - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest (with sign-in enabled), livediagram for everyone else. Decided at commit by
+  says: Offline for a guest (with sign-in enabled), livediagram for everyone else. Decided at commit by
   `resolveSaveLocation`: a guest never waits, a browser that looks signed in waits for identity, so a signed-in
-  person is never handed a document in This Browser.
+  person is never handed a document kept Offline.
 - **Filed** (livediagram) in the `/new?folder=` / `?team=` context when there is one, an explicit placement; otherwise
   the create carries no placement and the server files it in the person's
   [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
@@ -301,7 +301,7 @@ on unbroken. The public sites' Start Blank is `/new?start=blank` ([No welcome st
 - Both compose with the placement context (`/new?blank=1&folder=<id>`, `&team=<id>`), and with `?via=`; a failed
   create shows the same retryable error card as any create.
 - **Where they store the document**: the default for who is creating, as every `/new` create
-  (`resolveSaveLocation` in `app/new/useNewDocumentLocation.ts`). A guest gets a document in This Browser, created
+  (`resolveSaveLocation` in `app/new/useNewDocumentLocation.ts`). A guest gets a document kept Offline, created
   without waiting for identity at all ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
   A placement param names a server place, so it makes the create a cloud one whoever is creating.
 - **`?welcome=1`** is not read.
@@ -432,7 +432,7 @@ caller's: `brand` on `/new`, the source tab's theme for a new tab.
 - `/document/shared?s=<code>` (visitor) → editor + identity-confirm modal.
 - NotFound CTA → goes to `/new`.
 - "New Canvas" from Explorer → goes to `/new`.
-- `/new` → the document is created at once, This Browser for a guest, filed in the signed-in person's default folder.
+- `/new` → the document is created at once, Offline for a guest, filed in the signed-in person's default folder.
 - `/new`, then Back from the editor → the page before `/new`, no second document.
 - `/new?start=blank` → a Blank Diagram with its start closed.
 - `/new?blank=1` → blank document created, start closed; `/new?blank=1&folder=<id>` files it into that folder.

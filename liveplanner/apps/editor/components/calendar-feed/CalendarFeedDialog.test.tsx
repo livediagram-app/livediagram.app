@@ -393,7 +393,7 @@ describe('the door', () => {
     expect(decodeURIComponent(href)).toContain('calendar=1');
   });
 
-  it('shows Sync Plan on a plan in This Browser, and syncs from the gate', async () => {
+  it('shows Sync Plan on a plan kept Offline, and syncs from the gate', async () => {
     const sync = vi.fn(async () => {});
     render(
       <CalendarFeedHost scope={null} gate={{ kind: 'sync', ready: true, sync }}>

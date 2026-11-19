@@ -7,7 +7,7 @@ import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { RoomOutgoing } from '@livediagram/api-schema';
 import { sendOrHold, type PreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 
-// This Browser's idea posts, from the press until the room answers them
+// Offline's idea posts, from the press until the room answers them
 // (docs/specs/012-collaboration/idea-box.md "Racing for the last card", blueprint idea-box-race.md).
 //
 // A post applies its card at once, with a fresh random id, and goes to the room through `sequence`, whose

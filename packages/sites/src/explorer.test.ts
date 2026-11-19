@@ -109,7 +109,7 @@ describe("the site switcher's links on an Explorer page", () => {
   });
 
   it("opens Home where the site's Explorer lacks the view", () => {
-    // This Browser is each app's own; liveworkspace.app can't read it.
+    // Offline is each app's own; liveworkspace.app can't read it.
     expect(links('/explorer/offline')).toMatchObject({
       liveworkspace: 'https://www.liveworkspace.app/explorer',
       liveplanner: 'https://www.liveplanner.app/explorer/offline',

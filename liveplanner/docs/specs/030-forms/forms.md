@@ -774,8 +774,8 @@ time the button shows it in a page load), `Started` `FormTour` (a press), `View`
       empties every pick. The picks live in the dialog alone and are gone once it closes.
     - Only an Editor reaches Share Form, so only an Editor sees these.
   - A project kept on this device only (an offline project) cannot publish until it is synced, so Share Form offers
-    the same move the project's Share dialog does ([Offline mode](../006-project/offline-mode.md#sharing-a-project-in-this-browser)):
-    the shared sync prompt (`SyncProjectPrompt`, the one `ShareOfflineGate` draws) says **This Project Is in This Browser**,
+    the same move the project's Share dialog does ([Offline mode](../006-project/offline-mode.md#sharing-an-offline-project)):
+    the shared sync prompt (`SyncProjectPrompt`, the one `ShareOfflineGate` draws) says **This Project Is Offline**,
     "It is saved only in this browser, so this form can't be published yet. Sync it to liveplanner to publish it: the
     form link and its responses need it on our servers. You can take it offline again any time.", with **Sync
     Project**. It syncs the project in place; the toast confirms and the same dialog carries straight on to the
@@ -1070,7 +1070,7 @@ board settings, for switching back.
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
-| Sync a project in This Browser from Share Form           | ✓                                      |             |        |
+| Sync a project kept Offline from Share Form              | ✓                                      |             |        |
 | More Ways to Share: QR code, embed code, pre-filled link | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 

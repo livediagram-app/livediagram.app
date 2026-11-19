@@ -508,8 +508,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Canvases saved to your account are stored in our database on Cloudflare, and canvases in
-            This Browser stay in your browser. There are no tracking pixels, no advertising and no
+            Canvases saved to your account are stored in our database on Cloudflare, and canvases
+            kept Offline stay in your browser. There are no tracking pixels, no advertising and no
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
@@ -517,7 +517,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Canvases saved to your account are stored in our database on Cloudflare, and canvases in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+          'Canvases saved to your account are stored in our database on Cloudflare, and canvases kept Offline stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
       },
       {
         q: 'Can I keep a canvas off your servers entirely?',

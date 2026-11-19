@@ -240,7 +240,7 @@ their home moved (`components/calls/CallDock.tsx`).
   microphone (Live, Nobody Near, Muted, Mic Blocked, Mic Off, Listening; it starts muted), **Do Not Disturb** while
   that is your status, the stage's **Raise Hand** or count, and the **Camera** and **Share Screen** (or one **Video
   Paused**). While the call connects, a greyed **Connecting…**; on a failure a warn **Retry** (a press tries again);
-  **Calls Paused** under the kill switch (likewise). With no call to offer (a space kept in This Browser, a server
+  **Calls Paused** under the kill switch (likewise). With no call to offer (a space kept Offline, a server
   without calls, calls paused or failed), the microphone shows **Muted** as a local preview that opens on a press and
   sends nothing (title Mic: Only You, a one-line card; see [No call
   here](../012-collaboration/proximity-audio.md#no-call-here)), then the camera and Share Screen as local previews. Each keeps its hover card, its states and its role gates
@@ -305,7 +305,7 @@ desktop apps of Zoom, Teams and Gather do.
   at the foot of the window holds the Call dock's own microphone button: the same states, glyph, short name, tone and
   level fill, and a press does what the dock's press does, the dock following. While your camera is on, the dock's
   Camera sits beside it, so you can turn it off. They follow the dock's phases: in a live call the call's microphone;
-  with no call (This Browser, calls off, paused or failed) the local preview's **Mic: Only You**; while the call
+  with no call (Offline, calls off, paused or failed) the local preview's **Mic: Only You**; while the call
   connects, or for a listener, no bar. There is no hang up: leaving a call is walking away. The buttons carry the
   dock's hover cards, drawn in the window itself (every hint draws in the document its control is in, Work Tracker
   1109), never in the Space's tab.

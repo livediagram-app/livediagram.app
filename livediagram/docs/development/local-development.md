@@ -70,7 +70,7 @@ the one to reach for; the production api reads and writes real people's document
 
 Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”**, which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` and `apps/community` read the same variable: the Community needs it for My Shares on `:3105` (its gallery reads liveworkspace's Community service: see below), and the help centre only loses its telemetry posts without it.
 
-The editor opens without any auth setup: run `corepack pnpm dev:diagram` and open `http://localhost:3100/new`. Without an accounts Worker there are no guests and no sign-in, so documents stay in This Browser (see [Signing in locally](#signing-in-locally-optional)); with one, documents persist in each document's local Durable Object, with the index running locally (see [The index](#the-index) below). (On `http://localhost:3102/new` instead, set `NEXT_PUBLIC_API_BASE` first: see the note above.)
+The editor opens without any auth setup: run `corepack pnpm dev:diagram` and open `http://localhost:3100/new`. Without an accounts Worker there are no guests and no sign-in, so documents stay Offline (see [Signing in locally](#signing-in-locally-optional)); with one, documents persist in each document's local Durable Object, with the index running locally (see [The index](#the-index) below). (On `http://localhost:3102/new` instead, set `NEXT_PUBLIC_API_BASE` first: see the note above.)
 
 ## The Community locally
 
@@ -139,7 +139,7 @@ The editor always offers sign-in, but signing in (and a guest identity) needs an
 
 With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim. The same accounts Worker mints guests their guest tokens, through `/api/auth/guest`. `--app livediagram.app` names the app the client is for: the accounts Worker keeps livediagram's settings, sign-ups and milestone emails under it. With the client registered, every person's preferences, display name and colour live in the accounts Worker's local D1 (`liveworkspace/apps/accounts`), guests' included; without it, the preferences stay in the browser and names are not kept on the server.
 
-Without these set: nobody can sign in, and there are no guests either, because a guest's identity is a guest token the accounts Worker mints (`/api/auth/guest` returns to `/auth/guest#error=guest_not_configured`). The editor still opens and documents in This Browser work, but no document can be kept on the server. Run the accounts Worker locally for anything beyond that. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+Without these set: nobody can sign in, and there are no guests either, because a guest's identity is a guest token the accounts Worker mints (`/api/auth/guest` returns to `/auth/guest#error=guest_not_configured`). The editor still opens and documents kept Offline work, but no document can be kept on the server. Run the accounts Worker locally for anything beyond that. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ### The index
 

@@ -1855,7 +1855,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'migration',
     tag: 'Migration',
     summary:
-      "Move a This Browser document's Pages, Plan and design tabs to their apps as the caller's; answers the parts and the tabs it keeps. Safe to repeat. 502 with the parts that landed when a handoff failed.",
+      "Move an offline document's Pages, Plan and design tabs to their apps as the caller's; answers the parts and the tabs it keeps. Safe to repeat. 502 with the parts that landed when a handoff failed.",
     auth: 'guest-or-clerk',
     requestSchema: {
       type: 'object',

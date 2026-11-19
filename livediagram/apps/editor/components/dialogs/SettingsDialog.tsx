@@ -91,7 +91,7 @@ export function SettingsDialog({
   // A workbench's Settings reach nothing beyond its one canvas (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, Surface table).
   const workbench = useWorkbenchSession() !== null;
-  // Canvases in This Browser with parts set aside: Account's way back to the offer
+  // Canvases kept Offline with parts set aside: Account's way back to the offer
   // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps").
   const retiredParts = useRetiredPartsCount(!workbench);
   // The Hide Participant Cursors row only where the tab draws cursors (collaborator-enhancements.md).

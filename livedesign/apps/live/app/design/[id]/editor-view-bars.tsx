@@ -5,6 +5,7 @@
 // (docs/specs/007-editor/split-view.md). Plain functions over the editor context, not components, so the
 // view's tree is what it always was; each is null where its bar is hidden.
 
+import type { VisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import type { ReactNode } from 'react';
 import { offersPrototype, PrototypeHeaderButton } from '@/components/chrome/PrototypeHeaderButton';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
@@ -29,13 +30,22 @@ const workbenchDesignHref = (designId: string, shareCode: string | null) =>
 // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
 // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
 // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-export function editorViewHeader(ctx: EditorContextValue): ReactNode {
+export function editorViewHeader(
+  ctx: EditorContextValue,
+  view: {
+    isOffline: boolean;
+    headerCommunity: boolean;
+    onTakeOffline: (() => void) | undefined;
+    visibilityActions: VisibilityActions | undefined;
+  },
+): ReactNode {
   const {
     anyWelcomeOpen,
     appChrome,
     copying,
     designId,
     designShareable,
+    designTeamId,
     hydrated,
     canShareDesign,
     makeCopy,
@@ -59,6 +69,12 @@ export function editorViewHeader(ctx: EditorContextValue): ReactNode {
         leadAction={prototype}
         showShare={canShareDesign && hydrated && !anyWelcomeOpen}
         shareable={designShareable}
+        // The Share button's colour reads the design's visibility, as the header's badge did.
+        visibility={{
+          team: !!designTeamId,
+          offline: view.isOffline,
+          community: view.headerCommunity,
+        }}
         // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
         // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
@@ -66,6 +82,8 @@ export function editorViewHeader(ctx: EditorContextValue): ReactNode {
             ? () => void makeCopy()
             : undefined
         }
+        onTakeOffline={view.onTakeOffline}
+        visibilityActions={view.visibilityActions}
         copying={copying}
         copyDescription="Duplicate this design into your own files."
         onOpenAccount={() => openSettingsOn('account')}

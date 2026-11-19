@@ -77,7 +77,7 @@ const projectSession = (ctx: RouteContext) =>
 // caller must be able to write that plan's cards (an Editor or a Participant; a Viewer is refused). The declared
 // type and length are checked here first, so a refused file never leaves this Worker; the service checks the type
 // against the bytes, dedupes, caps the gallery and strips JPEG metadata. The plan then records a grant for the
-// picture, so it serves it to everyone who may read the plan. Without `p` (a This Browser plan, which the server
+// picture, so it serves it to everyone who may read the plan. Without `p` (an offline plan, which the server
 // does not hold) the picture only goes into the uploader's gallery, and only they read it.
 async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> {
   const { request, env, url } = ctx;
@@ -127,8 +127,8 @@ async function upload(ctx: RouteContext, media: MediaClient): Promise<Response> 
     // An API token's upload names its tool (the MCP's upload_image, the CLI's `image add`) so the gallery can say
     // Made by AI (liveworkspace/docs/specs/006-media/media.md "Uploaded by a tool"); the editor never sends one.
     source: ctx.token ? imageSourceOf(request.headers.get(IMAGE_SOURCE_HEADER)) : null,
-    // A plan the server holds claims the picture, so the media sweep keeps it until that plan reports it gone. A This
-    // Browser plan names none (media.md "Uploads").
+    // A plan the server holds claims the picture, so the media sweep keeps it until that plan reports it gone. An offline
+    // plan names none (media.md "Uploads").
     document: planId,
   });
   if (!uploaded.ok) return serviceAnswer(uploaded);

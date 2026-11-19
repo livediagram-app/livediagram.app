@@ -1,5 +1,5 @@
 import type { ElementTourApi } from './element-tour-api';
-import { conceptOutro, inTheMenu, onGraphic } from './concept-element-tour-steps';
+import { conceptOutro, inTheMenu, onGraphic, onKindTool } from './concept-element-tour-steps';
 import type { TourStepOf } from '@liveworkspace/workbench/components/tour/tour-step';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
 
@@ -15,9 +15,6 @@ export type MindNodeTourContext = {
   hasChildren: boolean;
 };
 
-const toolbarButton = (label: string) =>
-  `[data-testid="selection-popover"] button[aria-label="${label}"]`;
-
 export function mindNodeTourSteps(ctx: MindNodeTourContext): TourStepOf<ElementTourApi>[] {
   const { elementId: id } = ctx;
   return [
@@ -27,21 +24,21 @@ export function mindNodeTourSteps(ctx: MindNodeTourContext): TourStepOf<ElementT
       'Every idea you add connects to this one, and the map tidies itself as it grows.',
       elementSelector(id),
     ),
-    onGraphic(
+    onKindTool(
       'child',
       'Grow a Child',
       ctx.touch
         ? 'Add Child adds an idea under this one.'
         : 'Press Tab, or Add Child, for an idea under this one. Then just type.',
-      toolbarButton('Add Child'),
+      'Add Child',
     ),
-    onGraphic(
+    onKindTool(
       'sibling',
       'Add a Sibling',
       ctx.touch
         ? 'Add Sibling adds an idea beside this one.'
         : 'Press Enter, or Add Sibling, for an idea beside this one. Shift+Enter starts a new line.',
-      toolbarButton('Add Sibling'),
+      'Add Sibling',
     ),
     onGraphic(
       'branch',

@@ -13,7 +13,7 @@ import { isOfflineId } from '../offline/offline-store';
 import { fetchFlow } from './flow';
 
 // A range's flow on the api (docs/specs/026-plan/plan-views.md "Flow charts"): every type, a tab-scoped session's
-// tab, and a This Browser plan, which keeps none and is never asked.
+// tab, and an offline plan, which keeps none and is never asked.
 const SCOPE = { ownerId: 'me', projectId: 'p 1', shareCode: null, tabId: null };
 const ANSWER = { fromDay: 1, toDay: 30, counts: [], cards: [] };
 
@@ -33,7 +33,7 @@ describe('fetchFlow', () => {
     ]);
   });
 
-  it('asks nothing of a This Browser plan', async () => {
+  it('asks nothing of an offline plan', async () => {
     vi.mocked(isOfflineId).mockResolvedValue(true);
     expect(await fetchFlow(SCOPE, 30)).toBe('offline');
     expect(apiFetch).not.toHaveBeenCalled();

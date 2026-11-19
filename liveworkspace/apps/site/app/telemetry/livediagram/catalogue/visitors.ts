@@ -331,7 +331,7 @@ export const ELEMENT_TOURS_DECLINED = chart(
   'UI',
   'Closed',
   'Element Tours Declined',
-  'An element tour turned down with the cross on its Tour toolbar.',
+  'An element tour turned down with the cross beside its Play button.',
   { types: elementTourTokens('Offer'), rising: 'neutral' },
 );
 

@@ -278,7 +278,7 @@ describe('DescribePlanHost', () => {
     expect(readAutomations).toHaveBeenCalled();
   });
 
-  it('makes no rules where Automations is closed (a plan in This Browser)', () => {
+  it('makes no rules where Automations is closed (a plan kept Offline)', () => {
     const { props } = host();
     expect(props.rulesMade).toBe(false);
     expect(props.onMake({ ...draft(), rules: [RULE] })).toBeNull();

@@ -4,9 +4,17 @@
 //
 // A LEAF module: types only from './element', the attachment helpers it shares with the badge.
 
-import { ATTACH_SNAP_PX, attachPointXY, canHost, type AttachPoint } from './attachment';
+import {
+  ATTACH_POINTS,
+  attachPointXY,
+  canHost,
+  sideMiddleFacing,
+  type AttachPoint,
+} from './attachment';
+import { anchorPosition } from './geometry';
+import { offeredAnchors } from './anchors';
 import type { Point, Rect } from '@liveworkspace/model-core/geometry-primitives';
-import type { Element, ShapeElement } from './element';
+import type { Anchor, BoxedElement, Element, ShapeElement } from './element';
 
 /** The furthest a tip may sit from its note, either axis. */
 const POINTER_TIP_MAX = 4000;
@@ -59,41 +67,98 @@ export function pointerLeader(
 
 type Boxed = Element & Rect & { rotation?: number };
 
-/** Where a tip dragged to `tipAbs` (canvas coordinates) lands: on the nearest host point within reach, attaching the
- *  note there, or free (detached) where it was let go. */
-export function snapPointerTip(
+/** How close (element px) the tip comes to an anchor to take it: an arrow end's reach (SNAP_THRESHOLD). */
+const TIP_SNAP_PX = 24;
+
+/** Whether `p` is inside the host's box, turned with it. */
+function insideBox(host: Boxed, p: Point): boolean {
+  const cx = host.x + host.width / 2;
+  const cy = host.y + host.height / 2;
+  const r = (-(host.rotation ?? 0) * Math.PI) / 180;
+  const dx = p.x - cx;
+  const dy = p.y - cy;
+  const lx = dx * Math.cos(r) - dy * Math.sin(r);
+  const ly = dx * Math.sin(r) + dy * Math.cos(r);
+  return Math.abs(lx) <= host.width / 2 && Math.abs(ly) <= host.height / 2;
+}
+
+/** Where the tip at `tipAbs` would attach, as an arrow end would (pointer-note.md "Attaching the tip"): the anchor
+ *  within reach of any host, else over a host's body its nearest anchor (the topmost host's); with every anchor that
+ *  host offers, for the drag's snap dots. Null when the tip is near no host. Hosts whose bounding circle the point is
+ *  not near are skipped before their anchors are worked out. */
+export function pointerTipTarget(
   elements: readonly Element[],
   note: ShapeElement,
   tipAbs: Point,
-): { pointerTip: Point; attachedTo?: string; attachAt?: AttachPoint } {
-  let best: { id: string; point: AttachPoint; at: Point; d: number } | null = null;
-  for (const el of elements) {
+): {
+  host: Boxed;
+  anchors: { anchor: Anchor; at: Point }[];
+  hit: { anchor: Anchor; at: Point };
+} | null {
+  let near: { host: Boxed; anchor: Anchor; at: Point; d: number } | null = null;
+  let body: Boxed | null = null;
+  // Top down, so the topmost host wins a tie and the body test.
+  for (let i = elements.length - 1; i >= 0; i--) {
+    const el = elements[i]!;
     if (el.id === note.id || !canHost(el) || isPointerNote(el)) continue;
     const host = el as Boxed;
     const dx = tipAbs.x - (host.x + host.width / 2);
     const dy = tipAbs.y - (host.y + host.height / 2);
-    const reach = Math.hypot(host.width, host.height) / 2 + ATTACH_SNAP_PX;
+    const reach = Math.hypot(host.width, host.height) / 2 + TIP_SNAP_PX;
     if (dx * dx + dy * dy > reach * reach) continue;
-    for (const point of [
-      'top-left',
-      'top',
-      'top-right',
-      'right',
-      'bottom-right',
-      'bottom',
-      'bottom-left',
-      'left',
-    ] as const) {
-      const at = attachPointXY(host, point);
+    for (const anchor of offeredAnchors(host as unknown as BoxedElement)) {
+      const at = anchorPosition(host as unknown as BoxedElement, anchor);
       const d = Math.hypot(tipAbs.x - at.x, tipAbs.y - at.y);
-      if (d <= ATTACH_SNAP_PX && (!best || d <= best.d)) best = { id: host.id, point, at, d };
+      if (d <= TIP_SNAP_PX && (!near || d < near.d)) near = { host, anchor, at, d };
+    }
+    if (!body && insideBox(host, tipAbs)) body = host;
+  }
+  const hostOf = near?.host ?? body;
+  if (!hostOf) return null;
+  const host = hostOf as unknown as BoxedElement;
+  const anchors = offeredAnchors(host).map((anchor) => ({
+    anchor,
+    at: anchorPosition(host, anchor),
+  }));
+  // Over the body, away from any anchor: the middle of the side facing the note, as an arrow dropped on a shape takes
+  // the side facing its other end.
+  const facing = near && near.host === hostOf ? null : sideMiddleFacing(host, note);
+  const hit =
+    near && near.host === hostOf
+      ? { anchor: near.anchor, at: near.at }
+      : (anchors.find((a) => a.anchor === facing) ?? anchors[0]!);
+  return { host: hostOf, anchors, hit };
+}
+
+/** The badge point nearest `at` on `host`: kept beside the anchor for readers that know only the badge's points. */
+function nearestAttachPoint(host: Boxed, at: Point): AttachPoint {
+  let best: AttachPoint = 'top';
+  let bestD = Infinity;
+  for (const point of ATTACH_POINTS) {
+    const p = attachPointXY(host, point);
+    const d = Math.hypot(at.x - p.x, at.y - p.y);
+    if (d < bestD) {
+      bestD = d;
+      best = point;
     }
   }
-  if (best)
+  return best;
+}
+
+/** Where a tip dragged to `tipAbs` (canvas coordinates) lands: on the arrow anchor in reach (pointer-note.md
+ *  "Attaching the tip"), attaching the note there, or free (detached) where it was let go. */
+export function snapPointerTip(
+  elements: readonly Element[],
+  note: ShapeElement,
+  tipAbs: Point,
+): { pointerTip: Point; attachedTo?: string; attachAt?: AttachPoint; pointerAnchor?: Anchor } {
+  const target = pointerTipTarget(elements, note, tipAbs);
+  if (target)
     return {
-      pointerTip: { x: best.at.x - note.x, y: best.at.y - note.y },
-      attachedTo: best.id,
-      attachAt: best.point,
+      pointerTip: { x: target.hit.at.x - note.x, y: target.hit.at.y - note.y },
+      attachedTo: target.host.id,
+      attachAt: nearestAttachPoint(target.host, target.hit.at),
+      pointerAnchor: target.hit.anchor,
     };
   return { pointerTip: { x: tipAbs.x - note.x, y: tipAbs.y - note.y } };
 }

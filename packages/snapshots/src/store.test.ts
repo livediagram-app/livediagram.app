@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { SNAPSHOTS_KEPT, SNAPSHOT_CHUNK_CHARS, SNAPSHOT_MAX_BYTES } from './limits';
 import {
   advanceGeneration,
   chunkText,
+  clearSnapshotAuthors,
   deleteSnapshot,
   getSnapshot,
   listSnapshots,
@@ -300,6 +302,110 @@ describe('a scoped take', () => {
   it('exports the schema it runs', () => {
     expect(SNAPSHOT_SCHEMA).toContain('CREATE TABLE IF NOT EXISTS snapshots');
     expect(SNAPSHOT_SCHEMA).toContain('CREATE TABLE IF NOT EXISTS snapshot_chunks');
+  });
+});
+
+describe('clearing a closed account off its snapshots (SN34)', () => {
+  const gone = { id: 'deleted', name: 'Deleted account' };
+  const take = (
+    db: Parameters<typeof takeSnapshot>[0],
+    itemId: string,
+    who: typeof author,
+    text = 'body',
+  ) => takeSnapshot(db, { itemId, text, name: 'Kept', kind: 'manual', author: who, keep: null });
+
+  it('names every snapshot they took Deleted account, under each of their ids, and nothing else', async () => {
+    const { db, sql } = testDb();
+    await take(db, 'D', author, 'theirs');
+    await take(db, 'tab:t1', { id: 'guest_was', name: 'Ada as a guest', color: '#0f0' });
+    await take(db, 'D', { id: 'user_b', name: 'Bea', color: '#00f' }, 'hers');
+    const before = sql
+      .prepare('SELECT snapshot_id, seq, data FROM snapshot_chunks ORDER BY rowid')
+      .all();
+
+    expect(await clearSnapshotAuthors(db, ['user_a', 'guest_was'], gone)).toBe(2);
+
+    const rows = sql
+      .prepare(
+        'SELECT item_id, name, kind, author_id, author_name, author_color, bytes FROM snapshots ORDER BY rowid',
+      )
+      .all();
+    expect(rows).toEqual([
+      {
+        item_id: 'D',
+        name: 'Kept',
+        kind: 'manual',
+        author_id: 'deleted',
+        author_name: 'Deleted account',
+        author_color: '#f00',
+        bytes: 6,
+      },
+      {
+        item_id: 'tab:t1',
+        name: 'Kept',
+        kind: 'manual',
+        author_id: 'deleted',
+        author_name: 'Deleted account',
+        author_color: '#0f0',
+        bytes: 4,
+      },
+      {
+        item_id: 'D',
+        name: 'Kept',
+        kind: 'manual',
+        author_id: 'user_b',
+        author_name: 'Bea',
+        author_color: '#00f',
+        bytes: 4,
+      },
+    ]);
+    // The bodies are the item's, and stay as they were.
+    expect(
+      sql.prepare('SELECT snapshot_id, seq, data FROM snapshot_chunks ORDER BY rowid').all(),
+    ).toEqual(before);
+    // A second run finds no snapshot of theirs.
+    expect(await clearSnapshotAuthors(db, ['user_a', 'guest_was'], gone)).toBe(0);
+  });
+
+  it('reads a database it has not seen, and makes no table where there is none', async () => {
+    const { db, sql } = testDb();
+    await take(db, 'D', author);
+    // A fresh handle over the same SQLite: the schema has not run on it.
+    expect(await clearSnapshotAuthors(testDb(sql).db, ['user_a'], gone)).toBe(1);
+
+    const empty = testDb();
+    expect(await clearSnapshotAuthors(empty.db, ['user_a'], gone)).toBe(0);
+    expect(
+      empty.sql.prepare("SELECT COUNT(*) AS n FROM sqlite_master WHERE type = 'table'").get(),
+    ).toEqual({ n: 0 });
+  });
+
+  it('does nothing for no ids', async () => {
+    const { db } = testDb();
+    await take(db, 'D', author);
+    expect(await clearSnapshotAuthors(db, [], gone)).toBe(0);
+    expect((await listSnapshots(db, 'D'))[0]!.author).toEqual(author);
+  });
+
+  // Far past any real room (five, plus livedocuments' 25 named versions a tab over a hundred tabs): one statement
+  // scans the summaries, never the bodies (2.5 ms measured locally on 25,005 rows).
+  it('clears a room of 25,005 snapshots in one statement, inside a budget', async () => {
+    const { db, sql } = testDb();
+    sql.exec(SNAPSHOT_SCHEMA);
+    const insert = sql.prepare(
+      `INSERT INTO snapshots (id, item_id, kind, author_id, author_name, bytes, chunks, created_at)
+       VALUES (?, ?, 'manual', ?, 'Someone', 1, 1, ?)`,
+    );
+    sql.exec('BEGIN');
+    for (let i = 0; i < 25_005; i += 1) {
+      insert.run(`s_${i}`, `tab:t${i % 100}`, i % 10 === 0 ? 'user_a' : `user_${i % 7}`, i);
+    }
+    sql.exec('COMMIT');
+    const ms = await cpuMsOfAsync(() => clearSnapshotAuthors(db, ['user_a', 'guest_a'], gone));
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
+    expect(
+      sql.prepare("SELECT COUNT(*) AS n FROM snapshots WHERE author_id = 'deleted'").get(),
+    ).toEqual({ n: 2_501 });
   });
 });
 

@@ -40,7 +40,7 @@ export function useAutomationsAccess(): AutomationsAccess | null {
 }
 
 // The footer button's way in: present for an Editor on a plan saved to an account (it opens the screen) and for
-// whoever can edit a plan in Browser Storage (it opens Rules Run on Our Servers).
+// whoever can edit a plan kept Offline (it opens Rules Run on Our Servers).
 // `badges`: what it needs first (Sign In, Sync Plan) while a press opens its gate.
 export type AutomationsDoor = {
   open: () => void;

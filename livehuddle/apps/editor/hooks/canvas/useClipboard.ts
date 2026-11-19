@@ -93,7 +93,7 @@ type ClipboardDeps = {
   // The canvas-coord rectangle on screen; a paste whose usual spot is outside
   // it lands in its middle (docs/specs/008-canvas/canvas-and-palette.md Clipboard).
   getViewportCanvasRect?: () => { x: number; y: number; width: number; height: number } | null;
-  // Who uploads a pasted or dropped picture (the gallery's owner) and into which Space: a This Browser Space embeds it
+  // Who uploads a pasted or dropped picture (the gallery's owner) and into which Space: an offline Space embeds it
   // instead (docs/specs/009-elements/images.md "Paste and drop").
   ownerId: string;
   documentId: string | null;
@@ -233,7 +233,7 @@ export function useClipboard(deps: ClipboardDeps) {
   const refusePastedFile = () => toast.info(DROP_NOT_TAKEN);
 
   // A picture pasted or dropped on the canvas (docs/specs/009-elements/images.md "Paste and drop"): uploaded to the
-  // person's gallery through the media service (a This Browser Space embeds it), then landed as an image element of
+  // person's gallery through the media service (an offline Space embeds it), then landed as an image element of
   // its own shape, selected, centred on `at` (where a drop was released) or the middle of the screen (a paste). An
   // Editor's alone: read-only sessions (a Participant, a Viewer) never get here.
   const pasteImageFile = async (file: File, at?: { x: number; y: number }) => {

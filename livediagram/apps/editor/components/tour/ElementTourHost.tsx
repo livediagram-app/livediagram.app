@@ -37,19 +37,13 @@ import {
   useTourEngine,
   type TourOutcome,
 } from '@liveworkspace/workbench/components/tour/useTourEngine';
-import {
-  TOUR_OFFER_RANK,
-  tourNameOf,
-  stepsLength,
-  useOfferTour,
-} from '@liveworkspace/workbench/components/tour/tour-offer';
+import { setElementTourOffer } from '@/lib/element-tour-offer';
 
 // The one selected element, or null for none or a multi-selection.
 const singleOf = (s: Selection) => (s.multiSelectedIds.size > 0 ? null : s.selectedId);
 
 // Element tours (docs/specs/007-editor/element-tours.md): decides whether the selected element is offered its tour,
-// offers it on the footer's Start Tour button ("Start Sankey Tour", ahead of the mode's own tour), and runs the tour
-// when the button is pressed. It never starts or prompts on its own. Mounted once in
+// offers it as a Play button beside the selection toolbar, and runs the tour when it is pressed. It never starts or prompts on its own. Mounted once in
 // EditorView beside the other tour hosts. Each toured kind's steps, copy and token are its ELEMENT_TOUR_DEFS entry.
 export function ElementTourHost() {
   const ctx = useEditorContext();
@@ -150,6 +144,7 @@ export function ElementTourHost() {
 
   // One tour at a time: publish this one while it runs, and start nothing while any tour is on screen.
   const shown = useActiveTour();
+  const shownRef = useLatest(shown);
   useEffect(() => {
     setActiveTour('element', active);
   }, [active]);
@@ -165,6 +160,7 @@ export function ElementTourHost() {
     ctx.writeUserPreferences(next, ctx.selfParticipant?.id ?? null);
   };
 
+  const answerRef = useLatest(answer);
   const activeTabRef = useLatest(ctx.activeTab);
   // What a tour's steps need from the page: built as it plays, and as Get Started counts its steps.
   const tourEnv = () => ({
@@ -174,7 +170,6 @@ export function ElementTourHost() {
   });
   const play = (el: Element, k: ElementTourKind) => {
     const d = ELEMENT_TOUR_DEFS[k];
-    answer(k);
     track('UI', 'Started', d.token);
     debugLog('[element-tour] play', { kind: k });
     setSteps(d.steps(el, tourEnv()));
@@ -186,36 +181,39 @@ export function ElementTourHost() {
   const startPanelOpen = useStartPanelOpen();
   const usable = ctx.hydrated && !startPanelOpen && !ctx.anyWelcomeOpen && !ctx.embedMode;
   const offered =
-    usable && !phone && element !== null && kind !== null && canTourElement(ctx.can, element, kind);
+    usable &&
+    !phone &&
+    element !== null &&
+    kind !== null &&
+    canTourElement(ctx.can, element, kind) &&
+    // Its X records the kind as dismissed; Settings › Show Me puts it back.
+    !elementTourSeen(ctx.userPreferences, kind);
 
-  // The footer's Start Tour button, while the selected element is one with a tour not yet taken (a press records it,
-  // `answer`; its Settings › Show Me switch puts it back). One offer per kind, so the button counts each kind's first
-  // showing in this page load.
+  // The Play button beside the selection toolbar (element-tours.md "The Play button"), whenever the selected element
+  // is one with a tour; never on the footer's Get Started, which offers the tab's mode tour alone (owner, 2026-11-19).
   const offerId = offered ? element.id : null;
   const offerKind = offered ? kind : null;
-  useOfferTour(
-    offerKind ? `element-${offerKind}` : 'element',
-    offerId && offerKind
-      ? {
-          name: tourNameOf(ELEMENT_TOUR_DEFS[offerKind].eyebrow),
-          rank: TOUR_OFFER_RANK.element,
-          start: () => {
-            if (shown !== null) return;
-            const el = activeTabRef.current.elements.find((e) => e.id === offerId);
-            if (el) playRef.current(el, offerKind);
-          },
-          onShown: () => track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`),
-          // Its length in steps, counted only as Get Started opens.
-          length: () => {
-            const el = activeTabRef.current.elements.find((e) => e.id === offerId);
-            return el
-              ? stepsLength(ELEMENT_TOUR_DEFS[offerKind].steps(el, tourEnv()).length)
-              : undefined;
-          },
-          seen: elementTourSeen(ctx.userPreferences, offerKind),
-        }
-      : null,
-  );
+  useEffect(() => {
+    if (!offerId || !offerKind) {
+      setElementTourOffer(null);
+      return;
+    }
+    track('UI', 'Opened', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`);
+    setElementTourOffer({
+      elementId: offerId,
+      kind: offerKind,
+      play: () => {
+        if (shownRef.current !== null) return;
+        const el = activeTabRef.current.elements.find((e) => e.id === offerId);
+        if (el) playRef.current(el, offerKind);
+      },
+      dismiss: () => {
+        track('UI', 'Closed', `${ELEMENT_TOUR_DEFS[offerKind].token}Offer`);
+        answerRef.current(offerKind);
+      },
+    });
+    return () => setElementTourOffer(null);
+  }, [offerId, offerKind, shownRef, activeTabRef, playRef, answerRef]);
 
   // Ends as skipped when the tour can no longer run on its element: deleted, no longer editable, or another tab.
   const touredElement = touring

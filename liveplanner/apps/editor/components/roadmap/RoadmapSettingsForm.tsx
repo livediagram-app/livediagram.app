@@ -1,6 +1,6 @@
 'use client';
 
-// Publish as Roadmap's settings (docs/specs/026-plan/public-roadmap.md "The settings"): the Title, the board's Columns
+// Publish Roadmap's settings (docs/specs/026-plan/public-roadmap.md "The settings"): the Title, the board's Columns
 // and Card Types and the allowlisted Fields as chips that flip, Voting, and the Suggest an Idea form. The dialog
 // decides what a change does: the settings to publish with, or a save that keeps the link. The title is handed up
 // when the field is left (or Enter), so typing does not save on every key.

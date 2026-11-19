@@ -426,7 +426,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       **total** is its entries' minutes added up; a running timer joins it when it stops. Everything that reads a
       Duration (the card face, Sort Cards, Rollups, Formulas, the Time widget, Export CSV, sheets and agents) reads a Time Spent field as its total.
     - **Time writes**: every change is one **time write** made to the card as stored (`POST
-/api/projects/{id}/items/{itemId}/time`, and the same pure step in a This Browser plan), never a whole value
+/api/projects/{id}/items/{itemId}/time`, and the same pure step in an offline plan), never a whole value
       written over another, so two people's timers and entries never overwrite each other: **concurrent timers from
       two people both count**. A time write is one of:
       - **start**: the caller's own timer on that field of the card, starting now. One timer per person per field: a
@@ -601,7 +601,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
       {Field}.", with **Move Here** and **Cancel** (Cancel goes back to the list).
     - **The write**: picking (or Move Here) sets the picked card's field to this card, one ordinary card write
       (the same as choosing it in that card's own field), so it undoes, syncs live, keeps to the plan's permissions
-      and works the same in a This Browser plan. The dialog closes, the card joins the section and "Linked #12 as
+      and works the same in an offline plan. The dialog closes, the card joins the section and "Linked #12 as
       {Field}" is announced. A refused write keeps the dialog open.
     - **Who sees it**: an Editor and a Participant (who add and edit cards); a Viewer sees neither New {Type} nor
       Link Existing.
@@ -752,7 +752,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     moved, relinked or trashed.
   - **Read-only everywhere**: the card panel shows the value as text after a calculator glyph, never an input (Children Done with a thin bar of the share done, or the Percent bar, read-only, when it shows as a Percent; a card without children "No linked cards"); the field's form in the type editor says it is worked out from the cards that link here; the card face draws it like any custom field when the
     type's Display places it ("Children Done: 40%"). A write that gives a Calculated field a value is refused
-    (`field_calculated`, field: the field's id): the api (and This Browser projects, through the same check),
+    (`field_calculated`, field: the field's id): the api (and Offline projects, through the same check),
     `change_items` and the CLI ("Progress is calculated: it can't be set"). Clearing an old value left under the
     field's id is allowed.
   - **Agents and the api read it**: `list_items` lists each Calculated field with `kind: "calculated"`, its
@@ -1000,7 +1000,7 @@ Budget * 100`), and a Rollup or a Lookup may read a Formula on the cards it read
     is uploaded for that plan (`POST /api/images?p={planId}`, by someone who may edit its cards, or an agent acting
     for them), so an id pasted into another plan serves nothing there. A tab-scoped link reads it only when a card
     its tab shows holds it (items.md "Who sees the bytes"). Anything else answers 404.
-  - **This Browser plans** upload too (as the person, their guest or account), and show their pictures to them.
+  - **Offline plans** upload too (as the person, their guest or account), and show their pictures to them.
     **Copies** carry the ids, every picture of a Several Images field among them, and the source plan's grant for
     each picture the copied cards hold (owner, 2026-11-12, Work Item 215), so a copy shows its cards' pictures to its
     readers as the original does. Only a picture the source holds a grant for is granted in the copy, so a copy never
@@ -1991,7 +1991,7 @@ copied across or tidied up.
   types it added, changed or deleted move, every other type stays as stored. Refused as stale, the editor and agents
   make it again to the stored catalogue and send it again (up to three tries); a save that still fails drops only
   that change, never one saved after it. A refusal is the api's word on what is stored, taken even when it names a
-  lower revision than the editor holds: a plan in This Browser counts its own revisions, and once Sync Plan moves it
+  lower revision than the editor holds: a plan kept Offline counts its own revisions, and once Sync Plan moves it
   to the server (in place, with no reload) the server's count starts again. So a sync in place reads the server's
   catalogue and revision straight after it and the editor takes them in place of its own count, and the first card
   types save after a sync names the server's revision and lands at once; should that read fail, the save is refused

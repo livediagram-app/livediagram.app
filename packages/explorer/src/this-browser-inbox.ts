@@ -1,8 +1,8 @@
-// This Browser in the Inbox (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"): the Inbox's
+// Offline in the Inbox (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"): the Inbox's
 // rows from an app's offline items (actions, cards and threads the index never holds), for the Explorer page on the
 // app's own address. Only the app's code can read its offline store and work the rows out; the page is liveworkspace's
 // build. So the app keeps one snapshot of them in localStorage under `liveworkspace:this-browser-inbox:<app>`, beside
-// the This Browser list (this-browser.ts), and the page, on the same origin, reads it and hears each change.
+// the Offline list (this-browser.ts), and the page, on the same origin, reads it and hears each change.
 // liveworkspace.app, on its own origin, can't read it.
 //
 // The snapshot names whose rows they are (the account id the app read them for, and this browser's guest id); a
@@ -204,7 +204,7 @@ export type InboxSnapshotKeeperOptions = {
    *  first standing for "me", usually with this browser's guest id after it) and its offline items' Inbox rows for
    *  them; null when there is no one to read for. Loads what it needs on first use, off the store's own graph. */
   compute: (account: string | null) => Promise<InboxSnapshotRead | null>;
-  /** Whether the app has offline items at all (its This Browser list): none drops the snapshot without a read. */
+  /** Whether the app has offline items at all (its Offline list): none drops the snapshot without a read. */
   hasItems: () => boolean;
   /** How long the offline store stays quiet before the rows are worked out again. */
   delayMs?: number;

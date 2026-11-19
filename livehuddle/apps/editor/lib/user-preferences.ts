@@ -255,7 +255,7 @@ export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | 
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new Event(PREFERENCES_CHANGED_EVENT));
   }
-  // Never under the 'self' placeholder a document in This Browser opens with before the reader is known
+  // Never under the 'self' placeholder a document kept Offline opens with before the reader is known
   // (docs/specs/006-document/offline-mode.md "Instant open"): that row would be everybody's.
   if (ownerId && ownerId !== 'self') savePreferences(ownerId, fitted);
 }

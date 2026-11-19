@@ -1,6 +1,6 @@
 // The Automations routes as the editor calls them (docs/specs/026-plan/automations.md, blueprint automations.md
 // "Routes"): the plan's rules, their runs, Test on a Card and Run Rule, typed with @liveplanner/api-schema. A plan in
-// This Browser never calls them (its footer shows no button). A refusal the api names (`automation_*`, with the
+// Offline never calls them (its footer shows no button). A refusal the api names (`automation_*`, with the
 // `path` of the step at fault) throws AutomationRefusal, an answer the builder shows rather than an error to report.
 
 import {

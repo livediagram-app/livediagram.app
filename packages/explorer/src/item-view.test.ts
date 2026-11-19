@@ -69,14 +69,14 @@ describe('viewOfItem', () => {
 });
 
 describe('viewOfLocalItem', () => {
-  it('opens This Browser at the local folder, or its root', () => {
+  it('opens Offline at the local folder, or its root', () => {
     expect(viewOfLocalItem({ folderId: 'lf' })).toEqual({ kind: 'offline', folder: 'lf' });
     expect(viewOfLocalItem({})).toEqual({ kind: 'offline' });
   });
 });
 
 describe('resolveItemView', () => {
-  it("answers a This Browser item from this browser's list, asking the index nothing", async () => {
+  it("answers an offline item from this browser's list, asking the index nothing", async () => {
     const getItem = vi.fn();
     await expect(
       resolveItemView('l1', { client: { getItem }, viewer: ME, local: [local('l1', 'lf')] }),

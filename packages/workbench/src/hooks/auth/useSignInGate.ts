@@ -9,7 +9,7 @@
 import { useEffect, useState } from 'react';
 
 // How long a page waits for a session its hint says is there before it offers Sign in anyway. The same bound /new
-// waits before keeping a create in This Browser.
+// waits before keeping a create Offline.
 export const SESSION_WAIT_MS = 15_000;
 
 export type SignInGate = 'waiting' | 'signed-in' | 'sign-in';

@@ -25,8 +25,15 @@ import { isLegacyEmojiIconId } from '@liveworkspace/icons';
 // drifting behind the palette again. Icon / sticker / tech tiles are excluded
 // deliberately: those catalogues are enumerated in full below, so including
 // their single "open the picker" tile would add a duplicate result.
+// A tile that only groups others (Layout's Infrastructure, whose popover holds the C4 tiles and the Entity) is left out
+// too: each tile it holds is its own result, and its own press places one of them, so it would find that one twice.
+const isGroupTile = (t: (typeof PALETTE_TILES)[number]) => t.id === 'layout:infrastructure';
 export const SHAPE_TILES = PALETTE_TILES.filter(
-  (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
+  (t) =>
+    t.action.type === 'shape' &&
+    t.action.kind !== 'icon' &&
+    t.action.kind !== 'sticker' &&
+    !isGroupTile(t),
 );
 
 // One shape tile as a search item. Also read by the whiteboard's More shapes

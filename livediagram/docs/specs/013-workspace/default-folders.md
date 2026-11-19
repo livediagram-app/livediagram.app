@@ -44,9 +44,9 @@ folder drops the defaults that point at it.
   opens in (`templateEditorMode`), else the mode the tab says it opens in (`seedIntentOf`,
   `apps/api/src/routes/document-seed.ts`).
 - Duplicate and the server copy land beside their source and are never filed by a default.
-- This Browser's canvases are never filed by a default: an offline canvas is kept where it is made
-  ([Offline Mode](../006-document/offline-mode.md)), at This Browser's root, and only the person moves it into one of
-  its local folders ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#this-browser-a-space) "This Browser, a Space").
+- Offline's canvases are never filed by a default: an offline canvas is kept where it is made
+  ([Offline Mode](../006-document/offline-mode.md)), at Offline's root, and only the person moves it into one of
+  its local folders ([one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#offline-a-space) "Offline, a Space").
 
 ### Defaults from before
 
@@ -63,7 +63,7 @@ the blank's (a Workshop template picked on a Diagram blank), so the mode's defau
 
 - **The wizard leaves a note** (this browser tab only): the canvas it made, its first tab, and whether the person
   chose the folder themselves (a `/new?folder=` / `?team=` context). It is written for a cloud canvas made from a
-  mode's blank, never for This Browser or a template link.
+  mode's blank, never for Offline or a template link.
 - **The first template picked from a start screen** on that first tab takes the note. When the person did not
   choose the folder, the index's defaults are read again for the template's mode, and the canvas goes to that
   default when it is somewhere else. A toast says so: "Moved to **Retros**, your default folder for workshops."
@@ -90,7 +90,7 @@ the blank's (a Workshop template picked on a Diagram blank), so the mode's defau
 ## Non-goals
 
 - A default for a space's root, per device, per tab kind or per template (a canvas routes only through its mode).
-- Defaults for This Browser's canvases.
+- Defaults for Offline's canvases.
 - Moving existing canvases when a default changes.
 
 ## References

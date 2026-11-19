@@ -1,4 +1,4 @@
-// Where a listed document belongs to the reader (docs/specs/013-workspace/explorer-structure.md#documents-in-this-browser).
+// Where a listed document belongs to the reader (docs/specs/013-workspace/explorer-structure.md#offline).
 
 import { describe, expect, it } from 'vitest';
 import { documentSpace, isInThisBrowser, readerAccessOf } from './document-space';

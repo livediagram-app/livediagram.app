@@ -88,7 +88,7 @@ box of its own.
 | `viewerId?`                | `string`                               | The person's id, for the Inbox's "Assigned to You".                                                                                                                                                                                         |
 | `shareUrl?`                | `(link, item) => string`               | A share link's address. Defaults to `${origin}/s/<code>`.                                                                                                                                                                                   |
 | `share?`                   | `ShareHost`                            | The Share dialog's extras per item: `loadTabs`, `handOver` (embed, live image), `helpHref` and `onTelemetry`.                                                                                                                               |
-| `inbox?`                   | `InboxHost`                            | The Inbox's extras: `localRows` (rows the index never sees, shown with This Browser), `cardGlyph`, `actionsHelpHref` and `onTelemetry`.                                                                                                     |
+| `inbox?`                   | `InboxHost`                            | The Inbox's extras: `localRows` (rows the index never sees, shown with Offline), `cardGlyph`, `actionsHelpHref` and `onTelemetry`.                                                                                                          |
 | `filter?`/`onFilterChange` | `'app' \| 'all'`                       | Controls the filter from outside. Without them the Explorer keeps it, remembered per app.                                                                                                                                                   |
 | `toolbar?`                 | `ReactNode`                            | The host's own controls, beside the search field.                                                                                                                                                                                           |
 | `header?`                  | `({ search }) => ReactNode`            | The host's header, drawn above the hero and given the search field to place (null on Home with the hero). Without it the Explorer draws a plain bar.                                                                                        |
@@ -99,7 +99,7 @@ box of its own.
 | `helpHref?`                | `(view) => string \| undefined`        | A Help article for a view. Shows a Help button in that view's header and the hero's corner.                                                                                                                                                 |
 | `onHome?`                  | `(action, type) => void`               | Home's reports for telemetry: `Loaded` (`Retry`).                                                                                                                                                                                           |
 | `welcome?`                 | `WelcomeOptions`                       | Home's first run: the app's welcome manifest (loaded lazily on `onFirstRun`) in place of empty lists, and the hero's welcome. Each start shows its whole name and description, wrapped, never clamped.                                      |
-| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, after the Library (liveworkspace.app's This Browser, linking to an app's view; elsewhere This Browser is a Space).                                                                         |
+| `sidebarLinks?`            | `SidebarLink[]`                        | The host's own rows in the sidebar's More group, after the Library (liveworkspace.app's Offline, linking to an app's view; elsewhere Offline is a Space).                                                                                   |
 | `allLabel?`                | `string`                               | The filter's every-app choice. "All" by default; "All Apps" on liveworkspace.app.                                                                                                                                                           |
 | `renderAppLogo?`           | `(app: App \| 'all') => ReactNode`     | The filter's logos: the app's on its choice, the platform's on the every-app one (the Explorer page and the panel). The host draws them, since the brands are its.                                                                          |
 | `archivedOnArrival?`       | `{ id, title } \| null`                | An item the host archived just before landing here (the item open in its editor): said once, as a success toast, with no Undo.                                                                                                              |
@@ -130,7 +130,7 @@ Views (`ExplorerView`) and their addresses under `basePath`. A list view's `q` i
 | `{ kind: 'search', q }`               | `/explorer/search?q=`           | Everything you can open, narrowed by the lens (`view=search`)                    |
 | `{ kind: 'folder', id, q? }`          | `/explorer/folder?id=`          | A folder                                                                         |
 | `{ kind: 'team', id, folderId?, q? }` | `/explorer/team?id=[&folder=]`  | A team's card over its library; or a folder                                      |
-| `{ kind: 'offline', folder?, q? }`    | `/explorer/offline?folder=`     | This Browser: the host's items kept only here, at its root or a local folder     |
+| `{ kind: 'offline', folder?, q? }`    | `/explorer/offline?folder=`     | Offline: the host's items kept only here, at its root or a local folder          |
 
 There is no Unsorted view: My Work's root, and a team's, list the items in no folder (the index's `view=unsorted`).
 The old `/explorer/unsorted` reads as My Work, and the Explorer page replaces it with `/explorer/all`.
@@ -200,7 +200,7 @@ The content of the editor's floating Explorer panel. The host wraps it in its ow
 
 - the current item, which can be renamed and has the item menu;
 - a rail with Home, Inbox, Shared With Me, My Work, each team, New Team (with a `teamsHost`),
-  This Browser (with a `thisBrowser` host, its count beside it, while this browser keeps any), Library (where the host
+  Offline (with a `thisBrowser` host, its count beside it, while this browser keeps any), Library (where the host
   has a `gallery` or `shapeLibraries`) and Trash, plus New and Open Explorer. Every entry opens its pane in place;
   there is no Open Page;
 - each pane's header: the section's name in full (it wraps, never truncates), then quiet glyphs, each named by its
@@ -208,7 +208,7 @@ The content of the editor's floating Explorer panel. The host wraps it in its ow
   the app switch with the hosts' logos;
 - a team's pane, whose Members button opens the team card in a dialog (with a `teamsHost`);
 - the Library's pages as tabs;
-- This Browser's pane: the live items kept only in this browser, each opening with the host's `open`, with Sync
+- Offline's pane: the live items kept only in this browser, each opening with the host's `open`, with Sync
   (`sync`, for a person signed in) and Delete, asked first (`remove`) where the host gives them;
 - the chosen section as compact rows, paged.
 
@@ -228,7 +228,7 @@ the search"), and the same optional props as `<Explorer>`.
 
 Its size: `EXPLORER_POPOVER_WIDTH` (`w-[56rem]`) and `EXPLORER_POPOVER_HEIGHT` (`45rem`) are the editors' popover,
 passed to each editor's movable panel so the size lives once. In it the rail is 15rem, headed by the current item's compact card, and the pane's preview cards
-(Home's Most Used and Recent, four each and each its own section, and folders) are compact: two across, three from a 24rem pane, four from 44rem (so in the 56rem popover, whose pane is about 40rem, three: each card keeps room for its name and its "This Browser" chip with the time beside it)
+(Home's Most Used and Recent, four each and each its own section, and folders) are compact: two across, three from a 24rem pane, four from 44rem (so in the 56rem popover, whose pane is about 40rem, three: each card keeps room for its name and its "Offline" chip with the time beside it)
 (liveworkspace/docs/specs/004-index/one-explorer.md "The editors' panel: its size and the scrim"). Each card's picture
 is the host's `renderThumbnail`, which should load only once it scrolls into view, as every editor's does.
 
@@ -323,8 +323,8 @@ link, nor one being renamed) drags from its row, card or Details row.
   bounce as it swallows an item. An item goes through its own Delete (with the Trash's Undo); one of the person's
   own folders, which also drags, goes through Delete Folder and its confirmation. Never red: the Trash is undoable.
   A live region reads the Trash's words as they change.
-- **An item kept only in this browser.** Its card on Home drags too, through This Browser's own verbs
-  (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser on Home"). On the Trash it is deleted for good after a
+- **An item kept only in this browser.** Its card on Home drags too, through Offline's own verbs
+  (liveworkspace/docs/specs/004-index/one-explorer.md "Offline on Home"). On the Trash it is deleted for good after a
   confirmation where the host has `remove`; elsewhere a toast says to open it to delete it. On a folder, My Work or
   a team it asks to sync it to the account first: in place with `sync` (then moved there), or the page's hand-over
   with `syncHref`; with neither, a toast says to sign in and sync it first. Its menu (`ThisBrowserItemMenu`) has

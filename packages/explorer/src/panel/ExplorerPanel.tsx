@@ -4,7 +4,7 @@
 // (components/panels/Explorer.tsx with its explorer-panel/ and explorer-tree/ parts): the open item's card with the
 // host's notice under it, then a rail of sections beside a pane (a row of chips over the pane when stacked). The
 // pane names its section in full, offers New Folder (an icon) in a space, and shows Home's Most Used and Recent, the Inbox, a
-// space's folders and items, This Browser or the Trash. Only where the data comes from changed: it
+// space's folders and items, Offline or the Trash. Only where the data comes from changed: it
 // shares the full Explorer's data layer, so a rename or a move shows here at once and every list is one request a
 // page, read only while its section is shown.
 
@@ -100,8 +100,8 @@ export type ExplorerPanelProps = {
   // The editor's own title for it, which follows its header's rename and a collaborator's or an agent's through its
   // live room: the card shows it over the copy read when the panel opened (one-explorer.md "The Current card").
   currentTitle?: string | null;
-  // The editor's word that it is kept only in this browser: its card is This Browser's, with the Browser Storage pill,
-  // even before This Browser's list holds it.
+  // The editor's word that it is kept only in this browser: its card is Offline's, with the Offline pill,
+  // even before Offline's list holds it.
   currentOffline?: boolean;
   // Trashes the item open in the editor, from any of the panel's menus: the host stops saving it first, then leaves
   // it (the Explorer offers the Undo). Settles true once it is in the Trash.
@@ -139,7 +139,7 @@ export type ExplorerPanelProps = {
   /** The Inbox's extras: rows from items only this browser holds, card glyphs, a help article and telemetry. */
   inbox?: InboxHost;
   /** The app's items kept only in this browser, as the Explorer page's `thisBrowser`, with the editor's own `open`,
-   *  `sync` and `remove`: a This Browser section on the rail (with their count) while there are any. */
+   *  `sync` and `remove`: an offline section on the rail (with their count) while there are any. */
   thisBrowser?: ThisBrowserHost | null;
   /** Folders, default folders, the Trash and team libraries changed from the panel, for the host's telemetry
    *  (OrganiseTelemetry); stable. */
@@ -247,10 +247,10 @@ function PanelInner({
   const library = Boolean(gallery || shapeLibraries || walkthroughs);
   const { host: localHost, live: thisBrowserLive } = useThisBrowserItems();
   const offlineCount = thisBrowserLive.length;
-  // The rail shows This Browser while it holds a live item or a local folder, as the sidebar does.
+  // The rail shows Offline while it holds a live item or a local folder, as the sidebar does.
   const localFolders = useThisBrowserFolders(localHost ? app : null).length;
   // The open item when it is kept only in this browser (the editor says so, or the index has none for it): its card
-  // comes from This Browser, or from the editor's title while the list has not heard of it yet.
+  // comes from Offline, or from the editor's title while the list has not heard of it yet.
   const localCurrent = useLocalCurrent(
     current && !currentOffline ? null : currentId,
     thisBrowserLive,

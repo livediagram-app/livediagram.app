@@ -783,6 +783,61 @@ describe('/api/internal/items (docs/specs/015-api/api.md "Internal")', () => {
     ).toBe(0);
   });
 
+  // liveworkspace/docs/specs/014-snapshots/snapshots.md "When an account closes" (Work Tracker 1310): the snapshots they
+  // took in someone else's document read Deleted account, as a guest merged into them too, when it is next opened;
+  // the bodies and the owner's own snapshot are left as they were.
+  it("names a closed account Deleted account on the snapshots it took in someone else's document", async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const w = world({ INDEX_KEY: 'index-key' });
+    await createDocument(w, 'A');
+    // Ada edits the owner's document through an edit link, as a guest and then as an account.
+    levelOf = () => 'edit';
+    const take = async (name: string, person: string) => {
+      const res = await w.send('POST', '/api/documents/A/snapshots', { name }, as(person));
+      expect(res.status).toBe(201);
+    };
+    await take('Mine', OWNER);
+    await take('Theirs', 'user_ada');
+    await take('As a guest', 'guest_was');
+    const db = w.documents.get('A')!.db;
+    const bodies = db
+      .prepare('SELECT snapshot_id, seq, data FROM snapshot_chunks ORDER BY rowid')
+      .all();
+    const owners = db.prepare('SELECT * FROM snapshots WHERE author_id = ?').all(OWNER);
+
+    const close = () =>
+      w.send(
+        'POST',
+        '/api/internal/people/user_ada/purge',
+        { items: ['A'], guests: ['guest_was'] },
+        auth,
+      );
+    expect((await close()).status).toBe(200);
+
+    // Opened again after the close: the list reads them as Deleted account.
+    const listed = await w.send('GET', '/api/documents/A/snapshots');
+    const { snapshots } = await listed.json<{
+      snapshots: { name: string; author: { id: string; name: string } | null }[];
+    }>();
+    expect(snapshots.map((s) => [s.name, s.author?.name])).toEqual([
+      ['As a guest', 'Deleted account'],
+      ['Theirs', 'Deleted account'],
+      ['Mine', owners[0]!.author_name],
+    ]);
+    expect(
+      db.prepare("SELECT COUNT(*) AS n FROM snapshots WHERE author_id = 'deleted'").get(),
+    ).toEqual({ n: 2 });
+    expect(db.prepare('SELECT * FROM snapshots WHERE author_id = ?').all(OWNER)).toEqual(owners);
+    expect(
+      db.prepare('SELECT snapshot_id, seq, data FROM snapshot_chunks ORDER BY rowid').all(),
+    ).toEqual(bodies);
+    // The index asks again within the linger window: nothing more changes.
+    expect((await close()).status).toBe(200);
+    expect(
+      db.prepare("SELECT COUNT(*) AS n FROM snapshots WHERE author_id = 'deleted'").get(),
+    ).toEqual({ n: 2 });
+  });
+
   // docs/specs/006-document/blueprints/version-history.md VH7: a version keeps the same comments, and may name them.
   it("takes a closed account's name off the versions the document keeps", async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});

@@ -46,6 +46,8 @@ import { EditorAnchoredPopovers } from '@/components/panels/EditorAnchoredPopove
 import { ModifierHint } from '@liveworkspace/workbench/components/chrome/ModifierHintBanner';
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
+import { useOfflineConversions } from '@/hooks/persistence/useOfflineConversion';
+import { useVisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { SnapshotsDoorProvider } from '@liveworkspace/snapshots/ui';
 import {
   ApprovalBanner,
@@ -113,7 +115,7 @@ const CommunityBar = dynamic(
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-project/offline-mode.md): a project saved only in this browser. Drives the
-  // "This Browser" header badge and hides server-only actions (Share).
+  // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineProject(ctx.projectId);
   // A card's comment threads (docs/specs/026-plan/items.md "Comments"): their own context, so a thread write
   // re-renders the open card panel alone, and the faces' counts through the thread store.
@@ -157,9 +159,8 @@ export function EditorView() {
     userPreferences,
     sessionCommunity,
   } = ctx;
-  // A Community link's `?copy=1` (editor-view-hooks). Its header state has no header to show in (experiment: no
-  // header bar).
-  useHeaderCommunity(ctx);
+  // A Community link's `?copy=1` (editor-view-hooks), and whether the plan is public, for the Share button's colour.
+  const headerCommunity = useHeaderCommunity(ctx);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
 
@@ -221,7 +222,42 @@ export function EditorView() {
     selectionStore: ctx.selectionStore,
     hideable: walkthroughHideable,
   });
-  const header = renderEditorHeader(ctx);
+  // The Share legend's Offline stop takes the plan offline, after Take Offline's confirm, for the person whose
+  // Explorer menu would offer it: one who may share it (owner or joined team member), not through a link or the
+  // Community, and not already offline (hooks/persistence/useOfflineItemMenu.tsx).
+  const offlineOwnerId = ctx.selfParticipant.id === 'self' ? null : ctx.selfParticipant.id;
+  const { takeOffline, syncToCloud } = useOfflineConversions(offlineOwnerId);
+  const projectId = ctx.projectId;
+  const onTakeOffline =
+    ctx.canShareProject &&
+    !isOffline &&
+    !sessionShareCode &&
+    !sessionCommunity &&
+    offlineOwnerId &&
+    projectId
+      ? () => void takeOffline({ id: projectId, name: projectName?.trim() || 'Untitled plan' })
+      : undefined;
+  // Its other stops (useVisibilityActions), for the same person: Private syncs an offline plan, Team opens the
+  // Explorer panel's Change Folder on it, Everyone opens Share on the Community tab (Passes where the Community is off).
+  const visibilityActions = useVisibilityActions({
+    manage: Boolean(
+      ctx.canShareProject && !sessionShareCode && !sessionCommunity && offlineOwnerId && projectId,
+    ),
+    offline: isOffline,
+    team: !!ctx.projectTeamId,
+    community: !!headerCommunity,
+    sync: projectId
+      ? () => void syncToCloud({ id: projectId, name: projectName?.trim() || 'Untitled plan' })
+      : undefined,
+    openShare: () => ctx.setShareDialogOpen(true),
+    openCommunity: () => ctx.openShareOn('app'),
+  });
+  const header = renderEditorHeader(ctx, {
+    isOffline,
+    headerCommunity,
+    onTakeOffline,
+    visibilityActions,
+  });
   const footer = renderEditorTabBar(ctx, { selectTab, barsShown: landscapeBars.shown });
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
   // where there are bars to fold (not in zen, an embed, the workbench frame or the welcome flow).
@@ -254,7 +290,7 @@ export function EditorView() {
   });
   // Subscribe to Calendar's scope: the tab menu's row (editor-view-hooks).
   const { calendarFeedScope, calendarFeedGate } = useEditorCalendarFeed(ctx, isOffline);
-  // Publish as Roadmap's scope (its Tools row; the dialog picks the tab), and the active tab's boards (Email to Board's).
+  // Publish Roadmap's scope (its Tools row; the dialog picks the tab), and the active tab's boards (Email to Board's).
   const roadmapScope = useEditorRoadmap(ctx, isOffline);
   const roadmapHasBoards = useMemo(
     () => tabs.some((t) => boardIdsOnTab(t.elements).length > 0),

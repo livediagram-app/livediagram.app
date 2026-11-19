@@ -2,7 +2,7 @@
 
 // The open card's history (docs/specs/026-plan/items.md "History", blueprint item-store.md "History"): read when its
 // panel shows activity, and again, after a short pause, whenever the card changes (its `rev` moves: someone's write,
-// or yours). An answer for a card no longer shown is dropped. A This Browser plan keeps none ('offline').
+// or yours). An answer for a card no longer shown is dropped. An offline plan keeps none ('offline').
 
 import { useEffect, useRef, useState } from 'react';
 import type { ItemHistoryEntry } from '@liveplanner/items';

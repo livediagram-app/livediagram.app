@@ -46,7 +46,7 @@ export function TrashView({ noun }: { noun: string }) {
       </Panel>
       <Panel x={14} y={154} w={392} h={62}>
         <Label x={30} y={176} size={11} weight={700} tone="strong">
-          Browser Storage
+          Offline
         </Label>
         <Label x={392} y={176} anchor="end" size={10} tone="muted">
           Open one to restore or delete it.

@@ -58,7 +58,7 @@ const transitions = (all: MotionRecord[]) =>
 
 async function startBlank(page: Page): Promise<void> {
   // Straight to a blank canvas: the /new?blank=1 bypass (Start Blank), made on livedesign (openStartBlank). A
-  // guest's own /new keeps it in This Browser, which the index holds no item for, so the Explorer panel would show
+  // guest's own /new keeps it Offline, which the index holds no item for, so the Explorer panel would show
   // no Current Design card and no Design menu to open.
   await openStartBlank(page);
 }

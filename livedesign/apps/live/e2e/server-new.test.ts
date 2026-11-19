@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-// A guest's own /new keeps the new design in This Browser (docs/specs/006-design/save-locations.md), where the
+// A guest's own /new keeps the new design kept Offline (docs/specs/006-design/save-locations.md), where the
 // index has no item, so a spec that then seeds it through the api failed on `grant on <id>: 404`. Such a spec reaches
 // /new through serverNewUrl or a fixture that does (docs/specs/003-system-architecture/e2e-smoke.md).
 

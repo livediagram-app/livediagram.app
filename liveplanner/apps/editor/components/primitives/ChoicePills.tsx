@@ -1,6 +1,6 @@
 'use client';
 
-// A row of choices as pills (Publish as Roadmap's Tab and Board, Subscribe to Calendar's Card Types): each a button
+// A row of choices as pills (Publish Roadmap's Tab and Board, Subscribe to Calendar's Card Types): each a button
 // with an optional glyph, pressed when chosen; one shape in every dialog so a choice looks the same everywhere.
 import type { ReactNode } from 'react';
 

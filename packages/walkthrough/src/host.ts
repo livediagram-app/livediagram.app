@@ -36,7 +36,7 @@ export type WalkthroughHideable = {
 };
 
 export type WalkthroughHost = {
-  // The open item, or null where walkthroughs don't fit (an unsaved item, This Browser, an embed, a phone, a
+  // The open item, or null where walkthroughs don't fit (an unsaved item, Offline, an embed, a phone, a
   // tab-scoped link): then no button shows.
   itemId: string | null;
   api: WalkthroughApiDeps;

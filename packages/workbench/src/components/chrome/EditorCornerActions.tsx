@@ -4,6 +4,8 @@ import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
 import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
+import { ShareVisibilityButton, shareStateOf, type ItemVisibility } from './ShareVisibilityButton';
+import type { VisibilityActions } from './share-states';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 
@@ -44,7 +46,16 @@ function sayCornerCard(card: HTMLElement | null) {
 export type EditorCornerActionsProps = {
   showShare: boolean;
   shareable: boolean;
+  // Who else can see the item, besides a share link (team library, Offline, the Community): the Share button's
+  // words wear it and its hover legend marks it (ShareVisibilityButton).
+  visibility?: ItemVisibility;
   onOpenShare: () => void;
+  // Take Offline from the Share legend's Offline stop (the app's own conversion, which confirms first). Absent where
+  // the reader may not take the item offline.
+  onTakeOffline?: () => void;
+  // The legend's other stops (VisibilityActions): Sync for Private, Move to a team's space for Team, Share on its
+  // Community tab for Everyone. Shared opens Share by default.
+  visibilityActions?: VisibilityActions;
   onMakeCopy?: () => void;
   copying?: boolean;
   present?: { slideCount: number; starting: boolean; onPresent: () => void };
@@ -64,7 +75,10 @@ export type EditorCornerActionsProps = {
 export function EditorCornerActions({
   showShare,
   shareable,
+  visibility = {},
   onOpenShare,
+  onTakeOffline,
+  visibilityActions,
   onMakeCopy,
   copying = false,
   present,
@@ -193,21 +207,19 @@ export function EditorCornerActions({
         ) : null}
         {shareAction ?? null}
         {!shareAction && showShare ? (
-          <HoverCard
-            title={shareable ? 'Shared' : 'Share'}
-            description={shareable ? 'Click to manage links.' : 'Invite collaborators with a link.'}
+          <ShareVisibilityButton
+            state={shareStateOf(shareable, visibility)}
+            onOpenShare={onOpenShare}
+            actions={{
+              shared: onOpenShare,
+              ...(onTakeOffline ? { offline: onTakeOffline } : {}),
+              ...visibilityActions,
+            }}
+            className={`${CORNER_BTN} hover:bg-slate-100 dark:hover:bg-slate-800`}
           >
-            <button
-              type="button"
-              data-tour-id="share"
-              onClick={onOpenShare}
-              aria-pressed={shareable}
-              className={`${CORNER_BTN} ${shareable ? CORNER_ON : CORNER_TONE}`}
-            >
-              <HeaderShareIcon />
-              <span className="phone:sr-only [[data-compact]_&]:sr-only">Share</span>
-            </button>
-          </HoverCard>
+            <HeaderShareIcon />
+            <span className="phone:sr-only [[data-compact]_&]:sr-only">Share</span>
+          </ShareVisibilityButton>
         ) : null}
         <AuthControls onOpenAccount={onOpenAccount} />
       </div>

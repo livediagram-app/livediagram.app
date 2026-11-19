@@ -37,7 +37,7 @@ avatar palette starts with the same Edit | Walk toggle, Walk on, ahead of the lo
 Participant's and a Viewer's has none ([Always walking](../013-workspace/share-roles.md#always-walking)). The building
 strip comes back, as it was, when the walk ends. The dock's buttons are named beside
 their glyph in a desktop window 1024 px wide and up (Mic, Camera, Share) and glyphs alone on a phone or a narrower window, their full name and state in
-the hover card ("Mic: Live", "Camera: Off"); with no call to offer (a space kept in This Browser) the microphone stays as a local preview, titled Only You ([The Call dock](../008-canvas/avatar-mode.md#the-call-dock)). The building strip carries no call controls: a call rides Avatar
+the hover card ("Mic: Live", "Camera: Off"); with no call to offer (a space kept Offline) the microphone stays as a local preview, titled Only You ([The Call dock](../008-canvas/avatar-mode.md#the-call-dock)). The building strip carries no call controls: a call rides Avatar
 mode, so there is none to control while building
 ([Who is in a call](../012-collaboration/proximity-audio.md#who-is-in-a-call)).
 

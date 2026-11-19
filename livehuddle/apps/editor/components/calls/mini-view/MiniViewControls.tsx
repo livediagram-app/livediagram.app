@@ -18,7 +18,7 @@ import { CameraSegment, LiveMicSegment, PreviewMicSegment } from '../MicAndCamer
 
 /**
  * The microphone the mini view shows, as the dock would: the call's in a live call, the local preview's with no call
- * (This Browser, calls off, paused or failed), none while the call connects.
+ * (Offline, calls off, paused or failed), none while the call connects.
  */
 export function miniMicSegment(self: CallSelf, actions: CallActions): ReactNode {
   const paused = self.mode === 'off' && self.phase !== 'live';

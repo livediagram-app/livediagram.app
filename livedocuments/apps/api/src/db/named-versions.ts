@@ -221,27 +221,18 @@ export async function unnameNamedVersion(
   return summary.rev;
 }
 
-/** VH24: a closed account off every named version here: their name as author, and their ids in each body that
- *  mentions them (a body over one chunk is read whole, since a mention could straddle a cut). */
+/** VH24: a closed account's ids off each named version's body that mentions them (a body over one chunk is read
+ *  whole, since a mention could straddle a cut). Their name as author comes off with every snapshot's
+ *  (`clearSnapshotAuthors`, SN34). */
 export async function anonymiseNamedVersions(
   env: DocumentEnv,
   p: {
-    idList: string;
     needles: string;
-    authorSql: string;
     mentionsSql: string;
     rewrite: (text: string) => string | null;
-    person: { id: string; name: string };
   },
 ): Promise<number> {
   const db = env.DOCUMENT_DB;
-  const authors = await db
-    .prepare(
-      `UPDATE snapshots SET author_id = ?1, author_name = ?2
-        WHERE id IN (SELECT snapshot_id FROM tab_named_versions) AND ${p.authorSql}`,
-    )
-    .bind(p.person.id, p.person.name, p.idList)
-    .run();
   const candidates = await db
     .prepare(
       `SELECT m.snapshot_id AS id, m.tab_id FROM tab_named_versions m JOIN snapshots s ON s.id = m.snapshot_id
@@ -250,7 +241,7 @@ export async function anonymiseNamedVersions(
     )
     .bind(p.needles)
     .all<{ id: string; tab_id: string }>();
-  let changes = authors.meta.changes ?? 0;
+  let changes = 0;
   for (const c of candidates.results ?? []) {
     const scope = namedScope(c.tab_id);
     const text = await readSnapshotText(db, scope, c.id);

@@ -9,7 +9,7 @@ import { readLocalStorageSafe } from '@liveworkspace/workbench/lib/local-storage
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
-// Moving the parts set aside from documents in This Browser to the apps they now belong to
+// Moving the parts set aside from documents kept Offline to the apps they now belong to
 // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps"): the dialog's phases, shared
 // by the offer on load and Settings' row. One document at a time, each as the person (`ownerId`), sending the whole
 // raw record (localPartsBody); a failure keeps that document's record and its set-aside copy exactly as they were.

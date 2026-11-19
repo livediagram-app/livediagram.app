@@ -8,6 +8,7 @@
 
 import { ACCENT_EDGES } from './accent-edge';
 import { ARROWHEAD_SHAPES } from './arrow-style';
+import { ALL_ANCHORS } from './arrow-types';
 import { ATTACH_POINTS } from './attachment';
 import { BORDER_DASH_ARRAY } from '@liveworkspace/model-core/border-style';
 import { CARD_MEDIA } from './card';
@@ -33,6 +34,7 @@ export const ELEMENT_FIELD_VALUES: Readonly<Record<string, readonly string[]>> =
   cardMedia: CARD_MEDIA,
   chipLook: CHIP_LOOKS,
   attachAt: ATTACH_POINTS,
+  pointerAnchor: ALL_ANCHORS,
   pyramidVariant: PYRAMID_VARIANTS,
   // Round 2 (docs/specs/009-elements/stack.md).
   stackDirection: STACK_DIRECTIONS,

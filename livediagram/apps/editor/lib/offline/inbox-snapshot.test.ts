@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The Inbox's This Browser snapshot (inbox-snapshot.ts): the offline store's writes keep it, once the store has been
+// The Inbox's Offline snapshot (inbox-snapshot.ts): the offline store's writes keep it, once the store has been
 // quiet a moment, for the person the page says is signed in, so the Explorer page on this address lists the same
 // rows as the editor's panel; it goes with the last canvas kept here.
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -14,7 +14,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe("the Inbox's This Browser snapshot", () => {
+describe("the Inbox's Offline snapshot", () => {
   it('is worked out once the store is quiet after a write, and dropped with the last canvas', async () => {
     __setOfflineBackend(memBackend());
     inboxSnapshot.setAccount('user_me');

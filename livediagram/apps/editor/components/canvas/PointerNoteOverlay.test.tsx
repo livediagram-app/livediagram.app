@@ -51,9 +51,11 @@ describe('PointerNoteOverlay', () => {
     fireEvent.pointerDown(handle, { clientX: 10, clientY: 10, pointerId: 1 });
     fireEvent.pointerMove(handle, { clientX: 40, clientY: 30, pointerId: 1 });
     expect(container.querySelector('[data-pointer-tip]')!.getAttribute('cx')).toBe('6');
-    expect(onSetTip).not.toHaveBeenCalled();
+    // While it moves the host only previews (its anchors show, the tip may snap); nothing is stored.
+    expect(onSetTip.mock.calls.map((c: unknown[]) => c[2] as string)).toEqual(['preview']);
     fireEvent.pointerUp(handle, { clientX: 40, clientY: 30, pointerId: 1 });
-    expect(onSetTip).toHaveBeenCalledWith('n', { x: 100 + 6, y: 50 + 140 });
+    const stored = onSetTip.mock.calls.filter((c) => c[2] !== 'preview' && c[2] !== 'cancel');
+    expect(stored).toEqual([['n', { x: 100 + 6, y: 50 + 140 }, ...stored[0]!.slice(2)]]);
   });
 
   it('puts the tip back and stores nothing when the browser cancels the drag', () => {
@@ -68,7 +70,11 @@ describe('PointerNoteOverlay', () => {
     fireEvent.pointerMove(handle, { clientX: 80, clientY: 80, pointerId: 1 });
     fireEvent.pointerUp(handle, { clientX: 80, clientY: 80, pointerId: 1 });
     expect(container.querySelector('[data-pointer-tip]')!.getAttribute('cx')).toBe('-24');
-    expect(onSetTip).not.toHaveBeenCalled();
+    // Only the preview and its cancel reached the host: nothing was stored.
+    expect(onSetTip.mock.calls.map((c: unknown[]) => c[2] as string)).toEqual([
+      'preview',
+      'cancel',
+    ]);
   });
 
   it('nudges the tip with the arrow keys, ten at a time with Shift', () => {

@@ -1,4 +1,4 @@
-// The Public Roadmap article's scenes (docs/specs/026-plan/public-roadmap.md): the Tools menu with Publish as Roadmap
+// The Public Roadmap article's scenes (docs/specs/026-plan/public-roadmap.md): the Tools menu with Publish Roadmap
 // under the pointer, the dialog's Published state (the live link, the chosen columns and fields as chips, Voting and
 // the privacy note), and the public page a visitor sees (the chosen columns, each card's vote button, Suggest an
 // Idea). Composed from the shared primitives so the house style holds.
@@ -7,9 +7,9 @@ import { Scene, Label, Dialog, Button } from '@liveworkspace/help-site/art/primi
 import { Switch } from '@liveworkspace/help-site/art/illustrations/settings-dialog';
 import { ToolsMenuFigure } from './tools-menu';
 
-/** The footer's Tools menu with Publish as Roadmap, under Collaborate, under the pointer. */
+/** The footer's Tools menu with Publish Roadmap, under Collaborate, under the pointer. */
 export function RoadmapMenu() {
-  return <ToolsMenuFigure highlight="Publish as Roadmap" />;
+  return <ToolsMenuFigure highlight="Publish Roadmap" />;
 }
 
 // A chip that is on (tinted, ticked) or off (outlined), as the dialog's Columns and Fields draw them.
@@ -48,7 +48,7 @@ function Chip({ x, y, label, on }: { x: number; y: number; label: string; on: bo
   );
 }
 
-/** Publish as Roadmap once published: the live link with Copy Link, the Columns and Fields chips (triage hidden),
+/** Publish Roadmap once published: the live link with Copy Link, the Columns and Fields chips (triage hidden),
  *  Voting on and the amber privacy note. */
 export function RoadmapDialog() {
   const W = 420;
@@ -73,7 +73,7 @@ export function RoadmapDialog() {
         y={dy}
         w={dw}
         h={H - 16}
-        title="Publish as Roadmap"
+        title="Publish Roadmap"
         sceneW={W}
         sceneH={H}
         scrim={false}

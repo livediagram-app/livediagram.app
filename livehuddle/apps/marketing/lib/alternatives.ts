@@ -95,7 +95,7 @@ const LIST: Alternative[] = [
       'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
       'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
       'A free REST API and webhooks, so your own scripts can set up your Spaces and Slack or Teams hears when one is renamed, moved, shared or trashed.',
-      'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
+      'Your Spaces can sync to your own Google Drive, or stay Offline and never reach our servers.',
     ],
     sections: [
       {
@@ -212,7 +212,7 @@ const LIST: Alternative[] = [
       'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
       'Participant links let people walk, talk and react without moving the furniture, and a Space can take a password and any link an expiry.',
       'A free REST API and webhooks, so a script can set up a Space and Slack or Teams hears when it is renamed, moved, shared or trashed.',
-      'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
+      'Your Spaces can sync to your own Google Drive, or stay Offline and never reach our servers.',
     ],
     sections: [
       {

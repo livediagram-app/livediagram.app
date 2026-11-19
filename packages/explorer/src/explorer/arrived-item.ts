@@ -22,7 +22,7 @@ const TAKE_OVER = ['wheel', 'touchstart', 'pointerdown', 'keydown'] as const;
 /** The arrived item's id, for the list views to bring into their window. */
 export const ArrivedItemContext = createContext<string | null>(null);
 
-/** The rows and cards that can stand for item `id`: an index item's in any list or Home, or This Browser's. */
+/** The rows and cards that can stand for item `id`: an index item's in any list or Home, or Offline's. */
 export function arrivedSelector(id: string): string {
   const v = CSS.escape(id);
   return `[data-item-row="${v}"],[data-item-card="${v}"],[data-this-browser-row="${v}"]`;

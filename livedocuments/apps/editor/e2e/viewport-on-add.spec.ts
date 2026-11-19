@@ -40,7 +40,7 @@ test.describe('Viewport on add', () => {
   });
 
   test('a reloaded tab is framed on its content', async ({ page, pageErrors }) => {
-    // On livedocuments, not This Browser: the autosave is read back through the api.
+    // On livedocuments, not Offline: the autosave is read back through the api.
     await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
     const canvas = page.locator(CANVAS);
     // Dropped at the far corner of what shows beside the Contents sidebar (docked from the first page,

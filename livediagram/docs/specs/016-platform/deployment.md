@@ -48,7 +48,7 @@ CI is the gate you check before deploying to production, but it does **not** tri
 
 The root `e2e.yml` runs livediagram's smoke build and three smoke shards, its sites audit and its signed-in specs through `e2e-product.yml` when a change reaches the editor ([End-to-end tests](../003-system-architecture/e2e-smoke.md)).
 
-The root `canvas-perf.yml` runs the canvas performance probe nightly against `main` ([Canvas performance](../008-canvas/canvas-performance.md)), skipping a night `main` has not moved. It never blocks anything: the budget table goes to the job summary, traces and screenshots to a 14-day artefact, and a miss opens or comments on one issue, **Canvas performance budget: livediagram**, which the first all-pass run closes. It needs no secrets, only `issues: write`.
+No workflow runs the canvas performance probe; it runs by hand ([Canvas performance](../008-canvas/canvas-performance.md)).
 
 The root `codeql.yml` scans the whole repository with CodeQL on every pull request, every push to `main` and weekly ([docs/ci.md](../../../../docs/ci.md)).
 

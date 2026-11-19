@@ -1,6 +1,6 @@
 // A picture file handed to the canvas, pasted or dropped (docs/specs/009-elements/images.md "Paste and drop";
 // docs/specs/002-project-scope/not-in-livehuddle.md "Media"): which file on the clipboard is the picture, the name a
-// pasted screenshot is given, the upload through the media service (or, for a This Browser Space, the embed), and the
+// pasted screenshot is given, the upload through the media service (or, for an offline Space, the embed), and the
 // image element it lands as. useClipboard runs the paste and the drop; this module holds what they share.
 //
 // The upload code (lib/upload-image: validation, hashing, the dimension read) is loaded only when a picture is
@@ -69,7 +69,7 @@ export function pasteHoldsFile(data: DataTransfer | null): boolean {
   return data.files.length > 0 || Array.from(data.items ?? []).some((i) => i.kind === 'file');
 }
 
-/** Uploads the file to the person's gallery through the media service, or embeds it in a This Browser Space
+/** Uploads the file to the person's gallery through the media service, or embeds it in an offline Space
  *  (lib/upload-image `addImageFileForDocument`). Throws the upload's own readable error. */
 export async function uploadImageFile(
   ownerId: string,

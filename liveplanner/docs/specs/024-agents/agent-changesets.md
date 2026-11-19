@@ -95,7 +95,7 @@ editor that was offline when it landed.
 ## Rooms for personal projects
 
 An editor connects to its project's room for every server-stored project it has open, personal ones included.
-A project in Offline Mode or This Browser has no room and no agent can reach it. On a personal project that is
+A project in Offline Mode or kept Offline has no room and no agent can reach it. On a personal project that is
 neither shared nor in a team the editor sends only its selection and its tab focus; cursors and
 drag previews stay for projects with an audience.
 

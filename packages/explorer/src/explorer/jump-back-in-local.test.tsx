@@ -1,6 +1,6 @@
-// An item kept only in this browser among Home's Recent (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser on
-// Home"): the same card as the index's, with This Browser's menu, and a drag each target reads as This
-// Browser's (the Trash deletes it for good after asking where the host can; a place asks to sync it first).
+// An item kept only in this browser among Home's Recent (liveworkspace/docs/specs/004-index/one-explorer.md "Offline on
+// Home"): the same card as the index's, with Offline's menu, and a drag each target reads as Offline's
+// (the Trash deletes it for good after asking where the host can; a place asks to sync it first).
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Folder } from '@liveworkspace/index-client';
@@ -96,7 +96,7 @@ beforeEach(() =>
 );
 afterEach(() => localStorage.clear());
 
-describe("a This Browser card in Home's Recent", () => {
+describe("an offline card in Home's Recent", () => {
   it('is the same card as the index’s: its frame, a thumbnail area, its name and a line with the badge', async () => {
     home(
       {},
@@ -121,7 +121,7 @@ describe("a This Browser card in Home's Recent", () => {
     expect(preview.style.getPropertyValue('--local-accent')).toBe('#8b5cf6');
   });
 
-  it('opens This Browser’s menu from ⋯ and a right-click: Open and Sync, no Delete where the page can’t', async () => {
+  it('opens Offline’s menu from ⋯ and a right-click: Open and Sync, no Delete where the page can’t', async () => {
     const assign = vi.fn();
     const real = window.location;
     Object.defineProperty(window, 'location', {
@@ -163,7 +163,7 @@ describe("a This Browser card in Home's Recent", () => {
   });
 });
 
-describe('dragging a This Browser card', () => {
+describe('dragging an offline card', () => {
   it('asks before deleting it for good when dropped on the Trash', async () => {
     const remove = vi.fn();
     const index = home({ remove });

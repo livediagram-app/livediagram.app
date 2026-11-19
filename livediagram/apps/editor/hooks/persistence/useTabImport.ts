@@ -11,9 +11,9 @@ import type { BoardScene } from '@/lib/board-scene/scene';
 import type { DrawioInput } from '@/lib/drawio/import';
 import type { VisioImportResult } from '@/lib/visio/import';
 import { VISIO_MAX_FILE_BYTES, VISIO_TAB_FILE_ACCEPT } from '@/lib/visio/limits';
-import { DRAWIO_TAB_FILE_ACCEPT } from '@/lib/drawio/limits';
-import { BPMN_FILE_ACCEPT, BPMN_MAX_FILE_BYTES } from '@/lib/bpmn/limits';
-import { INFRA_FILE_ACCEPT, INFRA_FILE_MAX_BYTES, infraImportOutcome } from '@/lib/infra-import';
+import { IMPORT_FILE_ACCEPT, type ImportFileFormat } from '@/lib/import-file-types';
+import { BPMN_MAX_FILE_BYTES } from '@/lib/bpmn/limits';
+import { INFRA_FILE_MAX_BYTES, infraImportOutcome } from '@/lib/infra-import';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { mermaidImportOutcome } from '@/lib/text-import-report';
 import { getTheme } from '@/lib/themes';
@@ -48,8 +48,7 @@ export function remintTabElements<T extends Pick<Tab, 'elements'>>(tab: T): T {
   return { ...tab, elements: remintElements(tab.elements).elements };
 }
 
-export type ImportFormat =
-  'json' | 'markdown' | 'mermaid' | 'excalidraw' | 'drawio' | 'visio' | 'bpmn' | 'infra';
+export type ImportFormat = ImportFileFormat;
 type ImportProgressListener = (progress: ImportImageProgress) => void;
 
 const EXCALIDRAW_TELEMETRY_TYPE = {
@@ -382,20 +381,7 @@ export function useTabImport({
       const picked = await pickTabFile(VISIO_TAB_FILE_ACCEPT, { binary: true });
       return picked ? importVisioFile(picked.file, onProgress) : { status: 'cancelled' };
     }
-    const accept =
-      format === 'markdown'
-        ? 'text/markdown,.md,.markdown,.mdown,.mkd,text/plain'
-        : format === 'mermaid'
-          ? '.mmd,.mermaid,.txt,text/plain'
-          : format === 'excalidraw'
-            ? '.excalidraw,.json,application/json,.png,image/png,.svg,image/svg+xml'
-            : format === 'drawio'
-              ? DRAWIO_TAB_FILE_ACCEPT
-              : format === 'bpmn'
-                ? BPMN_FILE_ACCEPT
-                : format === 'infra'
-                  ? INFRA_FILE_ACCEPT
-                  : '.json,application/json';
+    const accept = IMPORT_FILE_ACCEPT[format];
     const { pickTabFile } = await import('@/lib/import-tab');
     // An infrastructure file past its cap is refused unread (infrastructure-import.md "Limits").
     const picked = await pickTabFile(

@@ -85,7 +85,7 @@ centred and never mirrored, at every facing.
   closes otherwise: livehuddle has no element lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)).
 - **Where notes go**: deleting the box leaves its notes unread (undo brings the box back with them); they go with
   the tab or the Space. Removing a note removes it for good.
-- **A Space saved in This Browser** has nobody else to collect from: the box says **Share this Space to collect
+- **A Space saved Offline** has nobody else to collect from: the box says **Share this Space to collect
   suggestions.** and drops nothing.
 
 ## Signpost

@@ -1,7 +1,7 @@
 // This browser's own opens of the projects stored only here (docs/specs/013-workspace/explorer-home.md
 // "Opens"; blueprint docs/specs/013-workspace/blueprints/explorer-home-view.md "Local opens").
 //
-// The server never sees an Offline Mode project, so it cannot count its opens. This Browser does,
+// The server never sees an Offline Mode project, so it cannot count its opens. Offline does,
 // by the server's own rule: the UTC days with an open, inside the 90-day use window, and the last
 // open, so Home's Recent places a local project among the rest. The record sits on the
 // project's own record, so it goes wherever the record goes (the local Trash, a purge, Sync

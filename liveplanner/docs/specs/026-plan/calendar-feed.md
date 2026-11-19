@@ -76,7 +76,7 @@ Where a person makes, copies, resets and turns off their feed of one plan.
   open.
 - It works for someone who may have a feed: **signed in**, on a plan **saved to an account**, holding the plan as its
   **owner or a team member** (a grant with no share link and no tab), and not in an embed or a workbench frame. A
-  guest, or the owner of a plan in This Browser, still sees the row, badged **Sign In** or **Sync Plan**, and a press
+  guest, or the owner of a plan kept Offline, still sees the row, badged **Sign In** or **Sync Plan**, and a press
   opens that gate first ([Footer Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md) "Always
   there"); signing in comes back with it open (`?calendar=1`). A share-link holder at any level sees no row. The api
   refuses all but the first the same, so the row is presentation, never the rule.

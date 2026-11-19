@@ -513,8 +513,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Plans saved to your account are stored in our database on Cloudflare, and plans in This
-            Browser stay in your browser. There are no tracking pixels, no advertising and no
+            Plans saved to your account are stored in our database on Cloudflare, and plans kept
+            Offline stay in your browser. There are no tracking pixels, no advertising and no
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
@@ -522,7 +522,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Plans saved to your account are stored in our database on Cloudflare, and plans in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+          'Plans saved to your account are stored in our database on Cloudflare, and plans kept Offline stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
       },
       {
         q: 'Can I keep a plan off your servers entirely?',

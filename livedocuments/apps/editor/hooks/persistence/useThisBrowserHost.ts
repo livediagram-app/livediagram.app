@@ -9,7 +9,7 @@ import { offlineDeleteDocument } from '@/lib/offline/offline-store';
 import { markDocumentDeleted } from '@liveworkspace/workbench/lib/document-tombstones';
 import { useOfflineConversions } from './useOfflineConversion';
 
-// This Browser in the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md "This Browser"): the documents kept only in this browser, from the
+// Offline in the editor's Explorer panel (docs/specs/013-workspace/explorer-structure.md "Offline"): the documents kept only in this browser, from the
 // list the offline store keeps for the Explorer (@liveworkspace/explorer/this-browser), heard as it changes. The same
 // host the Explorer page on this address builds (its items, addresses and help), with the editor's own verbs: each
 // opens in the editor without a page load, and Sync (signed in) moves one into the account here, in place. One host per

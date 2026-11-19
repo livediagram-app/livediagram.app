@@ -36,7 +36,7 @@ export function itemSubject(
   };
 }
 
-/** An item kept only in this browser, as the lens reads it (explorer-filters.md "Views", This Browser): the
+/** An item kept only in this browser, as the lens reads it (explorer-filters.md "Views", Offline): the
  *  reader's own, in My Work, opening in the host app. What the list does not keep (a template, how it was made, its
  *  mode) is unknown, so a lens holding those matches nothing here. */
 export function thisBrowserSubject(

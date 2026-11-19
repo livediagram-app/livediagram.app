@@ -76,7 +76,7 @@ const VIEW_HELP: Partial<Record<ExplorerView['kind'], HelpArticleKey>> = {
   search: 'explorerFilters',
 };
 
-// A view with no article of its own (the Library's, Invites, This Browser) shows no Help button.
+// A view with no article of its own (the Library's, Invites, Offline) shows no Help button.
 export const explorerHelpHref: HelpHref = (view) => {
   const key = VIEW_HELP[view.kind];
   return key ? helpArticleHref(key) : undefined;

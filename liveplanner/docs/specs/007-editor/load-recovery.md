@@ -211,8 +211,8 @@ the server, which the rest of this spec covers.
   Sheet changes are kept in this browser instead and the banner counts them
   while they wait ([Offline changes](offline-changes.md)). It is a rounded card, not a pill, so a line that
   wraps on a phone stays inside its corners. The words
-  say it all: no coloured dot beside them (never a dot standing for a status), and not the This
-  Browser pill's teal, since a dropped connection is not where a project lives. The save
+  say it all: no coloured dot beside them (never a dot standing for a status), and not the Offline
+  pill's teal, since a dropped connection is not where a project lives. The save
   failure toast reads "You're offline. Keep this tab open to save when you
   reconnect." instead of the connection message: one line, as every toast is
   ([Toasts](../004-interface-design/toasts.md)).

@@ -596,6 +596,7 @@ This is the one list of columns that hold an owner id (a guest id or an account 
 | `image_owners.owner_id`      | In each design's own store: the person's images themselves are deleted from the media service, so a design that placed one serves nothing        |
 | `agent_changesets.author_id` | In each design's own store: those on someone else's design stay until the 30-day changeset retention ages them out                               |
 | `notify_claims.sender`       | In each design's own store: dropped from each design the index names when the account closes (`anonymise`), and past the dedupe window otherwise |
+| `snapshots.author_id`        | In each design's own store: on someone else's design the name comes off each snapshot they took (`anonymise`, Work Tracker 1310), and it stays   |
 
 `deleteAccount` deletes the person's images from liveworkspace's media service, from every app (`forgetOwner`, first, so a failure leaves the account whole to delete again), . Their workbench pairings and sessions are liveworkspace's, which ends them when the account closes. Their name comes off other people's designs they worked in through the index's person purge (`anonymise`). Account deletion runs on `DELETE /api/account` and whenever the index says an account closed (`POST /api/internal/people/:id/purge`), wherever it was closed. `entitled` rows name people too, but only until their grant lapses, and go with the design.
 

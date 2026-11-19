@@ -1,6 +1,6 @@
 'use client';
 
-// Publish as Roadmap in the footer's Tools menu, in Collaborate (docs/specs/026-plan/public-roadmap.md "Where it lives";
+// Publish Roadmap in the footer's Tools menu, in Collaborate (docs/specs/026-plan/public-roadmap.md "Where it lives";
 // liveworkspace/docs/specs/004-index/footer-tools-menu.md): there only with the door RoadmapHost sets for someone who
 // may publish, on a plan with a Plan board on any tab.
 import { lucideGlyph } from '@liveplanner/ui';
@@ -16,7 +16,7 @@ export function useRoadmapToolsItem(): ChromeToolsItem | null {
   return {
     id: 'roadmap',
     group: 'collaborate',
-    label: 'Publish as Roadmap',
+    label: 'Publish Roadmap',
     description: 'A public page of a board’s cards.',
     icon: <RoadmapIcon />,
     // Its dialog opens inside Tools (footer-tools-menu.md "Opening a tool inside Tools").

@@ -66,6 +66,7 @@ function OpenEditorTabDialogs() {
     importFileIntoActiveTab,
     setImportOpen,
     shareDialogOpen,
+    shareStartView,
     selfParticipant,
     documentId,
     setShareDialogOpen,
@@ -188,6 +189,8 @@ function OpenEditorTabDialogs() {
           firstTabEmpty={
             !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
           }
+          // The Share legend's Everyone stop opens it on the Community tab (openShareOn).
+          initialView={shareStartView}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

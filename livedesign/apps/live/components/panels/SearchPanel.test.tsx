@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// A search result for a design saved only in this browser carries the This Browser pill as a
-// plain label (docs/specs/006-design/offline-mode.md#this-browser-pill).
+// A search result for a design saved only in this browser carries the Offline pill as a
+// plain label (docs/specs/006-design/offline-mode.md#offline-pill).
 
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import type { IndexClient, Item } from '@liveworkspace/index-client';
@@ -12,7 +12,7 @@ import { SearchPanel } from './SearchPanel';
 afterEach(cleanup);
 
 describe('SearchPanel', () => {
-  it('labels a design in This Browser result, with what it means', () => {
+  it('labels a design kept Offline result, with what it means', () => {
     render(
       <SearchPanel
         designs={[
@@ -25,12 +25,10 @@ describe('SearchPanel', () => {
       />,
     );
     const local = screen.getByRole('option', { name: /Workshop notes/ });
-    expect(local.textContent).toContain('This Browser');
+    expect(local.textContent).toContain('Offline');
     expect(local.textContent).toContain(THIS_BROWSER_DESCRIPTION);
     expect(local.querySelector('a')).toBeNull();
-    expect(screen.getByRole('option', { name: /Cloud plan/ }).textContent).not.toContain(
-      'This Browser',
-    );
+    expect(screen.getByRole('option', { name: /Cloud plan/ }).textContent).not.toContain('Offline');
   });
 
   // A touch screen has no Esc key: its close button shows a × there, the Esc key cap on a keyboard's screen.

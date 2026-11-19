@@ -109,7 +109,7 @@ async function downloadAndRemoveCloudCopy(
   const unembedded = tabs.some((t) => tabImageIds(t).some((id) => !isDataImageId(id)));
   if (unembedded) throw new Error('image embed incomplete');
 
-  // The library comes along (docs/specs/009-elements/components.md "This Browser"). A failed read aborts before the
+  // The library comes along (docs/specs/009-elements/components.md "Offline"). A failed read aborts before the
   // server copy goes, like a tab that would not load.
   const components = await apiLoadComponents(ownerId, designId, shareCode);
   const now = Date.now();

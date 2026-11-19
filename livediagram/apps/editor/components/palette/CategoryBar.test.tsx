@@ -195,7 +195,7 @@ describe('tile captions (docs/specs/007-editor/toolbar-layout.md)', () => {
     fireEvent.click(button('Shapes'), { detail: 1 });
     const square = within(flyout()!).getByRole('button', { name: 'Add Square' });
     expect(square.textContent).toContain('Square');
-    fireEvent.click(button('Diagrams'), { detail: 1 });
+    fireEvent.click(button('Concepts'), { detail: 1 });
     expect(
       within(flyout()!).getAllByRole('button', { name: /Mind Node/ })[0]!.textContent,
     ).toContain('Mind Node');
@@ -250,7 +250,8 @@ describe('the keyboard', () => {
     // docs/specs/007-editor/toolbar-layout.md "Optional groups".
     const KEY = 'livediagram:v2:palette-group-open:bpmn';
     // Queried by attribute: role queries over the whole Shapes flyout, three mounts over, outrun the time budget.
-    const section = () => flyout()!.querySelector<HTMLButtonElement>('[data-optional-group]')!;
+    const section = () =>
+      flyout()!.querySelector<HTMLButtonElement>('[data-optional-group="BPMN"]')!;
     const tileHidden = () =>
       !!flyout()!.querySelector('[aria-label="Add BPMN Task"]')!.closest('[inert][aria-hidden]');
     show();

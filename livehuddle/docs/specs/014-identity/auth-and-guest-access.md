@@ -10,10 +10,10 @@ We don't put auth in front of the core experience. We add auth where it _enables
 
 Every build offers sign-in: there is no build-time switch for it. The frontend always mounts the accounts bridge, `AuthControls` always shows, and `/sign-in/` and `/get-started/` always hand off to the accounts site. What a deployment configures is the api's accounts client (`ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET`):
 
-| API configuration  | What visitors get                                                                                                                                                                                                                                                    |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_*` set   | Guests and signed-in people coexist. The api verifies the Bearer: an account's access token or a guest token.                                                                                                                                                        |
-| `ACCOUNTS_*` unset | `/api/auth/guest` returns straight to `/auth/guest#error=guest_not_configured` and `/api/auth/*` answers 404 `sign_in_not_configured`: visitors have no identity, settle as signed out, and can only draw in documents in This Browser. Suits a quick local try-out. |
+| API configuration  | What visitors get                                                                                                                                                                                                                                                 |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ACCOUNTS_*` set   | Guests and signed-in people coexist. The api verifies the Bearer: an account's access token or a guest token.                                                                                                                                                     |
+| `ACCOUNTS_*` unset | `/api/auth/guest` returns straight to `/auth/guest#error=guest_not_configured` and `/api/auth/*` answers 404 `sign_in_not_configured`: visitors have no identity, settle as signed out, and can only draw in documents kept Offline. Suits a quick local try-out. |
 
 **Guests need the accounts site too**: a guest's identity is a guest token the liveworkspace accounts site mints ([Guest identity](#guest-identity)), so a deployment without it has no guests.
 
@@ -221,13 +221,13 @@ When a guest signs in or signs up, the things they made as a guest **become the 
 2. **The index tells livehuddle.** The liveworkspace index calls the app's internal `personMerged(guestId, userId)` hook (`apps/api/src/routes/internal-items.ts`), which runs `mergeGuest` (`apps/api/src/db/account.ts`): the guest's images in liveworkspace's media service (`mergeOwner`), their shape libraries (`migrateShapeLibraries`, a clashing name taking the next free " (n)"), and their Community copier records (`mergeCommunityCopier`). Their documents, folders, shared-with-you visits, defaults, the Timeline and opens are the index's, which moves them itself ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)). [Owner-keyed data](../015-api/api.md#owner-keyed-data) is the one list of what this app keeps, with how each handles a row the account already has. A document's own rows follow their document for free. The hook is idempotent, so a retry moves nothing twice.
 3. **The editor drops its guest token** once signed in (`useAccountBootstrap`). Nothing in the editor waits for the merge: the move happens between liveworkspace and the api, and the signed-in page reads as the account.
 
-A guest's documents in This Browser are not part of the merge; they stay in the browser until the person moves them ([Moving documents in This Browser after signing in](#moving-documents-in-this-browser-after-signing-in)).
+A guest's documents kept Offline are not part of the merge; they stay in the browser until the person moves them ([Moving documents kept Offline after signing in](#moving-offline-documents-after-signing-in)).
 
 ## Deleting an account
 
 Settings > Account > Delete Account deletes the whole account: the person's livehuddle data and their **liveworkspace account**, which closes it in every liveworkspace app. Then it ends the session:
 
-The Settings row reads just "Permanently deletes your liveworkspace account and everything you own in every liveworkspace app." The dialog itself says more before anything else: it deletes the liveworkspace account and **everything the person owns in every liveworkspace app**, not only livehuddle. It lists what goes (every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle, the Trash included; folders, settings and API tokens; teams they run alone), says it signs them out everywhere and can't be undone, and that canvases in This Browser stay on the device. Closing the account purges every app's items through the index ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#closing-an-account)), so naming only this app's would understate it.
+The Settings row reads just "Permanently deletes your liveworkspace account and everything you own in every liveworkspace app." The dialog itself says more before anything else: it deletes the liveworkspace account and **everything the person owns in every liveworkspace app**, not only livehuddle. It lists what goes (every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle, the Trash included; folders, settings and API tokens; teams they run alone), says it signs them out everywhere and can't be undone, and that canvases kept Offline stay on the device. Closing the account purges every app's items through the index ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#closing-an-account)), so naming only this app's would understate it.
 
 1. **Confirm with a code emailed to the account.** After the person types their email, **Email Me a Code** (`POST /api/account/deletion-code`, [API](../015-api/api.md)) has the accounts Worker email a 6-digit code to the account's own address, the same kind of code that signs in ([liveworkspace/docs/specs/003-accounts/sign-in.md](../../../../liveworkspace/docs/specs/003-accounts/sign-in.md#closing-an-account)). The dialog then asks for it in the sign-in page's six boxes (`CodeDigits` from `@liveworkspace/ui`), with **Resend Code**, and **Delete Account** sends it with the delete. Being signed in is not enough on its own: someone at a machine left signed in can't delete the account without the inbox. The email box reads neutral while it is empty or still a correct start of the address, shows a rose border and “That isn’t your account’s email.” only once what is typed can no longer become it, and a green border once it matches, so a correct entry never reads as an error.
 2. **Check the code, delete the server data, then close the account** (`DELETE /api/account { code }`, [API](../015-api/api.md)). The worker first checks the code with the accounts Worker (`confirmDeletionCode` from `@liveworkspace/auth-client`) and deletes nothing unless it is right: no code is `400 code_required`, a wrong or expired one `403 invalid_code`, the third wrong one `403 too_many_attempts` (the code is gone; ask for a new one), too many tries a minute `429 rate_limited`. Then it removes documents, folders and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data), then asks the accounts Worker to close the account, which takes the person's profile and preferences with it (`closeAccount` from `@liveworkspace/auth-client`: `POST /api/auth/delete-account` with this app's client credentials, the caller's access token and the code, which the accounts Worker checks again and spends). Closing it removes the account's sessions, its Google link, and every app's refresh tokens. The response clears the refresh cookie.
@@ -239,19 +239,19 @@ The emailed code is the step-up, and it is checked on the servers, by this app's
 
 ## Guest documents start local
 
-A guest's new document is **This Browser** by default ([Offline Mode](../006-document/offline-mode.md), [Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
+A guest's new document is **Offline** by default ([Offline Mode](../006-document/offline-mode.md), [Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
 
-**Why.** A guest cloud document is keyed to the guest token held in this browser's `localStorage`. Clearing site data loses that token, and with it every document under its guest: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A document in This Browser is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
+**Why.** A guest cloud document is keyed to the guest token held in this browser's `localStorage`. Clearing site data loses that token, and with it every document under its guest: the server keeps the rows for good, but nobody can reach them again. Many first visits are someone trying the product out, so most of those rows are orphans the moment they are written. A document kept Offline is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open)).
 
 - **Signed-in people are unchanged.** Their default stays livehuddle.
-- **Moving to the server is always the guest's own act**: Sync Space (from the Share dialog, which explains why first, [Offline Mode → Sharing a document in This Browser](../006-document/offline-mode.md#sharing-a-document-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
+- **Moving to the server is always the guest's own act**: Sync Space (from the Share dialog, which explains why first, [Offline Mode → Sharing a document kept Offline](../006-document/offline-mode.md#sharing-an-offline-document), or the Explorer), or the prompt after signing in (below). No guest document is uploaded silently.
 - **Nothing is purged.** Guest cloud documents already on the server stay where they are; this changes where new ones start, not what happens to old ones.
 
 ### Who is a guest, before sign-in answers
 
 The session loads deferred, so `/new` cannot wait for the token request without making every create slower. It reads the `lh_signed_in` hint cookie instead (`apps/editor/lib/signed-in-hint.ts`): the api sets it to `1` beside the HttpOnly refresh cookie when a sign-in completes, readable from script and holding no secret, and to `0` on sign-out or when a refresh is refused (`signedInHintOf` in `packages/api-schema/src/signed-in-hint.ts`, shared with the site header's primary link and the Repair page).
 
-- **No hint, or `lh_signed_in=0`**: a guest. The create goes ahead at once, This Browser.
+- **No hint, or `lh_signed_in=0`**: a guest. The create goes ahead at once, Offline.
 - **`lh_signed_in=1`**: probably signed in. The create waits for auth to settle (as it always has) and then uses the settled answer.
 - **The page itself** never settles as a guest while `lh_signed_in=1` and the session hasn't answered: the 5-second
   give-up (a stalled proxy must not hold the canvas) applies only without the hint. When the accounts site doesn't
@@ -259,7 +259,7 @@ The session loads deferred, so `/new` cannot wait for the token request without 
   the page shows **Can’t reach your account right now** with **Try Again**, starts no guest hand-off, and carries on
   by itself once the session answers ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
   A `401` is signed out at once, as before.
-- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a document in This Browser, the safe direction.
+- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a document kept Offline, the safe direction.
 
 **livehuddle's own names.** Every auth cookie carries livehuddle's `lh_` prefix (`lh_signed_in`, `lh_account*`, `lh_refresh`, `lh_pkce`, `lh_signed_out`, `lh_silent*`), never livediagram's `ld_`, which it carried as a fork: cookies ignore the port, so on `localhost` the two apps would read and overwrite each other's session ([An app's signed-in cookies](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#an-apps-signed-in-cookies)). A browser that signed in before the rename keeps its old `ld_*` cookies until they expire, read by nothing. Its first page load after the rename finds no `lh_signed_in` hint, so it is a guest for that load: the [silent sign-in](#signing-in-without-a-click) bounces once and signs it back in with no click while the accounts site still has its session (otherwise the Sign in button does, as for anyone signed out). Nothing is lost: documents belong to the account, not the cookie.
 
@@ -274,14 +274,14 @@ authenticates nothing: it is only the name the marketing header's account menu s
 ([Marketing site](../019-marketing/marketing-site.md), "Header"), so a public page can say who is signed in without
 asking the api.
 
-### Moving documents in This Browser after signing in
+### Moving offline documents after signing in
 
-Signing in never moves a document in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's documents in This Browser. If there are any, it offers to move them:
+Signing in never moves a document kept Offline by itself ([Offline Mode → Auth / guest interaction](../006-document/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's documents kept Offline. If there are any, it offers to move them:
 
-- **Move Spaces in This Browser to Your Account?** A dialog lists each document in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
-- **Move** runs Sync Space ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays This Browser and is named in the result; the rest move.
-- **Not Now** is remembered for this account in this browser (`livehuddle:v2:local-move-dismissed:<userId>`), with the count of documents in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document in This Browser is not asked again about it.
-- The same move is always reachable by hand: **Sync Space** on any document in This Browser.
+- **Move Offline Spaces to Your Account?** A dialog lists each document kept Offline (name, last edited), every one ticked, with **Move** and **Not Now**.
+- **Move** runs Sync Space ([Offline Mode → Save to server](../006-document/offline-mode.md#save-to-server-offline--cloud)) on each ticked document in turn, showing progress. A document that fails stays Offline and is named in the result; the rest move.
+- **Not Now** is remembered for this account in this browser (`livehuddle:v2:local-move-dismissed:<userId>`), with the count of documents kept Offline at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate document kept Offline is not asked again about it.
+- The same move is always reachable by hand: **Sync Space** on any document kept Offline.
 
 ## Implications for how we build
 
@@ -289,7 +289,7 @@ Signing in never moves a document in This Browser by itself ([Offline Mode → A
 - Features that genuinely need an account are surfaced as opt-in prompts ("Sign in to keep your canvases"), never modal walls.
 - The single persistence boundary (`apps/editor/lib/api-client.ts` against the api worker, see [11-api.md](../015-api/api.md)) is the same in guest and authenticated mode. Both send `Authorization: Bearer`: the guest token from `localStorage` for guests, the in-memory access token for signed-in users. The api-client's module-level `setTokenProvider` is the single switch.
 - Page script never holds the client secret or the refresh token: both live only in the api worker and its HttpOnly cookie, and the access token lives only in memory. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
-- The api worker's degraded-mode behaviour matters: with `ACCOUNTS_URL` or `API_RESOURCE` unset, it resolves no owner for any request, so nobody can keep a document on the server. The editor still opens and documents in This Browser still work, but a real deployment, even a guest-only one, configures the accounts site.
+- The api worker's degraded-mode behaviour matters: with `ACCOUNTS_URL` or `API_RESOURCE` unset, it resolves no owner for any request, so nobody can keep a document on the server. The editor still opens and documents kept Offline still work, but a real deployment, even a guest-only one, configures the accounts site.
 
 ### Google pictures (liveworkspace/docs/specs/003-accounts/accounts.md "Profile pictures")
 

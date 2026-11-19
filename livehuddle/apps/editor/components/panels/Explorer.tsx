@@ -103,7 +103,7 @@ function ExplorerImpl({
 
   // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
   const shown = popoverOpen === true;
-  // Kept only in this browser? Then the index is not asked and the card is This Browser's, with its Browser Storage
+  // Kept only in this browser? Then the index is not asked and the card is Offline's, with its Offline
   // pill, before the list has heard of it too (one-explorer.md "The Current card"). An opening asks the index again
   // while it had nothing for the canvas (a new one registered since).
   const offline = useIsOfflineDocument(currentDocumentId ?? null);
@@ -209,7 +209,7 @@ function ExplorerImpl({
           viewerId={accountUserId ?? null}
           shareUrl={shareUrl}
           share={shareHost}
-          // The canvases kept only in this browser, which no index list holds: This Browser on the rail, in place.
+          // The canvases kept only in this browser, which no index list holds: Offline on the rail, in place.
           thisBrowser={thisBrowser}
           onOrganise={trackOrganise}
           itemMenu={itemMenu}

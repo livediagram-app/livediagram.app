@@ -68,6 +68,7 @@ import type {
   TextSizePreset,
 } from './index';
 import type { StackAlign, StackDirection } from './stack';
+import type { Anchor } from './arrow-types';
 
 // Where a chart's legend sits relative to the plot (docs/specs/009-elements/pie-chart.md). 'off' is modelled
 // separately by `chartLegend: false`, so this only covers the four placements.
@@ -326,6 +327,8 @@ export type ShapeElement = {
   chipLook?: ChipLook;
   attachedTo?: ElementId;
   attachAt?: AttachPoint;
+  // A pointer note's tip held on an arrow anchor of its host (pointer-note.md "Attaching the tip"); wins over attachAt.
+  pointerAnchor?: Anchor;
   stepSequence?: boolean;
   // A pointer note's tip, relative to its top-left (docs/specs/009-elements/pointer-note.md).
   pointerTip?: { x: number; y: number };
@@ -353,7 +356,7 @@ export type ShapeElement = {
   processSteps?: string[];
   navLinks?: string[];
   // The quote (docs/specs/009-elements/quote.md): its look (absent = card) and its portrait's photo, a gallery id (or a
-  // data: URI in a This Browser document) placed like an image element's (elementImageId).
+  // data: URI in an offline document) placed like an image element's (elementImageId).
   quoteLook?: QuoteLook;
   imageId?: string;
   // Checklist (docs/specs/009-elements/checklist.md): the checkable rows. Only meaningful on the

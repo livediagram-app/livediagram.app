@@ -32,17 +32,17 @@ export type PickerTeam = {
   id: string;
   name: string;
   folders: PickerFolder[];
-  // A space drawn as a team is (This Browser, with its local folders): its own glyph, line and root's name.
+  // A space drawn as a team is (Offline, with its local folders): its own glyph, line and root's name.
   icon?: ReactNode;
   sub?: string;
   rootLabel?: string;
 };
 export type Destination = { teamId: string | null; folderId: string | null };
-/** A place that is a space of its own, holding no folders (Archived, This Browser): listed under the spaces, after a
+/** A place that is a space of its own, holding no folders (Archived, Offline): listed under the spaces, after a
  *  divider, its `value` the placement chosen. */
 export type PlacementSpace = { value: string; label: string; sub: string; icon: ReactNode };
 
-/** Archived's placement, and This Browser's for an item kept only here. */
+/** Archived's placement, and Offline's for an item kept only here. */
 export const ARCHIVED_PLACEMENT = 'archived';
 export const THIS_BROWSER_PLACEMENT = 'this-browser';
 

@@ -17,9 +17,9 @@ describe('RolePicker', () => {
   it('hands focus back to the card when Escape folds the levels', () => {
     render(<Picker />);
     fireEvent.click(card());
-    const viewer = screen.getByRole('radio', { name: /Viewer/ });
-    viewer.focus();
-    fireEvent.keyDown(viewer, { key: 'Escape' });
+    const participant = screen.getByRole('button', { name: /Participant/ });
+    participant.focus();
+    fireEvent.keyDown(participant, { key: 'Escape' });
     expect(card().getAttribute('aria-expanded')).toBe('false');
     expect(document.activeElement).toBe(card());
   });
@@ -27,11 +27,20 @@ describe('RolePicker', () => {
   it('hands focus back to the card when a level is chosen', () => {
     render(<Picker />);
     fireEvent.click(card());
-    const editor = screen.getByRole('radio', { name: /Editor/ });
+    const editor = screen.getByRole('button', { name: /Editor/ });
     editor.focus();
     fireEvent.click(editor);
     expect(card().getAttribute('aria-label')).toBe('Pass level: Editor. Change level');
     expect(document.activeElement).toBe(card());
+  });
+
+  it('lists only the levels it can switch to, never the chosen one', () => {
+    render(<Picker />);
+    fireEvent.click(card());
+    const levels = [...document.querySelectorAll('[data-level]')].map((b) =>
+      b.getAttribute('data-level'),
+    );
+    expect(levels).toEqual(['edit', 'participate']);
   });
 
   // An app's own blurb (liveworkspace/docs/specs/004-index/one-explorer-contracts.md): livehuddle's Participant, and
@@ -45,10 +54,10 @@ describe('RolePicker', () => {
         app="livehuddle"
       />,
     );
-    expect(screen.getAllByText('Walks, talks and uses the pieces; adds nothing.').length).toBe(2);
+    expect(screen.getAllByText('Walks, talks and uses the pieces; adds nothing.').length).toBe(1);
     expect(screen.getByText('Works with you in real time.')).toBeTruthy();
     unmount();
     render(<RolePicker level="participate" onChange={() => {}} app="livediagram" />);
-    expect(screen.getAllByText(LEVEL_PASS.participate.blurb).length).toBe(2);
+    expect(screen.getAllByText(LEVEL_PASS.participate.blurb).length).toBe(1);
   });
 });

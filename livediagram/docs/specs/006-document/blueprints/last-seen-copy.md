@@ -35,7 +35,7 @@ liveplanner (Work Tracker 927) bind the same shared modules; their blueprints na
 | Refresh         | (the follower's timer)           | The one write a window of follows gathers into, `LAST_SEEN_REFRESH_MS` after the first     |
 | Save landed     | `onSaveLanded(landed)`           | The autosave's newest save landed: the baseline tabs and name, and each PUT's revision     |
 
-"Last seen copy" is the only name: never "cache", "snapshot" or "local copy" (This Browser documents are local).
+"Last seen copy" is the only name: never "cache", "snapshot" or "local copy" (Offline documents are local).
 
 ## Modules
 
@@ -45,7 +45,7 @@ liveplanner (Work Tracker 927) bind the same shared modules; their blueprints na
 | `../packages/workbench/src/lib/api/last-seen-store.ts`               | `createLastSeenStore(dbName)`: the IndexedDB store, two object stores (`copies`, `seen`), one kept connection, every call bounded and never throwing                                                                                                                                              |
 | `../packages/workbench/src/lib/editor-arrival.ts`                    | `openShareLink` and `openOwnAddress` keep the copy on reaching the document and forget it on not found, the deleted card or the password gate                                                                                                                                                     |
 | `../packages/workbench/src/lib/api/last-seen-follower.ts`            | `createLastSeenFollower(copies)`: `remember`, `read`, `forget`, `forgetAll`, `follows`, `followMeta`, `followSave`, `followItem`, `flush`; `LAST_SEEN_REFRESH_MS`                                                                                                                                 |
-| `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went to This Browser                                                                                                                                                                         |
+| `../packages/workbench/src/hooks/persistence/useLastSeenFollow.ts`   | Follows the open document's name and tab list, answers `onSaveLanded`, forgets a copy whose document went Offline                                                                                                                                                                                 |
 | `../packages/workbench/src/hooks/persistence/useAutosaveCore.ts`     | `onSaveLanded` (an option, read as an effect event): told once the newest save landed, with the baseline tabs, name and revisions                                                                                                                                                                 |
 | `../packages/workbench/src/lib/warm-open.ts`                         | `readWarmCopy`, `expectedReader`, `hashTabId`, `keptWarmTab`, `measureAfterPaint`: which copy may paint, and the timing marks; `guardNotFound`, `warmOpenFallback`: a warm-painted not found checked once cold                                                                                    |
 | `../packages/workbench/src/hooks/editor/useBrowserTabTitle.ts`       | Holds the tab title while the editor route shows it                                                                                                                                                                                                                                               |
@@ -62,7 +62,7 @@ liveplanner (Work Tracker 927) bind the same shared modules; their blueprints na
 - **Keep (share link).** `openShareLink` reaching the document, not a Community post and not an embed: `remember({
 reader: self.id, itemId: fetched.id, item: fetched, firstTab, via: shareCodeParam, access })`, where `access` is the
   session the kernel answered (`sessionRole`, `isOwner`, `sessionShareCode`) and the link's `tabScope`.
-- **Keep (own address).** `openOwnAddress` reaching a server document (not This Browser): `remember({ reader: self.id,
+- **Keep (own address).** `openOwnAddress` reaching a server document (not Offline): `remember({ reader: self.id,
 itemId: id, item: fetched, firstTab, via: null, access: { role: 'edit', isOwner, sessionShareCode: null, tabScope: null
 } })`, `isOwner` being the grant's answer.
 - **Forget.** Not found, the deleted card and the password gate forget `(self.id, id)` when the address names the
@@ -79,7 +79,7 @@ itemId: id, item: fetched, firstTab, via: null, access: { role: 'edit', isOwner,
 - **Follow (part 2).** The follower holds `current`, the copy the last `remember` kept, in memory. `followMeta(reader,
 itemId, { name, tabs })` and `followSave(reader, itemId, { name, tabs, revs })` do nothing unless `current` is that
   reader's copy of that document, so only a copy an arrival kept is ever followed (never an embed, a Community post, a
-  workbench or a This Browser document) and never for another reader.
+  workbench or an offline document) and never for another reader.
   - **Meta.** When the name or the tab list (each tab's id, name and folder, in order) differs from `current.item`, the
     item's `name` and `tabs` are rewritten: each summary keeps the fields the load answered for that tab id
     (`documentId`, `updatedAt`, `outOfScope`, `connection`) with its `name`, `folder` and `orderIndex` (its position)
@@ -108,7 +108,7 @@ itemId, { name, tabs })` and `followSave(reader, itemId, { name, tabs, revs })` 
 - **Warm open (part 3).** The bootstrap's first layout effect calls `tryEarlyOpen` (never awaited by anything; a
   rejection is logged and the open waits for auth as before). Unless auth has answered, the editor is hydrated, or
   it is an embed or a workbench:
-  - A path naming a This Browser document takes the early open, as before (`isOfflineId`, only without `?s=`).
+  - A path naming an offline document takes the early open, as before (`isOfflineId`, only without `?s=`).
   - Signed in by the hint (`readSignedInHint()`, read before the first await): no read yet. The address is kept
     (`warmAddress`) and the layout effect on `[authLoaded, passwordRetry]` calls `warmForAccount` before `bootstrap`:
     once auth has answered, with an `accountUserId`, it reads
@@ -226,7 +226,7 @@ Promise<void>`, `entries() → Promise<LastSeenEntry[]>`, `clear() → Promise<v
 | Two loads racing (auth settling twice)                    | The arrival's setters are run-guarded; a superseded keep writes the same reader's copy, which the newer keep overwrites |
 | A refresh waiting when another document is kept           | `remember` writes the waiting refresh first (it is the older document's last copy), then keeps the new one              |
 | A refresh waiting at sign-out or a forget                 | `forgetAll` and a matching `forget` drop `current` and cancel the timer before the store call, so nothing comes back    |
-| Document taken offline to This Browser while open         | The hook forgets its copy; This Browser documents keep none                                                             |
+| Document taken Offline while open                         | The hook forgets its copy; Offline documents keep none                                                                  |
 | A save or follow before the arrival kept the copy         | `current` is not that copy yet: nothing happens; the arrival's keep has the same content                                |
 | The first tab deleted or moved off first                  | `firstTab` becomes null until a save of the new first tab lands                                                         |
 | A refresh's write fails or times out                      | `remember` never rejects; the copy stays as last written and the next refresh tries again                               |

@@ -387,6 +387,9 @@ function Flyout({
       // the editor while a label is being edited (docs/specs/008-canvas/canvas-and-palette.md), and moving the
       // caret shouldn't collapse the open category.
       if (t instanceof Element && t.closest('[data-rich-text-session]')) return;
+      // A tour's card (data-tour-popover) presses its own Next or Back: closing the flyout it rings on that press
+      // moved the card out from under the pointer, so the press never landed and the tour sat still.
+      if (t instanceof Element && t.closest('[data-tour-popover]')) return;
       // Clicking a canvas ELEMENT retargets the host menu to it rather than
       // dismissing it (docs/specs/008-canvas/canvas-and-palette.md menu-follows-selection), so the open flyout
       // must ride along too — collapsing it on every element switch broke

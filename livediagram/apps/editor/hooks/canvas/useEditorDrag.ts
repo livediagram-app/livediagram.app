@@ -19,7 +19,7 @@
 // fresh view of the parent state on every fire.
 
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { Element } from '@livediagram/document';
+import { isPointerNote, settleChips, type Element } from '@livediagram/document';
 import type { DragState } from '@/lib/canvas';
 import type { InsertionSlot } from '@/lib/insert-between';
 import type { EditorDragDeps, EditorDragApi } from './useEditorDrag.types';
@@ -31,6 +31,27 @@ import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import { applyOverlay, clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { attachDragListeners } from './editor-drag-listeners';
+
+// A pointer note attached to a host keeps its tip on the host's point through the drag, not only on release
+// (docs/specs/009-elements/pointer-note.md "Attaching the tip"): the preview settles pointer notes as a commit does,
+// holding each tip on the anchor it had; the release's commit then moves it to the anchor nearest the note.
+// Badges and steps are left to the commit, so one dragged past a corner never catches it mid-gesture. O(1) when
+// the board has no pointer note.
+function settlePointerNotes(prev: Element[], next: Element[]): Element[] {
+  if (!next.some(isPointerNote)) return next;
+  const settled = settleChips(prev, next, { repickPointerAnchor: false });
+  if (settled === next) return next;
+  const byId = new Map(settled.map((el) => [el.id, el]));
+  let changed = false;
+  const out = next.map((el) => {
+    if (!isPointerNote(el)) return el;
+    const s = byId.get(el.id);
+    if (!s || s === el) return el;
+    changed = true;
+    return s;
+  });
+  return changed ? out : next;
+}
 
 export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
   const [drag, setDrag] = useState<DragState | null>(null);
@@ -97,7 +118,7 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
       previewRef.current = p;
       debugLog('[drag-preview] begin', { tab: tab.id });
     }
-    const next = { ...p, virtual: mapper(p.virtual) };
+    const next = { ...p, virtual: settlePointerNotes(p.virtual, mapper(p.virtual)) };
     previewRef.current = next;
     setLocalPreview(next.tabId, next.virtual, next.base);
   });

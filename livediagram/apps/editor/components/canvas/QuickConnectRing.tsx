@@ -75,6 +75,9 @@ type QuickConnectRingProps = {
   // process or header with room for more), the ring gains an action that
   // appends one more stat / step / link, labelled with what it adds.
   webRow?: { label: string; description: string; onAdd: () => void };
+  // The ring offers the row action alone: a concept graphic grows by its rows, never by arrows or shapes (owner
+  // 2026-11-19, docs/specs/008-canvas/canvas-and-palette.md "Quick-connect").
+  rowOnly?: boolean;
   // Table variant (docs/specs/008-canvas/canvas-and-palette.md): the ring slims down to Arrow plus the
   // structural add for this side — Add Row on the bottom plus, Add Column
   // on the right one. Duplicate / Pencil / Text don't apply to a grid.
@@ -168,6 +171,7 @@ export function QuickConnectRing({
   onArrowPointerDown,
   onPencil,
   webRow,
+  rowOnly = false,
   variant = 'default',
   onAddTableRow,
   onGrowMind,
@@ -193,7 +197,9 @@ export function QuickConnectRing({
             ...OPTIONS.filter((o) => o.kind === 'arrow' || o.kind === 'duplicate'),
           ]
         : webRow
-          ? [...OPTIONS, webRowOption(webRow.label, webRow.description)]
+          ? rowOnly
+            ? [webRowOption(webRow.label, webRow.description)]
+            : [...OPTIONS, webRowOption(webRow.label, webRow.description)]
           : onGrowMind
             ? // A mind node's ring is how a map grows: its two growth actions
               // and Duplicate. A free arrow, a sketch or a loose label is not

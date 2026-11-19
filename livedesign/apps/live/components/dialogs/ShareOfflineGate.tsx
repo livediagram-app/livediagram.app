@@ -8,7 +8,7 @@ import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/Dialog
 import { SyncDesignPrompt } from './SyncDesignPrompt';
 
 // The Share dialog's offline gate (docs/specs/006-design/offline-mode.md "Sharing a design in
-// This Browser"). An offline design is stored only in this browser, so there are no links to mint until it
+// Offline"). An offline design is stored only in this browser, so there are no links to mint until it
 // is synced. The gate says so and offers Sync Design (SyncDesignPrompt, which Share Form draws too); the
 // sync converts the open design in place ("Syncing in place"), with no reload, and the Share dialog swaps the
 // gate for its share options as the design stops being offline. Sync waits for `ready` (the reader is known).

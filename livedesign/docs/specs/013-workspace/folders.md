@@ -84,7 +84,7 @@ Every Explorer section is its own page under `/explorer` (the chrome, meaning he
 | A folder                                                       | `/explorer/folder?id=<id>`                                         |
 | A team ([Teams](teams.md))                                     | `/explorer/team?id=<id>`                                           |
 | Invites ([Teams](teams.md))                                    | `/explorer/invites`                                                |
-| This Browser ([Offline Mode](../006-design/offline-mode.md))   | `/explorer/offline`                                                |
+| Offline ([Offline Mode](../006-design/offline-mode.md))        | `/explorer/offline`                                                |
 | Image gallery                                                  | `/explorer/images`                                                 |
 | Trash ([Trash](trash.md))                                      | `/explorer/trash`                                                  |
 
@@ -346,7 +346,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
   Overview (Home, Inbox, Shared With Me), Spaces (My Work with
   its root folders beneath it, each team with its
-  folders, This Browser and its local folders while it holds anything, New Team), and More (Tags, Library, Trash). Each folder
+  folders, Offline and its local folders while it holds anything, New Team), and More (Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
   Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete. The Image gallery (under Library) degrades to an empty state
   when the api worker reports 503, e.g. a deployment without R2.

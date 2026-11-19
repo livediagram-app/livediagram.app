@@ -64,6 +64,26 @@ snapshots by a scoped item id. livedocuments' named versions (Name This Version,
   account's name taken off it), under the same size cap and chunking as a take.
 - **Gone with their part.** The app removes a part's save points when the part goes (livedocuments: with the tab).
 
+## When an account closes
+
+Closing an account deletes the person's own items in every app, and their snapshots go with them
+([sign-in.md](../003-accounts/sign-in.md#closing-an-account)). A snapshot they took in someone else's item (as an
+Editor of a colleague's plan, say) is the item's, and stays: its content is the owner's, and only the person's name
+comes off it. Their id becomes `deleted` and their name "Deleted account", as team member lists and comments already
+read (Work Tracker 1310). The colour stays, as it names no one.
+
+- **Every snapshot in the item**, the whole item's five and the save points of one part alike (livedocuments' named
+  versions), taken under the account's id or a guest id merged into it.
+- **Only the author.** The snapshot's content, name, kind, size and time are left as they are, and so is every
+  snapshot anyone else took.
+- **Through the index's notice.** The index tells each app which of its items may name the person
+  ([one-explorer-contracts.md](../004-index/one-explorer-contracts.md) "Closing an account", the items they opened or
+  reached by a link among them) and each item's room clears the author as it takes their name off the item's
+  comments. A room nobody has open is woken by that call, so the next person to open it, however much later, finds
+  the name gone; a room the call could not reach is asked again an hour later.
+- **Safe to run twice.** A second run finds no snapshot under their ids and changes nothing. A room that never took a
+  snapshot has no snapshot tables, and none are made for it.
+
 ## Revert
 
 Revert replaces the item's content in place with the snapshot's. Its steps, in order, all inside the item's object:
@@ -105,13 +125,13 @@ make sure of it:
 
 Share roles as every app applies them (each app's `013-workspace/share-roles.md`):
 
-| Who                                                                                                      | Snapshots                                                      |
-| -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| An **Editor** of the whole item: its owner, its team, an edit link to the whole item, a guest's own item | Sees the list, takes, reverts and deletes                      |
-| An Editor through a link **confined to one tab**                                                         | Nothing: no button, and the routes answer as missing           |
-| A **Participant** or a **Viewer**                                                                        | Nothing: no button, and the routes answer as missing           |
-| An **API token** (agents, MCP, CLI)                                                                      | Refused (403 `snapshots_need_a_person`), an Editor's included  |
-| A Community visitor, a workbench frame, an item in **This Browser**                                      | Nothing: no button (a This Browser item has no Durable Object) |
+| Who                                                                                                      | Snapshots                                                     |
+| -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| An **Editor** of the whole item: its owner, its team, an edit link to the whole item, a guest's own item | Sees the list, takes, reverts and deletes                     |
+| An Editor through a link **confined to one tab**                                                         | Nothing: no button, and the routes answer as missing          |
+| A **Participant** or a **Viewer**                                                                        | Nothing: no button, and the routes answer as missing          |
+| An **API token** (agents, MCP, CLI)                                                                      | Refused (403 `snapshots_need_a_person`), an Editor's included |
+| A Community visitor, a workbench frame, an item kept **Offline**                                         | Nothing: no button (an offline item has no Durable Object)    |
 
 ## In History
 
@@ -119,13 +139,13 @@ Snapshots live inside **History** in the footer's **Tools** menu ([The footer's 
 which has one Versioning row, History (owner, 2026-11-17: merge Snapshots into History). There is no Snapshots row of
 its own. History opens inside Tools, as every tool does, and what it shows depends on what the person may use:
 
-| Who                                                                            | History shows                                                                                                 |
-| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
-| Signed in, on a stored item they may take snapshots of (the owner, their team) | a **Take Snapshot** button at History's foot, and each snapshot on the timeline at the time it was taken      |
-| Signed in, may read History but not take snapshots (a Participant or Viewer)   | The timeline alone, as before                                                                                 |
-| May take snapshots but has no History to read (an Editor through a share link) | The snapshots on their own (the list below)                                                                   |
-| A guest who may take snapshots (a share link's Editor, signed out)             | The snapshots on their own, with "Sign In to see who changed this <item>, and when." under them               |
-| A guest or an item in **This Browser**, with no snapshots to take              | The Sign In or Sync <Item> prompt, as before (a This Browser item has no snapshots: it has no Durable Object) |
+| Who                                                                            | History shows                                                                                             |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Signed in, on a stored item they may take snapshots of (the owner, their team) | a **Take Snapshot** button at History's foot, and each snapshot on the timeline at the time it was taken  |
+| Signed in, may read History but not take snapshots (a Participant or Viewer)   | The timeline alone, as before                                                                             |
+| May take snapshots but has no History to read (an Editor through a share link) | The snapshots on their own (the list below)                                                               |
+| A guest who may take snapshots (a share link's Editor, signed out)             | The snapshots on their own, with "Sign In to see who changed this <item>, and when." under them           |
+| A guest or an item kept **Offline**, with no snapshots to take                 | The Sign In or Sync <Item> prompt, as before (an offline item has no snapshots: it has no Durable Object) |
 
 On the timeline:
 
@@ -195,5 +215,5 @@ one, its gate, and handing `useHistorySnapshotsHost()` to the History host it al
 
 - Automatic or scheduled snapshots, an operation log, per-edit history, retention tiers.
 - Restoring a snapshot as a copy (Make a Copy already copies the item as it is).
-- Snapshots of an item in This Browser.
+- Snapshots of an item kept Offline.
 - Agent access: no MCP tool or CLI verb takes or reverts a snapshot.

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// docs/specs/026-plan/public-roadmap.md "Publish as Roadmap": the plan's roadmaps read fresh, the tab's board in its two
+// docs/specs/026-plan/public-roadmap.md "Publish Roadmap": the plan's roadmaps read fresh, the tab's board in its two
 // states (Not published, Published), the defaults (triage columns hidden, Description, voting on), Publish Roadmap
 // with the settings chosen, a change that saves at once and keeps the link (and goes back when the save fails), the
 // suggestion form rules, Copy Link, Unpublish behind its confirm, the privacy note, the board picker, and the
@@ -303,20 +303,20 @@ describe('the Tools row', () => {
         <ToolsRow />
       </RoadmapHost>,
     );
-    expect(screen.queryByRole('button', { name: 'Publish as Roadmap' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Publish Roadmap' })).toBeNull();
     rerender(
       <RoadmapHost scope={SCOPE} hasBoards={false} activeTabId="t1">
         <ToolsRow />
       </RoadmapHost>,
     );
-    expect(screen.queryByRole('button', { name: 'Publish as Roadmap' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Publish Roadmap' })).toBeNull();
     client.readRoadmaps.mockResolvedValue({ roadmaps: [], boards: [BOARD], forms: [] });
     rerender(
       <RoadmapHost scope={SCOPE} hasBoards activeTabId="t1">
         <ToolsRow />
       </RoadmapHost>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Publish as Roadmap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Publish Roadmap' }));
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'Roadmap');
     await waitFor(() => expect(client.readRoadmaps).toHaveBeenCalledWith(SCOPE));
   });
@@ -466,7 +466,7 @@ describe('Votes on a public roadmap', () => {
         <ToolsRow />
       </RoadmapHost>,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Publish as Roadmap' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Publish Roadmap' }));
     await waitFor(() => expect(saves).toHaveBeenCalledTimes(1));
     expect(shows(saved(), 'feature')).toBe(true);
   });

@@ -65,9 +65,7 @@ export function ImportTabDialog({
           <span>
             This replaces everything on{' '}
             <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-            content. Undo
-            {/* The keys only where there is a keyboard to press them. */}
-            <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
+            content. Undo brings it back.
           </span>
         </div>
         <TextImportPanel

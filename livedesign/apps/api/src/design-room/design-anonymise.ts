@@ -19,6 +19,7 @@ import {
   mentionsAnySql,
 } from '@liveworkspace/index-app';
 import { reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
+import { clearSnapshotAuthors } from '@liveworkspace/snapshots/server';
 import type { DesignEnv } from '../types';
 
 export async function anonymiseDesign(
@@ -71,5 +72,11 @@ export async function anonymiseDesign(
     db.prepare(`DELETE FROM notify_claims WHERE ${isAnySql('sender')}`).bind(idList),
   );
   const results = await db.batch(writes);
-  return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);
+  // The snapshots they took here (liveworkspace/docs/specs/014-snapshots "When an account closes", Work Tracker 1310):
+  // the author only; the snapshot is the item's and stays.
+  const snapshots = await clearSnapshotAuthors(db, ids, {
+    id: ANONYMISED_PERSON,
+    name: ANONYMISED_NAME,
+  });
+  return results.reduce((sum, r) => sum + (r.meta.changes ?? 0), 0) + snapshots;
 }

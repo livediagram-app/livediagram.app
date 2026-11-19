@@ -6,7 +6,7 @@ the Explorer panel, and no **Favourites** page, sidebar row or panel section. Ho
 folders are how a space is found again.
 
 - An old `/explorer/favourites` address opens My Work, and a panel left on Favourites opens on My Work.
-- A space kept only in This Browser carries no star either: an older local record's mark is ignored, and Take
+- A space kept only Offline carries no star either: an older local record's mark is ignored, and Take
   Offline and Sync move none.
 - What the index keeps and why is in
   [one-explorer.md "Favourites removed"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#favourites-removed).

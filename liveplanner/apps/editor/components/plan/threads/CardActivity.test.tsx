@@ -8,8 +8,8 @@ import { PlanProvider, type PlanContextValue } from '../PlanContext';
 import { card, contextOf, fakeThreads, PLAN, Provide } from './thread-test-kit';
 
 // A card's Activity tab (docs/specs/026-plan/items.md "History" "Where it shows"): its timeline (day groups, runs on a
-// rail, a line per change with chips), Show N More and Show N More Changes, the skeleton and the empty, failed, This
-// Browser and no-plan states, the read on mount and on a change, and that a Viewer reads it as anyone does.
+// rail, a line per change with chips), Show N More and Show N More Changes, the skeleton and the empty, failed, Offline
+// and no-plan states, the read on mount and on a change, and that a Viewer reads it as anyone does.
 
 const fetchItemHistory = vi.fn<(...args: unknown[]) => unknown>();
 vi.mock('@/lib/api/item-history', () => ({
@@ -224,11 +224,11 @@ describe('its states', () => {
     expect(screen.getByText('No Activity Yet')).toBeTruthy();
   });
 
-  it('says a This Browser plan keeps no history', async () => {
+  it('says an offline plan keeps no history', async () => {
     fetchItemHistory.mockResolvedValue('offline');
     show();
     await flush();
-    expect(screen.getByText('Plans in This Browser keep no card history.')).toBeTruthy();
+    expect(screen.getByText('Offline plans keep no card history.')).toBeTruthy();
   });
 
   it('says a read failed, and tries again', async () => {

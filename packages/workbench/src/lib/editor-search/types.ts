@@ -7,7 +7,7 @@ import type { App } from '@liveworkspace/index-client';
 
 // `team` set = a file in a team's library (docs/specs/013-workspace/): the panel renders an "in <team>" suffix,
 // like team folders. Personal ones leave it unset. Either way picking it opens it by id. `localOnly`: saved only in
-// this browser (Offline Mode); the result carries the This Browser pill.
+// this browser (Offline Mode); the result carries the Offline pill.
 export type LibraryItem<K extends string> = {
   kind: K;
   id: string;

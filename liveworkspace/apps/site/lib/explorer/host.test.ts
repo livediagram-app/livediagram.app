@@ -62,7 +62,7 @@ describe("every app's addresses", () => {
     expect(itemHref(item({}), { cardId: 'c1' })).toMatch(/\/project\/p1#item=c1$/);
   });
 
-  it("makes New, share links, Help and This Browser the app's own", () => {
+  it("makes New, share links, Help and Offline the app's own", () => {
     expect(newItemHref('liveplanner', { folderId: 'f1', teamId: 't1' })).toBe(
       'https://www.liveplanner.app/new?folder=f1&team=t1',
     );

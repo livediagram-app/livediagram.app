@@ -185,7 +185,7 @@ export function lockWholeTab(
 /**
  * The tab a create stores (share-roles.md "A new document keeps only its creator's entries"): nothing is stored and no
  * room holds anything yet, so every reaction, response and dot under another person's collab key could only be made
- * up, and goes. The creator's own stay, under their collab key or a browser's own key (what a This Browser canvas
+ * up, and goes. The creator's own stay, under their collab key or a browser's own key (what an offline canvas
  * records them under, naming nobody); old editors' duplicate reactions collapse as on any write. The SAME tab when
  * nothing goes.
  */

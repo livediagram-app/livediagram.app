@@ -1,4 +1,4 @@
-// This Browser's lens (this-browser-lens.ts): what the list keeps matches as it would at the index; what it does not
+// Offline's lens (this-browser-lens.ts): what the list keeps matches as it would at the index; what it does not
 // keep matches nothing; and a whole list narrows well inside a frame.
 import { describe, expect, it } from 'vitest';
 import { parseLens, type LensContext } from '../lens';
@@ -28,7 +28,7 @@ const local = (n: number, over: Partial<ThisBrowserItem> = {}): ThisBrowserItem 
 const narrow = (items: ThisBrowserItem[], q: string) =>
   narrowThisBrowser(items, parseLens(q, context).lens, 'livediagram', NOW).map((i) => i.id);
 
-describe('This Browser’s lens', () => {
+describe('Offline’s lens', () => {
   const items = [local(0, { title: 'Road map' }), local(3), local(40, { title: 'Old road' })];
 
   it('matches the name, the last change, the app and the reader’s own', () => {
@@ -66,7 +66,7 @@ describe('This Browser’s lens', () => {
     const ms = cpuMsOf(() => {
       left = narrowThisBrowser(many, lens, 'livediagram', NOW);
     });
-    console.info(`This Browser lens, 5,000 items: ${ms.toFixed(1)} ms`);
+    console.info(`Offline lens, 5,000 items: ${ms.toFixed(1)} ms`);
     expect(left.length).toBeGreaterThan(0);
     expect(ms).toBeLessThan(cpuBudgetMs(50));
   });

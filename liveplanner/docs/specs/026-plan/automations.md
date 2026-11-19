@@ -64,23 +64,23 @@ work. A rule does it every time, at once, and says that it did.
   signed-in Editor of the whole plan) can pick one. The webhook must exist first, made in the plan's **Webhooks**
   dialog; a rule never holds an address. An Editor through a share link can already make a webhook of the plan, so
   a rule that posts to one shows them nothing new.
-- A plan in **Browser Storage** has no Automations: rules run on the plan's server-side alarm (as [Repeating
-  cards](items.md#repeating-cards)), even while nobody has the plan open, and a Browser Storage plan has none. Its
+- A plan kept **Offline** has no Automations: rules run on the plan's server-side alarm (as [Repeating
+  cards](items.md#repeating-cards)), even while nobody has the plan open, and a plan kept Offline has none. Its
   footer still shows **Automations** to whoever can edit it, and it opens the same gate the Share dialog does for a
-  plan in This Browser: titled **Automations**, saying **Rules Run on Our Servers**, "Rules, schedules and due-date
+  plan kept Offline: titled **Automations**, saying **Rules Run on Our Servers**, "Rules, schedules and due-date
   reminders run even when nobody has this plan open, so they need it saved to your account.", with **Sync Plan**
   (Share's own sync, in place, with no reload), **Cancel** and the help link (How Rules Work). Once synced, the same
   opening goes on to the Automations screen, as Share goes on to sharing. Sync to cloud carries no rules: an offline
   plan holds none.
 - A **guest** (no account) who can edit a plan on the server sees the button too, but rules are an account's work
   (the api's gate needs a signed-in Editor and answers a guest `automations_need_editor`), so it opens the same gate
-  asking them to sign in, under a person glyph (This Browser's gate keeps its cloud-off): **Rules Run on Our
+  asking them to sign in, under a person glyph (Offline's gate keeps its cloud-off): **Rules Run on Our
   Servers**, "Rules act for an Editor of this plan, even when nobody has it
   open, so they need you signed in. You come back here with Automations open.", with **Sign In** (back to this page,
   `?automations=1` opening the screen) and **Cancel**. After signing in the screen opens on the
   rules. **Only an Editor Can See Rules** is for a signed-in reader the api refuses, never a guest. Run Rule waits for
   sign-in too.
-- A guest on a plan in Browser Storage needs both: Tools badges the row **Sign In** then **Sync Plan**, and the gate
+- A guest on a plan kept Offline needs both: Tools badges the row **Sign In** then **Sync Plan**, and the gate
   asks for the sign-in first (owner, 2026-11-16), coming back to Sync Plan's gate.
 - **Typed-in email addresses** (Send Email to addresses, [Typed-in addresses](#typed-in-addresses)) are an Editor's
   like any action: only a signed-in Editor of the whole plan, in person or through their API token, saves a rule that
@@ -1396,7 +1396,7 @@ part at fault, the words, and the command to run next).
 - A plan made from a template with a board starts with that template's **starter rules**
   ([Plan templates](plan-templates.md#starter-rules)): Templates gallery rules filled from its columns and types, on
   when they need nothing picked, off until people are picked. None sends an email or calls a webhook. They are made
-  for a signed-in person's cloud plan, and for a plan in This Browser the moment it is saved to the cloud; a guest's
+  for a signed-in person's cloud plan, and for a plan kept Offline the moment it is saved to the cloud; a guest's
   plan starts with none.
 - An **export** of a plan (its file) carries its rules (who made and last changed each by name and colour, without account ids); an import of that file brings them back off, each checked as
   a save checks it against the file's card types: a rule a save would refuse (one that does not read, a name an
@@ -1417,7 +1417,7 @@ part at fault, the words, and the command to run next).
 `UI · Opened · Automations`; `Plan · Created · AutomationRule`; `Plan · Toggled · AutomationOn` /
 `AutomationOff`; `Plan · Deleted · AutomationRule`; `Plan · Tested · AutomationRule`; `Plan · Ran · AutomationManual`;
 `UI · Opened · AutomationTemplate.<id>`, the template's id after the dot (an event carries no value, so the id
-rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Browser Storage panel);
+rides in its type, from the fixed list above); `UI · Opened · AutomationsOffline` (the Offline plan's panel);
 `Plan · Created · AutomationSecret` (Make Secret), `Plan · Changed · AutomationSecret` (Regenerate) and
 `Plan · Copied · AutomationSecret` (Copy on the once-shown secret); `Plan · Created · AutomationRuleGithub` beside
 `AutomationRule` for a new rule with a GitHub trigger, and the GitHub view's own events

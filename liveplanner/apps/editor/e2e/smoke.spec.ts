@@ -14,9 +14,9 @@ import {
 // (the `pageErrors` fixture).
 
 // /new asks nothing: it makes a plan and opens it on Start Planning (docs/specs/007-editor/new-project-route.md).
-// A guest's lives in This Browser (docs/specs/006-project/save-locations.md "The default depends on who is creating"):
+// A guest's lives Offline (docs/specs/006-project/save-locations.md "The default depends on who is creating"):
 // listed in this browser's list for the Explorer. (Its header badge went with the header bar, experiment.)
-test('/new opens a guest’s new plan in This Browser on Start Planning, with no apps menu', async ({
+test('/new opens a guest’s new plan kept Offline on Start Planning, with no apps menu', async ({
   page,
   pageErrors,
 }) => {

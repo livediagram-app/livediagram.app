@@ -86,7 +86,7 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   trip to come back before it checks the page. The signed-in run skips it: its pages sign in.
   `e2e/guest-first.test.ts` holds every spec that opens a page to the shared fixture, and `freshVisitor` to that one
   test.
-- **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)),
+- **A guest's `/new` is Offline**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)),
   and the index holds no item for it, so its grant request answers 404. A spec that needs its new document on the
   server (it seeds it through the api with `seedTab`, watches the api's saves, or shares it) opens `/new` through
   `serverNewUrl`, which keeps the page's adopted guest (or adopts a minted one) and adds a `?folder=` of theirs, the

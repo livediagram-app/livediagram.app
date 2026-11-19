@@ -54,7 +54,7 @@ describe('useTeamPeople', () => {
     expect(result.current[0]!.id).toBe(await itemPersonId('user_a'));
   });
 
-  it('asks for nobody on a plan with no team (My Work, This Browser), whatever teams you are in', async () => {
+  it('asks for nobody on a plan with no team (My Work, Offline), whatever teams you are in', async () => {
     const { result } = renderHook(() =>
       useTeamPeople('user_1', true, true, [{ id: 't1' }, { id: 't2' }], null),
     );

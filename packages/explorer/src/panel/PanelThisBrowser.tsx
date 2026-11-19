@@ -1,6 +1,6 @@
 'use client';
 
-// The editor panel's This Browser section, as livediagram's own panel showed it before the shared Explorer (its
+// The editor panel's Offline section, as livediagram's own panel showed it before the shared Explorer (its
 // `browser` section): the items this browser keeps only for itself (offline), newest change first, each a row that
 // opens it in the editor. The editor runs the app's own code, so Sync (signed in) moves one into the account in
 // place, and Delete removes one for good after a confirmation (the Explorer's `delete-local` dialog, which a drop on
@@ -97,8 +97,8 @@ export function PanelThisBrowser() {
   );
 }
 
-/** Home's Most Used and Recent card for an item kept only in this browser, as the page's Home shows one: This Browser's
- *  picture, the pill and when it was opened, This Browser's menu (Open, Sync, Delete) and its drag. */
+/** Home's Most Used and Recent card for an item kept only in this browser, as the page's Home shows one: Offline's
+ *  picture, the pill and when it was opened, Offline's menu (Open, Sync, Delete) and its drag. */
 export const PanelLocalCard = memo(function PanelLocalCard({ item }: { item: ThisBrowserItem }) {
   const { app, kind } = useExplorer();
   const { host } = useThisBrowserItems();

@@ -91,7 +91,7 @@ test.describe('Optical alignment audit', () => {
 
   test('the Share dialog', async ({ page, pageErrors, baseURL }) => {
     await openSeededEditor(page, baseURL!);
-    await page.getByRole('button', { name: /^Share$/ }).click();
+    await page.getByRole('button', { name: /^Share, / }).click();
     await page.getByRole('dialog', { name: /^Share / }).waitFor();
     await expectCentred(page, 'Share dialog');
     expectNoPageErrors(pageErrors);

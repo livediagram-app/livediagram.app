@@ -61,9 +61,9 @@ const SECTIONS: HelpSection[] = [
       <>
         <p>
           Everything you own outside a team, from every app, in your own folders. Not synced: items
-          in a team, items others shared with you, and anything kept only in this browser (This
-          Browser and Offline). Move an item into a team and its file goes to Drive&apos;s bin; move
-          it back out and the file returns.
+          in a team, items others shared with you, and anything kept only in this browser (Offline
+          and Offline). Move an item into a team and its file goes to Drive&apos;s bin; move it back
+          out and the file returns.
         </p>
         <p>
           The copy in Drive is a mirror. Your work still lives in liveworkspace, so sharing,

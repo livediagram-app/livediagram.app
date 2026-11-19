@@ -470,7 +470,7 @@ describe('useIdentityBootstrapCore: a workbench', () => {
   });
 });
 
-describe('useIdentityBootstrapCore: instant open of an item in This Browser', () => {
+describe('useIdentityBootstrapCore: instant open of an item kept Offline', () => {
   it('opens before auth under the placeholder, then settles who is reading once auth answers', async () => {
     const set = makeSet();
     const { deps } = makeDeps({
@@ -583,7 +583,7 @@ describe('useIdentityBootstrapCore: instant open of an item in This Browser', ()
     expect(deps.isOfflineId).toHaveBeenCalledOnce();
   });
 
-  it('reads no copy for a share link that names no item in This Browser', async () => {
+  it('reads no copy for a share link that names no item kept Offline', async () => {
     window.history.replaceState(null, '', '/doc/d1?s=CODE');
     const set = makeSet();
     const { deps, copies } = makeDeps();

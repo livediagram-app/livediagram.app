@@ -84,7 +84,7 @@ afterEach(() => vi.useRealTimers());
 describe('ShareDialog', () => {
   it('starts a new pass as an Editor’s, and issues and copies it with a note and a highlight', async () => {
     const { calls, notify, onTelemetry } = renderDialog();
-    expect(screen.getByRole('radio', { name: /Editor/ }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByRole('button', { name: /^Pass level: Editor\./ })).toBeTruthy();
     expect(await screen.findByText(/No passes yet\. Only you can open this plan/)).toBeTruthy();
     expect(screen.getByRole('status').textContent).toContain(
       'Private: only you can open this plan.',
@@ -110,11 +110,10 @@ describe('ShareDialog', () => {
       { item: { id: 'p1', app: 'livehuddle', kind: 'space', sharedVia: null, title: 'Standup' } },
       { links: [link('old1', { level: 'view' }), link('pub1', { level: 'view', public: true })] },
     );
-    const levels = [...document.querySelectorAll('[role="radio"][data-level]')];
-    expect(levels.map((r) => r.getAttribute('data-level'))).toEqual(['edit', 'participate']);
-    expect(
-      screen.getByRole('radio', { name: /Participant/, hidden: true }).getAttribute('aria-checked'),
-    ).toBe('true');
+    // Participant to start; the picker lists only the other level, Editor (no Viewer for a space).
+    fireEvent.click(screen.getByRole('button', { name: /^Pass level: Participant\./ }));
+    const levels = [...document.querySelectorAll('[data-level]')];
+    expect(levels.map((r) => r.getAttribute('data-level'))).toEqual(['edit']);
     // The Viewer pass made before still lists, its band saying Legacy; a Community post's public link does not.
     const old = await waitFor(() => {
       const found = document.querySelector('[data-share-link="old1"]');

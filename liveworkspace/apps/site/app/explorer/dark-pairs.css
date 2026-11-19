@@ -7,7 +7,6 @@
 @source inline("dark:bg-amber-500");
 @source inline("dark:bg-amber-500/15");
 @source inline("dark:bg-amber-950");
-@source inline("dark:bg-emerald-400");
 @source inline("dark:bg-emerald-400/10");
 @source inline("dark:bg-emerald-500");
 @source inline("dark:bg-emerald-950");
@@ -21,9 +20,8 @@
 @source inline("dark:bg-slate-900/95");
 @source inline("dark:bg-slate-950/40");
 @source inline("dark:bg-slate-950/50");
-@source inline("dark:bg-teal-400/10");
-@source inline("dark:bg-violet-400");
 @source inline("dark:bg-violet-400/10");
+@source inline("dark:bg-violet-500/15");
 @source inline("dark:bg-violet-500/20");
 @source inline("dark:border-brand-500/30");
 @source inline("dark:border-emerald-500/50");

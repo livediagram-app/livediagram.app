@@ -6626,6 +6626,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "pointerAnchor": {
+        "$ref": "#/components/schemas/Anchor"
+      },
       "pointerTip": {
         "additionalProperties": false,
         "properties": {

@@ -2,9 +2,9 @@ import type { AccessLevel } from '@livedesign/api-schema';
 import { OFFLINE_OWNER_ID } from './offline/offline-store';
 
 // Where a listed design stands to the reader
-// (docs/specs/013-workspace/explorer-structure.md#designs-in-this-browser). A design saved only
+// (docs/specs/013-workspace/explorer-structure.md#offline-designs). A design saved only
 // in this browser (Offline Mode) is the reader's own, exactly like one in My Work: Space
-// `mine`, owner "You". It just lives somewhere else, which the This Browser pill says.
+// `mine`, owner "You". It just lives somewhere else, which the Offline pill says.
 
 type DesignSpace = 'mine' | 'team' | 'shared';
 
