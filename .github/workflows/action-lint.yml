@@ -1,0 +1,33 @@
+name: Action lint
+
+# Lints livediagram's GitHub Action (livediagram/apps/cli/github-action/), which users run in their own
+# repositories, so a shell or workflow syntax error would otherwise show only there. Path-filtered: it runs only
+# when the Action's files (or this workflow) change.
+on:
+  pull_request:
+    paths:
+      - livediagram/apps/cli/github-action/**
+      - .github/workflows/action-lint.yml
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: actionlint and shellcheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      # shellcheck is on the runner image.
+      - name: shellcheck
+        run: shellcheck livediagram/apps/cli/github-action/review.sh
+
+      # actionlint lints workflow files, so it reads the example workflow beside the Action (action.yml is
+      # action metadata, which it does not read); it runs shellcheck over the workflow's `run:` scripts too.
+      - name: actionlint
+        uses: docker://rhysd/actionlint:1.7.7
+        with:
+          args: -color livediagram/apps/cli/github-action/workflow.example.yml .github/workflows/action-lint.yml

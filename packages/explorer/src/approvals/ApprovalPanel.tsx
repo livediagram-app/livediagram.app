@@ -9,6 +9,7 @@ import { useState } from 'react';
 import type { Approval } from '@liveworkspace/index-client';
 import { Button, PictureDisc } from '@liveworkspace/ui';
 import { dateFormat } from '@liveworkspace/ui/date-format';
+import { HelpLink } from '../dialogs/share/HelpLink';
 import { SECTION_LABEL } from '../dialogs/share/parts';
 import { initials } from '../library/person-name';
 import { ApprovalPill } from './ApprovalBadge';
@@ -24,7 +25,21 @@ const DECISION_TONE = {
   changes_requested: 'text-rose-700 dark:text-rose-300',
 } as const;
 
-export function ApprovalPanel() {
+/** The tab's form or status, with a link to the Request Approval article under it where the app has one. */
+export function ApprovalPanel({ helpHref }: { helpHref?: string }) {
+  const body = <ApprovalBody />;
+  if (!helpHref) return body;
+  return (
+    <>
+      {body}
+      <div className="-mt-2">
+        <HelpLink href={helpHref} label="How approvals work" variant="text" />
+      </div>
+    </>
+  );
+}
+
+function ApprovalBody() {
   const ctx = useApprovalDoor();
   const [asking, setAsking] = useState(false);
   if (!ctx) return null;

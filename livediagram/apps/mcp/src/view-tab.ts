@@ -211,7 +211,7 @@ export async function viewEdit(env: Env, token: string, args: ViewEditArgs): Pro
     content: [
       {
         type: 'text',
-        text: `Saved ${count} edit${count === 1 ? '' : 's'} from the interactive view.`,
+        text: `Saved ${count} edit${count === 1 ? '' : 's'} from the interactive view. The diagram changed: call read_diagram before describing or editing it again, because any picture of it you hold is out of date.`,
       },
     ],
     structuredContent: {

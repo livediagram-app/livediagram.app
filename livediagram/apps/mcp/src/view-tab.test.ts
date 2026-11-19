@@ -227,6 +227,11 @@ describe('the view’s cost', () => {
 
 // docs/specs/015-api/mcp-server.md "Edits in the view": view_edit writes one changeset through the api on the user's
 // token, the path update_document takes, so the api decides; what the view may not do is refused before any write.
+// The text the model reads when the host passes it on: the picture it holds is stale (docs/specs/015-api/mcp-server.md
+// "Edits in the view").
+const STALE =
+  ' The diagram changed: call read_diagram before describing or editing it again, because any picture of it you hold is out of date.';
+
 describe('view_edit', () => {
   const box = { x: 0, y: 0, width: 40, height: 20 };
   const TAB = {
@@ -302,7 +307,7 @@ describe('view_edit', () => {
     expect(seen.filter((r) => r.method === 'GET')).toHaveLength(3);
     expect(result.isError).toBeUndefined();
     expect(result.content).toEqual([
-      { type: 'text', text: 'Saved 1 edit from the interactive view.' },
+      { type: 'text', text: 'Saved 1 edit from the interactive view.' + STALE },
     ]);
     expect(result.structuredContent).toMatchObject({
       documentId: 'd1',
@@ -326,7 +331,7 @@ describe('view_edit', () => {
       ],
     });
     expect(result.content).toEqual([
-      { type: 'text', text: 'Saved 2 edits from the interactive view.' },
+      { type: 'text', text: 'Saved 2 edits from the interactive view.' + STALE },
     ]);
     expect(result.structuredContent).toMatchObject({ changesetId: null });
     info.mockRestore();

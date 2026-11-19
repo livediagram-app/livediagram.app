@@ -15,3 +15,6 @@ AUTH_ORIGIN=http://localhost:3400
 # The local index (liveworkspace/apps/index, its dev key for livedesign).
 INDEX_ORIGIN=http://127.0.0.1:8793
 INDEX_KEY=dev-livedesign-index-key
+# Images, through the local media Worker (liveworkspace/apps/media): its MEDIA_KEY_LIVEDESIGN.
+MEDIA_URL=http://localhost:8792/api/media
+MEDIA_KEY=dev-livedesign-media-key

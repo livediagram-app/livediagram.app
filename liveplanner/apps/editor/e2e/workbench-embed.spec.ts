@@ -56,6 +56,14 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   page.on('request', (req) => {
     if (req.url().includes('/api/workbench/sessions')) sessionCalls.push(req.method());
   });
+  // A live embed frame logs no 401 and no `[workbench] request-confined` line (a confined frame's calls
+  // all stay inside its session).
+  const consoleLines: string[] = [];
+  const unauthorised: string[] = [];
+  page.on('console', (msg) => consoleLines.push(msg.text()));
+  page.on('response', (res) => {
+    if (res.status() === 401) unauthorised.push(res.url());
+  });
   await workbench.open(page, minted.body.url!);
   const frame = page.frameLocator('#frame');
   await frame.locator('[data-canvas-a11y-root]').waitFor();
@@ -77,6 +85,11 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
     projectName: 'Home screen',
     role: 'edit',
   });
+
+  expect(unauthorised).toEqual([]);
+  expect(consoleLines.filter((l) => l.includes('request-confined') || l.includes('401'))).toEqual(
+    [],
+  );
 
   // Drawing saves through the session.
   const viewport = page.viewportSize()!;
