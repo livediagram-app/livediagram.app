@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Callout } from '@liveworkspace/ui/callout';
 
 /**
  * The drop area every file import's pick step shares: a large dashed target that opens the picker
@@ -36,12 +37,9 @@ export function ImportDropZone({
         {label}
       </button>
       {error ? (
-        <p
-          role="alert"
-          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="alert" className="mt-3">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </>
   );

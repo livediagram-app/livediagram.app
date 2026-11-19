@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '@liveplanner/ui';
 import type { ImportOutcome } from '@/lib/import-tab';
 import { HeldFileChip, type HeldFile } from './import/HeldFileChip';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 
@@ -73,13 +74,14 @@ export function TextImportPanel({
         />
       )}
       {error ? (
-        <p
+        <Callout
           // Announced when it appears: the Import button keeps focus, so a reader would never hear why nothing landed.
           role="alert"
-          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+          tone="error"
+          className="mt-3"
         >
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-2">
         <Button

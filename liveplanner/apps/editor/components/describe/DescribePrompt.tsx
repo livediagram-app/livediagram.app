@@ -8,6 +8,7 @@
 import { forwardRef, useId, type ReactNode } from 'react';
 import { Button, SparkleIcon, TextArea } from '@liveplanner/ui';
 import { AiNote } from '@/components/automations/step-panels/AiStepPanel';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export type DescribeExample = { label: string; text: string };
 
@@ -92,13 +93,9 @@ export const DescribePrompt = forwardRef<
         </div>
       </div>
       {said ? (
-        <p
-          id={saidId}
-          role="alert"
-          className="rounded-lg bg-amber-50 px-3 py-2.5 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-200"
-        >
-          {said}
-        </p>
+        <Callout tone="warning" size="md" role="alert">
+          <span id={saidId}>{said}</span>
+        </Callout>
       ) : null}
       <AiNote id={noteId}>{note}</AiNote>
     </div>

@@ -21,7 +21,7 @@ function renderFolder(index: ReturnType<typeof createFakeIndex>) {
 }
 
 describe('a folder that is gone', () => {
-  it('shows Folder not found, an h2 under the pane’s own h1, and no Try again', async () => {
+  it('shows Folder not found, an h2 under the pane’s own h1, and no Try Again', async () => {
     const index = createFakeIndex();
     index.fail.set('listItems', new IndexError(404, 'folder_not_found'));
     renderFolder(index);
@@ -31,7 +31,7 @@ describe('a folder that is gone', () => {
     expect(screen.getByRole('button', { name: 'Back to your plans' })).toBeTruthy();
   });
 
-  it('still offers Try again when the read failed for another reason', async () => {
+  it('still offers Try Again when the read failed for another reason', async () => {
     const index = createFakeIndex();
     index.fail.set('listItems', new IndexError(500, 'unknown'));
     renderFolder(index);

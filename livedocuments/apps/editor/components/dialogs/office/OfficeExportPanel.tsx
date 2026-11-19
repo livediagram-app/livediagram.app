@@ -15,6 +15,7 @@ import {
   type OfficeFormat,
 } from '@/lib/office-export/summary';
 import { useOfficeExport } from './useOfficeExport';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const MAKING_COPY: Record<OfficeFormat, string> = {
   pptx: 'Making the deck…',
@@ -87,12 +88,9 @@ export default function OfficeExportPanel({
         </ul>
       </div>
       {office.phase.kind === 'error' ? (
-        <p
-          role="alert"
-          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="alert" className="mt-3">
           {OFFICE_EXPORT_MESSAGES[office.phase.failure]}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
         {making ? (

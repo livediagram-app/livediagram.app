@@ -11,6 +11,7 @@ import { ShapesIcon } from '../ui/library-icons';
 import { isAbort } from '../data/errors';
 import { PlainShapeTile } from './ShapePreview';
 import type { LibraryShape, ShapeLibrariesHost, ShapeLibrary } from './types';
+import { Callout } from '@liveworkspace/ui/callout';
 
 /** How many shapes a closed card shows. */
 export const SHAPE_LIBRARY_CARD_PREVIEWS = 8;
@@ -107,12 +108,9 @@ export function ShapeLibrariesPane({
   return (
     <div className="flex flex-col gap-3" data-explorer-shape-libraries="">
       {error ? (
-        <p
-          role="alert"
-          className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="alert">
           {error}
-        </p>
+        </Callout>
       ) : null}
       {loaded.libraries.map((library) => (
         <LibraryCard

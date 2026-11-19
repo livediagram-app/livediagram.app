@@ -315,7 +315,7 @@ describe('the Audit Log', () => {
     expect(await screen.findByText(/Couldn’t load the rest of this list/)).toBeTruthy();
     expect(rows().length).toBe(100);
     index.fail.delete('teamAudit');
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await waitFor(() => expect(rows().length).toBe(120));
     expect(screen.queryByRole('button', { name: 'Show More' })).toBeNull();
   });

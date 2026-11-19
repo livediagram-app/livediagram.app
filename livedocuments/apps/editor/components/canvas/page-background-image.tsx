@@ -39,6 +39,7 @@ import {
 import { useCanvasSurface } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
 import { usePageImageAccess } from './page-image-access';
 import { tileClass } from './page-panel-sections';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The Strength slider's step: 5%.
 const STRENGTH_STEP = 5;
@@ -249,9 +250,9 @@ export function ImageBackgroundChoices({
         {busy ? 'Uploading…' : 'Upload an Image'}
       </Button>
       {error ? (
-        <p className="mt-2 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+        <Callout tone="error" role="alert" className="mt-2">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </>
   );

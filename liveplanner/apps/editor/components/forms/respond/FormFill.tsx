@@ -19,6 +19,7 @@ import { LinkedText } from '../LinkedText';
 import { QuestionView } from '../QuestionView';
 import { FormConfirmation } from './FormConfirmation';
 import { useFormFill, type FillState, type SubmitOutcome } from './useFormFill';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The form's colour, as its look (form-look.ts) sets it on an ancestor: the builder's page or the form link's.
 export const FORM_ACCENT = 'var(--form-accent)';
@@ -239,12 +240,9 @@ export function FormFill({
       </div>
 
       {fill.failure ? (
-        <p
-          role="alert"
-          className="rounded-lg bg-red-50 px-4 py-3 text-[14px] text-red-800 dark:bg-red-950/40 dark:text-red-200"
-        >
+        <Callout tone="error" size="md" role="alert">
           {fill.failure}
-        </p>
+        </Callout>
       ) : null}
 
       {/* Back and Next / Submit at the bottom right; the note sits to their left (first on a phone, its own line).

@@ -43,6 +43,7 @@ import {
   withTrailingBlank,
   type SankeyDraftRow,
 } from '@/lib/sankey-flow-rows';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type Tab = 'table' | 'text';
 const TABS: readonly Tab[] = ['table', 'text'];
@@ -297,18 +298,14 @@ export function SankeyFlowsDialog({
             </div>
           )}
           {notes.length > 0 ? (
-            <div
-              data-tour-id="sankey-balance"
-              className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 dark:border-amber-500/30 dark:bg-amber-500/10"
-            >
-              <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
-                In and out differ
-              </p>
-              <ul className="mt-1 list-disc pl-4 text-xs text-amber-800 dark:text-amber-300">
-                {notes.slice(0, 6).map((n) => (
-                  <li key={n}>{n}</li>
-                ))}
-              </ul>
+            <div data-tour-id="sankey-balance" className="mt-4">
+              <Callout tone="warning" title="In and out differ">
+                <ul className="mt-0.5 list-disc pl-4">
+                  {notes.slice(0, 6).map((n) => (
+                    <li key={n}>{n}</li>
+                  ))}
+                </ul>
+              </Callout>
             </div>
           ) : null}
         </div>

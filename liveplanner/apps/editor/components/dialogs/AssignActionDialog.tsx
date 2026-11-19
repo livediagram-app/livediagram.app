@@ -1,5 +1,6 @@
 'use client';
 
+import { Callout } from '@liveworkspace/ui/callout';
 import { useEffect, useRef, useState } from 'react';
 import { Button, CloseIcon, TextInput, Switch } from '@liveplanner/ui';
 import {
@@ -320,7 +321,7 @@ export function AssignActionDialog({
           />
 
           {showAccessHint ? (
-            <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+            <Callout tone={assigneeAccess === 'invited' ? 'info' : 'warning'}>
               {assigneeAccess === 'invited' ? (
                 // Informational, not a warning: access arrives with the
                 // invite acceptance, no owner action needed.
@@ -337,7 +338,7 @@ export function AssignActionDialog({
                   : share it or move it to the team library.
                 </>
               )}
-            </p>
+            </Callout>
           ) : null}
 
           {showEmailControl ? (

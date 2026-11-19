@@ -35,7 +35,8 @@
     "./lazy-panel": "./src/lazy-panel.tsx",
     "./dialog-hero": "./src/dialog/hero/index.ts",
     "./dialog-hero-art/*": "./src/dialog/hero/art/*.tsx",
-    "./toast": "./src/toast/index.ts"
+    "./toast": "./src/toast/index.ts",
+    "./callout": "./src/callout/index.ts"
   },
   "scripts": {
     "lint": "oxlint",

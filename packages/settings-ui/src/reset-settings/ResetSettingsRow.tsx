@@ -142,13 +142,8 @@ export function ResetSettingsRow({
       }
     >
       {failed !== null ? (
-        <ErrorNote>
-          <span className="flex flex-wrap items-center justify-between gap-x-3 gap-y-2">
-            <span>{failedMessage(failed)}</span>
-            <Button variant="secondary" size="xs" onClick={() => void run()} className="shrink-0">
-              Try Again
-            </Button>
-          </span>
+        <ErrorNote action={{ label: 'Try Again', onSelect: () => void run() }}>
+          {failedMessage(failed)}
         </ErrorNote>
       ) : null}
       {confirming ? (

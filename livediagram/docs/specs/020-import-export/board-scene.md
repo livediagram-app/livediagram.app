@@ -270,13 +270,15 @@ Import`; the open document is not touched.
   lossless paste shows nothing. It has **its own slot just above the
   whiteboard dock**, so it never covers the dock at any width; with no dock it
   takes the slot a dock would have (above the bottom-right controls' line).
-  It floats, so showing it moves nothing. Copy:
+  It floats, so showing it moves nothing. It is a floating callout
+  ([Callouts](../../../../liveworkspace/docs/specs/016-notifications/callouts.md)): warning for a paste with
+  changes, error for a refused one, info while images store. Copy:
   - Heading: "Pasted from Excalidraw with some changes" (the source's name).
   - One line per rule, the count first: "2 · Groups were dropped".
   - Image placeholders as the image pipeline words them.
   - A refused paste (too big for the tab) says "Couldn't paste from Excalidraw"
     and the rejection's sentence.
-  - A Close button ("Close", Escape when focused). It stays until closed,
+  - Its close button (×, "Dismiss"; Escape when focused). It stays until closed,
     replaced by the next paste's, or the tab changes: it never times out under
     the reader.
 

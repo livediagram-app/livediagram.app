@@ -4,6 +4,7 @@ import { useRef, useState } from 'react';
 import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livediagram/api-schema';
 import { UPLOAD_ACCEPT_ATTR } from '@/lib/upload-image';
 import { Glyph } from '@livediagram/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // Drop / click target for image uploads. The same dashed-border
 // tile appeared inline in both ImagePicker (editor modal, 192px
@@ -99,9 +100,9 @@ export function ImageDropZone({
         />
       </div>
       {error ? (
-        <p className="mt-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
+        <Callout tone="error" className="mt-3">
           {error}
-        </p>
+        </Callout>
       ) : null}
     </>
   );

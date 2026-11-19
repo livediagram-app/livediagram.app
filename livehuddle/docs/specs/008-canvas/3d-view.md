@@ -252,11 +252,11 @@ The owner, 2026-11-18: "quarter turns is fine". You can walk round to see the ot
   face on the floor as the camera sees it (the owner: "I rotated screen then sat down at this desk, my character is
   facing the wrong way").
 
-## Bring it back into view
+## Show All (Nothing in view)
 
 The flat view's nudge when everything has scrolled out of view ([Canvas](canvas-and-palette.md)) counts what the
 3D camera sees: the floor it draws, far ahead and less behind (all round when turned), so content up ahead is never
-called out of view, and the nudge's button, which centres on your character, brings it back (the owner, 2026-11-18:
+called out of view, and the nudge's Show All, which centres on your character, brings it back (the owner, 2026-11-18:
 "Bring it back into view does nothing when I am in 3d").
 
 ## Pieces you can use

@@ -1,6 +1,7 @@
 import type { EditorView } from 'prosemirror-view';
 import { MAX_PAGES, type ArticleBlock, type LaidOutPage } from '@livedocuments/document';
 import { replaceContentTr } from '@/lib/article/article-replace';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The editor's content made `blocks` (article-replace): only what differs is replaced.
 export function replaceContent(
@@ -27,9 +28,9 @@ export function PageLimitNotice({ page }: { page: LaidOutPage }) {
         height: 32,
       }}
     >
-      <span className="rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-800 ring-1 ring-amber-200 dark:bg-amber-500/15 dark:text-amber-200 dark:ring-amber-500/30">
+      <Callout tone="warning" floating>
         This tab has reached {MAX_PAGES} pages: the writing below this line is hidden
-      </span>
+      </Callout>
     </div>
   );
 }

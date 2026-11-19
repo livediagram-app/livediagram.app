@@ -15,6 +15,7 @@ import {
 import { SegmentedToggle, lucideGlyph, type SegmentedOption } from '@liveplanner/ui';
 import { lucideTriangleAlert } from '@liveworkspace/icons/lucide';
 import { ChipToggles, PanelField, PanelSelect } from './panel-parts';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const AlertIcon = lucideGlyph(lucideTriangleAlert, 13);
 
@@ -220,17 +221,8 @@ export function EveryCardWarning({ compact = false }: { compact?: boolean }) {
       </span>
     );
   return (
-    <p
-      data-every-card=""
-      className="flex items-start gap-1.5 rounded-lg bg-amber-50 px-3 py-2 text-[12px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300"
-    >
-      <span className="mt-0.5 shrink-0">
-        <AlertIcon aria-hidden />
-      </span>
-      <span>
-        <span className="font-semibold">Runs on every card in the plan.</span> Add a condition to
-        pick the cards it runs on.
-      </span>
-    </p>
+    <Callout tone="warning" title="Runs on every card in the plan.">
+      Add a condition to pick the cards it runs on.
+    </Callout>
   );
 }

@@ -5,17 +5,12 @@ import { lucideGlyph } from '@liveworkspace/ui';
 import { lucideDownload, lucideMail, lucideUser, lucideUsers } from '@liveworkspace/icons/lucide';
 import { BUTTON } from '../account-ui';
 import { leftOutLine, phaseLine, readyLine, rowStateOf, type RowState } from './data-export-copy';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const DownloadGlyph = /* @__PURE__ */ lucideGlyph(lucideDownload, 15);
 const MailGlyph = /* @__PURE__ */ lucideGlyph(lucideMail, 13);
 const PersonGlyph = /* @__PURE__ */ lucideGlyph(lucideUser, 18);
 const TeamGlyph = /* @__PURE__ */ lucideGlyph(lucideUsers, 18);
-
-const NOTE = {
-  amber:
-    'mt-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[13px] leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200',
-  rose: 'mt-2.5 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-[13px] leading-relaxed text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300',
-};
 
 /**
  * One export's row in Settings › Your Data: the person's own or a team's, in its state. None and lapsed offer to
@@ -89,16 +84,20 @@ export function ExportRow({
             </p>
           </>
         ) : null}
-        {notes ? <p className={NOTE.amber}>{notes}</p> : null}
+        {notes ? (
+          <Callout tone="warning" size="md" className="mt-2.5">
+            {notes}
+          </Callout>
+        ) : null}
         {state === 'failed' ? (
-          <p className={NOTE.rose}>
+          <Callout tone="error" size="md" className="mt-2.5">
             Something went wrong while it was being made. Nothing of yours has changed.
-          </p>
+          </Callout>
         ) : null}
         {error ? (
-          <p role="alert" className={NOTE.rose}>
+          <Callout tone="error" size="md" role="alert" className="mt-2.5">
             {error}
-          </p>
+          </Callout>
         ) : null}
       </div>
       {state !== 'running' ? (

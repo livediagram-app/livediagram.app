@@ -65,12 +65,3 @@ export function DownloadIcon(props: IconProps) {
     </Glyph>
   );
 }
-
-export function WarningIcon(props: IconProps) {
-  return (
-    <Glyph size={13} {...props}>
-      <path d="M7.1 2.6 1.6 12.1a1 1 0 0 0 .9 1.5h11a1 1 0 0 0 .9-1.5L8.9 2.6a1 1 0 0 0-1.8 0z" />
-      <path d="M8 6.2v3M8 11.3h.01" />
-    </Glyph>
-  );
-}

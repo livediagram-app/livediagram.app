@@ -21,6 +21,7 @@ import {
 import { SLIDE_SPEEDS, SLIDE_TRANSITIONS } from '@/lib/presentation-config';
 import { ExportPagePicker } from '../ExportPagePicker';
 import { useGifExport } from './useGifExport';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export const GIF_ERROR_COPY: Record<GifExportErrorCode, string> = {
   tainted:
@@ -161,12 +162,9 @@ export default function GifExportPanel({
         ) : null}
       </div>
       {gif.phase.kind === 'error' ? (
-        <p
-          role="alert"
-          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="alert" className="mt-3">
           {GIF_ERROR_COPY[gif.phase.code]}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
         {making ? (

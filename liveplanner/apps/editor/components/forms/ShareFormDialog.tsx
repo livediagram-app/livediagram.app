@@ -20,6 +20,7 @@ import { track } from '@/lib/telemetry';
 import { FormProblems, formProblemCount } from './FormProblems';
 import { shareFormHeroArt } from './ShareFormHeroArt';
 import { ShareFormMore } from './share/ShareFormMore';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export function ShareFormDialog({
   open,
@@ -158,15 +159,15 @@ export function ShareFormDialog({
           ) : (
             <>
               {suspended ? (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-900 dark:bg-red-500/10 dark:text-red-100">
+                <Callout tone="error" size="md">
                   This form’s link was suspended after reports from respondents. Publishing again
                   makes a new link.
-                </p>
+                </Callout>
               ) : null}
               {!canPublish ? (
-                <p className="rounded-lg bg-red-50 px-3 py-2 text-[13px] text-red-900 dark:bg-red-500/10 dark:text-red-100">
+                <Callout tone="error" size="md">
                   This plan can’t publish more forms: its form links were suspended after reports.
-                </p>
+                </Callout>
               ) : formProblemCount(problem, notReady, warnings) ? (
                 <FormProblems
                   title="Before publishing:"

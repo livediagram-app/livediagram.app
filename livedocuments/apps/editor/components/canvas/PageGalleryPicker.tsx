@@ -11,6 +11,7 @@ import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { useImageGallery } from '@/hooks/ui/useImageGallery';
 import { GalleryEmpty } from '@liveworkspace/workbench/components/panels/GalleryEmpty';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The page panel's own width, three pictures across.
 const POPOVER_WIDTH = 304;
@@ -88,11 +89,7 @@ function GalleryChoices({
     if (picked) onPicked(picked);
   };
   if (error) {
-    return (
-      <p className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
-        {error}
-      </p>
-    );
+    return <Callout tone="error">{error}</Callout>;
   }
   if (!gallery) {
     return (

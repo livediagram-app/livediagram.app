@@ -17,6 +17,7 @@ import {
   NewPlanIcon,
   PeopleIcon,
 } from './tracker-icons';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const count = (n: number) => n.toLocaleString('en-GB');
 const plural = (n: number, one: string, many = `${one}s`) => `${count(n)} ${n === 1 ? one : many}`;
@@ -203,12 +204,9 @@ export function TrackerPreviewView({
           ]}
         />
         {tabReason ? (
-          <p
-            role="status"
-            className="rounded-lg bg-amber-50 px-3 py-2 text-[12px] leading-relaxed text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
-          >
+          <Callout tone="warning" role="status">
             {tabReason} It goes into a new plan instead, whole.
-          </p>
+          </Callout>
         ) : null}
       </Section>
     </div>

@@ -31,6 +31,7 @@ import { SetAutomatically } from './SetAutomatically';
 import { CardResponsePreview, SheetResponsePreview } from './ResponsePreview';
 import { CardTypeRules } from './CardTypeRules';
 import { ColumnChips } from './ChoiceChip';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const BoardIcon = lucideGlyph(lucideSquareKanban, 18);
 const SheetIcon = lucideGlyph(lucideTable, 18);
@@ -127,12 +128,9 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
           read={`Each response becomes a row on ${current.name}, a column per question. No mapping needed.`}
         />
       ) : (
-        <p
-          role="status"
-          className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
-        >
+        <Callout tone="warning" size="md" role="status">
           {DESTINATION_PROBLEM_TEXT.sheet_missing}
-        </p>
+        </Callout>
       )}
       {current ? <ExtraColumns /> : null}
       {current ? <SheetResponsePreview form={b.form} /> : null}
@@ -289,19 +287,13 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
         </div>
       </div>
       {problem ? (
-        <p
-          role="status"
-          className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
-        >
+        <Callout tone="warning" size="md" role="status">
           {DESTINATION_PROBLEM_TEXT[problem]}
-        </p>
+        </Callout>
       ) : warning && type ? (
-        <p
-          role="status"
-          className="rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100"
-        >
+        <Callout tone="warning" size="md" role="status">
           {destinationWarningText(warning, type.label, destTab?.name ?? 'the board')}
-        </p>
+        </Callout>
       ) : (
         <Flow
           lead={ruled.length ? 'Otherwise, each response' : 'Each response'}

@@ -12,6 +12,7 @@ import { GalleryEmpty } from '@liveworkspace/workbench/components/panels/Gallery
 import { GalleryImageButton } from '@/components/panels/GalleryImageButton';
 import { ImageDropZone } from '@/components/canvas/ImageDropZone';
 import { ImageSearchPane } from '@/components/panels/ImageSearchPane';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // Three-tab modal launched from the Image element's placeholder + the
 // "Upload image" palette button. Tab 1 (Upload) accepts a file via
@@ -221,11 +222,7 @@ function GalleryGrid({
   onDelete: (image: ImageSummary) => void;
 }) {
   if (error) {
-    return (
-      <p className="rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/15 dark:text-rose-300">
-        {error}
-      </p>
-    );
+    return <Callout tone="error">{error}</Callout>;
   }
   if (!gallery) {
     return <p className="text-xs text-slate-500 dark:text-slate-400">Loading…</p>;

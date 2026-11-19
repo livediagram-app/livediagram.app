@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { Button, htmlProps, Switch, BackBar } from '@livediagram/ui';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { track } from '@/lib/telemetry';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The options-and-download second screen for an image export format
 // (PNG / SVG / PDF). The isometric + background-pattern toggles used to sit
@@ -161,9 +162,9 @@ export function ImageExportPanel({
         </button>
       ) : null}
       {error ? (
-        <p className="mt-4 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300">
+        <Callout tone="error" className="mt-4">
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
         <Button

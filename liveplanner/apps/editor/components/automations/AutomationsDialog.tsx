@@ -55,6 +55,7 @@ import { TemplatesGallery } from './TemplatesGallery';
 import { DescribeRuleDialog } from './DescribeRuleDialog';
 import { DraftedNote } from './DraftedNote';
 import { readAutomations, useAutomations } from './use-automations';
+import { Callout } from '@liveworkspace/ui/callout';
 
 /** A template's rule over this plan, named so no rule here has its name, and what it left to pick. */
 export function templateStart(
@@ -357,9 +358,9 @@ export function AutomationsDialog({
       return (
         <div className={`min-h-0 flex-1 overflow-y-auto ${phone ? 'px-4 py-4' : 'px-6 py-5'}`}>
           {full ? (
-            <p className="mb-4 rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+            <Callout tone="warning" size="md" className="mb-4">
               This plan has 50 rules, the most it can hold. Delete one to add another.
-            </p>
+            </Callout>
           ) : null}
           <p className="mb-4 text-[13px] text-slate-500 dark:text-slate-400">
             Pick one to open it in the builder, filled in from this plan. Nothing is saved until you
@@ -453,13 +454,14 @@ export function AutomationsDialog({
       >
         {/* The plan spent its runs for the day (spec "Runs, limits and loops"): the meter is full and says why. */}
         {api.data && api.data.runsToday >= api.data.runsPerDay ? (
-          <p
+          <Callout
+            tone="warning"
+            size="md"
             role="status"
-            data-runs-full=""
-            className={`mt-3 rounded-lg bg-amber-50 px-3 py-2 text-[13px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300 ${phone ? 'mx-4' : 'mx-6'}`}
+            className={`mt-3 ${phone ? 'mx-4' : 'mx-6'}`}
           >
             Daily limit reached: rules run again tomorrow
-          </p>
+          </Callout>
         ) : null}
         {body}
       </div>

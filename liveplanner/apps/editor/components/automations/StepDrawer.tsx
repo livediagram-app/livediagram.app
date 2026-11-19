@@ -8,6 +8,7 @@
 import { useId, type ReactNode } from 'react';
 import { Button, DialogCloseButton, useDialogDismiss } from '@liveplanner/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
+import { Callout } from '@liveworkspace/ui/callout';
 
 function DoneButton({ onDone }: { onDone: () => void }) {
   const dismiss = useDialogDismiss();
@@ -61,12 +62,9 @@ export function StepDrawer({
         className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto overscroll-contain px-4 py-4"
       >
         {fault ? (
-          <p
-            role="alert"
-            className="rounded-lg bg-red-50 px-3 py-2 text-[12px] font-medium text-red-700 dark:bg-red-500/10 dark:text-red-300"
-          >
+          <Callout tone="error" role="alert">
             {fault}
-          </p>
+          </Callout>
         ) : null}
         {children}
       </section>

@@ -206,7 +206,7 @@ describe('Home', () => {
     expect(section('most-used')!.getAttribute('aria-busy')).toBe('false');
   });
 
-  it('says once that Home could not load, under Recent, with Try again', async () => {
+  it('says once that Home could not load, under Recent, with Try Again', async () => {
     const index = createFakeIndex({ items: twenty() });
     index.fail.set('listItems', new IndexError(500, 'unknown'));
     renderHome(index);
@@ -217,7 +217,7 @@ describe('Home', () => {
     expect(section('most-used')).toBeNull();
     expect(screen.queryByRole('link', { name: 'See More' })).toBeNull();
     index.fail.delete('listItems');
-    fireEvent.click(within(alert).getByRole('button', { name: 'Try again' }));
+    fireEvent.click(within(alert).getByRole('button', { name: 'Try Again' }));
     expect(await screen.findByRole('heading', { name: 'Most Used' })).toBeTruthy();
     expect(screen.queryByRole('alert')).toBeNull();
   });
