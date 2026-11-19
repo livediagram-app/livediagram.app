@@ -3,14 +3,13 @@
 Derived from [The pointer note](../pointer-note.md). Attachment is the badge's ([Badge blueprint](badge.md)); this adds
 the note's own tip. Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                      | Role                                                                |
-| --------------------------------------------------------- | ------------------------------------------------------------------- |
-| `packages/document/src/pointer-note.ts`                   | Kind guard, tip read / write, leader geometry, tip snapping         |
-| `packages/document/src/attachment.ts`                     | `settleChips` settles a pointer note; `withAttached` carries it     |
-| `packages/document/src/svg-render-pointer-note.ts`        | Headless body: panel, leader, tip                                   |
-| `apps/editor/components/canvas/PointerNoteOverlay.tsx`      | Canvas face: leader, tip, the tip handle while selected             |
-| `apps/editor/components/palette/PointerNoteMenuSection.tsx` | Detach                                                              |
-| `apps/editor/hooks/canvas/usePointerNoteSetters.ts`         | `setPointerTip(id, tipAbs)`: snap, attach or free, one history step |
+| File                                                   | Role                                                                |
+| ------------------------------------------------------ | ------------------------------------------------------------------- |
+| `packages/document/src/pointer-note.ts`                | Kind guard, tip read / write, leader geometry, tip snapping         |
+| `packages/document/src/attachment.ts`                  | `settleChips` settles a pointer note; `withAttached` carries it     |
+| `packages/document/src/svg-render-pointer-note.ts`     | Headless body: panel, leader, tip                                   |
+| `apps/editor/components/canvas/PointerNoteOverlay.tsx` | Canvas face: leader, tip, the tip handle while selected             |
+| `apps/editor/hooks/canvas/usePointerNoteSetters.ts`    | `setPointerTip(id, tipAbs)`: snap, attach or free, one history step |
 
 ## Domain and naming
 
@@ -29,12 +28,16 @@ Banned: "callout" (a Card preset), "arrow" (an arrow element), "pin" (comment pi
 
 For each pointer note `n` (before: `p`, the same id in `prev`):
 
-1. Attached with a known, hostable host and a valid point: `target = attachPointXY(host, attachAt)`.
+1. Attached with a known, hostable host and a valid point: `target = anchorPosition(host, pointerAnchor)` when
+   `pointerAnchor` is a valid anchor (the arrow's outline point, turned with the host), else
+   `attachPointXY(host, attachAt)`.
    - The host's box changed since `prev`, or the note is new: keep the tip, move the note so its tip lands on target:
      `x = target.x - tip.x`, `y = target.y - tip.y`.
+   - The note's own box changed against a still host: `pointerAnchor` becomes the middle of the host's side facing the
+     note (`sideMiddleFacing`: centres compared, scaled to the host; the nearest offered anchor where that side has none), then the tip is re-aimed as below.
    - Otherwise (the note moved, resized or nothing): keep the note, re-aim the tip: `tip = target - (x, y)`.
 2. Attached to an id in `prev` that is gone from `next`: the note is removed (deleted with its host).
-3. Attached to an unknown or unhostable id, or with an invalid point: detached where it is, its tip unchanged.
+3. Attached to an unknown or unhostable id, or with neither a valid anchor nor a valid point: detached where it is, its tip unchanged.
 4. Unattached: unchanged. (A note is never attached by landing near a point; only its tip handle attaches it.)
 
 `withAttached` adds attached pointer notes to a carried set, as it does chips; duplicate and paste remap `attachedTo`
@@ -53,8 +56,8 @@ when `t` lies inside the box there is no leader (`null`). The face and the expor
 
 ### Writes
 
-`withPointerTip(el, tip)`; `detachChip` detaches a pointer note too. Telemetry `PointerTip` (moved or attached),
-`PointerDetach`.
+`withPointerTip(el, tip)`; `detachChip` detaches a pointer note too. Telemetry `PointerTip` (moved) and `PointerAttach` (attached); `PointerDetach` came from the retired menu
+section.
 
 ### Invariants
 
@@ -104,13 +107,14 @@ Text renders as React text and is escaped in export; the tip is two bounded numb
 
 ## Performance and limits
 
-Settling adds one pass over pointer notes (O(notes)); the tip handle snaps against hosts with the badge's
-bounding-circle reject, on pointer-up only.
+Settling adds one pass over pointer notes (O(notes)); the tip handle snaps against hosts' offered anchors
+(`snapPointerTip`) with the badge's bounding-circle reject; while dragging, the overlay asks the same function for the
+host in reach (one pass per pointer move, hosts outside the bounding circle skipped) to draw its anchor dots.
 
 ## Presentation and UX
 
 - Starting content (D190): 180 × 64, label "Stale for 60 s after a price change", tip at (-24, 120) (56 px below the
-  bottom-left corner, 24 px left of it); amber border `#d97706`, wash `#fffbeb`, ink `#78350f`; text sm, top-left;
+  bottom-left corner, 24 px left of it); amber border `#d97706`, wash `#fffbeb`, ink `#78350f`; text sm, centred both ways;
   radius md.
 - Tip: a 7 px dot in the border colour; leader 1.5 px in the border colour.
 - Handle: while selected and editable, a 12 px ring on the tip, `cursor: grab`; dragging shows the tip following the
@@ -127,12 +131,11 @@ on key-up.
 
 ## Testing
 
-| Rule                                | Test file                                                                                                                    |
-| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Settling (I1, I2, deletes, carries) | `packages/document/src/pointer-note.test.ts`                                                                                 |
-| Leader, snapping, export (I3)       | same                                                                                                                         |
+| Rule                                | Test file                                                                                                                      |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Settling (I1, I2, deletes, carries) | `packages/document/src/pointer-note.test.ts`                                                                                   |
+| Leader, snapping, export (I3)       | same                                                                                                                           |
 | Face, tip handle drag and keys      | `apps/editor/components/canvas/PointerNoteOverlay.test.tsx`                                                                    |
-| Menu section                        | `apps/editor/components/palette/PointerNoteMenuSection.test.tsx`                                                               |
 | E5, no turn kept or offered         | `packages/document/src/unturnable-rotation.test.ts`; `apps/editor/components/palette/MultiPlacementSections.rotation.test.tsx` |
 
 ## Constants and configuration

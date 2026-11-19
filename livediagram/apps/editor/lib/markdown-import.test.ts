@@ -25,10 +25,14 @@ import {
 const RATIO_CEILING = cpuRatioCeiling(8);
 // The least CPU a sample of the smaller input takes: its read repeats until then, so the timer's noise reads small.
 const SAMPLE_MS = 2;
+const SETTLE_ROUNDS = 6;
 
 // The growth of `read` from `small` to `large`, built outside the timing. A sample repeats the read as often as the
 // smaller needs for SAMPLE_MS (a long heading reads in hundredths of a millisecond), and both sizes are warmed and
-// then timed in turns (cpuGrowthRatio).
+// then timed in turns (cpuGrowthRatio). Up to SETTLE_ROUNDS rounds, not the default three: a busy CI runner read
+// `![` at 8.001 after three (PR #2041), where it reads 3.9 to 4.0 every round here, even with a 1 MB young
+// generation. A further round runs only while the ratio reads at or over the ceiling, and a quadratic scan reads
+// sixteen in every round, so it costs a quiet run nothing and still fails a real regression.
 function growthOf(read: (text: string) => unknown, small: string, large: string): number {
   read(small);
   const runs = Math.ceil(
@@ -42,7 +46,10 @@ function growthOf(read: (text: string) => unknown, small: string, large: string)
     cpuMsOf(() => {
       for (let i = 0; i < runs; i++) read(text);
     });
-  return cpuGrowthRatio(sample(small), sample(large), { ceiling: RATIO_CEILING });
+  return cpuGrowthRatio(sample(small), sample(large), {
+    ceiling: RATIO_CEILING,
+    attempts: SETTLE_ROUNDS,
+  });
 }
 
 // Flatten a parsed forest into "depth:label" strings for compact assertions.

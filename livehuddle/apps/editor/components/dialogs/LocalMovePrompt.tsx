@@ -9,7 +9,7 @@ import { Spinner } from '@liveworkspace/workbench/components/palette/template-pi
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useLocalMovePrompt } from '@/hooks/persistence/useLocalMovePrompt';
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents kept Offline
 // after signing in"), mounted by the Explorer and the editor. Renders nothing until there is
 // something to offer.
 export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
@@ -18,7 +18,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   const { phase } = prompt;
   if (phase.kind === 'idle') return null;
 
-  const title = 'Move Spaces in This Browser to Your Account?';
+  const title = 'Move Offline Spaces to Your Account?';
   if (phase.kind === 'moving') {
     return (
       <Dialog open onClose={() => {}} ariaLabel={title} size="md">
@@ -39,14 +39,14 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   if (phase.kind === 'partial') {
     return (
       <Dialog open onClose={prompt.finish} ariaLabel={title} size="md">
-        <DialogHeader title="Some Spaces Stayed in This Browser">
+        <DialogHeader title="Some Spaces Stayed Offline">
           <DialogCloseButton onClick={prompt.finish} />
         </DialogHeader>
         <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">
           <p role="alert">
             {phase.failed.length === 1
-              ? 'This one could not be moved and is still in This Browser:'
-              : `These ${phase.failed.length} could not be moved and are still in This Browser:`}
+              ? 'This one could not be moved and is still Offline:'
+              : `These ${phase.failed.length} could not be moved and are still Offline:`}
           </p>
           <ul className="mt-2 list-disc pl-5 text-slate-600 dark:text-slate-300">
             {phase.failed.map((name, i) => (
@@ -79,7 +79,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
       </DialogHeader>
       <div className="px-6 py-5">
         <ImportChecklist
-          legend="Spaces in This Browser"
+          legend="Offline Spaces"
           rows={prompt.rows}
           checked={prompt.checked}
           onToggle={prompt.toggle}

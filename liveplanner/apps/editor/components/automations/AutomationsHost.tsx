@@ -3,7 +3,7 @@
 // Gives the editor its Automations (AutomationsContext) and draws the screen while it is open. The screen's code
 // loads the first time it opens (docs/specs/016-platform/web-performance.md), so a plan whose Editor never opens it
 // pays nothing for it; the list itself is read a moment after the plan opens, for the footer's amber dot. On a plan in
-// This Browser, or for a guest, it gives the footer its button alone, which opens the Share-style gate
+// Offline, or for a guest, it gives the footer its button alone, which opens the Share-style gate
 // (AutomationsSyncGate, its own chunk): Sync Plan, or Sign In; once synced or signed in the same opening goes on to the
 // screen, as Share goes on to sharing. `?automations=1` (where a guest's sign-in comes back) opens it on arrival, and
 // `#github=…` (where Connect GitHub comes back) opens it at the GitHub view, or at the rule kept for the round trip.
@@ -41,7 +41,7 @@ const AutomationsSyncGate = dynamic(
   { ssr: false },
 );
 
-// What stands before the screen (automationsGateFor): a plan in This Browser syncs (the Sync Plan move, once the
+// What stands before the screen (automationsGateFor): a plan kept Offline syncs (the Sync Plan move, once the
 // reader is known); a guest on a server plan signs in.
 export type AutomationsGate = { badges?: readonly string[] } & (
   { kind: 'sync'; ready: boolean; sync: () => Promise<void> } | { kind: 'sign_in' }

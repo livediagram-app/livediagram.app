@@ -200,7 +200,7 @@ describe('offlineDeleteIfUnchanged (Sync Project, docs/specs/006-project/offline
   });
 });
 
-// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser
+// The move prompt's cheap gate (docs/specs/014-identity/auth-and-guest-access.md "Moving projects kept Offline
 // after signing in"): a count off the cached index, never a full read.
 describe('offlineIdCount', () => {
   it('counts the projects this browser holds', async () => {

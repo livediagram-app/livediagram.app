@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 The Explorer, and everything it lists, is liveworkspace's index and its shared Explorer package, served at livediagram's own `/explorer`: [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) is the document and [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) the calls. The specs below marked "index" are short pages saying what the index does and what livediagram supplies.
 
-- ./explorer-structure.md - when working on the Explorer at `/explorer` or the editor's Explorer panel: the shared `@liveworkspace/explorer` served at livediagram's address, its views, what livediagram lends it (addresses, New, the Library, Take Offline and Sync Canvas, Share, Help), and This Browser at `/offline` (index)
+- ./explorer-structure.md - when working on the Explorer at `/explorer` or the editor's Explorer panel: the shared `@liveworkspace/explorer` served at livediagram's address, its views, what livediagram lends it (addresses, New, the Library, Take Offline and Sync Canvas, Share, Help), and Offline at `/offline` (index)
 - ./folders.md - when working on folders (index)
 - ./default-folders.md - when working on where a new canvas is filed by default: the app's entry and the template families' (Retrospective, Kanban), filing on create, a template picked after creation (index)
 - ./share-roles.md - when working on what a share link, embed or API token may do: Viewer, Participant, Editor; ownership powers
@@ -26,9 +26,10 @@ The Explorer, and everything it lists, is liveworkspace's index and its shared E
 - ./explorer-home.md - when working on Explorer Home: the words, first-run welcome manifest and Help livediagram gives it, and recording a canvas's opens (index)
 - ./inbox.md - when working on what a canvas pushes for the Inbox (index)
 - ./explorer-filters.md - when working on the Explorer's filter lens: the shared lens, with livediagram's template families for the Template chip (index)
-- ./trash.md - when working on the Trash: deleting and its Undo, a trashed canvas's refusals, the purge, the API and Google Drive sync; This Browser deletes for good (index)
-- ./empty-document-cleanup.md - when working on Empty document clean-up: the index's daily sweep sends a canvas with no elements or articles in any tab, unchanged for 30 days, to the Trash (marked `empty`); never This Browser's
+- ./trash.md - when working on the Trash: deleting and its Undo, a trashed canvas's refusals, the purge, the API and Google Drive sync; Offline deletes for good (index)
+- ./empty-document-cleanup.md - when working on Empty document clean-up: the index's daily sweep sends a canvas with no elements or articles in any tab, unchanged for 30 days, to the Trash (marked `empty`); never Offline's
 - ./shape-libraries.md - when working on Shape libraries: named, owner-scoped sets of reusable shapes (draw.io libraries imported, one library per file, never merged), the palette My shapes category, the shared Explorer's Shape Libraries and the previews route that draws its shapes, the `/api/shape-libraries` resource, limits and sign-up migration
 - ./snapshots.md - when working on Snapshots: manual save points of the whole document, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./approvals.md - when working on Approvals: asking named people to approve the canvas, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
+- ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livediagram supplies (the platform's `004-index/inbox-notices.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (shape libraries, share roles, workbench embeds)

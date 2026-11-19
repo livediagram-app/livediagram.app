@@ -152,7 +152,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   'event-storming': 8,
   // Diagram's Build as two, listed by the Diagram layout (docs/specs/010-palette/build-category.md); Diagrams owns
   // only the C4 model's six.
-  diagrams: 6,
+  // The C4 tiles and Layout's Infrastructure tile that offers them (owner, 2026-11-19).
+  diagrams: 7,
   layout: 0,
   // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
   participate: 0,

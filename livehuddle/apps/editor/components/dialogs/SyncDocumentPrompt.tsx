@@ -6,8 +6,8 @@ import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
-// The offer to move a document in This Browser onto livehuddle (docs/specs/006-document/offline-mode.md "Sharing a
-// document in This Browser"), drawn inside a dialog: the document Share dialog's gate. It says the document is offline and offers Sync
+// The offer to move a document kept Offline onto livehuddle (docs/specs/006-document/offline-mode.md "Sharing a
+// document kept Offline"), drawn inside a dialog: the document Share dialog's gate. It says the document is offline and offers Sync
 // Document; the sync converts the open document in place, and the dialog around it swaps this prompt for what it was
 // opened for as the document stops being offline. Sync waits for `ready` (the reader is known).
 export function SyncDocumentPrompt({
@@ -54,7 +54,7 @@ export function SyncDocumentPrompt({
       </span>
       <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-          This Space Is in This Browser
+          This Space Is Offline
         </p>
         <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           {message}

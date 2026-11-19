@@ -100,7 +100,7 @@ An embed never offers Sign In.
 
 A document its owner moved to Archived ([one-explorer.md "Archived"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#archived))
 never opens. The index refuses its grant as `archived` (to its owner; anyone else hears it is missing, and gets
-**Document Not Found**), or this browser holds it archived ([offline-mode.md "Archived in This Browser"](../006-document/offline-mode.md#archived-in-this-browser)).
+**Document Not Found**), or this browser holds it archived ([offline-mode.md "Archived Offline"](../006-document/offline-mode.md#archived-offline)).
 Either way the editor shows the same card in place of the document, titled **Document Archived** ("This document is archived, so it
 can't be opened or edited. Move it out of Archived with Change Folder to work on it again.") with a slate archive-box
 tile and no 404. **Change Folder** goes to `/explorer/archived?move=<id>`, where the Explorer opens Change Folder on
@@ -215,11 +215,11 @@ page), logging `[new] restored, back out <target>` (`../packages/workbench/src/h
   empty tab that opens on its start (Start Making Pages). An unknown template kind is ignored rather than guessed,
   so a stale link makes a document, not a 404; a retired kind opens its replacement.
 - **Stored** where [Save Locations → The default depends on who is creating](../006-document/save-locations.md#the-default-depends-on-who-is-creating)
-  says: This Browser for a guest, livedocuments for a signed-in person (`defaultSaveLocationFor`). Decided at commit by
+  says: Offline for a guest, livedocuments for a signed-in person (`defaultSaveLocationFor`). Decided at commit by
   `resolveSaveLocation` (`app/new/useNewDocumentLocation.ts`): a guest never waits, and is created without waiting
   for identity at all, a first visit's guest token aside ([Offline Mode → Instant open](../006-document/offline-mode.md#instant-open));
-  a browser that looks signed in waits for identity, so a signed-in person is never handed a document in This
-  Browser. A placement param (`folder` / `team`) names a server place, so it makes the create a cloud one whoever is
+  a browser that looks signed in waits for identity, so a signed-in person is never handed a document kept Offline.
+  A placement param (`folder` / `team`) names a server place, so it makes the create a cloud one whoever is
   creating.
 - **Filed** (livedocuments) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
   otherwise the create carries no placement and the server files it in the person's

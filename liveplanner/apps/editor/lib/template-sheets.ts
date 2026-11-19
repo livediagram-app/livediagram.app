@@ -1,5 +1,5 @@
 // A template's Sheets made in the browser (docs/specs/029-sheets/sheet-store.md "Template starts"), for the paths
-// that make tabs without the api's create: a project in This Browser from the wizard, and Quick Start. The sheets engine
+// that make tabs without the api's create: a project kept Offline from the wizard, and Quick Start. The sheets engine
 // loads only when a tab holds such a Sheet (hasTemplateSheets is engine-free), so no other template pays for it.
 import { hasTemplateSheets } from '@liveplanner/templates';
 import type { SheetCreateRequest } from '@liveplanner/api-schema';

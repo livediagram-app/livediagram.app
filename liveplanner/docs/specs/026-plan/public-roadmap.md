@@ -26,17 +26,19 @@ the fields listed under [What a visitor sees](#what-a-visitor-sees) and nothing 
 - **The plan's owner and the members of its team** (ownership, [share-roles.md](../013-workspace/share-roles.md)
   "Ownership"): publishing widens who sees the plan beyond anyone the owner shared it with, as sharing does, so it is
   never an access level's. A guest owner may publish (the planner works without signing in).
-- **Never through a share link**, at any level: an Editor, a Participant and a Viewer neither see Publish as Roadmap
+- **Never through a share link**, at any level: an Editor, a Participant and a Viewer neither see Publish Roadmap
   nor may call its routes. Nor a grant confined to one tab, an API token or a workbench session (a delegated caller
   never opens a lasting public door). The api refuses them with 403 `roadmap_needs_owner`, so the menu row is
   presentation, never the rule.
-- **A plan in This Browser** has no server to answer the page, so it offers no row.
+- **A plan kept Offline** has no server to answer the page, so it offers no row.
 
-## Publish as Roadmap
+## Publish Roadmap
+
+(Named **Publish as Roadmap** until 2026-11-19, owner.)
 
 ### Where it lives
 
-**Publish as Roadmap** in the footer's **Tools** menu, in Collaborate beside Subscribe to Calendar (owner, 2026-11-17;
+**Publish Roadmap** in the footer's **Tools** menu, in Collaborate beside Subscribe to Calendar (owner, 2026-11-17;
 no longer in the tab menu), for someone who may publish, on a plan with at least one Plan board on any tab. It opens
 inside Tools (liveworkspace/docs/specs/004-index/footer-tools-menu.md). At the top, **Tab** lists the plan's tabs holding
 a Plan board as pills (a board glyph, the tab's name, a green dot where a board on it is published), starting on the
@@ -45,7 +47,7 @@ Changing the tab starts on its first board. The Card Types offered are the chose
 
 ### The dialog
 
-A centred dialog (a bottom sheet on a phone) titled **Publish as Roadmap**, subtitled "A public page of the cards you
+A centred dialog (a bottom sheet on a phone) titled **Publish Roadmap**, subtitled "A public page of the cards you
 choose.", in two states:
 
 - **Not published**: the roadmap's settings (below) and **Publish Roadmap**.

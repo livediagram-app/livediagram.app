@@ -180,7 +180,7 @@ export function ExplorerDialogs() {
     }
     case 'move-local': {
       const item = dialog.item;
-      // Into the account goes through Sync, as a This Browser drop on a place does: only where the host syncs.
+      // Into the account goes through Sync, as an offline drop on a place does: only where the host syncs.
       const syncs = Boolean(thisBrowser?.sync || thisBrowser?.syncHref?.(item));
       // A place in the account asks to sync next: the dialog closes onto that question.
       let next: DialogTarget = null;
@@ -324,7 +324,7 @@ export function ExplorerDialogs() {
         </Suspense>
       );
     case 'delete-local': {
-      // Nothing else holds it (the index never saw it), so this is for good, as This Browser's Delete always asks, in
+      // Nothing else holds it (the index never saw it), so this is for good, as Offline's Delete always asks, in
       // the words the editor's handed-over Delete uses too.
       const item = dialog.item;
       return (

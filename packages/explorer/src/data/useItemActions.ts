@@ -36,7 +36,7 @@ export type ItemActions = {
 // goes): its promise settles the action. null lets the Explorer trash it.
 export type HostTrash = (item: Item) => Promise<boolean> | null;
 
-// The host's word that an item just went to Archived (an account's, or one kept in This Browser): true when it took it,
+// The host's word that an item just went to Archived (an account's, or one kept Offline): true when it took it,
 // the item open in its editor, and leaves for the Explorer, which says so on arrival; false keeps the toast here.
 export type HostArchived = (item: { id: string; title: string | null }) => boolean;
 

@@ -47,8 +47,8 @@ router). Wrangler does not inherit bindings into a named environment, so a bindi
 block, or a `service =` that lost its `-staging` suffix (pointing the staging router at **production**), is neither a
 type error nor a test failure. Without this step the first sign of either is a deploy.
 
-End-to-end suites run from the root `e2e.yml` through `e2e-product.yml` ([End-to-end tests](../003-system-architecture/e2e-smoke.md)),
-and the canvas performance probe from the root `canvas-perf.yml` ([Canvas performance](../008-canvas/canvas-performance.md)).
+End-to-end suites run from the root `e2e.yml` through `e2e-product.yml` ([End-to-end tests](../003-system-architecture/e2e-smoke.md)).
+The canvas performance probe runs by hand, in no workflow ([Canvas performance](../008-canvas/canvas-performance.md)).
 The `livedesign/.github/` folder is not used.
 
 **Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their `package.json` scripts and `vitest` to their `devDependencies`; turbo then picks the task up automatically. Tests live next to the source they cover as `*.test.ts` files.

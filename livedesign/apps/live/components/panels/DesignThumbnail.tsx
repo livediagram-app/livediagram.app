@@ -148,7 +148,7 @@ export function DesignThumbnail({
   }, [offline, empty, visible, ownerId, designId, version, shareCode, fetchKey]);
 
   // Offline Mode (docs/specs/006-design/offline-mode.md): the browser it lives in, on a wash of
-  // the app's accent (the Explorer's LocalPreview, as its This Browser rows draw it), no fetch, no snapshot.
+  // the app's accent (the Explorer's LocalPreview, as its Offline rows draw it), no fetch, no snapshot.
   if (offline) {
     return (
       <span ref={ref} aria-hidden className={`flex shrink-0 overflow-hidden ${className}`}>

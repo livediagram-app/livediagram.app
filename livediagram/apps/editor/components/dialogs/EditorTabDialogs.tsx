@@ -8,6 +8,8 @@ import dynamic from 'next/dynamic';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import { tabAsSeen } from '@/lib/export-as-seen';
+import { infraUpdateOffered } from '@/lib/infra-import';
+import { tabSourcesOf } from '@livediagram/document';
 import { panelEnabled } from '@/lib/user-preferences';
 import { indexClient } from '@liveworkspace/workbench/lib/index-client';
 import { shareUrl } from '@/lib/explorer-host';
@@ -55,8 +57,12 @@ export function EditorTabDialogs() {
     importOpen,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importInfraFiles,
+    updateFromSources,
+    can,
     setImportOpen,
     shareDialogOpen,
+    shareStartView,
     selfParticipant,
     setSelfParticipant,
     accountUserId,
@@ -112,6 +118,12 @@ export function EditorTabDialogs() {
           tabName={activeTab.name}
           onImportFile={importIntoActiveTab}
           onImportText={importTextIntoActiveTab}
+          infra={{
+            // The From Its Files card is an Editor's, on an unlocked tab the import drew (share roles).
+            sources: infraUpdateOffered(activeTab, can.level) ? tabSourcesOf(activeTab) : null,
+            importFiles: importInfraFiles,
+            update: updateFromSources,
+          }}
           onClose={() => setImportOpen(false)}
         />
       ) : null}
@@ -160,6 +172,8 @@ export function EditorTabDialogs() {
           firstTabEmpty={
             !!activeTab && tabs[0]?.id === activeTab.id && activeTab.elements.length === 0
           }
+          // The Share legend's Everyone stop opens it on the Community tab (openShareOn).
+          initialView={shareStartView}
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}

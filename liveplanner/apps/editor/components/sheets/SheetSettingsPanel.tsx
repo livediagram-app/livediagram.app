@@ -64,7 +64,9 @@ const DownloadGlyph = lucideGlyph(lucideFileDown, 18);
 const ClearGlyph = lucideGlyph(lucideTrash2, 18);
 const ResetGlyph = lucideGlyph(lucideRotateCcw, 12);
 
-type Section = 'data' | 'view' | 'sizes' | 'freeze' | 'calc' | 'names' | 'validation' | 'formats';
+export type SheetSettingsSection =
+  'data' | 'view' | 'sizes' | 'freeze' | 'calc' | 'names' | 'validation' | 'formats';
+type Section = SheetSettingsSection;
 
 // A Settings dialog row's presentational half.
 const row = (key: string, label: string, description: string) => ({
@@ -80,6 +82,7 @@ export function SheetSettingsPanel({
   csvInTabMenu = false,
   more,
   asRow,
+  openOn,
 }: {
   actions: SheetActions;
   onImportCsv: () => void;
@@ -94,10 +97,13 @@ export function SheetSettingsPanel({
   asRow?:
     | ((group: { id: Section; title: string; icon: ReactNode; children: ReactNode }) => ReactNode)
     | undefined;
+  // The section open at first (lib/settings-open-on.ts: Tab Style's Sheet Settings row asks for Sheet Options);
+  // absent, Sheet Setup.
+  openOn?: SheetSettingsSection | null | undefined;
 }) {
   const c = useSheetController();
   const layout = c.sheet.layout;
-  const [open, setOpen] = useState<string | null>('data');
+  const [open, setOpen] = useState<string | null>(openOn ?? 'data');
   const [title, setTitle] = useState<string | null>(null);
   const [confirmClear, setConfirmClear] = useState<HTMLElement | null>(null);
   const pick = useStatusPick();

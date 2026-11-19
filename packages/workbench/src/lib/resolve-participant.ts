@@ -1,6 +1,6 @@
 // Who is opening the editor (docs/specs/014-identity/auth-and-guest-access.md), resolved once auth has settled: the
 // account id when signed in, else the guest token's id (fetching one from the accounts site on a first visit); then
-// the stored profile, seeded on a first visit. Lifted out of useIdentityBootstrap so an item in This Browser can open
+// the stored profile, seeded on a first visit. Lifted out of useIdentityBootstrap so an item kept Offline can open
 // first and resolve this in the background (docs/specs/006-document/offline-mode.md "Instant open"). Each editor binds
 // it once, in its `resolve-participant.ts` beside its editor page.
 

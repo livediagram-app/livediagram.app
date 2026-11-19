@@ -31,7 +31,7 @@ this subdomain on the card (2026-11-15, option (a)).
   the board, so it is never a Participant's or a Viewer's: they see no row and the routes refuse them.
 - **Not** through an API token or a workbench session (a delegated caller never mints a lasting secret), nor a
   link confined to one tab, nor a Community link. Refused with 403 `email_intake_needs_editor`.
-- **A plan in This Browser** has no server to take its mail, so it offers no row; nor does an embed or a workbench
+- **A plan kept Offline** has no server to take its mail, so it offers no row; nor does an embed or a workbench
   frame.
 
 | Role                              | See the address, copy it, New Address, Turn Off, Who Can Send |
@@ -47,7 +47,7 @@ this subdomain on the card (2026-11-15, option (a)).
 **Email to Board** in the footer's **Tools** menu, in its Automate group under Automations
 ([Footer Tools menu](../../../../liveworkspace/docs/specs/004-index/footer-tools-menu.md); moved out of the tab menu, owner
 2026-11-16), on a tab holding at least one Plan board, for someone who may manage an address. Signed out, it is still
-there, badged **Sign In**; on a plan in This Browser, badged **Sync Plan**; a press opens that gate first, then the
+there, badged **Sign In**; on a plan kept Offline, badged **Sync Plan**; a press opens that gate first, then the
 dialog. It opens the Email to
 Board dialog on the tab's first board (a board picker at the top when the tab holds several).
 

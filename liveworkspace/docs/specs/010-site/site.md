@@ -497,13 +497,13 @@ built once here. It is shown here and, through each switched-on app's router, at
   ([one-explorer.md](../004-index/one-explorer.md#archived)). `?move=<id>` there opens Change Folder on that
   document, the editors' way back from their archived card, and `?open=<id>` (a Search panel's result) its archived
   dialog; each is dropped from the address once read. This browser's archived items aren't listed here: this origin
-  can't read an app's This Browser store, as This Browser here is a link into the app.
+  can't read an app's Offline store, as Offline here is a link into the app.
 - **The Inbox.** Plan cards wear their type's glyph, and its empty state points at liveplanner's help on actions.
 - **Teams.** Made, run and answered here ([one-explorer.md](../004-index/one-explorer.md#teams-are-run-in-the-explorer)): the
   page hands the Explorer `createTeamsHost({ fetch: accountFetch })` over this origin's `/api/account/teams…`, and
   after a team is made, joined, left or deleted it asks for a fresh workspace token, whose `teams` claim names
   them (`lib/explorer/new-team.ts` `renewIdentity`).
-- **This Browser.** Here, a row in the sidebar opens the app's own offline view (`offlinePath`), since what a
+- **Offline.** Here, a row in the sidebar opens the app's own offline view (`offlinePath`), since what a
   browser keeps belongs to that app's origin. On the app's address the Explorer lists it itself (below).
 - **Addresses handed over.** `?settings=<category>` (every notification email's unsubscribe link, the old
   `/account/settings` and `/account/tokens`, a Search result) opens the Settings panel here, in place, once the
@@ -519,7 +519,7 @@ built once here. It is shown here and, through each switched-on app's router, at
   ([one-explorer.md](../004-index/one-explorer.md#opening-from-an-open-item) "Opening from an open item").
 - **Retired addresses.** `/explorer/profile` goes to notification settings, `/explorer/activity` to the Inbox,
   `/explorer/generated` to a search for items made by AI, `/explorer/unsorted` and `/explorer/dynamic` to My Work (`/explorer/all`; there is no Unsorted view, since My Work's root already lists what is in no folder), `/explorer/tags` to Home, and `/explorer/offline` to the app's offline view (on an app's
-  address, This Browser's own view).
+  address, Offline's own view).
 
 #### On an app's own address
 
@@ -548,9 +548,9 @@ the `liveworkspace-app` meta an app's E2E stack adds ([one-explorer.md](../004-i
   (`/api/workspace/account/profile`), and its Sign-in Methods, Where You're Signed In, API Tokens and Your
   Data draw in place too, over the same token ([Settings](#settings), "On an app's address"), never a link to
   liveworkspace.app. Its search opens Profile and API Tokens in place as well.
-- **This Browser** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
+- **Offline** comes from the app's list in localStorage (`@liveworkspace/explorer/this-browser`), heard as it
   changes.
-- **The Inbox's This Browser rows** come from the app's snapshot in localStorage
+- **The Inbox's Offline rows** come from the app's snapshot in localStorage
   (`liveworkspace:this-browser-inbox:<app>`, [one-explorer.md](../004-index/one-explorer.md#the-explorer-on-each-apps-address)),
   listed only when it names the person reading (`lib/explorer/inbox.tsx` `localInboxHost`) and heard as it changes.
   Each opens in the app's editor on this origin, like any of the app's items. On liveworkspace.app there are none:
@@ -794,7 +794,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
       apps' own after them (Someone Joins My Canvas, Someone Fills In My Form); **Tips and Check-Ins** and
       **Milestones**, the emails from us, close the section (`closesSection`) however many apps add rows.
     - **Profile**: Name and Colour, Time Zone, Sign-in Methods, Where You're Signed In, Cloud Sync, Your Account,
-      then an editor's This Browser, and the Danger Zone last: Reset All Settings above Delete Account. Both apply to
+      then an editor's Offline, and the Danger Zone last: Reset All Settings above Delete Account. Both apply to
       every app, so under All they carry liveworkspace's mark (Reset only where it resets the account's settings).
     - **API Tokens**, **Your Data**: an app's own introduction to the panel (what a token lets your
       scripts and AI tools do, the guide to connecting one) comes first, above the panel (`fold-account.ts`).
@@ -941,7 +941,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     in silence. The header's account menu on this address does the same. And **Delete Account**, "Permanently deletes your liveworkspace account and everything you own
     in every liveworkspace app.", whose **Delete Account** button (`AccountHost.deleteAccount`) opens that app's own
     Delete Account dialog, the one its editor opens (`DeleteAccountDialog` in `@liveworkspace/workbench`, with the
-    app's name and its This Browser items), its confirmation unchanged: the typed email, then the code emailed to the
+    app's name and its Offline items), its confirmation unchanged: the typed email, then the code emailed to the
     account, sent to the app's own `POST /api/account/deletion-code` and `DELETE /api/account` on this address with the
     app's token, which deletes the app's data and closes the account. Deleted, the page goes to the app's landing page
     as a fresh guest. Signed out (a guest's settings for the app), neither row shows, as no account rows do.

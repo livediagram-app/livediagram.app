@@ -28,7 +28,7 @@ export const inboxHost: InboxHost = {
   actionsHelpHref: `${siteOfApp('liveplanner').url}/help/plan/cards/`,
 };
 
-/** The Inbox on the page served at `app`'s address: `base`, with the app's This Browser rows for this reader (only
+/** The Inbox on the page served at `app`'s address: `base`, with the app's Offline rows for this reader (only
  *  when the app's snapshot names them) read again as the app rewrites it. Each row opens like any of the app's items,
  *  on this origin (host.ts `itemHref`). Without an app (liveworkspace.app), `base` as it is. */
 export function localInboxHost(
@@ -47,7 +47,7 @@ export function localInboxHost(
 /** The reading pane's verbs on this page (@liveworkspace/explorer/inbox-actions): Reply and Resolve on a thread,
  *  through the app's own comment routes. On liveworkspace.app every app's threads, as the workspace token's audience
  *  is every app's api; on an app's address that app's alone, as its token is only its own api's. Mark Done on a
- *  livediagram action goes through its action route; nothing here reaches This Browser's items. */
+ *  livediagram action goes through its action route; nothing here reaches Offline's items. */
 export function inboxActionsFor(host: AppName | null, doFetch: typeof fetch = fetch): InboxActions {
   return createInboxActions({
     api: (app) => {

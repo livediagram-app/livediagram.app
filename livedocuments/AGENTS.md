@@ -188,7 +188,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 - **Mode** is how a tab is worked on. livedocuments has one, **Pages**; a mode stored by livediagram (Diagram, Draw, Workshop, Plan) reads as Pages. Never a type of document or tab.
 - **Page kind** is what a page is: infographic, article, slide or flashcard. Every page of a tab is of one kind, its first page's.
 - **Template** is what a document was made from: a Pages template or a page layout, never a kind.
-- **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
+- **Offline** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
 ## Repo layout
 

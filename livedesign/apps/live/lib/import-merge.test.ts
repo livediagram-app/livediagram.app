@@ -30,6 +30,14 @@ describe('mergeImportedTab', () => {
     expect(mergeImportedTab(tab({ finish: 'sketch' }), tab()).finish).toBe('sketch');
   });
 
+  // docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours": the tab's choice comes with it.
+  it("carries the tab's Element Colours choice", () => {
+    expect(mergeImportedTab(tab(), tab({ keepElementColours: true })).keepElementColours).toBe(
+      true,
+    );
+    expect(mergeImportedTab(tab(), tab()).keepElementColours).toBeUndefined();
+  });
+
   it('carries the imported LAYERS, so element layerIds still resolve', () => {
     const layers = [{ id: 'layer:cards', name: 'Cards' }];
     expect(mergeImportedTab(tab(), tab({ layers })).layers).toEqual(layers);

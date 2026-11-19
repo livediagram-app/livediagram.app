@@ -136,6 +136,21 @@ Two words, two owners, and the naming is deliberate: **Appearance** is yours, a 
 
 The open canvas has no header bar. Its actions are the top-right corner card's (`EditorCornerActions` in `../packages/workbench/src/components/chrome/`, [Toolbar layout](toolbar-layout.md)): Present while the deck has a presentable slide, Share (owner), Copy (visitor), and Sign in or the account control. The canvas is named and renamed in the Explorer panel's Current card, also from the search's Rename command ([one-explorer.md "Rename from the search"](../../../../liveworkspace/docs/specs/004-index/one-explorer.md#the-explorer-on-each-apps-address)), and its visibility badge is the Explorer's.
 
+**Share shows who can see the canvas** (owner, 2026-11-19; every app, `ShareVisibilityButton` in the workbench). Its
+words and glyph wear the item's visibility in the visibility tones every app shares (`@liveworkspace/explorer/visibility-tones`, also the Explorer's badge):
+**Private** green, **Shared** (a link) blue, **Team** violet, **Public** (listed in the Community) pink, **Offline** grey; Offline wins, then
+Public, Shared, Team, Private. Its accessible name says it ("Share, Team"). On a computer, resting the pointer on it
+opens the **visibility legend** the header badge had (`VisibilityLegend`: the reach rings, one scale from Offline (first,
+the narrowest) through Private, Shared and Team to Everyone with the current stop marked, and Change Who Can See This, which opens Share), under the
+button at its right edge; it closes a beat after the pointer leaves both. Pressing its Offline stop takes the canvas
+offline, after Take Offline's usual confirmation, for someone who may take it offline (the owner or a joined team member,
+not through a link or the Community, and not already offline). For the same person the other stops act too
+(`useVisibilityActions`): Private syncs an offline canvas to the account (from a team it opens Change Folder, from the
+Community Share's Community tab, from a link Share); Shared opens Share; Team opens the Explorer panel's Change Folder on
+the canvas, listing their own space and their teams'; Everyone opens Share on its Community tab (on Passes where the
+Community is off), except on a team's canvas. An offline canvas offers Private alone. Touch screens and phones never open it; a
+press opens Share as before.
+
 Only the pages that stand in for a canvas (loading, not found, and a create that failed) keep a bar: `EditorHeader` in `../packages/workbench/src/components/chrome/`, bound in `apps/*/components/chrome/EditorHeader.tsx` with this app's logo and account control. It holds the logo, which goes to the Explorer, and the account control (`AuthControls` in the same folder: Sign in, or the account's picture and first name opening Account and Sign Out), and nothing else.
 
 The account menu's **Account** item opens the host page's own Settings dialog on the Account category, in place (the editor via `openSettingsOn('account')`, the Explorer via its settings state); it navigates to `/explorer?settings=account` only when the host passes no handler.

@@ -9,7 +9,9 @@ import {
   elementSupportsText,
   isBoxed,
   isCompoundPath,
+  canAppendWebRow,
   cardinalityLabel,
+  isConceptShape,
   isFlowchartStep,
   isMindNode,
   joinsEntities,
@@ -27,10 +29,13 @@ import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 import { MultiSelectionToolbar } from '@/components/canvas/MultiSelectionToolbar';
 import { libraryDraftOf } from '@/lib/library-draft';
+import { WEB_ROW_ACTION } from '@/lib/web-row-actions';
 import { flowchartStepToolbarFor } from '@/components/flowchart/flowchart-step-toolbar';
 import { SelectionPopover } from '@/components/canvas/SelectionPopover';
 import { useInsertionSlot } from '@/lib/insertion-preview';
 import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+import { useElementTourOffer } from '@/lib/element-tour-offer';
+import { ElementTourOffer } from '@/components/tour/ElementTourOffer';
 
 // The floating selection toolbars (docs/specs/008-canvas/canvas-and-palette.md): the single-selection popover
 // and the marquee multi-selection toolbar, each riding a sibling wrapper
@@ -63,6 +68,8 @@ export function CanvasSelectionToolbars({
     showMultiToolbar,
   } = useCanvasSelectionView(selectionInput, props.activeTabId ?? '');
   const multiSelectedIds = useSelectionOf(multiOf);
+  // The element tour's Play button (docs/specs/007-editor/element-tours.md): ElementTourHost decides it; drawn beside the toolbar.
+  const tourOffer = useElementTourOffer(selected?.id ?? null);
   // The toolbars mirror the canvas transform, so they follow the view, but only while they show:
   // with nothing selected a zoom renders none of this (docs/specs/008-canvas/blueprints/viewport-store.md).
   const showing = selected !== null || showMultiToolbar;
@@ -117,6 +124,21 @@ export function CanvasSelectionToolbars({
             props.onGrowMindNode,
             props.flowchartActions,
           ),
+        }
+      : {}),
+    // A concept graphic's add (owner 2026-11-19): its Quick Style toolbar offers it as a mind node's offers Add Child.
+    ...(!readOnly &&
+    !selectedLocked &&
+    props.onAppendWebRow &&
+    selected?.type === 'shape' &&
+    isConceptShape(selected.shape) &&
+    canAppendWebRow(selected) &&
+    WEB_ROW_ACTION[selected.shape]
+      ? {
+          addRow: {
+            ...WEB_ROW_ACTION[selected.shape]!,
+            onAdd: () => props.onAppendWebRow?.(selected.id),
+          },
         }
       : {}),
     // Save to Library (liveworkspace/docs/specs/006-media/libraries.md): at the bar's right, apart from the rest.
@@ -241,6 +263,7 @@ export function CanvasSelectionToolbars({
             // annotation, an event-storming board). An arrow keeps the wide gap: its move
             // frame sits there, and a toolbar over it would take the press that drags the arrow.
             compact={readOnly || (!showPlus && !!selected && isBoxed(selected))}
+            aside={tourOffer ? <ElementTourOffer offer={tourOffer} /> : undefined}
           />
         </div>
       ) : null}

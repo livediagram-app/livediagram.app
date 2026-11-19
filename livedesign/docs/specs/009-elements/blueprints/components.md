@@ -244,7 +244,7 @@ CREATE INDEX IF NOT EXISTS component_refs_component ON component_refs (component
 - A copy of a design copies every `components` row (a one-tab copy, the mains that tab uses). A shared tab's body
   carries `extra.components` (the mains its instances use); taking it in upserts each where the stored `updated_at`
   is older or absent.
-- This Browser designs keep the library under the design's offline record (`components`), saved with its tabs.
+- Offline designs keep the library under the design's offline record (`components`), saved with its tabs.
 - Snapshot / restore: a tab's revision history never holds mains; a restored tab draws with today's mains.
 
 ## Errors and edge cases

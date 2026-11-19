@@ -88,7 +88,7 @@ export function TextImportPanel({
           busy={busy}
           className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60"
         >
-          Import a file instead
+          Import File
         </Button>
         <Button
           variant="primary"

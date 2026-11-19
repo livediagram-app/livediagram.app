@@ -31,7 +31,7 @@ board of the template shows some, and every plan view on its Dashboard has somet
   own: Weekly Planner's **Weekly review** repeats every week on Friday, landing in Friday. Its `from` is the day the
   project is made and its `timeZone` the maker's (the browser's; the API's seeded create uses UTC), so its first copy
   is the next Friday after today. It is an example card like the rest (Clear Example Cards trashes it, which stops it
-  while it is in the Trash); its copies are ordinary cards, as every repeat's are. A plan in This Browser holds the
+  while it is in the Trash); its copies are ordinary cards, as every repeat's are. A plan kept Offline holds the
   rule and makes copies once it is saved to an account. A seed names only `every`, `days`, `date` and `status`, and a
   test holds every seeded rule to what `readRepeatRule` accepts.
 - **They are marked.** Every example card carries the `example` flag ([Items](items.md#example-cards)), so the
@@ -320,7 +320,7 @@ template and a blank plan have no cards for a rule to act on, and start with non
     same way, for a signed-in person or their API token.
   - **Start Planning** on a cloud plan's first tab: the editor makes them, as Make Plan makes its own, once it knows the
     person may.
-  - **A plan in This Browser** keeps its template with the plan (made from the wizard, or Start Planning on its first
+  - **A plan kept Offline** keeps its template with the plan (made from the wizard, or Start Planning on its first
     tab), and its rules are made, on or off as they ship, the moment it is saved to the cloud: Sync Plan's create names
     the template as the wizard's does.
   - A guest's cloud plan gets none (a guest can hold no rule; Automations "Who may do what"), nor does a template on a
@@ -730,7 +730,7 @@ templates, and bring no card types. Whether the Sheet fills its tab is decided p
   table says.
 - **The sheet is made with the project.** The template's Sheet element names its start (`start` on the element,
   [Sheet store](../029-sheets/sheet-store.md#template-starts)); every path that makes the tabs makes the sheet
-  from it there and then: the New Project wizard (stored with the project, cloud or This Browser), a start screen (as
+  from it there and then: the New Project wizard (stored with the project, cloud or Offline), a start screen (as
   it adds the tabs), and agents (the MCP's `create_project` and `add_tab`, the api's seeded create). So the sheet
   is there for everyone, an agent's `read_sheet` included, the moment the project is.
 - The eight added with the template catalogue's categories (Invoice, Expense Report, Loan Calculator, Sales Pipeline,

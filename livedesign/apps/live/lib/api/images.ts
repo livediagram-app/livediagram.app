@@ -175,7 +175,7 @@ export async function apiFetchImageDataUrl(
   imageId: string,
   opts: { designId?: string; shareCode?: string | null } = {},
 ): Promise<string | null> {
-  // A This Browser picture is already its data URL: no decode and re-encode.
+  // An offline picture is already its data URL: no decode and re-encode.
   if (isDataImageId(imageId)) return imageId;
   const res = await fetchImage(ownerId, imageId, opts);
   if (!res) return null;
@@ -197,7 +197,7 @@ export async function apiFetchImageBlob(
 // null on any non-ok status (the callers map that to a broken / placeholder
 // state). Native `<img src>` can't send auth headers, so every read goes
 // through this fetch.
-// A This Browser design's picture id IS its `data:` URL (upload-image.ts embedImageFile), so it is
+// An offline design's picture id IS its `data:` URL (upload-image.ts embedImageFile), so it is
 // decoded in place, never sent to the images api (which answers 404 for it): docs/specs/009-elements/images.md.
 async function fetchImage(
   ownerId: string,

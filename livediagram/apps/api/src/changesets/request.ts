@@ -32,6 +32,8 @@ export type ChangesetBody =
       theme?: string;
       finish?: Finish;
       name?: string;
+      // The tab's sources record as sent; the engine checks it (diagram-sources.md "Writing the record").
+      sources?: unknown;
     };
 
 export type ParsedChangeset = {
@@ -172,6 +174,7 @@ function parseReplace(raw: unknown): ChangesetBody | { refusal: Refusal } {
     ...(typeof raw.theme === 'string' ? { theme: raw.theme } : {}),
     ...(isFinish(raw.finish) ? { finish: raw.finish } : {}),
     ...(typeof raw.name === 'string' ? { name: raw.name } : {}),
+    ...(raw.sources !== undefined ? { sources: raw.sources } : {}),
   };
 }
 

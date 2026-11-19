@@ -4,6 +4,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ElementTourApi } from './element-tour-api';
 import { flowchartTourSteps, type FlowchartTourContext } from './flowchart-tour-steps';
+import { kindToolSelector } from './concept-element-tour-steps';
 
 const ctxOf = (over: Partial<FlowchartTourContext> = {}): FlowchartTourContext => ({
   elementId: 'st',
@@ -35,10 +36,10 @@ describe('flowchartTourSteps', () => {
   it("points at the step's toolbar buttons", () => {
     const steps = flowchartTourSteps(ctxOf({ hasLanes: true }));
     const sel = (id: string) => steps.find((s) => s.id === id)!.selector!(api);
-    expect(sel('next')).toBe('[data-testid="selection-popover"] button[aria-label="Add Step"]');
-    expect(sel('branch')).toBe('[data-testid="selection-popover"] button[aria-label="Add Branch"]');
-    expect(sel('type')).toBe('[data-testid="selection-popover"] button[aria-label="Step Type"]');
-    expect(sel('lane')).toBe('[data-testid="selection-popover"] button[aria-label="Lane"]');
+    expect(sel('next')).toBe(kindToolSelector('Add Step'));
+    expect(sel('branch')).toBe(kindToolSelector('Add Branch'));
+    expect(sel('type')).toBe(kindToolSelector('Step Type'));
+    expect(sel('lane')).toBe(kindToolSelector('Lane'));
   });
 
   it('names Tab and Enter on a keyboard, and only the buttons on a touch screen', () => {

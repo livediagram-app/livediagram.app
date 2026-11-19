@@ -20,10 +20,32 @@ describe('wallColourVars', () => {
     );
   });
 
-  it('deepens the colour on a dark canvas', () => {
-    const day = wallColourVars('#d5e6d3', false)!['--space-wall'];
-    const evening = wallColourVars('#d5e6d3', true)!['--space-wall'];
-    expect(contrastRatio(evening, '#000000')).toBeLessThan(contrastRatio(day, '#000000'));
+  it('takes the shade a third toward black and the top a quarter toward white, not past them', () => {
+    const vars = wallColourVars('#ef4444', false)!;
+    // A third darker: each channel at two thirds of the face's, so red stays red.
+    expect(vars['--space-wall-shade']).toBe('#9f2d2d');
+    expect(vars['--space-wall-top']).toBe('#f37373');
+  });
+
+  it('deepens the colour on a dark canvas, gently, so the hue stays recognisable', () => {
+    const lightness = (hex: string) => {
+      const n = Number.parseInt(hex.slice(1), 16);
+      const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+      return (Math.max(...c) + Math.min(...c)) / 2 / 255;
+    };
+    for (const color of ['#d5e6d3', '#ef4444', '#dc2626', '#1e293b', '#fafafa']) {
+      const day = wallColourVars(color, false)!['--space-wall'];
+      const evening = wallColourVars(color, true)!['--space-wall'];
+      expect(contrastRatio(evening, '#000000'), color).toBeLessThan(contrastRatio(day, '#000000'));
+      // Down a tenth of its lightness at most, and never more than 0.06 (plus a rounding step).
+      const drop = lightness(day) - lightness(evening);
+      expect(drop, color).toBeLessThanOrEqual(Math.min(lightness(day) / 10, 0.06) + 1 / 255);
+    }
+    // A red wall stays red in evening light: its red channel well above the others, nowhere near black.
+    const red = wallColourVars('#ef4444', true)!;
+    expect(red['--space-wall']).toBe('#d73d3d');
+    expect(Number.parseInt(red['--space-wall-shade'].slice(1, 3), 16)).toBeGreaterThan(128);
+    expect(wallColourVars('#000000', true)!['--space-wall']).toBe('#000000');
   });
 
   it('inks a sign dark on a light wall and light on a dark one, readable either way', () => {

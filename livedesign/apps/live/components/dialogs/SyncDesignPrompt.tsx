@@ -6,8 +6,8 @@ import { useToast } from '@/hooks/ui/useToast';
 import { syncFailureMessage } from '@/lib/offline/offline-convert';
 import { Spinner } from '@liveworkspace/workbench/components/palette/template-picker-icons';
 
-// The offer to move a design in This Browser onto livedesign (docs/specs/006-design/offline-mode.md "Sharing a
-// design in This Browser"), drawn inside a dialog: the design Share dialog's gate and Share Form's. It says
+// The offer to move a design kept Offline onto livedesign (docs/specs/006-design/offline-mode.md "Sharing a
+// design kept Offline"), drawn inside a dialog: the design Share dialog's gate and Share Form's. It says
 // the design is offline and offers Sync Design; the sync converts the open design in place, and the dialog around it swaps this prompt for what it was
 // opened for as the design stops being offline. Sync waits for `ready` (the reader is known).
 export function SyncDesignPrompt({
@@ -54,7 +54,7 @@ export function SyncDesignPrompt({
       </span>
       <div className="flex flex-col gap-1.5">
         <p className="text-sm font-medium text-slate-800 dark:text-slate-100">
-          This Design Is in This Browser
+          This Design Is Offline
         </p>
         <p className="mx-auto max-w-sm text-xs leading-relaxed text-slate-500 dark:text-slate-400">
           {message}

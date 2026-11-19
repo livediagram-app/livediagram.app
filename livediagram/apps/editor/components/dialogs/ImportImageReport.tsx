@@ -16,6 +16,7 @@ export function ImportImageReport({
   failures,
   documents,
   libraries,
+  title = 'Import complete',
   onDone,
 }: {
   report?: Report;
@@ -25,6 +26,8 @@ export function ImportImageReport({
   documents?: { id: string; name: string }[];
   // The shape libraries an import made, opened together on the Explorer's Shape libraries page.
   libraries?: { id: string; name: string }[];
+  // The heading: an update from a tab's files says "Update complete".
+  title?: string;
   onDone: () => void;
 }) {
   const doneRef = useRef<HTMLButtonElement>(null);
@@ -36,7 +39,7 @@ export function ImportImageReport({
 
   return (
     <div role="status" data-testid="import-image-report">
-      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Import complete</h3>
+      <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</h3>
       {scene ? (
         <div className="mt-2">
           <BoardSceneReportList report={scene} showLanded />

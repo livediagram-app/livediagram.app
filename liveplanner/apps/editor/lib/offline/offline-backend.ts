@@ -6,7 +6,7 @@ import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@liveplanner/ui';
 import type { OfflineProjectRecord } from './offline-store';
 import { APP_ITEMS } from '@liveworkspace/sites';
 
-// The names are the registry's, which the Explorer page deletes a This Browser item by.
+// The names are the registry's, which the Explorer page deletes an offline item by.
 const DB_NAME = APP_ITEMS.liveplanner.offlineStore.db;
 // Version 2, the first liveplanner opened (docs/specs/006-project/offline-mode.md). Never lowered: a browser that
 // holds version 2 refuses an open that asks for less.

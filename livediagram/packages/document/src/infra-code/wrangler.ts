@@ -97,6 +97,30 @@ const SILENT = new Set([
   'preview_urls',
 ]);
 
+// The top-level keys an environment inherits (Wrangler's "inheritable keys"); every other key, each binding and
+// `vars` among them, belongs to the top level alone.
+const INHERITABLE = [
+  'name',
+  'main',
+  'compatibility_date',
+  'compatibility_flags',
+  'account_id',
+  'workers_dev',
+  'preview_urls',
+  'route',
+  'routes',
+  'triggers',
+  'assets',
+  'build',
+  'rules',
+  'observability',
+  'limits',
+  'placement',
+  'logpush',
+  'minify',
+  'tsconfig',
+] as const;
+
 // A list key's entries: an array's items, or one value on its own.
 const entriesOf = (v: unknown): unknown[] => (Array.isArray(v) ? v : [v]);
 
@@ -125,8 +149,16 @@ export function wranglerPart(
         },
       };
     }
-    // The environment's keys take the top level's place, as Wrangler's non-inheritable keys do.
-    source = { ...config, ...chosen };
+    // Only the top level's inheritable keys carry into an environment, as Wrangler deploys it: bindings and vars
+    // never do, so the top level's D1 is not the environment's. An unnamed environment is `<name>-<env>`.
+    const inherited: Table = {};
+    for (const key of INHERITABLE) if (key in config) inherited[key] = config[key];
+    const topName = asString(config.name);
+    source = {
+      ...inherited,
+      ...(topName !== undefined && chosen.name === undefined ? { name: `${topName}-${env}` } : {}),
+      ...chosen,
+    };
   }
   const b = new PartBuilder();
   const name = asString(source.name) ?? fallbackName;

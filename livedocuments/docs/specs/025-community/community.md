@@ -102,7 +102,7 @@ viewer does not stream changes. The publish dialog says so plainly.
   password to share it to the Community."), and a listed post locks Password Protection ("Remove it from the
   Community to set a password.").
 - **Public**: while the post is listed, the document's visibility badge reads **Public** in the editor header and on every
-  Explorer row and card (it wins over Private, Shared and Team; only This Browser beats it). A post that is not
+  Explorer row and card (it wins over Private, Shared and Team; only Offline beats it). A post that is not
   public gives no badge.
 - An owner can have at most 50 posts in livedocuments's Community.
 

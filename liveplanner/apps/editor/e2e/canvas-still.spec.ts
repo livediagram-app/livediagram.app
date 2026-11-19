@@ -46,7 +46,7 @@ async function openStill(page: Page, path: string) {
   });
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark', reducedMotion: 'reduce' });
-  // On liveplanner, not This Browser: seedTab writes the board through the api.
+  // On liveplanner, not Offline: seedTab writes the board through the api.
   await page.goto(await serverNewUrl(page, path));
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
   await dismissQuickTour(page);

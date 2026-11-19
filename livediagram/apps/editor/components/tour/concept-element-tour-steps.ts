@@ -73,6 +73,36 @@ export function onGraphic(
   };
 }
 
+// An element kind's own verb (Add Child, Add Step, Add Tier, ...): its buttons left the selection toolbar for the Quick
+// Style panel's Tools row and the element menu's top bar (docs/specs/008-canvas/element-menu-quick-bar.md "Kind
+// tools"). The step points at the panel's button while the panel is open, else opens the element menu at its bar.
+const quickStyleButton = (label: string) =>
+  `[data-quick-kind-tools] button[aria-label="${label}"], [data-quick-kind-tools] button[data-label="${label}"]`;
+export const kindToolSelector = (label: string) =>
+  `${quickStyleButton(label)}, [data-element-quick-bar] button[aria-label="${label}"]`;
+const quickStyleHas = (label: string) => !!document.querySelector(quickStyleButton(label));
+
+export function onKindTool(id: string, title: string, body: string, label: string): Step {
+  let opened = false;
+  return {
+    id,
+    title,
+    body,
+    selector: () => kindToolSelector(label),
+    prepare: async (api) => {
+      api.clearPreview();
+      opened = false;
+      if (quickStyleHas(label)) return;
+      opened = true;
+      await api.openElementMenu();
+    },
+    cleanup: (api) => {
+      if (opened) api.closeElementMenu();
+      opened = false;
+    },
+  };
+}
+
 // Whether the menu step on screen has been left, so a menu still opening as it ends is closed too.
 let menuLeft = false;
 

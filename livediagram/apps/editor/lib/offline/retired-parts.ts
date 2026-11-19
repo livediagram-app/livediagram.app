@@ -45,7 +45,7 @@ export function localPartsBody(
   return body as LocalPartsBody;
 }
 
-// What settling a document did to its record in This Browser.
+// What settling a document did to its record kept Offline.
 export type RetiredPartsSettled = 'written' | 'deleted' | 'missing';
 
 function request<T>(req: IDBRequest<T>): Promise<T> {

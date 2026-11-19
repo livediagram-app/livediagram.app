@@ -276,7 +276,7 @@ createdAt, since, moves: FlowStep[] }` (`since`: its oldest kept history entry; 
     `PLAN_VISUALISATION_LABELS`; `rangeDays` validated by `isPlanViewSettings` through `isFlowRange` (any of
     `FLOW_RANGES`, 30 accepted, never written); `flowRangeOf(settings)` reads it, else `FLOW_RANGE_DEFAULT`. No
     `VIEW_NEEDS` row: every card type can feed a flow chart.
-  - Read: `fetchFlow(scope, days)` (`apps/editor/lib/api/flow.ts`; `'offline'` for a This Browser plan, `tabId` for a
+  - Read: `fetchFlow(scope, days)` (`apps/editor/lib/api/flow.ts`; `'offline'` for an offline plan, `tabId` for a
     tab-scoped session, no `types`: every type is read and each chart filters with its own `viewShownTypes`).
     `createFlowStore` (`hooks/plan/plan-flow-store.ts`) keys an entry by `projectId|tabId|shareCode|days`; an entry
     lives while a chart subscribes and is dropped with its last. `want(key, scope, days, version)` (`version`:

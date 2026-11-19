@@ -22,6 +22,10 @@ import { NAV_LINKS_MAX, PROCESS_MAX_STEPS, STATS_MAX, WEB_TEXT_MAX } from './web
 import { CARD_TAG_MAX, CARD_TAGS_MAX, isCardMedia } from './card';
 import { isChipLook } from './chip';
 import { isAttachPoint } from './attachment';
+import { ALL_ANCHORS } from './arrow-types';
+import type { Anchor } from './element';
+
+const isAnchor = (v: unknown): v is Anchor => (ALL_ANCHORS as readonly unknown[]).includes(v);
 import { isPointerTip } from './pointer-note';
 import { isBoundaryStyle } from './boundary';
 import { isPyramidVariant } from './concept';
@@ -220,6 +224,8 @@ export const CARD_CHECKS: readonly FieldCheck[] = [
   { field: 'chipLook', valid: isChipLook, rule: oneOfRule(CHIP_LOOKS_RULE) },
   { field: 'attachedTo', valid: isNonEmptyStr, rule: 'an element id' },
   { field: 'attachAt', valid: isAttachPoint, rule: oneOfRule(ATTACH_POINTS_RULE) },
+  // A pointer note's tip on an arrow anchor (pointer-note.md "Attaching the tip").
+  { field: 'pointerAnchor', valid: isAnchor, rule: oneOfRule(ALL_ANCHORS) },
 ];
 
 export const POINTER_TIP_CHECK: FieldCheck = {

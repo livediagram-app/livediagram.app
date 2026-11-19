@@ -92,7 +92,7 @@ describe('useItemArrival', () => {
     expect(result.current.view).toEqual({ kind: 'home' });
   });
 
-  it('opens This Browser at its local folder without asking the index', async () => {
+  it('opens Offline at its local folder without asking the index', async () => {
     const local = [{ id: 'd1', title: 'L', folderId: 'lf' } as unknown as ThisBrowserItem];
     const { result, replace, getItem } = setup({ local });
     await waitFor(() => expect(result.current.pending).toBe(false));

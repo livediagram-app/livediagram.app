@@ -1,5 +1,5 @@
 // `link from-code` (docs/specs/020-import-export/infrastructure-import.md "The CLI"; blueprint "The CLI"):
-// wrangler.toml and Compose files read from the repository, drawn by the shared graph builder, and sent as a new
+// wrangler.toml, Compose, Terraform and Kubernetes files read from the repository, drawn by the shared graph builder, and sent as a new
 // document or a new tab through `document create` / `tab add` themselves, so their requests, refusals and printed
 // line are the ones every other write has.
 
@@ -10,7 +10,9 @@ import {
   INFRA_MAX_NODES,
   infraGraph,
   skippedLine,
+  sourceFiles,
   type InfraFile,
+  type InfraFormat,
 } from '@livediagram/document/infra-code';
 import { EXIT } from '@liveworkspace/cli-kit/exit-codes';
 import type { DebugLog } from '../debug';
@@ -29,9 +31,19 @@ export const STANDARD_INFRA_FILES = [
 export type FromCodeInput = {
   files?: string[];
   doc?: string;
+  tab?: string;
+  update?: boolean;
   name?: string;
   env?: string;
   dryRun?: boolean;
+};
+
+// How each format is named on the `read` line.
+const FORMAT_WORD: Record<InfraFormat, string> = {
+  wrangler: 'wrangler.toml',
+  compose: 'Compose',
+  terraform: 'Terraform',
+  kubernetes: 'Kubernetes',
 };
 
 type FromCodeOutput = { text: string; id: string | null; dryRun: boolean; graph: unknown };
@@ -45,7 +57,7 @@ async function readFiles(io: CliIo, named: readonly string[] | undefined): Promi
     new CliError({
       exit: EXIT.rejected,
       code: 'too_large',
-      message: `${name} is over 1 MB, larger than any wrangler.toml or Compose file`,
+      message: `${name} is over 1 MB, larger than any infrastructure file`,
       hint: HINT,
     });
   if (named && named.length > 0) {
@@ -65,7 +77,13 @@ async function readFiles(io: CliIo, named: readonly string[] | undefined): Promi
     return files;
   }
   const found: InfraFile[] = [];
-  for (const name of STANDARD_INFRA_FILES) {
+  // The standard names, then every .tf file here in name order: a Terraform module is the folder's .tf files.
+  const listed = (await io.files.list(io.cwd)) ?? [];
+  const terraform = listed
+    .filter((e) => e.kind === 'file' && e.name.endsWith('.tf'))
+    .map((e) => e.name)
+    .sort();
+  for (const name of [...STANDARD_INFRA_FILES, ...terraform]) {
     const text = await io.files.read(at(name));
     if (text === null) continue;
     if (text.length > INFRA_MAX_FILE_BYTES) throw tooBig(name);
@@ -75,15 +93,23 @@ async function readFiles(io: CliIo, named: readonly string[] | undefined): Promi
     throw new CliError({
       exit: EXIT.usage,
       code: 'usage',
-      message: `no ${STANDARD_INFRA_FILES.join(', ')} in ${io.cwd}`,
+      message: `no ${STANDARD_INFRA_FILES.join(', ')} or .tf file in ${io.cwd}`,
       hint: 'livediagram link from-code <file>...',
     });
   return found;
 }
 
-/** The files read, drawn as one graph, with the summary on stderr. Throws a CliError naming the file at fault. */
-export async function drawFromCode(io: CliIo, input: FromCodeInput, log: DebugLog) {
-  const files = await readFiles(io, input.files);
+/**
+ * The files read (or `given`, already read), drawn as one graph, with the summary on stderr. Throws a CliError naming
+ * the file at fault.
+ */
+export async function drawFromCode(
+  io: CliIo,
+  input: Pick<FromCodeInput, 'files' | 'env'>,
+  log: DebugLog,
+  given?: InfraFile[],
+) {
+  const files = given ?? (await readFiles(io, input.files));
   const result = infraGraph(files, input.env !== undefined ? { env: input.env } : {});
   if (!result.ok) {
     const { code, message, file } = result.error;
@@ -98,7 +124,7 @@ export async function drawFromCode(io: CliIo, input: FromCodeInput, log: DebugLo
   for (const f of result.files) {
     log(`[from-code] read ${f.name} ${f.format}`);
     io.stderr(
-      `read ${f.name}: ${f.format === 'wrangler' ? 'wrangler.toml' : 'Compose'}, ${f.boxes} box${f.boxes === 1 ? '' : 'es'}\n`,
+      `read ${f.name}: ${FORMAT_WORD[f.format]}, ${f.boxes} box${f.boxes === 1 ? '' : 'es'}\n`,
     );
   }
   if (result.skipped.length > 0) {
@@ -115,23 +141,61 @@ export async function drawFromCode(io: CliIo, input: FromCodeInput, log: DebugLo
     io.stderr(
       `left out: ${result.linesLeftOut} lines past the first ${result.graph.edges.length}\n`,
     );
-  return result.graph;
+  return { graph: result.graph, files };
 }
 
-/** `link from-code`: the graph printed (`--dry-run`, no `ctx`), or sent as a new document or a tab on `--doc`. */
+/**
+ * `link from-code`: the graph printed (`--dry-run`, no `ctx`), sent as a new document or a tab on `--doc` with the
+ * files it came from, a tab updated from its files (`--update`), or every tab a link file binds to files.
+ */
 export async function linkFromCode(
   io: CliIo,
   ctx: VerbContext | null,
   input: FromCodeInput,
   log: DebugLog,
 ): Promise<FromCodeOutput> {
-  const graph = await drawFromCode(io, input, log);
+  if (input.update || input.tab !== undefined) {
+    if (input.doc === undefined)
+      throw new CliError({
+        exit: EXIT.usage,
+        code: 'usage',
+        message: `${input.update ? '--update' : '--tab'} needs --doc, the document the tab is on`,
+        hint: 'livediagram link from-code --doc <doc> --tab <tab> --update',
+      });
+    if (!input.update)
+      throw new CliError({
+        exit: EXIT.usage,
+        code: 'usage',
+        message: '--tab names the tab --update updates; a new tab is added with --doc alone',
+        hint: 'livediagram link from-code --doc <doc> --tab <tab> --update',
+      });
+  }
+  if (ctx !== null && input.update) {
+    const { updateFromCode } = await import('./from-code-update');
+    return updateFromCode(io, ctx, { ...input, doc: input.doc! }, log);
+  }
+  if (ctx !== null && !input.files?.length && input.doc === undefined) {
+    const { runLinkSources } = await import('./from-code-sources');
+    const ran = await runLinkSources(io, ctx, log);
+    if (ran) return ran;
+  }
+  const { graph, files } = await drawFromCode(io, input, log);
   // No context is `--dry-run`, run offline (main.ts).
   if (ctx === null) return { text: JSON.stringify(graph, null, 2), id: null, dryRun: true, graph };
+  // The files the tab was drawn from travel with it, so it can be updated from them (diagram-sources.md "Writing the
+  // record"); the api works out what each node became.
+  const sources = {
+    bridge: 'infra' as const,
+    files: sourceFiles(files),
+    ...(input.env !== undefined ? { env: input.env } : {}),
+  };
   // The drawing's title names what is made unless --name does (I5); infraGraph always titles it.
   const name = input.name ?? String(graph.title);
   // The graph handed to the write verbs as the file they read, so the request is theirs.
-  const withGraph: VerbContext = { ...ctx, readInput: async () => JSON.stringify(graph) };
+  const withGraph: VerbContext = {
+    ...ctx,
+    readInput: async () => JSON.stringify({ replace: { graph, sources } }),
+  };
   // Each through its own schema, so its defaults (the write flags) are set as on its command line.
   if (input.doc === undefined) {
     const verb = verbById('document.create')!;
@@ -139,6 +203,7 @@ export async function linkFromCode(
       text: string;
       id: string;
     };
+    io.stderr(`update later: livediagram link from-code --doc ${out.id} --update\n`);
     return { text: out.text, id: out.id, dryRun: false, graph };
   }
   const verb = verbById('tab.add')!;
@@ -146,5 +211,10 @@ export async function linkFromCode(
     withGraph,
     verb.input.parse({ doc: input.doc, name, file: 'infra' }),
   )) as { text: string; changeset: { id: string } };
+  const tabId = /^\+ tab (\S+)/.exec(out.text)?.[1];
+  if (tabId)
+    io.stderr(
+      `update later: livediagram link from-code --doc ${JSON.stringify(input.doc)} --tab ${tabId} --update\n`,
+    );
   return { text: out.text, id: out.changeset.id, dryRun: false, graph };
 }

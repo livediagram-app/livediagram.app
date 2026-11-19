@@ -9,7 +9,7 @@ import type {
 // The open item's last seen copy keeps up with it (each product's docs/specs/006-*/offline-mode.md "Warm open of a
 // cloud document", livediagram's blueprints/last-seen-copy.md "Follow"): the name and the tab list each time they
 // change, the first tab each time a save of it lands (`onSaveLanded`, handed to the autosave), and a copy whose item
-// went to This Browser is forgotten. The follower decides what is written and when; this hook only tells it.
+// went Offline is forgotten. The follower decides what is written and when; this hook only tells it.
 
 // What separates one tab list from another for the copy: each tab's id, name and folder, in order. Built once per
 // `tabs` change, so an edit inside a tab costs one pass over the tab list, never over its elements.
@@ -45,7 +45,7 @@ export function useLastSeenFollow<Item extends LastSeenItem>({
     if (following && itemId) followMeta(itemId);
   }, [following, reader, itemId, name, signature]);
 
-  // Taken offline in place: a This Browser item keeps no copy.
+  // Taken offline in place: an offline item keeps no copy.
   useEffect(() => {
     if (!hydrated || serverStored || !itemId || !follower.follows(reader, itemId)) return;
     void follower.forget(reader, itemId);

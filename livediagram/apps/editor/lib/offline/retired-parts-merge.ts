@@ -1,4 +1,4 @@
-// Writing the answer's `keep` tabs back into a document in This Browser (docs/specs/006-document/offline-mode.md
+// Writing the answer's `keep` tabs back into a document kept Offline (docs/specs/006-document/offline-mode.md
 // "Moving retired parts to the other apps", "Writing `keep` back"), without undoing anything done since the
 // set-aside. Pure.
 

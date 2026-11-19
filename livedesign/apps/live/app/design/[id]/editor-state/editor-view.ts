@@ -396,6 +396,7 @@ export function editorView({
     setBackgroundAnimationSpeed: tabsSlice.setBackgroundAnimationSpeed,
     setNewPageBackground: tabsSlice.setNewPageBackground,
     applyNewPageBackgroundToEveryPage: tabsSlice.applyNewPageBackgroundToEveryPage,
+    setKeepElementColours: tabsSlice.setKeepElementColours,
     setBackgroundPattern: tabsSlice.setBackgroundPattern,
     setTabFont: tabsSlice.setTabFont,
     setTabDefaultTextSize: tabsSlice.setTabDefaultTextSize,

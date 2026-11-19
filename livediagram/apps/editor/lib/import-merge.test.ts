@@ -11,6 +11,15 @@ describe('mergeImportedTab', () => {
     expect(out.name).toBe('Mine');
   });
 
+  it('takes the files a drawing came from from the import alone (infrastructure-import.md)', () => {
+    const sources = { bridge: 'infra' as const, files: [], readAt: 1, nodes: {}, edges: {} };
+    // Any other import replaces the tab with something no file drew: the record goes.
+    expect(mergeImportedTab(tab({ sources }), tab())).not.toHaveProperty('sources');
+    // An infrastructure import brings its own.
+    const next = { ...sources, readAt: 2 };
+    expect(mergeImportedTab(tab({ sources }), tab({ sources: next })).sources).toBe(next);
+  });
+
   it('carries the tab KIND, so an imported workshop board is still one', () => {
     // Without this the export/import round trip quietly downgraded a
     // workshop board to an ordinary diagram: the notes came back, but the

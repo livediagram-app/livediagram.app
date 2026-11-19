@@ -409,7 +409,7 @@ inspect it." With one, under the element's name (its kind, and its words when it
   `inspect`. The owner (and anyone who may share the design) copies the design's live **Viewer** link
   (one for every tab, or this tab's; never a Community post's public link) with `inspect`; with no
   Viewer link yet the Share dialog opens so one can be made, with the note "Make a Viewer link, then
-  copy the Inspect link." A design kept in This Browser has no link to copy, so no button.
+  copy the Inspect link." A design kept Offline has no link to copy, so no button.
 
 ## Clickable prototypes
 
@@ -515,7 +515,7 @@ exporting. Linking the element again, or clearing its link, mends it.
   visitor in the editor with the link's role.
 - **Copy Prototype Link** in the player's bar copies a link with `prototype`, as Copy Inspect Link does: a visitor the
   link they came in on; the owner (and anyone who may share) the design's live **Viewer** link (no Viewer link yet
-  opens the Share dialog with "Make a Viewer link, then copy the Prototype link."); a design kept in This Browser has
+  opens the Share dialog with "Make a Viewer link, then copy the Prototype link."); a design kept Offline has
   no link, so no button. It says "Copied a link that opens the prototype".
 - On a phone the prototype fills the screen: the device frame steps aside and the screen alone fills the viewport
   (letterboxed on black where its shape differs), the bar shrinks to a small floating pill at the top (Previous, the

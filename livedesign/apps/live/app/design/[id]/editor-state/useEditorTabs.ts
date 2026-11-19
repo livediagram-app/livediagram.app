@@ -242,6 +242,7 @@ export function useEditorTabs({
     setBackgroundAnimationSpeed,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    setKeepElementColours,
   } = useTabCanvas({
     notify: (message) => toast.info(message),
     editsBlocked: structureBlocked,
@@ -309,6 +310,7 @@ export function useEditorTabs({
     setBackgroundAnimationSpeed,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    setKeepElementColours,
     applyStyleToAllTabs,
     applyingStyleToAllTabs,
   };

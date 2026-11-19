@@ -89,7 +89,7 @@ export const ImageIcon = lucideGlyph(lucideImage, 13);
 // A team: one drawing, shared with the landing page (@livedesign/ui).
 export { TeamIcon } from '@livedesign/ui';
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home, My
-// designs (a root folder), Library, and This Browser (a browser window).
+// designs (a root folder), Library, and Offline (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
 export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
 

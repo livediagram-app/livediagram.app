@@ -2,8 +2,9 @@
 
 // What the Tab Style dialog knows of the tab's pages (docs/specs/011-theme/canvas-and-theme-dialog.md "New Page
 // Background", "Element colours"): the kind it styles, the background new pages start on and its setters, and
-// whether a look or a theme recolours the elements. The door (CanvasThemeDialog) provides it; the profile's New Page
-// Background panel, frame preview and Element Colours row read it, so the profile itself stays one constant.
+// whether a look or a theme recolours the elements (the tab's Element Colours) and its setter. The door
+// (EditorModals, through CanvasThemeDialog) provides it; the profile's New Page Background panel, frame preview and
+// Element Colours row read it, so the profile itself stays one constant.
 import { createContext, useContext } from 'react';
 import type { PageBackground, PageKind } from '@livedesign/design';
 
@@ -18,7 +19,7 @@ export type TabStylePages = {
   units: number;
   onSet: (patch: Partial<PageBackground> | null) => void;
   onApplyToEveryPage: () => void;
-  // Element Colours: Keep as They Are (true) or Follow the Theme, for this open of the dialog.
+  // Element Colours: Keep as They Are (true) or Follow the Theme, the tab's own (`Tab.keepElementColours`).
   keepElementColours: boolean;
   onSetKeepElementColours: (keep: boolean) => void;
 };

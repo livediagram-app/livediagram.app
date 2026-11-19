@@ -4,7 +4,7 @@ import { VIEW_TITLES, type ExplorerView } from '../views';
 
 /** The name a view goes by: its pane heading's title, and the phone's sections bar (one-explorer.md "The sidebar",
  *  On a phone). A folder's own name ("Folder" while the folders load), a team's name at its root, a local folder's
- *  name in This Browser (its root's name for one not there). */
+ *  name kept Offline (its root's name for one not there). */
 export function viewTitle(
   view: ExplorerView,
   folders: Pick<FolderStore, 'byId'>,

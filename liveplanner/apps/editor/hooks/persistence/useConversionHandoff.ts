@@ -26,7 +26,7 @@ export function useConversionHandoff(ownerId: string | null, signedIn: boolean) 
     getItem: (id) => indexClient.getItem(id),
     listKept: offlineListProjects,
     // Delete handed over by the Explorer page: the item is the one open here, so it is tombstoned, removed, and the
-    // editor goes back to This Browser's view it came from.
+    // editor goes back to Offline's view it came from.
     remove: (id) =>
       removeThisBrowserItem(id, id, {
         remove: offlineDeleteProject,

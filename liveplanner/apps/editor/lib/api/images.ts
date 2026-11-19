@@ -1,7 +1,7 @@
 // The pictures of Image fields (docs/specs/026-plan/item-types.md "Image fields"): an upload for a plan, and the
 // authenticated read that hands an `<img>` a blob URL. The bytes live in liveworkspace's media service, behind this
 // app's api (`POST /api/images?p=`, `GET /api/images/{id}?p=`), which checks who may upload for a plan and who may
-// see what. A This Browser plan uploads into the person's gallery without naming the plan, and reads its pictures
+// see what. An offline plan uploads into the person's gallery without naming the plan, and reads its pictures
 // as their uploader.
 
 import { INDEX_GRANT_HEADER, sha256Hex } from '@liveplanner/api-schema';
@@ -227,7 +227,7 @@ export async function apiImageOriginal(scope: ImagesScope, imageId: string): Pro
 /** Gives back a URL apiImageUrl handed out. */
 export const releaseImageUrl = releaseShownUrl;
 
-// The plan a request names: none for a This Browser plan, which the server does not hold.
+// The plan a request names: none for an offline plan, which the server does not hold.
 const planQuery = (scope: ImagesScope, local: boolean) =>
   local ? '' : `?p=${encodeURIComponent(scope.projectId)}`;
 
@@ -283,8 +283,8 @@ export async function apiListGallery(ownerId: string): Promise<ImageSummary[]> {
 }
 
 /** A picture of the person's gallery taken for the scope's plan (a form's cover or picture block chosen from Your
- *  Images), so the plan serves it to everyone who may read it. Throws ImageUploadError when it is refused. A This
- *  Browser plan has nothing to claim it for: its pictures are its uploader's. */
+ *  Images), so the plan serves it to everyone who may read it. Throws ImageUploadError when it is refused. An offline
+ *  plan has nothing to claim it for: its pictures are its uploader's. */
 export async function apiClaimImage(scope: ImagesScope, imageId: string): Promise<void> {
   const local = await isOfflineId(scope.projectId);
   if (local) return;

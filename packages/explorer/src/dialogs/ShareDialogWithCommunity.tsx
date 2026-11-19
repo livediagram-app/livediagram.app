@@ -37,5 +37,8 @@ export function ShareDialogWithCommunity({
     teamDocument: !!share.item.teamId,
   });
   if (tab.kind === 'publish') return <>{tab.dialog}</>;
-  return <ShareDialog {...share} {...(tab.kind === 'share' ? tab.props : null)} />;
+  if (tab.kind !== 'share') return <ShareDialog {...share} />;
+  // The host's start (the Share legend's Everyone stop opens on the Community tab), unless back from publishing.
+  const initialView = tab.props.initialView === 'app' ? 'app' : (share.initialView ?? 'passes');
+  return <ShareDialog {...share} {...tab.props} initialView={initialView} />;
 }

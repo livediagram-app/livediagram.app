@@ -77,6 +77,53 @@ describe('infraGraph', () => {
     expect(many.graph.title).toBe('a, b and 2 more');
   });
 
+  it('draws all four formats together into one system', () => {
+    const result = ok(
+      infraGraph([
+        { name: 'apps/api/wrangler.toml', text: 'name = "api"\n[ai]\nbinding = "AI"' },
+        { name: 'compose.yml', text: 'services:\n  db:\n    image: postgres' },
+        { name: 'infra/main.tf', text: 'resource "aws_s3_bucket" "b" {}' },
+        { name: 'k8s/web.yaml', text: 'apiVersion: v1\nkind: Service\nmetadata: { name: web }' },
+        { text: 'resource "aws_sqs_queue" "q" {}' },
+        { text: 'kind: Pod\napiVersion: v1\nmetadata: { name: p }' },
+      ]),
+    );
+    expect(result.files.map((f) => [f.name, f.format, f.boxes])).toEqual([
+      ['apps/api/wrangler.toml', 'wrangler', 2],
+      ['compose.yml', 'compose', 1],
+      ['infra/main.tf', 'terraform', 1],
+      ['k8s/web.yaml', 'kubernetes', 1],
+      ['main.tf', 'terraform', 1],
+      ['manifest.yaml', 'kubernetes', 1],
+    ]);
+    // Each part is named by its folder, else its format's word.
+    expect(result.graph.title).toBe('api, Compose and 4 more');
+    expect(result.graph.nodes).toHaveLength(7);
+  });
+
+  it('draws the chosen environment where a file has it, the top level where it has not', () => {
+    const files = [
+      {
+        name: 'apps/api/wrangler.toml',
+        text: 'name = "api"\n[env.staging]\nname = "api-staging"\n[env.prod]\nname = "api-prod"',
+      },
+      { name: 'apps/web/wrangler.toml', text: 'name = "web"' },
+      { name: 'compose.yml', text: 'services:\n  db: {}' },
+    ];
+    const result = ok(infraGraph(files, { env: 'staging' }));
+    expect(result.graph.nodes.map((n) => n.id)).toEqual([
+      'worker-api-staging',
+      'worker-web',
+      'svc-db',
+    ]);
+    expect(result.skipped).toEqual([{ key: 'env.staging not in web', count: 1 }]);
+    // No file has it: the first wrangler.toml says which environments it has.
+    expect(infraGraph(files, { env: 'qa' })).toMatchObject({
+      ok: false,
+      error: { code: 'unknown-env', file: 'apps/api/wrangler.toml' },
+    });
+  });
+
   it('draws a line two files both give once', () => {
     const text = '[[services]]\nbinding = "A"\nservice = "auth"';
     const result = ok(
@@ -109,6 +156,18 @@ describe('infraGraph', () => {
         { name: 'bad/compose.yml', text: 'services: [' },
       ]),
     ).toMatchObject({ ok: false, error: { code: 'parse', file: 'bad/compose.yml' } });
+    expect(infraGraph([{ name: 'main.tf', text: 'resource {' }])).toMatchObject({
+      ok: false,
+      error: { code: 'parse', file: 'main.tf' },
+    });
+    expect(infraGraph([{ name: 'k8s.yaml', text: 'apiVersion: v1\nkind: [' }])).toMatchObject({
+      ok: false,
+      error: { code: 'parse', file: 'k8s.yaml' },
+    });
+    expect(infraGraph([{ name: 'main.tf', text: 'variable "x" {}' }])).toMatchObject({
+      ok: false,
+      error: { code: 'nothing-to-draw', file: 'main.tf' },
+    });
     expect(infraGraph([{ text: 'services: {}' }])).toMatchObject({
       ok: false,
       error: { code: 'no-services' },

@@ -21,7 +21,7 @@ import { offlineFetchThreads, offlineWriteThread } from '../offline/offline-thre
 import { fetchThreads, writeThread, type ThreadAction } from './card-threads';
 
 // A card's threads on the api (docs/specs/026-plan/items.md "Writes"; blueprint item-store.md "Editor"): each action's
-// route, a tab-scoped session's tab, and a This Browser plan kept in this browser.
+// route, a tab-scoped session's tab, and an offline plan kept in this browser.
 const SCOPE = { ownerId: 'me', projectId: 'p 1', shareCode: null, tabId: null };
 const WHO = { ownerId: 'me', by: { id: 'x', name: 'Sam', color: '#000' } };
 
@@ -135,7 +135,7 @@ describe('the thread routes', () => {
     ).rejects.toMatchObject({ code: 'refused' });
   });
 
-  it('keeps a This Browser plan’s threads in this browser', async () => {
+  it('keeps an offline plan’s threads in this browser', async () => {
     vi.mocked(isOfflineId).mockResolvedValue(true);
     expect(await fetchThreads(SCOPE)).toEqual(['offline']);
     await writeThread(SCOPE, { kind: 'deleteThread', threadId: 'th' }, WHO);

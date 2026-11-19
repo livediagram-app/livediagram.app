@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { IndexError } from '@liveworkspace/index-client';
 import { createFakeIndex, makeItem } from '../test/fakeClient';
+import { requestMoveCurrent, useMoveCurrentRequest } from './move-current-request';
 import {
   EXPLORER_POPOVER_HEIGHT,
   EXPLORER_POPOVER_WIDTH,
@@ -262,7 +263,7 @@ describe('<ExplorerPanel>', () => {
     expect(within(card()).getByText('Old name')).toBeTruthy();
   });
 
-  it("shows the editor's title on a This Browser item's card ahead of the list", () => {
+  it("shows the editor's title on an offline item's card ahead of the list", () => {
     renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: {
         items: [
@@ -471,7 +472,7 @@ describe('<ExplorerPanel>', () => {
   });
 });
 
-describe("the panel's This Browser", () => {
+describe("the panel's Offline", () => {
   beforeEach(() => localStorage.clear());
 
   const local = (
@@ -500,14 +501,14 @@ describe("the panel's This Browser", () => {
 
   it('is on the rail with its count while this browser keeps any, and not otherwise', () => {
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
-    const entry = within(rail()).getByRole('button', { name: 'Browser Storage (2)' });
+    const entry = within(rail()).getByRole('button', { name: 'Offline (2)' });
     expect(entry.textContent).toContain('2');
     cleanup();
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ items: [] }) });
-    expect(within(rail()).queryByRole('button', { name: /Browser Storage/ })).toBeNull();
+    expect(within(rail()).queryByRole('button', { name: /Offline/ })).toBeNull();
     cleanup();
     renderPanel(createFakeIndex({ items: [] }));
-    expect(within(rail()).queryByRole('button', { name: /Browser Storage/ })).toBeNull();
+    expect(within(rail()).queryByRole('button', { name: /Offline/ })).toBeNull();
   });
 
   it('opens its pane in place, listing the live ones, each opening in the editor', () => {
@@ -515,16 +516,16 @@ describe("the panel's This Browser", () => {
     const { onOpenExplorer } = renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: host({ open }),
     });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (2)' }));
-    expect(screen.getByRole('heading', { level: 3, name: 'Browser Storage' })).toBeTruthy();
-    const list = screen.getByRole('list', { name: 'Browser Storage' });
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Offline (2)' }));
+    expect(screen.getByRole('heading', { level: 3, name: 'Offline' })).toBeTruthy();
+    const list = screen.getByRole('list', { name: 'Offline' });
     expect(within(list).getAllByRole('listitem')).toHaveLength(2);
     expect(within(list).queryByText('Gone')).toBeNull();
     fireEvent.click(within(list).getByRole('button', { name: 'Kept here' }));
     expect(open).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
     // Never a link out of the editor: the Explorer page is not asked for.
     expect(onOpenExplorer).not.toHaveBeenCalled();
-    // This Browser holds only this app's items: no app filter.
+    // Offline holds only this app's items: no app filter.
     expect(screen.queryByRole('group', { name: 'Show' })).toBeNull();
   });
 
@@ -532,7 +533,7 @@ describe("the panel's This Browser", () => {
     const sync = vi.fn();
     const remove = vi.fn();
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host({ sync, remove }) });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (2)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Offline (2)' }));
     fireEvent.click(screen.getByRole('button', { name: 'Sync Plan: Kept here' }));
     expect(sync).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));
     fireEvent.click(screen.getByRole('button', { name: 'Delete Also here' }));
@@ -544,7 +545,7 @@ describe("the panel's This Browser", () => {
 
   it('offers neither Sync nor Delete where the host gives none (a guest)', () => {
     renderPanel(createFakeIndex({ items: [] }), { thisBrowser: host() });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (2)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Offline (2)' }));
     expect(screen.queryByRole('button', { name: /^Sync/ })).toBeNull();
     expect(screen.queryByRole('button', { name: /^Delete/ })).toBeNull();
   });
@@ -564,13 +565,13 @@ describe("the panel's This Browser", () => {
     expect(screen.queryByText('Moved “\u2068Kept here\u2069” to Archived.')).toBeNull();
   });
 
-  it('draws the Current card from This Browser when the index has none for the open item', () => {
+  it('draws the Current card from Offline when the index has none for the open item', () => {
     const index = createFakeIndex({ items: [] });
     renderPanel(index, { thisBrowser: host(), current: null, currentId: 'l1' });
     const card = screen.getByRole('region', { name: 'Current plan' });
     expect(card.getAttribute('data-current-item')).toBe('this-browser');
     expect(within(card).getByText('Kept here')).toBeTruthy();
-    expect(within(card).getByText('Browser Storage')).toBeTruthy();
+    expect(within(card).getByText('Offline')).toBeTruthy();
     expect(within(card).getByText(/^Updated /)).toBeTruthy();
   });
 
@@ -593,7 +594,7 @@ describe("the panel's This Browser", () => {
     expect(screen.queryByRole('region', { name: 'Current plan' })).toBeNull();
   });
 
-  it("renames a This Browser item through the editor's own rename, never the index", () => {
+  it("renames an offline item through the editor's own rename, never the index", () => {
     const index = createFakeIndex({ items: [] });
     const onRenameCurrent = vi.fn();
     renderPanel(index, { thisBrowser: host(), currentId: 'l1', onRenameCurrent });
@@ -672,7 +673,35 @@ describe("the panel's This Browser", () => {
     });
   });
 
-  it("gives a This Browser item This Browser's menu: Sync in place, Delete after asking", async () => {
+  // The Share legend's Team stop (move-current-request): Change Folder on the open item, as its menu's.
+  describe('move request', () => {
+    function Pending({ seen }: { seen: (n: number) => void }) {
+      seen(useMoveCurrentRequest());
+      return null;
+    }
+
+    it('opens Change Folder on the current item and ends the ask', async () => {
+      const item = makeItem(1, { title: 'Roadmap' });
+      requestMoveCurrent();
+      renderPanel(createFakeIndex({ items: [item] }), { current: item, currentId: item.id });
+      expect(await screen.findByRole('dialog', { name: 'Move to folder' })).toBeTruthy();
+      const seen = vi.fn();
+      render(<Pending seen={seen} />);
+      expect(seen).toHaveBeenLastCalledWith(0);
+    });
+
+    it('opens nothing for someone who may not move it, and still ends the ask', () => {
+      const item = makeItem(1, { title: 'Read only', access: 'view' });
+      requestMoveCurrent();
+      renderPanel(createFakeIndex({ items: [item] }), { current: item, currentId: item.id });
+      expect(screen.queryByRole('dialog', { name: 'Move to folder' })).toBeNull();
+      const seen = vi.fn();
+      render(<Pending seen={seen} />);
+      expect(seen).toHaveBeenLastCalledWith(0);
+    });
+  });
+
+  it("gives an offline item Offline's menu: Sync in place, Delete after asking", async () => {
     const sync = vi.fn();
     const remove = vi.fn();
     const index = createFakeIndex({ items: [] });
@@ -690,7 +719,7 @@ describe("the panel's This Browser", () => {
   });
 
   // Work Tracker 1165: the card for an offline current item, whatever the index said and before the list has it.
-  it('draws an offline current item from This Browser with its Browser Storage pill, over a copy the index read before', () => {
+  it('draws an offline current item from Offline with its Offline pill, over a copy the index read before', () => {
     const item = makeItem(1, { id: 'l1', title: 'Index copy' });
     renderPanel(createFakeIndex({ items: [item] }), {
       thisBrowser: host(),
@@ -701,10 +730,10 @@ describe("the panel's This Browser", () => {
     const card = screen.getByRole('region', { name: 'Current plan' });
     expect(card.getAttribute('data-current-item')).toBe('this-browser');
     expect(within(card).getByText('Kept here')).toBeTruthy();
-    expect(within(card).getByText('Browser Storage')).toBeTruthy();
+    expect(within(card).getByText('Offline')).toBeTruthy();
   });
 
-  it("draws a fresh offline item the list has not heard of from the editor's title, with This Browser's menu", async () => {
+  it("draws a fresh offline item the list has not heard of from the editor's title, with Offline's menu", async () => {
     const sync = vi.fn();
     const index = createFakeIndex({ items: [] });
     renderPanel(index, {
@@ -716,9 +745,9 @@ describe("the panel's This Browser", () => {
     const card = screen.getByRole('region', { name: 'Current plan' });
     expect(card.getAttribute('data-current-item')).toBe('this-browser');
     expect(within(card).getByText('Untitled Plan')).toBeTruthy();
-    expect(within(card).getByText('Browser Storage')).toBeTruthy();
+    expect(within(card).getByText('Offline')).toBeTruthy();
     expect(within(card).getByText('Updated just now')).toBeTruthy();
-    // Its actions are This Browser's, so nothing goes to the index.
+    // Its actions are Offline's, so nothing goes to the index.
     fireEvent.click(within(card).getByRole('button', { name: 'Plan menu' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: /Sync Plan/ }));
     expect(sync).toHaveBeenCalledWith(expect.objectContaining({ id: 'fresh' }));
@@ -751,7 +780,7 @@ describe("the panel's This Browser", () => {
       expect(rail.hasAttribute('data-rail-tight')).toBe(true);
       const card = screen.getByRole('region', { name: 'Current plan' });
       expect(card.querySelector('[data-current-picture]')).toBeNull();
-      expect(within(card).getByText('Browser Storage')).toBeTruthy();
+      expect(within(card).getByText('Offline')).toBeTruthy();
       expect(within(card).getByText('Updated just now')).toBeTruthy();
     } finally {
       rects.mockRestore();
@@ -835,7 +864,7 @@ describe("the panel's This Browser", () => {
     renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: host({ items: [local('l1', 'Kept here', { updatedAt: now - 3 * 3_600_000 })] }),
     });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (1)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Offline (1)' }));
     const when = screen.getByText('Changed 3 hours ago');
     expect(when.tagName).toBe('TIME');
     expect(when.getAttribute('title')).toBe(
@@ -848,7 +877,7 @@ describe("the panel's This Browser", () => {
     renderPanel(createFakeIndex({ items: [] }), {
       thisBrowser: host({ items: [local('l1', 'Kept here', { updatedAt: 9e15 })] }),
     });
-    fireEvent.click(within(rail()).getByRole('button', { name: 'Browser Storage (1)' }));
+    fireEvent.click(within(rail()).getByRole('button', { name: 'Offline (1)' }));
     expect(screen.getByText('Changed').tagName).toBe('SPAN');
   });
 
@@ -874,7 +903,7 @@ describe("the panel's This Browser", () => {
       expect.stringContaining('Kept here'),
       expect.stringContaining(indexed.title),
     ]);
-    expect(within(cards[0]!).getByText('Browser Storage')).toBeTruthy();
+    expect(within(cards[0]!).getByText('Offline')).toBeTruthy();
     expect(cards[0]!.hasAttribute('data-this-browser-card')).toBe(true);
     fireEvent.click(within(cards[0]!).getByRole('button', { name: 'Kept here' }));
     expect(open).toHaveBeenCalledWith(expect.objectContaining({ id: 'l1' }));

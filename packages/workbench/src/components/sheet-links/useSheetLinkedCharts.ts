@@ -35,7 +35,7 @@ type Read = (source: ChartSheetSource) => Promise<SheetLinkStatus>;
 // without access sees them. The read still goes once `ready` turns true.
 export const SHEET_LINK_READY_TIMEOUT_MS = 10_000;
 
-// The reader item's own grant (the product's item grants), or null: a This Browser item, a refusal, offline.
+// The reader item's own grant (the product's item grants), or null: an offline item, a refusal, offline.
 export type SheetLinkGrantOf = (itemId: string) => Promise<string | null>;
 
 // One read, as the index answers it: live, or why not.

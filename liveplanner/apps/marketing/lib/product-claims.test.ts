@@ -51,7 +51,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /nothing is sent to a server/i,
-    why: 'projects save to the server; only a This Browser project stays local',
+    why: 'projects save to the server; only an offline project stays local',
   },
   {
     pattern:

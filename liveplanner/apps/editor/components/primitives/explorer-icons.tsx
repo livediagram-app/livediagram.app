@@ -84,7 +84,7 @@ export const ShareIcon = lucideGlyph(lucideShare2, 13);
 // A team: one drawing, shared with the landing page (@liveplanner/ui).
 export { TeamIcon } from '@liveplanner/ui';
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home, My
-// projects (a root folder), Library, and This Browser (a browser window).
+// projects (a root folder), Library, and Offline (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
 export const ThisBrowserIcon = lucideGlyph(lucideAppWindow, 13);
 

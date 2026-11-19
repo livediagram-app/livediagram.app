@@ -31,6 +31,23 @@ export type InboxAccessRequest = {
   askedAt: number;
 };
 
+/** How far back the Inbox read lists the reader's own granted requests (`shares`, inbox-notices.md). */
+export const INBOX_SHARES_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** One of the reader's own requests a manager granted lately, as the Inbox read answers it (`shares`): not a row of
+ *  the Explorer's list, but what an editor's notice says. Who granted it is the grant's `shared` event's actor, and
+ *  their name as accounts gave it then; null when the event kept none ("Someone"). */
+export type InboxShare = {
+  id: string;
+  app: App;
+  itemId: string;
+  itemTitle: string;
+  itemTeamId: string | null;
+  sharedById: string | null;
+  sharedByName: string | null;
+  sharedAt: number;
+};
+
 export type AccessRequestInput = { note?: string | null };
 export type AccessGrantInput = { level?: Level };
 

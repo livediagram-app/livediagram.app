@@ -15,7 +15,7 @@ Every build of the editor offers sign-in; there is no switch to turn it off. Gue
 | `ACCOUNTS_URL`, `API_RESOURCE`, `ACCOUNTS_CLIENT_ID`, `ACCOUNTS_CLIENT_SECRET` set (production) | The accounts bridge asks for the session; a guest fetches a guest token from liveworkspace. Guests and signed-in people coexist. | Verifies the Bearer: an account's access token or a guest's token. |
 | Unset (local development without liveworkspace running)                                         | `/api/auth/*` answers 404 `sign_in_not_configured`, so every visitor settles without an identity and cannot sign in.             | No Bearer to verify: every caller is treated as a link visitor.    |
 
-Without the accounts site there is no guest identity either, so an api without accounts settings keeps projects in This Browser and opens shared plans through their links; anything the index must record (a cloud plan, the Explorer's lists) needs liveworkspace.
+Without the accounts site there is no guest identity either, so an api without accounts settings keeps projects kept Offline and opens shared plans through their links; anything the index must record (a cloud plan, the Explorer's lists) needs liveworkspace.
 
 `../packages/workbench/src/lib/auth-config.ts` keeps one build-time switch, `e2eAuthEnabled` (`NEXT_PUBLIC_E2E_AUTH=1`, test builds only), which swaps the accounts bridge for the e2e bridge; a real build never sets it, so the bridge is never bundled.
 
@@ -176,7 +176,7 @@ When a guest signs in or signs up, what they made as a guest **becomes the accou
 
 Settings > Account > Delete Account deletes the whole account: the person's liveplanner data and their **liveworkspace account**, which closes it in every liveworkspace app. Then it ends the session:
 
-The Settings row reads just "Permanently deletes your liveworkspace account and everything you own in every liveworkspace app." The dialog itself says more before anything else: it deletes the liveworkspace account and **everything the person owns in every liveworkspace app**, not only liveplanner. It lists what goes (every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle, the Trash included; folders, settings and API tokens; teams they run alone), says it signs them out everywhere and can't be undone, and that plans in This Browser stay on the device. Closing the account purges every app's items through the index ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#closing-an-account)), so naming only this app's would understate it.
+The Settings row reads just "Permanently deletes your liveworkspace account and everything you own in every liveworkspace app." The dialog itself says more before anything else: it deletes the liveworkspace account and **everything the person owns in every liveworkspace app**, not only liveplanner. It lists what goes (every canvas, plan, document, design and space in livediagram, liveplanner, livedocuments, livedesign and livehuddle, the Trash included; folders, settings and API tokens; teams they run alone), says it signs them out everywhere and can't be undone, and that plans kept Offline stay on the device. Closing the account purges every app's items through the index ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#closing-an-account)), so naming only this app's would understate it.
 
 1. **Confirm with a code emailed to the account.** After the person types their email, **Email Me a Code** (`POST /api/account/deletion-code`, [API](../015-api/api.md)) has the accounts Worker email a 6-digit code to the account's own address, the same kind of code that signs in ([liveworkspace/docs/specs/003-accounts/sign-in.md](../../../../liveworkspace/docs/specs/003-accounts/sign-in.md#closing-an-account)). The dialog then asks for it in the sign-in page's six boxes (`CodeDigits` from `@liveworkspace/ui`), with **Resend Code**, and **Delete Account** sends it with the delete. Being signed in is not enough on its own: someone at a machine left signed in can't delete the account without the inbox. The email box reads neutral while it is empty or still a correct start of the address, shows a rose border and “That isn’t your account’s email.” only once what is typed can no longer become it, and a green border once it matches, so a correct entry never reads as an error.
 2. **Check the code, delete the server data, then close the account** (`DELETE /api/account { code }`, [API](../015-api/api.md)). The worker first checks the code with the accounts Worker (`confirmDeletionCode` from `@liveworkspace/auth-client`) and deletes nothing unless it is right: no code is `400 code_required`, a wrong or expired one `403 invalid_code`, the third wrong one `403 too_many_attempts` (the code is gone; ask for a new one), too many tries a minute `429 rate_limited`. Then it deletes the person's own plans for good through the index (ten at a time, up to 1,000 a request; a person with more is answered 409 `plans_remaining` and asks again), and the rest of the [owner-keyed data](../015-api/api.md#owner-keyed-data), then asks the accounts Worker to close the account (which deletes the settings, name and colour and sightings it keeps for every app) (`closeAccount` from `@liveworkspace/auth-client`: `POST /api/auth/delete-account` with this app's client credentials, the caller's access token and the code, which the accounts Worker checks again and spends). Closing it removes the account's sessions, its Google link, and every app's refresh tokens. The response clears the refresh cookie.
@@ -188,20 +188,20 @@ The emailed code is the step-up, and it is checked on the servers, by this app's
 
 ## Guest projects start local
 
-A guest's new project is **This Browser** by default ([Offline Mode](../006-project/offline-mode.md), [Save Locations](../006-project/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
+A guest's new project is **Offline** by default ([Offline Mode](../006-project/offline-mode.md), [Save Locations](../006-project/save-locations.md#the-default-depends-on-who-is-creating)): saved in this browser, never sent to the server until the guest asks for it.
 
-**Why.** Many first visits are someone trying the product out. A guest cloud project is an index item under the guest's liveworkspace identity ([Guests](#guests)), and a guest who never signs in leaves it on the server for good, unreached once they clear the site data that holds their guest token. A project in This Browser is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-project/offline-mode.md#instant-open)). It is not hidden for it: the shared Explorer lists this browser's projects beside the index's, in its This Browser row and view and in Most Used and Recent ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)). (Between October 23 and 25, 2026 every new project started on liveplanner, a guest's included, because a project in This Browser did not show in the Explorer then.)
+**Why.** Many first visits are someone trying the product out. A guest cloud project is an index item under the guest's liveworkspace identity ([Guests](#guests)), and a guest who never signs in leaves it on the server for good, unreached once they clear the site data that holds their guest token. A project kept Offline is exactly as durable for a guest (the same clear wipes IndexedDB), costs the server nothing, and opens without a round trip ([Offline Mode → Instant open](../006-project/offline-mode.md#instant-open)). It is not hidden for it: the shared Explorer lists this browser's projects beside the index's, in its Offline row and view and in Most Used and Recent ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md)). (Between October 23 and 25, 2026 every new project started on liveplanner, a guest's included, because a project kept Offline did not show in the Explorer then.)
 
 - **Signed-in people are unchanged.** Their default stays liveplanner.
 - **A `/new?folder=` / `?team=` link stays on liveplanner**: it names a place on the server, so the create goes there whoever is creating.
-- **Moving to the server is always the guest's own act**: Sync Project (from the Share dialog, which explains why first, [Offline Mode → Sharing a project in This Browser](../006-project/offline-mode.md#sharing-a-project-in-this-browser), or the Explorer), or the prompt after signing in (below). No guest project is uploaded silently. A project synced as a guest is then a guest cloud project, and moves to the account at sign-in with the rest ([Guest → account](#guest--account)).
+- **Moving to the server is always the guest's own act**: Sync Project (from the Share dialog, which explains why first, [Offline Mode → Sharing a project kept Offline](../006-project/offline-mode.md#sharing-an-offline-project), or the Explorer), or the prompt after signing in (below). No guest project is uploaded silently. A project synced as a guest is then a guest cloud project, and moves to the account at sign-in with the rest ([Guest → account](#guest--account)).
 - **Nothing is purged.** Guest cloud projects already on the server stay where they are; this changes where new ones start, not what happens to old ones.
 
 ### Who is a guest, before sign-in answers
 
 The session loads deferred, so `/new` cannot wait for the token request without making every create slower. It reads the `lp_signed_in` hint cookie instead (`apps/editor/lib/signed-in-hint.ts`): the api sets it to `1` beside the HttpOnly refresh cookie when a sign-in completes, readable from script and holding no secret, and to `0` on sign-out or when a refresh is refused (`signedInHintOf` in `packages/api-schema/src/signed-in-hint.ts`, shared with the site header's primary link and the Repair page). The same hint tells the page whether a session is worth asking for at all: a browser without it settles as a guest at once.
 
-- **No hint, or `lp_signed_in=0`**: a guest. The create goes ahead at once, This Browser, without waiting for the guest token or the participant.
+- **No hint, or `lp_signed_in=0`**: a guest. The create goes ahead at once, Offline, without waiting for the guest token or the participant.
 - **`lp_signed_in=1`**: probably signed in. The create waits for auth to settle and then uses the settled answer.
 - **The consent and device pages** (`/oauth/*`) read the hint the same way. With `lp_signed_in=1` they show their
   loading line until the session itself answers, up to 15 seconds, rather than taking the page's 5-second give-up on
@@ -214,7 +214,7 @@ The session loads deferred, so `/new` cannot wait for the token request without 
   the page shows **Can’t reach your account right now** with **Try Again**, starts no guest hand-off, and carries on
   by itself once the session answers ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
   A `401` is signed out at once, as before.
-- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a project in This Browser, the safe direction.
+- The hint only decides a default. Every request still authenticates the real way, and a guest whose cookie misleads gets a project kept Offline, the safe direction.
 
 ### The account name cookie
 
@@ -227,14 +227,14 @@ authenticates nothing: it is only the name the marketing header's account menu s
 ([Marketing site](../019-marketing/marketing-site.md), "Header"), so a public page can say who is signed in without
 asking the api.
 
-### Moving projects in This Browser after signing in
+### Moving offline projects after signing in
 
-Signing in never moves a project in This Browser by itself ([Offline Mode → Auth / guest interaction](../006-project/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's projects in This Browser. If there are any, it offers to move them:
+Signing in never moves a project kept Offline by itself ([Offline Mode → Auth / guest interaction](../006-project/offline-mode.md#auth--guest-interaction)). Instead, once auth has settled signed in, a page that shows the Explorer or the editor checks this browser's projects kept Offline. If there are any, it offers to move them:
 
-- **Move Projects in This Browser to Your Account?** A dialog lists each project in This Browser (name, last edited), every one ticked, with **Move** and **Not Now**.
-- **Move** runs Sync Project ([Offline Mode → Save to server](../006-project/offline-mode.md#save-to-server-offline--cloud)) on each ticked project in turn, showing progress. A project that fails stays This Browser and is named in the result; the rest move.
-- **Not Now** is remembered for this account in this browser (`liveplanner:v2:local-move-dismissed:<userId>`), with the count of projects in This Browser at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate project in This Browser is not asked again about it.
-- The same move is always reachable by hand: **Sync Project** on any project in This Browser.
+- **Move Offline Projects to Your Account?** A dialog lists each project kept Offline (name, last edited), every one ticked, with **Move** and **Not Now**.
+- **Move** runs Sync Project ([Offline Mode → Save to server](../006-project/offline-mode.md#save-to-server-offline--cloud)) on each ticked project in turn, showing progress. A project that fails stays Offline and is named in the result; the rest move.
+- **Not Now** is remembered for this account in this browser (`liveplanner:v2:local-move-dismissed:<userId>`), with the count of projects kept Offline at the time. The dialog comes back only when that count grows, so a person who keeps a deliberate project kept Offline is not asked again about it.
+- The same move is always reachable by hand: **Sync Project** on any project kept Offline.
 
 ## Implications for how we build
 

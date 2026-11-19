@@ -22,13 +22,13 @@ Nobody is asked when creating a project; the default decides:
 
 - The **New Project** wizard ([Dedicated route for new-project creation](../007-editor/new-project-route.md#one-step-wizard))
   asks only for a mode and creates the project in the default location for who is creating
-  ([Save Locations](save-locations.md)): **This Browser** for a guest, **liveplanner** for a signed-in person.
-  Either moves later: **Take Offline** moves a cloud project into This Browser, **Sync Project** puts one in This Browser on
+  ([Save Locations](save-locations.md)): **Offline** for a guest, **liveplanner** for a signed-in person.
+  Either moves later: **Take Offline** moves a cloud project Offline, **Sync Project** puts one kept Offline on
   liveplanner.
 - The links that create without the wizard (`/new?template=`, `/new?blank=1`,
   [Dedicated route for new-project creation → Start Blank](../007-editor/new-project-route.md#start-blank-skip-the-wizard))
   take the same default, so a guest following a template from the landing page
-  gets a project in This Browser.
+  gets a project kept Offline.
 - A `/new?folder=` / `?team=` context names a server place, so it is liveplanner whoever is creating.
 - The location only changes _where the project is stored_; the mode, templates and theme work identically.
 
@@ -92,7 +92,7 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## Instant open
 
-A project in This Browser lives in this browser, so opening it waits on nothing the
+A project kept Offline lives in this browser, so opening it waits on nothing the
 server says. The editor bootstrap ([Dedicated route for new-project creation → In-place handoff](../007-editor/new-project-route.md#in-place-handoff-to-the-editor),
 `app/project/[id]/useIdentityBootstrap.ts`) takes an **early open** when, before
 auth has settled, the path names a project registered in the local index
@@ -112,7 +112,7 @@ auth has settled, the path names a project registered in the local index
   nudge. The project is not reloaded: an offline project is the reader's own
   whoever they turn out to be.
 - **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))
-  creating This Browser, the create writes to IndexedDB and hands off without
+  creating Offline, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewProject` in `app/new/page.tsx`).
 - **Except a first visit's guest token.** A browser with no guest token yet (or one near its end) fetches one before
@@ -129,10 +129,10 @@ auth has settled, the path names a project registered in the local index
 same way with the local api (headless Chromium, 10 runs each, interleaved; a
 fresh browser profile per first visit), guest create to first canvas paint:
 
-| Link                   | Before (cloud) first / return | After (This Browser) first / return | API requests |
-| ---------------------- | ----------------------------- | ----------------------------------- | ------------ |
-| `/new?template=kanban` | 2,956 / 1,775 ms              | 955 / 819 ms                        | 24 → 1       |
-| `/new?blank=1`         | 3,076 / 1,803 ms              | 1,053 / 834 ms                      | 20 → 1       |
+| Link                   | Before (cloud) first / return | After (Offline) first / return | API requests |
+| ---------------------- | ----------------------------- | ------------------------------ | ------------ |
+| `/new?template=kanban` | 2,956 / 1,775 ms              | 955 / 819 ms                   | 24 → 1       |
+| `/new?blank=1`         | 3,076 / 1,803 ms              | 1,053 / 834 ms                 | 20 → 1       |
 
 The one request left is `GET /api/capabilities`; the guest id, participant and
 Explorer lists follow after the paint.
@@ -187,7 +187,7 @@ every editor's copy:
   every 2 seconds, off the editing path, and a waiting one is written when the page is hidden or closed. While the
   Plan tour's practice cards are on the board the cards are not followed (they are never anyone's real cards).
 - **Bounded.** At most 20 copies, the oldest seen dropped first; a copy over 1,000,000 characters of JSON is not
-  kept; a copy older than 30 days is never read. Embeds, Community posts, workbenches and This Browser plans keep
+  kept; a copy older than 30 days is never read. Embeds, Community posts, workbenches and Offline plans keep
   none.
 
 **The warm open.** An address naming a cloud plan with a copy for the reader paints that copy under the `'self'`
@@ -195,7 +195,7 @@ placeholder, read-only, before the ordinary load lands, exactly as the other edi
 hint, the reader is the guest token's id and the copy is read at once, before auth settles; signed in, the warm open
 waits for the session's first token answer and reads only the copies of the account it names (the hint says whether,
 never who), so a stale hint paints nothing and its answer empties the store. A share link warm-opens only by the code the copy was kept under, by an address that names
-the plan or by the link's own address (`/project/shared?s=<code>`). Embeds, workbenches and This Browser plans never
+the plan or by the link's own address (`/project/shared?s=<code>`). Embeds, workbenches and Offline plans never
 warm-open, and neither does a copy whose first tab is not the tab this open would show first (no first tab kept, or
 `#t=` naming another tab).
 
@@ -255,59 +255,59 @@ stands at the same height before and after the catch-up.
 The bindings are set out in the [Last seen copy blueprint](blueprints/last-seen-copy.md), which names its
 measurements.
 
-## Archived in This Browser
+## Archived Offline
 
-A plan in This Browser can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the
-browser: the mark (`archivedAt`) lives only in This Browser's shared list (`@liveworkspace/explorer/this-browser`),
+A plan kept Offline can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the
+browser: the mark (`archivedAt`) lives only in Offline's shared list (`@liveworkspace/explorer/this-browser`),
 and every rewrite of the list carries the marks it held. Before the editor opens a plan it reads the mark once
 (`isThisBrowserArchived`), and an archived one shows the **Plan Archived** card in place of the plan
 ([Archived](../007-editor/new-project-route.md#archived)), whether or not the early open would have taken it. Change Folder moves it out,
-back into This Browser's list.
+back into Offline's list.
 
-## "This Browser" badge + Explorer
+## "Offline" badge + Explorer
 
 - **Visibility badge.** The open item's badge is the Explorer panel's Current card's (the open editor has no
   header bar, and its legend went with it): Private / Shared / Team from the index, and, for an item kept only
-  here, the [This Browser pill](#this-browser-pill) with its words, browser-window icon, teal tone and sentence
+  here, the [Offline pill](#offline-pill) with its words, browser-window icon, teal tone and sentence
   (one-explorer.md "The Current card").
 - **Explorer.** Offline projects appear in Recent (and the other lists)
-  alongside cloud projects, each with the **This Browser** pill (below) and the
-  fixed offline thumbnail, so a project in This Browser is recognisable at a glance.
+  alongside cloud projects, each with the **Offline** pill (below) and the
+  fixed offline thumbnail, so a project kept Offline is recognisable at a glance.
   The Explorer view merges the API-fetched cloud list with the local index of
   offline projects; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
 - **The reader's own.** An offline project counts as one of the reader's own
   projects: Space `mine` and owner "You", like a project in My Work
-  ([Explorer structure: projects in This Browser](../013-workspace/explorer-structure.md)).
-- **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
+  ([Explorer structure: projects kept Offline](../013-workspace/explorer-structure.md)).
+- **Sidebar.** The full-page Explorer's **Offline** row (the More group,
   [Explorer structure](../013-workspace/explorer-structure.md)) opens
   `/explorer/offline`, the list of every offline project, titled **This
   browser**; the row shows while this browser holds at least one.
 - **Home.** An offline project's opens are counted in its own local record, never
   sent anywhere, so Home's Most Used and Recent places it among the reader's other
-  projects by the same rule, with the **This Browser** pill on its thumbnail
+  projects by the same rule, with the **Offline** pill on its thumbnail
   ([Explorer Home](../013-workspace/explorer-home.md)).
 - **Inbox.** The Inbox reads offline projects in the browser and lists their open actions, Plan cards and comment
-  threads among the cloud ones, each row with the **This Browser** pill
+  threads among the cloud ones, each row with the **Offline** pill
   ([Inbox §2.6](../013-workspace/inbox.md)).
 
-### This Browser pill
+### Offline pill
 
-Every row and card of an offline project carries a **This Browser** pill,
+Every row and card of an offline project carries an **Offline** pill,
 wherever the project is listed: the list and card views (folders, Search results,
-This Browser, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
+Offline, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows, and the Trash.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
-  "This Browser", in a teal tone whose text meets 4.5:1 on its fill in light and
+  "Offline", in a teal tone whose text meets 4.5:1 on its fill in light and
   dark mode; the ring meets 3:1 against the row. Teal because it is no app's accent
   (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, liveworkspace
   slate) and no status colour (green fine, amber warning, red failing), so the pill never reads
   as whose an item is, or as fine or failing. One pill for every editor and the Explorer
   (`ThisBrowserPill` in `@liveworkspace/workbench`, its tone `THIS_BROWSER_TONE` from
   `@liveworkspace/explorer/this-browser`).
-- **What it means, on hover and focus.** Its hover card reads "This Browser" over
+- **What it means, on hover and focus.** Its hover card reads "Offline" over
   "Lives only in this browser. Clearing this browser's site data deletes it."
   The same sentence is the pill's accessible description (`aria-describedby`),
   so a screen reader hears it without hovering.
@@ -328,18 +328,18 @@ rows, and the Trash.
 Conversion works **both directions**, from the Explorer row menu (in both the
 in-editor panel and the full-page Explorer). In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
-the move prompt ([Auth + guest access → Moving projects in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-projects-in-this-browser-after-signing-in)).
+the move prompt ([Auth + guest access → Moving projects kept Offline after signing in](../014-identity/auth-and-guest-access.md#moving-offline-projects-after-signing-in)).
 
 On a fresh, unshared plan's start screen the **Sync Plan to Server** switch moves it either way, in place and with no confirmation ([Save Locations → On the start screen](save-locations.md#on-the-start-screen)).
 
-### Sharing a project in This Browser
+### Sharing an offline project
 
 Share is how most people find out a project needs the server. Pressing it never
 uploads anything by itself; the dialog explains and asks, for a guest and a
 signed-in person alike:
 
-- **The gate.** Share on a project in This Browser opens the Share dialog on its
-  offline gate (`ShareOfflineGate`): **This Project Is in This Browser**, "It is saved only
+- **The gate.** Share on a project kept Offline opens the Share dialog on its
+  offline gate (`ShareOfflineGate`): **This Project Is Offline**, "It is saved only
   in this browser, so there is nothing to share yet. Sync it to liveplanner to
   share it: share links, real-time collaboration and the live image all need it
   on our servers. You can take it offline again any time.", with **Sync Project**
@@ -351,7 +351,7 @@ signed-in person alike:
   cloud project.
 - The button waits for the reader to be known (an early open runs under the
   `'self'` placeholder, [Instant open](#instant-open)).
-- A failed sync keeps the project This Browser, says why in a toast
+- A failed sync keeps the project Offline, says why in a toast
   (`syncFailureMessage`) and leaves the button to try again; nothing is
   half-uploaded (see below).
 - **Share Form** on a Form tab offers the same prompt (`SyncProjectPrompt`, which
@@ -378,7 +378,7 @@ reload:
 4. **The room opens** (`projectServerStored` turns true) and the Explorer list
    refreshes.
 
-The Explorer panel's Sync and Take Offline (an item's menu, This Browser's rows) never reload either: the
+The Explorer panel's Sync and Take Offline (an item's menu, Offline's rows) never reload either: the
 project open in the editor moves in place as above, any other moves on its own, and the Explorer loads its lists again
 once the move settles. Only the move prompt after signing in still reloads, since several move at once.
 
@@ -452,7 +452,7 @@ Action: **"Take Offline"**, in the editor and in the Explorer on liveplanner's a
 at the plan's own address (`/project/<id>?convert=take-offline&item=<id>`, `apps/editor/components/dialogs/ConversionHandoff.tsx`
 over `apps/editor/hooks/persistence/useConversionHandoff.ts` and the shared `@liveworkspace/explorer/conversion-handoff`):
 the editor checks the plan is the person's to move, then asks the same confirmation. The Explorer offers it on a plan
-the person can edit in their library or a team's, never on one reached through a link. Its This Browser rows' **Sync
+the person can edit in their library or a team's, never on one reached through a link. Its Offline rows' **Sync
 Plan** hands over the same way (`/project/<id>?convert=sync&item=<id>`), and the editor asks before it moves the plan;
 in the editor's Explorer panel Sync Plan runs in place. This is **destructive on the server**
 and gated by a confirmation:
@@ -463,7 +463,7 @@ and gated by a confirmation:
 - On confirm: download the project's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **This Browser**.
+  badge flips to **Offline**.
 - **The deck and personal folder come along** for the same reason: the
   server row they live on is about to be deleted. A team project's folder is a
   team folder, which has no place in the personal tree, so it lands at the root of My Work.
@@ -507,9 +507,9 @@ Offline Mode is independent of sign-in:
   an offline project never touches the server at all.
 - Sign-in / sign-out never migrates offline projects by itself (the index's guest-to-account move, [Auth + guest access](../014-identity/auth-and-guest-access.md#guest--account),
   only moves a guest's _cloud_ projects). After signing in, a prompt
-  **offers** to move them ([Moving projects in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-projects-in-this-browser-after-signing-in));
+  **offers** to move them ([Moving projects kept Offline after signing in](../014-identity/auth-and-guest-access.md#moving-offline-projects-after-signing-in));
   a project the person leaves stays put.
-- The "This Browser" badge and pill read the same for a guest as for anyone: the
+- The "Offline" badge and pill read the same for a guest as for anyone: the
   sentence about clearing site data is the one a guest most needs to see.
 
 ## Persistence architecture
@@ -536,7 +536,7 @@ target:
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
   to dispatch on yet: the New Project wizard calls `offlineCreateProject`
-  directly when the location is This Browser (a guest's default), and
+  directly when the location is Offline (a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the project/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline
@@ -612,7 +612,7 @@ Track adoption without content, reusing the closed vocabulary:
 - `/new` ([Dedicated route for new-project creation](../007-editor/new-project-route.md)) asks nothing: the store
   follows who is creating ([Save Locations](save-locations.md)).
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
-  show the **This Browser** pill wherever an offline project is listed plus a
+  show the **Offline** pill wherever an offline project is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
 - Guest default + instant open: `lib/save-locations.ts` (`defaultSaveLocationFor`),
   `lib/signed-in-hint.ts`, `app/new/useNewProjectLocation.ts`, the early open in

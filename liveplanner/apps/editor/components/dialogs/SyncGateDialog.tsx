@@ -6,8 +6,8 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
 import { SyncProjectPrompt } from './SyncProjectPrompt';
 
-// A dialog a plan in This Browser opens before it can do what it was opened for (docs/specs/006-project/
-// offline-mode.md "Sharing a project in This Browser"): its header, the Sync Plan prompt (SyncProjectPrompt) with the
+// A dialog a plan kept Offline opens before it can do what it was opened for (docs/specs/006-project/
+// offline-mode.md "Sharing a project kept Offline"): its header, the Sync Plan prompt (SyncProjectPrompt) with the
 // dialog's own reason, and Cancel, held while the sync runs. The sync converts the open plan in place, with no reload,
 // and whoever opened the gate swaps it for the real dialog as the plan stops being offline. Share draws it
 // (ShareOfflineGate), and so does Automations (docs/specs/026-plan/automations.md "Who may do what"), which also

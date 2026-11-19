@@ -5,7 +5,7 @@ import {
   listSnapshots,
   takeSnapshot,
 } from '@liveworkspace/snapshots/server';
-import { isAnySql, mentionsAnySql } from '@liveworkspace/index-app';
+import { mentionsAnySql } from '@liveworkspace/index-app';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   anonymiseNamedVersions,
@@ -294,15 +294,12 @@ describe('reading both stores', () => {
 
 describe('anonymising', () => {
   const p = (rewrite: (text: string) => string | null) => ({
-    idList: JSON.stringify(['user_a']),
     needles: JSON.stringify(['user_a']),
-    authorSql: isAnySql('author_id', '?3'),
     mentionsSql: mentionsAnySql('c.data'),
     rewrite,
-    person: { id: 'gone', name: 'Deleted account' },
   });
 
-  it('takes the name off and rewrites a body that mentions them, chunked or not', async () => {
+  it('rewrites a body that mentions them, chunked or not', async () => {
     const db = setUp();
     db.sql
       .prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'")
@@ -318,9 +315,7 @@ describe('anonymising', () => {
       db.env,
       p((text) => (text.includes('user_a') ? text.replaceAll('user_a', 'gone') : null)),
     );
-    expect(changes).toBe(3 + 2);
-    const authors = db.sql.prepare('SELECT DISTINCT author_id, author_name FROM snapshots').all();
-    expect(authors).toEqual([{ author_id: 'gone', author_name: 'Deleted account' }]);
+    expect(changes).toBe(2);
     expect((await getNamedVersion(db.env, 't1', small!.id))!.data).not.toContain('user_a');
     expect((await getNamedVersion(db.env, 't1', big!.id))!.data).not.toContain('user_a');
   });
@@ -331,7 +326,7 @@ describe('anonymising', () => {
     db.sql.prepare("UPDATE snapshot_chunks SET data = 'user_a'").run();
     db.sql.prepare('UPDATE snapshots SET chunks = 2').run();
     const rewrite = vi.fn(() => 'x');
-    expect(await anonymiseNamedVersions(db.env, p(rewrite))).toBe(1);
+    expect(await anonymiseNamedVersions(db.env, p(rewrite))).toBe(0);
     expect(rewrite).not.toHaveBeenCalled();
   });
 });

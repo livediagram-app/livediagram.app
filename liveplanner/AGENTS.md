@@ -190,7 +190,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 - **Mode** is how a tab is worked on; there is one, **Plan**, shared by everyone on the tab and never a type of project or tab.
 - **Kind** is what a tab is: a Board, Sheet, Dashboard or Form tab (a fresh tab is the general kind until Start Planning sets one).
 - **Template** is what a project was made from; a template family (Retrospectives, Kanban) is never a kind.
-- **This Browser** names a project saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
+- **Offline** names a project saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
 ## Repo layout
 

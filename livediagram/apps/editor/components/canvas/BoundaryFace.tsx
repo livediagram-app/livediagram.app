@@ -1,9 +1,10 @@
-import type { ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
   PAGE_HEADING_MAX,
   boundaryLayout,
   boundaryStyleOf,
   BOUNDARY_TINT,
+  BOUNDARY_TITLE_PX,
   colorWash,
   labelOn,
   type ShapeElement,
@@ -15,6 +16,24 @@ import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@liveworkspace/workbench/components/canvas/CanvasZoomContext';
 import { isTechIconId } from '@liveworkspace/workbench/lib/tech-icons';
+
+// The title's text without its markdown marks (bold, italic, code), as it reads.
+const plainLabel = (label: string) => label.replace(/[*_`~]/g, '');
+
+let measureCtx: CanvasRenderingContext2D | null | undefined;
+/** The title's width in px, bold at the tab's size in the tab's font; null where no canvas can measure (tests). */
+function measureBoldTitle(text: string, fontFamily: string | undefined): number | null {
+  if (measureCtx === undefined) {
+    try {
+      measureCtx = document.createElement('canvas').getContext('2d');
+    } catch {
+      measureCtx = null;
+    }
+  }
+  if (!measureCtx) return null;
+  measureCtx.font = `700 ${BOUNDARY_TITLE_PX}px ${fontFamily ?? 'system-ui, sans-serif'}`;
+  return measureCtx.measureText(text).width;
+}
 
 // The boundary (docs/specs/009-elements/boundary.md): a tint under everything it holds (nested ones stack, so they
 // read deeper), and its title in a tab on the top edge, inside its corner, or at its bottom-left for C4, placed by boundaryLayout (the
@@ -39,11 +58,17 @@ export function BoundaryFace({
   const zoom = useCanvasZoom();
   const style = boundaryStyleOf(element);
   const icon = style !== 'c4' && element.iconId ? element.iconId : undefined;
+  // The title as it is being typed (null when not editing), so the tab grows with each key rather than wrapping
+  // until the edit commits.
+  const [draft, setDraft] = useState<string | null>(null);
+  const title = draft ?? plainLabel(element.label ?? '');
+  const titleWidth = useMemo(() => measureBoldTitle(title, fontFamily), [title, fontFamily]);
   const l = boundaryLayout(element.width, element.height, {
     style,
     icon: !!icon,
-    titleChars: (element.label ?? '').length,
+    titleChars: title.length,
     meta: !!element.pageSubtitle,
+    ...(titleWidth !== null ? { titleWidth } : {}),
   });
   const onTab = labelOn(accent);
   const titleColour = l.tab ? onTab : style === 'inset' ? accent : ink;
@@ -81,7 +106,12 @@ export function BoundaryFace({
         )
       ) : null}
       <LabelRegion rect={l.title}>
-        <div className="absolute inset-0" style={{ color: titleColour }}>
+        <div
+          className="absolute inset-0"
+          style={{ color: titleColour }}
+          onInputCapture={(e) => setDraft((e.target as HTMLElement).textContent ?? '')}
+          onBlurCapture={() => setDraft(null)}
+        >
           {labelNode}
         </div>
       </LabelRegion>

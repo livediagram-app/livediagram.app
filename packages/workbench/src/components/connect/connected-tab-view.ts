@@ -15,7 +15,7 @@ export type ConnectedTabView =
   | { state: 'link_removed' }
   // The tab came with a copy, an export or an import: the index knows its id for another host or tab.
   | { state: 'copy' }
-  // The host is offline (a This Browser item, or no network).
+  // The host is offline (an offline item, or no network).
   | { state: 'offline' }
   // Anything else: the network, the rate limit.
   | { state: 'failed' };

@@ -14,7 +14,7 @@ import {
 import type { Folder, Item } from '@liveworkspace/index-client';
 import type { ThisBrowserItem } from '../this-browser';
 
-// An index item, a folder, or an item kept only in this browser (This Browser, which the index never sees).
+// An index item, a folder, or an item kept only in this browser (Offline, which the index never sees).
 export type Payload =
   | { kind: 'item'; item: Item }
   | { kind: 'folder'; folder: Folder }

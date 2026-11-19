@@ -1,6 +1,6 @@
 // Who sees Subscribe to Calendar (docs/specs/026-plan/calendar-feed.md "Where it lives"): signed in, on a plan saved
 // to an account, holding it as its owner or a team member (no share link, no tab), and not in an embed or a workbench
-// frame. A share-link holder at any level, a guest and a plan in This Browser see no row; the api refuses them all the
+// frame. A share-link holder at any level, a guest and a plan kept Offline see no row; the api refuses them all the
 // same (403 `calendar_feed_needs_member`), so this is presentation, never the rule. Pure.
 
 export type CalendarFeedScope = { ownerId: string; projectId: string };
@@ -32,7 +32,7 @@ export function calendarFeedScopeFor(input: GateInput): CalendarFeedScope | null
 
 /** What stands before the feed for someone who would have one but for where the plan lives or who they are
  *  (liveworkspace/docs/specs/004-index/footer-tools-menu.md "Always there"): Sign In for a guest (once sign-in has
- *  answered), then Sync Plan on a plan in This Browser; null for a share-link holder or a tab-scoped link, who signing
+ *  answered), then Sync Plan on a plan kept Offline; null for a share-link holder or a tab-scoped link, who signing
  *  in or syncing would not help, and for anyone who already has the feed. */
 export function calendarFeedGateFor(
   input: GateInput & { authLoaded: boolean },

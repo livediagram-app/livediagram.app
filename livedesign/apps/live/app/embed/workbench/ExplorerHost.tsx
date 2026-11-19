@@ -105,7 +105,7 @@ export function ExplorerHost({
   view: ExplorerView;
   header?: (search: ReactNode, chrome: ExplorerChrome) => ReactNode;
   children?: (chrome: ExplorerChrome) => ReactNode;
-  /** The host's own rows in the sidebar's More group (the /explorer pages' This Browser and Image Gallery). */
+  /** The host's own rows in the sidebar's More group (the /explorer pages' Offline and Image Gallery). */
   sidebarLinks?: readonly SidebarLink[];
 }) {
   const router = useAppNavigation();

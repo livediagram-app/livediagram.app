@@ -40,7 +40,7 @@ selected: 'YYYY-MM-DD' }`, starting on today. ‹ and › step `cursor` a month 
 
 - Face (`SuggestionBoxFace`): a **Suggest** pill (`data-piece-main`) opening `SuggestionBoxPopover` (select mode) or
   `SuggestionBoxReader` (walking); both render `SuggestionBoxPanel`.
-- The panel's state machine: `mode` from the session: `offline` (a This Browser Space: `isOfflineIdSync`, or no
+- The panel's state machine: `mode` from the session: `offline` (an offline Space: `isOfflineIdSync`, or no
   `imageContext`), `viewer` (`can.level === 'view'`), `participant`, `editor`. `editor` loads on open
   (`apiListSuggestions`), status `loading | ready | failed`, and again on **Refresh**. Drop: status `idle | sending |
 sent | failed`, the text cleared on `sent`.

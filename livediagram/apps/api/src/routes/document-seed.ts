@@ -40,13 +40,16 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
       continue;
     }
     const tabId = raw.id as string;
-    const { graph: _g, mermaid: _m, template: given, ...rest } = raw;
+    // A graph tab may bring the files it was drawn from; the engine checks them and writes the record
+    // (docs/specs/027-repositories/diagram-sources.md "Writing the record").
+    const { graph: _g, mermaid: _m, template: given, sources, ...rest } = raw;
     // A retired template's kind makes its replacement (templateKindOf).
     const template = templateKindOf(given) ?? given;
     const compiled = applyReplace(null, body, {
       tabId,
       name: typeof raw.name === 'string' ? raw.name : 'Tab',
       ...(typeof raw.theme === 'string' ? { themeId: raw.theme } : {}),
+      ...(sources !== undefined ? { sources } : {}),
       log: engineLog({ documentId, tabId }),
     });
     if ('errors' in compiled) {

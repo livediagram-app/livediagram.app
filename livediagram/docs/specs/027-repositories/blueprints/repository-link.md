@@ -426,7 +426,7 @@ type LinkFile = {
   covers: { folder: string | null; documents: string[] };
   mirror: { level: MirrorLevel; dir: string }; // dir: normalised, POSIX separators, relative to root
   hooks: { block: boolean }; // validated; read by the git slice
-  sources: Record<string, unknown>[]; // [[sources]], owned by diagram-sources; unread in this slice (RL2)
+  sources: Record<string, unknown>[]; // [[sources]], owned by diagram-sources: infrastructure entries read by link from-code
 };
 ```
 
@@ -441,7 +441,7 @@ type LinkFile = {
 | `mirror.dir`       | string           | `diagrams` | Relative; normalised; not empty after normalisation; no `..` segment; its real path inside the link root's (spec default; RL3) |
 | `[hooks]`          | table            | defaults   |                                                                                                                                |
 | `hooks.block`      | boolean          | `false`    | Validated; unused in this slice (RL2)                                                                                          |
-| `[[sources]]`      | array of tables  | `[]`       | Only its shape is checked; its tables' keys are diagram-sources' (RL2)                                                         |
+| `[[sources]]`      | array of tables  | `[]`       | Only its shape is checked here; diagram-sources checks the keys of an infrastructure entry when `link from-code` reads it      |
 
 Rejections (`error:` lines are final copy; each ends with its `hint:`):
 

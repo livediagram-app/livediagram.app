@@ -21,12 +21,12 @@ Offline Mode is **on by default for a guest and off by default for a signed-in p
 Nobody is asked when creating a design; the default decides:
 
 - **`/new`** ([New design route](../007-editor/new-design-route.md#what-new-makes)) asks nothing and creates the
-  design in the default location for who is creating ([Save Locations](save-locations.md)): **This Browser** for a
+  design in the default location for who is creating ([Save Locations](save-locations.md)): **Offline** for a
   guest, **livedesign** for a signed-in person. Its links (`/new?template=`, `/new?blank=1`,
   [Start Blank](../007-editor/new-design-route.md#start-blank)) take the same default, so a guest following a template
-  from the landing page gets a design in This Browser. A placement param (`?folder=`, `?team=`) makes it a cloud one.
-- Either moves later: **Take Offline** moves a cloud design into This Browser, **Sync Design** puts one in This
-  Browser on livedesign.
+  from the landing page gets a design kept Offline. A placement param (`?folder=`, `?team=`) makes it a cloud one.
+- Either moves later: **Take Offline** moves a cloud design Offline, **Sync Design** puts one kept Offline
+  on livedesign.
 - The location only changes _where the design is stored_; the templates and theme work identically.
 
 No global "offline mode" switch: the choice is **per design**, so a person can
@@ -104,7 +104,7 @@ instead of the API, and the "Saved" indicator means _saved on this device_.
 
 ## Instant open
 
-A design in This Browser lives in this browser, so opening it waits on nothing the
+A design kept Offline lives in this browser, so opening it waits on nothing the
 server says. The editor bootstrap ([Dedicated route for new-design creation → In-place handoff](../007-editor/new-design-route.md#in-place-handoff-to-the-editor),
 `app/design/[id]/useIdentityBootstrap.ts`) takes an **early open** when, before
 auth has settled, the path names a design registered in the local index
@@ -125,13 +125,13 @@ auth has settled, the path names a design registered in the local index
   nudge. The design is not reloaded: an offline design is the reader's own
   whoever they turn out to be.
 - **`/new` does not wait either.** For a guest ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers))
-  creating This Browser, the create writes to IndexedDB and hands off without
+  creating Offline, the create writes to IndexedDB and hands off without
   waiting on auth, the guest id or the participant, which resolve in the
   background (`commitNewDesign` in `app/new/page.tsx`).
 - **Except a first visit's guest token.** A browser with no guest token yet (or one near its end) fetches one before
   the create: the handoff ([Auth + guest access → Guests](../014-identity/auth-and-guest-access.md#guests)) leaves
   the page and comes back to the same `/new` address, so a create begun first would run again on the way back and
-  make the design twice, the first left behind in Browser Storage. `commitNewDesign` awaits `ensureGuestToken` first; a
+  make the design twice, the first left behind Offline. `commitNewDesign` awaits `ensureGuestToken` first; a
   returning guest's token is already in `localStorage`, so it answers at once and nothing waits. With no accounts
   site the handoff comes straight back failed, and the create goes ahead.
 - The editor reads back the record `/new` has just written rather than taking
@@ -142,9 +142,9 @@ auth has settled, the path names a design registered in the local index
 same way with the local api (headless Chromium, 10 runs each, interleaved; a
 fresh browser profile per first visit), guest create to first canvas paint:
 
-| Link           | Before (cloud) first / return | After (This Browser) first / return | API requests |
-| -------------- | ----------------------------- | ----------------------------------- | ------------ |
-| `/new?blank=1` | 3,076 / 1,803 ms              | 1,053 / 834 ms                      | 20 → 1       |
+| Link           | Before (cloud) first / return | After (Offline) first / return | API requests |
+| -------------- | ----------------------------- | ------------------------------ | ------------ |
+| `/new?blank=1` | 3,076 / 1,803 ms              | 1,053 / 834 ms                 | 20 → 1       |
 
 The one request left is `GET /api/capabilities`; the guest id, participant and
 Explorer lists follow after the paint.
@@ -184,11 +184,11 @@ server.
   the catch-up brings the rest. Refreshes are gathered into at most one write every 2
   seconds, made off the editing path, so they never hold up a save or a keystroke; a
   waiting one is written at once when the page is hidden or closed. Only a copy the open
-  kept is followed, for the same reader: an embed, a Community post or a This Browser design
-  never gains one, and a design taken offline to This Browser drops its copy.
+  kept is followed, for the same reader: an embed, a Community post or an offline design
+  never gains one, and a design taken offline drops its copy.
 - **Bounded.** At most 20 copies, the oldest seen dropped first; a copy over 1,000,000
   characters of JSON is not kept (a bigger design opens as it does today); a copy older
-  than 30 days is never read. Embeds, Community posts, workbenches and This Browser
+  than 30 days is never read. Embeds, Community posts, workbenches and Offline
   designs keep none.
 
 **The warm open.** An address naming a cloud design with a copy for the reader paints that
@@ -201,7 +201,7 @@ account is reading. A stale hint (a sign-out in another app) paints nothing, and
 empties the store. Signed in, the warm open gives up the token round trip of its head start
 and keeps the rest (the participant, the design and its first tab). A signed-out browser, or
 one whose guest is someone else, never reads an account's copy. A
-share link warm-opens only when its share code is the one the copy was kept under: by an address that names the design, or by the link's own address (`/design/shared?s=<code>`, as the Share dialog gives it), which names no design and finds the reader's newest copy kept under that code, for the same reader rules. The warm open leaves the address as it is (the load that catches up names the design in the bar, as it always has). Embeds, workbenches and This Browser designs never
+share link warm-opens only when its share code is the one the copy was kept under: by an address that names the design, or by the link's own address (`/design/shared?s=<code>`, as the Share dialog gives it), which names no design and finds the reader's newest copy kept under that code, for the same reader rules. The warm open leaves the address as it is (the load that catches up names the design in the bar, as it always has). Embeds, workbenches and Offline designs never
 warm-open, and a copy whose first tab is not the tab this open would show first (no first
 tab kept, or the address's `#t=` names another tab) is not painted: the design opens as it
 always did.
@@ -290,55 +290,55 @@ back cost about a millisecond against the seconds the warm open saves.
 | 500 elements   | 120 KB    | 0.2 / 0.3 ms | 0.3 / 1.5 ms | 0.2 / 0.8 ms  | 0.1 / 0.2 ms |
 | 2,000 elements | 480 KB    | 0.7 / 0.7 ms | 0.7 / 3.4 ms | 0.5 / 2.2 ms  | 0.5 / 0.6 ms |
 
-## Archived in This Browser
+## Archived Offline
 
-A design in This Browser can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the
-browser: the mark (`archivedAt`) lives only in This Browser's shared list (`@liveworkspace/explorer/this-browser`),
+A design kept Offline can be moved to Archived from the Explorer's menu, like an account's. Nothing leaves the
+browser: the mark (`archivedAt`) lives only in Offline's shared list (`@liveworkspace/explorer/this-browser`),
 and every rewrite of the list carries the marks it held. Before the editor opens a design it reads the mark once
 (`isThisBrowserArchived`), and an archived one shows the **Design Archived** card in place of the design
 ([Archived](../007-editor/new-design-route.md#archived)), whether or not the early open would have taken it. Change Folder moves it out,
-back into This Browser's list.
+back into Offline's list.
 
-## "This Browser" badge + Explorer
+## "Offline" badge + Explorer
 
 - **Visibility badge.** The open item's badge is the Explorer panel's Current card's (the open editor has no
   header bar, and its legend went with it): Private / Shared / Team from the index, and, for an item kept only
-  here, the [This Browser pill](#this-browser-pill) with its words, browser-window icon, teal tone and sentence
+  here, the [Offline pill](#offline-pill) with its words, browser-window icon, teal tone and sentence
   (one-explorer.md "The Current card").
 - **Explorer.** The Explorer lists what liveworkspace's index holds, and offline designs never reach it. livedesign
   keeps a small list of them in this browser (id, title and dates, never their content,
-  `@liveworkspace/explorer/this-browser`), which the Explorer on livedesign's own address reads: a **This Browser**
-  sidebar row with their count, a view of its own (`/explorer/offline`), a This Browser group in the Trash and a
-  place in Home's Most Used and Recent, each with the **This Browser** pill (below), opening in the editor. Each live row has
-  **Sync Design** for a signed-in person. The editor's Explorer panel has This Browser on its rail too, with the count, shown while
+  `@liveworkspace/explorer/this-browser`), which the Explorer on livedesign's own address reads: an **Offline**
+  sidebar row with their count, a view of its own (`/explorer/offline`), an offline group in the Trash and a
+  place in Home's Most Used and Recent, each with the **Offline** pill (below), opening in the editor. Each live row has
+  **Sync Design** for a signed-in person. The editor's Explorer panel has Offline on its rail too, with the count, shown while
   this browser holds at least one, opening its pane in place, **Sync Design** run there for a signed-in person
-  (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old This Browser page, only redirects to
+  (`hooks/persistence/useThisBrowserHost.ts`). `/offline`, the old Offline page, only redirects to
   `/explorer/offline`, its query kept.
 - **Home.** An offline design's opens are counted in its own local record, never
   sent anywhere, so Home's Most Used and Recent places it among the reader's other
-  designs by the same rule, with the **This Browser** pill on its thumbnail
+  designs by the same rule, with the **Offline** pill on its thumbnail
   ([Explorer Home](../013-workspace/explorer-home.md#opens)).
 - **Inbox.** The Inbox reads offline designs in the browser and lists their open actions and comment
-  threads among the cloud ones, each row with the **This Browser** pill
-  ([Inbox](../013-workspace/inbox.md) "This Browser").
+  threads among the cloud ones, each row with the **Offline** pill
+  ([Inbox](../013-workspace/inbox.md) "Offline").
 
-### This Browser pill
+### Offline pill
 
-Every row and card of an offline design carries a **This Browser** pill,
+Every row and card of an offline design carries an **Offline** pill,
 wherever the design is listed: the list and card views (folders, Search results,
-This Browser, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
+Offline, Recent), Home's Most Used and Recent, the Inbox's rows, the folder previews' tiles excepted (they
 are pictures, not rows), the search panel's results, the editor's Explorer
 rows and its Current Design card, and the Trash.
 
 - **Not colour alone.** The pill shows an icon (a browser window) and the words
-  "This Browser", in a teal tone whose text meets 4.5:1 on its fill in light and
+  "Offline", in a teal tone whose text meets 4.5:1 on its fill in light and
   dark mode; the ring meets 3:1 against the row. Teal because it is no app's accent
   (livediagram sky, liveplanner violet, livedocuments amber, livedesign rose, liveworkspace
   slate) and no status colour (green fine, amber warning, red failing), so the pill never reads
   as whose an item is, or as fine or failing. One pill for every editor and the Explorer
   (`ThisBrowserPill` in `@liveworkspace/workbench`, its tone `THIS_BROWSER_TONE` from
   `@liveworkspace/explorer/this-browser`).
-- **What it means, on hover and focus.** Its hover card reads "This Browser" over
+- **What it means, on hover and focus.** Its hover card reads "Offline" over
   "Lives only in this browser. Clearing this browser's site data deletes it."
   The same sentence is the pill's accessible description (`aria-describedby`),
   so a screen reader hears it without hovering.
@@ -359,18 +359,18 @@ rows and its Current Design card, and the Trash.
 Conversion works **both directions**, from the Explorer row menu (in both the
 in-editor panel and the full-page Explorer). In the editor, the offline to cloud
 direction is also offered by the Share dialog (below), and after signing in by
-the move prompt ([Auth + guest access → Moving designs in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-designs-in-this-browser-after-signing-in)).
+the move prompt ([Auth + guest access → Moving designs kept Offline after signing in](../014-identity/auth-and-guest-access.md#moving-offline-designs-after-signing-in)).
 
 On a fresh, unshared design's start screen the **Sync Design to Server** switch moves it either way, in place and with no confirmation ([Save Locations → On the start screen](save-locations.md#on-the-start-screen)).
 
-### Sharing a design in This Browser
+### Sharing an offline design
 
 Share is how most people find out a design needs the server. Pressing it never
 uploads anything by itself; the dialog explains and asks, for a guest and a
 signed-in person alike:
 
-- **The gate.** Share on a design in This Browser opens the Share dialog on its
-  offline gate (`ShareOfflineGate`): **This Design Is in This Browser**, "It is saved only
+- **The gate.** Share on a design kept Offline opens the Share dialog on its
+  offline gate (`ShareOfflineGate`): **This Design Is Offline**, "It is saved only
   in this browser, so there is nothing to share yet. Sync it to livedesign to
   share it: share links, real-time collaboration and the live image all need it
   on our servers. You can take it offline again any time.", with **Sync Design**
@@ -382,7 +382,7 @@ signed-in person alike:
   cloud design.
 - The button waits for the reader to be known (an early open runs under the
   `'self'` placeholder, [Instant open](#instant-open)).
-- A failed sync keeps the design This Browser, says why in a toast
+- A failed sync keeps the design Offline, says why in a toast
   (`syncFailureMessage`) and leaves the button to try again; nothing is
   half-uploaded (see below).
 
@@ -407,7 +407,7 @@ reload:
 5. **The room opens** (`designServerStored` turns true) and the Explorer list
    refreshes.
 
-The Explorer panel's Sync and Take Offline (an item's menu, This Browser's rows) never reload either: the
+The Explorer panel's Sync and Take Offline (an item's menu, Offline's rows) never reload either: the
 design open in the editor moves in place as above, any other moves on its own, and the Explorer loads its lists again
 once the move settles. Only the move prompt after signing in still reloads, since several move at once.
 
@@ -430,8 +430,8 @@ switch only shows on a fresh design nobody else has, so there is nothing to lose
 
 ### Save to server (Offline → Cloud)
 
-Action: **"Sync Design"** (one name everywhere: the design menu and This Browser's rows in the editor's Explorer panel,
-the Explorer's This Browser view, the Share dialog gate and the move prompt after signing in).
+Action: **"Sync Design"** (one name everywhere: the design menu and Offline's rows in the editor's Explorer panel,
+the Explorer's Offline view, the Share dialog gate and the move prompt after signing in).
 
 - Uploads the design's meta + tabs to the API ([API app](../015-api/api.md)), creating a normal
   cloud design owned by the current identity (signed-in account, or the liveworkspace
@@ -489,7 +489,7 @@ confirmation:
 - On confirm: download the design's tabs + meta into IndexedDB, register it in
   the local index, then **delete the server record** (via a raw delete so the
   now-offline id isn't re-routed to the local store) and any share links. The
-  badge flips to **This Browser**. Referenced R2 images are downloaded and embedded
+  badge flips to **Offline**. Referenced R2 images are downloaded and embedded
   as `data:` URIs BEFORE the server copy is deleted (the deletion would make
   them "unused" and the retention reaper would eventually take the bytes); an
   incomplete embed aborts the conversion and the design stays on the server.
@@ -536,9 +536,9 @@ Offline Mode is independent of sign-in:
   an offline design never touches the server at all.
 - Sign-in / sign-out never migrates offline designs by itself (the migrate flow, [Auth + guest access](../014-identity/auth-and-guest-access.md),
   only moves guest _cloud_ designs to the account). After signing in, a prompt
-  **offers** to move them ([Moving designs in This Browser after signing in](../014-identity/auth-and-guest-access.md#moving-designs-in-this-browser-after-signing-in));
+  **offers** to move them ([Moving designs kept Offline after signing in](../014-identity/auth-and-guest-access.md#moving-offline-designs-after-signing-in));
   a design the person leaves stays put.
-- The "This Browser" badge and pill read the same for a guest as for anyone: the
+- The "Offline" badge and pill read the same for a guest as for anyone: the
   sentence about clearing site data is the one a guest most needs to see.
 
 ## Persistence architecture
@@ -566,7 +566,7 @@ target:
   the offline rows when the cloud fetch fails.
 - **Create is the one caller-decided branch**, because there is no registered id
   to dispatch on yet: `/new` calls `offlineCreateDesign`
-  directly when the location is This Browser (a guest's default), and
+  directly when the location is Offline (a guest's default), and
   that call is what registers the id every later operation routes on.
 - Only the design/tab CRUD path needs the local store; server-only endpoints
   (share, teams, room ticket, thumbnails) are simply never called for an offline
@@ -593,7 +593,7 @@ inside, "no cloud"), consistent with the existing privacy iconography
 The help centre has an **"Offline Mode"** article, registered in the help registry
 ([Register a help article](../../instructions/register-a-help-article.md)). It covers:
 
-- What Offline Mode is and when a design is made in This Browser ([Save Locations](save-locations.md)).
+- What Offline Mode is and when a design is made Offline ([Save Locations](save-locations.md)).
 - That it's **this-browser-only**: not synced, not backed up, and can be lost if
   you clear site data: the durability warning, stated plainly.
 - **Converting**: "Sync Design" (Offline → Cloud) and "Take Offline"
@@ -631,9 +631,9 @@ Adoption is tracked without content, in the closed vocabulary:
 - `apps/live/lib/api-client.ts` + `lib/api/*`: the persistence seam; per-design
   dispatch via the local index (`lib/offline/offline-ids.ts`) to `lib/offline/offline-store.ts`.
 - `/new` (`app/new/page.tsx`, [New design route](../007-editor/new-design-route.md)): `offlineCreateDesign` for a
-  This Browser create.
+  Offline create.
 - Explorer (row + card components, `ThisBrowserPill`): merge the local index,
-  show the **This Browser** pill wherever an offline design is listed plus a
+  show the **Offline** pill wherever an offline design is listed plus a
   fixed offline thumbnail everywhere, and skip server fetches for offline rows.
 - Guest default + instant open: `lib/save-locations.ts` (`defaultSaveLocationFor`),
   `lib/signed-in-hint.ts`, `app/new/useNewDesignLocation.ts`, the early open in

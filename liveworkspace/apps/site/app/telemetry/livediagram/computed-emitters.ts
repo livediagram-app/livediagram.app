@@ -373,9 +373,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Bold', 'Italic', 'List', 'Heading'],
     open: 'the rich-text command a note applied',
   },
-  // The flyout's optional groups (category-flyout-groups OPTIONAL_GROUPS), BPMN alone today.
+  // The flyout's optional groups (category-flyout-groups OPTIONAL_GROUPS).
   'apps/editor/components/palette/OptionalFlyoutGroup.tsx UI·Opened': {
-    values: ['BpmnGroup'],
+    values: ['FlowchartGroup', 'MoreShapesGroup', 'BpmnGroup'],
   },
   'apps/editor/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
     values: ['IconSearch', 'TechSearch', 'StickerSearch'],
@@ -440,6 +440,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/editor/components/tour/ElementTourHost.tsx UI·Opened': {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
+  // The X beside the Play button turns the tour down (element-tours.md "Telemetry").
+  'apps/editor/components/tour/ElementTourHost.tsx UI·Closed': {
+    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
+  },
   'apps/editor/components/tour/WatchItBuiltPlayer.tsx UI·View': { values: WATCH_STEP_SOURCE },
   'apps/editor/components/tour/WatchItBuiltHost.tsx UI·View': { values: WATCH_TOPIC_PICKS },
   'apps/editor/hooks/canvas/commit-freehand.ts Element·Added': {
@@ -489,7 +493,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'BoundaryMeta',
       'PyramidVariant',
       'HubSpokes',
-      'PointerDetach',
       'StackDirection',
       'StackColumns',
       'StackGap',

@@ -59,6 +59,7 @@ export function EditorModals() {
     canApplyStyleToAllTabs,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
+    setKeepElementColours,
   } = useEditorContext();
   // The page someone is on is the Tab Style surface; a page nobody has chosen a kind for is the canvas.
   const pageKind = useCurrentPageKind();
@@ -71,8 +72,17 @@ export function EditorModals() {
       units: pagesOf(activeTab).filter((p) => pageKindOf(p) !== 'photo').length,
       onSet: setNewPageBackground,
       onApplyToEveryPage: applyNewPageBackgroundToEveryPage,
+      // Element Colours, the tab's own (docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours").
+      keepElementColours: activeTab.keepElementColours === true,
+      onSetKeepElementColours: setKeepElementColours,
     }),
-    [activeTab, pageKind, setNewPageBackground, applyNewPageBackgroundToEveryPage],
+    [
+      activeTab,
+      pageKind,
+      setNewPageBackground,
+      applyNewPageBackgroundToEveryPage,
+      setKeepElementColours,
+    ],
   );
 
   return (

@@ -41,7 +41,7 @@ test('offline documents saved before the rename survive the store upgrade', asyn
       }),
   );
   // Opening the canvas upgrades the store and reads it whole (the offline id cache, once per page load), which
-  // rebuilds This Browser's list (the Explorer's, in localStorage) with it. /new alone never reads the store: a
+  // rebuilds Offline's list (the Explorer's, in localStorage) with it. /new alone never reads the store: a
   // guest's wizard has no offline id to ask about.
   await page.goto('/document/offline-legacy-1');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });

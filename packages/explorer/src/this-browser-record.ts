@@ -85,7 +85,7 @@ function inStore(
   });
 }
 
-/** Deletes one item's record from the app's offline store, for good, then drops it from This Browser's list and its
+/** Deletes one item's record from the app's offline store, for good, then drops it from Offline's list and its
  *  rows from the Inbox snapshot. Never throws: `unreachable` when it couldn't. */
 export async function removeThisBrowserRecord(
   app: App,
@@ -112,7 +112,7 @@ export type ThisBrowserRecordRename = 'renamed' | 'unreachable' | 'missing';
 
 /** Renames one item kept only in this browser that its editor won't open (an archived one): the record's `name` and
  *  `savedAt` in the app's offline store, as the editor's own rename writes them (every app's record has both), then
- *  its row in This Browser's list, its archive mark kept. Never throws. */
+ *  its row in Offline's list, its archive mark kept. Never throws. */
 export async function renameThisBrowserRecord(
   app: App,
   id: string,

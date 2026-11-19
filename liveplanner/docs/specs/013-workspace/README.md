@@ -4,7 +4,7 @@ Follow the references below only as needed; never upfront.
 
 The Explorer, and everything it lists, lives in liveworkspace's index and its shared Explorer package: [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md) is the plan and [one-explorer-contracts.md](../../../../liveworkspace/docs/specs/004-index/one-explorer-contracts.md) the calls. The specs below marked "moved" are short notes saying what went and what liveplanner still does.
 
-- ./explorer-structure.md - when working on the Explorer page or the editor's Explorer panel: the shared `@liveworkspace/explorer` on liveworkspace.app, the `/explorer` redirect, This Browser, and the panel (moved)
+- ./explorer-structure.md - when working on the Explorer page or the editor's Explorer panel: the shared `@liveworkspace/explorer` on liveworkspace.app, the `/explorer` redirect, Offline, and the panel (moved)
 - ./share-roles.md - when working on what a share link, embed or API token may do: Viewer, Participant, Editor; ownership powers
 - ./share-password.md - when working on a link visitor's password prompt; the password itself is the index's (moved)
 - ./tab-scoped-share-links.md - when working on a share link confined to one tab: the grant's `tab`, enforced by the api and the room (moved)
@@ -29,4 +29,5 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./share-link-previews.md - when working on what a pasted share link previews as in Slack, Teams, iMessage and the like: the project's name and a 1200 x 630 PNG share card (`/api/share/<code>/card`, `/api/share/<code>/image.png`), the editor worker's head rewrite, and the brand card everywhere else
 - ./approvals.md - when working on Approvals: asking named people to approve the plan, the Approval tab in Share, the badge in the corner card and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./snapshots.md - when working on Snapshots: manual save points of the whole plan, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
+- ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what liveplanner supplies (the platform's `004-index/inbox-notices.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds)

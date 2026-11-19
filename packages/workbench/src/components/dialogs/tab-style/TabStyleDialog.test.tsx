@@ -560,4 +560,23 @@ describe('a frame of the product’s own', () => {
     parts!.tourApi.showFinish();
     expect(p.onTabChange).toHaveBeenCalledWith('finish');
   });
+
+  it("hands Show Me the surface's panels, so a surface without Finish runs without its steps", () => {
+    let parts: Omit<TabStyleFrameParts, 'children'> | undefined;
+    const frame = {
+      kind: 'custom' as const,
+      render: (f: TabStyleFrameParts) => {
+        parts = f;
+        return f.children;
+      },
+    };
+    open({
+      profile: profileWith({
+        frame,
+        surfaces: { article: { panels: ['theme', 'font', 'canvas'] } },
+      }),
+      surface: 'article',
+    });
+    expect(parts!.tourApi.panels).toEqual(['theme', 'font', 'canvas']);
+  });
 });

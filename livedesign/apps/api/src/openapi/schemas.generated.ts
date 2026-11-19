@@ -6797,6 +6797,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "pointerAnchor": {
+        "$ref": "#/components/schemas/Anchor"
+      },
       "pointerTip": {
         "additionalProperties": false,
         "properties": {
@@ -7613,6 +7616,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
+      "keepElementColours": {
+        "type": "boolean"
+      },
       "kind": {
         "$ref": "#/components/schemas/TabKind"
       },
@@ -7759,6 +7765,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/TabId"
+      },
+      "keepElementColours": {
+        "type": "boolean"
       },
       "kind": {
         "$ref": "#/components/schemas/TabKind"

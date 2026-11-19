@@ -337,10 +337,10 @@ describe('CanvasThemeDialog per tab kind', () => {
     expect(screen.queryByText('Size of New Text')).toBeNull();
   });
 
-  it('gives a form its own lines and no link, and a dashboard Dashboard Settings', () => {
+  it('gives a form its own lines and Form Settings, and a dashboard Dashboard Settings', () => {
     open('form', { tab: 'looks' });
     expect(screen.getByText('Colours, finish and font for the whole form.')).toBeTruthy();
-    expect(document.querySelector('[data-tab-style-link]')).toBeNull();
+    expect(screen.getByRole('button', { name: /^Form Settings:/ })).toBeTruthy();
     cleanup();
     open('dashboard', { tab: 'looks', defaultTextSize: 'lg' });
     expect(screen.getByRole('button', { name: /^Dashboard Settings:/ })).toBeTruthy();

@@ -329,7 +329,8 @@ shading, its foot shadow and its skirting rather than by a stroke.
 **Wall colour.** A tab can paint its walls: `wallColor` on the tab (a `#rrggbb`, set in Tab Style's Room panel or by
 a look, [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#room-panel)). Unset, the walls are the plaster
 above. Set, the face takes the colour, its shade a third darker, its top edge a quarter lighter, and on a dark canvas
-the lot is the same colour in evening light (a fifth deeper), as the plaster is. Anything drawn on a wall (a
+the lot is the same colour in evening light, as the plaster is: a modest step deeper, its lightness down a tenth and
+never more than 0.06, so the chosen hue stays recognisable (a red wall reads red, not near black). Anything drawn on a wall (a
 sign's ink) takes a dark or a light ink, whichever reads at 4.5:1 on the face. The skirting, doors and windows keep
 their own colours. The walls layer sets these as its own custom properties (`--space-wall`, `--space-wall-shade`,
 `--space-wall-top`, `--space-wall-ink`), so nothing is restyled per wall and a change costs one style write. The

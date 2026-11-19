@@ -35,8 +35,8 @@ What livediagram does is say when a canvas is opened. The editor's first-tab rea
 (never in an embed; `DOCUMENT_OPEN_HEADER` in `packages/api-schema/src/home.ts`, beside the 90-day use window), and the api records the open with the index (`POST /items/:id/open`, debounced there to one
 write a minute; `apps/api/src/routes/document-subresource-routes.ts`). Making a canvas is a use of it too, recorded
 beside the create unless it came in a bulk import. The index keeps the time for Recent and counts the open on that day
-for Most Used (opens over the last 14 days), and Most Used and Recent reads both in one request. A canvas opened from This Browser is recorded in this browser
-only (`apps/editor/lib/offline/offline-opens.ts`), in the This Browser list the Explorer reads, so Most Used and Recent can
+for Most Used (opens over the last 14 days), and Most Used and Recent reads both in one request. A canvas opened from Offline is recorded in this browser
+only (`apps/editor/lib/offline/offline-opens.ts`), in the Offline list the Explorer reads, so Most Used and Recent can
 show it too ([Offline Mode](../006-document/offline-mode.md)).
 
 The document is [one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md); the calls and types are in

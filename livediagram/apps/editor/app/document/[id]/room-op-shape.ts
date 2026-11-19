@@ -46,6 +46,7 @@ export function roomOpIsWellFormed(op: unknown): op is RoomOp {
       return (
         isText(op.tabId) &&
         (op.tab === undefined || isRecord(op.tab)) &&
+        (op.sources === undefined || op.sources === null || isRecord(op.sources)) &&
         (op.elementOps === undefined ||
           (Array.isArray(op.elementOps) && op.elementOps.every((o) => isElementOpShape(o, false))))
       );

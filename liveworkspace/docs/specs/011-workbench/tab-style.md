@@ -23,12 +23,16 @@ dialog shows by changing its profile, never by forking the dialog.
   the Size of New Text control; each over the product's preview.
 - **Apply to All Tabs** at the foot of the home, for an Editor of the whole item (`ApplyToAllTabsRow`). It copies
   `TAB_STYLE_KEYS` (`lib/tab-style-to-all.ts`): the canvas, the text defaults, the finish and the background new pages
-  start on (`newPageBackground`, a Pages editor's; absent elsewhere, so nothing changes there).
+  start on (`newPageBackground`, a Pages editor's) and the tab's Element Colours choice (`keepElementColours`,
+  livedesign's); each absent elsewhere, so nothing changes there.
 - **Eased changes.** Every pick eases the canvas into its new colours (`lib/tab-style-ease`).
 - **The frame.** By default the modal every editor wore: no dimming, a transparent click-catcher, the dialog hero
   header (title "Tab Style", the line for the view that is up, Show Me, the help link and the close), a popover
   anchored on what opened it on a screen 640 px wide and up, a bottom sheet on a phone. A product may wrap the views
   in a frame of its own instead (liveplanner's `ClusterPanel`, which it shares with a board's Configure).
+- **Show Me follows the surface.** The tour visits only what the surface shows: a step that opens a panel the surface
+  leaves out (the Finish steps, on livedocuments' `article` and `flashcard` pages, which hide Finish) is left out of
+  that run, so the tour never opens a hidden panel or points at nothing, and goes from Fine-tune to its last card.
 
 ## Surfaces
 

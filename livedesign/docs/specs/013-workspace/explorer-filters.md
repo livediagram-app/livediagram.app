@@ -32,7 +32,7 @@ An **aggregate view** lists designs from every place at once: **Recent**, **Sear
 | -------------------------------------------------------- | ---------------------------------------------------------- | --------------------------------- |
 | My Work, and each of its folders                         | `/explorer/all`, `/explorer/folder?id=<id>`                | Scoped                            |
 | A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                   | Scoped                            |
-| This Browser                                             | `/explorer/offline`                                        | Scoped                            |
+| Offline                                                  | `/explorer/offline`                                        | Scoped                            |
 | Recent, Search results, Shared With Me                   | `/explorer/recent`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
 | Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                  | None: typing opens Search results |
 
@@ -46,8 +46,8 @@ An **aggregate view** lists designs from every place at once: **Recent**, **Sear
   aside while the lens is set and return when it is cleared. A row from a subfolder names its folder (the
   [Recent folder chip](recent-folder-chip.md)).
 - **Recent** lists the 12 newest designs that match.
-- **This Browser**'s designs are the reader's own: they read as Space `mine` and People `me`, and keep their
-  **This Browser** pill ([Explorer structure](explorer-structure.md#designs-in-this-browser)).
+- **Offline**'s designs are the reader's own: they read as Space `mine` and People `me`, and keep their
+  **Offline** pill ([Explorer structure](explorer-structure.md#offline-designs)).
 
 ## The chip row
 
@@ -86,7 +86,7 @@ Each dimension is a closed list of values. The interface says what a value means
 - **People** on a design is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared With Me
   is `others`.
 - **Space** on a design is `mine` for one in My Work or in this browser ([Offline Mode](../006-design/offline-mode.md),
-  the designs the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
+  the designs the sidebar marks "Offline"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
   token names a team by id; every label shows the team's **name**, never the id.
 - A row that cannot answer a dimension (a Shared With Me row carries no provenance or mode) matches no
   value of it.

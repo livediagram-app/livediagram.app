@@ -117,6 +117,7 @@ export const CARD_FIELDS = [
   'chipLook',
   'attachedTo',
   'attachAt',
+  'pointerAnchor',
 ] as const;
 
 export const STACK_FIELDS = [

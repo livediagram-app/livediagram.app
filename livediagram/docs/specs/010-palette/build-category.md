@@ -29,15 +29,18 @@ The **Flowchart** ([The flowchart](../009-elements/flowchart.md)) joined later, 
 drops a Start that grows into a chart from the keyboard and lays itself out. Like the Mind Node it is
 in Diagram mode.
 
-## In Diagram: Diagrams and Layout
+## In Diagram: Concepts and Layout
 
-Diagram mode offers Build as two categories ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)).
-Grown to fifteen tiles there, one Build put the structures you type into beside the containers and labels you set
-them in. **Diagrams** holds the first (Mind node, Org chart, Flowchart, Sequence, Table, Entity), **Layout** the
-second (Lane, Frame, Stack, Boundary, then Diagram key, Card, Badge, Step number). Tile ids are
-unchanged. Workshop offers the same **Layout** (no Diagrams), with the Timeline after the Boundary.
+Diagram mode spreads Build over two categories ([Editor modes](../007-editor/editor-modes.md#the-palette-per-mode)).
+It had a **Diagrams** category of its own until 2026-11-19 (owner), when its tiles moved where they read best:
+**Concepts** opens with a **Diagrams** group (Mind node, Org chart, Flowchart, Sequence: the structures you type
+into) before the concept graphics, and **Layout** takes the rest: **Containers** (Lane, Frame, Stack, Boundary,
+Table), **Parts** (Diagram key, Card, Badge, Step number, then **Infrastructure**: one tile
+whose popover offers the C4 tiles below and the Entity, as the Card's offers its presets), then **Pictures**. Tile ids are unchanged. Workshop offers its own **Layout** (no Table, C4 tiles or Entity),
+with the Timeline after the Boundary.
 
-**The C4 model** follows in Diagrams as a group of its own, **C4 Model** ([Templates](../008-canvas/canvas-and-palette.md),
+**The C4 model** sits in the popover of Layout's **Infrastructure** tile (in Parts, after the Step number), with the
+Entity last; Search finds each tile on its own ([Templates](../008-canvas/canvas-and-palette.md),
 the C4 levels): six tiles, each an ordinary element dressed in C4's palette so a level can be drawn by hand or a
 template's level grown. **Person** (a deep-blue card with the person glyph, "Person" as its meta line), **Software
 System** (mid blue, "Software system"), **Container** (the container blue, its meta line the technology, "Go"),

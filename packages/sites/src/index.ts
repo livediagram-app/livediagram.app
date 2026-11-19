@@ -183,7 +183,7 @@ export type AppItems = {
   itemPath: string;
   // Where the app makes one: `${url}${newPath}` (`?folder=`, `?team=` and `?template=` ride on it).
   newPath: string;
-  // The app's view of what is kept only in this browser (its offline items), when it has one: This Browser in the
+  // The app's view of what is kept only in this browser (its offline items), when it has one: Offline in the
   // Explorer on the app's own address, `/explorer/offline`, which alone can read the app's list. The app's old
   // `/offline` page only redirects there.
   offlinePath: string | null;
@@ -194,7 +194,7 @@ export type AppItems = {
   offlineConversions: boolean;
   // The app's offline store (liveworkspace/docs/specs/004-index/one-explorer.md "Take Offline, Sync and Delete"): its
   // IndexedDB database (also its offline-ids BroadcastChannel's name) and object store. The editor opens them by these
-  // names, and the Explorer page on the app's address deletes a This Browser item from them in place.
+  // names, and the Explorer page on the app's address deletes an offline item from them in place.
   offlineStore: OfflineStore;
   // Its share link: `${url}${sharePath}<code>`.
   sharePath: string;
@@ -439,7 +439,7 @@ const EXPLORER_ARRIVAL_PARAMS = [
   'item',
 ];
 
-/** Whether `site`'s Explorer has the view at `section` (the path under /explorer). This Browser reads one app's
+/** Whether `site`'s Explorer has the view at `section` (the path under /explorer). Offline reads one app's
  *  offline list on its own origin, so liveworkspace.app has none; the Library is where an app keeps one (on
  *  liveworkspace.app, the last app's). */
 function explorerHasView(site: Site, section: string): boolean {

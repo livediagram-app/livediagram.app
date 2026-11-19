@@ -15,14 +15,13 @@ const bar = (mode: EditorMode) =>
   );
 
 describe('the category bar’s categories', () => {
-  it('drops Popular and offers Write, Draw, Diagrams and Layout apart in Diagram', () => {
+  it('drops Popular and offers Write, Draw, Concepts and Layout apart in Diagram', () => {
     // My shapes is in the layout; the palette leaves it out until there is a library to place from.
     expect(bar('diagram').map((c) => c.id)).toEqual([
       'shapes',
       'my-shapes',
       'write',
       'draw',
-      'diagrams',
       'concepts',
       'layout',
       'icons',
@@ -43,11 +42,17 @@ describe('the category bar’s categories', () => {
   });
 
   // docs/specs/010-palette/build-category.md "In Diagram: Diagrams and Layout".
-  it('offers every Build tile in Diagram through Diagrams, Layout or Concepts, each once', () => {
+  // Since 2026-11-19 the builders open Concepts (its Diagrams group) and Entity sits in Layout's Infrastructure tile.
+  it('offers every Build tile in Diagram through Layout or Concepts, each once', () => {
     const cats = bar('diagram');
     const ids = (id: string) => cats.find((c) => c.id === id)!.tiles!.map((t) => t.id);
-    const placed = [...ids('diagrams'), ...ids('layout'), ...ids('concepts')];
+    // A tile, or a tile offered in a Layout tile's popover (Infrastructure holds the C4 tiles and the Entity).
+    const inPopovers = cats
+      .find((c) => c.id === 'layout')!
+      .tiles!.flatMap((t) => (t.variants ?? []).map((v) => v.id));
+    const placed = [...ids('layout'), ...ids('concepts'), ...inPopovers];
     expect(cats.map((c) => c.id)).not.toContain('build');
+    expect(cats.map((c) => c.id)).not.toContain('diagrams');
     for (const tile of tilesForCategory('build'))
       expect(
         placed.filter((id) => id === tile.id),
@@ -60,7 +65,7 @@ describe('the category bar’s categories', () => {
       flyoutGroups(id, bar('diagram').find((c) => c.id === id)!.tiles!).map((g) => g.title);
     expect(groups('write')).toEqual(['Text', 'Notes', 'Comments']);
     expect(groups('draw')).toEqual(['Pens', 'Outlines', 'Connectors']);
-    expect(groups('layout')).toEqual(['Containers', 'Parts', 'Pictures', 'People']);
+    expect(groups('layout')).toEqual(['Containers', 'Parts', 'Pictures']);
   });
 
   it('gathers Workshop’s session tools into Session, Ask keeping its own button', () => {

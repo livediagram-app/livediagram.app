@@ -85,7 +85,7 @@ gallery `imageId` as it counts an image, so the reference index keeps the pictur
 ## Interfaces and contracts
 
 - Validation: `quoteLook` one of `card`, `plain`; `imageId` on a shape a string of at most `IMAGE_REF_ID_MAX_LENGTH`
-  (a gallery id or a `data:` URI in a This Browser document). The MCP validator refuses an `imageId` not in the
+  (a gallery id or a `data:` URI in an offline document). The MCP validator refuses an `imageId` not in the
   gallery as it does for an image.
 
 ## Security and trust

@@ -18,7 +18,7 @@ export type TableGameScene = {
   selfId: string;
   /** This screen's own person first, then every peer on the tab. */
   sources: readonly GameSeatSource[];
-  /** The room, or null with none (a Space kept in This Browser, or not yet connected). */
+  /** The room, or null with none (a Space kept Offline, or not yet connected). */
   send: ((op: GameSignal) => void) | null;
 };
 

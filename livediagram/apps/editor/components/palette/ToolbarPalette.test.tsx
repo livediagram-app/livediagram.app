@@ -105,17 +105,8 @@ describe('ToolbarPalette', () => {
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-    // No Popular, Write and Draw apart, Build as Diagrams and Layout, every name one word.
-    expect(barNames()).toEqual([
-      'Shapes',
-      'Write',
-      'Draw',
-      'Diagrams',
-      'Concepts',
-      'Layout',
-      'Icons',
-      'Tech',
-    ]);
+    // No Popular, Write and Draw apart, Build spread over Concepts and Layout, every name one word.
+    expect(barNames()).toEqual(['Shapes', 'Write', 'Draw', 'Concepts', 'Layout', 'Icons', 'Tech']);
     // No tiles of their own on the strip: they are in the flyouts.
     expect(within(strip()).queryByRole('button', { name: 'Add Square' })).toBeNull();
   });

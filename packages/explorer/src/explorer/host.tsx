@@ -1,7 +1,7 @@
 'use client';
 
 // What a host adds to the Explorer's own chrome, beside the props the rest of the Explorer reads through its
-// context: rows of its own in the sidebar's More group (liveworkspace.app's This Browser, which opens an app's
+// context: rows of its own in the sidebar's More group (liveworkspace.app's Offline, which opens an app's
 // offline view), and the filter's words.
 
 import { createContext, useContext, type ReactNode } from 'react';
@@ -49,7 +49,7 @@ export function HostExtrasProvider({
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
-/** A browser window: the This Browser row's icon. */
+/** A browser window: the Offline row's icon. */
 export function BrowserIcon({ size = 13 }: { size?: number }) {
   return (
     <svg

@@ -61,7 +61,11 @@ export type CanvasEditProps = {
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
   onSetWebRows?: (elementId: string, rows: import('@livediagram/document').WebRows) => void;
   // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md). Omitted in read-only.
-  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
+  onSetPointerTip?: (
+    elementId: string,
+    tipAbs: { x: number; y: number },
+    phase?: 'preview' | 'commit' | 'cancel',
+  ) => { x: number; y: number } | null | void;
   onAppendWebRow?: (elementId: string) => void;
   onSetHeroCaptionLine?: (
     elementId: string,

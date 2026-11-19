@@ -9,6 +9,7 @@ import type { Finish } from './finish';
 import type { TabId, TextSize } from '@liveworkspace/model-core/basics';
 import type { BackgroundPattern } from './background-pattern';
 import type { Element } from './element-union';
+import type { DiagramSources } from './diagram-sources';
 
 // What KIND of board this tab is, when it is a specialised one. A board
 // kind changes how the editor presents the same underlying tab: an
@@ -110,4 +111,7 @@ export type Tab = {
   // layer; the array is materialised lazily on the first layer
   // operation (see layers.ts). Elements point in via `layerId`.
   layers?: Layer[];
+  // The files this tab was drawn from and what each became (docs/specs/027-repositories/diagram-sources.md "The
+  // tab's sources"), so Update From Files can re-read them into it. Read with `tabSourcesOf`; absent = drawn by hand.
+  sources?: DiagramSources;
 };

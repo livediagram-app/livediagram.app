@@ -1,4 +1,4 @@
-// This Browser on the app's own address: the host app's items kept only in this browser, read from the list the app
+// Offline on the app's own address: the host app's items kept only in this browser, read from the list the app
 // keeps (this-browser.ts), shown as liveplanner's own Explorer showed them: the sidebar row and its count, the view,
 // the Trash's group and Home's Recent. Without a host (liveworkspace.app) none of it shows.
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
@@ -136,13 +136,13 @@ describe('the list an app keeps', () => {
   });
 });
 
-describe('This Browser in the Explorer', () => {
+describe('Offline in the Explorer', () => {
   it('shows the sidebar row with its count, which opens the view', async () => {
     const onNavigate = page(
       { kind: 'home' },
       host([local(1), local(2), local(3, { trashedAt: 5 })]),
     );
-    const row = await screen.findByRole('treeitem', { name: /Browser Storage/ });
+    const row = await screen.findByRole('treeitem', { name: /Offline/ });
     expect(row.textContent).toContain('2');
     fireEvent.click(row.querySelector('[data-tree-activate]')!);
     expect(onNavigate).toHaveBeenCalledWith({ kind: 'offline' }, '/explorer/offline');
@@ -151,7 +151,7 @@ describe('This Browser in the Explorer', () => {
   it('has no row without a host, or with nothing kept', async () => {
     page({ kind: 'home' }, undefined);
     await screen.findByRole('treeitem', { name: /Home/ });
-    expect(screen.queryByRole('treeitem', { name: /Browser Storage/ })).toBeNull();
+    expect(screen.queryByRole('treeitem', { name: /Offline/ })).toBeNull();
   });
 
   it('lists the live ones in its view, each opening in the app with the pill', async () => {
@@ -161,7 +161,7 @@ describe('This Browser in the Explorer', () => {
       '/project/local-2',
       '/project/local-1',
     ]);
-    expect(within(rows[0]!).getByText('Browser Storage')).toBeTruthy();
+    expect(within(rows[0]!).getByText('Offline')).toBeTruthy();
   });
 
   it('offers Sync on each live row where the host can, handing over to the app', async () => {
@@ -256,7 +256,7 @@ describe('This Browser in the Explorer', () => {
 
   it('says so when nothing is kept', async () => {
     page({ kind: 'offline' }, host([]));
-    expect(await screen.findByText('Nothing is kept in Browser Storage.')).toBeTruthy();
+    expect(await screen.findByText('Nothing is kept Offline.')).toBeTruthy();
   });
 
   it('narrows by the lens in this browser, with the chips, and says so when nothing matches', async () => {
@@ -289,7 +289,7 @@ describe('This Browser in the Explorer', () => {
 
   it('groups the trashed ones in the Trash', async () => {
     page({ kind: 'trash' }, host([local(1), local(2, { trashedAt: Date.now() })]));
-    const group = await screen.findByRole('region', { name: 'Browser Storage' });
+    const group = await screen.findByRole('region', { name: 'Offline' });
     const links = within(group).getAllByRole('link');
     expect(links.map((a) => a.getAttribute('href'))).toEqual(['/project/local-2']);
     expect(group.textContent).toContain('30 days left');

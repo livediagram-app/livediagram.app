@@ -366,9 +366,13 @@ controls that change what it draws, says so in its header, and links to the sett
   pattern colour; the looks are the calm ones; Size of New Text is not offered (cells are a fixed 13 px, and the tab
   font reaches the sheet's title only). Its header says so: "Colours, the frame's finish and the title's font for the
   sheet." Fine-tune ends with a **Sheet Settings** row ("Gridlines, headers and cell sizes"), opening the sheet's own
-  settings.
-- **A Form tab** (`form`): as a sheet (the form is a page on the canvas), but the tab font letters the whole form;
-  no link (a form's settings are in the form itself).
+  settings on Sheet Options (Gridlines and headers), that section open; a later press of the cog opens on Sheet Setup
+  as ever.
+- **A Form tab** (`form`): as a sheet (the form is a page on the canvas), but the tab font letters the whole form.
+  Fine-tune ends with a **Form Settings** row ("Width, messages and taking responses"), opening the form's cog on
+  its Settings (Layout's Width is the form-wide setting that shapes how it looks,
+  [Forms](../030-forms/forms.md#responses-go-to-and-settings)). The cog is an Editor's, outside Preview; with no cog
+  on screen (a Participant, a Viewer, Preview) the row does nothing, as a Sheet's does.
 - **A Dashboard tab** (`dashboard`): the static patterns, the calm looks, no Speed and no Size of New Text (a
   dashboard keeps its own scale); Fine-tune ends with a **Dashboard Settings** row ("Layout, tint and slots").
 - **A moving pattern under an opaque page.** A Sheet or a plan view filling its tab (or maximised) covers the

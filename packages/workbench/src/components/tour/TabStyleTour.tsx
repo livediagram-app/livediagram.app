@@ -4,7 +4,8 @@
 // docs/specs/007-editor/show-me.md): the tour of the dialog's home, drawn over the dialog. Never offered: only the
 // button runs it. The dialog is loaded on demand, so its steps are imported with it rather than at the press. Each
 // editor binds it once, in its components/tour/TabStyleTour.tsx, with its own Show Me parts and its own `track`.
-import { useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
+import type { TabStylePanel } from '../dialogs/tab-style/tab-style-profile';
 import { useLatest } from '../../hooks/ui/useLatest';
 import {
   tabStyleTourSteps,
@@ -31,7 +32,13 @@ export function createTabStyleTour({
 }: TabStyleTourDeps): TabStyleTourBinding {
   function useTabStyleTour(api: TabStyleTourApi): Tour {
     const apiRef = useLatest<TabStyleTourApi>(api);
-    const [steps] = useState(tabStyleTourSteps);
+    // The steps for the surface's panels, rebuilt only when they change (a new array each render would restart the
+    // engine's step effects).
+    const panelsKey = api.panels.join(',');
+    const steps = useMemo(
+      () => tabStyleTourSteps(panelsKey ? (panelsKey.split(',') as TabStylePanel[]) : []),
+      [panelsKey],
+    );
     return useTourEngine<TabStyleTourApi>({
       steps,
       apiRef,

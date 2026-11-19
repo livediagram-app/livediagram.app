@@ -269,7 +269,7 @@ describe('POST /api/images?p=', () => {
     });
   });
 
-  it("without p (a This Browser plan), only into the uploader's gallery; 404 for an overlong p", async () => {
+  it("without p (an offline plan), only into the uploader's gallery; 404 for an overlong p", async () => {
     const grant = grantOf('alice', 'edit');
     const res = await upload({}, PNG, '/api/images');
     expect(res.status).toBe(200);

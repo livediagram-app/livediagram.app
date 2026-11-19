@@ -180,7 +180,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Project|Loaded|':
     'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
   'Project|Moved|SavedToCloud':
-    'Someone synced a project in This Browser to their account, turning it into a cloud project kept on the server.',
+    'Someone synced a project kept Offline to their account, turning it into a cloud project kept on the server.',
   'Project|Moved|TakenOffline':
     'Someone took a project offline, moving it out of their account into this browser only.',
   'Project|Redone|': 'Someone hit Redo on a project edit.',
@@ -758,7 +758,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Opened|NotTakingFull':
     "Someone pressed a form's Not Taking Responses warning: its project held as many cards as it can.",
   'Form|Moved|SyncedToShare':
-    'Someone synced a project in This Browser from Share Form, so its form could be published.',
+    'Someone synced a project kept Offline from Share Form, so its form could be published.',
   'Form|Sent|Response':
     'Someone filled in a form through its link, and the response became a card on its board.',
   'Form|Sent|Dropped':
@@ -823,7 +823,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Plan|Shared|CalendarFeedGoogle': 'Someone handed their new calendar link to Google Calendar.',
   'Plan|Shared|CalendarFeedApple': 'Someone handed their new calendar link to Apple Calendar.',
   'Plan|Ended|CalendarFeed': 'Someone turned off their calendar link.',
-  'UI|Opened|Roadmap': 'Someone opened Publish as Roadmap from the tab menu.',
+  'UI|Opened|Roadmap': 'Someone opened Publish Roadmap from the tab menu.',
   'Plan|Created|Roadmap':
     'Someone published a board as a public roadmap: a page of its chosen columns, card types and fields.',
   'Plan|Changed|Roadmap': "Someone changed a published roadmap's settings, keeping its link.",
@@ -2566,7 +2566,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
   'Form|Opened': "Someone pressed a form's Not Taking Responses warning, to see why and fix it.",
   'Form|Moved':
-    'Someone synced a project in This Browser from Share Form, so its form could be published.',
+    'Someone synced a project kept Offline from Share Form, so its form could be published.',
   'Form|Sent': 'A response came in through a form link.',
   'Form|Reported': 'Someone reported a form they were sent.',
   'Canvas|Used': 'Someone picked up one of the canvas tools or modes, or used a canvas feature.',

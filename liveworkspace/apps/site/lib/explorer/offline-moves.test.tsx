@@ -49,7 +49,7 @@ describe('Sync', () => {
   });
 });
 
-describe('A request that reaches This Browser', () => {
+describe('A request that reaches Offline', () => {
   it("goes on to the item's own address in the app's editor, and nowhere on liveworkspace.app", () => {
     expect(offlineHandOver('livediagram')!('take-offline', 'a b')).toBe(
       '/document/a%20b?convert=take-offline&item=a+b',

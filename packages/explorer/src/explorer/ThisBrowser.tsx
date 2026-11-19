@@ -1,13 +1,13 @@
 'use client';
 
-// This Browser in the Explorer: the host app's items kept only in this browser (this-browser.ts), where the host can
+// Offline in the Explorer: the host app's items kept only in this browser (this-browser.ts), where the host can
 // read them (the Explorer served on the app's own address). They show as liveplanner's own Explorer showed them: a
-// sidebar row with their count, a view of their own (`/explorer/offline`), a This Browser group in the Trash, and
+// sidebar row with their count, a view of their own (`/explorer/offline`), an offline group in the Trash, and
 // among Recent in Home's Most Used and Recent. The editor's Explorer panel has the same view (panel/PanelThisBrowser.tsx). Each
 // opens in its app's editor, which does the rest (rename, restore): the index never sees them, so the Explorer only
 // lists them. Where the app moves them into the account, each live row also has Sync: in place in the editor's panel
 // (`sync`), or, on the Explorer page, a hand-over to the app's editor (this-browser.ts `thisBrowserConvertHref`).
-// Most Used and Recent's card of one has This Browser's menu (ThisBrowserItemMenu: Open, Sync, Delete where the host can)
+// Most Used and Recent's card of one has Offline's menu (ThisBrowserItemMenu: Open, Sync, Delete where the host can)
 // and drags to the Trash or a place (drag.tsx), each through these same verbs.
 
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
@@ -55,7 +55,7 @@ export {
   ThisBrowserItemMenu,
 } from './ThisBrowserItemMenu';
 
-/** What a host hands the Explorer for This Browser. */
+/** What a host hands the Explorer for Offline. */
 export type ThisBrowserHost = {
   // Newest change first, live and trashed alike.
   items: readonly ThisBrowserItem[];
@@ -78,8 +78,8 @@ export type ThisBrowserHost = {
 
 export { BROWSER_STORAGE_COPY, THIS_BROWSER_COPY };
 
-/** What This Browser says with nothing kept, on the page and in the panel. */
-export const THIS_BROWSER_EMPTY = 'Nothing is kept in Browser Storage.';
+/** What Offline says with nothing kept, on the page and in the panel. */
+export const THIS_BROWSER_EMPTY = 'Nothing is kept Offline.';
 export { LocalPreview };
 
 // Live: out of the app's Trash and out of Archived (one-explorer.md "Archived"), which only Archived lists.
@@ -184,7 +184,7 @@ function LocalRow({
         </span>
       ) : null}
       {sync && thisBrowser?.remove ? (
-        // For good, asked first: the panel's This Browser rows do the same (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser").
+        // For good, asked first: the panel's Offline rows do the same (liveworkspace/docs/specs/004-index/one-explorer.md "Offline").
         <span className="mr-3 shrink-0">
           <PaneIconButton
             label={`Delete ${name}`}
@@ -199,7 +199,7 @@ function LocalRow({
   );
 }
 
-/** `/explorer/offline`: This Browser's Space (one-explorer.md "This Browser, a Space"), at its root or one of its
+/** `/explorer/offline`: Offline's Space (one-explorer.md "Offline, a Space"), at its root or one of its
  *  folders (`?folder=`): the back bar to the level above, New Folder, the folders here as cards by name, then the live
  *  items here as rows, newest change first, both narrowed by the lens. */
 export function ThisBrowserPane() {
@@ -301,7 +301,7 @@ export function ThisBrowserPane() {
   );
 }
 
-/** This Browser with nothing left in it (its last item synced, deleted or archived while the view was open): it says
+/** Offline with nothing left in it (its last item synced, deleted or archived while the view was open): it says
  *  so, with the way back. */
 function SpaceEmpty() {
   const { navigate } = useExplorer();
@@ -349,7 +349,7 @@ export function useThisBrowserTrashed(): number {
   return useMemo(() => thisBrowser?.items.filter(localTrashed).length ?? 0, [thisBrowser]);
 }
 
-/** The Trash's This Browser group: each opens in its app, whose own Trash restores or deletes it. */
+/** The Trash's Offline group: each opens in its app, whose own Trash restores or deletes it. */
 export function ThisBrowserTrashGroup() {
   const { thisBrowser } = useHostExtras();
   const [now] = useState(() => Date.now());

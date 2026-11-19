@@ -7,7 +7,7 @@ import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livediagram/ui';
 import type { OfflineDocumentRecord } from './offline-store';
 import { APP_ITEMS } from '@liveworkspace/sites';
 
-// The names are the registry's, which the Explorer page deletes a This Browser item by.
+// The names are the registry's, which the Explorer page deletes an offline item by.
 const DB_NAME = APP_ITEMS.livediagram.offlineStore.db;
 // Version 2 renamed the object store (docs/specs/006-document/offline-mode.md);
 // ./legacy-offline-store moves every record across. Version 3 added the `retired-parts` store and sets aside each

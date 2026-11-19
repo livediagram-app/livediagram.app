@@ -42,6 +42,10 @@ persistence boundary"). That write never reached the room, so:
   A `replace`'s name names the tab it creates; on an existing tab it is ignored.
 - **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
   graph, Mermaid or template tabs with the same engine.
+- **A replace may carry the files it was drawn from** (`replace.sources`, or `sources` on a created document's
+  graph tab): the tab's sources record, written in the same revision, and heard by the editors that have the tab
+  open. A replace without it leaves the tab with no record; edit operations leave the record alone
+  ([Diagram sources](../027-repositories/diagram-sources.md) "Writing the record").
 - **A fingerprint** covers the element without its live multi-writer fields (`LIVE_ELEMENT_FIELDS`: comments,
   answers, ideas, ticks and the like), which people change through deltas that never conflict with an agent's
   edit.
@@ -93,7 +97,7 @@ editor that was offline when it landed.
 ## Rooms for personal documents
 
 An editor connects to its document's room for every server-stored document it has open, personal ones included.
-A document in Offline Mode or This Browser has no room and no agent can reach it. On a personal document that is
+A document in Offline Mode or kept Offline has no room and no agent can reach it. On a personal document that is
 neither shared nor in a team the editor sends only its selection and its tab focus; cursors, laser, viewport and
 drag previews stay for documents with an audience.
 

@@ -11,13 +11,14 @@ import { useSheetController } from './sheet-controller';
 import { renameSheet } from './sheet-rename';
 import { SheetToolbarEnd } from './sheet-toolbar-end';
 import { SheetArt } from './sheet-art';
-import { SheetSettingsPanel } from './SheetSettingsPanel';
+import { SheetSettingsPanel, type SheetSettingsSection } from './SheetSettingsPanel';
 import { SettingsCog } from '@/components/plan/SettingsCog';
 import { SLOT_KEEP_OPEN, useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { useFillsTab } from '@/hooks/plan/plan-cover-store';
 import { FocusElementButton } from '@/components/plan/FocusElementButton';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '@/components/plan/menu-name-slot';
 import { track } from '@/lib/telemetry';
+import { takeOpenOn } from '@/lib/settings-open-on';
 import { PLAN_HEADING_STYLE } from '@/lib/plan-font';
 import type { SheetActions } from './useSheetActions';
 import {
@@ -51,6 +52,8 @@ export function SheetHeader({
   const slot = useSlotSettings();
   const [renaming, setRenaming] = useState(false);
   const [draft, setDraft] = useState(c.sheet.title);
+  // The section the cog opens on: one asked for by its press (Tab Style's Sheet Settings row), else Sheet Setup.
+  const [openOn, setOpenOn] = useState<SheetSettingsSection | null>(null);
 
   const rename = () => {
     setRenaming(false);
@@ -77,7 +80,10 @@ export function SheetHeader({
       <SettingsCog
         label="Sheet Settings"
         palette={c.palette}
-        onOpen={() => track('Sheet', 'Opened', 'Settings')}
+        onOpen={() => {
+          setOpenOn(takeOpenOn<SheetSettingsSection>('sheet'));
+          track('Sheet', 'Opened', 'Settings');
+        }}
         {...(slot ? { keepOpenWithin: SLOT_KEEP_OPEN } : {})}
       >
         {(close) => (
@@ -86,6 +92,7 @@ export function SheetHeader({
             onImportCsv={onImportCsv}
             onClose={close}
             csvInTabMenu={filled}
+            openOn={openOn}
             more={slot ? (section) => slot.sections(section, close) : undefined}
           />
         )}

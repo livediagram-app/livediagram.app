@@ -46,7 +46,7 @@ export function useItemSnapshotsDoor(input: {
 }
 
 /** The editor's door from its session (liveworkspace/docs/specs/014-snapshots/snapshots.md "In the editor"): an Editor
- *  of the whole item stored on the server, never in This Browser, an embed, the workbench frame or a tab-scoped link
+ *  of the whole item stored on the server, never Offline, an embed, the workbench frame or a tab-scoped link
  *  (which reads as structure read-only), and never before the editor knows who is asking. The api refuses everyone
  *  else all the same, so this is presentation. */
 export function useEditorSnapshotsDoor(input: {

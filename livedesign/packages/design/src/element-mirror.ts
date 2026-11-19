@@ -44,6 +44,26 @@ export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
     x: 2 * axisX - el.x - el.width,
     ...(rotation ? { rotation: -rotation } : {}),
   };
+  // An arrow anchor reflected left to right (n and s stay).
+  const MIRRORED_ANCHOR = {
+    n: 'n',
+    nne: 'nnw',
+    ne: 'nw',
+    ene: 'wnw',
+    e: 'w',
+    ese: 'wsw',
+    se: 'sw',
+    sse: 'ssw',
+    s: 's',
+    ssw: 'sse',
+    sw: 'se',
+    wsw: 'ese',
+    w: 'e',
+    wnw: 'ene',
+    nw: 'ne',
+    nnw: 'nne',
+  } as const;
+
   // A chip's point on its host, and a pointer note's tip, reflect with it: left unflipped, attachment would settle
   // the twin back onto its host's unreflected corner.
   const attachAt = (el as { attachAt?: AttachPoint }).attachAt;
@@ -51,7 +71,12 @@ export function mirrorElement<T extends BoxedElement>(el: T, axisX: number): T {
     (moved as { attachAt?: AttachPoint }).attachAt = MIRRORED_POINT[attachAt];
   if (isPointerNote(moved)) {
     const tip = pointerTipOf(moved);
-    return { ...moved, pointerTip: { x: moved.width - tip.x, y: tip.y } };
+    const anchor = moved.pointerAnchor;
+    return {
+      ...moved,
+      pointerTip: { x: moved.width - tip.x, y: tip.y },
+      ...(anchor ? { pointerAnchor: MIRRORED_ANCHOR[anchor] } : {}),
+    };
   }
   if (moved.type === 'path') {
     return {

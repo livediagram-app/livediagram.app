@@ -34,7 +34,7 @@ Each is a step of its own in the [Build plan](../005-project-roadmap/build-plan.
 In the order the build makes them (code locations as on `main` today):
 
 1. **Sites and brand.** `packages/sites/src/index.ts`: `SiteId`, `LOCAL_PORTS` (`'livehuddle.app': 3500`), an
-   `APP_SITES` row, `AppName` and its `AppItems` (noun **Space**, `apiNoun: 'document'`, This Browser at
+   `APP_SITES` row, `AppName` and its `AppItems` (noun **Space**, `apiNoun: 'document'`, Offline at
    `/explorer/offline` with its conversions, `shapeLibrariesPath: null` (Shape Libraries left livehuddle in Work
    Tracker #423 part 4, so the Explorer's Library shows the Image Gallery alone), and the Community's `communityPath`). `packages/brand/src/apps.ts`: the `BrandApp` entry with its prism tint
    ([Open decisions](../005-project-roadmap/open-decisions.md) D5).
@@ -114,7 +114,7 @@ Wrangler's own ports sit outside the 35xx block, one range per product (the api 
   email's "one account" line.
 - **E2E:** `e2e.yml` calls `e2e-product.yml` for livehuddle when its editor is reached (in place since the fork,
   now planned like any product's).
-- **Canvas performance:** livehuddle's probe joins the nightly `canvas-perf.yml`, with an avatar fan-out probe of its
+- **Canvas performance:** livehuddle's probe runs by hand, as every product's does, with an avatar fan-out probe of its
   own ([Build plan](../005-project-roadmap/build-plan.md#risks), R3).
 - **Suites that read other workspaces** declare their `$TURBO_ROOT$` inputs in `turbo.json`, as docs/ci.md requires.
 

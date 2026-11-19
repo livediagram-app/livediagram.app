@@ -1,5 +1,5 @@
 // The microphone with no call to send it on (docs/specs/012-collaboration/proximity-audio.md "Local preview"), as the
-// camera has one (local-preview.ts): in a Space kept in This Browser, on a server without calls, or while calls are
+// camera has one (local-preview.ts): in a Space kept Offline, on a server without calls, or while calls are
 // paused, unmuting still opens the microphone, so you can see it work. It drives your own talking equaliser on your
 // own screen and nothing else: no session, no track, no signal to the room. Part of the canvas chunk, never the
 // call's: it needs only the store, the constraints and the voice detector.

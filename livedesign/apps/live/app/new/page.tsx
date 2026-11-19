@@ -110,7 +110,7 @@ export default function NewDesignPage() {
   // here, if any. Counts the arrival now and the design once it's committed.
   const cta = useCtaAttribution();
 
-  // Where a new design is stored: This Browser for a guest (docs/specs/006-design/save-locations.md), decided at
+  // Where a new design is stored: Offline for a guest (docs/specs/006-design/save-locations.md), decided at
   // commit.
   const { resolveSaveLocation } = useNewDesignLocation({
     authLoaded,
@@ -185,7 +185,7 @@ export default function NewDesignPage() {
     // A `?q=` preset becomes the search in the new design's start (start-query.ts).
     handStartQuery(newDesignQuery(window.location.search));
     const startsBlank = newDesignStartsBlank(window.location.search);
-    // Save location (docs/specs/006-design/save-locations.md): only This Browser takes the offline branch.
+    // Save location (docs/specs/006-design/save-locations.md): only Offline takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { designId, tabId } = createIdsFor(retrying);
     // A blank asked for (`?blank=1`, `?start=blank`) opens with its start closed (close-start-for-blank.ts).
@@ -204,13 +204,13 @@ export default function NewDesignPage() {
     markNameConfirmed();
     // Never create as the 'pending' placeholder — see resolveSelf above.
     const settleIdentity = resolveSelf;
-    // A design in This Browser has no owner on the server to wait for (docs/specs/006-design/offline-mode.md
+    // A design kept Offline has no owner on the server to wait for (docs/specs/006-design/offline-mode.md
     // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
     const cloudOwner = offline ? null : await settleIdentity();
     if (offline) {
       // Except a first visit's guest token (offline-mode.md "Instant open"): fetching one leaves the page for the
       // accounts site and comes back to this /new address, so a create begun first would run again on the way back and
-      // leave the first design behind in Browser Storage. Taken first, the design is made once; a returning guest's token
+      // leave the first design behind Offline. Taken first, the design is made once; a returning guest's token
       // is already here and this answers at once.
       await ensureGuestToken();
       void settleIdentity().catch((err: unknown) =>
@@ -279,8 +279,8 @@ export default function NewDesignPage() {
     setOpenedId(designId);
   };
 
-  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): This
-  // Browser for a guest, livedesign for a signed-in person or anyone with a /new?folder= / ?team= context
+  // Every create from /new goes where new designs go by default (docs/specs/007-editor/new-design-route.md): Offline
+  // for a guest, livedesign for a signed-in person or anyone with a /new?folder= / ?team= context
   // (docs/specs/006-design/save-locations.md), and that context when there is one; without one the index files it at
   // the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {

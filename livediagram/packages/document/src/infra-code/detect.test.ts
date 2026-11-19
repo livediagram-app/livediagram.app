@@ -22,6 +22,24 @@ describe('detectInfraFormat', () => {
     expect(detectInfraFormat(undefined, 'servicesx: 1')).toBe('wrangler');
   });
 
+  it('tells Terraform and Kubernetes by name and by content', () => {
+    expect(detectInfraFormat('infra/main.tf', 'services:\n')).toBe('terraform');
+    const manifest = 'apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web';
+    expect(detectInfraFormat('k8s/web.yaml', manifest)).toBe('kubernetes');
+    // Named as Compose, it is Compose whatever it holds; a `services:` line wins over the manifest's keys.
+    expect(detectInfraFormat('compose.yaml', manifest)).toBe('compose');
+    expect(detectInfraFormat('k8s/web.yaml', `${manifest}\nservices:\n`)).toBe('compose');
+    expect(detectInfraFormat('k8s/web.yaml', 'apiVersion: v1\n')).toBe('compose');
+    expect(detectInfraFormat(undefined, manifest)).toBe('kubernetes');
+    expect(detectInfraFormat(undefined, 'resource "aws_s3_bucket" "b" {}')).toBe('terraform');
+    expect(detectInfraFormat(undefined, 'module  "vpc" {\n}')).toBe('terraform');
+    expect(detectInfraFormat(undefined, 'terraform {\n}')).toBe('terraform');
+    expect(detectInfraFormat(undefined, 'provider\t"aws" {}')).toBe('terraform');
+    expect(detectInfraFormat(undefined, 'data "aws_ami" "x" {}')).toBe('terraform');
+    // A word that only starts the line is not a block.
+    expect(detectInfraFormat(undefined, 'resource = "x"')).toBe('wrangler');
+  });
+
   it('scans a long paste in linear time', () => {
     const text = `${'a\n'.repeat(200_000)}${' '.repeat(50_000)}services`;
     expect(cpuMsOf(() => detectInfraFormat(undefined, text))).toBeLessThan(cpuBudgetMs(100));

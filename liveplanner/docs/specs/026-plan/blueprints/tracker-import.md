@@ -285,7 +285,7 @@ show, changeTarget, run, back }`. `pick` opens `pickTabFile(TRACKER_FILE_ACCEPT,
   failure nothing landed, so the store reloads without the cards. `importPlan(…, 'plan')`: signed in,
   `apiCreateProject` with the tab and the catalogue, then `writeItem` with the cards as one whole import; a failure
   deletes the plan for good (`indexClient.deleteItem(id, { permanent: true })`). A guest, the plan is made in
-  This Browser (`offlineCreateProject`, `offlineWriteItem`, one local write); a failure deletes it
+  Offline (`offlineCreateProject`, `offlineWriteItem`, one local write); a failure deletes it
   (`offlineDeleteProject`). Then it opens. Telemetry `Plan` · `Imported` · the source's name.
   Any failure: "Couldn’t import those cards. Try again."
 - Entry points: none of its own. The tab menu's `Import…` (`TabPortalMenu`, lit by `canImport`: TabBar's

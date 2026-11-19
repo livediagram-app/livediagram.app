@@ -1,6 +1,10 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  endMoveCurrent,
+  useMoveCurrentRequest,
+} from '@liveworkspace/explorer/move-current-request';
 import { useLatest } from '../ui/useLatest';
 
 export type RenameCurrentRequest = {
@@ -15,7 +19,8 @@ export type RenameCurrentRequest = {
  * one-explorer.md "Rename from the search"): each bump of `nonce` opens the Explorer panel (`openExplorer`, unless it
  * is open already) and holds a request the panel's Current card takes once, opening its name field. The request is
  * dropped when the panel closes before the card took it, so a later opening never starts a rename nobody asked for,
- * and never taken where the panel can't open (`available` false: the menu button shows exactly where it can).
+ * and never taken where the panel can't open (`available` false: the menu button shows exactly where it can). The
+ * Share legend's Team stop (requestMoveCurrent) opens the panel the same way, for its Current card's Change Folder.
  */
 export function useRenameCurrentRequest({
   nonce,
@@ -50,6 +55,20 @@ export function useRenameCurrentRequest({
     openedFor.current = request;
     if (!explorerOpen) open.current();
   }, [request, explorerOpen, open]);
+  // The Share legend's Team stop asks the same panel to open Change Folder on the item (move-current-request): it
+  // opens the panel likewise, and the ask lapses where the panel can't open or closes before the card took it.
+  const move = useMoveCurrentRequest();
+  const openedForMove = useRef(0);
+  useEffect(() => {
+    if (!move) return;
+    if (!available) return endMoveCurrent();
+    if (openedForMove.current !== move) {
+      openedForMove.current = move;
+      if (!explorerOpen) open.current();
+      return;
+    }
+    if (!explorerOpen) endMoveCurrent();
+  }, [move, explorerOpen, available, open]);
   const onHandled = useCallback(() => setRequest(0), []);
   return { request, onHandled };
 }

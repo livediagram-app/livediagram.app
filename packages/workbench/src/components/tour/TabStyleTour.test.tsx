@@ -22,8 +22,9 @@ vi.mock('./useTourEngine', () => ({
 }));
 
 function fakeApi(start: Finish): TabStyleTourApi & { worn: Finish } {
-  const api = {
+  const api: TabStyleTourApi & { worn: Finish } = {
     worn: start,
+    panels: ['theme', 'finish', 'font', 'canvas'],
     showHome: vi.fn(),
     showFinish: vi.fn(),
     finish: () => api.worn,
@@ -66,9 +67,56 @@ describe('createTabStyleTour', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'TabStyleTour');
     expect(screen.getByText('changingTheme')).toBeTruthy();
   });
+
+  it('runs a surface without Finish without its Finish steps, and rebuilds them only when the panels change', () => {
+    const { useTabStyleTour } = createTabStyleTour({
+      ShowMeButton: () => null,
+      ShowMeStage: () => null,
+      track: vi.fn(),
+    });
+    // livedocuments' article page: Colours, Text and Canvas, no Finish.
+    const article: TabStyleTourApi = {
+      ...fakeApi('flexible'),
+      panels: ['theme', 'font', 'canvas'],
+    };
+    const { rerender } = renderHook((api: TabStyleTourApi) => useTabStyleTour(api), {
+      initialProps: article,
+    });
+    const first = engine.last!.steps;
+    expect(first.map((s) => s.id)).toEqual(['looks', 'mashup', 'pages', 'fine-tune', 'outro']);
+    rerender({ ...article, panels: ['theme', 'font', 'canvas'] });
+    expect(engine.last!.steps).toBe(first);
+    rerender({ ...article, panels: [] });
+    expect(engine.last!.steps.map((s) => s.id)).toEqual([
+      'looks',
+      'mashup',
+      'pages',
+      'fine-tune',
+      'outro',
+    ]);
+    rerender(fakeApi('flexible'));
+    expect(engine.last!.steps.map((s) => s.id)).toContain('try-finish');
+  });
 });
 
 describe('tabStyleTourSteps', () => {
+  it('leaves out the steps opening a panel the surface hides, and keeps every step by default', () => {
+    const ids = (panels?: Parameters<typeof tabStyleTourSteps>[0]) =>
+      tabStyleTourSteps(panels).map((s) => s.id);
+    expect(ids()).toEqual([
+      'looks',
+      'mashup',
+      'pages',
+      'fine-tune',
+      'finish',
+      'try-finish',
+      'outro',
+    ]);
+    expect(ids(['theme', 'font', 'canvas'])).not.toContain('finish');
+    expect(ids(['theme', 'font', 'canvas'])).not.toContain('try-finish');
+    expect(ids(['finish'])).toContain('try-finish');
+  });
+
   const byId = (id: string) => tabStyleTourSteps().find((s) => s.id === id)!;
 
   it('brings the home forward for its steps, and the Finish panel for the finish', () => {

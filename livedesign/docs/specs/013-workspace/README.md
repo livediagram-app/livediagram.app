@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./explorer-structure.md - when working on the Explorer sidebar or the editor's Explorer panel: places vs views, the Overview / Spaces / More groups, page titles that follow the rows, visibility rules, group titles, alignment, ARIA tree keyboard model, mobile drawer, designs in This Browser
+- ./explorer-structure.md - when working on the Explorer sidebar or the editor's Explorer panel: places vs views, the Overview / Spaces / More groups, page titles that follow the rows, visibility rules, group titles, alignment, ARIA tree keyboard model, mobile drawer, designs kept Offline
 - ./folders.md - when working on Folders: Nested folders for designs in the Explorer; designs with no folder sit at the root of their space; deleting a folder moves its contents up to its parent
 - ./share-roles.md - when working on what a share link or embed may do: Viewer, Participant, Editor; ownership powers
 - ./share-password.md - when working on Share password: the index's per-item password over every link, and livedesign's password gate
@@ -21,11 +21,12 @@ Follow the references below only as needed; never upfront.
 - ./folder-content-previews.md - when working on Folder content previews: the shared Explorer's folder mosaic, drawn from the designs' previews
 - ./history.md - when working on an item's History: what the index records, the `edited` events livedesign reports, the History dialog, and the retired Timeline, What Happened and Team Activity
 - ./explorer-home.md - when working on Explorer Home: the landing view, one column of Most Used and Recent (a Within reach set: 4 most used, 4 recent)
-- ./inbox.md - when working on the Inbox: liveworkspace's shared view of open actions and unresolved threads; what livedesign pushes to it (each tab's threads and actions, from the design's outbox), its This Browser rows and snapshot, and how its rows open the editor
+- ./inbox.md - when working on the Inbox: liveworkspace's shared view of open actions and unresolved threads; what livedesign pushes to it (each tab's threads and actions, from the design's outbox), its Offline rows and snapshot, and how its rows open the editor
 - ./default-folders.md - when working on Default folders: per-person folders new designs land in by creation intent (`mode:pages`), the explicit root, Duplicate beside its source, the intent recorded on the design, the index's placement defaults, precedence after explicit placement, dangling defaults skipped and kept, guest migration; the Use as Default for menu, the default marker, `/new` filing into the default, Settings > Explorer
 - ./trash.md - when working on Trash: every design delete moves it to a 30-day Trash (personal, team, or this-browser for Offline Mode), restorable to its folder and purged by the index's daily run; trashed designs leave every list, and share links, the room and saves answer `design_trashed`; Take Offline and account deletion bypass it
 - ./explorer-filters.md - when working on Explorer filters: the lens, one string of words and tokens (`opens-in:` `made-by:ai` `edited:` `people:` `space:`) that chips write and the top-bar search types, with autocomplete, scope versus lens, `?q=` in the URL, the chip row, the field, Search results, and Made by AI replacing the Generated bucket
 - ./empty-design-cleanup.md - when working on Empty design clean-up: the index's daily sweep moves a design with no elements, unchanged for 30 days, to the Trash (marked `empty`); what livedesign reports (`hasContent`) and shows (`reason`)
 - ./snapshots.md - when working on Snapshots: manual save points of the whole design, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./approvals.md - when working on Approvals: asking named people to approve the design, the Approval tab in Share, the badge and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
+- ./inbox-notices.md - when working on Inbox notices in the editor: a new Inbox row on screen while working, the Explorer button's count, what livedesign supplies (the platform's `004-index/inbox-notices.md`)
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds, local opens)

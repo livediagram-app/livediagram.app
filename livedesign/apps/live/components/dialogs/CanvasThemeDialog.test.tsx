@@ -50,6 +50,8 @@ const props: ComponentProps<typeof CanvasThemeDialog> = {
     units: 2,
     onSet: vi.fn(),
     onApplyToEveryPage: vi.fn(),
+    keepElementColours: false,
+    onSetKeepElementColours: vi.fn(),
   },
 };
 
@@ -191,16 +193,30 @@ describe('CanvasThemeDialog home', () => {
     expect(onApplyLook).toHaveBeenCalledWith('wireframe', undefined);
   });
 
-  it('applies looks and themes keeping the element colours once Keep as They Are is chosen', () => {
-    const onApplyLook = vi.fn();
-    const onSetTheme = vi.fn();
-    const { rerender } = home({ onApplyLook, onSetTheme });
+  it("sets the tab's Element Colours from the row, and reads it back from the tab", () => {
+    const onSetKeepElementColours = vi.fn();
+    const pages = { ...props.pages, onSetKeepElementColours };
+    const { rerender } = home({ pages });
     const row = document.querySelector('[data-tab-style-element-colours]')!;
     expect(row.textContent).toContain('Element Colours');
+    expect(row.textContent).toContain('recolour what is on the theme');
     fireEvent.click(screen.getByRole('button', { name: /Keep as They Are/ }));
+    expect(onSetKeepElementColours).toHaveBeenCalledWith(true);
+    // The tab now keeps them: a new open of the dialog shows it.
+    rerender(
+      <CanvasThemeDialog {...props} tab="looks" pages={{ ...pages, keepElementColours: true }} />,
+    );
+    expect(row.textContent).toContain('leave the design’s colours as they are');
+  });
+
+  it('applies looks and themes keeping the element colours while the tab keeps them', () => {
+    const onApplyLook = vi.fn();
+    const onSetTheme = vi.fn();
+    const pages = { ...props.pages, keepElementColours: true };
+    const { rerender } = home({ onApplyLook, onSetTheme, pages });
     fireEvent.click(screen.getByRole('button', { name: /^Boardroom/ }));
     expect(onApplyLook).toHaveBeenLastCalledWith('boardroom', { keepElementColours: true });
-    rerender(<CanvasThemeDialog {...props} tab="theme" onSetTheme={onSetTheme} />);
+    rerender(<CanvasThemeDialog {...props} tab="theme" onSetTheme={onSetTheme} pages={pages} />);
     fireEvent.click(screen.getAllByRole('button', { name: /Steel/ })[0]!);
     expect(onSetTheme).toHaveBeenLastCalledWith('steel', { keepElementColours: true });
   });

@@ -1,7 +1,8 @@
-// TOML or YAML to a plain object (blueprint "parseInfraText"). Both through real parsers; the result is walked only
-// along known paths, so a YAML alias shared a thousand times costs nothing.
+// TOML or YAML to plain values (blueprint "checkInfraText, parseInfraText, parseKubernetesText"). Both through real
+// parsers; the result is walked only along known paths, so a YAML alias shared a thousand times costs nothing.
+// Terraform's HCL has its own reader (hcl.ts), which meets the same size and empty checks first.
 
-import { load } from 'js-yaml';
+import { load, loadAll } from 'js-yaml';
 import { parse } from 'smol-toml';
 import { INFRA_MAX_FILE_BYTES } from './limits';
 import type { InfraError, InfraFormat } from './types';
@@ -11,44 +12,56 @@ export type Table = Record<string, unknown>;
 export const isTable = (v: unknown): v is Table =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 
-const LANGUAGE: Record<InfraFormat, string> = { wrangler: 'TOML', compose: 'YAML' };
+const LANGUAGE: Record<InfraFormat, string> = {
+  wrangler: 'TOML',
+  compose: 'YAML',
+  kubernetes: 'YAML',
+  terraform: 'HCL',
+};
+
+const isYaml = (format: InfraFormat) => format === 'compose' || format === 'kubernetes';
 
 // The parser's own message, its first line only (smol-toml appends a code block), and the line it names. js-yaml
 // reads an unclosed flow collection to a line past the last, so the line is held to the text's own `lines`.
 export function parseError(format: InfraFormat, err: unknown, lines = Infinity): InfraError {
   const e = err as { message?: string; line?: number; reason?: string; mark?: { line?: number } };
-  const raw = (format === 'compose' ? e.reason : undefined) ?? e.message ?? String(err);
+  const raw = (isYaml(format) ? e.reason : undefined) ?? e.message ?? String(err);
   const first = raw.split('\n')[0]!.trim();
   const message = first.endsWith('.') || first.endsWith(':') ? first.slice(0, -1) : first;
-  const line = Math.min(format === 'compose' ? (e.mark?.line ?? -1) + 1 : (e.line ?? 0), lines);
+  const line = Math.min(isYaml(format) ? (e.mark?.line ?? -1) + 1 : (e.line ?? 0), lines);
   return {
     code: 'parse',
     message: `Couldn't read the ${LANGUAGE[format]}: ${message}${line > 0 ? ` (line ${line})` : ''}.`,
   };
 }
 
-export function parseInfraText(
-  format: InfraFormat,
-  text: string,
-): { ok: true; value: Table } | { ok: false; error: InfraError } {
+/** The checks every format meets before it is parsed: the size cap, then an empty file. */
+export function checkInfraText(text: string): InfraError | null {
   // The UTF-16 length, known without encoding the text again (I2).
   if (text.length > INFRA_MAX_FILE_BYTES)
     return {
-      ok: false,
-      error: {
-        code: 'too-large',
-        message:
-          'That file is over 1 MB, larger than any wrangler.toml or Compose file. Pick the file itself.',
-      },
+      code: 'too-large',
+      message: 'That file is over 1 MB, larger than any infrastructure file. Pick the file itself.',
     };
-  if (text.trim() === '')
-    return { ok: false, error: { code: 'empty', message: 'That file is empty.' } };
+  if (text.trim() === '') return { code: 'empty', message: 'That file is empty.' };
+  return null;
+}
+
+// How many lines the text has, holding a parser's line to it.
+const lineCount = (text: string) => text.trimEnd().split('\n').length;
+
+export function parseInfraText(
+  format: 'wrangler' | 'compose',
+  text: string,
+): { ok: true; value: Table } | { ok: false; error: InfraError } {
+  const refused = checkInfraText(text);
+  if (refused) return { ok: false, error: refused };
   let value: unknown;
   try {
     // `json: true`: a key given twice keeps the later value, as Compose reads it (I3).
     value = format === 'wrangler' ? parse(text) : load(text, { json: true });
   } catch (err) {
-    return { ok: false, error: parseError(format, err, text.trimEnd().split('\n').length) };
+    return { ok: false, error: parseError(format, err, lineCount(text)) };
   }
   if (!isTable(value))
     return {
@@ -59,4 +72,17 @@ export function parseInfraText(
       },
     };
   return { ok: true, value };
+}
+
+/** A Kubernetes file's documents, as given (`null` for an empty one between `---` lines). */
+export function parseKubernetesText(
+  text: string,
+): { ok: true; docs: unknown[] } | { ok: false; error: InfraError } {
+  const refused = checkInfraText(text);
+  if (refused) return { ok: false, error: refused };
+  try {
+    return { ok: true, docs: loadAll(text, undefined, { json: true }) };
+  } catch (err) {
+    return { ok: false, error: parseError('kubernetes', err, lineCount(text)) };
+  }
 }

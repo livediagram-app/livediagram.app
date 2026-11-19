@@ -64,9 +64,8 @@ block, or a `service =` that lost its `-staging` suffix and points the staging r
 type error nor a test failure. Without this step the first sign of either is a deploy.
 
 `e2e.yml` (calling `e2e-product.yml`) runs livedocuments's Playwright smoke build and two smoke shards, sites audit and signed-in specs
-when a change reaches its editor ([E2E smoke](../003-system-architecture/e2e-smoke.md)). `canvas-perf.yml` runs its
-canvas probe nightly against `main` and opens or updates **Canvas performance budget: livedocuments** on a miss
-([Canvas performance](../008-canvas/canvas-performance.md)).
+when a change reaches its editor ([E2E smoke](../003-system-architecture/e2e-smoke.md)). The canvas probe runs by hand, in no
+workflow ([Canvas performance](../008-canvas/canvas-performance.md)).
 
 **Testing** runs via [Vitest](https://vitest.dev). A workspace opts in with `"test": "vitest run"` in its
 `package.json` and `vitest` in its `devDependencies`; turbo picks the task up. Tests sit next to the source they cover

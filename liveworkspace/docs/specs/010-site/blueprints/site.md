@@ -27,7 +27,7 @@ sign-out of that app alone the reloaded page says so (`components/explorer/app-a
 ### Opening from an open item (`components/explorer/useItemArrival.ts`)
 
 `/explorer?item=<id>` ([one-explorer.md](../../004-index/one-explorer.md#opening-from-an-open-item)): `pending` while
-the person is unknown and the place is looked up (This Browser's list, else one `GET /items/:id` through
+the person is unknown and the place is looked up (Offline's list, else one `GET /items/:id` through
 `resolveItemView`), during which ExplorerShell shows the skeleton; then `router.replace` to the place, or, when the
 index can't answer, the address without `item`. From the answer until the address first shows the place, the hook
 hands back the place as `view`, and ExplorerShell renders the Explorer on it rather than on the address's view, so

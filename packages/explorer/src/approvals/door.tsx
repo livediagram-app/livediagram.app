@@ -71,7 +71,7 @@ export function useApprovalDoor(): ApprovalContext | null {
 /** A team member as an app's team read answers. */
 export type ApprovalTeamMember = { userId: string | null; name: string | null; status: string };
 
-/** The editor's door from its session: a signed-in account (never a guest) on a stored item, never in This Browser,
+/** The editor's door from its session: a signed-in account (never a guest) on a stored item, never Offline,
  *  an embed or the workbench frame, and never before the editor knows who is asking. The index answers a Community
  *  visitor with no approval and refuses everyone else all the same, so this is presentation. The app hands in its
  *  team read and its Snapshots api (null where it offers none); the door keeps one identity while they change. */

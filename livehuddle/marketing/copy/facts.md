@@ -63,7 +63,7 @@ The unit of value is the group in the room.
   and reacts, and adds nothing to the Space; Viewer links made before still
   work, as Viewer (Legacy).
 - Export a tab as PNG, SVG, PDF or a livehuddle JSON file, which imports back.
-- Offline Mode (This Browser): a Space kept only in your browser, never on our
+- Offline Mode: a Space kept only in your browser, never on our
   servers. Google Drive sync for signed-in users.
 - The Community: a public gallery of Spaces people share.
 - A REST API with personal API tokens, free.

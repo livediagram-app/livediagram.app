@@ -84,10 +84,10 @@ Cost controls, all in `e2e-product.yml` and `playwright.config.ts`:
   itself (`browser.newContext()`, a share link's visitor) stay fresh unless the spec adopts a guest there. The first
   visit has one test of its own (`smoke.spec.ts`, under `test.use({ freshVisitor: true })`), which waits for the round
   trip to come back before it checks the page. It comes back to `/new`, or to `/document/<id>` when `/new` already made
-  the guest's This Browser canvas (it needs no token) and took its address before the handoff left. Signed-in and workbench runs skip it: their pages sign in.
+  the guest's Offline canvas (it needs no token) and took its address before the handoff left. Signed-in and workbench runs skip it: their pages sign in.
   `e2e/guest-first.test.ts` holds every spec that opens a page to the shared fixture, and `freshVisitor` to that one
   test.
-- **A guest's `/new` is This Browser**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)),
+- **A guest's `/new` is Offline**, as in production ([Save Locations](../006-document/save-locations.md#the-default-depends-on-who-is-creating)),
   and the index holds no item for it, so its grant request answers 404. A spec that needs its new document on the
   server (it seeds it through the api with `seedTab`, watches the api's saves, or shares it) opens `/new` through
   `serverNewUrl`, which keeps the page's adopted guest (or adopts a minted one) and adds a `?folder=` of theirs, the

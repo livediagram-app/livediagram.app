@@ -4,7 +4,7 @@
 import type { GraphEdge } from '../graph-authoring';
 import type { GraphInput, GraphInputNode } from '../graph-input';
 
-export type InfraFormat = 'wrangler' | 'compose';
+export type InfraFormat = 'wrangler' | 'compose' | 'terraform' | 'kubernetes';
 
 /** A file's base name (absent for a paste) and its text. */
 export type InfraFile = { name?: string; text: string };

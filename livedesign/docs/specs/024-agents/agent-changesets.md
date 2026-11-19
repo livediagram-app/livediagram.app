@@ -90,7 +90,7 @@ editor that was offline when it landed.
 ## Rooms for personal designs
 
 An editor connects to its design's room for every server-stored design it has open, personal ones included.
-A design in Offline Mode or This Browser has no room and no agent can reach it. On a personal design that is
+A design in Offline Mode or kept Offline has no room and no agent can reach it. On a personal design that is
 neither shared nor in a team the editor sends only its selection and its tab focus; cursors, laser, viewport and
 drag previews stay for designs with an audience.
 

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// This Browser's list (this-browser.ts): every write to the offline store keeps it, and the id cache's one read
+// Offline's list (this-browser.ts): every write to the offline store keeps it, and the id cache's one read
 // per page load rebuilds it, so the Explorer on this address lists what is kept only here.
 import { afterEach, describe, expect, it } from 'vitest';
 import { readThisBrowser } from '@liveworkspace/explorer/this-browser';
@@ -16,7 +16,7 @@ afterEach(() => {
   localStorage.clear();
 });
 
-describe("This Browser's list", () => {
+describe("Offline's list", () => {
   it('follows a create and a delete', async () => {
     __setOfflineBackend(memBackend());
     await offlineCreateProject({ id: 'a', name: 'Alpha' }, 1_000);

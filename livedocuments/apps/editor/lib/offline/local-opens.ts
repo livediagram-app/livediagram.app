@@ -1,5 +1,5 @@
 // The opens a local document's record holds (docs/specs/013-workspace/explorer-home.md "Opens"), read and moved on.
-// Pure, and apart from the store: This Browser's list reads them (this-browser.ts), and the store imports that list,
+// Pure, and apart from the store: Offline's list reads them (this-browser.ts), and the store imports that list,
 // so these importing the store would close a cycle (offline-store -> this-browser -> offline-opens -> offline-store).
 
 import { windowStartOf, utcDay } from '@livedocuments/api-schema';

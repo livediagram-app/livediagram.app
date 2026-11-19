@@ -8,7 +8,7 @@ import { track } from '@/lib/telemetry';
 import { EditorNewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
 import { registerUnsavedWork } from '@liveworkspace/workbench/lib/unsaved-work';
 import { useRegionCycle } from '@liveworkspace/workbench/hooks/ui/useRegionCycle';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { canvasSurface } from '@livedocuments/document';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasSurfaceProvider } from '@liveworkspace/workbench/components/canvas/CanvasSurfaceContext';
@@ -24,7 +24,11 @@ import { ViewportStoreProvider } from '@liveworkspace/workbench/hooks/canvas/use
 import { EditorCanvasHost } from '@/components/canvas/EditorCanvasHost';
 import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
+import { useCommunityEnabled } from '@liveworkspace/community-ui';
+import { API_BASE } from '@/lib/api-client';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
+import { documentIsPublic } from '@/lib/community-public';
+import { useCommunityState } from '@/lib/community-state-store';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 
@@ -43,6 +47,9 @@ import { ModifierHint } from '@liveworkspace/workbench/components/chrome/Modifie
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useOfflineConversions } from '@/hooks/persistence/useOfflineConversion';
+import { useVisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
+import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
@@ -153,7 +160,7 @@ const NEW_VERSION_PROMPT = <EditorNewVersionPrompt />;
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-document/offline-mode.md): a document saved only in this browser. Drives the
-  // "This Browser" header badge and hides server-only actions (Share).
+  // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDocument(ctx.documentId);
   // Snapshots (docs/specs/013-workspace/snapshots.md): the footer's button and dialog, for an Editor of the whole item.
   const snapshotsDoor = useEditorSnapshotsDoor({
@@ -239,6 +246,15 @@ export function EditorView() {
     community: sessionCommunity !== null && !sessionCommunity.ownDocumentId,
     makeCopy,
   });
+  // The Share button's Public colour follows the document's Community post (docs/specs/025-community/blueprints/
+  // community.md); the Community's switch is asked only while there is a listed post, and never in an embed.
+  const communityState = useCommunityState(documentId);
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
+  const headerCommunity = documentIsPublic({
+    communityOn,
+    ownPostState: communityState,
+    communitySession: sessionCommunity !== null,
+  });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales, isMobileViewport } = useEditorUiScales(userPreferences);
 
@@ -303,10 +319,55 @@ export function EditorView() {
     selectionStore: ctx.selectionStore,
     deck: ctx.slideDeck,
   });
+  // The Share legend's Offline stop takes the document offline, after Take Offline's confirm, for the person whose
+  // Explorer menu would offer it: one who may share it (owner or joined team member), not through a link or the
+  // Community, and not already offline (hooks/persistence/useOfflineItemMenu.tsx). One callback for the editor's
+  // life, reading the newest name when pressed, so the memoised header doesn't render for it.
+  const offlineOwnerId =
+    ctx.selfParticipant?.id === 'self' ? null : (ctx.selfParticipant?.id ?? null);
+  const { takeOffline, syncToCloud } = useOfflineConversions(offlineOwnerId);
+  const takeOfflineNow = useLatest(() => {
+    if (documentId)
+      void takeOffline({ id: documentId, name: ctx.documentName?.trim() || 'Untitled document' });
+  });
+  const takeThisOffline = useCallback(() => takeOfflineNow.current(), [takeOfflineNow]);
+  const mayTakeOffline =
+    canShareDocument &&
+    !isOffline &&
+    !sessionShareCode &&
+    !sessionCommunity &&
+    !!offlineOwnerId &&
+    !!documentId;
+  // Its other stops (useVisibilityActions), for the same person: Private syncs an offline document, Team opens the
+  // Explorer panel's Change Folder on it, Everyone opens Share on the Community tab (Passes where the Community is off).
+  // Stable while the gate holds (the hook reads the newest handlers when pressed), so the memoised header keeps its skip.
+  const visibilityActions = useVisibilityActions({
+    manage:
+      canShareDocument &&
+      !sessionShareCode &&
+      !sessionCommunity &&
+      !!offlineOwnerId &&
+      !!documentId,
+    offline: isOffline,
+    team: !!documentTeamId,
+    community: !!headerCommunity,
+    sync: documentId
+      ? () =>
+          void syncToCloud({
+            id: documentId,
+            name: ctx.documentName?.trim() || 'Untitled document',
+          })
+      : undefined,
+    openShare: () => ctx.setShareDialogOpen(true),
+    openCommunity: () => ctx.openShareOn('app'),
+  });
   const header =
     zenMode || !appChrome ? null : (
       <EditorViewHeader
         isOffline={isOffline}
+        onTakeOffline={mayTakeOffline ? takeThisOffline : undefined}
+        visibilityActions={visibilityActions}
+        headerCommunity={headerCommunity}
         isMobileViewport={isMobileViewport}
         landscapeShown={landscapeBars.shown}
       />

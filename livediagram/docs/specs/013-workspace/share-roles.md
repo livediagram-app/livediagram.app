@@ -186,7 +186,7 @@ browser never chooses it.
 - **Pinned on the session.** The upgrade forwards it as `X-Verified-Collab-Key`, the session keeps it, and the
   roster's `key` is that value whatever the `hello` claimed. The room then tells the session its own key in a
   `collab-key` frame sent to that socket alone, and the editor records its answers and reactions under it from then
-  on. Before that (a document only in This Browser, or the moment before the room answers) the editor uses this
+  on. Before that (a document only Offline, or the moment before the room answers) the editor uses this
   browser's own key, as it always did.
 - **A guest who signs in keeps their entries.** When a guest becomes an account, the index keeps the guest as an
   alias of the account, and every grant for the account names the collab keys of its aliases (`aliases`, at most 32;
@@ -218,7 +218,7 @@ browser never chooses it.
     exists there yet, so a create carrying a reaction, response or dot under another person's collab key could only
     be made up: it is dropped, as an agent's (a token's create keeps no one's). What a create keeps is the creator's
     own: under their collab key, or under a browser's own key, which is not a collab key's shape. A canvas made in
-    This Browser records its creator's entries under that browser's key (the editor has no collab key before the
+    Offline records its creator's entries under that browser's key (the editor has no collab key before the
     room answers), so a canvas taken offline and synced back keeps the answers and reactions it went offline with,
     and a browser key names no one, so keeping it shows nothing as anyone else's. A new tab in a stored document is
     locked like any write. livediagram alone has the whole-tab lock; the other products take this rule with it.

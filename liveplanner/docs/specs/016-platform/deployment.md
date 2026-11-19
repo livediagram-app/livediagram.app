@@ -73,9 +73,8 @@ a type error nor a test failure. Without this step the first sign of either is a
 
 The root `e2e.yml` runs liveplanner's smoke build and two smoke shards, its sites audit and its signed-in specs through
 `e2e-product.yml` when a change reaches the editor ([E2E smoke](../003-system-architecture/e2e-smoke.md)).
-`canvas-perf.yml` runs the canvas performance probe nightly against `main`
-([Canvas performance](../008-canvas/canvas-performance.md)). It never blocks anything: a miss opens or comments on
-one issue, **Canvas performance budget: liveplanner**, which the first all-pass run closes.
+The canvas performance probe runs by hand, in no workflow
+([Canvas performance](../008-canvas/canvas-performance.md)).
 
 **Testing** runs via [Vitest](https://vitest.dev). Workspaces opt in by adding `"test": "vitest run"` to their
 `package.json` scripts and `vitest` to their `devDependencies`; turbo picks the task up. Tests live next to the

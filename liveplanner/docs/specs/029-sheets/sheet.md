@@ -243,7 +243,8 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
 | Data Validation        | Each validation rule with its range and line, **Edit**, **Go To** and **Remove** ([Data validation](data-validation.md#making-and-changing-rules))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | Conditional Formatting | Each format rule in list order with its swatch and range, **Edit**, **Go To** and **Remove** ([Conditional formatting](conditional-formatting.md#making-and-changing-rules))                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |     |
 
-- Sheet Setup opens first. The same sections are rows of the element menu itself (right-click the Sheet), each a flyout under Style and a separator, as a board's are, with no **Sheet** parent row; they act on the same sheet. Numbers apply on Enter or leaving the field, kept within the limits (a column
+- Sheet Setup opens first, unless the cog was pressed for one section: Tab Style's **Sheet Settings** row opens it on
+  Sheet Options, open, so Gridlines is in view ([Tab Style](../011-theme/canvas-and-theme-dialog.md)). The same sections are rows of the element menu itself (right-click the Sheet), each a flyout under Style and a separator, as a board's are, with no **Sheet** parent row; they act on the same sheet. Numbers apply on Enter or leaving the field, kept within the limits (a column
   20 to 2,000 px, a row 16 to 2,000 px, frozen lines as Freeze's); Escape closes the popover without saving.
 - Everything but the totals is the sheet's own: saved, seen by everyone, and one undo step each. A sheet without
   headers starts its cells at the frame's edge; without gridlines only fills and set borders show. Exports and
@@ -711,8 +712,8 @@ whole Sheet.
   @-mentioned in it, and in "threads I'm in or mentioned in". Its row is keyed by the cell: `elementId` is
   `<sheetElementId>:<rowId>:<colId>` (the Sheet element's id, then the cell key), so two cells on one Sheet never
   share a row and the key holds through inserted, moved and sorted lines. Its label is the Sheet's name and the
-  cell's A1 (`Budget!B4`), worked out from the stored sheet when the tab is pushed (from the plan's own sheets on a This
-  Browser plan): "Budget (Deleted Cell)" when the cell's row or column is gone, the Sheet's name alone where the sheet
+  cell's A1 (`Budget!B4`), worked out from the stored sheet when the tab is pushed (from the plan's own sheets on an offline
+  plan): "Budget (Deleted Cell)" when the cell's row or column is gone, the Sheet's name alone where the sheet
   is not at hand. The Sheet's own thread's row takes the same name. An A1 that an
   inserted row moves follows within the minute: a change to a Sheet's layout (a line inserted, deleted, moved or
   sorted) queues its tab's push when the tab carries cell threads. Its link (`#t=<tab>&el=<sheetElementId>:<cell>&open=comments`)

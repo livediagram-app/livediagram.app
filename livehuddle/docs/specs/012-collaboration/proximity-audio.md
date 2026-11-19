@@ -15,7 +15,7 @@ sharing stay [Future work](../005-project-roadmap/future-work.md).
 
 Audio rides [Avatar mode](../008-canvas/avatar-mode.md): only a walking character has a place on the board, so only
 someone in the mode hears or is heard. Leaving the mode, changing tab or closing the page leaves the call. A board
-that is not shared (a This Browser Space, or one with no room) has nobody to talk to; the
+that is not shared (an offline Space, or one with no room) has nobody to talk to; the
 microphone, camera and Share Screen buttons still show there, as a [local preview](video-and-screen-bubbles.md#local-preview).
 
 - **Walking in joins.** There is no Join and no Leave button (owner, 2026-11-07: "Currently we have this concept of
@@ -129,7 +129,7 @@ People sit in a call while they work in other tabs and apps, and mute or unmute 
 
 ## No call here
 
-While walking somewhere calls cannot reach (a space kept in This Browser, which has no server room to call through, a
+While walking somewhere calls cannot reach (a space kept Offline, which has no server room to call through, a
 server with calls switched off, calls paused, or a call that failed), the dock still shows the microphone, **Muted**,
 as a **local preview** (owner, 2026-11-07: "I can't use audio when on this browser or alone, which makes it hard to
 test, do what we did with camera and allow me to do it anyway, just don't transmit it to a server"):

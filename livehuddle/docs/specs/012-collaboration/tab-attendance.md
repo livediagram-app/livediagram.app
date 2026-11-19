@@ -94,7 +94,7 @@ becomes `anonymised`, its name "Deleted account" and its picture goes. Running i
 ## Where it shows
 
 - **Attendance** in the tab menu (the tab's ⋯ and its right-click), for an Editor and a Participant on a document
-  that has a room (not one saved only in This Browser). A Participant's tab menu, otherwise closed to them, opens with
+  that has a room (not one saved only Offline). A Participant's tab menu, otherwise closed to them, opens with
   this one row. Opening it shows a dialog for that tab:
   - Title "Attendance", subtitle the tab's name and "Last 90 days".
   - Visits grouped by the day they started ("Today", "Yesterday", then the date), newest first.

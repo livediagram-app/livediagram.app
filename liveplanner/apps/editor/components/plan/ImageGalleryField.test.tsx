@@ -456,7 +456,7 @@ describe('the card panel, for an Editor or a Participant', () => {
     expect(screen.getByRole('button', { name: 'Remove image 1 from Designs' })).toBeTruthy();
   });
 
-  it('takes no files in a This Browser plan, and says so', async () => {
+  it('takes no files in an offline plan, and says so', async () => {
     gallery([]);
     offline.value = true;
     pick([file('a.png')]);

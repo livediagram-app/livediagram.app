@@ -1,31 +1,31 @@
 # Save Locations
 
 A new document is stored in one of a small set of **save locations**: on the server (livedocuments) or in this browser
-only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible).
+only (Offline, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible).
 
 **Nobody is asked.** `/new` ([Dedicated route for new-document creation](../007-editor/new-document-route.md))
 has no Location step: every new document is stored in the default location for who is creating it, below. A document
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Document** and **Take Offline**.
 (There is no Location step: most people would answer it with the default before they had anything on the canvas.
-A document in This Browser says what it is on the document itself: the editor header's
-**This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
+A document kept Offline says what it is on the document itself: the editor header's
+**Offline** badge and its legend, [Offline Mode](offline-mode.md#offline-badge--explorer).)
 
 | Location          | What it means                                                                                                |
 | ----------------- | ------------------------------------------------------------------------------------------------------------ |
 | **livedocuments** | A normal cloud document, saved to the api (its Durable Object), reachable from any device.                   |
-| **This Browser**  | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
+| **Offline**       | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
 
 | Who                | Default           |
 | ------------------ | ----------------- |
-| A guest            | **This Browser**  |
+| A guest            | **Offline**       |
 | A signed-in person | **livedocuments** |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
-A document in This Browser is still in the shared Explorer: its This Browser row and view, and Most Used and Recent, list this
+A document kept Offline is still in the shared Explorer: its Offline row and view, and Most Used and Recent, list this
 browser's documents beside the index's ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md),
-[Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
+[Offline Mode → Offline badge + Explorer](offline-mode.md#offline-badge--explorer)).
 
 - One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
@@ -36,17 +36,17 @@ browser's documents beside the index's ([liveworkspace/docs/specs/004-index/one-
 - Before sign-in has answered, `signedIn` is the `ldoc_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
-  signed-in person is never handed a document in This Browser; a guest never waits. The page's 5-second give-up on
-  sign-in (it then carries on as a guest) is not that answer: a slow session would otherwise make the document This Browser,
+  signed-in person is never handed a document kept Offline; a guest never waits. The page's 5-second give-up on
+  sign-in (it then carries on as a guest) is not that answer: a slow session would otherwise make the document Offline,
   and the move prompt would then offer the document just made. Only a known account saves on livedocuments; a session that
-  still hasn't answered after the wait keeps the document in This Browser, where nothing is lost.
+  still hasn't answered after the wait keeps the document kept Offline, where nothing is lost.
 - There is no per-person override: no setting chooses the store.
 
 ## On the start screen
 
 Nobody is asked, but the start screen offers one switch, **Sync Document to Server**, in a quiet strip under its choices
 (Start Making Pages), so a new document can change place while it is still empty without a trip to the Explorer. It reflects
-where the document is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
+where the document is **now**, so it starts as the default above: **off** for a guest (Offline), **on** for a signed-in
 person (livedocuments).
 
 - **The whole row is the switch**, as a Settings row is: a press anywhere on it (its icon, label or line) flips
@@ -166,7 +166,7 @@ SaveLocationId`.
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 `Document` / `Created` carries a `type` naming the store,
-`Cloud` for livedocuments and `Offline` for This Browser. A future location adds
+`Cloud` for livedocuments and `Offline` for the Offline location. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([One help centre](../../../../liveworkspace/docs/specs/016-help/help-centre.md))

@@ -36,7 +36,7 @@ export type MoveToFolderDialogProps = {
   onFindTeam?: FindTeam;
   onPick: (dest: Destination) => void;
   onClose: () => void;
-  // Spaces of their own (Archived, This Browser), chosen by `onPickSpace`; `currentSpace` when it is in one now.
+  // Spaces of their own (Archived, Offline), chosen by `onPickSpace`; `currentSpace` when it is in one now.
   spaces?: readonly PlacementSpace[];
   currentSpace?: string | null;
   onPickSpace?: (value: string) => void;

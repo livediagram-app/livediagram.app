@@ -92,7 +92,8 @@ SheetFace.tsx            the frame: loading (SheetBuildAnimation, "Opening Sheet
                          lines with Couldn't load (Try Again) or not found (Remove)
 SheetHeader.tsx          title (in-place edit), FocusElementButton kind="Sheet", MaximisePlanButton kind="Sheet"
                          (neither while the Sheet fills its tab), the Sheet Settings cog (plan/SettingsCog.tsx, shared
-                         with BoardSettingsButton)
+                         with BoardSettingsButton), opening on the section its press asked for (lib/settings-open-on.ts,
+                         SheetSettingsPanel's `openOn`: Tab Style's Sheet Settings row asks for Sheet Options)
 SheetMenuSection.tsx     The element menu's Sheet rows: SheetSettingsPanel (its `asRow`, a flyout row per section) with the Sheet's controller, read from
                          sheet-settings-registry.ts (usePublishSheetSettings in PlanSheetView, useSheetSettingsEntry)
 SheetSettingsPanel.tsx   Sheet Settings' sections (BoardSettingsSection): Sheet Setup, Sheet Options (with Fill Tab's
@@ -438,7 +439,7 @@ element.cellComments }`.
   title alone; `sheets` is `SheetNamesOf`, by store id: `title` names every row of the Sheet, `cellRef` the cell), at most `CELL_INBOX_ROWS_MAX` a Sheet by newest comment, none past
   `INDEX_ID_MAX` (`@liveworkspace/index-client/constants`). The api's outbox (`plan-room/plan-outbox.ts`) hands it `sheetCellNames`
   (`apps/api/src/sheet-cell-refs.ts`, also the comment listing's A1), over `sheetNamesFrom`
-  (`@liveplanner/sheets/sheet-names`, which the editor's This Browser Inbox, `lib/offline/offline-activity.ts`, reads
+  (`@liveplanner/sheets/sheet-names`, which the editor's Offline Inbox, `lib/offline/offline-activity.ts`, reads
   the plan's own sheets with). Schema step V25 (`plan-room/plan-schema.ts`) adds
   `outbox_sheet_layout`: a `sheets.layout` change queues its tab's `tab` key when the tab's data holds `"cellComments"`. The editor's `useCollabDeepLink` takes an `el`
   no element has through `splitCellThreadKey`: the Sheet selected, `focusSheetCell` (held until the Sheet is drawn)

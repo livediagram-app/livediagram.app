@@ -77,7 +77,7 @@ describe('DeleteAccountDialog', () => {
     open();
     expect(screen.getByText(/everything you own in every liveworkspace app/)).toBeTruthy();
     expect(screen.getByText(/not just livediagram/)).toBeTruthy();
-    expect(screen.getByText(/Canvases in This Browser stay on this device/)).toBeTruthy();
+    expect(screen.getByText(/Canvases kept Offline stay on this device/)).toBeTruthy();
     // Every app's work goes, so every app is named: the five that share the account today.
     expect(
       screen.getByText(

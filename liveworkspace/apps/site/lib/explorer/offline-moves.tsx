@@ -4,7 +4,7 @@
 // each app's address"). Moving an item into this browser, or back into the account, is the app's own code: only it
 // can write its offline store. So the Explorer offers the verbs and hands over to the app's editor, at the item's own
 // address (`?convert=…&item=…`, @liveworkspace/explorer/this-browser), which confirms and runs the move. A request
-// that reaches This Browser's view (`handOverHref`) goes on there too. Only where the registry says the editor does
+// that reaches Offline's view (`handOverHref`) goes on there too. Only where the registry says the editor does
 // (`offlineConversions`), and never on liveworkspace.app, whose origin can't reach the app's storage.
 
 import type { ItemMenuHost, ThisBrowserItem } from '@liveworkspace/explorer';
@@ -49,7 +49,7 @@ export function offlineItemMenu(host: AppName | null): ItemMenuHost | undefined 
         ];
 }
 
-/** Sync on each of This Browser's rows, for a person signed in (a guest has no account to move it to). */
+/** Sync on each of Offline's rows, for a person signed in (a guest has no account to move it to). */
 export function offlineSyncHref(
   host: AppName | null,
   signedIn: boolean,
@@ -59,7 +59,7 @@ export function offlineSyncHref(
   return (item) => handOver('sync', item.id);
 }
 
-/** Delete on each of This Browser's rows, for anyone, once the Explorer has asked (its `delete-local` dialog): in
+/** Delete on each of Offline's rows, for anyone, once the Explorer has asked (its `delete-local` dialog): in
  *  place, the page deleting the record from the app's offline store itself, so the person stays where they were and the
  *  item leaves the list there. Where it can't reach the record (`unreachable`), it falls back to the hand-over: it notes
  *  that the Explorer asked for the editor in this tab and opens the item there, which deletes it without asking again

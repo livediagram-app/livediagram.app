@@ -16,10 +16,6 @@ fixtures and stack, and imports these by subpath.
   (docs/specs/008-canvas/canvas-performance.md).
 - `perf/budget`: the budget's rules, table and median of runs, generic over the tabs a probe names
   (`Measurement<'whiteboard' | 'diagram'>`, `Measurement<'plan'>`).
-- `perf/budget-report` and `perf/nightly.mjs`: what the nightly run does with the budget issue
-  (`budgetIssueTitle(product)`, `budgetIssueAction`, `budgetIssueComment`), and its I/O, dependency-free, which
-  `.github/workflows/canvas-perf.yml` runs from each editor's folder before `pnpm install`:
-  `node ../../../packages/e2e-kit/src/perf/nightly.mjs previous`, then `... report <product>`.
 - `scripts/icon-sheet-shoot.mjs`: the icon contact sheet's screenshots (dark, 2x) of the pages each editor's
   `scripts/icon-sheet/sheet.run.tsx` wrote; every editor's `icons:sheet` runs it after its sheet.
 

@@ -110,8 +110,8 @@ spotlight, which are not in livehuddle ([Not in livehuddle](not-in-livehuddle.md
 livehuddle keeps every feature the platform gives all its apps, and cuts only what is livediagram's own (owner,
 2026-11-02; [Open decisions](../005-project-roadmap/open-decisions.md) D3 settled as (b)):
 
-- **Offline Mode** ([Offline Mode](../006-document/offline-mode.md)): a Space kept in This Browser, a guest's default,
-  with Take Offline and Sync Space to move it either way, and the prompt that offers to move This Browser's Spaces into
+- **Offline Mode** ([Offline Mode](../006-document/offline-mode.md)): a Space kept Offline, a guest's default,
+  with Take Offline and Sync Space to move it either way, and the prompt that offers to move Offline's Spaces into
   the account after signing in.
 - **Google Drive sync** (above), the platform service
   ([Google Drive sync](../../../../liveworkspace/docs/specs/005-drive/drive.md)).

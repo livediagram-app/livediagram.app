@@ -45,7 +45,7 @@ describe('buildSearchResults', () => {
     { id: 'f2', name: 'Personal' },
   ];
 
-  it('marks a design saved only in this browser as This Browser (docs/specs/006-design/offline-mode.md#this-browser-pill)', () => {
+  it('marks a design saved only in this browser as Offline (docs/specs/006-design/offline-mode.md#offline-pill)', () => {
     const out = buildSearchResults({
       query: 'notes',
       designs: [

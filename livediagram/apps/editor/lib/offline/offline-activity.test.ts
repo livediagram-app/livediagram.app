@@ -10,7 +10,7 @@ import {
 } from './offline-activity';
 import { memBackend, testRecord, testTab } from './offline-test-utils';
 
-// The Inbox's read of documents in This Browser (docs/specs/013-workspace/inbox.md §2.6): the server's rules, applied
+// The Inbox's read of documents kept Offline (docs/specs/013-workspace/inbox.md §2.6): the server's rules, applied
 // in the browser, with the reader owning every document.
 
 afterEach(() => __setOfflineBackend(null));
@@ -174,7 +174,7 @@ describe('readOfflineActivity', () => {
     timeout.mockRestore();
   });
 
-  it('reads nothing when the browser holds no documents in This Browser', async () => {
+  it('reads nothing when the browser holds no documents kept Offline', async () => {
     __setOfflineBackend(memBackend());
     expect(await readOfflineActivity(['guest-1'])).toEqual({
       actions: [],

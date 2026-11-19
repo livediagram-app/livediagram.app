@@ -136,11 +136,11 @@ const SECTIONS: LegalSection[] = [
           Cloudflare, with its comments beside what they are about. While people work on one
           together, each comment, answer, idea and vote that passes through the live session is also
           noted in that document&rsquo;s own storage, so none is lost or counted twice, and is
-          removed with it. A document you make in <strong>Offline Mode</strong> (This Browser),
-          which every app has, stays in your browser and never reaches our servers, unless you use
-          an AI feature on it or add a web link to it (our server fetches the link&rsquo;s preview).
-          A guest&rsquo;s new documents start in This Browser; someone signed in starts on our
-          servers. Either can move a document between the two.
+          removed with it. A document you make in <strong>Offline Mode</strong>, which every app
+          has, stays in your browser and never reaches our servers, unless you use an AI feature on
+          it or add a web link to it (our server fetches the link&rsquo;s preview). A guest&rsquo;s
+          new documents start Offline; someone signed in starts on our servers. Either can move a
+          document between the two.
         </li>
         <li>
           <strong>Your Explorer.</strong> liveworkspace.app keeps one list of what you make in every

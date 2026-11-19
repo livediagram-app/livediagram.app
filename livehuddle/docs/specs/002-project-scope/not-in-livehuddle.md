@@ -469,7 +469,7 @@ door makes a Space a place of its own. livehuddle's [Images](../009-elements/ima
   and so in the strip's Search and the search panel's Add to Canvas. It arms the draw-to-size gesture; the new image
   lands as its empty placeholder and its picker (Upload, Gallery, Search) fills it.
 - **A picture pasted or dropped on the canvas lands as an image element**, uploaded to the person's gallery through
-  liveworkspace's media service (a This Browser Space embeds it instead), as in livediagram. Any other file is still
+  liveworkspace's media service (an offline Space embeds it instead), as in livediagram. Any other file is still
   refused, with one notice ("The canvas takes pictures, not other files."); a livehuddle tab's JSON dropped there
   still points at Import.
 - **An Editor's alone.** A Participant and a Viewer have no palette and paste or drop nothing; they see every image

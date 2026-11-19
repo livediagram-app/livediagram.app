@@ -608,7 +608,7 @@ and the dialog stays as the one complete, browsable index of them.
   it by path ("in Account › API Tokens").
 
   Within a category, rows carry an optional **`section`** so a category
-  holding several clusters (Account's You and Danger Zone rows, and a This Browser row while this browser holds pages or boards to move) gets a sub-heading per
+  holding several clusters (Account's You and Danger Zone rows, and an offline row while this browser holds pages or boards to move) gets a sub-heading per
   cluster. Sections group CONSECUTIVE runs, so one cannot be split and
   silently re-headed further down.
 

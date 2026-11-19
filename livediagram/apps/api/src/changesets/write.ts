@@ -79,7 +79,10 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
   // save all say exactly what landed (server rules included).
   const elementOps = diffToElementOps(before, next.elements);
   const creates = w.stored === null;
-  if (elementOps.length === 0 && !creates) return { kind: 'unchanged' };
+  // The sources record rides the tab (diagram-sources.md "Writing the record"): a re-read whose drawing is the same but
+  // whose files changed still writes, and the editors with the tab open hear the record.
+  const sourcesChanged = recordOf(w.stored?.tab.sources) !== recordOf(next.sources);
+  if (elementOps.length === 0 && !creates && !sourcesChanged) return { kind: 'unchanged' };
   const inverse = invertElementOps(before, elementOps);
   const expected = w.stored?.rev ?? 0;
   const rev = expected + 1;
@@ -154,11 +157,19 @@ export async function writeChangeset(env: DocumentEnv, w: ChangesetWrite): Promi
       elementOps,
       ...(w.tokenId ? { agentKey: await agentKeyFor(w.tokenId) } : {}),
       ...(creates ? { tab: tabFieldsOf(next) } : {}),
+      ...(sourcesChanged && !creates ? { sources: next.sources ?? null } : {}),
       revertOf: w.revertOf,
     }),
   );
   const written = writtenAs(record.id);
   return { kind: 'written', record, written, text: w.textFor(written) };
+}
+
+// A sources record as compared for a change: its time of reading left out, so a re-read of the same files is no change.
+function recordOf(sources: unknown): string {
+  if (sources === undefined || sources === null) return '';
+  const { readAt: _readAt, ...rest } = sources as Record<string, unknown>;
+  return JSON.stringify(rest);
 }
 
 // Each touched element as found and as left; the order found when the changeset reordered (CS17).
