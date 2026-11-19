@@ -942,7 +942,7 @@ name an app reported, or as a teammate.
 `GET /inbox?app=`: `{threads, actions, forms, accessRequests, shares}` across every app: open actions and cards assigned
 to or by me; unresolved threads (an element's or a card's) on my items, where I commented, or where I am
 mentioned; and forms with responses I haven't seen on items I own or reach through a team (not through a
-link; and open access requests on items I manage ([request-access.md](request-access.md#in-the-inbox)), and my own requests granted lately (`shares`, [inbox-notices.md](inbox-notices.md#shares-in-the-inbox-read)), which no list row draws; all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
+link; and open access requests on items I manage ([request-access.md](request-access.md#in-the-inbox)), and my own requests granted lately (`shares`, [inbox-notices.md](inbox-notices.md#shares-in-the-inbox-read)), which no list row draws (an access request's row is below); all limited to items I can reach (through a link scoped to one tab, that tab's threads and actions and the
 cards on its boards alone). Each row carries `app`, `itemId`, `itemTitle`, `itemTeamId`, `tabId`
 and `tabName`, so opening it goes to that app; a thread says why it is there (`mentionsYou`, `youCommented`,
 `onYourItem`), who wrote last (`latestAuthorId`, null when the app did not say) and, when I am mentioned, who mentioned
@@ -985,7 +985,14 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   (`Select`, `@liveworkspace/ui`, a native select named **Inbox filter**) in the pane's header row, on the right
   beside the app filter, in the editor's panel and on the page alike (one style, no chips), each option reading its
   name and count ("My Actions (3)"), so the pane keeps one quiet row of controls; it shows only while the list does.
-  Each change is `Activity·Changed` (`All`, `MyActions`, `AssignedByMe`, `Comments`, `FormResponses`).
+  **Access Requests** joins them while there is an open request on an item I manage (or it is the choice), so
+  someone who never shares never sees it.
+  Each change is `Activity·Changed` (`All`, `MyActions`, `AssignedByMe`, `Comments`, `FormResponses`,
+  `AccessRequests`).
+- **Access requests** ([request-access.md "In the Inbox"](request-access.md#in-the-inbox)): a row per open request
+  on an item I manage, **Asked for access** by the requester, **Wants access**, counted in the badge; its pane quotes
+  their note and offers **Share as Viewer** (the level menu beside it), **Decline** and Open in the app. Its verbs
+  are the index's own (`grantAccessRequest`, `declineAccessRequest`), on every page with the Inbox.
 - **The reading pane**, labelled by its title: where it is (the Living Prism, the team glyph, the item › the tab ›
   the element or board), the title, who and why in a sentence ("Priya mentioned you · 25 mins ago · Task"), the verbs
   with their keys, the item's thumbnail where the host draws one (the host's `renderThumbnail`, the item read from

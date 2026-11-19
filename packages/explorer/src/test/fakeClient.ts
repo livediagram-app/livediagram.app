@@ -117,7 +117,7 @@ export function createFakeIndex(
   const fail = new Map<string, IndexError>();
   const hold = new Set<string>();
   let waiting: (() => void)[] = [];
-  const inbox: InboxResponse = { threads: [], actions: [], forms: [] };
+  const inbox: InboxResponse = { threads: [], actions: [], forms: [], accessRequests: [] };
 
   function answer<T>(
     method: string,
@@ -349,7 +349,20 @@ export function createFakeIndex(
         threads: inbox.threads.filter((t) => !query.app || t.app === query.app),
         actions: inbox.actions.filter((a) => !query.app || a.app === query.app),
         forms: inbox.forms.filter((f) => !query.app || f.app === query.app),
+        accessRequests: (inbox.accessRequests ?? []).filter(
+          (r) => !query.app || r.app === query.app,
+        ),
       })),
+    // Request Access (request-access.md): a grant or a decline closes the open request.
+    grantAccessRequest: (itemId: string, requestId: string, input: { level?: string } = {}) =>
+      answer('grantAccessRequest', [itemId, requestId, input], undefined, () => {
+        inbox.accessRequests = (inbox.accessRequests ?? []).filter((r) => r.id !== requestId);
+        return { link: { code: 'granted', level: input.level ?? 'view' } };
+      }),
+    declineAccessRequest: (itemId: string, requestId: string) =>
+      answer('declineAccessRequest', [itemId, requestId], undefined, () => {
+        inbox.accessRequests = (inbox.accessRequests ?? []).filter((r) => r.id !== requestId);
+      }),
     itemHistory: (
       itemId: string,
       query: HistoryQuery = {},

@@ -32,8 +32,8 @@ import {
   INBOX_BUCKET_LABEL,
   INBOX_FILTER_LABEL,
   INBOX_FILTER_TELEMETRY,
-  INBOX_FILTERS,
   isInboxFilter,
+  shownFilters,
   type InboxBucket,
   type InboxEntry,
   type InboxFilter,
@@ -478,7 +478,8 @@ function Rows({
   return <>{out}</>;
 }
 
-/** The filter: five choices (All, My Actions, Assigned by Me, Comments, Form Responses), each with its count, as one
+/** The filter: All, My Actions, Assigned by Me, Comments, Form Responses (and Access Requests while there is one),
+ *  each with its count, as one
  *  quiet native select (keyboard, the phone's picker and a screen reader's name for free), drawn into the header row's
  *  slot (the panel's and the page's), or above the list without one. */
 function FilterDropdown({
@@ -504,7 +505,7 @@ function FilterDropdown({
       }}
       selectClassName="max-sm:py-2"
     >
-      {INBOX_FILTERS.map((f) => (
+      {shownFilters(counts, filter).map((f) => (
         <option key={f} value={f}>
           {INBOX_FILTER_LABEL[f]} ({counts[f]})
         </option>

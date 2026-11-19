@@ -396,7 +396,7 @@ export const ACTIVITY_FILTERS = chart(
   'Activity',
   'Changed',
   'Inbox Filters Chosen',
-  "A filter chosen over the Explorer's Inbox: All, My Actions, Assigned by Me, Comments or Form Responses.",
+  "A filter chosen over the Explorer's Inbox: All, My Actions, Assigned by Me, Comments, Form Responses or Access Requests.",
   { rising: 'neutral' },
 );
 
@@ -412,7 +412,7 @@ export const ACTIVITY_RESOLVED = chart(
   'Activity',
   'Resolved',
   'Inbox Threads Resolved and Actions Done',
-  "A thread resolved, or an action marked done in the editor's panel, from the Explorer's Inbox reading pane.",
+  "A thread resolved, an action marked done in the editor's panel, or an access request shared or declined, from the Explorer's Inbox reading pane.",
 );
 
 // Explorer Home (docs/specs/013-workspace/explorer-home.md): first-run arrivals, designs opened from each part of

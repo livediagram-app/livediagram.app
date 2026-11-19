@@ -3,9 +3,15 @@
 // list, newest first, under date dividers, with a filter bar over it. The sidebar's count is the work waiting on the
 // person: what is assigned to them, and the threads that ask something of them (a mention, a thread on their item
 // they have not written in themselves), Offline's rows included. At 0 the sidebar and the rail show no badge;
-// forms, threads they replied in and work they handed out are listed but not counted.
+// forms, threads they replied in and work they handed out are listed but not counted. An access request on an item
+// they manage (request-access.md "In the Inbox") asks something of them, so it counts.
 
-import type { InboxAction, InboxForm, InboxThread } from '@liveworkspace/index-client';
+import type {
+  InboxAccessRequest,
+  InboxAction,
+  InboxForm,
+  InboxThread,
+} from '@liveworkspace/index-client';
 import type { Located } from '../../types';
 import type { InboxData } from '../../data/useInbox';
 import { kindWords } from '../../words';
@@ -15,9 +21,10 @@ export type InboxSections = {
   byMe: Located<InboxAction>[];
   forms: InboxForm[];
   threads: Located<InboxThread>[];
+  requests: InboxAccessRequest[];
 };
 
-const NONE: InboxSections = { forMe: [], byMe: [], forms: [], threads: [] };
+const NONE: InboxSections = { forMe: [], byMe: [], forms: [], threads: [], requests: [] };
 
 // With no viewer id (signed out), every open action reads as theirs.
 export function inboxSections(data: InboxData | null, viewerId: string | null): InboxSections {
@@ -30,6 +37,8 @@ export function inboxSections(data: InboxData | null, viewerId: string | null): 
       : [],
     forms: data.forms,
     threads: data.threads.filter((t) => !t.resolved),
+    // The reader's own request (a team member who once could not reach a team item) is never theirs to answer.
+    requests: (data.accessRequests ?? []).filter((r) => !viewerId || r.requesterId !== viewerId),
   };
 }
 
@@ -43,7 +52,7 @@ export const threadNeedsYou = (reason: InboxReason | null): boolean =>
 export function inboxCount(data: InboxData | null, viewerId: string | null): number | undefined {
   if (!data) return undefined;
   const s = inboxSections(data, viewerId);
-  let n = s.forMe.length;
+  let n = s.forMe.length + s.requests.length;
   for (const t of s.threads) if (threadNeedsYou(threadReason(t, viewerId))) n++;
   return n;
 }
@@ -58,7 +67,7 @@ export function inboxBadge(data: InboxData | null, viewerId: string | null): num
 export function inboxTotal(data: InboxData | null, viewerId: string | null): number | undefined {
   if (!data) return undefined;
   const s = inboxSections(data, viewerId);
-  return s.forMe.length + s.byMe.length + s.forms.length + s.threads.length;
+  return s.forMe.length + s.byMe.length + s.forms.length + s.threads.length + s.requests.length;
 }
 
 // ---------- Why a row is here ----------------------------------------------------------------------------------
@@ -72,7 +81,8 @@ export type InboxReason =
   | { kind: 'yours'; label: string }
   | { kind: 'replied'; label: 'Replied to you' | 'You replied' }
   | { kind: 'agent'; label: 'Your agent wrote' }
-  | { kind: 'responses'; label: string };
+  | { kind: 'responses'; label: string }
+  | { kind: 'access'; label: 'Wants access' };
 
 /** Why a thread is on the page: a mention is the most direct reason, so it wins; then the item being theirs, until
  *  they reply themselves; then that they are in it: someone else wrote last (Replied to you), or they did (You
@@ -103,6 +113,9 @@ export function actionReason(a: Pick<InboxAction, 'assigneeName'>, forMe: boolea
   return { kind: 'waiting', label: `Waiting on ${firstName(a.assigneeName) ?? 'a teammate'}` };
 }
 
+/** An access request's reason. */
+export const ACCESS_REASON: InboxReason = { kind: 'access', label: 'Wants access' };
+
 /** A form's reason: how many responses the person hasn't seen. */
 export const formReason = (unseen: number): InboxReason => ({
   kind: 'responses',
@@ -115,7 +128,8 @@ export const formReason = (unseen: number): InboxReason => ({
 // rather than per render.
 
 /** What a row is, as the telemetry names it (`Activity·Selected`). */
-export type InboxEntryKind = 'Action' | 'Card' | 'Thread' | 'CardThread' | 'FormResponses';
+export type InboxEntryKind =
+  'Action' | 'Card' | 'Thread' | 'CardThread' | 'FormResponses' | 'AccessRequest';
 
 export type InboxActionEntry = {
   key: string;
@@ -139,11 +153,19 @@ export type InboxFormEntry = {
   row: InboxForm;
   at: number;
 };
-export type InboxEntry = InboxActionEntry | InboxThreadEntry | InboxFormEntry;
+export type InboxAccessEntry = {
+  key: string;
+  kind: 'AccessRequest';
+  forMe: false;
+  row: InboxAccessRequest;
+  at: number;
+};
+export type InboxEntry = InboxActionEntry | InboxThreadEntry | InboxFormEntry | InboxAccessEntry;
 
 /** The filter bar's choices. `mine`: assigned to me; `waiting`: assigned by me; `comments`: threads (mentions, on my
- *  items, replies); `forms`: forms with new responses. */
-export const INBOX_FILTERS = ['all', 'mine', 'waiting', 'comments', 'forms'] as const;
+ *  items, replies); `forms`: forms with new responses; `requests`: access requests on items I manage, offered only
+ *  while there is one (or it is the choice: `shownFilters`). */
+export const INBOX_FILTERS = ['all', 'mine', 'waiting', 'comments', 'forms', 'requests'] as const;
 export type InboxFilter = (typeof INBOX_FILTERS)[number];
 
 export const INBOX_FILTER_LABEL: Record<InboxFilter, string> = {
@@ -152,6 +174,7 @@ export const INBOX_FILTER_LABEL: Record<InboxFilter, string> = {
   waiting: 'Assigned by Me',
   comments: 'Comments',
   forms: 'Form Responses',
+  requests: 'Access Requests',
 };
 
 /** The token a filter change reports (`Activity·Changed`). */
@@ -161,6 +184,7 @@ export const INBOX_FILTER_TELEMETRY: Record<InboxFilter, string> = {
   waiting: 'AssignedByMe',
   comments: 'Comments',
   forms: 'FormResponses',
+  requests: 'AccessRequests',
 };
 
 export function isInboxFilter(v: unknown): v is InboxFilter {
@@ -177,7 +201,20 @@ export function entryFilter(e: InboxEntry): Exclude<InboxFilter, 'all'> {
       return 'comments';
     case 'FormResponses':
       return 'forms';
+    case 'AccessRequest':
+      return 'requests';
   }
+}
+
+/** The filters the dropdown offers: Access Requests only while there is one or it is the choice, so someone who never
+ *  shares never sees it. */
+export function shownFilters(
+  counts: Record<InboxFilter, number>,
+  chosen: InboxFilter,
+): readonly InboxFilter[] {
+  return INBOX_FILTERS.filter(
+    (f) => f !== 'requests' || counts.requests > 0 || chosen === 'requests',
+  );
 }
 
 // Each row's key: unique per row and stable across reads.
@@ -187,6 +224,8 @@ export const threadKey = (r: Pick<InboxThread, 'app' | 'itemId' | 'tabId' | 'ele
   `t:${r.app}:${r.itemId}:${r.tabId}:${r.elementId}`;
 export const formKey = (r: Pick<InboxForm, 'app' | 'itemId' | 'tabId'>) =>
   `f:${r.app}:${r.itemId}:${r.tabId}`;
+/** An access request's: `r:<id>`, the key its notice and its email open the Inbox at (`?at=`). */
+export const requestKey = (r: Pick<InboxAccessRequest, 'id'>) => `r:${r.id}`;
 
 /** What holds a row done from the pane out of the Inbox (`useInbox`'s `settle`): its key, a card thread by its own id
  *  (whichever plan lists it, as the list shows it once), and its time then, so a row that changes after comes back. */
@@ -204,6 +243,8 @@ export function settledOf(e: InboxEntry): InboxSettled {
       return { key: actionKey(e.row), at: e.row.updatedAt };
     case 'FormResponses':
       return { key: formKey(e.row), at: e.row.latestAt };
+    case 'AccessRequest':
+      return { key: requestKey(e.row), at: e.row.askedAt };
   }
 }
 
@@ -216,6 +257,9 @@ export function withoutSettled(data: InboxData, settled: ReadonlyMap<string, num
     actions: data.actions.filter((a) => kept(actionKey(a), a.updatedAt)),
     threads: data.threads.filter((t) => kept(threadSettleKey(t), t.latestAt)),
     forms: data.forms.filter((f) => kept(formKey(f), f.latestAt)),
+    ...(data.accessRequests
+      ? { accessRequests: data.accessRequests.filter((r) => kept(requestKey(r), r.askedAt)) }
+      : {}),
   };
 }
 
@@ -269,6 +313,9 @@ export function inboxEntries(s: InboxSections): InboxEntry[] {
       at: r.latestAt,
     });
   }
+  for (const r of s.requests) {
+    out.push({ key: requestKey(r), kind: 'AccessRequest', forMe: false, row: r, at: r.askedAt });
+  }
   return out.sort((a, b) => b.at - a.at);
 }
 
@@ -280,6 +327,7 @@ export function inboxFilterCounts(entries: readonly InboxEntry[]): Record<InboxF
     waiting: 0,
     comments: 0,
     forms: 0,
+    requests: 0,
   };
   for (const e of entries) c[entryFilter(e)]++;
   return c;

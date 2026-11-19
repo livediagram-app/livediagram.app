@@ -27,7 +27,11 @@ import { purgeDocumentPreviews } from '../db/documents';
 import { documentRoom } from '../document-client';
 import { closeArchivedSessions, closeTokenSessions, tellTrashed } from '../room-access-client';
 import { forgetImageRefs } from '../document-room/document-outbox';
-import { notifyFirstShare } from '../email/notifications';
+import {
+  notifyAccessGranted,
+  notifyAccessRequested,
+  notifyFirstShare,
+} from '../email/notifications';
 import { personStore } from '../person-client';
 import { reportServerEvent } from '../server-telemetry';
 import { importDocumentFileFor } from './internal-file';
@@ -85,6 +89,10 @@ export function handleInternalItems(
       // An API token was revoked at liveworkspace: the sockets its room tickets opened here close
       // (public-api-and-tokens.md "Revoking a token").
       tokenClose: (id, tokenId) => closeTokenSessions(env, id, tokenId),
+      // Request Access (liveworkspace request-access.md "The emails"): a manager's email when someone asks, and the
+      // requester's when a manager shares it.
+      accessRequested: (id, notice) => notifyAccessRequested(env, id, notice),
+      accessGranted: (id, notice) => notifyAccessGranted(env, id, notice),
       notice: (id, notice) =>
         notice.type === 'shared'
           ? notifyFirstShare(env, notice.actorId)

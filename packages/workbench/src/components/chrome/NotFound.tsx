@@ -18,6 +18,7 @@ import {
 } from '@liveworkspace/ui';
 import { notFoundTitle, type NotFoundReason } from '../../lib/not-found-reason';
 import { lucideFolder, lucideLogIn, lucideUnlink } from '@liveworkspace/icons/lucide';
+import { RequestAccess } from '../request-access/RequestAccess';
 
 const FolderIcon = lucideGlyph(lucideFolder, 16);
 // A share link that no longer opens anything: the tile's glyph, at the size and weight of the CircleXIcon it stands in for.
@@ -69,11 +70,17 @@ export type NotFoundProps = {
   // refused its grant as `archived`, or this browser holds it archived. The card says so and offers Change Folder,
   // which moves it out; without `onChangeFolder` (an embed) only Open Explorer is offered.
   archived?: { onChangeFolder?: () => void } | null;
+  // Request Access (liveworkspace/docs/specs/004-index/request-access.md "On screen"): the item the address names,
+  // passed only on the app's own address with someone signed in. On the `missing` case the card then offers Request
+  // Access beside its other buttons and its hint says so; an embed never shows it here (its own card does).
+  requestAccess?: { itemId: string } | null;
 };
 
 // The line under the body for the cases a colleague reaches from an editor address someone copied (signed out, or
 // signed in without access): only a share link lets them in.
-function shareHintOf(reason: NotFoundReason, noun: string): string | null {
+function shareHintOf(reason: NotFoundReason, noun: string, asking: boolean): string | null {
+  if (asking)
+    return `Joining a colleague on this ${noun}? Request access, and whoever runs it is asked to share it with you.`;
   return reason === 'sign-in' || reason === 'missing'
     ? `If you are joining a colleague on this ${noun}, ask them to share a URL via the Share button.`
     : null;
@@ -105,9 +112,11 @@ export function NotFound({
   onOpenExplorer,
   signInHref,
   archived = null,
+  requestAccess = null,
 }: NotFoundProps) {
   const Noun = capitalised(noun);
-  const shareHint = shareHintOf(reason, noun);
+  const asking = !embed && reason === 'missing' && requestAccess ? requestAccess : null;
+  const shareHint = shareHintOf(reason, noun, asking !== null);
   if (archived) {
     return (
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
@@ -152,7 +161,10 @@ export function NotFound({
   const createNew = deadLink && embed ? undefined : onCreateNew;
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-      <div className="pointer-events-auto flex max-w-md animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900">
+      {/* Asking, the card is a step wider so its three buttons keep one row. */}
+      <div
+        className={`pointer-events-auto flex ${asking ? 'max-w-lg' : 'max-w-md'} animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900`}
+      >
         {deadLink ? (
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
             <UnlinkIcon />
@@ -180,7 +192,28 @@ export function NotFound({
             {shareHint}
           </p>
         ) : null}
-        {onOpenExplorer || createNew || signIn ? (
+        {asking ? (
+          <RequestAccess
+            itemId={asking.itemId}
+            noun={noun}
+            leading={
+              <>
+                {onOpenExplorer ? (
+                  <Button size="md" variant="secondary" onClick={onOpenExplorer}>
+                    <FolderIcon />
+                    Open Explorer
+                  </Button>
+                ) : null}
+                {createNew ? (
+                  <Button size="md" variant="secondary" onClick={createNew}>
+                    <SparkleIcon />
+                    {`New ${capitalised(noun)}`}
+                  </Button>
+                ) : null}
+              </>
+            }
+          />
+        ) : onOpenExplorer || createNew || signIn ? (
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
             {onOpenExplorer ? (
               <Button size="md" variant="secondary" onClick={onOpenExplorer}>

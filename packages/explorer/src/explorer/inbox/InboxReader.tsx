@@ -31,6 +31,7 @@ import { BoundedCache, itemCache, useSettledRead } from './paneData';
 import { firstName, type InboxEntry } from './sections';
 import { entryPlace, entryTarget, offeredVerbs } from './inbox-entry-place';
 import { Body, Byline } from './InboxReaderBody';
+import { AccessRequestFailure, AccessRequestVerbs, useAccessAnswer } from './AccessRequestPane';
 
 // Where a row leads lives in ./inbox-entry-place; re-exported so callers' imports stay as they were.
 export { entryPlace, entryTarget, offeredVerbs } from './inbox-entry-place';
@@ -137,6 +138,16 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
     target && loadThread ? (signal) => loadThread(target, signal) : null,
   );
 
+  // An access request's verbs, the index's own (./AccessRequestPane).
+  const access = entry.kind === 'AccessRequest' ? entry : null;
+  const answer = useAccessAnswer({
+    entry,
+    client,
+    onGone,
+    announce,
+    onTelemetry: inboxHost?.onTelemetry,
+  });
+
   const run = useCallback(
     async (verb: 'resolve' | 'done') => {
       const fn = verb === 'resolve' ? actions?.resolve : actions?.done;
@@ -193,6 +204,10 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         return true;
       },
       primary: () => {
+        if (access) {
+          void answer.share();
+          return true;
+        }
         if (!primaryVerb) return false;
         void run(primaryVerb);
         return true;
@@ -200,7 +215,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
       open: () => openRef.current?.closest('a')?.click(),
       focusTitle: () => titleRef.current?.focus(),
     }),
-    [canReply, primaryVerb, run],
+    [canReply, primaryVerb, run, access, answer],
   );
 
   const team = entry.row.itemTeamId ? teamName(entry.row.itemTeamId) : null;
@@ -290,10 +305,11 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
             </kbd>
           </Button>
         ) : null}
+        {access ? <AccessRequestVerbs entry={access} answer={answer} /> : null}
         <Link
           href={href}
           onClick={() => inboxHost?.onTelemetry?.('Selected', entry.kind)}
-          className={canReply || primaryVerb ? SECONDARY : PRIMARY}
+          className={canReply || primaryVerb || access ? SECONDARY : PRIMARY}
         >
           <span ref={openRef} data-inbox-open="" className="inline-flex items-center gap-1.5">
             <OpenIcon size={14} />
@@ -304,6 +320,7 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
           </span>
         </Link>
       </div>
+      {access ? <AccessRequestFailure entry={access} answer={answer} /> : null}
       {failed && failed !== 'reply' ? (
         <p role="alert" className="text-sm text-rose-700 dark:text-rose-300">
           {failed === 'resolve' ? 'Couldn’t resolve this thread.' : 'Couldn’t mark this done.'} Try

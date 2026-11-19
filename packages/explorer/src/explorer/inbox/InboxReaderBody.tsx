@@ -40,6 +40,9 @@ export function Byline({ entry, facts: f }: { entry: InboxEntry; facts: EntryFac
     case 'FormResponses':
       sentence = f.reason?.label ?? 'New responses';
       break;
+    case 'AccessRequest':
+      sentence = `${who} wants access to ${f.item}`;
+      break;
   }
   return (
     <p
@@ -146,6 +149,31 @@ export function Body({
               </p>
             </>
           ) : null}
+        </div>
+      );
+    }
+    case 'AccessRequest': {
+      const r = entry.row;
+      const name = firstName(r.requesterName) ?? 'them';
+      return (
+        <div className="flex flex-col gap-3" data-inbox-access="">
+          {r.note?.trim() ? (
+            <>
+              <h3 className={SECTION_LABEL}>Note</h3>
+              <blockquote
+                data-inbox-access-note=""
+                className="m-0 whitespace-pre-line break-words border-l-2 border-slate-300 pl-3 text-sm leading-6 text-slate-700 dark:border-slate-600 dark:text-slate-200"
+              >
+                {r.note.trim()}
+              </blockquote>
+            </>
+          ) : (
+            <p className="text-sm text-slate-500 dark:text-slate-400">They left no note.</p>
+          )}
+          <p className="text-xs leading-5 text-slate-500 dark:text-slate-400">
+            Sharing makes a pass for {name} in Share. Delete it there to take the access away.
+            Declining tells them nothing.
+          </p>
         </div>
       );
     }

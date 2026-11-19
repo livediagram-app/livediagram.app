@@ -71,7 +71,9 @@ fits wins (`notFoundReason`, `@liveworkspace/workbench/lib/not-found-reason`, th
   No "404" line.
 - **Design Not Found** with **Sign In** ("This design doesn’t exist, or you don’t have access to it.", then on its own line "If you are joining a colleague on this design, ask them to share a URL via the Share button."): a signed-out
   visitor. Sign In comes back to the same address.
-- **Design Not Found** ("This design doesn’t exist or isn’t yours.", then on its own line "If you are joining a colleague on this design, ask them to share a URL via the Share button."): anyone else.
+- **Design Not Found** ("This design doesn’t exist or isn’t yours.", then on its own line "Joining a colleague on this design? Request access, and whoever runs it is asked to share it with you."): anyone else.
+
+**Request Access** ([Request Access](../../../../liveworkspace/docs/specs/004-index/request-access.md#on-screen)) is on the Missing card alone, on this app's own address: a signed-in visitor asks whoever runs the design to share it with them, with an optional note, and the button then says **Requested** ("If its owner shares it with you, you'll get an email."). The answer is the same for every address, so it tells them nothing about whether the design exists. Never in an embed or a workbench frame, and never to someone signed out, who signs in first. Where it is not offered (an embed) the Missing card keeps "ask them to share a URL via the Share button."
 
 In an embed a refused share code reads **No Longer Shared** ("This design is no longer shared at this link. Ask whoever
 shared it for a new one.") with no buttons, and the embed's browser tab names the card ("No Longer Shared | livedesign").

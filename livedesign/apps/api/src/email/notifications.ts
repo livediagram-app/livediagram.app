@@ -8,8 +8,12 @@
 // a notification problem can't break the request that triggered it.
 
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
-import type { TeamPerson } from '@liveworkspace/auth-client';
-import type { ApprovalNotice } from '@liveworkspace/index-client';
+import { accountAddresses, type TeamPerson } from '@liveworkspace/auth-client';
+import type {
+  AccessGrantedNotice,
+  AccessRequestedNotice,
+  ApprovalNotice,
+} from '@liveworkspace/index-client';
 import { MENTIONS_MAX, type Comment } from '@livedesign/design';
 import { emailOf } from '../accounts/people';
 import {
@@ -31,6 +35,8 @@ import { emailEnabled, sendEmail } from './client';
 // burst of comments doesn't spam the owner.
 const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 import {
+  accessGrantedEmail,
+  accessRequestedEmail,
   actionAssignedEmail,
   approvalRequestedEmail,
   commentNotificationEmail,
@@ -77,12 +83,15 @@ const notifier = createNotifier<Env, RenderedEmail>({
   allowance: (env) => accountsAllowance(accountCredentials(env)),
   nameOf: async (env, id) => (await getParticipant(env, id))?.name ?? null,
   teamPeople,
+  addresses: (env, ids) => accountAddresses(accountCredentials(env), ids),
   settings: { join: 'notifyDesignJoin' },
   emails: {
     milestone: milestoneEmail,
     firstShare: firstShareEmail,
     joined: designJoinedEmail,
     actionAssigned: actionAssignedEmail,
+    accessRequested: accessRequestedEmail,
+    accessGranted: accessGrantedEmail,
     approvalRequested: approvalRequestedEmail,
     mentioned: (env, authorName, design, text) =>
       mentionedEmail(env, authorName, design.name, design.id, text),
@@ -104,6 +113,22 @@ export const notifyApprovalRequested = (
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
 export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>
   notifier.notifyFirstShare(env, actorId);
+
+// Someone asked for access to a design these managers run (the index's `access_requested` notice,
+// routes/internal-items.ts; liveworkspace request-access.md "The emails"). Opt-out with the join switch.
+export const notifyAccessRequested = (
+  env: Env,
+  id: string,
+  notice: AccessRequestedNotice,
+): Promise<void> => notifier.notifyAccessRequested(env, id, notice);
+
+// A manager shared a design with the person who asked (the index's `access_granted` notice): their email, which no
+// switch holds back.
+export const notifyAccessGranted = (
+  env: Env,
+  id: string,
+  notice: AccessGrantedNotice,
+): Promise<void> => notifier.notifyAccessGranted(env, id, notice);
 
 // A signed-in person opened one of an owner's designs through a share link for the first time (the index's `joined`
 // notice, run inside the design's Durable Object). Opt-out (notifyDesignJoin).

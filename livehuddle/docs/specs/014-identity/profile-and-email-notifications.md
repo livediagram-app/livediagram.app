@@ -118,6 +118,15 @@ HTML-escaped. The notification is on by default, so the email says so rather tha
 and points at the notification settings. Only the first visit notifies, so an active collaborator doesn't generate a
 mail per reload; live-room reconnects are deliberately not wired.
 
+### Someone asks for access (`notifyDocumentJoin`)
+
+The same switch holds the **access requested** email
+([Request Access](../../../../liveworkspace/docs/specs/004-index/request-access.md#the-emails)): a signed-in person
+asked for access to a space you manage, from its Not Found screen or a live embed's no-access card. It names them,
+quotes their note and opens the liveworkspace Inbox on the request (this app has no Inbox of its own), where **Share** grants it in one click. The index's limits are its
+only throttle: one per person and space a week, at most ten a space a day. When you share it, the person who asked
+gets the **access granted** email, which no switch holds back: they asked for it.
+
 ### Someone responds to a team invite (`notifyInviteResponse`)
 
 Team invitations are liveworkspace's ([Teams](../013-workspace/teams.md)), and so is the email telling a team's admins

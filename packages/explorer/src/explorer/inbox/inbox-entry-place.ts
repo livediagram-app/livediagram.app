@@ -26,12 +26,16 @@ export function entryPlace(e: InboxEntry): ItemPlace {
       return { tabId: e.row.tabId, elementId: e.row.elementId, open: 'comments' };
     case 'FormResponses':
       return { tabId: e.row.boardTabId ?? e.row.tabId };
+    case 'AccessRequest':
+      // The item itself, where its Share dialog is.
+      return {};
   }
 }
 
-/** The row as the host's verbs find it; null for a form, which has none. */
+/** The row as the host's verbs find it; null for a form, which has none, and an access request, whose verbs are the
+ *  index's own (./AccessRequestPane). */
 export function entryTarget(e: InboxEntry): InboxTarget | null {
-  if (e.kind === 'FormResponses') return null;
+  if (e.kind === 'FormResponses' || e.kind === 'AccessRequest') return null;
   const r = e.row;
   return {
     kind: e.kind,

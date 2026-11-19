@@ -312,6 +312,24 @@ export async function accountEmails(
   return Object.assign({}, ...pages) as Record<string, string>;
 }
 
+// The verified addresses of these accounts, by id, for an email no switch holds back (Request Access's grant email,
+// liveworkspace/docs/specs/004-index/request-access.md "The emails"). Guests and malformed ids are dropped; no
+// credentials, or a read that fails, means nobody (logged), so it never throws.
+export async function accountAddresses(
+  credentials: ClientCredentials | null | undefined,
+  ids: readonly string[],
+  fetcher: typeof fetch = fetch,
+): Promise<Map<string, string>> {
+  const accounts = [...new Set(ids.filter((id) => /^user_[A-Za-z0-9]{1,64}$/.test(id)))];
+  if (!credentials || accounts.length === 0) return new Map();
+  try {
+    return new Map(Object.entries(await accountEmails(credentials, accounts, fetcher)));
+  } catch (error) {
+    console.warn('[notify] emails_failed', { count: accounts.length, error: String(error) });
+    return new Map();
+  }
+}
+
 // --- The onboarding series ---
 
 // Someone saved something they own at `at` (default now), for the onboarding series liveworkspace

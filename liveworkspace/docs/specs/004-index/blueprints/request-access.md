@@ -5,27 +5,39 @@ Defaults are cited as `IDXn`. Paths are relative to the repository root.
 
 ## Build order
 
-Work Tracker 1137 lands in three parts, each leaving main working; nothing a person can press exists until part 3.
+Work Tracker 1137 was planned in three parts. Part 1 landed in #1944; parts 2 and 3 landed together, in one PR, with
+Work Tracker 1308 (the answer to an editor address sent to a colleague):
 
-| Part | Brings                                                                                                                                                                                                                                                                                      |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | This spec and blueprint; migration `0022_access_requests.sql`; the index's three routes, the Inbox's `accessRequests`, closing an account; `@liveworkspace/index-client`'s types, limits, client calls and notice parser; `@liveworkspace/index-app`'s notice door (202, handlers optional) |
-| 2    | The managers' side: the Explorer's Inbox row, reading pane and verbs (Share, its level menu, Decline) and badge count; each app's `accessRequested` and `accessGranted` handlers and their two emails                                                                                       |
-| 3    | The requester's side: Request Access (with its note, and Requested after) on the live embed's no-access card and on each app's Not Found screen; live-embeds.md's no-access row                                                                                                             |
+| Part | Brings                                                                                                                                                                                                                                                                                      | Landed                 |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| 1    | This spec and blueprint; migration `0022_access_requests.sql`; the index's three routes, the Inbox's `accessRequests`, closing an account; `@liveworkspace/index-client`'s types, limits, client calls and notice parser; `@liveworkspace/index-app`'s notice door (202, handlers optional) | #1944                  |
+| 2    | The managers' side: the Explorer's Inbox row, reading pane and verbs (Share, its level menu, Decline) and badge count; each app's `accessRequested` and `accessGranted` handlers and their two emails                                                                                       | with Work Tracker 1308 |
+| 3    | The requester's side: Request Access (with its note, and Requested after) on the live embed's no-access card and on each app's Not Found screen; live-embeds.md's no-access row                                                                                                             | with Work Tracker 1308 |
 
 Scope, by file:
 
-| File                                                           | Role                                                                                                          |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `liveworkspace/apps/index/migrations/0022_access_requests.sql` | `access_requests`, `access_request_tries` and their indexes                                                   |
-| `liveworkspace/apps/index/src/access-requests.ts`              | `handleAccessRequests`: ask (`POST /items/:id/access-requests`), grant, decline; `recordRequest` off the path |
-| `liveworkspace/apps/index/src/inbox.ts`                        | the fourth Inbox statement, `accessRequests`                                                                  |
-| `liveworkspace/apps/index/src/account-purge.ts`                | a closed account's requests and tries deleted                                                                 |
-| `liveworkspace/apps/index/src/index.ts`                        | routes `items/:id/access-requests…`; labels `access-requests`, `grant` (already), `decline`                   |
-| `packages/index-client/src/access-requests.ts`                 | limits, `InboxAccessRequest`, `AccessNotice`, `parseAccessNotice`                                             |
-| `packages/index-client/src/client.ts`                          | `requestAccess`, `grantAccessRequest`, `declineAccessRequest`                                                 |
-| `packages/index-client/src/types.ts`                           | `InboxResponse.accessRequests`                                                                                |
-| `packages/index-app/src/internal.ts`, `internal-contract.ts`   | the two notices to `accessRequested` / `accessGranted` (202 and nothing without one)                          |
+| File                                                           | Role                                                                                                             |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `liveworkspace/apps/index/migrations/0022_access_requests.sql` | `access_requests`, `access_request_tries` and their indexes                                                      |
+| `liveworkspace/apps/index/src/access-requests.ts`              | `handleAccessRequests`: ask (`POST /items/:id/access-requests`), grant, decline; `recordRequest` off the path    |
+| `liveworkspace/apps/index/src/inbox.ts`                        | the fourth Inbox statement, `accessRequests`                                                                     |
+| `liveworkspace/apps/index/src/account-purge.ts`                | a closed account's requests and tries deleted                                                                    |
+| `liveworkspace/apps/index/src/index.ts`                        | routes `items/:id/access-requests…`; labels `access-requests`, `grant` (already), `decline`                      |
+| `packages/index-client/src/access-requests.ts`                 | limits, `InboxAccessRequest`, `AccessNotice`, `parseAccessNotice`                                                |
+| `packages/index-client/src/client.ts`                          | `requestAccess`, `grantAccessRequest`, `declineAccessRequest`                                                    |
+| `packages/index-client/src/types.ts`                           | `InboxResponse.accessRequests`                                                                                   |
+| `packages/index-app/src/internal.ts`, `internal-contract.ts`   | the two notices to `accessRequested` / `accessGranted` (202 and nothing without one)                             |
+| `packages/index-app/src/notifier.ts`                           | `notifyAccessRequested` (the join switch), `notifyAccessGranted` (the verified address, no switch)               |
+| `packages/auth-client/src/account.ts`                          | `accountAddresses`: verified addresses by id, never throwing (the grant email's recipient)                       |
+| `packages/email/src/access-request.ts`                         | the two emails' words, once: `accessRequestedSection`, `accessGrantedSection`                                    |
+| `live*/apps/api/src/email/templates.ts`, `notifications.ts`    | each app's two emails in its look and noun, and its notifier's two templates                                     |
+| `live*/apps/api/src/routes/internal-items.ts`                  | each app's `accessRequested` and `accessGranted` handlers                                                        |
+| `packages/explorer/src/explorer/inbox/sections.ts`             | the `AccessRequest` entry: its key `r:<id>`, filter, count, settle                                               |
+| `packages/explorer/src/explorer/inbox/AccessRequestPane.tsx`   | the reading pane's request: the note, Share as Viewer and its level menu, Decline, their failures                |
+| `packages/explorer/src/inbox-notices/rows.ts`                  | an access request's notice links to its Inbox row                                                                |
+| `packages/workbench/src/components/request-access/`            | `RequestAccess` (the Not Found card's), `RequestAccessButton` (the live embed's), `requested` (the tab's memory) |
+| `packages/workbench/src/components/chrome/NotFound.tsx`        | `requestAccess`: the item's id on the Missing card                                                               |
+| `live*/apps/*/…/editor-page.tsx` (each app's Not Found)        | passes the address's item id to the Missing card when signed in on the app's own address                         |
 
 ## Domain and naming
 
@@ -182,6 +194,10 @@ CREATE INDEX access_request_tries_person ON access_request_tries (person_id, at)
   `access_requests_item`; measured in `inbox.test.ts`'s scale test.
 - Grant: one read and one four-statement batch.
 
+- Request Access (client): one `POST` on a press, none on the editor's load; the Not Found card and the embed's
+  card are already off the editor's path (the card loads lazily). The Inbox's request rows ride the one Inbox read:
+  no request of their own, and the count is one more loop over the read's rows.
+
 ## Observability
 
 - `[access-requests] record failed` when the off-path record throws.
@@ -196,6 +212,15 @@ CREATE INDEX access_request_tries_person ON access_request_tries (person_id, at)
   and decline; the Inbox rows and their reach; closing an account.
 - `packages/index-client/src/access-requests.test.ts`: the notice parser.
 - `packages/index-app/src/internal.test.ts`: the two notices to their handlers, and 202 without one.
+- `packages/index-app/src/notifier.test.ts`: who each email reaches (the join switch, guests, no template), and the
+  grant email's address without a switch.
+- `packages/email/src/access-request.test.ts`: the words, escaped, the note quoted and cut, Someone for no name.
+- Each app's `email/notifications.test.ts` and `routes/internal-items.test.ts`: the handlers reach the notifier with
+  the app's words.
+- `packages/explorer/src/explorer/inbox/access-requests.test.tsx`: the row, the count and filter, Share at the default
+  and a chosen level, Decline, each failure, and a requester's own request never their row.
+- `packages/workbench/src/components/request-access/*.test.tsx`: every state; signed out offered nothing; Requested
+  held across mounts; one request per press.
 
 ## Constants and configuration
 
