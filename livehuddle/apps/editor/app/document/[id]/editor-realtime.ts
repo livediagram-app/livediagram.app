@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 
 import type { CommunityShareInfo } from '@livehuddle/api-schema';
 import { connectRoom, type ShareRole } from '@/lib/api-client';
+import { isOutboxOp } from '@/lib/api/room-contract';
+import { createPreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import { mayShareDocument } from './editor-page-helpers';
 import { createRoomNameSync } from './room-name-sync';
 import { useChangesetSeen } from '@liveworkspace/workbench/hooks/editor/useChangesetSeen';
@@ -27,6 +29,9 @@ export function useEditorRealtime() {
   // Single open room connection for the current document. Re-opens
   // whenever documentId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
+  // What was sent before that connection exists (an element edit), handed to it as it is made
+  // (@liveworkspace/workbench/lib/pre-room-outbox). It holds what the room client's own outbox would.
+  const [preRoomOutbox] = useState(() => createPreRoomOutbox(isOutboxOp));
   // Our presence name against the room's (room-name-sync.ts): a name we chose waits for the room to show it.
   const [roomNameSync] = useState(createRoomNameSync);
   // Whether the document is saved on the server, so it has a room (docs/specs/024-agents/
@@ -116,6 +121,7 @@ export function useEditorRealtime() {
     sessionCommunity,
     setSessionCommunity,
     roomRef,
+    preRoomOutbox,
     roomNameSync,
     documentServerStored,
     setDocumentServerStored,

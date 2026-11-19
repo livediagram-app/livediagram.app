@@ -5,6 +5,7 @@ import type {
   ChangesetRoomOp,
   FacilitatorReason,
   LivePoll,
+  RoomOutgoing,
 } from '@livediagram/api-schema';
 import type { Participant } from '@/lib/identity';
 import type { connectRoom } from '@/lib/api-client';
@@ -13,7 +14,7 @@ import type { RemoteSelection } from '@/lib/presence-rows';
 import type { PendingIdeaIds } from './room-op-apply';
 import type { SaveBaselineRefs } from './save-baseline';
 import type { OwnElementWrites } from './own-element-writes';
-import type { PreRoomOutbox } from './pre-room-outbox';
+import type { PreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import type { RemoteViewport } from '@liveworkspace/workbench/hooks/collab/useFollowMe';
 
 // What useRoomConnection takes, split out of useRoomConnection.ts: the document and who we are, the page's state
@@ -54,9 +55,10 @@ export type RoomConnectionOptions = {
   countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
-  // What was sent before the room existed (a dot cast as the page opens), flushed to the room as it is made and
-  // dropped when the document is left (pre-room-outbox.ts). Stable for the page's life, so it never reopens the socket.
-  preRoomOutbox?: PreRoomOutbox;
+  // What was sent before the room existed (a dot, a poll answer or an element edit as the page opens), aimed at the
+  // document, flushed to the room as it is made and dropped when the document is left
+  // (@liveworkspace/workbench/lib/pre-room-outbox). Stable for the page's life, so it never reopens the socket.
+  preRoomOutbox?: PreRoomOutbox<RoomOutgoing>;
   // Merge a peer's tab / document-meta change into the present, PRESERVING
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).

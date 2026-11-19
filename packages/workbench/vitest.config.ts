@@ -35,6 +35,8 @@ const HELD_AT_100 = [
   'src/lib/editor-path.ts',
   'src/lib/guard-run.ts',
   'src/lib/room-presence.ts',
+  // Sends held before the room client exists (each product's collab-race-hardening.md, Work Tracker 1263).
+  'src/lib/pre-room-outbox.ts',
   'src/hooks/ui/usePageContents.ts',
   'src/components/canvas/arrow-view-parts.tsx',
   'src/lib/editor-search/build-search-results.ts',

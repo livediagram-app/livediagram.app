@@ -26,6 +26,11 @@ import { resetArticlePeers, syncArticlePeople } from '@/lib/article/article-care
 import { resetArticleHolds, syncArticleHolders } from '@/lib/article/article-holds-store';
 import { receiveRoomOp } from './room-op-receive';
 import type { RoomConnectionOptions } from './useRoomConnection.types';
+import {
+  aimPreRoomOutbox,
+  clearPreRoomOutbox,
+  flushPreRoomOutbox,
+} from '@liveworkspace/workbench/lib/pre-room-outbox';
 
 // Realtime room: one WebSocket per document, opened for every document saved on
 // the server (docs/specs/024-agents/agent-changesets.md "Rooms for personal documents"). Lifted out of editor-page.tsx verbatim — the
@@ -51,6 +56,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     selfParticipantRef,
     sessionShareCodeRef,
     roomRef,
+    preRoomOutbox,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,
@@ -65,6 +71,12 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     resyncFromServer,
     onRoomJoined,
   } = opts;
+
+  // What is sent before the room exists is held for this document; moving to another drops it (pre-room-outbox).
+  // Declared before the room's own effect, so the hold is aimed before a room made in the same pass flushes it.
+  useEffect(() => {
+    if (preRoomOutbox) aimPreRoomOutbox(preRoomOutbox, documentId);
+  }, [preRoomOutbox, documentId]);
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
@@ -269,6 +281,9 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       renewGrant: async () => (await documentGrant(documentId, share))?.grant ?? null,
     });
     roomRef.current = openedRoom;
+    // What was sent before this room existed goes to it now, once (pre-room-outbox): the connector holds it in its
+    // own outbox until the socket has said hello.
+    if (preRoomOutbox) flushPreRoomOutbox(preRoomOutbox, openedRoom, documentId);
     return () => {
       stopGrant();
       presence.cancel();
@@ -276,6 +291,8 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       resetArticleHolds();
       openedRoom.close();
       roomRef.current = null;
+      // The room closed: anything still held goes too (it was handed over as the room was made).
+      if (preRoomOutbox) clearPreRoomOutbox(preRoomOutbox);
     };
   }, [
     enabled,
@@ -284,6 +301,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     documentServerStored,
     documentTeamId,
     roomRef,
+    preRoomOutbox,
     setLivePresence,
     setLiveAgents,
     setRemoteSelections,

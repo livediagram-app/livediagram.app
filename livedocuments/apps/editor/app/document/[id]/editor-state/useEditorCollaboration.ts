@@ -199,6 +199,7 @@ export function useEditorCollaboration({
   );
 
   useRoomConnection({
+    preRoomOutbox: realtime.preRoomOutbox,
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,

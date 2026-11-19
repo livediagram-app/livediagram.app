@@ -252,6 +252,7 @@ export function useEditorPlanData(
 
   const roomFullNotice = useRoomFullNotice(toast.warning);
   useRoomConnection({
+    preRoomOutbox: realtime.preRoomOutbox,
     onAdderKey: participant.setAdderKey,
     onRoomFull: roomFullNotice.noticeFull,
     hydrated,

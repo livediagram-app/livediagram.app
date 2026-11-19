@@ -1,3 +1,5 @@
+import type { RoomOutgoing } from '@liveplanner/api-schema';
+import type { PreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@liveplanner/project';
 import type {
@@ -53,6 +55,10 @@ export type RoomConnectionOptions = {
   countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
+  // What was sent before the room existed (an element edit as the page opens), aimed at the project, flushed to the
+  // room as it is made and dropped when the project is left (@liveworkspace/workbench/lib/pre-room-outbox). Stable for
+  // the page's life, so it never reopens the socket.
+  preRoomOutbox?: PreRoomOutbox<RoomOutgoing>;
   // Merge a peer's tab / project-meta change into the present, PRESERVING
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).

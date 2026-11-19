@@ -96,7 +96,12 @@ export function useEditorSession({
   } = realtime;
   // One tick / comment, applied here and sent to the room as a delta ahead of the autosave
   // (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments and the checklist below.
-  const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  const applyElementDelta = useElementDeltas({
+    activeId,
+    tickTabs,
+    roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
+  });
   // The mention notify (useCommentMentions, below): declared first because the
   // comments hook takes it before the teams it depends on exist.
   const mentionNotifyRef = useRef<(text: string, mentions: CommentMention[]) => void>(() => {});

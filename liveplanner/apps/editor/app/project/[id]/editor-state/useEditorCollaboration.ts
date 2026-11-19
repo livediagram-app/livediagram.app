@@ -77,7 +77,12 @@ export function useEditorCollaboration(
   // One answer / tick / comment, applied here and sent to the room as
   // a delta ahead of the autosave (docs/specs/012-collaboration/collab-race-hardening.md). Shared by the comments, the
   // checklist and the collaboration elements below.
-  const applyElementDelta = useElementDeltas({ activeId, tickTabs, roomRef });
+  const applyElementDelta = useElementDeltas({
+    activeId,
+    tickTabs,
+    roomRef,
+    preRoomOutbox: realtime.preRoomOutbox,
+  });
   // The mention notify (useCommentMentions, below): declared first because the
   // comments hook takes it before the teams it depends on exist.
   const mentionNotifyRef = useRef<

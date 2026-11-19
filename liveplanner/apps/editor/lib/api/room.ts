@@ -108,7 +108,7 @@ const MAX_RECONNECT_ATTEMPTS = 6;
 // outage can't grow it without end; past the bound, newer ops are dropped
 // and the next save still carries the state to D1.
 const OUTBOX_MAX = 500;
-function isOutboxOp(msg: RoomOutgoing): boolean {
+export function isOutboxOp(msg: RoomOutgoing): boolean {
   if (msg.kind !== 'op') return false;
   const kind = (msg.op as { kind?: unknown }).kind;
   return kind === 'poll-answer' || isMutationOpKind(kind);

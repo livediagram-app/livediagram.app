@@ -2,6 +2,8 @@ import { useRef, useState } from 'react';
 
 import type { CommunityShareInfo } from '@liveplanner/api-schema';
 import { connectRoom, type ShareRole } from '@/lib/api-client';
+import { isOutboxOp } from '@/lib/api/room';
+import { createPreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import { mayShareProject } from './editor-page-helpers';
 import { useChangesetSeen } from '@liveworkspace/workbench/hooks/editor/useChangesetSeen';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -26,6 +28,9 @@ export function useEditorRealtime() {
   // Single open room connection for the current project. Re-opens
   // whenever projectId changes.
   const roomRef = useRef<ReturnType<typeof connectRoom> | null>(null);
+  // What was sent before that connection exists (an element edit), handed to it as it is made
+  // (@liveworkspace/workbench/lib/pre-room-outbox). It holds what the room client's own outbox would.
+  const [preRoomOutbox] = useState(() => createPreRoomOutbox(isOutboxOp));
   // Whether the project is saved on the server, so it has a room (docs/specs/024-agents/
   // agent-changesets.md "Rooms for personal projects"): every server-stored project opens one,
   // personal ones included, since an agent is a second writer. False for an Offline Mode project
@@ -115,6 +120,7 @@ export function useEditorRealtime() {
     sessionCommunity,
     setSessionCommunity,
     roomRef,
+    preRoomOutbox,
     projectServerStored,
     setProjectServerStored,
     changesetSeen,

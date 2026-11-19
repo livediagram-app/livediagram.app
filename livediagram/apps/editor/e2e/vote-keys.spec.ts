@@ -135,7 +135,8 @@ test('an Editor and a Participant vote by keyboard and converge; a Viewer cannot
   await participant.keyboard.press('Tab');
   // The Editor seeing the Participant's hold on the sticky says the Participant's room is open, so the
   // walk's selection lock below holds. A dot cast before then is held and sent as the room opens
-  // (pre-room-outbox.ts, useRoomConnection.pre-room-vote.test.tsx); this walk waits for the lock.
+  // (@liveworkspace/workbench/lib/pre-room-outbox, useRoomConnection.pre-room-sends.test.tsx); this walk
+  // waits for the lock.
   await expect(editor.getByLabel(/^Locked to /)).toHaveCount(1, { timeout: 20_000 });
   await participant.keyboard.press('+');
   await expect(said(participant)).toHaveText("Dot added to 'Idea'. 1 of 2 dots left.");

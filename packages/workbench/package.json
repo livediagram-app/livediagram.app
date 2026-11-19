@@ -589,6 +589,7 @@
     "./lib/remote-op-log": "./src/lib/remote-op-log.ts",
     "./lib/room-presence": "./src/lib/room-presence.ts",
     "./lib/room-client": "./src/lib/room-client.ts",
+    "./lib/pre-room-outbox": "./src/lib/pre-room-outbox.ts",
     "./lib/remote-selection": "./src/lib/remote-selection.ts",
     "./lib/responsive": "./src/lib/responsive.ts",
     "./lib/sankey-flows-dialog-handle": "./src/lib/sankey-flows-dialog-handle.ts",
