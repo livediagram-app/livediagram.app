@@ -260,9 +260,9 @@ export const InboxReader = forwardRef<ReaderHandle, Props>(function InboxReader(
         data-inbox-reader-title=""
         className={`font-semibold leading-tight tracking-tight text-slate-900 outline-none dark:text-slate-50 ${onBack ? 'text-xl' : 'text-2xl'}`}
       >
-        {f.cardKey == null ? null : (
+        {f.cardNumber == null ? null : (
           <span className="mr-1.5 font-medium tabular-nums text-slate-400 dark:text-slate-500">
-            #{f.cardKey}
+            {f.cardNumber}
           </span>
         )}
         {f.title}

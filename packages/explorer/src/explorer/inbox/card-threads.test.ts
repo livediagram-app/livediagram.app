@@ -54,7 +54,7 @@ describe('a card thread in the Inbox', () => {
     expect(entry!.kind).toBe('CardThread');
     const facts = entryFacts(entry!, 'user_me');
     expect(facts.title).toBe('Ada: The basket empties');
-    expect(facts.cardKey).toBeNull();
+    expect(facts.cardNumber).toBeNull();
     expect(facts.where).toEqual(['Board', 'Sprint', '#12 Login fails']);
   });
 
@@ -72,8 +72,19 @@ describe('a card thread in the Inbox', () => {
     const { id: _id, ...old } = card;
     const [entry] = inboxEntries(sections([thread({ elementId: 'card-7', card: old })]));
     expect(entryFacts(entry!, null).title).toBe('Login fails');
-    expect(entryFacts(entry!, null).cardKey).toBe(12);
+    expect(entryFacts(entry!, null).cardNumber).toBe('#12');
     expect(entryPlace(entry!)).toEqual({ tabId: 'tab-b', elementId: 'board-1', cardId: 'card-7' });
+  });
+
+  // Card prefixes across plans (liveplanner/docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+  it('names a card by the prefixed ref its plan pushed, #N for a push from before', () => {
+    const [entry] = inboxEntries(sections([thread({ card: { ...card, ref: 'BUG-12' } })]));
+    expect(entryFacts(entry!, null).where).toEqual(['Board', 'Sprint', 'BUG-12 Login fails']);
+    const { id: _id, ...old } = card;
+    const [whole] = inboxEntries(
+      sections([thread({ elementId: 'card-7', card: { ...old, ref: 'BUG-12' } })]),
+    );
+    expect(entryFacts(whole!, null).cardNumber).toBe('BUG-12');
   });
 
   it('names a card with no number or board by its title alone', () => {

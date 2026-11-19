@@ -4,7 +4,12 @@
 // they assigned, a self-assignment. Every row comes from the reader's own Inbox read, which lists only items they
 // reach, so a notice says nothing the Inbox row does not.
 
-import type { App, InboxResponse, InboxThread } from '@liveworkspace/index-client';
+import {
+  cardNumber,
+  type App,
+  type InboxResponse,
+  type InboxThread,
+} from '@liveworkspace/index-client';
 import { mentionHandle } from '@liveworkspace/model-core/comment-mentions';
 import { APP_ITEMS, PLATFORM_SITE, siteOfApp } from '@liveworkspace/sites';
 import { appHasInbox } from '../inbox-apps';
@@ -85,6 +90,11 @@ export function itemHref(rowApp: App, itemId: string, here: App): string {
   return `${origin}${APP_ITEMS[rowApp].itemPath}${encodeURIComponent(itemId)}`;
 }
 
+// A card as a notice names it: "WI-100 Fix login", "#100 Fix login" from a push before prefixes, the title alone
+// for a card of no number.
+const cardLine = (card: NonNullable<InboxThread['card']>): string =>
+  [cardNumber(card), card.title].filter(Boolean).join(' ');
+
 function threadRow(
   t: InboxThread,
   viewerId: string,
@@ -114,7 +124,7 @@ function threadRow(
   // Where in the item, as the Inbox row says it: the card, else the tab and the element, so rows on one canvas
   // differ. A part that only repeats the item's name ("Launch plan › Launch plan") is left out.
   const label = t.card
-    ? `#${t.card.key} ${t.card.title}`
+    ? cardLine(t.card)
     : [t.tabName, t.elementLabel].filter((part) => part && part !== t.itemTitle).join(' › ') ||
       null;
   return {
@@ -170,7 +180,7 @@ export function noticeRows(
       verb: a.card ? 'assigned you a card' : 'assigned you an action',
       quote: null,
       place: a.itemTitle,
-      detail: a.card ? `#${a.card.key} ${a.card.title}` : a.name || null,
+      detail: a.card ? cardLine(a.card) : a.name || null,
       href: inboxRowHref(a.app, key, here),
     });
   }

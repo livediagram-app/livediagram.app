@@ -57,6 +57,7 @@ const local: OfflineActivity = {
       column: { name: 'To Do', color: '#3b82f6', done: false },
       id: 'c1',
       key: 4,
+      ref: 'T-4',
       type: 'task',
       title: 'Ship',
       status: 'todo',
@@ -102,6 +103,7 @@ describe('the Inbox host', () => {
       assigneeId: 'user_me',
       card: {
         key: 4,
+        ref: 'T-4',
         type: 'task',
         title: 'Ship',
         board,
@@ -121,8 +123,9 @@ describe('the Inbox host', () => {
       elementLabel: 'Ada: Loose ends',
       card: { id: 'c2', typeLabel: 'Card', board: null },
     });
-    // No column holds it: no status chip.
+    // No column holds it: no status chip; its type has no prefix, so no ref (the Inbox reads #5).
     expect(rows.threads[1]!.card).not.toHaveProperty('column');
+    expect(rows.threads[1]!.card).not.toHaveProperty('ref');
   });
 
   it('reports each Inbox event as its own literal pair', () => {

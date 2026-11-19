@@ -103,18 +103,19 @@ function stepLine(line: AutomationStepLine): string {
 }
 
 // A run's card as people say it (docs/specs/026-plan/item-types.md "Card number prefixes"): "WI-12" from the card's
-// type in `items`, "#12" for a card no longer there (its type unknown).
-export type RunCardRef = (card: { id: string; key: number }) => string;
+// type in `items`; for a card no longer there, the ref the run kept as it ran ("Across plans"), else "#12" (a run
+// stored before refs).
+export type RunCardRef = (card: { id: string; key: number; ref?: string }) => string;
+const keptRef: RunCardRef = (card) => card.ref ?? `#${card.key}`;
 export function runCardRefs(items: readonly Item[], types: readonly ItemTypeDef[]): RunCardRef {
   const byId = new Map(items.map((i) => [i.id, i]));
   return (card) => {
     const item = byId.get(card.id);
-    return item ? cardRefOrKey(item, types) : `#${card.key}`;
+    return item ? cardRefOrKey(item, types) : keptRef(card);
   };
 }
-const bareRef: RunCardRef = (card) => `#${card.key}`;
 
-export function listedRun(run: AutomationRun, refOf: RunCardRef = bareRef): ListedRun {
+export function listedRun(run: AutomationRun, refOf: RunCardRef = keptRef): ListedRun {
   return {
     id: run.id,
     rule: run.ruleName,

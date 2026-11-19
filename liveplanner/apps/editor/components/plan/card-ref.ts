@@ -22,15 +22,20 @@ export function cardRefIn(types: readonly ItemTypeDef[] | undefined): CardRefOf 
 }
 
 // A card known by its id and number alone (an automation run's, a thread's): its live card's ref when the plan has
-// it, "#12" otherwise (a card since deleted, or in another plan).
-export function useCardRefById(): (card: { id: string; key: number }) => string {
+// it; otherwise (a card since deleted, or in another plan) the ref it carries, else "#12" (one stored before refs:
+// docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+export function useCardRefById(): (card: {
+  id: string;
+  key: number;
+  ref?: string | undefined;
+}) => string {
   const plan = usePlan();
   const items = plan?.items;
   const types = plan?.types;
   return useCallback(
     (card) => {
       const live = items?.get(card.id);
-      return live ? cardRefIn(types)(live) : `#${card.key}`;
+      return live ? cardRefIn(types)(live) : (card.ref ?? `#${card.key}`);
     },
     [items, types],
   );
