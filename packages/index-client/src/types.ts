@@ -149,6 +149,10 @@ export type CollabCard = {
   // thread (one-explorer-contracts.md "What an item pushes").
   id?: string;
   key: number | null;
+  // Its number as its plan shows it, with its card type's prefix ("WI-100"), worked out by the app from the plan's
+  // card types as it pushes: readers across items have none. Absent from an older push, or for an app with no
+  // prefixes: readers show `cardNumber(card)` ("#100" then).
+  ref?: string;
   // The card type's id, and its name as the app shows it ("Task").
   type: string;
   typeLabel: string;

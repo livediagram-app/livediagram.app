@@ -8,6 +8,7 @@ export * from './grant';
 export * from './notices';
 export * from './standing';
 export * from './beside';
+export * from './card-ref';
 export * from './connections';
 export * from './kits';
 export * from './webhooks';
