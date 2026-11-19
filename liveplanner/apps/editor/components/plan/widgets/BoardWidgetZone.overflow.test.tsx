@@ -102,6 +102,28 @@ describe('a widget zone too full for its widgets', () => {
     expect(document.querySelector<HTMLElement>('[data-widget-zone]')!.style.width).toBe('798px');
   });
 
+  // Work Tracker 1288: beside a phone's Form strip the zone had no room at all and its row ran on under the corner card.
+  it('clips its row across, so a zone squeezed to nothing never spills past its edge', () => {
+    room = 2000;
+    show();
+    const zone = document.querySelector<HTMLElement>('[data-widget-zone]')!;
+    expect(zone.className.split(' ')).toContain('overflow-x-clip');
+    expect(zone.className).not.toMatch(/overflow-(hidden|y-)/);
+  });
+
+  // Work Tracker 1288: with less room than More, the zone draws nothing (out of sight, still measured), and comes back.
+  it('draws nothing, rather than a cut-off More, when not even More fits', () => {
+    room = 40;
+    show();
+    const zone = document.querySelector<HTMLElement>('[data-widget-zone]')!;
+    expect(zone.hasAttribute('data-widget-zone-bare')).toBe(true);
+    expect(zone.className.split(' ')).toContain('invisible');
+    resize(2000);
+    expect(zone.hasAttribute('data-widget-zone-bare')).toBe(false);
+    expect(zone.className.split(' ')).not.toContain('invisible');
+    expect(row()).toEqual(WIDGETS);
+  });
+
   it('pins the Filter, keeps the widgets that fit in order and puts the rest in More', () => {
     // 1000: Filter 200 + More 70 + two buttons 56 + 4 gaps 24 leaves 650: 5 widgets of 100 and their gaps fit 5.
     room = 600;

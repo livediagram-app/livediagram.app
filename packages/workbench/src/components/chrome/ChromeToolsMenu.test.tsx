@@ -230,6 +230,48 @@ describe('a tool inside Tools', () => {
     expect(popover()!.getAttribute('aria-label')).toBe('Tools');
   });
 
+  // footer-tools-menu.md "Stepping aside" (Work Tracker 1287): a tool picking on the canvas from its own bar.
+  it('steps out of sight for a tool marked stepAside, staying open, and back when the mark clears', () => {
+    function Picker() {
+      const [aside, setAside] = useState(false);
+      const pick: ChromeToolsItem = {
+        id: 'pick',
+        group: 'collaborate',
+        label: 'Pick',
+        description: 'Picks on the canvas.',
+        icon: glyph,
+        stepAside: aside,
+        view: () => <p>Pick view</p>,
+        onSelect: vi.fn(),
+      };
+      return (
+        <>
+          <ChromeToolsMenu items={[pick]} />
+          <button type="button" onClick={() => setAside((a) => !a)}>
+            Toggle Aside
+          </button>
+        </>
+      );
+    }
+    render(<Picker />);
+    fireEvent.click(tools());
+    fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="pick"]')!);
+    expect(popover()!.hasAttribute('data-stepped-aside')).toBe(false);
+    fireEvent.click(screen.getByText('Toggle Aside'));
+    expect(popover()!.hasAttribute('data-stepped-aside')).toBe(true);
+    // A press anywhere while aside keeps it open, its view kept.
+    fireEvent.pointerDown(document.body);
+    fireEvent.mouseDown(document.body);
+    expect(popover()).not.toBeNull();
+    expect(screen.getByText('Pick view')).toBeTruthy();
+    // Escape is left to the tool (its picking ends on it): Tools neither steps back nor closes.
+    fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.getByText('Pick view')).toBeTruthy();
+    fireEvent.click(screen.getByText('Toggle Aside'));
+    expect(popover()!.hasAttribute('data-stepped-aside')).toBe(false);
+  });
+
   it('closes Tools for a row that is not in place (Search)', () => {
     render(<DialogTool />);
     fireEvent.click(tools());

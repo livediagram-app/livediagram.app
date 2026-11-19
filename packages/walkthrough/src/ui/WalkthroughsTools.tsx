@@ -76,6 +76,8 @@ function WalkthroughsView({
 }) {
   const walkthroughs = useSyncExternalStore(latest.subscribe, latest.get, latest.get);
   const setup = walkthroughs.recorder.phase.kind === 'setup';
+  // Picking what to hide: the set-up gives way to the picking bar (RecordDock), and Tools steps aside (`stepAside`).
+  const picking = walkthroughs.hiding.picking;
   // Leaving Tools mid set-up lets the microphone and camera go; Start Recording does not.
   const started = useRef(false);
   useEffect(
@@ -108,11 +110,11 @@ function WalkthroughsView({
         }}
       />
       {/* The set-up opens beside Tools (a drawer on a phone), as Add Webhook does (owner, 2026-11-17). A press outside
-          closes it, except while picking what to hide, whose presses land on the canvas. */}
+          closes it. While picking what to hide it gives way to the picking bar, the devices staying open (they live in
+          the recorder), and comes back on Done. */}
       <ResponsivePopover
-        open={setup && anchor !== null}
+        open={setup && anchor !== null && !picking}
         onClose={walkthroughs.discard}
-        beforeClose={() => !latest.get().hiding.picking}
         anchor={anchor}
         titleId={titleId}
         width={400}
@@ -158,8 +160,10 @@ export function WalkthroughsTools({ walkthroughs }: { walkthroughs: Walkthroughs
                 ) : undefined,
               onSelect: () => {},
               // Closes on a press outside like any tool (owner, 2026-11-17: only Slide Deck stays open), except while
-              // Hide From Recording picks things on the canvas.
+              // Hide From Recording picks things on the canvas: then it stays open but steps out of sight, so it never
+              // covers what is being picked (a Dashboard tab's right-hand slots, Work Tracker 1287).
               keepOpen: picking,
+              stepAside: picking,
               view: ({ close }) => <WalkthroughsView latest={latest} onClose={close} />,
             },
           ]

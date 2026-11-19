@@ -21,8 +21,12 @@ export const TYPES_SHOWN = 3;
 export const DONE_GREEN = PHASE_COLOURS.done;
 export const SOON_AMBER = '#d97706';
 
-export const WIDGET_PILL =
-  'inline-flex h-7 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md border px-2 text-[12px] font-medium';
+const PILL_SHAPE =
+  'inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-md border px-2 text-[12px] font-medium';
+export const WIDGET_PILL = `${PILL_SHAPE} shrink-0`;
+// A pill that gives way when the header runs short (the Form strip's, Work Tracker 1288): its parts shrink inside it
+// rather than running on under the top-right corner card.
+export const WIDGET_PILL_SHRINKS = `${PILL_SHAPE} min-w-0 shrink`;
 
 export type WidgetContext = {
   setup: PlanBoardSetup;

@@ -74,6 +74,10 @@ name you shouldn't show.
   arrow pinned to it, or to an arrow that goes). Presses do nothing else while the mode is on.
   **Hide Selection** hides what is already selected. The button's badge counts what is hidden, and **Done** (or
   `Esc`) leaves the mode.
+- **Out of the way while picking** (Work Tracker 1287). Tools and the set-up step out of sight while the mode is on,
+  so nothing covers what you want to pick (Tools covered the canvas's right side): a slim bar where the
+  recording bar goes holds the hint, the hidden count, Hide Selection and Done, and Done brings Tools and the set-up
+  back as they were.
 - **You still see them**, faded inside a dashed outline, so you know what the recording leaves out. Viewers of the
   walkthrough never see them: the player hides them for as long as it is open.
 - **They stay out of what is stored**, not only out of the player: a press on a hidden element is not recorded, and
