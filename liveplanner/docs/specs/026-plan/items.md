@@ -102,6 +102,8 @@ they are the same family: filled in automatically, never typed.
     upkeep, whoever's browser sends it;
   - a **thread** write ([Writes](#writes)), and the plan's own upkeep (the schema's moves, a closed account's
     anonymising, which rewrites the name to **Deleted account**, and the migration door).
+- **A card as made** says only Created by in its panel's footer: its Last Edited stamps are its maker and its Created At
+  until an edit changes them, so Edited by is left out, never a copy of Created by.
 - **People** are shown as the item holds them today, a name and colour beside the hashed id, never more: the same
   identity the panel's foot has always shown. A rule's stamp (Automation, with the rule's name) also says where its
   run came from when that was GitHub (`via: "github"`, [Automations](automations.md#on-cards)), so the foot draws

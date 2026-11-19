@@ -138,9 +138,9 @@ export function ItemMeta({ item, now }: { item: Item; now: number }) {
   const made = itemStampTime(item, 'createdAt');
   const editor = itemStampPerson(item, 'updatedBy');
   const edited = itemStampTime(item, 'updatedAt');
-  // An email's card, as made: its Edited by is only the sender it was made as, at the moment it was made, so it says
-  // Created by alone until someone really edits it (email-to-board.md "From email").
-  const unedited = fromEmail !== null && editor?.id === maker?.id && edited === made;
+  // A card as made: its Edited by is only its maker, at the moment it was made, so it says Created by alone until
+  // someone really edits it (items.md "Created and Last Edited").
+  const unedited = editor?.id === maker?.id && edited === made;
   if (!maker && !response && !fromEmail && !editor) return null;
   const github = isGithubStamp(editor);
   const madeByGithub = isGithubStamp(maker);

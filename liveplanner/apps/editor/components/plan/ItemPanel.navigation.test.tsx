@@ -240,14 +240,21 @@ describe('the item panel’s authorship', () => {
     expect(created.textContent).toMatch(/Created by ada@example\.com$/);
   });
 
-  // Work Tracker 1135: an email card with a picture, as it was made, says Created by alone; a real edit brings Edited by.
-  it('leaves Edited by out of an email card with an attachment until someone edits it', () => {
+  // Work Tracker 1135: a card as made, plain or from an email with a picture, says Created by alone; a real edit
+  // brings Edited by.
+  it('leaves Edited by out of a card as made, plain or from an email, until someone edits it', () => {
     const made = new Date(2026, 9, 3, 14, 2).getTime();
     const sender = { id: 'email:abc', name: 'ada@example.com', color: '#0f766e' };
-    const card = {
-      ...item('t', 1, 'task'),
+    const robin = { id: 'q', name: 'Robin Lee', color: '#16a34a' };
+    const plain = {
+      ...item('p', 1, 'task'),
+      createdAt: made,
+      updatedAt: made,
+    };
+    const email = {
+      ...item('t', 2, 'task'),
       fields: {
-        ...item('t', 1, 'task').fields,
+        ...item('t', 2, 'task').fields,
         fromEmail: 'ada@example.com',
         attachments: [{ id: 'img1', name: 'photo.png', size: 10, type: 'image/png' }],
       },
@@ -256,15 +263,16 @@ describe('the item panel’s authorship', () => {
       createdBy: sender,
       updatedBy: sender,
     };
-    const { unmount } = render(<ItemMeta item={card} now={made + 15_000} />);
-    expect(screen.queryByText(/^Edited by/)).toBeNull();
-    expect(screen.getByText(/^Created by/)).toBeTruthy();
-    unmount();
-    const robin = { id: 'q', name: 'Robin Lee', color: '#16a34a' };
-    render(
-      <ItemMeta item={{ ...card, updatedAt: made + 5000, updatedBy: robin }} now={made + 15_000} />,
-    );
-    expect(screen.getByText(/^Edited by/).textContent).toMatch(/Robin Lee/);
+    for (const card of [plain, email]) {
+      const { unmount } = render(<ItemMeta item={card} now={made + 15_000} />);
+      expect(screen.queryByText(/^Edited by/)).toBeNull();
+      expect(screen.getByText(/^Created by/)).toBeTruthy();
+      unmount();
+      const edit = { ...card, updatedAt: made + 5000, updatedBy: robin };
+      const again = render(<ItemMeta item={edit} now={made + 15_000} />);
+      expect(screen.getByText(/^Edited by/).textContent).toMatch(/Robin Lee/);
+      again.unmount();
+    }
   });
 
   it('shows a rule’s whole name on hover, where the footer cuts it', async () => {
