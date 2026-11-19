@@ -2,7 +2,15 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { FlyoutHeader } from './CategoryFlyout';
-import { FLYOUT_FOOTER_HEIGHT, FlyoutFooter, InfoFooter, Kbd } from './category-flyout-items';
+import {
+  CardTile,
+  FLYOUT_FOOTER_CLASS,
+  FLYOUT_FOOTER_HEIGHT,
+  FlyoutFooter,
+  InfoFooter,
+  Kbd,
+  PictureTile,
+} from './category-flyout-items';
 import { NOTE, SQUARE, testKit, type TestTile } from './category-flyout-testing';
 
 afterEach(cleanup);
@@ -91,5 +99,52 @@ describe('FlyoutHeader', () => {
     );
     expect(screen.getByText('Drag a corner.').className).toContain('line-clamp-2');
     expect(screen.getByRole('button', { name: 'Reset' })).toBeTruthy();
+  });
+});
+
+// livehuddle's avatar palette draws its outfits, statuses and reactions with the flyout's own tiles.
+describe('PictureTile and CardTile', () => {
+  it('draws a picture tile at its own height, without a key cap while disabled', () => {
+    render(
+      <PictureTile
+        aria-label="Hoodie"
+        picture={<svg />}
+        name="Hoodie"
+        shortcut="H"
+        active={false}
+        disabled
+        height="h-24"
+      />,
+    );
+    const tile = screen.getByRole('button', { name: 'Hoodie' });
+    expect(tile.className).toContain('h-24');
+    expect(tile.className).toContain('cursor-not-allowed');
+    expect(tile.querySelector('kbd')).toBeNull();
+  });
+
+  it('puts an inline plate before the name, and leaves out a blurb it has none of', () => {
+    render(
+      <CardTile
+        aria-label="Away"
+        plate={<span data-testid="dot" />}
+        inline
+        name="Away"
+        active
+        trailing={<span data-testid="tick" />}
+      />,
+    );
+    const card = screen.getByRole('button', { name: 'Away' });
+    expect(card.className).toContain('bg-brand-50');
+    // The dot sits in the name's line, not in a square of its own.
+    expect(screen.getByTestId('dot').parentElement!.className).toContain('shrink-0');
+    expect(card.querySelector('.line-clamp-2')).toBeNull();
+    expect(screen.getByTestId('tick')).toBeTruthy();
+  });
+
+  it('frames a footer bar with the shared class', () => {
+    render(<InfoFooter def={null} kit={kit} />);
+    expect(document.querySelector('[data-flyout-footer]')!.className).toContain(
+      FLYOUT_FOOTER_CLASS,
+    );
   });
 });

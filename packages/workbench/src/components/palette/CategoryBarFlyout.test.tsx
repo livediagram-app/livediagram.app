@@ -6,7 +6,7 @@ import { configureWorkbench, resetWorkbenchForTests } from '../../bindings';
 import { testBindings } from '../../lib/testing/bindings';
 import { CategoryBarButtons, HOVER_CLOSE_MS, HOVER_OPEN_MS, useCategoryBar } from './CategoryBar';
 import { CategoryBarFlyout } from './CategoryBarFlyout';
-import type { FlyoutKit } from './category-flyout-kit';
+import { flyoutCategoryWidthPx, type FlyoutKit } from './category-flyout-kit';
 import {
   CATEGORIES,
   testKit,
@@ -419,5 +419,66 @@ describe('hover intent across the flyout', () => {
     fireEvent.pointerLeave(body, { pointerType: 'mouse' });
     wait(HOVER_CLOSE_MS);
     expect(flyout()).toBeNull();
+  });
+});
+
+// What an editor's kit adds of its own: livediagram's optional groups and padded catalogue, livehuddle's carried
+// pieces and self-laid-out flyouts.
+describe('an editor’s own arrangement', () => {
+  it('lets a group draw its title and tiles itself', () => {
+    const base = testKit();
+    show({
+      kit: testKit({
+        groups: (id, tiles) =>
+          base.groups(id, tiles).map((g) =>
+            g.title === 'More'
+              ? {
+                  ...g,
+                  frame: (items) => (
+                    <div data-testid="optional">
+                      <button type="button">{g.title} (closed)</button>
+                      <div inert>{items}</div>
+                    </div>
+                  ),
+                }
+              : g,
+          ),
+      }),
+    });
+    open('Shapes');
+    const card = flyout()!;
+    // Only Basics keeps the small heading; More draws its own header row over an inert body.
+    expect([...card.querySelectorAll('h4')].map((h) => h.textContent)).toEqual(['Basics']);
+    expect(
+      within(screen.getByTestId('optional')).getByRole('button', { name: 'More (closed)' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByTestId('optional').querySelector('[inert] [data-flyout-item]'),
+    ).not.toBeNull();
+  });
+
+  it('hands a catalogue its category, so the kit can wrap one its own way', () => {
+    const catalogue = vi.fn((content: React.ReactNode) => (
+      <div data-testid="catalogue">{content}</div>
+    ));
+    show({ kit: testKit({ catalogue }) });
+    open('Icons');
+    expect(catalogue).toHaveBeenCalledWith(expect.anything(), 'icons');
+  });
+
+  it('carries a piece by the pointer where the kit says so, and not a tile that does not drag', () => {
+    const carry = vi.fn();
+    show({ kit: testKit({ carryStart: (d) => (d.id === 'square' ? carry : undefined) }) });
+    open('Shapes');
+    fireEvent.pointerDown(tileIn(flyout(), 'Square'));
+    expect(carry).toHaveBeenCalledTimes(1);
+    fireEvent.pointerDown(tileIn(flyout(), 'Star'));
+    expect(carry).toHaveBeenCalledTimes(1);
+  });
+
+  it('sizes a flyout that lays out its own body at its own width', () => {
+    const kit = testKit();
+    expect(flyoutCategoryWidthPx(kit, { id: 'avatar', tiles: null, width: 520 })).toBe(520);
+    expect(flyoutCategoryWidthPx(kit, { id: 'icons', tiles: null })).not.toBe(520);
   });
 });

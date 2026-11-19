@@ -6,7 +6,8 @@ import { BehaviourTabIcon } from '@livediagram/ui';
 import { PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 import { rankTiles } from './palette-tile-search';
-import { CardList } from './category-flyout-items';
+import { CardList } from '@liveworkspace/workbench/components/palette/category-flyout-items';
+import { flyoutKit } from './category-flyout-kit';
 import { flyoutTagline } from './category-flyout-groups';
 import type { PaletteTileDef } from './palette-tile-defs';
 import type { BarCategory } from './CategoryBar';
@@ -77,6 +78,7 @@ export function SessionBrowse({
     <CardList
       tiles={items}
       columns={1}
+      kit={flyoutKit('workshop')}
       actions={actions}
       pendingDraw={pendingDraw}
       onPress={(def) => tileHandler(def, actions, pendingDraw)()}

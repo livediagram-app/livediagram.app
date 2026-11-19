@@ -48,9 +48,12 @@ export function flyoutKeyTarget(
   }
 }
 
-/** Arrow keys walk the flyout's items (`data-flyout-item`) by position, across its groups. */
+/** Arrow keys walk the flyout's items (`data-flyout-item`) by position, across its groups. A closed group's tiles
+ *  sit in an inert body (livediagram's optional BPMN group), so they are skipped and its header is the stop. */
 export function onFlyoutArrowKey(e: KeyboardEvent<HTMLElement>, body: HTMLElement | null): void {
-  const items = [...(body?.querySelectorAll<HTMLElement>('[data-flyout-item]') ?? [])];
+  const items = [...(body?.querySelectorAll<HTMLElement>('[data-flyout-item]') ?? [])].filter(
+    (el) => !el.closest('[inert]'),
+  );
   const index = items.indexOf(document.activeElement as HTMLElement);
   if (index < 0) return;
   const points = items.map((el) => {

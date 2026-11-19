@@ -124,7 +124,11 @@ groups, ArrowRight into a side panel, ArrowLeft and Escape back out). Each edito
 `components/palette/category-flyout-kit.tsx`, as a `FlyoutKit` (`category-flyout-kit`): how a tile places, arms, drags
 and tints, which tiles open a side panel, and how its categories group and lay out. What a side panel holds for a tile
 without presets is the editor's (`sideExtra`: livedesign's opener and Fill colour), and so is a press it takes itself
-(`pressSide`: livedesign's Fill picks up on a desktop). livediagram and livehuddle still draw their own flyouts.
+(`pressSide`: livedesign's Fill picks up on a desktop). A kit can also frame a group itself (livediagram's optional
+BPMN group, whose closed body is inert so the arrows skip it), wrap a catalogue by its category, carry a piece by the
+pointer (`carryStart`), and set where a side panel stops (`sideFloor`, `sideCoversFlyoutOnPhone`, `sideHidesOnDrag`:
+livehuddle's, clear of its tab bar). `PictureTile` and `CardTile` draw the tiles and cards, and livehuddle's avatar
+palette draws its own with them. Every editor with a category bar uses this flyout.
 
 Never by importing the product: a workbench module that needs `@<product>/…` is not ready to move.
 

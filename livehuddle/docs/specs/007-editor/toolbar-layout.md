@@ -167,6 +167,10 @@ under the pointer as a category is switched.
 
 ### The flyout
 
+The flyout, its side panel and their keyboard are every editor's one copy, in `@liveworkspace/workbench`
+(`CategoryBarFlyout`, `CategoryFlyout`, `CategoryFlyoutSide`, `category-flyout-keys`; Work Tracker 1261): this editor
+keeps only its tiles, how its categories are arranged and where its side panel stops, bound once in `components/palette/category-flyout-kit.tsx`.
+
 Hung centred under its button (spanning the screen between the gutters on a phone), capped to the window and
 scrolling when long:
 
@@ -199,12 +203,19 @@ A tile with presets (Card, Badge: [Card presets](../009-elements/card.md); the R
 [Door types](../009-elements/room-builder.md#door-types), [Rug types](../009-elements/office.md#rug-types)) opens a **side panel** (there are no category openers: the opener action went in Work Tracker #583): a
 second popover beside the flyout, lined up with the tile, so the flyout stays open behind it as a submenu's parent
 does. It opens on the side of the tile's own column (a right-column tile to the flyout's right, a left-column one
-to its left), against the tile itself over the other column where the window has no room, and rises to stay inside
-the window. Resting on the tile for 150 ms opens it, a press opens it at once, a second press closes it, and
+to its left), against the tile itself over the other column where the window has no room, and rises so its foot
+stays clear of the tab bar under the canvas (and inside the window), measured at its full height, not the smaller box
+of its opening animation. Resting on the tile for 150 ms opens it, a press opens it at once, a second press closes it, and
 resting on another tile closes it. On a phone it lies over the flyout, from the flyout's top and at least as tall
 as it, so a short panel (the Room's seven presets over the Rooms flyout) never leaves the flyout's bottom rows showing
 below it (Work Tracker 628), its body stretching so its footer stands at the panel's foot. Its header names the tile and says what can
-change after a preset is placed; its presets are one column of cards, placing and dragging as any tile.
+change after a preset is placed; its presets are one column of cards, placing and dragging as any tile. While a
+tile is dragged out of it the panel hides at once, so it never lies over the fading flyout.
+
+The keyboard reaches it as it reaches a submenu: **ArrowRight** on the tile opens its panel at once (or enters the
+one a rest already opened) and focuses its first card, Up and Down walk the cards, and **ArrowLeft** on a card or
+**Escape** anywhere in the panel closes it and hands the focus back to the tile, the flyout staying open. ArrowRight
+on any other tile still steps to the next one.
 
 ### Icons, Stickers and Session: two panes
 

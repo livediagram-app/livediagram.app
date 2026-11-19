@@ -1,6 +1,13 @@
 'use client';
 
-import type { CSSProperties, FocusEvent, MouseEvent, PointerEvent, ReactNode } from 'react';
+import type {
+  ButtonHTMLAttributes,
+  CSSProperties,
+  FocusEvent,
+  MouseEvent,
+  PointerEvent,
+  ReactNode,
+} from 'react';
 import { ChevronRightIcon } from '@liveworkspace/ui';
 import { useTabFinish } from '../canvas/CanvasFinishContext';
 import { tileEnterAnimation } from './palette-tile-finish';
@@ -57,6 +64,8 @@ function useFlyoutItem<T extends FlyoutTile<T>, A, P>({
       : (e: MouseEvent<HTMLButtonElement>) => onPress(def, e.currentTarget),
     draggable: drag !== undefined || undefined,
     onDragStart: drag,
+    // A piece the editor carries by the pointer (livehuddle's, which Space turns on its way).
+    onPointerDown: drag ? kit.carryStart?.(def) : undefined,
     // The drag's canvas preview goes with the drag, dropped or not.
     onDragEnd: kit.dragEnd,
     onPointerEnter: (e: PointerEvent<HTMLButtonElement>) => onHover(def, e.currentTarget),
@@ -81,6 +90,11 @@ export function Kbd({ children, small }: { children: ReactNode; small?: boolean 
 // description (16 px each), 10 px above and below, and the 1 px top border. Fixed, so pointing along the tiles never
 // grows or shrinks the flyout under the pointer; a longer description clamps to its two lines.
 export const FLYOUT_FOOTER_HEIGHT = 16 * 3 + 10 * 2 + 1;
+
+// A flyout's footer bar: a hairline over a quieter band at the card's foot. The tile describer and livehuddle's avatar
+// palette Say popover (its Cancel and Send) both stand in it.
+export const FLYOUT_FOOTER_CLASS =
+  'flex shrink-0 items-center gap-3 rounded-b-xl border-t border-slate-100 bg-slate-50/80 px-3.5 dark:border-slate-800 dark:bg-slate-950/40';
 
 /** What the pointed-at tile does, and its key: the hover card's job, without the wait. */
 export function InfoFooter<T extends FlyoutTile<T>, A, P>({
@@ -122,7 +136,7 @@ export function FlyoutFooter({
       aria-live="polite"
       data-flyout-footer
       style={{ height: FLYOUT_FOOTER_HEIGHT }}
-      className="flex shrink-0 items-center gap-3 overflow-hidden rounded-b-xl border-t border-slate-100 bg-slate-50/80 px-3.5 dark:border-slate-800 dark:bg-slate-950/40"
+      className={`${FLYOUT_FOOTER_CLASS} overflow-hidden`}
     >
       {item ? (
         <>
@@ -184,9 +198,53 @@ function GridTile<T extends FlyoutTile<T>, A, P>(item: ItemProps<T, A, P>) {
   const { def, kit } = item;
   const { props, glyph, active, disabled, side } = useFlyoutItem(item);
   return (
-    <button
+    <PictureTile
       {...props}
-      className={`group relative flex h-[72px] w-full flex-col items-center justify-center gap-1.5 rounded-xl px-1 ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 ${
+      active={active}
+      disabled={disabled}
+      name={kit.displayName(def)}
+      shortcut={def.shortcut}
+      side={side}
+      picture={
+        <span
+          aria-hidden
+          style={glyph.glyphStyle}
+          className={`${glyph.glyphClass}flex h-7 items-center justify-center transition-transform duration-micro group-hover:-translate-y-0.5 [&>svg]:h-6 [&>svg]:w-6`}
+        >
+          {def.icon}
+        </span>
+      }
+    />
+  );
+}
+
+/** A flyout's picture tile: a picture over its name, pressed while `active`, a key cap in its corner. The category
+ *  flyout's grid draws its tiles with it, and livehuddle's avatar palette its outfits and hairstyles. */
+export function PictureTile({
+  picture,
+  name,
+  shortcut,
+  active,
+  disabled = false,
+  side = false,
+  height = 'h-[72px]',
+  ...button
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'name'> & {
+  picture: ReactNode;
+  name: ReactNode;
+  shortcut?: string | undefined;
+  active: boolean;
+  disabled?: boolean;
+  // Opens a side panel: a chevron at its right.
+  side?: boolean;
+  // Its height class: 72 px for a glyph, taller for a bigger picture.
+  height?: string;
+}) {
+  return (
+    <button
+      type="button"
+      {...button}
+      className={`group relative flex ${height} w-full flex-col items-center justify-center gap-1.5 rounded-xl px-1 ring-1 transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-500 ${
         disabled
           ? 'cursor-not-allowed opacity-50 ring-transparent'
           : active
@@ -194,19 +252,11 @@ function GridTile<T extends FlyoutTile<T>, A, P>(item: ItemProps<T, A, P>) {
             : 'text-slate-600 ring-transparent hover:bg-slate-50 hover:text-slate-900 hover:ring-slate-200 hover:shadow-sm dark:text-slate-200 dark:hover:bg-slate-800/70 dark:hover:text-white dark:hover:ring-slate-700'
       }`}
     >
-      <span
-        aria-hidden
-        style={glyph.glyphStyle}
-        className={`${glyph.glyphClass}flex h-7 items-center justify-center transition-transform duration-micro group-hover:-translate-y-0.5 [&>svg]:h-6 [&>svg]:w-6`}
-      >
-        {def.icon}
-      </span>
-      <span className="w-full truncate text-center text-[11px] leading-tight">
-        {kit.displayName(def)}
-      </span>
-      {def.shortcut && !disabled ? (
+      {picture}
+      <span className="w-full truncate text-center text-[11px] leading-tight">{name}</span>
+      {shortcut && !disabled ? (
         <span className="pointer-events-none absolute right-1.5 top-1.5 pointer-coarse:hidden">
-          <Kbd small>{def.shortcut}</Kbd>
+          <Kbd small>{shortcut}</Kbd>
         </span>
       ) : null}
       {side ? (
@@ -252,33 +302,88 @@ function Card<T extends FlyoutTile<T>, A, P>(item: ItemProps<T, A, P>) {
   const { def, kit } = item;
   const { props, glyph, active, disabled, side } = useFlyoutItem(item);
   return (
-    <button {...props} className={flyoutCardClass(active, disabled)}>
-      <span aria-hidden className={FLYOUT_CARD_PLATE}>
+    <CardTile
+      {...props}
+      active={active}
+      disabled={disabled}
+      name={kit.displayName(def)}
+      shortcut={def.shortcut}
+      blurb={
+        def.variants?.length ? (
+          `${def.variants.length} ${def.parentOf ?? 'presets'}`
+        ) : (
+          <PointerWords text={def.blurb ?? def.description} />
+        )
+      }
+      plate={
         <span
           style={glyph.glyphStyle}
           className={`${glyph.glyphClass}flex items-center justify-center transition-transform duration-micro group-hover:scale-110 [&>svg]:h-5 [&>svg]:w-5`}
         >
           {def.icon}
         </span>
-      </span>
+      }
+      trailing={
+        side ? (
+          <ChevronRightIcon
+            className={`h-3.5 w-3.5 shrink-0 transition group-hover:translate-x-0.5 ${active ? 'text-brand-700 dark:text-brand-200' : 'text-slate-400 group-hover:text-slate-600'}`}
+          />
+        ) : null
+      }
+    />
+  );
+}
+
+/** A flyout's card: a plate, the name with its key cap, and a line of blurb, pressed while `active`. The category
+ *  flyout's cards draw with it, and livehuddle's avatar palette its statuses, Behaviours and Reactions. An `inline`
+ *  plate (a status's dot) sits before the name instead of in its own square, so a dense grid gives the words the
+ *  width. */
+export function CardTile({
+  plate,
+  name,
+  shortcut,
+  blurb,
+  active,
+  disabled = false,
+  trailing,
+  inline = false,
+  ...button
+}: Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'name'> & {
+  plate: ReactNode;
+  // The plate before the name, unboxed (a status's dot), rather than in a square on the left.
+  inline?: boolean;
+  name: ReactNode;
+  shortcut?: string | undefined;
+  blurb?: ReactNode;
+  active: boolean;
+  disabled?: boolean;
+  // After the words: a chevron for a side panel, a tick for the current choice.
+  trailing?: ReactNode;
+}) {
+  return (
+    <button type="button" {...button} className={flyoutCardClass(active, disabled)}>
+      {inline ? null : (
+        <span aria-hidden className={`${FLYOUT_CARD_PLATE} overflow-hidden`}>
+          {plate}
+        </span>
+      )}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center gap-1.5 text-[13px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
-          <span className="truncate">{kit.displayName(def)}</span>
-          {def.shortcut && !disabled ? <Kbd small>{def.shortcut}</Kbd> : null}
+          {inline ? (
+            <span aria-hidden className="flex shrink-0 items-center">
+              {plate}
+            </span>
+          ) : null}
+          <span className="truncate">{name}</span>
+          {shortcut && !disabled ? <Kbd small>{shortcut}</Kbd> : null}
         </span>
-        <span className="line-clamp-2 text-[11.5px] leading-snug text-slate-500 dark:text-slate-400">
-          {def.variants?.length ? (
-            `${def.variants.length} ${def.parentOf ?? 'presets'}`
-          ) : (
-            <PointerWords text={def.blurb ?? def.description} />
-          )}
-        </span>
+        {blurb ? (
+          <span className="line-clamp-2 text-[11.5px] leading-snug text-slate-500 dark:text-slate-400">
+            {blurb}
+          </span>
+        ) : null}
       </span>
-      {side ? (
-        <ChevronRightIcon
-          className={`h-3.5 w-3.5 shrink-0 transition group-hover:translate-x-0.5 ${active ? 'text-brand-700 dark:text-brand-200' : 'text-slate-400 group-hover:text-slate-600'}`}
-        />
-      ) : null}
+      {trailing}
     </button>
   );
 }

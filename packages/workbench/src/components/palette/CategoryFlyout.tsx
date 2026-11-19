@@ -81,15 +81,9 @@ export function CategoryFlyout<T extends FlyoutTile<T>, A, P>({
         {tiles ? (
           <div className="flex flex-col gap-3 p-3">
             {kit.lead?.(category.id)}
-            {kit.groups(category.id, tiles).map((group, gi) => (
-              <section key={group.id} aria-label={group.title ?? category.label}>
-                {group.title ? (
-                  <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
-                    {group.title}
-                    <span aria-hidden className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
-                  </h4>
-                ) : null}
-                {kit.layout(category.id) === 'grid' ? (
+            {kit.groups(category.id, tiles).map((group, gi) => {
+              const items =
+                kit.layout(category.id) === 'grid' ? (
                   <TileGrid
                     tiles={group.tiles}
                     offset={gi * 4}
@@ -102,17 +96,38 @@ export function CategoryFlyout<T extends FlyoutTile<T>, A, P>({
                     columns={kit.cardColumns(tiles.length)}
                     {...itemProps}
                   />
-                )}
-              </section>
-            ))}
+                );
+              return (
+                <section key={group.id} aria-label={group.title ?? category.label}>
+                  {group.frame ? (
+                    group.frame(items)
+                  ) : (
+                    <>
+                      {group.title ? <FlyoutGroupTitle>{group.title}</FlyoutGroupTitle> : null}
+                      {items}
+                    </>
+                  )}
+                </section>
+              );
+            })}
           </div>
         ) : (
           // A catalogue browses as two panes, edge to edge.
-          kit.catalogue(category.content)
+          kit.catalogue(category.content, category.id)
         )}
       </div>
       {tiles ? <InfoFooter def={hovered} kit={kit} /> : null}
     </div>
+  );
+}
+
+/** A flyout group's small heading with a hairline after it (livehuddle's avatar palette heads its groups with it). */
+export function FlyoutGroupTitle({ children }: { children: ReactNode }) {
+  return (
+    <h4 className="mb-1.5 flex items-center gap-2 px-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+      {children}
+      <span aria-hidden className="h-px flex-1 bg-slate-100 dark:bg-slate-800" />
+    </h4>
   );
 }
 

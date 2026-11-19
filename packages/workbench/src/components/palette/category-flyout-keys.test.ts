@@ -136,3 +136,16 @@ describe('firstStop', () => {
     expect(firstStop(el)).toBe(card);
   });
 });
+
+describe('onFlyoutArrowKey with a closed group', () => {
+  it('skips the tiles in an inert body, so the arrows go past a closed group', () => {
+    const { el, items } = body();
+    const closed = document.createElement('div');
+    closed.setAttribute('inert', '');
+    closed.append(items[1]!);
+    el.append(closed);
+    items[0]!.focus();
+    onFlyoutArrowKey(key('ArrowRight').e, el);
+    expect(document.activeElement).toBe(items[2]);
+  });
+});

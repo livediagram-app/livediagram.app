@@ -3,7 +3,7 @@
 // CategoryBarFlyout, Work Tracker 1261), drawn from the editor's own tiles. Each editor binds its tiles once, at module
 // scope, in its components/palette/category-flyout-kit.tsx: how a tile places, arms, drags and tints, and how its
 // categories are arranged. The flyout never reads a tile's action; only the kit does.
-import type { CSSProperties, DragEvent, ReactNode } from 'react';
+import type { CSSProperties, DragEvent, PointerEvent, ReactNode } from 'react';
 import { flyoutWidthPx } from './CategoryBar';
 
 /** A palette tile as the flyout draws it: the fields every editor's PaletteTileDef shares. */
@@ -30,10 +30,20 @@ export type FlyoutCategory<T> = {
   // Null for a catalogue, whose body is `content`.
   tiles: readonly T[] | null;
   content: ReactNode;
+  // Its flyout's design width in px, for a flyout that lays out its own body (livehuddle's avatar palette); absent,
+  // the width follows its tiles.
+  width?: number | undefined;
 };
 
 /** One of a category's named groups (the editor's category-flyout-groups). */
-export type FlyoutGroup<T> = { id: string; title: string | null; tiles: T[] };
+export type FlyoutGroup<T> = {
+  id: string;
+  title: string | null;
+  tiles: T[];
+  // Draws the group's title and tiles itself, in place of the small heading (livediagram's optional BPMN group, a
+  // header row closed until opened, whose closed body is inert so the arrows skip its tiles).
+  frame?: ((items: ReactNode) => ReactNode) | undefined;
+};
 
 /** The editor's tiles, bound for the flyout. `A` is its tile actions and `P` its pending draw; the flyout only passes
  *  them through. */
@@ -48,6 +58,8 @@ export type FlyoutKit<T extends FlyoutTile<T>, A, P> = {
   active: (def: T, pendingDraw: P) => boolean;
   /** Its drag onto the canvas, or none for a tile that does not drag. */
   dragStart: (def: T) => ((e: DragEvent) => void) | undefined;
+  /** A press that carries the piece by the pointer on its way to a drag (livehuddle's, which Space turns). */
+  carryStart?: (def: T) => ((e: PointerEvent) => void) | undefined;
   /** A drag's end, dropped or not: its canvas preview goes. */
   dragEnd: () => void;
   /** Its glyph's theme tint and finish (the editor's useTileGlyph); `plain` keeps the brand look. A hook. */
@@ -72,14 +84,24 @@ export type FlyoutKit<T extends FlyoutTile<T>, A, P> = {
   /** What leads a category's groups, if anything (livedesign's own components lead Components). */
   lead?: (categoryId: string) => ReactNode;
   /** A catalogue's browse, wrapped for the flyout (its two panes). */
-  catalogue: (content: ReactNode) => ReactNode;
+  catalogue: (content: ReactNode, categoryId: string) => ReactNode;
+  /** The lowest a side panel may reach, in window px; absent, the flyout's foot (else the window's, 8px clear).
+   *  livehuddle's keeps clear of its tab bar, under the canvas region. */
+  sideFloor?: (panel: HTMLElement) => number;
+  /** On a phone a side panel covers the whole flyout, from its top and at least its height, so none of its rows
+   *  show around a short panel (livehuddle, Work Tracker 628). */
+  sideCoversFlyoutOnPhone?: boolean;
+  /** While a tile is dragged out a side panel hides at once rather than fading, so it never lies over the fading
+   *  flyout as a second layer of see-through text (livehuddle). */
+  sideHidesOnDrag?: boolean;
 };
 
 /** A category's flyout width in px, by the kit's arrangement (flyoutWidthPx). */
 export function flyoutCategoryWidthPx<T extends FlyoutTile<T>>(
   kit: Pick<FlyoutKit<T, unknown, unknown>, 'layout' | 'cardColumns'>,
-  category: Pick<FlyoutCategory<T>, 'id' | 'tiles'>,
+  category: Pick<FlyoutCategory<T>, 'id' | 'tiles' | 'width'>,
 ): number {
+  if (category.width) return category.width;
   return flyoutWidthPx(
     category.tiles ? category.tiles.length : null,
     kit.layout(category.id) === 'cards',

@@ -1,51 +1,48 @@
 'use client';
 
-import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import type { RefObject } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { StripPopover } from '@liveworkspace/workbench/components/palette/ToolbarStripPopover';
 import {
   CategoryBarButtons as SharedCategoryBarButtons,
-  HOVER_CLOSE_MS,
-  flyoutWidthClass,
-  flyoutWidthPx,
   useCategoryBar as useSharedCategoryBar,
   type CategoryBarState as SharedCategoryBarState,
 } from '@liveworkspace/workbench/components/palette/CategoryBar';
-import { CategoryFlyout, type FlyoutCategory } from './CategoryFlyout';
-import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
-import { opensSide } from './category-flyout-items';
-import { CategoryFlyoutSide, sidePlacement, type SideOpen } from './CategoryFlyoutSide';
-import type { PaletteTileDef } from './palette-tile-defs';
+import { CategoryBarFlyout as SharedCategoryBarFlyout } from '@liveworkspace/workbench/components/palette/CategoryBarFlyout';
+import type { SideExtra } from '@liveworkspace/workbench/components/palette/CategoryFlyoutSide';
+import {
+  flyoutCategoryWidthPx,
+  type FlyoutCategory,
+} from '@liveworkspace/workbench/components/palette/category-flyout-kit';
 import type { EditorMode } from '@livediagram/document';
+import { flyoutCardColumns, flyoutLayout } from './category-flyout-groups';
+import { flyoutKit } from './category-flyout-kit';
+import type { PaletteTileDef } from './palette-tile-defs';
 import { StripOpenedBody, Divider } from './strip-rail-items';
 import { type PaletteTileActions } from './PaletteTileGrid';
 
-// The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): its state and its buttons are
-// workbench's (@liveworkspace/workbench/components/palette/CategoryBar), bound here to this editor's flyout widths and
-// strip divider; the flyout under it, drawn from this editor's tiles, is this editor's own.
+// The category bar (docs/specs/007-editor/toolbar-layout.md "The category bar"): its state, its buttons, the flyout
+// under it and the flyout's side panel are workbench's (@liveworkspace/workbench/components/palette/CategoryBar and
+// CategoryBarFlyout), bound here to this editor's tiles (flyoutKit), its openers' bodies and its strip divider.
 export {
   HOVER_CLOSE_MS,
   HOVER_OPEN_MS,
 } from '@liveworkspace/workbench/components/palette/CategoryBar';
 
-// Resting on a presets tile this long opens its side panel; a click opens it at once.
-const SIDE_OPEN_MS = 150;
+export type BarCategory = FlyoutCategory<PaletteTileDef> & { group?: number | undefined };
 
-export type BarCategory = FlyoutCategory & { group?: number | undefined };
-
-// A category's flyout width: a catalogue's two panes, a grid of picture tiles, or its cards in one column or two.
-const widthPx = (c: FlyoutCategory) =>
-  flyoutWidthPx(c.tiles ? c.tiles.length : null, flyoutLayout(c.id) === 'cards', flyoutCardColumns);
+// How a category's flyout is arranged, which sets its width (the same in every mode).
+const ARRANGEMENT = { layout: flyoutLayout, cardColumns: flyoutCardColumns };
 
 /** The bar's state: which category's flyout is open, and the popover it hangs in. */
 export function useCategoryBar(
   rootRef: RefObject<HTMLElement | null>,
   { onOpen }: { onOpen?: () => void } = {},
 ) {
-  return useSharedCategoryBar<BarCategory>(rootRef, { onOpen, widthOf: widthPx });
+  return useSharedCategoryBar<BarCategory>(rootRef, {
+    onOpen,
+    widthOf: (c) => flyoutCategoryWidthPx(ARRANGEMENT, c),
+  });
 }
-
-type CategoryBarState = SharedCategoryBarState<BarCategory>;
 
 /** The bar's buttons, a divider between the bands. */
 export function CategoryBarButtons(
@@ -57,17 +54,12 @@ export function CategoryBarButtons(
   return <SharedCategoryBarButtons {...props} divider={<Divider />} />;
 }
 
-/** The open category's flyout, hung under its button and gliding to the next one, and its side panel. */
+/** The open category's flyout and its side panel, drawn from this editor's tiles. */
 export function CategoryBarFlyout({
-  bar,
-  categories,
   mode,
-  actions,
-  pendingDraw,
-  isMobile,
-  scale,
+  ...props
 }: {
-  bar: CategoryBarState;
+  bar: SharedCategoryBarState<BarCategory>;
   categories: readonly BarCategory[];
   mode: EditorMode;
   actions: PaletteTileActions;
@@ -75,103 +67,22 @@ export function CategoryBarFlyout({
   isMobile: boolean;
   scale: number;
 }) {
-  // The side panel (CategoryFlyoutSide) and the category it belongs to: a switch of category drops it.
-  const [side, setSide] = useState<(SideOpen & { category: string }) | null>(null);
-  // Its own hover intent: resting on a presets tile opens its panel, resting on another tile closes it.
-  const sideTimer = useRef<number | null>(null);
-  const clearSideTimer = () => {
-    if (sideTimer.current !== null) window.clearTimeout(sideTimer.current);
-    sideTimer.current = null;
-  };
-  useEffect(() => clearSideTimer, []);
-  const category = categories.find((c) => c.id === bar.openId);
-  if (!category) return null;
-  const openSide = side && side.category === category.id ? side : null;
-  const showSide = (def: PaletteTileDef, el: HTMLElement) => {
-    clearSideTimer();
-    const placed = sidePlacement(el, def);
-    if (placed) setSide({ ...placed, category: category.id });
-  };
-  const onItemHover = (def: PaletteTileDef | null, el: HTMLElement | null) => {
-    clearSideTimer();
-    if (def && el && opensSide(def)) {
-      if (openSide?.def.id !== def.id)
-        sideTimer.current = window.setTimeout(() => showSide(def, el), SIDE_OPEN_MS);
-    } else if (openSide) {
-      sideTimer.current = window.setTimeout(() => setSide(null), HOVER_CLOSE_MS);
-    }
-  };
-  // An opener's body: the category it stands for, at its group (an AWS opener opens Technology's AWS marks).
-  const openBody = (categoryId: string, group: string | null): ReactNode => (
-    <StripOpenedBody
-      opened={{ key: `${categoryId}/${group ?? ''}`, category: categoryId, group, label: '' }}
-      content={categories.find((c) => c.id === categoryId)?.content ?? null}
-    />
-  );
-  // The flyout and the side panel count as one surface for hover intent, drags and Escape.
-  const surface = {
-    onPointerEnter: (e: React.PointerEvent) => {
-      if (e.pointerType === 'mouse') bar.hoverFlyout();
-    },
-    onPointerLeave: (e: React.PointerEvent) => {
-      if (e.pointerType === 'mouse') bar.leave();
-    },
-    onDragStart: bar.dragStarted,
-    onDragEnd: bar.dragEnded,
-  };
-  const width = widthPx(category);
-  return (
-    <>
-      <StripPopover
-        right={bar.popover.right}
-        isMobile={isMobile}
-        scale={scale}
-        name={category.label}
-        dataAttr="data-category-flyout"
-        widthClass={flyoutWidthClass(width)}
-        seeThrough={bar.dragActive}
-        glide
-        bare
-      >
-        <div
-          {...surface}
-          onKeyDown={(e) => {
-            // Escape closes it (the popover's own listener) and hands the focus back to its button.
-            if (e.key === 'Escape') bar.close(true);
-          }}
-        >
-          <CategoryFlyout
-            key={category.id}
-            category={category}
-            mode={mode}
-            actions={actions}
-            pendingDraw={pendingDraw}
-            focusFirst={bar.viaKeyboard}
-            sideOpenId={openSide?.def.id ?? null}
-            onSide={(def, el) => (openSide?.def.id === def.id ? setSide(null) : showSide(def, el))}
-            onItemHover={onItemHover}
+  // An opener's side panel: the category it stands for, at its group (an AWS opener opens Technology's AWS marks).
+  const sideExtra = (def: PaletteTileDef): SideExtra | null => {
+    const a = def.action;
+    if (a.type !== 'open') return null;
+    const group = a.group ?? null;
+    return {
+      tagline: `Browse ${def.label}.`,
+      body: (
+        <div className="px-2 py-2.5">
+          <StripOpenedBody
+            opened={{ key: `${a.category}/${group ?? ''}`, category: a.category, group, label: '' }}
+            content={props.categories.find((c) => c.id === a.category)?.content ?? null}
           />
         </div>
-      </StripPopover>
-      {openSide ? (
-        <CategoryFlyoutSide
-          key={openSide.def.id}
-          side={openSide}
-          isMobile={isMobile}
-          scale={scale}
-          actions={actions}
-          pendingDraw={pendingDraw}
-          openBody={openBody}
-          seeThrough={bar.dragActive}
-          hoverHandlers={{
-            ...surface,
-            onPointerEnter: (e) => {
-              clearSideTimer();
-              surface.onPointerEnter(e);
-            },
-          }}
-        />
-      ) : null}
-    </>
-  );
+      ),
+    };
+  };
+  return <SharedCategoryBarFlyout {...props} kit={flyoutKit(mode)} sideExtra={sideExtra} />;
 }
