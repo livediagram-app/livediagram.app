@@ -20,7 +20,7 @@ vi.mock('../providers/deferred-auth', () => ({
   }),
 }));
 
-import { DeleteAccountDialog } from './DeleteAccountDialog';
+import { confirmEmailState, DeleteAccountDialog } from './DeleteAccountDialog';
 
 afterEach(() => {
   calls.length = 0;
@@ -96,6 +96,48 @@ describe('DeleteAccountDialog', () => {
     expect(sendCode).toHaveBeenCalledTimes(1);
     expect(screen.getByText(/We emailed a 6-digit code to/)).toBeTruthy();
     expect(screen.getByText('Ada@Example.com')).toBeTruthy();
+  });
+
+  it('keeps the email box neutral while empty or mid-typing, flags a mismatch, and never reads a match as an error', () => {
+    open();
+    const box = emailBox();
+    const hint = () => screen.queryByText('That isn’t your account’s email.');
+    // Empty: no danger tone, no hint.
+    expect(box.getAttribute('data-state')).toBe('empty');
+    expect(box.getAttribute('aria-invalid')).toBeNull();
+    expect(box.className).not.toMatch(/rose/);
+    expect(hint()).toBeNull();
+    // A correct start of the address is not wrong yet.
+    fireEvent.change(box, { target: { value: 'ada@ex' } });
+    expect(box.getAttribute('data-state')).toBe('typing');
+    expect(box.className).not.toMatch(/rose/);
+    expect(hint()).toBeNull();
+    // Once it can no longer become the address, it says so.
+    fireEvent.change(box, { target: { value: 'ada@exz' } });
+    expect(box.getAttribute('data-state')).toBe('mismatch');
+    expect(box.getAttribute('aria-invalid')).toBe('true');
+    expect(box.getAttribute('aria-describedby')).toBe('delete-confirm-email-hint');
+    expect(box.className).toMatch(/border-rose-400/);
+    expect(hint()).toBeTruthy();
+    // The match, in any case and with stray spaces: green, no red anywhere on the box.
+    fireEvent.change(box, { target: { value: ' ADA@example.com ' } });
+    expect(box.getAttribute('data-state')).toBe('match');
+    expect(box.getAttribute('aria-invalid')).toBeNull();
+    expect(box.className).not.toMatch(/rose/);
+    expect(box.className).toMatch(/border-emerald-500/);
+    expect(hint()).toBeNull();
+  });
+
+  it.each([
+    ['', 'ada@example.com', 'empty'],
+    ['   ', 'ada@example.com', 'empty'],
+    ['ADA', 'ada@example.com', 'typing'],
+    ['bob', 'ada@example.com', 'mismatch'],
+    ['ada@example.com.au', 'ada@example.com', 'mismatch'],
+    ['Ada@Example.com', 'ada@example.com', 'match'],
+    ['ada', '', 'mismatch'],
+  ] as const)('reads %j against %j as %s', (typed, expected, state) => {
+    expect(confirmEmailState(typed, expected)).toBe(state);
   });
 
   it('stays on the email step and says why when no code could be sent', async () => {

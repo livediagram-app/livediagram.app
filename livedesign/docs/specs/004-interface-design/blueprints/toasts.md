@@ -4,15 +4,15 @@ Derived from [Toasts](../toasts.md). Implementation detail only; the spec decide
 
 ## Files
 
-| File                                                          | Holds                                                                                                                   |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `apps/live/hooks/ui/useToast.tsx`                             | `ToastProvider`, `useToast`, the `ToastApi` (`info`, `success`, `warning`, `error`, `offer`, `action`, `dismissAction`) |
-| `../packages/workbench/src/components/toast/toast-queue.ts`   | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToast`, `TOAST_LIMIT`, durations                            |
-| `../packages/workbench/src/components/toast/ToastStack.tsx`   | The always-mounted `Notifications` region, its placement and the floor                                                  |
-| `../packages/workbench/src/components/toast/ToastCard.tsx`    | One toast: icon, message, actions, close; `TOAST_SURFACE` for the look shared by other notices                          |
-| `../packages/workbench/src/components/toast/useToastTimer.ts` | The pausable timeout                                                                                                    |
-| `../packages/workbench/src/components/toast/toast-floor.ts`   | Pure `toastFloor()` and `TOAST_FLOOR_SELECTOR`                                                                          |
-| `../packages/workbench/src/components/toast/useToastFloor.ts` | Measures the floor while the stack is up                                                                                |
+| File                                                          | Holds                                                                                                                                                   |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/live/hooks/ui/useToast.tsx`                             | Re-exports the workbench’s `ToastProvider` and `useToast` (`packages/workbench/src/hooks/ui/useToast.tsx`), so workbench code’s toasts reach this stack |
+| `../packages/workbench/src/components/toast/toast-queue.ts`   | Pure queue writes: `pushToast`, `upsertActionToast`, `retireToast`, `TOAST_LIMIT`, durations                                                            |
+| `../packages/workbench/src/components/toast/ToastStack.tsx`   | The always-mounted `Notifications` region, its placement and the floor                                                                                  |
+| `../packages/workbench/src/components/toast/ToastCard.tsx`    | One toast: icon, message, actions, close; `TOAST_SURFACE` for the look shared by other notices                                                          |
+| `../packages/workbench/src/components/toast/useToastTimer.ts` | The pausable timeout                                                                                                                                    |
+| `../packages/workbench/src/components/toast/toast-floor.ts`   | Pure `toastFloor()` and `TOAST_FLOOR_SELECTOR`                                                                                                          |
+| `../packages/workbench/src/components/toast/useToastFloor.ts` | Measures the floor while the stack is up                                                                                                                |
 
 ## Domain and naming
 
