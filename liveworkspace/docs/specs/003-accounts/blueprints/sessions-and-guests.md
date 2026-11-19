@@ -82,6 +82,33 @@ caller's for `sign-out`; for `revoke-session`, the one whose `token` the body na
 account's; every other session of the account, or every one, for the last two. Better Auth then deletes the sessions
 (and, for `sign-out`, the cookie). The deletes run `SESSIONS_PER_STATEMENT` (40) sessions to a statement, in one batch.
 
+### Signed out of this app only (the page's side, Work Tracker 1283)
+
+`askSignOut(returnTo, { noteHereOnly })` (`@liveworkspace/auth-client/sign-out`) writes `noteSignedOutHere()` when the
+app signed out (`ok`) with no hop (`next` null) and the caller asked for it. The note is `{ at: <ms> }` under
+`lw:signed-out-here` in the tab's sessionStorage (`@liveworkspace/auth-client/signed-out-here`, no imports, so a
+visitor's header can read it); a blocked sessionStorage drops it silently. `takeSignedOutHere()` reads it, removes it,
+and answers true only for a note under `SIGNED_OUT_HERE_FRESH_MS` (60 s) old.
+
+Who asks for the note: the account menu's `appSignOut` (`@liveworkspace/account-menu`, so a marketing page's menu and
+the Explorer on an app's address, its header and Settings' Sign Out row), unless passed `{ noteHereOnly: false }`
+(the Explorer's `endAppSession` after Delete Account); and each editor's `AccountsBridge` `signOut`, unless passed
+`{ accountClosed: true }` (its Delete Account row's `onDeleted`, whose second sign-out has no refresh cookie left).
+
+Who shows it: `SignedOutHereNotice({ app })` (`@liveworkspace/account-menu/signed-out-notice`) takes the note in an
+effect after hydration and renders a `role="status"` card under the account control, in the control's palette, with
+the app's name and a Dismiss button. `createSiteAccount({ app, … })` draws it beside every product's marketing
+header control (where an editor's Sign Out lands, `/`), and the site's `AppAccountControl` beside the Explorer's on an
+app's address, with `pageApp()`'s name.
+
+| Case                                          | Result                                    |
+| --------------------------------------------- | ----------------------------------------- |
+| Sign Out, accounts site answered (`next` set) | no note; the hop, then no notice          |
+| Sign Out, accounts site silent or no token    | note; the page lands and shows the notice |
+| Sign Out after Delete Account                 | no note                                   |
+| A note over a minute old, or unreadable       | dropped; no notice                        |
+| sessionStorage blocked                        | no note, no notice; sign-out unchanged    |
+
 ### The guest hand-off (`GET /api/auth/guest?client_id=&redirect_uri=&state=[&resource=]`)
 
 1. `GUEST_LIMITER` keyed `ip:<network>` (60 a minute): `429 rate_limited`.

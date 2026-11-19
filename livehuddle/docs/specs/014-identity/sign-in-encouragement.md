@@ -72,7 +72,7 @@ never triggers it; staying in one for 5+ minutes does.
   Teams"), one line of supporting copy saying what an account gives and
   that spaces sync ("Share with your team, sync across devices, connect
   scripts with API tokens."). livehuddle has no MCP server, so unlike the
-  other apps it never says "AI", a primary **Sign in**
+  other apps it never says "AI", a primary **Sign In**
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
 - Responsive: the copy and buttons stack / shrink gracefully on a
@@ -99,7 +99,7 @@ Lists the benefits, each with an icon, headline, and a sentence:
 5. **Your shares, organised.** Manage every share link and expiry from
    one account instead of one browser.
 
-The modal's footer carries the same primary **Sign in** call to action.
+The modal's footer carries the same primary **Sign In** call to action.
 
 It is fine to refine the exact wording over time; the five benefit
 themes (durability, cross-device, teams, identity, share management)

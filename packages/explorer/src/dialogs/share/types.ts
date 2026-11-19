@@ -1,8 +1,9 @@
 // What a host hands the Share dialog beyond the item and its links: where its help articles are, how it reports
 // to its telemetry, how it says what happened, and, for a guest, the name they share as.
 
-/** The help articles the dialog links to: sharing at large, link lifetimes, and the share password. */
-export type ShareHelpArticle = 'sharing' | 'shareLinkExpiry' | 'sharePasswords';
+/** The help articles the dialog links to: sharing at large, link lifetimes, the share password, and asking for
+ *  approval (on the Approval tab, where the app has Approvals). */
+export type ShareHelpArticle = 'sharing' | 'shareLinkExpiry' | 'sharePasswords' | 'requestApproval';
 export type ShareHelpHref = (article: ShareHelpArticle) => string | undefined;
 
 /** What the dialog reports, for the host's telemetry (`type` is always a fixed token):

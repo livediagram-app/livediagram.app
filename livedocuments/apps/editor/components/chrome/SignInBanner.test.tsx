@@ -20,7 +20,7 @@ describe('SignInBanner', () => {
   // docs/specs/014-identity/sign-in-encouragement.md: the headline names what an account opens up.
   it('invites a sign-in for Teams & AI, in one short line of reasons', () => {
     const view = render(<SignInBanner onDismiss={() => {}} placementClassName="" />);
-    expect(view.getByText('Sign in to access Teams & AI')).toBeTruthy();
+    expect(view.getByText('Sign In to Use Teams')).toBeTruthy();
     expect(
       view.getByText('Share with your team, build with AI, sync across devices.'),
     ).toBeTruthy();
@@ -53,7 +53,7 @@ describe('SignInBanner', () => {
   // docs/specs/014-identity/sign-in-encouragement.md: a panel opened from the chrome reaches up into the banner's band.
   it('steps aside while a panel opened from the chrome is open', () => {
     render(<SignInBanner onDismiss={() => {}} placementClassName="" />);
-    const wrapper = screen.getByText('Sign in to access Teams & AI').closest('.fixed')!;
+    const wrapper = screen.getByText('Sign In to Use Teams').closest('.fixed')!;
     expect(wrapper.className).toContain(
       '[body:has([data-dock-button]_[aria-expanded=true])_&]:hidden',
     );
@@ -67,7 +67,7 @@ describe('SignInBanner', () => {
     window.addEventListener(TOAST_FLOOR_CHANGED_EVENT, heard);
     const view = render(<SignInBanner onDismiss={() => {}} placementClassName="" />);
     const card = document.querySelector(TOAST_FLOOR_SELECTOR);
-    expect(card?.textContent).toContain('Sign in to access Teams & AI');
+    expect(card?.textContent).toContain('Sign In to Use Teams');
     expect(heard).toHaveBeenCalledTimes(1);
     view.unmount();
     expect(heard).toHaveBeenCalledTimes(2);

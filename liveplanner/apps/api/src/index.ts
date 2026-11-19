@@ -62,6 +62,7 @@ import { resolveWorkbenchSession } from './auth/workbench-session';
 import { workbenchRefusal } from './auth/workbench-confinement';
 import { withServerRelease } from './server-release-header';
 import { routeToWorkspace, WORKBENCH_ROUTE } from '@liveworkspace/sites/workspace-proxy';
+import { accountsFetch } from '@liveworkspace/auth-client';
 import type { Env } from './types';
 
 export { PlanRoom };
@@ -127,6 +128,8 @@ async function routeApiRequest(
           app: 'liveplanner',
           origin: env.ACCOUNTS_URL,
           routes: [WORKBENCH_ROUTE],
+          // Over the API's own ACCOUNTS binding, the whole request (Work Tracker 1070); the public route without one.
+          fetch: accountsFetch(env.ACCOUNTS),
         })
       : null;
     const unavailable = () => json({ error: 'accounts_unavailable' }, { status: 503 });

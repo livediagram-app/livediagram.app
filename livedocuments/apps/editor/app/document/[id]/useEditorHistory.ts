@@ -21,6 +21,9 @@ export function useEditorHistory(opts: {
   tickTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   undoHistory: () => void;
   redoHistory: () => void;
+  // Told just before the person's own undo or redo steps, so an import's undo can bring its view back
+  // (@liveworkspace/workbench/hooks/canvas/useImportUndoView).
+  beforeStep?: () => void;
   set: {
     setSelectedId: SetState<string | null>;
     setEditingId: SetState<string | null>;
@@ -49,6 +52,7 @@ export function useEditorHistory(opts: {
     if (!canUndo) return;
     track('Document', 'Undone');
     announce('Undid the last change');
+    opts.beforeStep?.();
     undoHistory();
     clearFocus();
   };
@@ -57,6 +61,7 @@ export function useEditorHistory(opts: {
     if (!canRedo) return;
     track('Document', 'Redone');
     announce('Redid the last change');
+    opts.beforeStep?.();
     redoHistory();
     clearFocus();
   };

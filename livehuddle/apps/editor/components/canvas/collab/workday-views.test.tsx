@@ -9,6 +9,8 @@ import {
   TREADMILL_BELTS,
   turnPiece,
   PET_LEG_MS,
+  PET_WALK_EVERY,
+  PET_WALK_MS,
   type ShapeElement,
 } from '@livehuddle/document';
 import { AVATAR_HEIGHT } from '@livehuddle/avatar/walk';
@@ -45,6 +47,9 @@ import { setPetAreas, useWorkdayPieces } from '@/lib/office/useWorkdayPieces';
 import { hasPieceArt, PieceArt } from '@/components/canvas/PieceArt';
 import { FurnitureView, isFurnitureViewShape, type ChairSitter } from './FurnitureView';
 import { hotDeskCard, hotDeskCardY, dogOffset } from './WorkdayFaces';
+import { ReceptionistBubble } from '../receptionist/ReceptionistBubble';
+import { KEEP_CLEAR_ATTR } from '../receptionist/keep-clear';
+import { openReceptionist, resetReceptionistState } from '@/lib/receptionist/receptionist-store';
 
 afterEach(() => {
   cleanup();
@@ -266,6 +271,55 @@ describe('the Reception Desk', () => {
     expect(container.querySelector('[data-bell-ringing]')).not.toBeNull();
   });
 
+  // Work Tracker 1256: the Receptionist's bubble, open at the desk after a ring, sat over the Ring Bell and swallowed
+  // the next press until I'll Explore closed it.
+  it('keeps the Ring Bell clear of the Receptionist’s bubble, so it rings twice with the bubble open', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    vi.setSystemTime(1_000_000);
+    const root = document.body.appendChild(document.createElement('div'));
+    root.setAttribute('data-canvas-root', '');
+    // The canvas, a desktop's; the Welcome bubble under where his card would stand; his card 300 px wide over his
+    // head, moved by its nudge.
+    const rect = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockImplementation(function (this: HTMLElement) {
+        if (this === root) return screenRect(0, 0, 1440, 900);
+        if (this.hasAttribute(KEEP_CLEAR_ATTR)) return screenRect(300, 260, 100, 24);
+        const shift = Number(/translateX\((-?[\d.]+)px\)/.exec(this.style.transform)?.[1] ?? 0);
+        return screenRect(200 + shift, 100, 300, 200);
+      });
+    try {
+      openReceptionist('bell');
+      render(
+        <>
+          <AtDesk feet={{ x: 200, y: 230 }} />
+          <ReceptionistBubble head={{ x: 350, y: 300 }} feet={{ x: 350, y: 380 }} zoom={1} />
+        </>,
+        { container: root },
+      );
+      const card = screen.getByRole('dialog', { name: 'Receptionist' })
+        .firstElementChild as HTMLElement;
+      // Off to the right of the Welcome (its left edge 8 px past the Welcome's right), the left having no room.
+      expect(card.style.transform).toBe('translateX(208px)');
+      // Only the moved card takes presses; the box left where he stands lets them through to the Ring Bell.
+      expect(screen.getByRole('dialog', { name: 'Receptionist' }).className).toContain(
+        'pointer-events-none',
+      );
+      expect(card.className).toContain('pointer-events-auto');
+      fireEvent.click(screen.getByRole('button', { name: 'Ring the bell' }));
+      act(() => {
+        vi.advanceTimersByTime(5_001);
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Ring the bell' }));
+      expect(vi.mocked(track).mock.calls.filter((c) => c[2] === 'ReceptionBell')).toHaveLength(2);
+      expect(screen.getByRole('dialog', { name: 'Receptionist' })).toBeTruthy();
+    } finally {
+      rect.mockRestore();
+      resetReceptionistState();
+      root.remove();
+    }
+  });
+
   // Work Tracker 793: a Room Sign placed by hand just above the desk would sit under the Welcome bubble.
   it('shows the Welcome beside the desk when a hand-placed Room Sign stands where it rises', () => {
     const bubble = () => screen.getByRole('status');
@@ -305,9 +359,9 @@ describe('the office dog', () => {
       </CanvasSurfaceProvider>,
     );
 
-  it('sleeps in its bed until the board is read, then wanders its area leg by leg', () => {
+  it('sleeps in its bed until the board is read, then wanders its area walk by walk', () => {
     vi.useFakeTimers();
-    vi.setSystemTime(PET_LEG_MS * 4);
+    vi.setSystemTime(PET_WALK_MS * 4);
     const area = { kind: 'box' as const, box: { x: 0, y: 0, width: 600, height: 400 } };
     expect(dogOffset(bed, null, 0)).toEqual({ x: 36, y: 48 * 0.72, asleep: true });
     // Leg 3 of every four naps in the bed; the others are a spot relative to it.
@@ -319,12 +373,109 @@ describe('the office dog', () => {
     const { container } = dogIn();
     expect(container.querySelector('[data-pet]')?.getAttribute('data-pet')).toBe('asleep');
     act(() => setPetAreas(new Map([[bed.id, area]])));
-    expect(container.querySelector('[data-pet]')?.getAttribute('data-pet')).toBe('awake');
+    // Out of its bed at its spot (lying there to rest: a test's DOM has no animation, so it is there at once).
+    expect(container.querySelector('[data-pet-floor]')).not.toBeNull();
     const first = (container.querySelector('[data-pet]') as HTMLElement).style.transform;
     act(() => {
-      vi.advanceTimersByTime(PET_LEG_MS + 50);
+      vi.advanceTimersByTime(PET_WALK_MS + 50);
     });
     expect((container.querySelector('[data-pet]') as HTMLElement).style.transform).not.toBe(first);
+  });
+
+  // docs/specs/008-canvas/canvas-performance.md "A still Space does nothing": the trot is one animation the compositor
+  // plays, its legs, bob and tail boxes of their own, and once it stops nothing loops.
+  it('trots as one animation, steps and wags on boxes of their own, and rests when it arrives', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    vi.setSystemTime(PET_WALK_MS * 4);
+    const played: { frames: Keyframe[]; options: KeyframeAnimationOptions; anim: Animation }[] = [];
+    const animate = vi.fn(function (frames: Keyframe[], options: KeyframeAnimationOptions) {
+      const anim = { currentTime: 0, cancel: vi.fn(), onfinish: null } as unknown as Animation;
+      played.push({ frames, options, anim });
+      return anim;
+    });
+    const was = HTMLElement.prototype.animate;
+    HTMLElement.prototype.animate = animate;
+    try {
+      const area = { kind: 'box' as const, box: { x: 0, y: 0, width: 600, height: 400 } };
+      const { container } = dogIn();
+      const dog = () => container.querySelector<HTMLElement>('[data-pet]')!;
+      const tail = () => container.querySelector('[data-pet-tail]')?.getAttribute('data-pet-tail');
+      act(() => setPetAreas(new Map([[bed.id, area]])));
+      // One animation along the route, linear, from where it lay to its spot.
+      // (A dog left out of its bed by an earlier test walks home first: the newest is this leg's.)
+      const { frames, options, anim } = played[played.length - 1]!;
+      expect(options).toMatchObject({ easing: 'linear', fill: 'forwards' });
+      expect(frames[0]!.offset).toBe(0);
+      expect(frames[frames.length - 1]!.offset).toBe(1);
+      // A transform's numbers, as the style rounds them.
+      const at = (t: unknown) =>
+        String(t)
+          .match(/-?[\d.]+/g)!
+          .map((n) => Math.round(Number(n) * 100));
+      expect(at(frames[0]!.transform)).toEqual(at(dog().style.transform));
+      // Trotting is a mark on the dog, not a render: its stylesheet steps the legs, bobs it and wags the tail, each
+      // on a box of its own (no SVG part animates).
+      expect(dog().hasAttribute('data-pet-trot')).toBe(true);
+      expect(container.querySelectorAll('.lh-pet-leg')).toHaveLength(4);
+      for (const leg of container.querySelectorAll('.lh-pet-leg')) expect(leg.tagName).toBe('SPAN');
+      expect(container.querySelector('.lh-pet-bob')?.tagName).toBe('DIV');
+      expect(tail()).toBe('calm');
+      expect(container.querySelectorAll('svg [class]')).toHaveLength(0);
+      // A pat on its way wags it fast, then calm again.
+      fireEvent.click(screen.getByRole('button', { name: 'Pat the Dog' }));
+      expect(tail()).toBe('fast');
+      act(() => {
+        vi.advanceTimersByTime(1600);
+      });
+      expect(tail()).toBe('calm');
+      // It arrives: the drawing stands at the route's end, the animation lets go and the loops stop.
+      act(() => {
+        anim.onfinish?.call(anim, {} as AnimationPlaybackEvent);
+      });
+      expect(anim.cancel).toHaveBeenCalled();
+      expect(at(dog().style.transform)).toEqual(at(frames[frames.length - 1]!.transform));
+      expect(dog().hasAttribute('data-pet-trot')).toBe(false);
+      // It lies down where it got to (on the floor, out of its bed) and rests, still, through the walk's other legs.
+      expect(dog().getAttribute('data-pet')).toBe('asleep');
+      expect(container.querySelector('[data-pet-floor]')).not.toBeNull();
+      expect(tail()).toBeUndefined();
+      const walks = played.length;
+      act(() => {
+        vi.advanceTimersByTime(PET_LEG_MS * (PET_WALK_EVERY - 1));
+      });
+      expect(played).toHaveLength(walks);
+      expect(dog().getAttribute('data-pet')).toBe('asleep');
+    } finally {
+      HTMLElement.prototype.animate = was;
+    }
+  });
+
+  it('stands where it had got to when a new goal stops it on its way', () => {
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
+    vi.setSystemTime(PET_WALK_MS * 4);
+    const anims: Animation[] = [];
+    const was = HTMLElement.prototype.animate;
+    HTMLElement.prototype.animate = vi.fn(() => {
+      const anim = { currentTime: 0, cancel: vi.fn(), onfinish: null } as unknown as Animation;
+      anims.push(anim);
+      return anim;
+    });
+    try {
+      const area = { kind: 'box' as const, box: { x: 0, y: 0, width: 600, height: 400 } };
+      const { container } = dogIn();
+      act(() => setPetAreas(new Map([[bed.id, area]])));
+      const start = container.querySelector<HTMLElement>('[data-pet]')!.style.transform;
+      // The bed is taken away mid-trot, at its very start: it stays put and the animation lets go.
+      act(() => setPetAreas(new Map()));
+      expect(anims[0]!.cancel).toHaveBeenCalled();
+      expect(container.querySelector<HTMLElement>('[data-pet]')!.style.transform).toBe(start);
+      // Still trotting only if it set off afresh (home to its bed).
+      expect(container.querySelector('[data-pet]')!.hasAttribute('data-pet-trot')).toBe(
+        anims.length > 1,
+      );
+    } finally {
+      HTMLElement.prototype.animate = was;
+    }
   });
 
   it('raises a heart when patted, and keeps the press its own', () => {
@@ -345,27 +496,28 @@ describe('the office dog', () => {
   });
 
   it('goes back to its bed the moment reduced motion is turned on, and wakes when it is off', async () => {
-    // Leg 4 trots (every fourth naps), so the switch is what puts it to bed.
+    // Walk 4 goes out (every fourth naps), so the switch is what puts it to bed.
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
-    vi.setSystemTime(PET_LEG_MS * 4);
+    vi.setSystemTime(PET_WALK_MS * 4);
     const area = { kind: 'box' as const, box: { x: 0, y: 0, width: 600, height: 400 } };
     setPetAreas(new Map([[bed.id, area]]));
     const { container, unmount } = dogIn();
-    const state = () => container.querySelector('[data-pet]')?.getAttribute('data-pet');
-    expect(state()).toBe('awake');
+    // In its bed, or out of it on the floor.
+    const state = () => (container.querySelector('[data-pet-floor]') ? 'out' : 'home');
+    expect(state()).toBe('out');
     // The in-app preference: its class on <html>, which the dog watches.
     reduced.on = true;
     await act(async () => {
       document.documentElement.classList.add('reduce-motion');
       await Promise.resolve();
     });
-    expect(state()).toBe('asleep');
+    expect(state()).toBe('home');
     reduced.on = false;
     await act(async () => {
       document.documentElement.classList.remove('reduce-motion');
       await Promise.resolve();
     });
-    expect(state()).toBe('awake');
+    expect(state()).toBe('out');
     unmount();
   });
 });

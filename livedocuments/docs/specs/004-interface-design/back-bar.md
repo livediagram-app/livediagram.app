@@ -2,14 +2,14 @@
 
 The **back bar** is the one way back out of a level, and the one breadcrumb, in every app: a full-width row naming
 where it goes back to, with the level that is open as a chip on the right. The tab's Import and Export screens set
-the shape (**All formats** then **PNG**). Every other drill-in and breadcrumb draws the same component, `BackBar` from
+the shape (**All Formats** then **PNG**). Every other drill-in and breadcrumb draws the same component, `BackBar` from
 `@liveworkspace/ui` (`../packages/ui/src/BackBar.tsx`), so they all read the same; none hand-rolls a "Back" link,
 a chevron button or a chain of crumbs. With nowhere to go back to, it stands as a static heading in the same shape
 ("Choose a Space").
 
 ## Where it is
 
-- The Import and Export format panels, the animated GIF's among them: **All formats** then the format.
+- The Import and Export format panels, the animated GIF's among them: **All Formats** then the format.
 - The Tab Style panels: **Tab Style** then **Colours**.
 - The palette's category browse: **Icons** then **People**.
 - Folder placement (Save to, Move): **Choose a Space** as the heading of the spaces; inside one, **Choose a Space**

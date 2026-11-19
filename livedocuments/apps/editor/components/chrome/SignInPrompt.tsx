@@ -135,7 +135,7 @@ export function SignInPrompt({ fallback, bar = false }: SignInPromptProps) {
             className: bar ? 'shrink-0 shadow-sm' : 'w-full shadow-sm',
           })}
         >
-          <ButtonContent>Sign in</ButtonContent>
+          <ButtonContent>Sign In</ButtonContent>
         </Link>
       }
     />

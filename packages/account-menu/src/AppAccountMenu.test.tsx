@@ -8,6 +8,7 @@ import { APP_TOKEN_ASK_TIMEOUT_MS, appAccountOf, appSignOut, resetAppAccount } f
 import { ACCOUNT_TRIGGER_BOX } from './face';
 import { avatarColour } from './initials';
 import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
+import { takeSignedOutHere } from '@liveworkspace/auth-client/signed-out-here';
 import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
 
 const HINT = 'lp_signed_in';
@@ -89,8 +90,8 @@ describe('AppAccountMenu', () => {
     fireEvent.click(trigger);
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
-      'Sign in',
-      'Create accountFree, and one account for every app',
+      'Sign In',
+      'Create AccountFree, and one account for every app',
     ]);
     expect(items[0]!.getAttribute('href')).toBe('/api/auth/sign-in?return_to=%2Fpricing%3Fx%3D1');
     expect(items[1]!.getAttribute('href')).toBe(
@@ -509,7 +510,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Guest, account menu' }));
     await act(async () => arrive());
     expect(load).toHaveBeenCalledOnce();
-    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
   });
 
   // Work Tracker 734: the code landing mid-press swapped the button under the pointer, and the click opened nothing.
@@ -535,7 +536,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
     expect(standIn()).toBe(pressedOn);
     fireEvent.pointerUp(pressedOn, { pointerType: 'mouse' });
     fireEvent.click(pressedOn);
-    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
   });
 
   it('waits for a lifted touch’s click, then opens', async () => {
@@ -552,7 +553,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
       expect(standIn()).toBe(pressedOn);
       fireEvent.click(pressedOn);
       act(() => vi.runAllTimers());
-      expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+      expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
     } finally {
       vi.useRealTimers();
     }
@@ -599,7 +600,7 @@ describe('DeferredAccountMenu (a marketing page’s Guest button)', () => {
       </StrictMode>,
     );
     expect(standIn().getAttribute('aria-expanded')).toBe('true');
-    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign in');
+    expect(screen.getAllByRole('menuitem')[0]!.textContent).toBe('Sign In');
   });
 
   it('asks again on the next approach when the code could not be fetched', async () => {
@@ -638,6 +639,21 @@ describe('appSignOut', () => {
     const go = vi.fn();
     expect(await appSignOut(go)).toBe(true);
     expect(go).toHaveBeenCalledWith(hop);
+  });
+
+  // "Signed out of this app only": the landing page's header takes the note (signed-out-notice.tsx).
+  it('notes a sign-out of this app alone for the page it lands on, unless told not to', async () => {
+    sessionStorage.clear();
+    const go = vi.fn();
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ signedIn: false, next: null })));
+    expect(await appSignOut(go, { noteHereOnly: false })).toBe(true);
+    expect(takeSignedOutHere()).toBe(false);
+    expect(await appSignOut(go)).toBe(true);
+    expect(takeSignedOutHere()).toBe(true);
+    const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ signedIn: false, next: hop })));
+    expect(await appSignOut(go)).toBe(true);
+    expect(takeSignedOutHere()).toBe(false);
   });
 
   it('leaves everything as it was when the API refuses or is unreachable', async () => {

@@ -111,6 +111,10 @@ client (`401 invalid_token` otherwise; `400 access_token_required` without one).
   `accountsFetch`, and stop at `ACCOUNT_CALL_TIMEOUT_MS` (10 s) for the headers; `mintAccountToken` and
   `createTeamFor`, which are not safe to repeat, pass `ACCOUNT_WRITE_TIMEOUT_MS` (20 s). A timeout throws
   `AccountCallTimeout` (`unconfirmed` for a write); `makeTeamFor` answers it `504 team_create_unconfirmed`. The
+  Explorer's teams client (`createTeamsHost` in `@liveworkspace/explorer`) reads that code, or a 504 without one
+  (the router's deadline), as `team_create_unconfirmed` for a create; `teamErrorMessage` words it, and
+  `TeamFormDialog` and the Move dialog's New Team offer **Refresh** (the teams context's `findMadeTeam(name)`: reads
+  `myTeams` and answers a team of that name not already listed, or null, which reads `team_not_made`). The
   deletion code's send and check (`close-account.ts`) use the binding with `CODE_TIMEOUT_MS` (10 s); `closeAccount`
   has no timeout. Deadlines are `deadlineSignal` timers, so tests drive them with fake timers.
 - Silent sign-in: once per tab until the tab comes back into view or is opened from another site, never in a frame, for a crawler or a Lighthouse audit, on sign-in pages,

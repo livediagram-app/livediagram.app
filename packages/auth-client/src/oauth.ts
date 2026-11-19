@@ -167,11 +167,28 @@ async function boundWorkerMissing(response: Response): Promise<boolean> {
  * no binding, it throws for any reason but the request's own timeout, or local dev says its Worker isn't running
  * (a local run without accounts started, `boundWorkerMissing`). A Worker's fetch to another Worker's public route
  * can stall; a binding's does not.
+ *
+ * A `Request` goes to the binding whole (its method, headers, body and signal, with `init` laid over them), never
+ * as its URL alone. One with a body keeps a clone for local dev's fallback, and a throw on it is not retried: the
+ * binding may have read the body, and a write must not go twice.
  */
 export function accountsFetch(via?: KeysFetcher, fallback: typeof fetch = fetch): typeof fetch {
   if (!via) return fallback;
   return async (input, init) => {
-    const url = input instanceof Request ? input.url : String(input);
+    if (input instanceof Request) {
+      const request = new Request(input, init);
+      const spare = request.body ? request.clone() : null;
+      let response: Response;
+      try {
+        response = await via.fetch(request);
+      } catch (err) {
+        if (spare || request.signal.aborted) throw err;
+        return fallback(request);
+      }
+      if (await boundWorkerMissing(response)) return fallback(spare ?? request);
+      return response;
+    }
+    const url = String(input);
     let response: Response;
     try {
       response = await via.fetch(url, init);

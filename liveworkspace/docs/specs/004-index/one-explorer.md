@@ -126,9 +126,10 @@ files", "Keep your files safe"), and the hero asks "what are you working on toda
 app's kind. In no app, where New offers every app's kind, the Explorer's own sentences say **files** too (the
 Default Folders dialog, Use as Default, a folder's Delete words), never the kind of the app New would make by default;
 what one app makes or keeps keeps that app's word (an import's line, This Browser's tile). Help follows the same rule:
-in no app there is no view Help button, no sign-in banner article and no help in Search, since liveworkspace.app has
-no Explorer articles of its own and one app's would speak of its kind alone; the Share dialog's help is always the
-item's own app's. It goes to the app's new-item route, where the app creates the Durable Object and
+in no app the view Help button, the sign-in banner's article and the help in Search are liveworkspace.app's own
+Explorer articles (site.md "Help": the overview, Folders, Teams, Moving Work, Sharing Across Apps and Guest or
+Account), never one app's, which would speak of its kind alone; the Share dialog's help is always the item's own
+app's. It goes to the app's new-item route, where the app creates the Durable Object and
 registers it in the index in one step, then opens it.
 
 An empty folder says "Add a <kind> or a subfolder", so its New is a menu of both, New <Kind> (each app's kind in no
@@ -307,7 +308,7 @@ panel keeps its own Home without it, and a first run shows its starting points i
   every app's.
 - **No teams yet.** Signed in where teams can be run, a dashed **Create a Team** tile follows My Work ("Work
   together on shared plans."): it opens New Team, and goes to the team once made. A guest has My Work, then a
-  **Sign In to Work in Teams** tile where the host says where signing in is; a deployment without accounts shows My
+  **Sign In to Use Teams** tile where the host says where signing in is; a deployment without accounts shows My
   Work alone.
 - **Loading** draws tile-shaped placeholders in the same grid, one per space known (at most eight). **A failed
   read** keeps every tile, since names and links need nothing from it, without its mosaic or line, and says
@@ -892,7 +893,10 @@ The journeys, one way each:
    name and an optional organisation, and **Create Team** makes it with you as its admin and opens its view, where
    you invite people. In the editor's panel the same **New Team** sits under the rail's Spaces. The Move dialog
    keeps its **New Team** tile, a shortcut for filing the item being moved into a team made on the spot (name
-   only); it is the same team and the same request.
+   only); it is the same team and the same request. When accounts doesn't answer in time the team may still have
+   been made, so either place says "The team may have been made. Refresh to check." with **Refresh**, which opens
+   the team if it was made and otherwise says none was, never a bare "try again" that could make a second one
+   ([accounts.md](../003-accounts/accounts.md#when-the-accounts-site-doesnt-answer)).
 2. **Run a team.** Choose the team (sidebar or panel rail). Its view opens on the team's card, above its library:
    the organisation, how many have joined and how many are invited; every member with their role, on a disc of
    their Google picture over their initials, painted as their account button in the header is

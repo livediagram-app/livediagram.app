@@ -238,7 +238,9 @@ export function layoutArrowLabel(
 
   // Beside the line at the route middle: each side at the cap, then ever
   // narrower wraps, until one clears every obstacle; else the first side at the cap.
-  const beside = (reason: string): ArrowLabelLayout => {
+  // Taken when the route is too short, its open run is empty, or no block fits on it.
+  // Silent: it runs on every arrow layout, so it never logs.
+  const beside = (): ArrowLabelLayout => {
     const s = route.length / 2;
     const p = pointAt(route, s);
     const u = directionAt(route, s);
@@ -264,7 +266,6 @@ export function layoutArrowLabel(
       if (arrow.labelMaxWidth !== undefined || textWidth <= floor + 0.01) break;
       width = Math.max(floor, textWidth - 1);
     }
-    console.debug('[arrow-label]', arrow.id, 'beside', reason);
     const { b: blk, c: center } = chosen;
     return {
       ...base,
@@ -277,7 +278,7 @@ export function layoutArrowLabel(
     };
   };
 
-  if (route.length < 1) return beside('short-route');
+  if (route.length < 1) return beside();
   const clear = endClearances(arrow);
 
   // The block a span could hold at its centre, or null.
@@ -299,9 +300,9 @@ export function layoutArrowLabel(
 
   const { span, sc } = placementOf(arrow, route, clear, blockOn);
   const [s0, s1] = openRunOf(span, clear);
-  if (s1 <= s0) return beside('empty-run');
+  if (s1 <= s0) return beside();
   const fit = blockOn(span);
-  if (!fit) return beside('no-fit');
+  if (!fit) return beside();
   const { block } = fit;
   const step = (s1 - s0) / SLIDE_DIVISIONS;
   const lo = Math.max(s0, sc - (s1 - s0) / 4);

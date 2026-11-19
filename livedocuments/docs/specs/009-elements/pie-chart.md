@@ -186,7 +186,9 @@ sheet. The editor's side is one copy, shared with livediagram and livedesign, in
 - **Link to Sheet.** The chart's Data section starts with a **Sheet** row: **Link to Sheet** opens a dialog to pick a
   plan (the person's liveplanner plans, most recent first, with Find a plan), one of its Sheets, and a range typed as
   in a spreadsheet (`B2:E9`, prefilled with the sheet's filled extent). A preview under the range shows what the chart
-  will draw (its categories and series, or why it cannot: "That range is not on the sheet."). **Link** writes the
+  will draw (its categories and the series it draws, or why it cannot: "That range is not on the sheet."). A pie,
+  doughnut, column or bar draws the first series alone, so its preview shows that column and says the rest are left out ("A column
+  chart draws the first series."); a line, area or scatter shows every series it draws (Work Tracker 1212). **Link** writes the
   read onto the chart (its slices, or its categories and series, keeping colours by position as liveplanner's own
   charts do) with the source, as one undo step. The dialog notes that the numbers are saved in the document, so
   everyone who can open it sees them.
@@ -217,7 +219,8 @@ sheet. The editor's side is one copy, shared with livediagram and livedesign, in
   sheet.") and Edit Data is not offered: the next read would overwrite a hand edit. Chart type, palette, legend,
   values, axis and animation stay the Editor's.
 - **The range breaks** when a corner row or column is deleted or the sheet is deleted: the chart keeps its values,
-  and the line says "The linked range is gone." with **Link to Sheet** in the Data section to pick it again.
+  and the line says "The linked range is gone." with **Change…** in the Data section to pick it again. Update is not
+  offered then: a read of a range that is gone is refused again (Work Tracker 1212).
 - **Unlink** removes the source and keeps the last values, as one undo step.
 - **Exports and copies.** An export (SVG, PNG, PDF, the document's file) draws the saved values and carries no source,
   as does a copy made through a Community link and a Community visitor's read. A duplicate, a copy-paste or a tab

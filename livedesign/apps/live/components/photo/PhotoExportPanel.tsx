@@ -130,7 +130,7 @@ export function PhotoExportPanel({
   };
   return (
     <div className="flex flex-col gap-4">
-      <BackBar label="All formats" current="Photo" onClick={onBack} disabled={busy} />
+      <BackBar label="All Formats" current="Photo" onClick={onBack} disabled={busy} />
       {photoPages.length > 1 && format !== 'sizes' ? (
         <OptionChoice
           label="Photo Page"

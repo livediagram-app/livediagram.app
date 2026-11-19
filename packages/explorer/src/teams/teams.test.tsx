@@ -466,9 +466,76 @@ describe('New Team', () => {
     expect(await within(form).findByText('You can be in up to 50 teams.')).toBeTruthy();
   });
 
+  // Work Tracker 1071: no answer in time, so the team may exist; Refresh checks rather than making a second one.
+  describe('when accounts did not answer in time', () => {
+    const UNCONFIRMED = 'The team may have been made. Refresh to check.';
+    const unconfirmed = (myTeams: TeamsHost['myTeams']) =>
+      fakeHost(details(), {
+        create: vi.fn(async () => ({ ok: false as const, error: 'team_create_unconfirmed' })),
+        myTeams,
+      });
+    async function tryOps(host: TeamsHost) {
+      const onNavigate = page({ kind: 'all' }, host);
+      fireEvent.click(await screen.findByRole('button', { name: 'New Team' }));
+      const form = await screen.findByRole('dialog', { name: 'New Team' });
+      fireEvent.change(within(form).getByLabelText('Team name'), { target: { value: 'Ops' } });
+      fireEvent.click(within(form).getByRole('button', { name: 'Create Team' }));
+      const alert = await within(form).findByRole('alert');
+      await waitFor(() => expect(alert.textContent).toContain(UNCONFIRMED));
+      return { form, alert, onNavigate };
+    }
+    const listed = (...names: [string, string][]) =>
+      vi.fn(async () => ({
+        teams: names.map(([id, name]) => ({ id, name, memberCount: 1 })),
+        invitations: [],
+      }));
+
+    it('says the team may have been made, and Refresh opens it when it was', async () => {
+      const myTeams = listed(['t1', 'Design']);
+      const host = unconfirmed(myTeams);
+      const { alert, onNavigate } = await tryOps(host);
+      myTeams.mockResolvedValue({
+        teams: [
+          { id: 't1', name: 'Design', memberCount: 2 },
+          { id: 't-ops', name: 'Ops', memberCount: 1 },
+        ],
+        invitations: [],
+      });
+      fireEvent.click(within(alert).getByRole('button', { name: 'Refresh' }));
+      await waitFor(() =>
+        expect(onNavigate).toHaveBeenCalledWith(
+          { kind: 'team', id: 't-ops' },
+          '/explorer/team?id=t-ops',
+        ),
+      );
+      expect(screen.queryByRole('dialog', { name: 'New Team' })).toBeNull();
+      expect(host.create).toHaveBeenCalledTimes(1);
+    });
+
+    it('says none was made when Refresh finds no new team of that name', async () => {
+      const { alert } = await tryOps(unconfirmed(listed(['t1', 'Design'])));
+      fireEvent.click(within(alert).getByRole('button', { name: 'Refresh' }));
+      await waitFor(() =>
+        expect(alert.textContent).toBe('No team was made. You can create it now.'),
+      );
+      expect(within(alert).queryByRole('button', { name: 'Refresh' })).toBeNull();
+    });
+
+    it('keeps the question open when the list cannot be read', async () => {
+      const myTeams = listed(['t1', 'Design']);
+      const { form } = await tryOps(unconfirmed(myTeams));
+      myTeams.mockRejectedValue(new Error('offline'));
+      fireEvent.click(within(form).getByRole('button', { name: 'Refresh' }));
+      await waitFor(() => expect(myTeams).toHaveBeenCalledTimes(2));
+      const again = await within(form).findByRole('button', { name: 'Refresh' });
+      expect(within(form).getByRole('alert').textContent).toContain(UNCONFIRMED);
+      expect(again.getAttribute('aria-disabled')).toBeNull();
+    });
+  });
+
   it('is not offered to a guest, nor without a TeamsHost', async () => {
     page({ kind: 'all' }, fakeHost(), { signedIn: false, signInHref: '/sign-in' });
-    const nudge = await screen.findByRole('link', { name: /Sign in to access Teams/ });
+    const nudge = await screen.findByRole('link', { name: /Sign In to Use Teams/ });
     expect(screen.queryByRole('button', { name: 'New Team' })).toBeNull();
     // Outside the Spaces tree, which holds only treeitems (axe aria-required-children).
     expect(nudge.closest('[role="tree"]')).toBeNull();
@@ -539,6 +606,40 @@ describe('teams in the editor’s panel', () => {
     expect(await rail().findByRole('button', { name: 'Ops' })).toBeTruthy();
     expect(rail().getByRole('button', { name: 'Ops' }).getAttribute('aria-current')).toBe('true');
   });
+
+  // Work Tracker 1071, in each app's editor panel (the one shared panel and host every app passes).
+  it.each(['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'] as const)(
+    'in %s, says an unconfirmed team may have been made, and Refresh opens it',
+    async (app) => {
+      const host = fakeHost(details(), {
+        create: vi.fn(async () => ({ ok: false as const, error: 'team_create_unconfirmed' })),
+        myTeams: vi.fn(async () => ({
+          teams: [{ id: 't-ops', name: 'Ops', memberCount: 1 }],
+          invitations: [],
+        })),
+      });
+      render(
+        <ExplorerPanel
+          app={app}
+          client={createFakeIndex({ items: [] }).client}
+          itemHref={(i) => `/p/${i.id}`}
+          onCreate={vi.fn()}
+          teams={[{ id: 't1', name: 'Design' }]}
+          teamsHost={host}
+        />,
+      );
+      fireEvent.click(rail().getByRole('button', { name: 'New Team' }));
+      const form = await screen.findByRole('dialog', { name: 'New Team' });
+      fireEvent.change(within(form).getByLabelText('Team name'), { target: { value: 'Ops' } });
+      fireEvent.click(within(form).getByRole('button', { name: 'Create Team' }));
+      const alert = await within(form).findByRole('alert');
+      await waitFor(() =>
+        expect(alert.textContent).toContain('The team may have been made. Refresh to check.'),
+      );
+      fireEvent.click(within(alert).getByRole('button', { name: 'Refresh' }));
+      expect(await rail().findByRole('button', { name: 'Ops' })).toBeTruthy();
+    },
+  );
 
   it('offers neither without a TeamsHost', () => {
     panel(null);

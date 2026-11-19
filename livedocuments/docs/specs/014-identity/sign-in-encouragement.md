@@ -69,7 +69,7 @@ never triggers it; staying in one for 5+ minutes does.
 - Contents: a small icon/illustration, a headline ("Sign in to access
   Teams & AI"), one line of supporting copy saying what those give and
   that documents sync ("Share with your team, build with AI, sync across
-  devices."), a primary **Sign in**
+  devices."), a primary **Sign In**
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
 - Responsive: the copy and buttons stack / shrink gracefully on a
@@ -96,7 +96,7 @@ Lists the benefits, each with an icon, headline, and a sentence:
 5. **Your shares, organised.** Manage every share link and expiry from
    one account instead of one browser.
 
-The modal's footer carries the same primary **Sign in** call to action.
+The modal's footer carries the same primary **Sign In** call to action.
 
 It is fine to refine the exact wording over time; the five benefit
 themes (durability, cross-device, teams, identity, share management)
