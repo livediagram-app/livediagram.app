@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentUrl } from '@liveworkspace/vitest-config/sent-request';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { Tab } from '@liveplanner/project';
 import { formsFeeding } from '@/hooks/forms/forms-feeding';
 import { FormBoardStrip } from './FormBoardStrip';
@@ -101,7 +101,14 @@ describe('FormBoardStrip', () => {
     expect(sentUrl(vi.mocked(fetch).mock.calls[0]![0])).toMatch(/form-link$/);
     fireEvent.click(screen.getByRole('button', { name: 'Open form Bug Report' }));
     expect(v.openTab).toHaveBeenCalledWith('f1');
-    expect(screen.getByRole('button', { name: 'Copy form link' })).toBeTruthy();
+    // Copy Form Link copies the form's own address and shows a tick for a moment.
+    const writeText = vi.fn(async () => undefined);
+    vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });
+    const copy = screen.getByRole('button', { name: 'Copy form link' });
+    const glyph = copy.innerHTML;
+    fireEvent.click(copy);
+    expect(writeText).toHaveBeenCalledWith(expect.stringMatching(/AbCdEfGhIjKlMnOpQrStU1$/));
+    await waitFor(() => expect(copy.innerHTML).not.toBe(glyph));
   });
 
   // Work Tracker 1288: at 390 px the pill ran on under the top-right corner card. It now gives way inside the header:
