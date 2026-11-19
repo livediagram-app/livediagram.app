@@ -693,9 +693,13 @@ assignerName?, teamId, doneById?, card?, createdAt, updatedAt}]}`. The same push
   apps side by side during a deploy. Until the log shows real tabs losing rows, that risk buys nothing.
 - Cards and their threads go under the tab id `~cards` (`COLLAB_CARDS_TAB`): each card assigned to someone is an
   action whose `elementId` is the card's id, and each of a card's comment threads a thread whose `elementId` is the
-  thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, type,
+  thread's own id (unique across every item) and `elementLabel` its title, both with `card: {id?, key, ref?, type,
 typeLabel, title, board: {tabId, elementId, title, tabName} | null, column?: {name, color?, done} | null, start?,
-due?}` (`start` and `due` the card's Start and Due days, `YYYY-MM-DD`, on an assigned card's action, for the person's
+due?}` (`ref` the card's number as its plan shows it, its card type's prefix and its number, `WI-100`: the app
+works it out from the plan's card types as it pushes, since nothing reading the index across items has them; a
+reader shows `ref`, else `#` and `key` (`#100`), so a row pushed before refs, or by an app with no prefixes, reads as
+before; a prefix of 1 to 6 upper-case letters and digits starting with a letter, `-`, then `key` itself, else
+dropped, never the push refused; `start` and `due` the card's Start and Due days, `YYYY-MM-DD`, on an assigned card's action, for the person's
   calendar feed below; absent when the card has none, and a malformed one is dropped, never the push refused; `board`
   is where the row opens it; null when no board shows it; `column` the column on that board holding the card's
   status as of the push: its name, its colour (`#rrggbb`) when it has one, and whether it is a done column; null or
@@ -968,7 +972,7 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   Each row is three lines: who is behind it (who assigned it, who it waits on, who mentioned me, who wrote last;
   never me on a mention: a thread that names no one who mentioned me, and whose latest comment is mine, reads
   **A teammate**; semibold when it asks something of me: mine to do, a mention, a thread on my item, new responses), with its age ("12m", "3h", "2d", then
-  the date); what it is (the action, the card's number and title, a card thread's title, the element a thread is
+  the date); what it is (the action, the card's number (its `ref`, `WI-100`, else `#100`) and title, a card thread's title, the element a thread is
   on, the form's heading), and for a Plan card's row (a card, or one of its threads) the card's status chip after
   the title: its column's name on its colour's dot (a done column's without a colour is green, any other's grey),
   the tooltip naming it ("Status: In Progress"), no chip when the card's column is unknown;
