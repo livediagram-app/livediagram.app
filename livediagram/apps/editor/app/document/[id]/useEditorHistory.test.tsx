@@ -9,7 +9,7 @@ vi.mock('@liveworkspace/workbench/lib/announcer', () => ({ announce: vi.fn() }))
 // A locked tab pauses undo and redo on every route (docs/specs/008-canvas/canvas-and-palette.md
 // "A locked tab pauses undo and redo"): the flags the toolbar and the command palette read, and
 // the handlers the keyboard shortcuts call.
-function setup(tabLocked: boolean) {
+function setup(tabLocked: boolean, beforeStep?: () => void) {
   const undoHistory = vi.fn();
   const redoHistory = vi.fn();
   const { result } = renderHook(() =>
@@ -22,6 +22,7 @@ function setup(tabLocked: boolean) {
       tickTabs: vi.fn(),
       undoHistory,
       redoHistory,
+      beforeStep,
       set: { setSelectedId: vi.fn(), setEditingId: vi.fn(), setFormatSourceId: vi.fn() },
     }),
   );
@@ -47,5 +48,27 @@ describe('useEditorHistory on a locked tab', () => {
     result.current.redo();
     expect(undoHistory).toHaveBeenCalledTimes(1);
     expect(redoHistory).toHaveBeenCalledTimes(1);
+  });
+});
+
+// An import's undo brings its view back (docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its
+// view back"): the view hook is told just before each step, and only when the step really happens.
+describe('useEditorHistory tells the view before it steps', () => {
+  it('calls beforeStep ahead of undo and redo', () => {
+    const order: string[] = [];
+    const { result, undoHistory, redoHistory } = setup(false, () => order.push('before'));
+    undoHistory.mockImplementation(() => order.push('undo'));
+    redoHistory.mockImplementation(() => order.push('redo'));
+    result.current.undo();
+    result.current.redo();
+    expect(order).toEqual(['before', 'undo', 'before', 'redo']);
+  });
+
+  it('does not call it when a locked tab ignores the step', () => {
+    const beforeStep = vi.fn();
+    const { result } = setup(true, beforeStep);
+    result.current.undo();
+    result.current.redo();
+    expect(beforeStep).not.toHaveBeenCalled();
   });
 });

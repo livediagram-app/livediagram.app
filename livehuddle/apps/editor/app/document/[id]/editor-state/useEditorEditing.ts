@@ -1,6 +1,7 @@
 'use client';
 
 import { contentAddBlocked } from '@/lib/editor-capabilities';
+import { useImportUndoView } from '@liveworkspace/workbench/hooks/canvas/useImportUndoView';
 import { useTourSquare } from '@/hooks/editor/useTourSquare';
 import { type Element, type Tab } from '@livehuddle/document';
 import { useDoorToggle } from '@/hooks/canvas/useDoorToggle';
@@ -47,7 +48,7 @@ export function useEditorEditing({
   fromFollowing: EditorFollowingSlice;
 }) {
   const { documentId, hydrated, loadedTabIds, tabLoadErrors, warmTabId } = fromDocument;
-  const { canHistoryRedo, canHistoryUndo, commitTabs, redoHistory, tickTabs, undoHistory } =
+  const { canHistoryRedo, canHistoryUndo, commitTabs, redoHistory, tabs, tickTabs, undoHistory } =
     fromHistory;
   const {
     activeId,
@@ -63,8 +64,8 @@ export function useEditorEditing({
   const { isReadOnly, participant } = fromCollaboration;
   const { tabsRef } = fromPersistence;
   const { activeTab } = fromActiveTab;
-  const { getViewportCenter, scrollIntoView } = fromViewport;
-  const { collabDeepLink } = fromFollowing;
+  const { getViewportCenter, scrollIntoView, viewport } = fromViewport;
+  const { collabDeepLink, requestFit } = fromFollowing;
   // --- Element-scoped history helpers (active-tab aware) -------------------
 
   // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md). Until the active tab's content has
@@ -181,6 +182,10 @@ export function useEditorEditing({
 
   const tourSquare = useTourSquare({ activeId, tickTabs });
 
+  // An import's undo puts the view back where it was before the import, and its redo frames it again
+  // (docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its view back").
+  const importUndoView = useImportUndoView({ tabs, activeId, viewport, land: requestFit });
+
   // Undo / redo handlers. See useEditorHistory.
   const editorHistory = useEditorHistory({
     activeId,
@@ -190,6 +195,7 @@ export function useEditorEditing({
     tickTabs,
     undoHistory,
     redoHistory,
+    beforeStep: importUndoView.beforeStep,
     set: { setSelectedId, setEditingId, setFormatSourceId },
   });
   const { tick, undo, redo, canUndo, canRedo } = editorHistory;
@@ -228,6 +234,7 @@ export function useEditorEditing({
     commit,
     currentSelectionIds,
     editsBlocked,
+    importUndoView,
     liveActiveElements,
     redo,
     rememberingCommit,

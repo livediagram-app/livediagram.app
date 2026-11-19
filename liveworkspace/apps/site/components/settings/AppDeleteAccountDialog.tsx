@@ -47,9 +47,9 @@ export async function deleteAppAccount(code: string): Promise<AccountDeletion> {
 }
 
 /** Ends the app's session once its data is gone, staying on the page; the dialog says "Sign out to finish" on a
- *  refusal. */
+ *  refusal. The account is closed, so no app is left signed in: no "Signed out of this app only" notice. */
 export async function endAppSession(): Promise<void> {
-  const left = await appSignOut(() => {});
+  const left = await appSignOut(() => {}, { noteHereOnly: false });
   if (!left) throw new Error('the app did not sign out');
 }
 

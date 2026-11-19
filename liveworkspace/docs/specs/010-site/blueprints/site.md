@@ -19,7 +19,10 @@ Derived from [site.md](../site.md) and [site-switcher.md](../site-switcher.md). 
 One `GET /api/auth/get-session` per page load, however many parts ask (`useSession`): `checking`, then `out` or `in
 { name, fullName, colour, picture, email, joined }`. The Explorer on an app's own address skips it: there the app's
 session is the one that counts (`components/explorer/AppAccountControl.tsx`). A colour picked in Settings repaints the
-avatar at once (`setSessionColour`). `signOut` resolves false when the API refused.
+avatar at once (`setSessionColour`). `signOut` resolves false when the API refused. `AppAccountControl` wraps the
+control in a positioned box with `SignedOutHereNotice` (`@liveworkspace/account-menu`) named by `pageApp()`, so after a
+sign-out of that app alone the reloaded page says so (`components/explorer/app-account-control.test.tsx`; Work Tracker
+1283, accounts.md "Signed out of this app only"); on liveworkspace.app (`pageApp()` null) it draws none.
 
 ### Opening from an open item (`components/explorer/useItemArrival.ts`)
 
@@ -120,7 +123,9 @@ beside an editor's own Delete Account.
 On an app's address (`pageApp()`), the site's `AccountHost` carries `onSignOut: () => appSignOut()` (`lib/explorer/
 app-session.ts`, the account menu's own app sign-out: `POST /api/auth/sign-out?return=<this page>` on the page's own
 origin, then the accounts site's hop it answers; `lib/explorer/app-sign-out.test.ts` pins that it signs out
-everywhere, as the row's copy says, and `site-settings-app-account.test.tsx` pins the copy, Work Tracker 1283) and `deleteAccount`, which opens
+everywhere, as the row's copy says, and `site-settings-app-account.test.tsx` pins the copy, Work Tracker 1283; when
+the accounts site didn't answer it notes "Signed out of this app only" for the reloaded page, see above) and
+`deleteAccount`, which opens
 `components/settings/AppDeleteAccountDialog.tsx`, loaded with `next/dynamic` the first time it is asked for. That
 dialog is `DeleteAccountDialog` from `@liveworkspace/workbench/components/dialogs/DeleteAccountDialog`, unchanged,
 bound to the app: `appName` the app's name, `localItems` its `APP_ITEMS[app].nouns`, `sendCode` a `POST
@@ -128,7 +133,8 @@ bound to the app: `appName` the app's name, `localItems` its `APP_ITEMS[app].nou
 app's router sends both to the app's api) with `Authorization: Bearer` the app account's token (`appAccount()`), read
 through the workbench's `deletionCodeSentOf` and `accountDeletionOf`; no token is `failed`. It reads the person through
 a `DeferredAuthContext` the site provides: `user.email` the app account's address, `deleteAccount` (ending the session
-once the data is gone) `appSignOut` with no navigation, throwing when the app refuses so the dialog says "Sign out to
+once the data is gone) `appSignOut` with no navigation and `noteHereOnly: false` (no app is left signed in, so no
+notice), throwing when the app refuses so the dialog says "Sign out to
 finish". `onDeleted` goes to `/`, the app's landing page; `onDataDeleted` counts `Session Deleted Account` in the app's
 name (`trackAppEvent`). `profileRows` (`@liveworkspace/settings-ui`) draws the `deleteAccount` row under Sign Out from
 `AccountSection.deleteAccount`: a `SettingsRowShell` with the editors' description and a secondary **Delete Account**

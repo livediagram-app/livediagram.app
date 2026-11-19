@@ -4,11 +4,11 @@
 // at its spot in the bed's area, its legs pattering while it walks and a pat answered. WorkdayFace (WorkdayFaces.tsx)
 // draws it; WorkdayFaces.tsx re-exports dogOffset.
 
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react';
+import { memo, useEffect, useEffectEvent, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
-  msToNextLeg,
+  msToNextWalk,
   petLeg,
-  petLegAt,
+  petWalkAt,
   PET_RADIUS,
   WORKDAY_TONES,
   type PetArea,
@@ -20,6 +20,7 @@ import { useReducedMotion } from '@/lib/reduced-motion';
 import { pieceControlProps } from '@/lib/piece-control';
 import { track } from '@/lib/telemetry';
 import { usePetArea } from '@/lib/office/useWorkdayPieces';
+import { dogAtTime, dogTrot } from './dog-trot';
 
 // --- The office dog -------------------------------------------------------------------------------------------------
 
@@ -31,19 +32,22 @@ const DOG_H = 32;
 const DOG_FEET = { x: 22, y: 30 };
 const PAT_MS = 1500;
 
-/** The leg the dog is on now, ticking once a leg (one timer per dog); never under reduced motion. */
-function usePetLeg(still: boolean): number {
-  const [leg, setLeg] = useState(() => petLegAt(Date.now()));
+/**
+ * The walk the dog is on now, ticking once a walk (one timer per dog, every PET_WALK_MS: it walks one leg and rests
+ * lying down through the others); never under reduced motion.
+ */
+function usePetWalk(still: boolean): number {
+  const [leg, setLeg] = useState(() => petWalkAt(Date.now()));
   useEffect(() => {
     if (still) return;
     let t: ReturnType<typeof setTimeout>;
     const arm = () => {
       t = setTimeout(
         () => {
-          setLeg(petLegAt(Date.now()));
+          setLeg(petWalkAt(Date.now()));
           arm();
         },
-        msToNextLeg(Date.now()) + 20,
+        msToNextWalk(Date.now()) + 20,
       );
     };
     arm();
@@ -92,7 +96,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
   // Reduced motion sends a trotting dog straight back to sleep in its bed.
   const still = useReducedMotion();
   const area = usePetArea(element.id);
-  const leg = usePetLeg(still);
+  const leg = usePetWalk(still);
   const at = still ? dogOffset(element, null, 0) : dogOffset(element, area, leg);
   // Where it is going, on the canvas.
   const goal = { x: element.x + at.x, y: element.y + at.y };
@@ -108,22 +112,37 @@ export function PetDog({ element }: { element: ShapeElement }) {
       was && Math.hypot(was.x - goal.x, was.y - goal.y) < 4 * (PET_RADIUS + element.width);
     return near ? was : goal;
   })();
-  const [pos, setPos] = useState(start);
-  const [facingLeft, setFacingLeft] = useState(false);
-  const [trotting, setTrotting] = useState(false);
+  // Where it last came to rest, for whether it is lying down: set as it arrives, the walk's one render after setting
+  // off. Its place on the floor is written to the drawing alone (`place`), never rendered.
+  const [rested, setRested] = useState(start);
+  // Which way it faces and whether it trots are marks on the drawing (`data-pet-left`, `data-pet-trot`), written
+  // straight to it rather than rendered, so setting off and turning cost no render; its stylesheet does the rest
+  // (app/workday-motion.css). The way it faces outlives a re-mount (the view going 3D).
+  const facingLeft = useRef(false);
   const node = useRef<HTMLDivElement>(null);
+  const mark = (name: 'data-pet-left' | 'data-pet-trot', on: boolean) =>
+    node.current?.toggleAttribute(name, on);
+  // The drawing's transform that stands its feet on a canvas point.
+  const offsetOf = (p: { x: number; y: number }) =>
+    `translate(${p.x - element.x - DOG_FEET.x}px, ${p.y - element.y - DOG_FEET.y}px)`;
   const place = (p: { x: number; y: number }) => {
     dogAt.set(element.id, p);
     const el = node.current;
-    if (el)
-      el.style.transform = `translate(${p.x - element.x - DOG_FEET.x}px, ${p.y - element.y - DOG_FEET.y}px)`;
+    if (el) el.style.transform = offsetOf(p);
   };
-  // Walk to the goal along a route round the pieces, a frame at a time, writing the position straight to the drawing
-  // (no render a frame); a render only when it sets off, turns or arrives.
-  // An effect event, so the walk reads the latest position and goal but starts only when the goal, the pieces in the
-  // way or the bed change.
+  // On mount it faces the way it last did and stands where it was; after that the walk places it.
+  const settle = useEffectEvent(() => {
+    node.current?.toggleAttribute('data-pet-left', facingLeft.current);
+    place(still ? goal : start);
+  });
+  useLayoutEffect(() => settle(), []);
+  // Walk to the goal along a route round the pieces: one animation of the drawing's transform along the route
+  // (dog-trot.ts), which the browser's compositor plays, so nothing runs on the page per frame while it trots
+  // (docs/specs/008-canvas/canvas-performance.md "A still Space does nothing"); a render only when it arrives. An
+  // effect event, so the walk reads the latest position and goal but starts only when the goal, the
+  // pieces in the way or the bed change.
   const walk = useEffectEvent((): (() => void) | undefined => {
-    const from = dogAt.get(element.id) ?? pos;
+    const from = dogAt.get(element.id) ?? start;
     // With reduced motion it is simply where it is going (drawn there by the render below); nothing walks.
     if (still) {
       place(goal);
@@ -132,61 +151,51 @@ export function PetDog({ element }: { element: ShapeElement }) {
     const path =
       Math.hypot(goal.x - from.x, goal.y - from.y) < 1 ? [] : findWalkPath(grid, from, goal);
     if (path.length === 0) return;
-    let here = from;
-    let next = 0;
-    let last = performance.now();
-    let frame = 0;
-    let left: boolean | null = null;
-    let started = false;
-    const step = (now: number) => {
-      // It sets off on the first frame, so the effect itself sets no state.
-      if (!started) {
-        started = true;
-        setTrotting(true);
-      }
-      let budget = (DOG_SPEED * Math.min(100, now - last)) / 1000;
-      last = now;
-      while (budget > 0 && next < path.length) {
-        const to = path[next]!;
-        const d = Math.hypot(to.x - here.x, to.y - here.y);
-        if (Math.abs(to.x - here.x) > 0.5) {
-          const goingLeft = to.x < here.x;
-          if (goingLeft !== left) {
-            left = goingLeft;
-            setFacingLeft(goingLeft);
-          }
-        }
-        if (d <= budget) {
-          here = to;
-          next += 1;
-          budget -= d;
-        } else {
-          here = {
-            x: here.x + ((to.x - here.x) * budget) / d,
-            y: here.y + ((to.y - here.y) * budget) / d,
-          };
-          budget = 0;
-        }
-      }
-      place(here);
-      if (next < path.length) frame = requestAnimationFrame(step);
-      else {
-        setPos(here);
-        setTrotting(false);
-      }
+    const trot = dogTrot(from, path, DOG_SPEED, facingLeft.current);
+    const end = path[path.length - 1]!;
+    const el = node.current;
+    // A browser that cannot animate an element (a test's DOM) puts it straight there.
+    if (!el || typeof el.animate !== 'function') {
+      place(end);
+      setRested(end);
+      return;
+    }
+    const anim = el.animate(
+      trot.points.map((p, i) => ({ transform: offsetOf(p), offset: trot.offsets[i] })),
+      { duration: trot.ms, easing: 'linear', fill: 'forwards' },
+    );
+    mark('data-pet-trot', true);
+    const turn = (left: boolean) => {
+      facingLeft.current = left;
+      mark('data-pet-left', left);
     };
-    frame = requestAnimationFrame(step);
+    const timers = trot.turns.map((t) =>
+      t.atMs === 0 ? (turn(t.left), 0) : setTimeout(() => turn(t.left), t.atMs),
+    );
+    let done = false;
+    anim.onfinish = () => {
+      done = true;
+      // The drawing's own transform takes over from the animation where it ended.
+      place(end);
+      anim.cancel();
+      mark('data-pet-trot', false);
+      // It lies down where it got to and rests until its next walk.
+      setRested(end);
+    };
     return () => {
-      cancelAnimationFrame(frame);
-      setPos(dogAt.get(element.id) ?? here);
+      for (const t of timers) clearTimeout(t);
+      if (done) return;
+      // Stopped on its way (a new goal, the view changing): it stands where it had got to.
+      const here = dogAtTime(trot, Number(anim.currentTime ?? 0));
+      anim.cancel();
+      mark('data-pet-trot', false);
+      place(here);
     };
   });
-  // A new goal, a moved bed or new pieces in the way start a fresh walk from where it stands.
   useEffect(() => walk(), [goal.x, goal.y, grid, still, element.x, element.y]);
-  // Asleep only once home: on its way back it trots, awake.
-  const asleep = still
-    ? at.asleep
-    : at.asleep && !trotting && Math.hypot(pos.x - goal.x, pos.y - goal.y) < 1;
+  // Lying down once it has come to rest where it was going, at a spot or in its bed; out of its bed it lies on the floor.
+  const asleep = still ? at.asleep : Math.hypot(rested.x - goal.x, rested.y - goal.y) < 1;
+  const home = asleep && at.asleep;
   const [pat, setPat] = useState(0);
   useEffect(() => {
     if (pat === 0) return;
@@ -197,11 +206,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
     <div
       ref={node}
       className="pointer-events-none absolute left-0 top-0"
-      style={{
-        width: DOG_W,
-        height: DOG_H,
-        transform: `translate(${(still ? goal : pos).x - element.x - DOG_FEET.x}px, ${(still ? goal : pos).y - element.y - DOG_FEET.y}px)`,
-      }}
+      style={{ width: DOG_W, height: DOG_H }}
       data-pet={asleep ? 'asleep' : 'awake'}
     >
       <div className="absolute inset-0" data-pet-stand="">
@@ -216,12 +221,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
             setPat((n) => n + 1);
           }}
         >
-          <DogDrawing
-            asleep={asleep}
-            facingLeft={facingLeft}
-            patted={pat > 0}
-            trotting={trotting && !still}
-          />
+          <DogDrawing asleep={asleep} patted={pat > 0} />
         </button>
         {pat > 0 ? (
           <span
@@ -241,7 +241,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
   // the dog stands up about its own feet (docs/specs/008-canvas/3d-view.md "The office dog"; app/space-3d.css). The
   // wrapper is always there, only its mark changes, so setting off or getting home never re-mounts the dog.
   return (
-    <div className="pointer-events-none absolute inset-0" data-pet-floor={asleep ? undefined : ''}>
+    <div className="pointer-events-none absolute inset-0" data-pet-floor={home ? undefined : ''}>
       {dog}
     </div>
   );
@@ -249,32 +249,30 @@ export function PetDog({ element }: { element: ShapeElement }) {
 
 // A small sandy dog side on: body, head with a darker ear, snout and nose, legs, a red collar and a wagging tail. Asleep
 // it curls up with its head on its paws and breathes.
-function DogDrawing({
+//
+// Drawn in layers, back to front, in its 44 x 32 box (one px a unit): what moves (the tail, each leg, the body's bob
+// and a sleeping breath) is a box of its own between the still drawing's layers, so its motion is a transform on that
+// box, which the browser's compositor plays with no work on the page each frame (docs/specs/008-canvas/
+// canvas-performance.md "A still Space does nothing"; app/workday-motion.css).
+// Memoised: a new leg re-renders the dog's place, never its drawing.
+const DogDrawing = memo(function DogDrawing({
   asleep,
-  facingLeft,
   patted,
-  trotting,
 }: {
   asleep: boolean;
-  facingLeft: boolean;
   patted: boolean;
-  // On its way: the legs step in diagonal pairs and the body bobs (app/workday-motion.css).
-  trotting: boolean;
 }) {
   const light = '#f0d2a8';
-  const leg = (pair: 'a' | 'b') => (trotting ? `lh-pet-leg lh-pet-leg-${pair}` : undefined);
+  // The tail wags fast for a pat; else a few wags as it stops, and all the way while it trots (its stylesheet, on the
+  // dog's `data-pet-trot` mark). Keyed, so a pat and its end each wag afresh.
+  const tail = patted ? 'fast' : 'calm';
   return (
-    <svg
-      viewBox={`0 0 ${DOG_W} ${DOG_H}`}
-      className="absolute inset-0 h-full w-full overflow-visible"
-      aria-hidden
-    >
-      <g transform={facingLeft ? `translate(${DOG_W} 0) scale(-1 1)` : undefined}>
-        {/* The bob is CSS on a group of its own: on the mirrored group it would replace the mirror. */}
-        <g className={trotting ? 'lh-pet-bob' : undefined}>
-          <ellipse cx={22} cy={30} rx={asleep ? 15 : 13} ry={2} fill="#000" opacity={0.14} />
-          {asleep ? (
-            <>
+    <div aria-hidden className="absolute inset-0" data-pet-drawing="">
+      <div className="lh-pet-bob absolute inset-0">
+        {asleep ? (
+          <>
+            <Layer>
+              <ellipse cx={22} cy={30} rx={15} ry={2} fill="#000" opacity={0.14} />
               <path
                 d="M8 26C4 22 8 16 14 17"
                 stroke={T.dog}
@@ -282,7 +280,17 @@ function DogDrawing({
                 fill="none"
                 strokeLinecap="round"
               />
-              <ellipse className="lh-pet-breathe" cx={21} cy={23} rx={13} ry={6.5} fill={T.dog} />
+            </Layer>
+            {/* The breath swells the body up from the floor: its foot (21, 29.5) holds still. */}
+            <div
+              className="lh-pet-breathe absolute inset-0"
+              style={{ transformOrigin: '21px 29.5px' }}
+            >
+              <Layer>
+                <ellipse cx={21} cy={23} rx={13} ry={6.5} fill={T.dog} />
+              </Layer>
+            </div>
+            <Layer>
               <ellipse cx={32} cy={25} rx={6} ry={4.6} fill={T.dog} />
               <ellipse cx={36.5} cy={26.2} rx={3} ry={2.2} fill={light} />
               <circle cx={39.2} cy={25.6} r={1.1} fill={T.dogNose} />
@@ -297,65 +305,92 @@ function DogDrawing({
               <text x={36} y={14} fontSize={6} fontWeight={700} fill="#64748b">
                 z
               </text>
-            </>
-          ) : (
-            <>
-              <path
-                className={`lh-pet-tail${patted ? ' lh-pet-tail-fast' : ''}`}
-                d="M10 16Q4.5 11 6 5"
-                stroke={T.dog}
-                strokeWidth={2.6}
-                fill="none"
-                strokeLinecap="round"
-              />
-              {/* The far legs, then the body, then the near legs: each diagonal pair steps together. */}
-              <rect
-                className={leg('a')}
-                x={11}
-                y={20}
-                width={2.8}
-                height={9}
-                rx={1.2}
-                fill={T.dogDeep}
-              />
-              <rect
-                className={leg('b')}
-                x={25}
-                y={20}
-                width={2.8}
-                height={9}
-                rx={1.2}
-                fill={T.dogDeep}
-              />
+            </Layer>
+          </>
+        ) : (
+          <>
+            <Layer>
+              <ellipse cx={22} cy={30} rx={13} ry={2} fill="#000" opacity={0.14} />
+            </Layer>
+            {/* The tail wags about its root (5.7, 16), keyed on what it is doing so each stop and each pat wags
+                afresh. */}
+            <div
+              key={tail}
+              className={`lh-pet-tail absolute inset-0${patted ? ' lh-pet-tail-fast' : ''}`}
+              style={{ transformOrigin: '5.7px 16px' }}
+              data-pet-tail={tail}
+            >
+              <Layer>
+                <path
+                  d="M10 16Q4.5 11 6 5"
+                  stroke={T.dog}
+                  strokeWidth={2.6}
+                  fill="none"
+                  strokeLinecap="round"
+                />
+              </Layer>
+            </div>
+            {/* The far legs, then the body, then the near legs: each diagonal pair steps together. */}
+            <Leg x={11} height={9} fill={T.dogDeep} pair="a" />
+            <Leg x={25} height={9} fill={T.dogDeep} pair="b" />
+            <Layer>
               <ellipse cx={20} cy={18} rx={11.5} ry={6.5} fill={T.dog} />
-              <rect
-                className={leg('b')}
-                x={14.5}
-                y={20}
-                width={2.8}
-                height={9.5}
-                rx={1.2}
-                fill={T.dog}
-              />
-              <rect
-                className={leg('a')}
-                x={28.5}
-                y={20}
-                width={2.8}
-                height={9.5}
-                rx={1.2}
-                fill={T.dog}
-              />
+            </Layer>
+            <Leg x={14.5} height={9.5} fill={T.dog} pair="b" />
+            <Leg x={28.5} height={9.5} fill={T.dog} pair="a" />
+            <Layer>
               <path d="M29 9.5L30.6 18" stroke="#ef4444" strokeWidth={1.8} strokeLinecap="round" />
               <circle cx={34} cy={11} r={6.2} fill={T.dog} />
               <ellipse cx={39.6} cy={13} rx={3.4} ry={2.5} fill={light} />
               <circle cx={42.4} cy={12.2} r={1.2} fill={T.dogNose} />
               <circle cx={35.6} cy={9.6} r={1} fill={T.dogNose} />
               <path d="M30 5.5Q27 12 30.5 15.5Q33 11 32 5.5Z" fill={T.dogDeep} />
-            </>
-          )}
-        </g>
-      </g>
+            </Layer>
+          </>
+        )}
+      </div>
+    </div>
+  );
+});
+
+// One still layer of the drawing, over the whole box.
+function Layer({ children }: { children: React.ReactNode }) {
+  return (
+    <svg
+      viewBox={`0 0 ${DOG_W} ${DOG_H}`}
+      className="absolute inset-0 h-full w-full overflow-visible"
+      aria-hidden
+    >
+      {children}
     </svg>
+  );
+}
+
+// A leg, hanging from its hip at (x, 20): its own box, so its step (while the dog trots) swings it there.
+function Leg({
+  x,
+  height,
+  fill,
+  pair,
+}: {
+  x: number;
+  height: number;
+  fill: string;
+  pair: 'a' | 'b';
+}) {
+  return (
+    <span
+      className={`lh-pet-leg lh-pet-leg-${pair} absolute block`}
+      style={{
+        left: x,
+        top: 20,
+        width: 2.8,
+        height,
+        borderRadius: 1.2,
+        background: fill,
+        transformOrigin: '50% 0',
+      }}
+      data-pet-leg={pair}
+    />
   );
 }

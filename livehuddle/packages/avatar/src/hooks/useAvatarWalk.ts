@@ -156,6 +156,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     destRef.current = null;
   };
   const heldRef = useRef<AvatarHeldKeys>({ ...NO_KEYS_HELD });
+  // Wakes the animation loop after an action sets it something to do (useAvatarWalkLoop.ts); a no-op off the mode.
+  const wakeRef = useRef<() => void>(() => {});
   const travelledRef = useRef(0);
   // Jump physics + when the current wave started (null = not waving).
   const liftRef = useRef(0);
@@ -256,6 +258,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     destRef.current = point;
     aimRef.current = point;
     arriveRef.current = onArrive ?? null;
+    wakeRef.current();
   };
 
   // Take a shove from a peer: slide a short way along their direction. It walks
@@ -277,6 +280,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       x: from.x + (dx / len) * AVATAR_SHOVE_DISTANCE,
       y: from.y + (dy / len) * AVATAR_SHOVE_DISTANCE,
     };
+    wakeRef.current();
   };
 
   // Play one of the panel's reactions (docs/specs/008-canvas/avatar-mode.md). It performs ON THE SPOT, so
@@ -286,6 +290,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     stopWalk();
     heldRef.current = { ...NO_KEYS_HELD };
     reactionRef.current = { kind, startedAt: performance.now() };
+    wakeRef.current();
     // A move performed, never which (docs/specs/008-canvas/avatar-mode.md "Telemetry").
     avatarBindings.track('Canvas', 'Used', 'AvatarAction');
   };
@@ -374,6 +379,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     jumpVyRef.current = AVATAR_JUMP_VELOCITY;
     liftRef.current = 0.001; // off the ground, so the loop takes over
     waveStartRef.current = performance.now();
+    wakeRef.current();
   };
 
   // Right-click ON the character toggles male / female (docs/specs/008-canvas/avatar-mode.md). Returns
@@ -398,6 +404,8 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
       // An arrow key stands you up and walks on (docs/specs/009-elements/chair.md "Any movement stands you up"); keys
       // typed into a field never reach here (useAvatarKeys' isTypingTarget guard).
       standUp();
+      // The arrow is held as this returns: the loop's first frame reads it.
+      wakeRef.current();
     },
     onJump: jump,
   });
@@ -429,6 +437,7 @@ export function useAvatarWalk<E extends AvatarSceneElement>({
     show,
     onPresence,
     seatFields,
+    wakeRef,
   });
 
   // The standing and idle snapshots, the drink and the heartbeat (useAvatarWalkPresence.ts).

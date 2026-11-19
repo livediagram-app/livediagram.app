@@ -8,6 +8,7 @@ import { APP_TOKEN_ASK_TIMEOUT_MS, appAccountOf, appSignOut, resetAppAccount } f
 import { ACCOUNT_TRIGGER_BOX } from './face';
 import { avatarColour } from './initials';
 import { SILENT_RETRY_GLOBAL } from '@liveworkspace/auth-client/silent';
+import { takeSignedOutHere } from '@liveworkspace/auth-client/signed-out-here';
 import { AccountMenuPlaceholder, DeferredAccountMenu, type DeferredMenuProps } from './placeholder';
 
 const HINT = 'lp_signed_in';
@@ -638,6 +639,21 @@ describe('appSignOut', () => {
     const go = vi.fn();
     expect(await appSignOut(go)).toBe(true);
     expect(go).toHaveBeenCalledWith(hop);
+  });
+
+  // "Signed out of this app only": the landing page's header takes the note (signed-out-notice.tsx).
+  it('notes a sign-out of this app alone for the page it lands on, unless told not to', async () => {
+    sessionStorage.clear();
+    const go = vi.fn();
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ signedIn: false, next: null })));
+    expect(await appSignOut(go, { noteHereOnly: false })).toBe(true);
+    expect(takeSignedOutHere()).toBe(false);
+    expect(await appSignOut(go)).toBe(true);
+    expect(takeSignedOutHere()).toBe(true);
+    const hop = 'https://www.liveworkspace.app/api/auth/end-session?ticket=t';
+    fetchMock.mockResolvedValue(new Response(JSON.stringify({ signedIn: false, next: hop })));
+    expect(await appSignOut(go)).toBe(true);
+    expect(takeSignedOutHere()).toBe(false);
   });
 
   it('leaves everything as it was when the API refuses or is unreachable', async () => {

@@ -109,7 +109,7 @@ export function SettingsDeleteAccountRow({ row }: { row: SettingsDeleteAccountRo
           onDeleted={async () => {
             // The data delete already completed inside the dialog;
             // sign out to clear client state and land on marketing.
-            await signOut({ redirectUrl: '/' });
+            await signOut({ redirectUrl: '/', accountClosed: true });
           }}
         />
       ) : null}

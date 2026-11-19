@@ -57,6 +57,7 @@ export function useAvatarWalkLoop({
   show,
   onPresence,
   seatFields,
+  wakeRef,
 }: {
   active: boolean;
   posRef: RefObject<AvatarPoint | null>;
@@ -83,10 +84,15 @@ export function useAvatarWalkLoop({
   show: (patch: Partial<AvatarPose>) => void;
   onPresence?: (snapshot: AvatarSnapshot | null) => void;
   seatFields: () => { seatedOn: string | null; seat?: SeatClaim };
+  // Set to the loop's wake while the mode is on: the walk's actions (a click-walk, a new arrow, a hop, a reaction, a
+  // shove) call it after setting what the loop reads, so a still character asks for no frames at all.
+  wakeRef: RefObject<() => void>;
 }) {
-  // The animation loop. Only runs while the mode is active, and only writes
-  // state on frames where something actually changed, so an idle avatar costs
-  // one no-op rAF callback per frame and no re-renders.
+  // The animation loop. Only runs while the mode is active and the character has something to do (avatar-mode.md
+  // "A still character asks for no frames", canvas-performance.md "A still Space does nothing"): an arrow held, a
+  // walk under way, a hop, a wave or a reaction. It runs one more frame once all of that is over, so the last frame
+  // writes the stop (walking false) and the presence that goes with it, then sleeps until the next wake. It only
+  // writes state on frames where something changed, so a frame that changes nothing renders nothing.
   // One frame of the walk, as an effect event: it reads the newest facing, costume, zoom and callbacks,
   // so the loop below attaches once per activation instead of re-attaching whenever they change.
   const frame = useEffectEvent((now: number, dt: number) => {
@@ -241,15 +247,35 @@ export function useAvatarWalkLoop({
   });
   useEffect(() => {
     if (!active) return;
+    // Whether the character has anything to animate: read before and after each frame.
+    const busy = () =>
+      arrowDirection(heldRef.current) !== null ||
+      targetRef.current !== null ||
+      liftRef.current > 0 ||
+      waveStartRef.current !== null ||
+      reactionRef.current !== null;
     let raf = 0;
-    let last = performance.now();
+    let last = 0;
     const tick = (now: number) => {
-      const dt = Math.min(0.05, (now - last) / 1000); // cap after a tab-out
+      const dt = Math.min(0.05, Math.max(0, now - last) / 1000); // cap after a tab-out
       last = now;
+      const was = busy();
       frame(now, dt);
+      raf = was || busy() ? requestAnimationFrame(tick) : 0;
+    };
+    const wake = () => {
+      if (raf !== 0) return;
+      last = performance.now();
       raf = requestAnimationFrame(tick);
     };
-    raf = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf);
-  }, [active]);
+    wakeRef.current = wake;
+    // One frame on entry, for whatever the entry set going.
+    wake();
+    return () => {
+      cancelAnimationFrame(raf);
+      wakeRef.current = noop;
+    };
+  }, [active, wakeRef, heldRef, targetRef, liftRef, waveStartRef, reactionRef]);
 }
+
+const noop = () => {};
