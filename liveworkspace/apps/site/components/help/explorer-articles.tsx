@@ -260,8 +260,8 @@ const TEAMS: Content = {
       body: (
         <p>
           Teams need an account, so team rows and <strong>New Team</strong> appear only when you are
-          signed in. A guest sees a <strong>Sign in to access Teams</strong> card under Spaces
-          instead, and the files made as a guest come with them when they sign in (
+          signed in. A guest sees a <strong>Sign In to Use Teams</strong> card under Spaces instead,
+          and the files made as a guest come with them when they sign in (
           <a href="/help/explorer/signing-in">Guest or Account</a>).
         </p>
       ),
