@@ -65,13 +65,12 @@ function isLine(node: Node): node is HTMLElement {
   return node instanceof HTMLElement && node.hasAttribute(LINE_ATTR);
 }
 
-// A run span holding only newlines.
-function isNewlineSpan(node: Node): boolean {
-  if (!(node instanceof HTMLElement)) return false;
-  const text = node.textContent ?? '';
-  if (text === '') return false;
-  for (let i = 0; i < text.length; i++) if (text.charCodeAt(i) !== 10) return false;
-  return true;
+// How many newlines a run span holding only newlines holds; 0 for anything else.
+function newlineSpanLength(node: Node): number {
+  const text = node instanceof HTMLElement ? node.textContent : null;
+  if (!text) return 0;
+  for (let i = 0; i < text.length; i++) if (text.charCodeAt(i) !== 10) return 0;
+  return text.length;
 }
 
 function newlinesIn(text: string): number {
@@ -95,8 +94,9 @@ export function linesStillApart(editor: HTMLElement, text: string): boolean {
       afterLine = true;
       continue;
     }
-    if (!isNewlineSpan(child)) return false;
-    newlines += (child.textContent ?? '').length;
+    const length = newlineSpanLength(child);
+    if (length === 0) return false;
+    newlines += length;
     afterLine = false;
   }
   return newlines === newlinesIn(text);

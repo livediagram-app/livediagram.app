@@ -160,6 +160,9 @@ const HELD_AT_100 = [
   // The Tab Style dialog the five editors kept as near-copies, one home with each editor's profile
   // (liveworkspace/docs/specs/011-workbench/tab-style.md).
   'src/components/dialogs/tab-style/*.{ts,tsx}',
+  // Mixed-direction text painted a line at a time in the shared label editor
+  // (liveworkspace/docs/specs/011-workbench/label-editor.md, Work Tracker 1188).
+  'src/components/label-editor/rich-text-lines.ts',
 ];
 
 export default defineProject({
