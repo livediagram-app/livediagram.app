@@ -1,13 +1,3 @@
 // The hug measurer behind a text box: the shared one (liveworkspace/docs/specs/011-workbench/label-editor.md), bound
-// to this editor's label run style.
-
-import {
-  createTextHugMeasure,
-  labelRuns,
-} from '@liveworkspace/workbench/components/label-editor/text-hug-measure';
-import { effectiveRunStyle } from '@/components/canvas/label-style';
-
-export { labelRuns };
-
-export const { measureLabelBlock, measureTextHug, measureDrawnText } =
-  createTextHugMeasure(effectiveRunStyle);
+// to the plain label run style, kept at this path for its importers and the tests that mock it.
+export * from '@liveworkspace/workbench/components/label-editor/plain-text-hug-measure';

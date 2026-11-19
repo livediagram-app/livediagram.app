@@ -140,8 +140,11 @@ describe('linesStillApart', () => {
     ];
     const editor = painted(runs);
     const all = runsPlainText(runs);
+    // Warmed once, then the best of nine: a process's CPU time also counts its collector and compiler threads, and one
+    // of those landing on every one of five short runs once failed a 2 ms check against its 5 ms budget.
+    linesStillApart(editor, all);
     let best = Infinity;
-    for (let i = 0; i < 5; i++)
+    for (let i = 0; i < 9; i++)
       best = Math.min(
         best,
         cpuMsOf(() => linesStillApart(editor, all)),

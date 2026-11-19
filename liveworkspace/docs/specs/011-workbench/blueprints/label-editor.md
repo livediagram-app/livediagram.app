@@ -20,6 +20,7 @@ Scope, by file (all under `packages/workbench/src/components/label-editor/`):
 | `fit-multiline-text.ts`       | `fitMultilineFontPx`: the auto-fit of a multi-line label on Scale                                   |
 | `text-hug-font.ts`            | `TEXT_HUG_LEADING`, `textHugFontPx`, `MeasureTextBlock`: what the measurer and the geometry share   |
 | `text-hug-measure.ts`         | `createTextHugMeasure(runStyle)`, `labelRuns`, `drawnLabelFont`: the hug measurer                   |
+| `plain-text-hug-measure.ts`   | the hug measurer bound to the plain run style, which every editor but livedocuments re-exports      |
 
 Each product's binding, in all five editors (`apps/editor/…`, `apps/live/…` in livedesign):
 
@@ -27,7 +28,7 @@ Each product's binding, in all five editors (`apps/editor/…`, `apps/live/…` 
 | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `components/canvas/RichTextEditor.tsx`  | `<LabelEditor>` with its `RichTextToolbar`, its `track`, and livediagram's mind keys and Escape; liveplanner's and livehuddle's toolbars take no `element` |
 | `components/canvas/label-style.ts`      | `export *` from the shared module; livedocuments overrides `effectiveRunStyle` with its effects                                                            |
-| `components/canvas/text-hug-measure.ts` | `createTextHugMeasure(effectiveRunStyle)`; livediagram adds `measureDrawnMindLabel`                                                                        |
+| `components/canvas/text-hug-measure.ts` | `export *` from `plain-text-hug-measure.ts`; livedocuments binds `createTextHugMeasure` with its effects style; livediagram adds `measureDrawnMindLabel`   |
 | `lib/text-hug.ts`                       | the text box's geometry, over `text-hug-font.ts`                                                                                                           |
 
 Tests mock the bindings at their old paths (`vi.mock('@/components/canvas/text-hug-measure')`), so they keep them.
