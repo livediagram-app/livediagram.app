@@ -88,6 +88,7 @@ import {
   revokeCodes,
   joined,
   anonymise,
+  assistantRevoked,
   receiveShares,
   exportTables,
 } from './plan-room-doors';
@@ -512,6 +513,10 @@ export class PlanRoom extends DurableObject<Env> {
 
   anonymise(planId: string, personId: string, guestIds: readonly string[] = []): Promise<number> {
     return anonymise(this, planId, personId, guestIds);
+  }
+
+  assistantRevoked(planId: string, personId: string, client: string): Promise<number> {
+    return assistantRevoked(this, planId, personId, client);
   }
 
   // Take the owner and team a grant names as the plan's own copy. A failure is logged, never the caller's: the
