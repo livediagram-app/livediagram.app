@@ -264,6 +264,27 @@ describe('outlineStroke: limits and failures', () => {
     expect(still).toEqual({ pts: [[5, 5]], corner: [true], closed: false });
   });
 
+  it('keeps points that share only an x or only a y with the one before, and a closed end apart from its start', () => {
+    // A closed contour whose last point sits straight below its start (same x): nothing is dropped.
+    const t = traceStroke(path('M0 0L10 0L10 10L0 10')[0]!, 0.01);
+    expect(t.pts).toHaveLength(4);
+    const closed: Contour = {
+      start: { x: 0, y: 0 },
+      segments: [
+        { c1: { x: 0, y: 0 }, c2: { x: 0, y: 10 }, to: { x: 0, y: 10 }, line: true },
+        { c1: { x: 0, y: 10 }, c2: { x: 10, y: 10 }, to: { x: 10, y: 10 }, line: true },
+        { c1: { x: 10, y: 10 }, c2: { x: 0, y: 5 }, to: { x: 0, y: 5 }, line: true },
+      ],
+      closed: true,
+    };
+    expect(traceStroke(closed, 0.01).pts).toEqual([
+      [0, 0],
+      [0, 10],
+      [10, 10],
+      [0, 5],
+    ]);
+  });
+
   it('draws a round part of a stroke thinner than the tolerance as a single chord', () => {
     const ring = strokeRing(traceStroke(path('M0 0H10')[0]!, 0.125), 0.1, ROUND, 0.125)!;
     // Two sides and no arc points: the caps' half circles sag less than the tolerance.
