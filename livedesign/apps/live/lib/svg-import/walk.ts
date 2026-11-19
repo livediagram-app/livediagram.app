@@ -3,7 +3,7 @@
 // cascade. Reads only what it needs from an inert document and never copies markup: scripts, foreignObject,
 // embedded media and references outside the file are never followed. Bounded by the element budget and the `<use>`
 // depth.
-import { SVG_IMPORT_MAX_ELEMENTS, SVG_USE_MAX_DEPTH } from './constants';
+import { SVG_IMPORT_MAX_ELEMENTS, SVG_MITER_LIMIT, SVG_USE_MAX_DEPTH } from './constants';
 import { parseColour, type Rgba } from './colour';
 import {
   IDENTITY,
@@ -34,12 +34,40 @@ const XLINK_NS = 'http://www.w3.org/1999/xlink';
 export type Drawn = {
   contours: Contour[];
   fill: Rgba | null;
-  // The stroke's width in root user units (its own width times its transforms' scale).
-  stroke: (Rgba & { width: number }) | null;
+  // The stroke's width in root user units (its own width times its transforms' scale), and how its ends and corners
+  // are drawn (read for an outlined stroke; SVG's defaults when absent).
+  stroke: (Rgba & { width: number } & Partial<LineStyle>) | null;
   fillRule: 'nonzero' | 'evenodd';
   // The element's opacity, multiplied down its groups.
   opacity: number;
 };
+
+export type LineCap = 'butt' | 'round' | 'square';
+export type LineJoin = 'miter' | 'round' | 'bevel';
+/** A stroke's caps, joins and miter limit. */
+export type LineStyle = { cap: LineCap; join: LineJoin; miterLimit: number };
+
+/** A stroke's caps, joins and miter limit from its declarations: SVG's defaults (butt, miter, 4) for anything unread;
+ *  SVG 2's `miter-clip` and `arcs` drawn as miter (D21); a miter limit under 1 is not valid and is ignored. */
+export function lineStyleFrom(style: Declarations): LineStyle {
+  const cap = style['stroke-linecap']?.trim().toLowerCase();
+  const join = style['stroke-linejoin']?.trim().toLowerCase();
+  const limit = Number(style['stroke-miterlimit']?.trim() ?? NaN);
+  return {
+    cap: cap === 'round' || cap === 'square' ? cap : 'butt',
+    join: join === 'round' || join === 'bevel' ? join : 'miter',
+    miterLimit: Number.isFinite(limit) && limit >= 1 ? limit : SVG_MITER_LIMIT,
+  };
+}
+
+/** A drawn stroke's line style, SVG's defaults where it carries none. */
+export function lineStyleOf(stroke: Partial<LineStyle>): LineStyle {
+  return {
+    cap: stroke.cap ?? 'butt',
+    join: stroke.join ?? 'miter',
+    miterLimit: stroke.miterLimit ?? SVG_MITER_LIMIT,
+  };
+}
 
 export type WalkResult =
   | { ok: true; drawn: Drawn[]; report: SvgImportReport; viewport: Viewport }
@@ -73,6 +101,9 @@ const INHERITED: readonly StyleProperty[] = [
   'fill',
   'stroke',
   'stroke-width',
+  'stroke-linecap',
+  'stroke-linejoin',
+  'stroke-miterlimit',
   'fill-rule',
   'fill-opacity',
   'stroke-opacity',
@@ -217,7 +248,9 @@ export function walkSvg(root: Element, pxPerUnit: number): WalkResult {
     const strokePaint = paint(style.stroke, style, 'none');
     const width = parseLength(style['stroke-width'] ?? null, 'd', viewport, 1);
     const stroke =
-      strokePaint && width > 0 ? { ...strokePaint, width: width * scaleOf(ctx.matrix) } : null;
+      strokePaint && width > 0
+        ? { ...strokePaint, width: width * scaleOf(ctx.matrix), ...lineStyleFrom(style) }
+        : null;
     const fillAlpha = fill ? fill.alpha * fraction(style['fill-opacity']) : 0;
     const strokeAlpha = stroke ? stroke.alpha * fraction(style['stroke-opacity']) : 0;
     const shownFill = fill && fillAlpha > 0 ? fill : null;

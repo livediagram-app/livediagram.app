@@ -26,3 +26,14 @@ export const SVG_NONZERO_MAX_POINTS = 50_000;
 
 /** The arc-precision scale is recomputed when the landed scale passes the guess by this factor. */
 export const SVG_RESCALE_FACTOR = 1.5;
+
+/** An outlined stroke's centreline, and each of its round caps and joins, are traced within this, in landed px: the
+ *  outline as a whole stays within the 0.25 px budget. */
+export const SVG_OUTLINE_TOLERANCE_PX = 0.125;
+
+/** A landed stroke is outlined only past Extra thick times this (D22), so a stroke at 7 px give or take rounding
+ *  stays a stroke. */
+export const SVG_OUTLINE_SLACK = 1.001;
+
+/** SVG's default `stroke-miterlimit`. */
+export const SVG_MITER_LIMIT = 4;

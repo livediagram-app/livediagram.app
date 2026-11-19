@@ -20,6 +20,11 @@ vi.mock('@liveworkspace/trusted-types', async (importOriginal) => {
   };
 });
 
+const logSpy = vi.hoisted(() => ({ calls: [] as unknown[][] }));
+vi.mock('@liveworkspace/workbench/lib/debug-log', () => ({
+  debugLog: (...args: unknown[]) => logSpy.calls.push(args),
+}));
+
 const BOX = { x: 100, y: 50, width: 400, height: 300 };
 const deps = { loadEngine: loadCombineEngine };
 const svg = (body: string, attrs = 'viewBox="0 0 100 100"') =>
@@ -139,28 +144,13 @@ describe('importSvgText: geometry', () => {
     expect(paths[0]!.strokeWidth).toBe('thick');
   });
 
-  it('fits a line icon no larger than its thickest stroke allows at Extra thick, centred', async () => {
-    // A 24-unit icon with 2-unit strokes would fit a 400 px box at 16.7x, its strokes 33 px: capped at 3.5x (7 px).
-    const { paths } = await shapes(
-      svg(
-        '<path d="M2 2 L22 22" fill="none" stroke="#000" stroke-width="2"/><rect x="2" y="2" width="4" height="4" fill="#f00"/>',
-        'viewBox="0 0 24 24"',
-      ),
-      { x: 0, y: 0, width: 400, height: 400 },
-    );
-    expect(paths[0]!.strokeWidth).toBe('extra-thick');
-    expect(paths[0]!.width).toBeCloseTo(70, 5);
-    expect(paths[0]!.x).toBeCloseTo(200 - 35, 5);
-    // The filled square scales with it: 4 units at 3.5x.
-    expect(paths[1]!.width).toBeCloseTo(14, 5);
-  });
-
   it('fills the box when its strokes land within the presets, and with no strokes at all', async () => {
     const thin = await shapes(
       svg('<path d="M0 0 L100 100" fill="none" stroke="#000" stroke-width="0.5"/>'),
       { x: 0, y: 0, width: 400, height: 400 },
     );
-    expect(thin.paths[0]!.width).toBeCloseTo(400, 5);
+    // The stroke's half width either side counts: 100.5 units fill 400 px, the line itself 398 px.
+    expect(thin.paths[0]!.width).toBeCloseTo((400 * 100) / 100.5, 5);
     const filled = await shapes(svg('<rect width="10" height="10"/>', 'viewBox="0 0 10 10"'), {
       x: 0,
       y: 0,
@@ -386,5 +376,142 @@ describe('importSvgText: limits', () => {
     });
     expect(count).toBe(1_000);
     expect(ms).toBeLessThan(cpuBudgetMs(3_000));
+  });
+});
+
+// Work Tracker 1104: bold stroked icons fill the page, their strokes past Extra thick outlined.
+describe('importSvgText: strokes', () => {
+  // A 1024 px page's safe area (the page less its 40 px margin).
+  const PAGE = { x: 40, y: 40, width: 944, height: 944 };
+  const lucide = (body: string) =>
+    svg(
+      body,
+      'viewBox="0 0 24 24" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"',
+    );
+  const boxOf = (paths: PathElement[]) => ({
+    x0: Math.min(...paths.map((p) => p.x)),
+    y0: Math.min(...paths.map((p) => p.y)),
+    x1: Math.max(...paths.map((p) => p.x + p.width)),
+    y1: Math.max(...paths.map((p) => p.y + p.height)),
+  });
+
+  it('outlines a bold Lucide icon so it fills a 1024 px page with its source proportions', async () => {
+    // Lucide's circle-check: a 20-unit ring and a tick, 2-unit round strokes.
+    const { paths, made } = await shapes(
+      lucide('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'),
+      PAGE,
+    );
+    expect(made.outlined).toBe(2);
+    expect(paths).toHaveLength(2);
+    for (const p of paths) {
+      expect(p.fillColor).toBe('#1d4ed8');
+      expect(p.strokeWidth).toBe('none');
+      expect(p.strokeColor).toBeUndefined();
+      expect(p.closed).toBe(true);
+    }
+    // The ring with its stroke is 22 units: it fills the safe area, centred.
+    const b = boxOf(paths);
+    expect(b.x1 - b.x0).toBeCloseTo(944, 0);
+    expect(b.y1 - b.y0).toBeCloseTo(944, 0);
+    expect(b.x0).toBeCloseTo(40, 0);
+    // The ring keeps its hole: a stroke 2 / 22 of the width, so its hole is 18 / 22 across.
+    const ring = paths[0]!;
+    expect(ring.subpaths).toHaveLength(1);
+    const hole = ring.subpaths![0]!;
+    const holeWidth =
+      (Math.max(...hole.map((n) => n.nx)) - Math.min(...hole.map((n) => n.nx))) * ring.width;
+    expect(holeWidth).toBeCloseTo((944 * 18) / 22, 0);
+    // The tick lands in proportion: 6 units plus its 2-unit stroke across, of 22.
+    expect(paths[1]!.width).toBeCloseTo((944 * 8) / 22, 0);
+  });
+
+  it('outlines a Tabler icon with its square caps and miter joins as drawn', async () => {
+    const { paths } = await shapes(
+      svg(
+        '<path d="M4 4h16v16" fill="none" stroke="#000" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter"/>',
+        'viewBox="0 0 24 24"',
+      ),
+      PAGE,
+    );
+    // A square cap and a mitered corner make a sharp L, 18 units square with its stroke: 4 corners and 2 at the
+    // inside, nothing rounded.
+    expect(paths[0]!.nodes).toHaveLength(6);
+    expect(paths[0]!.width).toBeCloseTo(944, 0);
+    expect(paths[0]!.height).toBeCloseTo(944, 0);
+  });
+
+  it('keeps a thin-stroked icon editable as strokes', async () => {
+    // A 1024-unit drawing with 4-unit strokes lands at about 0.9x: Medium-ish lines, well under Extra thick.
+    const { paths, made } = await shapes(
+      svg(
+        '<circle cx="512" cy="512" r="400" fill="none" stroke="#111" stroke-width="4"/><path d="M312 512h400" fill="none" stroke="#111" stroke-width="4"/>',
+        'viewBox="0 0 1024 1024"',
+      ),
+      PAGE,
+    );
+    expect(made.outlined).toBe(0);
+    expect(paths.map((p) => p.strokeColor)).toEqual(['#111111', '#111111']);
+    expect(paths[1]!.closed).toBe(false);
+    expect(paths.every((p) => p.strokeWidth !== 'none' && p.fillColor === undefined)).toBe(true);
+  });
+
+  it('outlines only the strokes past 7 px, and lands a filled and stroked element as its fill below its outline', async () => {
+    const { paths, made } = await shapes(
+      svg(
+        '<rect x="2" y="2" width="20" height="20" fill="#fde047" stroke="#000" stroke-width="2"/><path d="M6 12h12" fill="none" stroke="#f00" stroke-width="0.1"/>',
+        'viewBox="0 0 24 24"',
+      ),
+      PAGE,
+    );
+    expect(made.outlined).toBe(1);
+    expect(paths.map((p) => [p.fillColor, p.strokeColor, p.strokeWidth])).toEqual([
+      ['#fde047', undefined, 'none'],
+      ['#000000', undefined, 'none'],
+      // 0.1 units at 43x: about 4.3 px, a stroke still.
+      [undefined, '#ff0000', 'thick'],
+    ]);
+  });
+
+  it('carries the stroke opacity onto the outline and lets a dot paint', async () => {
+    const { paths } = await shapes(
+      lucide('<path d="M12 8h.01" stroke-opacity="0.5" opacity="0.8"/><path d="M12 12v4"/>'),
+      PAGE,
+    );
+    expect(paths[0]!.opacity).toBe(0.4);
+    expect(paths[0]!.fillColor).toBe('#1d4ed8');
+  });
+
+  it('drops a butt-capped zero-length stroke past 7 px, as SVG paints nothing for it', async () => {
+    const { paths } = await shapes(
+      svg(
+        '<path d="M12 8h0" stroke="#000" stroke-width="2"/><path d="M4 4h16" stroke="#000" stroke-width="2"/>',
+        'viewBox="0 0 24 24"',
+      ),
+      PAGE,
+    );
+    expect(paths).toHaveLength(1);
+  });
+
+  it('keeps a stroke a stroke when the engine cannot outline it', async () => {
+    const real = await loadCombineEngine();
+    const r = await importSvgText(lucide('<path d="M4 4h16"/>'), PAGE, 'dialog', {
+      loadEngine: async () => ({
+        ...real,
+        union: () => {
+          throw new Error('round-off');
+        },
+      }),
+    });
+    if (r.kind !== 'shapes') throw new Error(r.kind);
+    expect(r.made.outlined).toBe(0);
+    expect(r.paths[0]!.strokeWidth).toBe('extra-thick');
+  });
+
+  it('logs how many strokes were outlined', async () => {
+    logSpy.calls.length = 0;
+    await shapes(lucide('<path d="M4 4h16"/>'), PAGE);
+    expect(logSpy.calls).toEqual([
+      ['[svg-import]', expect.objectContaining({ outcome: 'shapes', outlined: 1, nonzero: 0 })],
+    ]);
   });
 });
