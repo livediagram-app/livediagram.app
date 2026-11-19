@@ -179,8 +179,9 @@ whitespace; a single word wider than the cap is not broken (D22).
 
 ## Observability
 
-`console.debug('[arrow-label]', id, mode, reason)` when a label falls back to beside (`reason`:
-`short-route` / `empty-run` / `no-fit`). No log on the normal path.
+None. The layout runs for every arrow on every layout pass, so it never logs, not even when a label falls back to
+beside (a short route, an empty open run, no block that fits): a `console.debug` there once flooded every editor's
+console (Work Tracker 1106). A test spies on the console to keep it silent.
 
 ## Testing
 

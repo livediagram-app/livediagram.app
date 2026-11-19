@@ -7,6 +7,7 @@ import { FOCUS_PRESS_MESSAGE, focusPressOutcome } from '@/lib/focus-audience';
 import { track } from '@/lib/telemetry';
 import { useEditorBroadcast } from '@/hooks/collab/useEditorBroadcast';
 import { useEditorViewport as useCanvasViewport } from '@/hooks/canvas/useEditorViewport';
+import { useImportUndoView } from '@liveworkspace/workbench/hooks/canvas/useImportUndoView';
 import { useDragPreviewBroadcast } from '@/hooks/collab/useDragPreviewBroadcast';
 import type { EditorDocumentSlice } from './useEditorDocument';
 import type { EditorHistorySlice } from './useEditorUndoState';
@@ -136,6 +137,9 @@ export function useEditorViewport({
   } = useCanvasViewport({ activeTab, readSelection });
   // A phone's keyboard never hides the caret on the canvas (useKeyboardAvoidance).
   useKeyboardAvoidance({ canvasMainRef, zoomRef, setViewportOffset });
+  // An import's undo puts the view back where it was before the import, and its redo lands on it again
+  // (docs/specs/008-canvas/canvas-and-palette.md "Undoing an import brings its view back").
+  const importUndoView = useImportUndoView({ tabs, activeId, viewport, land: landOnTab });
 
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): ask everyone else to come and look at this
   // element, on our tab, each at their own zoom.
@@ -175,6 +179,7 @@ export function useEditorViewport({
     fitToScreen,
     getViewportCanvasRect,
     getViewportCenter,
+    importUndoView,
     isCentredOn,
     landOnTab,
     localLaserTrail,

@@ -136,6 +136,10 @@ const HELD_AT_100 = [
   'src/hooks/persistence/useIdentityBootstrapCore.ts',
   'src/hooks/persistence/useUnloadFlushCore.ts',
   'src/lib/load-progress.ts',
+  // The view across an import's undo and redo, every editor's one copy (each editor's 008-canvas
+  // canvas-and-palette.md "Undoing an import brings its view back", Work Tracker 1247).
+  'src/lib/import-undo-view.ts',
+  'src/hooks/canvas/useImportUndoView.ts',
 ];
 
 export default defineProject({
