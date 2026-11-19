@@ -57,7 +57,7 @@ A centred dialog (a bottom sheet on a phone) titled **Email to Board**, subtitle
 states:
 
 - **Off**: "Forward an email to this board's own address and it becomes a card in **<first column>**: the subject as
-  its title, the message as its description, pictures attached." Then **Who Can Send** and **Turn On**.
+  its title, the message as its description, pictures and PDFs attached." Then **Who Can Send** and **Turn On**.
 - **On**: the address in a read-only field with **Copy Address**, then a quiet line of what it has done: "3 cards
   made · 1 refused · Last card 2 hours ago" (or "No mail yet."), then **Who Can Send**, which saves as it changes
   (the address kept). The footer holds **New Address** and **Turn Off**, each behind a confirm, and **Done**:

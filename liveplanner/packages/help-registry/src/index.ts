@@ -793,7 +793,7 @@ export const articles: Article[] = [
     slug: 'email-to-board',
     title: 'Email to Board',
     description:
-      'Give a board its own secret email address: forwarded mail becomes a card, pictures attached.',
+      'Give a board its own secret email address: forwarded mail becomes a card, pictures and PDFs attached.',
     keywords:
       'email to board email in inbound email forward mail address intake inbox send email create card from email mail to board who can send plan members anyone new address turn off spam dmarc dkim spf attachments pictures from email trello asana linear',
     category: 'Plan',
