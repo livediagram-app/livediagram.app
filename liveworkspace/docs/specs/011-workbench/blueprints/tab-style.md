@@ -65,6 +65,7 @@ type TabStyleSurface<Look, Pattern> = {
   lookFilter?: (look: Look) => boolean;
   renderCanvasPanel: (props: TabStyleCanvasPanelProps<Pattern>) => ReactNode; // values, setters, hidden set
   renderPreview: (kind: 'finish' | 'text', props: TabStylePreviewProps) => ReactNode;
+  renderHomeExtra?: () => ReactNode; // drawn between the looks carousel and Fine-tune
   copy: { viewLines: Record<TabStyleView, string>; panelTitles: Record<TabStylePanel, string> };
 };
 ```
@@ -76,7 +77,8 @@ type TabStyleSurface<Look, Pattern> = {
 - `TAB_STYLE_HELP` maps each view to its article: `looks` and `theme` `changingTheme`, `finish` `choosingAFinish`,
   `font` `choosingFonts`, `canvas` `changingTheBackground`.
 - `TabStyleDialogProps<Look, Pattern>` is the door's props (the view, the tab's settings and setters, `allTabs`,
-  `onClose`) plus `surface?: string`. `backgroundAnimationSpeed` and its setter are optional (livehuddle has none):
+  `onClose`) plus `surface?: string` and `canvasSummary?: string` (the Canvas row's value; the pattern's label when
+  unset). `backgroundAnimationSpeed` and its setter are optional (livehuddle has none):
   the Canvas panel gets `1` and a no-op.
 - `TabStylePreviewProps` carries the tab's resolved finish (the Finish panel's tile on show), unresolved
   background, theme id, font, the size new text takes (the Text panel only) and the finish and font names, so the
@@ -88,6 +90,8 @@ type TabStyleSurface<Look, Pattern> = {
 - `enter` is `'fade'` on open, `'forward'` into a panel and `'back'` home (`AnimatedHeightBox`).
 - Every pick goes through `easedStyleChange`: the look, theme select, font, text size, finish and pattern; the canvas
   colours, opacity, scale and speed apply unwrapped (slider drags).
+- The home renders `surface.renderHomeExtra?.()` between the carousel and Fine-tune (TS: the extra shows on its
+  surface only).
 - The Fine-tune rows follow `surface.panels`; with `defaultTextSize` hidden, the Text row's value is the font name
   alone and the Text panel renders no Size of New Text section.
 - The looks pool is the year-round looks (or, Seasonal on, the seasonal ones) through `lookFilter`, then the Finish

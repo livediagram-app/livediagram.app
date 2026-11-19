@@ -44,6 +44,7 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
   font,
   defaultTextSize,
   pattern,
+  canvasSummary,
   onOpenPanel,
 }: {
   profile: TabStyleProfile<Look, Pattern>;
@@ -58,6 +59,8 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
   font: string | null;
   defaultTextSize: TextSize | undefined;
   pattern: Pattern;
+  // The Canvas row's value when the product says it (a page background), else the pattern's name.
+  canvasSummary?: string;
   onOpenPanel: (panel: TabStylePanel) => void;
 }) {
   const { label: themeLabel, swatch } = profile.themeSummary(themeId);
@@ -76,7 +79,7 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
         : `${fontLabel}, ${sizeLabel(defaultTextSize)}`,
       icon: <span className="text-[15px] font-semibold">Aa</span>,
     },
-    canvas: { value: profile.patternLabel(pattern), icon: <CanvasGlyph /> },
+    canvas: { value: canvasSummary ?? profile.patternLabel(pattern), icon: <CanvasGlyph /> },
   };
   const activeLook = profile.looks.activeId(settings);
   return (
@@ -89,6 +92,8 @@ export function LooksHome<Look extends TabStyleLook, Pattern extends string>({
         onPickLook={onPickLook}
         headingClass={SECTION_LABEL}
       />
+
+      {surface.renderHomeExtra?.()}
 
       <section
         aria-labelledby="fine-tune-heading"

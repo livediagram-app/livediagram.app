@@ -34,6 +34,9 @@ export type TabStyleSurfaceName =
   | 'slide'
   | 'infographic'
   | 'flashcard'
+  | 'wireframe'
+  | 'logo'
+  | 'photo'
   | 'space';
 
 /** A look as the dialog shows it: its four settings, its card's name and line, and a seasonal look's season. */
@@ -145,6 +148,9 @@ export type TabStyleSurface<Look extends TabStyleLook, Pattern extends string> =
   lookFilter?: (look: Look) => boolean;
   renderCanvasPanel: (props: TabStyleCanvasPanelProps<Pattern>) => ReactNode;
   renderPreview: (kind: TabStylePreviewKind, props: TabStylePreviewProps) => ReactNode;
+  // What the home shows between the looks and Fine-tune (an article's door to its own Style, a choice of what a look
+  // recolours); nothing when unset.
+  renderHomeExtra?: () => ReactNode;
   copy: TabStyleCopy;
 };
 

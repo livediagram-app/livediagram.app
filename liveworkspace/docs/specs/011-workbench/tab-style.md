@@ -21,7 +21,9 @@ dialog shows by changing its profile, never by forking the dialog.
   `UI / Changed / LooksFinishFilter`) goes through the workbench's `track` binding, the product's own `track`.
 - **The Finish and Text panels.** Four finish tiles; the typeface carousel (six to a page, "Editor default" first),
   the Size of New Text control; each over the product's preview.
-- **Apply to All Tabs** at the foot of the home, for an Editor of the whole item (`ApplyToAllTabsRow`).
+- **Apply to All Tabs** at the foot of the home, for an Editor of the whole item (`ApplyToAllTabsRow`). It copies
+  `TAB_STYLE_KEYS` (`lib/tab-style-to-all.ts`): the canvas, the text defaults, the finish and the background new pages
+  start on (`newPageBackground`, a Pages editor's; absent elsewhere, so nothing changes there).
 - **Eased changes.** Every pick eases the canvas into its new colours (`lib/tab-style-ease`).
 - **The frame.** By default the modal every editor wore: no dimming, a transparent click-catcher, the dialog hero
   header (title "Tab Style", the line for the view that is up, Show Me, the help link and the close), a popover
@@ -45,11 +47,14 @@ in front of the person. The names in use:
 | `slide`       | a slide page (livedocuments)                                                                                 |
 | `infographic` | an infographic page (livedocuments)                                                                          |
 | `flashcard`   | a flashcard page (livedocuments)                                                                             |
+| `wireframe`   | a wireframe page (livedesign)                                                                                |
+| `logo`        | a logo page (livedesign)                                                                                     |
+| `photo`       | a photo page (livedesign)                                                                                    |
 | `space`       | a Space (livehuddle)                                                                                         |
 
-A surface the profile does not name, or none, takes the profile's base. Today every product's surfaces take its base,
-so each dialog is what it was; the surfaces are where a product tailors the dialog later (phase 2 adapts it for
-livedocuments' articles).
+A surface the profile does not name, or none, takes the profile's base. The Pages editors tailor theirs: livedocuments
+shows an article what reaches it (no Finish or Text, no canvas pattern), and livedesign keeps hand-drawn looks off
+logo and photo pages.
 
 ## The profile
 
@@ -72,10 +77,15 @@ The surface settings say, for a surface:
 - **Looks**: a filter over the catalogue. A look the filter drops shows on no page; a tab wearing one shows no card
   selected. The Mashup card is not filtered.
 - **The Canvas panel**: its title (the copy below) and its content, which the product draws (livediagram's patterns,
-  livehuddle's floors; a page background later). It is handed the tab's canvas settings, their setters and the hidden
-  controls.
+  livehuddle's floors, the Pages editors' New Page Background). It is handed the tab's canvas settings, their setters
+  and the hidden controls. The Fine-tune row's value is the pattern's name unless the editor hands the dialog a
+  `canvasSummary` of its own (the Pages editors name the background new pages start on).
+- **A home extra** (`renderHomeExtra`, optional): what the home shows between the looks and Fine-tune, a row the
+  product draws for that surface (livedocuments' door to an article's own Style, livedesign's choice of whether a
+  look or a theme recolours the elements). Nothing by default.
 - **The preview** the Finish and Text panels draw over: the product draws it for the panel asking (`finish` or
-  `text`), from the tab's finish, paper, theme, font and the size new text takes. Each product's is its sample today.
+  `text`), from the tab's finish, paper, theme, font and the size new text takes. Each product draws its own kind of
+  work: a diagram, a page, a frame.
 - **Copy**: the header's line for each view, and each panel's name (the Fine-tune row's label and the breadcrumb's
   chip). The shared lines are the default; a product changes only the ones it words differently.
 
