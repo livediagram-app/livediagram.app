@@ -2,7 +2,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CategoryFlyoutSide, SIDE_PX, sidePlacement } from './CategoryFlyoutSide';
-import { CARD, testKit, type TestTile } from './category-flyout-test-kit';
+import { CARD, testKit, type TestTile } from './category-flyout-testing';
 
 // Where a tile's side panel hangs (each editor's docs/specs/007-editor/toolbar-layout.md "A tile's side panel"):
 // beside the tile's own column, as offsets into the strip's root, and risen so its foot stays no lower than the

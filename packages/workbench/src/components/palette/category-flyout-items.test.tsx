@@ -3,7 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { FlyoutHeader } from './CategoryFlyout';
 import { FLYOUT_FOOTER_HEIGHT, FlyoutFooter, InfoFooter, Kbd } from './category-flyout-items';
-import { NOTE, SQUARE, testKit, type TestTile } from './category-flyout-test-kit';
+import { NOTE, SQUARE, testKit, type TestTile } from './category-flyout-testing';
 
 afterEach(cleanup);
 

@@ -13,7 +13,7 @@ import {
   type TestActions,
   type TestPending,
   type TestTile,
-} from './category-flyout-test-kit';
+} from './category-flyout-testing';
 
 // The flyout under the category bar and the side panel beside it (each editor's docs/specs/007-editor/toolbar-layout.md
 // "The flyout" and "A tile's side panel"), every editor's one copy: its tiles, its keyboard and its hover intent. The

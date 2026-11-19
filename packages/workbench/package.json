@@ -215,6 +215,7 @@
     "./components/palette/category-flyout-items": "./src/components/palette/category-flyout-items.tsx",
     "./components/palette/category-flyout-keys": "./src/components/palette/category-flyout-keys.ts",
     "./components/palette/category-flyout-kit": "./src/components/palette/category-flyout-kit.ts",
+    "./components/palette/category-flyout-testing": "./src/components/palette/category-flyout-testing.tsx",
     "./components/palette/useEdgeDividers": "./src/components/palette/useEdgeDividers.ts",
     "./components/palette/useFrozenAnimations": "./src/components/palette/useFrozenAnimations.ts",
     "./components/palette/useStripCrowded": "./src/components/palette/useStripCrowded.ts",
