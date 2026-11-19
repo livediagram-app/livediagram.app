@@ -352,9 +352,10 @@ panels in their corners, the bottom-row popovers over their buttons. What change
     round, all four corners rounded and the strip's shadow, dark in dark mode), 6 px below the strip's bottom edge:
     close enough to read as the strip's, apart so the two don't look stuck together.
   - Centred under the strip's card and never wider than it, unless the strip is narrow. A strip narrower than **360 px** (`PALETTE_TRAY_MIN_WIDTH_PX`, shared) gives the tray 360 px centred under it, kept
-    8 px inside the window, so a message is never cut to its first letter. On a phone, where the card sits beside
-    the menu button, that is the window's width less 8 px each side: an empty tab's **Show Templates** and a template's
-    **Clear Example Content** and **Keep It** sit inside the tray on one line rather than running past its edge. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
+    8 px inside the window, so a message is never cut to its first letter. A phone too, where the card sits beside
+    the menu button (at most the window's width less 8 px each side), and the tray's card stays centred under the
+    strip's: an empty tab's **Show Templates** and a template's **Clear Example Content** and **Keep It** sit inside
+    the tray on one line rather than running past its edge. It follows the card as it moves, including when the card's whole-pixel box re-centres it a beat
     after a resize (the category bar dropping its names left the tray off-centre until it watched that box). It also follows a move with no resize at all (the strip re-centring as the tab-name pill beside it changes
     width on a tab switch, a delete or a reload, or going crowded and back): one IntersectionObserver whose margin is
     the card's own box (`watchMove`, shared) hears a move of a pixel or more and costs nothing while the strip is still.
