@@ -306,4 +306,4 @@ chosen fires `Community · Copied · StartWith`. Import pressed fires `UI · Use
   in, and the badge's colours reading at AA in light and dark (shared by every app's start).
 - `components/start/StartModeSwitch.test.tsx`, `hooks/editor/useEditorMode.test.tsx`.
 - `components/start/start-palette.test.ts`, `start-panel-open.test.tsx`, `start-query.test.ts`.
-- `components/start/StartAgainTray.test.tsx`, `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).
+- `../packages/workbench/src/components/start/StartAgainTray.test.tsx` (every editor's one tray), `../packages/workbench/src/components/canvas/empty-card-dismissed.test.ts` (bringing a start back).

@@ -1220,6 +1220,16 @@ export const articles: Article[] = [
     parentSlug: 'sharing',
   },
   {
+    slug: 'request-approval',
+    title: 'Request Approval',
+    description: 'Ask named people to approve a plan, and see where their answers stand.',
+    keywords:
+      'approve approval sign off signoff review request changes approver badge awaiting approved changed since approval due note audit history',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
     slug: 'share-passwords',
     title: 'Share Passwords',
     description: 'Guard every share link to a plan with one password.',

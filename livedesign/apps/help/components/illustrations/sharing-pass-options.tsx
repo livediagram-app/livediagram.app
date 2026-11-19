@@ -101,7 +101,7 @@ export function SharePasswordGate() {
       <Label x={210} y={158} anchor="middle" size={10} weight={500} className="fill-rose-500">
         That password didn&apos;t match. Try again.
       </Label>
-      <Button x={94} y={174} w={232} h={30} label="Open design" variant="primary" />
+      <Button x={94} y={174} w={232} h={30} label="Open Design" variant="primary" />
     </Scene>
   );
 }

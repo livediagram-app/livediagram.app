@@ -93,7 +93,7 @@ describe('ExportTabDialog: Whole Plan', () => {
     expect(await screen.findByText(WHOLE_PLAN_FAILED)).toBeTruthy();
     expect(onClose).not.toHaveBeenCalled();
     expect(download).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    fireEvent.click(screen.getByRole('button', { name: /All Formats/ }));
     expect(card()).toBeTruthy();
   });
 });

@@ -48,4 +48,54 @@ describe('the shared text fields', () => {
       expect(field.className).toContain('disabled:cursor-not-allowed');
     }
   });
+
+  // Work Tracker 1171: a screen reader hears that a field is wrong, and why.
+  it('tell a screen reader when invalid, and only then', () => {
+    render(
+      <>
+        <TextInput aria-label="ok" />
+        <TextInput aria-label="bad" invalid />
+        <TextArea aria-label="bad note" invalid />
+      </>,
+    );
+    expect(screen.getByLabelText('ok').hasAttribute('aria-invalid')).toBe(false);
+    expect(screen.getByLabelText('bad').getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByLabelText('bad note').getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('keep a caller’s own aria-invalid over invalid', () => {
+    render(
+      <>
+        <TextInput aria-label="own false" invalid aria-invalid={false} />
+        <TextInput aria-label="own true" aria-invalid />
+      </>,
+    );
+    expect(screen.getByLabelText('own false').getAttribute('aria-invalid')).toBe('false');
+    expect(screen.getByLabelText('own true').getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('are described by their hint, joined after any ids the caller passed', () => {
+    render(
+      <>
+        <TextInput aria-label="plain" />
+        <TextInput aria-label="hinted" invalid hintId="why" />
+        <TextInput aria-label="both" hintId="why" aria-describedby="count" />
+        <TextInput aria-label="own only" aria-describedby="count" />
+        <TextArea aria-label="note" hintId="why" />
+        <p id="why">Not an email address or a domain.</p>
+      </>,
+    );
+    expect(screen.getByLabelText('plain').hasAttribute('aria-describedby')).toBe(false);
+    expect(screen.getByLabelText('hinted').getAttribute('aria-describedby')).toBe('why');
+    expect(screen.getByLabelText('both').getAttribute('aria-describedby')).toBe('count why');
+    expect(screen.getByLabelText('own only').getAttribute('aria-describedby')).toBe('count');
+    expect(screen.getByLabelText('note').getAttribute('aria-describedby')).toBe('why');
+    // Found the way a screen reader finds it: the field's description is the hint's text.
+    expect(
+      screen.getByRole('textbox', {
+        name: 'hinted',
+        description: 'Not an email address or a domain.',
+      }),
+    ).toBeTruthy();
+  });
 });

@@ -101,7 +101,11 @@ export function KitSetup({
           </button>
         )}
         {error ? (
-          <p id={errorId} role="alert" className="max-w-56 text-xs text-red-700 dark:text-red-400">
+          <p
+            id={errorId}
+            role="alert"
+            className="text-xs text-red-700 md:max-w-56 dark:text-red-400"
+          >
             {error}
           </p>
         ) : null}

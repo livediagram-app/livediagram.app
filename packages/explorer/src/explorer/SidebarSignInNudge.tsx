@@ -17,7 +17,7 @@ export function SidebarSignInNudge({ href }: { href: string }) {
         aria-hidden
         className="pointer-events-none absolute -right-8 -top-8 size-[120px] rounded-full bg-[radial-gradient(circle,color-mix(in_oklab,var(--color-brand-400)_45%,transparent),transparent_70%)]"
       />
-      <span className="relative text-sm font-semibold text-white">Sign in to access Teams</span>
+      <span className="relative text-sm font-semibold text-white">Sign In to Use Teams</span>
       <span className="relative text-[12.5px] leading-normal text-[#a9b8d0]">
         Free, and your guest {words.lowerMany} come with you.
       </span>

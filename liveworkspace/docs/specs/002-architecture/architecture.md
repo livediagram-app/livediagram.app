@@ -215,6 +215,14 @@ vocabulary, its copy) and, where its package's surface must stay stable, a one-l
 copies the products still hold may only become fewer ([docs/ci.md](../../../../docs/ci.md#copies-across-products)).
 Each product's router reads one set of caching rules, `@liveworkspace/sites/cache-policy`.
 
+### The shared text fields
+
+Every app's single-line field and textarea is `@liveworkspace/ui`'s `TextInput` and `TextArea`. A field marked
+invalid is told to a screen reader as well as drawn in rose: it carries `aria-invalid`, and the line under it that
+says why (or the hint it shows) is tied to it with `aria-describedby`, so the reader hears the field, that its value
+is wrong and what to type instead. A caller that sets its own `aria-invalid` or `aria-describedby` keeps it (the
+hint is added to its own list, never in place of it).
+
 ### The shared element model
 
 Each product's element union (`Element`, `BoxedElement`, `ShapeElement`, `ArrowElement`) differs: its kinds, its

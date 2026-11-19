@@ -168,7 +168,7 @@ export function PairWorkbench() {
               href={signInHref(here)}
               className={`${BUTTON.primary} relative touch-target-y px-6 py-2.5`}
             >
-              Sign in
+              Sign In
             </a>
           </div>
         </div>

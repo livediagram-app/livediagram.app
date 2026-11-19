@@ -9,6 +9,7 @@
 
 import { accountsAllowance, createNotifier } from '@liveworkspace/index-app';
 import { isAccountId, type TeamPerson } from '@liveworkspace/auth-client';
+import type { ApprovalNotice } from '@liveworkspace/index-client';
 import { MENTIONS_MAX, type Comment } from '@liveplanner/project';
 import { claimFormEmail } from '../db';
 import { ownerEmail } from '../person/account-app';
@@ -34,6 +35,7 @@ const COMMENT_NOTIFY_THROTTLE_MS = 15 * 60 * 1000;
 const FORM_EMAIL_THROTTLE_MS = 15 * 60 * 1000;
 import {
   actionAssignedEmail,
+  approvalRequestedEmail,
   commentNotificationEmail,
   firstShareEmail,
   formResponseEmail,
@@ -131,6 +133,7 @@ const notifier = createNotifier<Env, RenderedEmail>({
     firstShare: firstShareEmail,
     joined: projectJoinedEmail,
     actionAssigned: actionAssignedEmail,
+    approvalRequested: approvalRequestedEmail,
     mentioned: (env, authorName, plan, text, cardId) =>
       mentionedEmail(env, authorName, plan.name, plan.id, text, cardId ?? undefined),
   },
@@ -143,6 +146,14 @@ export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
 // Someone made a share link for the first time (the index's `shared` notice, routes/internal-items.ts).
 export const notifyFirstShare = (env: Env, actorId: string): Promise<void> =>
   notifier.notifyFirstShare(env, actorId);
+
+// Someone asked these people to approve a plan (the index's `approval_requested` notice, routes/internal-items.ts).
+// Opt-out with assigned actions (notifyActionAssigned).
+export const notifyApprovalRequested = (
+  env: Env,
+  id: string,
+  notice: ApprovalNotice,
+): Promise<void> => notifier.notifyApprovalRequested(env, id, notice);
 
 // A signed-in person opened one of an owner's plans through a share link for the first time (the index's `joined`
 // notice, run inside the plan's Durable Object). Opt-out (notifyProjectJoin).
