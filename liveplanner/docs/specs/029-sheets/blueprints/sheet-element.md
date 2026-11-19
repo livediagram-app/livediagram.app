@@ -92,7 +92,8 @@ SheetFace.tsx            the frame: loading (SheetBuildAnimation, "Opening Sheet
                          lines with Couldn't load (Try Again) or not found (Remove)
 SheetHeader.tsx          title (in-place edit), FocusElementButton kind="Sheet", MaximisePlanButton kind="Sheet"
                          (neither while the Sheet fills its tab), the Sheet Settings cog (plan/SettingsCog.tsx, shared
-                         with BoardSettingsButton)
+                         with BoardSettingsButton), opening on the section its press asked for (lib/settings-open-on.ts,
+                         SheetSettingsPanel's `openOn`: Tab Style's Sheet Settings row asks for Sheet Options)
 SheetMenuSection.tsx     The element menu's Sheet rows: SheetSettingsPanel (its `asRow`, a flyout row per section) with the Sheet's controller, read from
                          sheet-settings-registry.ts (usePublishSheetSettings in PlanSheetView, useSheetSettingsEntry)
 SheetSettingsPanel.tsx   Sheet Settings' sections (BoardSettingsSection): Sheet Setup, Sheet Options (with Fill Tab's

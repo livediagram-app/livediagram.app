@@ -7,6 +7,7 @@ import {
   DASHBOARD_SETTINGS_LINK,
   SHEET_SETTINGS_LINK,
 } from './tab-style-links';
+import { takeOpenOn } from './settings-open-on';
 
 // docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile": each tab kind's Fine-tune link
 // opens the setting that really styles it.
@@ -39,7 +40,20 @@ describe('the Tab Style links', () => {
     expect(onDashboard).toHaveBeenCalledOnce();
   });
 
-  it('does nothing when the cog is not on screen', () => {
+  it('asks the Sheet for Sheet Options as it presses its cog', () => {
+    document.body.innerHTML = `<div data-plan-sheet="s"><button aria-label="Sheet Settings"></button></div>`;
+    let sheetAsked: string | null = null;
+    document
+      .querySelector('button')!
+      .addEventListener('click', () => (sheetAsked = takeOpenOn('sheet')));
+    SHEET_SETTINGS_LINK.onOpen();
+    expect(sheetAsked).toBe('view');
+    // Taken once: a later press of the cog opens as it always does.
+    expect(takeOpenOn('sheet')).toBeNull();
+  });
+
+  it('does nothing when the cog is not on screen, and drops its ask', () => {
     expect(() => SHEET_SETTINGS_LINK.onOpen()).not.toThrow();
+    expect(takeOpenOn('sheet')).toBeNull();
   });
 });

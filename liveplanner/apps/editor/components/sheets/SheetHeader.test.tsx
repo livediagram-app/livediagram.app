@@ -15,6 +15,7 @@ import { downloadSheetCsv } from './sheet-csv';
 import { statusPick } from './sheet-status-pick';
 import { ROW_HEIGHT_MIN } from '@liveplanner/sheets';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';
+import { requestOpenOn } from '@/lib/settings-open-on';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 vi.mock('./sheet-csv', () => ({ downloadSheetCsv: vi.fn() }));
@@ -123,6 +124,22 @@ describe('the sheet header', () => {
     expect(importCsv).toHaveBeenCalledOnce();
     // Importing closes the popover.
     expect(screen.queryByLabelText('Title')).toBeNull();
+  });
+
+  it('opens on Sheet Options when its press asked for it (Tab Style), then on Sheet Setup again', () => {
+    show(h);
+    requestOpenOn('sheet', 'view');
+    openSettings();
+    const expanded = (name: string) =>
+      screen.getByRole('button', { name }).getAttribute('aria-expanded');
+    // Gridlines in view, without opening the section by hand; Sheet Setup closed.
+    expect(expanded('Sheet Options')).toBe('true');
+    expect(expanded('Sheet Setup')).toBe('false');
+    expect(screen.getByRole('switch', { name: /Gridlines/ })).toBeTruthy();
+    openSettings();
+    openSettings();
+    expect(expanded('Sheet Options')).toBe('false');
+    expect(expanded('Sheet Setup')).toBe('true');
   });
 
   it('sets the view and the default cell sizes, and resets them', () => {
