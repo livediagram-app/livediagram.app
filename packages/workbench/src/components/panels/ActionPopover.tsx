@@ -2,30 +2,30 @@
 
 // The docs/specs/012-collaboration/assigned-actions.md clipboard-with-tick action glyph, shared with the context
 // menu's Assign Action tile so the two surfaces can't drift.
-import { ActionMenuIcon as ClipboardIcon } from '@/components/palette/context-menu-icons';
+import { ActionMenuIcon as ClipboardIcon } from '../palette/context-menu-icons';
 import {
   CloseIcon,
   TrashIcon,
   useClickOutside,
   useEscape,
-  IDENTITY_FILL,
-  identityVars,
   Glyph,
   GlyphDisc,
   Portal,
   Tooltip,
-} from '@liveplanner/ui';
-import { useId, useRef, useState, useCallback } from 'react';
-import type { ElementAction } from '@liveplanner/project';
-import { useReposition } from '@liveworkspace/workbench/hooks/canvas/useReposition';
-import { initialsOf } from '@/lib/identity';
-import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
-import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '@liveworkspace/workbench/lib/clamp-to-viewport';
-import { elementSelector } from '@liveworkspace/workbench/lib/canvas-selectors';
+} from '@liveworkspace/ui';
+import { formatRelativeTimeCompact } from '@liveworkspace/ui/relative-time';
+import { useId, useRef, useState, useCallback, type ReactNode } from 'react';
+import type { ElementAction } from '@liveworkspace/element-model/element-action';
+import { initialsOf } from '@liveworkspace/model-core/names';
 import { presenceColourOf } from '@liveworkspace/settings/presence';
+import { useReposition } from '../../hooks/canvas/useReposition';
+import { useRelativeNow } from '../../lib/relative-now';
+import { VIEWPORT_EDGE_MARGIN as EDGE_MARGIN } from '../../lib/clamp-to-viewport';
+import { elementSelector } from '../../lib/canvas-selectors';
+import { IDENTITY_FILL, identityVars } from '../../lib/identity-fill';
 
-// Portal-rendered assigned-action card (docs/specs/012-collaboration/assigned-actions.md), anchored to the right
-// edge of the element like CommentThreadPopover. Name + description up
+// Portal-rendered assigned-action card (docs/specs/012-collaboration/assigned-actions.md), one copy for every
+// editor, anchored to the right edge of the element like CommentThreadPopover. Name + description up
 // top, one calm assignee/assigner meta row, and an icon-button footer:
 // Complete (check) / Reopen (undo), Edit (pencil), Delete (bin, two-step
 // confirm). Read-only sessions see the card without the footer — an
@@ -36,9 +36,10 @@ type ActionPopoverProps = {
   action: ElementAction;
   onComplete: () => void;
   onReopen: () => void;
-  // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): closes it without it being done.
+  // Won't Do (docs/specs/012-collaboration/assigned-actions.md): closes it without it being done.
   onWontDo?: () => void;
-  // Present when the project has an Actions board: opens it on this action's card ("Where it went").
+  // liveplanner's, present when the plan has an Actions board: opens it on this action's card ("Where it went",
+  // its docs/specs/026-plan/linked-boards.md "On the canvas").
   onOpenBoard?: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -114,6 +115,7 @@ export function ActionPopover({
         className="fixed z-[var(--z-overlay)] flex animate-fade-in flex-col rounded-lg border border-slate-200 bg-white shadow-xl shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
         style={{ left: pos.left, top: pos.top, width: WIDTH }}
       >
+        {/* A plain row, not a <header>: inside the dialog a header read as a second banner landmark. */}
         <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2 dark:border-slate-800">
           <h3
             id={titleId}
@@ -252,7 +254,7 @@ function FooterButton({
   label,
 }: {
   onClick: () => void;
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
 }) {
   return (
@@ -292,22 +294,22 @@ function PencilIcon() {
   );
 }
 
+// Three columns: liveplanner's Actions board.
+function BoardIcon() {
+  return (
+    <Glyph size={11} units={16}>
+      <rect x="2" y="2.5" width="12" height="11" rx="2" />
+      <path d="M6 2.5v11M10 2.5v11" />
+    </Glyph>
+  );
+}
+
 // A circle struck through: closed without being done.
 function WontDoIcon() {
   return (
     <Glyph size={11} units={16}>
       <circle cx="8" cy="8" r="5.5" />
       <path d="M4.2 11.8 11.8 4.2" />
-    </Glyph>
-  );
-}
-
-// Three columns: the Actions board.
-function BoardIcon() {
-  return (
-    <Glyph size={11} units={16}>
-      <rect x="2" y="2.5" width="12" height="11" rx="2" />
-      <path d="M6 2.5v11M10 2.5v11" />
     </Glyph>
   );
 }

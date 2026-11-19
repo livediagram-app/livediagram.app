@@ -1,9 +1,11 @@
-import { initialsOf } from '@/lib/identity';
-import { GlyphDisc, IDENTITY_FILL, identityVars } from '@livedesign/ui';
+import { GlyphDisc } from '@liveworkspace/ui';
+import { initialsOf } from '@liveworkspace/model-core/names';
 import { presenceColourOf } from '@liveworkspace/settings/presence';
+import { explorerHref } from '../../lib/explorer-href';
+import { IDENTITY_FILL, identityVars } from '../../lib/identity-fill';
 
 // One pickable assignee (docs/specs/012-collaboration/assigned-actions.md): the pinned Myself row, or a joined
-// member of the design's team.
+// member of the item's team.
 export type PickableMember = {
   // Null for an invited member the lazy claim hasn't identified with an
   // account yet — memberId is their key then.
@@ -22,19 +24,20 @@ export type PickableMember = {
   teamName: string | null;
 };
 
-// The Assign Action dialog's assignee picker (docs/specs/012-collaboration/assigned-actions.md §2): the pinned
-// Myself row, the design team's joined members (grouped under a sticky
-// team header), the loading row, and the Myself-only nudges — sign in
-// (guests), move-into-a-team-library (personal designs), not-a-member
-// (share-link editors), and the empty-team invite hint. Selection state
-// stays with the dialog; picking calls back up.
+// The Assign Action dialog's assignee picker (docs/specs/012-collaboration/assigned-actions.md §2), one copy for
+// every editor: the pinned Myself row, the item team's joined members (grouped under a sticky team header), the
+// loading row, and the Myself-only nudges — sign in (guests), move-into-a-team-library (personal items),
+// not-a-member (share-link editors), and the empty-team invite hint. Selection state stays with the dialog; picking
+// calls back up. `noun` is the editor's word for what it edits in those nudges ("canvas", "design", "document",
+// "plan").
 export function AssigneePicker({
+  noun,
   signedIn,
   selfRow,
   grouped,
   members,
-  memberOfDesignTeam,
-  designTeamId,
+  memberOfItemTeam,
+  itemTeamId,
   assignee,
   onPick,
   signInHref,
@@ -43,17 +46,18 @@ export function AssigneePicker({
   moveFailed,
   onMoveToTeam,
 }: {
+  noun: string;
   signedIn: boolean;
   selfRow: PickableMember | null;
   grouped: [string, { teamName: string; members: PickableMember[] }][];
   members: PickableMember[] | null;
-  memberOfDesignTeam: boolean;
-  designTeamId: string | null;
+  memberOfItemTeam: boolean;
+  itemTeamId: string | null;
   assignee: PickableMember | null;
   onPick: (m: PickableMember) => void;
   signInHref: string;
-  // The user's joined teams, for the personal-design inline move offer
-  // (docs/specs/012-collaboration/assigned-actions.md §2): pick a team and the design files into its library
+  // The user's joined teams, for the personal-item inline move offer
+  // (docs/specs/012-collaboration/assigned-actions.md §2): pick a team and the item files into its library
   // root, making that team's members assignable right here.
   teams: { id: string; name: string }[];
   movingToTeamId: string | null;
@@ -124,7 +128,7 @@ export function AssigneePicker({
             {group.members.map((m) => row(m, false))}
           </div>
         ))}
-        {signedIn && memberOfDesignTeam && members === null ? (
+        {signedIn && memberOfItemTeam && members === null ? (
           <p className="px-3 py-2 text-center text-xs text-slate-500 dark:text-slate-400">
             Loading teammates…
           </p>
@@ -139,15 +143,15 @@ export function AssigneePicker({
           </a>{' '}
           and join a team to assign actions to teammates.
         </p>
-      ) : signedIn && designTeamId === null ? (
-        // Personal design: teammates couldn't open it to complete the
+      ) : itemTeamId === null ? (
+        // Personal item: teammates couldn't open it to complete the
         // action. With teams to offer, fix it INLINE — one click files
-        // the design into that team's library root and the members
+        // the item into that team's library root and the members
         // load right here (docs/specs/012-collaboration/assigned-actions.md §2). No teams -> create-team link.
         <div className="flex flex-col gap-1.5 rounded-lg border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
           {teams.length > 0 && onMoveToTeam ? (
             <>
-              <p>Move this design into a team library to assign teammates:</p>
+              <p>Move this {noun} into a team library to assign teammates:</p>
               <div className="flex flex-wrap gap-1.5">
                 {teams.map((t) => (
                   <button
@@ -163,15 +167,16 @@ export function AssigneePicker({
               </div>
               {moveFailed ? (
                 <p className="text-rose-600 dark:text-rose-400">
-                  Couldn&apos;t move the design. Check your connection and try again.
+                  Couldn&apos;t move the {noun}. Check your connection and try again.
                 </p>
               ) : null}
             </>
           ) : (
             <p>
-              Actions assign to the design&apos;s team.{' '}
+              Actions assign to the {noun}&apos;s team.{' '}
+              {/* The Explorer's Invites, beside the teams: a bare /explorer/team reads as Home. */}
               <a
-                href="/explorer/team"
+                href={explorerHref('invites')}
                 className="font-medium text-brand-700 underline dark:text-brand-400"
               >
                 Create or join a team
@@ -180,13 +185,13 @@ export function AssigneePicker({
             </p>
           )}
         </div>
-      ) : signedIn && !memberOfDesignTeam ? (
-        // Share-link editor on someone else's team design: they can
+      ) : !memberOfItemTeam ? (
+        // Share-link editor on someone else's team item: they can
         // edit, but only the team's members are assignable.
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
-          Only members of this design&apos;s team can be assigned actions.
+          Only members of this {noun}&apos;s team can be assigned actions.
         </p>
-      ) : signedIn && members !== null && members.length === 0 ? (
+      ) : members !== null && members.length === 0 ? (
         <p className="px-1 text-xs text-slate-500 dark:text-slate-400">
           No other members in this team yet. Invite teammates from the team page and they become
           assignable here, even before they accept.
