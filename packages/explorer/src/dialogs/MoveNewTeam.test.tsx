@@ -1,10 +1,13 @@
 // New Team in the Move dialog (livediagram's, 19e2d87ca): a team made on the spot, opened with its root chosen, and
 // the item filed into it on Move Here.
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { MoveToFolderDialog } from './MoveToFolderDialog';
 
-function open(onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | null>) {
+function open(
+  onCreateTeam?: (name: string) => Promise<{ id: string; name: string } | { error: string } | null>,
+  onFindTeam?: (name: string) => Promise<{ id: string; name: string } | null>,
+) {
   const onPick = vi.fn();
   render(
     <MoveToFolderDialog
@@ -15,6 +18,7 @@ function open(onCreateTeam?: (name: string) => Promise<{ id: string; name: strin
       onPick={onPick}
       onClose={vi.fn()}
       {...(onCreateTeam ? { onCreateTeam } : {})}
+      {...(onFindTeam ? { onFindTeam } : {})}
     />,
   );
   return onPick;
@@ -49,6 +53,58 @@ describe('New Team in the Move dialog', () => {
     expect((screen.getByRole('textbox', { name: 'New team name' }) as HTMLInputElement).value).toBe(
       'Design',
     );
+  });
+
+  // Work Tracker 1071: no answer in time, so the team may exist; Refresh checks rather than making a second one.
+  function nameOps() {
+    fireEvent.click(screen.getByRole('button', { name: /^Choose a Space/ }));
+    fireEvent.click(screen.getByRole('button', { name: /New Team/ }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'New team name' }), {
+      target: { value: 'Ops' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create' }));
+  }
+
+  it('says an unconfirmed team may have been made, and Refresh files into it when it was', async () => {
+    const onFindTeam = vi.fn(async (name: string) => ({ id: 't-ops', name }));
+    const onPick = open(async () => ({ error: 'team_create_unconfirmed' }), onFindTeam);
+    nameOps();
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('The team may have been made. Refresh to check.');
+    fireEvent.click(within(alert).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(onFindTeam).toHaveBeenCalledWith('Ops'));
+    expect(await screen.findByRole('button', { name: /Team Library/, pressed: true })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Move Here' }));
+    expect(onPick).toHaveBeenCalledWith({ teamId: 't-ops', folderId: null });
+  });
+
+  it('says none was made when Refresh finds none, and stays put when the list cannot be read', async () => {
+    const onFindTeam = vi
+      .fn<(name: string) => Promise<{ id: string; name: string } | null>>()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(null);
+    open(async () => ({ error: 'team_create_unconfirmed' }), onFindTeam);
+    nameOps();
+    const alert = await screen.findByRole('alert');
+    fireEvent.click(within(alert).getByRole('button', { name: 'Refresh' }));
+    await waitFor(() => expect(onFindTeam).toHaveBeenCalledTimes(1));
+    const again = await within(alert).findByRole('button', { name: 'Refresh' });
+    await waitFor(() => expect(again.getAttribute('aria-disabled')).toBeNull());
+    expect(alert.textContent).toContain('Refresh to check.');
+    fireEvent.click(again);
+    await waitFor(() =>
+      expect(screen.getByRole('alert').textContent).toBe(
+        'No team was made. You can create it now.',
+      ),
+    );
+  });
+
+  it('says a refusal with a code as any other failure, with no Refresh', async () => {
+    open(async () => ({ error: 'team_limit_reached' }), vi.fn());
+    nameOps();
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toMatch(/could not be made/);
+    expect(within(alert).queryByRole('button', { name: 'Refresh' })).toBeNull();
   });
 
   it('is not offered without a host that makes teams', () => {

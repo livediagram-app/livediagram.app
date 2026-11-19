@@ -79,9 +79,11 @@ export function ExplorerDialogs() {
   const onCreateTeam = teamsCtx.canRun
     ? async (name: string) => {
         const made = await teamsCtx.create({ name });
-        return made.ok ? made.value : null;
+        return made.ok ? made.value : { error: made.error };
       }
     : undefined;
+  // Refresh after New Team's unconfirmed answer: the team, if it was made after all.
+  const onFindTeam = teamsCtx.canRun ? teamsCtx.findMadeTeam : undefined;
   const {
     dialog,
     openDialog,
@@ -145,6 +147,7 @@ export function ExplorerDialogs() {
           onCreateFolder={createFolder}
           // New Team, as livediagram's Move dialog has it: a team made on the spot, the item filed into it.
           onCreateTeam={onCreateTeam}
+          onFindTeam={onFindTeam}
           onPick={(dest) => void actions.move(item, dest)}
           spaces={spaces}
           currentSpace={archived ? ARCHIVED_PLACEMENT : null}

@@ -128,6 +128,11 @@ https://github.com/<repo>/blob/<branch>/pr-<n>/{file}?raw=true`; the JSON's `dra
    the branch does not exist), the pictures copied into `pr-<n>/`, one commit `livediagram: pictures for #<n>` as
    `github-actions[bot]` when anything is new, push. A rejected push starts again from the branch's new tip (never a
    rebase, which a depth-1 history cannot do), `REVIEW_PUSH_ATTEMPTS` in all, then fails the step.
+   3a. **Cleanup on close** (optional: it runs only when the workflow lists `closed` in the `pull_request` types, which
+   sets `REVIEW_EVENT_ACTION=closed`). The script does no review: it removes `pr-<n>/` from the previews branch in
+   one commit `livediagram: remove pictures for #<n>` and pushes, with the same retry from the new tip. It removes
+   exactly that one folder (`git rm -r -- pr-<n>`, `n` checked to be digits only before anything runs, so `pr-1`
+   never touches `pr-12`), does nothing when the branch or the folder is absent, and never touches the comment.
 4. Comment: `gh api --paginate repos/<repo>/issues/<n>/comments` filtered to `user.login == "github-actions[bot]"`
    and a body starting with the marker; the first found is edited (`PATCH`), else, when `tabs > 0`, one is posted.
 
@@ -143,8 +148,10 @@ https://github.com/<repo>/blob/<branch>/pr-<n>/{file}?raw=true`; the JSON's `dra
 ## Data and persistence
 
 Nothing is stored beyond `<out>`. Re-running over the same range writes the same files byte for byte (pictures are
-deterministic; their names are hashes). The previews branch only grows: a picture is never removed, so an edited
-comment's earlier pictures stay reachable; deleting the branch is safe at any time and only blanks old pictures.
+deterministic; their names are hashes). The previews branch grows while a pull request is open: a picture is never removed
+then, so an edited comment's earlier pictures stay reachable. When the workflow also runs on `closed`, the pull
+request's `pr-<n>/` folder is removed (see "Cleanup on close"); a reopened pull request draws its pictures again on
+its next push. Deleting the branch is safe at any time and only blanks old pictures.
 
 ## Errors and edge cases
 
@@ -196,18 +203,20 @@ comment's earlier pictures stay reachable; deleting the branch is safe at any ti
 
 ## Testing
 
-| Spec rule                                                               | Test                                                                           |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Range from the merge base; bad ref, no merge base, no repository        | `apps/cli/src/link/review-git.test.ts` (scripted `tool`)                       |
-| Files paired by document id; tabs skipped when equal; element splits    | `apps/cli/src/link/review-diff.test.ts`                                        |
-| Marks per side, styles, hidden layers unmarked                          | `apps/cli/src/link/review-picture.test.ts`                                     |
-| Comment shape, marker, link, caps, listing, not drawn, no changes       | `apps/cli/src/link/review-comment.test.ts`                                     |
-| No token, no request; pictures written and named by hash; `--image-url` | `apps/cli/src/commands/review.test.ts` (real PNGs, empty fetch log)            |
-| `writePicture` scale and max side                                       | `review.test.ts` (a 224×124 drawing written 448×248)                           |
-| Console lines kept off stdout                                           | `../packages/cli-kit/src/bin.test.ts`                                          |
-| The Action: post once, edit in place, nothing changed, fork artifact    | Run by hand against a fixture repository and a recording `gh` (PR description) |
-| Verb input, `{file}` refusal, text, JSON, quiet                         | `packages/agent-verbs/src/verbs/link.test.ts`                                  |
-| The command in the spec's table; help budgets                           | `commands-table.test.ts`, `help.test.ts`                                       |
+| Spec rule                                                                      | Test                                                                           |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------ |
+| Range from the merge base; bad ref, no merge base, no repository               | `apps/cli/src/link/review-git.test.ts` (scripted `tool`)                       |
+| Files paired by document id; tabs skipped when equal; element splits           | `apps/cli/src/link/review-diff.test.ts`                                        |
+| Marks per side, styles, hidden layers unmarked                                 | `apps/cli/src/link/review-picture.test.ts`                                     |
+| Comment shape, marker, link, caps, listing, not drawn, no changes              | `apps/cli/src/link/review-comment.test.ts`                                     |
+| No token, no request; pictures written and named by hash; `--image-url`        | `apps/cli/src/commands/review.test.ts` (real PNGs, empty fetch log)            |
+| `writePicture` scale and max side                                              | `review.test.ts` (a 224×124 drawing written 448×248)                           |
+| Console lines kept off stdout                                                  | `../packages/cli-kit/src/bin.test.ts`                                          |
+| The Action: post once, edit in place, nothing changed, fork artifact           | Run by hand against a fixture repository and a recording `gh` (PR description) |
+| Cleanup on close: removes only `pr-<n>/`, no-ops, refuses a non-numeric number | `apps/cli/src/link/review-action.test.ts` (real git, a bare origin)            |
+| `action.yml`, `review.sh` and the example workflow parse and lint              | `.github/workflows/action-lint.yml` (actionlint, shellcheck; path-filtered)    |
+| Verb input, `{file}` refusal, text, JSON, quiet                                | `packages/agent-verbs/src/verbs/link.test.ts`                                  |
+| The command in the spec's table; help budgets                                  | `commands-table.test.ts`, `help.test.ts`                                       |
 
 ## Constants and configuration
 
