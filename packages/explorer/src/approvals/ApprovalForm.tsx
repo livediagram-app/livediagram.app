@@ -17,6 +17,7 @@ import { initials } from '../library/person-name';
 import { personName } from './approval-words';
 import { filterNameable, mergeNameable, VIA_WORDS, type Nameable } from './approval-people';
 import type { ApprovalContext } from './door';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // More people than this, and the list grows a filter field.
 const FILTER_AFTER = 8;
@@ -122,9 +123,9 @@ export function ApprovalForm({
       }}
     >
       {replacing ? (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+        <Callout tone="warning">
           A new request replaces the open one. Answers to it stay in History.
-        </p>
+        </Callout>
       ) : null}
       <section aria-labelledby={ids.list} className="flex flex-col gap-2">
         <h3 id={ids.list} className={`${SECTION_LABEL} flex items-center justify-between`}>

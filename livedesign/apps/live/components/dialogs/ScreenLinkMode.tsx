@@ -15,6 +15,7 @@ import {
 import type { ScreenChoice } from '@/lib/screen-link-choices';
 import { BackLinkGlyph, ScreenLinkGlyph } from '@/components/canvas/screen-link-glyphs';
 import { RowButton } from './link-picker-rows';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const TRANSITIONS: readonly { id: PageLinkTransition; label: string }[] = [
   { id: 'instant', label: 'Instant' },
@@ -51,12 +52,9 @@ export function ScreenLinkMode({
   return (
     <div className="flex flex-col gap-4">
       {broken ? (
-        <p
-          role="status"
-          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-        >
+        <Callout tone="error" role="status">
           This link&apos;s screen was deleted. Pick another screen, or remove the link.
-        </p>
+        </Callout>
       ) : null}
       <div className="flex flex-col gap-1.5">
         <span className="text-xs font-medium text-slate-600 dark:text-slate-300">Transition</span>

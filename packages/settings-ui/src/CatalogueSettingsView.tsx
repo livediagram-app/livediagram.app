@@ -31,6 +31,7 @@ import {
 import { SettingsView, type SettingsFocus } from './SettingsView';
 import type { PhoneHost } from './push/phone-host';
 import { type AccountHost, panelModel } from './catalogue-panel-model';
+import { Callout, type CalloutAction } from '@liveworkspace/ui/callout';
 export {
   type AccountHost,
   ACCOUNT_GROUP,
@@ -331,27 +332,25 @@ function useAppMarks(
 // A read of the account's settings that failed: what went wrong, and the way to ask again.
 function ReadFailed({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
-    <>
-      <ErrorNote>{message}</ErrorNote>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="mt-3 cursor-pointer text-sm font-semibold text-slate-900 underline underline-offset-2 dark:text-white"
-      >
-        Try again
-      </button>
-    </>
+    <ErrorNote action={{ label: 'Try Again', onSelect: onRetry }} className="mt-2">
+      {message}
+    </ErrorNote>
   );
 }
 
-function ErrorNote({ children }: { children: ReactNode }) {
+function ErrorNote({
+  children,
+  action,
+  className = 'mt-2',
+}: {
+  children: ReactNode;
+  action?: CalloutAction;
+  className?: string;
+}) {
   return (
-    <p
-      role="alert"
-      className="mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-    >
+    <Callout tone="error" role="alert" action={action} className={className}>
       {children}
-    </p>
+    </Callout>
   );
 }
 

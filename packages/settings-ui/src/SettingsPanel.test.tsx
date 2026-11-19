@@ -135,12 +135,12 @@ describe('SettingsPanel', () => {
 
     fail = false;
     const asked = calls.length;
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await waitFor(() =>
       expect(within(rail()).getByRole('group', { name: 'Account' })).toBeTruthy(),
     );
     expect(calls.length).toBeGreaterThan(asked);
-    expect(screen.queryByRole('button', { name: 'Try again' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Try Again' })).toBeNull();
   });
 
   it('offers no switch when All is not allowed (a guest)', () => {

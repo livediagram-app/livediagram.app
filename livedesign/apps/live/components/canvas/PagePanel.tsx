@@ -44,6 +44,7 @@ import { ApplyBackgroundToAll } from './page-background-apply-all';
 import { BackgroundSection } from './page-background-section';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import type { HelpArticleKey } from '@/lib/help-articles';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const LockIcon = lucideGlyph(lucideLock, 16);
 const UnlockIcon = lucideGlyph(lucideLockOpen, 16);
@@ -196,14 +197,11 @@ export function PagePanel({
   const body = (
     <>
       {locked ? (
-        <p
-          role="status"
-          className="mx-3 mt-2 rounded-md bg-amber-50 px-2.5 py-1.5 text-xs text-amber-900 dark:bg-amber-500/15 dark:text-amber-100"
-        >
+        <Callout tone="warning" role="status" className="mx-3 mt-2">
           {mobile
             ? 'This page is locked. Unlock it below to change it.'
             : 'This page is locked. Unlock it beside the cog to change it.'}
-        </p>
+        </Callout>
       ) : null}
       {showMe ? (
         <div className="flex items-center justify-end gap-0.5 px-2 pt-1.5">

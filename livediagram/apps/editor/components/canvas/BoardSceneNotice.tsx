@@ -3,7 +3,9 @@
 // The paste notice (docs/specs/020-import-export/board-scene.md "In the editor"): after a paste that
 // changed or dropped anything, a small non-blocking status at the bottom of the canvas says what;
 // while images store, it shows their progress. It never takes the focus and never times out under
-// the reader: Close (or Escape inside it), the next paste, or another tab clears it.
+// the reader: its close (or Escape inside it), the next paste, or another tab clears it. A floating
+// callout (liveworkspace/docs/specs/016-notifications/callouts.md): warning for changes, error for a refusal.
+import { Callout } from '@liveworkspace/ui/callout';
 import { describeImportImageReport } from '@/lib/import-images';
 import type { BoardSceneNoticeState, BoardSceneSource } from '@/hooks/canvas/useBoardSceneInsert';
 import { BoardSceneReportList } from '@/components/dialogs/BoardSceneReportList';
@@ -43,50 +45,42 @@ export function BoardSceneNotice({
             onClose();
           }
         }}
-        className="pointer-events-auto w-full max-w-[360px] rounded-lg border border-slate-200 bg-white p-3 text-slate-900 shadow-lg shadow-slate-900/5 motion-safe:animate-fade-in dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
+        className="pointer-events-auto w-full max-w-[360px] motion-safe:animate-fade-in"
       >
         {notice.kind === 'progress' ? (
-          <p className="text-sm">
+          <Callout tone="info" size="md" floating>
             Pasting images {notice.done} of {notice.total}…
-          </p>
+          </Callout>
+        ) : notice.kind === 'refused' ? (
+          <Callout
+            tone="error"
+            size="md"
+            floating
+            title={`Couldn't paste from ${source}`}
+            onClose={onClose}
+          >
+            <span className="mt-1 block text-xs">{notice.message}</span>
+          </Callout>
         ) : (
-          <div className="flex items-start gap-3">
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">
-                {notice.kind === 'refused'
-                  ? `Couldn't paste from ${source}`
-                  : `Pasted from ${source} with some changes`}
-              </p>
-              {notice.kind === 'refused' ? (
-                <p className="mt-1 text-xs text-slate-600 dark:text-slate-300">{notice.message}</p>
-              ) : (
-                <>
-                  <BoardSceneReportList report={notice.report} />
-                  {images && images.failures.length > 0 ? (
-                    <ul className="mt-1 space-y-1 text-xs text-slate-600 dark:text-slate-300">
-                      {images.failures.map((f) => (
-                        <li key={f.failure} data-failure={f.failure}>
-                          <span className="font-semibold tabular-nums">{f.count}</span> ·{' '}
-                          {f.sentence}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : null}
-                  {images?.hint ? (
-                    <p className="mt-2 text-xs text-slate-600 dark:text-slate-300">{images.hint}</p>
-                  ) : null}
-                </>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={onClose}
-              data-testid="board-scene-notice-close"
-              className="shrink-0 rounded-md px-2 py-1 text-xs font-medium text-slate-700 transition hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-slate-200 dark:hover:bg-slate-800"
-            >
-              Close
-            </button>
-          </div>
+          <Callout
+            tone="warning"
+            size="md"
+            floating
+            title={`Pasted from ${source} with some changes`}
+            onClose={onClose}
+          >
+            <BoardSceneReportList report={notice.report} />
+            {images && images.failures.length > 0 ? (
+              <ul className="mt-1 space-y-1 text-xs">
+                {images.failures.map((f) => (
+                  <li key={f.failure} data-failure={f.failure}>
+                    <span className="font-semibold tabular-nums">{f.count}</span> · {f.sentence}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {images?.hint ? <p className="mt-2 text-xs">{images.hint}</p> : null}
+          </Callout>
         )}
       </div>
     </div>

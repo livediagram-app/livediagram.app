@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
-import { BackBar, Glyph } from '@liveplanner/ui';
+import { BackBar } from '@liveplanner/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
 import {
@@ -38,6 +38,7 @@ import {
   planFileRefusal,
 } from './import/plan-file-copy';
 import type { ProjectFileSummary } from '@liveplanner/project';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -335,16 +336,11 @@ export function ImportTabDialog({
                 ) : (
                   <>
                     {/* Destructive-action warning: this overwrites the tab. */}
-                    <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-                      <span className="mt-0.5 shrink-0">
-                        <WarningIcon />
-                      </span>
-                      <span>
-                        This replaces everything on{' '}
-                        <strong className="font-semibold">{tabName || 'this tab'}</strong> with the
-                        imported content. Undo brings it back.
-                      </span>
-                    </div>
+                    <Callout tone="warning" className="mb-4">
+                      This replaces everything on{' '}
+                      <strong className="font-semibold">{tabName || 'this tab'}</strong> with the
+                      imported content. Undo brings it back.
+                    </Callout>
                     {dropError ? (
                       <div className="mb-4">
                         <ImportError>{dropError}</ImportError>
@@ -385,15 +381,5 @@ export function ImportTabDialog({
         {drop.over ? <DropOverlay /> : null}
       </div>
     </Dialog>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M8 2.5 1.5 14h13L8 2.5Z" />
-      <path d="M8 6.5v3.5" />
-      <path d="M8 12h.01" />
-    </Glyph>
   );
 }

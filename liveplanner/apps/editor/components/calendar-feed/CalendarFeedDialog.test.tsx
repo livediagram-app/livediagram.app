@@ -291,7 +291,7 @@ describe('the My Work feed', () => {
     expect(screen.getByText('Your cards in your own calendar.')).toBeTruthy();
     expect(screen.getByText(/Every open card assigned to you, in any plan you own/)).toBeTruthy();
     expect(screen.queryByText('What It Shows')).toBeNull();
-    expect(document.querySelector('[data-calendar-feed-privacy]')).toBeTruthy();
+    expect(screen.getByText(/Anyone with this link can see the titles and dates/)).toBeTruthy();
     client.issueMyWorkCalendarFeed.mockResolvedValue({ feed: { createdAt: MADE }, path: MY_PATH });
     fireEvent.click(screen.getByRole('button', { name: 'Make Calendar Link' }));
     await waitFor(() => expect(stateOf()).toBe('made'));

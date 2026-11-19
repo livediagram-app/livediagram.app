@@ -10,6 +10,7 @@ import { apiExportProjectFile } from '@/lib/api/project-file';
 import { downloadBlob } from '@/lib/export-tab';
 import { track } from '@/lib/telemetry';
 import { ImportError } from './import/ImportError';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export const WHOLE_PLAN_FAILED = 'Couldn’t prepare the file. Try again.';
 const MIME = 'application/vnd.liveplanner+json';
@@ -80,9 +81,9 @@ export function WholePlanExportPanel({
           </li>
         ))}
       </ul>
-      <p className="rounded-lg bg-slate-50 px-3 py-2 text-[12px] leading-relaxed text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
+      <Callout tone="info">
         Pictures stay links: the file names them and carries no image bytes.
-      </p>
+      </Callout>
       {error ? (
         <div className="mt-3">
           <ImportError>{error}</ImportError>

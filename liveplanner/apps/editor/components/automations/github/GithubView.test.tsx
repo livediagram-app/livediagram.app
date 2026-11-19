@@ -218,7 +218,7 @@ describe('GithubView: connected', () => {
     expect(client.disconnectGithub).toHaveBeenCalledWith(SCOPE);
     expect(track).toHaveBeenCalledWith('Plan', 'Unlinked', 'Github');
     expect(toast.info).toHaveBeenCalledWith('Disconnected GitHub');
-    expect(document.querySelector('[data-github-result]')).toBeNull();
+    expect(document.querySelector('[data-callout]')).toBeNull();
   });
 
   it('says a disconnect that failed, and stays connected', async () => {
@@ -236,13 +236,13 @@ describe('GithubView: connected', () => {
 
 describe('GithubView: coming back and who may', () => {
   it.each([
-    ['connected', /GitHub is connected/],
-    ['failed', /didn’t connect/],
-    ['requested', /must approve the install/],
-  ] as const)('says how a return went: %s', async (result, words) => {
+    ['connected', 'success', /GitHub is connected/],
+    ['failed', 'error', /didn’t connect/],
+    ['requested', 'warning', /must approve the install/],
+  ] as const)('says how a return went: %s', async (result, tone, words) => {
     client.readGithub.mockResolvedValue(null);
     view({ result });
-    const line = document.querySelector(`[data-github-result="${result}"]`);
+    const line = document.querySelector(`[data-callout="${tone}"]`);
     expect(line?.textContent).toMatch(words);
     await screen.findByRole('heading', { name: 'Connect GitHub' });
   });

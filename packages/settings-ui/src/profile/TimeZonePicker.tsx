@@ -30,6 +30,7 @@ import {
   zoneOptions,
   type ZoneOption,
 } from './time-zones';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // Settings › Profile › Time Zone (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): the zone the
 // emails that can wait keep to (liveworkspace/docs/specs/003-accounts/accounts.md "The send window"). One button names
@@ -234,12 +235,9 @@ export function TimeZoneRow({ initial, host }: { initial: Profile | null; host: 
           />
         ) : null}
         {error ? (
-          <p
-            role="alert"
-            className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-          >
+          <Callout tone="error" role="alert">
             {message(error)}
-          </p>
+          </Callout>
         ) : null}
       </SettingsRowShell>
     </div>

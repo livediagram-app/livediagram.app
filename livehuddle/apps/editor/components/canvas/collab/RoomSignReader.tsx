@@ -28,6 +28,7 @@ import {
 import { ReaderShell } from './ReaderShell';
 import { KnockGlyph } from './RoomSignView';
 import { useKnockedRecently, useMinuteClock } from './room-sign-clock';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const ClockIcon = lucideGlyph(lucideClock, 15);
 const UsersIcon = lucideGlyph(lucideUsers, 15);
@@ -231,9 +232,9 @@ export function RoomSignReader({ elementId, onClose }: { elementId: string; onCl
           />
         </dl>
         {live.status === 'dnd' ? (
-          <p className="rounded-lg bg-red-50 px-3.5 py-2.5 text-sm leading-snug text-red-800 ring-1 ring-inset ring-red-200 dark:bg-red-950/50 dark:text-red-200 dark:ring-red-900">
+          <Callout tone="error" size="md">
             Its door is shut while both seats are taken. A knock asks someone inside to make room.
-          </p>
+          </Callout>
         ) : null}
         <section aria-label="Who's Inside" className="flex flex-col gap-2">
           <h3 className={SECTION_LABEL}>Who&apos;s Inside</h3>

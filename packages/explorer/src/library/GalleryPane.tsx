@@ -23,6 +23,7 @@ import {
 } from './gallery-filter';
 import type { GalleryHost, GalleryImage, GalleryUsage, GalleryUse } from './types';
 import { quoted } from '../quoted';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type Loaded =
   | { status: 'loading' }
@@ -244,12 +245,9 @@ export function GalleryContent({
 
 function Note({ children }: { children: ReactNode }) {
   return (
-    <p
-      role="alert"
-      className="mb-3 rounded-md bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:bg-rose-500/10 dark:text-rose-300"
-    >
+    <Callout tone="error" role="alert" className="mb-3">
       {children}
-    </p>
+    </Callout>
   );
 }
 

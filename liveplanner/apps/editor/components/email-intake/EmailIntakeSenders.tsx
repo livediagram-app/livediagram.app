@@ -6,11 +6,11 @@
 import { useId } from 'react';
 import type { EmailIntakeSenders as Senders } from '@liveplanner/api-schema';
 import { lucideGlyph } from '@liveplanner/ui';
-import { lucideAtSign, lucideTriangleAlert, lucideUsers } from '@liveworkspace/icons/lucide';
+import { lucideAtSign, lucideUsers } from '@liveworkspace/icons/lucide';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const MembersIcon = lucideGlyph(lucideUsers, 16);
 const AnyoneIcon = lucideGlyph(lucideAtSign, 16);
-const WarnIcon = lucideGlyph(lucideTriangleAlert, 14);
 
 const CHOICES: { value: Senders; label: string; hint: string; Icon: typeof MembersIcon }[] = [
   {
@@ -85,18 +85,10 @@ export function EmailIntakeSenders({
           );
         })}
       </div>
-      <p
-        className="mt-1 flex gap-2 rounded-lg bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900 ring-1 ring-amber-200 dark:bg-amber-950/40 dark:text-amber-100 dark:ring-amber-900"
-        data-email-intake-warning=""
-      >
-        <span className="mt-0.5 shrink-0" aria-hidden>
-          <WarnIcon />
-        </span>
-        <span>
-          Anyone who can send from an allowed address can add cards to this board. If the address
-          leaks, press New Address.
-        </span>
-      </p>
+      <Callout tone="warning" className="mt-1">
+        Anyone who can send from an allowed address can add cards to this board. If the address
+        leaks, press New Address.
+      </Callout>
     </fieldset>
   );
 }

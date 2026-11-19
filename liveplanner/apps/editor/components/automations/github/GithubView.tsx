@@ -23,14 +23,12 @@ import { GithubConnectCard, GithubDiscMark, connectRefusalWords } from './Github
 import { GithubRepositories } from './GithubRepositories';
 import { GITHUB_RESULT_WORDS, goConnectGithub, type GithubResult } from './github-return';
 import { setGithub, useGithubConnection } from './use-github-connection';
+import { Callout, type CalloutTone } from '@liveworkspace/ui/callout';
 
-const RESULT_TONES: Readonly<Record<GithubResult, string>> = {
-  connected:
-    'bg-emerald-50 text-emerald-900 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-100 dark:ring-emerald-500/30',
-  failed:
-    'bg-red-50 text-red-900 ring-red-200 dark:bg-red-500/10 dark:text-red-100 dark:ring-red-500/30',
-  requested:
-    'bg-amber-50 text-amber-900 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-100 dark:ring-amber-500/30',
+const RESULT_TONES: Readonly<Record<GithubResult, CalloutTone>> = {
+  connected: 'success',
+  failed: 'error',
+  requested: 'warning',
 };
 
 export const DISCONNECT_WORDS =
@@ -229,13 +227,9 @@ export function GithubView({
       <div className={`min-h-0 flex-1 overflow-y-auto ${phone ? 'px-4 py-5' : 'px-6 py-7'}`}>
         <div className="mx-auto flex w-full max-w-xl flex-col gap-5">
           {shown ? (
-            <p
-              role="status"
-              data-github-result={shown}
-              className={`rounded-lg px-3.5 py-2.5 text-[13px] leading-5 ring-1 ${RESULT_TONES[shown]}`}
-            >
+            <Callout tone={RESULT_TONES[shown]} size="md" role="status">
               {GITHUB_RESULT_WORDS[shown]}
-            </p>
+            </Callout>
           ) : null}
           {body}
         </div>

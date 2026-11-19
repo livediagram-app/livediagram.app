@@ -22,6 +22,7 @@ import { CUSTOM_KIND_ICONS } from '@/components/plan/CustomFieldKindParts';
 import { PlusIcon, lucideGlyph } from '@liveplanner/ui';
 import { lucideHeading1, lucideTextQuote } from '@liveworkspace/icons/lucide';
 import { useFormBuilder } from './form-builder-context';
+import { Callout } from '@liveworkspace/ui/callout';
 
 const TitleIcon = lucideGlyph(lucideHeading1, 16);
 const DescriptionIcon = lucideGlyph(lucideTextQuote, 16);
@@ -62,15 +63,15 @@ export function AnswerGoesTo({
       </div>
       {/* Card type rules map their own types' fields (forms.md "Choosing the card type by an answer"). */}
       {b.type && b.form.destination?.typeRules?.length ? (
-        <p className="rounded-lg bg-slate-50 px-3 py-2 text-[12px] text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
+        <Callout tone="info">
           For {b.type.label} cards. Rules map their own types’ fields under Responses Go To.
-        </p>
+        </Callout>
       ) : null}
       {target.broken ? (
-        <p className="rounded-lg bg-amber-50 px-3 py-2 text-[12px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-100">
+        <Callout tone="warning">
           Goes to Description: its field was removed or no longer fits this question. Choose again
           below.
-        </p>
+        </Callout>
       ) : null}
       <div role="radiogroup" aria-label="Answer goes to" className="flex flex-col gap-4">
         <Group title="On the Card">

@@ -6,6 +6,7 @@
 
 import { useId, type ReactNode } from 'react';
 import { Button, CheckIcon, Select, TextInput, type SelectProps } from '@liveplanner/ui';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export const PANEL_SELECT = 'h-9 rounded-lg pl-2.5 pr-7 text-[13px]';
 
@@ -211,8 +212,8 @@ export function TodayShift({
 /** A quiet sentence for a step with nothing to set. */
 export function PanelNote({ children }: { children: ReactNode }) {
   return (
-    <p className="rounded-lg bg-slate-50 px-3 py-2.5 text-[13px] text-slate-600 dark:bg-slate-800/60 dark:text-slate-300">
+    <Callout tone="info" size="md">
       {children}
-    </p>
+    </Callout>
   );
 }

@@ -26,6 +26,7 @@ import { useModalGuard } from '../../hooks/ui/useModalGuard';
 import type { AccountDeletion, DeletionCodeSent } from '../../lib/account-deletion';
 import { useDeferredAuth } from '../providers/deferred-auth';
 import { DialogFooter } from './DialogFooter';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type Step = 'confirm' | 'code';
 type Busy = null | 'sending' | 'resending' | 'deleting';
@@ -340,20 +341,14 @@ export function DeleteAccountDialog({
               )}
 
               {notice ? (
-                <p
-                  role="status"
-                  className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-300"
-                >
+                <Callout tone="success" role="status" className="mt-3">
                   {notice}
-                </p>
+                </Callout>
               ) : null}
               {error ? (
-                <div
-                  role="alert"
-                  className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
-                >
+                <Callout tone="error" role="alert" className="mt-3">
                   {error}
-                </div>
+                </Callout>
               ) : null}
             </div>
 

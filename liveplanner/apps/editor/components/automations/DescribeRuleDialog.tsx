@@ -20,6 +20,7 @@ import {
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { AutomationRefusal } from './automations-client';
 import { AiNote } from './step-panels/AiStepPanel';
+import { Callout } from '@liveworkspace/ui/callout';
 
 export const DESCRIBE_EXAMPLES: readonly { label: string; text: string }[] = [
   {
@@ -160,13 +161,9 @@ export function DescribeRuleDialog({
           </div>
         </div>
         {said ? (
-          <p
-            id={saidId}
-            role="alert"
-            className="rounded-lg bg-amber-50 px-3 py-2.5 text-[13px] text-amber-900 dark:bg-amber-500/10 dark:text-amber-200"
-          >
-            {said}
-          </p>
+          <Callout tone="warning" size="md" role="alert">
+            <span id={saidId}>{said}</span>
+          </Callout>
         ) : null}
         <AiNote id={noteId}>
           Uses AI: counts toward this plan&rsquo;s {AUTOMATION_AI_PER_DAY} AI steps a day.

@@ -12,9 +12,9 @@ import type {
   ImportFormat as Format,
   TextImportFormat,
 } from '@/hooks/persistence/useTabImport';
-import { Glyph } from '@livedocuments/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -183,16 +183,11 @@ function ImportChooser({
   return (
     <>
       {/* Destructive-action warning — this overwrites the tab. */}
-      <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-        <span className="mt-0.5 shrink-0">
-          <WarningIcon />
-        </span>
-        <span>
-          This replaces everything on{' '}
-          <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
-          content. Undo brings it back.
-        </span>
-      </div>
+      <Callout tone="warning" className="mb-4">
+        This replaces everything on{' '}
+        <strong className="font-semibold">{tabName || 'this tab'}</strong> with the imported
+        content. Undo brings it back.
+      </Callout>
       {activeFormat?.kind === 'file' ? (
         <FileImportPanel
           // A fresh panel per format, so a stale error never carries across.
@@ -277,15 +272,5 @@ function FormatIcon({ kind }: { kind: Format }) {
         {label}
       </text>
     </svg>
-  );
-}
-
-function WarningIcon() {
-  return (
-    <Glyph size={14} units={16}>
-      <path d="M8 2.5 1.5 14h13L8 2.5Z" />
-      <path d="M8 6.5v3.5" />
-      <path d="M8 12h.01" />
-    </Glyph>
   );
 }

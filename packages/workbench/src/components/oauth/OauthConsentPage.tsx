@@ -30,15 +30,15 @@ import {
   UnverifiedAppBadge,
   type OauthPagesConfig,
 } from './oauth-chrome';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // Where the access goes, for a client the server vouches for (the product's CLI): the quiet line.
 function VerifiedDestination({ host }: { host: string }) {
   return (
-    <p className="mt-3 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500 dark:bg-slate-800/60 dark:text-slate-400">
-      Access will be sent to{' '}
-      <span className="font-medium text-slate-700 dark:text-slate-200">{host}</span>. Only continue
-      if you recognise this.
-    </p>
+    <Callout tone="info" className="mt-3">
+      Access will be sent to <span className="font-semibold">{host}</span>. Only continue if you
+      recognise this.
+    </Callout>
   );
 }
 

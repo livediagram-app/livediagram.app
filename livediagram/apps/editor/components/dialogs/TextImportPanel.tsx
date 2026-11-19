@@ -3,6 +3,7 @@ import { Button, BackBar } from '@livediagram/ui';
 import { FileTypes } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
+import { Callout } from '@liveworkspace/ui/callout';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 type ProgressListener = (progress: ImportImageProgress) => void;
@@ -93,13 +94,14 @@ export function TextImportPanel({
         </div>
       ) : null}
       {error ? (
-        <p
+        <Callout
           // Announced when it appears: the Import button keeps focus, so a reader would never hear why nothing landed.
+          tone="error"
           role="alert"
-          className="mt-3 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300"
+          className="mt-3"
         >
           {error}
-        </p>
+        </Callout>
       ) : null}
       <div className="mt-4 flex items-center justify-between gap-3">
         {/* The left slot carries the format's note, or, while images store, the

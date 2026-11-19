@@ -4,6 +4,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { Button, usePageRestore } from '@liveworkspace/ui';
 import { DAY_LONG_MONTH, DAY_MONTH } from '@liveworkspace/ui/date-format';
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from '../SettingsRowShell';
+import { Callout } from '@liveworkspace/ui/callout';
 
 // The Profile's Sign-in and Security (liveworkspace/docs/specs/010-site/site.md "Settings", "Profile"): how the person signs in and
 // where they are signed in, from the accounts Worker: Better Auth's own session endpoints on liveworkspace.app, the
@@ -36,9 +37,6 @@ export type AccountSecurity = {
   connectGoogle: () => Promise<boolean>;
 };
 
-const ERROR_NOTE =
-  'mt-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300';
-
 type Load<T> = { state: 'loading' } | { state: 'error' } | { state: 'ready'; data: T };
 
 // The read, `reload` (read again, keeping what shows meanwhile) and `retry` (after a failure: loading again).
@@ -70,7 +68,7 @@ function TryAgain({ onClick }: { onClick: () => void }) {
       onClick={onClick}
       className="relative touch-target ml-2 cursor-pointer font-semibold underline underline-offset-2 hover:no-underline"
     >
-      Try again
+      Try Again
     </button>
   );
 }
@@ -221,18 +219,22 @@ export function SignInMethodsRows({
           }
         >
           {load.state === 'error' ? (
-            <p role="alert" className={ERROR_NOTE}>
+            <Callout
+              tone="error"
+              role="alert"
+              action={{ label: 'Try Again', onSelect: retry }}
+              className="mt-2"
+            >
               Couldn’t reach your account just now.
-              <TryAgain onClick={retry} />
-            </p>
+            </Callout>
           ) : failed ? (
-            <p role="alert" className={ERROR_NOTE}>
+            <Callout tone="error" role="alert" className="mt-2">
               Couldn’t reach your account just now. Try again in a moment.
-            </p>
+            </Callout>
           ) : refused ? (
-            <p role="alert" className={ERROR_NOTE}>
+            <Callout tone="error" role="alert" className="mt-2">
               {refused}
-            </p>
+            </Callout>
           ) : null}
         </SettingsRowShell>
       )}
@@ -436,15 +438,15 @@ export function SessionsRows({ security }: { security: AccountSecurity }) {
           }
         >
           {failed ? (
-            <p role="alert" className={ERROR_NOTE}>
+            <Callout tone="error" role="alert" className="mt-2">
               Couldn’t sign that session out. Try again in a moment.
-            </p>
+            </Callout>
           ) : null}
         </SettingsRowShell>
       ) : failed ? (
-        <p role="alert" className={`mx-4 mb-3 ${ERROR_NOTE}`}>
+        <Callout tone="error" role="alert" className="mx-4 mt-2 mb-3">
           Couldn’t sign that session out. Try again in a moment.
-        </p>
+        </Callout>
       ) : null}
     </>
   );
