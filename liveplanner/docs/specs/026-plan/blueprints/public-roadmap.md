@@ -50,6 +50,15 @@ the public read and vote, the vote field and its sort, the editor's Publish Road
   `roadmap-tools-item.tsx` (the Tools row, `useRoadmapToolsItem`). `RoadmapHost` takes the plan's `itemTypes`
   (`ItemTypesSlice`, from `ctx.plan.context`) and hands it to the dialog as `cardTypes`, which it changes to add Votes
   to a published roadmap's types (an effect, each type tried once per opening); `namesOf` joins type names.
+- Editor, the board's Roadmap pill (spec "On the board"): `RoadmapContext.tsx` also holds `RoadmapBoardsContext`
+  (`useRoadmapOnBoard(boardId)`: the board's `PublishedRoadmap` or null, and `manage()`), which `RoadmapHost` provides
+  for someone who may publish (`roadmapScopeFor`), null otherwise. `use-roadmaps-on-boards.ts`
+  (`useRoadmapsOnBoards(scope)`) reads `readRoadmaps` once, on the first `want()` (the first pill mounted), and keeps
+  the roadmaps by board id; `RoadmapDialog`'s `onRoadmaps` hands it every change of its own list (a read, Publish, a
+  settings save, Unpublish), and its `startBoardId` opens it on the pill's board (the board's tab picked from the read).
+  `RoadmapBoardPill.tsx` draws the pill in `PlanBoardHeader`'s widget zone after `FormBoardStrip`, both through
+  `components/plan/widgets/BoardStripPill.tsx` (`BoardStripPill`, `BoardStripButton`: the shell, glyph, name, dot and
+  icon buttons the Form pill had).
 - `packages/items/src/card-display.ts`: `typeShowsVotes(type)` (the built-in Votes in its fields and its Detailed
   layout), `withVotesShown(type)` (the field added, then placed last in the Detailed Footer when the layout leaves it
   out). The built-in Project type carries `votes` (`item-types.ts`) and its Detailed default places it after
@@ -173,6 +182,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS roadmaps_code ON roadmaps (code);
   held by reference.
 - A vote: one row update for the cap, one item read and one guarded write.
 - The editor's dialog and the public page's code each load on their own (`next/dynamic`, its own route bundle).
+- The board's Roadmap pill costs one managing `GET` a plan opening, for someone who may publish, only once a board
+  header is drawn (a plan open on a Sheet tab reads nothing), and nothing per header or render after it: the pills
+  share one map in `RoadmapHost`, updated by the dialog's own writes. Share-link holders never read.
 
 ## Observability
 

@@ -992,7 +992,8 @@ board settings, for switching back.
   read out), "3 responses · 1 new", **Copy Form Link** (an Editor's, once published; it reads "Copied") and **Open
   Form** (opens the Form tab). It reads the count without marking anything seen (only opening the Form tab does), and
   refreshes as the Form tab's status bar does. It is not a stored widget: it comes and goes with the form's
-  destination. The same board shown in a Dashboard slot has no strip, until it is maximised from the slot (a board there is simplified:
+  destination. A board published as a roadmap shows a Roadmap pill of the same shape after the Form pills
+  ([public-roadmap.md](../026-plan/public-roadmap.md) "On the board"). The same board shown in a Dashboard slot has no strip, until it is maximised from the slot (a board there is simplified:
   [Dashboard tab](../026-plan/plan-tabs.md#dashboard-tab) "A board in a slot is simplified").
   **Short of room** (Work Tracker 1288: on a 390 px phone the pill ran on under the top-right corner card, the Share
   icon over "0 responses"), the strip gives way inside the header, which keeps clear of the corner card: the form's
