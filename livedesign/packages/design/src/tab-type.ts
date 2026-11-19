@@ -64,6 +64,10 @@ export type Tab = {
   // Tab Style's New Page Background): a fill and a pattern, never a picture (a logo page takes the fill alone). Absent,
   // a new page carries over the page before it. Read via `newPageBackgroundOf`.
   newPageBackground?: PageBackground;
+  // Tab Style's Element Colours (docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours"): true for Keep as
+  // They Are, a theme or look pick recolouring no element; absent (Follow the Theme), the pick recolours what is still
+  // on the old theme's colours. Stored only as true.
+  keepElementColours?: boolean;
   // Selected preset theme name (see apps/live/lib/themes.ts). Setting
   // a theme via the palette repaints every existing element on the tab
   // to match (sticky notes keep their amber palette). Newly added

@@ -4,7 +4,7 @@
 // the one dialog every editor shares (@liveworkspace/workbench, liveworkspace/docs/specs/011-workbench/tab-style.md),
 // handed this editor's profile. Loaded on demand (canvas-theme-dialog-loader.ts), the profile with it.
 
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import type { BackgroundPattern } from '@livedesign/design';
 import {
   TabStyleDialog,
@@ -22,27 +22,20 @@ import { TabStylePagesContext, type TabStylePages } from './tab-style-pages';
 // 'looks' is the home (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"); the others are its Fine-tune panels.
 export type CanvasThemeTab = TabStyleView;
 
-type DoorPages = Omit<TabStylePages, 'keepElementColours' | 'onSetKeepElementColours'>;
-
 // The tab's pages ride beside the shared props (tab-style-pages.ts): the New Page Background panel, the frame
 // preview and the Element Colours row read them; the Canvas row names the background new pages start on. Element
-// Colours is this open's own choice, handed to every theme and look the dialog applies.
+// Colours is the tab's own choice (`keepElementColours`), handed to every theme and look the dialog applies.
 export function CanvasThemeDialog({
-  pages: given,
+  pages,
   onSetTheme,
   onApplyLook,
   ...props
 }: Omit<TabStyleDialogProps<TabLook, BackgroundPattern>, 'onSetTheme' | 'onApplyLook'> & {
-  pages: DoorPages;
+  pages: TabStylePages;
   onSetTheme: (id: string, options?: ThemeApplyOptions) => void;
   onApplyLook: (look: string | TabLook, options?: ThemeApplyOptions) => void;
 }) {
-  const [keepElementColours, setKeepElementColours] = useState(false);
-  const pages = useMemo<TabStylePages>(
-    () => ({ ...given, keepElementColours, onSetKeepElementColours: setKeepElementColours }),
-    [given, keepElementColours],
-  );
-  const options = keepElementColours ? { keepElementColours } : undefined;
+  const options = pages.keepElementColours ? { keepElementColours: true } : undefined;
   const summary = useMemo(
     () =>
       pages.kind === 'photo'

@@ -29,9 +29,14 @@ const box = (id: string, over: Record<string, unknown> = {}): Element => ({
   ...over,
 });
 
-function setup(elements: Element[], editsBlocked = false, notify = vi.fn()) {
+function setup(
+  elements: Element[],
+  editsBlocked = false,
+  notify = vi.fn(),
+  active: Partial<Tab> = {},
+) {
   let tabs: Tab[] = [
-    { id: 't1', name: 'One', elements },
+    { id: 't1', name: 'One', elements, ...active },
     { id: 't2', name: 'Two', elements: [] },
   ];
   const commitTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
@@ -91,6 +96,50 @@ describe('useTabCanvas finish', () => {
     h.api.setTabFont('inter');
     h.api.setTabDefaultTextSize('lg');
     expect(h.commitTabs).not.toHaveBeenCalled();
+  });
+});
+
+// Element Colours (docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours"): the tab's own choice.
+describe('useTabCanvas Element Colours', () => {
+  const red = () => box('a', { fill: '#ff0000' });
+  it('stores Keep as They Are on the tab and clears it for Follow the Theme, one step each', () => {
+    const h = setup([red()]);
+    h.api.setKeepElementColours(true);
+    expect(h.tabs()[0]!.keepElementColours).toBe(true);
+    expect(h.tabs()[1]!.keepElementColours).toBeUndefined();
+    const kept = setup([red()], false, vi.fn(), { keepElementColours: true });
+    kept.api.setKeepElementColours(true);
+    expect(kept.commitTabs).not.toHaveBeenCalled();
+    kept.api.setKeepElementColours(false);
+    expect(kept.commitTabs).toHaveBeenCalledTimes(1);
+    expect('keepElementColours' in kept.tabs()[0]!).toBe(false);
+  });
+
+  it('refuses a blocked session (a Participant, a Viewer, a locked tab)', () => {
+    const h = setup([red()], true);
+    h.api.setKeepElementColours(true);
+    expect(h.commitTabs).not.toHaveBeenCalled();
+  });
+
+  it("follows the tab's choice on a theme or look pick that names none", () => {
+    // An arrow still on the old theme's stroke: following, it takes the new theme's; kept, it stays.
+    const arrow = {
+      id: 'r',
+      type: 'arrow',
+      from: { kind: 'free', x: 0, y: 0 },
+      to: { kind: 'free', x: 50, y: 0 },
+    } as Element;
+    const stroke = (h: ReturnType<typeof setup>) =>
+      (h.tabs()[0]!.elements[0] as { strokeColor?: string }).strokeColor;
+    const kept = setup([arrow], false, vi.fn(), { theme: 'brand', keepElementColours: true });
+    kept.api.setTheme('forest');
+    expect(stroke(kept)).toBeUndefined();
+    const followed = setup([arrow], false, vi.fn(), { theme: 'brand' });
+    followed.api.setTheme('forest');
+    expect(stroke(followed)).toBeDefined();
+    const look = setup([arrow], false, vi.fn(), { theme: 'brand', keepElementColours: true });
+    look.api.applyTabLook('boardroom');
+    expect(stroke(look)).toBeUndefined();
   });
 });
 

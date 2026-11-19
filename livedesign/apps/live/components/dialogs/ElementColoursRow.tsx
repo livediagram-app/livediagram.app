@@ -3,8 +3,8 @@
 // Tab Style's Element Colours (docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours"): on a design, what a
 // look or a theme pick does to the elements already there. Follow the Theme (the default) recolours what is still on
 // the old theme's colours and keeps every colour someone chose, arrows included; Keep as They Are recolours nothing,
-// the theme still setting the tab's backdrop, its pages' theme fills and the colours new elements take. The viewer's
-// own, for this open of the dialog.
+// the theme still setting the tab's backdrop, its pages' theme fills and the colours new elements take. The tab's
+// own (`Tab.keepElementColours`): it lasts and is shared with everyone on the design.
 import { SegmentedToggle } from '@liveworkspace/ui';
 import { track } from '@/lib/telemetry';
 import { useTabStylePages } from './tab-style-pages';

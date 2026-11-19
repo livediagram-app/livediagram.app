@@ -22,7 +22,11 @@ import {
 } from '@livedesign/design';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { everyPageMessage } from '@liveworkspace/page-background/new-page-background-label';
-import type { ThemeApplyOptions } from '@/lib/tab-theme-apply';
+import {
+  themeApplyOptionsOf,
+  withKeepElementColours,
+  type ThemeApplyOptions,
+} from '@/lib/tab-theme-apply';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';
@@ -146,7 +150,8 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   };
 
   // A look (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): the tab's theme, finish, font and pattern at
-  // once, as one undo step. The theme lands exactly as picking it does (withThemeApplied).
+  // once, as one undo step. The theme lands exactly as picking it does (withThemeApplied), under the options given or
+  // the tab's own Element Colours.
   // A named look comes by id; the Mashup card's random look (lib/look-mashup.ts) comes whole.
   const applyTabLook = (lookOrId: string | TabLook, options?: ThemeApplyOptions) => {
     if (editsBlocked) return;
@@ -157,7 +162,20 @@ export function useTabCanvas(deps: TabCanvasDeps) {
       'Changed',
       look.id === 'mashup' ? 'Mashup' : look.season ? 'SeasonalLook' : 'Look',
     );
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withLookApplied(t, look, options) : t)));
+    commitTabs((ts) =>
+      ts.map((t) =>
+        t.id === activeId ? withLookApplied(t, look, options ?? themeApplyOptionsOf(t)) : t,
+      ),
+    );
+  };
+
+  // Element Colours (docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours"): the tab's choice of what a
+  // theme or look pick does to its elements, stored on the tab so it lasts and is shared. One undo step; the row
+  // that calls it tracks the change.
+  const setKeepElementColours = (keep: boolean) => {
+    if (editsBlocked) return;
+    if ((activeTab.keepElementColours === true) === keep) return;
+    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withKeepElementColours(t, keep) : t)));
   };
 
   // Tab default text size (docs/specs/004-interface-design/fonts.md): seeded onto NEW palette elements.
@@ -257,6 +275,7 @@ export function useTabCanvas(deps: TabCanvasDeps) {
   };
 
   return {
+    setKeepElementColours,
     setNewPageBackground,
     applyNewPageBackgroundToEveryPage,
     autoAlignTab,

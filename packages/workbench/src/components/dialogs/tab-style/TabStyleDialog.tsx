@@ -92,6 +92,7 @@ export function TabStyleDialog<Look extends TabStyleLook, Pattern extends string
     help: profile.renderHelp(TAB_STYLE_HELP[view]),
     // Show Me's tour of the home, run on this dialog.
     tourApi: {
+      panels: surface.panels,
       showHome: () => (view === 'looks' ? undefined : go('looks')),
       showFinish: () => (view === 'finish' ? undefined : go('finish')),
       finish: () => resolvedFinish,

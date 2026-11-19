@@ -7616,6 +7616,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
+      "keepElementColours": {
+        "type": "boolean"
+      },
       "kind": {
         "$ref": "#/components/schemas/TabKind"
       },
@@ -7762,6 +7765,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/TabId"
+      },
+      "keepElementColours": {
+        "type": "boolean"
       },
       "kind": {
         "$ref": "#/components/schemas/TabKind"

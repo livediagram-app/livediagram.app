@@ -34,6 +34,7 @@ import { TAB_LOOKS, activeLookId, lookMatches, type TabLook } from '@/lib/tab-lo
 import {
   BOARD_CONFIGURE_LINK,
   DASHBOARD_SETTINGS_LINK,
+  FORM_SETTINGS_LINK,
   SHEET_SETTINGS_LINK,
 } from '@/lib/tab-style-links';
 import { getTheme } from '@/lib/themes';
@@ -163,6 +164,7 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
     }),
     form: planTab({
       hiddenControls: PAGE_HIDDEN,
+      links: [FORM_SETTINGS_LINK],
       copy: {
         viewLines: {
           looks: 'Colours, finish and font for the whole form.',

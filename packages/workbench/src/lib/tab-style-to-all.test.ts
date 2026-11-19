@@ -52,6 +52,7 @@ describe('withTabStyleOf', () => {
     expect(TAB_STYLE_KEYS).toContain('font');
     expect(TAB_STYLE_KEYS).toContain('finish');
     expect(TAB_STYLE_KEYS).toContain('newPageBackground');
+    expect(TAB_STYLE_KEYS).toContain('keepElementColours');
     expect(TAB_STYLE_KEYS).not.toContain('theme' as never);
   });
 });

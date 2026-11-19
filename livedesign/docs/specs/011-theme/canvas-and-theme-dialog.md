@@ -284,9 +284,16 @@ Colours** asks what the next pick does to the elements already there:
 - **Keep as They Are**: no element changes colour; the theme still sets the tab's backdrop, its pages' theme fills
   and the colours new elements take.
 
-The choice is the viewer's own, for this open of the dialog (not stored), and changing it is tracked as
+The choice is the tab's, stored on it as `keepElementColours` (`true` for Keep as They Are; absent, Follow the
+Theme), so it lasts past the dialog, is saved with the tab and reaches everyone on the design as any tab style
+change does (a `tab-meta` patch; the tab body is JSON, so no migration). Every theme or look pick on the tab follows
+it, from the dialog or anywhere else a theme is picked, and Apply to All Tabs copies it with the rest of the style
+(applying the source tab's theme to each tab under the source's choice). Changing it is one undo step, offered only
+to someone who may change the tab's style (an Editor, on a tab that is not locked: the dialog is not offered to a
+read-only person, and the setter refuses while edits are blocked, as every tab style setter does), and is tracked as
 `UI / Changed / TabStyleElementColours`. `withThemeApplied(tab, id, appearance, { keepElementColours })` and
 `withLookApplied(tab, look, { keepElementColours })` carry it (`apps/live/lib/tab-theme-apply.ts`, `tab-looks.ts`).
+Import keeps an imported tab's choice.
 
 ### Formal themes / per-shape colours
 
@@ -363,8 +370,8 @@ describes it on each.
 - **Copy.** The shared lines, but the home's ("Pick a look for the tab’s pages, then fine-tune any part of it.") and
   the Canvas panel's ("The background new pages start on, and the canvas around the pages.").
 - **The door.** `CanvasThemeDialog` takes `pages` (`TabStylePages`, `tab-style-pages.ts`: the kind, the field, the
-  pages Apply to Every Page reaches and its setters), holds the Element Colours choice, and hands it to every theme
-  and look it applies.
+  pages Apply to Every Page reaches and its setters, and the tab's Element Colours choice with its setter), and hands
+  that choice to every theme and look it applies.
 - **Frame.** The shared modal, its Show Me bound in `apps/live/components/tour/TabStyleTour.tsx`.
 
 ## Reuse notes

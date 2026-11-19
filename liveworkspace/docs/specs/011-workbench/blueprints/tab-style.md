@@ -103,6 +103,9 @@ type TabStyleLink = { id: string; label: string; value: string; onOpen: () => vo
   filter. The Mashup card leads the year-round pool unfiltered.
 - A card's preview is drawn on its first render and cached per open and appearance.
 - The modal frame calls `useModalGuard(true)` and binds Escape to close only while Show Me is not running.
+- Show Me's steps are `tabStyleTourSteps(panels)` over the surface's panels (`TabStyleTourApi.panels`, the dialog's
+  `surface.panels`): a step naming a `panel` the surface leaves out is dropped. `useTabStyleTour` rebuilds the steps
+  only when the panels change (keyed on their joined names).
 - `data-tab-style-view` names the view up, on a `display: contents` wrapper, in every editor.
 
 ## Performance and limits

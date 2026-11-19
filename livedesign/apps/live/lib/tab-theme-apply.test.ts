@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { type ArrowElement, type Element, type ShapeElement, type Tab } from '@livedesign/design';
 import { getTheme } from '@/lib/themes';
-import { withStyleOfTab, withThemeApplied } from './tab-theme-apply';
+import {
+  themeApplyOptionsOf,
+  withKeepElementColours,
+  withStyleOfTab,
+  withThemeApplied,
+} from './tab-theme-apply';
 
 // Applying a theme to a tab (docs/specs/011-theme/canvas-and-theme-dialog.md "Colours panel").
 const shape = (over: Partial<ShapeElement> = {}): Element => ({
@@ -81,6 +86,34 @@ describe('withThemeApplied', () => {
 });
 
 // Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md "Apply to All Tabs").
+// docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours": the tab's own choice.
+describe('Element Colours on the tab', () => {
+  const t: Tab = { id: 't', name: 'T', theme: 'brand', elements: [arrow()] };
+  it('stores Keep as They Are as true and clears the key for Follow the Theme', () => {
+    const kept = withKeepElementColours(t, true);
+    expect(kept.keepElementColours).toBe(true);
+    expect(themeApplyOptionsOf(kept)).toEqual({ keepElementColours: true });
+    const followed = withKeepElementColours(kept, false);
+    expect('keepElementColours' in followed).toBe(false);
+    expect(themeApplyOptionsOf(followed)).toBeUndefined();
+  });
+
+  it("Apply to All Tabs copies it, and applies the source's theme under it", () => {
+    const source: Tab = { ...t, id: 's', theme: 'forest', keepElementColours: true };
+    const out = withStyleOfTab(t, source);
+    expect(out.keepElementColours).toBe(true);
+    expect(out.elements).toEqual(t.elements);
+    const followed = withStyleOfTab(
+      { ...t, keepElementColours: true },
+      { ...source, keepElementColours: undefined },
+    );
+    expect('keepElementColours' in followed).toBe(false);
+    expect((followed.elements[0] as ArrowElement).strokeColor).toBe(
+      getTheme('forest').elementStroke,
+    );
+  });
+});
+
 describe('withStyleOfTab', () => {
   it("puts the source's theme, canvas, text defaults and finish on the target, keeping its name and content", () => {
     const source = {
