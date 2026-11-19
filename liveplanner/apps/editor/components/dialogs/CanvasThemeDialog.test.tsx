@@ -54,7 +54,7 @@ describe('CanvasThemeDialog placement', () => {
       ({ left: 1360, right: 1404, top: 840, bottom: 884, width: 44, height: 44 }) as DOMRect;
     document.body.appendChild(brush);
     render(<CanvasThemeDialog {...props} />);
-    const panel = screen.getByRole('dialog', { name: 'Tab style' });
+    const panel = screen.getByRole('dialog', { name: 'Tab Style' });
     expect(panel.style.right).toBe('36px');
     expect(panel.style.bottom).toBe('68px');
   });
@@ -62,7 +62,7 @@ describe('CanvasThemeDialog placement', () => {
   it('is the centred dialog without a brush', () => {
     Object.assign(window, { innerWidth: 1440, innerHeight: 900 });
     render(<CanvasThemeDialog {...props} />);
-    expect(screen.getByRole('dialog', { name: 'Tab style' }).style.right).toBe('');
+    expect(screen.getByRole('dialog', { name: 'Tab Style' }).style.right).toBe('');
   });
 });
 
@@ -271,7 +271,7 @@ describe('CanvasThemeDialog header', () => {
     ['canvas', 'The pattern and colours behind everything.'],
   ] as const)('wears the hero band on %s, its line for that view', (tab, line) => {
     render(<CanvasThemeDialog {...props} tab={tab} />);
-    const panel = screen.getByRole('dialog', { name: 'Tab style' });
+    const panel = screen.getByRole('dialog', { name: 'Tab Style' });
     expect(panel.querySelector('[data-dialog-hero="canvas-theme"]')).not.toBeNull();
     expect(screen.getByRole('heading', { level: 2, name: 'Tab Style' })).toBeTruthy();
     expect(screen.getByText(line)).toBeTruthy();

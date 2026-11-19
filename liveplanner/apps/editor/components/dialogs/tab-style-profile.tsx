@@ -112,7 +112,7 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
     kind: 'custom',
     render: ({ subtitle, help, onClose, children }) => (
       <ClusterPanel
-        label="Tab style"
+        label="Tab Style"
         title="Tab Style"
         subtitle={subtitle}
         hero={canvasThemeHeroArt}
