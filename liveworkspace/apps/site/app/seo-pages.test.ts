@@ -4,6 +4,12 @@ import { metadata as root } from './layout';
 import { metadata as community } from './community/page';
 import { metadata as compare } from './compare/page';
 import { metadata as help } from './help/google-drive/page';
+import { metadata as explorerHelp } from './help/explorer/page';
+import { metadata as foldersHelp } from './help/explorer/folders/page';
+import { metadata as teamsHelp } from './help/explorer/teams/page';
+import { metadata as movingHelp } from './help/explorer/moving/page';
+import { metadata as sharingHelp } from './help/explorer/sharing/page';
+import { metadata as signingInHelp } from './help/explorer/signing-in/page';
 import { metadata as licences } from './licences/page';
 import { metadata as privacy } from './privacy/page';
 import { metadata as status } from './status/page';
@@ -16,6 +22,12 @@ const PAGES: Record<string, Metadata> = {
   '/community': community,
   '/compare': compare,
   '/help/google-drive': help,
+  '/help/explorer': explorerHelp,
+  '/help/explorer/folders': foldersHelp,
+  '/help/explorer/teams': teamsHelp,
+  '/help/explorer/moving': movingHelp,
+  '/help/explorer/sharing': sharingHelp,
+  '/help/explorer/signing-in': signingInHelp,
   '/licences': licences,
   '/privacy': privacy,
   '/status': status,

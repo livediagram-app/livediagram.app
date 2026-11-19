@@ -30,6 +30,8 @@ const SHARE_HELP: Record<ShareHelpArticle, HelpArticleKey> = {
   sharing: 'sharing',
   shareLinkExpiry: 'shareLinkExpiry',
   sharePasswords: 'sharePasswords',
+  // This app has no Approvals, so its Share dialog has no Approval tab to link from: the sharing article stands in.
+  requestApproval: 'sharing',
 };
 
 export const shareHelpHref: ShareHelpHref = (article) => helpArticleHref(SHARE_HELP[article]);
