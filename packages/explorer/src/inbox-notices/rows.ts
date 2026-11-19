@@ -25,7 +25,7 @@ export type NoticeRow = {
   verb: string;
   /** The comment's first line, for a thread. */
   quote: string | null;
-  /** The item's name, and the tab or the card where there is one. */
+  /** The item's name, and the card, or the tab and the element, where there are. */
   place: string;
   detail: string | null;
   href: string;
@@ -77,7 +77,10 @@ function threadRow(t: InboxThread, viewerId: string, here: App): NoticeRow | nul
     return null;
   }
   const key = threadKey(t);
-  const label = t.card ? `#${t.card.key} ${t.card.title}` : t.tabName || null;
+  // Where in the item, as the Inbox row says it: the card, else the tab and the element, so rows on one canvas differ.
+  const label = t.card
+    ? `#${t.card.key} ${t.card.title}`
+    : [t.tabName, t.elementLabel].filter(Boolean).join(' › ') || null;
   return {
     key,
     at: t.latestAt,

@@ -123,10 +123,27 @@ describe('each kind', () => {
       verb: 'mentioned you',
       quote: 'Can you check the totals?',
       place: 'Roadmap',
-      detail: 'Q3',
+      detail: 'Q3 › Box',
       href: '/explorer/inbox?at=t%3Alivediagram%3Ad1%3At1%3Ae1',
     });
     expect(noticeHeadline(row!)).toBe('Quinn mentioned you');
+  });
+
+  it('names the element as the Inbox row does, with or without a tab name', () => {
+    const rows = noticeRows(
+      inbox({
+        threads: [
+          thread({ elementId: 'e2', tabName: '', elementLabel: 'Note 13', latestAt: NOW - 400 }),
+          thread({ elementId: 'e3', tabName: '', elementLabel: '', latestAt: NOW - 300 }),
+        ],
+      }),
+      ME,
+      'livediagram',
+    );
+    expect(rows.map((r) => [r.place, r.detail])).toEqual([
+      ['Roadmap', null],
+      ['Roadmap', 'Note 13'],
+    ]);
   });
 
   it('a mention by the reader themselves names the latest author', () => {

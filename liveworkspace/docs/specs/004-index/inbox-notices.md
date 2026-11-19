@@ -73,8 +73,9 @@ a computer; on a phone and at 450 px it spans the screen under the top row with 
 palette strip, the menu card or the corner card, and takes no focus.
 
 - **One row**: the kind's icon, who and what in one line (**Priya mentioned you**), the comment's first line in quotes
-  where there is one, the item (› the tab) in small text, and one action: **Open in Inbox** (or **Open** for an
-  access request or a share). A close button (**Dismiss**, with its tooltip) at the top right.
+  where there is one, the item (› the tab › the element, or › the card, as its Inbox row names them, so rows on one
+  canvas tell apart) in small text, and one action: **Open in Inbox** (or **Open** for an access request or a share).
+  A close button (**Dismiss**, with its tooltip) at the top right.
 - **Several rows** that arrive in one read, or while a notice is still on screen, are one notice: **3 New in Your
   Inbox**, then up to three lines (each who and what, then the item, each a link to its own place), **and 2 more**
   past three, and **Open Inbox**.
