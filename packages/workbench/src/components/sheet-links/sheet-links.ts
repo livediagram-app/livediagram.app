@@ -4,7 +4,7 @@
 // read gives a chart, whether that changes what it stores, and the status words. Typed on the fields every product's
 // chart shares, so each product's own element type passes through unchanged.
 import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
-import { chartFieldsFromTable } from '@liveworkspace/element-model/chart-table';
+import { chartFieldsFromTable, type ChartTable } from '@liveworkspace/element-model/chart-table';
 import {
   isChartShape,
   type LineSeries,
@@ -69,6 +69,28 @@ export function sheetLinkKey(s: ChartSheetSource): string {
 // The data fields a read gives a chart, its colours kept.
 export const liveChartFields = (el: SheetChartFields, read: SheetRangeRead) =>
   chartFieldsFromTable(el, read.table);
+
+// What the Link to Sheet preview shows of a read: the categories and the series the chart draws, as Link would write
+// them (a scatter may take the first column as its x), and how many series a pie or bar leaves out, since it draws
+// the first alone (Work Tracker 1212: a bar previewed Planned and Actual but drew Planned alone).
+export function drawnTable(
+  el: SheetChartFields,
+  table: ChartTable,
+): { table: ChartTable; leftOut: number } {
+  const fields = chartFieldsFromTable(el, table);
+  if ('pieSlices' in fields)
+    return {
+      table: { categories: table.categories, series: table.series.slice(0, 1) },
+      leftOut: Math.max(0, table.series.length - 1),
+    };
+  return {
+    table: {
+      categories: fields.lineCategories,
+      series: fields.lineSeries.map((s) => ({ name: s.name, values: s.values })),
+    },
+    leftOut: 0,
+  };
+}
 
 // The link as a read leaves it: the names, the range's A1 and the ids it reads now, and when.
 export function sourceAfterRead(s: ChartSheetSource, read: SheetRangeRead): ChartSheetSource {

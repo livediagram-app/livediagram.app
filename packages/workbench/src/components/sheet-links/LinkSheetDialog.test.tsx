@@ -88,6 +88,49 @@ describe('LinkSheetDialog', () => {
     });
   });
 
+  // Work Tracker 1212: a bar draws the first series alone, so its preview shows that one and says so; a line shows all.
+  it('previews only the series the chart draws', async () => {
+    listItems.mockResolvedValue({ items: [] });
+    listSheets.mockResolvedValue({
+      itemId: 'plan_1',
+      itemName: 'Budget',
+      sheets: [{ id: 'sheet0001', name: 'Costs', tabId: 't1', a1: 'A1:C3' }],
+    });
+    readSheetRange.mockResolvedValue({
+      ...read,
+      table: {
+        categories: ['Q1', 'Q2'],
+        series: [
+          { name: 'Planned', values: [10, 20] },
+          { name: 'Actual', values: [11, 21] },
+        ],
+      },
+    });
+    const view = (chart: SheetChart) =>
+      render(
+        <LinkSheetDialog
+          chart={chart}
+          itemId="doc_1"
+          grantOf={grantOf}
+          noun="document"
+          onLink={() => {}}
+          onClose={() => {}}
+        />,
+      );
+    view(bar({ chartSheetSource: sourceOf() }));
+    expect(await screen.findByRole('columnheader', { name: 'Planned' })).toBeTruthy();
+    expect(screen.queryByRole('columnheader', { name: 'Actual' })).toBeNull();
+    expect(screen.getByText('A column chart draws the first series.')).toBeTruthy();
+    cleanup();
+    view(bar({ shape: 'pie-chart', chartSheetSource: sourceOf() }));
+    expect(await screen.findByText('A pie chart draws the first series.')).toBeTruthy();
+    cleanup();
+    view(bar({ shape: 'line-chart', chartSheetSource: sourceOf() }));
+    expect(await screen.findByRole('columnheader', { name: 'Actual' })).toBeTruthy();
+    expect(screen.getByRole('columnheader', { name: 'Planned' })).toBeTruthy();
+    expect(screen.queryByText(/draws the first series/)).toBeNull();
+  });
+
   it('says why a range cannot be read, and keeps Link off', async () => {
     listItems.mockResolvedValue({ items: [] });
     listSheets.mockResolvedValue({
@@ -340,6 +383,17 @@ describe('SheetLinkSection', () => {
     expect(screen.getByText(/a sheet you can't open, as last saved/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Unlink' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Update' })).toBeNull();
+  });
+
+  // Work Tracker 1212: a read of a range that is gone is refused again, so only Change… picks it anew.
+  it('hides Update once the linked range is gone, keeping Change and Unlink', () => {
+    act(() => {
+      show(links({ statusOf: () => ({ kind: 'gone' }) }), bar({ chartSheetSource: sourceOf() }));
+    });
+    expect(screen.getByText('The linked range is gone')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Update' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Change…' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Unlink' })).toBeTruthy();
   });
 
   it('gives an Editor who cannot open the plan Change and Unlink, but no Update', () => {

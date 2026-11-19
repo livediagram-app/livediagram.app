@@ -319,6 +319,8 @@ format ticked, its picture scaled to fill the format and cropped about the centr
 own: nothing links back to the page it came from, and each is then adjusted freely (the Move tool slides the
 picture to choose another crop, since the pixels past the new edges are kept).
 
+The dialog's Formats row carries a **Help** link to the Make Sizes article (`pages/photo-pages/make-sizes`).
+
 Make Sizes works on photo pages only. Social sizes are pictures, so they are photo pages; a logo or wireframe page
 has no Make Sizes ([Pages](../007-editor/pages-mode.md) "One kind a tab").
 

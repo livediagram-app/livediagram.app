@@ -1,7 +1,15 @@
 // @vitest-environment jsdom
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { ModifierHintBanner, selectedKindOf } from './ModifierHintBanner';
+import type { DragState } from '@/lib/canvas';
+import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { createStateStore } from '@liveworkspace/workbench/lib/state-store';
+import { ModifierHint } from './ModifierHintBanner';
+
+// The banner itself is workbench's (its ModifierHintBanner.test.tsx); this is livedesign's binding of it, which reads
+// the drag from the drag store (docs/specs/008-canvas/blueprints/canvas-performance.md "The drag state lives in a
+// store").
 
 function holdShift(down: boolean) {
   act(() => {
@@ -9,51 +17,24 @@ function holdShift(down: boolean) {
   });
 }
 
-function show(props: Partial<Parameters<typeof ModifierHintBanner>[0]> = {}) {
-  return render(
-    <ModifierHintBanner
-      drag={null}
-      selectedKind={null}
-      hasElements
-      suppressed={false}
-      {...props}
-    />,
-  );
-}
-
-
 afterEach(() => {
-  // `globals: false` means no automatic RTL cleanup; without this every
-  // render stacks up and the queries match the previous test's banner.
   cleanup();
   holdShift(false);
 });
 
-describe('ModifierHintBanner', () => {
-  it('says nothing when no modifier is worth naming', () => {
-    show();
-    expect(screen.queryByText(/shift/i)).toBeNull();
-  });
-
-  it('names what Shift is doing while it is held', () => {
-    show();
+describe('ModifierHint', () => {
+  it('follows the drag store: the aspect lock while resizing, nothing while moving', () => {
+    const dragStore = createStateStore<DragState | null>(null);
+    render(
+      <SelectionStoreProvider store={createSelectionStore()}>
+        <ModifierHint elements={[]} dragStore={dragStore} hasElements suppressed={false} />
+      </SelectionStoreProvider>,
+    );
     holdShift(true);
     expect(screen.getByText(/click elements to select several/i)).toBeTruthy();
-  });
-});
-
-describe('selectedKindOf', () => {
-  const els = [
-    { id: 'r', type: 'arrow' },
-    { id: 't', type: 'table' },
-    { id: 's', type: 'shape' },
-  ] as unknown as Parameters<typeof selectedKindOf>[0];
-
-  it('names the selected element’s flavour for the no-drag hints, or null', () => {
-    expect(selectedKindOf(els, 'r')).toBe('arrow');
-    expect(selectedKindOf(els, 't')).toBe('table');
-    expect(selectedKindOf(els, 's')).toBe('other');
-    expect(selectedKindOf(els, null)).toBeNull();
-    expect(selectedKindOf(els, 'gone')).toBeNull();
+    act(() => dragStore.set({ kind: 'boxed', mode: 'resize-se' } as DragState));
+    expect(screen.getByText(/proportions locked/i)).toBeTruthy();
+    act(() => dragStore.set({ kind: 'boxed', mode: 'move' } as DragState));
+    expect(screen.queryByText(/proportions locked|select several/i)).toBeNull();
   });
 });

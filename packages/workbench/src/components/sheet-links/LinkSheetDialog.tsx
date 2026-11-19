@@ -18,6 +18,11 @@ import {
 } from '@liveworkspace/ui';
 import type { ChartSheetSource } from '@liveworkspace/element-model/chart-sheet-source';
 import {
+  CHART_TYPE_LABELS,
+  chartTypeOf,
+  type ChartType,
+} from '@liveworkspace/element-model/chart-types';
+import {
   IndexError,
   SHEET_A1_MAX,
   type Item,
@@ -28,7 +33,7 @@ import { Dialog } from '../dialogs/Dialog';
 import { SearchInput } from '../primitives/SearchInput';
 import { indexClient } from '../../lib/index-client';
 import type { SheetLinkNoun } from './SheetLinkedCharts';
-import type { SheetChart } from './sheet-links';
+import { drawnTable, type SheetChart } from './sheet-links';
 import { readSheetLink, type SheetLinkGrantOf } from './useSheetLinkedCharts';
 
 // Spec constants (each reader app's blueprints/data-charts.md): how long typing settles before the preview reads, and how many plans
@@ -347,7 +352,7 @@ export function LinkSheetDialog({
         </section>
         <section className="flex min-w-0 flex-col gap-2 sm:col-span-2" aria-live="polite">
           <h3 className={LABEL}>Preview</h3>
-          <PreviewTable preview={preview} empty={empty} />
+          <PreviewTable preview={preview} empty={empty} chart={chart} />
         </section>
       </div>
       <DialogFooter>
@@ -387,7 +392,15 @@ function ListSkeleton({ rows = 4 }: { rows?: number }) {
   );
 }
 
-function PreviewTable({ preview, empty }: { preview: Preview; empty: boolean }) {
+function PreviewTable({
+  preview,
+  empty,
+  chart,
+}: {
+  preview: Preview;
+  empty: boolean;
+  chart: SheetChart;
+}) {
   const box =
     'flex min-h-28 items-center justify-center rounded-lg border border-dashed border-slate-200 px-4 py-6 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-slate-400';
   if (preview.state === 'idle')
@@ -402,7 +415,9 @@ function PreviewTable({ preview, empty }: { preview: Preview; empty: boolean }) 
     return (
       <div className={box}>Nothing to draw in this range. Pick one with labels and numbers.</div>
     );
-  const { categories, series } = preview.read.table;
+  // Only what the chart will draw: a pie or bar draws the first series alone.
+  const { table, leftOut } = drawnTable(chart, preview.read.table);
+  const { categories, series } = table;
   const shown = categories.slice(0, PREVIEW_ROWS);
   const more = categories.length - shown.length;
   return (
@@ -444,6 +459,16 @@ function PreviewTable({ preview, empty }: { preview: Preview; empty: boolean }) 
       {more > 0 ? (
         <p className="border-t border-slate-100 px-3 py-1.5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400">
           and {more} more {more === 1 ? 'row' : 'rows'}
+        </p>
+      ) : null}
+      {/* Only a pie, doughnut, column or bar leaves series out, so the chart has a type. */}
+      {leftOut > 0 ? (
+        <p
+          data-preview-left-out=""
+          className="border-t border-slate-100 px-3 py-1.5 text-xs text-slate-500 dark:border-slate-800 dark:text-slate-400"
+        >
+          A {CHART_TYPE_LABELS[chartTypeOf(chart) as ChartType].toLowerCase()} chart draws the first
+          series.
         </p>
       ) : null}
     </div>

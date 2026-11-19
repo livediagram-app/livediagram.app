@@ -4,7 +4,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { DragState } from '@/lib/canvas';
 import { setInsertionDragInHand } from '@/lib/insertion-preview';
 import { setPaletteDragPreview } from '@/lib/palette-drag-preview';
-import { ModifierHintBanner, selectedKindOf } from './ModifierHintBanner';
+import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/useSelectionStore';
+import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { ModifierHint } from './ModifierHintBanner';
+
+// The banner itself is workbench's (its ModifierHintBanner.test.tsx); this is livediagram's binding of it, which adds
+// the insert-between offer (docs/specs/021-event-storming/event-storming.md).
 
 function holdShift(down: boolean) {
   act(() => {
@@ -12,16 +17,18 @@ function holdShift(down: boolean) {
   });
 }
 
-function show(props: Partial<Parameters<typeof ModifierHintBanner>[0]> = {}) {
+function show(props: Partial<Parameters<typeof ModifierHint>[0]> = {}) {
   return render(
-    <ModifierHintBanner
-      drag={null}
-      selectedKind={null}
-      hasElements
-      suppressed={false}
-      esBoard={false}
-      {...props}
-    />,
+    <SelectionStoreProvider store={createSelectionStore()}>
+      <ModifierHint
+        elements={[]}
+        drag={null}
+        hasElements
+        suppressed={false}
+        esBoard={false}
+        {...props}
+      />
+    </SelectionStoreProvider>,
   );
 }
 
@@ -38,7 +45,7 @@ afterEach(() => {
   });
 });
 
-describe('ModifierHintBanner', () => {
+describe('ModifierHint', () => {
   it('says nothing when no modifier is worth naming', () => {
     show();
     expect(screen.queryByText(/shift|alt/i)).toBeNull();
@@ -51,7 +58,7 @@ describe('ModifierHintBanner', () => {
   });
 
   // Q4: a held modifier nobody knows about is a feature nobody finds. The
-  // offer appears DURING the drag, before Alt is touched — which is also the
+  // offer appears DURING the drag, before Alt is touched, which is also the
   // only wording that works where a window manager claims Alt+press.
   describe('the insert-between offer (docs/specs/021-event-storming/event-storming.md)', () => {
     it('offers the gesture while a note already on the board is dragged', () => {
@@ -91,21 +98,5 @@ describe('ModifierHintBanner', () => {
       act(() => setInsertionDragInHand(true));
       expect(screen.queryByText(/insert it between/i)).toBeNull();
     });
-  });
-});
-
-describe('selectedKindOf', () => {
-  const els = [
-    { id: 'r', type: 'arrow' },
-    { id: 't', type: 'table' },
-    { id: 's', type: 'shape' },
-  ] as unknown as Parameters<typeof selectedKindOf>[0];
-
-  it('names the selected element’s flavour for the no-drag hints, or null', () => {
-    expect(selectedKindOf(els, 'r')).toBe('arrow');
-    expect(selectedKindOf(els, 't')).toBe('table');
-    expect(selectedKindOf(els, 's')).toBe('other');
-    expect(selectedKindOf(els, null)).toBeNull();
-    expect(selectedKindOf(els, 'gone')).toBeNull();
   });
 });

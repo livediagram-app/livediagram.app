@@ -6,6 +6,7 @@ import {
   arrival,
   arrivalNotice,
   helpHrefFor,
+  platformHelpHref,
   itemHref,
   newItemHref,
   LAST_APP_KEY,
@@ -79,6 +80,21 @@ describe("every app's addresses", () => {
       'https://www.livediagram.app/help/explorer/home/',
     );
     expect(offlineHref('liveplanner')).toBe('https://www.liveplanner.app/explorer/offline');
+  });
+});
+
+describe('platformHelpHref', () => {
+  it("sends each view to liveworkspace.app's own Explorer article, a folder's and a team's to theirs", () => {
+    expect(platformHelpHref({ kind: 'home' })).toBe('/help/explorer#home');
+    expect(platformHelpHref({ kind: 'all' })).toBe('/help/explorer#my-work');
+    expect(platformHelpHref({ kind: 'trash' })).toBe('/help/explorer#trash');
+    expect(platformHelpHref({ kind: 'search', q: '' })).toBe('/help/explorer#search');
+    expect(platformHelpHref({ kind: 'folder', id: 'f1' } as never)).toBe('/help/explorer/folders');
+    expect(platformHelpHref({ kind: 'team', id: 't1' } as never)).toBe('/help/explorer/teams');
+  });
+
+  it('has no article for a view without one', () => {
+    expect(platformHelpHref({ kind: 'invites' } as never)).toBeUndefined();
   });
 });
 

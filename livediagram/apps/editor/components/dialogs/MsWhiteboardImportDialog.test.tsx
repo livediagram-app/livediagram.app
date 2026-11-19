@@ -15,7 +15,7 @@ describe('MsWhiteboardImportDialog', () => {
     expect(screen.getByRole('dialog', { name: MS_WHITEBOARD_IMPORT_TITLE })).toBeTruthy();
     expect(screen.getByText('Each board becomes its own canvas.')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Choose a .zip' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /close/i }));
     expect(onClose).toHaveBeenCalled();
   });

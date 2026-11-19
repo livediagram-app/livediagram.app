@@ -187,7 +187,9 @@ signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs
 - **Link to Sheet.** An Editor's chart Data section offers **Link to Sheet…** under its rows: a dialog to pick a plan
   (the person's liveplanner plans, most recent first, with a search), one of its Sheets, and a range typed as in a
   spreadsheet (`B2:E9`, prefilled with the sheet's filled extent). A preview shows what the chart will draw (its
-  categories and series, or why it cannot: "That is not a range."). **Link** writes the read onto the chart (its
+  categories and the series it draws, or why it cannot: "That is not a range."). A pie, doughnut, column or bar draws the first series
+  alone, so its preview shows that column and says the rest are left out ("A column chart draws the first series.");
+  a line, area or scatter shows every series it draws (Work Tracker 1212). **Link** writes the read onto the chart (its
   slices, or its categories and series, keeping colours by position) with the source, as one undo step. The dialog
   notes that the values are saved in the design, so people who can't open the plan still see them.
 - **The source** (`chartSheetSource`, `@liveworkspace/element-model/chart-sheet-source`) names the plan, the sheet and
@@ -216,7 +218,8 @@ signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs
   sheet."): the next read would overwrite a hand edit. Chart type, palette, legend, values, axis and animation stay the
   Editor's.
 - **The range breaks** when a corner row or column is deleted: the chart keeps its values, and the line says "The
-  linked range is gone" with **Change…** to pick it again.
+  linked range is gone" with **Change…** to pick it again. Update is not offered then: a read of a range that is gone
+  is refused again (Work Tracker 1212).
 - **Unlink** removes the source and keeps the last values, as one undo step.
 - **Not linked yet.** A chart can be meant to come from a sheet before one is linked (`chartSheetPending`): a
   template's chart whose numbers belong in a sheet (livedocuments' Status Report, Work Tracker 1281). Until a sheet is

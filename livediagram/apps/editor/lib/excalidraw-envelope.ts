@@ -21,7 +21,7 @@ type ExcalidrawRejection =
 
 const MESSAGES: Record<ExcalidrawRejection, string> = {
   'too-large': 'This Excalidraw scene is too large to import.',
-  'not-json': "File isn't valid JSON.",
+  'not-json': "This isn't valid JSON.",
   'not-object': 'Expected a JSON object at the top level.',
   'not-excalidraw': 'This isn\'t an Excalidraw scene (missing "type": "excalidraw").',
   'no-elements': 'Scene is missing its elements array.',

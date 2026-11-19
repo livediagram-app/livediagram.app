@@ -13,7 +13,7 @@ describe('sceneFromExcalidrawText', () => {
   it('names the rejection of a broken copy', () => {
     expect(sceneFromExcalidrawText('{"type":"excalidraw/clipboard","elements":[')).toEqual({
       ok: false,
-      error: "File isn't valid JSON.",
+      error: "This isn't valid JSON.",
     });
   });
 });
@@ -49,7 +49,7 @@ describe('readExcalidrawFile', () => {
   it('is an error for a broken .excalidraw file', async () => {
     expect(await readExcalidrawFile(file('nope', 'b.excalidraw'))).toEqual({
       kind: 'error',
-      error: "File isn't valid JSON.",
+      error: "This isn't valid JSON.",
     });
   });
 });
