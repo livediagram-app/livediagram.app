@@ -49,7 +49,8 @@ export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnsw
   // Mounted after hydration (the static HTML has no stack), then always, so a toast added to it is announced.
   const hydrated = useSyncExternalStore(subscribeNever, onClient, onServer);
   const showing = toasts.length > 0;
-  const floor = useToastFloor(showing, toasts.length);
+  const placement = useToastFloor(showing, toasts.length);
+  const beside = placement.right !== null;
   if (!hydrated) return null;
   return (
     <Portal>
@@ -57,11 +58,14 @@ export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnsw
         aria-label="Notifications"
         // Above the modal rung (z-toast) so a failure shows over an open dialog. Side padding clears a
         // landscape notch; the bottom clears the home indicator and the bottom chrome (toast-floor.ts).
-        className="pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex flex-col items-center gap-2"
+        className={`pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex flex-col gap-2 ${beside ? 'items-end' : 'items-center'}`}
         style={{
-          bottom: `max(${floor}px, calc(16px + ${safeInset('bottom')}))`,
+          bottom: `max(${placement.bottom}px, calc(16px + ${safeInset('bottom')}))`,
           paddingLeft: atLeastInset('1rem', 'left'),
-          paddingRight: atLeastInset('1rem', 'right'),
+          // Beside the bottom-right cluster on desktop: the stack's right edge stands just left of Undo.
+          ...(beside
+            ? { right: `${placement.right}px` }
+            : { paddingRight: atLeastInset('1rem', 'right') }),
         }}
       >
         {toasts.map((t) => (

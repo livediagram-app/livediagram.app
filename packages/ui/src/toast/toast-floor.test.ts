@@ -4,6 +4,7 @@ import {
   TOAST_FLOOR_GAP_PX,
   TOAST_FLOOR_SELECTOR,
   toastFloor,
+  toastPlacement,
   type FloorRect,
 } from './toast-floor';
 
@@ -76,5 +77,51 @@ describe('toastFloor', () => {
     const at = { viewportWidth: 1440, viewportHeight: 900, obstacles: [cluster] };
     expect(toastFloor(at)).toBe(TOAST_EDGE_PX);
     expect(toastFloor({ ...at, columnWidth: 768 })).toBe(900 - 790 + 8);
+  });
+});
+
+describe('toastPlacement', () => {
+  const tabBar = rect(0, 852, 1440, 48);
+  const cluster = rect(895, 790, 530, 46);
+
+  it('from 640px, stands level with the cluster and just left of it, not above it', () => {
+    expect(
+      toastPlacement({
+        viewportWidth: 1440,
+        viewportHeight: 900,
+        floors: [tabBar],
+        sides: [cluster],
+      }),
+    ).toEqual({ bottom: 900 - 836, right: 1440 - 895 + TOAST_FLOOR_GAP_PX });
+  });
+
+  it('stays centred on its floors where the cluster leaves the centre clear', () => {
+    const wide = rect(1500, 790, 380, 46);
+    expect(
+      toastPlacement({ viewportWidth: 1920, viewportHeight: 900, floors: [tabBar], sides: [wide] }),
+    ).toEqual({ bottom: 48 + TOAST_FLOOR_GAP_PX, right: null });
+  });
+
+  it('never stands lower than a floor taller than the cluster, and ignores a hidden one', () => {
+    const banner = rect(300, 700, 800, 120);
+    expect(
+      toastPlacement({
+        viewportWidth: 1440,
+        viewportHeight: 900,
+        floors: [tabBar, banner],
+        sides: [cluster, rect(0, 0, 0, 0), rect(895, 100, 530, 46)],
+      }).bottom,
+    ).toBe(200 + TOAST_FLOOR_GAP_PX);
+  });
+
+  it('on a phone, the cluster is one more floor', () => {
+    expect(
+      toastPlacement({
+        viewportWidth: 390,
+        viewportHeight: 844,
+        floors: [rect(0, 796, 390, 48)],
+        sides: [rect(200, 740, 180, 44)],
+      }),
+    ).toEqual({ bottom: 104 + TOAST_FLOOR_GAP_PX, right: null });
   });
 });

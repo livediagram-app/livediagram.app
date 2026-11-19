@@ -171,6 +171,11 @@ dark:ring-slate-900`.
 [data-whiteboard-dock]`. The Explorer bottom bar and the sign-in banner's card carry `data-toast-floor`; a template
 start's foot row carries `data-start-footer`, and `setStartPanelOpen` announces the floor change.
 
+`toastPlacement()` gives the stack its `bottom` and, from 640px, a `right`: the bottom-right cluster
+(`TOAST_SIDE_SELECTOR`, `[data-zoom-cluster]`) that intrudes on the centred column (576px) is taken as a side, not a
+floor, so the stack stands level with its bottom (`innerHeight - rect.bottom`, never below the other floors) with its
+right edge `TOAST_FLOOR_GAP_PX` left of it, toasts aligned to the end. Under 640px it is a floor (`toastFloor`).
+
 ## Errors and edge cases
 
 - An empty message: ignored. A deduped repeat: not recorded again (NT3).
@@ -191,19 +196,19 @@ skips both.
 
 ## Testing
 
-| Rule                                                                     | Test                                                                         |
-| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------- |
-| Dedupe, limit, upsert in place, retire oldest timed out                  | `packages/ui/src/toast/toast-queue.test.ts`                                  |
-| Close on every toast, plain action closes, standing, quiet still listed  | `packages/ui/src/toast/ToastProvider.test.tsx`                               |
-| Nesting hands over; the top provider's scope; collapse removes on finish | `packages/ui/src/toast/ToastProvider.test.tsx`                               |
-| The list: scopes, reload, upsert once, muted burst, limits, storage      | `packages/ui/src/toast/toast-history.test.ts`                                |
-| The collapse's target, the bell lookup, reduced motion, the pulse        | `packages/ui/src/toast/toast-collapse.test.ts`                               |
-| The bell: no label, dot, opening sees all, newest first, read-only       | `packages/ui/src/toast/ToastBell.test.tsx`                                   |
-| Floor: column, overlap, off-column chrome, phone, the selector           | `packages/ui/src/toast/toast-floor.test.ts`                                  |
-| Timeouts per tone, pause and resume with the remainder                   | `packages/ui/src/toast/useToastTimer.test.tsx`                               |
-| The editors' gate (In-Editor Notifications), roles, Escape, exit         | `packages/workbench/src/hooks/ui/useToast.test.tsx`                          |
-| New version: a standing toast, Reload phases, closed until newer         | `packages/workbench/src/components/chrome/NewVersionPrompt.test.tsx`         |
-| Account unreachable: standing warning, Try Again, leaves when answered   | `packages/workbench/src/components/chrome/AccountUnreachableNotice.test.tsx` |
+| Rule                                                                                        | Test                                                                         |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Dedupe, limit, upsert in place, retire oldest timed out                                     | `packages/ui/src/toast/toast-queue.test.ts`                                  |
+| Close on every toast, plain action closes, standing, quiet still listed                     | `packages/ui/src/toast/ToastProvider.test.tsx`                               |
+| Nesting hands over; the top provider's scope; collapse removes on finish                    | `packages/ui/src/toast/ToastProvider.test.tsx`                               |
+| The list: scopes, reload, upsert once, muted burst, limits, storage                         | `packages/ui/src/toast/toast-history.test.ts`                                |
+| The collapse's target, the bell lookup, reduced motion, the pulse                           | `packages/ui/src/toast/toast-collapse.test.ts`                               |
+| The bell: no label, dot, opening sees all, newest first, read-only                          | `packages/ui/src/toast/ToastBell.test.tsx`                                   |
+| Floor: column, overlap, off-column chrome, phone, the selector; the side beside the cluster | `packages/ui/src/toast/toast-floor.test.ts`                                  |
+| Timeouts per tone, pause and resume with the remainder                                      | `packages/ui/src/toast/useToastTimer.test.tsx`                               |
+| The editors' gate (In-Editor Notifications), roles, Escape, exit                            | `packages/workbench/src/hooks/ui/useToast.test.tsx`                          |
+| New version: a standing toast, Reload phases, closed until newer                            | `packages/workbench/src/components/chrome/NewVersionPrompt.test.tsx`         |
+| Account unreachable: standing warning, Try Again, leaves when answered                      | `packages/workbench/src/components/chrome/AccountUnreachableNotice.test.tsx` |
 
 ## Observability
 

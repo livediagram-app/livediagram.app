@@ -63,3 +63,45 @@ export function toastFloor(input: {
   }
   return Math.round(floor);
 }
+
+/** Bottom chrome the stack sits beside, not above, from 640px: the canvas's bottom-right cluster (Undo, Redo, Zoom). */
+export const TOAST_SIDE_SELECTOR = '[data-zoom-cluster]';
+
+export type ToastPlacement = {
+  /** The stack's CSS `bottom`, in px. */
+  bottom: number;
+  /** The stack's CSS `right`, in px, when it stands beside a side (its toasts aligned to that edge); null: centred. */
+  right: number | null;
+};
+
+/**
+ * Where the toast stack stands ("Placement"): on its floors, and from 640px level with, and left of, a side that
+ * would sit beneath the centred column. On a phone a side is one more floor.
+ */
+export function toastPlacement(input: {
+  viewportWidth: number;
+  viewportHeight: number;
+  floors: readonly FloorRect[];
+  sides: readonly FloorRect[];
+}): ToastPlacement {
+  const { viewportWidth: w, viewportHeight: h, floors, sides } = input;
+  if (w <= TOAST_PHONE_MAX_PX) {
+    return {
+      bottom: toastFloor({ viewportWidth: w, viewportHeight: h, obstacles: [...floors, ...sides] }),
+      right: null,
+    };
+  }
+  let bottom = toastFloor({ viewportWidth: w, viewportHeight: h, obstacles: floors });
+  const half = Math.min(TOAST_MAX_WIDTH_PX, w) / 2;
+  const left = w / 2 - half;
+  const right = w / 2 + half;
+  let edge: number | null = null;
+  for (const r of sides) {
+    if (r.width <= 0 || r.height <= 0) continue;
+    if (r.top >= h || r.top < h / 2) continue;
+    if (r.right <= left || r.left >= right) continue;
+    edge = Math.max(edge ?? 0, w - r.left + TOAST_FLOOR_GAP_PX);
+    bottom = Math.max(bottom, h - (r.top + r.height));
+  }
+  return { bottom: Math.round(bottom), right: edge === null ? null : Math.round(edge) };
+}

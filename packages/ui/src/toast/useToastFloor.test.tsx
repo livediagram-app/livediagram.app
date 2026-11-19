@@ -23,21 +23,42 @@ describe('useToastFloor', () => {
   it('stays at the edge, measuring nothing, while the stack is empty', () => {
     chrome('data-editor-tabbar', window.innerHeight - 48);
     const { result } = renderHook(() => useToastFloor(false, 0));
-    expect(result.current).toBe(TOAST_EDGE_PX);
+    expect(result.current).toEqual({ bottom: TOAST_EDGE_PX, right: null });
   });
 
   it('stands on the bottom chrome, and follows a banner that comes and goes', () => {
     chrome('data-editor-tabbar', window.innerHeight - 48);
     const { result } = renderHook(() => useToastFloor(true, 1));
-    expect(result.current).toBe(48 + TOAST_FLOOR_GAP_PX);
+    expect(result.current.bottom).toBe(48 + TOAST_FLOOR_GAP_PX);
     const banner = chrome('data-toast-floor', window.innerHeight - 160, 100);
     act(() => announceToastFloorChange());
-    expect(result.current).toBe(160 + TOAST_FLOOR_GAP_PX);
+    expect(result.current.bottom).toBe(160 + TOAST_FLOOR_GAP_PX);
     banner.remove();
     act(() => {
       window.dispatchEvent(new Event('resize'));
     });
-    expect(result.current).toBe(48 + TOAST_FLOOR_GAP_PX);
+    expect(result.current.bottom).toBe(48 + TOAST_FLOOR_GAP_PX);
+  });
+
+  it('on desktop, stands level with and left of the bottom-right cluster under its column', () => {
+    chrome('data-editor-tabbar', window.innerHeight - 48);
+    const cluster = document.createElement('div');
+    cluster.setAttribute('data-zoom-cluster', '');
+    const left = window.innerWidth / 2 + 100;
+    cluster.getBoundingClientRect = () =>
+      ({
+        top: window.innerHeight - 110,
+        left,
+        right: left + 400,
+        width: 400,
+        height: 46,
+      }) as DOMRect;
+    document.body.append(cluster);
+    const { result } = renderHook(() => useToastFloor(true, 1));
+    expect(result.current).toEqual({
+      bottom: 64,
+      right: Math.round(window.innerWidth - left + TOAST_FLOOR_GAP_PX),
+    });
   });
 
   it('measures again when an animation lands, and stops listening once empty', () => {

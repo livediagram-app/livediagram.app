@@ -141,6 +141,11 @@ A toast is easy to miss. Every one is also written to a list the person can open
   indicator), and above anything that occupies the bottom of the screen beneath it: the editor's tab bar, its
   bottom-right cluster and the whiteboard dock, the Explorer's bottom bar, and the sign-in banner. It lifts 8px clear
   of the highest of those that overlaps its column, measured as they move or resize.
+- **Beside the bottom-right cluster on desktop.** From 640px, where the canvas's bottom-right cluster (Undo, Redo,
+  Tidy, Layers, Style, Zoom) would sit beneath the centred stack, the stack stays on the cluster's line instead of
+  rising above it: its bottom level with the cluster's, its right edge 8px left of Undo, the toasts aligned to that
+  edge. Where the cluster leaves the centre clear, the stack stays centred. On a phone the cluster is a floor like the
+  rest.
 - **Stacking order.** Toasts sit at the top of the stacking ladder (`--z-toast`), over dialogs, so a failure shows even
   while a dialog is open.
 - **One stack per page.** A page has one toast stack and one list: the Explorer panel inside an editor raises its
