@@ -15,7 +15,10 @@ import type {
 import { CountBadge } from '@livedocuments/ui';
 import { KindChips, SideTabs } from '@/components/panels/collaborate/CollaborateControls';
 import { CollaborateEmpty } from '@/components/panels/collaborate/CollaborateEmpty';
-import { ActionRowItem, CommentRowItem } from '@/components/panels/collaborate/CollaborateRows';
+import {
+  ActionRowItem,
+  CommentRowItem,
+} from '@liveworkspace/workbench/components/panels/collaborate/CollaborateRows';
 import {
   kindCounts,
   rowsFor,

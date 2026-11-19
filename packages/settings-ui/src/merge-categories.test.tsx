@@ -344,12 +344,14 @@ describe('mergeAppCategories', () => {
         cpuMsOf(() => {
           for (let i = 0; i < merges; i++) mergeAppCategories(sources, APPS_GROUP, { only });
         });
-    // Each side's larger input stays a few thousand categories or rows a category, so the collector stays out of it.
+    // Each side's larger input stays a few thousand rows, so the collector and the cache stay out of it: the merge
+    // costs the same per row from 1,600 rows to 6,400, then about a fifth more by 16,000 and nearly twice by 32,000
+    // (measured 2026-11-19), which read 8.26 against 8 on CI with the rows side at 4,000 against 16,000.
     const growth = {
       // Each app's 100 categories against 400, four rows each: 1,600 rows against 6,400.
       categories: [catalogue(100, 4), catalogue(400, 4)],
-      // Each app's 250 rows a category against 1,000, in four categories: 4,000 rows against 16,000.
-      rows: [catalogue(4, 250), catalogue(4, 1000)],
+      // Each app's 100 rows a category against 400, in four categories: 1,600 rows against 6,400.
+      rows: [catalogue(4, 100), catalogue(4, 400)],
     };
     for (const [side, [small, large]] of Object.entries(growth)) {
       for (const only of [undefined, 'a.app']) {

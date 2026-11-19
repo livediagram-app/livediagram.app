@@ -1,24 +1,43 @@
 'use client';
 
-// The Collaborate panel's rows (docs/specs/012-collaboration/assigned-actions.md §5): soft tinted rows, an
-// action's round check that completes it in place, a comment's bubble in its
+// The Collaborate panel's rows (docs/specs/012-collaboration/assigned-actions.md §5), one copy for every editor:
+// soft tinted rows, an action's round check that completes it in place, a comment's bubble in its
 // latest author's colour. The whole body is one button that jumps to the
 // element; the check is its own button beside it (buttons don't nest).
 
 import { useState, type CSSProperties, type ReactNode } from 'react';
-import {
-  CheckIcon,
-  CommentIcon,
-  HoverCard,
-  SOLID_BRAND_DARK,
-  GlyphDisc,
-  IDENTITY_FILL,
-  identityVars,
-} from '@livedocuments/ui';
-import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
-import { initialsOf } from '@/lib/identity';
-import type { ActionRow, CommentRow } from '@/components/panels/CollaboratePanel';
-import { firstName } from '@liveworkspace/workbench/components/panels/collaborate/collaborate-model';
+import { CheckIcon, CommentIcon, HoverCard, SOLID_BRAND_DARK, GlyphDisc } from '@liveworkspace/ui';
+import { IDENTITY_FILL, identityVars } from '../../../lib/identity-fill';
+import { formatRelativeTimeCompact } from '@liveworkspace/ui/relative-time';
+import { initialsOf } from '@liveworkspace/model-core/names';
+import type { ElementActionStatus } from '@liveworkspace/element-model/element-action';
+import { useRelativeNow } from '../../../lib/relative-now';
+import { firstName } from './collaborate-model';
+
+// The parts of an editor's panel rows (its components/panels/CollaboratePanel.tsx) these rows draw; each editor's
+// rows carry more, such as the element and action ids its clicks name.
+export type CollaborateActionRow = {
+  // Display label for the element the action sits on.
+  label: string;
+  actionName: string;
+  status: ElementActionStatus;
+  assigneeName: string;
+  // The assignee's colour (presenceColourOf): their row avatar wears it.
+  assigneeColor: string;
+  // Assigned to the current user: a brand tint and "You" in place of the avatar.
+  mine: boolean;
+  createdAt: number;
+};
+
+export type CollaborateCommentRow = {
+  label: string;
+  count: number;
+  latestAuthorName: string;
+  latestAuthorColor: string;
+  latestText: string;
+  latestAt: number;
+  resolved: boolean;
+};
 
 // A comment author's colour as ink: as chosen on light, lifted toward white on
 // dark, where a deep blue or purple name would sink into the panel.
@@ -78,7 +97,7 @@ export function ActionRowItem({
   onClick,
   onToggleDone,
 }: {
-  row: ActionRow;
+  row: CollaborateActionRow;
   index: number;
   onClick: () => void;
   // Absent for a read-only visitor: the check is then a static status disc.
@@ -166,10 +185,14 @@ export function CommentRowItem({
   row,
   index,
   onClick,
+  label = row.label,
 }: {
-  row: CommentRow;
+  row: CollaborateCommentRow;
   index: number;
   onClick: () => void;
+  // The row's name when the editor names it otherwise than its element's label (liveplanner: a Sheet cell's
+  // thread by its cell, `Budget!B4`).
+  label?: string;
 }) {
   const now = useRelativeNow();
   const color = row.latestAuthorColor;
@@ -177,7 +200,7 @@ export function CommentRowItem({
     <RowShell
       index={index}
       onClick={onClick}
-      label={`Open the comment thread on ${row.label}`}
+      label={`Open the comment thread on ${label}`}
       lead={
         <HoverCard
           title={row.count === 1 ? '1 comment' : `${row.count} comments`}
@@ -209,7 +232,7 @@ export function CommentRowItem({
               row.resolved ? 'text-slate-400' : 'text-slate-800 dark:text-slate-100'
             }`}
           >
-            {row.label}
+            {label}
           </span>
           <span className="shrink-0 text-[11px] text-slate-500 dark:text-slate-400">
             {formatRelativeTimeCompact(now - row.latestAt)}
