@@ -102,7 +102,11 @@ function TypefaceCard({
           : 'border-slate-200 bg-white hover:border-brand-300 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-brand-500/60'
       }`}
     >
-      <span aria-hidden className="text-2xl leading-tight text-slate-800 dark:text-slate-100" style={face}>
+      <span
+        aria-hidden
+        className="text-2xl leading-tight text-slate-800 dark:text-slate-100"
+        style={face}
+      >
         Aa
       </span>
       <span

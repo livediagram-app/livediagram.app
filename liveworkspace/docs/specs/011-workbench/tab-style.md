@@ -33,19 +33,19 @@ dialog shows by changing its profile, never by forking the dialog.
 The editor says what the dialog is styling when it opens it: a **surface**, a short name for the kind of tab or page
 in front of the person. The names in use:
 
-| Surface       | Where                                         |
-| ------------- | --------------------------------------------- |
+| Surface       | Where                                                                                                        |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
 | `canvas`      | a canvas tab (livediagram, livedesign), a diagram tab (liveplanner), a tab with no pages yet (livedocuments) |
-| `whiteboard`  | a whiteboard tab (livediagram)                |
-| `board`       | a Board tab (liveplanner)                     |
-| `sheet`       | a Sheet tab (liveplanner)                     |
-| `form`        | a Form tab (liveplanner)                      |
-| `dashboard`   | a Dashboard tab (liveplanner)                 |
-| `article`     | an article page (livedocuments)               |
-| `slide`       | a slide page (livedocuments)                  |
-| `infographic` | an infographic page (livedocuments)           |
-| `flashcard`   | a flashcard page (livedocuments)              |
-| `space`       | a Space (livehuddle)                          |
+| `whiteboard`  | a whiteboard tab (livediagram)                                                                               |
+| `board`       | a Board tab (liveplanner)                                                                                    |
+| `sheet`       | a Sheet tab (liveplanner)                                                                                    |
+| `form`        | a Form tab (liveplanner)                                                                                     |
+| `dashboard`   | a Dashboard tab (liveplanner)                                                                                |
+| `article`     | an article page (livedocuments)                                                                              |
+| `slide`       | a slide page (livedocuments)                                                                                 |
+| `infographic` | an infographic page (livedocuments)                                                                          |
+| `flashcard`   | a flashcard page (livedocuments)                                                                             |
+| `space`       | a Space (livehuddle)                                                                                         |
 
 A surface the profile does not name, or none, takes the profile's base. Today every product's surfaces take its base,
 so each dialog is what it was; the surfaces are where a product tailors the dialog later (phase 2 adapts it for

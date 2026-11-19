@@ -16,13 +16,11 @@ export type TabStylePanel = 'theme' | 'finish' | 'font' | 'canvas';
 /** What the dialog shows: the home (`looks`) or one of its panels. */
 export type TabStyleView = 'looks' | TabStylePanel;
 /** A control a panel can leave out. */
-export type TabStyleControl = 'defaultTextSize' | 'animationSpeed' | 'patternScale' | 'patternColor';
+export type TabStyleControl =
+  'defaultTextSize' | 'animationSpeed' | 'patternScale' | 'patternColor';
 /** The help article each view links to (every product's help catalogue holds these four). */
 export type TabStyleHelpArticle =
-  | 'changingTheme'
-  | 'choosingAFinish'
-  | 'choosingFonts'
-  | 'changingTheBackground';
+  'changingTheme' | 'choosingAFinish' | 'choosingFonts' | 'changingTheBackground';
 
 /** The kind of tab or page the dialog styles, as the editor says it (the spec's "Surfaces" table). */
 export type TabStyleSurfaceName =
@@ -218,9 +216,7 @@ export function resolveTabStyleSurface<Look extends TabStyleLook, Pattern extend
   profile: Pick<TabStyleProfile<Look, Pattern>, 'base' | 'surfaces'>,
   surface: string | undefined,
 ): TabStyleSurface<Look, Pattern> {
-  const changes = surface
-    ? profile.surfaces?.[surface as TabStyleSurfaceName]
-    : undefined;
+  const changes = surface ? profile.surfaces?.[surface as TabStyleSurfaceName] : undefined;
   if (!changes) return profile.base;
   const { copy, ...rest } = changes;
   const base = profile.base;

@@ -31,7 +31,9 @@ export function tabStyleAnchor(opener?: () => Element | null): TabStyleAnchor | 
   const box = brush?.getBoundingClientRect();
   if (!box || box.width === 0) return null;
   // The cluster's right edge (the zoom controls end it), else the brush's own.
-  const cluster = document.querySelector<HTMLElement>('[data-zoom-cluster]')?.getBoundingClientRect();
+  const cluster = document
+    .querySelector<HTMLElement>('[data-zoom-cluster]')
+    ?.getBoundingClientRect();
   const edge = cluster && cluster.width > 0 ? Math.max(cluster.right, box.right) : box.right;
   return {
     right: Math.max(EDGE_MIN_PX, Math.round(window.innerWidth - edge)),

@@ -5,32 +5,32 @@ are cited as `TSn` ([DEFAULTS.md](DEFAULTS.md)). Paths are relative to the repos
 
 Scope, by file (all under `packages/workbench/src/components/dialogs/tab-style/`):
 
-| File                    | Role                                                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------------------------------- |
-| `tab-style-profile.ts`  | The profile's types, the shared copy and help map, `resolveTabStyleSurface`, `shownTabStyleView`         |
-| `TabStyleDialog.tsx`    | The controller: resolves the surface, holds the slide direction, eases the setters, picks the frame     |
-| `TabStyleModal.tsx`     | The shared frame: Portal, click-catcher, hero header, popover or sheet, Show Me, Escape                 |
-| `useTabStyleAnchor.ts`  | `tabStyleAnchor` and its hook: the popover's place, read once                                           |
-| `LooksHome.tsx`         | The home: the carousel and one `FineTuneRow` per panel the surface shows                                |
-| `LooksCarousel.tsx`     | The looks in pages of six, the Mashup card, the Seasonal toggle and the Finish filter                   |
-| `FinishPanel.tsx`       | The four finish tiles over the product's preview                                                        |
-| `TextPanel.tsx`         | The preview, the typeface carousel and the Size of New Text control                                     |
-| `tab-style-fonts.ts`    | The typeface cards ("Editor default" first) and a tab font's name from the whole catalogue              |
+| File                   | Role                                                                                                |
+| ---------------------- | --------------------------------------------------------------------------------------------------- |
+| `tab-style-profile.ts` | The profile's types, the shared copy and help map, `resolveTabStyleSurface`, `shownTabStyleView`    |
+| `TabStyleDialog.tsx`   | The controller: resolves the surface, holds the slide direction, eases the setters, picks the frame |
+| `TabStyleModal.tsx`    | The shared frame: Portal, click-catcher, hero header, popover or sheet, Show Me, Escape             |
+| `useTabStyleAnchor.ts` | `tabStyleAnchor` and its hook: the popover's place, read once                                       |
+| `LooksHome.tsx`        | The home: the carousel and one `FineTuneRow` per panel the surface shows                            |
+| `LooksCarousel.tsx`    | The looks in pages of six, the Mashup card, the Seasonal toggle and the Finish filter               |
+| `FinishPanel.tsx`      | The four finish tiles over the product's preview                                                    |
+| `TextPanel.tsx`        | The preview, the typeface carousel and the Size of New Text control                                 |
+| `tab-style-fonts.ts`   | The typeface cards ("Editor default" first) and a tab font's name from the whole catalogue          |
 
 Each editor's door is `components/dialogs/CanvasThemeDialog.tsx` (`apps/live/…` in livedesign), rendering
 `<TabStyleDialog profile={TAB_STYLE_PROFILE} {...props} />`; its profile is `components/dialogs/tab-style-profile.tsx`.
 
 ## Domain and naming
 
-| Term          | Identifier                                   | Meaning                                                                 |
-| ------------- | -------------------------------------------- | ----------------------------------------------------------------------- |
-| View          | `TabStyleView`: `looks` and the four panels  | What the dialog shows; `looks` is the home                              |
-| Panel         | `TabStylePanel`: `theme` `finish` `font` `canvas` | A Fine-tune panel (named Colours, Finish, Text, Canvas by default) |
-| Surface       | `TabStyleSurfaceName`, `surface` prop        | The kind of tab or page the editor says the dialog styles               |
-| Control       | `TabStyleControl`                            | `defaultTextSize`, `animationSpeed`, `patternScale`, `patternColor`     |
-| Profile       | `TabStyleProfile<Look, Pattern>`             | A product's parts and surface settings                                  |
-| Surface settings | `TabStyleSurface<Look, Pattern>`          | What one surface shows; `base` and `surfaces[name]` changes             |
-| Frame         | `TabStyleFrame`                              | `{ kind: 'modal', tour, opener? }` or `{ kind: 'custom', render }`      |
+| Term             | Identifier                                        | Meaning                                                             |
+| ---------------- | ------------------------------------------------- | ------------------------------------------------------------------- |
+| View             | `TabStyleView`: `looks` and the four panels       | What the dialog shows; `looks` is the home                          |
+| Panel            | `TabStylePanel`: `theme` `finish` `font` `canvas` | A Fine-tune panel (named Colours, Finish, Text, Canvas by default)  |
+| Surface          | `TabStyleSurfaceName`, `surface` prop             | The kind of tab or page the editor says the dialog styles           |
+| Control          | `TabStyleControl`                                 | `defaultTextSize`, `animationSpeed`, `patternScale`, `patternColor` |
+| Profile          | `TabStyleProfile<Look, Pattern>`                  | A product's parts and surface settings                              |
+| Surface settings | `TabStyleSurface<Look, Pattern>`                  | What one surface shows; `base` and `surfaces[name]` changes         |
+| Frame            | `TabStyleFrame`                                   | `{ kind: 'modal', tour, opener? }` or `{ kind: 'custom', render }`  |
 
 ## Interfaces and contracts
 
@@ -49,12 +49,12 @@ type TabStyleProfile<Look extends TabStyleLook, Pattern extends string> = {
   finishLabels: Record<Finish, string>;
   FinishSwatch: ComponentType<{ finish: Finish; size?: number }>;
   patternLabel: (pattern: Pattern) => string;
-  fonts?: readonly TabStyleFont[];                 // default: every face in FONTS
+  fonts?: readonly TabStyleFont[]; // default: every face in FONTS
   TextSizeControl: ComponentType<{ current; onSet; onPreview; onPreviewEnd }>;
-  useAppearance: () => unknown;                    // a hook, called once per carousel render
+  useAppearance: () => unknown; // a hook, called once per carousel render
   renderHelp: (article: TabStyleHelpArticle) => ReactNode;
   frame: TabStyleFrame;
-  tabLocks?: boolean;                              // default true (ApplyToAllTabsRow)
+  tabLocks?: boolean; // default true (ApplyToAllTabsRow)
   base: TabStyleSurface<Look, Pattern>;
   surfaces?: Partial<Record<TabStyleSurfaceName, TabStyleSurfaceChanges<Look, Pattern>>>;
 };
@@ -113,13 +113,13 @@ Fine-tune grid from `sm`, six looks and six typefaces per page. The popover is `
 
 ## Constants and configuration
 
-| Constant         | Value | Where                  | Why                                           |
-| ---------------- | ----- | ---------------------- | --------------------------------------------- |
-| `ANCHOR_GAP_PX`  | 8     | `useTabStyleAnchor.ts` | The spec's gap to the brush or opener         |
-| `PHONE_MAX_PX`   | 640   | `useTabStyleAnchor.ts` | Tailwind's `sm`, where the sheet gives way    |
-| `EDGE_MIN_PX`    | 8     | `useTabStyleAnchor.ts` | The popover never meets the window's edge     |
-| `LOOKS_PER_PAGE` | 6     | `lib/tab-looks.ts`     | Two rows of three                             |
-| `FONTS_PER_PAGE` | 6     | `TextPanel.tsx`        | Two rows of three                             |
+| Constant         | Value | Where                  | Why                                        |
+| ---------------- | ----- | ---------------------- | ------------------------------------------ |
+| `ANCHOR_GAP_PX`  | 8     | `useTabStyleAnchor.ts` | The spec's gap to the brush or opener      |
+| `PHONE_MAX_PX`   | 640   | `useTabStyleAnchor.ts` | Tailwind's `sm`, where the sheet gives way |
+| `EDGE_MIN_PX`    | 8     | `useTabStyleAnchor.ts` | The popover never meets the window's edge  |
+| `LOOKS_PER_PAGE` | 6     | `lib/tab-looks.ts`     | Two rows of three                          |
+| `FONTS_PER_PAGE` | 6     | `TextPanel.tsx`        | Two rows of three                          |
 
 ## Observability
 

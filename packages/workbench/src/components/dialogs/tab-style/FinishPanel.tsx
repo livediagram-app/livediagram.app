@@ -28,7 +28,11 @@ export function FinishPanel<Look extends TabStyleLook, Pattern extends string>({
     <div className="flex flex-col gap-4">
       <div className="flex flex-col gap-1.5">
         <span className={SECTION_LABEL}>Finish</span>
-        <div role="radiogroup" aria-label="Finish" className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div
+          role="radiogroup"
+          aria-label="Finish"
+          className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+        >
           {FINISHES.map((f) => (
             <button
               key={f}

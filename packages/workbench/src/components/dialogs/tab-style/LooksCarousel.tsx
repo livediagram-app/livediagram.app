@@ -59,7 +59,9 @@ export function LooksCarousel<Look extends TabStyleLook, Pattern extends string>
   const [seasonalLooks] = useState(() => catalogue.seasonalFor(new Date()));
   // Seasonal looks only, in place of the everyday ones. Opens on when the tab already wears a seasonal look.
   const [seasonal, setSeasonal] = useState(() => seasonalLooks.some((l) => l.id === activeLook));
-  const pool = (seasonal ? seasonalLooks : catalogue.all).filter((l) => !lookFilter || lookFilter(l));
+  const pool = (seasonal ? seasonalLooks : catalogue.all).filter(
+    (l) => !lookFilter || lookFilter(l),
+  );
   const looks = finish === 'all' ? pool : pool.filter((l) => l.finish === finish);
   // The Mashup card rolls everyday ingredients, so it leads the everyday looks only.
   const cards: Card<Look>[] = seasonal ? [...looks] : [MASHUP_CARD, ...looks];

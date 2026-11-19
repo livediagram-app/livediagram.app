@@ -43,7 +43,11 @@ const look = (id: string, finish: TabStyleLook['finish'], season?: TabStyleLook[
   pattern: 'grid',
   season,
 });
-const LOOKS = [look('everyday', 'flexible'), look('sketchy', 'sketch'), look('crisp', 'professional')];
+const LOOKS = [
+  look('everyday', 'flexible'),
+  look('sketchy', 'sketch'),
+  look('crisp', 'professional'),
+];
 const SEASONAL = [look('haunted', 'sketch', 'halloween'), look('frosty', 'flexible', 'christmas')];
 const ALL = [...LOOKS, ...SEASONAL];
 const matches = (s: { theme?: string; finish?: unknown }, l: TabStyleLook) =>
@@ -107,7 +111,12 @@ function profileWith(
         </button>
       </div>
     ),
-    finishLabels: { flexible: 'Flexible', professional: 'Professional', sketch: 'Sketch', marker: 'Marker' },
+    finishLabels: {
+      flexible: 'Flexible',
+      professional: 'Professional',
+      sketch: 'Sketch',
+      marker: 'Marker',
+    },
     FinishSwatch: ({ finish }) => <b>{finish}</b>,
     patternLabel: (p) => `Pattern ${p}`,
     TextSizeControl: ({ current, onSet, onPreview, onPreviewEnd }) => (
@@ -131,7 +140,10 @@ function profileWith(
       hiddenControls: [],
       renderCanvasPanel: canvasPanel,
       renderPreview: (kind, p) => (
-        <div role="img" aria-label={`${kind}: ${p.finishLabel}, ${p.fontLabel}, ${String(p.textSize)}`} />
+        <div
+          role="img"
+          aria-label={`${kind}: ${p.finishLabel}, ${p.fontLabel}, ${String(p.textSize)}`}
+        />
       ),
       copy: TAB_STYLE_COPY,
     },
@@ -187,7 +199,9 @@ const cardNames = () =>
 describe('the home', () => {
   it('shows a Fine-tune row per panel with its value, each opening its panel', () => {
     const { p } = open({ defaultTextSize: 18 });
-    expect(screen.getByText('Pick a look for the whole tab, then fine-tune any part of it.')).toBeTruthy();
+    expect(
+      screen.getByText('Pick a look for the whole tab, then fine-tune any part of it.'),
+    ).toBeTruthy();
     expect(button('Colours: Theme everyday theme')).toBeTruthy();
     expect(button('Finish: Flexible')).toBeTruthy();
     expect(button('Text: Editor default, 18px')).toBeTruthy();
@@ -234,7 +248,10 @@ describe('the home', () => {
     expect(onApply).toHaveBeenCalled();
     expect(document.body.textContent).toMatch(/locked/i);
     cleanup();
-    open({ profile: profileWith({ tabLocks: false }), allTabs: { tabCount: 3, applying: false, onApply } });
+    open({
+      profile: profileWith({ tabLocks: false }),
+      allTabs: { tabCount: 3, applying: false, onApply },
+    });
     expect(document.body.textContent).not.toMatch(/locked/i);
   });
 });
@@ -251,7 +268,9 @@ describe('the looks', () => {
   });
 
   it("drops the looks the surface's filter leaves out", () => {
-    const profile = profileWith({ base: { ...profileWith().base, lookFilter: (l) => l.id !== 'crisp' } });
+    const profile = profileWith({
+      base: { ...profileWith().base, lookFilter: (l) => l.id !== 'crisp' },
+    });
     open({ profile });
     expect(cardNames()).toEqual(['Mashup', 'Everyday', 'Sketchy']);
   });
@@ -286,7 +305,8 @@ describe('the looks', () => {
 
   it('applies the mashup on show, then rolls another while the tab wears it', () => {
     const { p, rerender } = open();
-    const mashup = () => screen.getByRole('button', { name: 'Mashup: a random look, press for another' });
+    const mashup = () =>
+      screen.getByRole('button', { name: 'Mashup: a random look, press for another' });
     fireEvent.click(mashup());
     const shown = (p.onApplyLook as ReturnType<typeof vi.fn>).mock.calls[0]![0] as TabStyleLook;
     expect(shown.label).toBe('Mashup');
@@ -303,7 +323,8 @@ describe('the looks', () => {
 
   it('rolls within the chosen finish while the tab wears the mashup', () => {
     const { p, rerender } = open();
-    const mashup = () => screen.getByRole('button', { name: 'Mashup: a random look, press for another' });
+    const mashup = () =>
+      screen.getByRole('button', { name: 'Mashup: a random look, press for another' });
     fireEvent.change(screen.getByRole('combobox', { name: 'Filter looks by finish' }), {
       target: { value: 'professional' },
     });
@@ -319,7 +340,9 @@ describe('the panels', () => {
   it('leads back home from a panel, under its line and help', () => {
     const { p } = open({ tab: 'finish' });
     expect(screen.getByText('How every element on the tab is drawn.')).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Help' }).getAttribute('href')).toBe('#choosingAFinish');
+    expect(screen.getByRole('link', { name: 'Help' }).getAttribute('href')).toBe(
+      '#choosingAFinish',
+    );
     fireEvent.click(screen.getByRole('button', { name: /Tab Style/ }));
     expect(p.onTabChange).toHaveBeenCalledWith('looks');
   });
@@ -332,9 +355,11 @@ describe('the panels', () => {
     expect(p.onSetFinish).toHaveBeenCalledWith('marker');
   });
 
-  it("previews Flexible for a tab with no finish of its own", () => {
+  it('previews Flexible for a tab with no finish of its own', () => {
     open({ tab: 'finish' });
-    expect(screen.getByRole('radio', { name: /Flexible/ }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByRole('radio', { name: /Flexible/ }).getAttribute('aria-checked')).toBe(
+      'true',
+    );
   });
 
   it('picks a typeface and the size of new text, the preview following the slider', () => {
