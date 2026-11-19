@@ -319,7 +319,8 @@ every add.
 - **Shapes**: the basics (Square, Circle, Diamond) | the flowchart shapes (Cylinder to Stadium), an optional group closed until opened |
   the rest (Cloud to Bubble), also optional; Diagram's adds **BPMN** (Start Event to Association,
   [BPMN](../009-elements/bpmn.md)) as a fourth group, an optional one, closed until opened ("Optional groups").
-- **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note and Callout to the notes, then Comment,
+- **Write**: Page, Text | Note, Annotation; Diagram's adds Pointer note to the notes (the Callout is a Card preset
+  since 2026-11-19, owner), then Comment,
   Action as a third group, **Comments**.
 - **Draw**: Freehand, Shape Pen | Polygon | Arrow, Line.
 - **Build**: Mind node, Table | Lane, Frame, Timeline.

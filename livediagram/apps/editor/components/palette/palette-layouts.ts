@@ -73,12 +73,11 @@ const EMBED_TILES = [
   'media:embed-live',
 ];
 
-// Write's own tiles and the Callout (a headed note, as much a diagram's as a page's), then the Comment
-// panel and the Action card as their own group: comments and assigned actions belong to every mode, so Diagram
-// keeps them though their Collaborate category is Workshop's.
+// Write's own tiles, then the Comment panel and the Action card as their own group: comments and assigned actions
+// belong to every mode, so Diagram keeps them though their Collaborate category is Workshop's. The Callout is a Card
+// preset, not a Write tile (owner, 2026-11-19).
 const WRITE_WITH_COMMENTS = [
   ...tilesForCategory('write').map((t) => t.id),
-  'components:callout',
   DIVIDE,
   'collab:comment-pin',
   'collab:action-card',
