@@ -41,6 +41,9 @@ export type TeamsContext = {
   /** The teams to show. */
   teams: TeamRef[];
   create: (input: { name: string; organisation?: string | null }) => Promise<TeamResult<TeamRef>>;
+  /** After New Team's unconfirmed answer (Refresh): reads accounts' list and answers a team named `name` that
+   *  wasn't shown before, taken in as if just made, or null when there is none. Throws when the read fails. */
+  findMadeTeam: (name: string) => Promise<TeamRef | null>;
   update: (
     teamId: string,
     patch: { name?: string; organisation?: string | null },
@@ -64,6 +67,7 @@ const QUIET: TeamsContext = {
   retryMyTeams: () => {},
   teams: NO_TEAMS,
   create: async () => NO_HOST,
+  findMadeTeam: async () => null,
   update: async () => NO_HOST,
   remove: async () => NO_HOST,
   removeMember: async () => NO_HOST,
@@ -163,6 +167,16 @@ export function TeamsProvider({
           changed();
         }
         return result;
+      },
+      findMadeTeam: async (name) => {
+        const read = await live.myTeams();
+        const shown = new Set(teams.map((t) => t.id));
+        const found = read.teams.find((t) => t.name === name && !shown.has(t.id));
+        if (!found) return null;
+        const team = { id: found.id, name: found.name };
+        teamChanges.made(team);
+        changed();
+        return team;
       },
       update: async (teamId, patch) => {
         const result = await live.update(teamId, patch);

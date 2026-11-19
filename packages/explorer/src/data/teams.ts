@@ -111,7 +111,14 @@ const MESSAGES: Record<string, string> = {
   rate_limited: 'Too many tries just now. Wait a minute and try again.',
   signed_out: 'You’ve been signed out. Sign in again to carry on.',
   offline: 'Couldn’t reach liveworkspace. Check your connection and try again.',
+  // New Team got no answer in time (accounts.md "When the accounts site doesn't answer"): it may exist, so never
+  // "try again", which could make a second one. RefreshTeamsButton sits beside it.
+  team_create_unconfirmed: 'The team may have been made. Refresh to check.',
+  team_not_made: 'No team was made. You can create it now.',
 };
+
+/** The error New Team answers when the outcome is unknown, the one that offers Refresh. */
+export const TEAM_CREATE_UNCONFIRMED = 'team_create_unconfirmed';
 
 /** A change's refusal, in words. */
 export function teamErrorMessage(error: string): string {
@@ -178,6 +185,8 @@ export function createTeamsHost({
     method: string,
     body?: unknown,
     shape: (raw: unknown) => T = (raw) => raw as T,
+    // The error for a 504 that names none (the router's own deadline): the change may have happened.
+    timedOut = 'failed',
   ): Promise<TeamResult<T>> {
     let res: Response;
     try {
@@ -188,7 +197,13 @@ export function createTeamsHost({
     const raw = (await res.json().catch(() => null)) as { error?: unknown } | null;
     if (!res.ok) {
       const error =
-        typeof raw?.error === 'string' ? raw.error : res.status === 401 ? 'signed_out' : 'failed';
+        typeof raw?.error === 'string'
+          ? raw.error
+          : res.status === 401
+            ? 'signed_out'
+            : res.status === 504
+              ? timedOut
+              : 'failed';
       return { ok: false, error };
     }
     return { ok: true, value: shape(raw) };
@@ -213,10 +228,16 @@ export function createTeamsHost({
       }
     },
     create: ({ name, organisation }) =>
-      change('/teams', 'POST', { name, organisation: organisation ?? null }, (raw) => {
-        const t = raw as { id: string; name: string };
-        return { id: t.id, name: t.name };
-      }),
+      change(
+        '/teams',
+        'POST',
+        { name, organisation: organisation ?? null },
+        (raw) => {
+          const t = raw as { id: string; name: string };
+          return { id: t.id, name: t.name };
+        },
+        TEAM_CREATE_UNCONFIRMED,
+      ),
     update: (teamId, patch) =>
       change(`/teams/${id(teamId)}`, 'PATCH', patch, (raw) => {
         const t = raw as { id: string; name: string; organisation: string | null };
