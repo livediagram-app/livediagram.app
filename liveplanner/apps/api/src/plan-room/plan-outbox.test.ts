@@ -487,6 +487,46 @@ describe('the cards push', () => {
     expect(cards.actions[0]!.card).toMatchObject({ typeLabel: 'review' });
   });
 
+  // Card prefixes across plans (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans"): the Inbox,
+  // its notices and My Work have no plan's types, so each card carries its prefixed ref.
+  it("carries each card's prefixed ref, none for a type the catalogue lacks", async () => {
+    const db = plan();
+    await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);
+    await drainOutbox(db.env, 'P', fakeIndex().client);
+    db.sql.prepare(`UPDATE plan SET item_types = ? WHERE id = 'P'`).run(
+      JSON.stringify({
+        version: 1,
+        types: [
+          {
+            id: 'wi',
+            label: 'Work Item',
+            newTitle: 'New Work Item',
+            glyph: 'bug',
+            color: '#dc2626',
+            fields: ['title', 'status', 'assignee'],
+          },
+        ],
+      }),
+    );
+    await insertItems(db.env, 'P', [
+      {
+        ...(await card('c1', 100, { status: 'new', assignee: await person('owner') })),
+        type: 'wi',
+      },
+      {
+        ...(await card('c2', 7, { status: 'new', assignee: await person('owner') })),
+        type: 'gone',
+      },
+    ]);
+    const index = fakeIndex();
+    await drainOutbox(db.env, 'P', index.client);
+    const cards = index.collab.find((c) => c.tab === '~cards')!.push;
+    const byId = Object.fromEntries(cards.actions.map((a) => [a.actionId, a.card]));
+    expect(byId.c1).toMatchObject({ key: 100, ref: 'WI-100' });
+    expect(byId.c2).toMatchObject({ key: 7 });
+    expect(byId.c2).not.toHaveProperty('ref');
+  });
+
   it('pushes 1,000 cards among 500 known people within budget', async () => {
     const db = plan();
     await upsertTab(db.env, 'P', { id: 't1', name: 'Sprint', elements: [board()] }, 0);

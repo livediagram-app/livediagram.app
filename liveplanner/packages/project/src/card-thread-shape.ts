@@ -8,11 +8,13 @@ import { isComment } from './element-deltas';
 // ---------- Shape --------------------------------------------------------------------------------------------
 
 /** One card a thread is on: its plan and id, its number, and (a card in another plan) that plan's name when the
- *  thread was added there. */
+ *  thread was added there. `ref`, its prefixed number when it was added ("WI-12"), is what another plan, which has
+ *  none of this plan's card types, shows (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans"). */
 export type CardRef = {
   projectId: string;
   itemId: string;
   key: number | null;
+  ref?: string;
   projectName?: string;
 };
 
@@ -127,6 +129,7 @@ function isCardRef(v: unknown): v is CardRef {
     typeof c.projectId === 'string' &&
     typeof c.itemId === 'string' &&
     (c.key === null || typeof c.key === 'number') &&
+    (c.ref === undefined || typeof c.ref === 'string') &&
     (c.projectName === undefined || typeof c.projectName === 'string')
   );
 }

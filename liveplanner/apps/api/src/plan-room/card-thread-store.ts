@@ -31,8 +31,10 @@ import {
   updateThreadStatement,
   type ThreadLink,
 } from '../db/card-threads';
+import { prefixedCardRef } from '@liveplanner/items';
 import { readItem } from '../db/items';
 import { planRoom } from '../plan-client';
+import { planTypesOf } from '../roadmap/roadmap-boards';
 import { relayThreads } from '../room-client';
 import type { PlanEnv } from '../types';
 
@@ -174,8 +176,11 @@ export async function threadsForVia(
 }
 
 export type ThreadLinkRefusal = 'item_not_found' | 'threads_full' | 'thread_on_card';
-// The card's number, for the thread's card list, or why it takes no link.
-export type ThreadLinked = { ok: true; key: number } | { ok: false; error: ThreadLinkRefusal };
+// The card's number and its prefixed ref (none for a type of no prefix), for the thread's card list, or why it takes
+// no link. The ref is what another plan holding the thread shows (docs/specs/026-plan/item-types.md "Card number
+// prefixes" "Across plans").
+export type ThreadLinked =
+  { ok: true; key: number; ref?: string } | { ok: false; error: ThreadLinkRefusal };
 
 /** A card of this plan takes a thread (stored here or elsewhere): its link, after the card and its room are checked. */
 export async function linkThread(
@@ -183,14 +188,18 @@ export async function linkThread(
   plan: string,
   link: { threadId: string; home: string; itemId: string; openComments: number },
 ): Promise<ThreadLinked> {
-  const item = await readItem(env, plan, link.itemId);
+  const [item, types] = await Promise.all([
+    readItem(env, plan, link.itemId),
+    planTypesOf(env, plan),
+  ]);
   if (!item) return { ok: false, error: 'item_not_found' };
   const held = await linksOfThread(env, plan, link.threadId);
   if (held.some((l) => l.itemId === link.itemId)) return { ok: false, error: 'thread_on_card' };
   if ((await threadCountOfItem(env, plan, link.itemId)) >= CARD_THREADS_MAX)
     return { ok: false, error: 'threads_full' };
   await insertLinkStatement(env, plan, link).run();
-  return { ok: true, key: item.key };
+  const ref = prefixedCardRef(item, types);
+  return { ok: true, key: item.key, ...(ref ? { ref } : {}) };
 }
 
 /** Takes a link `linkThread` made back off (the home then refused the card). */

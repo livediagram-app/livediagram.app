@@ -25,6 +25,10 @@ import {
   itemPersonId,
   itemStatus,
   itemTitle,
+  legacyCatalogue,
+  prefixedCardRef,
+  readItemTypeCatalogue,
+  typesOf,
   type Item,
 } from '@liveplanner/items';
 import { offlineBackend } from './offline-backend';
@@ -74,6 +78,8 @@ export async function readOfflineActivity(
 const OFFLINE_ACTIVITY_SLICE_MS = 8;
 
 type Place = Pick<ActivityCard, 'projectId' | 'projectName' | 'teamId' | 'via' | 'shareCode'>;
+
+const withRef = (ref: string | undefined) => (ref ? { ref } : {});
 
 function placeOf(rec: OfflineProjectRecord): Place {
   return { projectId: rec.id, projectName: rec.name, teamId: null, via: 'own', shareCode: null };
@@ -155,6 +161,9 @@ function collector(reader: OfflineReader) {
     });
     const items = rec.items ?? [];
     if (items.length === 0) return;
+    // The plan's card types as its editor reads them, for each card's prefixed ref (docs/specs/026-plan/item-types.md
+    // "Card number prefixes" "Across plans"): the Inbox lists cards from several plans and has no types of its own.
+    const types = typesOf(legacyCatalogue(readItemTypeCatalogue(rec.itemTypes ?? null), true));
     // Each card's open threads, a thread listed once, on its first card (docs/specs/026-plan/items.md "Comments").
     const threadsOf = new Map<string, CardThread[]>();
     for (const t of recordThreads(rec)) {
@@ -174,6 +183,7 @@ function collector(reader: OfflineReader) {
         column: places.columnFor(status),
         id: item.id,
         key: item.key,
+        ...withRef(prefixedCardRef(item, types)),
         type: item.type,
         title: itemTitle(item),
       });

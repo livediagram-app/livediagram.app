@@ -72,6 +72,9 @@ export type ActivityCard = {
   column?: { name: string; color?: string; done: boolean } | null;
   id: string;
   key: number;
+  // Its number as its plan shows it ("WI-12"), for the Inbox, which lists cards from several plans; absent for a type
+  // of no prefix (docs/specs/026-plan/item-types.md "Card number prefixes" "Across plans").
+  ref?: string;
   type: string;
   title: string;
   status: string | null;

@@ -219,6 +219,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "projectName": {
         "type": "string"
       },
+      "ref": {
+        "type": "string"
+      },
       "shareCode": {
         "type": [
           "string",
@@ -377,6 +380,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "projectName": {
+        "type": "string"
+      },
+      "ref": {
         "type": "string"
       },
       "shareCode": {
@@ -2621,6 +2627,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "key": {
                 "type": "number"
               },
+              "ref": {
+                "type": "string"
+              },
               "title": {
                 "type": "string"
               }
@@ -4223,7 +4232,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "CardRef": {
     "additionalProperties": false,
-    "description": "One card a thread is on: its plan and id, its number, and (a card in another plan) that plan's name when the thread was added there.",
+    "description": "One card a thread is on: its plan and id, its number, and (a card in another plan) that plan's name when the thread was added there. `ref`, its prefixed number when it was added (\"WI-12\"), is what another plan, which has none of this plan's card types, shows (docs/specs/026-plan/item-types.md \"Card number prefixes\" \"Across plans\").",
     "properties": {
       "itemId": {
         "type": "string"
@@ -4238,6 +4247,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "projectName": {
+        "type": "string"
+      },
+      "ref": {
         "type": "string"
       }
     },
