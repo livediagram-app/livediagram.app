@@ -18,7 +18,7 @@ export type OpenItemOptions = {
  * card and the footer's Tools, as the share link's guest when the editor was opened from one (one-explorer.md "The
  * Current card"). Asked once per item, again when it stops being local (a Sync in place), and again on an opening
  * while the index had nothing for it; one it answered is never read again for an opening. Null while it is read, while
- * the item is local, and when the index has none for it: the panel then draws the card from This Browser.
+ * the item is local, and when the index has none for it: the panel then draws the card from Offline.
  */
 export function useOpenItem(
   client: IndexClient,

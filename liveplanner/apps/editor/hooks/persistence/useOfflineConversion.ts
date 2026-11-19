@@ -15,7 +15,7 @@ import {
 import { dismissLocalMove } from '@liveworkspace/workbench/lib/offline/local-move-dismissal';
 import { offlineListProjects } from '@/lib/offline/offline-store';
 
-// Offline Mode conversions (docs/specs/006-project/offline-mode.md) for the pages that offer them: This Browser's
+// Offline Mode conversions (docs/specs/006-project/offline-mode.md) for the pages that offer them: Offline's
 // rows (Sync Plan) and the Take Offline or Sync the Explorer on this address hands over (useConversionHandoff).
 // `syncToCloud` uploads an offline plan to the account; `takeOffline` pulls a cloud plan down and deletes the server
 // copy (gated by a confirm). Neither reloads the page: the one open in this editor moves in place (useSyncInPlace, useTakeOfflineInPlace), and

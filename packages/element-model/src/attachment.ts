@@ -6,7 +6,12 @@
 import { badgeSize, isChip, nextStepNumber, stepFontPx } from './chip';
 import { isPointerNote, pointerTipOf } from './pointer-note';
 import type { Point, Rect } from '@liveworkspace/model-core/geometry-primitives';
-import type { Element, ElementId, ShapeElement } from './element';
+import type { Anchor, BoxedElement, Element, ElementId, ShapeElement } from './element';
+import { anchorPosition } from './geometry';
+import { offeredAnchors } from './anchors';
+import { ALL_ANCHORS } from './arrow-types';
+
+const isAnchorName = (v: unknown): v is Anchor => (ALL_ANCHORS as readonly unknown[]).includes(v);
 
 export type AttachPoint =
   'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
@@ -114,7 +119,7 @@ function nearestPoint(
 }
 
 function detached<T extends ShapeElement>(el: T): T {
-  const { attachedTo: _host, attachAt: _at, ...rest } = el;
+  const { attachedTo: _host, attachAt: _at, pointerAnchor: _anchor, ...rest } = el;
   return rest as T;
 }
 
@@ -133,7 +138,7 @@ function centredOn<T extends ShapeElement>(el: T, p: Point): T {
 export function settleChips<E extends Element>(
   prev: readonly Element[],
   next: E[],
-  opts: { attachLoose?: boolean } = {},
+  opts: { attachLoose?: boolean; repickPointerAnchor?: boolean } = {},
 ): E[] {
   // Each element comes back as it was or as a copy with new geometry, a label or a cleared attachment: still an E.
   return settleChipsOf(prev, next, opts) as E[];
@@ -144,7 +149,11 @@ function settleChipsOf(
   next: Element[],
   // Whether a new or moved chip that lands on a point attaches to it. Off when settling a stored board on read:
   // there nothing was just dropped, and a loose badge near a corner is where its author left it.
-  { attachLoose = true }: { attachLoose?: boolean } = {},
+  {
+    attachLoose = true,
+    // Off in a drag's preview: a moving note keeps its tip where it was attached, and picks its best anchor on release.
+    repickPointerAnchor = true,
+  }: { attachLoose?: boolean; repickPointerAnchor?: boolean } = {},
 ): Element[] {
   if (!next.some((el) => isChip(el) || isPointerNote(el))) return next;
   const prevById = new Map(prev.map((el) => [el.id, el]));
@@ -154,7 +163,7 @@ function settleChipsOf(
   const notes = new Map<ElementId, ShapeElement | null>();
   for (const el of next) {
     if (!isPointerNote(el)) continue;
-    const settled = settlePointerNote(el, prevById, byId);
+    const settled = settlePointerNote(el, prevById, byId, repickPointerAnchor);
     notes.set(el.id, settled);
     if (settled === null) byId.delete(el.id);
     else if (settled !== el) byId.set(el.id, settled);
@@ -245,23 +254,65 @@ function settleChipsOf(
   return changed ? out : next;
 }
 
+/** The middle of the host's side facing the box `r` (its centre against the host's, scaled to the host's shape), as an
+ *  arrow's end faces what it joins: where a note's tip reads best. Corners only when that side offers no middle. */
+export function sideMiddleFacing(host: BoxedElement, r: Rect): Anchor | null {
+  const dx = (r.x + r.width / 2 - (host.x + host.width / 2)) / Math.max(host.width, 1);
+  const dy = (r.y + r.height / 2 - (host.y + host.height / 2)) / Math.max(host.height, 1);
+  const side: Anchor = Math.abs(dx) >= Math.abs(dy) ? (dx >= 0 ? 'e' : 'w') : dy >= 0 ? 's' : 'n';
+  const offered = offeredAnchors(host);
+  if (offered.includes(side)) return side;
+  // No middle on that side (a triangle's apex): the offered anchor nearest the box.
+  let best: Anchor | null = null;
+  let bestD = Infinity;
+  for (const anchor of offered) {
+    const p = anchorPosition(host, anchor);
+    const ex = Math.max(r.x - p.x, 0, p.x - (r.x + r.width));
+    const ey = Math.max(r.y - p.y, 0, p.y - (r.y + r.height));
+    if (ex * ex + ey * ey < bestD) {
+      bestD = ex * ex + ey * ey;
+      best = anchor;
+    }
+  }
+  return best;
+}
+
 /** One pointer note settled: on its host's point when attached, carried when its host moved, null when its host was
  *  deleted, detached when its host is unknown. */
 function settlePointerNote(
   note: ShapeElement,
   prevById: ReadonlyMap<ElementId, Element>,
   byId: ReadonlyMap<ElementId, Element>,
+  repick: boolean,
 ): ShapeElement | null {
-  if (note.attachedTo === undefined && note.attachAt === undefined) return note;
+  if (
+    note.attachedTo === undefined &&
+    note.attachAt === undefined &&
+    note.pointerAnchor === undefined
+  )
+    return note;
   const host = note.attachedTo ? byId.get(note.attachedTo) : undefined;
-  if (!host || !canHost(host) || !isAttachPoint(note.attachAt) || host.id === note.id) {
+  if (
+    !host ||
+    !canHost(host) ||
+    !(isAttachPoint(note.attachAt) || isAnchorName(note.pointerAnchor)) ||
+    host.id === note.id
+  ) {
     if (note.attachedTo && prevById.has(note.attachedTo) && !host) return null;
     return detached(note);
   }
-  const target = attachPointXY(host as Boxed, note.attachAt);
   const before = prevById.get(note.id);
   const hostBefore = prevById.get(host.id);
   const hostStill = !!hostBefore && isBoxedEl(hostBefore) && sameBox(hostBefore, host as Boxed);
+  // The note itself moved or resized against a still host: its tip moves to the middle of the host's side facing the note, as
+  // an arrow's end turns to face what it joins (pointer-note.md "Attaching the tip"). Otherwise it keeps its anchor.
+  if (repick && before && hostStill && isBoxedEl(before) && !sameBox(before, note)) {
+    const nearest = sideMiddleFacing(host as unknown as BoxedElement, note);
+    if (nearest && nearest !== note.pointerAnchor) note = { ...note, pointerAnchor: nearest };
+  }
+  const target = isAnchorName(note.pointerAnchor)
+    ? anchorPosition(host as unknown as BoxedElement, note.pointerAnchor)
+    : attachPointXY(host as Boxed, note.attachAt as AttachPoint);
   const tip = pointerTipOf(note);
   if (!before || !hostStill) {
     // The host moved (or the note is new): carry the note so its tip lands on the point.
@@ -301,7 +352,7 @@ export function withAttached(
 export function detachChip<T extends Element>(el: T): T {
   if (
     !(isChip(el) || isPointerNote(el)) ||
-    (el.attachedTo === undefined && el.attachAt === undefined)
+    (el.attachedTo === undefined && el.attachAt === undefined && el.pointerAnchor === undefined)
   )
     return el;
   return detached(el as ShapeElement & T);

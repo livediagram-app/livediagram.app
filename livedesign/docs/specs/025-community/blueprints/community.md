@@ -137,7 +137,7 @@ room's one alarm, only for a design with a post.
 
 - **Community bar**: under the header, "Shared to the Community by <author>" with the author badge, **Back to
   Community**, and **Make a Copy** (Copying while it runs) or, for the author, **Edit Your Design**.
-- **Public**: the header's share state and the Explorer rows, winning over everything but This Browser; the visibility
+- **Public**: the header's share state and the Explorer rows, winning over everything but Offline; the visibility
   legend shows the ladder with Everyone.
 - The Share tab's copy is the shared tab's, in livedesign's words (section 1).
 

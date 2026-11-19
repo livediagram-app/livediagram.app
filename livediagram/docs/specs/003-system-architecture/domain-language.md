@@ -184,20 +184,20 @@ menu's item for putting a tab into another canvas is **Add to Another Canvas**, 
 canvas**, which puts an element on the drawing surface. The flowchart **Document** shape is a shape, not an item, and
 keeps its name.
 
-## Browser Storage and This Browser
+## Offline
 
-**Browser Storage** is the Explorer's name for the place a canvas saved only in this browser lives
+**Offline** is the name for the place a canvas saved only in this browser lives
 ([Offline Mode](../006-document/offline-mode.md)): its Space in the sidebar, beside My Work and the teams, its view and folders, its tile on
 Home, and the pill on its Explorer rows and cards (Archived, the Trash, Most Used and Recent, the Inbox, the editor's
-Explorer panel). The owner renamed it from "This Browser" on 2026-11-10, for clarity. **This Browser** stays the
-editor's badge on such a canvas (the pill at the top of an open canvas, and the editor's own copy). In the
-Explorer a canvas is **in Browser Storage**, never "This Browser", "Local Only" or "Local Browser", and never
-"offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline` and `thisBrowser`.
+Explorer panel), and the editor's badge on such a canvas (the pill at the top of an open canvas, and the editor's own
+copy). The Explorer first called the place "This Browser", then "Browser Storage" (the owner's rename of 2026-11-10,
+for clarity); "Browser Storage" renamed to "Offline" by the owner on 2026-11-19, the day the editor's badge went
+from "This Browser" to "Offline" too. A canvas is **kept Offline**, never "Local Only" or "Local Browser". "Offline Mode" stays the name of the feature, and code may say `offline` and `thisBrowser`.
 
-Wherever a canvas in Browser Storage shows a picture (the editors' Current card, Home's cards and tile, the panel's
+Wherever a canvas kept Offline shows a picture (the editors' Current card, Home's cards and tile, the panel's
 cards, rows' squares), the picture is the **offline art** (`LocalPreview`), never a pill laid over it (owner,
 2026-11-17): a browser window holding the item, a crossed-out cloud on its corner, in the app's accent; a row's small
-square draws the same as one glyph. Screen readers still hear "Browser Storage" with it. Rows and lines that carry no
+square draws the same as one glyph. Screen readers still hear "Offline" with it. Rows and lines that carry no
 picture keep the pill.
 
 ## Names in a sentence

@@ -76,7 +76,7 @@ export function HomeSpaces() {
   );
   const title =
     APP_KINDS[app] === 'space' ? SPACES_COPY.titleWhereItemsAreSpaces : SPACES_COPY.title;
-  // This Browser after the teams, while it holds anything (one-explorer.md "This Browser, a Space"): read from this
+  // Offline after the teams, while it holds anything (one-explorer.md "Offline, a Space"): read from this
   // browser, so it costs no request.
   const local = useThisBrowserSpace();
   const total = spaces.length + (local.holds ? 1 : 0);
@@ -269,11 +269,11 @@ function SpaceTile({
   );
 }
 
-/** This Browser's tile: up to four of its newest items, each the app's picture of a local item, over the teal disc,
+/** Offline's tile: up to four of its newest items, each the app's picture of a local item, over the teal disc,
  *  its name and a line from the list itself. A link to its view, as the others are. */
 function ThisBrowserTile({ live }: { live: readonly ThisBrowserItem[] }) {
   const { viewHref, navigate, app } = useExplorer();
-  // This Browser keeps the app's own items, so its line counts them in its words.
+  // Offline keeps the app's own items, so its line counts them in its words.
   const kind = kindWords(app);
   const now = useNow();
   const lineId = useId();
@@ -341,7 +341,7 @@ function ThisBrowserTile({ live }: { live: readonly ThisBrowserItem[] }) {
   );
 }
 
-/** A space's glyph (My Work's, This Browser's) or a team's initials, on the space's tone. */
+/** A space's glyph (My Work's, Offline's) or a team's initials, on the space's tone. */
 function SpaceDisc({ className, children }: { className: string; children: ReactNode }) {
   return (
     <span

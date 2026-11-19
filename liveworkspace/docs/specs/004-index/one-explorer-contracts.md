@@ -445,8 +445,9 @@ level, tabId, expiry, expiresAt, createdAt, public}`. Managing them needs the ow
   `POST /items/:id/share` with a level the item's app does not offer is 400 `level_not_offered`, and so is a
   `PATCH /share/:code` that changes a link to one; a link already holding such a level (made before the app stopped
   offering it) keeps working, opens at its level and can be rescoped to another tab. A public link is always `view`,
-  outside the table. The shared Share dialog reads the same table for the item's app: its role picker lists the
-  offered levels with the default chosen, and a pass whose level is no longer offered reads "Viewer (Legacy)".
+  outside the table. The shared Share dialog reads the same table for the item's app: its role picker's card names the
+  chosen level (the default at first) and unfolds only the other offered levels, never the chosen one again (owner,
+  2026-11-19), and a pass whose level is no longer offered reads "Viewer (Legacy)".
   Each level's card carries a one-line blurb, the same for every app (`LEVEL_PASS` in
   `packages/explorer/src/dialogs/share/parts.tsx`) unless the app words it its own way (`APP_LEVEL_BLURBS`, keyed
   by app and level, read for the item's app): livehuddle's Participant reads "Walks, talks and uses the pieces; adds
@@ -948,7 +949,7 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
   and why it is here as an icon and words (**To do**, **Waiting on Bo**, **Mentioned you**, **On your plan**,
   **Replied to you** or **You replied**, **Your agent wrote** for a thread only their agent wrote in,
   **6 new responses**), then the app's Living Prism (in the All filter) and
-  the item's name, and the teal **This Browser** pill for an item only this browser holds. The chosen row has a
+  the item's name, and the teal **Offline** pill for an item only this browser holds. The chosen row has a
   brand edge on its left. Rows are an ARIA listbox: focus stays on the list while j/k or the arrows move the choice.
 - **The filter dropdown**: **All**, **My Actions** (assigned to me, a self-assignment included),
   **Assigned by Me** (waiting on others), **Comments** (mentions, threads on my items, threads I replied in) and
@@ -985,7 +986,7 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
     `POST /api/documents/:id/tabs/:tabId/actions/:actionId/status` with `{ elementId, status: 'done' }`, an Editor's
     (403 for anyone less), which the canvas's open editors hear live. On liveworkspace.app and on livediagram's
     address alike (the same token rules as Reply). `Activity·Resolved` (`Action`).
-  - Nothing on a This Browser row (no page here reaches the offline store but the editor, which has no verbs for it
+  - Nothing on an offline row (no page here reaches the offline store but the editor, which has no verbs for it
     yet), on another app's row where the token can't write, or on a Plan card (done is its board's column).
     A row whose work is done here leaves the list at once, and the sidebar's badge and the rail's count drop with
     it (`useInbox`'s `settle`, held while a re-read still lists the row unchanged), though the index may list it
@@ -1012,7 +1013,7 @@ thread on my item I have not written in myself, an agent's question with my toke
 on the sidebar and the rail alike, in every app.
 Work I handed out, threads I replied in and form responses are listed but not counted. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
-This Browser) through the Explorer's `inbox` prop; they carry the This Browser pill.
+Offline) through the Explorer's `inbox` prop; they carry the Offline pill.
 
 ## Calendar feeds
 
@@ -1037,10 +1038,10 @@ are theirs, each asked fresh on every fetch.
 - **A token's person**: `GET /app/calendar-feeds/:tokenHash` (the app's key) answers `{personId}` for that app's feed
   with that hash, else `404`; a malformed hash is `404` too.
 
-## This Browser's list (in the browser, never the index)
+## Offline's list (in the browser, never the index)
 
 Not an index contract: the shape every app's offline store and the Explorer on its address share in localStorage
-([one-explorer.md "This Browser, a Space"](one-explorer.md#this-browser-a-space)), `@liveworkspace/explorer/this-browser`.
+([one-explorer.md "Offline, a Space"](one-explorer.md#offline-a-space)), `@liveworkspace/explorer/this-browser`.
 
 - **`liveworkspace:this-browser:<app>`**: `{ v: 2, items: ThisBrowserItem[], folders: ThisBrowserFolder[] }`.
   `ThisBrowserItem` is `{ id, title, createdAt, updatedAt, lastOpenedAt, trashedAt, archivedAt?,

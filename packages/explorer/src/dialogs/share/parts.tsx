@@ -16,10 +16,9 @@ export type PassStyle = {
   button: string;
   // The role picker card's border and tint.
   selected: string;
-  // The role picker's row in the level's hue: its title, its hover tint, and its ring and tint once chosen.
+  // The role picker's row in the level's hue: its title and its hover tint.
   text: string;
   hover: string;
-  chosen: string;
 };
 
 export const LEVEL_PASS: Record<Level, PassStyle> = {
@@ -32,7 +31,6 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
     selected: 'border-brand-500 bg-brand-50/70 dark:border-brand-400 dark:bg-brand-500/10',
     text: 'text-brand-700 dark:text-brand-300',
     hover: 'hover:bg-brand-50 dark:hover:bg-brand-500/10',
-    chosen: 'bg-brand-50 ring-1 ring-brand-300 dark:bg-brand-500/15 dark:ring-brand-500/50',
   },
   participate: {
     title: 'Participant',
@@ -44,7 +42,6 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
     selected: 'border-teal-600 bg-teal-50/70 dark:border-teal-400 dark:bg-teal-500/10',
     text: 'text-teal-800 dark:text-teal-300',
     hover: 'hover:bg-teal-50 dark:hover:bg-teal-500/10',
-    chosen: 'bg-teal-50 ring-1 ring-teal-300 dark:bg-teal-500/15 dark:ring-teal-500/50',
   },
   view: {
     title: 'Viewer',
@@ -55,7 +52,6 @@ export const LEVEL_PASS: Record<Level, PassStyle> = {
     selected: 'border-violet-500 bg-violet-50/70 dark:border-violet-400 dark:bg-violet-500/10',
     text: 'text-violet-700 dark:text-violet-300',
     hover: 'hover:bg-violet-50 dark:hover:bg-violet-500/10',
-    chosen: 'bg-violet-50 ring-1 ring-violet-300 dark:bg-violet-500/15 dark:ring-violet-500/50',
   },
 };
 

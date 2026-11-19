@@ -21,7 +21,7 @@ afterEach(() => {
 });
 
 describe('arrivedSelector', () => {
-  it("matches an index item's row or card and This Browser's row, escaping the id", () => {
+  it("matches an index item's row or card and Offline's row, escaping the id", () => {
     expect(arrivedSelector('a"b')).toBe(
       '[data-item-row="a\\"b"],[data-item-card="a\\"b"],[data-this-browser-row="a\\"b"]',
     );

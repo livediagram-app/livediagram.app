@@ -86,9 +86,9 @@ export type DialogTarget =
   | { kind: 'history'; item: Item }
   // Webhooks: the item's own, for an account who edits all of it.
   | { kind: 'webhooks'; item: Item }
-  // This Browser's Delete (its menu, or a drop on the Trash): gone for good, since nothing else holds it.
+  // Offline's Delete (its menu, or a drop on the Trash): gone for good, since nothing else holds it.
   | { kind: 'delete-local'; item: ThisBrowserItem }
-  // A This Browser item dropped on a place: synced to the account first, then moved there where the host can. From
+  // An offline item dropped on a place: synced to the account first, then moved there where the host can. From
   // Archived (`archived`), its mark is cleared as it syncs.
   | {
       kind: 'sync-local';
@@ -99,12 +99,12 @@ export type DialogTarget =
   // An archived document opened: it says so, with Change Folder (one-explorer.md "Archived").
   | { kind: 'archived'; item: Item }
   | { kind: 'archived-local'; item: ThisBrowserItem }
-  // Change Folder for an archived This Browser item: back to This Browser, or (signed in) into the account.
+  // Change Folder for an archived Offline item: back Offline, or (signed in) into the account.
   | { kind: 'move-local'; item: ThisBrowserItem }
-  // Move to Folder for a live This Browser item: one of This Browser's folders, or (signed in) the account's places
-  // through Sync (one-explorer.md "This Browser, a Space").
+  // Move to Folder for a live Offline item: one of Offline's folders, or (signed in) the account's places
+  // through Sync (one-explorer.md "Offline, a Space").
   | { kind: 'move-local-item'; item: ThisBrowserItem }
-  // One of This Browser's own folders: moved within This Browser, or deleted (its contents up a level).
+  // One of Offline's own folders: moved within Offline, or deleted (its contents up a level).
   | { kind: 'move-local-folder'; folderId: string }
   | { kind: 'delete-local-folder'; folderId: string }
   | null;
@@ -178,7 +178,7 @@ export type ExplorerContextValue = {
   expansion: Expansion;
   // The folder on screen, once its list is in (FolderShown), for the host.
   onFolderShown?: (shown: FolderShown) => void;
-  // The host's take on an item just archived (HostArchived): This Browser's archive asks it too.
+  // The host's take on an item just archived (HostArchived): Offline's archive asks it too.
   hostArchived?: HostArchived;
 };
 

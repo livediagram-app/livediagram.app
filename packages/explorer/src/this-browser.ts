@@ -1,4 +1,4 @@
-// This Browser: what an app keeps only in this browser (its offline items), for the Explorer served on that app's own
+// Offline: what an app keeps only in this browser (its offline items), for the Explorer served on that app's own
 // address (liveworkspace/docs/specs/004-index/one-explorer.md "The Explorer on each app's address"). The index never sees these, and
 // they live in the app's own storage, which only a page on the app's origin can read. So the app keeps a small list
 // of them in localStorage under one shared key (`liveworkspace:this-browser:<app>`): id, title and the few dates the
@@ -9,10 +9,11 @@
 
 import type { App } from '@liveworkspace/index-client';
 import { quoted } from './quoted';
+import { VISIBILITY_TONE } from './visibility-tones';
 
 // The Inbox's rows from the same items, kept beside the list for the page (this-browser-inbox.ts).
 export * from './this-browser-inbox';
-// This Browser's folders, kept in the same list (this-browser-folders.ts).
+// Offline's folders, kept in the same list (this-browser-folders.ts).
 export * from './this-browser-folders';
 
 export type ThisBrowserItem = {
@@ -29,55 +30,51 @@ export type ThisBrowserItem = {
   // while it is not. The mark lives only in this list: the app's own record never hears of it, so every write of the
   // list carries the marks it already held (writeThisBrowser), and the editor reads it here before it opens one.
   archivedAt?: number | null;
-  // The local folder it sits in (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser, a Space"); absent
-  // or null at This Browser's root. Like the archive mark it lives only in this list, so every write keeps it.
+  // The local folder it sits in (liveworkspace/docs/specs/004-index/one-explorer.md "Offline, a Space"); absent
+  // or null at Offline's root. Like the archive mark it lives only in this list, so every write keeps it.
   folderId?: string | null;
 };
 
-/** One of This Browser's folders: kept only in this list, beside the items, never content. */
+/** One of Offline's folders: kept only in this list, beside the items, never content. */
 export type ThisBrowserFolder = {
   id: string;
   name: string;
-  // Null at This Browser's root.
+  // Null at Offline's root.
   parentId: string | null;
   createdAt: number;
   updatedAt: number;
 };
 
-/** The whole stored list: the items and This Browser's folders. */
+/** The whole stored list: the items and Offline's folders. */
 export type ThisBrowserStore = {
   items: ThisBrowserItem[];
   folders: ThisBrowserFolder[];
 };
 
-/** The editor's This Browser pill's words (the title bar's badge, the editors' search): its label, and the sentence it
- *  gives on hover and to assistive technology. The Explorer names the same place Browser Storage
- *  (BROWSER_STORAGE_COPY, owner's rename 2026-11-10). */
+/** The editor's Offline pill's words (the title bar's badge, the editors' search): its label, and the sentence it
+ *  gives on hover and to assistive technology. The Explorer names the same place Offline too (BROWSER_STORAGE_COPY:
+ *  called Browser Storage from the owner's rename of 2026-11-10 until the owner renamed it Offline on 2026-11-19). */
 export const THIS_BROWSER_COPY = {
-  label: 'This Browser',
+  label: 'Offline',
   sentence: 'Lives only in this browser. Clearing this browser’s site data deletes it.',
 } as const;
 
-/** The Explorer's name for what is kept only in this browser (one-explorer.md "This Browser, a Space": the owner's
- *  rename, 2026-11-10): its Space, its view, its tile, its pill on Explorer rows and its Trash and Archived groups. */
-export const BROWSER_STORAGE_COPY = {
-  label: 'Browser Storage',
-  sentence: THIS_BROWSER_COPY.sentence,
-} as const;
+/** The Explorer's name for what is kept only in this browser (one-explorer.md "Offline, a Space"): its Space, its
+ *  view, its tile, its pill on Explorer rows and its Trash and Archived groups. The same words as the editor's pill
+ *  since the owner renamed "Browser Storage" to "Offline" on 2026-11-19. */
+export const BROWSER_STORAGE_COPY = THIS_BROWSER_COPY;
 
 /**
- * The This Browser pill's tone, the Explorer's and every editor's: teal, which is no app's accent (livedocuments' is
- * amber) and no status colour, so it never reads as whose an item is, or as fine or failing. The words meet 4.5:1 on
- * the fill (light 9.1:1, dark 12.8:1 over slate-900) and the ring 3:1 against the row (teal-600 on white 3.7:1,
- * teal-400 on slate-900 9.6:1). The picture of a local item is not teal: it takes its own app's accent (LocalPreview).
+ * The Offline pill's tone, the Explorer's and every editor's: grey (owner 2026-11-19), from the visibility tones
+ * (visibility-tones.ts), where Private is green: offline reaches nobody, not even your other devices.
+ * The picture of a local item is not grey: it takes its own app's accent (LocalPreview).
  */
-export const THIS_BROWSER_TONE =
-  'bg-teal-50 text-teal-900 ring-1 ring-teal-600 dark:bg-teal-900/40 dark:text-teal-100 dark:ring-teal-400';
+export const THIS_BROWSER_TONE = `ring-1 ${VISIBILITY_TONE.browser.chip}`;
 /** Its hover fill, where the pill is a link. */
-export const THIS_BROWSER_HOVER = 'hover:bg-teal-100 dark:hover:bg-teal-900/60';
+export const THIS_BROWSER_HOVER = 'hover:bg-slate-200 dark:hover:bg-slate-700';
 /** Its focus outline, where the pill is a link. */
 export const THIS_BROWSER_FOCUS =
-  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-600 dark:focus-visible:outline-teal-400';
+  'focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-500 dark:focus-visible:outline-slate-400';
 
 // The list is cut at this many, newest change first: a few dozen offline items is a heavy user, and the whole list
 // is parsed on every change.
@@ -198,7 +195,7 @@ export function writeThisBrowserStore(
     if (items.length === 0 && folders.length === 0) store.removeItem(thisBrowserKey(app));
     else store.setItem(thisBrowserKey(app), JSON.stringify({ v: VERSION, items, folders }));
   } catch {
-    // Storage full or blocked: the Explorer goes without This Browser, the app's own view still lists them.
+    // Storage full or blocked: the Explorer goes without Offline, the app's own view still lists them.
     return;
   }
   if (typeof window !== 'undefined') {
@@ -364,7 +361,7 @@ export function thisBrowserPublisher<R extends OfflineRecordFields>(
 // runs them in place. The Explorer page on the app's address (liveworkspace's build) offers them and hands over to the
 // app's editor, at the item's own address with what to do in its query; the editor asks the person to confirm, checks
 // the item is theirs to move, and runs the conversion (conversion-handoff.ts). A request that reaches the Explorer's
-// This Browser view instead (`/explorer/offline?convert=…`, an older `/offline` link redirected) goes on to the
+// Offline view instead (`/explorer/offline?convert=…`, an older `/offline` link redirected) goes on to the
 // editor the same way. Every app that converts reads the same query through these, so the sides can't drift.
 
 // Delete rides the same hand-over: only the app's editor can remove a record from its offline store.
@@ -388,7 +385,7 @@ export function thisBrowserConvertHref(
   return `${address}${address.includes('?') ? '&' : '?'}${params}`;
 }
 
-/** The conversion a This Browser page's address asks for, or null. */
+/** The conversion an offline page's address asks for, or null. */
 export function readThisBrowserConversion(
   search: string,
 ): { conversion: ThisBrowserConversion; id: string } | null {

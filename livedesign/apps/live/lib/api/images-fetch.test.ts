@@ -5,7 +5,7 @@ vi.mock('../guest-token', () => ({
   readGuestToken: () => ({ token: 'guest-jwt', id: 'guest_1', expiresAt: 1 }),
 }));
 
-// One picture's bytes (docs/specs/009-elements/images.md "A data: id is its own bytes"): a This Browser
+// One picture's bytes (docs/specs/009-elements/images.md "A data: id is its own bytes"): an offline
 // design's id is its data URL and is read in place; a synced design's id is fetched from the images api.
 
 // A 1x1 transparent PNG.
@@ -31,7 +31,7 @@ afterEach(() => {
 });
 
 describe('apiFetchImageBlob', () => {
-  it('reads a This Browser picture from its data URL, never the images api', async () => {
+  it('reads an offline picture from its data URL, never the images api', async () => {
     const seen = stubFetch(404);
     const blob = await apiFetchImageBlob('guest_1', PNG_DATA_URL, { designId: 'local-1' });
     expect(seen).toEqual([]);

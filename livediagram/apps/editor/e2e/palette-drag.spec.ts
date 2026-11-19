@@ -10,9 +10,21 @@ import { expect, test, expectNoPageErrors, openBlankSession, openStartBlank } fr
 const CANVAS = '[data-canvas-a11y-root]';
 
 // A category's flyout on the category bar, searched when the body has a search field.
-async function openMore(page: Page, category: string, query?: string): Promise<void> {
+// An optional group named (docs/specs/007-editor/toolbar-layout.md "Optional groups") is opened by its header row,
+// since it starts closed.
+async function openMore(
+  page: Page,
+  category: string,
+  query?: string,
+  group?: string,
+): Promise<void> {
   await page.locator(`[data-category-bar-button][aria-label="${category}"]`).click();
   await more(page).waitFor();
+  if (group) {
+    const header = more(page).getByRole('button', { name: new RegExp(`^${group}`) });
+    await header.click();
+    await expect(header).toHaveAttribute('aria-expanded', 'true');
+  }
   if (query)
     await more(page)
       .getByRole('textbox', { name: /search/i })
@@ -31,10 +43,12 @@ async function dragTileOntoCanvas(page: Page, tileName: string, at: { x: number;
 }
 
 test.describe('Toolbar strip drag', () => {
-  for (const { category, query, tile, placedAs, open } of [
+  for (const { category, query, group, tile, placedAs, open } of [
     {
+      // The Speech Bubble sits in Shapes' More Shapes group, closed until its row is pressed.
       category: 'Shapes',
       query: undefined,
+      group: 'More Shapes',
       tile: 'Add Speech Bubble',
       placedAs: /speech bubble/i,
       open: openStartBlank,
@@ -42,6 +56,7 @@ test.describe('Toolbar strip drag', () => {
     {
       category: 'Icons',
       query: 'speech',
+      group: undefined,
       tile: 'Add Message',
       placedAs: /^Icon$/,
       open: openStartBlank,
@@ -50,6 +65,7 @@ test.describe('Toolbar strip drag', () => {
       // Stickers are the Icons category's Stickers side; its one search finds them too.
       category: 'Icons',
       query: 'speech',
+      group: undefined,
       tile: 'Speech balloon',
       placedAs: /^Sticker$/,
       open: openBlankSession,
@@ -60,7 +76,7 @@ test.describe('Toolbar strip drag', () => {
       pageErrors,
     }) => {
       await open(page);
-      await openMore(page, category, query);
+      await openMore(page, category, query, group);
       await expect(placed(page, placedAs)).toHaveCount(0);
       await dragTileOntoCanvas(page, tile, { x: 300, y: 500 });
       await expect(placed(page, placedAs)).toHaveCount(1);

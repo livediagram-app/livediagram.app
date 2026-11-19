@@ -14,7 +14,7 @@ changed since.
 ## Where it sits
 
 - **Request Approval** is the Share dialog's **Approval** tab, beside Passes, for an Editor of the whole plan stored
-  on the server (never in This Browser, an embed, the workbench frame or through a link confined to one tab). Its
+  on the server (never Offline, an embed, the workbench frame or through a link confined to one tab). Its
   approvers are the team's members (the same read as mentions and assignments), then the plan's owner and its link
   visitors.
 - **Save this version as a snapshot** is offered there whenever Snapshots are ([snapshots.md](snapshots.md)): the

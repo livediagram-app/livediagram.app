@@ -18,7 +18,7 @@ import type { PlanPalette } from './plan-palette';
 
 // docs/specs/026-plan/items.md "Attachments": a card's pictures in the panel (add, open, cover, remove), on a board's
 // card (a drop, a cover, a count), for each share role: an Editor and a Participant add and change them, a Viewer
-// only opens and saves them; a This Browser plan takes none.
+// only opens and saves them; an offline plan takes none.
 
 const api = vi.hoisted(() => ({
   upload: vi.fn(),
@@ -459,7 +459,7 @@ describe('the card panel, for a Viewer', () => {
   });
 });
 
-describe('a This Browser plan', () => {
+describe('an offline plan', () => {
   it('takes no picture, and says why', async () => {
     offline.value = true;
     field(undefined);
@@ -654,7 +654,7 @@ describe('a file dropped on a board’s card', () => {
     expect(screen.queryByText('Drop to Attach')).toBeNull();
   });
 
-  it('is said in a toast when the plan is in This Browser', async () => {
+  it('is said in a toast when the plan is Offline', async () => {
     card();
     offline.value = true;
     const el = document.querySelector('[data-plan-card]')!;

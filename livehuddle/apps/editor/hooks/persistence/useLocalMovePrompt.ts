@@ -12,16 +12,16 @@ import { track } from '@/lib/telemetry';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 import type { ImportChecklistRow } from '@liveworkspace/workbench/components/dialogs/ImportChecklist';
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
-// after signing in"): once auth settles signed in, offer to move its documents in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents kept Offline
+// after signing in"): once auth settles signed in, offer to move its documents kept Offline
 // into the account. Move runs Sync Space on each ticked one in turn; a failure stays
-// This Browser and is named; Not Now is remembered until the count grows.
+// Offline and is named; Not Now is remembered until the count grows.
 
 type LocalMovePhase =
   | { kind: 'idle' }
   | { kind: 'offer' }
   | { kind: 'moving'; done: number; total: number }
-  // Some stayed This Browser: their names, and whether any moved (the page reloads to show them).
+  // Some stayed Offline: their names, and whether any moved (the page reloads to show them).
   | { kind: 'partial'; failed: string[]; moved: number };
 
 export function useLocalMovePrompt(opts: {
@@ -38,7 +38,7 @@ export function useLocalMovePrompt(opts: {
     if (!enabled || !authLoaded || !accountUserId) return;
     let live = true;
     // The cached id count first (an upper bound, the local Trash included): most people hold no
-    // documents in This Browser, and they never pay for reading every record.
+    // documents kept Offline, and they never pay for reading every record.
     void offlineIdCount()
       .then((upTo) => (shouldOfferLocalMove(accountUserId, upTo) ? offlineListDocuments() : []))
       .then((docs) => {
@@ -92,7 +92,7 @@ export function useLocalMovePrompt(opts: {
         await saveOfflineToCloud(row.key, accountUserId);
         track('Document', 'Moved', 'SavedToCloud');
       } catch (err) {
-        console.warn('[local-move] a document stayed This Browser', err);
+        console.warn('[local-move] a document stayed Offline', err);
         failed.push(row.name);
       }
     }

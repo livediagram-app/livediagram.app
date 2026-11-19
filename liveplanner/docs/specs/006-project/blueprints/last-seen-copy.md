@@ -59,7 +59,7 @@ expected reader and catch-up. Never "cache" or "snapshot". liveplanner adds:
 ## Behaviour and state
 
 - **Keep.** The shared arrival keeps the copy on reaching a server plan (`openShareLink`, not a Community post or an
-  embed; `openOwnAddress`, not This Browser), with the first tab the seed answers. The arrival's item is the plan as
+  embed; `openOwnAddress`, not Offline), with the first tab the seed answers. The arrival's item is the plan as
   loaded, without `cards` or `sheets`: the follower adds them as they load.
 - **Follow.** The shared hook follows the name, the tab list and the first tab's landed saves. `usePlanCopyFollow`
   adds:

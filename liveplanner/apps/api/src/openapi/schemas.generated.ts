@@ -13773,6 +13773,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "planView": {
         "$ref": "#/components/schemas/PlanViewRef"
       },
+      "pointerAnchor": {
+        "$ref": "#/components/schemas/Anchor"
+      },
       "pointerTip": {
         "additionalProperties": false,
         "properties": {

@@ -1,6 +1,6 @@
 'use client';
 
-// This Browser's verbs for one item (open, archive, reload after a move), the pill and Changed line its rows
+// Offline's verbs for one item (open, archive, reload after a move), the pill and Changed line its rows
 // and cards carry, and its menu (ThisBrowserItemMenu), shared by the page, the panel and Home's cards.
 // ThisBrowser.tsx re-exports them.
 
@@ -94,7 +94,7 @@ export function ThisBrowserPill({ inLink = false }: { inLink?: boolean }) {
   );
 }
 
-/** "Changed 3 hours ago", its full date and time in the reader's locale on hover: This Browser's rows, on the page
+/** "Changed 3 hours ago", its full date and time in the reader's locale on hover: Offline's rows, on the page
  *  and in the panel alike. */
 export function ChangedAgo({ at }: { at: number }) {
   const now = useNow();
@@ -107,8 +107,8 @@ export function ChangedAgo({ at }: { at: number }) {
   );
 }
 
-/** This Browser's menu for one live item, from its card's on Home ⋯ or a right-click: Open; Sync (signed in: in
- *  place with `sync`, or the page's hand-over to the editor with `syncHref`), as This Browser's rows offer it; and
+/** Offline's menu for one live item, from its card's on Home ⋯ or a right-click: Open; Sync (signed in: in
+ *  place with `sync`, or the page's hand-over to the editor with `syncHref`), as Offline's rows offer it; and
  *  Delete, asked first, where the host deletes in place (`remove`). */
 export function ThisBrowserItemMenu({
   item,

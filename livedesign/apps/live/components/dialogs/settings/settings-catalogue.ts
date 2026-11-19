@@ -1222,7 +1222,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   },
 ];
 
-// A section's target id: "This Browser" → "this-browser". Settings can open on one
+// A section's target id: "Offline" → "this-browser". Settings can open on one
 // (docs/specs/007-editor/user-preferences.md).
 export function settingsSectionId(section: string): string {
   return section.trim().toLowerCase().replace(/\s+/g, '-');

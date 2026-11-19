@@ -1,31 +1,31 @@
 # Save Locations
 
 A new project is stored in one of a small set of **save locations**: on the server (liveplanner) or in this browser
-only (This Browser, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible).
+only (Offline, [Offline Mode](offline-mode.md)). More stores may come (GitHub is plausible).
 
 **Nobody is asked.** The New Project wizard ([Dedicated route for new-project creation](../007-editor/new-project-route.md#one-step-wizard))
 has no Location step: every new project is stored in the default location for who is creating it, below. A project
 moves between the two afterwards with [Offline Mode](offline-mode.md)'s **Sync Project** and **Take Offline**.
 (The wizard has no Location step: most people would answer it with the default before they had anything on the
-canvas. A project in This Browser says what it is on the project itself: the editor header's
-**This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
+canvas. A project kept Offline says what it is on the project itself: the editor header's
+**Offline** badge and its legend, [Offline Mode](offline-mode.md#offline-badge--explorer).)
 
-| Location         | What it means                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **liveplanner**  | A normal cloud project, saved to the api (D1), reachable from any device.                                    |
-| **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
+| Location        | What it means                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------ |
+| **liveplanner** | A normal cloud project, saved to the api (D1), reachable from any device.                                    |
+| **Offline**     | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
 
-| Who                | Default          |
-| ------------------ | ---------------- |
-| A guest            | **This Browser** |
-| A signed-in person | **liveplanner**  |
+| Who                | Default         |
+| ------------------ | --------------- |
+| A guest            | **Offline**     |
+| A signed-in person | **liveplanner** |
 
 Why a guest starts local: [Auth + guest access → Guest projects start local](../014-identity/auth-and-guest-access.md#guest-projects-start-local).
-A project in This Browser is still in the shared Explorer: its This Browser row and view, and Most Used and Recent, list this
+A project kept Offline is still in the shared Explorer: its Offline row and view, and Most Used and Recent, list this
 browser's projects beside the index's ([liveworkspace/docs/specs/004-index/one-explorer.md](../../../../liveworkspace/docs/specs/004-index/one-explorer.md),
-[Offline Mode → This Browser badge + Explorer](offline-mode.md#this-browser-badge--explorer)).
+[Offline Mode → Offline badge + Explorer](offline-mode.md#offline-badge--explorer)).
 
 - One function answers it: `defaultSaveLocationFor({ signedIn })` in
   `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
@@ -36,17 +36,17 @@ browser's projects beside the index's ([liveworkspace/docs/specs/004-index/one-e
 - Before sign-in has answered, `signedIn` is the `lp_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
-  signed-in person is never handed a project in This Browser; a guest never waits. The page's 5-second give-up on
-  sign-in (it then carries on as a guest) is not that answer: otherwise a slow session would make the project This Browser,
+  signed-in person is never handed a project kept Offline; a guest never waits. The page's 5-second give-up on
+  sign-in (it then carries on as a guest) is not that answer: otherwise a slow session would make the project Offline,
   and the move prompt would offer the project just made. Only a known account saves on liveplanner; a session that
-  still hasn't answered after the wait keeps the project in This Browser, where nothing is lost.
+  still hasn't answered after the wait keeps the project kept Offline, where nothing is lost.
 - There is no per-person override: no setting chooses the store ([User preferences](../007-editor/user-preferences.md)).
 
 ## On the start screen
 
 Nobody is asked, but the start screen offers one switch, **Sync Plan to Server**, in a quiet strip under its choices
 (Start Planning), so a new plan can change place while it is still empty without a trip to the Explorer. It reflects
-where the plan is **now**, so it starts as the default above: **off** for a guest (This Browser), **on** for a signed-in
+where the plan is **now**, so it starts as the default above: **off** for a guest (Offline), **on** for a signed-in
 person (liveplanner).
 
 - **No switch, no strip**: where the switch is not offered (a new tab added to a plan that already has others, a
@@ -169,7 +169,7 @@ SaveLocationId`.
 ## Telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))
 
 `Project` / `Created` carries a `type` naming the store,
-`Cloud` for liveplanner and `Offline` for This Browser. A future location adds
+`Cloud` for liveplanner and `Offline` for the Offline location. A future location adds
 its own preset `type`; the location id itself never leaves as content.
 
 ## Help centre ([Help app](../018-help/help-app.md))

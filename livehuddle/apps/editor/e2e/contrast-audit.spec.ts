@@ -65,7 +65,7 @@ test.describe('Contrast audit, dark mode', () => {
     expectAA(await auditContrast(page), 'Settings dialog');
     await page.keyboard.press('Escape');
 
-    await page.getByRole('button', { name: /^Share$/ }).click();
+    await page.getByRole('button', { name: /^Share, / }).click();
     await page.getByRole('dialog', { name: /^Share / }).waitFor();
     expectAA(await auditContrast(page), 'Share dialog');
     await page.keyboard.press('Escape');

@@ -49,7 +49,7 @@ export function imageFilesOf(list: FileList | readonly File[] | null | undefined
 }
 
 /** Uploads for card `itemId`. `canEdit`: whether this person may change the card's fields. `watchOffline`: whether
- *  to know up front that the plan is in This Browser (the panel says so); a board's cards, of which there may be
+ *  to know up front that the plan is Offline (the panel says so); a board's cards, of which there may be
  *  thousands, leave it off and check when a file is dropped. */
 export function useAttachmentUpload(
   itemId: string,
@@ -76,7 +76,7 @@ export function useAttachmentUpload(
       const item = now?.items.get(itemId);
       if (!canAdd || !scope || !now || !item || files.length === 0) return null;
       setError(null);
-      // A This Browser plan takes none (its pictures would never be reported, and the sweep would take them).
+      // An offline plan takes none (its pictures would never be reported, and the sweep would take them).
       if (await isOfflineId(scope.projectId)) {
         setError(ATTACHMENTS_OFFLINE);
         return ATTACHMENTS_OFFLINE;

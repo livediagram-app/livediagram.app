@@ -3,8 +3,8 @@
 // A card's Activity tab (docs/specs/026-plan/items.md "History" "Where it shows"): its history as a timeline, never
 // mixed with the threads. Day groups (Today, Yesterday, dates); in each, runs of one person's entries hang from their
 // disc on a thin rail; each entry is short lines, one per change, with a glyph and values as chips. The entries past
-// the first ACTIVITY_ENTRIES_SHOWN wait under Show N More. A skeleton while it loads, and the empty, failed, This
-// Browser and no-plan states. Mounted only while the tab is picked, so history is read only then.
+// the first ACTIVITY_ENTRIES_SHOWN wait under Show N More. A skeleton while it loads, and the empty, failed, Offline
+// and no-plan states. Mounted only while the tab is picked, so history is read only then.
 
 import { useMemo, useState, type ReactNode } from 'react';
 import { CompactEmptyState, TrashIcon, lucideGlyph } from '@liveplanner/ui';
@@ -332,8 +332,8 @@ export function ActivityNote({ history }: { history: CardHistory }): ReactNode {
   if (history.status === 'offline')
     return (
       <ActivityState
-        title="No Activity in This Browser"
-        description="Plans in This Browser keep no card history."
+        title="No Activity Offline"
+        description="Offline plans keep no card history."
         action={<HelpArticleLink article="planCardActivity" variant="text" />}
       />
     );

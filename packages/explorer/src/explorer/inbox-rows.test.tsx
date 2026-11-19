@@ -1,5 +1,5 @@
 // The Inbox's one row at its two densities (the page's and the editor panel's): three lines of who, what, and why
-// and where; the skeleton that matches it while the Inbox reads, the empty state, and a This Browser row.
+// and where; the skeleton that matches it while the Inbox reads, the empty state, and an offline row.
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { shortAgo } from './inbox/InboxRows';
 import { describe, expect, it, vi } from 'vitest';
@@ -139,7 +139,7 @@ describe('an Inbox row', () => {
     expect(row.querySelector('[data-app-mark]')).toBeNull();
   });
 
-  it('names a This Browser row as such, and says why a thread on your item is there', async () => {
+  it('names an offline row as such, and says why a thread on your item is there', async () => {
     const index = createFakeIndex();
     const localRows = vi.fn().mockResolvedValue({
       actions: [],
@@ -165,9 +165,9 @@ describe('an Inbox row', () => {
     );
     const row = await screen.findByRole('option', { name: /Ledger/ });
     expect(row.getAttribute('aria-label')).toBe(
-      'Ledger. On your canvas. A teammate. In Offline canvas, Overview, Browser Storage',
+      'Ledger. On your canvas. A teammate. In Offline canvas, Overview, Offline',
     );
-    expect(row.querySelector('[data-this-browser]')!.textContent).toMatch(/^Browser Storage/);
+    expect(row.querySelector('[data-this-browser]')!.textContent).toMatch(/^Offline/);
     // No author name: a teammate wrote it.
     expect(row.querySelector('[data-inbox-who]')!.textContent).toBe('A teammate');
   });

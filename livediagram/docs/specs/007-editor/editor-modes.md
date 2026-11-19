@@ -281,14 +281,14 @@ what it carries explains an idea the way a funnel or a cycle does. Workshop offe
 graphics lay out an idea for a diagram, which a session does not stop to draw.
 Diagram's
 **Media** leaves out the **Embed** group (YouTube, Vimeo, Loom, Figma, Google
-Docs, Website), keeping Image and Avatar; it offers Build's tiles as two categories, **Diagrams** (Mind node, Org
-chart, Flowchart, Sequence, Table and the **Entity**, Popular's alone until the category bar had no Popular) and
-**Layout** (Lane, Frame, Stack, **Boundary**, Timeline, then Diagram key and the **Card**, **Badge** and **Step
-Number** from Components: [The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
+Docs, Website), keeping Image and Avatar; it spreads Build's tiles over two categories (owner, 2026-11-19), **Concepts**
+(a **Diagrams** group first: Mind node, Org chart, Flowchart, Sequence) and **Layout** (Lane, Frame, Stack,
+**Boundary**, **Table**, then Diagram key and the **Card**, **Badge** and **Step Number** from Components, then an
+**Infrastructure** tile whose popover offers the C4 tiles and the **Entity**, all in its Parts group: [The card](../009-elements/card.md), [The badge](../009-elements/badge.md),
 [The step number](../009-elements/step-number.md), [The boundary](../009-elements/boundary.md)), so what is built
 sits apart from what it is laid out in ([Toolbar layout](toolbar-layout.md#the-category-bar)); and its **Write**
-adds the **Callout** from Components (a headed note belongs to a diagram as much as a page) ahead of the Comment
-panel and Action card, which close it as their own Comments group. Workshop's **Write** holds Text, Sticky note and Pointer note, then Table and Checklist (no Page or Annotation), its
+closes with the Comment panel and Action card as their own Comments group (the **Callout** left Write for the
+Card's presets on 2026-11-19, owner). Workshop's **Write** holds Text, Sticky note and Pointer note, then Table and Checklist (no Page or Annotation), its
 **Draw** leaves out **Shape Pen** and **Polygon**: a session needs none of them, and it shares Diagram's **Layout**. Workshop offers the Collaborate elements as
 six categories, **Ask**, **Tools**, **Record**, **React**, **Selection Mode** and **Navigate**
 ("Collaborate's six" below), and offers **Data**: every chart and meter, since a session reads results
@@ -302,7 +302,7 @@ and sets targets.
 | Write             | yes     | yes      |
 | Draw              | yes     | yes      |
 | Build             | no      | no       |
-| Diagrams          | yes     | no       |
+| Diagrams          | no      | no       |
 | Layout            | yes     | yes      |
 | Concepts          | yes     | no       |
 | Event Storming    | board   | no       |

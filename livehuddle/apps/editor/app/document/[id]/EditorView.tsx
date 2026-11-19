@@ -22,6 +22,10 @@ import { ConnectedTabHost } from '@/components/connect/ConnectedTabHost';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
 import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@liveworkspace/workbench/hooks/canvas/useAutoCopyParam';
+import { documentIsPublic } from '@/lib/community-public';
+import { useCommunityState } from '@/lib/community-state-store';
+import { useCommunityEnabled } from '@livehuddle/ui';
+import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { TabBar } from '@/components/chrome/TabBar';
 import { LandscapeBarFold, LandscapeBarsHandle } from '@/components/chrome/LandscapeBars';
@@ -40,6 +44,8 @@ import { ModifierHintBanner } from '@liveworkspace/workbench/components/chrome/M
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useSignInNudge } from '@liveworkspace/workbench/hooks/ui/useSignInNudge';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useOfflineConversions } from '@/hooks/persistence/useOfflineConversion';
+import { useVisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useEditorContext } from './EditorContext';
@@ -71,7 +77,7 @@ const EditorSearchPanel = dynamic(loadEditorSearchPanel, { ssr: false });
 export function EditorView() {
   const ctx = useEditorContext();
   // Offline Mode (docs/specs/006-document/offline-mode.md): a document saved only in this browser. Drives the
-  // "This Browser" header badge and hides server-only actions (Share).
+  // "Offline" header badge and hides server-only actions (Share).
   const isOffline = useIsOfflineDocument(ctx.documentId);
   // Snapshots (docs/specs/013-workspace/snapshots.md): the footer's button and dialog, for an Editor of the whole item.
   const snapshotsDoor = useEditorSnapshotsDoor({
@@ -121,6 +127,7 @@ export function EditorView() {
     documentId,
     documentList,
     documentShareable,
+    documentTeamId,
     duplicateTab,
     formatSourceId,
     hydrated,
@@ -162,10 +169,19 @@ export function EditorView() {
     community: sessionCommunity !== null && !sessionCommunity.ownDocumentId,
     makeCopy,
   });
+  // The Share button's Public colour follows the document's Community post (docs/specs/025-community/community.md);
+  // the Community's switch is asked only while there is a listed post, and never in an embed.
+  const communityState = useCommunityState(documentId);
+  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
+  const headerCommunity = documentIsPublic({
+    communityOn,
+    ownPostState: communityState,
+    communitySession: sessionCommunity !== null,
+  });
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, and a dragged Settings slider's patch wins.
   const { uiScales } = useEditorUiScales(userPreferences);
   // A tab's Attendance (docs/specs/012-collaboration/tab-attendance.md "Where it shows"): the tab whose dialog is open.
-  // An Editor's and a Participant's, on a document with a room (not one saved only in This Browser).
+  // An Editor's and a Participant's, on a document with a room (not one saved only Offline).
   const [attendanceTabId, setAttendanceTabId] = useState<string | null>(null);
   const openAttendance =
     ctx.can.seeAttendance && !isOffline
@@ -199,6 +215,36 @@ export function EditorView() {
   // held sideways"); a rename asked for elsewhere shows them first, so its field can take the focus.
   const landscapeBars = useLandscapeBars([renameTabNonce]);
 
+  // The Share legend's Offline stop takes the Space offline, after Take Offline's confirm, for the person whose
+  // Explorer menu would offer it: one who may share it (owner or joined team member), not through a link or the
+  // Community, and not already offline (hooks/persistence/useOfflineItemMenu.tsx).
+  const offlineOwnerId = selfParticipant.id === 'self' ? null : selfParticipant.id;
+  const { takeOffline, syncToCloud } = useOfflineConversions(offlineOwnerId);
+  const onTakeOffline =
+    canShareDocument &&
+    !isOffline &&
+    !sessionShareCode &&
+    !sessionCommunity &&
+    offlineOwnerId &&
+    documentId
+      ? () =>
+          void takeOffline({ id: documentId, name: ctx.documentName?.trim() || 'Untitled Space' })
+      : undefined;
+  // Its other stops (useVisibilityActions), for the same person: Private syncs an offline Space, Team opens the
+  // Explorer panel's Change Folder on it, Everyone opens Share on the Community tab (Passes where the Community is off).
+  const spaceName = ctx.documentName?.trim() || 'Untitled Space';
+  const visibilityActions = useVisibilityActions({
+    manage: Boolean(
+      canShareDocument && !sessionShareCode && !sessionCommunity && offlineOwnerId && documentId,
+    ),
+    offline: isOffline,
+    team: !!documentTeamId,
+    community: !!headerCommunity,
+    sync: documentId ? () => void syncToCloud({ id: documentId, name: spaceName }) : undefined,
+    openShare: () => setShareDialogOpen(true),
+    openCommunity: () => ctx.openShareOn('app'),
+  });
+
   // The site header. Embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
   // side (docs/specs/007-editor/split-view.md) lays it across both panes.
   // Experiment: no header bar. The name and its visibility badge are gone; Copy, Share and the account float in a
@@ -208,6 +254,8 @@ export function EditorView() {
       <EditorCornerActions
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
+        // The Share button's colour reads the document's visibility, as the header's badge did.
+        visibility={{ team: !!documentTeamId, offline: isOffline, community: headerCommunity }}
         // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden during the
         // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
@@ -215,6 +263,8 @@ export function EditorView() {
             ? () => void makeCopy()
             : undefined
         }
+        onTakeOffline={onTakeOffline}
+        visibilityActions={visibilityActions}
         copying={copying}
         copyDescription="Duplicate this space into your own files."
         onOpenAccount={() => openSettingsOn('account')}

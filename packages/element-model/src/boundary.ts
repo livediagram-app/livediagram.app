@@ -30,7 +30,8 @@ type BoundaryLayout = {
   metaPx: number;
 };
 
-const TITLE_PX = 14;
+export const BOUNDARY_TITLE_PX = 14;
+const TITLE_PX = BOUNDARY_TITLE_PX;
 const META_PX = 11;
 const ICON = 16;
 
@@ -38,10 +39,22 @@ const ICON = 16;
 export function boundaryLayout(
   w: number,
   h: number,
-  o: { style: BoundaryStyle; icon: boolean; titleChars: number; meta: boolean },
+  o: {
+    style: BoundaryStyle;
+    icon: boolean;
+    titleChars: number;
+    meta: boolean;
+    // The title's measured width in px, where a DOM can measure it (the canvas, as it is typed); wins over the
+    // estimate from its characters.
+    titleWidth?: number;
+  },
 ): BoundaryLayout {
-  // A bold title's width from its characters (no DOM headless), generous so it never wraps in its tab.
-  const titleW = Math.ceil(o.titleChars * TITLE_PX * 0.66) + 6;
+  // A bold title's width: measured where it can be, else from its characters (no DOM headless), generous so it never
+  // wraps in its tab.
+  const titleW =
+    o.titleWidth !== undefined && Number.isFinite(o.titleWidth)
+      ? Math.ceil(o.titleWidth) + 2
+      : Math.ceil(o.titleChars * TITLE_PX * 0.66) + 6;
   if (o.style === 'c4') {
     const twoLines = o.meta && h >= 64;
     return {

@@ -2082,7 +2082,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'p',
         required: false,
         description:
-          "The plan the picture is for; left out (a This Browser plan), it only goes into the caller's gallery.",
+          "The plan the picture is for; left out (an offline plan), it only goes into the caller's gallery.",
       },
     ],
     requestSchema: { type: 'string', format: 'binary' },

@@ -1,6 +1,6 @@
 // Who the Export dialog offers Whole Plan to (docs/specs/026-plan/plan-tabs.md "Whole Plan"): an Editor of the whole
 // plan (`isStructureReadOnly` is a Participant's, a Viewer's and a tab-scoped link's), on a plan saved on the server (a
-// signed-in person's or a guest's synced plan; a This Browser plan has no server copy to write the file from). The api checks the same on its door. Pure.
+// signed-in person's or a guest's synced plan; an offline plan has no server copy to write the file from). The api checks the same on its door. Pure.
 export function wholePlanOffer(opts: {
   projectId: string | null;
   ownerId: string;

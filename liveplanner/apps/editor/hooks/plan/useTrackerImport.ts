@@ -197,7 +197,7 @@ export function useTrackerImport(opts: {
         throw err;
       }
     } else {
-      // A guest's new plan is in This Browser, as New makes it (save-locations.md); a failure deletes it.
+      // A guest's new plan is Offline, as New makes it (save-locations.md); a failure deletes it.
       await offlineCreateProject(head, Date.now());
       try {
         await offlineWriteItem(id, write, by);

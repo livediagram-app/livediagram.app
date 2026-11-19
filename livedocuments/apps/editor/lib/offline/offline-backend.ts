@@ -6,7 +6,7 @@ import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livedocuments/ui';
 import type { OfflineDocumentRecord } from './offline-store';
 import { APP_ITEMS } from '@liveworkspace/sites';
 
-// The names are the registry's, which the Explorer page deletes a This Browser item by.
+// The names are the registry's, which the Explorer page deletes an offline item by.
 const DB_NAME = APP_ITEMS.livedocuments.offlineStore.db;
 const DB_VERSION = 2;
 const STORE = APP_ITEMS.livedocuments.offlineStore.store;

@@ -443,9 +443,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <BrowserSpaceArt />,
         href: '/help/privacy-and-security/offline-mode/',
         group: 'Your Spaces, your way',
-        title: 'Keep a Space in This Browser',
+        title: 'Keep a Space Offline',
         description:
-          'Without an account your Spaces live in This Browser and never leave it. Take a Space offline whenever you like, or sync it to your account when you want company.',
+          'Without an account your Spaces live Offline and never leave it. Take a Space offline whenever you like, or sync it to your account when you want company.',
       },
       {
         art: <DriveCopyArt />,

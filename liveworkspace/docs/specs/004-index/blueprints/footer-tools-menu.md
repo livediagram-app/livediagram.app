@@ -74,7 +74,7 @@ FM9. History with Snapshots in it (owner, 2026-11-17). `useItemToolsRows({ app, 
 snapshots })`, `snapshots` being the app's `useHistorySnapshotsHost()` (`{ useExtras, Alone }` or null; blueprint
 SN22), and Version History read from `useItemVersions()` (published by livedocuments' `useVersionHistoryInTools`).
 `historyMode({ timeline, snapshots, gated, versions })` picks, in order: `timeline` (a history host and not gated),
-`snapshots` (a door), `gate` (signed out or This Browser), `versions`, else no row. The row: `id: 'item-history'`,
+`snapshots` (a door), `gate` (signed out or Offline), `versions`, else no row. The row: `id: 'item-history'`,
 label History, line "Snapshots, and who changed what." with snapshots, else "Who changed what, and when."; `inPlace`
 but in `versions` mode; badges only in `gate` mode.
 
@@ -89,7 +89,7 @@ but in `versions` mode; badges only in `gate` mode.
 - A row's in-place confirm carries `data-keeps-escape`; Tools leaves Escape to it while focus is inside one.
 
 FM10. The item's gate for other tools (owner, 2026-11-17). While `useItemToolsRows` is gated (signed out, or the item in
-This Browser) it publishes `{ badges, open(tool) }` through `usePublishToolGate` (tools-door.ts). `WalkthroughsTools`
+Offline) it publishes `{ badges, open(tool) }` through `usePublishToolGate` (tools-door.ts). `WalkthroughsTools`
 reads `useToolGate()`: with no walkthroughs available and a gate set, it publishes its row badged with `gate.badges`,
 `inPlace`, its press `gate.open('walkthroughs')`, which shows the item rows' `SignInDialog` for Walkthroughs. A sync
 that passes asks `requestToolsView('walkthroughs')` (FM7), so Tools opens at the real row once it publishes.

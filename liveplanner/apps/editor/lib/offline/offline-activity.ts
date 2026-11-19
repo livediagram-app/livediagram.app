@@ -1,4 +1,4 @@
-// The Inbox's read of projects in This Browser (docs/specs/013-workspace/inbox.md §2.6). They never reach the
+// The Inbox's read of projects kept Offline (docs/specs/013-workspace/inbox.md §2.6). They never reach the
 // worker, so the server's collaboration index never holds them; this finds their open actions, Plan cards and
 // comment threads in the browser's offline store, with the same derivation the index uses
 // (collabIndexRowsFromElements, cardPlacesOf) and the same rules the server read applies, the reader
@@ -49,7 +49,7 @@ export async function offlineReader(ids: readonly (string | null)[]): Promise<Of
   return { ids: distinct, personIds: await Promise.all(distinct.map((id) => itemPersonId(id))) };
 }
 
-// Reads every live record in This Browser and lists what is waiting on the reader. A browser with no projects in This Browser
+// Reads every live record kept Offline and lists what is waiting on the reader. A browser with no projects kept Offline
 // reads no records: the id index answers first, and is cached for the page load.
 export async function readOfflineActivity(
   ids: readonly (string | null)[],
@@ -147,7 +147,7 @@ function collector(reader: OfflineReader) {
           },
           firstAt: t.firstAt,
           youCommented: t.participantIds.some((id) => me.has(id)),
-          // The reader owns every project in This Browser.
+          // The reader owns every project kept Offline.
           onYourProject: true,
           mentionsYou: t.mentionedIds.some((id) => me.has(id)),
         });

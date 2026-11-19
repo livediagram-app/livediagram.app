@@ -1,6 +1,6 @@
 // Each item shows once on Home (liveworkspace/docs/specs/004-index/one-explorer.md "Each item shows once"): in the
 // first of New, Most Used and Recent it qualifies for. Most Used leaves out New's, Recent leaves out both, and each
-// still fills to eight from the next in its order; This Browser's items, an All Apps Home and a phone's strips alike.
+// still fills to eight from the next in its order; Offline's items, an All Apps Home and a phone's strips alike.
 import { render, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Item } from '@liveworkspace/index-client';
@@ -75,7 +75,7 @@ describe('homeSections', () => {
     expect(ids(rest)).toEqual(['x', 'y']);
   });
 
-  it('leaves This Browser’s items that New shows out of Recent, and merges the rest by last open', () => {
+  it('leaves Offline’s items that New shows out of Recent, and merges the rest by last open', () => {
     const local = (id: string, openedAt: number): ThisBrowserItem => ({
       id,
       title: id,
@@ -186,7 +186,7 @@ describe('Home shows each item once', () => {
     await expectOnce();
   });
 
-  it('leaves a This Browser item New shows out of Recent', async () => {
+  it('leaves an offline item New shows out of Recent', async () => {
     const local: ThisBrowserItem = {
       id: 'local-1',
       title: 'Local 1',

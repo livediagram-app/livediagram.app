@@ -85,7 +85,7 @@ export function WelcomeProvider({
     return () => controller.abort();
   }, [enabled, client, app, filter, viewerId, scope, key]);
 
-  // Something kept only in this browser (the host's This Browser) is not a first run either.
+  // Something kept only in this browser (the host's Offline) is not a first run either.
   const { live: local } = useThisBrowserItems();
   const keptHere = local.length > 0;
   const known = answer?.key === key ? answer.empty : undefined;

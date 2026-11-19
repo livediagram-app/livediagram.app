@@ -34,7 +34,7 @@ export interface DeleteAccountDialogProps {
   open: boolean;
   onClose: () => void;
   onDeleted: () => Promise<void> | void;
-  // This app's name ('livediagram') and what its This Browser items are called ('Canvases').
+  // This app's name ('livediagram') and what its Offline items are called ('Canvases').
   appName: string;
   localItems: string;
   sendCode: () => Promise<DeletionCodeSent>;
@@ -262,8 +262,8 @@ export function DeleteAccountDialog({
                   </ul>
                   <p>
                     You will be signed out of every app.{' '}
-                    <strong className={strong}>This can’t be undone.</strong> {localItems} in This
-                    Browser stay on this device.
+                    <strong className={strong}>This can’t be undone.</strong> {localItems} kept
+                    Offline stay on this device.
                   </p>
                 </div>
               ) : (

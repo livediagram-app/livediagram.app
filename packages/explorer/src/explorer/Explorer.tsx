@@ -270,7 +270,7 @@ function ExplorerInner({
               ) : null}
             </div>
           </WelcomeProvider>
-          {/* Inside the host's extras: This Browser's dialogs run its verbs. */}
+          {/* Inside the host's extras: Offline's dialogs run its verbs. */}
           <ExplorerDialogs />
           <SyncPlaces />
         </HostExtrasProvider>

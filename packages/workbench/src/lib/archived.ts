@@ -1,6 +1,6 @@
 // An archived file in an editor (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): one its owner put in
 // Archived never opens. The index refuses its grant as `archived` (only its owner hears that; anyone else hears it is
-// missing), and one kept only in this browser carries the mark in This Browser's list. Either way the editor shows
+// missing), and one kept only in this browser carries the mark in Offline's list. Either way the editor shows
 // its archived card in place of the file, and the card's Change Folder goes back to the Explorer's Archived view,
 // which opens Change Folder on it.
 import type { App } from '@liveworkspace/index-client';

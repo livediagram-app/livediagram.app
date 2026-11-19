@@ -1,7 +1,7 @@
 'use client';
 
 // What the shared Explorer's Inbox (@liveworkspace/explorer `InboxHost`) needs from livedesign beyond the index:
-// the rows of designs in This Browser, which never reach the index (lib/offline/offline-activity.ts), the help
+// the rows of designs kept Offline, which never reach the index (lib/offline/offline-activity.ts), the help
 // article on actions, and telemetry. Designs hold no cards, so no card glyph. The editor's Explorer panel uses it.
 
 import type { ActivityAction, ActivityThread } from '@livedesign/api-schema';
@@ -83,7 +83,7 @@ export function localInboxRows(local: OfflineActivity, me: string): InboxLocalRo
   return { actions: local.actions.map(action), threads: local.threads.map(thread) };
 }
 
-/** The Explorer's Inbox for this person: their This Browser designs' rows, help and telemetry. */
+/** The Explorer's Inbox for this person: their Offline designs' rows, help and telemetry. */
 export function explorerInboxHost(ownerId: string | null): InboxHost {
   return {
     localRows: async () => {
@@ -119,7 +119,7 @@ export type InboxOpenAction = {
 
 /** The reading pane's verbs in the editor's panel (@liveworkspace/explorer/inbox-actions): Reply and Resolve on this
  *  app's threads through its comment routes, and Mark Done on an action on the open design's active tab, as the
- *  canvas marks it. Another app's rows, and This Browser's, are opened in their place instead. */
+ *  canvas marks it. Another app's rows, and Offline's, are opened in their place instead. */
 export function explorerInboxActions(
   ownerId: string | null,
   open: InboxOpenAction | null,

@@ -37,7 +37,7 @@ describe('email intake gate', () => {
     ).toBe('c');
   });
 
-  it('opens only for someone signed in; a guest meets Sign In, then This Browser meets Sync Plan', () => {
+  it('opens only for someone signed in; a guest meets Sign In, then Offline meets Sync Plan', () => {
     expect(emailIntakeScopeFor({ ...base, signedIn: false })).toBeNull();
     expect(emailIntakeGateFor(base)).toBeNull();
     expect(emailIntakeGateFor({ ...base, signedIn: false })).toBe('sign_in');
@@ -50,7 +50,7 @@ describe('email intake gate', () => {
     expect(emailIntakeGateFor({ ...base, signedIn: false, embed: true })).toBeNull();
   });
 
-  it('draws no row for a Participant, a Viewer, a tab link, This Browser, an embed or a workbench', () => {
+  it('draws no row for a Participant, a Viewer, a tab link, Offline, an embed or a workbench', () => {
     for (const input of [
       { ...base, level: 'participate' as const },
       { ...base, level: 'view' as const },

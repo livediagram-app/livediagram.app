@@ -1,8 +1,8 @@
 'use client';
 
-// The dialogs of This Browser's Space (one-explorer.md "This Browser, a Space"): Move to Folder for a live item (This
-// Browser's folders, or, signed in, the account's places through Sync), Move Folder for a local folder (within This
-// Browser, never into itself or below it), and Delete Folder (asked first; its contents move up a level).
+// The dialogs of Offline's Space (one-explorer.md "Offline, a Space"): Move to Folder for a live item (Offline's
+// folders, or, signed in, the account's places through Sync), Move Folder for a local folder (within Offline,
+// never into itself or below it), and Delete Folder (asked first; its contents move up a level).
 
 import { ConfirmDialog } from '@liveworkspace/ui';
 import type { ReactNode } from 'react';
@@ -34,7 +34,7 @@ const pickLocal = (f: ThisBrowserFolder): PickerFolder => ({
   parentId: f.parentId,
 });
 
-/** This Browser as a space of the placement browser, beside My Work and the teams. */
+/** Offline as a space of the placement browser, beside My Work and the teams. */
 export function localSpace(folders: readonly ThisBrowserFolder[]): PickerTeam {
   return {
     id: LOCAL_SPACE_ID,
@@ -67,7 +67,7 @@ export function LocalSpaceDialog({
   const folders = useThisBrowserFolders(thisBrowser ? app : null);
   const moveLocal = useMoveLocal();
   const close = () => openDialog(null);
-  // New Folder inside This Browser's space makes a local one; anywhere else an account folder.
+  // New Folder inside Offline's space makes a local one; anywhere else an account folder.
   const createAny = async (name: string, parentId: string | null, teamId: string | null) => {
     if (teamId !== LOCAL_SPACE_ID) return createFolder(name, parentId, teamId);
     const made = createThisBrowserFolder(app, name, parentId);
@@ -91,7 +91,7 @@ export function LocalSpaceDialog({
           subtitle={
             syncs
               ? 'Pick a folder here, or a place in your account to sync it to.'
-              : 'Pick a folder in Browser Storage.'
+              : 'Pick an Offline folder.'
           }
           onCreateFolder={createAny}
           onPick={(to) => {

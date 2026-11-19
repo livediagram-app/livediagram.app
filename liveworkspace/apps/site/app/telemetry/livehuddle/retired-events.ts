@@ -322,7 +322,7 @@ const AVATAR_TOUR_STEP = /^AvatarTourStep/;
 const LOCKING_CATEGORIES = new Set(['Element', 'Tab']);
 const LOCKING_ACTIONS = new Set(['Locked', 'Unlocked']);
 
-// The offer to move a This Browser document's retired parts (Pages, Plan, designs) to the other apps (removed
+// The offer to move an offline document's retired parts (Pages, Plan, designs) to the other apps (removed
 // 2026-11-08, livehuddle/docs/specs/006-document/offline-mode.md): livehuddle never held such parts. The offer shown,
 // taken or put off, and a document whose parts moved.
 const RETIRED_PARTS_OFFER_TYPE = 'RetiredPartsOffer';

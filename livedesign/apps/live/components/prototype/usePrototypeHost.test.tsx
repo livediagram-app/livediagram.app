@@ -163,7 +163,7 @@ describe('Copy Prototype Link', () => {
     expect(m.track).toHaveBeenCalledTimes(1);
   });
 
-  it('is not offered on a design kept in This Browser, or to a visitor who may not share', () => {
+  it('is not offered on a design kept Offline, or to a visitor who may not share', () => {
     m.offline = true;
     expect(host().view.result.current.copyLink).toBeNull();
     cleanup();

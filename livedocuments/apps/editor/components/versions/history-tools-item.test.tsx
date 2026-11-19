@@ -40,7 +40,7 @@ describe('offersHistory', () => {
   it.each([
     ['no document', { documentId: null }],
     ['still loading', { hydrated: false }],
-    ['in This Browser', { offline: true }],
+    ['in Offline', { offline: true }],
     ['in an embed', { embed: true }],
     ['in a workbench frame', { workbench: true }],
     ['behind a welcome', { welcomeOpen: true }],

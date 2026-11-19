@@ -62,7 +62,7 @@ describe('component library calls', () => {
     expect(JSON.parse(calls[2]!.init.body as string)).toEqual({ name: 'Nav' });
   });
 
-  it('keeps a This Browser design library in its record', async () => {
+  it('keeps an offline design library in its record', async () => {
     __setOfflineBackend(memBackend());
     const fetchSpy = vi.fn();
     vi.stubGlobal('fetch', fetchSpy);

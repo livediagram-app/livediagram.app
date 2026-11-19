@@ -1,5 +1,5 @@
-// This Browser's folders and the list's version 2 (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser, a
-// Space", one-explorer-contracts.md "This Browser's list"): a version 1 list reads with no folders and is written as
+// Offline's folders and the list's version 2 (liveworkspace/docs/specs/004-index/one-explorer.md "Offline, a
+// Space", one-explorer-contracts.md "Offline's list"): a version 1 list reads with no folders and is written as
 // version 2, every write keeps what the app's records don't carry, and the folder verbs keep the tree whole.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';

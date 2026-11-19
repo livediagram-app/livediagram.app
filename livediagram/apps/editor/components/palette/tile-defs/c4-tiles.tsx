@@ -1,9 +1,10 @@
 import { Glyph } from '@livediagram/ui';
+import { ELEMENT_TILES } from './element-tiles';
 import { TILE_GLYPH_PX, type PaletteTileDef } from './types';
 
 // The C4 model's tiles (docs/specs/010-palette/build-category.md "The C4 model"): a Card or a Cylinder dressed as
-// one kind of C4 element (packages/document c4-look.ts), in C4's own colours, which keep under every theme. Filed
-// under Diagram's Diagrams category, as its C4 Model group after the Entity (palette-layouts.ts). Their descriptions
+// one kind of C4 element (packages/document c4-look.ts), in C4's own colours, which keep under every theme. Offered
+// in Diagram's Layout through the Infrastructure tile's popover (below). Their descriptions
 // carry what people search for them by: C4, Structurizr, container.
 
 const C4_SEARCH = 'C4 model, Structurizr.';
@@ -101,3 +102,27 @@ export const C4_TILES: PaletteTileDef[] = [
     ),
   },
 ];
+
+// Layout's Infrastructure tile (owner, 2026-11-19; docs/specs/010-palette/build-category.md "The C4 model"): one tile
+// in Parts beside the Card and the Badge whose popover offers the C4 tiles and the Entity, as the Card's offers its
+// presets. Pressed anywhere without a popover (search, a rail), it places the Software System.
+const ENTITY_TILE = ELEMENT_TILES.find((t) => t.id === 'tools:entity');
+
+export const INFRASTRUCTURE_TILE: PaletteTileDef = {
+  id: 'layout:infrastructure',
+  blurb: 'C4 people, systems, containers and entities',
+  caption: 'Infrastructure',
+  section: 'diagrams',
+  label: 'Add Infrastructure',
+  description: `Infrastructure. The C4 Person, Software System, Container, Component, External System and Database, and the Entity. ${C4_SEARCH}`,
+  action: { type: 'shape', kind: 'card', variant: 'c4-system' },
+  variants: ENTITY_TILE ? [...C4_TILES, ENTITY_TILE] : C4_TILES,
+  variantsHint: 'Pick a C4 element or an Entity; its text and colours can change once placed.',
+  icon: (
+    <Glyph size={TILE_GLYPH_PX} units={24}>
+      <rect x="4" y="3.5" width="16" height="6" rx="1.5" />
+      <rect x="4" y="14.5" width="16" height="6" rx="1.5" />
+      <path d="M12 9.5v5M7.5 6.5h.01M7.5 17.5h.01" />
+    </Glyph>
+  ),
+};

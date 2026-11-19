@@ -1,6 +1,6 @@
 // A template's starter rules, waiting for the editor (docs/specs/026-plan/plan-templates.md "Starter rules"): Start
 // Planning drops a template on a plan's first tab and leaves its kind here under that tab's id; the editor makes the
-// rules once it knows the person may, keeps the kind with a plan in This Browser for its sync, or drops it for a guest
+// rules once it knows the person may, keeps the kind with a plan kept Offline for its sync, or drops it for a guest
 // (PendingStarterRules). Kept in sessionStorage, as a page load may come between; a memory copy covers storage
 // refused. A kind waits at most PENDING_STARTER_RULES_MS, so a plan opened much later never makes them.
 import { hasStarterRules, type StarterRuleKind } from '@liveplanner/templates';

@@ -3,7 +3,7 @@
 // Share Form (docs/specs/030-forms/forms.md "Publishing and the form link"), separate from the project's Share
 // dialog: a form link grants nothing on the project. Unpublished, it explains and offers Publish Form (held back,
 // with the reason, while responses have nowhere to go or the form is not ready: each problem listed with Show). Published, it shows the link to copy or open, Accepting
-// Responses, and Delete Link, which asks first. On a project in This Browser it offers Sync Project first (the project
+// Responses, and Delete Link, which asks first. On a project kept Offline it offers Sync Project first (the project
 // Share dialog's prompt), then carries straight on to publishing as the project stops being offline.
 // Published, More Ways to Share (closed, loaded on first open) offers a QR code, an embed code and a pre-filled link.
 import { useId, useState } from 'react';
@@ -47,7 +47,7 @@ export function ShareFormDialog({
   onShow?: (problem: PublishProblem) => void;
   // Responses go to a sheet (a row each) rather than a board.
   toSheet?: boolean;
-  // A project in This Browser: syncs it in place (useSyncInPlace), once the reader is known (`syncReady`).
+  // A project kept Offline: syncs it in place (useSyncInPlace), once the reader is known (`syncReady`).
   onSyncToCloud?: () => Promise<void>;
   syncReady?: boolean;
   // The form as respondents see it, for More Ways to Share (its heading, and its questions to pre-fill).
@@ -60,7 +60,7 @@ export function ShareFormDialog({
   const url = live?.code ? formUrlFor(window.location.origin, live.code) : null;
   const suspended = !live && link.link?.suspendedAt;
   const canPublish = link.link?.canPublish !== false;
-  // A project in This Browser syncs first; the publish view follows once it is on liveplanner.
+  // A project kept Offline syncs first; the publish view follows once it is on liveplanner.
   const syncFirst = link.status === 'offline' && !!onSyncToCloud;
   return (
     <Dialog open={open} onClose={onClose} titleId={titleId} size="md" phoneSheet>

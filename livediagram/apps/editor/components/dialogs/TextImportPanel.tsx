@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Button, BackBar } from '@livediagram/ui';
+import { FileTypes } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 
@@ -16,6 +17,7 @@ export function TextImportPanel({
   formatTitle,
   placeholder,
   note,
+  fileTypes,
   onImportText,
   onImportFile,
   onDone,
@@ -31,6 +33,8 @@ export function TextImportPanel({
   // way back became the BackBar above. Left to hang under the footer instead,
   // it read as a stray line that had fallen off the dialog.
   note?: ReactNode;
+  // The file endings Import File takes, listed under the box so the reader knows before the picker opens.
+  fileTypes?: readonly string[];
   // Runners get a progress listener: an import that meets images reports
   // them as they store (docs/specs/020-import-export/import-image-pipeline.md).
   onImportText: (text: string, onProgress: ProgressListener) => Promise<ImportOutcome>;
@@ -82,6 +86,12 @@ export function TextImportPanel({
         placeholder={placeholder}
         className="h-56 w-full resize-y rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 font-mono text-xs leading-relaxed text-slate-800 placeholder:text-slate-400 focus:border-brand-400 focus:ring-2 focus:ring-brand-200 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-600 dark:focus:ring-brand-500/30"
       />
+      {fileTypes?.length ? (
+        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+          <span>Import File takes</span>
+          <FileTypes types={fileTypes} />
+        </div>
+      ) : null}
       {error ? (
         <p
           // Announced when it appears: the Import button keeps focus, so a reader would never hear why nothing landed.
@@ -111,7 +121,7 @@ export function TextImportPanel({
             busy={busy}
             className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition enabled:hover:border-brand-300 enabled:hover:bg-brand-50/40 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:enabled:hover:border-brand-500/60"
           >
-            Import a file instead
+            Import File
           </Button>
           <Button
             variant="primary"

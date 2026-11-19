@@ -48,7 +48,7 @@ test.describe('Contrast audit, dark mode', () => {
 
     // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx) is named "Share <the document>" and
     // headed "Share This Document".
-    await page.getByRole('button', { name: /^Shared?$/ }).click();
+    await page.getByRole('button', { name: /^Share, / }).click();
     await page
       .getByRole('dialog', { name: /^Share / })
       .getByRole('heading', { name: 'Share This Document' })

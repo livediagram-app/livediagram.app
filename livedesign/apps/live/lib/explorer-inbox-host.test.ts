@@ -5,7 +5,7 @@ vi.mock('./telemetry', () => ({ track: vi.fn() }));
 const { explorerInboxActions, localInboxRows, trackInbox } = await import('./explorer-inbox-host');
 const { track } = await import('./telemetry');
 
-// A This Browser design's open actions and threads, in the index's Inbox shape (docs/specs/013-workspace/inbox.md).
+// An offline design's open actions and threads, in the index's Inbox shape (docs/specs/013-workspace/inbox.md).
 
 const place = {
   designId: 'd1',

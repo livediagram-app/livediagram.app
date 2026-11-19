@@ -11,7 +11,7 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 // A new blank document (/new?blank=1), which the editor opens at /document/<id>: answers its id.
 async function openNewDocument(page: Page): Promise<string> {
-  // On livedocuments, not This Browser: the newer build is told by the api's responses.
+  // On livedocuments, not Offline: the newer build is told by the api's responses.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.waitForURL(/\/document\//, { timeout: 30_000 });
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });

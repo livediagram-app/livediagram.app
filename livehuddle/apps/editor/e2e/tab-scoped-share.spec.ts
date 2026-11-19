@@ -46,7 +46,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser 
   await adoptGuest(page, owner);
   await page.addInitScript(() => localStorage.setItem('livehuddle:v2:name-confirmed', '1'));
   await page.goto(`/document/${liveDoc}`);
-  await page.getByRole('button', { name: /^Share$/ }).click();
+  await page.getByRole('button', { name: /^Share, / }).click();
   // The shared Share dialog (@liveworkspace/explorer): issue a pass for one tab, then each pass with its own scope.
   const dialog = page.getByRole('dialog', { name: /^Share / });
   await dialog

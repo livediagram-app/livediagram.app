@@ -1,8 +1,8 @@
 'use client';
 
-// A folder card in This Browser's view (one-explorer.md "This Browser, a Space"): drawn as My Work's folder cards
+// A folder card in Offline's view (one-explorer.md "Offline, a Space"): drawn as My Work's folder cards
 // are (rows.tsx FolderCard: the same shell, letterbox, name, count and ⋯), opening the folder, renaming in place, and
-// taking a This Browser item dropped on it. Its picture is up to four of its newest items, each the app's picture of a
+// taking an offline item dropped on it. Its picture is up to four of its newest items, each the app's picture of a
 // local item (LocalPreview), or the folder glyph while it holds none.
 
 import { memo } from 'react';

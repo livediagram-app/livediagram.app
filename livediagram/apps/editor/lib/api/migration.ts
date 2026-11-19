@@ -1,6 +1,6 @@
 // The editor's two calls for the move from the old livediagram.app (repo docs/migration.md, step 6), made as the
 // person, like every other call: a returning old guest's claim (docs/specs/014-identity/auth-and-guest-access.md
-// "Returning guests from the old site") and a document's retired parts from This Browser
+// "Returning guests from the old site") and a document's retired parts from Offline
 // (docs/specs/006-document/offline-mode.md "Moving retired parts to the other apps"). The wire shapes are the
 // migration contract's (@liveworkspace/migration).
 import type {

@@ -11,7 +11,7 @@ const CANVAS = '[data-canvas-a11y-root]';
 
 // A new blank design (/new?blank=1), which the editor opens at /design/<id>: answers its id.
 async function openNewDesign(page: Page): Promise<string> {
-  // On livedesign, not This Browser: the newer build is told by the api's responses.
+  // On livedesign, not Offline: the newer build is told by the api's responses.
   await page.goto(await serverNewUrl(page, '/new?blank=1'));
   await page.waitForURL(/\/design\//, { timeout: 30_000 });
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });

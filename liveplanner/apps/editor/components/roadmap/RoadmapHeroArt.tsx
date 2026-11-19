@@ -1,4 +1,4 @@
-// Publish as Roadmap's hero art (docs/specs/026-plan/public-roadmap.md "The dialog"), drawn in the dialog hero
+// Publish Roadmap's hero art (docs/specs/026-plan/public-roadmap.md "The dialog"), drawn in the dialog hero
 // header's tokens: a faint grid fading out toward the title, and in the bottom right three short columns rising off
 // the band's foot, their cards plain except one, whose upvote is lit and rings out, motion allowing. The title mark
 // is a megaphone, as the tab menu's row.

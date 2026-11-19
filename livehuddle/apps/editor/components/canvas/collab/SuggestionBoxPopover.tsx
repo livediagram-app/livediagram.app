@@ -17,7 +17,7 @@ import { ReaderShell } from './ReaderShell';
 // note in; only an Editor reads them. The notes live beside the Space (the api's suggestion routes), never in the
 // element or the room, so the box reads and writes only through those, and only while it is open. Who is asking
 // decides what it shows: an Editor the notes and the add box, a Participant the add box alone, a Viewer the box shut,
-// and a Space kept in This Browser a word on sharing it.
+// and a Space kept Offline a word on sharing it.
 
 const RefreshIcon = lucideGlyph(lucideRefreshCw, 13);
 

@@ -123,7 +123,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     setPasswordRetry,
   } = state;
   // Whose data the owner-scoped providers read: nobody's while the reader is the 'self' placeholder,
-  // which a design in This Browser opens under (docs/specs/006-design/offline-mode.md "Instant open").
+  // which a design kept Offline opens under (docs/specs/006-design/offline-mode.md "Instant open").
   const ownerId = state.selfParticipant?.id === 'self' ? null : (state.selfParticipant?.id ?? null);
   // Archived by its owner (liveworkspace/docs/specs/004-index/one-explorer.md "Archived"): the index refused the
   // grant as `archived`, or this browser holds it archived. It doesn't open; Change Folder moves it out, from the
@@ -273,7 +273,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
           </EditorLibraryProvider>
         </CommentReactionsProvider>
       </MentionContext.Provider>
-      {/* Moving this browser's designs in This Browser after signing in
+      {/* Moving this browser's designs kept Offline after signing in
           (docs/specs/014-identity/auth-and-guest-access.md); never inside someone else's page. */}
       {appChrome ? <LocalMovePrompt /> : null}
       {/* A Take Offline or Sync the Explorer page handed over in the address. */}

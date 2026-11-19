@@ -113,7 +113,7 @@ describe('ImportTabDialog', () => {
   });
 
   // The warning's keys only for a keyboard.
-  it('names Undo’s keys only on a fine pointer', () => {
+  it('names no keys in its warning', () => {
     render(
       <ImportTabDialog
         tabName="Board"
@@ -122,9 +122,9 @@ describe('ImportTabDialog', () => {
         onClose={vi.fn()}
       />,
     );
-    const keys = screen.getByText(/⌘Z/);
-    expect(keys.className).toContain('pointer-coarse:hidden');
-    expect(keys.parentElement!.textContent).toMatch(/Undo \(⌘Z \/ Ctrl.Z\) brings it back\./);
+    // The owner, 2026-11-19: no keyboard shortcuts written in the text.
+    expect(screen.getByText(/Undo brings it back\./)).toBeTruthy();
+    expect(screen.queryByText(/⌘Z|Ctrl.Z/)).toBeNull();
   });
 });
 

@@ -1,6 +1,6 @@
 // A range's flow, as the flow charts read it (docs/specs/026-plan/plan-views.md "Flow charts", blueprint item-store.md
 // "Flow read"): one request per range, every card type (each chart keeps its own), shared by the charts of that range
-// (hooks/plan/plan-flow-store.ts). A This Browser plan keeps no history or counts, so it is never asked. A session on
+// (hooks/plan/plan-flow-store.ts). An offline plan keeps no history or counts, so it is never asked. A session on
 // a tab-scoped link names its tab.
 
 import type { FlowResponse } from '@liveplanner/api-schema';

@@ -44,7 +44,7 @@ async function loadIds(): Promise<Set<string>> {
     idCacheLoad = offlineBackend()
       .all()
       .then((recs) => {
-        // Read anyway: This Browser's list rebuilt from it, once per page load (this-browser.ts).
+        // Read anyway: Offline's list rebuilt from it, once per page load (this-browser.ts).
         publishThisBrowser(recs);
         const ids = new Set([...recs.map((r) => r.id), ...pendingIds]);
         for (const id of removedIds) ids.delete(id);

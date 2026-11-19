@@ -32,6 +32,8 @@ export function PopoverButton({
         type="button"
         onClick={onClick}
         aria-pressed={active ? true : undefined}
+        // Its words name it; the label kept as data so a tour step can find it as it finds the glyph button.
+        data-label={label}
         className={`flex h-8 items-center gap-1.5 rounded-md px-2 text-xs font-medium transition ${
           active
             ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'

@@ -110,7 +110,7 @@ your own screen and nothing is sent; once a call is joined, the same bubble is s
 
 - **Offered whenever the browser can capture.** In Avatar mode, the Camera button shows wherever the browser has a
   camera API in a secure context, and Share Screen wherever it has a screen picker (not on a phone), whether or not
-  calls are on: in a This Browser Space, in a private Space nobody else can open, with calls off on the deployment or
+  calls are on: in an offline Space, in a private Space nobody else can open, with calls off on the deployment or
   paused by the kill switch, and before the call connects. With no call to offer, the call group on the
   [Call dock](../008-canvas/avatar-mode.md#the-call-dock) holds the microphone (a [local preview](proximity-audio.md#no-call-here)) and the two buttons; with a call joined
   (or Calls Paused) on offer, they sit beside it.

@@ -133,15 +133,15 @@ The words for the editor framed beside code ([Workbench embeds](../013-workspace
   mode.
 - A **reveal** brings an element or its words in; a **loop** repeats around the rest frame.
 
-## Browser Storage and This Browser
+## Offline
 
-**Browser Storage** is the Explorer's name for the place a design saved only in this browser lives
+**Offline** is the name for the place a design saved only in this browser lives
 ([Offline Mode](../006-design/offline-mode.md)): its Space in the sidebar, beside My Work and the teams, its view and folders, its tile on
 Home, and the pill on its Explorer rows and cards (Archived, the Trash, Most Used and Recent, the Inbox, the editor's
-Explorer panel). The owner renamed it from "This Browser" on 2026-11-10, for clarity. **This Browser** stays the
-editor's badge on such a design (the pill at the top of an open design, and the editor's own copy). In the
-Explorer a design is **in Browser Storage**, never "This Browser", "Local Only" or "Local Browser", and never
-"offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline` and `thisBrowser`.
+Explorer panel), and the editor's badge on such a design (the pill at the top of an open design, and the editor's own
+copy). The Explorer first called the place "This Browser", then "Browser Storage" (the owner's rename of 2026-11-10,
+for clarity); "Browser Storage" renamed to "Offline" by the owner on 2026-11-19, the day the editor's badge went
+from "This Browser" to "Offline" too. A design is **kept Offline**, never "Local Only" or "Local Browser". "Offline Mode" stays the name of the feature, and code may say `offline` and `thisBrowser`.
 
 ## Photo pages
 

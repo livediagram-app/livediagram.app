@@ -120,7 +120,7 @@ export default function NewDocumentPage() {
   // here, if any. Counts the arrival now and the document once it's committed.
   const cta = useCtaAttribution();
 
-  // Where a new document is stored: This Browser for a guest (docs/specs/006-document/save-locations.md), decided at
+  // Where a new document is stored: Offline for a guest (docs/specs/006-document/save-locations.md), decided at
   // commit.
   const { resolveSaveLocation } = useNewDocumentLocation({
     authLoaded,
@@ -190,7 +190,7 @@ export default function NewDocumentPage() {
     // A `?q=` preset becomes the search in the new document's start (start-query.ts).
     handStartQuery(newDocumentQuery(window.location.search));
     const startsBlank = newDocumentStartsBlank(window.location.search);
-    // Save location (docs/specs/006-document/save-locations.md): only This Browser takes the offline branch.
+    // Save location (docs/specs/006-document/save-locations.md): only Offline takes the offline branch.
     const offline = isOfflineLocation(settings.saveLocation);
     const { documentId, tabId } = createIdsFor(retrying);
     // A blank asked for (`?blank=1`, `?start=blank`) opens with its start closed (close-start-for-blank.ts).
@@ -212,7 +212,7 @@ export default function NewDocumentPage() {
     // Inside the try: an identity or template that fails to load shows the Retry card too, never a
     // screen stuck on "Creating your document".
     try {
-      // A document in This Browser has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
+      // A document kept Offline has no owner on the server to wait for (docs/specs/006-document/offline-mode.md
       // "Instant open"): identity settles in the background while it opens. A cloud create needs the owner.
       const cloudOwner = offline ? null : await settleIdentity();
       if (offline) {
@@ -285,8 +285,8 @@ export default function NewDocumentPage() {
     setOpenedId(documentId);
   };
 
-  // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md): This
-  // Browser for a guest, livedocuments for a signed-in person or anyone with a /new?folder= / ?team= context
+  // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md): Offline
+  // for a guest, livedocuments for a signed-in person or anyone with a /new?folder= / ?team= context
   // (docs/specs/006-document/save-locations.md), and that context when there is one; without one the index files it
   // at the root of the person's space.
   const createByDefault = async (kind: TemplateKind | null) => {

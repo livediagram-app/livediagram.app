@@ -63,7 +63,7 @@ bug in applying ops can only ever cost a fallback, never a tab.
 - The unload flush sends a delta where it has one, as a `keepalive` request when it fits what is left of the 60 KB
   budget; otherwise the tab goes whole as before. A refused flushed delta is followed by the whole tab when the page
   lives on to hear the refusal.
-- An offline project (This Browser) never sends one: it has no api. Card writes, Sheet cells, item fields and the
+- An offline project (Offline) never sends one: it has no api. Card writes, Sheet cells, item fields and the
   other subresource writes are their own routes and are unchanged.
 
 ## A peer's save moves the base copy

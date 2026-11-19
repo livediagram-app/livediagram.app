@@ -4,7 +4,7 @@ import { useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Item } from '@liveworkspace/index-client';
 import { useExplorer } from '../explorer/context';
 import { VisibilityBadge } from '../explorer/badges';
-import { ItemMenu } from '../explorer/menus';
+import { ItemMenu, canManage } from '../explorer/menus';
 import { LocalPreview, ThisBrowserItemMenu, ThisBrowserPill } from '../explorer/ThisBrowser';
 import type { ThisBrowserItem } from '../this-browser';
 import { InlineRenameInput } from '../ui/InlineRenameInput';
@@ -15,6 +15,7 @@ import { PANE_CARD_PICTURE, PANE_CARD_SURFACE } from './pane-parts';
 import { RailPicture } from './useRailFit';
 import { SIDEBAR_LABELS } from '../views';
 import { useLatest } from '../ui/useLatest';
+import { endMoveCurrent, useMoveCurrentRequest } from './move-current-request';
 
 // ---- The current item's card ----------------------------------------------------------------------------
 
@@ -32,8 +33,18 @@ export function CurrentItem({
   title?: string | null;
   compact?: boolean;
 } & RenameRequestProps) {
-  const { overlay, renderThumbnail, actions, openItem, renamingId, setRenamingId } = useExplorer();
+  const { overlay, renderThumbnail, actions, openItem, renamingId, setRenamingId, openDialog } =
+    useExplorer();
   const item = overlay.apply(title && title !== read.title ? { ...read, title } : read);
+  // The editor's Team stop (move-current-request): Change Folder on the item, for someone its menu offers it to.
+  const moveRequest = useMoveCurrentRequest();
+  const moveNow = useLatest({ item, manage: canManage(item) && !item.archivedAt });
+  useEffect(() => {
+    if (!moveRequest) return;
+    const now = moveNow.current;
+    if (now.manage) openDialog({ kind: 'move-item', item: now.item });
+    endMoveCurrent();
+  }, [moveRequest, moveNow, openDialog]);
   // Its pencil, or Rename on its menu (which names it for renaming, as every row's does).
   const [pencil, setPencil] = useState(false);
   const editing = pencil || renamingId === item.id;
@@ -65,8 +76,8 @@ export function CurrentItem({
   );
 }
 
-// The open item when it lives only in this browser (the index never holds it): drawn from This Browser's list, with
-// the app's picture of a local item, the This Browser pill and This Browser's own menu (Open, Sync, Delete). Renaming
+// The open item when it lives only in this browser (the index never holds it): drawn from Offline's list, with
+// the app's picture of a local item, the Offline pill and Offline's own menu (Open, Sync, Delete). Renaming
 // it is the editor's own rename (`onRenameCurrent`), which writes this browser's store; nothing goes to the index.
 export function LocalCurrentItem({
   item,
@@ -136,7 +147,7 @@ function useRenameRequest(
 }
 
 /**
- * The open item as This Browser holds it, for the Current card: its row in This Browser's list, or, while the editor
+ * The open item as Offline holds it, for the Current card: its row in Offline's list, or, while the editor
  * says it is local and the list has not heard of it yet (a fresh /new item), one drawn from the editor's title and
  * the time the panel first saw it. Null for no id, and for an item neither holds that the editor does not call local.
  */

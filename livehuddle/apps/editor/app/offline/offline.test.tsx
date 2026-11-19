@@ -6,7 +6,7 @@ import Page from './page';
 afterEach(() => vi.unstubAllGlobals());
 
 describe('/offline', () => {
-  it("sends people to the Explorer's This Browser view, its query and hash kept", () => {
+  it("sends people to the Explorer's Offline view, its query and hash kept", () => {
     const replace = vi.fn();
     vi.stubGlobal('location', { search: '?convert=sync&item=d1', hash: '#x', replace });
     render(<Page />);

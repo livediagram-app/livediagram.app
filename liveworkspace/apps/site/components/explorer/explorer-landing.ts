@@ -61,7 +61,7 @@ function readLanding(): Landing {
   const host = pageApp();
   const found: Arrival = host ? { app: host, via: 'host' } : arrival(search, document.referrer);
   const lastApp = readLastApp();
-  // A retired address gives way to its successor. This Browser is a view of its own on the app's address.
+  // A retired address gives way to its successor. Offline is a view of its own on the app's address.
   const retired = retiredView(window.location.pathname);
   if (retired === 'offline' && !host)
     return { leave: offlineHref(found.app ?? lastApp ?? FALLBACK_APP) ?? '/explorer' };

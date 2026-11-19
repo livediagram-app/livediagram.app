@@ -780,7 +780,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'public-roadmap',
-    title: 'Publish as Roadmap',
+    title: 'Publish Roadmap',
     description:
       'Publish a board as a public roadmap anyone can open: chosen columns and fields, upvotes and suggestions.',
     keywords:

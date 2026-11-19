@@ -21,7 +21,7 @@ by any column.
 
 | Column   | A design shows                                                                   | A folder shows                        |
 | -------- | -------------------------------------------------------------------------------- | ------------------------------------- |
-| Name     | Its name (a link that opens it), This Browser and Made by AI pills               | Its name (opens it), default marker   |
+| Name     | Its name (a link that opens it), Offline and Made by AI pills                    | Its name (opens it), default marker   |
 | Type     | The mode its most recently written tab is in, as the mode's icon                 | The folder icon                       |
 | Comments | A speech bubble holding how many comments its tabs hold; empty for none          | Empty                                 |
 | Access   | The reader's level as a small, muted role icon: Editor, Participant or Viewer    | Empty                                 |
@@ -49,7 +49,7 @@ by any column.
   from") shows **–** in Type, Comments and Size, with the tooltip "Not counted yet". So does a design
   with no tabs, and a design shared with the reader, whose library is not the reader's.
 - **Designs in this browser** are counted in the browser from their own tabs, by the same rule.
-  This Browser keeps no time per tab, so their Type is the mode of their first tab.
+  Offline keeps no time per tab, so their Type is the mode of their first tab.
 - A Created date the list does not carry (a design shared with the reader) shows **–** with the
   tooltip "Not known".
 - A `⋯` ends every row, shown on hover or keyboard focus (always on touch), opening the same menu

@@ -79,7 +79,7 @@ as every dialog's does, so no row lights up unasked.
   - **Any other tab** (a Dashboard or Form tab, or one not yet started): **liveplanner Tab**, "A tab's JSON from
     Export. Replaces this tab." Pressing it opens the paste-or-file step ([Import and Export of a
     Dashboard](#import-and-export-of-a-dashboard)) under an **All Imports** back bar: the amber warning naming the
-    tab, the box to paste into, **Import a file instead** and **Import**.
+    tab, the box to paste into, **Import File** and **Import**.
   - The row is dimmed, its line saying why, when this person may not import into the tab: "This tab is locked.
     Unlock it to import into it.", "Only someone who may add cards can import here." (a board) or "Only someone who
     may change this sheet can import here." (a Sheet).
@@ -505,7 +505,7 @@ cards, card types, comment threads and rules belong to the plan, never to one bo
 - **Who**: an Editor of the whole plan, on a plan saved on the server (a signed-in person's, or a guest's synced
   plan). A Participant, a Viewer and a visitor on a
   tab-scoped link don't see the card (the file holds every tab, and the rules only an Editor sees), and the api
-  refuses them; a This Browser plan has no card, since the file is written from the plan's server copy.
+  refuses them; an offline plan has no card, since the file is written from the plan's server copy.
 - Pressing it opens a panel under the dialog's back bar: what the file holds (every tab with its folder, every card
   with its fields, the card types and their templates, the Sheets, every comment thread without the commenters'
   account ids, and the Automations rules, their makers and last editors by name and colour without account ids),

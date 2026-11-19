@@ -1,7 +1,7 @@
 'use client';
 
 // An editor's door from an open item (`/explorer?item=<id>`, liveworkspace/docs/specs/004-index/one-explorer.md "Opening
-// from an open item"): the place that holds the item, worked out once the person is known (This Browser's list, else one
+// from an open item"): the place that holds the item, worked out once the person is known (Offline's list, else one
 // read of the index), then the address replaced with that place's own, so Back returns to the item in its editor.
 // Until then the page shows the Explorer's skeleton, never Home first. The place shows as soon as it is known
 // (`view`), not once the router has moved to its address, which is a second round trip. While the person is in that
@@ -34,7 +34,7 @@ export function useItemArrival({
   // Who is here, once known.
   viewer: ItemViewer | null;
   client: Pick<IndexClient, 'getItem'>;
-  // This Browser's list, on the app's address.
+  // Offline's list, on the app's address.
   local: readonly ThisBrowserItem[];
   // The view the page shows now.
   view: ExplorerView;

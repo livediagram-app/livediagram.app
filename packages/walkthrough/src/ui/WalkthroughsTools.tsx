@@ -5,7 +5,7 @@
 // door, with the count of recorded walkthroughs at its end. Pressing it opens the Walkthroughs list inside Tools, under
 // its back bar (footer-tools-menu.md "Opening a tool inside Tools"): the item's walkthroughs to play, each with its
 // delete where the caller may, and Record Walkthrough for an Editor; playing or recording closes Tools. No row where
-// walkthroughs don't fit (a phone, an embed, This Browser, a tab-scoped link) or where there is nothing to play or
+// walkthroughs don't fit (a phone, an embed, Offline, a tab-scoped link) or where there is nothing to play or
 // record.
 
 import {
@@ -135,7 +135,7 @@ export function WalkthroughsTools({ walkthroughs }: { walkthroughs: Walkthroughs
   const { available, canRecord } = menu;
   const count = menu.list.length;
   const picking = walkthroughs.hiding.picking;
-  // Signed out, or the item kept in This Browser (owner, 2026-11-17): still there, badged as Webhooks is ("Sign In",
+  // Signed out, or the item kept Offline (owner, 2026-11-17): still there, badged as Webhooks is ("Sign In",
   // "Sync Canvas"), and a press opens the same gate.
   const gate = useToolGate();
   const rows = useMemo<ChromeToolsItem[]>(

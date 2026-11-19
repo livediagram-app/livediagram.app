@@ -108,7 +108,7 @@ dropped on the canvas lands as an image element without the picker (`useClipboar
 2. **Its name.** A pasted screenshot arrives named `""` or `image.png`; it is renamed `pasted-<ms>.<ext>` so the Image
    Gallery can tell pastes apart.
 3. **The upload.** Through the same pipeline as the picker's Upload tab (`addImageFileForDocument`): the media service
-   for a synced Space, a data-URI embed for a This Browser one. The upload code loads only now (a dynamic import), so it
+   for a synced Space, a data-URI embed for an offline one. The upload code loads only now (a dynamic import), so it
    stays out of the editor's first load. A refused upload (too large, the wrong type, a full gallery) says why in an
    error toast and lands nothing.
 4. **The element.** Its own aspect ratio, the larger side 240 px (`PLACED_IMAGE_MAX_PX`), centred where a drop was

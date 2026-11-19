@@ -1,6 +1,6 @@
 // A card's comment threads, as the editor reads and writes them (docs/specs/026-plan/items.md "Comments", blueprint
-// item-store.md "Editor"). A cloud plan's go through the thread routes, which stamp every author themselves; a This
-// Browser plan's apply the same pure writes to its own record (../offline/offline-threads.ts). A session on a
+// item-store.md "Editor"). A cloud plan's go through the thread routes, which stamp every author themselves; an offline
+// plan's apply the same pure writes to its own record (../offline/offline-threads.ts). A session on a
 // tab-scoped link names its tab on every call.
 
 import type { CardThreadWriteResponse, CardThreadsResponse } from '@liveplanner/api-schema';

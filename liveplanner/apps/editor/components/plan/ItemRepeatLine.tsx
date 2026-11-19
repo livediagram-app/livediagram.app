@@ -38,7 +38,7 @@ export function ItemRepeatLine({
 }: {
   rule: RepeatRule;
   now: number;
-  // A plan in This Browser makes no copies: the line says so instead of a next day.
+  // A plan kept Offline makes no copies: the line says so instead of a next day.
   offline: boolean;
   // An Editor's Edit and Stop; absent, the line alone.
   onEdit?: (() => void) | undefined;

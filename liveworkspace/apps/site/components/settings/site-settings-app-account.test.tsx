@@ -141,7 +141,7 @@ describe('the Explorer’s Settings on an app’s address, signed in', () => {
     await until(dialog);
     expect(dialog()!.textContent).toContain('everything you own in every liveworkspace app');
     expect(dialog()!.textContent).toContain('not just livediagram');
-    expect(dialog()!.textContent).toContain('Canvases in This Browser stay on this device');
+    expect(dialog()!.textContent).toContain('Canvases kept Offline stay on this device');
     expect(fetchMock.mock.calls.length).toBe(before);
     // The confirmation is unchanged: the code waits for the account's own address, typed.
     const send = buttonIn(dialog(), 'Email Me a Code')!;

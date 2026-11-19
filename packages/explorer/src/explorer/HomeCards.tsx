@@ -1,7 +1,7 @@
 'use client';
 
 // Home's cards (HomePane's Most Used, Recent and Shared With You Recently, HomeNew's New): the large card and its
-// frame, the This Browser card, a group of them, the phone's strip and the placeholders they load behind. One
+// frame, the Offline card, a group of them, the phone's strip and the placeholders they load behind. One
 // component for every Home section, so a card looks and behaves the same wherever Home shows it; only its line
 // differs (when it was opened, or when it was made).
 
@@ -122,7 +122,7 @@ function Line({
   );
 }
 
-/** A picture with a pill on its corner (This Browser's, Made by AI), as the editors' panel has it, so the line keeps its
+/** A picture with a pill on its corner (Offline's, Made by AI), as the editors' panel has it, so the line keeps its
  *  width. */
 function Pinned({ pill, children }: { pill: ReactNode; children: ReactNode }) {
   return (
@@ -142,7 +142,7 @@ const cardClass = (large: boolean) =>
 const nameSize = (large: boolean) => (large ? 'text-[15px] leading-5' : 'text-sm leading-5');
 
 /** One Home card's frame, whoever holds the item: the thumbnail area, the name row (the app's mark under All)
- *  and the line under it, the ⋯ chip, the right-click menu and the drag. The index's cards and This Browser's differ
+ *  and the line under it, the ⋯ chip, the right-click menu and the drag. The index's cards and Offline's differ
  *  only in what fills it. */
 function CardFrame({
   id,
@@ -298,8 +298,8 @@ const JumpBackInCard = memo(function JumpBackInCard({
   );
 });
 
-/** A Home card for an item kept only in this browser: the same card, its thumbnail area This Browser's,
- *  its line led by the This Browser badge, This Browser's menu, and a drag that its targets read as This Browser's
+/** A Home card for an item kept only in this browser: the same card, its thumbnail area Offline's,
+ *  its line led by the Offline badge, Offline's menu, and a drag that its targets read as Offline's
  *  (drag.tsx). It opens in the app's editor, by its address. */
 const LocalCard = memo(function LocalCard({
   item,

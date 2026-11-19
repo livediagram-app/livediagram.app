@@ -6,7 +6,11 @@
 // buttons on every element. The canvas, which holds the handlers, publishes them for the selected element; the menu
 // shows them when it opens on that element.
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react';
-import { MIND_CHILD_OPTION, MIND_SIBLING_OPTION } from '@/components/canvas/quick-connect-options';
+import {
+  MIND_CHILD_OPTION,
+  MIND_SIBLING_OPTION,
+  webRowOption,
+} from '@/components/canvas/quick-connect-options';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
 import dynamic from 'next/dynamic';
 import { SaveToLibraryButton } from '@liveworkspace/workbench/components/library/SaveToLibraryButton';
@@ -26,6 +30,8 @@ const CardinalityButton = dynamic(
 export type ElementKindTools = {
   onAddMindChild?: () => void;
   onAddMindSibling?: () => void;
+  // A concept graphic's add (Add Tier, Add Layer, ...), while it has room for one more.
+  addRow?: { label: string; description: string; onAdd: () => void };
   flowchartStep?: FlowchartStepToolbar;
   cardinality?: CardinalityToolbar;
   // The element as a Library item (liveworkspace/docs/specs/006-media/libraries.md).
@@ -41,6 +47,7 @@ const subscribe = (l: () => void) => {
 
 const hasAny = (t: ElementKindTools) =>
   !!(t.onAddMindChild && t.onAddMindSibling) ||
+  !!t.addRow ||
   !!t.flowchartStep ||
   !!t.cardinality ||
   !!t.saveToLibrary;
@@ -125,6 +132,15 @@ export function ElementKindToolButtons({
           </PopoverButton>
         </>
       ) : null}
+      {tools.addRow ? (
+        <PopoverButton
+          label={tools.addRow.label}
+          description={tools.addRow.description}
+          onClick={tools.addRow.onAdd}
+        >
+          {webRowOption(tools.addRow.label, tools.addRow.description).icon}
+        </PopoverButton>
+      ) : null}
       {tools.flowchartStep ? (
         // Its own closing rule is dropped here: Save to Library sits apart at the right.
         <span className="contents [&>[aria-hidden]:last-child]:hidden">
@@ -149,5 +165,7 @@ export function ElementKindToolButtons({
 
 /** Whether the element has verbs of its kind (Save to Library aside). */
 export function hasKindVerbs(t: ElementKindTools): boolean {
-  return !!(t.onAddMindChild && t.onAddMindSibling) || !!t.flowchartStep || !!t.cardinality;
+  return (
+    !!(t.onAddMindChild && t.onAddMindSibling) || !!t.addRow || !!t.flowchartStep || !!t.cardinality
+  );
 }

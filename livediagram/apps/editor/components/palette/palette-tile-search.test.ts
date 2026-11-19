@@ -37,7 +37,8 @@ describe('elementTileSections', () => {
   });
 
   it("finds the tiles on no strip in every mode, as this mode's", () => {
-    expect(SEARCH_ONLY_TILE_IDS.length).toBe(20);
+    // The C4 tiles joined them on 2026-11-19: on the strip only inside Layout's Infrastructure popover.
+    expect(SEARCH_ONLY_TILE_IDS.length).toBe(26);
     for (const mode of ['diagram', 'workshop'] as const) {
       const { here, elsewhere } = elementTileSections({ mode, hasImage: true });
       for (const id of SEARCH_ONLY_TILE_IDS) {

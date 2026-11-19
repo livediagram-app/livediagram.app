@@ -3,7 +3,7 @@
 // Makes a template's starter rules on the plan it just made (docs/specs/026-plan/plan-templates.md "Starter rules";
 // lib/pending-starter-rules.ts): once Automations are this person's on this plan (a signed-in Editor of the whole plan,
 // saved to an account), the kind left under the plan's first tab is taken, its rules built (their builders load only
-// then) and made as Make Plan makes its own, each turned off after when it ships off. On a plan in This Browser the
+// then) and made as Make Plan makes its own, each turned off after when it ships off. On a plan kept Offline the
 // kind is kept with the plan, and the rules are made when it is saved to the cloud (offline-sync.ts); for a guest on a
 // server plan, who can hold no rule, it is dropped. /new and the workspace's New need none of this: their create
 // names the template (lib/api/projects.ts starterRulesAskOf). Draws nothing.
@@ -28,7 +28,7 @@ export function PendingStarterRules({
   tabId: string | undefined;
   // Null while the editor has no project open.
   projectId: string | null;
-  // A plan in This Browser.
+  // A plan kept Offline.
   offline: boolean;
 }) {
   const scope = useAutomationsAccess()?.scope ?? null;

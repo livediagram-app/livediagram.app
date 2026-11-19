@@ -113,7 +113,7 @@ export function useItemTypes(opts: {
   const types = useMemo(() => typesOf(catalogue), [catalogue]);
 
   // `refused`: the api's own word on what is stored (a 409), taken even below the revision held: a plan synced from
-  // This Browser in place counted its own revisions, and the server's count starts again (item-types.md "Storage and
+  // Offline in place counted its own revisions, and the server's count starts again (item-types.md "Storage and
   // sync").
   const keepStored = useCallback(
     (next: SavedItemTypes, refused = false) => {

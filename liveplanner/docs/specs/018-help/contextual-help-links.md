@@ -109,7 +109,7 @@ in-panel settings (the Settings dialog's rows), **empty-state messages** and too
 - Template starts -> `templates` (Start a Workshop, Start Making Pages)
 - Settings - Keyboard category (was the Shortcuts dialog) -> `keyboard-shortcuts`
 - Sign-in reasons modal -> `guest-vs-account`
-- A card's Activity tab, while it has nothing to list (**No Activity Yet**, **No Activity in This Browser**) ->
+- A card's Activity tab, while it has nothing to list (**No Activity Yet**, **No Activity Offline**) ->
   `card-activity` (`planCardActivity`), a **Learn more** text link as the empty state's action
 
 - A card type editor's **Templates** tab -> `card-templates` (`planCardTemplates`, Work Tracker 971), for every

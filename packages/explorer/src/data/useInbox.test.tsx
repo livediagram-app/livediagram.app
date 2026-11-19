@@ -1,4 +1,4 @@
-// The Inbox's data (useInbox.ts): the host's This Browser rows are read again, alone, when the host says they
+// The Inbox's data (useInbox.ts): the host's Offline rows are read again, alone, when the host says they
 // changed (`subscribeLocal`, the Explorer page hearing the app's snapshot); the index is not asked again.
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';

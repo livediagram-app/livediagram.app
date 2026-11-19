@@ -411,8 +411,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Where is my data stored, and do you track me?',
         a: (
           <>
-            Designs saved to your account are stored in our database on Cloudflare, and designs in
-            This Browser stay in your browser. There are no tracking pixels, no advertising and no
+            Designs saved to your account are stored in our database on Cloudflare, and designs kept
+            Offline stay in your browser. There are no tracking pixels, no advertising and no
             third-party analytics. We do record anonymous, first-party usage (which features get
             used, never your content or name) and show it openly on our{' '}
             <a href="/telemetry">telemetry page</a>. See the{' '}
@@ -420,7 +420,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Designs saved to your account are stored in our database on Cloudflare, and designs in This Browser stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
+          'Designs saved to your account are stored in our database on Cloudflare, and designs kept Offline stay in your browser. There are no tracking pixels, no advertising and no third-party analytics. We do record anonymous, first-party usage (which features get used, never your content or name) and show it openly on our telemetry page. See the privacy policy for the details.',
       },
       {
         q: 'Can I keep a design off your servers entirely?',

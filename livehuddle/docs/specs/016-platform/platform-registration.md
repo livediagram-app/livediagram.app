@@ -34,7 +34,7 @@ Each is a step of its own in the [Build plan](../005-project-roadmap/build-plan.
 In the order the build makes them (code locations as on `main` today):
 
 1. **Sites and brand.** `packages/sites/src/index.ts`: `SiteId`, `LOCAL_PORTS` (`'livehuddle.app': 3500`), an
-   `APP_SITES` row, `AppName` and its `AppItems` (noun **Space**, `apiNoun: 'document'`, This Browser at
+   `APP_SITES` row, `AppName` and its `AppItems` (noun **Space**, `apiNoun: 'document'`, Offline at
    `/explorer/offline` with its conversions, `shapeLibrariesPath: null` (Shape Libraries left livehuddle in Work
    Tracker #423 part 4, so the Explorer's Library shows the Image Gallery alone), and the Community's `communityPath`). `packages/brand/src/apps.ts`: the `BrandApp` entry with its prism tint
    ([Open decisions](../005-project-roadmap/open-decisions.md) D5).

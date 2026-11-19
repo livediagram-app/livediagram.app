@@ -6,7 +6,7 @@ import { INDEXED_DB_PROBE_TIMEOUT_MS } from '@livehuddle/ui';
 import type { OfflineDocumentRecord } from './offline-store';
 import { APP_ITEMS } from '@liveworkspace/sites';
 
-// The names are the registry's, which the Explorer page deletes a This Browser item by.
+// The names are the registry's, which the Explorer page deletes an offline item by.
 const DB_NAME = APP_ITEMS.livehuddle.offlineStore.db;
 // Version 3, the number livediagram's store had reached when livehuddle forked from it
 // (docs/specs/006-document/offline-mode.md): kept so no browser that opened it is asked to go back a version.

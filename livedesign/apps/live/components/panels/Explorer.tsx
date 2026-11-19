@@ -114,7 +114,7 @@ function ExplorerImpl({
 
   // Open, the panel reaches under the palette strip: the trays just under it step aside (PaletteTray).
   const shown = popoverOpen === true;
-  // Kept only in this browser? Then the index is not asked and the card is This Browser's, with its Browser Storage
+  // Kept only in this browser? Then the index is not asked and the card is Offline's, with its Offline
   // pill, before the list has heard of it too (one-explorer.md "The Current card"). An opening asks the index again
   // while it had nothing for the design (a new one registered since).
   const offline = useIsOfflineDesign(currentDesignId ?? null);
@@ -222,7 +222,7 @@ function ExplorerImpl({
           shareUrl={shareUrl}
           share={shareHost}
           inbox={inboxHost}
-          // The designs kept only in this browser, which no index list holds: This Browser on the rail, in place.
+          // The designs kept only in this browser, which no index list holds: Offline on the rail, in place.
           thisBrowser={thisBrowser}
           itemMenu={itemMenu}
           // The Library section: the Image Gallery over this app's API.

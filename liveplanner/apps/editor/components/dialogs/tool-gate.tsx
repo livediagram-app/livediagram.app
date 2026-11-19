@@ -16,7 +16,7 @@ export type ToolGate = { badges?: readonly string[] } & (
   { kind: 'sync'; ready: boolean; sync: () => Promise<void> } | { kind: 'sign_in' }
 );
 
-/** The badges a gated tool wears in Tools: Sign In while signed out, Sync Plan while the plan is in This Browser. */
+/** The badges a gated tool wears in Tools: Sign In while signed out, Sync Plan while the plan is Offline. */
 export const toolBadges = (input: { signedIn: boolean; offline: boolean }): readonly string[] => [
   ...(input.signedIn ? [] : ['Sign In']),
   ...(input.offline ? ['Sync Plan'] : []),

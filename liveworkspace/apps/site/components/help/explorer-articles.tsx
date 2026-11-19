@@ -474,8 +474,8 @@ const SIGNING_IN: Content = {
         <p>
           When you sign in or sign up in the same browser, what you kept as a guest moves into your
           account: your files and folders, shape libraries and images. Files kept only in{' '}
-          <strong>This Browser</strong> stay there until you choose to move them: after you sign in,
-          a list of them lets you tick the ones to move, or press <strong>Not Now</strong> to leave
+          <strong>Offline</strong> stay there until you choose to move them: after you sign in, a
+          list of them lets you tick the ones to move, or press <strong>Not Now</strong> to leave
           them.
         </p>
       ),

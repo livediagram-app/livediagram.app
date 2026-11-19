@@ -24,7 +24,7 @@ import { useGifExport } from './useGifExport';
 
 export const GIF_ERROR_COPY: Record<GifExportErrorCode, string> = {
   tainted:
-    "This Browser couldn't draw the page into a GIF. Try Chrome, Edge or Firefox, or export a PNG.",
+    "This browser couldn't draw the page into a GIF. Try Chrome, Edge or Firefox, or export a PNG.",
   'page-missing': 'That page is no longer in the tab.',
   failed: "Couldn't make the GIF. Try a smaller size or a shorter hold.",
 };

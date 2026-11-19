@@ -194,7 +194,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
   has no slide, article or infographic pages, and no slide deck or presenting (removed 25 October 2026,
   [Presentation mode](docs/specs/012-collaboration/presentation-mode.md)).
 - **Template** is what a design was made from: a Logos, Photos or Wireframes template or a page layout, never a kind.
-- **This Browser** names a design saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
+- **Offline** names a design saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
 ## Repo layout
 

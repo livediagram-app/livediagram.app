@@ -1,6 +1,6 @@
-// Who sees Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "Who may publish"): the plan's owner or a team
+// Who sees Publish Roadmap (docs/specs/026-plan/public-roadmap.md "Who may publish"): the plan's owner or a team
 // member (no share link, no tab), on a plan saved to the server, outside an embed and a workbench frame. A guest owner
-// may publish, so signing in is not asked. A share-link holder at any level and a plan in This Browser see no row; the
+// may publish, so signing in is not asked. A share-link holder at any level and a plan kept Offline see no row; the
 // api refuses them all the same (403 `roadmap_needs_owner`), so this is presentation, never the rule. Pure.
 
 export type RoadmapScope = { ownerId: string; projectId: string };
@@ -28,7 +28,7 @@ export function roadmapScopeFor(input: GateInput): RoadmapScope | null {
   return { ownerId: scope.ownerId, projectId: scope.projectId };
 }
 
-/** The ids of the Plan boards on a tab, in its order: what Publish as Roadmap offers. */
+/** The ids of the Plan boards on a tab, in its order: what Publish Roadmap offers. */
 export function boardIdsOnTab(
   elements: readonly { id: string; type?: string; shape?: string }[],
 ): string[] {

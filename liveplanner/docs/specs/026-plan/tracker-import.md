@@ -185,7 +185,7 @@ Choosing a file shows what the import will make, before anything is written:
   already previewed, or, with none, the dialog says "Couldn’t read that file. Check it and try again."
 - **Into a new plan**: one create makes the plan with the tab and the card type, then every card lands with its
   comments in **one write**, so the plan opens whole. It is named after the board, filed where a new plan from New
-  would be, and opens in this window once made. A guest's plan is made in This Browser, as a guest's New makes one.
+  would be, and opens in this window once made. A guest's plan is made Offline, as a guest's New makes one.
   **A failed import deletes the new plan** (for good: it held nothing but the import), so no half-made plan is left
   behind.
 - **The cards land whole or not at all.** A large import is sent in several requests of at most 200 cards and 6 MB

@@ -109,7 +109,7 @@ export const PROJECTS_CREATED: Metric = {
   action: 'Created',
   allTypes: true,
   title: 'Projects Created',
-  blurb: 'New projects from the New Project wizard, stored in the cloud or in This Browser.',
+  blurb: 'New projects from the New Project wizard, stored in the cloud or Offline.',
 };
 
 export const PROJECTS_RENAMED: Metric = {
@@ -136,13 +136,13 @@ export const PROJECTS_DUPLICATED: Metric = {
 };
 
 // Offline Mode (docs/specs/006-project/offline-mode.md): a project kept only in this browser, and the two
-// conversions between the stores. Created in This Browser is a subset of Projects
+// conversions between the stores. Created Offline is a subset of Projects
 // Created, so it sits in Project Actions outside the headline as well as
 // heading its own stack.
 export const CREATED_OFFLINE = chart(
   'Project',
   'Created',
-  'Created in This Browser',
+  'Created Offline',
   'A new project kept only in this browser (Offline Mode), never sent to the server. Part of Projects Created.',
   { types: ['Offline'] },
 );
@@ -159,11 +159,11 @@ export const SAVED_TO_CLOUD = chart(
   'Project',
   'Moved',
   'Saved to Cloud',
-  'A project in This Browser synced up to the server with Sync Project, so it can be shared.',
+  'A project kept Offline synced up to the server with Sync Project, so it can be shared.',
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving projects kept Offline
 // after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
 // Each project it moves is a Saved to Cloud.
 export const LOCAL_MOVE_ACCEPTED = chart(
@@ -256,7 +256,7 @@ export const PROJECT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Project Actions',
   blurb:
-    'Projects opened, made, renamed, deleted and duplicated, and how new ones were started: a template link, or in This Browser (both part of Projects Created).',
+    'Projects opened, made, renamed, deleted and duplicated, and how new ones were started: a template link, or Offline (both part of Projects Created).',
   members: [
     PROJECTS_LOADED,
     PROJECTS_CREATED,
@@ -1142,7 +1142,7 @@ export const PLAN_CALENDAR_FEEDS_TURNED_OFF = chart(
   { types: ['CalendarFeed', 'MyWorkCalendarFeed'], rising: 'neutral' },
 );
 
-// Publish as Roadmap (docs/specs/026-plan/public-roadmap.md "Telemetry", in the liveplanner folder): roadmaps
+// Publish Roadmap (docs/specs/026-plan/public-roadmap.md "Telemetry", in the liveplanner folder): roadmaps
 // published, their settings changed, their links copied and roadmaps unpublished (its dialog opening is a Dialogs &
 // Panels chart, features.ts). Never a plan, a board, a column or a link.
 export const PLAN_ROADMAPS_PUBLISHED = chart(
@@ -1165,7 +1165,7 @@ export const PLAN_ROADMAPS_COPIED = chart(
   'Plan',
   'Copied',
   'Roadmap Links Copied',
-  "A published roadmap's link copied from Publish as Roadmap.",
+  "A published roadmap's link copied from Publish Roadmap.",
   { types: ['Roadmap'] },
 );
 
@@ -1472,7 +1472,7 @@ export const FORMS_CREATED = chart(
   'Form',
   'Created',
   'Forms Started',
-  "A Form tab started from Start Planning, by its starter, made from a board's cog, or made by Publish as Roadmap's Create a Suggestion Form.",
+  "A Form tab started from Start Planning, by its starter, made from a board's cog, or made by Publish Roadmap's Create a Suggestion Form.",
   { types: [...FORM_STARTERS.map((s) => s.telemetry), 'FromBoard', 'Roadmap'] },
 );
 
@@ -1581,7 +1581,7 @@ export const FORMS_SYNCED_TO_SHARE = chart(
   'Form',
   'Moved',
   'Projects Synced to Share a Form',
-  'A project in This Browser synced from Share Form, so its form could be published.',
+  'A project kept Offline synced from Share Form, so its form could be published.',
   { types: ['SyncedToShare'] },
 );
 

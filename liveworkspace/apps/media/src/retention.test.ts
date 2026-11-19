@@ -106,7 +106,7 @@ describe('sweepUnusedImages with an app that reports per document', () => {
     expect(ids()).toEqual(['asleep', 'kept-a']);
   });
 
-  it('never takes an unclaimed picture of that app: a This Browser plan, or an upload from before claims', async () => {
+  it('never takes an unclaimed picture of that app: an offline plan, or an upload from before claims', async () => {
     await allReported();
     image('this-browser', 40, 'liveplanner.app', null);
     expect(await sweepUnusedImages(withPlanner(), CUTOFF)).toBe(0);

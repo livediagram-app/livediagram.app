@@ -91,7 +91,7 @@ export function placementDefaultTelemetry(key: string): 'Kind' | 'Template' {
 }
 
 /** An Inbox row the host read itself, marked `local`: from an item kept only in this browser, which the index never
- *  sees. Shown with the This Browser pill. */
+ *  sees. Shown with the Offline pill. */
 export type Located<T> = T & { local?: true };
 
 /** The host's own Inbox rows, read beside the index's each time the Inbox is read. */

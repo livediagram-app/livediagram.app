@@ -129,10 +129,10 @@ export type ExplorerProps = {
   /** Home's first run: for a person with nothing yet, the app's starting points in place of empty lists, and the
    *  hero's welcome. Without it Home shows its empty sections. */
   welcome?: WelcomeOptions;
-  /** The host's own rows in the sidebar's More group, after the Library (liveworkspace.app's This Browser link). */
+  /** The host's own rows in the sidebar's More group, after the Library (liveworkspace.app's Offline link). */
   sidebarLinks?: readonly SidebarLink[];
   /** The host app's items kept only in this browser, where the host can read them (the Explorer on the app's own
-   *  address): This Browser's Space in the sidebar (with its local folders), `/explorer/offline`, Home's tile, a
+   *  address): Offline's Space in the sidebar (with its local folders), `/explorer/offline`, Home's tile, a
    *  Trash group and Most Used and Recent. */
   thisBrowser?: ThisBrowserHost | null;
   /** The filter's every-app choice, "All" by default ("All apps" where the Explorer is no one app's). */

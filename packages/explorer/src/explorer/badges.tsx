@@ -17,6 +17,7 @@ import {
   TeamBadgeGlyph,
 } from '../ui/icons';
 import { kindWords, siteOf } from '../words';
+import { VISIBILITY_TONE } from '../visibility-tones';
 
 // A caps chip (optical-alignment.md): its word centres on its cap band, so "PRIVATE" no longer sits a pixel high,
 // and gives back its trailing tracking.
@@ -34,7 +35,7 @@ export function VisibilityBadge({
         caps
         title="Public: anyone can find it, view it and make their own copy."
         data-visibility="public"
-        className={`${BADGE} bg-pink-50 text-pink-700 ring-pink-200 dark:bg-pink-500/10 dark:text-pink-300 dark:ring-pink-500/30`}
+        className={`${BADGE} ${VISIBILITY_TONE.public.chip}`}
         icon={<SharedDotGlyph />}
       >
         Public
@@ -50,7 +51,7 @@ export function VisibilityBadge({
             ? 'Shared: you reach it through a link.'
             : 'Shared: anyone with one of its links can open it.'
         }
-        className={`${BADGE} bg-emerald-50 text-emerald-700 ring-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:ring-emerald-500/30`}
+        className={`${BADGE} ${VISIBILITY_TONE.shared.chip}`}
         icon={<SharedDotGlyph />}
       >
         Shared
@@ -62,7 +63,7 @@ export function VisibilityBadge({
       <Chip
         caps
         title="Team: every member of the team can open it."
-        className={`${BADGE} bg-brand-50 text-brand-700 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30`}
+        className={`${BADGE} ${VISIBILITY_TONE.team.chip}`}
         icon={<TeamBadgeGlyph />}
       >
         Team
@@ -72,8 +73,8 @@ export function VisibilityBadge({
   return (
     <Chip
       caps
-      title="Private: only visible to you."
-      className={`${BADGE} bg-slate-100 text-slate-600 ring-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:ring-slate-700`}
+      title="Private: only visible to you, but synced to our servers."
+      className={`${BADGE} ${VISIBILITY_TONE.private.chip}`}
       icon={<PrivateBadgeGlyph />}
     >
       Private

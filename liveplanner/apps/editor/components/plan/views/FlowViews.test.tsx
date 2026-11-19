@@ -260,7 +260,7 @@ describe('flow charts', () => {
     expect(screen.queryByText(/Counting since/)).toBeNull();
   });
 
-  it('says what is missing: no finishes, no counts, This Browser, a failed read and outside a plan', async () => {
+  it('says what is missing: no finishes, no counts, Offline, a failed read and outside a plan', async () => {
     fetchFlow.mockResolvedValue({ ...ANSWER, counts: [], cards: [] });
     draw('cycle-time', planWith());
     await screen.findByText('No cards finished in this range');

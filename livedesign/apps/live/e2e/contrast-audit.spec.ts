@@ -48,7 +48,7 @@ test.describe('Contrast audit, dark mode', () => {
 
     // The shared Share dialog (`@liveworkspace/explorer`, ShareDialog.test.tsx): named "Share <the design>",
     // headed "Share This Design", its composer ending in Create Pass.
-    await page.getByRole('button', { name: /^Share$/ }).click();
+    await page.getByRole('button', { name: /^Share, / }).click();
     const dialog = page.getByRole('dialog', { name: /^Share / });
     await dialog.getByRole('heading', { name: 'Share This Design' }).waitFor();
     await dialog.getByRole('button', { name: 'Create Pass' }).waitFor();

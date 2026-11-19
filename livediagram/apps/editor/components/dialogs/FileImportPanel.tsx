@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { Button, BackBar } from '@livediagram/ui';
+import { FileTypes } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { ImportDropZone } from './ImportDropZone';
@@ -17,6 +18,7 @@ export function FileImportPanel({
   formatTitle,
   dropLabel,
   hint,
+  fileTypes,
   note,
   onImportFile,
   onDone,
@@ -25,6 +27,8 @@ export function FileImportPanel({
   formatTitle: string;
   dropLabel: string;
   hint: string;
+  // The file endings the drop target takes (FileTypes), under it with the hint.
+  fileTypes?: readonly string[];
   note?: ReactNode;
   // Opens the picker, or imports the dropped file when one is given.
   onImportFile: (onProgress: ProgressListener, dropped?: File) => Promise<ImportOutcome>;
@@ -68,7 +72,7 @@ export function FileImportPanel({
   return (
     <div>
       {onBack ? (
-        <BackBar label="All formats" current={formatTitle} onClick={onBack} disabled={busy} />
+        <BackBar label="All Formats" current={formatTitle} onClick={onBack} disabled={busy} />
       ) : null}
       <ImportDropZone
         label={dropLabel}
@@ -76,6 +80,7 @@ export function FileImportPanel({
         onDropData={onDrop}
         {...(error ? { error } : {})}
       />
+      {fileTypes?.length ? <FileTypes types={fileTypes} className="mt-2" /> : null}
       <p className="mt-3 text-xs leading-relaxed text-slate-600 dark:text-slate-300">{hint}</p>
       <div className="mt-4 flex items-center justify-between gap-3">
         <div aria-live="polite" className="min-w-0">

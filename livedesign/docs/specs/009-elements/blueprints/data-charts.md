@@ -205,7 +205,7 @@ can.level === 'edit' && !isReadOnly`, `commit = commitElements`, `tick = tickEle
    `{ ...chartFieldsFromTable(el, read.table), chartSheetSource }` on the chart, telemetry `ChartSheetLink`.
 2. **Reads**: `useSheetLinkedCharts` keys each linked chart of the open tab by `sheetLinkKey(source)`
    (`itemId|sheetId|range|cols`), reads each key once on open, on a tab change and on a `source-changed` frame naming
-   its plan and sheet, with the item's grant and `watch: itemId` (no grant, as in This Browser: no watch). One read in
+   its plan and sheet, with the item's grant and `watch: itemId` (no grant, as kept Offline: no watch). One read in
    flight per key; a frame while one is in flight reads once more after it.
    **The first read waits** for `ready` (sign-in answered, so the token provider is registered, and the item
    loaded): before it no range is read and no frame reads, so there is no anonymous read and the grant asked for is

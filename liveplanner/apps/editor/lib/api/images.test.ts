@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // The Image field's client (docs/specs/026-plan/item-types.md "Image fields"): the gate before anything is sent, the
-// upload for a plan with the index's grant (none for a This Browser plan), each refusal in the panel's own words, and
+// upload for a plan with the index's grant (none for an offline plan), each refusal in the panel's own words, and
 // the read that hands an <img> one shared blob URL per picture, or null when it can't be shown.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { MAX_IMAGE_BYTES } from '@liveworkspace/media';
@@ -139,7 +139,7 @@ describe('apiUploadImage', () => {
     expect(header(calls[0]!, 'X-Image-Original-Name')).toBeNull();
   });
 
-  it('names no plan for a This Browser plan, and asks no grant', async () => {
+  it('names no plan for an offline plan, and asks no grant', async () => {
     await offlinePutRecord(testRecord({ id: 'p1' }));
     await apiUploadImage(SCOPE, png());
     expect(calls[0]!.url).toBe(`${API_BASE}/images`);
@@ -352,7 +352,7 @@ describe('apiImageUrl', () => {
     expect(URL.revokeObjectURL).toHaveBeenCalledWith(a);
   });
 
-  it('reads a This Browser plan’s picture as its uploader, naming no plan', async () => {
+  it('reads an offline plan’s picture as its uploader, naming no plan', async () => {
     await offlinePutRecord(testRecord({ id: 'p1' }));
     expect(await apiImageUrl(SCOPE, 'img-2')).toMatch(/^blob:/);
     expect(calls[0]!.url).toBe(`${API_BASE}/images/img-2`);

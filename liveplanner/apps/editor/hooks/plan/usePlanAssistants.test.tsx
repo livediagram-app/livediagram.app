@@ -45,7 +45,7 @@ beforeEach(() => {
 });
 
 describe('apiPlanAssistants', () => {
-  it('reads the plan’s route, and none for a tab-scoped link or a This Browser plan', async () => {
+  it('reads the plan’s route, and none for a tab-scoped link or an offline plan', async () => {
     expect(await apiPlanAssistants(SCOPE)).toEqual([CURSOR]);
     expect(vi.mocked(apiFetch).mock.calls[0]![0]).toBe('/api/projects/p%201/items/assistants');
     expect(await apiPlanAssistants({ ...SCOPE, tabId: 't1' })).toEqual([]);

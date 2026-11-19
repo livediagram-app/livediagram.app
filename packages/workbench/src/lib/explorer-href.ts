@@ -11,7 +11,7 @@ export function explorerHref(path = '', search = ''): string {
   return `/explorer${tail ? `/${tail}` : ''}${query ? `?${query}` : ''}`;
 }
 
-/** The Explorer opened from an open item: the place that holds item `id` (its folder, its team's, This Browser's or
+/** The Explorer opened from an open item: the place that holds item `id` (its folder, its team's, Offline's or
  *  Shared With Me), which the Explorer works out from the id (liveworkspace/docs/specs/004-index/one-explorer.md "Opening
  *  from an open item"). With no item, the Explorer as any other door opens it. */
 export function explorerItemHref(id?: string | null): string {

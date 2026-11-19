@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import {
+  endMoveCurrent,
+  requestMoveCurrent,
+  useMoveCurrentRequest,
+} from '@liveworkspace/explorer/move-current-request';
 import { useRenameCurrentRequest } from './useRenameCurrentRequest';
 
 type Props = { nonce: number; explorerOpen: boolean; available: boolean };
@@ -66,5 +71,45 @@ describe('useRenameCurrentRequest', () => {
     rerender({ nonce: 2, explorerOpen: true, available: true });
     expect(result.current.request).toBe(2);
     expect(openExplorer).not.toHaveBeenCalled();
+  });
+
+  describe("the Share legend's Team stop (requestMoveCurrent)", () => {
+    afterEach(() => act(() => endMoveCurrent()));
+    const pending = () => renderHook(() => useMoveCurrentRequest());
+
+    it('opens the closed panel once and leaves the ask for the card', () => {
+      const { rerender, openExplorer } = setup();
+      const ask = pending();
+      act(() => requestMoveCurrent());
+      expect(openExplorer).toHaveBeenCalledTimes(1);
+      rerender({ nonce: 0, explorerOpen: true, available: true });
+      expect(openExplorer).toHaveBeenCalledTimes(1);
+      expect(ask.result.current).toBeGreaterThan(0);
+    });
+
+    it('leaves an open panel open', () => {
+      const { openExplorer } = setup({ explorerOpen: true });
+      const ask = pending();
+      act(() => requestMoveCurrent());
+      expect(openExplorer).not.toHaveBeenCalled();
+      expect(ask.result.current).toBeGreaterThan(0);
+    });
+
+    it('lapses when the panel closes before the card took it', () => {
+      const { rerender } = setup();
+      const ask = pending();
+      act(() => requestMoveCurrent());
+      rerender({ nonce: 0, explorerOpen: true, available: true });
+      rerender({ nonce: 0, explorerOpen: false, available: true });
+      expect(ask.result.current).toBe(0);
+    });
+
+    it('lapses where the panel cannot show', () => {
+      const { openExplorer } = setup({ available: false });
+      const ask = pending();
+      act(() => requestMoveCurrent());
+      expect(ask.result.current).toBe(0);
+      expect(openExplorer).not.toHaveBeenCalled();
+    });
   });
 });

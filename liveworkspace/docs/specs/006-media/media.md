@@ -132,7 +132,7 @@ from that document to the image at once, new or deduped, so the image is placed 
 and a new image remembers that document as the one it was **claimed** by (a deduped image keeps whatever it
 had, so an older image is never claimed after the fact). Only that document's own report can then take the
 reference away (References, below). An app sends it whenever it knows the document; an upload for a
-document the server never sees (a This Browser plan) leaves it out.
+document the server never sees (an offline plan) leaves it out.
 
 **Uploaded by a tool.** `X-Image-Source` names the tool that uploaded the picture: `mcp` (an AI assistant, through
 an app's MCP server) or `cli` (the app's command line). Any other value, or none, is a person's upload. The service
@@ -162,7 +162,7 @@ as placing nothing.
 An app whose documents report one by one, as they wake, never says `complete` (liveplanner: a plan that has
 not woken since reporting began has sent nothing). It claims its pictures instead, at upload (above): a
 claimed picture keeps its reference until its own document reports a set without it, so a document that
-never reports never loses one. Its unclaimed pictures (older uploads, and This Browser documents') wait for
+never reports never loses one. Its unclaimed pictures (older uploads, and Offline documents') wait for
 `complete` like any other app's, which it never sends, so the sweep never reaches them.
 
 ### Unconfirmed references
@@ -232,7 +232,7 @@ unchecked. A document the index
 answers as gone, or not the caller's to open, is not a use. A document in the owner's Trash is: its
 references stay (the sweep keeps its pictures too), and deleting the picture would leave a broken one on
 restore, so the badge counts it and names it "in the Trash", without a link. An older client that reads only
-`usage` sees the same badges as before. An item saved only in This Browser has no references: its
+`usage` sees the same badges as before. An item saved only Offline has no references: its
 pictures are embedded in it, not placed from the gallery, so it never makes a gallery image used.
 
 A document reports its set from its outbox on idle, at most once a minute, so an image placed a moment

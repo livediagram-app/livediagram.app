@@ -136,7 +136,7 @@ export function createUseAccountBootstrap({
       return registerTokenProvider((opts) => getToken(opts));
     }, [held, isSignedIn, getToken]);
 
-    // 3. Who the Inbox's This Browser snapshot is for, once settled (lib/offline/inbox-snapshot.ts): the page on this
+    // 3. Who the Inbox's Offline snapshot is for, once settled (lib/offline/inbox-snapshot.ts): the page on this
     // address lists those rows only to them.
     const settledAccount = workbench
       ? workbench.person.id

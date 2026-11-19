@@ -191,7 +191,7 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   plan the copy shows them to everyone; a copied plan carries the source's grants for them too, so it shows them
   to its readers as the original does, and reports them in use under its own id (as an Image field's,
   [item-types.md](item-types.md#image-fields) "Image fields").
-- **This Browser plans** take no attachments: the server holds no record of them, so nothing would report their
+- **Offline plans** take no attachments: the server holds no record of them, so nothing would report their
   pictures and the sweep would take them. The zone reads "Save this plan to your account to add images." and
   takes no file; a card that came in with attachments (a plan taken offline) keeps them and shows them to their
   uploader.
@@ -221,8 +221,8 @@ The sweep can never take a picture a plan still holds, whether or not that plan 
   it away, so a plan that never reports again keeps every picture uploaded for it.
 - **Never `complete`.** Plans report one by one as they wake, so liveplanner never tells the service it has sent
   every plan. The service then sweeps only pictures claimed for a plan that has since reported them gone (once
-  every other app has reported complete); a picture with no claim, uploaded before claims began or for a This
-  Browser plan (an Image field there, which uploads with no `p`), is never swept.
+  every other app has reported complete); a picture with no claim, uploaded before claims began or for an offline
+  plan (an Image field there, which uploads with no `p`), is never swept.
 - **Past the cap.** A plan holding more pictures than one report carries (500) sends nothing and logs it, so no
   reference is dropped; it reports again once back under.
 - **A copy is vouched for by its source** (Work Tracker 1190). A copy (a duplicate, a tab copied into a new plan, a
@@ -270,7 +270,7 @@ card deleted for good.
 - **Kept is final, failures retry.** An answer either way ends the wait; a release the service can't answer tries
   again a minute later, doubling to an hour, and gives up after 12 tries. The daily sweep stays the backstop for
   anything kept. At most 20 releases are asked a wake.
-- **This Browser plans** release nothing: the server holds no record of them, and their pictures were uploaded for
+- **Offline plans** release nothing: the server holds no record of them, and their pictures were uploaded for
   no plan.
 
 ## Item types
@@ -434,7 +434,7 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
   The Details column then shows the rule in words with the next day ("Repeats every week on Mon and Thu · Next Thu
   5 Nov"), and for an Editor **Edit** and **Stop** beside it.
 - **Where it runs**: from the plan's Durable Object alarm, never a sweep over every plan, so a plan without a
-  repeating card does no repeat work at all. A plan in This Browser makes no copies (it has no alarm), and its
+  repeating card does no repeat work at all. A plan kept Offline makes no copies (it has no alarm), and its
   menu offers no Repeat; a rule it holds from before reads "Repeats only in plans saved to your account".
 - **Duplicate**: a card's Duplicate (its menu or the item panel's) is a plain card without the rule, so a Participant
   may duplicate a repeating card and the copy never makes copies of its own beside the source's.
@@ -670,7 +670,7 @@ A card's history marks an agent's changes with the same sparkle, worded by what 
 - **This plan's cards only** (not archived, not in the Trash), as the card finder draws them (type glyph and
   colour, number, title), newest change first, at most 50 until a search narrows them. A card the thread is already
   on is shown with **Already on this card**, and cannot be picked. No other plan is offered, in the cloud or in
-  This Browser.
+  Offline.
 - Picking a card adds the thread at once ("Added to #12"). Once added, the thread's shared chip counts the new card
   on every card it is on.
 
@@ -719,7 +719,7 @@ Every write is applied by the home plan to the thread as stored, so concurrent w
 - **Copies**: a copied plan takes the threads its own cards hold (stored in it), on the copied cards; a thread
   shared in from another plan stays that plan's and is not copied.
 - **Exports**: a tab's JSON export carries no comments (they name people), as before.
-- **Offline projects** (This Browser) keep their threads in their own record beside the items, with every rule
+- **Offline projects** (Offline) keep their threads in their own record beside the items, with every rule
   above minus the room and other plans; **Sync to cloud** sends them with the items; **Take offline** keeps the
   threads the plan stores and leaves behind the ones shared in from other plans.
 
@@ -728,7 +728,7 @@ Every write is applied by the home plan to the thread as stored, so concurrent w
 A card's single thread from before threads becomes the card's **first thread**, with every comment, keeping its
 resolved state, titled automatically from its first comment's author and text. Plans in the cloud move once, when
 the plan is next opened (a step of its schema); a thread that arrives later in the old shape (an older copy, an
-import, a restore) is taken the same way as it lands. This Browser plans move as their record is read.
+import, a restore) is taken the same way as it lands. Offline plans move as their record is read.
 
 ### Telemetry
 
@@ -867,9 +867,9 @@ In the card panel, on a tab of its own, **Activity**, never mixed with the threa
   made before history, or past its age): the shared compact empty state, a history glyph, **No Activity Yet** and
   "Changes to this card show here: who moved it, what they set, and when."; a failed read: **Couldn't Load
   Activity**, "Check your connection and try again." and **Try Again**.
-- **This Browser** plans keep no history: the tab says **No Activity in This Browser** and "Plans in This Browser
+- **Offline** plans keep no history: the tab says **No Activity Offline** and "Offline plans
   keep no card history." in place of the timeline.
-- A panel with no plan to read from (a preview) still shows the tab, with the This Browser note's sibling: **No
+- A panel with no plan to read from (a preview) still shows the tab, with the Offline note's sibling: **No
   Activity Here** and "Activity shows on cards in a plan."
 - **Every role** sees the tab and reads it (a Viewer included); nobody writes it.
 - Picking it sends `Plan · Toggled · ActivityOn` (the event the earlier Activity switch and section sent when
@@ -1010,7 +1010,7 @@ Items follow the project's access ([Auth and guest access](../014-identity/auth-
 - **Who a card can be assigned to**: you, the joined members of **the plan's team** (the team whose library holds
   it, and only when your sign-in names that team; by their profile name, else their invite address's local part),
   fetched once a project has Plan content, and the plan's **custom assignees**. People from your other teams are
-  never offered: a plan in My Work, one shared with you from someone else's My Work, one in This Browser or a
+  never offered: a plan in My Work, one shared with you from someone else's My Work, one kept Offline or a
   guest's offers only you and custom assignees. A guest, who has no teams, never has its teams asked for (the
   request could only fail). A card already assigned to someone outside that list keeps them, shown in its picker
   (and, as a held assignee, in the plan's other pickers; see "Where the list comes from" below). Comment

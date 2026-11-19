@@ -5,6 +5,7 @@
 // is hidden: zen mode (docs/specs/007-editor/zen-mode.md), an embed (docs/specs/013-workspace/embeds.md) and, for
 // the tab bar, the welcome flow. Plain functions that return elements, called in EditorView's render, so the tree is
 // the one EditorView drew inline.
+import type { VisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import type { ReactNode } from 'react';
 import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
@@ -25,7 +26,15 @@ const workbenchProjectHref = (projectId: string, shareCode: string | null) =>
 // The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
 // canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
 // side (docs/specs/007-editor/split-view.md) lays it across both panes.
-export function renderEditorHeader(ctx: EditorContextValue): ReactNode {
+export function renderEditorHeader(
+  ctx: EditorContextValue,
+  view: {
+    isOffline: boolean;
+    headerCommunity: boolean;
+    onTakeOffline: (() => void) | undefined;
+    visibilityActions: VisibilityActions | undefined;
+  },
+): ReactNode {
   const {
     zenMode,
     appChrome,
@@ -33,6 +42,7 @@ export function renderEditorHeader(ctx: EditorContextValue): ReactNode {
     canShareProject,
     hydrated,
     projectShareable,
+    projectTeamId,
     projectId,
     sessionCommunity,
     makeCopy,
@@ -48,6 +58,12 @@ export function renderEditorHeader(ctx: EditorContextValue): ReactNode {
       <PlanCornerActions
         showShare={canShareProject && hydrated && !anyWelcomeOpen}
         shareable={projectShareable}
+        // The Share button's colour reads the plan's visibility, as the header's badges did.
+        visibility={{
+          team: !!projectTeamId,
+          offline: view.isOffline,
+          community: view.headerCommunity,
+        }}
         // Visitors see "Make a copy" instead of "Share" (a joined team member is no visitor). Hidden through the
         // welcome flow and hydration; a Community visitor gets it from the Community bar instead.
         onMakeCopy={
@@ -56,6 +72,8 @@ export function renderEditorHeader(ctx: EditorContextValue): ReactNode {
             : undefined
         }
         copying={copying}
+        onTakeOffline={view.onTakeOffline}
+        visibilityActions={view.visibilityActions}
         onOpenAccount={() => openSettingsOn('account')}
         onOpenShare={() => {
           setShareDialogOpen(true);

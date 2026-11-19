@@ -1,6 +1,6 @@
 'use client';
 
-// This Browser as a Space (liveworkspace/docs/specs/004-index/one-explorer.md "This Browser, a Space"): whether it
+// Offline as a Space (liveworkspace/docs/specs/004-index/one-explorer.md "Offline, a Space"): whether it
 // shows, its folders' verbs, and Sync keeping an item's place. Everything here reads this browser's storage through
 // the hooks that parse it once per change (ThisBrowser.tsx); nothing asks the network.
 
@@ -16,21 +16,21 @@ import { useExplorer } from '../context';
 import { LOCAL_ROW_KEY } from '../sidebar/expansion';
 import { useThisBrowserFolders, useThisBrowserItems, thenReload } from '../ThisBrowser';
 
-/** The placement browser's id for This Browser, drawn as a space beside the teams. No team's id looks like it. */
+/** The placement browser's id for Offline, drawn as a space beside the teams. No team's id looks like it. */
 export const LOCAL_SPACE_ID = 'this-browser';
 
 /** What a new local folder is called until the person names it, as My Work's are. */
 export const NEW_FOLDER_NAME = 'New Folder';
 
 export const LOCAL_FOLDER_COPY = {
-  full: 'Browser Storage keeps as many folders as it can. Delete one to make another.',
+  full: 'Offline keeps as many folders as it can. Delete one to make another.',
   empty: 'This folder is empty.',
   deleteTitle: (name: string) => `Delete “${name}”?`,
   deleteMessage: (parent: string) =>
     `Its folders and items move up to ${parent}. Nothing in it is deleted.`,
 } as const;
 
-/** This Browser's live items and folders, and whether the Space shows: while it holds a live item or a folder. */
+/** Offline's live items and folders, and whether the Space shows: while it holds a live item or a folder. */
 export function useThisBrowserSpace(): {
   live: ThisBrowserItem[];
   folders: readonly ThisBrowserFolder[];
@@ -123,6 +123,6 @@ export function useRenameLocalFolder(): (id: string, name: string) => void {
   return useCallback((id, name) => void renameThisBrowserFolder(app, id, name), [app]);
 }
 
-/** The sidebar's open-row keys: This Browser's own row, and each local folder's. */
+/** The sidebar's open-row keys: Offline's own row, and each local folder's. */
 export { LOCAL_ROW_KEY };
 export const localKey = (folderId: string) => `local:${folderId}`;

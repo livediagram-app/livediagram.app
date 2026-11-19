@@ -64,8 +64,8 @@ store](photo-store.md).
     Search). The picked picture becomes the photo's first layer, **Background**, at its own pixel size (scaled
     down to the pixel cap, keeping its shape, when larger), and the page takes its size. The view frames the page
     again as the photo starts, as **Fit Photo** does, on a desktop, a phone and a narrow window alike, so the picture
-    fills the view rather than sitting at the blank sheet's zoom (a photo started Blank, dropped or pasted frames too). On a design kept in This
-    Browser a picture's id is its `data:` URL ([Offline Mode](../006-design/offline-mode.md)), so its bytes are read
+    fills the view rather than sitting at the blank sheet's zoom (a photo started Blank, dropped or pasted frames too). On a design kept Offline
+    a picture's id is its `data:` URL ([Offline Mode](../006-design/offline-mode.md)), so its bytes are read
     from that URL and never asked of the images api; a synced design's picture is fetched from the api.
   - **Blank**: preset tiles, each drawn to scale: **HD (1920 x 1080)**, **4K (3840 x 2160)**, **Square (1080 x 1080)**, **Portrait Post (1080 x 1350)**, **Story (1080 x 1920)**, **A4 Print (2480 x 3508)**, **Icon (1024 x 1024)**, and **Custom** (width and height fields, 1 to the pixel cap, a chain to keep the shape: the shape the size had when Custom or Keep Shape was turned on, so retyping a side keeps it; a field can be emptied and retyped, and Create waits, saying "Enter a whole number of pixels.", until it holds one). One press
     of **Create** makes the photo with one layer, **Background**, transparent (the checkerboard). The card offers no fill choice;

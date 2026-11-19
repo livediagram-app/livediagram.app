@@ -16,7 +16,7 @@ const TONES: Record<Tone, string> = {
   emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-400/15 dark:text-emerald-300',
   indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-400/15 dark:text-indigo-300',
   rose: 'bg-rose-100 text-rose-700 dark:bg-rose-400/15 dark:text-rose-300',
-  // This Browser's, as its pill (THIS_BROWSER_TONE): no app's accent and no status colour.
+  // Offline's, as its pill (THIS_BROWSER_TONE): no app's accent and no status colour.
   teal: 'bg-teal-100 text-teal-700 dark:bg-teal-400/15 dark:text-teal-300',
 };
 // liveplanner's current row and tile are violet, its brand; here they are each app's brand.

@@ -152,7 +152,7 @@ export async function untilHydrated(locator: Locator): Promise<void> {
 
 // `/new` makes a document as it mounts and opens it on its start, Start Making Pages
 // (docs/specs/007-editor/new-document-route.md). Resolves to the new document's id once the editor is up; `url`
-// carries a `/new?folder=` / `?team=` / `?blank=1` context. A guest's plain `/new` makes it in This Browser;
+// carries a `/new?folder=` / `?team=` / `?blank=1` context. A guest's plain `/new` makes it Offline;
 // `serverNewUrl` makes it on livedocuments.
 export async function createDocument(page: Page, url = '/new'): Promise<string> {
   await page.goto(url);
@@ -212,7 +212,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
   await openStartBlank(page, await serverNewUrl(page, '/new?blank=1'));
 }
 
-// A /new address that makes the document on livedocuments. A guest's own /new makes it in This Browser
+// A /new address that makes the document on livedocuments. A guest's own /new makes it Offline
 // (docs/specs/006-document/save-locations.md "The default depends on who is creating"), but a `?folder=` context
 // names a place on the server, so /new makes it there whoever is creating. The page becomes a minted guest (its token
 // where the app keeps it, so /new never leaves for the guest handoff), or keeps the account it is signed in as

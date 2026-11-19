@@ -37,9 +37,9 @@ Two things bypass it:
   account because it now lives in this browser, so there is nothing to restore.
 - **Account deletion** removes everything the account owns at once.
 
-## This Browser
+## Offline
 
-A canvas kept only in this browser is never on the index, so it has no Trash. **This Browser** (in the editor's Explorer panel) deletes
+A canvas kept only in this browser is never on the index, so it has no Trash. **Offline** (in the editor's Explorer panel) deletes
 one for good, after a confirmation: "Delete this canvas?", "“Roadmap” is kept only in this browser, so deleting it
 removes it for good." ([Offline Mode](../006-document/offline-mode.md)).
 

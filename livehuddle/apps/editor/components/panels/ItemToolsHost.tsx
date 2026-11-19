@@ -23,7 +23,7 @@ export function ItemToolsHost({
   onWebhooks?: () => void;
 }) {
   const { isSignedIn, accountUserId } = useAccountBootstrap();
-  // In This Browser, both rows ask for a sync first (footer-tools-menu.md "Always there"), with Share's Sync move.
+  // Offline, both rows ask for a sync first (footer-tools-menu.md "Always there"), with Share's Sync move.
   const { syncToCloud, selfParticipant } = useEditorContext();
   const isOffline = useIsOfflineDocument(currentDocumentId ?? null);
   const ready = selfParticipant.id !== 'self';

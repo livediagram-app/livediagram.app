@@ -3,7 +3,7 @@
 // Starter Rules in Describe a Plan's preview (docs/specs/026-plan/describe-a-plan.md "The preview", "Starter rules"):
 // up to two Automations rules drafted with the plan, each a card with its On switch, its name, its sentence as the
 // Rules list draws it (in the draft's words, so a renamed column reads renamed) and Remove Rule. Nothing is made here:
-// Make Plan makes the rules left in. On a plan in This Browser, where Automations can't run, the section says the
+// Make Plan makes the rules left in. On a plan kept Offline, where Automations can't run, the section says the
 // rules are left out instead.
 
 import { useMemo } from 'react';
