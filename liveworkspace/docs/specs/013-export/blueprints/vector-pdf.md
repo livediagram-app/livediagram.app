@@ -30,7 +30,7 @@ Implements [vector-pdf.md](../vector-pdf.md). Code in `packages/vector-export`.
 | `src/pdf/glyph-forms.ts`      | `glyphOps`, `placeGlyphs`                                                                                |
 | `src/pdf/fallback-face.ts`    | `withFallbackFace`: text in a stack with no embedded face set in Inter                                   |
 | `src/pdf/text-layer.ts`       | `InvisibleFonts` (Type 3, 255 codes a font, ToUnicode), `readingOrder`, `mergeLines`, `textLayerOps`     |
-| `src/pdf/struct-tree.ts`      | `StructTree`: Document over H1 to H6 and P, MCIDs, the parent tree                                       |
+| `src/pdf/struct-tree.ts`      | `StructTree`: Document over the tag paths' elements and Figures, MCIDs, the parent tree, page rollback   |
 | `src/pdf/pdf-file.ts`         | `PdfFile`: objects, `CompressionStream` deflate, xref, trailer                                           |
 | `src/pdf/pdf-resources.ts`    | the one resource dictionary every page, form and pattern shares                                          |
 | `src/pdf/pdf-image.ts`        | RGB plus DeviceGray soft mask, `jpegInfo`, `dataUrlBytes`, `loadPixels`                                  |
@@ -51,16 +51,25 @@ Exports: `./pdf`, `./pdf-links`, `./pdf-page-size`, `./outline-svg`, `./outline-
    or viewport clip; a translucent group (or a group with a blend) draws into a transparency-group form.
 3. Text: `outlineTextElement` gives outlined paths with their glyph placements; a solid fill with no stroke places glyph
    forms, anything else paints the path. The text's runs, in page points, go to the text layer.
-4. After the walk: `mergeLines(readingOrder(items))` into `3 Tr` text objects; when the SVG has `data-pdf-tag`, each
-   line is marked content of its block's element and the drawing is wrapped in `/Artifact BMC ... EMC`.
-5. Any throw on a page: that page becomes `raster()` composited on white (no `raster`: the error is the caller's).
-6. Fonts, resources, tree, pages, catalog (`/MarkInfo`, `/StructTreeRoot`, `/Lang`, `/ViewerPreferences`), info
+4. Figures, during the walk of a tagged PDF: an element with `data-pdf-alt` closes the drawing's artifact, draws
+   inside `/Figure << /MCID n >> BDC ... EMC` and reopens it. Inside a figure, a translucent group's form or a
+   fallback picture no new figure opens: the alt texts met there join the one outside it (a group or picture drawn
+   straight on the page becomes the Figure of the alt texts inside it). A pattern's tile is never a figure.
+5. After the walk: `mergeLines(readingOrder(items))` into `3 Tr` text objects; when the PDF is tagged (a page has
+   `data-pdf-tag` or `data-pdf-alt`), each line is marked content of its tag path's leaf element and the drawing is
+   wrapped in `/Artifact BMC ... EMC`. `endPage` puts the page's new top-level elements in the Document, each Figure
+   before the first that starts below its top (EX6).
+6. Any throw on a page: that page becomes `raster()` composited on white (no `raster`: the error is the caller's),
+   and `resetPage` takes back every element, kid and MCID the page had added.
+7. Fonts, resources, tree, pages, catalog (`/MarkInfo`, `/StructTreeRoot`, `/Lang`, `/ViewerPreferences`), info
    (`/Title`), then the bytes.
 
 The products: each `export-tab-pdf.ts` dynamic-imports `@liveworkspace/vector-export/pdf`, builds the SVG with its
 `exportTabAsSvg`, passes `raster: () => renderTabToCanvas(...)`, `title: tab.name` and
 `fallbackFontCss: () => embeddedFontFaceCss(['inter'])`. livedocuments adds `pdfLinksFor` and tags
-(`blockTagger` in `article-snapshot.ts`, written as `data-pdf-tag`/`data-pdf-block` by `articleOpsToSvg`).
+(`blockTagger` in `article-snapshot.ts`, written as `data-pdf-tag`/`data-pdf-block` by `articleOpsToSvg`). Every
+product's image export (`svgImageShape` in `@liveworkspace/element-model`) puts the picture's alt text on its clip
+group as `data-pdf-alt`.
 
 ## Interfaces and contracts
 
@@ -79,8 +88,13 @@ type SvgPdfOptions = {
 function svgPagesToPdf(pages: readonly SvgPdfPage[], opts?: SvgPdfOptions): Promise<Blob>; // application/pdf
 ```
 
-Tags in the SVG: `data-pdf-tag` (H1 to H6, else read as P) with `data-pdf-block` (an integer, reading order) on a
-`<text>` or an ancestor.
+Tags in the SVG: `data-pdf-tag` with `data-pdf-block` (an integer, reading order) on a `<text>` or an ancestor. The
+tag is a path of segments `Tag#key` split by `/`, outermost first: `L#l0/LI#i4/LBody` is the words of list item 4,
+`L#l0/LI#i4/Lbl#m4` its marker, `Table#t0/TR#r2/TH` a header cell. Each segment's key names one element across the
+document (a segment with no key is keyed by its path); the last segment's key defaults to the block, so a container
+`LBody#4` is the same element as block 4's leaf `LBody` (a nested list sits in its item's body). Tags known: H1 to H6,
+P, BlockQuote, L, LI, Lbl, LBody, Table, TR, TH, TD; an unknown leaf reads as P, an unknown container is skipped.
+`data-pdf-alt` on any element makes it (and what it draws) a Figure with that `/Alt`.
 
 ## Errors and edge cases
 
@@ -105,12 +119,17 @@ the page's own SVG; nothing is fetched except pictures the SVG already names and
 - Glyph forms: each glyph written once (a nine-page article: 176 KB, against 3.7 MB with every outline inline).
 - Fallback pictures at EX1, cropped to the page and to their filter region; images capped at IMAGE_MAX_SCALE (3)
   device px per CSS px and shared across pages; MAX_RASTER_PIXELS 8,000,000.
-- O(n) in elements and characters: `mergeLines` and `readingOrder` are linear (a stable sort of tagged runs).
+- O(n) in elements and characters: `mergeLines` and `readingOrder` are linear (a stable sort of tagged runs); each
+  line's tag path is parsed once per distinct path and its elements found by key; a page's figures are sorted once
+  and merged with its blocks in one pass; alt texts inside a fallback picture are gathered once per picture, which
+  never overlap. `src/pdf/struct-tree.test.ts` holds a CPU-time budget for 20,000 tagged lines and 2,000 figures.
 
 ## Accessibility
 
-Text in render mode 3 with ToUnicode, in reading order, joined into lines with spaces; tagged H1 to H6/P where the
-writing knows them (EX4), `/Tabs /S`, `/Lang` (EX3), `/Title` with `DisplayDocTitle`.
+Text in render mode 3 with ToUnicode, in reading order, joined into lines with spaces; tagged headings, paragraphs,
+quotes, lists (L, LI, Lbl, LBody) and tables (Table, TR, TH with `/Scope`, TD) where the writing knows them (EX4);
+described pictures as Figures with `/Alt`, undescribed ones artifacts (EX6); `/Tabs /S`, `/Lang` (EX3), `/Title` with
+`DisplayDocTitle`.
 
 ## Observability
 
@@ -121,6 +140,8 @@ the embedded faces. No telemetry.
 
 - `src/pdf/core.test.ts`: matrices, transforms, path data, shapes, the file, resources, pictures, the text layer,
   tags, glyph forms, links, page size (read back with `src/test-pdf.ts`).
+- `src/pdf/struct-tree.test.ts`: tag paths, lists, tables, figures in reading order, rollback, the structure tree
+  dumped and checked whole, and the CPU-time budget.
 - `src/pdf/svg-to-pdf.test.ts` (jsdom, `src/test-dom.ts` standing in for layout, canvas, `Image`, `FontFace`): every
   SVG feature, the fallbacks, text, tags, the fallback face, fontkit loading.
 - `src/lazy-guard.test.ts`; the outliner's own tests in `src/outline-text/`.
@@ -142,4 +163,4 @@ fontkit 2.0.4 (with dfa 1.2.0 and brotli 1.3.3), lazy; their licence texts are `
 
 ## Defaults ledger
 
-EX1, EX2, EX3, EX4, EX5 ([DEFAULTS.md](DEFAULTS.md)).
+EX1, EX2, EX3, EX4, EX5, EX6 ([DEFAULTS.md](DEFAULTS.md)).
