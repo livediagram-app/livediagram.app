@@ -258,4 +258,17 @@ describe('naming', () => {
     expect(api.apiRenameVersion).toHaveBeenCalledWith(expect.anything(), 'd1', 't1', 'v1', null);
     expect(await screen.findByRole('button', { name: /Automatic/ })).toBeTruthy();
   });
+
+  // Work Tracker 1097: unnaming a version in the snapshots store can answer the automatic version already holding its
+  // revision, under that one's id.
+  it('follows an unnamed version to the automatic one that holds its revision', async () => {
+    const auto: VersionSummary = { ...VERSION, id: 'v_auto', name: null };
+    api.apiRenameVersion.mockResolvedValueOnce(auto);
+    panel();
+    await openVersion();
+    await act(async () => fireEvent.click(screen.getByRole('button', { name: 'Remove Name' })));
+    const row = await screen.findByRole('button', { name: /Automatic/ });
+    expect(row.getAttribute('aria-current')).toBeTruthy();
+    expect(screen.queryByRole('button', { name: /Draft/ })).toBeNull();
+  });
 });

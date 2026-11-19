@@ -4,6 +4,7 @@
 // changes. A colour someone picked that is not the theme's stays as it is, as an element's does.
 // Content on a page whose fill changed is re-inked for it, as any fill change re-inks. Pure.
 import {
+  newPageBackgroundOf,
   pagesOf,
   pagesInkFor,
   sameFill,
@@ -43,6 +44,19 @@ export function followedFill(fill: PageFill, prev: Theme, next: Theme): PageFill
 /** The tab with every page on a fill of the old theme's own moved to the new theme's, its content
  *  re-inked; the same tab when no page changes. */
 export function withPageBackgroundsFollowingTheme(tab: Tab, prev: Theme, next: Theme): Tab {
+  return pagesFollowingTheme(newPageBackgroundFollowingTheme(tab, prev, next), prev, next);
+}
+
+/** The tab's New Page Background following a theme change as a page's does: a fill of the old theme's own becomes
+ *  the new theme's. */
+function newPageBackgroundFollowingTheme(tab: Tab, prev: Theme, next: Theme): Tab {
+  const own = newPageBackgroundOf(tab);
+  const to = own?.fill ? followedFill(own.fill, prev, next) : undefined;
+  if (!own || !to || sameFill(to, own.fill)) return tab;
+  return { ...tab, newPageBackground: { ...own, fill: to } };
+}
+
+function pagesFollowingTheme(tab: Tab, prev: Theme, next: Theme): Tab {
   const pages = pagesOf(tab);
   if (!pages.some((p) => p.background?.fill)) return tab;
   const moved: string[] = [];

@@ -4,7 +4,7 @@
 // lock stay each page's own. Pure, shared by the page panel, the canvas Format tool and the agents'
 // page changes, so each copies the same way.
 import type { Tab } from './index';
-import { pagesOf, pageKindOf, type PageBackground } from './page';
+import { pagesOf, pageKindOf, type Page, type PageBackground } from './page';
 import {
   pageBackgroundSet,
   pageBackgroundStored,
@@ -13,11 +13,16 @@ import {
   type PageEdit,
 } from './pages-edits';
 import { pagesInkFor, type InkMemory, type PageInk } from './page-ink';
+import { pageUnits } from './article-pages';
+import { newPageBackgroundOf, withNewPageBackground } from './tab-new-page-background';
+import { isThemeOwnFill } from './page-theme-fills';
+import { sameFill } from './page-paint';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
   pageOrientation?: unknown;
   articles?: unknown;
+  newPageBackground?: unknown;
 };
 
 type BackgroundCopyRefusal = 'unknown_page' | 'locked';
@@ -90,4 +95,68 @@ export function pageBackgroundSpread<T extends PagesTab>(
   const inked = pagesInkFor(out, inks, memory);
   const recall = inks.length > 0 ? inked.memory : memory;
   return { tab: inked.tab, ...(recall ? { memory: recall } : {}), applied, skipped };
+}
+
+export type NewPageBackgroundSpread<T> = {
+  tab: T;
+  memory?: InkMemory;
+  // The pages that now wear it (an article counts each of its pages), and the locked ones left as they were.
+  applied: number;
+  skipped: number;
+};
+
+/** Apply to Every Page: every page of the tab given its new-page background (or put back on the paper when it has
+ *  none), as one edit, each re-inked for its new fill in one walk; `reaches` narrows the pages (a look's restyle
+ *  reaches only the pages still on the old default). An article is one unit (its pages share one background) and
+ *  keeps its own pattern (its ruled lines are its Style's); a locked page keeps its own and counts as skipped. */
+export function pagesGivenNewPageBackground<T extends PagesTab>(
+  tab: T,
+  memory?: InkMemory,
+  reaches: (page: Page) => boolean = () => true,
+): NewPageBackgroundSpread<T> {
+  const background = newPageBackgroundOf(tab);
+  const patch: Partial<PageBackground> = { fill: background?.fill, pattern: background?.pattern };
+  const pages = pagesOf(tab);
+  let out = tab;
+  const inks: PageInk[] = [];
+  let applied = 0;
+  let skipped = 0;
+  for (const unit of pageUnits(pages)) {
+    const first = pages.find((p) => p.id === unit.pageIds[0])!;
+    if (!reaches(first)) continue;
+    const article = pageKindOf(first) === 'article';
+    const edit = pageBackgroundStored(out, first.id, article ? { fill: patch.fill } : patch);
+    if ('refused' in edit) {
+      skipped += unit.pageIds.length;
+      continue;
+    }
+    out = edit.tab;
+    inks.push(...edit.inks);
+    applied += unit.pageIds.length;
+  }
+  const inked = pagesInkFor(out, inks, memory);
+  const recall = inks.length > 0 ? inked.memory : memory;
+  return { tab: inked.tab, ...(recall ? { memory: recall } : {}), applied, skipped };
+}
+
+/** A look's page background landing (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): the tab's new-page
+ *  background set to it, and every page still on what new pages started on before (the old new-page background, or,
+ *  with none, the paper or a fill of the theme's own) given it too; a page someone painted keeps its paint. One edit,
+ *  re-inked. `theme` is the tab's theme after the look's. */
+export function withLookPageBackground<T extends PagesTab>(
+  tab: T,
+  background: PageBackground,
+  theme: Parameters<typeof isThemeOwnFill>[1],
+  memory?: InkMemory,
+): { tab: T; memory?: InkMemory } {
+  const before = newPageBackgroundOf(tab);
+  const next = withNewPageBackground(tab, null);
+  const set = withNewPageBackground(next, { fill: background.fill, pattern: background.pattern });
+  const onOldDefault = (page: Page) => {
+    const fill = page.background?.fill;
+    if (before) return sameFill(fill, before.fill);
+    return !fill || isThemeOwnFill(fill, theme);
+  };
+  const out = pagesGivenNewPageBackground(set, memory, onOldDefault);
+  return { tab: out.tab, ...(out.memory ? { memory: out.memory } : {}) };
 }

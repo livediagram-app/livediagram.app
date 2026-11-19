@@ -9,6 +9,14 @@ import {
   type VersionSummary,
 } from '@livedocuments/api-schema';
 import type { DocumentEnv } from '../types';
+import {
+  countNamedVersions,
+  getNamedVersion,
+  listNamedVersions,
+  namedVersionAtRev,
+  renameNamedVersion,
+  unnameNamedVersion,
+} from './named-versions';
 
 export type VersionAuthor = { id: string; name: string; color: string };
 
@@ -54,8 +62,33 @@ function rowToSummary(row: VersionRow): VersionSummary {
   };
 }
 
-// A tab's versions, newest content first, without bodies: the rail's list, at most the bounds' 75 rows.
+// VH21: a read of the snapshots' store that fails reads as nothing there, so `tab_versions` always answers.
+async function orNothing<T>(read: () => Promise<T>, nothing: T, tabId: string): Promise<T> {
+  try {
+    return await read();
+  } catch (err) {
+    console.warn('[versions] refused', { tabId, reason: 'store', error: String(err) });
+    return nothing;
+  }
+}
+
+// VH21: a tab's versions from both stores, newest content first, without bodies: one query each, at most the bounds'
+// 75 rows between them. An automatic version at a revision a named one in the snapshots' store holds is left out (one
+// per revision).
 export async function listVersions(env: DocumentEnv, tabId: string): Promise<VersionSummary[]> {
+  const [own, named] = await Promise.all([
+    listTabVersions(env, tabId),
+    orNothing(() => listNamedVersions(env, tabId), [], tabId),
+  ]);
+  if (named.length === 0) return own;
+  const held = new Set(named.map((v) => v.rev));
+  return [...own.filter((v) => v.name !== null || !held.has(v.rev)), ...named].sort(
+    (a, b) => b.savedAt - a.savedAt || b.rev - a.rev,
+  );
+}
+
+// The tab's versions in `tab_versions` alone.
+async function listTabVersions(env: DocumentEnv, tabId: string): Promise<VersionSummary[]> {
   const res = await env.DOCUMENT_DB.prepare(
     `SELECT ${SUMMARY_COLUMNS} FROM tab_versions WHERE tab_id = ? ORDER BY saved_at DESC, rev DESC`,
   )
@@ -64,8 +97,19 @@ export async function listVersions(env: DocumentEnv, tabId: string): Promise<Ver
   return (res.results ?? []).map(rowToSummary);
 }
 
-// One version of this tab with its body; null when the tab has no such version.
+// One version of this tab with its body, from either store; null when the tab has no such version.
 export async function getVersion(
+  env: DocumentEnv,
+  tabId: string,
+  id: string,
+): Promise<StoredVersion | null> {
+  return (
+    (await getTabVersion(env, tabId, id)) ??
+    orNothing(() => getNamedVersion(env, tabId, id), null, tabId)
+  );
+}
+
+async function getTabVersion(
   env: DocumentEnv,
   tabId: string,
   id: string,
@@ -78,8 +122,20 @@ export async function getVersion(
   return row ? { summary: rowToSummary(row), tabName: row.tab_name, data: row.data } : null;
 }
 
-// The version holding this revision of the tab, if one was kept.
+// The version holding this revision of the tab, if one was kept: a named one in the snapshots' store first, since the
+// list shows it over an automatic one at the same revision.
 export async function versionAtRev(
+  env: DocumentEnv,
+  tabId: string,
+  rev: number,
+): Promise<VersionSummary | null> {
+  return (
+    (await orNothing(() => namedVersionAtRev(env, tabId, rev), null, tabId)) ??
+    tabVersionAtRev(env, tabId, rev)
+  );
+}
+
+async function tabVersionAtRev(
   env: DocumentEnv,
   tabId: string,
   rev: number,
@@ -171,17 +227,35 @@ export async function tabRev(env: DocumentEnv, tabId: string): Promise<number | 
   return row?.rev ?? null;
 }
 
-// How many of the tab's versions are named.
+// How many of the tab's versions are named, in both stores.
 export async function namedVersionCount(env: DocumentEnv, tabId: string): Promise<number> {
-  const row = await env.DOCUMENT_DB.prepare(
-    'SELECT COUNT(*) AS n FROM tab_versions WHERE tab_id = ? AND name IS NOT NULL',
-  )
-    .bind(tabId)
-    .first<{ n: number }>();
-  return row?.n ?? 0;
+  const [row, named] = await Promise.all([
+    env.DOCUMENT_DB.prepare(
+      'SELECT COUNT(*) AS n FROM tab_versions WHERE tab_id = ? AND name IS NOT NULL',
+    )
+      .bind(tabId)
+      .first<{ n: number }>(),
+    orNothing(() => countNamedVersions(env, tabId), 0, tabId),
+  ]);
+  return (row?.n ?? 0) + named;
 }
 
-// Names, renames or (null) unnames one of the tab's versions; null when it has no such version.
+// VH11, VH22: names, renames or (null) unnames one of the tab's versions in whichever store holds it; null when it
+// has no such version. Unnaming one in the snapshots' store answers the `tab_versions` row now holding its revision.
+export async function nameVersion(
+  env: DocumentEnv,
+  tabId: string,
+  id: string,
+  name: string | null,
+): Promise<VersionSummary | null> {
+  const own = await setVersionName(env, tabId, id, name);
+  if (own) return own;
+  if (name !== null) return renameNamedVersion(env, tabId, id, name);
+  const rev = await unnameNamedVersion(env, tabId, id);
+  return rev === null ? null : tabVersionAtRev(env, tabId, rev);
+}
+
+// Names, renames or (null) unnames one of the tab's versions in `tab_versions`; null when it has no such version.
 export async function setVersionName(
   env: DocumentEnv,
   tabId: string,

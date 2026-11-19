@@ -91,6 +91,7 @@ function CanvasView(props: CanvasProps) {
     tabBackgroundColor,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
+    tabWallColor,
     tabPatternColor,
     mainRef,
     isPinchingRef,
@@ -550,6 +551,9 @@ function CanvasView(props: CanvasProps) {
                 size={mainSize}
                 // The tab's background on the tilted floor (3d-view.md "What it shows"): in canvas px, unzoomed.
                 floor={spaceFloor}
+                // The tab's walls, in evening light on a dark canvas (3d-view.md "Themes").
+                wallColor={tabWallColor}
+                darkCanvas={isDarkCanvas(tabBackgroundColor)}
               />
             )}
             <Space3DOverlayProvider value={space3DOverlay}>

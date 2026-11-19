@@ -31,6 +31,7 @@ export function CanvasCover({
   tint,
   blend,
   enter = false,
+  opaque = false,
   children,
 }: {
   layout: CanvasLayout;
@@ -43,6 +44,10 @@ export function CanvasCover({
   // The element's own surface and border (planBandBlend): with it, the chrome in the band takes them instead, flat
   // (no shadow), so the top row reads as part of the element.
   blend?: BandBlend | undefined;
+  // The element's surface is opaque (a Sheet, a plan view): an animated pattern would show only in the margin round it
+  // yet still run every frame, so it is not drawn and the margin shows the canvas colour
+  // (docs/specs/011-theme/canvas-and-theme-dialog.md "A moving pattern under an opaque page").
+  opaque?: boolean;
   children: ReactNode;
 }) {
   const { insets, band, row } = layout;
@@ -107,7 +112,9 @@ export function CanvasCover({
       }}
       onWheel={stop}
     >
-      {pattern && isAnimatedPattern(pattern.pattern) ? <TabPatternLayer {...pattern} /> : null}
+      {pattern && !opaque && isAnimatedPattern(pattern.pattern) ? (
+        <TabPatternLayer {...pattern} />
+      ) : null}
       <div
         {...marker}
         {...(band ? { 'data-header-band': '' } : row ? { 'data-shared-row': '' } : {})}

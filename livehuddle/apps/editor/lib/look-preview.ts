@@ -34,8 +34,9 @@ function piece(kind: ShapeKind, x: number, y: number, w: number): ShapeElement {
 // the trunk neutral. The sticky keeps its own yellow, as a sticky
 // does under every theme. A single-colour or per-shape theme paints every piece alike.
 //
-// Fixed ids and sizes, so the Sketch wobble is the same every time and every card lays out alike.
-function scene(): Element[] {
+// Fixed ids and sizes, so the Sketch wobble is the same every time and every card lays out alike. The Tab Style
+// panels' room preview draws it too (lib/room-preview.ts).
+export function lookPreviewScene(): Element[] {
   const { room, door } = roomWithDoorPiece({
     ...createShape('room', 0, 0),
     id: `${ID}room`,
@@ -76,7 +77,10 @@ function entry(look: TabLook): Built {
 /** The tiny Space with the look applied, as a tab of its own. */
 export function lookPreviewTab(look: TabLook): Tab {
   const hit = entry(look);
-  hit.tab ??= withLookApplied({ id: `look-${look.id}`, name: look.label, elements: scene() }, look);
+  hit.tab ??= withLookApplied(
+    { id: `look-${look.id}`, name: look.label, elements: lookPreviewScene() },
+    look,
+  );
   return hit.tab;
 }
 

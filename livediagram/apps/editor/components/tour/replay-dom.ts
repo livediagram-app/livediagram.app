@@ -165,7 +165,7 @@ export const OPENABLES: Record<string, Openable> = {
     isOpen: () => !!document.querySelector('[data-toolbar-search]'),
     toggle: () => press('[data-toolbar-search-button]'),
   },
-  // The Tab Style dialog's Canvas panel (LooksHome.tsx's Fine-tune row), back home by the panel's Back bar.
+  // The Tab Style dialog's Canvas panel (the shared LooksHome's Fine-tune row), back home by the panel's Back bar.
   'tab-style-canvas': {
     isOpen: () => !!document.querySelector('[data-tab-style-view="canvas"]'),
     toggle: () => {

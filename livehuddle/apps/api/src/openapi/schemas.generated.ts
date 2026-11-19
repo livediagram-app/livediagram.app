@@ -4767,6 +4767,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "theme": {
         "type": "string"
+      },
+      "wallColor": {
+        "type": "string"
       }
     },
     "required": [
@@ -4915,6 +4918,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "updatedAt": {
         "type": "number"
+      },
+      "wallColor": {
+        "type": "string"
       }
     },
     "required": [

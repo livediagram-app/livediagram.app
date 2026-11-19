@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FONTS, type Element, type Tab } from '@liveplanner/project';
+import { FONTS, isAnimatedPattern, type Element, type Tab } from '@liveplanner/project';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { resolveTheme } from '@/lib/themes';
 import { LOOKS_PER_PAGE, TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
@@ -27,33 +27,33 @@ describe('TAB_LOOKS', () => {
   it('fills five pages of six after the Mashup card, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
-      'Textbook',
-      'Spectrum',
+      'Crown Jewels',
+      'Stand-up',
       'Whiteboard',
+      'Spectrum',
+      'Terracotta',
       'Boardroom',
-      'Notebook',
-      'Seaside',
       'Doodle',
+      'Quayside',
       'Editorial',
-      'Midnight',
-      'Poster',
-      'Workshop',
-      'Graph Paper',
-      'Daydream',
-      'Engineer',
-      'Lagoon',
-      'Studio',
-      'Garden',
-      'Billboard',
-      'Patchwork',
+      'Sweet Shop',
       'Northern Lights',
-      'Coffeehouse',
-      'Schematic',
+      'Poster',
+      'Notebook',
+      'Daydream',
+      'Graph Paper',
+      'Regatta',
+      'Lagoon',
+      'Quarterly',
+      'Gallery',
+      'Midnight',
       'Flipchart',
-      'Sketchbook',
+      'Textbook',
+      'Workshop',
+      'Allotment',
+      'Gelato',
       'Greenboard',
-      'Picnic',
-      'Mural',
+      'Night Shift',
       'Field Notes',
     ]);
     expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 5);
@@ -83,14 +83,31 @@ describe('TAB_LOOKS', () => {
     shown.slice(i * LOOKS_PER_PAGE, (i + 1) * LOOKS_PER_PAGE).filter((l) => l !== null),
   );
 
-  it('opens on Everyday and has eight multi-colour looks, one or two on every page', () => {
+  // Multi-colour looks are the majority (each board column takes its own colour): three on page one, where the
+  // Mashup card and Everyday take two places, and four on every other page.
+  it('opens on Everyday and has nineteen multi-colour looks, three on page one and four on every other', () => {
     expect(TAB_LOOKS[0]!.id).toBe('everyday');
-    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(8);
-    for (const page of pages) {
-      const count = page.filter((l) => multicolour(l.theme)).length;
-      expect(count).toBeGreaterThanOrEqual(1);
-      expect(count).toBeLessThanOrEqual(2);
-    }
+    expect(TAB_LOOKS.filter((l) => multicolour(l.theme))).toHaveLength(19);
+    expect(pages.map((page) => page.filter((l) => multicolour(l.theme)).length)).toEqual([
+      3, 4, 4, 4, 4,
+    ]);
+  });
+
+  // Every board theme (docs/specs/011-theme/multicolour-themes.md "Board themes") is worn by at least two looks.
+  it('dresses every board theme in two looks or more', () => {
+    for (const id of ['office', 'earth', 'gemstone', 'harbour', 'sorbet', 'nightfall'])
+      expect(TAB_LOOKS.filter((l) => l.theme === id).length, id).toBeGreaterThanOrEqual(2);
+  });
+
+  // Calm canvases: boards are see-through and sheets sit on the canvas, so no busy tile, and one softened animated
+  // look.
+  it('keeps to calm patterns, with one animated look drawn softly', () => {
+    const calm = new Set(['blank', 'grid', 'lines', 'graph']);
+    const animated = TAB_LOOKS.filter((l) => isAnimatedPattern(l.pattern));
+    expect(animated.map((l) => l.id)).toEqual(['northern-lights']);
+    for (const look of animated) expect(look.patternOpacity!, look.id).toBeLessThanOrEqual(0.4);
+    for (const look of TAB_LOOKS.filter((l) => !isAnimatedPattern(l.pattern)))
+      expect(calm.has(look.pattern), look.id).toBe(true);
   });
 
   it('never sets two neighbours on a page in the same theme or the same finish', () => {
@@ -106,17 +123,16 @@ describe('TAB_LOOKS', () => {
   it('offers every finish, Marker on five looks', () => {
     expect(TAB_LOOKS.filter((l) => l.finish === 'marker').map((l) => l.id)).toEqual([
       'whiteboard',
-      'workshop',
+      'regatta',
       'flipchart',
+      'workshop',
       'greenboard',
-      'mural',
     ]);
   });
 
-  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): its two looks wear Mono.
-  it('dresses Textbook and Schematic in Mono, and no look in UML', () => {
+  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook wears Mono.
+  it('dresses Textbook in Mono, and no look in UML', () => {
     expect(tabLookById('textbook')!.theme).toBe('mono');
-    expect(tabLookById('schematic')!.theme).toBe('mono');
     expect(TAB_LOOKS.map((l) => l.theme)).not.toContain('uml');
   });
 
@@ -166,6 +182,19 @@ describe('activeLookId', () => {
     expect(tabLookById('nope')).toBeUndefined();
   });
 
+  it('reads a tab styled with a retired look as its own mix, nothing migrated', () => {
+    // Seaside, retired in the 2026-11-19 rework: Ocean, Flexible, Nunito, waves.
+    expect(tabLookById('seaside')).toBeUndefined();
+    expect(
+      activeLookId({
+        theme: 'ocean',
+        finish: 'flexible',
+        font: 'nunito',
+        backgroundPattern: 'waves',
+      }),
+    ).toBeUndefined();
+  });
+
   it('reads a tab styled with the retired Carnival look as its own mix, nothing migrated', () => {
     expect(tabLookById('carnival')).toBeUndefined();
     const carnival = {
@@ -182,10 +211,10 @@ describe('activeLookId', () => {
 describe('pattern strength', () => {
   it('counts only for a look that sets one: a template’s softened grid is still Everyday', () => {
     expect(activeLookId({ backgroundOpacity: 0.4 })).toBe('everyday');
-    const garden = withLookApplied(tab(), tabLookById('garden')!);
-    expect(garden.backgroundOpacity).toBe(0.4);
-    expect(activeLookId(garden)).toBe('garden');
-    expect(activeLookId({ ...garden, backgroundOpacity: 1 })).toBeUndefined();
+    const terracotta = withLookApplied(tab(), tabLookById('terracotta')!);
+    expect(terracotta.backgroundOpacity).toBe(0.4);
+    expect(activeLookId(terracotta)).toBe('terracotta');
+    expect(activeLookId({ ...terracotta, backgroundOpacity: 1 })).toBeUndefined();
   });
 
   it('leaves the tab’s own strength alone for a look without one', () => {

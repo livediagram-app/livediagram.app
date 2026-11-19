@@ -1,6 +1,6 @@
 // The Font and theme scenes of every product's canvas basics (docs/specs/018-help/help-app.md): the element
 // menu's Font tiles, and the Text and Colours panels of the Tab Style dialog (TypographySections.tsx,
-// ThemeBrowser.tsx, TextTab.tsx). Composed from the shared primitives.
+// ThemeBrowser.tsx, the shared TextPanel.tsx). Composed from the shared primitives.
 
 import { Label, Menu, Scene, SelectionBox, Shape } from '../primitives';
 import { Caption, CarouselHeading, OptionBox, PageDots, TabStylePanel } from './tab-style-parts';

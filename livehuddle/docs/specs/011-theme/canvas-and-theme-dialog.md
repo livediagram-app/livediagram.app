@@ -31,10 +31,12 @@ The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid 
 
 ### Looks
 
-A **look** is a shortcut that sets four of the tab's existing settings at once: its **theme**, **finish**
-([Finish](../008-canvas/finish.md)), **tab font** and **floor** ([Floors](floors.md)). It is not a stored concept: nothing
-records which look was picked, and the tab carries only those four ordinary settings, exactly as if they had been
-picked one by one.
+A **look** is a shortcut that dresses a room: it sets four of the tab's existing settings at once, its **theme**,
+**finish** ([Finish](../008-canvas/finish.md)), **tab font** and **floor** ([Floors](floors.md)), and its **walls**
+(the 3D view's wall colour, [3D view](../008-canvas/3d-view.md#themes)): a look with walls of its own sets them, any
+other puts the plaster back. It is not a stored concept: nothing records which look was picked, and the tab carries
+only those ordinary settings, exactly as if they had been picked one by one. Whether a look reads as selected is
+judged on the four (the walls are a finishing touch, so repainting them keeps the look).
 
 A **Finish filter** sits left of the carousel's page controls on the Looks heading row: a compact dropdown,
 **All finishes** (the default, every look), then each finish (**Flexible**, **Professional**, **Sketch**, **Marker**),
@@ -44,54 +46,59 @@ changing it is tracked as `UI / Changed / LooksFinishFilter`.
 
 The table is in the order the carousel shows them after the Mashup card, six to a page:
 
-| Look            | Theme    | Finish       | Tab font      | Floor        | Floor strength |
-| --------------- | -------- | ------------ | ------------- | ------------ | -------------- |
-| Everyday        | Default  | Flexible     | (none)        | Carpet Tiles | (kept)         |
-| Textbook        | Mono     | Professional | Oswald        | Tiles        | (kept)         |
-| Spectrum        | Rainbow  | Flexible     | Inter         | Terrazzo     | (kept)         |
-| Whiteboard      | Mono     | Marker       | (none)        | None         | (kept)         |
-| Boardroom       | Steel    | Professional | Inter         | Carpet       | (kept)         |
-| Notebook        | Mocha    | Sketch       | (none)        | Wood Floor   | (kept)         |
-| Seaside         | Ocean    | Flexible     | Nunito        | Sand         | (kept)         |
-| Doodle          | Rainbow  | Sketch       | Kalam         | None         | (kept)         |
-| Editorial       | Cream    | Professional | Lora          | Parquet      | (kept)         |
-| Midnight        | Midnight | Flexible     | (none)        | Marble       | (kept)         |
-| Poster          | Tropical | Professional | Bodoni Moda   | Decking      | (kept)         |
-| Workshop        | Sand     | Marker       | (none)        | Concrete     | (kept)         |
-| Graph Paper     | Indigo   | Professional | Roboto Mono   | Tiles        | (kept)         |
-| Daydream        | Pastel   | Flexible     | Nunito        | Carpet       | 70%            |
-| Engineer        | Sky      | Professional | Space Grotesk | Concrete     | (kept)         |
-| Lagoon          | Tropical | Flexible     | Space Grotesk | Sand         | (kept)         |
-| Studio          | Lavender | Professional | Roboto Slab   | Wood Floor   | (kept)         |
-| Garden          | Forest   | Flexible     | Poppins       | Grass        | (kept)         |
-| Billboard       | Sunset   | Professional | Oswald        | Stone Paving | (kept)         |
-| Patchwork       | Pastel   | Sketch       | Lora          | Carpet       | 70%            |
-| Northern Lights | Abyss    | Flexible     | Poppins       | Decking      | (kept)         |
-| Coffeehouse     | Espresso | Sketch       | Kalam         | Terrazzo     | (kept)         |
-| Schematic       | Mono     | Professional | Roboto Mono   | Carpet Tiles | (kept)         |
-| Flipchart       | Rainbow  | Marker       | (none)        | Carpet       | (kept)         |
-| Sketchbook      | Rose     | Sketch       | (none)        | None         | (kept)         |
-| Greenboard      | Pine     | Marker       | (none)        | None         | (kept)         |
-| Picnic          | Pastel   | Flexible     | Poppins       | Grass        | (kept)         |
-| Mural           | Plum     | Marker       | (none)        | Cobbles      | (kept)         |
-| Field Notes     | Olive    | Sketch       | (none)        | Mud          | (kept)         |
+| Look            | Theme    | Finish       | Tab font      | Floor        | Floor strength | Walls         |
+| --------------- | -------- | ------------ | ------------- | ------------ | -------------- | ------------- |
+| Everyday        | Default  | Flexible     | (none)        | Carpet Tiles | (kept)         | (plaster)     |
+| Gallery         | Mono     | Professional | Oswald        | Tiles        | (kept)         | Gallery White |
+| Spectrum        | Rainbow  | Flexible     | Inter         | Terrazzo     | (kept)         | (plaster)     |
+| Meeting Room    | Mono     | Marker       | (none)        | Carpet Tiles | (kept)         | Cool Grey     |
+| Boardroom       | Steel    | Professional | Inter         | Carpet       | (kept)         | (plaster)     |
+| Cabin           | Mocha    | Sketch       | (none)        | Wood Floor   | (kept)         | Timber        |
+| Seaside         | Ocean    | Flexible     | Nunito        | Sand         | (kept)         | (plaster)     |
+| Playroom        | Rainbow  | Sketch       | Kalam         | Carpet       | (kept)         | Apricot       |
+| Editorial       | Cream    | Professional | Lora          | Parquet      | (kept)         | (plaster)     |
+| Midnight        | Midnight | Flexible     | (none)        | Marble       | (kept)         | (plaster)     |
+| Poster          | Tropical | Professional | Bodoni Moda   | Decking      | (kept)         | (plaster)     |
+| Sandstone       | Sand     | Marker       | (none)        | Concrete     | (kept)         | (plaster)     |
+| Lab             | Indigo   | Professional | Roboto Mono   | Tiles        | (kept)         | Lab Blue      |
+| Daydream        | Pastel   | Flexible     | Nunito        | Carpet       | 70%            | (plaster)     |
+| Engineer        | Sky      | Professional | Space Grotesk | Concrete     | (kept)         | (plaster)     |
+| Lagoon          | Tropical | Flexible     | Space Grotesk | Sand         | (kept)         | (plaster)     |
+| Studio          | Lavender | Professional | Roboto Slab   | Wood Floor   | (kept)         | (plaster)     |
+| Garden          | Forest   | Flexible     | Poppins       | Grass        | (kept)         | (plaster)     |
+| Billboard       | Sunset   | Professional | Oswald        | Stone Paving | (kept)         | (plaster)     |
+| Patchwork       | Pastel   | Sketch       | Lora          | Carpet       | 70%            | (plaster)     |
+| Northern Lights | Abyss    | Flexible     | Poppins       | Decking      | (kept)         | (plaster)     |
+| Coffeehouse     | Espresso | Sketch       | Kalam         | Terrazzo     | (kept)         | (plaster)     |
+| Schematic       | Mono     | Professional | Roboto Mono   | Carpet Tiles | (kept)         | (plaster)     |
+| Flipchart       | Rainbow  | Marker       | (none)        | Carpet       | (kept)         | (plaster)     |
+| Atelier         | Rose     | Sketch       | (none)        | Concrete     | (kept)         | Blush         |
+| Classroom       | Pine     | Marker       | (none)        | Parquet      | (kept)         | Sage          |
+| Picnic          | Pastel   | Flexible     | Poppins       | Grass        | (kept)         | (plaster)     |
+| Mural           | Plum     | Marker       | (none)        | Cobbles      | (kept)         | (plaster)     |
+| Potting Shed    | Olive    | Sketch       | (none)        | Mud          | (kept)         | Moss          |
 
-- **Floors.** Each look stands its Space on a floor that suits its mood ([Floors](floors.md)): Seaside and Lagoon on
-  sand, Garden and Picnic on a lawn, Midnight on dark marble, Coffeehouse on a cafe's terrazzo, Field Notes out on bare
-  earth; the pen-and-paper looks (Whiteboard, Doodle, Sketchbook, Greenboard) keep None. Every floor is worn by at
-  least one look, so the Mashup draws from the whole set. Daydream and Patchwork soften their carpet into the pastel
-  canvas at 70%.
+- **Rooms, not paper.** Every look is named for a room or a place and stands its Space on a real floor ([Floors](floors.md)),
+  none on None: Seaside and Lagoon on sand, Garden and Picnic on a lawn, Midnight on dark marble, Coffeehouse on a
+  cafe's terrazzo, the Cabin on wood, the Classroom on a parquet floor, the Lab and the Gallery on tiles, the Potting
+  Shed out on bare earth. The looks that wore paper names or no floor took room names in November 2026 (Textbook became
+  Gallery, Whiteboard Meeting Room, Notebook Cabin, Doodle Playroom, Graph Paper Lab, Sketchbook Atelier, Greenboard
+  Classroom, Field Notes Potting Shed); their ids stayed, so a tab wearing one still reads as it. Every floor is worn
+  by at least one look, so the Mashup draws from the whole set. Daydream and Patchwork soften their carpet into the
+  pastel canvas at 70%.
+- **Walls.** Eight looks paint their walls (the renamed rooms, each in a colour that suits it: white for the Gallery,
+  timber for the Cabin, sage for the Classroom); the rest keep the plaster.
 - **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
   Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)). Each is a
   different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on terrazzo),
-  Doodle a bold hand-drawn rainbow, Daydream soft pastels on a soft carpet, Lagoon a fresh tropical spread on sand,
+  the Playroom a bold hand-drawn rainbow, Daydream soft pastels on a soft carpet, Lagoon a fresh tropical spread on sand,
   Poster a bold tropical display face on decking, and Patchwork pastel
   branches sketched on carpet. A dark-mode viewer sees each in its theme's
   dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
-- **Textbook and Schematic wear Mono.** Both wore UML, which this product retired (owner, 2026-11-12, Work Item
+- **Gallery and Schematic wear Mono.** Both wore UML, which this product retired (owner, 2026-11-12, Work Item
   696, [Retired colour schemes](retired-schemes.md#uml)); each took Mono, the scheme nearest UML's colours, so
-  Textbook is a crisp single-ink notation in Oswald and Schematic the same ink in a monospace. Textbook moved to the
-  second slot on page one, before Spectrum, so it never sits beside Whiteboard, the other Mono look.
+  the Gallery is a crisp single ink in Oswald and Schematic the same ink in a monospace. The Gallery sits in the
+  second slot on page one, before Spectrum, so it never sits beside the Meeting Room, the other Mono look.
 - **Order.** The **Mashup** card leads the carousel (below), then the looks; Everyday is always the first look (it
   is what an untouched tab reads as). The rest follow a fixed, interleaved
   order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds one or two of the eight multi-colour looks,
@@ -105,10 +112,10 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   Mashup card and the twenty-nine looks fill five pages. Looks are added six at a time, so every page stays full.
 - **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each brought a theme no other
   look uses (Sunset, Abyss and Espresso), so page four is new ground rather than a reshuffle.
-- **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): Whiteboard (a whiteboard is drawn in marker),
-  Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
-  marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
-  with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
+- **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): the Meeting Room (a whiteboard is drawn in
+  marker), Sandstone, and on page five Flipchart, Classroom and Mural, a flip chart, a classroom's board and a wall to
+  draw on, each in marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five
+  alternates them with the Atelier, Picnic and the Potting Shed, so no two neighbours share a finish, and its two multi-colour looks
   (Flipchart and Picnic) keep two on it.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a **tiny Space** drawn in the look, its name, and a line on what it is made of. The scene is a
@@ -183,7 +190,8 @@ and the user can keep pressing it to regenerate.
 
 - **Ingredients.** A mashup draws each of a look's four settings at random, independently: a **theme** from the
   whole built-in catalogue less the seasonal themes, a **finish**, a **tab font** from the fonts the looks use (or none), and a **floor**
-  with its strength from the floors the everyday looks use (every floor, and None), so a softened floor keeps the
+  with its strength from the floors the everyday looks use (every floor; None is no longer one, as no look stands on
+  it), so a softened floor keeps the
   strength its look gave it.
   Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over fifteen
   thousand combinations).
@@ -208,7 +216,7 @@ and the user can keep pressing it to regenerate.
 ### Fine-tune
 
 Below the looks, four rows, one per setting, each showing its current value: **Colours** (the theme's name),
-**Finish**, **Text** (the tab font and the default size) and **Canvas** (the floor). Two columns, one on a phone.
+**Finish**, **Text** (the tab font and the default size) and **Room** (the floor). Two columns, one on a phone.
 Pressing a row opens that setting's panel **in place**, sliding in from the right (back slides from the left; a fade
 with reduced motion), under the shared [back bar](../004-interface-design/back-bar.md) (the one Import and Export use: **Tab Style** then the panel's name), which stays pinned to the top as the panel scrolls.
 Panels carry no descriptions. The editor's commands that open a panel directly ("Change Theme", "Canvas Options")
@@ -266,9 +274,10 @@ The tab's [Finish](../008-canvas/finish.md): a preview of the sample diagram in 
 finishes as tiles with a 40 px icon each. Picking one applies to the whole tab at once (every element's own finish
 cleared).
 
-### Canvas panel
+### Room panel
 
-The floor controls (`CanvasStyleControls`):
+The Canvas panel is called **Room** here ("The floor under the Space and the walls round its rooms."): the floor
+controls and the walls (`CanvasStyleControls`):
 
 - **Floor**: one carousel of real floor previews, None then the fourteen floors ([Floors](floors.md)), nine to a page
   on a desktop and six on a phone (`PatternCarousel`). Each tile draws the floor a little smaller than the canvas does
@@ -283,6 +292,10 @@ The floor controls (`CanvasStyleControls`):
   `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies the tile's `background-size` by it (never the
   pan phase, so the floor still tracks panning at any size). None has no tile, so the slider is a no-op there.
 - There are no animated backdrops (a floor does not move), so there is no Speed slider.
+- **Walls**: the colour of the walls the [3D view](../008-canvas/3d-view.md#themes) stands up round the rooms, a swatch
+  opening the colour picker (soft and strong standard colours) and a **Plaster** button that puts the default back
+  (shown while a colour is set). Writes the tab's `wallColor`; unset is the plaster. Its hover card says it shows in
+  the 3D view. An Editor sets it, as every Tab Style control.
 
 ### Colours panel
 
@@ -357,6 +370,27 @@ Opening the dialog fires `track('UI', 'Opened', 'ThemePicker')` (the dock button
 the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (there are no Apply to All actions, and no
 `FinishToAll` or `ResetElements` events)
 ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+
+## One dialog, this editor's profile
+
+The dialog is the one every editor shares ([Tab Style dialog](../../../../liveworkspace/docs/specs/011-workbench/tab-style.md), in `@liveworkspace/workbench`):
+`apps/editor/components/dialogs/CanvasThemeDialog.tsx` hands it this editor's profile
+(`apps/editor/components/dialogs/tab-style-profile.tsx`), and the profile decides what it shows. The editor names the
+**surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
+describes it on each.
+
+- **Surfaces.** `space`.
+- **Panels and controls.** All four panels; a floor never moves, so there is no animation speed.
+- **Looks.** Every look in `apps/editor/lib/tab-looks.ts`, the seasonal ones from `apps/editor/lib/seasonal-looks.ts`.
+- **Canvas panel.** The Room panel (`CanvasStyleControls`): the floors drawn for real, the canvas colour, a seasonal
+  motif's colour, Strength, Size and the Walls.
+- **Preview.** A small room (`TabStylePreview`, `apps/editor/lib/room-preview.ts`): a slice of the tab's floor,
+  a room on it (its walls and door) and a desk with its chair and a sticky, in the Finish and Text panels, so the
+  preview shows the Space the person is styling rather than a diagram.
+- **Copy.** The shared lines, but the Canvas panel is named Room, its line "The floor under the Space and the walls
+  round its rooms.", and the home's "Pick a look for the Space, then fine-tune any part of it."
+- **Frame.** The shared modal, its Show Me bound in `apps/editor/components/tour/TabStyleTour.tsx`. Apply to All Tabs
+  names no locked tabs (livehuddle has no tab locks).
 
 ## Reuse notes
 

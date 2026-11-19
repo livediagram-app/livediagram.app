@@ -98,9 +98,11 @@ export function PagedCarousel<T>({
   return (
     <div className="flex flex-col gap-2">
       {/* px-1 lines the heading up with the tiles, which sit inside their page's p-1. */}
-      <div className="flex min-h-8 items-center justify-between gap-2 px-1">
+      {/* On a narrow screen the controls wrap under the heading rather than squeeze (a phone's Looks header holds a
+          toggle, a filter and five pages' dots). */}
+      <div className="flex min-h-8 flex-wrap items-center justify-between gap-x-2 gap-y-1 px-1">
         {heading}
-        <div className="flex items-center gap-2">
+        <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
           {controls}
           {pages.length > 1 ? (
             <div className="flex items-center gap-1" data-tour-id={navTourId}>

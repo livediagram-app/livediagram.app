@@ -20,6 +20,7 @@ import {
   mentionsAnySql,
 } from '@liveworkspace/index-app';
 import { reactionPersonFor } from '@liveworkspace/api-kit/collab-key';
+import { anonymiseNamedVersions } from '../db/named-versions';
 import type { DocumentEnv } from '../types';
 
 export async function anonymiseDocument(
@@ -97,5 +98,18 @@ export async function anonymiseDocument(
     }
   }
   const versionResults = versionWrites.length > 0 ? await db.batch(versionWrites) : [];
-  return [...results, ...versionResults].reduce((sum, r) => sum + (r.meta.changes ?? 0), 0);
+  // The named versions kept in the snapshots' store (VH24), last: `tab_versions` is done whatever happens here.
+  const named = await anonymiseNamedVersions(env, {
+    idList,
+    needles,
+    authorSql: isAnySql('author_id', '?3'),
+    mentionsSql: mentionsAnySql('c.data'),
+    person: { id: ANONYMISED_PERSON, name: ANONYMISED_NAME },
+    rewrite: (text) => {
+      const named = anonymiseJsonText(text, ids);
+      const reacted = anonymiseReactionsText(named.value, persons);
+      return named.changed || reacted.changed ? reacted.value : null;
+    },
+  });
+  return [...results, ...versionResults].reduce((sum, r) => sum + (r.meta.changes ?? 0), 0) + named;
 }

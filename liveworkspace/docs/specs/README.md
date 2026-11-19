@@ -26,7 +26,7 @@ Paths in these specs are relative to `liveworkspace/` (`apps/accounts/…`), exc
 - ./008-telemetry/README.md - when working on anonymous events, the telemetry Worker or the telemetry dashboard
 - ./009-status/README.md - when working on the hourly status checks, their history or the status page
 - ./010-site/README.md - when working on liveworkspace.app's pages: the front door, the Explorer page, the Settings panel, the sign-in pages, the site switcher
-- ./011-workbench/README.md - when working on workbench pairings, tickets and sessions
+- ./011-workbench/README.md - when working on workbench pairings, tickets and sessions, or the Tab Style dialog every editor shares
 - ./012-migrate/README.md - when working on the move from the historical livediagram.app, or on what is left of Clerk
 - ./013-export/README.md - when working on an export every product shares: the PDF writer (`@liveworkspace/vector-export`)
 - ./014-snapshots/README.md - when working on Snapshots in any app: manual save points of a whole item, the latest five, Revert, `@liveworkspace/snapshots`

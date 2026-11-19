@@ -5,6 +5,7 @@
 import { isRetiredElement } from './retired-kinds';
 import { themeHalf } from './theme-halves';
 import type { BackgroundPattern, Element, ShapeKind } from './index';
+import type { BoardThemeId } from '@liveworkspace/element-model/themes';
 import { rederiveColorPresetForTheme } from './theme-presets';
 import { DEFAULT_SCHEME_DARK, DEFAULT_SCHEME_LIGHT, THEMES } from './themes-data';
 export { THEMES, DEFAULT_SCHEME_LIGHT, DEFAULT_SCHEME_DARK };
@@ -79,7 +80,9 @@ export type ThemePaletteEntry = {
 type ShapeColourOverride = { fill?: string; stroke?: string; text?: string };
 
 export type ThemeDefinition = {
-  id: ThemeId;
+  // The shared builders hand back the shared definition, whose id also names liveplanner's board themes; livehuddle
+  // offers none of them, so its own catalogue's ids stay ThemeId.
+  id: ThemeId | BoardThemeId;
   label: string;
   // Backdrop.
   backgroundColor: string;

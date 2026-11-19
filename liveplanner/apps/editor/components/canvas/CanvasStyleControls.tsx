@@ -22,6 +22,7 @@ import {
 import { ShowMoreButton } from '@liveworkspace/workbench/components/primitives/ShowMoreButton';
 import { HoverCard } from '@liveplanner/ui';
 import { RANGE_SLIDER } from '@liveworkspace/workbench/components/primitives/surface-classes';
+import type { TabStyleControl } from '@liveworkspace/workbench/components/dialogs/tab-style/tab-style-profile';
 
 // Static vs animated split (docs/specs/008-canvas/canvas-and-palette.md): the two render as separate, labelled
 // sections so the catalogue reads clearly. Computed once from the single
@@ -53,6 +54,9 @@ function PatternGrid({
   );
 }
 
+// Nothing left out: the palette's and the dialog's default.
+const NONE_HIDDEN: ReadonlySet<TabStyleControl> = new Set();
+
 // The pattern is ink on the canvas: lines and dots, so the strong tone only.
 const PATTERN_TONES = ['strong'] as const;
 
@@ -71,6 +75,8 @@ export function CanvasStyleControls({
   onSetBackgroundAnimationSpeed,
   showAllPatterns = false,
   previewTiles = false,
+  staticOnly = false,
+  hidden = NONE_HIDDEN,
 }: {
   backgroundPattern: BackgroundPattern;
   backgroundColor: string;
@@ -93,6 +99,11 @@ export function CanvasStyleControls({
   // Each pattern drawn for real in this tab's colours, in carousels (the dialog's Canvas panel), instead of the
   // compact icon grid the narrow accordion uses.
   previewTiles?: boolean;
+  // The static patterns only: a plan's tab (a board, a Sheet, a form, a dashboard) offers no moving canvas
+  // (docs/specs/011-theme/canvas-and-theme-dialog.md "One dialog, this editor's profile").
+  staticOnly?: boolean;
+  // The controls the Tab Style surface leaves out (liveworkspace/docs/specs/011-workbench/tab-style.md "The profile").
+  hidden?: ReadonlySet<TabStyleControl>;
 }) {
   // The "Show more" toggle applies to the STATIC patterns only; the
   // animated set is small and shown in full so it stays discoverable.
@@ -116,15 +127,17 @@ export function CanvasStyleControls({
             backgroundColor={backgroundColor}
             patternColor={patternColor}
           />
-          <PatternCarousel
-            heading="Animated"
-            patterns={ANIMATED_PATTERNS}
-            animated
-            active={backgroundPattern}
-            onPick={onSetBackgroundPattern}
-            backgroundColor={backgroundColor}
-            patternColor={patternColor}
-          />
+          {staticOnly ? null : (
+            <PatternCarousel
+              heading="Animated"
+              patterns={ANIMATED_PATTERNS}
+              animated
+              active={backgroundPattern}
+              onPick={onSetBackgroundPattern}
+              backgroundColor={backgroundColor}
+              patternColor={patternColor}
+            />
+          )}
         </div>
       ) : (
         <>
@@ -138,15 +151,19 @@ export function CanvasStyleControls({
           {!showAllPatterns && staticList.hasMore && !staticList.showAll ? (
             <ShowMoreButton label="Show More Patterns" onClick={staticList.reveal} />
           ) : null}
-          <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
-            Animated
-          </p>
-          <PatternGrid
-            patterns={ANIMATED_PATTERNS}
-            gridClass={patternGridClass}
-            active={backgroundPattern}
-            onPick={onSetBackgroundPattern}
-          />
+          {staticOnly ? null : (
+            <>
+              <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
+                Animated
+              </p>
+              <PatternGrid
+                patterns={ANIMATED_PATTERNS}
+                gridClass={patternGridClass}
+                active={backgroundPattern}
+                onPick={onSetBackgroundPattern}
+              />
+            </>
+          )}
         </>
       )}
       <p className="mt-3 border-t border-slate-100 pt-3 text-[10px] font-medium text-slate-500 dark:border-slate-800 dark:text-slate-400">
@@ -156,14 +173,19 @@ export function CanvasStyleControls({
         <HoverCard title="Canvas colour" description="The colour of the canvas background.">
           <ColorSwatch label="Canvas" value={backgroundColor} onChange={onSetBackgroundColor} />
         </HoverCard>
-        <HoverCard title="Pattern colour" description="The colour of the grid dots or ruled lines.">
-          <ColorSwatch
-            label="Pattern"
-            value={patternColor}
-            onChange={onSetPatternColor}
-            tones={PATTERN_TONES}
-          />
-        </HoverCard>
+        {hidden.has('patternColor') ? null : (
+          <HoverCard
+            title="Pattern colour"
+            description="The colour of the grid dots or ruled lines."
+          >
+            <ColorSwatch
+              label="Pattern"
+              value={patternColor}
+              onChange={onSetPatternColor}
+              tones={PATTERN_TONES}
+            />
+          </HoverCard>
+        )}
       </div>
       <div className="mt-3 flex flex-col gap-1 border-t border-slate-100 pt-3 dark:border-slate-800">
         <div className="flex items-center justify-between">
@@ -182,27 +204,29 @@ export function CanvasStyleControls({
           className={RANGE_SLIDER}
         />
       </div>
-      <div className="mt-3 flex flex-col gap-1">
-        <div className="flex items-center justify-between">
-          <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
-          <span className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
-            {Math.round(backgroundPatternScale * 100)}%
-          </span>
+      {hidden.has('patternScale') ? null : (
+        <div className="mt-3 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Size</p>
+            <span className="text-[10px] font-medium text-slate-500 dark:text-slate-300">
+              {Math.round(backgroundPatternScale * 100)}%
+            </span>
+          </div>
+          <input
+            type="range"
+            min={0.5}
+            max={2}
+            step={0.1}
+            value={backgroundPatternScale}
+            onChange={(e) => onSetBackgroundPatternScale(parseFloat(e.target.value))}
+            className={RANGE_SLIDER}
+          />
         </div>
-        <input
-          type="range"
-          min={0.5}
-          max={2}
-          step={0.1}
-          value={backgroundPatternScale}
-          onChange={(e) => onSetBackgroundPatternScale(parseFloat(e.target.value))}
-          className={RANGE_SLIDER}
-        />
-      </div>
+      )}
       {/* Motion speed (docs/specs/008-canvas/canvas-and-palette.md) — only meaningful for an ANIMATED pattern,
           so the row appears exactly when one is active. A rate multiplier:
           100% is each pattern's own tuned pace. */}
-      {isAnimatedPattern(backgroundPattern) ? (
+      {isAnimatedPattern(backgroundPattern) && !hidden.has('animationSpeed') ? (
         <div className="mt-3 flex flex-col gap-1">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-medium text-slate-500 dark:text-slate-400">Speed</p>

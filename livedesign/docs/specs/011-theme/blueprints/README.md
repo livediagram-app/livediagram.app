@@ -7,3 +7,4 @@ Follow the references below only as needed; never upfront.
 - ./paper-label-ink.md - when implementing or changing how words on the plain paper are drawn on the dark paper (withPaperLabelInks)
 - ./DEFAULTS.md - when a theme blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a theme blueprint covers
+- ./tab-style-pages.md - when changing the New Page Background, Element Colours, the looks' finished-art filter or the frame preview

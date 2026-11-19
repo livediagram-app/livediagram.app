@@ -127,7 +127,7 @@ function TabStyleRow({ onOpen }: { onOpen: () => void }) {
             Tab Style
           </span>
           <span className="text-[11px] text-slate-500 dark:text-slate-400">
-            Theme, finish, fonts and canvas for the whole tab
+            The tab’s colours and the canvas around its pages
           </span>
         </span>
         <span

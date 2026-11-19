@@ -215,6 +215,25 @@ describe('Space3DWalls (docs/specs/008-canvas/3d-view.md "Walls in front of you 
     expect(container.querySelector('[data-space-wall-label]')?.textContent).toBeTruthy();
   });
 
+  it("paints the walls in the tab's colour, in evening light on a dark canvas, and leaves the plaster unset", () => {
+    const pose = createStateStore<AvatarPose>(NO_POSE);
+    const layer = (wallColor?: string, darkCanvas?: boolean) =>
+      render(
+        <Space3DWalls
+          elements={office}
+          poseStore={pose}
+          size={size}
+          wallColor={wallColor}
+          darkCanvas={darkCanvas}
+        />,
+      ).container.querySelector<HTMLElement>('[data-space-walls]')!;
+    expect(layer().style.getPropertyValue('--space-wall')).toBe('');
+    cleanup();
+    expect(layer('#d5e6d3').style.getPropertyValue('--space-wall')).toBe('#d5e6d3');
+    cleanup();
+    expect(layer('#d5e6d3', true).style.getPropertyValue('--space-wall')).not.toBe('#d5e6d3');
+  });
+
   it('draws only the walls near the view, and chooses them again when the view has moved far', () => {
     const pose = createStateStore<AvatarPose>(NO_POSE);
     const board = [...office, ...buildTemplate('virtual-office', 40000, 0)];

@@ -13,10 +13,12 @@ import {
 import type { Tab } from './index';
 import type { WireframeDeviceId } from './wireframe-device';
 import { blankPhoto, withPhoto } from './photo-pages';
+import { newPageBackgroundOf } from './tab-new-page-background';
 
 type PagesTab = Pick<Tab, 'elements'> & {
   pages?: unknown;
   pageOrientation?: unknown;
+  newPageBackground?: unknown;
 };
 
 /** One thing in the row that moves as one: a page. Kept as a unit so the row's reorder and contents
@@ -74,6 +76,9 @@ export function withPageKindChosen<T extends PagesTab>(
   const page = pages.find((p) => p.id === pageId);
   if (!page || pages.length !== 1 || page.kind) return null;
   const { name } = page;
+  // A page with no background of its own starts on the tab's new-page background (the plain paper for `{}`).
+  const own = newPageBackgroundOf(tab);
+  const background = page.background ?? (own && (own.fill || own.pattern) ? own : undefined);
   if (kind === 'photo') {
     // A photo page keeps the page's name; it is never painted, its picture blank until started.
     const photoPage = { ...newPhotoPage(page.id), ...(name ? { name } : {}) };
@@ -81,7 +86,7 @@ export function withPageKindChosen<T extends PagesTab>(
   }
   if (kind === 'logo') {
     // The artboard keeps the page's name and fill; a logo page takes no pattern.
-    const fill = page.background?.fill;
+    const fill = background?.fill;
     return withPages(tab, [
       {
         ...newLogoPage(page.id),
@@ -94,7 +99,7 @@ export function withPageKindChosen<T extends PagesTab>(
   return withPages(tab, [
     {
       ...newWireframePage(page.id, device),
-      ...(page.background ? { background: page.background } : {}),
+      ...(background ? { background } : {}),
       ...(name ? { name } : {}),
     },
   ]);

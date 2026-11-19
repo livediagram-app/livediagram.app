@@ -23,7 +23,7 @@ describe('lookPreviewSvg', () => {
   });
 
   it('shows two palette colours on a multi-colour look, the arrow still on its pins', () => {
-    for (const id of ['spectrum', 'doodle', 'daydream', 'lagoon', 'poster']) {
+    for (const id of ['spectrum', 'daydream', 'lagoon']) {
       const els = lookPreviewTab(tabLookById(id)!).elements as Array<
         Element & { fillColor?: string }
       >;
@@ -45,10 +45,10 @@ describe('lookPreviewSvg', () => {
     expect(fills('lagoon')).toEqual([palette('tropical')[0], palette('tropical')[3]]);
   });
 
-  // UML is retired here (docs/specs/011-theme/retired-schemes.md "UML"): Textbook and Schematic wear Mono.
-  it('still draws Textbook and Schematic, now in Mono', () => {
+  // The low-fidelity Wireframe look draws in Mono's single ink.
+  it('draws Wireframe in Mono', () => {
     const ink = resolveTheme('mono')!.elementStroke!;
-    for (const id of ['textbook', 'schematic']) {
+    for (const id of ['wireframe']) {
       const look = tabLookById(id)!;
       expect(lookPreviewTab(look).theme, id).toBe('mono');
       expect(lookPreviewSvg(look).toLowerCase(), id).toContain(ink.toLowerCase());
@@ -56,10 +56,10 @@ describe('lookPreviewSvg', () => {
   });
 
   it('draws the Sketch looks sketched, and the Marker looks in marker', () => {
-    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'notebook')!)).toContain(
+    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'wireframe')!)).toContain(
       'data-finish="sketch"',
     );
-    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'whiteboard')!)).toContain(
+    expect(lookPreviewSvg(TAB_LOOKS.find((l) => l.id === 'workshop')!)).toContain(
       'data-finish="marker"',
     );
   });

@@ -30,3 +30,14 @@
 - [ ] Observability
 - [ ] Constants and configuration
 - [ ] Defaults ledger
+
+## tab-style-pages
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Data and persistence
+- [x] Errors and edge cases
+- [x] Performance and limits
+- [x] Presentation and UX
+- [x] Testing

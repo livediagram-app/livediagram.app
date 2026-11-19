@@ -60,6 +60,8 @@ export type TabLook = {
   pattern: BackgroundPattern;
   /** The pattern's strength, the tab's existing backgroundOpacity (1 when omitted): a busy pattern drawn softly. */
   patternOpacity?: number;
+  /** The 3D view's walls (docs/specs/008-canvas/3d-view.md "Themes"); unset puts the plaster back. Not matched on. */
+  wallColor?: string;
   /** A seasonal look's season (lib/seasonal-looks.ts); unset on the year-round looks. */
   season?: Season;
 };
@@ -80,12 +82,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'textbook',
-    label: 'Textbook',
-    description: 'Mono, Professional, Oswald, tiles',
+    label: 'Gallery',
+    description: 'Mono, Professional, Oswald, white tiles, white walls',
     theme: 'mono',
     finish: 'professional',
     font: 'oswald',
     pattern: 'tiles',
+    wallColor: '#f5f5f4',
   },
   {
     id: 'spectrum',
@@ -98,13 +101,14 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'whiteboard',
-    label: 'Whiteboard',
-    description: 'Mono, Marker, plain white',
+    label: 'Meeting Room',
+    description: 'Mono, Marker, carpet tiles, grey walls',
     theme: 'mono',
     // A whiteboard is drawn in marker; its letters in Shantell Sans itself.
     finish: 'marker',
     font: undefined,
-    pattern: 'blank',
+    pattern: 'carpet-tiles',
+    wallColor: '#e5e7eb',
   },
   {
     id: 'boardroom',
@@ -117,12 +121,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'notebook',
-    label: 'Notebook',
-    description: 'Mocha, Sketch, wood floor',
+    label: 'Cabin',
+    description: 'Mocha, Sketch, wood floor, timber walls',
     theme: 'mocha',
     finish: 'sketch',
     font: undefined,
     pattern: 'wood',
+    wallColor: '#d6bc95',
   },
   {
     id: 'seaside',
@@ -135,12 +140,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'doodle',
-    label: 'Doodle',
-    description: 'Rainbow, Sketch, Kalam, plain paper',
+    label: 'Playroom',
+    description: 'Rainbow, Sketch, Kalam, carpet, apricot walls',
     theme: 'rainbow',
     finish: 'sketch',
     font: 'caveat',
-    pattern: 'blank',
+    pattern: 'carpet',
+    wallColor: '#f8dcb4',
   },
   {
     id: 'editorial',
@@ -181,12 +187,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'graph-paper',
-    label: 'Graph Paper',
-    description: 'Indigo, Professional, Roboto Mono, tiles',
+    label: 'Lab',
+    description: 'Indigo, Professional, Roboto Mono, tiles, blue walls',
     theme: 'indigo',
     finish: 'professional',
     font: 'roboto-mono',
     pattern: 'tiles',
+    wallColor: '#dfe6f3',
   },
   {
     id: 'daydream',
@@ -293,21 +300,23 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'sketchbook',
-    label: 'Sketchbook',
-    description: 'Rose, Sketch, plain paper',
+    label: 'Atelier',
+    description: 'Rose, Sketch, concrete, blush walls',
     theme: 'rose',
     finish: 'sketch',
     font: undefined,
-    pattern: 'blank',
+    pattern: 'concrete',
+    wallColor: '#efd9dc',
   },
   {
     id: 'greenboard',
-    label: 'Greenboard',
-    description: 'Pine, Marker, a green board',
+    label: 'Classroom',
+    description: 'Pine, Marker, parquet, sage walls',
     theme: 'pine',
     finish: 'marker',
     font: undefined,
-    pattern: 'blank',
+    pattern: 'parquet',
+    wallColor: '#d3e4d1',
   },
   {
     id: 'picnic',
@@ -329,12 +338,13 @@ export const TAB_LOOKS: readonly TabLook[] = [
   },
   {
     id: 'field-notes',
-    label: 'Field Notes',
-    description: 'Olive, Sketch, mud',
+    label: 'Potting Shed',
+    description: 'Olive, Sketch, mud, moss walls',
     theme: 'olive',
     finish: 'sketch',
     font: undefined,
     pattern: 'mud',
+    wallColor: '#c9c3a0',
   },
 ];
 
@@ -348,12 +358,20 @@ export type LookSettings = Pick<
 
 // The lookup, apply and match are the shared ones (@liveworkspace/workbench/lib/tab-looks), over every named look,
 // year-round and seasonal: a tab wearing a seasonal look reads as that look too.
-export const { tabLookById, withLookApplied, lookMatches, activeLookId } = createTabLooks<
-  Tab,
-  TabLook
->({
+const shared = createTabLooks<Tab, TabLook>({
   looks: [...TAB_LOOKS, ...SEASONAL_LOOKS],
   withThemeApplied,
   // A pattern matches by the floor it draws as, so a retired diagram pattern reads as the floor it draws.
   samePattern: (look, tab) => spacePattern(look) === spacePattern(tab),
 });
+
+export const { tabLookById, lookMatches, activeLookId } = shared;
+
+/** `tab` dressed in `look`: its four settings (the shared apply), then its walls, or the plaster for a look without. */
+export function withLookApplied(tab: Tab, look: TabLook): Tab {
+  const dressed = shared.withLookApplied(tab, look);
+  if (look.wallColor) return { ...dressed, wallColor: look.wallColor };
+  if (dressed.wallColor === undefined) return dressed;
+  const { wallColor: _plaster, ...rest } = dressed;
+  return rest;
+}
