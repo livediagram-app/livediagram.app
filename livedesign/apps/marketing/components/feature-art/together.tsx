@@ -10,10 +10,8 @@ import {
   ALEX,
   AWAY,
   Avatar,
-  Box,
   CHECK_PATHS,
   CLOCK_PATHS,
-  Connector,
   Glyph,
   JORDAN,
   MUTED,
@@ -30,36 +28,26 @@ import {
   at,
   from,
 } from './canvas-parts';
+import { MiniPage, type PageSpec } from './page-tiles';
 
-// A row of steps joined left to right: [x, width, label], all 24 high at y.
-function Flow({ steps, y = 36 }: { steps: [number, number, string][]; y?: number }) {
+// The four pages the selection, laser and spotlight cards talk through: a logo, two phone screens and a
+// photo, each centred on a stop of the spotlight's tour (.fa-a-tour: 39, 112, 186 and 260 across).
+const ROW: PageSpec[] = [
+  { x: 19, y: 28, w: 40, h: 40, kind: 'logo' },
+  { x: 98, y: 23, w: 28, h: 50, kind: 'phone', title: 'Sign in' },
+  { x: 172, y: 23, w: 28, h: 50, kind: 'phone', title: 'Home' },
+  { x: 234, y: 30, w: 52, h: 36, kind: 'photo' },
+];
+
+function Pages({ pages }: { pages: PageSpec[] }) {
   return (
     <g>
-      {steps.map(([x, w, label], i) => {
-        const next = steps[i + 1];
-        return (
-          <g key={label}>
-            <Box x={x} y={y} w={w} h={24} label={label} />
-            {next ? (
-              <Connector
-                d={`M${x + w} ${y + 12} H ${next[0] - 2}`}
-                head={`M${next[0] - 6} ${y + 9} l4 3 l-4 3`}
-              />
-            ) : null}
-          </g>
-        );
-      })}
+      {pages.map((p) => (
+        <MiniPage key={`${p.x}-${p.y}`} {...p} />
+      ))}
     </g>
   );
 }
-
-// The four screens the laser and spotlight cards talk through.
-const TALK: [number, number, string][] = [
-  [14, 50, 'Logo'],
-  [86, 52, 'Sign in'],
-  [160, 52, 'Home'],
-  [234, 52, 'Checkout'],
-];
 
 /* ───────────────────────── Working together live ───────────────────────── */
 
@@ -144,7 +132,7 @@ export function PresenceArt() {
   );
 }
 
-/** Edits land live: change a step in your window and it changes in Jordan's a beat later. */
+/** Edits land live: recolour the logo in your window and Jordan's copy recolours a beat later. */
 export function RealtimeArt() {
   const pane = (x: number, name: string, color: string, initials: string, lag: number) => (
     <g>
@@ -155,30 +143,29 @@ export function RealtimeArt() {
       </text>
       <path className={RULE} d={`M${x} 31.5 H ${x + 112}`} strokeWidth="1" />
       <rect className="fill-(--art-paper)" x={x + 1} y="32" width="110" height="51" rx="5" />
-      <g className="fa-a-out" style={at(lag)}>
-        <Box x={x + 26} y={46} w={60} h={24} label="Draft" />
-      </g>
-      <g className="fa-a-late" style={at(lag)}>
-        <rect
-          className="fill-emerald-100 stroke-emerald-500 dark:fill-emerald-500/20 dark:stroke-emerald-300"
-          x={x + 26}
-          y="46"
-          width="60"
-          height="24"
-          rx="5"
-          strokeWidth="1.75"
-        />
-        <text
-          className="fill-emerald-800 dark:fill-emerald-100"
-          x={x + 56}
-          y="60.6"
-          fontSize="7.5"
-          fontWeight="600"
-          textAnchor="middle"
-        >
-          Shipped
-        </text>
-      </g>
+      <MiniPage x={x + 18} y={37} w={40} h={40} kind="logo" />
+      {/* The mark's ring, sky until the change lands, then emerald. */}
+      <circle
+        className="fa-a-late"
+        style={at(lag)}
+        cx={x + 38}
+        cy="53.8"
+        r="7.6"
+        fill="none"
+        stroke={SAM}
+        strokeWidth="3"
+      />
+      <MiniPage x={x + 66} y={37} w={26} h={40} kind="phone" />
+      <rect
+        className="fa-a-late"
+        style={at(lag)}
+        x={x + 69.6}
+        y="68"
+        width="18.7"
+        height="4.6"
+        rx="2.3"
+        fill={SAM}
+      />
     </g>
   );
   return (
@@ -202,53 +189,61 @@ export function RealtimeArt() {
       <text className={MUTED} x="150" y="52" fontSize="6.5" fontWeight="600" textAnchor="middle">
         live
       </text>
-      <Pointer x={76} y={62} color={YOU} />
+      <Pointer x={61} y={50} color={YOU} />
     </Scene>
   );
 }
 
-/** See what others are working on: each person's selection glows in their colour, with their initials. */
+/** See what others are working on: each person's selected page glows in their colour, with their initials. */
 export function SelectionGlowArt() {
-  const glow = (x: number, w: number, color: string, initials: string) => (
+  const glow = ({ x, y, w, h }: PageSpec, color: string, initials: string) => (
     <g>
       <rect
-        x={x - 4.5}
-        y="31.5"
-        width={w + 9}
-        height="33"
-        rx="9"
+        x={x - 4}
+        y={y - 4}
+        width={w + 8}
+        height={h + 8}
+        rx="5"
         fill="none"
         stroke={color}
         strokeOpacity="0.25"
         strokeWidth="4"
       />
       <rect
-        x={x - 2.5}
-        y="33.5"
-        width={w + 5}
-        height="29"
-        rx="7"
+        x={x - 2}
+        y={y - 2}
+        width={w + 4}
+        height={h + 4}
+        rx="3.5"
         fill="none"
         stroke={color}
         strokeWidth="1.5"
       />
-      <rect x={x + w - 12} y="25" width="16" height="10" rx="3" fill={color} />
-      <text x={x + w - 4} y="32.2" fontSize="6.5" fontWeight="700" textAnchor="middle" fill="#fff">
+      <rect x={x + w - 12} y={y - 9} width="16" height="10" rx="3" fill={color} />
+      <text
+        x={x + w - 4}
+        y={y - 1.8}
+        fontSize="6.5"
+        fontWeight="700"
+        textAnchor="middle"
+        fill="#fff"
+      >
         {initials}
       </text>
     </g>
   );
+  const [logo, signIn, , photo] = ROW;
   return (
     <Scene>
-      <Flow steps={TALK.map(([x, w], i) => [x, w, ['Login', 'Verify', 'Welcome', 'Home'][i]!])} />
-      {glow(14, 50, YOU, 'TM')}
-      {glow(234, 52, ALEX, 'A')}
+      <Pages pages={ROW} />
+      {glow(logo!, YOU, 'TM')}
+      {glow(photo!, ALEX, 'A')}
       <g className="fa-a-pop" style={at(1.7)}>
-        {glow(86, 52, JORDAN, 'JR')}
+        {glow(signIn!, JORDAN, 'JR')}
       </g>
       <Pointer
-        x={124}
-        y={56}
+        x={118}
+        y={62}
         color={JORDAN}
         name="Jordan"
         className="fa-a-move"
@@ -258,21 +253,21 @@ export function SelectionGlowArt() {
   );
 }
 
-/** Comments on any element: a badge on the shape, and its thread open beside it. */
+/** Comments on anything: a badge on the Pricing screen, and its thread open beside it. */
 export function CommentsArt() {
   return (
     <Scene>
-      <Box x={34} y={38} w={64} h={28} label="Pricing" />
+      <MiniPage x={56} y={16} w={36} h={68} kind="phone" title="Pricing" />
       <path
         className="stroke-pink-300 dark:stroke-pink-400/60"
-        d="M104 36 C 116 28, 126 24, 138 22"
+        d="M98 16 C 112 14, 124 16, 138 20"
         fill="none"
         strokeWidth="1"
         strokeDasharray="2 2"
       />
       <g className="fa-a-pop" style={at(0.2)}>
-        <circle className={ON_CANVAS} cx="98" cy="38" r="6" fill={JORDAN} strokeWidth="1.5" />
-        <text x="98" y="40.4" fontSize="6.5" fontWeight="700" textAnchor="middle" fill="#fff">
+        <circle className={ON_CANVAS} cx="92" cy="16" r="6" fill={JORDAN} strokeWidth="1.5" />
+        <text x="92" y="18.4" fontSize="6.5" fontWeight="700" textAnchor="middle" fill="#fff">
           2
         </text>
       </g>
@@ -321,18 +316,18 @@ export function CommentsArt() {
   );
 }
 
-/** Assign actions: a shape becomes a piece of work, handed to Alex, then ticked off. */
+/** Assign actions: a screen becomes a piece of work, handed to Alex, then ticked off. */
 export function AssignedActionsArt() {
   return (
     <Scene>
-      <Box x={30} y={36} w={68} h={28} label="Sign in" />
-      <circle className={ON_CANVAS} cx="98" cy="36" r="5.5" fill={YOU} strokeWidth="1.5" />
-      <Glyph x={94.5} y={32.5} className="stroke-white" scale={0.7}>
+      <MiniPage x={52} y={16} w={36} h={68} kind="phone" title="Sign in" />
+      <circle className={ON_CANVAS} cx="88" cy="16" r="5.5" fill={YOU} strokeWidth="1.5" />
+      <Glyph x={84.5} y={12.5} className="stroke-white" scale={0.7}>
         {CHECK_PATHS}
       </Glyph>
       <path
         className="stroke-sky-300 dark:stroke-sky-500/60"
-        d="M104 46 H 128"
+        d="M94 46 H 128"
         strokeWidth="1"
         strokeDasharray="2 2"
       />
@@ -388,11 +383,11 @@ export function AssignedActionsArt() {
 
 /* ──────────────────────── Pointing people at it ──────────────────────── */
 
-/** Spotlight: the canvas dims under a shroud, and a soft circle of light tours the steps. */
+/** Spotlight: the canvas dims under a shroud, and a soft circle of light tours the pages. */
 export function SpotlightArt() {
   return (
     <Scene>
-      <Flow steps={TALK} />
+      <Pages pages={ROW} />
       <defs>
         <radialGradient id="fa-a-spot-light">
           <stop offset="0.62" stopColor="#000" />
@@ -419,7 +414,7 @@ export function SpotlightArt() {
         mask="url(#fa-a-spot-mask)"
       />
       <g className="fa-a-tour">
-        <Pointer x={48} y={56} color={YOU} />
+        <Pointer x={46} y={58} color={YOU} />
       </g>
     </Scene>
   );
@@ -427,16 +422,13 @@ export function SpotlightArt() {
 
 /** The laser pointer: a glowing trail that follows your cursor and fades behind it. */
 export function LaserArt() {
-  const path = 'M18 54 C 54 66, 96 44, 150 46 S 236 60, 286 50';
+  // The trail sweeps from the logo, under the Sign in button and on to the photo's sun.
+  const path = 'M30 48 C 60 64, 90 72, 112 66 S 200 30, 274 42';
   const streak = (dash: string): CSSProperties =>
     ({ '--dash': dash, '--len': '275px' }) as CSSProperties;
   return (
     <Scene>
-      <Box x={20} y={16} w={56} h={24} label="Logo" />
-      <Connector d="M76 28 C 104 28, 100 72, 122 72" head="M118 69 l4 3 l-4 3" />
-      <Box x={124} y={60} w={52} h={24} label="Screens" />
-      <Connector d="M176 72 C 200 72, 196 28, 222 28" head="M218 25 l4 3 l-4 3" />
-      <Box x={224} y={16} w={56} h={24} label="Photo" />
+      <Pages pages={ROW} />
       <path
         className="fa-a-streak stroke-rose-500/45 blur-[1.5px]"
         style={streak('90px')}

@@ -149,7 +149,15 @@ export function LogoPageArt() {
               </text>
             </g>
           ))}
-          <rect x="124" y="64" width="68" height="12" rx="3" fill={SKY} />
+          <rect
+            className="fill-brand-700 dark:fill-brand-600"
+            x="124"
+            y="64"
+            width="68"
+            height="12"
+            rx="3"
+            fill="#be123c"
+          />
           <text x="158" y="71.8" textAnchor="middle" fontSize="4.8" fontWeight="700" fill="#ffffff">
             Download .zip
           </text>

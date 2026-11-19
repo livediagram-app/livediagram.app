@@ -166,9 +166,17 @@ function LayersPanel({ x, y }: { x: number; y: number }) {
           </g>
         );
       })}
-      {/* Export, as a PSD with its layers kept. */}
+      {/* Export: the Photo panel's Download (apps/live PhotoExportPanel), a PSD with its layers kept. */}
       <g className="hm-pop" style={at(4.8)}>
-        <rect x={x + 10} y={y + 186} width="180" height="34" rx="6" fill={SKY} />
+        <rect
+          className="fill-brand-700 dark:fill-brand-600"
+          x={x + 10}
+          y={y + 186}
+          width="180"
+          height="34"
+          rx="6"
+          fill="#be123c"
+        />
         <text
           x={x + 100}
           y={y + 207}
@@ -178,7 +186,7 @@ function LayersPanel({ x, y }: { x: number; y: number }) {
           fontWeight="700"
           fill="#ffffff"
         >
-          Export PSD, layers kept
+          Download
         </text>
       </g>
     </g>

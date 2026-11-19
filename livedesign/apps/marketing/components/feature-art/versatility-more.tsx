@@ -5,18 +5,16 @@
 
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import {
-  ArrowHead,
   Chip,
-  LINK,
   MONO,
   MUTED_TEXT,
-  Node,
   PANEL,
   PANEL_TEXT,
   STAGE,
   Selection,
   delay,
 } from '@liveworkspace/marketing-site/components/feature-art/versatility-parts';
+import { MiniPage } from './page-tiles';
 
 /* ──────────────── Zen, fonts ──────────────── */
 
@@ -26,9 +24,6 @@ export function ZenModeArt() {
   return (
     <Frame canvas>
       <svg viewBox={STAGE} className="absolute inset-0 h-full w-full">
-        <defs>
-          <ArrowHead id="fac-zen-head" />
-        </defs>
         <g className="fa-c-before">
           {/* Header. */}
           <rect
@@ -114,12 +109,10 @@ export function ZenModeArt() {
           />
         </g>
 
-        {/* What stays: the design. */}
-        <Node x={78} y={39} w={40} h={20} label="Logo" tone="amber" size={7} />
-        <Node x={130} y={39} w={40} h={20} label="Screens" tone="sky" size={7} />
-        <Node x={182} y={39} w={40} h={20} label="Photo" tone="emerald" size={7} />
-        <path className={LINK} d="M118 49 H129" strokeWidth="1.3" markerEnd="url(#fac-zen-head)" />
-        <path className={LINK} d="M170 49 H181" strokeWidth="1.3" markerEnd="url(#fac-zen-head)" />
+        {/* What stays: the design's pages. */}
+        <MiniPage x={82} y={38} w={36} h={36} kind="logo" />
+        <MiniPage x={132} y={31} w={27} h={47} kind="phone" title="Sign in" />
+        <MiniPage x={173} y={39} w={48} h={34} kind="photo" />
 
         {/* Zen: the zoom controls and the way out. */}
         <g className="fa-c-after">
