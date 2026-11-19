@@ -69,7 +69,7 @@ const action = (over: Partial<InboxAction> = {}): InboxAction => ({
     type: 'task',
     typeLabel: 'Task',
     title: 'Fix login',
-    board: { tabId: 'b', name: 'Board' },
+    board: { tabId: 'b', elementId: 'board-1', title: 'Board', tabName: 'Board' },
   } as InboxAction['card'],
   createdAt: NOW - 900,
   updatedAt: NOW - 400,
