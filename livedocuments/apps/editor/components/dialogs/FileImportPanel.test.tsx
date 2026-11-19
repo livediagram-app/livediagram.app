@@ -54,7 +54,7 @@ describe('FileImportPanel', () => {
     expect(screen.getByRole('button', { name: 'Choose a File' }).getAttribute('aria-busy')).toBe(
       'true',
     );
-    expect(screen.getByRole('button', { name: /All formats/ }).hasAttribute('disabled')).toBe(true);
+    expect(screen.getByRole('button', { name: /All Formats/ }).hasAttribute('disabled')).toBe(true);
     // A second drop while busy is ignored.
     drop(docx());
     expect(onImportFile).toHaveBeenCalledOnce();
@@ -75,7 +75,7 @@ describe('FileImportPanel', () => {
       .mockResolvedValueOnce({ status: 'cancelled' });
     const onDone = vi.fn();
     render(<FileImportPanel format="word" onImportFile={onImportFile} onDone={onDone} />);
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
     drop(docx());
     expect((await screen.findByRole('alert')).textContent).toContain('This is a PowerPoint file');
     expect(screen.getByText('Drop a Word document here')).toBeTruthy();

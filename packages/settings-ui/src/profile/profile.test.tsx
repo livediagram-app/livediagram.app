@@ -137,7 +137,7 @@ describe('the Profile header card', () => {
     expect(screen.getByText('Guest · This browser only')).toBeTruthy();
     expect(screen.getByText(/Keep your plans and settings on every device/)).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Sign in' }).getAttribute('href')).toBe('/sign-in');
-    expect(screen.getByRole('link', { name: 'Create account' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'Create Account' }).getAttribute('href')).toBe(
       '/get-started',
     );
   });

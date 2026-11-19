@@ -321,7 +321,7 @@ function GuestItems({
       </a>
       <PageItem
         href={guest.signUpHref}
-        label="Create account"
+        label="Create Account"
         hint="Free, and one account for every app"
         icon={CreateAccountIcon}
       />

@@ -51,7 +51,7 @@ describe('ImportTabDialog', () => {
     );
     pick('SVG');
     expect(screen.getByText('Paste your SVG, or import a file.')).toBeTruthy();
-    expect(screen.getByRole('button', { name: /All formats/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /All Formats/ })).toBeTruthy();
   });
 
   it('opens straight at JSON when it is the one format offered, with no way back to a list', () => {
@@ -65,7 +65,7 @@ describe('ImportTabDialog', () => {
       />,
     );
     expect(screen.getByText('Paste your JSON, or import a file.')).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /All formats/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /All Formats/ })).toBeNull();
   });
 
   it('passes pasted SVG on as SVG, under a note that it adds to the page instead of the warning', async () => {

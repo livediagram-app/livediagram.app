@@ -28,7 +28,7 @@ describe('the site header account menu', () => {
     fireEvent.click(guest);
     const signIn = await screen.findByRole('menuitem', { name: 'Sign In' }, { timeout: 10_000 });
     expect(signIn.getAttribute('href')).toBe('/api/auth/sign-in?return_to=%2F');
-    expect(screen.getByRole('menuitem', { name: /Create account/ }).getAttribute('href')).toBe(
+    expect(screen.getByRole('menuitem', { name: /Create Account/ }).getAttribute('href')).toBe(
       '/api/auth/sign-in?return_to=%2F&screen=sign-up',
     );
     expect(fetchMock).not.toHaveBeenCalled();

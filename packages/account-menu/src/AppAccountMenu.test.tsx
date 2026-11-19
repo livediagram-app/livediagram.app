@@ -90,7 +90,7 @@ describe('AppAccountMenu', () => {
     const items = screen.getAllByRole('menuitem');
     expect(items.map((i) => i.textContent)).toEqual([
       'Sign In',
-      'Create accountFree, and one account for every app',
+      'Create AccountFree, and one account for every app',
     ]);
     expect(items[0]!.getAttribute('href')).toBe('/api/auth/sign-in?return_to=%2Fpricing%3Fx%3D1');
     expect(items[1]!.getAttribute('href')).toBe(

@@ -55,7 +55,7 @@ shareable as it is, and the device's own setting applies through System.
 - **Signed out**: the same control, as **Guest**: a neutral disc with a person glyph (not a presence colour, so it
   never passes for someone), the word "Guest" (hidden on a phone) and the chevron, opening "Guest" over "Not signed
   in", then **Sign in**, the menu's primary, which opens `/sign-in` with the page to come back to
-  (`?return=/telemetry`, say), and **Create account** (`/sign-up`, with the same `?return=`). Once signed in, the
+  (`?return=/telemetry`, say), and **Create Account** (`/sign-up`, with the same `?return=`). Once signed in, the
   page goes back there. Only a path on this site is followed, so the link can't send anyone elsewhere. A guest has
   no settings on liveworkspace.app (see the Explorer's bottom bar), so the menu here offers none.
 - **Signed in**: an avatar of the account's Google picture where it has one ([accounts.md](../003-accounts/accounts.md#profile-pictures): `user.image` from `/get-session`, an app's `<prefix>account_picture` cookie), over its initials, which show whenever there is no picture or it fails to load (always two letters: the first
@@ -947,7 +947,7 @@ the browser on to the Explorer with the panel open ([Your account](#your-account
     the editor's own copy, in that browser, and the row says so. liveworkspace.app's own panel has no
     Danger Zone: as closing an account, resetting goes from an app.
   - **A guest** (an editor's own Settings, the Explorer on an app's address): Profile shows the header card as a
-    guest (their name, Guest, and their colour where the app has one) with **Sign in** and **Create account**, and
+    guest (their name, Guest, and their colour where the app has one) with **Sign in** and **Create Account**, and
     says what an account adds, rather than empty rows.
   - **Show My Google Picture**, in Name and Colour, for an account with a Google picture: on by default; off, others
     see the initials ([accounts.md](../003-accounts/accounts.md#profile-pictures)). The header card's avatar is the picture
