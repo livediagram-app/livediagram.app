@@ -250,7 +250,9 @@ describe('tool output schemas', () => {
         expect(first!.text).not.toContain((structured as { ticket: string }).ticket);
       } else if (tool === 'view_edit') {
         // One line, not the SVG, as view_tab ("Edits in the view").
-        expect(first!.text).toBe('Saved 1 edit from the interactive view.');
+        expect(first!.text).toMatch(
+          /^Saved 1 edit from the interactive view\. The diagram changed: call read_diagram/,
+        );
       } else {
         expect(JSON.parse(first!.text)).toEqual(structured);
       }

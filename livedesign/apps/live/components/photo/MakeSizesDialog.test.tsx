@@ -39,6 +39,13 @@ const tile = (name: RegExp) => screen.getByRole('checkbox', { name });
 const make = () => screen.getByRole('button', { name: /^Mak(e\b|ing)/ });
 
 describe('the Make Sizes dialog', () => {
+  it('links to the Make Sizes help article from the Formats row', () => {
+    open();
+    const help = screen.getByRole('link', { name: /make sizes/i });
+    expect(help.getAttribute('href')).toBe('/help/pages/photo-pages/make-sizes/');
+    expect(help.getAttribute('target')).toBe('_blank');
+  });
+
   it('offers every format and Custom, none ticked the first time', () => {
     open();
     expect(screen.getAllByRole('checkbox').map((c) => c.getAttribute('aria-label'))).toEqual([

@@ -11,6 +11,7 @@ import { nextPageId, type Page } from '@livedesign/design';
 import { Button, DialogHeader, lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@livedesign/ui';
 import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { DialogFooter } from '@liveworkspace/workbench/components/dialogs/DialogFooter';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useOptionalEditorContext } from '@/app/design/[id]/EditorContext';
 import type { PhotoEditorView } from '@/hooks/editor/usePhotoEditor';
 import { useToast } from '@/hooks/ui/useToast';
@@ -233,6 +234,7 @@ export function MakeSizesDialog({
             Formats
           </p>
           <div className="flex items-center gap-1">
+            <HelpArticleLink article="makeSizes" variant="labelled" />
             <Button
               variant="ghost"
               size="sm"

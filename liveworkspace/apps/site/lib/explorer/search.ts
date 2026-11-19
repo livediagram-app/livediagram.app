@@ -5,7 +5,8 @@
 import type { SearchEntry } from '@liveworkspace/explorer/search-panel';
 import { APP_NAMES, siteOfApp, type AppName } from '@liveworkspace/sites';
 import { SETTINGS_CONTENTS } from '@/lib/account-settings';
-import { appOrigin } from './page-app';
+import { EXPLORER_ARTICLES, explorerArticlePath } from '@/lib/help/platform-help';
+import { appOrigin, workspaceHref } from './page-app';
 
 // The Explorer's articles every app's help centre has (lib/explorer/host.ts VIEW_HELP), by name.
 const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
@@ -22,8 +23,8 @@ const HELP_ARTICLES: readonly { slug: string; label: string }[] = [
   { slug: 'getting-started/guest-vs-account', label: 'Guest or Account' },
 ];
 
-/** Search's entries: the app's help articles (none in no app, where liveworkspace.app has no Explorer articles of
- *  its own), and the Settings sections for an account. */
+/** Search's entries: the app's help articles, or in no app liveworkspace.app's own Explorer articles (lib/help), and
+ *  the Settings sections for an account. */
 export function searchEntries(app: AppName | null, signedIn: boolean): SearchEntry[] {
   const help: SearchEntry[] = app
     ? HELP_ARTICLES.map(({ slug, label }) => ({
@@ -34,7 +35,14 @@ export function searchEntries(app: AppName | null, signedIn: boolean): SearchEnt
         href: `${appOrigin(app)}/help/${slug}/`,
         newTab: true,
       }))
-    : [];
+    : EXPLORER_ARTICLES.map(({ slug, title }) => ({
+        id: `explorer/${slug || 'overview'}`,
+        group: 'help',
+        label: title,
+        hint: 'liveworkspace Help',
+        href: workspaceHref(explorerArticlePath(slug)),
+        newTab: true,
+      }));
   if (!signedIn) return help;
   // Each opens the Settings panel here, in place, on its section (`?settings=`): every one is edited on an app's
   // address as on liveworkspace.app.
