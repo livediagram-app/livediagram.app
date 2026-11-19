@@ -99,9 +99,10 @@ END;
   trigger drops its snapshot rows. The answer is the `tab_versions` row now holding the revision.
 - **VH23 gone with the tab.** Deleting a tab cascades to `tab_named_versions`, whose trigger deletes the snapshot and
   its chunks; the document's own snapshots (item id the document's) are never touched.
-- **VH24 anonymise both.** `anonymiseDocument` also sets `author_id`/`author_name` on the snapshots rows a
-  `tab_named_versions` row names, and rewrites each such version's text through `anonymiseJsonText` with
-  `rewriteSnapshotText` (SN33) where it mentions the person.
+- **VH24 anonymise both.** `anonymiseDocument` also clears the author of every snapshots row they took, the named
+  versions and the document's own snapshots alike (`clearSnapshotAuthors`, SN34, Work Tracker 1310), and rewrites
+  each named version's text through `anonymiseJsonText` with `rewriteSnapshotText` (SN33) where it mentions the
+  person. The document's own snapshots keep their text: it is the owner's file.
 
 ## Interfaces and contracts
 
