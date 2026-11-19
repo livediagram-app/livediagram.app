@@ -27,5 +27,6 @@ The Explorer, and everything it lists, lives in liveworkspace's index and its sh
 - ./workbench-embeds.md - when a developer tool (an agent workbench, VS Code) frames the editor signed in: workbench tickets and sessions, the origin handshake, workbench messages, the selection reference
 - ./live-image-share.md - when working on Live image share link: Share-link-scoped `<img>`-able SVG at `/api/share/<code>/image.svg`, served by liveworkspace's previews ([Project previews](../006-project/project-snapshots.md))
 - ./share-link-previews.md - when working on what a pasted share link previews as in Slack, Teams, iMessage and the like: the project's name and a 1200 x 630 PNG share card (`/api/share/<code>/card`, `/api/share/<code>/image.png`), the editor worker's head rewrite, and the brand card everywhere else
+- ./approvals.md - when working on Approvals: asking named people to approve the plan, the Approval tab in Share, the badge in the corner card and the banner, a Viewer's one write (the platform's `004-index/approvals.md`)
 - ./snapshots.md - when working on Snapshots: manual save points of the whole plan, the latest five kept, Revert (the platform's `014-snapshots`), and what this app's revert puts back
 - ./blueprints/README.md - when implementing a workspace spec from its blueprint (share roles, workbench embeds)

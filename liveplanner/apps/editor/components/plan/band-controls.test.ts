@@ -18,7 +18,7 @@ describe('the header band', () => {
     expect(BAND_FLUSH).toContain('[[data-band-blend]_&]:bg-transparent!');
     // In a band, and in a phone's shared row (experiment: no header bar), clear of the corner card.
     expect(BAND_HEADER_END).toBe(
-      '[[data-header-band]_&]:pr-[calc(var(--corner-card-room,0px)+12px)] [[data-shared-row]_&]:pr-[calc(var(--corner-card-room,0px)+8px)]',
+      '[[data-header-band]_&]:pr-[calc(var(--corner-card-span,0px)+12px)] [[data-shared-row]_&]:pr-[calc(var(--corner-card-span,0px)+8px)]',
     );
     expect(BAND_STRIP_FLUSH).toContain('[[data-strip-in-band]_&]:border-transparent!');
   });

@@ -373,6 +373,14 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M12 5.5V4a2.5 2.5 0 015 0v1.5" />
     </Glyph>
   ),
+  // A page with a tick on it: the plan being signed off.
+  'request-approval': (
+    <Glyph>
+      <path d="M13.5 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8.5z" />
+      <path d="M13.5 3v5.5H19" />
+      <path d="M8.8 14.2l2.3 2.3 4.2-4.6" />
+    </Glyph>
+  ),
   // A row of tabs where only the middle one is solid: the one tab a link opens.
   'one-tab': (
     <Glyph>

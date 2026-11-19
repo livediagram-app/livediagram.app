@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createApiClient } from '@liveworkspace/api-client';
 import { DOCUMENT_TRASHED_CLOSE } from '@livediagram/api-schema';
+import { ITEM_ARCHIVED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import { fakeIo, type Route } from '../testing/fake-io';
 import { openRoomStream, ROOM_RECONNECT_MAX_MS, ROOM_RECONNECT_MIN_MS } from './room-stream';
 
@@ -116,6 +117,37 @@ describe('openRoomStream', () => {
     io.sockets[0]!.drop(DOCUMENT_TRASHED_CLOSE);
     expect(await stream.ended).toBe('trashed');
     stream.stop();
+  });
+
+  // liveworkspace one-explorer.md "Archived from elsewhere while open": 4010 asks again at once, without saying it is
+  // reconnecting, and the archived refusal ends the stream.
+  it('ends with the refusal when the item is archived, without reconnecting first', async () => {
+    let calls = 0;
+    const { io, stream, notices } = setUp((request, url) =>
+      request.method === 'POST' &&
+      url.pathname === '/api/documents/d%201/room-ticket' &&
+      ++calls > 1
+        ? Response.json({ error: 'archived' }, { status: 409 })
+        : ticketing(request, url),
+    );
+    await tick();
+    io.sockets[0]!.open();
+    io.sockets[0]!.drop(ITEM_ARCHIVED_CLOSE);
+    await expect(stream.ended).rejects.toMatchObject({ status: 409 });
+    expect(notices).toEqual([]);
+    expect(io.sockets).toHaveLength(1);
+  });
+
+  it('goes on when the archived close finds the item back', async () => {
+    const { io, stream, notices } = setUp(ticketing);
+    await tick();
+    io.sockets[0]!.open();
+    io.sockets[0]!.drop(ITEM_ARCHIVED_CLOSE);
+    await tick();
+    expect(io.sockets).toHaveLength(2);
+    expect(notices).toEqual([]);
+    stream.stop();
+    expect(await stream.ended).toBe('stopped');
   });
 
   // A rate-limited ticket is the network being busy, not a refusal: the watch must keep its stream.

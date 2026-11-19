@@ -48,6 +48,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     documentServerStored,
     enabled = true,
     onRoomFull,
+    onItemArchived,
     documentTeamId,
     selfParticipant,
     sessionShareCode,
@@ -197,6 +198,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
     window.location.reload();
   });
   const roomFull = useEffectEvent(() => onRoomFull?.());
+  const roomItemArchived = useEffectEvent(() => onItemArchived?.());
   // A join turned away (docs/specs/013-workspace/trash.md): trashed between our load and our join, the room
   // refuses us instead of telling us. Ask the api once per refusal (one probe at a time); only a trashed
   // answer changes anything.
@@ -279,6 +281,7 @@ export function useRoomConnection(opts: RoomConnectionOptions) {
       // Reload so the access gates run again (a password prompt, a refusal page, or the editor).
       onAccessChanged: () => roomAccessChanged(),
       onRoomFull: () => roomFull(),
+      onItemArchived: () => roomItemArchived(),
       onRefused: () => roomRefused(),
       onResync: () => roomResync(),
       // Our own socket dropped (it reconnects as a new presence): the room lowered our raised hand for everyone, so

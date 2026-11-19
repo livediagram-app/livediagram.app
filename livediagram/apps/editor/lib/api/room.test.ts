@@ -721,6 +721,43 @@ describe('connectRoom when the document is trashed', () => {
     expect(onRefused).not.toHaveBeenCalled();
   });
 
+  // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): close 4010. The
+  // connector stops for good and hands over, so the editor leaves for the Explorer; nothing else is called.
+  it('reports an archive once and never reconnects', () => {
+    const onItemArchived = vi.fn();
+    const onDocumentTrashed = vi.fn();
+    const onAccessChanged = vi.fn();
+    connectRoom(
+      'd1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onItemArchived, onDocumentTrashed, onAccessChanged },
+    );
+    ClosingSocket.all[0]!.fire('open');
+    ClosingSocket.all[0]!.fire('close', { code: 4010 });
+    vi.runAllTimers();
+
+    expect(onItemArchived).toHaveBeenCalledTimes(1);
+    expect(onDocumentTrashed).not.toHaveBeenCalled();
+    expect(onAccessChanged).not.toHaveBeenCalled();
+    expect(ClosingSocket.all).toHaveLength(1);
+  });
+
+  // A trash or an access change is never taken for an archive.
+  it('never reports an archive for the trashed or access-changed close', () => {
+    const onItemArchived = vi.fn();
+    for (const code of [4004, 4005]) {
+      connectRoom(
+        'd1',
+        { id: 'me', name: 'Me', color: '#000' },
+        { onPresence() {}, onOp() {}, onItemArchived },
+      );
+      ClosingSocket.all.at(-1)!.fire('open');
+      ClosingSocket.all.at(-1)!.fire('close', { code });
+    }
+    vi.runAllTimers();
+    expect(onItemArchived).not.toHaveBeenCalled();
+  });
+
   // An access change (docs/specs/015-api/api.md "Access changes end the sessions they affect"):
   // close 4005. The connector stops and hands over, so the editor reloads into the access path
   // instead of reconnecting into a join the gates may refuse.

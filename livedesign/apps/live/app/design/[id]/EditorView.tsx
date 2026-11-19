@@ -351,8 +351,10 @@ export function EditorView() {
                                     </button>
                                   </div>
                                 ) : null}
-                                {headerInColumn}
+                                {/* The approver's banner above the corner card's zero-height layer, so the card floats below it and
+                                    never over its buttons (approvals.md "Where it sits"). */}
                                 <ApprovalBanner />
+                                {headerInColumn}
                                 {sessionCommunity && appChrome && hydrated ? (
                                   <CommunityBar
                                     community={sessionCommunity}

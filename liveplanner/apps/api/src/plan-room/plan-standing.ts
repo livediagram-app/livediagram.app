@@ -9,7 +9,7 @@ import { AUTOMATION_LATE_MAX_MS } from '@liveplanner/items';
 import { isPutAway, type ItemStanding } from '@liveworkspace/index-client';
 import { settleWaiting } from './automations/automation-log';
 import { clearAgentsFor } from './plan-room-presence';
-import { closeAllIfTrashed } from './plan-room-sockets';
+import { closeAllIfTrashed, closeSessionsForAccessChange } from './plan-room-sockets';
 import type { PlanRoom } from './plan-room';
 
 export const STANDING_KEY = 'planStanding';
@@ -73,13 +73,20 @@ export async function applyStanding(room: PlanRoom, next: StoredStanding): Promi
 
 // The index's push. A newer word that the plan went to the Trash (from the editor, the Explorer, the REST API or MCP
 // alike) ends every session there (docs/specs/013-workspace/trash.md "Open editors"; Work Tracker 1141): each hears
-// project-trashed, its socket closes with 4004 and the agents' presence clears. Nothing more is kept, so a restore's
-// next join is admitted as before.
+// project-trashed, its socket closes with 4004 and the agents' presence clears. A newer word that it was archived ends
+// every session with 4010 and no op. Nothing more is kept, so a restore's next join is admitted as before.
 export async function takeStanding(room: PlanRoom, standing: ItemStanding): Promise<void> {
   const next = { putAway: isPutAway(standing), at: standing.at };
   const fresh = room.standing.newer(next);
   await applyStanding(room, next);
-  if (!fresh || !standing.trashed) return;
+  if (!fresh) return;
+  // A newer word that the plan was archived (Work Tracker 1242, one-explorer.md "Archived from elsewhere while open"):
+  // every socket closes with 4010, telling nobody anything else, and each editor leaves for the Explorer.
+  if (standing.archived && !standing.trashed) {
+    closeSessionsForAccessChange(room, { match: 'archived' });
+    return;
+  }
+  if (!standing.trashed) return;
   const op = { kind: 'project-trashed' };
   room.broadcastSystemOp(op);
   const closed = closeAllIfTrashed(room, op);

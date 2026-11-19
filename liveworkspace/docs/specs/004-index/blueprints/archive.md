@@ -55,8 +55,9 @@ archived_at IS NULL AND trashed_at IS NULL`.
 4. `DELETE` from `share_links`, `share_passwords`, `shared_with`.
 5. `DELETE` from `opens`, `use_days` for the item (every person).
 6. `DELETE` from `collab_thread_people`, `collab_threads`, `collab_actions`, `collab_form_reads`, `collab_forms`.
-7. After the batch, the app hears `POST /items/:id/revoke {codes}` with the deleted links' codes (`waitUntil`), and
-   the owner's Drive mirror (and, out of a team, nobody else's) is touched.
+7. After the standing call of step 8 is answered (or dropped), the app hears `POST /items/:id/revoke {codes}` with the
+   deleted links' codes (`waitUntil`), so the link visitors' sessions end with the archive's 4010, not the revoke's
+   close; the owner's Drive mirror (and, out of a team, nobody else's) is touched.
 8. After the batch, the app hears `POST /items/:id/standing {archived: true, trashed: false, at}` (`waitUntil`,
    `tellStanding` in `standing.ts`; [one-explorer-contracts.md](../one-explorer-contracts.md) "Where an item stands"),
    so its own clock (liveplanner's time rules) stops. A call that fails is tried once more about a second later, in the
@@ -97,6 +98,16 @@ event. Naming neither keeps `a:<owner>` whatever the title. A move out tells the
 - Collab push (`collab-push.ts`) for an archived item answers `204` and writes nothing.
 - Connected tabs: an archived host or target opens as missing, as a trashed one does.
 - `GET /items/:id`, `POST /items/lookup`: unchanged; `archivedAt` is on the item.
+- Open sessions (Work Tracker 1242): each app's `standing` handler (`routes/internal-items.ts`) closes the item's
+  room on `archived && !trashed`: `closeArchivedSessions` (`@liveworkspace/api-kit/room-access-client`) posts
+  `{match: 'archived'}` to the room's `/close-sessions`, which matches every socket (`sessionMatchesAccessClose`) and
+  closes it with `accessCloseCode` → `[4010, 'item-archived']` (`ITEM_ARCHIVED_CLOSE`,
+  `@liveworkspace/api-schema/room-wire`). liveplanner closes in its room's `takeStanding`, only on a fresh standing.
+  The editors' room clients treat 4010 as final (like 4004): no reconnect, `onItemArchived`, and the editor calls
+  `leaveArchivedElsewhere(app, item, isOwner)`: the owner to `?archived=<id>&title=<name>`, anyone else to
+  `?ended=archived` (the site's `arrivalNotice`). The MCP viewer stops with "This <noun> was archived."; each CLI's
+  room stream asks for a ticket again at once, saying nothing, and ends on the api's `409 archived` refusal (a ticket
+  means the item is back, and the stream goes on).
 
 ## Interfaces and contracts
 
@@ -126,7 +137,7 @@ No new index: every live list is driven by scope, and `a:<owner>` is a scope of 
 | A folder id                              | `404` (no item has it)                                           |
 | Archiving an item in the Trash           | `409 trashed`                                                    |
 | An old teammate opens it                 | `404`: not in the team any more, no link                         |
-| An open session when it is archived      | link sessions end at once; others when the grant is next renewed |
+| An open session when it is archived      | every session ends at once (4010); the owner's lands on Archived |
 | A Hide from Recent or open sent for it   | `409 archived`; nothing written                                  |
 | Moved out into a team the owner has left | `403 not_team_member`                                            |
 
@@ -150,6 +161,12 @@ one `items_live` range: pinned by `lists.test.ts` "query plans".
 | `liveworkspace/apps/index/src/lists.test.ts`       | the Archived, Search and Trash plans                                                                 |
 | `liveworkspace/apps/index/src/standing.test.ts`    | the app told on archive and move out, once, a failed call retried once, then dropped                 |
 | `packages/explorer/src/explorer/archived.test.tsx` | the sidebar row, the view and empty state, the menu, the dialog, Change Folder's space, `?move=`     |
+| `packages/api-kit/src/room-access.test.ts`         | `archived` matches every session, and its close code is 4010, no other match's                       |
+| `packages/workbench/src/lib/archived.test.ts`      | `leaveArchivedElsewhere`: the owner's handoff and toast address, anyone else's `?ended=archived`     |
+| each app's `routes/internal-items.test.ts`         | archived closes with 4010; trashed, a move and a restore never do                                    |
+| each editor's room client test                     | 4010 stops the connector, calls `onItemArchived` once, never reconnects                              |
+| each CLI's `room/room-stream.test.ts`              | 4010 asks for a ticket at once, saying nothing; the archived refusal ends it, a ticket goes on       |
+| `packages/mcp-kit/src/app-viewer-live.test.ts`     | 4010 stops the live view for good: "This document was archived."                                     |
 
 ## Constants and configuration
 

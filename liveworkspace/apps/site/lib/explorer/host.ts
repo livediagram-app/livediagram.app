@@ -243,11 +243,17 @@ export function settingsOpening(
 
 export const ENDED_PARAM = 'ended';
 
-/** `?ended=revoked`, set by an editor whose share link was revoked under it: the toast that explains the arrival. */
+/** `?ended=revoked`, set by an editor whose share link was revoked under it, or `?ended=archived`, by one whose file
+ *  its owner archived elsewhere (one-explorer.md "Archived from elsewhere while open"): the toast that explains the
+ *  arrival. */
 export function arrivalNotice(search: string, app: AppName | null): string | null {
-  if (new URLSearchParams(search).get(ENDED_PARAM) !== 'revoked') return null;
+  const ended = new URLSearchParams(search).get(ENDED_PARAM);
   const noun = app ? APP_ITEMS[app].noun.toLowerCase() : 'item';
-  return `The link you opened that ${noun} with was revoked, so it is no longer open to you.`;
+  if (ended === 'revoked')
+    return `The link you opened that ${noun} with was revoked, so it is no longer open to you.`;
+  if (ended === 'archived')
+    return `That ${noun} was archived by its owner, so it is no longer open to you.`;
+  return null;
 }
 
 // ---------- Retired addresses --------------------------------------------------------------------------------
