@@ -50,6 +50,7 @@ import type {
 } from './types';
 import type { CreateWebhookInput, UpdateWebhookInput, Webhook, WebhookDelivery } from './webhooks';
 import { type ConnectionInput, type ConnectionMade, type ConnectionOpen } from './connections';
+import type { BesideInput } from './beside';
 import type { KitRemoveInput, KitRun, KitStartInput } from './kits';
 import type { SheetList, SheetRangeAsk, SheetRangeRead } from './sheet-sources';
 import type {
@@ -300,6 +301,14 @@ export function createIndexClient({
     // made it into the host.
     makeConnection: (hostId: string, input: ConnectionInput, grant: string) =>
       call<ConnectionMade>(`/items/${enc(hostId)}/connections`, {
+        method: 'POST',
+        body: input,
+        grant,
+      }),
+    // A file made beside `hostId` from a template's offer, then connected in its tab (connected-tabs.md "A file made
+    // beside it"): answered as makeConnection answers.
+    makeBeside: (hostId: string, input: BesideInput, grant: string) =>
+      call<ConnectionMade>(`/items/${enc(hostId)}/beside`, {
         method: 'POST',
         body: input,
         grant,

@@ -1,8 +1,9 @@
 // The Connect list's words (liveworkspace/docs/specs/004-index/connected-tabs.md "Connecting", "How it looks").
 import { describe, expect, it } from 'vitest';
-import { IndexError } from '@liveworkspace/index-client';
+import { BESIDE_OFFERS, IndexError } from '@liveworkspace/index-client';
 import {
   appName,
+  besideOfferWords,
   bothWaysLine,
   connectedTabPhrase,
   connectErrorWords,
@@ -73,10 +74,19 @@ describe('connect words', () => {
     expect(words('connection_self', 400)).toBe('A diagram cannot connect to itself.');
     expect(words('rate_limited', 429)).toMatch(/Wait a moment/);
     expect(words('not_found', 404)).toBe('This file is no longer there.');
+    expect(words('unavailable', 503)).toBe('The plan could not be made just now. Try again.');
+    expect(words('sign_in_required', 403)).toBe('Sign in to make a plan beside it.');
     expect(words('unknown', 500)).toMatch(/Check your connection/);
     expect(connectErrorWords(new TypeError('Failed to fetch'), 'diagram')).toMatch(
       /Check your connection/,
     );
+  });
+
+  it("words a template's offer for its host", () => {
+    expect(besideOfferWords(BESIDE_OFFERS.plan, 'document')).toEqual({
+      title: 'Make a plan beside it',
+      line: 'New liveplanner Project Planner, connected to this document',
+    });
   });
 
   it('tells a screen reader what the tab is, never that pressing it opens anything', () => {

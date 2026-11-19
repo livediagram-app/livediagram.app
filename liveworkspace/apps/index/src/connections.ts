@@ -119,6 +119,33 @@ export const sharedEvent = (
     when: { sql: 'EXISTS (SELECT 1 FROM connections WHERE id = ?)', args: [connectionId] },
   });
 
+// The host a connection goes in, by the person's own grant on it at `edit` for the tab (`tabId`): live, or why not.
+// Shared with a file made beside it (beside.ts).
+export async function hostForConnect(
+  ctx: RouteContext,
+  person: Person,
+  hostId: string,
+  tabId: string,
+): Promise<ItemRow | Response> {
+  const { request, env } = ctx;
+  const [grant, host] = await Promise.all([
+    verifyOwnGrant(env, request.headers.get(ITEM_GRANT_HEADER)),
+    getItemRow(env, hostId),
+  ]);
+  if (
+    !grant ||
+    grant.item !== hostId ||
+    grant.sub !== person.id ||
+    !levelAtLeast(grant.level, 'edit') ||
+    (grant.tab !== null && grant.tab !== tabId) ||
+    (host && grant.app !== host.app)
+  ) {
+    return forbidden();
+  }
+  if (!host || host.trashed_at !== null || host.archived_at !== null) return notFound();
+  return host;
+}
+
 // POST /items/:id/connections (the host's id), with the person's token and the host's grant.
 export async function makeConnection(ctx: RouteContext, hostId: string): Promise<Response> {
   const { request, env, caller } = ctx;
@@ -130,21 +157,8 @@ export async function makeConnection(ctx: RouteContext, hostId: string): Promise
   if (!input) return badRequest();
   if (input.targetId === hostId) return badRequest('connection_self');
 
-  const [grant, host] = await Promise.all([
-    verifyOwnGrant(env, request.headers.get(ITEM_GRANT_HEADER)),
-    getItemRow(env, hostId),
-  ]);
-  if (
-    !grant ||
-    grant.item !== hostId ||
-    grant.sub !== person.id ||
-    !levelAtLeast(grant.level, 'edit') ||
-    (grant.tab !== null && grant.tab !== input.tabId) ||
-    (host && grant.app !== host.app)
-  ) {
-    return forbidden();
-  }
-  if (!host || host.trashed_at !== null || host.archived_at !== null) return notFound();
+  const host = await hostForConnect(ctx, person, hostId, input.tabId);
+  if (host instanceof Response) return host;
 
   // The target: live, and the person may share it (its owner or a joined member of its team).
   const self: Caller = { person, share: null };
@@ -152,6 +166,21 @@ export async function makeConnection(ctx: RouteContext, hostId: string): Promise
   if (loaded instanceof Response) return loaded;
   const target = loaded.row;
   if (target.trashed_at !== null || target.archived_at !== null) return notFound();
+  return connectTo(ctx, person, host, target, input);
+}
+
+// The connection from `host`'s tab to `target` (live, and the person's to share), and its pair both ways: steps 5 to
+// 11 of Making (the blueprint). Shared with a file made beside it.
+export async function connectTo(
+  ctx: RouteContext,
+  person: Person,
+  host: ItemRow,
+  target: ItemRow,
+  input: { tabId: string; level?: Level; both?: boolean },
+): Promise<Response> {
+  const { env } = ctx;
+  const hostId = host.id;
+  const self: Caller = { person, share: null };
   const level = input.level ?? connectionDefaultLevel(target.app);
   if (!connectionLevels(target.app).includes(level)) return badRequest('level_not_offered');
   // Both ways shares the host too, so the person must manage it.

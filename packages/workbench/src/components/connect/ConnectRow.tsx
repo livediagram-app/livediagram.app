@@ -100,7 +100,7 @@ export function ConnectRow({
 }
 
 // The row's trailing mark: what a press does.
-function RowEnd({ kind, busyLabel }: { kind: ConnectRowState['kind']; busyLabel: string }) {
+export function RowEnd({ kind, busyLabel }: { kind: ConnectRowState['kind']; busyLabel: string }) {
   if (kind === 'connected')
     return (
       <span className="flex shrink-0 items-center gap-1 rounded-full bg-[var(--cp-column)] px-2 py-0.5 text-[11px] font-semibold text-[var(--cp-text)]">
