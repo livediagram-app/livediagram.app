@@ -2,13 +2,14 @@
 
 import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { Glyph, HoverCard } from '@liveworkspace/ui';
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { CORNER_CARD_EVENT, STRIP_NAMED_EVENT, cornerCardCompact } from '../canvas/menu-join';
 import { AuthControls } from './AuthControls';
 import { useUiScale } from '../providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '../../lib/ui-scale';
 import { HeaderShareIcon } from './EditorHeader';
 
-// Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (Copy, Present, Share and the account) float in a card of
+// Experiment (livediagram, livedocuments): no header bar. The header's right-edge actions (the approval's badge, Copy, Present, Share and the account) float in a card of
 // their own at the canvas's top right, the same card as the menu card at its top left. The account control is the
 // shared AuthControls, drawn as a header action; styles/corner-actions.css redraws it as a button in
 // this card.
@@ -138,6 +139,9 @@ export function EditorCornerActions({
         }
         className="pointer-events-auto absolute right-3 top-3 phone:right-0 phone:rounded-r-none phone:border-r-0 flex h-[46px] items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:shadow-slate-950/40"
       >
+        {/* Where the item's approval stands (liveworkspace approvals.md "In the editor"), first: drawn only inside an
+            editor's approvals door with an approval to show, so nothing here for anyone else. */}
+        <ApprovalBadge corner />
         {leadAction ?? null}
         {onMakeCopy ? (
           <HoverCard title="Make a Copy" description={copyDescription}>

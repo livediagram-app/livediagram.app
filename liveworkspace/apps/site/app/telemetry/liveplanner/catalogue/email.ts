@@ -114,6 +114,13 @@ export const ACTION_EMAILS = email(
   'A teammate was emailed about work assigned to them.',
 );
 
+// docs/specs/013-workspace/approvals.md: an approval request's email to each approver.
+export const APPROVAL_EMAILS = email(
+  'ApprovalRequested',
+  'Approval Requests',
+  'Someone was emailed because a teammate asked them to approve their work.',
+);
+
 // docs/specs/026-plan/automations.md "Send Email": a rule's Send Email action.
 export const AUTOMATION_EMAILS = email(
   'AutomationEmail',
@@ -171,6 +178,7 @@ export const EMAIL_KIND_METRICS: readonly Metric[] = [
   PROJECT_JOINED_EMAILS,
   COMMENT_EMAILS,
   ACTION_EMAILS,
+  APPROVAL_EMAILS,
   AUTOMATION_EMAILS,
   MENTION_EMAILS,
   FORM_RESPONSE_EMAILS,

@@ -21,7 +21,7 @@ import {
 } from '@liveworkspace/index-app';
 import { MAX_TAB_BYTES } from '../limits';
 import { communityService } from '../community-service';
-import { notifyFirstShare } from '../email/notifications';
+import { notifyApprovalRequested, notifyFirstShare } from '../email/notifications';
 import { deleteAccount } from '../db/account';
 import { purgePlanPreviews } from '../db/projects';
 import { mediaClient, mediaOwner } from '../media';
@@ -81,6 +81,8 @@ export function handleInternalItems(
       // Archived, moved out, trashed or restored at the index: the plan's time rules, Waits and repeating cards stop
       // while it is put away and take up again when it comes back (plan-room/plan-standing.ts).
       standing: (id, standing) => planRoom(env, id).takeStanding(standing),
+      // An approval request (liveworkspace approvals.md, docs/specs/013-workspace/approvals.md): the approvers' email.
+      approvalRequested: (id, notice) => notifyApprovalRequested(env, id, notice),
       // Someone's first time in through a link: the owner's email, and Project·Joined by the link's level.
       notice: (id, notice) =>
         notice.type === 'shared'
