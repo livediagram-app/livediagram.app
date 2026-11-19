@@ -9,6 +9,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./page-layout-build": "./src/page-layout-build.ts",
+    "./beside-offers": "./src/beside-offers.ts",
     "./welcome.json": "./welcome.json"
   },
   "scripts": {
