@@ -103,6 +103,31 @@ describe('FormBoardStrip', () => {
     expect(screen.getByRole('button', { name: 'Copy form link' })).toBeTruthy();
   });
 
+  // Work Tracker 1288: at 390 px the pill ran on under the top-right corner card. It now gives way inside the header:
+  // nothing in it holds its width (no shrink-0 on the strip or the pill), the name truncates first and on a phone
+  // leaves sight, and the glyph, dot and buttons never shrink.
+  it('gives way when the header runs short, never running under the corner card', async () => {
+    render(
+      <FormBoardContext.Provider value={value()}>
+        <FormBoardStrip palette={palette} />
+      </FormBoardContext.Provider>,
+    );
+    await screen.findByText(/3 responses/);
+    const classes = (el: Element | null) => (el?.getAttribute('class') ?? '').split(' ');
+    const strip = document.querySelector('[data-form-strip]');
+    expect(classes(strip)).toEqual(expect.arrayContaining(['min-w-0', 'shrink']));
+    expect(classes(strip)).not.toContain('shrink-0');
+    const pill = screen.getByRole('group', { name: 'Bug Report form' });
+    expect(classes(pill)).toEqual(expect.arrayContaining(['min-w-0', 'shrink']));
+    expect(classes(pill)).not.toContain('shrink-0');
+    const name = document.querySelector('[data-form-strip-name]');
+    expect(name?.textContent).toBe('Bug Report');
+    expect(classes(name)).toEqual(expect.arrayContaining(['min-w-0', 'truncate', 'phone:sr-only']));
+    expect(classes(document.querySelector('[data-form-strip-count]'))).toContain('min-w-0');
+    for (const button of screen.getAllByRole('button'))
+      expect(classes(button)).toContain('shrink-0');
+  });
+
   it('offers no Copy Link to someone who may not share it', async () => {
     render(
       <FormBoardContext.Provider value={value({ canShare: false })}>
