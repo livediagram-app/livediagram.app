@@ -19,7 +19,7 @@ import {
   toolbarButtonClass,
 } from '@/components/rich-text/toolbar-chrome';
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
-import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
+import type { ActiveFormat } from '@liveworkspace/workbench/components/label-editor/rich-text-format';
 import { normaliseUrl } from '@liveworkspace/workbench/lib/url-safety';
 import { HoverCard, SOLID_BRAND_DARK_CONTROL, lucideGlyph } from '@livedesign/ui';
 

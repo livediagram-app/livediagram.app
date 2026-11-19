@@ -30,3 +30,13 @@
 - [x] Testing
 - [x] Constants and configuration
 - [x] Defaults ledger
+
+## label-editor
+
+- [x] Interfaces and contracts
+- [x] Behaviour and state
+- [x] Performance and limits
+- [ ] Presentation and UX
+- [ ] Accessibility
+- [ ] Observability
+- [x] Testing

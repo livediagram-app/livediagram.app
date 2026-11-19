@@ -17,7 +17,7 @@ import {
   toolbarButtonClass,
 } from '@/components/rich-text/toolbar-chrome';
 import { noFocusSteal, ToolbarDropdown } from '@/components/rich-text/ToolbarDropdown';
-import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
+import type { ActiveFormat } from '@liveworkspace/workbench/components/label-editor/rich-text-format';
 import type {
   ListStyle,
   RunBoolKey,

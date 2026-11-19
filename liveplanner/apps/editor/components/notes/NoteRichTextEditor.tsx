@@ -2,22 +2,22 @@
 
 // The note editor (docs/specs/009-elements/rich-text-notes.md): a docked toolbar over a contentEditable that
 // paints the note's runs. It is the same runs ⇄ DOM machine the element-label
-// editor uses (useRichTextProject), so newlines stay literal '\n' text and
+// editor uses (useRichTextRuns), so newlines stay literal '\n' text and
 // the plain-text mirror the note stores is always the DOM's text content.
 //
 // Nothing is committed from here. The popover owns the note's lifecycle and
 // receives the current value through `onChange`.
 
-import { listStyleOfText } from '@/components/rich-text/block-type';
+import { listStyleOfText } from '@liveworkspace/workbench/components/label-editor/block-type';
 import {
   insertTextAtCaret,
   lineBeforeCaret,
   offsetsToDomRange,
   paragraphEndOffset,
   selectRange,
-} from '@/components/rich-text/rich-text-dom';
+} from '@liveworkspace/workbench/components/label-editor/rich-text-dom';
 import { listEnter, type TextRun } from '@liveplanner/project';
-import { formatShortcut } from '@/components/rich-text/rich-text-format';
+import { formatShortcut } from '@liveworkspace/workbench/components/label-editor/rich-text-format';
 import { NOTE_BASE_PX } from './note-run-style';
 import { NoteFormatToolbar } from './NoteFormatToolbar';
 import { useNoteRichTextSession } from './useNoteRichTextSession';

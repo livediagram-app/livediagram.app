@@ -17,8 +17,8 @@ Scope, by file:
 | `packages/element-model/src/svg-render-text-effects.ts` (shared)                     | `svgLineEffects`, `highlightBandRect`, `sameEffects`, `exportRunEffects`, `hasTextEffects`                             |
 | `apps/editor/components/canvas/label-style.ts`                                       | `effectiveRunStyle` paints both effects                                                                                |
 | `apps/editor/components/canvas/element-variant.ts`                                   | Text `textShadow`                                                                                                      |
-| `apps/editor/components/rich-text/rich-text-dom.ts`                                  | `data-rt-highlight`, `data-rt-gradient` round trip                                                                     |
-| `apps/editor/components/rich-text/rich-text-format.ts`                               | `ActiveFormat.highlight` / `.gradient` (uniform or null)                                                               |
+| `../packages/workbench/src/components/label-editor/rich-text-dom.ts`                 | `data-rt-highlight`, `data-rt-gradient` round trip                                                                     |
+| `../packages/workbench/src/components/label-editor/rich-text-format.ts`              | `ActiveFormat.highlight` / `.gradient` (uniform or null)                                                               |
 | `apps/editor/components/rich-text/TextEffectsPanel.tsx`                              | The panel (Highlight picker, Gradient tiles)                                                                           |
 | `apps/editor/components/canvas/RichTextToolbar.tsx`                                  | The Text Effects dropdown                                                                                              |
 | `apps/editor/lib/export-tab-canvas-draw.ts`                                          | PNG bands and gradients                                                                                                |

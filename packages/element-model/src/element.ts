@@ -207,6 +207,8 @@ export type TextElement = BoxBase & {
   fontWeight?: 400 | 500 | 700;
   textCase?: 'upper' | 'lower';
   textArc?: number;
+  // A Shift-resized text box's scale on its text (the label editor's hug measurer reads it).
+  textScale?: number;
 };
 
 export type FreehandElement = BoxBase & {

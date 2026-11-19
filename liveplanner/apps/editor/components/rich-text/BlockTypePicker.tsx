@@ -17,7 +17,7 @@ import {
   blockTypeLabel,
   blockTypeOf,
   type BlockType,
-} from './block-type';
+} from '@liveworkspace/workbench/components/label-editor/block-type';
 import { noFocusSteal, ToolbarDropdown } from './ToolbarDropdown';
 
 export function BlockTypePicker({
