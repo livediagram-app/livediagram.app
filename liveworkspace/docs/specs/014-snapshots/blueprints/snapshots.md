@@ -227,7 +227,11 @@ out only as the viewer's own ("You").
 A take exports the item once (the same work as a Drive mirror push) and writes at most `32 MiB / 600,000` = 56 chunk
 rows. A list reads summaries only. The fence costs one kept integer per request after the first; the first read per
 object is one `sqlite_master` lookup. Five snapshots at the cap are 160 MiB, inside the object's storage. A revert
-writes every tab once in one batch, then deletes the extra tabs one by one.
+writes every tab once in one batch, then deletes the extra tabs one by one. The author clear (SN34) is one statement
+per room that scans the `snapshots` summaries, never the chunks; `author_id` has no index, as a room holds five rows
+plus livedocuments' named versions (25 a tab), and an index would cost every take a write. Measured on node:sqlite:
+0.04 ms over 130 rows, 0.44 ms over 2,505, 4.6 ms over 25,005 (a second run 1.8 ms); the store test holds 25,005 rows
+under a 100 ms CPU budget.
 
 ## Observability
 

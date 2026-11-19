@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { cpuBudgetMs, cpuMsOfAsync } from '@liveworkspace/vitest-config/cpu-time';
 import { SNAPSHOTS_KEPT, SNAPSHOT_CHUNK_CHARS, SNAPSHOT_MAX_BYTES } from './limits';
 import {
   advanceGeneration,
@@ -384,6 +385,27 @@ describe('clearing a closed account off its snapshots (SN34)', () => {
     await take(db, 'D', author);
     expect(await clearSnapshotAuthors(db, [], gone)).toBe(0);
     expect((await listSnapshots(db, 'D'))[0]!.author).toEqual(author);
+  });
+
+  // Far past any real room (five, plus livedocuments' 25 named versions a tab over a hundred tabs): one statement
+  // scans the summaries, never the bodies (2.5 ms measured locally on 25,005 rows).
+  it('clears a room of 25,005 snapshots in one statement, inside a budget', async () => {
+    const { db, sql } = testDb();
+    sql.exec(SNAPSHOT_SCHEMA);
+    const insert = sql.prepare(
+      `INSERT INTO snapshots (id, item_id, kind, author_id, author_name, bytes, chunks, created_at)
+       VALUES (?, ?, 'manual', ?, 'Someone', 1, 1, ?)`,
+    );
+    sql.exec('BEGIN');
+    for (let i = 0; i < 25_005; i += 1) {
+      insert.run(`s_${i}`, `tab:t${i % 100}`, i % 10 === 0 ? 'user_a' : `user_${i % 7}`, i);
+    }
+    sql.exec('COMMIT');
+    const ms = await cpuMsOfAsync(() => clearSnapshotAuthors(db, ['user_a', 'guest_a'], gone));
+    expect(ms).toBeLessThan(cpuBudgetMs(100));
+    expect(
+      sql.prepare("SELECT COUNT(*) AS n FROM snapshots WHERE author_id = 'deleted'").get(),
+    ).toEqual({ n: 2_501 });
   });
 });
 
