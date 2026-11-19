@@ -43,8 +43,11 @@ describe('animatedPatternStill', () => {
 describe('lookPreviewSvg', () => {
   // docs/specs/011-theme/canvas-and-theme-dialog.md "Looks": a card shows what the tab will, motion backdrops included.
   it('shows the still of every look with an animated backdrop, over the paper and under the boxes', () => {
-    const animated = TAB_LOOKS.filter((l) => l.pattern === 'aurora' || l.pattern === 'ripple');
-    expect(animated.length).toBeGreaterThan(0);
+    // No look in the catalogue wears an animated backdrop now; a look made with one still draws its still.
+    const animated = (['aurora', 'ripple'] as const).map((pattern) => ({
+      ...TAB_LOOKS[1]!,
+      pattern,
+    }));
     for (const look of animated) {
       const svg = lookPreviewSvg(look);
       const still = svg.indexOf('<circle ');

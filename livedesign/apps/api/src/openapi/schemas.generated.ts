@@ -7625,6 +7625,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "newPageBackground": {
+        "$ref": "#/components/schemas/PageBackground"
+      },
       "opensIn": {
         "$ref": "#/components/schemas/EditorMode"
       },
@@ -7768,6 +7771,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
+      },
+      "newPageBackground": {
+        "$ref": "#/components/schemas/PageBackground"
       },
       "opensIn": {
         "$ref": "#/components/schemas/EditorMode"

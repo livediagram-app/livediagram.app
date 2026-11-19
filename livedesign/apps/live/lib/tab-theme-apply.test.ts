@@ -30,16 +30,40 @@ describe('withThemeApplied', () => {
     expect(out.backgroundColor).toBe(forest.backgroundColor);
   });
 
-  it('keeps a colour the user set, and re-tints every arrow', () => {
+  // docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours": an arrow keeps a chosen colour too.
+  it('keeps a colour the user set, an arrow’s included, and moves an arrow still on the theme', () => {
     const t = {
       id: 't',
       name: 'T',
       theme: 'brand',
-      elements: [shape({ fillColor: '#123456' }), arrow({ strokeColor: '#654321' })],
+      elements: [
+        shape({ fillColor: '#123456' }),
+        arrow({ strokeColor: '#654321' }),
+        arrow({ id: 'themed' }),
+      ],
     } as Tab;
     const out = withThemeApplied(t, 'forest');
     expect((out.elements[0] as ShapeElement).fillColor).toBe('#123456');
-    expect((out.elements[1] as ArrowElement).strokeColor).not.toBe('#654321');
+    expect((out.elements[1] as ArrowElement).strokeColor).toBe('#654321');
+    expect((out.elements[2] as ArrowElement).strokeColor).toBe(getTheme('forest').elementStroke);
+  });
+
+  it('with keepElementColours, recolours no element but still takes the theme’s backdrop', () => {
+    const t = {
+      id: 't',
+      name: 'T',
+      theme: 'brand',
+      elements: [shape(), arrow()],
+    } as Tab;
+    const out = withThemeApplied(t, 'forest', undefined, { keepElementColours: true });
+    expect(out.theme).toBe('forest');
+    expect(out.elements).toEqual(t.elements);
+    expect(out.backgroundColor).toBe(getTheme('forest').backgroundColor);
+    const gone = withThemeApplied({ ...t, theme: 'custom:gone' }, 'forest', undefined, {
+      keepElementColours: true,
+    });
+    expect(gone.elements).toEqual(t.elements);
+    expect(gone.backgroundPattern).toBe(getTheme('forest').backgroundPattern);
   });
 
   it('hard-resets a tab whose previous theme no longer resolves (a theme id no built-in names)', () => {

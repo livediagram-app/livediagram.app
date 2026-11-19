@@ -207,6 +207,14 @@ kind, a new page **carries over the background** of the page before it (the last
 and pattern, a logo page taking the fill alone (it takes no pattern). It is the new page's own
 from then on.
 
+**The tab's own New Page Background.** A tab may name the background every new page starts on
+(`Tab.newPageBackground`, set in [Tab Style](../011-theme/canvas-and-theme-dialog.md) "New Page Background"): a
+fill and a pattern, never a picture, or `{}` for the plain paper. With one, a new page (added, added like another, or
+the first page as its kind is chosen, unless it already wears one) starts on it rather than on the page before's, a
+logo page on its fill alone; a photo page takes none. Absent, the carry-over above. Read via `newPageBackgroundOf`
+(`packages/design/src/tab-new-page-background.ts`); Apply to Every Page is `pagesGivenNewPageBackground`
+(`pages-background-copy.ts`). It rides the tab like any tab setting, so no storage changes.
+
 **A new page's background.** A new page with nothing to carry over starts on the plain paper, and a
 template that comes with content keeps the paper it was designed on. Every path that makes a page
 lands the same: adding one, choosing the first page's kind, the template picker and an AI tool's

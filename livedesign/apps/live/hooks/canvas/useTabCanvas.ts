@@ -21,6 +21,7 @@ import {
   type TextSize,
 } from '@livedesign/design';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
+import { everyPageMessage } from '@liveworkspace/page-background/new-page-background-label';
 import type { ThemeApplyOptions } from '@/lib/tab-theme-apply';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
@@ -272,13 +273,4 @@ export function useTabCanvas(deps: TabCanvasDeps) {
     setBackgroundPatternScale,
     setBackgroundAnimationSpeed,
   };
-}
-
-/** What Apply to Every Page says it did, by the pages it reached and the locked it kept. */
-export function everyPageMessage(reached: number, kept: number): string {
-  const pages = (n: number) => `${n} ${n === 1 ? 'page' : 'pages'}`;
-  const done = `Background applied to ${pages(reached)}.`;
-  if (kept === 0) return done;
-  const own = `${pages(kept)} locked kept ${kept === 1 ? 'its' : 'their'} own.`;
-  return reached === 0 ? `Every page is locked: ${own}` : `${done} ${own}`;
 }

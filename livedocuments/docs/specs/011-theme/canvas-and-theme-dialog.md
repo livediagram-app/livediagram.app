@@ -170,8 +170,8 @@ and the user can keep pressing it to regenerate.
 - **Ingredients.** A mashup draws each of a look's four settings at random, independently: a **theme** from the
   whole built-in catalogue less the seasonal themes, a **finish**, a **tab font** from the fonts the looks use (or none), and a **pattern**
   with its strength from the patterns the everyday looks use, so a busy pattern keeps the soft strength its look gave it.
-  Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over fifteen
-  thousand combinations).
+  Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over four
+  thousand combinations, from the page looks' quieter fonts and patterns).
 - **Light and dark.** Any theme reads in both appearances ([Light and dark halves](light-and-dark.md)), so every
   mashup does too: a dark-mode viewer sees it in its theme's dark half, with the same contrast floor as the looks
   (`apps/editor/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).

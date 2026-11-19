@@ -44,72 +44,44 @@ narrowing the carousel to the looks of that finish, paged afresh from its first 
 tab's look when it is among them). It is the viewer's own, for this open of the dialog only (not stored), and
 changing it is tracked as `UI / Changed / LooksFinishFilter`.
 
-The table is in the order the carousel shows them after the Mashup card, six to a page:
+The table is in the order the carousel shows them after the Mashup card, six to a page. The set is made for what a
+design here is, wireframes and presentation pages: clean faces and quiet surrounds, a low-fidelity Wireframe look, a
+Blueprint grid, and few enough that two pages hold them all (owner, 2026-11-19; the twenty-nine looks a diagram tool
+offers read as noise on a design).
 
-| Look            | Theme    | Finish       | Tab font      | Pattern      | Pattern strength |
-| --------------- | -------- | ------------ | ------------- | ------------ | ---------------- |
-| Everyday        | Default  | Flexible     | (none)        | Grid         | (kept)           |
-| Textbook        | Mono     | Professional | Oswald        | Graph        | 50%              |
-| Spectrum        | Rainbow  | Flexible     | Inter         | Grid         | 50%              |
-| Whiteboard      | Mono     | Marker       | (none)        | Blank        | (kept)           |
-| Boardroom       | Steel    | Professional | Inter         | Blank        | (kept)           |
-| Notebook        | Mocha    | Sketch       | (none)        | Lines        | (kept)           |
-| Seaside         | Ocean    | Flexible     | Nunito        | Waves        | (kept)           |
-| Doodle          | Rainbow  | Sketch       | Kalam         | Blank        | (kept)           |
-| Editorial       | Cream    | Professional | Lora          | Blank        | (kept)           |
-| Midnight        | Midnight | Flexible     | (none)        | Grid         | (kept)           |
-| Poster          | Tropical | Professional | Bodoni Moda   | Diagonal     | 40%              |
-| Workshop        | Sand     | Marker       | (none)        | Grid         | 60%              |
-| Graph Paper     | Indigo   | Professional | Roboto Mono   | Graph        | (kept)           |
-| Daydream        | Pastel   | Flexible     | Nunito        | Grid         | 60%              |
-| Engineer        | Sky      | Professional | Space Grotesk | Engineering  | (kept)           |
-| Lagoon          | Tropical | Flexible     | Space Grotesk | Ripple       | 50%              |
-| Studio          | Lavender | Professional | Roboto Slab   | Crosshatch   | (kept)           |
-| Garden          | Forest   | Flexible     | Poppins       | Hexagonal    | 40%              |
-| Billboard       | Sunset   | Professional | Oswald        | Stripes      | 40%              |
-| Patchwork       | Pastel   | Sketch       | Lora          | Checkerboard | 30%              |
-| Northern Lights | Abyss    | Flexible     | Poppins       | Aurora       | 60%              |
-| Coffeehouse     | Espresso | Sketch       | Kalam         | Bricks       | 40%              |
-| Schematic       | Mono     | Professional | Roboto Mono   | Crosshatch   | 40%              |
-| Flipchart       | Rainbow  | Marker       | (none)        | Lines        | 50%              |
-| Sketchbook      | Rose     | Sketch       | (none)        | Blank        | (kept)           |
-| Greenboard      | Pine     | Marker       | (none)        | Blank        | (kept)           |
-| Picnic          | Pastel   | Flexible     | Poppins       | Checkerboard | 25%              |
-| Mural           | Plum     | Marker       | (none)        | Grid         | 50%              |
-| Field Notes     | Olive    | Sketch       | (none)        | Lines        | 60%              |
+| Look        | Theme    | Finish       | Tab font      | Pattern     | Pattern strength |
+| ----------- | -------- | ------------ | ------------- | ----------- | ---------------- |
+| Everyday    | Default  | Flexible     | (none)        | Grid        | (kept)           |
+| Blueprint   | Sky      | Professional | Roboto Mono   | Engineering | 50%              |
+| Spectrum    | Rainbow  | Flexible     | Inter         | Grid        | 50%              |
+| Wireframe   | Mono     | Sketch       | (none)        | Blank       | (kept)           |
+| Boardroom   | Steel    | Professional | Inter         | Blank       | (kept)           |
+| Workshop    | Sand     | Marker       | (none)        | Grid        | 60%              |
+| Midnight    | Midnight | Professional | Space Grotesk | Blank       | (kept)           |
+| Daydream    | Pastel   | Flexible     | Nunito        | Grid        | 60%              |
+| Editorial   | Cream    | Professional | Lora          | Blank       | (kept)           |
+| Lagoon      | Tropical | Flexible     | Space Grotesk | Lines       | 40%              |
+| Graph Paper | Indigo   | Professional | Roboto Mono   | Graph       | (kept)           |
 
-- **Multi-colour looks.** Eight looks use a theme whose nodes take different colours: the branch palettes of Rainbow,
-  Pastel and Tropical ([Multi-colour themes](multicolour-themes.md)). Each is a
-  different feel: Spectrum is crisp colour-coding for everyday work (rainbow branches in a clean sans on a
-  quiet dot grid), Doodle a bold hand-drawn rainbow, Daydream soft
-  pastels on dotted paper, Lagoon a fresh tropical spread on ripples, Poster a bold tropical display face on
-  diagonals, and Patchwork pastel branches sketched on soft
-  checks. A dark-mode viewer sees each in its theme's
-  dark half ([Light and dark halves](light-and-dark.md)), so the bright-on-dark versions come for free.
-- **Textbook and Schematic wear Mono.** Both wore UML, which this product retired (owner, 2026-11-12, Work Item
-  696, [Retired colour schemes](retired-schemes.md#uml)); each took Mono, the scheme nearest UML's colours, so
-  Textbook is a crisp single-ink notation in Oswald and Schematic the same ink in a monospace. Textbook moved to the
-  second slot on page one, before Spectrum, so it never sits beside Whiteboard, the other Mono look.
+- **Multi-colour looks.** Three looks use a theme whose nodes take different colours: Spectrum (Rainbow), Daydream
+  (Pastel) and Lagoon (Tropical) ([Multi-colour themes](multicolour-themes.md)). A dark-mode viewer sees each in its
+  theme's dark half ([Light and dark halves](light-and-dark.md)).
 - **Order.** The **Mashup** card leads the carousel (below), then the looks; Everyday is always the first look (it
-  is what an untouched tab reads as). The rest follow a fixed, interleaved
-  order written into the catalogue (`TAB_LOOKS`, never shuffled at runtime): every page holds one or two of the eight multi-colour looks,
-  and no two neighbours on a page share a theme or a finish, so each page reads as a spread of contrasting styles
-  rather than the colourful looks clumping on one page. `apps/live/lib/tab-looks.test.ts` locks both rules.
-- **Retired looks.** Carnival (Rainbow, Flexible, Poppins, Confetti at 50%) was replaced by Spectrum: its confetti
-  backdrop fought the diagram, and the party feel was already covered by Doodle. Because a look is not stored, a tab
-  that once picked Carnival keeps its four settings and simply reads as its own mix (no card selected); nothing
-  migrates.
+  is what an untouched tab reads as). The rest follow a fixed, interleaved order written into the catalogue
+  (`TAB_LOOKS`, never shuffled at runtime): every page holds one or two of the multi-colour looks, and no two
+  neighbours on a page share a theme or a finish. `apps/live/lib/tab-looks.test.ts` locks both rules.
+- **Retired looks.** The diagram looks that do not suit a design (Textbook, Whiteboard, Notebook, Seaside, Doodle,
+  Poster, Engineer, Studio, Garden, Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic, Flipchart,
+  Sketchbook, Greenboard, Picnic, Mural, Field Notes, and Carnival before them) left the catalogue. Because a look is
+  not stored, a tab that once picked one keeps its four settings and simply reads as its own mix (no card
+  selected); nothing migrates.
+- **Hand-drawn looks stay off finished art.** On a logo or a photo page the dialog leaves out the looks drawn by
+  hand (Sketch and Marker: Wireframe and Workshop), since a logo or a photo is finished work (`suitsFinishedArt`).
+  The Finish filter and the Finish panel still offer every finish.
 - A look that sets a pattern strength sets it (a busy pattern toned down); the rest leave the tab's own strength.
 - The looks sit in a **carousel**, six to a page (three columns, two on a phone), with arrows and page dots: the
-  Mashup card and the twenty-nine looks fill five pages. Looks are added six at a time, so every page stays full.
-- **The newest five** (Billboard, Patchwork, Northern Lights, Coffeehouse, Schematic) each bring a theme or a
-  pattern no other look uses (Sunset, Abyss and Espresso; stripes, checks, aurora, bricks and crosshatch), so page
-  four is new ground rather than a reshuffle.
-- **Marker has looks of its own** ([Finish](../008-canvas/finish.md)): Whiteboard (a whiteboard is drawn in marker),
-  Workshop, and on page five Flipchart, Greenboard and Mural, a flip chart, a green board and a wall to draw on, each in
-  marker on a theme no other look used (Rose, Pine, Plum and Olive arrive with page five). Page five alternates them
-  with Sketchbook, Picnic and Field Notes, so no two neighbours share a finish, and its two multi-colour looks
-  (Flipchart and Picnic) keep two on it.
+  Mashup card and the eleven looks fill two pages. Looks are added six at a time, so every page stays full.
+- **Marker** has Workshop, a wall to draw on; **Sketch** has Wireframe, the low-fidelity first pass.
 - When the tab matches no look, no card is selected (there is no "Current" card for the tab's own mix).
 - Each look is a card: a small sample diagram drawn in the look (the same sample and renderer as the Finish
   preview, on the look's own canvas colour and pattern, in the viewer's half of its theme), its name, and a line on what it is made of.
@@ -118,8 +90,8 @@ The table is in the order the carousel shows them after the Mashup card, six to 
   after; so a multi-colour look's card shows two contrasting palette colours rather than the trunk neutral and one
   hue. Single-colour looks draw exactly as they would without it (`apps/live/lib/look-preview.ts`).
 - Picking a look applies it as **one undo step**. The theme is applied exactly as picking that theme does
-  (preserve-customs, arrows track the theme, see Theme below), then the finish, font and pattern are set; an
-  element's own finish or font still wins over the tab's.
+  (preserve-customs, or no element recoloured with Element Colours on Keep as They Are, see "Element colours"
+  below), then the finish, font and pattern are set; an element's own finish or font still wins over the tab's.
 - A look's card shows as **selected** while the tab's four settings match it. Change any one of them and no look is
   selected; the tab simply has its own mix.
 - **Share roles:** an Editor picks looks. A Participant or Viewer never reaches the dialog (it is only offered on
@@ -177,8 +149,8 @@ and the user can keep pressing it to regenerate.
 - **Ingredients.** A mashup draws each of a look's four settings at random, independently: a **theme** from the
   whole built-in catalogue less the seasonal themes, a **finish**, a **tab font** from the fonts the looks use (or none), and a **pattern**
   with its strength from the patterns the everyday looks use, so a busy pattern keeps the soft strength its look gave it.
-  Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (over fifteen
-  thousand combinations).
+  Every ingredient is curated, which keeps a mashup respectable; the mix is what makes it unique (about four thousand combinations, the design looks' quieter fonts and
+  patterns keeping every mashup fit for a design).
 - **Light and dark.** Any theme reads in both appearances ([Light and dark halves](light-and-dark.md)), so every
   mashup does too: a dark-mode viewer sees it in its theme's dark half, with the same contrast floor as the looks
   (`apps/live/lib/tab-looks-contrast.test.ts` checks a spread of seeded mashups in both halves).
@@ -241,9 +213,17 @@ worked out between frames and shown in one step, so a pick on a big board never 
 ([Canvas performance](../008-canvas/canvas-performance.md#theme-pick-big-board) "A theme pick on a big board keeps the
 page answering").
 
+### Previews
+
+The Text and Finish panels preview on a **sample frame** (`TabStylePreview`, `apps/live/lib/frame-preview.ts`): a
+small UI screen (a title, a card, a button and the arrow between) on the background new pages start on (the paper
+when the tab has none, and on a photo page), drawn by the page exporter in the tab's theme, finish and font, inside
+the tab's surround colour. It is what a page of the tab will look like, and it is rebuilt only when one of those
+changes. A look's card keeps the sample diagram (below).
+
 ### Text panel
 
-The tab's typography ([Fonts](../004-interface-design/fonts.md)): a **preview** of the sample diagram lettered in
+The tab's typography ([Fonts](../004-interface-design/fonts.md)): a **preview** of the sample frame lettered in
 the tab's font at the size new text takes; the **Typeface** specimen cards ("Aa" and the name in each face, with its
 style), six to a carousel page (three to a row, two rows), "Editor default" first; and **Size of New Text** on the one
 [Text Size](../004-interface-design/fonts.md#text-size) control (Scale, or a 6 to 48 px slider), the preview following the slider as
@@ -253,21 +233,34 @@ text-bearing element takes the size). There is no separate apply action.
 
 ### Finish panel
 
-The tab's [Finish](../008-canvas/finish.md): a preview of the sample diagram in the chosen finish, and the three
+The tab's [Finish](../008-canvas/finish.md): a preview of the sample frame in the chosen finish, and the three
 finishes as tiles with a 40 px icon each. Picking one applies to the whole tab at once (every element's own finish
 cleared).
 
-### Canvas panel
+### New Page Background
 
-The canvas-style controls, shared with the palette's **Canvas** accordion (`CanvasStyleControls`, so the two can never drift):
+The Canvas panel's place holds **New Page Background** (`NewPageBackgroundPanel`), the background every new page of
+the tab starts on (`Tab.newPageBackground`, [Pages](../007-editor/pages-mode.md) "A new page's background"). Its
+Fine-tune row reads it ("Like the page before", "Paper", a theme gradient's or a preset's name, "Solid colour",
+"Custom gradient", "Animated", with ", dots" and so on for a pattern; on a photo page "Around the pages").
 
-- **Pattern**: in the dialog, two carousels of real pattern previews: **static** patterns and **animated** ones,
-  nine to a page on a desktop and six on a phone (`PatternCarousel`). The narrow palette accordion keeps its 4-wide
-  grid with "Show more". ([Canvas and palette](../008-canvas/canvas-and-palette.md) lists the patterns.)
-- **Colours**: Canvas colour + Pattern colour, each opening the [colour picker](../004-interface-design/colour-picker.md) in a popover (soft and strong standard colours for the canvas, strong only for the pattern).
-- **Opacity**: the pattern-opacity slider with its percentage readout.
-- **Size**: the pattern-size slider (50%–200%, default 100%) with its percentage readout, directly under Opacity. Writes `backgroundPatternScale` on the tab; `tabBackgroundStyle` multiplies every tile's `background-size` by it (never the pan phase, so the pattern still tracks panning at any size). Blank has no tile, so the slider is a no-op there.
-- **Speed**: a motion-rate slider (25%–300%, default 100%) with its percentage readout, directly under Size, shown **only while an animated pattern is active** (a static pattern has nothing to pace). Writes `backgroundAnimationSpeed` on the tab; the animated backdrop divides each motif's tuned duration by it via the `--lvd-bg-speed` var, so every pattern keeps its character and the slider just scales the pace.
+- **New pages start**: a segmented choice, **Like the Page Before** (the default, the field absent: a new page wears
+  the background of the page before it) or **Choose One** (the field set; choosing it starts on the plain paper,
+  `{}`).
+- With **Choose One**, the page panel's own Background section (`BackgroundSection`), offering Solid, Gradient and
+  Animated, never a picture (a picture is a page's own); on a logo page without a pattern, as the page panel. Each
+  pick is one undo step and writes only the field: pages already made keep their own.
+- **Apply to Every Page** under it gives every page of the tab that background, one undo step, each page re-inked
+  for it; a logo page takes the fill alone, a photo page is passed by (it takes no background), a locked page keeps
+  its own, and a notice says how many it reached and kept.
+- **Around the Pages**, a small section: the canvas colour around the pages, and four calm patterns for it (Blank,
+  Grid, Lines, Graph). The surround draws its pattern again, as the canvas does (the old rule that blanked it in
+  Pages is gone).
+- On a **photo page**, which is its picture, the panel says it takes no background and keeps only Around the Pages.
+- The tab's other canvas settings (opacity, size, speed, the busy patterns) are no longer offered here; a tab keeps
+  any it holds.
+- A look or a theme change carries the field as it carries a page's fill: a fill of the old theme's own becomes the
+  new theme's. Apply to All Tabs copies it.
 
 ### Colours panel
 
@@ -280,14 +273,20 @@ viewer's half ([Light and dark halves](light-and-dark.md)).
 - There is no "reset elements to theme" action: picking a theme already moves every element still on the old
   theme's colours, and a colour someone chose is theirs.
 
-**Arrows always track the theme.** Picking a theme keeps the per-field
-preserve-customs rule for shapes / text (a colour the user hand-set survives the
-switch), but **arrows are the one exception**: every arrow's stroke is always
-reset to the new theme's stroke, even if it was custom-coloured. A theme switch
-that left hand-coloured connectors on the old hue read as broken, so
-`setTheme` runs `resetArrowsToTheme` on top of `switchThemeElements`. It's
-palette-aware (each arrow snaps to its branch's stroke), reusing the same
-per-element resolution every theme transform uses.
+### Element colours
+
+A theme pick (or a look's theme) keeps every colour someone chose and moves every colour still on the old theme's to
+the new one, **arrows included**: a design's hand-coloured connector is part of the design, so it is no longer reset
+to the theme's stroke (livediagram's rule; owner, 2026-11-19). On the Looks home, under the carousel, **Element
+Colours** asks what the next pick does to the elements already there:
+
+- **Follow the Theme** (the default): the rule above.
+- **Keep as They Are**: no element changes colour; the theme still sets the tab's backdrop, its pages' theme fills
+  and the colours new elements take.
+
+The choice is the viewer's own, for this open of the dialog (not stored), and changing it is tracked as
+`UI / Changed / TabStyleElementColours`. `withThemeApplied(tab, id, appearance, { keepElementColours })` and
+`withLookApplied(tab, look, { keepElementColours })` carry it (`apps/live/lib/tab-theme-apply.ts`, `tab-looks.ts`).
 
 ### Formal themes / per-shape colours
 
@@ -352,18 +351,26 @@ The dialog is the one every editor shares ([Tab Style dialog](../../../../livewo
 **surface** as it opens the dialog; every surface here takes the profile's base, so the dialog is as this page
 describes it on each.
 
-- **Surfaces.** `canvas`.
-- **Panels and controls.** All four panels, every control.
-- **Looks.** Every look in `apps/live/lib/tab-looks.ts`.
-- **Canvas panel.** `CanvasStyleControls`: the static and animated patterns drawn for real, the colours, Opacity, Size
-  and Speed.
-- **Preview.** The sample design (`TabStylePreview`, `apps/live/lib/finish-preview.ts`), in the Finish and Text panels.
-- **Copy.** The shared lines.
+- **Surfaces.** The kind of the page someone is on (`useCurrentPageKind`): `wireframe`, `logo` or `photo`, and
+  `canvas` for a page nobody has chosen a kind for.
+- **Panels and controls.** All four panels, every control, on every surface.
+- **Looks.** Every look in `apps/live/lib/tab-looks.ts`; on `logo` and `photo`, those not drawn by hand
+  (`lookFilter: suitsFinishedArt`).
+- **Canvas panel.** New Page Background (`NewPageBackgroundPanel`, above), titled so; its row's value from
+  `newPageBackgroundLabel`. On a photo page, Around the Pages alone.
+- **Home extra.** Element Colours (`ElementColoursRow`, `renderHomeExtra`), between the looks and Fine-tune.
+- **Preview.** The sample frame (`TabStylePreview`, `apps/live/lib/frame-preview.ts`), in the Finish and Text panels.
+- **Copy.** The shared lines, but the home's ("Pick a look for the tab’s pages, then fine-tune any part of it.") and
+  the Canvas panel's ("The background new pages start on, and the canvas around the pages.").
+- **The door.** `CanvasThemeDialog` takes `pages` (`TabStylePages`, `tab-style-pages.ts`: the kind, the field, the
+  pages Apply to Every Page reaches and its setters), holds the Element Colours choice, and hands it to every theme
+  and look it applies.
 - **Frame.** The shared modal, its Show Me bound in `apps/live/components/tour/TabStyleTour.tsx`.
 
 ## Reuse notes
 
-- `CanvasStyleControls`: pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
+- `CanvasStyleControls`: pattern grid + colour swatches + opacity slider. Rendered by the palette's Canvas accordion.
+- `BackgroundSection`: the page panel's Background section, rendered again by New Page Background (`only`).
 - `ThemeBrowser`: the flat, paged theme list. Rendered by the palette accordion, the New-design picker and the dialog's Colours panel.
 - `PagedCarousel`: the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share. Shared from `@liveworkspace/workbench`
   (`packages/workbench/src/components/primitives/PagedCarousel.tsx`). Every page keeps its slot in the strip (so

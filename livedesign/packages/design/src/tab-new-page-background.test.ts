@@ -67,10 +67,7 @@ describe('a new page', () => {
     const like = pageAddedLike(design, 'a', 'c');
     if (!('tab' in like)) throw new Error('refused');
     expect(backgrounds(like.tab).c).toEqual({ fill: mint, pattern: 'dots' });
-    const logos = tabOf(
-      [{ id: 'l', orientation: 'portrait', kind: 'logo', size: 'logo' } as Page],
-      own,
-    );
+    const logos = tabOf([{ id: 'l', orientation: 'portrait', kind: 'logo', size: 'logo' }], own);
     const logo = pageAdded(logos, 'logo', 'm');
     if (!('tab' in logo)) throw new Error('refused');
     expect(backgrounds(logo.tab).m).toEqual({ fill: mint });
@@ -105,7 +102,7 @@ describe('pagesGivenNewPageBackground', () => {
           kind: 'logo',
           size: 'logo',
           background: { fill: steel },
-        } as Page,
+        },
       ],
       { newPageBackground: { fill: mint, pattern: 'grid' } },
     );
