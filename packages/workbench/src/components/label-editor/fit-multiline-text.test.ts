@@ -3,8 +3,8 @@ import { labelMeasure, wrapLabel } from '@liveworkspace/element-model/svg-render
 import { fitMultilineFontPx, FIT_MAX_PX, FIT_MIN_PX } from './fit-multiline-text';
 
 // Genuine auto-fit for multi-line labels (stickies): `scale` should
-// mean "fill the note", the way writing on a physical sticky does — a
-// two-word event large, a long policy sentence small — rather than the fixed
+// mean "fill the note", the way writing on a physical sticky does, a
+// two-word event large, a long policy sentence small, rather than the fixed
 // 14px it used to mean. Pure: same inputs, same answer, so the display label,
 // the inline editor and any export can all ask and agree.
 describe('fitMultilineFontPx', () => {
@@ -44,7 +44,7 @@ describe('fitMultilineFontPx', () => {
     expect(fitMultilineFontPx({ text: '', ...box })).toBeGreaterThanOrEqual(FIT_MIN_PX);
   });
 
-  it('is deterministic — the editor and the label must land on the same size', () => {
+  it('is deterministic, the editor and the label must land on the same size', () => {
     const a = fitMultilineFontPx({ text: 'Order shipped to the customer', ...box });
     const b = fitMultilineFontPx({ text: 'Order shipped to the customer', ...box });
     expect(a).toBe(b);
@@ -52,10 +52,10 @@ describe('fitMultilineFontPx', () => {
 });
 
 // Workshop notes render in capitals (docs/specs/021-event-storming/event-storming.md), and capitals are WIDER. The
-// fitter therefore has to measure the caps, not the typed mixed case — a
+// fitter therefore has to measure the caps, not the typed mixed case, a
 // size fitted against "Order placed" overflows the moment it paints as
 // "ORDER PLACED".
-describe('fitMultilineFontPx — uppercase', () => {
+describe('fitMultilineFontPx, uppercase', () => {
   const note = { width: 200, height: 200, padding: 12 };
 
   it('measures the capitals it will actually paint', () => {
@@ -80,9 +80,9 @@ describe('fitMultilineFontPx — uppercase', () => {
 
 // The note is painted in a face of its own (a workshop note wears the marker,
 // docs/specs/021-event-storming/event-storming.md), and faces have different widths at the same px. The fitter
-// therefore measures IN THAT FACE — measuring system-ui and painting a marker
+// therefore measures IN THAT FACE, measuring system-ui and painting a marker
 // is how a note ends up with its last word over the edge.
-describe('fitMultilineFontPx — font family', () => {
+describe('fitMultilineFontPx, font family', () => {
   const note = { width: 200, height: 200, padding: 12 };
 
   // A stand-in browser whose measurer is font-aware: the marker face is
@@ -124,7 +124,7 @@ describe('fitMultilineFontPx — font family', () => {
 // every word lands on its own line, the note reads as a column of fragments
 // rather than a phrase, so the text is stepped down until at least one pair
 // of words shares a line.
-describe('fitMultilineFontPx — two words must share a line', () => {
+describe('fitMultilineFontPx, two words must share a line', () => {
   const note = { width: 200, height: 200, padding: 12 };
 
   it('keeps two short words on one line rather than stacking them', () => {
@@ -159,7 +159,7 @@ describe('fitMultilineFontPx — two words must share a line', () => {
     expect(px).toBeGreaterThanOrEqual(10);
   });
 
-  it('leaves a single word alone — there is no pair to make', () => {
+  it('leaves a single word alone, there is no pair to make', () => {
     const one = fitMultilineFontPx({ text: 'Shipped', ...note });
     expect(one).toBeGreaterThan(20);
   });
@@ -170,7 +170,7 @@ describe('fitMultilineFontPx — two words must share a line', () => {
 // is fixed, so "Cart Emptied" and a two-line policy are written at roughly
 // the same size and the canvas stays legible as one surface. The floor still
 // lets a long note shrink; only the top end is pinned.
-describe('fitMultilineFontPx — the 25px ceiling', () => {
+describe('fitMultilineFontPx, the 25px ceiling', () => {
   it('never exceeds it, however much room there is', () => {
     expect(FIT_MAX_PX).toBe(25);
     const roomy = { width: 600, height: 600, padding: 12 };

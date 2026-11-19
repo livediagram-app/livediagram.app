@@ -100,6 +100,11 @@ export type LabelEditorBinding = {
   joining lines, a paste over lines, a character typed into a newline span), or when the rule's answer changed
   (a first right-to-left letter, the last newline gone), the session paints again and puts the selection back at the
   same offsets. Typing within a line passes the check and paints nothing.
+- Painted line by line, the editor's own `dir` follows the line holding the caret (`caretLineDirection`, read on
+  every input and caret move: one `closest()` and the line's computed `direction`); a caret in no line keeps the
+  last one, and a flat paint sets `dir="auto"` back. Without it the editor reads left to right (`dir="auto"` skips
+  the line spans' own `dir`), and the caret at the end of a right-to-left line drew at its right. A caret moved up or
+  down onto a line of the other direction can land at that line's other end from where `plaintext` put it.
 
 ## Performance and limits
 
@@ -116,13 +121,23 @@ nine:
 | a line span per line (now)              | 5.9 ms               |
 
 The line spans draw the same as `plaintext` on left and centre aligned text with mixed-direction lines, one of them
-wrapping (compared by eye in the same page).
+wrapping (compared by eye in the same page). In livediagram's editor, a text box and a sticky typed and pasted with
+Arabic, Latin and Hebrew lines draw the same before and after, the caret at the end of the Hebrew line included.
+
+First-load JS of each editor's document page (gzip of the scripts `placeholder.html` loads, production build):
+
+| Editor        | Before     | After      |
+| ------------- | ---------- | ---------- |
+| livediagram   | 1493.0 KiB | 1490.4 KiB |
+| livedesign    | 1319.1 KiB | 1318.6 KiB |
+| livedocuments | 1215.3 KiB | 1214.2 KiB |
 
 ## Testing
 
 - `rich-text-lines.test.ts`: the runs split into lines with each newline's attributes; the painted structure; a
   read-back of a painted text equals its runs; `linesStillApart` on a fresh paint, a joined line, a newline typed into
-  a line, a character typed after a newline, and bare text; a CPU-time budget on checking 100,000 characters.
+  a line, a character typed after a newline, and bare text; a CPU-time budget on checking 100,000 characters; the
+  caret's line direction, and none for a caret outside every line.
 - `LabelEditor.long-text.test.tsx`: long left-to-right text is one isolated run; right-to-left text that gains a
   second line is painted a line at a time and stays `isolate`; a keystroke in 100,000 characters stays inside its
   CPU-time budget, flat and line by line.

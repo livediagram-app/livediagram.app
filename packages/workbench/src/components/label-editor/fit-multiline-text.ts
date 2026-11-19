@@ -2,7 +2,7 @@ import { labelMeasure, wrapLabel } from '@liveworkspace/element-model/svg-render
 
 // Auto-fit for MULTI-LINE labels: the font size at which the
 // wrapped text just fills its box. `scale` on a sticky used to mean a fixed
-// 14px — which read as a lie next to the Scale tile, and left an
+// 14px, which read as a lie next to the Scale tile, and left an
 // unresizable note with no way out of overflow. Now it means
 // what it says: a two-word event fills the note, a long policy sentence
 // shrinks to fit, exactly like writing on real paper.
@@ -17,13 +17,13 @@ import { labelMeasure, wrapLabel } from '@liveworkspace/element-model/svg-render
 // The ceiling is the pen: on a real wall everyone writes at roughly one size,
 // so a two-word event and a two-line policy sit at the same weight and the
 // canvas reads as one surface. Let a short label fill its paper and it becomes
-// a poster that shouts down every note beside it — which is what 44px did.
+// a poster that shouts down every note beside it, which is what 44px did.
 // The floor stops an essay shrinking into illegibility (past it the box
 // simply clips, as it always did).
 export const FIT_MIN_PX = 10;
 export const FIT_MAX_PX = 25;
 
-// Line box as a multiple of the font size — matching the display label's own
+// Line box as a multiple of the font size, matching the display label's own
 // leading, so the fit measures the layout that actually renders.
 const LINE_HEIGHT_RATIO = 1.5;
 
@@ -44,10 +44,10 @@ export function fitMultilineFontPx({
   bold?: boolean;
   italic?: boolean;
   // The label paints in capitals (a note that paints in capitals, or a text's Upper case). Caps
-  // are wider, so the fit must measure THEM — measuring the typed mixed
+  // are wider, so the fit must measure THEM, measuring the typed mixed
   // case would hand back a size that overflows the moment it renders.
   uppercase?: boolean;
-  // The CSS stack the label paints in (docs/specs/004-interface-design/fonts.md) — a marker face is
+  // The CSS stack the label paints in (docs/specs/004-interface-design/fonts.md), a marker face is
   // much wider than the UI sans at the same px. Same
   // rule as the capitals: measure the text as it will look.
   fontFamily?: string;
@@ -75,7 +75,7 @@ export function fitMultilineFontPx({
 
   // "Fits" isn't enough on a sticky. At a big enough size every word lands on
   // its own line, and the note stops reading as a phrase and starts reading
-  // as a column of fragments — technically fitted, visually wrong. So a
+  // as a column of fragments, technically fitted, visually wrong. So a
   // multi-word label must also keep at least one PAIR of words together.
   const pairsUp = (px: number): boolean => wordCount < 2 || linesAt(px).length < wordCount;
 
@@ -87,7 +87,7 @@ export function fitMultilineFontPx({
   // Two searches, not one: the pair rule is not monotonic the way "fits" is
   // (a size can fit while stacking words, and shrinking fixes it), so we
   // search for the largest size satisfying BOTH, and fall back to the plain
-  // fit when no size can pair the words up — two long words that can never
+  // fit when no size can pair the words up, two long words that can never
   // share a line must not drag the whole note down to 10px.
   const search = (predicate: (px: number) => boolean): number | null => {
     if (predicate(FIT_MAX_PX)) return FIT_MAX_PX;

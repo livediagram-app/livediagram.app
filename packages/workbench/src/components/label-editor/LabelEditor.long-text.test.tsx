@@ -115,6 +115,29 @@ describe('LabelEditor in a long text', () => {
     expect(editor.textContent).toBe(`${ARABIC} Hello`);
   });
 
+  it("reads in the direction of the caret's line, and from its first letter once flat again", () => {
+    const editor = edit(`${ARABIC}\nHello`);
+    expect(editor.dir).toBe('auto');
+    const arabic = lines(editor)[0]!;
+    // jsdom resolves no `dir="auto"`: the line's computed direction stands in for the browser's.
+    arabic.style.direction = 'rtl';
+    act(() => {
+      editor.focus();
+      caretIn(textNodes(editor)[0]!, 2);
+      document.dispatchEvent(new Event('selectionchange'));
+    });
+    expect(editor.dir).toBe('rtl');
+    // Typing in the left-to-right line turns it back.
+    act(() => typeInto(editor, textNodes(editor).at(-1)!, 5, '!'));
+    expect(editor.dir).toBe('ltr');
+    act(() => {
+      editor.textContent = `${ARABIC} Hello`;
+      caretIn(editor.firstChild as Text, 3);
+      fireEvent.input(editor);
+    });
+    expect(editor.dir).toBe('auto');
+  });
+
   it('keeps a keystroke at the end of 100,000 characters inside its budget', () => {
     const editor = edit(LONG);
     act(() => typeAtEnd(editor, 'a'));

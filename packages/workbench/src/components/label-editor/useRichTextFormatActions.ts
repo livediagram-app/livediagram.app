@@ -16,7 +16,7 @@ import { applyTitleCaption } from '@liveworkspace/model-core/title-caption';
 import { domSelectionToOffsets } from './rich-text-dom';
 import { wordRangeAt, type RunDefaults } from './rich-text-format';
 
-// Formatting command dispatch for a runs-backed contentEditable — the bold /
+// Formatting command dispatch for a runs-backed contentEditable, the bold /
 // italic / … toggles, run patches, the bullet / numbered list apply, and
 // (docs/specs/009-elements/rich-text-notes.md) headings + links. Everything React-shaped (the refs, the version
 // bump that triggers repaint-and-restore) is owned by the host editor and
@@ -24,8 +24,8 @@ import { wordRangeAt, type RunDefaults } from './rich-text-format';
 // element notes.
 //
 // `collapsedScope` decides what a command with NO selection acts on:
-//   'all'  — the whole text. Right for a label, which is one short string.
-//   'word' — the word under the caret for inline commands, the line under it
+//   'all' , the whole text. Right for a label, which is one short string.
+//   'word', the word under the caret for inline commands, the line under it
 //            for block commands. Right for a note, which is a document.
 export function useRichTextFormatActions({
   editorRef,
@@ -67,7 +67,7 @@ export function useRichTextFormatActions({
   };
 
   // Resolve the range a BLOCK command (heading / list) acts on: the selected
-  // lines, or — for a collapsed caret — the whole text for a label and the
+  // lines, or, for a collapsed caret, the whole text for a label and the
   // caret's own line for a note. `undefined` means "the whole text", which is
   // what applyListStyle / applyHeadingToLines take for an unscoped apply.
   const targetLineRange = (): { start: number; end: number } | undefined => {

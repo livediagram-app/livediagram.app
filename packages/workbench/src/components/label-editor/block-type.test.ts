@@ -27,7 +27,7 @@ describe('blockTypeOf', () => {
   it('lets a list win over a heading', () => {
     // The bullet is the thing you can see at the start of the line, so
     // reporting "Heading 2" for a line rendering a bullet would be the picker
-    // lying about what is on screen. Reachable only through legacy runs — the
+    // lying about what is on screen. Reachable only through legacy runs, the
     // applies below can no longer produce this pairing.
     expect(blockTypeOf(2, 'bullet')).toBe('bullet');
     expect(blockTypeOf(1, 'numbered')).toBe('numbered');
@@ -77,7 +77,7 @@ describe('listStyleOfText', () => {
   });
 
   it('does not mistake similar text for a list', () => {
-    // The prefix is "N. " with the space — a decimal or a bare number is not
+    // The prefix is "N. " with the space, a decimal or a bare number is not
     // a list item.
     expect(listStyleOfText('1.5 metres')).toBe('none');
     expect(listStyleOfText('1)  first')).toBe('none');

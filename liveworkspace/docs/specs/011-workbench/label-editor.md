@@ -55,7 +55,8 @@ text as a whole is isolated in the direction of its first letter, as every other
 same as line by line (alignment is the label's own Left, Centre or Right either way), and no line pays the
 square-of-length cost. The lines are kept apart as they change: a new line, a joined line, a paste over several lines
 or a first right-to-left letter lays the text out again with the caret where it was; typing within a line touches
-only that line.
+only that line. While the lines are apart the editor reads in the direction of the line holding the caret, so the
+caret at the end of a right-to-left line sits at its left, where the next letter goes.
 
 ## Performance
 

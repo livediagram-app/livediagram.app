@@ -137,7 +137,7 @@ export function wordmarkTextStyle(el: BoxedElement): LabelTextStyle {
 // Resolve one run ⊕ the element's whole-element defaults into a span
 // style. Boolean attrs inherit the element field when the run leaves them
 // unset (runs are deltas). Colour + size are only emitted when the run
-// overrides them — otherwise the span inherits the wrapper's base font and
+// overrides them, otherwise the span inherits the wrapper's base font and
 // the element's resolved text colour (set as `color`/currentColor on the
 // parent element view, same as the legacy label path).
 // Heading levels as multipliers on the inherited size (docs/specs/009-elements/block-type-picker.md).
@@ -164,7 +164,7 @@ export function effectiveRunStyle(
   // A caption (docs/specs/009-elements/block-type-picker.md "Title and Caption"): the run's own colour, quieter.
   if (run.muted) css.opacity = MUTED_RUN_OPACITY;
   // Headings (docs/specs/009-elements/block-type-picker.md). Expressed as `em` rather than px so a heading scales
-  // with whatever base size the element carries — a label, a sticky and a
+  // with whatever base size the element carries, a label, a sticky and a
   // page all have different bases, and pinning heading px like the note
   // renderer does would make an H1 smaller than the body on a large element.
   if (run.heading) {
@@ -179,7 +179,7 @@ export function effectiveRunStyle(
 // The typography a label wears, display and editor alike. They MUST agree:
 // the display label and the inline editor occupy the same box, so any
 // difference in leading or weight moves the glyphs (and can re-wrap a
-// multi-line label) the moment editing starts — a layout shift on the most
+// multi-line label) the moment editing starts, a layout shift on the most
 // common interaction there is. Single-line labels run tight + medium; a
 // multi-line label (sticky, page) keeps the element's own line-height.
 export function labelTypographyClass(multiline: boolean): string {

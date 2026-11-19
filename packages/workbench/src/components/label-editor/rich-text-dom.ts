@@ -16,7 +16,7 @@ import { normalizeRuns, type TextRun } from '@liveworkspace/model-core/rich-text
 // data-* attribute names carried on each rendered span. Render
 // (`dataAttrsForRun`) and read-back (`readRunsFromDom`) must agree, so they
 // share these constants. The values are the RUN's own deltas (not the
-// effective appearance) — newly typed characters land inside a span and so
+// effective appearance), newly typed characters land inside a span and so
 // inherit exactly the deltas read back here.
 const DATA = {
   bold: 'data-rt-bold',

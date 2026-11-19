@@ -1,6 +1,6 @@
 // The runs ⇄ contentEditable machine shared by every rich-text surface in
 // the editor: the element-label editor (docs/specs/008-canvas/canvas-and-palette.md) and the element-note editor
-// (docs/specs/009-elements/rich-text-notes.md). It owns the parts that are identical whatever is being edited —
+// (docs/specs/009-elements/rich-text-notes.md). It owns the parts that are identical whatever is being edited:
 // the runs / selection / composition refs, the imperative paint, the DOM
 // read-back, the repaint-and-restore-selection cycle a format apply triggers,
 // and the toolbar's active-format state.
@@ -35,7 +35,7 @@ import {
   type ActiveFormat,
   type RunDefaults,
 } from './rich-text-format';
-import { linesStillApart, paintRunLines } from './rich-text-lines';
+import { caretLineDirection, linesStillApart, paintRunLines } from './rich-text-lines';
 import { useRichTextFormatActions } from './useRichTextFormatActions';
 
 export function useRichTextRuns({
@@ -123,6 +123,16 @@ export function useRichTextRuns({
     if (at) selectRange(offsetsToDomRange(el, at.start, at.end));
   };
 
+  // Painted a line at a time, the editor reads in the direction of the caret's line (kept while the caret is in no
+  // line), so a right-to-left line's end caret draws at its left as it did under `plaintext`; painted flat, it reads
+  // `auto` again, from its first letter.
+  const followCaretLine = (el: HTMLElement) => {
+    const dir = linesPaintedRef.current
+      ? (caretLineDirection(el, document.getSelection()) ?? el.dir)
+      : 'auto';
+    if (el.dir !== dir) el.dir = dir;
+  };
+
   const refreshActive = () => {
     const el = editorRef.current;
     if (!el) return;
@@ -142,7 +152,10 @@ export function useRichTextRuns({
     const el = editorRef.current;
     if (el) {
       runsRef.current = readRunsFromDom(el);
-      if (isolateLines) keepLinesApart(el, runsPlainText(runsRef.current));
+      if (isolateLines) {
+        keepLinesApart(el, runsPlainText(runsRef.current));
+        followCaretLine(el);
+      }
       // Keep the trailing-newline sentinel in step: typing past a trailing
       // newline drops it, an Enter at the end adds it. When it adds it, the
       // caret is re-set: WebKit settled a caret after a newline at the very
@@ -185,7 +198,9 @@ export function useRichTextRuns({
 
   // Keep the toolbar active-state in sync as the caret / selection moves.
   const onSelectionChange = useEffectEvent(() => {
-    if (document.activeElement !== editorRef.current) return;
+    const el = editorRef.current;
+    if (!el || document.activeElement !== el) return;
+    if (isolateLines) followCaretLine(el);
     refreshActive();
   });
   useEffect(() => {

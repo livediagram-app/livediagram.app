@@ -152,7 +152,7 @@ function LabelEditorView<E extends BoxedElement>({
   return (
     <div
       // Marks the whole editing session (editor + floating toolbar) so the
-      // context menu's outside-click dismiss ignores clicks in here — the
+      // context menu's outside-click dismiss ignores clicks in here, the
       // menu rides alongside the editor while a label is edited (docs/specs/008-canvas/canvas-and-palette.md).
       data-rich-text-session=""
       className={`pointer-events-none flex overflow-visible ${
@@ -194,7 +194,7 @@ function LabelEditorView<E extends BoxedElement>({
           // Same for the context menu riding alongside the edit session
           // (docs/specs/008-canvas/canvas-and-palette.md): its buttons preserve focus via the capture listener
           // in useRichTextSession, but its form controls (the opacity slider)
-          // legitimately take focus — that's a menu interaction, not a
+          // legitimately take focus, that's a menu interaction, not a
           // click-away. And for the toolbar's colour picker, which opens in a
           // popover outside the toolbar and focuses its swatches
           // (docs/specs/004-interface-design/colour-picker.md).
@@ -212,7 +212,7 @@ function LabelEditorView<E extends BoxedElement>({
           // The binding's keys first (livediagram's mind node: Tab and Enter COMMIT this label and
           // grow the next node, so a whole branch is typed without leaving the
           // editor). Handled here rather than in the global shortcut handler
-          // because the label has to be committed first — the global one would
+          // because the label has to be committed first, the global one would
           // move the edit to the new node and lose what was just typed.
           if (onBindingKeyDown(e)) return;
           // Escape keeps what was typed and leaves (docs/specs/008-canvas/canvas-and-palette.md "Labels"), as a click
@@ -273,7 +273,7 @@ function LabelEditorView<E extends BoxedElement>({
           }
         }}
         onPointerDown={(e) => {
-          // A deliberate click inside the text places its own caret — the
+          // A deliberate click inside the text places its own caret, the
           // pending type-to-edit end caret must not override it.
           needsEndCaretRef.current = false;
           e.stopPropagation();
@@ -311,7 +311,7 @@ function LabelEditorView<E extends BoxedElement>({
         ref={toolbarWrapRef}
         // The edit-mode element menu opens clear of this (useEditModeContextMenu).
         data-rich-text-toolbar
-        // Stop pointer events reaching the canvas — otherwise a click on a
+        // Stop pointer events reaching the canvas, otherwise a click on a
         // toolbar button reads as a click-off the editing element and the
         // canvas commits + exits edit mode (the same guard the editable div
         // carries). Also flag the interaction so the editor's onBlur doesn't

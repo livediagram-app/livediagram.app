@@ -4,7 +4,13 @@ import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
 import { runsPlainText, type TextRun } from '@liveworkspace/model-core/rich-text';
 import { dataAttrsForRun, readRunsFromDom, reconcileTrailingNewline } from './rich-text-dom';
-import { LINE_ATTR, linesStillApart, paintRunLines, runsByLine } from './rich-text-lines';
+import {
+  caretLineDirection,
+  LINE_ATTR,
+  linesStillApart,
+  paintRunLines,
+  runsByLine,
+} from './rich-text-lines';
 
 // Mixed-direction text painted a line at a time (liveworkspace/docs/specs/011-workbench/blueprints/label-editor.md
 // "Mixed-direction lines").
@@ -142,5 +148,43 @@ describe('linesStillApart', () => {
       );
     expect(linesStillApart(editor, all)).toBe(true);
     expect(best).toBeLessThan(cpuBudgetMs(5));
+  });
+});
+
+describe('caretLineDirection', () => {
+  const caretIn = (node: Node, offset: number) => {
+    const range = document.createRange();
+    range.setStart(node, offset);
+    const selection = document.getSelection()!;
+    selection.removeAllRanges();
+    selection.addRange(range);
+    return selection;
+  };
+
+  it("answers the direction of the caret's line", () => {
+    const editor = painted(RUNS);
+    document.body.append(editor);
+    const [first, second] = [...editor.querySelectorAll<HTMLElement>(`[${LINE_ATTR}]`)] as [
+      HTMLElement,
+      HTMLElement,
+    ];
+    first.style.direction = 'rtl';
+    expect(caretLineDirection(editor, caretIn(first.firstChild!.firstChild!, 2))).toBe('rtl');
+    expect(caretLineDirection(editor, caretIn(second, 0))).toBe('ltr');
+    editor.remove();
+  });
+
+  it('answers null for a caret in no line of this editor', () => {
+    const editor = painted(RUNS);
+    const other = painted(RUNS);
+    document.body.append(editor, other);
+    expect(caretLineDirection(editor, null)).toBeNull();
+    expect(caretLineDirection(editor, caretIn(editor, 1))).toBeNull();
+    const newline = editor.querySelector(`[${LINE_ATTR}] + span`)!;
+    expect(caretLineDirection(editor, caretIn(newline.firstChild!, 0))).toBeNull();
+    const elsewhere = other.querySelector(`[${LINE_ATTR}]`)!;
+    expect(caretLineDirection(editor, caretIn(elsewhere, 0))).toBeNull();
+    editor.remove();
+    other.remove();
   });
 });

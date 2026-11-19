@@ -1,6 +1,6 @@
 // The LABEL rich-text editor's session state (docs/specs/008-canvas/canvas-and-palette.md "Labels",
 // liveworkspace/docs/specs/011-workbench/label-editor.md): everything that is
-// specific to editing an element's label on the canvas — the element-derived
+// specific to editing an element's label on the canvas, the element-derived
 // run styling, the mount caret policy, the toolbar flip, the focus guards for
 // the context menu riding alongside, and the commit-on-blur-or-unmount
 // lifecycle. LabelEditor keeps the JSX and its event handlers and mounts
@@ -105,7 +105,7 @@ export function useRichTextSession({
   } = doc;
 
   // Auto-fit: a multi-line label on 'scale' measures its LIVE
-  // text against the box, so the size tracks what is being typed — and, on
+  // text against the box, so the size tracks what is being typed, and, on
   // mount, lands on exactly the number the display label was already using
   // (same pure helper, same inputs), which is what keeps double-click
   // shift-free. `fitBox` absent (non-sticky callers) falls back to the
@@ -148,16 +148,16 @@ export function useRichTextSession({
       // Type-to-edit: collapse to the true END of the painted content so the
       // seed char stays first and further typing appends. Done against the live
       // DOM (not the computed offset) so a stray empty / desynced run can't drop
-      // the caret back to the start — the "Hello" -> "elloH" bug.
+      // the caret back to the start, the "Hello" -> "elloH" bug.
       placeCaretAtEnd(el);
       // The first commit around a freshly-opened caption can REMOUNT /
       // MOVE this editor node (observed on icon captions: the wrapper
       // swaps its label subtree as editing begins), and a DOM move
-      // silently drops the selection back to the start — the seeded first
+      // silently drops the selection back to the start, the seeded first
       // char then ends up typed AFTER the rest ("LOL" -> "OLL"). The
       // mount-time placement above can't survive that, so `beforeinput`
       // in the host re-asserts the end caret right before the FIRST
-      // keystroke applies — the last safe moment, immune to any churn in
+      // keystroke applies, the last safe moment, immune to any churn in
       // between. A deliberate click inside the text first cancels it
       // (the host's pointerdown handler).
       needsEndCaretRef.current = true;
@@ -186,7 +186,7 @@ export function useRichTextSession({
     // Focus preservation for the context menu riding alongside the edit
     // session (docs/specs/008-canvas/canvas-and-palette.md): preventDefault on mousedown inside the element
     // context menu (or one of its side flyouts) so clicking a menu control
-    // never blurs the editor or drops the live text selection — the same
+    // never blurs the editor or drops the live text selection, the same
     // trick as the toolbar's noFocusSteal, applied at the document capture
     // phase because the menu is portalled outside the editor's tree. Form
     // controls are exempt (the colour input needs focus for its OS picker,
@@ -206,7 +206,7 @@ export function useRichTextSession({
   }, []);
 
   // Flip the toolbar below the element when there isn't room above it. Measure
-  // the EDITOR (a fixed reference), not the toolbar — the toolbar moves when
+  // the EDITOR (a fixed reference), not the toolbar, the toolbar moves when
   // it flips, which would otherwise ping-pong. ~52px clears the toolbar +
   // its gap.
   useLayoutEffect(() => {

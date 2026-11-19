@@ -67,7 +67,7 @@ export function blockTypeApplies(type: BlockType): {
  * The list style the FIRST line of `text` is in.
  *
  * A list is literal line-prefix text ("• " / "1. ") rather than a block node
- * (docs/specs/009-elements/rich-text-notes.md), so detecting one means reading the prefix — there is no node to
+ * (docs/specs/009-elements/rich-text-notes.md), so detecting one means reading the prefix, there is no node to
  * ask. First line only: the picker shows one value, and a selection spanning
  * a bullet and a paragraph has no single honest answer, so it reports where
  * the selection starts.

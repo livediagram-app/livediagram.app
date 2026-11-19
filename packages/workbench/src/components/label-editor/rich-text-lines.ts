@@ -101,3 +101,19 @@ export function linesStillApart(editor: HTMLElement, text: string): boolean {
   }
   return newlines === newlinesIn(text);
 }
+
+/**
+ * The direction the line holding the caret reads in, or null when the caret is in no line (an empty line, a caret
+ * between the editor's children, or no selection in `editor`). The editor takes it on, so the caret at a line's end
+ * draws at that line's own end, as when every line was a paragraph of its own.
+ */
+export function caretLineDirection(
+  editor: HTMLElement,
+  selection: Selection | null,
+): 'ltr' | 'rtl' | null {
+  const node = selection?.focusNode;
+  const host = node instanceof Element ? node : node?.parentElement;
+  const line = host?.closest<HTMLElement>(`[${LINE_ATTR}]`);
+  if (!line || !editor.contains(line)) return null;
+  return getComputedStyle(line).direction === 'rtl' ? 'rtl' : 'ltr';
+}

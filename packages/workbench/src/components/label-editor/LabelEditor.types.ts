@@ -18,7 +18,7 @@ import type { ActiveFormat } from './rich-text-format';
 // Generic over the product's own element, which is assignable to the structural one, so a binding's toolbar and
 // key handling read it precisely.
 export type LabelEditorProps<E extends BoxedElement = BoxedElement> = {
-  // The element being edited — its whole-element text* fields are the
+  // The element being edited, its whole-element text* fields are the
   // defaults each run's unset attrs inherit (for effective styling +
   // toggle computation).
   element: E;
