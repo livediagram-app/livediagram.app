@@ -69,7 +69,7 @@ other: an Editor's palette has it, a Participant's (Participate alone) and a Vie
 canvas places it centred where it is dropped, in every app (the drag carries the item's id,
 `application/x-liveworkspace-library-item`; livediagram's own shape library items keep their own drag). The drop asks
 the door for the item's elements and lands them in one commit when the answer comes back, so a refused or failed
-fetch places nothing at all, and the Library says why. A tile's preview shows its pictures (below, "Pictures").
+fetch places nothing at all, and says why in the Library and as an error toast on the canvas, so a failure is seen with the palette closed too. A tile's preview shows its pictures (below, "Pictures").
 
 **The Library sits beside Search.** On the Toolbar strip it is not a category: it holds what people saved, not
 what the app ships, so it is an icon-only button at the strip's far right, just before Search (`ToolbarLibraryButton`,
