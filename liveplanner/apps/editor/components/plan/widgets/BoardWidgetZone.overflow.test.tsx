@@ -102,6 +102,15 @@ describe('a widget zone too full for its widgets', () => {
     expect(document.querySelector<HTMLElement>('[data-widget-zone]')!.style.width).toBe('798px');
   });
 
+  // Work Tracker 1288: beside a phone's Form strip the zone had no room at all and its row ran on under the corner card.
+  it('clips its row across, so a zone squeezed to nothing never spills past its edge', () => {
+    room = 2000;
+    show();
+    const zone = document.querySelector<HTMLElement>('[data-widget-zone]')!;
+    expect(zone.className.split(' ')).toContain('overflow-x-clip');
+    expect(zone.className).not.toMatch(/overflow-(hidden|y-)/);
+  });
+
   it('pins the Filter, keeps the widgets that fit in order and puts the rest in More', () => {
     // 1000: Filter 200 + More 70 + two buttons 56 + 4 gaps 24 leaves 650: 5 widgets of 100 and their gaps fit 5.
     room = 600;

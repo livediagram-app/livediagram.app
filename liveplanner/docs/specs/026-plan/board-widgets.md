@@ -22,7 +22,9 @@ header; they are not in the palette.
   whatever its widgets are (**Reveal** on a hide-writing board, **Retry** when items failed to load).
 - <a id="more"></a>The widget zone is **one row**, never two, so the board's columns never move down for it, and it
   never scrolls. Widgets keep their order; the ones that do not fit go into **More** at the end of the row (Work
-  Tracker 880, replacing the sideways scroll of Work Tracker 823):
+  Tracker 880, replacing the sideways scroll of Work Tracker 823). The zone is clipped across at its edge, so one
+  squeezed to no room at all (a phone's Requests header beside the Form strip, Work Tracker 1288) shows nothing rather
+  than running on under the top-right corner card:
   - **More** is a header-sized button after the last widget that fits, before the **+** and Edit Widgets: "More", a
     count of the widgets it holds and a chevron, named "More widgets, 3 more". It shows only while some widget does
     not fit; with room again (the window widened, widgets taken off, a count shrinking) every widget is back in the
