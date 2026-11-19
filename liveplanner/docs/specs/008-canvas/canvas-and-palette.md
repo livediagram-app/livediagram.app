@@ -838,7 +838,7 @@ Opening and tab switches pop nothing in. On the 1,000-element reference board a 
 
 When a shape is selected, a small **popover menu** appears next to it with action buttons (icon-only).
 
-- **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`); otherwise below it, as at the header. Horizontally centred on the shape.
+- **Position:** above the shape if there is room between the shape and the canvas top edge, and it would not sit on the floating chrome over the canvas (the palette toolbar, a panel: any `data-floating-panel`); otherwise below it, as at the header. Horizontally centred on the shape. The toolbar's title pill (_Selected Elements (2)_) counts as part of it, and a page's own title bar (`data-page-title-bar`) counts as chrome too, so neither is ever covered (on a phone the title bar sits just above its page, where an element's toolbar lands).
 - **Layout:** small rounded panel with the same styling language as the palette (border, shadow).
 - **Overflow:** the buttons sit in a strip at most **95vw** wide. When they outgrow it (a flowchart step's full set
   on a phone) the strip scrolls sideways under a finger or trackpad, with no visible scrollbar, and the card and its
