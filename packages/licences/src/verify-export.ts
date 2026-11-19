@@ -1,9 +1,10 @@
 import type { LicencesManifest } from './contract.ts';
 
-// The exported licences.html may not exceed this (blueprint D14): 1.5 times the
-// page as first measured (173.5 KB for 54 works), so dependencies can grow by
-// dozens of entries but inlined licence texts, even the small ones, cannot.
-export const LICENCES_HTML_BUDGET_BYTES = 260_000;
+// The exported licences.html may not exceed this (blueprint D14): 1.3 times the
+// page as measured on 2026-11-19 (259.9 KB, after the infrastructure import
+// brought it to the first cap of 260,000), so dependencies can grow by dozens of
+// entries but inlined licence texts, even the small ones, cannot.
+export const LICENCES_HTML_BUDGET_BYTES = 340_000;
 
 type Export = {
   manifest: LicencesManifest;

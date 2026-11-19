@@ -340,7 +340,7 @@ Every line is `[licences] <fingerprint> key=value …` on stdout (errors on stde
 | `TEXTS_URL_PREFIX`           | `/licences/texts/`                    | Under the page's own path on marketing          | fixed               |
 | `TEXT_BOX_MAX_LINES`         | 24                                    | D1: a licence's opening fits; long ones scroll  | 12 to 40            |
 | `TEXT_BOX_LINE_HEIGHT_REM`   | 1.25                                  | D2: Tailwind `text-xs leading-5`                | tied to the class   |
-| `LICENCES_HTML_BUDGET_BYTES` | 260,000                               | D14: 1.5 times the 173.5 KB first measured      | measured × 1.3 to 2 |
+| `LICENCES_HTML_BUDGET_BYTES` | 340,000                               | D14: 1.3 times the 259.9 KB measured 2026-11-19 | measured × 1.3 to 2 |
 
 ## Assets and external resources
 
