@@ -191,6 +191,35 @@ describe('SheetLinksHost', () => {
   });
 });
 
+describe('a chart not linked to a sheet yet', () => {
+  const { chartSheetSource: _linked, ...plain } = chart;
+  const pending: SheetChart = { ...plain, chartSheetPending: true };
+
+  it('links in one commit that drops the mark', async () => {
+    readSheetRange.mockResolvedValue(read);
+    const { commit, els } = arrange(true, [pending]);
+    linkRead.current = { ...read, sheetId: 'sheet0002' };
+    act(() => api!.openLink('c1'));
+    act(() => screen.getByRole('button', { name: 'stub link' }).click());
+    await waitFor(() => expect(commit).toHaveBeenCalledTimes(1));
+    expect(els()[0]).not.toHaveProperty('chartSheetPending');
+    expect((els()[0] as SheetChart).chartSheetSource).toEqual(linkSource);
+  });
+
+  it('keeps its numbers as its own in one commit, leaving other elements as they are', () => {
+    const { commit, els } = arrange(true, [pending, plain, { id: 'arrow', type: 'arrow' }]);
+    act(() => api!.keepNumbers('c1'));
+    expect(commit).toHaveBeenCalledTimes(1);
+    expect(els()[0]).toEqual(plain);
+    act(() => api!.keepNumbers('arrow'));
+    expect(els()[2]).toEqual({ id: 'arrow', type: 'arrow' });
+    // One with no mark is the same element.
+    const before = els()[1];
+    act(() => api!.keepNumbers(plain.id));
+    expect(els()[1]).toEqual(before);
+  });
+});
+
 describe('SheetLinkLine', () => {
   const show = (status: SheetLinkStatus, element: Element, selected: boolean) =>
     render(
@@ -201,6 +230,7 @@ describe('SheetLinkLine', () => {
           openLink: () => {},
           update: () => {},
           unlink: () => {},
+          keepNumbers: () => {},
         }}
       >
         <SheetLinkLine element={element} selected={selected} />

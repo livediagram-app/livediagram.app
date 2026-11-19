@@ -6,6 +6,7 @@
 // server, and a session that may change its tabs (not a tab-scoped link's, an embed's, a workbench's or a viewer's).
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
+import { besideOfferFor } from '@/components/connect/beside-offer';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
 import type { StartPalette } from '@/components/start/start-palette';
@@ -35,6 +36,7 @@ export function useConnectStart(): ((palette: StartPalette) => ReactNode) | unde
   } = ctx;
   if (!accountUserId || !documentId || offline || isStructureReadOnly || embedMode || workbench)
     return undefined;
+  const offer = besideOfferFor(tabs);
   return (palette) => (
     <ConnectFilePanel
       hostId={documentId}
@@ -54,6 +56,7 @@ export function useConnectStart(): ((palette: StartPalette) => ReactNode) | unde
       onGoTo={connectedTabs.goTo}
       // Nothing recent: the Explorer, where every file is.
       onOpenExplorer={() => window.location.assign(`${window.location.origin}/explorer`)}
+      {...(offer ? { offer } : {})}
     />
   );
 }

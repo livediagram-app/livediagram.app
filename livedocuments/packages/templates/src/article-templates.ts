@@ -307,6 +307,8 @@ The server merges changes by operation, not by whole note, so two people typing 
           ],
           chartLegend: false,
           chartValues: true,
+          // Spend by month lives in a budget sheet: it lands not linked yet (Work Tracker 1281).
+          chartSheetPending: true,
         },
       },
     },

@@ -1,7 +1,7 @@
 // One connect (connected-tabs.md "Connecting"): made, then added; a failed add is taken back (#571).
 import { describe, expect, it, vi } from 'vitest';
 import { IndexError, type ConnectionMade } from '@liveworkspace/index-client';
-import { connectFile } from './connect-file';
+import { connectFile, makeBeside } from './connect-file';
 
 const made: ConnectionMade = {
   connection: { id: 'cn_abcdefghijklmnopqrstuvwx', app: 'liveplanner', itemId: 'plan1' },
@@ -74,5 +74,49 @@ describe('connectFile', () => {
         throw failure;
       }),
     ).rejects.toBe(failure);
+  });
+});
+
+describe('makeBeside', () => {
+  const besideClient = () => ({
+    makeBeside: vi.fn(async () => made),
+    takeBackConnection: vi.fn(async () => {}),
+  });
+  const make = (
+    client: ReturnType<typeof besideClient>,
+    addTab: (m: ConnectionMade) => Promise<void>,
+  ) =>
+    makeBeside({
+      client,
+      hostId: 'doc1',
+      grant: 'grant',
+      tabId: 'tab9',
+      offer: 'plan',
+      level: 'edit',
+      both: false,
+      addTab,
+    });
+
+  it("asks the index for the offer's file in the tab, then adds the tab", async () => {
+    const client = besideClient();
+    const addTab = vi.fn(async () => {});
+    await expect(make(client, addTab)).resolves.toBe(made);
+    expect(client.makeBeside).toHaveBeenCalledWith(
+      'doc1',
+      { offer: 'plan', tabId: 'tab9', level: 'edit', both: false },
+      'grant',
+    );
+    expect(addTab).toHaveBeenCalledWith(made);
+  });
+
+  it('takes the connection back when the tab add fails', async () => {
+    const client = besideClient();
+    const failure = new Error('save failed');
+    await expect(
+      make(client, async () => {
+        throw failure;
+      }),
+    ).rejects.toBe(failure);
+    expect(client.takeBackConnection).toHaveBeenCalledWith('cn_abcdefghijklmnopqrstuvwx', 'grant');
   });
 });

@@ -158,6 +158,9 @@ export type ShapeElement = BoxBase & {
   chartAxis?: boolean;
   chartLegendPosition?: 'top' | 'right' | 'bottom' | 'left';
   chartPalette?: ChartPaletteId;
+  /** Meant to come from a liveplanner sheet, not linked yet: drawn faded under a "Not linked to a sheet yet" chip
+   *  (svg-render-charts.ts, each product's pie-chart.md "Not linked yet"). */
+  chartSheetPending?: boolean;
   /** A chart's type within its kind (chart-types.ts). */
   chartVariant?: string;
   /** A progress bar or ring's percentage, a rating's stars (data-shapes.ts). */

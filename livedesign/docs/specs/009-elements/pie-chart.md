@@ -221,6 +221,15 @@ signal) is [liveworkspace sheet-sources.md](../../../../liveworkspace/docs/specs
   linked range is gone" with **Change…** to pick it again. Update is not offered then: a read of a range that is gone
   is refused again (Work Tracker 1212).
 - **Unlink** removes the source and keeps the last values, as one undo step.
+- **Not linked yet.** A chart can be meant to come from a sheet before one is linked (`chartSheetPending`): a
+  template's chart whose numbers belong in a sheet (livedocuments' Status Report, Work Tracker 1281). Until a sheet is
+  linked it never passes its sample numbers off as real: its marks draw faded, under a centred chip, a sheet glyph and
+  "Not linked to a sheet yet", on the canvas, in a thumbnail and in every export (SVG, PNG, PDF), whoever looks. The
+  chip takes no pointer, so the chart selects and drags as any. Its Data section opens with "Sample numbers, meant to
+  come from a sheet." and, for an Editor, **Link to Sheet** and **Use These Numbers** (they become the chart's own and
+  the mark goes, one undo step). Linking drops the mark in the link's own undo step; Unlink never sets it again. A hand
+  edit to the rows keeps it until Use These Numbers. The mark names no other item, so copies, exports and Community
+  copies keep it. A Participant and a Viewer see the faded chart and its chip, never the actions.
 - **Exports and copies.** An export (SVG, PNG, PDF, the design's file) draws the saved values and the file carries no
   source, as does a copy made through a Community link and a Community visitor's read. A duplicate, a copy-paste or a
   tab copied within livedesign keeps the source.

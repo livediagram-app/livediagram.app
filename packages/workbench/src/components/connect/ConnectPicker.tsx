@@ -6,7 +6,7 @@
 // (`onConnect`, usually through connectFile) and moves to the new tab; this list holds the row busy meanwhile and, on a
 // failure, says why on the row. Painted from the start panel's palette (`ink`), else the app's light or dark look.
 import { useId, useMemo, useState, type CSSProperties } from 'react';
-import type { IndexClient, Item, Level } from '@liveworkspace/index-client';
+import type { App, IndexClient, Item, Level } from '@liveworkspace/index-client';
 import { CompactEmptyState, PANEL_INK, SwitchRow, lucideGlyph, Button } from '@liveworkspace/ui';
 import { lucideClock, lucideRefreshCw, lucideSearch, lucideX } from '@liveworkspace/icons/lucide';
 import {
@@ -17,7 +17,11 @@ import {
   titleMatches,
 } from './connect-words';
 import { ConnectRolePicker } from './ConnectRolePicker';
+import { ConnectOfferRow, type ConnectOfferState } from './ConnectOfferRow';
 import { ConnectRow, type ConnectRowState } from './ConnectRow';
+
+// The offer's key among the rows' busy and failure marks: no item id has a space.
+const OFFER_KEY = 'beside offer';
 import { useRecentFiles } from './useRecentFiles';
 
 const SearchGlyph = lucideGlyph(lucideSearch, 15);
@@ -77,6 +81,8 @@ export function ConnectPicker({
   onConnect,
   onGoTo,
   onOpenExplorer,
+  offer,
+  onMakeOffer,
 }: {
   client: Pick<IndexClient, 'listItems'>;
   hostId: string;
@@ -95,6 +101,10 @@ export function ConnectPicker({
   onGoTo: (tabId: string) => void;
   // Nothing recent: the way to the Explorer, where every file is.
   onOpenExplorer?: () => void;
+  // A template's offer (connected-tabs.md "A file made beside it"): the Suggested row, and making it at the chosen
+  // role; throws to say it failed.
+  offer?: { app: App; title: string; line: string };
+  onMakeOffer?: (choice: ConnectChoice) => Promise<void>;
 }) {
   const files = useRecentFiles(client, hostId);
   const [level, setLevel] = useState<Level>('edit');
@@ -104,6 +114,7 @@ export function ConnectPicker({
   const [failure, setFailure] = useState<{ id: string; words: string } | null>(null);
   const roleLineId = useId();
   const bothLineId = useId();
+  const offerHeadingId = useId();
   const items = files.state === 'ready' ? files.items : null;
   const shown = useMemo(
     () => (items ? items.filter((item) => titleMatches(item.title, query)) : []),
@@ -127,6 +138,20 @@ export function ConnectPicker({
       setBusyId(null);
     }
   };
+
+  // The offer shares the rows' one-at-a-time: it is busy under its own key, and waits while a file connects.
+  const pressOffer = async (make: (choice: ConnectChoice) => Promise<void>) => {
+    setFailure(null);
+    setBusyId(OFFER_KEY);
+    try {
+      await make({ level, both: both && hostManaged });
+    } catch (error) {
+      setFailure({ id: OFFER_KEY, words: connectErrorWords(error, hostKind) });
+    } finally {
+      setBusyId(null);
+    }
+  };
+  const offerState: ConnectOfferState = busyId === OFFER_KEY ? 'busy' : busyId ? 'waiting' : 'open';
 
   const rowState = (item: Item): ConnectRowState => {
     if (connected.has(item.id)) return { kind: 'connected' };
@@ -175,6 +200,25 @@ export function ConnectPicker({
           </p>
         </div>
       </div>
+
+      {offer && onMakeOffer ? (
+        <section aria-labelledby={offerHeadingId} className="mt-4">
+          <h3
+            id={offerHeadingId}
+            className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-[var(--cp-muted)]"
+          >
+            Suggested
+          </h3>
+          <ConnectOfferRow
+            app={offer.app}
+            title={offer.title}
+            line={offer.line}
+            state={offerState}
+            error={failure?.id === OFFER_KEY ? failure.words : null}
+            onPress={() => void pressOffer(onMakeOffer)}
+          />
+        </section>
+      ) : null}
 
       <label className="mt-4 flex h-9 items-center gap-2 rounded-xl border border-[var(--cp-border)] bg-[var(--cp-surface)] px-3 text-[var(--cp-muted)] focus-within:ring-2 focus-within:ring-[var(--cp-accent)]">
         <SearchGlyph />
