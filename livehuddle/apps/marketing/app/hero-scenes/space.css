@@ -6,16 +6,10 @@
 .hs-scene {
   --hs-card: #ffffff;
   --hs-card-text: #1e293b;
-  --hs-chip: #ffffff;
-  --hs-chip-edge: #e2e8f0;
-  --hs-chip-text: #334155;
 }
 :where(.dark, .dark *):not(:where(.light, .light *)) .hs-scene {
   --hs-card: #0f172a;
   --hs-card-text: #f1f5f9;
-  --hs-chip: #1e293b;
-  --hs-chip-edge: #334155;
-  --hs-chip-text: #e2e8f0;
 }
 
 .hs-card {
@@ -25,13 +19,6 @@
 }
 .hs-card-text {
   fill: var(--hs-card-text);
-}
-.hs-chip-card {
-  fill: var(--hs-chip);
-  stroke: var(--hs-chip-edge);
-}
-.hs-chip-text {
-  fill: var(--hs-chip-text);
 }
 
 /* A leg of a walk: one straight move, nested inside the leg before it, so the legs add up to the path. */

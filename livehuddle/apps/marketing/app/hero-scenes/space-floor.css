@@ -4,9 +4,6 @@
 .hsf-stage {
   --hsf-card: #ffffff;
   --hsf-card-text: #1e293b;
-  --hsf-chip: #ffffff;
-  --hsf-chip-edge: #d1fae5;
-  --hsf-chip-text: #334155;
   --hsf-shadow: rgb(2 44 34 / 0.14);
   /* Off screen, a browser that skips rendering the stage does no work for it. */
   content-visibility: auto;
@@ -15,9 +12,6 @@
 :where(.dark, .dark *):not(:where(.light, .light *)) .hsf-stage {
   --hsf-card: #0f172a;
   --hsf-card-text: #f1f5f9;
-  --hsf-chip: #1e293b;
-  --hsf-chip-edge: #334155;
-  --hsf-chip-text: #e2e8f0;
   --hsf-shadow: rgb(0 0 0 / 0.5);
 }
 
@@ -83,28 +77,19 @@
 }
 
 .hsf-chip {
+  /* Its top is set per character, over the head (chipTopOf); its fill and ink are the person's (identityPaint). */
   position: absolute;
-  top: 4px;
   left: 0;
   translate: -50% 0;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
   height: 18px;
-  padding: 0 8px 0 6px;
-  border-radius: 9px;
-  border: 1px solid var(--hsf-chip-edge);
-  background: var(--hsf-chip);
-  color: var(--hsf-chip-text);
+  padding: 0 7px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
-}
-.hsf-chip-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 9999px;
 }
 
 /* A bubble, in the editor's bubble look: a card edged in the speaker's colour, the name under the words, a tail

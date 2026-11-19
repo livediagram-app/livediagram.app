@@ -9,17 +9,18 @@ import type { TemplateKind } from '@livehuddle/templates';
 import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shared';
 import { FONT } from '../art-tokens';
 import { TEAM_POD } from '../hero-space-cast';
-import { HALL, OFFICE } from '../hero-space-places';
-import { SpaceShot, SpeechBubble, at, headOf, shotPoint } from './space-shot';
+import { OFFICE } from '../hero-space-places';
+import { SpaceShot, SpeechBubble, at, overHeadOf, shotPoint } from './space-shot';
 
 // The crops, [x, y, width, height] in each template's canvas coordinates, about the card frame's 3:1.
-const POD_TABLE = [-215, -221, 560, 190] as const;
-const OFFICE_DESKS = [-375, -552, 470, 170] as const;
-const OFFICE_MEETING = [495, -552, 420, 170] as const;
+// The whole table, the back row's chips over it and the front row's feet.
+const POD_TABLE = [-410, -240, 690, 220] as const;
+// High enough that the chips over the two at their desks show whole, under the room's name.
+const OFFICE_DESKS = [-375, -542, 470, 170] as const;
+const OFFICE_MEETING = [400, -548, 680, 215] as const;
 const OFFICE_CORRIDOR = [-140, -250, 720, 240] as const;
-const HALL_ROOM = [-571, -448, 1080, 348] as const;
 
-/** A small pill over a character's head: a status, a role, a view being followed. */
+/** A small pill on the board: a place's name, a view being followed (over the head's name chip). */
 function Pill({
   x,
   y,
@@ -217,40 +218,34 @@ export function PortalArt() {
   );
 }
 
-/** Everyone walks together: the All-Hands Hall's room, everyone in their own colour with their name. */
+/** Everyone walks together: the team crossing the Team Pod at once, each in their own colour with their name. */
 export function EveryoneArt() {
   return (
     <SpaceShot
-      spec={HALL}
-      box={HALL_ROOM}
-      cast={['Maya', 'Jo', 'Leo', 'Priya', 'Sam', 'Kit', 'Raj'].map((name) => ({ name }))}
+      spec={TEAM_POD}
+      box={[-420, 8, 600, 192]}
+      cast={[
+        { name: 'Maya', still: 'walk-up-0', x: -150, y: 128 },
+        { name: 'Sam', still: 'walk-up-1', x: -212, y: 180 },
+        { name: 'Priya', still: 'walk-right-1', x: -74, y: 150 },
+        { name: 'Ana', still: 'walk-right-0', x: 40, y: 172 },
+        { name: 'Leo', still: 'walk-up-0', x: 104, y: 136 },
+      ]}
     />
   );
 }
 
-/** Status at a glance: Leo focusing with his headphones on, Ana available, each said above their heads. */
+/** Status at a glance: Leo focusing with his headphones on, Ana available, each said in their name chips. */
 export function StatusArt() {
-  const leo = shotPoint(OFFICE, { name: 'Leo' });
-  const ana = shotPoint(OFFICE, { name: 'Ana' });
   return (
-    <SpaceShot spec={OFFICE} box={OFFICE_DESKS} cast={[{ name: 'Leo' }, { name: 'Ana' }]}>
-      <Pill
-        x={leo.x}
-        y={leo.y - headOf(OFFICE, 'Leo') - 4}
-        text="Focusing"
-        colour="#b45309"
-        dot="#fde68a"
-        delay={0.4}
-      />
-      <Pill
-        x={ana.x}
-        y={ana.y - headOf(OFFICE, 'Ana') - 4}
-        text="Available"
-        colour="#047857"
-        dot="#a7f3d0"
-        delay={0.9}
-      />
-    </SpaceShot>
+    <SpaceShot
+      spec={OFFICE}
+      box={OFFICE_DESKS}
+      cast={[
+        { name: 'Leo', status: 'focus' },
+        { name: 'Ana', status: 'available' },
+      ]}
+    />
   );
 }
 
@@ -263,7 +258,7 @@ export function BubbleArt() {
       box={OFFICE_MEETING}
       cast={[{ name: 'Priya' }, { name: 'Maya' }, { name: 'Sam' }]}
     >
-      <g transform={`translate(${p.x - 40} ${p.y - headOf(OFFICE, 'Priya') - 6})`}>
+      <g transform={`translate(${p.x - 40} ${p.y - overHeadOf(OFFICE, 'Priya')})`}>
         <g className="fa-a-pop" style={at(0.4)}>
           <SpeechBubble text="Demo time? 👋" name="Priya" colour="#ec4899" />
         </g>
@@ -275,9 +270,9 @@ export function BubbleArt() {
 /** Wave, cheer and dance: Leo's cheer and Sam's wave at the stand-up, and a burst over the table. */
 export function ReactArt() {
   const bursts = [
-    ['🎉', -40, -120, 0.3],
-    ['✨', 60, -140, 0.6],
-    ['🎉', 150, -110, 0.9],
+    ['🎉', -40, -165, 0.3],
+    ['✨', 60, -185, 0.6],
+    ['🎉', 150, -160, 0.9],
   ] as const;
   return (
     <SpaceShot
@@ -320,9 +315,9 @@ function ViewFrame({ following }: { following?: string }) {
       <g className="fa-a-in" style={at(0.3)}>
         <rect
           x={p.x - 120}
-          y={p.y - 130}
+          y={p.y - 160}
           width={240}
-          height={170}
+          height={200}
           rx={8}
           fill="none"
           strokeWidth={3}
@@ -339,7 +334,7 @@ function ViewFrame({ following }: { following?: string }) {
       {following ? (
         <Pill
           x={p.x}
-          y={p.y - 92}
+          y={p.y - overHeadOf(OFFICE, 'Sam', 'walk-right-0') - 4}
           text={`Following ${following}`}
           colour="#0369a1"
           dot="#0ea5e9"
@@ -360,13 +355,40 @@ export function FollowArt() {
   return <ViewFrame following="Sam" />;
 }
 
-/** A Space for every meeting: the Team Pod's stand-up round its table, the team in their places. */
+/**
+ * A Space for every meeting: the Spaces a meeting starts from, side by side as the template picker shows them, each
+ * its own preview and name: the Team Pod for the stand-up, the Interview Suite and the Client Lounge for people from
+ * outside, and the Classroom.
+ */
 export function EveryMeetingArt() {
+  const spaces: { kind: TemplateKind; name: string }[] = [
+    { kind: 'team-pod', name: 'Team Pod' },
+    { kind: 'interview-suite', name: 'Interview Suite' },
+    { kind: 'client-lounge', name: 'Client Lounge' },
+    { kind: 'classroom', name: 'Classroom' },
+  ];
   return (
-    <SpaceShot
-      spec={TEAM_POD}
-      box={POD_TABLE}
-      cast={['Maya', 'Sam', 'Priya', 'Leo', 'Ana'].map((name) => ({ name }))}
-    />
+    <Frame canvas>
+      <div className="absolute inset-0 grid grid-cols-4 gap-2 p-2.5">
+        {spaces.map(({ kind, name }, i) => (
+          <div
+            key={kind}
+            className={`fa-a-pop flex flex-col overflow-hidden rounded-md border bg-white dark:bg-slate-900 ${
+              i === 0
+                ? 'border-brand-500 ring-2 ring-brand-500/25'
+                : 'border-slate-200 dark:border-slate-700'
+            }`}
+            style={at(0.2 + i * 0.25)}
+          >
+            <div className="flex min-h-0 flex-1 items-center justify-center p-1 [&_svg]:h-full [&_svg]:w-full">
+              <TemplatePreview kind={kind} />
+            </div>
+            <p className="truncate border-t border-slate-100 px-0.5 py-0.5 text-center text-[7.5px] font-semibold leading-tight text-slate-700 dark:border-slate-800 dark:text-slate-200">
+              {name}
+            </p>
+          </div>
+        ))}
+      </div>
+    </Frame>
   );
 }
