@@ -60,7 +60,17 @@ export function PhotoPhoneHeldBar({ photo }: { photo: PhotoEditorView }) {
       >
         Cancel
       </button>
-      <Button size="sm" onClick={() => (transform ? commitTransform(ctx) : commitCrop(ctx))}>
+      <Button
+        size="sm"
+        onClick={() => {
+          if (transform) commitTransform(ctx);
+          else {
+            // The sheet may be open over the photo: the crop shows at once (photo-pages.md "On a phone").
+            commitCrop(ctx);
+            toolFlyout.close();
+          }
+        }}
+      >
         {transform ? 'Commit' : 'Crop'}
       </Button>
     </div>
@@ -104,7 +114,12 @@ export function PhotoPhoneOptionsSheet({ photo }: { photo: PhotoEditorView }) {
           {transform ? (
             <TransformOptionsBody photo={photo} onPoint={noPoint} />
           ) : (
-            <PhotoToolOptionsBody photo={photo} tool={tool!} onPoint={noPoint} />
+            <PhotoToolOptionsBody
+              photo={photo}
+              tool={tool!}
+              onPoint={noPoint}
+              onCropped={() => toolFlyout.close()}
+            />
           )}
         </div>
       </div>
