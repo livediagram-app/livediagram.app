@@ -55,20 +55,23 @@ Picking a file writes the link and a fresh snapshot (the target's name and its p
 
 ## What a reader sees
 
-| The reader                                          | Shown                                                                          |
-| --------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Can open the target, the element on screen          | The target live, read-only, in its app's frame                                 |
-| Can open it, the element off screen or over the cap | The snapshot, with the target's app logo and name                              |
-| The page is itself framed                           | The snapshot, with the name and Open ([The frame](#the-frame))                 |
-| Cannot open it (no access, or signed out)           | The snapshot unreadable, "You don't have access to <name>.", **Open in <App>** |
-| The target is in the Trash, or gone                 | "This file is no longer there." (an Editor: "Double-click to choose another")  |
-| Offline, or the ticket could not be had             | The snapshot, "<name> could not be shown just now.", **Try Again**             |
-| A Community copy, or a Community visitor            | The snapshot alone, with no app or item named and no way to open it            |
+| The reader                                          | Shown                                                                                                             |
+| --------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Can open the target, the element on screen          | The target live, read-only, in its app's frame                                                                    |
+| Can open it, the element off screen or over the cap | The snapshot, with the target's app logo and name                                                                 |
+| The page is itself framed                           | The snapshot, with the name and Open ([The frame](#the-frame))                                                    |
+| Cannot open it (no access, or signed out)           | The snapshot unreadable, "You don't have access to <name>.", **Open in <App>**; signed in, **Request Access** too |
+| The target is in the Trash, or gone                 | "This file is no longer there." (an Editor: "Double-click to choose another")                                     |
+| Offline, or the ticket could not be had             | The snapshot, "<name> could not be shown just now.", **Try Again**                                                |
+| A Community copy, or a Community visitor            | The snapshot alone, with no app or item named and no way to open it                                               |
 
 **Open** (and **Open in <App>** on the no-access card) opens the target at its own address in its own app, in a new
 browser tab, at whatever the reader's own access gives there: signed out, its sign-in; signed in without access, the
-app's not-found page. No app has a way to ask for access yet, so the card says what to do ("Ask its owner to share it
-with you") rather than offering a request it cannot make. The host sends the owner nothing.
+app's not-found page. A signed-in reader is also offered **Request Access** ([request-access.md "On
+screen"](request-access.md#on-screen)): one press asks the target's owner, with no note on a card this small, and
+it then says **Requested**, held for the page so every embed of that file agrees. A signed-out reader is told what
+to do ("Ask its owner to share it with you"). The host's owner is sent nothing: the request is the reader's own, to
+the target's managers.
 
 For a reader without access the snapshot is unreadable, not just dimmed: drawn with a 24 px blur (wider than any letter
 of a poster at most 480 px wide), so no title or card on it can be read. Readers who can open the target, while the

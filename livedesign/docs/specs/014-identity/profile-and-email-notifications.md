@@ -187,6 +187,15 @@ so an active collaborator doesn't generate a mail per reload. This is the
 only server-observable "join" signal; live-room reconnects in the Durable
 Object are deliberately **not** wired (they'd be far too chatty).
 
+### Someone asks for access (`notifyDesignJoin`)
+
+The same switch holds the **access requested** email
+([Request Access](../../../../liveworkspace/docs/specs/004-index/request-access.md#the-emails)): a signed-in person
+asked for access to a design you manage, from its Not Found screen or a live embed's no-access card. It names them,
+quotes their note and opens the Inbox on the request, where **Share** grants it in one click. The index's limits are its
+only throttle: one per person and design a week, at most ten a design a day. When you share it, the person who asked
+gets the **access granted** email, which no switch holds back: they asked for it.
+
 ### b. Someone responds to a team invite: `notifyInviteResponse`
 
 Sent by liveworkspace, not livedesign: teams, their invitations and the

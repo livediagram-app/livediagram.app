@@ -1,7 +1,8 @@
 # Request Access
 
-Status: building in parts (Work Tracker 1137). What each part brings is in the blueprint's
-[Build order](blueprints/request-access.md#build-order); until a part lands, what it describes is not reachable.
+Status: built (Work Tracker 1137, and Work Tracker 1308, which chose it as the answer to an editor address sent to a
+colleague: browsers never tell a page its address was copied from the address bar, so the warning is given where
+that address fails, on the colleague's screen).
 
 ## What
 
@@ -38,7 +39,7 @@ not even whether that id is an item:
   try, answers, and only then (off the response's path) reads the item and records the request, so a real item takes
   no longer to answer than a made-up one.
 - **No read.** There is no route a requester can read their own requests back through. Their button remembers in the
-  browser tab that it asked, and says **Requested** until the page is left.
+  browser tab that it asked, and says **Requested** until the page is left ([On screen](#on-screen)).
 - **Granted is the first they hear.** Only when a manager grants it is the requester told anything: the email names
   the item, which they can now open. A decline sends nothing.
 
@@ -76,6 +77,36 @@ then told:
 Past the person's limit the ask is refused `429 rate_limited` with `Retry-After`; past the item's, the request is
 still recorded and shows in the Inbox, with no email.
 
+### On screen
+
+Request Access is offered where a signed-in person meets an item they can't open, and nowhere else: nobody who
+never follows someone else's address sees it.
+
+- **The Not Found card**, on the app's own address (each product's new-file route spec, "Which not-found card"),
+  in its **Missing** case only: signed in, no share code, an address that names an item. Never in an embed or a
+  workbench frame (the person is in someone else's page), never to someone signed out (the card offers **Sign In**,
+  and after signing in they come back to it), and never for a dead link, ended access or an Archived item.
+- **The live embed's no-access card** ([live-embeds.md](live-embeds.md#what-a-reader-sees)), to a signed-in reader;
+  a signed-out reader is told to ask its owner, as before.
+
+The control is one button, **Request Access** (a key glyph), beside the card's other buttons. Pressing it opens, in
+place in the card, an optional note ("Add a note (optional)", at most `ACCESS_REQUEST_NOTE_MAX` characters, a count
+shown from 250 on) and **Send Request** with **Cancel**; Enter with Ctrl or Cmd sends, Escape cancels. On the live
+embed's small card the note is left out: the button asks at once. Its states:
+
+| State     | Shows                                                                                                                            |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Ready     | **Request Access** (tooltip "Ask its owner to share it with you")                                                                |
+| Writing   | the note field, focused, with **Send Request** and **Cancel**                                                                    |
+| Sending   | **Sending…** on the button, which keeps focus and takes no second press                                                          |
+| Requested | a green check and **Requested**; the line under it "If its owner shares it with you, you'll get an email."                       |
+| Error     | the button again, with "Couldn't send your request. Try again." (`429`: "You've asked for access a lot today. Try again later.") |
+
+**Requested** says nothing about the item, since every id answers the same. It is held for the browser tab (module
+state, keyed by the item's id), so every embed of that item on the page agrees and a second press never asks
+again; leaving the page forgets it, and asking again within `ACCESS_REQUEST_REPEAT_MS` records nothing new. A `401`
+(signed out meanwhile) shows Sign In's words: "Sign in to ask for access."
+
 ## Granting and declining
 
 Only a manager of the item may, through their own access (a share link never manages).
@@ -101,15 +132,37 @@ password, or removes it.
 ## In the Inbox
 
 The Inbox ([one-explorer-contracts.md "Inbox"](one-explorer-contracts.md#inbox)) lists each open request on an item
-the reader manages, newest first: `accessRequests` beside its threads, actions and forms. A row says who asks (their
-name as accounts named them when they asked, else **Someone**), their note, when, and the item. It asks something of
-the reader, so it counts in the Inbox's badge.
+the reader manages, newest first: `accessRequests` beside its threads, actions and forms. It asks something of the
+reader, so it counts in the Inbox's badge (the sidebar's, the rail's and every editor's Inbox button).
 
 - A request whose requester has since come to reach the item through a live link (granted elsewhere, or sent a
   link) is not listed.
 - An item in the Trash or Archived lists none of its requests; they come back with it.
-- Each row's verbs, for a manager: **Share** (one click, at the default level above; a menu beside it picks another
-  offered level) and **Decline**. Open in the app goes to the item, as every row's does.
+- The reader's own request (a team member asking for a team item they could not reach then) is never their row.
+
+**The row** reads as every Inbox row does, three lines: who asks (their name as accounts named them when they asked,
+else **Someone**), semibold since it needs the reader, and when; what, **Asked for access**; then why, a key glyph and
+**Wants access**, and the app's Living Prism (in the All filter) and the item. Its avatar is the requester's. Its key
+is `r:<request id>`, so an editor's notice and the request email open the Inbox on it (`?at=r:<id>`). The filter
+dropdown gains **Access Requests (n)**, listed while there is one or it is chosen.
+
+**The reading pane**: where it is (the item), the title **<Name> asked for access**, the byline ("Ana wants access
+to Launch Plan · 2 hours ago"), the verbs, then their note under **Note** (as they wrote it, quoted), and a line on
+what sharing does: "Sharing makes a pass for Ana in Share. Delete it there to take the access away." The verbs:
+
+- **Share as Viewer** (`e`), the primary button, at the default level above, with a chevron beside it that opens a
+  menu of the levels the app offers (**Editor**, **Participant**, **Viewer**, each with its line from the Share
+  dialog), the default ticked. Choosing one shares at it. While it works the button says **Sharing…**.
+- **Decline**, secondary, one press; nothing is sent to the requester.
+- **Open in <App>** (↵), as every row's.
+
+Done, the row leaves at once (the badge drops with it) and the pane moves to the row below, as resolving a thread
+does; the live region says "Shared Launch Plan with Ana as Viewer" or "Declined Ana's request". A request another
+manager answered first (`404 access_request_not_found`) leaves the same way, saying "Already answered". The cap
+(`409 share_link_limit`) keeps the row with "Launch Plan has as many passes as it can hold. Delete one in Share,
+then try again."; an Archived item's (`409 archived`) "Move Launch Plan out of Archived to share it."; any other
+failure "Couldn't share it. Try again." or "Couldn't decline it. Try again." `Activity·Selected` (`AccessRequest`)
+opens it in the app; `Activity·Resolved` (`AccessGranted`, `AccessDeclined`) answers it.
 
 A grant is also in the requester's Inbox read, as `shares` (a grant of the last 7 days, while they reach the item):
 not a row of the list, but what an open editor's notice says, "<Granter> shared <item> with you"
@@ -122,11 +175,18 @@ The index sends no email ([one-explorer-contracts.md "Notices"](one-explorer-con
 is written it tells the item's app `POST <app>/api/internal/items/:id/notices`:
 
 - `{type: 'access_requested', requestId, requesterId, requesterName, recipientIds, itemTitle, note}`: the app emails
-  each recipient whose **Someone Joined** emails (`notifyJoin`) are on: "<Requester> asked for access to <item>", the
-  note quoted, and a button that opens the app's Inbox on the request.
+  each recipient whose **Someone Joined** emails (the app's join switch: `notifyDocumentJoin`, `notifyPlanJoin`, ...)
+  are on: subject "<Requester> asked for access to <item>", the note quoted, a button **Review the Request** that
+  opens the app's Inbox on the request (`/explorer/inbox?at=r:<requestId>`), and the notifications footer.
 - `{type: 'access_granted', requestId, requesterId, granterId, granterName, level, itemTitle}`: the app emails the
-  requester (they asked for it, so no switch holds it back): "<Granter> shared <item> with you", and a button that
-  opens it.
+  requester's verified address (they asked for it, so no switch holds it back): subject "<Granter> shared <item> with
+  you", what they can do there (as an Editor, a Participant or a Viewer), and a button **Open the <noun>** to the
+  item's address.
+
+The words are written once (`@liveworkspace/email/access-request`) and each app binds them to its look and its noun;
+the sending is `@liveworkspace/index-app`'s notifier (`notifyAccessRequested`, `notifyAccessGranted`), which every
+app's other notification emails use. Each is reported as `Email·Sent` (`AccessRequested`, `AccessGranted`). The
+index's limits are the only throttle: one email per requester and item a week, at most 10 an item a day.
 
 An app without the door takes the notice and sends nothing. Best-effort, as every notice: a failure is logged and
 dropped.
