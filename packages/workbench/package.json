@@ -286,6 +286,7 @@
     "./components/request-access/RequestAccess": "./src/components/request-access/RequestAccess.tsx",
     "./components/request-access/RequestAccessButton": "./src/components/request-access/RequestAccessButton.tsx",
     "./components/request-access/requested": "./src/components/request-access/requested.ts",
+    "./components/request-access/request-intent": "./src/components/request-access/request-intent.ts",
     "./components/providers/auth-provider": "./src/components/providers/auth-provider.tsx",
     "./components/rich-text/rich-text-toolbar-icons": "./src/components/rich-text/rich-text-toolbar-icons.tsx",
     "./components/split/SplitSeamControls": "./src/components/split/SplitSeamControls.tsx",
