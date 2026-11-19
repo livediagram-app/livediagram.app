@@ -1,7 +1,7 @@
 import { useEffectEvent, useLayoutEffect, type KeyboardEvent, type RefObject } from 'react';
 import { isFlowchartStep, isMindNode, type Element } from '@livediagram/document';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
-import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
+import { insertTextAtCaret } from '@liveworkspace/workbench/components/label-editor/rich-text-dom';
 import { claimMindHandoff } from '@/lib/mind-handoff';
 
 // The mind node's keys inside its label editor (docs/specs/009-elements/mind-node.md "Keyboard").

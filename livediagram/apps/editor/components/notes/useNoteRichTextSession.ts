@@ -2,7 +2,7 @@
 // label editor's useRichTextSession because a note has no canvas to fight:
 // no zoom counter-scale, no toolbar flip, no context menu riding alongside,
 // and no commit-on-blur (the popover owns the commit, on outside click or
-// Cmd-Enter). All this adds over the shared useRichTextDocument is the mount
+// Cmd-Enter). All this adds over the shared useRichTextRuns is the mount
 // paint + caret, and reporting every edit up so the popover always holds the
 // current value.
 
@@ -14,8 +14,8 @@ import {
   type RunHeading,
   type TextRun,
 } from '@livediagram/document';
-import { PLAIN_RUN_DEFAULTS } from '@/components/rich-text/rich-text-format';
-import { useRichTextDocument } from '@/components/rich-text/useRichTextDocument';
+import { PLAIN_RUN_DEFAULTS } from '@liveworkspace/workbench/components/label-editor/rich-text-format';
+import { useRichTextRuns } from '@liveworkspace/workbench/components/label-editor/useRichTextRuns';
 import { track } from '@/lib/telemetry';
 import { noteRunStyle } from './note-run-style';
 
@@ -29,7 +29,7 @@ export function useNoteRichTextSession({
   // into the editor's DOM.
   onChange: (plain: string, runs: TextRun[]) => void;
 }) {
-  const doc = useRichTextDocument({
+  const doc = useRichTextRuns({
     initialRuns,
     runStyle: noteRunStyle,
     // A note has no whole-element typography to inherit.

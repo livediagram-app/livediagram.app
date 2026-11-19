@@ -27,12 +27,12 @@ import {
   insertTextAtCaret,
   offsetsToDomRange,
   selectRange,
-} from '@/components/rich-text/rich-text-dom';
+} from '@liveworkspace/workbench/components/label-editor/rich-text-dom';
 import {
   computeActiveFormat,
   PLAIN_RUN_DEFAULTS,
   wordRangeAt,
-} from '@/components/rich-text/rich-text-format';
+} from '@liveworkspace/workbench/components/label-editor/rich-text-format';
 import {
   indentRow,
   joinDown,
