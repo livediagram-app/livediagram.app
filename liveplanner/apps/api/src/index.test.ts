@@ -165,7 +165,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
         new Request('https://api.test/api/workbench/tickets?x=1', {
           method: 'POST',
           headers: { ...RO, 'Content-Type': 'application/json', Cookie: 'a=b' },
-          body: '{"documentId":"d1"}',
+          body: '{"planId":"p1"}',
         }),
         { ACCOUNTS_URL: 'https://accounts.test', ACCOUNTS } as unknown as Env,
       );
@@ -175,7 +175,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
       const sent = seen[0]!;
       expect(sent.url).toBe('https://accounts.test/api/account/workbench/tickets?x=1');
       expect(sent.method).toBe('POST');
-      expect(await sent.text()).toBe('{"documentId":"d1"}');
+      expect(await sent.text()).toBe('{"planId":"p1"}');
       expect(sent.headers.get('Authorization')).toBe(RO.Authorization);
       expect(sent.headers.get('Content-Type')).toBe('application/json');
       expect(sent.headers.get('X-Liveworkspace-Proxy')).toBe('liveplanner');
