@@ -387,7 +387,7 @@ Missing key === undefined === default behaviour. Concretely:
   so turning notifications off quiets the chatter without hiding
   breakage. The gate is read fresh on each toast push (a synchronous
   `readUserPreferences()` call in `hooks/ui/useToast.tsx`), so a flip
-  applies immediately with no subscription.
+  applies immediately with no subscription. A toast it keeps from popping up is still written to the notification list under the footer's bell ([the shared Toasts spec](../../../../liveworkspace/docs/specs/016-notifications/toasts.md) "Notifications off").
 
 - **Retired keys.** `upgradeLegacyPreferences` (`packages/api-schema/src/legacy-preferences.ts`) drops
   `powerUserMode`, `powerUserBaseline`, `minimalChrome` and `powerUserOfferShown` on read

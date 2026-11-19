@@ -1,177 +1,52 @@
 'use client';
 
-// A small toast stack for the Explorer: what a change did, a refusal said in words, and Undo for a delete
-// (liveplanner's toasts: bottom of the page, newest last, a few seconds each). A toast that offers an answer (Undo)
-// stays TOAST_ANSWER_MS, long enough to reach for it, and its clock stops while it is hovered or focused.
+// The Explorer's toasts: the one shared toast (@liveworkspace/ui/toast, liveworkspace/docs/specs/016-notifications/
+// toasts.md), with the Explorer's short API kept for its callers: what a change did, a refusal said in words, and Undo
+// for a move to the Trash. Every toast can be closed, and one with an action (Undo) stays TOAST_ANSWER_MS.
+//
+// One stack per page: inside an editor (the Explorer panel) this provider hands its toasts to the editor's, so they
+// share its stack, its notification list and its In-Editor Notifications setting. On its own page
+// (liveworkspace.app/explorer) it is the page's, and every Explorer page shares one notification list.
 
+import { useMemo, type ReactNode } from 'react';
 import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from 'react';
+  TOAST_ANSWER_TIMEOUT_MS,
+  ToastProvider as SharedToastProvider,
+  useToast as useSharedToast,
+  type ToastTone,
+} from '@liveworkspace/ui/toast';
 
-// `warning`: something happened to the person that they should know, not their mistake (a revoked link on arrival).
-type Tone = 'info' | 'success' | 'warning' | 'error';
-type Hold = 'hover' | 'focus';
-type Toast = { id: number; tone: Tone; text: string; action?: { label: string; run: () => void } };
+type Tone = ToastTone;
 
 export type ToastApi = {
-  show: (text: string, options?: { tone?: Tone; action?: Toast['action'] }) => void;
+  show: (
+    text: string,
+    options?: { tone?: Tone; action?: { label: string; run: () => void } },
+  ) => void;
   error: (text: string) => void;
 };
 
-const TOAST_MS = 5000;
-export const TOAST_ANSWER_MS = 10_000;
-const MAX_TOASTS = 3;
+export const TOAST_ANSWER_MS = TOAST_ANSWER_TIMEOUT_MS;
 
-const NOOP: ToastApi = { show: () => {}, error: () => {} };
-const ToastContext = createContext<ToastApi>(NOOP);
+/** The Explorer's notification list, one for all its pages. */
+const explorerScope = () => 'explorer';
 
 export function useToast(): ToastApi {
-  return useContext(ToastContext);
+  const toast = useSharedToast();
+  return useMemo<ToastApi>(
+    () => ({
+      show: (text, options = {}) =>
+        toast[options.tone ?? 'info'](text, {
+          action: options.action
+            ? { label: options.action.label, onSelect: options.action.run }
+            : undefined,
+        }),
+      error: (text) => toast.error(text),
+    }),
+    [toast],
+  );
 }
 
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const next = useRef(1);
-  // Each toast's clock: the timer while it runs, how long it has left (kept while paused), and what holds it
-  // (the pointer over it, focus in it).
-  const timers = useRef(
-    new Map<
-      number,
-      {
-        timer: ReturnType<typeof setTimeout> | null;
-        left: number;
-        since: number;
-        holds: Set<Hold>;
-      }
-    >(),
-  );
-
-  const dismiss = useCallback((id: number) => {
-    setToasts((all) => all.filter((t) => t.id !== id));
-    const clock = timers.current.get(id);
-    if (clock?.timer) clearTimeout(clock.timer);
-    timers.current.delete(id);
-  }, []);
-
-  const run = useCallback(
-    (id: number, left: number) => {
-      timers.current.set(id, {
-        timer: setTimeout(() => dismiss(id), left),
-        left,
-        since: Date.now(),
-        holds: new Set(),
-      });
-    },
-    [dismiss],
-  );
-
-  // Hovered or focused: the clock stops; it goes on from where it was once neither holds it, so the pointer
-  // leaving never restarts it under focus still on Undo.
-  const pause = useCallback((id: number, hold: Hold) => {
-    const clock = timers.current.get(id);
-    if (!clock) return;
-    clock.holds.add(hold);
-    if (!clock.timer) return;
-    clearTimeout(clock.timer);
-    clock.timer = null;
-    clock.left = Math.max(0, clock.left - (Date.now() - clock.since));
-  }, []);
-  const resume = useCallback(
-    (id: number, hold: Hold) => {
-      const clock = timers.current.get(id);
-      if (!clock) return;
-      clock.holds.delete(hold);
-      if (!clock.timer && clock.holds.size === 0) run(id, clock.left);
-    },
-    [run],
-  );
-
-  const show = useCallback<ToastApi['show']>(
-    (text, options = {}) => {
-      const id = next.current++;
-      setToasts((all) => {
-        // The oldest beyond MAX_TOASTS leave with their clocks.
-        const kept = all.slice(-(MAX_TOASTS - 1));
-        for (const gone of all.slice(0, all.length - kept.length)) {
-          const clock = timers.current.get(gone.id);
-          if (clock?.timer) clearTimeout(clock.timer);
-          timers.current.delete(gone.id);
-        }
-        return [...kept, { id, tone: options.tone ?? 'info', text, action: options.action }];
-      });
-      run(id, options.action ? TOAST_ANSWER_MS : TOAST_MS);
-    },
-    [run],
-  );
-
-  useEffect(() => {
-    const all = timers.current;
-    return () => {
-      for (const clock of all.values()) if (clock.timer) clearTimeout(clock.timer);
-      all.clear();
-    };
-  }, []);
-
-  const api = useMemo<ToastApi>(
-    () => ({ show, error: (text) => show(text, { tone: 'error' }) }),
-    [show],
-  );
-
-  return (
-    <ToastContext.Provider value={api}>
-      {children}
-      <div
-        aria-live="polite"
-        // A guest's sign-in banner stands at the foot of the page; the toasts stand above it. Both stand on a host's
-        // bottom bar, as tall as its `--explorer-floor` (README.md "Styling").
-        className="pointer-events-none fixed inset-x-0 bottom-[calc(1rem+var(--explorer-floor,0px))] z-50 flex flex-col items-center gap-2 px-4 [body:has([data-sign-in-banner])_&]:bottom-[calc(10rem+var(--explorer-floor,0px))] sm:[body:has([data-sign-in-banner])_&]:bottom-[calc(7rem+var(--explorer-floor,0px))]"
-      >
-        {toasts.map((t) => (
-          <div
-            key={t.id}
-            role={t.tone === 'error' ? 'alert' : 'status'}
-            data-tone={t.tone}
-            onMouseEnter={() => pause(t.id, 'hover')}
-            onMouseLeave={() => resume(t.id, 'hover')}
-            onFocus={() => pause(t.id, 'focus')}
-            onBlur={() => resume(t.id, 'focus')}
-            className="pointer-events-auto flex max-w-md animate-fade-in items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-lg dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
-          >
-            <span
-              aria-hidden
-              className={`h-2 w-2 shrink-0 rounded-full ${
-                t.tone === 'error'
-                  ? 'bg-rose-500'
-                  : t.tone === 'warning'
-                    ? 'bg-amber-500'
-                    : t.tone === 'success'
-                      ? 'bg-emerald-500'
-                      : 'bg-brand-500'
-              }`}
-            />
-            <span className="min-w-0 flex-1">{t.text}</span>
-            {t.action ? (
-              <button
-                type="button"
-                onClick={() => {
-                  t.action!.run();
-                  dismiss(t.id);
-                }}
-                className="shrink-0 rounded px-1.5 py-0.5 text-sm font-semibold text-brand-700 hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/15"
-              >
-                {t.action.label}
-              </button>
-            ) : null}
-          </div>
-        ))}
-      </div>
-    </ToastContext.Provider>
-  );
+  return <SharedToastProvider historyScope={explorerScope}>{children}</SharedToastProvider>;
 }

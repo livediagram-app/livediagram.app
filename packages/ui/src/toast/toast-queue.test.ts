@@ -11,7 +11,7 @@ import {
   type ToastEntry,
 } from './toast-queue';
 
-// docs/specs/004-interface-design/toasts.md "Kinds of toast" and "Timing".
+// liveworkspace/docs/specs/016-notifications/toasts.md "Kinds of toast" and "Timing".
 const undo = { label: 'Undo', onSelect: vi.fn() };
 const live = (list: ToastEntry[]) => list.filter((t) => !t.leaving).map((t) => t.message);
 

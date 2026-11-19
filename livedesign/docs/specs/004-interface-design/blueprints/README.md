@@ -11,6 +11,6 @@ Follow the references below only as needed; never upfront.
 - ./menus.md - when implementing or changing useMenu, useMenuButton, useControlMenu, the menu row primitives' roles, or the menu focus ring
 - ./within-reach.md - when implementing or changing the shared most used + recent allocation (`withinReach`)
 - ./colour-picker.md - when implementing or changing ColourPicker, its skins, the standard colours or Custom colours
-- ./toasts.md - when implementing or changing the toast stack, its queue, timer, floor, card or motion
+- ./toasts.md - when naming what a toast acted on; the toast itself is the shared one (liveworkspace 016-notifications)
 - ./DEFAULTS.md - when an interface-design blueprint applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories an interface-design blueprint covers

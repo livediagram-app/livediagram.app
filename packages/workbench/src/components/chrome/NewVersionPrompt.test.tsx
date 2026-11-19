@@ -6,14 +6,8 @@ import { WORKBENCH_DEFAULTS, configureWorkbench } from '../../bindings';
 import { createListeners } from '../../lib/listeners';
 import { LIVE_BUILD_MAX_CHECKS, LIVE_BUILD_POLL_MS } from '../../hooks/ui/useNewerEditorLive';
 import { RELOAD_SAVE_WAIT_MS } from '../../lib/reload-when-saved';
-import { setStartPanelOpen } from '../start/start-panel-open';
-import { CORNER_CLUSTER_CLEARANCE, CORNER_CLUSTER_CLEARANCE_PX } from './corner-cluster-clearance';
-import {
-  NewVersionPrompt,
-  OVER_START_SHEET,
-  STILL_ARRIVING,
-  type NewVersionPromptProps,
-} from './NewVersionPrompt';
+import { TOAST_ANSWER_TIMEOUT_MS, ToastProvider } from '@liveworkspace/ui/toast';
+import { NewVersionPrompt, STILL_ARRIVING, type NewVersionPromptProps } from './NewVersionPrompt';
 
 // docs/specs/016-platform/new-version-prompt.md "When the prompt shows" and "The prompt", in each product.
 const EDITOR_FORMAT = 4;
@@ -54,17 +48,19 @@ afterEach(() => {
 
 function mount(props: Partial<NewVersionPromptProps> = {}) {
   return render(
-    <NewVersionPrompt
-      product="liveplanner"
-      editorFormat={EDITOR_FORMAT}
-      serverFormat={() => serverFormat}
-      subscribe={listeners.subscribe}
-      buildMetaName={META}
-      editorBuildId={null}
-      hasUnsavedChanges={() => false}
-      reload={vi.fn()}
-      {...props}
-    />,
+    <ToastProvider>
+      <NewVersionPrompt
+        product="liveplanner"
+        editorFormat={EDITOR_FORMAT}
+        serverFormat={() => serverFormat}
+        subscribe={listeners.subscribe}
+        buildMetaName={META}
+        editorBuildId={null}
+        hasUnsavedChanges={() => false}
+        reload={vi.fn()}
+        {...props}
+      />
+    </ToastProvider>,
   );
 }
 const flush = () => act(async () => vi.advanceTimersByTimeAsync(0));
@@ -73,10 +69,10 @@ const pressReload = () =>
 
 describe('NewVersionPrompt', () => {
   it('shows nothing while the server is not ahead', async () => {
-    const { container } = mount();
+    mount();
     noteServer(EDITOR_FORMAT);
     await flush();
-    expect(container.innerHTML).toBe('');
+    expect(screen.queryByRole('status')).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -87,68 +83,21 @@ describe('NewVersionPrompt', () => {
     const status = screen.getByRole('status');
     expect(status.textContent).toContain('A new version of liveplanner is ready.');
     expect(document.activeElement).not.toBe(screen.getByRole('button', { name: 'Reload' }));
-    expect(screen.getByRole('button', { name: 'Not now' })).toBeTruthy();
+    // Closing it is Not now (liveworkspace/docs/specs/016-notifications/toasts.md).
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeTruthy();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'NewVersionPrompt');
     expect(track).toHaveBeenCalledTimes(1);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  // Work Tracker 1193: at 80px up it covered the canvas's zoom bar on a phone and at 450px.
-  it('stands clear of the canvas’s bottom-right cluster, the shared offset, start sheet or not', async () => {
+  it('is a standing toast: it never times out', async () => {
     mount();
     newer();
     await flush();
-    const status = screen.getByRole('status');
-    expect(status.className).toContain(CORNER_CLUSTER_CLEARANCE);
-    expect(status.className).not.toContain('bottom-20');
-    // Over a start sheet it never sinks below that clearance either.
-    for (const variant of ['max-sm', 'short-window'])
-      expect(OVER_START_SHEET).toContain(
-        `${variant}:bottom-[max(${CORNER_CLUSTER_CLEARANCE_PX}px,var(--start-clear))]`,
-      );
-  });
-
-  // Work Tracker 784: on a phone, an empty tab's start sheet (the overlay layer) hid it until a board was picked.
-  it('stands over a start panel’s phone sheet while one is open, and back on the chrome layer after', async () => {
-    mount();
-    newer();
-    await flush();
-    const status = screen.getByRole('status');
-    expect(status.className).toContain('z-[var(--z-chrome)]');
-    expect(status.className).not.toContain('--z-overlay');
-    act(() => setStartPanelOpen(true));
-    for (const cls of OVER_START_SHEET.split(' ')) expect(status.classList).toContain(cls);
-    // One above the overlay layer only: never as high as the canvas modal or a dialog.
-    expect(OVER_START_SHEET).not.toMatch(/z-modal|z-canvas-modal|z-popover|z-toast/);
-    act(() => setStartPanelOpen(false));
-    expect(status.className).not.toContain('--z-overlay');
-  });
-
-  it('stands above the start sheet’s foot row (the Save switch) while both show, never lower than usual', async () => {
-    const footer = document.createElement('footer');
-    footer.setAttribute('data-start-footer', '');
-    // A phone's sheet: its foot row's top 150px above the bottom of an 844px screen, across the column.
-    footer.getBoundingClientRect = () =>
-      ({ top: 694, bottom: 744, left: 0, right: 390, width: 390, height: 50 }) as DOMRect;
-    document.body.append(footer);
-    vi.stubGlobal('innerWidth', 390);
-    vi.stubGlobal('innerHeight', 844);
-    try {
-      mount();
-      newer();
-      await flush();
-      const status = screen.getByRole('status');
-      expect(status.style.getPropertyValue('--start-clear')).toBe('');
-      act(() => setStartPanelOpen(true));
-      // 844 - 694 and the toasts' gap over chrome: clear of the row, whatever its height.
-      const clear = parseInt(status.style.getPropertyValue('--start-clear'), 10);
-      expect(clear).toBeGreaterThan(150);
-      expect(OVER_START_SHEET).toContain('max-sm:bottom-[max(135px,var(--start-clear))]');
-      act(() => setStartPanelOpen(false));
-      expect(status.style.getPropertyValue('--start-clear')).toBe('');
-    } finally {
-      footer.remove();
-    }
+    await act(async () => vi.advanceTimersByTimeAsync(TOAST_ANSWER_TIMEOUT_MS * 3));
+    expect(screen.getByRole('status').textContent).toContain(
+      'A new version of liveplanner is ready.',
+    );
   });
 
   it('renders nothing in the static export, whatever the server says', () => {
@@ -206,8 +155,7 @@ describe('NewVersionPrompt', () => {
     expect(reload).not.toHaveBeenCalled();
     expect(screen.getByRole('status').textContent).toContain(STILL_ARRIVING);
     expect(STILL_ARRIVING).toBe('The new version is still on its way. Try again in a minute.');
-    expect(screen.getByRole('button', { name: 'Reload' }).hasAttribute('aria-busy')).toBe(false);
-    expect(screen.getByRole('button', { name: 'Not now' }).hasAttribute('disabled')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Reload' }).hasAttribute('disabled')).toBe(false);
     // Once the new build is live, Reload goes through.
     liveBuild = 'next';
     await pressReload();
@@ -245,8 +193,8 @@ describe('NewVersionPrompt', () => {
     await flush();
     await pressReload();
     expect(screen.getByRole('status').textContent).toContain('Saving your changes…');
-    // Busy, not disabled: the keyboard stays on Reload (busy-buttons.md).
-    expect(screen.getByRole('button', { name: 'Reload' }).getAttribute('aria-busy')).toBe('true');
+    // A second press is held while it saves.
+    expect(screen.getByRole('button', { name: 'Reload' }).hasAttribute('disabled')).toBe(true);
     expect(reload).not.toHaveBeenCalled();
     unsaved = false;
     await act(async () => vi.advanceTimersByTimeAsync(400));
@@ -264,18 +212,21 @@ describe('NewVersionPrompt', () => {
     expect(screen.getByRole('status').textContent).toContain(
       "Your latest changes aren't saved yet. Reload once they are.",
     );
-    expect(screen.getByRole('button', { name: 'Reload' }).hasAttribute('aria-busy')).toBe(false);
+    expect(screen.getByRole('button', { name: 'Reload' }).hasAttribute('disabled')).toBe(false);
   });
 
-  it('hides on Not now until a still newer number arrives', async () => {
+  it('closed, stays away until a still newer number arrives', async () => {
     mount();
     newer();
     await flush();
-    fireEvent.click(screen.getByRole('button', { name: 'Not now' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
+    await act(async () => vi.advanceTimersByTimeAsync(1000));
     expect(screen.queryByRole('status')).toBeNull();
     noteServer(EDITOR_FORMAT + 1);
+    await flush();
     expect(screen.queryByRole('status')).toBeNull();
     noteServer(EDITOR_FORMAT + 2);
+    await flush();
     expect(screen.getByRole('status')).toBeTruthy();
   });
 
@@ -283,15 +234,17 @@ describe('NewVersionPrompt', () => {
     const reload = vi.fn();
     vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, reload });
     render(
-      <NewVersionPrompt
-        product="liveplanner"
-        editorFormat={EDITOR_FORMAT}
-        serverFormat={() => serverFormat}
-        subscribe={listeners.subscribe}
-        buildMetaName={META}
-        editorBuildId={null}
-        hasUnsavedChanges={() => false}
-      />,
+      <ToastProvider>
+        <NewVersionPrompt
+          product="liveplanner"
+          editorFormat={EDITOR_FORMAT}
+          serverFormat={() => serverFormat}
+          subscribe={listeners.subscribe}
+          buildMetaName={META}
+          editorBuildId={null}
+          hasUnsavedChanges={() => false}
+        />
+      </ToastProvider>,
     );
     newer();
     await flush();

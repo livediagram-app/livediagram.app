@@ -1,18 +1,30 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { ToastProvider, TOAST_TIMEOUT_MS } from '@liveworkspace/ui/toast';
 import { ACCOUNT_UNREACHABLE_COPY, AccountUnreachableNotice } from './AccountUnreachableNotice';
-import { CORNER_CLUSTER_CLEARANCE } from './corner-cluster-clearance';
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
+function mount(onRetry?: () => void) {
+  return render(
+    <ToastProvider>
+      <AccountUnreachableNotice onRetry={onRetry} />
+    </ToastProvider>,
+  );
+}
+
+// liveworkspace/docs/specs/003-accounts/accounts.md "The editors": a standing warning toast.
 describe('AccountUnreachableNotice', () => {
-  it('says what happened as a polite status, and Try Again asks again', () => {
+  it('says what happened as a polite warning toast, and Try Again asks again', () => {
     const onRetry = vi.fn();
-    render(<AccountUnreachableNotice onRetry={onRetry} />);
+    mount(onRetry);
     const status = screen.getByRole('status');
-    expect(status.textContent).toContain(ACCOUNT_UNREACHABLE_COPY.title);
-    expect(status.textContent).toContain(ACCOUNT_UNREACHABLE_COPY.body);
+    expect(status.getAttribute('data-toast-tone')).toBe('warning');
+    expect(status.textContent).toContain(ACCOUNT_UNREACHABLE_COPY.message);
     fireEvent.click(screen.getByRole('button', { name: ACCOUNT_UNREACHABLE_COPY.retry }));
     expect(onRetry).toHaveBeenCalledOnce();
   });
@@ -21,7 +33,7 @@ describe('AccountUnreachableNotice', () => {
     const reload = vi.fn();
     vi.stubGlobal('location', { ...window.location, reload });
     try {
-      render(<AccountUnreachableNotice />);
+      mount();
       fireEvent.click(screen.getByRole('button', { name: ACCOUNT_UNREACHABLE_COPY.retry }));
       expect(reload).toHaveBeenCalledOnce();
     } finally {
@@ -29,10 +41,18 @@ describe('AccountUnreachableNotice', () => {
     }
   });
 
-  it('sits clear of the canvas corner cluster', () => {
-    render(<AccountUnreachableNotice onRetry={() => {}} />);
-    const cls = screen.getByRole('status').className.split(' ');
-    expect(cls).toContain(CORNER_CLUSTER_CLEARANCE);
-    expect(cls).not.toContain('bottom-20');
+  it('stands until the account answers, then leaves by itself; it can be closed', () => {
+    vi.useFakeTimers();
+    const { rerender } = mount(() => {});
+    act(() => {
+      vi.advanceTimersByTime(TOAST_TIMEOUT_MS.warning * 3);
+    });
+    expect(screen.getByRole('status').textContent).toContain(ACCOUNT_UNREACHABLE_COPY.message);
+    expect(screen.getByRole('button', { name: 'Dismiss' })).toBeTruthy();
+    rerender(<ToastProvider>{null}</ToastProvider>);
+    act(() => {
+      vi.advanceTimersByTime(1000);
+    });
+    expect(screen.queryByRole('status')).toBeNull();
   });
 });

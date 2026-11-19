@@ -1,4 +1,4 @@
-// Where the toast stack stands (docs/specs/004-interface-design/toasts.md "Placement"): 16px off the
+// Where the toast stack stands (liveworkspace/docs/specs/016-notifications/toasts.md "Placement"): 16px off the
 // bottom edge, or 8px above the highest bottom chrome that overlaps its column (the editor's tab bar,
 // bottom-right cluster and a whiteboard dock where the editor has one, the Explorer's bottom bar, the sign-in banner). Pure: the
 // hook measures, this decides.
@@ -11,8 +11,9 @@
 export const BOTTOM_CHROME_SELECTOR =
   '[data-editor-tabbar], [data-zoom-cluster], [data-whiteboard-dock]';
 
-/** Bottom chrome the stack clears: the editor's, plus anything that opts in with `data-toast-floor`. */
-export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], ${BOTTOM_CHROME_SELECTOR}`;
+/** Bottom chrome the stack clears: the editor's, a template start's foot row (the Save switch, on a phone sheet), plus
+ *  anything that opts in with `data-toast-floor`. */
+export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], [data-start-footer], ${BOTTOM_CHROME_SELECTOR}`;
 
 /** The stack's distance from the bottom edge with nothing beneath it, and from the screen's sides on a phone. */
 export const TOAST_EDGE_PX = 16;
@@ -61,4 +62,46 @@ export function toastFloor(input: {
     floor = Math.max(floor, h - r.top + TOAST_FLOOR_GAP_PX);
   }
   return Math.round(floor);
+}
+
+/** Bottom chrome the stack sits beside, not above, from 640px: the canvas's bottom-right cluster (Undo, Redo, Zoom). */
+export const TOAST_SIDE_SELECTOR = '[data-zoom-cluster]';
+
+export type ToastPlacement = {
+  /** The stack's CSS `bottom`, in px. */
+  bottom: number;
+  /** The stack's CSS `right`, in px, when it stands beside a side (its toasts aligned to that edge); null: centred. */
+  right: number | null;
+};
+
+/**
+ * Where the toast stack stands ("Placement"): on its floors, and from 640px level with, and left of, a side that
+ * would sit beneath the centred column. On a phone a side is one more floor.
+ */
+export function toastPlacement(input: {
+  viewportWidth: number;
+  viewportHeight: number;
+  floors: readonly FloorRect[];
+  sides: readonly FloorRect[];
+}): ToastPlacement {
+  const { viewportWidth: w, viewportHeight: h, floors, sides } = input;
+  if (w <= TOAST_PHONE_MAX_PX) {
+    return {
+      bottom: toastFloor({ viewportWidth: w, viewportHeight: h, obstacles: [...floors, ...sides] }),
+      right: null,
+    };
+  }
+  let bottom = toastFloor({ viewportWidth: w, viewportHeight: h, obstacles: floors });
+  const half = Math.min(TOAST_MAX_WIDTH_PX, w) / 2;
+  const left = w / 2 - half;
+  const right = w / 2 + half;
+  let edge: number | null = null;
+  for (const r of sides) {
+    if (r.width <= 0 || r.height <= 0) continue;
+    if (r.top >= h || r.top < h / 2) continue;
+    if (r.right <= left || r.left >= right) continue;
+    edge = Math.max(edge ?? 0, w - r.left + TOAST_FLOOR_GAP_PX);
+    bottom = Math.max(bottom, h - (r.top + r.height));
+  }
+  return { bottom: Math.round(bottom), right: edge === null ? null : Math.round(edge) };
 }

@@ -1,22 +1,23 @@
 'use client';
 
-// The toast stack (docs/specs/004-interface-design/toasts.md "Placement" and "Keyboard and screen
+// The toast stack (liveworkspace/docs/specs/016-notifications/toasts.md "Placement" and "Keyboard and screen
 // readers"): an always-mounted "Notifications" region at the bottom centre, the newest toast nearest the
 // edge, standing on whatever bottom chrome sits beneath it (useToastFloor). Each toast here owns its timer
 // (paused on hover, focus and a hidden page), its Escape and its exit.
 import {
   useEffect,
+  useLayoutEffect,
+  useRef,
   useState,
   useSyncExternalStore,
   type AnimationEvent,
   type FocusEvent,
 } from 'react';
-import { Portal, atLeastInset, safeInset } from '@liveworkspace/ui';
+import { Portal } from '../Portal';
+import { atLeastInset, safeInset } from '../safe-area';
 import { ToastCard, type ToastCardAction } from './ToastCard';
-import {
-  toastTimeout,
-  type ToastEntry,
-} from './toast-queue';
+import { TOAST_COLLAPSE_MS, collapseIntoBell } from './toast-collapse';
+import { toastTimeout, type ToastEntry } from './toast-queue';
 import { useToastFloor } from './useToastFloor';
 import { useToastTimer } from './useToastTimer';
 
@@ -48,7 +49,8 @@ export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnsw
   // Mounted after hydration (the static HTML has no stack), then always, so a toast added to it is announced.
   const hydrated = useSyncExternalStore(subscribeNever, onClient, onServer);
   const showing = toasts.length > 0;
-  const floor = useToastFloor(showing, toasts.length);
+  const placement = useToastFloor(showing, toasts.length);
+  const beside = placement.right !== null;
   if (!hydrated) return null;
   return (
     <Portal>
@@ -56,11 +58,14 @@ export function ToastStack({ toasts, on }: { toasts: ToastEntry[]; on: ToastAnsw
         aria-label="Notifications"
         // Above the modal rung (z-toast) so a failure shows over an open dialog. Side padding clears a
         // landscape notch; the bottom clears the home indicator and the bottom chrome (toast-floor.ts).
-        className="pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex flex-col items-center gap-2"
+        className={`pointer-events-none fixed inset-x-0 z-[var(--z-toast)] flex flex-col gap-2 ${beside ? 'items-end' : 'items-center'}`}
         style={{
-          bottom: `max(${floor}px, calc(16px + ${safeInset('bottom')}))`,
+          bottom: `max(${placement.bottom}px, calc(16px + ${safeInset('bottom')}))`,
           paddingLeft: atLeastInset('1rem', 'left'),
-          paddingRight: atLeastInset('1rem', 'right'),
+          // Beside the bottom-right cluster on desktop: the stack's right edge stands just left of Undo.
+          ...(beside
+            ? { right: `${placement.right}px` }
+            : { paddingRight: atLeastInset('1rem', 'right') }),
         }}
       >
         {toasts.map((t) => (
@@ -76,13 +81,29 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
   const [focused, setFocused] = useState(false);
   const hidden = useSyncExternalStore(subscribeVisibility, pageHidden, onServer);
   const leaving = toast.leaving === true;
+  const card = useRef<HTMLDivElement>(null);
+  // Collapsing into the footer's bell (toast-collapse.ts): its own animation decides when the toast is removed, and
+  // the card's `toast-out` ending first is ignored.
+  const collapsing = useRef(false);
   useToastTimer(leaving ? null : toastTimeout(toast), hovered || focused || hidden, () =>
     on.expire(toast.id),
   );
-  // The fallback for an exit whose animationend never comes (a hidden tab, a test environment).
+  useLayoutEffect(() => {
+    if (!leaving || !card.current) return;
+    const motion = collapseIntoBell(card.current);
+    if (!motion) return;
+    collapsing.current = true;
+    motion.finished.then(
+      () => on.remove(toast.id),
+      () => {},
+    );
+    return () => motion.cancel();
+  }, [leaving, on, toast.id]);
+  // The fallback for an exit whose end never comes (a hidden tab, a test environment).
   useEffect(() => {
     if (!leaving) return;
-    const id = setTimeout(() => on.remove(toast.id), TOAST_EXIT_HOLD_MS);
+    const hold = collapsing.current ? TOAST_COLLAPSE_MS + TOAST_EXIT_HOLD_MS : TOAST_EXIT_HOLD_MS;
+    const id = setTimeout(() => on.remove(toast.id), hold);
     return () => clearTimeout(id);
   }, [leaving, on, toast.id]);
 
@@ -96,6 +117,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
 
   return (
     <ToastCard
+      ref={card}
       tone={toast.tone}
       message={toast.message}
       actions={actions}
@@ -116,7 +138,7 @@ function ToastItem({ toast, on }: { toast: ToastEntry; on: ToastAnswers }) {
         on.close(toast);
       }}
       onAnimationEnd={(e: AnimationEvent<HTMLDivElement>) => {
-        if (leaving && e.target === e.currentTarget) on.remove(toast.id);
+        if (leaving && !collapsing.current && e.target === e.currentTarget) on.remove(toast.id);
       }}
     />
   );

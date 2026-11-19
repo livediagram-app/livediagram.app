@@ -2,6 +2,7 @@
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { Component, useEffect, type ComponentType, type ReactNode } from 'react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ToastProvider } from '@liveworkspace/ui/toast';
 import { ACCOUNT_STALL_MS, createAuthProvider } from './auth-provider';
 import {
   DEFERRED_AUTH_DEFAULT,
@@ -233,9 +234,11 @@ describe('createAuthProvider with a signed-in hint', () => {
   it('expects the session, and says it can’t reach the account at the bridge’s first unknown answer', async () => {
     const AuthProvider = provider(true);
     render(
-      <AuthProvider>
-        <Expecting />
-      </AuthProvider>,
+      <ToastProvider>
+        <AuthProvider>
+          <Expecting />
+        </AuthProvider>
+      </ToastProvider>,
     );
     await act(async () => {});
     expect(screen.getByText('expected reachable')).toBeTruthy();
@@ -243,9 +246,7 @@ describe('createAuthProvider with a signed-in hint', () => {
     act(() => publish({ ...DEFERRED_AUTH_DEFAULT, accountUnreachable: true }));
     expect(screen.getByText('expected unreachable')).toBeTruthy();
     // The notice's code loads lazily, as it first draws.
-    expect((await screen.findByRole('status')).textContent).toContain(
-      'Can’t reach your account right now',
-    );
+    expect((await screen.findByRole('status')).textContent).toContain('Can’t reach your account.');
     // The session answers: the notice goes and the page carries on.
     act(() => publish(SIGNED_IN));
     expect(screen.getByText('settled user_a')).toBeTruthy();
@@ -256,9 +257,11 @@ describe('createAuthProvider with a signed-in hint', () => {
     vi.useFakeTimers();
     const AuthProvider = provider(true);
     render(
-      <AuthProvider>
-        <Expecting />
-      </AuthProvider>,
+      <ToastProvider>
+        <AuthProvider>
+          <Expecting />
+        </AuthProvider>
+      </ToastProvider>,
     );
     await act(async () => {});
     expect(screen.getByText('expected reachable')).toBeTruthy();
@@ -274,9 +277,11 @@ describe('createAuthProvider with a signed-in hint', () => {
     vi.useFakeTimers();
     const AuthProvider = provider(false);
     render(
-      <AuthProvider>
-        <Expecting />
-      </AuthProvider>,
+      <ToastProvider>
+        <AuthProvider>
+          <Expecting />
+        </AuthProvider>
+      </ToastProvider>,
     );
     await act(async () => {});
     act(() => publish({ ...DEFERRED_AUTH_DEFAULT, accountUnreachable: true }));
@@ -291,9 +296,11 @@ describe('createAuthProvider with a signed-in hint', () => {
     vi.useFakeTimers();
     const AuthProvider = provider(true);
     render(
-      <AuthProvider>
-        <Expecting />
-      </AuthProvider>,
+      <ToastProvider>
+        <AuthProvider>
+          <Expecting />
+        </AuthProvider>
+      </ToastProvider>,
     );
     await act(async () => vi.advanceTimersByTime(ACCOUNT_STALL_MS * 2));
     expect(screen.queryByRole('status')).toBeNull();

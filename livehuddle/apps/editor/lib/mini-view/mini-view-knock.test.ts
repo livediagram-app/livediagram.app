@@ -1,7 +1,7 @@
 // The knock on show in the mini view (docs/specs/008-canvas/avatar-mode.md "The mini view"; blueprint:
 // space-mini-view.md "Knocks").
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { TOAST_ANSWER_TIMEOUT_MS } from '@liveworkspace/workbench/components/toast/toast-queue';
+import { TOAST_ANSWER_TIMEOUT_MS } from '@liveworkspace/ui/toast';
 import { clearMiniKnock, miniKnock, resetMiniKnock, showMiniKnock } from './mini-view-knock';
 
 afterEach(() => {

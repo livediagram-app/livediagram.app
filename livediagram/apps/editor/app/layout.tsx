@@ -166,11 +166,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <TimingTelemetryBoot />
         <TruthArmBoot />
         <KeyboardAvoidanceBoot />
-        <AuthProvider>
-          <ToastProvider>
+        {/* Toasts outside auth: the account-unreachable notice AuthProvider raises is a toast. */}
+        <ToastProvider>
+          <AuthProvider>
             <ConfirmProvider>{children}</ConfirmProvider>
-          </ToastProvider>
-        </AuthProvider>
+          </AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

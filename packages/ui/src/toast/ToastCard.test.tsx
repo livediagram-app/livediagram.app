@@ -5,7 +5,7 @@ import { ToastCard } from './ToastCard';
 
 afterEach(cleanup);
 
-// docs/specs/004-interface-design/toasts.md "One line by default" and "Look".
+// liveworkspace/docs/specs/016-notifications/toasts.md "One line by default" and "Look".
 describe('ToastCard', () => {
   it('reads icon, message, actions, close, in that order, on one wrapping row', () => {
     render(

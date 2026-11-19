@@ -5,8 +5,8 @@ import { useEffect } from 'react';
 import { ToastProvider, useToast, type ToastOffer } from './useToast';
 import { configureWorkbench, type WorkbenchPreferences } from '../../bindings';
 import { testBindings } from '../../lib/testing/bindings';
-import { TOAST_EXIT_HOLD_MS } from '../../components/toast/ToastStack';
-import { TOAST_ANSWER_TIMEOUT_MS, TOAST_TIMEOUT_MS } from '../../components/toast/toast-queue';
+import { TOAST_EXIT_HOLD_MS } from '@liveworkspace/ui/toast';
+import { TOAST_ANSWER_TIMEOUT_MS, TOAST_TIMEOUT_MS } from '@liveworkspace/ui/toast';
 
 // A toast leaves by playing its exit; jsdom never fires animationend, so the exit hold removes it.
 function afterExit() {
