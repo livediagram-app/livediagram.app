@@ -63,7 +63,7 @@ function WindowPanelSkeleton() {
   );
 }
 
-// "All apps": the panel, Apps Compared (the events chart and its table, then the visitors card's tiles and two
+// "All Apps": the panel, Apps Compared (the events chart and its table, then the visitors card's tiles and two
 // charts), and the busiest events' rows.
 function AllAppsSkeleton() {
   return (

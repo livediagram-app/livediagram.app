@@ -1,4 +1,4 @@
-// The numbers behind All apps' Apps Compared (liveworkspace/docs/specs/008-telemetry/telemetry.md "Apps Compared"):
+// The numbers behind All Apps' Apps Compared (liveworkspace/docs/specs/008-telemetry/telemetry.md "Apps Compared"):
 // each app's events, visitors and sign-ups in the window, the span before it, the ratios read from them, and the
 // daily series the charts draw. Pure, so the section only renders, and every figure is tested here.
 
@@ -96,7 +96,7 @@ function row(
 export type Comparison = {
   // Every listed app, in TELEMETRY_APPS' order.
   apps: ComparedRow[];
-  // liveworkspace.app's own events (the Explorer and Settings on All apps), when it has any in either span: it adds
+  // liveworkspace.app's own events (the Explorer and Settings on All Apps), when it has any in either span: it adds
   // to the total, so the table shows where the rest of the total came from. It has no visitors of its own.
   platform: ComparedRow | null;
   total: ComparedRow;

@@ -10,7 +10,7 @@ import {
 } from '@liveworkspace/telemetry';
 import { AllApps } from './AllApps';
 
-// All apps' Apps Compared (liveworkspace/docs/specs/008-telemetry/telemetry.md "Apps Compared"): the events chart with
+// All Apps' Apps Compared (liveworkspace/docs/specs/008-telemetry/telemetry.md "Apps Compared"): the events chart with
 // a line per app and the Total, the visitors and accounts for every app or one, the tables beside the charts, the
 // window from the page, and the empty states.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

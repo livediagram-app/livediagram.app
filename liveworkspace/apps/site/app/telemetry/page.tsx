@@ -27,7 +27,7 @@ import {
 } from './apps';
 import { ActivityGlyph } from './_shared/glyphs';
 
-// Each app's own dashboard loads only when it is picked, so "All apps" ships none of the apps'
+// Each app's own dashboard loads only when it is picked, so "All Apps" ships none of the apps'
 // catalogues of event names and explanations. While its code downloads, the app's skeleton holds its
 // place (without one, `dynamic` draws nothing and the page empties under the chips).
 // Next needs each call's options written out in place.

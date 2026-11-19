@@ -13,7 +13,7 @@ import { VisitorsAndAccounts } from './_all/VisitorsAndAccounts';
 // How many of the busiest events the overview lists.
 const TOP_EVENTS = 12;
 
-// "All apps" (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every app's events summed. Each app's
+// "All Apps" (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard"): every app's events summed. Each app's
 // own tabs read its own vocabulary, so the overview keeps to what every app shares: how much happens, how the apps
 // compare on it and on their visitors and sign-ups (Apps Compared), liveworkspace.app's own Project Kits, and the
 // busiest events. Picking an app opens its

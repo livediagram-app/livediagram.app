@@ -12,7 +12,7 @@ import {
 export const APP_PARAM = 'app';
 
 export const APP_CHOICES: { key: TelemetryAppFilter; label: string }[] = [
-  { key: ALL_TELEMETRY_APPS, label: 'All apps' },
+  { key: ALL_TELEMETRY_APPS, label: 'All Apps' },
   ...TELEMETRY_APPS.map((app) => ({ key: app, label: app })),
 ];
 

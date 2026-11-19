@@ -118,8 +118,8 @@ moves between them, and the one account that joins them.
    the first names each app in its accent and what it is for (sketch, plan, write it up, make it look right, talk
    it through), the second says one account opens them all and every link opens straight into the work. Under the
    calls to action, three ticked promises: Open source, No sign-up needed (Free in every app, signed in), No
-   trackers or ads. Two calls to action: **Create your free account** (`/sign-up`, back here after) and **Explore
-   the apps**. Signed in, they are hidden. Beside it, the platform's prism
+   trackers or ads. Two calls to action: **Create Your Free Account** (`/sign-up`, back here after) and **Explore
+   the Apps**. Signed in, they are hidden. Beside it, the platform's prism
    with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
    clockwise in the
    order work moves through them, and someone at work in each, drawn as that app shows them: a cursor in
@@ -164,9 +164,9 @@ moves between them, and the one account that joins them.
    terminal, checked against every app's API by a script, since there is no liveworkspace CLI); a copy in your Google Drive (the liveworkspace folder in Drive, a file from each app, each synced); on your phone, too (an installed app's notification on a home screen of the apps); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live." Signed out, it says "Or start your work as a
-   guest without signing in at all." over **Create your free account** (`/sign-up`, back here after) and **Pick an
-   app** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
-   app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an app**. Until the page knows
+   guest without signing in at all." over **Create Your Free Account** (`/sign-up`, back here after) and **Pick an
+   App** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
+   app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an App**. Until the page knows
    (`useSession`), it shows the signed-out words, right for most visitors; the two states have the same lines and
    buttons, so the swap moves nothing (`components/landing/AccountActions.tsx`). The banner is a card with a surface
    of its own in both modes (slate-950 on the light page; slate-900 with a white hairline on the dark one, whose page
@@ -1072,7 +1072,7 @@ pressable again, and so does coming Back to a page the browser kept.
 - Under a Windows contrast theme (`forced-colors: active`), a button whose only shape is its fill keeps a 1 px
   `ButtonBorder` edge (the shared `forced-edge` utility, [forced colours](../../../livediagram/docs/specs/004-interface-design/forced-colors.md)):
   the account pages' primary button (Continue with email, Verify, Continue), the front door's and closing banner's
-  Create your free account, the account panels' primary button and Decline invitation. Before, Continue with email
+  Create Your Free Account, the account panels' primary button and Decline invitation. Before, Continue with email
   on `/sign-in` was bare centred text with nothing marking it as a button. Normal themes are unchanged.
 - A page that fails to render never shows the framework's bare error screen. It shows the site's own: the
   title "Something went wrong · liveworkspace", a main landmark holding the logo (a link home) over one card (the
