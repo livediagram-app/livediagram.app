@@ -80,7 +80,7 @@ describe('BoxedElementView indicators', () => {
     expect(cluster).not.toBeNull();
     expect(cluster.querySelectorAll('button')).toHaveLength(3);
     // The content area starts below the cluster.
-    const moved = getByText('Cloud').closest<HTMLElement>('.inset-x-0')!;
+    const moved = getByText('Cloud').closest<HTMLElement>('[data-label-body]')!;
     expect(parseFloat(moved.style.top)).toBeGreaterThan(0);
   });
 
@@ -94,14 +94,14 @@ describe('BoxedElementView indicators', () => {
   it('draws none and moves nothing when indicators are off', () => {
     const { container, getByText } = draw(cloud, { style: 'off' });
     expect(container.querySelector('[data-indicators]')).toBeNull();
-    expect(getByText('Cloud').closest('.inset-x-0')).toBeNull();
+    expect(getByText('Cloud').closest('[data-label-body]')).toBeNull();
   });
 
   it('draws none in an embed, whatever style the person chose', () => {
     for (const style of ['top', 'footer'] as const) {
       const { container, getByText, unmount } = draw(cloud, { style, embed: true });
       expect(container.querySelector('[data-indicators]')).toBeNull();
-      expect(getByText('Cloud').closest('.inset-x-0')).toBeNull();
+      expect(getByText('Cloud').closest('[data-label-body]')).toBeNull();
       unmount();
     }
   });
