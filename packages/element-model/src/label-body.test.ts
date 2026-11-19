@@ -41,7 +41,7 @@ describe('labelBodyInset', () => {
     expect(labelBodyInset(createSticky(0, 0))).toEqual({ top: 0, bottom: 0, side: 0 });
   });
 
-  it('keeps a slanted kind\'s label inside its slants where they cross the middle', () => {
+  it("keeps a slanted kind's label inside its slants where they cross the middle", () => {
     const at = (kind: 'parallelogram' | 'trapezoid') =>
       labelBodyInset({ ...createShape(kind, 0, 0), width: 200, height: 80 } as BoxedElement);
     expect(at('parallelogram')).toEqual({ top: 0, bottom: 0, side: 20 });
@@ -52,7 +52,7 @@ describe('labelBodyInset', () => {
     expect(TRAPEZOID_SIDE).toBe((22 + 2) / 2 / 100);
   });
 
-  it('wraps a slanted kind\'s export label inside its slants', () => {
+  it("wraps a slanted kind's export label inside its slants", () => {
     const shape = { ...createShape('parallelogram', 0, 0), width: 200, height: 80 } as BoxedElement;
     expect(labelMaxWidth(shape, 6)).toBe(200 - 12 - 40);
   });

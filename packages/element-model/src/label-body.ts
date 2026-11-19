@@ -23,7 +23,8 @@ const WHOLE_BOX: LabelBodyInset = { top: 0, bottom: 0, side: 0 };
 /** The band a shape's label sits in, as insets from its box; the whole box for most kinds. */
 export function labelBodyInset(el: BoxedElement): LabelBodyInset {
   if (el.type !== 'shape') return WHOLE_BOX;
-  if (el.shape === 'parallelogram') return { top: 0, bottom: 0, side: el.width * PARALLELOGRAM_SIDE };
+  if (el.shape === 'parallelogram')
+    return { top: 0, bottom: 0, side: el.width * PARALLELOGRAM_SIDE };
   if (el.shape === 'trapezoid') return { top: 0, bottom: 0, side: el.width * TRAPEZOID_SIDE };
   if (el.shape !== 'cylinder') return WHOLE_BOX;
   return {

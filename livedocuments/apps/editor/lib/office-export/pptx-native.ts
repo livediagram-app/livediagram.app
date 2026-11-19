@@ -215,12 +215,7 @@ function textBodyOf(el: BoxedElement, label: Label, opacity: number, ctx: Native
       (body.top + pad) * e,
       (body.side + pad) * e,
       (body.bottom + pad) * e,
-    ] as [
-      number,
-      number,
-      number,
-      number,
-    ],
+    ] as [number, number, number, number],
     paragraphs,
   };
 }
