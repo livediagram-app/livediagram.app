@@ -48,10 +48,10 @@ describe('AuthControls', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('offers Sign in when signed out, returning to this page', () => {
+  it('offers Sign In when signed out, returning to this page', () => {
     window.history.replaceState(null, '', '/document/d1');
     renderControls({ isSignedIn: false });
-    const link = screen.getByRole('link', { name: /Sign in/ });
+    const link = screen.getByRole('link', { name: /Sign In/ });
     expect(link.getAttribute('href')).toBe('/sign-in?redirect_url=%2Fdocument%2Fd1');
     expect(link.querySelector('svg')).not.toBeNull();
   });

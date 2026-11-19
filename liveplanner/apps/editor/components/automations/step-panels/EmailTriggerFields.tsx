@@ -112,10 +112,11 @@ export function EmailTriggerFields({
         )}
       </PanelField>
       <PanelField label="From" hint={invalid ? FROM_INVALID : FROM_HINT}>
-        {(id) => (
+        {(id, hintId) => (
           <TextInput
             compact
             id={id}
+            hintId={hintId}
             type="text"
             inputMode="email"
             autoComplete="off"

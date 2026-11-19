@@ -17,3 +17,6 @@ the file going out in front in the accent; an arrow rising out of a tray is its 
 two files in the bottom left, a dashed line along the foot to a dashed frame in the bottom right, a file dropping
 in over its edge; an arrow into a tray is its mark. Both arts are shared
 (`@liveworkspace/ui/dialog-hero-art/export`, `/import`), so every product's pair reads alike.
+
+An import's refusal names what it read: a picked file is "This file isn't valid JSON.", pasted text "This pasted text
+isn't valid JSON." (a JSON tab); never "File" for text that was pasted (Work Tracker 1060).

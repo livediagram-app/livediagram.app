@@ -50,17 +50,17 @@ describe('BackBar stays in view', () => {
 describe('BackBar as the way back', () => {
   it('names where it goes back to, with where you are as its chip', () => {
     const back = vi.fn();
-    render(<BackBar label="All formats" current="PNG" onClick={back} />);
-    const bar = screen.getByRole('button', { name: /All formats/ });
-    expect(bar.textContent).toBe('All formatsPNG');
+    render(<BackBar label="All Formats" current="PNG" onClick={back} />);
+    const bar = screen.getByRole('button', { name: /All Formats/ });
+    expect(bar.textContent).toBe('All FormatsPNG');
     fireEvent.click(bar);
     expect(back).toHaveBeenCalledTimes(1);
   });
 
   it('does not fire while disabled', () => {
     const back = vi.fn();
-    render(<BackBar label="All formats" onClick={back} disabled />);
-    fireEvent.click(screen.getByRole('button', { name: /All formats/ }));
+    render(<BackBar label="All Formats" onClick={back} disabled />);
+    fireEvent.click(screen.getByRole('button', { name: /All Formats/ }));
     expect(back).not.toHaveBeenCalled();
   });
 

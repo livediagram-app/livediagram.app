@@ -153,7 +153,7 @@ function GuestInvitation({ guest }: { guest: AccountGuest }) {
             href={guest.signUpHref}
             className={buttonClassName({ variant: 'secondary', size: 'sm' })}
           >
-            Create account
+            Create Account
           </a>
         ) : null}
       </div>

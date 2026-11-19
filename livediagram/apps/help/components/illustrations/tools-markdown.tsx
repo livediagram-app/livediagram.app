@@ -92,7 +92,7 @@ export function MarkdownToTree() {
 // --- Markdown import (dialog) ----------------------------------------------
 
 /** The Import to Tab dialog on its Markdown step: the replace warning, the
- *  All formats back bar with the chosen format, the paste box, and the two
+ *  All Formats back bar with the chosen format, the paste box, and the two
  *  ways to import. */
 export function MarkdownImportPanel() {
   const lines = ['# Project', '- Research', '  - Interviews', '- Build', '- Launch'];
@@ -128,7 +128,7 @@ export function MarkdownImportPanel() {
       </Label>
       {/* Back bar with the chosen format as its chip */}
       <Label x={36} y={98} size={10} weight={600} tone="body">
-        ‹ All formats
+        ‹ All Formats
       </Label>
       <rect x={112} y={89} width={66} height={18} rx={9} className="fill-brand-50" />
       <Label x={145} y={99} size={10} weight={600} tone="accent" anchor="middle">

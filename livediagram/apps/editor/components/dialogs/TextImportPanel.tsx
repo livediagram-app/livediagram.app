@@ -71,7 +71,7 @@ export function TextImportPanel({
           uses — not a small text link buried in the footer beside the
           commit button, where the way back sat next to the way forward. */}
       {onBack ? (
-        <BackBar label="All formats" current={formatTitle} onClick={onBack} disabled={busy} />
+        <BackBar label="All Formats" current={formatTitle} onClick={onBack} disabled={busy} />
       ) : null}
       <textarea
         // Named for the format: the placeholder (a sample) is no name, and clears once anything is typed.

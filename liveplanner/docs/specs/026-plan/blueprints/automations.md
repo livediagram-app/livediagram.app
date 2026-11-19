@@ -1583,8 +1583,9 @@ email: { from: sender, board: board.id } }`: one created event per email card, o
   card."; TriggerScene: an envelope turning into a card.
 - TriggerPanel: **Board** (Any Board, a gone one, each Plan board as "Title" or "Title · Tab" when titles repeat) and
   **From** (a text field kept as typed while focused, saved through `emailSenderFilter` on change, its hint "An
-  address, or a domain like @example.com. Empty: anyone."; a value that is neither shows "Not an address or a domain"
-  and the save refuses it), and the note on boards with Email to Board turned on.
+  address, or a domain like @example.com. Empty: anyone."; a value that is neither shows "Not an email address or a domain."
+  and the save refuses it; the field carries `aria-invalid` then, and its hint, whichever it shows, is its
+  `aria-describedby`), and the note on boards with Email to Board turned on.
 - automation-outline.ts: `OutlineBoard.id`; the sentence outline's `boards`.
 - value-insert-options.ts: an **Email** group (From Email) when the rule is an email one (incoming-rule.tsx `email`).
   This Card leaves out `person` (Who Did It) when the rule is an email or an incoming one (Work Tracker 1173).

@@ -23,11 +23,12 @@ export function LabelActionPanel({
   const list = useId();
   return (
     <PanelField label="Label" hint="One of the plan’s labels, or a new one.">
-      {(id) => (
+      {(id, hintId) => (
         <>
           <TextInput
             compact
             id={id}
+            hintId={hintId}
             list={list}
             value={action.label}
             maxLength={40}
