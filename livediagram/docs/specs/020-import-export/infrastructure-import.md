@@ -64,8 +64,10 @@ joined to it by an arrow from the Worker:
   Worker's box is the same box its own file draws.
 - **Environments.** `[env.<name>]` tables are not merged in by default: the top level is drawn, and the summary names
   the environments left out. Choosing an environment (the editor's **Wrangler environment** choice, the CLI's
-  `--env <name>`) draws that environment instead, its keys taking the place of the top level's, as Wrangler's own
-  non-inheritable keys do. With several files, each file that has the environment draws it and the rest draw their
+  `--env <name>`) draws that environment instead, as Wrangler deploys it: the top level's inheritable keys (`name`,
+  `main`, routes, cron triggers, assets and settings) carry in unless the environment sets its own, and bindings and
+  `vars` never do, so a binding drawn is one the environment declares. An environment without a `name` is the Worker
+  `<name>-<env>`, as Wrangler names it. With several files, each file that has the environment draws it and the rest draw their
   top level, said in the summary (`env.staging not in web`); an environment no file has is an error naming the ones
   there are.
 

@@ -165,7 +165,11 @@ nodes: Record<string, DiagramSourceNode>; edges: Record<string, string> }`.
 ### `wranglerPart(config, fallbackName, env?)`
 
 - With `env`, `config.env[env]` must be an object, else the error `unknown-env` naming the environments there are;
-  its keys replace the top level's, key by key.
+  the drawn table is the top level's `INHERITABLE` keys (`name`, `main`, `compatibility_date`, `compatibility_flags`,
+  `account_id`, `workers_dev`, `preview_urls`, `route`, `routes`, `triggers`, `assets`, `build`, `rules`,
+  `observability`, `limits`, `placement`, `logpush`, `minify`, `tsconfig`) overlaid by the environment's own keys.
+  Every other top-level key (each binding, `vars`, `define`) is left behind. No `name` in the environment: the
+  top level's `<name>-<env>`.
 - The Worker node `worker-<slug(name)>` labelled `name`, icon `cf-workers`.
 - Each row of the spec's table adds its node (icon as listed; a node without an icon is shape `cylinder` for
   storage, `square` otherwise) and an edge from the Worker, except a consumer (queue to Worker), a route (route
