@@ -1,6 +1,8 @@
 // draw.io files picked in the Explorer, read by content (docs/specs/020-import-export/drawio-import.md
 // "Import as new documents"): each diagram named and dated for its own document, each library for
-// its own shape library, everything else listed with its reason. Never throws.
+// its own shape library, everything else listed with its reason. A Visio drawing among them (a .vsdx, from Visio or
+// exported from Lucidchart) is read by the Visio importer and lands like a diagram (visio-import.md "UI"). Never
+// throws.
 
 import type { DrawioMeta } from './envelope';
 import { sniffDrawio } from './envelope';
@@ -9,10 +11,14 @@ import { importDrawioLibrary, type ImportedLibraryItem } from './library';
 import type { DrawioDocumentFile } from './new-document';
 import type { DrawioReport } from './notes';
 import type { ImportImageRequest } from '@/lib/import-images';
+import { importVisio } from '@/lib/visio/import';
+import { sniffVisio } from '@/lib/visio/package';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
-/** The names draw.io files carry, longest first so `.drawio.png` is not read as `.png`. */
+/** The names draw.io (and Visio) files carry, longest first so `.drawio.png` is not read as `.png`. */
 const DRAWIO_EXTENSIONS = [
+  '.vsdx',
+  '.vsdm',
   '.drawio.svg',
   '.drawio.png',
   '.drawio',
@@ -122,6 +128,22 @@ export async function readDrawioFiles(files: readonly File[]): Promise<DrawioFil
     const title = stripDrawioExtension(file.name) || file.name;
     try {
       const input = await inputOf(file);
+      if (sniffVisio(input.bytes)) {
+        const read = await importVisio(input.bytes, { tabIdForPage: () => crypto.randomUUID() });
+        if (!read.ok) {
+          out.failures.push({ title, message: read.error });
+          continue;
+        }
+        const dates = drawioFileDates(undefined, file.lastModified);
+        out.diagrams.push({
+          name: drawioFileTitle(file.name, read.meta, read.pages[0]?.name ?? '', dates.modifiedAt),
+          ...dates,
+          pages: read.pages,
+          images: read.images,
+          report: read.report,
+        });
+        continue;
+      }
       const kind = sniffDrawio(input);
       if (kind === null) {
         out.failures.push({ title: file.name, message: DRAWIO_NOT_DRAWIO });

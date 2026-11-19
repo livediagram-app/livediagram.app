@@ -95,6 +95,20 @@ const seedRuns = (n: number, steps: unknown[] = []) => {
 const aiLines = (n: number) =>
   Array.from({ length: n }, () => ({ kind: 'action', ok: true, text: 'x', ai: true }));
 
+// A request's read of the plan (its types, for a Set Field) or of the card held until `between` has run: another
+// Editor's write landing at that await.
+type Spy = {
+  mockImplementationOnce: (f: never) => unknown;
+  getMockImplementation: () => ((...a: never[]) => unknown) | undefined;
+};
+const holdOnce = (spy: Spy, between: () => Promise<unknown>) => {
+  const real = spy.getMockImplementation()!;
+  spy.mockImplementationOnce((async (...args: never[]) => {
+    await between();
+    return real(...args);
+  }) as never);
+};
+
 describe('a run and a person writing the same card', () => {
   it('keeps the label a person added while the AI answered', async () => {
     await w.make('A', { title: 'Old', labels: ['billing'] });
@@ -132,13 +146,22 @@ describe('a run and a person writing the same card', () => {
     });
     const c = await w.make('A', { title: 'Checkout', labels: ['wip', 'web'] });
     await w.send('POST', `/api/projects/A/items/${c.id}/move`, { status: 'done' });
-    // The person's write lands between the run's read of the card and its write.
-    const read = room().alarm();
-    await w.send('POST', `/api/projects/A/items/${c.id}`, { set: { labels: ['wip', 'mobile'] } });
-    await read;
-    const labels = ((await card(c.id)).fields['labels'] as string[]).sort();
-    expect(labels).toContain('shipped');
-    expect(labels).not.toContain('wip');
+    // The person's write lands between the run's read of the card (the one its steps are planned from) and its write:
+    // the run's next card read, the one the write rebases onto, waits for it.
+    let wrote = 0;
+    const spy = vi.mocked(items.readItem);
+    holdOnce(spy, async () =>
+      holdOnce(spy, async () => {
+        const res = await w.send('POST', `/api/projects/A/items/${c.id}`, {
+          set: { labels: ['wip', 'mobile'] },
+        });
+        wrote = res.status;
+      }),
+    );
+    await room().alarm();
+    expect(wrote).toBeGreaterThanOrEqual(200);
+    expect(wrote).toBeLessThan(300);
+    expect(((await card(c.id)).fields['labels'] as string[]).sort()).toEqual(['mobile', 'shipped']);
   });
 });
 
@@ -275,20 +298,6 @@ describe('Describe a Rule and a rule’s AI step at once', () => {
 });
 
 describe('a rule changed while a request holds it', () => {
-  // The request's read of the plan (its types, for a Set Field) or of the card held until `between` has run: another
-  // Editor's write landing at that await.
-  type Spy = {
-    mockImplementationOnce: (f: never) => unknown;
-    getMockImplementation: () => ((...a: never[]) => unknown) | undefined;
-  };
-  const holdOnce = (spy: Spy, between: () => Promise<unknown>) => {
-    const real = spy.getMockImplementation()!;
-    spy.mockImplementationOnce((async (...args: never[]) => {
-      await between();
-      return real(...args);
-    }) as never);
-  };
-
   it('Run Rule never runs a rule turned off while it read the card', async () => {
     const manual = await w.rule({
       name: 'Manual',

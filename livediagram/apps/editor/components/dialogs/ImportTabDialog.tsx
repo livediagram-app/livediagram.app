@@ -3,6 +3,7 @@ import { Dialog } from '@liveworkspace/workbench/components/dialogs/Dialog';
 import { FormatCard } from '@liveworkspace/workbench/components/dialogs/FormatCard';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { TextImportPanel } from './TextImportPanel';
+import { FileImportPanel } from './FileImportPanel';
 import type { ImportOutcome } from '@/lib/import-tab';
 import type { ImportImageProgress } from '@/lib/import-images';
 import { reportHasLosses } from '@/lib/board-scene/report';
@@ -19,9 +20,11 @@ type ImportTabDialogProps = {
   // Runs a file import for the chosen format: opens the file picker,
   // parses, and replaces the active tab. Returns an outcome so this
   // dialog can close / stay open / show an error without throwing.
+  // A binary format's panel hands over a dropped file instead of opening the picker.
   onImportFile: (
     format: Format,
     onProgress: (progress: ImportImageProgress) => void,
+    dropped?: File,
   ) => Promise<ImportOutcome>;
   // Runs a text import (the paste/write path) for the chosen format,
   // bypassing the file picker (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md).
@@ -48,6 +51,8 @@ const FORMATS: {
   // on the format rather than the picker screen so it appears once the
   // reader has actually chosen that format and the answer is relevant.
   note?: { article: 'markdownImport' | 'importTabs'; label: string };
+  // A binary format (a .vsdx): no paste box, a drop target and a line saying where the file comes from.
+  file?: { dropLabel: string; hint: string };
 }[] = [
   {
     key: 'json',
@@ -86,6 +91,19 @@ const FORMATS: {
     placeholder:
       '<mxfile>\n  <diagram name="Page-1">\n    <mxGraphModel>…</mxGraphModel>\n  </diagram>\n</mxfile>',
     note: { article: 'importTabs', label: 'See what carries over from draw.io' },
+  },
+  {
+    // docs/specs/020-import-export/visio-import.md "UI".
+    key: 'visio',
+    title: 'Visio',
+    description:
+      'A .vsdx from Visio, or a Lucidchart diagram exported as Visio (VSDX). Keeps shapes, text, connections and pages.',
+    placeholder: '',
+    note: { article: 'importTabs', label: 'See what carries over from Visio' },
+    file: {
+      dropLabel: 'Drop a .vsdx file here, or choose one',
+      hint: 'From Lucidchart: File, Export, Visio (VSDX), then import that file.',
+    },
   },
   {
     // docs/specs/020-import-export/bpmn-import.md "Where".
@@ -159,9 +177,11 @@ export function ImportTabDialog({
                 : report.images
                   ? "Here's how your images came across."
                   : "Here's how your import came across."
-            : activeFormat
-              ? `Paste your ${activeFormat.title}, or import a file.`
-              : 'Pick a format to import into the current tab.'
+            : activeFormat?.file
+              ? `Import your ${activeFormat.title} file.`
+              : activeFormat
+                ? `Paste your ${activeFormat.title}, or import a file.`
+                : 'Pick a format to import into the current tab.'
         }
         actions={<HelpArticleLink article="importTabs" size="md" />}
         onClose={onClose}
@@ -227,7 +247,27 @@ function ImportChooser({
           <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
         </span>
       </div>
-      {activeFormat ? (
+      {activeFormat?.file ? (
+        <FileImportPanel
+          formatTitle={activeFormat.title}
+          dropLabel={activeFormat.file.dropLabel}
+          hint={activeFormat.file.hint}
+          note={
+            activeFormat.note ? (
+              <HelpArticleLink
+                article={activeFormat.note.article}
+                variant="text"
+                label={activeFormat.note.label}
+              />
+            ) : null
+          }
+          onImportFile={(onProgress, dropped) =>
+            onImportFile(activeFormat.key, onProgress, dropped)
+          }
+          onDone={onDone}
+          onBack={single ? undefined : () => onPick(null)}
+        />
+      ) : activeFormat ? (
         <TextImportPanel
           formatTitle={activeFormat.title}
           placeholder={activeFormat.placeholder}
@@ -280,11 +320,13 @@ function FormatIcon({ kind }: { kind: Format }) {
           ? 'excali'
           : kind === 'drawio'
             ? 'drawio'
-            : kind === 'bpmn'
-              ? 'bpmn'
-              : kind === 'infra'
-                ? 'infra'
-                : 'json';
+            : kind === 'visio'
+              ? 'vsdx'
+              : kind === 'bpmn'
+                ? 'bpmn'
+                : kind === 'infra'
+                  ? 'infra'
+                  : 'json';
   return (
     <svg width="36" height="20" viewBox="0 0 36 20" aria-hidden>
       <rect

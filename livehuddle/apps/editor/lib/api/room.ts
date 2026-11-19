@@ -18,6 +18,7 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@livehuddle/api-schema';
+import { ITEM_ARCHIVED_CLOSE } from '@liveworkspace/api-schema/room-wire';
 import { reloadAfterRevert } from '@liveworkspace/snapshots/client';
 import { isCollabKey } from '@liveworkspace/api-schema/collab-key';
 import { opForTheWire } from '@livehuddle/document';
@@ -323,6 +324,14 @@ export function connectRoom(
         closed = true;
         settleTimings(false);
         handlers.onAccessChanged?.();
+        return;
+      }
+      // Archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): stop for good, and
+      // the caller leaves for the Explorer.
+      if (event?.code === ITEM_ARCHIVED_CLOSE) {
+        closed = true;
+        settleTimings(false);
+        handlers.onItemArchived?.();
         return;
       }
       // A snapshot's revert replaced the content in place (docs/specs/013-workspace/snapshots.md): stop, and reload

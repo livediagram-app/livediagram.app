@@ -32,8 +32,6 @@ const seedDeps = (s: BootstrapSet, ctx: BootstrapSeedContext<Tab>): SeedDeps => 
   ...ctx,
   setActiveId: s.setActiveId,
   setDocumentName: s.setDocumentName,
-  setDocumentOwnerColor: s.setDocumentOwnerColor,
-  setDocumentOwnerId: s.setDocumentOwnerId,
   setDocumentOwnerName: s.setDocumentOwnerName,
   setDocumentShareable: s.setDocumentShareable,
   setDocumentShareCode: s.setDocumentShareCode,

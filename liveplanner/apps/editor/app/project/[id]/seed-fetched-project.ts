@@ -38,8 +38,6 @@ export type SeedDeps = {
   setProjectName: SetState<string>;
   // The type catalogue (docs/specs/026-plan/item-types.md), null for the default types, and its revision.
   setProjectItemTypes: SetState<SavedItemTypes>;
-  setProjectOwnerColor: SetState<string | null>;
-  setProjectOwnerId: SetState<string | null>;
   setProjectOwnerName: SetState<string | null>;
   setProjectShareable: SetState<boolean>;
   setProjectShareCode: SetState<string | null>;
@@ -87,9 +85,7 @@ function showProject(
   setCommunityState(fetched.id, fetched.communityState ?? null);
   deps.setProjectTeamId(fetched.teamId ?? null);
   deps.setProjectShareCode(fetched.shareCode);
-  deps.setProjectOwnerId(fetched.ownerId);
   deps.setProjectOwnerName(fetched.ownerName ?? null);
-  deps.setProjectOwnerColor(fetched.ownerColor ?? null);
 }
 
 /** The warm open's paint (offline-mode.md "Warm open of a cloud project"): the last seen copy shown as the seed shows a

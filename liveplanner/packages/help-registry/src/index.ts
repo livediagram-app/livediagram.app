@@ -190,7 +190,7 @@ export const articles: Article[] = [
     description:
       'The always-available Tools (with Search), Settings and appearance controls at the end of the bottom bar.',
     keywords:
-      'corner buttons actions tools toolbox search settings bottom bar cluster appearance light dark automations webhooks history walkthroughs editing mode sign in sync plan badge get started tour',
+      'corner buttons actions tools toolbox search settings bottom bar cluster appearance light dark automations webhooks history walkthroughs sign in sync plan badge get started tour',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -209,7 +209,7 @@ export const articles: Article[] = [
     description:
       'The logo and the menu at the top left, and Share or Copy and your account at the top right.',
     keywords:
-      'title bar header top bar corners logo menu button explorer project name rename role editing mode viewing participating owner preview read only share share form copy make a copy account plan',
+      'title bar header top bar corners logo menu button explorer project name rename share share form copy make a copy account plan',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -1215,6 +1215,16 @@ export const articles: Article[] = [
     description: 'Publish a plan to the public gallery for others to view and copy.',
     keywords:
       'community gallery public publish showcase inspiration examples share plan proud like likes copy copies tags category report moderation discover browse',
+    category: 'Collaboration',
+    categorySlug: 'collaboration/sharing',
+    parentSlug: 'sharing',
+  },
+  {
+    slug: 'request-approval',
+    title: 'Request Approval',
+    description: 'Ask named people to approve a plan, and see where their answers stand.',
+    keywords:
+      'approve approval sign off signoff review request changes approver badge awaiting approved changed since approval due note audit history',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',

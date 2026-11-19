@@ -24,9 +24,9 @@ draws them.
 - **Import** sits above Connect File in the rail's foot, as liveplanner's Start Planning has it (a file-down glyph,
   the shared `footLead`). It places nothing: it opens the **Import** dialog (`StartImportDialog`, the shared Import hero
   header, "Bring a board into this tab."), one section, **A Board from Another Tool**, listing **Microsoft
-  Whiteboard**, **Excalidraw** and **draw.io** as option rows (the tool's mark, its name, the file it takes and a line
+  Whiteboard**, **Excalidraw**, **draw.io** and **Visio** as option rows (the tool's mark, its name, the file it takes and a line
   saying where that file comes from), the same rows liveplanner's Import dialog draws. What it brings goes **into the
-  tab the start screen is on**, never a new canvas (`useStartImport`): Excalidraw and draw.io open the tab's own
+  tab the start screen is on**, never a new canvas (`useStartImport`): Excalidraw, draw.io and Visio open the tab's own
   Import dialog at that format (`ImportTabDialog` `formats`); Microsoft Whiteboard opens its board picker, its line
   "The first board you choose goes into this tab.", and lands that board on the tab (`importSceneIntoActiveTab`), any
   other chosen board named in the report as left out. Offered to an Editor; the dialogs load only on first open. The

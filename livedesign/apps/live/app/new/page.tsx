@@ -311,14 +311,7 @@ export default function NewDesignPage() {
   if (createError) {
     return (
       <div className="flex h-dvh flex-col">
-        <EditorHeader
-          designName="New design"
-          hideTitle
-          showShare={false}
-          shareable={false}
-          onOpenShare={() => {}}
-          onRename={() => {}}
-        />
+        <EditorHeader />
         <main className="relative flex-1 bg-slate-50 dark:bg-slate-950">
           <ApiErrorPage
             eyebrow={createError.eyebrow}

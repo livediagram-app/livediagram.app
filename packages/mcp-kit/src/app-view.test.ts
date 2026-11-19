@@ -318,6 +318,7 @@ describe('the viewer’s pure parts', () => {
     expect(LDV.stopWords('lost')).toContain('connection kept dropping');
     expect(LDV.stopWords('refused')).toBe('Live updates are off for this document.');
     expect(LDV.stopWords('trashed', 'plan')).toBe('This plan moved to the Trash.');
+    expect(LDV.stopWords('archived', 'design')).toBe('This design was archived.');
     expect(LDV.stopWords('refused', 'design')).toBe('Live updates are off for this design.');
   });
 });

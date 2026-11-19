@@ -20,7 +20,8 @@ const NotePopover = dynamic(
   { ssr: false },
 );
 const ActionPopover = dynamic(
-  () => import('@/components/panels/ActionPopover').then((m) => m.ActionPopover),
+  () =>
+    import('@liveworkspace/workbench/components/panels/ActionPopover').then((m) => m.ActionPopover),
   { ssr: false },
 );
 const AssignActionDialog = dynamic(
@@ -215,7 +216,6 @@ export function EditorAnchoredPopovers() {
                 selfUserId={actionSelfId}
                 selfName={actionSelfName}
                 selfColor={selfParticipant.color}
-                projectId={projectId}
                 projectTeamId={projectTeamId}
                 emailEnabled={emailEnabled}
                 // Inline personal-project fix (docs/specs/012-collaboration/assigned-actions.md §2): file the project

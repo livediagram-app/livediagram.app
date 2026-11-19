@@ -4,7 +4,6 @@ Follow the references below only as needed; never upfront.
 
 - ./appearance.md - when implementing or changing light / dark / system appearance, its boot script or the Dark Reader lock
 - ./editor-modes.md - when implementing or changing editor modes: the mode store, the switch, Opens in and the switch moving it, offered modes, legacy mode names, the opening mode, text sizing, the whiteboard migration
-- ./role-pill.md - when implementing or changing the role pill and its view preview
 - ./load-recovery.md - when implementing or changing the load watchdog, the self-healing reload, the offline-store and session-token limits, the diagnostics report, the browser repair or its kept list
 - ./watch-it-built.md - when implementing or changing Watch It Built, the Diagram tour: its replay scope, the write and telemetry freeze, the fade, the clock and the demo layout
 - ./ui-scale.md - when implementing or changing the UI scale preference, its resolver, or how a scaled surface converts screen px

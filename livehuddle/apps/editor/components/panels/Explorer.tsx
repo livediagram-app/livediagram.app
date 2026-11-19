@@ -59,6 +59,8 @@ function ExplorerImpl({
   currentTitle = null,
   currentShareCode = null,
   onRenameCurrent,
+  renameCurrentRequest = 0,
+  onRenameCurrentHandled,
   onNewDocument,
   menuActions,
   popoverOpen,
@@ -180,6 +182,8 @@ function ExplorerImpl({
           onTrashCurrent={trashCurrent}
           onArchivedCurrent={archivedCurrent}
           // Renamed from the Explorer's current item, the editor's one rename since the header bar went (experiment).
+          renameCurrentRequest={renameCurrentRequest}
+          onRenameCurrentHandled={onRenameCurrentHandled}
           onRenameCurrent={
             onRenameCurrent
               ? (name: string) => {

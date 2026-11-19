@@ -34,8 +34,6 @@ const seedDeps = (s: BootstrapSet, ctx: BootstrapSeedContext<Tab>): SeedDeps => 
   ...ctx,
   setActiveId: s.setActiveId,
   setDesignName: s.setDesignName,
-  setDesignOwnerColor: s.setDesignOwnerColor,
-  setDesignOwnerId: s.setDesignOwnerId,
   setDesignOwnerName: s.setDesignOwnerName,
   setDesignShareable: s.setDesignShareable,
   setDesignShareCode: s.setDesignShareCode,

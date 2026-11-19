@@ -342,7 +342,7 @@ from the same start as `DocumentLoad`, so the two read side by side in the Telem
 
 ## Presentation and UX
 
-- The warm paint is the editor as a Viewer sees it: the same canvas, tab bar and header, with the role pill and the
+- The warm paint is the editor as a Viewer sees it: the same canvas, tab bar and header, with the
   disabled edit controls a view link shows. No new surface, copy or state: nothing to design beyond the editor's own
   read-only look, which every share role already has.
 - A tab other than the painted one shows the tab loader the editor already has for a tab still loading, never a
@@ -357,8 +357,7 @@ from the same start as `DocumentLoad`, so the two read side by side in the Telem
 
 ## Accessibility
 
-- Read-only controls keep the disabled states, labels and roles a view link has. The catch-up announces nothing new;
-  the role pill's own label changes with the role, as it does today.
+- Read-only controls keep the disabled states, labels and roles a view link has. The catch-up announces nothing new.
 
 ## Web Experience
 

@@ -233,7 +233,7 @@ export const articles: Article[] = [
     description:
       'The always-available Get Started, Tools (with Search), Settings and appearance controls at the end of the bottom bar.',
     keywords:
-      'corner buttons actions settings search tools toolbox history snapshots webhooks editing mode get started tour receptionist github bottom bar cluster appearance light dark',
+      'corner buttons actions settings search tools toolbox history snapshots webhooks get started tour receptionist github bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -253,7 +253,7 @@ export const articles: Article[] = [
     description:
       "The card at the top right of the editor: Share or Copy and your account, and where the title bar's parts went.",
     keywords:
-      'header top bar title bar share copy make a copy account sign in sign out corner card logo editing mode role preview participating viewing visibility rename space',
+      'header top bar title bar share copy make a copy account sign in sign out corner card logo visibility rename space',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

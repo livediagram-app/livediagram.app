@@ -129,8 +129,6 @@ room's pieces the way anyone in a room would. What a Space holds is the host's.
   Door's `doorClosed` and a Notice Board's or a Calendar Wall's notes it signs. A refused op comes back with the
   correction that puts the sender's screen right, as before.
 - **A Viewer walks too** ([Always walking](#always-walking)).
-- **Previewing as a Participant** (an Editor's role pill) shows exactly this: the avatar palette, walking, no way out until
-  the preview ends.
 
 ## Always walking
 
@@ -150,7 +148,6 @@ true for both, false for an Editor alone.
   [reader](../008-canvas/avatar-mode.md#the-reader) (it would show the same face, larger and still not pressable)
   and no walk. Bring Focus says why on hover ([Bring Focus](../012-collaboration/bring-focus.md#rules)); owner,
   2026-11-06.
-- **Previewing as a Viewer** (an Editor's role pill) shows the same: walking, no toggle, until the preview ends.
 - **Start a Space** is an Editor's, so neither role meets it; if one were open, the avatar palette steps aside as it
   does for anyone ([Not over a start](../008-canvas/avatar-mode.md#not-over-a-start)).
 
@@ -201,6 +198,21 @@ chooses it.
 - **An editor from before this**, still open when it ships, keeps its browser's key. The room stamps its reactions
   with the server's key, so peers see them as its person's; a reload, which the new-version prompt offers, brings it
   in line.
+
+## Approvals: not offered
+
+livehuddle has no **Request Approval**: no Approval tab in the Share dialog, no approval badge and no approver's
+banner ([liveworkspace approvals](../../../../liveworkspace/docs/specs/004-index/approvals.md), which livediagram,
+livedocuments, livedesign and liveplanner offer; Work Tracker 1145 decided it). A Space is a place to meet, not a piece
+of work that goes out for sign-off ([Purpose](../001-project-vision/purpose.md)): nothing in it is handed to a manager
+or a client for a yes. Its walls change in every meeting (a sticky added, a Notice Board's note, a Door opened), so an
+approval would read **Changed Since Approval** within a minute of the next meeting and say nothing true. So no role
+gains or loses anything here: a Viewer still only looks.
+
+The index's approval routes are the platform's and take any item they can open, so a script could still ask for one
+on a Space; the editor draws none of it (its corner card is passed no approval badge, so it never bundles one), and livehuddle's api sends no approval email (its index notice handler has no
+`approvalRequested`). Should livehuddle ever hold work meant for sign-off, it gains the editor's door as the others
+did, and this section becomes its share-role rows.
 
 ## Future features
 

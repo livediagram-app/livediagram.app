@@ -37,8 +37,6 @@ const seedDeps = (s: BootstrapSetters, ctx: BootstrapSeedContext<Tab>): SeedDeps
   setActiveId: s.setActiveId,
   setProjectName: s.setProjectName,
   setProjectItemTypes: s.setProjectItemTypes,
-  setProjectOwnerColor: s.setProjectOwnerColor,
-  setProjectOwnerId: s.setProjectOwnerId,
   setProjectOwnerName: s.setProjectOwnerName,
   setProjectShareable: s.setProjectShareable,
   setProjectShareCode: s.setProjectShareCode,

@@ -23,7 +23,7 @@ design decision. Draw mode's own tools are blueprinted in
 | The person's effective mode | `useEditorMode(tab, { canEdit })` → `EditorModeState`                                                                                                                                                                                                                                       |
 | The mode resolver           | `resolveEditorMode({ tab, canEdit })`, `apps/editor/lib/editor-mode-store.ts`                                                                                                                                                                                                               |
 | A collaborator's switch     | `peerModeSwitchOf(op)`, `peerModeSwitchMessage(name, mode)` (`apps/editor/lib/peer-mode-switch.ts`); `receiveRoomOp` (`room-op-receive.ts`, from `useRoomConnection`) `receivePeerModeSwitch`                                                                                               |
-| May this person edit        | `useViewPreview(...).canEdit`, `apps/editor/app/document/[id]/useViewPreview.ts`                                                                                                                                                                                                            |
+| May this person edit        | `canEdit`, `apps/editor/app/document/[id]/editor-state/useEditorCollaboration.ts`                                                                                                                                                                                                           |
 | The mode switch             | `EditorModeSwitch` (beside the menu button, in `ToolbarExplorerButton`'s card) and `StartModeSwitch` (`apps/editor/components/start/`, a start panel's rail): chip `ModeMenuChip` (`compact`, `iconOnly`), menu `ModeMenu` + `ModePreviewArt`, `apps/editor/components/chrome/editor-mode/` |
 | The editor's resolved mode  | `EditorModeProvider` / `useEditorModeState()`, `editor-mode-context.tsx`                                                                                                                                                                                                                    |
 | A tab's mode icon           | `TabModeIcon`, `apps/editor/components/chrome/editor-mode/`                                                                                                                                                                                                                                 |
@@ -95,7 +95,7 @@ or written (left in place). Nothing is pinned per page.
   (`nameByPresenceRef`, null when unknown); the editor toasts `peerModeSwitchMessage` when
   `tabId` is the active tab. An inline text edit stays open across the switch, so nothing typed is
   lost (browser-checked).
-- **One `canEdit`**: `useViewPreview` returns `canEdit = sessionRole === 'edit' && !previewing`.
+- **One `canEdit`**: `useEditorCollaboration` sets `canEdit = level === 'edit'`.
   `useEditorState` derives `isReadOnly = !canEdit` and resolves the mode once with it;
   `EditorView` provides that `EditorModeState` (`EditorModeProvider value={ctx.editorMode}`)
   and every switch reads it through `useEditorModeState()`, so a switch and the canvas cannot
@@ -273,7 +273,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | Switch to the mode the tab is in                                    | No commit                                                                                                                                |
 | Shift+D on a tab with content                                       | `editorModeShortcut` returns null: nothing written, no telemetry                                                                         |
 | A peer switches while I type in a label                             | The editor stays open; the text commits as usual; a toast names the peer                                                                 |
-| Previewing as a viewer                                              | `canEdit` false: no switch, the tab's mode, read-only                                                                                    |
+| A Viewer or a Participant                                           | `canEdit` false: no switch, the tab's mode, read-only                                                                                    |
 | Event-storming board, or outside an editor                          | `StartModeSwitch` renders nothing; its mode is Diagram                                                                                   |
 | A tab switched while a paste's images upload                        | The paste is dropped (unchanged board-scene rule)                                                                                        |
 | Stale client sends a `Whiteboard` telemetry event                   | Refused by the closed category list                                                                                                      |
@@ -361,7 +361,7 @@ Migration on read, in every entry point (`migrateStoredTab` / `migrateIncomingTa
 | The tab's mode for everyone; view role; lock; ES | `apps/editor/lib/editor-mode-store.test.ts`, `hooks/editor/useEditorMode.test.tsx` |
 | A switch is one tab edit                         | `useEditorMode.test.tsx`, `packages/document/src/editor-mode-switch.test.ts`       |
 
-| One `canEdit`; preview hides the switch | `useViewPreview.test.tsx`, `components/start/StartModeSwitch.menu.test.tsx` |
+| One `canEdit`; no switch without it | `components/start/StartModeSwitch.menu.test.tsx`, `EditorModeSwitch.test.tsx` |
 | The switch: named, menu below, rows, keys | `StartModeSwitch.menu.test.tsx` "StartModeSwitch chip", `StartModeSwitch.test.tsx`, `ModeMenu.test.tsx` |
 | A pressed row lands; Tab away closes | `StartModeSwitch.menu.test.tsx` "keeps the menu open through a blur to nowhere…", "closes when focus moves outside (Tab away)" |
 | The switch beside the menu button, in its card; icon only on a phone; none in the tab menu | `components/chrome/editor-mode/EditorModeSwitch.test.tsx`, `ToolbarExplorerButton.test.tsx` "carries the mode switch right of the menu button…", "drops the label on a phone…", e2e `editor-modes.spec.ts` "a tab offers the mode switch beside the menu button, and none in its tab menu" |

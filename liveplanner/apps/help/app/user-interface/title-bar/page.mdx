@@ -1,5 +1,6 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
+import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
 
 export const metadata = helpMetadata({
   title: 'The Top Corners',
@@ -21,6 +22,10 @@ liveplanner has no bar across the top of the editor, so your board, sheet, dashb
 - **Top right**: **Copy** if the plan is someone else's, **Share** if it is yours, and your account.
 
 Both cards take the tab's style, so they read as part of the tab rather than a frame around it, and **Panel Opacity** in [Settings](/help/user-interface/settings/) fades them like the other panels.
+
+<Figure caption="The top of a shared plan, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account.">
+  <TitleBarParts product="liveplanner" />
+</Figure>
 
 ## The top left
 
@@ -55,16 +60,6 @@ On a phone, and whenever the card would crowd the tab's own toolbar, its buttons
 ## Your account
 
 At the far right is your account. Signed in, it shows your initial; click it for a menu with your name and email, **Account** (which opens [Settings](/help/user-interface/settings/) on your account details, without leaving the plan) and **Sign Out**. Not signed in, it shows **Sign In** instead (see [Signing In](/help/account-and-data/signing-in/)).
-
-## Previewing another role
-
-If you can edit the plan, you can check what each kind of link will get before you send it. Open **Tools** in the bottom bar (see [Quick Controls](/help/user-interface/quick-controls/)), choose **Editing Mode**, and pick one:
-
-- **Editing**: change anything.
-- **Participating**: work the plan as someone on a Participant link does, with their limits. You can comment, take part in a vote or a timer, add and work with cards and type into Sheet cells, but not change how a board, sheet, dashboard or form is set up.
-- **Viewing**: the plan becomes read-only, exactly as someone on a Viewer link sees it.
-
-The row in Tools shows the mode you are in, and the panel says who owns the plan (**Owned by you**, or **Owned by** and the owner's name). The preview only changes what you can do, in this browser tab: nobody else sees your role change, and reloading the page brings you back to **Editing**. Anything you add while participating stays in the plan. Someone on a Participant or Viewer link has no Editing Mode row, because their link does not allow editing.
 
 ## When the corners are hidden
 

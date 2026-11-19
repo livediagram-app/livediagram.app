@@ -48,8 +48,6 @@ function deps(recordOpen: boolean, noteChangesetSeen = vi.fn(), over: Partial<Se
     noteChangesetSeen,
     setActiveId: noop,
     setDocumentName: noop,
-    setDocumentOwnerColor: noop,
-    setDocumentOwnerId: noop,
     setDocumentOwnerName: noop,
     setDocumentShareable: noop,
     setDocumentShareCode: noop,

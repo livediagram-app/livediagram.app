@@ -490,6 +490,9 @@ The Explorer page header's **Import from** group ([Folders](../013-workspace/fol
   page order (named after the pages), through the shared new-document target ([Board import](board-import.md)
   "new-document"), filed where New Canvas files.
 - **Libraries**: each library file becomes its own shape library (above).
+- **Visio drawings**: a `.vsdx` (from Visio, or exported from Lucidchart) is read by the
+  [Visio importer](visio-import.md) and becomes its own new document like a diagram, named after the file without
+  `.vsdx` (a generic name falls back as a draw.io file's does) and dated by the file's last-modified time.
 - **Everything else** (an image without a diagram, a text file, a folder's stray files) is listed as
   skipped with its reason, never fatal.
 - **The list**: one row per diagram or library with a checkbox, all ticked, under the name it will
@@ -612,6 +615,8 @@ These differ from draw.io for every file and are not worth a line each time:
 - Exporting to draw.io.
 - Fetching library or web images from draw.io's or anyone's servers.
 - Rendering draw.io's stencil artwork (the vendor icon catalogues are theirs to ship, not ours).
-- `.vsdx`, Lucidchart and Gliffy files, which draw.io itself imports: bring them through draw.io first.
+- Gliffy files, which draw.io itself imports: bring them through draw.io first. Visio `.vsdx` files, and Lucidchart
+  diagrams exported as VSDX, have their own importer ([Visio and Lucidchart import](visio-import.md)), built on this
+  one's converter.
 - Re-creating draw.io's automatic layouts (`childLayout` other than the stacks above, tree layouts):
   the laid-out positions in the file are imported as they are.

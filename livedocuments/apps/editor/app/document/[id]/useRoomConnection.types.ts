@@ -1,3 +1,5 @@
+import type { RoomOutgoing } from '@livedocuments/api-schema';
+import type { PreRoomOutbox } from '@liveworkspace/workbench/lib/pre-room-outbox';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Tab } from '@livedocuments/document';
 import type { AgentPresence, ChangesetRoomOp } from '@livedocuments/api-schema';
@@ -25,6 +27,9 @@ export type RoomConnectionOptions = {
   // The room is full (docs/specs/015-api/api.md "Room size"): told once per spell of being turned away, while
   // the connector keeps trying to join.
   onRoomFull?: () => void;
+  // The item was archived from anywhere (liveworkspace one-explorer.md "Archived from elsewhere while open"): the
+  // room closed this session with 4010 and the connector stopped. The editor leaves for the Explorer.
+  onItemArchived?: () => void;
   // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
   // document is a live room for its members even without a share link,
   // so presence opens for it the same way a shared document does.
@@ -46,6 +51,10 @@ export type RoomConnectionOptions = {
   countAppliedOp: () => void;
   sessionShareCodeRef: MutableRefObject<string | null>;
   roomRef: MutableRefObject<ReturnType<typeof connectRoom> | null>;
+  // What was sent before the room existed (an element edit as the page opens), aimed at the document, flushed to the
+  // room as it is made and dropped when the document is left (@liveworkspace/workbench/lib/pre-room-outbox). Stable for
+  // the page's life, so it never reopens the socket.
+  preRoomOutbox?: PreRoomOutbox<RoomOutgoing>;
   // Merge a peer's tab / document-meta change into the present, PRESERVING
   // the local undo / redo stacks (peers autosave ~600ms, so clearing
   // history on each would wipe undo continuously during a shared session).

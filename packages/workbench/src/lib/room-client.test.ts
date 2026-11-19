@@ -165,6 +165,60 @@ describe('connectRoomClient', () => {
     expect(FakeSocket.all).toHaveLength(1);
   });
 
+  // one-explorer.md "Archived from elsewhere while open": 4010 is final, like the trashed close, and it is the only code
+  // that sends the editor off as archived.
+  it('calls onItemArchived on the archived close, once, and never reconnects', () => {
+    const onItemArchived = vi.fn();
+    const onGone = vi.fn();
+    connectRoomClient(
+      wireFor(),
+      'r1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onItemArchived, onGone },
+    );
+    FakeSocket.all[0]!.fire('open');
+    FakeSocket.all[0]!.fire('close', { code: 4010 });
+    vi.advanceTimersByTime(120_000);
+    expect(onItemArchived).toHaveBeenCalledOnce();
+    expect(onGone).not.toHaveBeenCalled();
+    expect(FakeSocket.all).toHaveLength(1);
+  });
+
+  // collab-race-hardening.md "Sent before the room client exists" meets one-explorer.md "Archived from elsewhere while
+  // open": what the editor held before its room existed is handed to the client's outbox as the room is made. An
+  // archive that closes the room before the socket ever opens drops it: nothing held reaches a later socket.
+  it('drops held sends when the archived close comes before the socket opens', () => {
+    const room = connectRoomClient(
+      wireFor(),
+      'r1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onItemArchived: vi.fn() },
+    );
+    const socket = FakeSocket.all[0]!;
+    socket.readyState = 0;
+    room.send({ kind: 'op', op: { kind: 'change' } } as Op);
+    socket.fire('close', { code: 4010 });
+    room.send({ kind: 'op', op: { kind: 'change' } } as Op);
+    vi.advanceTimersByTime(120_000);
+    expect(FakeSocket.all).toHaveLength(1);
+    expect(socket.sent).toEqual([]);
+  });
+
+  it('never calls onItemArchived for another close: a lapsed grant reconnects', () => {
+    const onItemArchived = vi.fn();
+    connectRoomClient(
+      wireFor(),
+      'r1',
+      { id: 'me', name: 'Me', color: '#000' },
+      { onPresence() {}, onOp() {}, onItemArchived },
+    );
+    FakeSocket.all[0]!.fire('open');
+    FakeSocket.all[0]!.fire('close', { code: 4007 });
+    vi.advanceTimersByTime(60_000);
+    expect(onItemArchived).not.toHaveBeenCalled();
+    expect(FakeSocket.all.length).toBeGreaterThan(1);
+  });
+
   it('stops on a snapshot revert and reloads, or calls the caller instead', () => {
     const reload = vi.fn();
     vi.stubGlobal('location', { reload });

@@ -85,3 +85,36 @@ export function DrawioSourceIcon() {
     </svg>
   );
 }
+
+const VISIO_TILE = '#2f4fa8';
+
+/**
+ * Visio's mark, for livediagram's start screen Import list (livediagram/docs/specs/020-import-export/
+ * visio-import.md "UI"): an original glyph (a drawing sheet with a box and a circle joined on it, on a
+ * blue tile), not Microsoft's logo; the repo ships no vendor trademark marks
+ * (livediagram/docs/specs/004-interface-design/iconography.md).
+ */
+export function VisioSourceIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden focusable="false">
+      <rect x="1" y="1" width="18" height="18" rx="4" fill={VISIO_TILE} />
+      <path d="M5 3.6h7.2l2.8 2.8v10H5z" fill="#fff" />
+      <path
+        d="M12.2 3.6v2.8h2.8"
+        fill="none"
+        stroke={VISIO_TILE}
+        strokeWidth="0.9"
+        strokeLinejoin="round"
+      />
+      <rect x="6.4" y="8.2" width="3.4" height="2.6" rx="0.4" fill={VISIO_TILE} />
+      <circle cx="12" cy="13.6" r="1.5" fill={VISIO_TILE} />
+      <path
+        d="M8.1 10.8v2.8h2.4"
+        fill="none"
+        stroke={VISIO_TILE}
+        strokeWidth="1"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}

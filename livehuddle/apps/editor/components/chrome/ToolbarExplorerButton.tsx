@@ -1,5 +1,7 @@
 'use client';
 
+import type { Ref } from 'react';
+
 import { track } from '@/lib/telemetry';
 import { Brand, Glyph } from '@livehuddle/ui';
 import { explorerItemHref } from '@liveworkspace/workbench/lib/explorer-href';
@@ -24,17 +26,21 @@ import { ToolbarMenuCard } from './ToolbarMenuCard';
 export function ToolbarExplorerButton({
   open,
   onToggle,
+  buttonRef,
   inline = false,
 }: {
   open: boolean;
   inline?: boolean;
   // Given the button itself, which the popover anchors to.
   onToggle: (button: HTMLElement) => void;
+  // The button itself: the Rename command opens the panel from it (useRenameCurrentRequest).
+  buttonRef?: Ref<HTMLButtonElement>;
 }) {
   // The open space: the logo opens the Explorer on the place that holds it (at its root with no editor around it).
   const itemId = useOptionalEditorContext()?.documentId ?? null;
   const button = (
     <button
+      ref={buttonRef}
       type="button"
       aria-label="Explorer"
       aria-expanded={open}

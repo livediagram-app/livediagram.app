@@ -34,8 +34,6 @@ export type SeedDeps = {
   noteChangesetSeen: (tabId: string, rev: number) => void;
   setActiveId: SetState<string>;
   setDocumentName: SetState<string>;
-  setDocumentOwnerColor: SetState<string | null>;
-  setDocumentOwnerId: SetState<string | null>;
   setDocumentOwnerName: SetState<string | null>;
   setDocumentShareable: SetState<boolean>;
   setDocumentShareCode: SetState<string | null>;
@@ -64,8 +62,6 @@ function showDocument(
     resetTabs,
     setActiveId,
     setDocumentName,
-    setDocumentOwnerColor,
-    setDocumentOwnerId,
     setDocumentOwnerName,
     setDocumentShareable,
     setDocumentShareCode,
@@ -91,9 +87,7 @@ function showDocument(
   setCommunityState(fetched.id, fetched.communityState ?? null);
   setDocumentTeamId(fetched.teamId ?? null);
   setDocumentShareCode(fetched.shareCode);
-  setDocumentOwnerId(fetched.ownerId);
   setDocumentOwnerName(fetched.ownerName ?? null);
-  setDocumentOwnerColor(fetched.ownerColor ?? null);
 }
 
 /** The warm open's paint (offline-mode.md "Warm open of a cloud document"): the last seen copy shown as the seed shows
