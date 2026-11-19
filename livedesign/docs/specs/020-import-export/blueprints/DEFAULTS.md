@@ -21,3 +21,5 @@ One row per default applied where a spec is silent or qualitative.
 | D18 | svg-import            | How densely nonzero is checked                       | 24 points each side of each contour, spread by length, offset 0.05 px               |
 | D19 | svg-import            | Fill and stroke opacity on one path                  | The fill's alpha when filled, else the stroke's, times the element's opacity        |
 | D20 | svg-import            | Where a picture fallback lands                       | The drop point, else the middle of the landing page's safe area                     |
+| D21 | svg-import            | SVG 2 joins on an outlined stroke                    | `miter-clip` and `arcs` drawn as `miter`                                            |
+| D22 | svg-import            | When a stroke "passes" 7 px                          | Landed wider than 7 px by more than a thousandth, so rounding never outlines        |

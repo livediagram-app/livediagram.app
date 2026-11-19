@@ -30,11 +30,15 @@ they may paste. Import to Tab keeps the tab menu's own gate, and refuses a locke
 
 - **Selected and fitted to the page.** The shapes land on one page: the page under the drop point; else the page
   someone is on; else the page nearest the middle of the view. The whole import is scaled uniformly (up or down) so its
-  drawn box fills the page's safe area (the page less its margin), and centred in it. An import with strokes is
-  never scaled past the size where its thickest stroke lands at Extra thick (7 px): strokes snap to presets, so a
-  24 px line icon blown up to fill a logo page would arrive as hairlines of its bold source. It lands smaller,
-  centred, with every line the weight it was drawn at. Every new path is selected, so
-  the next move (recolour, nudge, combine) takes them all.
+  drawn box fills the page's safe area (the page less its margin), and centred in it. The drawn box counts each
+  stroke's own width (half of it either side of the line), so a stroked icon fills the page with its lines inside the
+  margin. Every new path is selected, so the next move (recolour, nudge, combine) takes them all.
+- **Bold strokes become filled shapes.** Strokes snap to presets, and the thickest is Extra thick (7 px), so a 24 px
+  line icon blown up to fill a logo page could not keep its weight as a stroke. Every stroke that would land wider
+  than 7 px is outlined instead: it becomes a filled path in the stroke's colour, the exact area the stroke paints
+  (its line caps, line joins and miter limit honoured), within 0.25 px. The icon lands at the full fit with its
+  source proportions. Strokes that land at 7 px or less stay strokes, editable as lines. An element with a fill and an
+  outlined stroke lands as two paths, its fill below its outline.
 - **One path per SVG element.** Each `<path>`, `<rect>`, `<circle>`, `<ellipse>`, `<line>`, `<polyline>` and
   `<polygon>` becomes one path element; a `<use>` of one of them inside the file becomes one more.
 - **The file's groups.** livedesign has no groups ([Web components are elements; groups are
@@ -72,8 +76,12 @@ they may paste. Import to Tab keeps the tab menu's own gate, and refuses a locke
   takes the inherited `color`. Colours are read in hex (3, 4, 6 and 8 digits), `rgb()`/`rgba()`, `hsl()`/`hsla()`,
   the CSS named colours and `transparent`, and stored as six-digit hex.
 - **Stroke width** is the stroke's landed width snapped to the nearest of the five presets (None, Thin, Medium,
-  Thick, Extra thick). The fit above keeps every landed stroke at or under Extra thick, so no stroke is
-  capped below its source weight. A path with no stroke stores None, so the theme's line is never drawn round a filled mark.
+  Thick, Extra thick). A stroke past Extra thick is outlined (above), so no stroke is capped below its source weight.
+  A path with no stroke stores None, so the theme's line is never drawn round a filled mark.
+- **Line caps and joins** (`stroke-linecap`, `stroke-linejoin`, `stroke-miterlimit`, inherited like the stroke) shape
+  an outlined stroke: butt, round and square caps (a zero-length line with a round or square cap paints a dot);
+  miter, round and bevel joins, a miter past its limit (SVG's default 4) drawn bevelled, and SVG 2's `miter-clip` and
+  `arcs` drawn as miter. A stroke that stays a stroke takes the canvas's own caps and joins.
 - **Opacity**: the element's `opacity`, multiplied down its groups, times its `fill-opacity` (its `stroke-opacity`
   when it has no fill), stored as the path's opacity.
 - **Gradients take their first stop**: a fill or stroke of `url(#gradient)` takes the gradient's first stop colour
@@ -125,11 +133,14 @@ the limits admit is read in linear time.
 ## Observability
 
 One `[svg-import]` line per import: the route (`dialog`, `drop`, `paste`), the outcome (`shapes`, `picture`,
-`unreadable`), the elements, paths and nodes made, how many elements were resolved nonzero, and the report's counts.
+`unreadable`), the elements, paths and nodes made, how many elements were resolved nonzero, how many strokes were
+outlined, and the report's counts.
 
 ## Non-goals
 
 - Text as editable text (outline it first; the report says so).
 - Gradients, masks, filters and clip paths as live effects.
 - Editable groups (the editor has none).
-- Markers, `stroke-dasharray` patterns beyond solid, line caps and joins.
+- Markers and `stroke-dasharray` patterns beyond solid (an outlined dashed stroke is outlined solid).
+- Outlined strokes as editable lines again (outlining is what lets a bold icon fill the page; a stroke that fits the
+  presets is never outlined).
