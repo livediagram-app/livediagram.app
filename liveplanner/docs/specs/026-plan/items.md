@@ -136,9 +136,10 @@ type can offer (no ready-made type offers it to start): Add Field's **Image** ki
 liveworkspace's media service, as [Image fields](item-types.md#image-fields) are.
 
 - **What a file may be**: a PNG, JPEG, WebP or GIF of up to 10 MB (the media service's own rule,
-  `@liveworkspace/media` limits.ts). A card holds at most **20** (`ITEM_ATTACHMENTS_MAX`). Each entry is
+  `@liveworkspace/media` limits.ts), or a PDF of up to 10 MB that came in by [Email to Board](email-to-board.md)
+  (the card panel's zone and agents add pictures only). A card holds at most **20** (`ITEM_ATTACHMENTS_MAX`). Each entry is
   `{ id, name, size, type, cover? }`: the picture's id at the media service, its file name (cut to 120 characters),
-  its size in bytes, its type, and `cover: true` on at most one of them. The api refuses anything else
+  its size in bytes, its type, and `cover: true` on at most one of them, never a PDF. The api refuses anything else
   (`field_value_invalid`), a 21st picture included, so the cap holds for every door: the editor, agents and a sync.
 - **Adding** (the card panel, an Editor or a Participant): the field's section lists the card's pictures, then a
   dashed **Add Images** zone ("PNG, JPEG, WebP or GIF, up to 10 MB · or paste"). Pressing it opens the file picker
@@ -158,7 +159,9 @@ liveworkspace's media service, as [Image fields](item-types.md#image-fields) are
   announcement names only the pictures that landed ("Image attached", "3 images attached"); none landing writes
   nothing.
 - **Each picture** is a row: a 40 px square thumbnail (cropped to fill), its name and its size ("1.2 MB"), with a
-  **Cover** tag on the cover. Pressing the row **opens** the picture full size in a new browser tab. Its **⋯** menu
+  **Cover** tag on the cover. A **PDF**'s row shows a file glyph in the same square (nothing is fetched to draw
+  it) and "PDF · 1.2 MB"; pressing it opens the PDF in the browser's own viewer in a new tab, and its menu holds
+  Open, Download and Remove (a PDF is never a cover). Pressing the row **opens** the picture full size in a new browser tab. Its **⋯** menu
   holds **Open**, **Download** (saves it under its name), **Set as Cover** (or **Remove Cover** on the cover) and
   **Remove**. A Viewer, and a link visitor who only reads, sees the rows and opens and downloads them; the menu
   then holds only Open and Download.

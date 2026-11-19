@@ -90,11 +90,15 @@ made by no person:
 - **Description**: the message's text (its plain text part, or its HTML as text), with the **quoted reply removed**
   (the earlier message a reply carries, `On … wrote:` and what follows, a signature) as the platform's reader does it.
   Cut to the description's limit.
-- **Attachments**: pictures (PNG, JPEG, WebP, GIF) of up to **10 MB** each join the card's Attachments, at most
-  the card's 20, stored with the plan's owner's uploads at the media service and granted to the plan. Everything
-  else (another type, a bigger file, one past the twentieth, any the media service refuses) is **listed and
-  dropped**: a line at the end of the description, "Not attached: report.pdf (2.1 MB, not a picture), photo.png
-  (14 MB, over 10 MB)."
+- **Attachments**: pictures (PNG, JPEG, WebP, GIF) and **PDFs** of up to **10 MB** each join the card's Attachments,
+  at most the card's 20, stored with the plan's owner's uploads at the media service and granted to the plan. What a
+  file is comes from its bytes alone, never its name or the type the email claims: a picture by its format's first
+  bytes, a PDF by its `%PDF-` start. A file is never opened or run here; the card serves a PDF as a download,
+  sandboxed (blueprint "Security and trust"). Everything else (another type, a bigger file, one
+  past the twentieth, any the media service refuses) is **listed and dropped**: a line at the end of the
+  description, "Not attached: notes.docx (2.1 MB, not a picture or PDF), photo.png (14 MB, over 10 MB)." The
+  coordinator's answer (2026-11-19) set this: PDFs only beside pictures, capped as pictures are, through the storage
+  already paid for; the owner may widen it later.
 - **From email**: the card keeps the sender's address in its `fromEmail` field, and its panel's footer says
   **From email alice@example.com** with a mail glyph, beside Created by (which names the same address). Its history
   starts "Created this card from an email in <column>". Like any card as made, it has no Edited by row until someone really

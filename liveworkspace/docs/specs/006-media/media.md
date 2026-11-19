@@ -64,7 +64,7 @@ time; a key speaks only for its own app. Answers are JSON except the bytes; erro
 
 | Route                                 | What it does                                                                        |
 | ------------------------------------- | ----------------------------------------------------------------------------------- |
-| `GET /images?owner=`                  | The owner's gallery from every app, newest first: `{ images: MediaImage[] }`        |
+| `GET /images?owner=`                  | The owner's pictures from every app, newest first: `{ images: MediaImage[] }`       |
 | `POST /images?owner=`                 | Upload (below): `{ image, deduped }`                                                |
 | `GET /images/<id>`                    | The image and whose it is: `{ image, owner }`                                       |
 | `GET /images/<id>/bytes`              | The bytes, with their `Content-Type` and the owner in `X-Media-Owner`               |
@@ -93,8 +93,8 @@ The body is the file's raw bytes. Headers: `Content-Type`, `Content-Length`, `X-
 `X-Image-Height`, optionally `X-Image-Original-Name` (percent-encoded, cut to 200 characters),
 `X-Image-Sha256`, `X-Media-Document` and `X-Image-Source`. The service refuses, cheapest first:
 
-1. A declared type not in `ACCEPTED_IMAGE_TYPES` (PNG, JPEG, WebP, GIF; never SVG): `415 unsupported_type`
-   with `acceptedTypes`.
+1. A declared type not in `ACCEPTED_IMAGE_TYPES` (PNG, JPEG, WebP, GIF; never SVG) or `ACCEPTED_FILE_TYPES` (PDF):
+   `415 unsupported_type` with `acceptedTypes`.
 2. A missing length (`400 missing_length`), or one over 10 MB (`413 file_too_large` with `limitBytes`).
 3. A known `X-Image-Sha256` answers with the owner's existing image without reading the body. An app
    sends this header only for the owner's own editor or a guest: for an API token or a workbench session
@@ -104,9 +104,9 @@ The body is the file's raw bytes. Headers: `Content-Type`, `Content-Length`, `X-
    are per person across every app (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`; 500 images and
    1 GB in production and staging: a full-window screenshot is 0.3 to 1.1 MB, so 1 GB holds the 500 with
    room to spare).
-5. Missing or invalid dimensions: `400 invalid_dimensions`.
+5. Missing or invalid dimensions for a picture: `400 invalid_dimensions`. A PDF has none: it is stored 0 by 0.
 6. Bytes whose first bytes aren't the declared format: `415 unsupported_type`. The declared type is never
-   trusted alone.
+   trusted alone: a PDF's bytes start `%PDF-`.
 
 The same owner uploading the same bytes, in any app, gets the one image back (`deduped: true`), keyed on
 the hash of the file as picked. A JPEG loses its APPn and comment segments (Exif with its GPS and camera serial,
@@ -118,6 +118,13 @@ video) is dropped: only the first picture is shown. A malformed JPEG is refused 
 stored with what it should have lost. The row's insert repeats both caps inside the statement, so
 uploads racing each other can't together pass one; a refused insert deletes the bytes it just wrote and
 answers `gallery_full`, or `409 upload_conflict` when there is room again by then.
+
+**PDFs.** A PDF of up to 10 MB is stored as a picture is, with the same caps, dedupe and references, for an app that
+keeps files beside its pictures (liveplanner's Email to Board, which attaches a mailed PDF to its card). It is never a
+picture: the gallery route lists pictures alone, so no app's image picker or Image Gallery offers one, while the data
+export's read of the same route lists both, so a person's download keeps their files. Its bytes are served as any
+image's are, `nosniff`, and also `Content-Disposition: attachment` and `Content-Security-Policy: sandbox`, so it is
+never active content wherever an app passes them on; the app that shows it serves it the same way.
 
 **Uploaded for a document.** `X-Media-Document` (the document's id, at most 200 characters; longer is
 `400 invalid_document`) names the document the picture is uploaded for. The service records a reference
