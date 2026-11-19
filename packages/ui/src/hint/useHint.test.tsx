@@ -541,46 +541,6 @@ describe('useHint, touch long press', () => {
   });
 });
 
-describe('useHint, a missed leave or blur', () => {
-  it('closes a focus-opened hint when focus lands elsewhere without a blur on the trigger', () => {
-    focusVisible(true);
-    render(
-      <>
-        <Harness kind="hover-card" />
-        <input aria-label="Elsewhere" />
-      </>,
-    );
-    fireEvent.focus(button());
-    expect(tip()).not.toBeNull();
-    fireEvent.focusIn(screen.getByLabelText('Elsewhere'));
-    expect(tip()).toBeNull();
-  });
-
-  it('closes a pointer-opened hint when the pointer moves on without a leave on the trigger', () => {
-    render(
-      <>
-        <Harness kind="hover-card" />
-        <p>Elsewhere</p>
-      </>,
-    );
-    fireEvent.pointerEnter(wrapper(), mouse);
-    expect(tip()).not.toBeNull();
-    fireEvent.pointerMove(screen.getByText('Elsewhere'), mouse);
-    advance(HINT_CLOSE_GRACE_MS);
-    expect(tip()).toBeNull();
-  });
-
-  it('keeps a hint open while focus or the pointer is on the trigger or the hint', () => {
-    focusVisible(true);
-    render(<Harness kind="hover-card" />);
-    fireEvent.pointerEnter(wrapper(), mouse);
-    fireEvent.pointerMove(tip()!, mouse);
-    fireEvent.focusIn(tip()!);
-    advance(HINT_CLOSE_GRACE_MS * 5);
-    expect(tip()).not.toBeNull();
-  });
-});
-
 describe('useHint, surface events', () => {
   it('keeps presses on the hint from reaching the trigger ancestors', () => {
     const parent = vi.fn();

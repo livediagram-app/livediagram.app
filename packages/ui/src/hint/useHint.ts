@@ -313,37 +313,6 @@ export function useHint(
     return () => doc.removeEventListener('pointerdown', onPointerDown, true);
   }, [open, close]);
 
-  // T17: a hint shows only while its trigger is hovered or focused, so it cannot outlive either when the control's own
-  // events were missed (a pointerleave an engine drops when the page re-renders under a resting pointer, a blur that
-  // never came because the focused control was swapped out). Checked on the next focus or pointer movement elsewhere in
-  // the document, only while a hint is open, so it costs nothing otherwise.
-  useEffect(() => {
-    if (!open) return;
-    const doc = machine.current.wrapper?.ownerDocument ?? document;
-    const outside = (target: EventTarget | null) =>
-      target instanceof Node &&
-      !machine.current.wrapper?.contains(target) &&
-      !(target instanceof Element && target.closest('[data-hint]'));
-    const onFocusIn = (e: FocusEvent) => {
-      if (machine.current.source !== 'focus' || !outside(e.target)) return;
-      machine.current.focused = false;
-      close();
-    };
-    const onPointerMove = (e: PointerEvent) => {
-      const m = machine.current;
-      if (m.source !== 'pointer' || e.pointerType === 'touch' || !outside(e.target)) return;
-      m.overTrigger = false;
-      m.overSurface = false;
-      settle();
-    };
-    doc.addEventListener('focusin', onFocusIn, true);
-    doc.addEventListener('pointermove', onPointerMove, true);
-    return () => {
-      doc.removeEventListener('focusin', onFocusIn, true);
-      doc.removeEventListener('pointermove', onPointerMove, true);
-    };
-  }, [open, close, settle]);
-
   // Escape dismisses without consuming the key: a menu or dialog listening
   // for it closes on the same press (spec). Heard in the trigger's own document, where the key lands when the trigger
   // is in a Picture-in-Picture window.
