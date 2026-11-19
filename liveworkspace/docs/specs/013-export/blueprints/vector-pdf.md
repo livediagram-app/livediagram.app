@@ -67,7 +67,7 @@ Exports: `./pdf`, `./pdf-links`, `./pdf-page-size`, `./outline-svg`, `./outline-
 The products: each `export-tab-pdf.ts` dynamic-imports `@liveworkspace/vector-export/pdf`, builds the SVG with its
 `exportTabAsSvg`, passes `raster: () => renderTabToCanvas(...)`, `title: tab.name` and
 `fallbackFontCss: () => embeddedFontFaceCss(['inter'])`. livedocuments adds `pdfLinksFor` and tags
-(`blockTagger` in `article-snapshot.ts`, written as `data-pdf-tag`/`data-pdf-block` by `articleOpsToSvg`). Every
+(`blockTagger` in `article-pdf-tags.ts`, its lists rebuilt from the flat writing, written as `data-pdf-tag`/`data-pdf-block` by `articleOpsToSvg`). Every
 product's image export (`svgImageShape` in `@liveworkspace/element-model`) puts the picture's alt text on its clip
 group as `data-pdf-alt`.
 
@@ -146,7 +146,7 @@ the embedded faces. No telemetry.
   SVG feature, the fallbacks, text, tags, the fallback face, fontkit loading.
 - `src/lazy-guard.test.ts`; the outliner's own tests in `src/outline-text/`.
 - Each product: `lib/export-tab-pdf.test.ts` (the caller and the first-load guard); livedocuments and livedesign
-  `export-tab-page-motion.test.ts`; livedocuments `article-snapshot-tags.test.ts` and `article-draw-ops.test.ts`.
+  `export-tab-page-motion.test.ts`; livedocuments `article-pdf-tags.test.ts` and `article-draw-ops.test.ts`.
 - In a browser (the PR): a long article and a big diagram through the real export, text extracted with pdf.js in
   reading order, contents links landing, sizes against the raster PDF, page 1 beside the PNG, a 4x render.
 

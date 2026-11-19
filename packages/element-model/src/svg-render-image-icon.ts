@@ -93,9 +93,12 @@ export function svgImageShape(
       options.altTitle ? el : null,
     );
   }
+  // The alt text for a PDF's tags (liveworkspace/docs/specs/013-export/vector-pdf.md "Tags"): the picture is a
+  // Figure a screen reader reads; with none it is decoration.
+  const alt = altOf(el);
   return (
     defs +
-    `<g clip-path="url(#${clipId})">` +
+    `<g clip-path="url(#${clipId})"${alt ? ` data-pdf-alt="${xmlEscape(alt)}"` : ''}>` +
     `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#ffffff"/>` +
     picture +
     `</g>`
@@ -106,11 +109,16 @@ export function svgImageShape(
 const GREY_MATRIX =
   '0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0.2126 0.7152 0.0722 0 0 0 0 0 1 0';
 
+// An image's alt text, trimmed; '' for none.
+function altOf(el: BoxedElement): string {
+  const raw = el.type === 'image' ? (el as PictureFields).alt : undefined;
+  return typeof raw === 'string' ? raw.trim() : '';
+}
+
 // The <image>, with the picture's alt text as its <title> (docs/specs/009-elements/images.md "Alt text"): what a
 // screen reader names it by, and the tooltip a viewer shows.
 function imageTag(attrs: string, el: BoxedElement | null): string {
-  const raw = el?.type === 'image' ? (el as PictureFields).alt : undefined;
-  const alt = typeof raw === 'string' ? raw.trim() : '';
+  const alt = el ? altOf(el) : '';
   return alt ? `<image ${attrs}><title>${xmlEscape(alt)}</title></image>` : `<image ${attrs}/>`;
 }
 

@@ -37,7 +37,7 @@ Word, Canva, Figma, Lucid and draw.io make.
     LBody, and a table Table of TR rows of TD cells, a header row's cells TH (column headers, `/Scope /Column`). Each
     line of the text layer is marked content of its block's element, a block running over two pages keeping one
     element.
-  - **A picture with alt text** (an image's **Alt Text** in livedocuments, livedesign and livediagram) is a Figure
+  - **A picture with alt text** (an image's **Alt Text**, in any product) is a Figure
     whose `/Alt` is that text, so a screen reader reads the description where the picture stands: on its page, before
     the first block that starts below the picture's top edge. A picture with no alt text is decoration, an artifact
     a screen reader skips, as a web page's `alt=""` is. A picture drawn as part of a fallback picture or a

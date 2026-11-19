@@ -6,6 +6,7 @@
 // draw operations in canvas coordinates. article-draw.ts paints them into an SVG or onto a canvas.
 import type { ArticleDrawOp } from '@livedocuments/document';
 import { splitPartsOf, type PartRect } from './article-footnote-split-look';
+import { blockTagger, type BlockTag, type BlockTagger } from './article-pdf-tags';
 
 export type { ArticleDrawOp } from '@livedocuments/document';
 
@@ -29,21 +30,6 @@ function metricsOf(cs: CSSStyleDeclaration, text: string): { ascent: number; des
   };
 }
 const ascentOf = (cs: CSSStyleDeclaration, text: string) => metricsOf(cs, text).ascent;
-
-// The blocks a word can belong to, for a PDF's tags (liveworkspace/docs/specs/013-export/vector-pdf.md "Tags").
-const BLOCKS = 'h1, h2, h3, h4, h5, h6, p, li, blockquote, pre, td, th';
-
-/** Each block's tag (H1 to H6, else P) and its place in reading order, numbered as first met. */
-export function blockTagger(): (el: Element | null) => { tag: string; block: number } | null {
-  const seen = new Map<Element, number>();
-  return (el) => {
-    const block = el?.closest(BLOCKS);
-    if (!block) return null;
-    let n = seen.get(block);
-    if (n === undefined) seen.set(block, (n = seen.size));
-    return { tag: /^H[1-6]$/.test(block.tagName) ? block.tagName : 'P', block: n };
-  };
-}
 
 // A split row's own rules, its side rules (drawn as backgrounds on screen) on each part as cut, and a closing rule
 // where a part ends early; a split header row's tint (its outline colour carries it, resolved) likewise.
@@ -100,11 +86,15 @@ export function snapshotWriting(
   root: HTMLElement,
   toCanvas: (x: number, y: number) => { x: number; y: number },
   scale: number,
+  // Numbers the blocks for a PDF's tags; shared by the writing and its notes, so the notes read after it.
+  tags: BlockTagger = blockTagger(),
 ): ArticleDrawOp[] {
   const ops: ArticleDrawOp[] = [];
   const text: ArticleDrawOp[] = [];
   const s = (n: number) => n / scale;
-  const blockOf = blockTagger();
+  // Every block numbered in reading order first: a list's markers are met before any word.
+  tags.scan(root);
+  const blockOf = tags.of;
   const elements = root.querySelectorAll<HTMLElement>('*');
   // Backgrounds and borders first, under the words.
   for (const el of Array.from(elements)) {
@@ -222,7 +212,11 @@ export function snapshotWriting(
       }
     }
     // A list item's marker (a number, a bullet) or a to-do's box, from its ::before.
-    if (el.classList.contains('article-list')) markerOps(el, toCanvas, s, ops, blockOf(el));
+    if (el.classList.contains('article-list')) {
+      // The marker is its item's label, read before the item's words.
+      const item = blockOf(el);
+      markerOps(el, toCanvas, s, ops, item && tags.marker(item));
+    }
   }
   // Then every word, where it landed.
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -297,7 +291,7 @@ function markerOps(
   toCanvas: (x: number, y: number) => { x: number; y: number },
   s: (n: number) => number,
   ops: ArticleDrawOp[],
-  tagged: { tag: string; block: number } | null,
+  tagged: BlockTag | null,
 ): void {
   const before = getComputedStyle(li, '::before');
   const box = li.getBoundingClientRect();
