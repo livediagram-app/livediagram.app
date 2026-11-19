@@ -570,8 +570,10 @@ Each step is its own PR, and both products build and pass their tests after ever
      (`lib/api/tab-calls`, `createTabCalls`: each `lib/api/tabs.ts` hands in its path, id key, grant, open marker
      and save headers). The open and the unload flush (`hooks/persistence/useIdentityBootstrapCore` and
      `useUnloadFlushCore`, Work Tracker 1243: each `app/<item>/[id]/useIdentityBootstrap.ts` and `useUnloadFlush.ts`
-     hands in its setters, seed, arrival, beacon and modules, and liveplanner its warm plan): about 2,100 fewer lines
-     across the editors and about 700 in `packages/workbench`, with 1,070 of tests. Still per editor: the selection editing, the boxed drag and the clipboard, which read the
+     hands in its setters, seed, arrival, beacon and modules, and liveplanner its warm plan), with the load's progress
+     and watchdog (`lib/load-progress`, `createLoadProgress`: each `lib/load-progress.ts` hands in its step, telemetry
+     name and storage key): about 2,700 fewer lines across the editors and about 870 in `packages/workbench`, with
+     1,290 of tests. Still per editor: the selection editing, the boxed drag and the clipboard, which read the
      element union on the pointer path.
 5. **`api-core`** out of the two `apps/api` Workers.
    - First slices, the plumbing every product's api, MCP and CLI had in its own copy, each one copy

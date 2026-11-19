@@ -459,6 +459,10 @@ drives it with fake timers.
   call time so its tests can mock them; liveplanner adds `paintsCopy`, `onWarmPaint` and `onWarmDropped` for its warm
   plan. Each `useUnloadFlush.ts` hands in its tombstone check, save diff, beacon and Participant relay (livediagram and
   livedesign claim placed pictures first), and livedocuments and livedesign `saveChanges`, what each tab's save changed.
+  The load's progress and watchdog the bootstrap reports to are one copy too, `@liveworkspace/workbench/lib/load-progress`
+  (`createLoadProgress`): each `lib/load-progress.ts` binds it once with the step that loads its item (`document`,
+  `design`, `project`), its telemetry name (`DocumentLoad`, `DesignLoad`, `ProjectLoad`) and its self-healing reload's
+  storage key, and keeps its old exports.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of all five editors.
   liveplanner hands it a board (`FaceFinishBoard`: `ownerOf` seeds a part by its card or column, `unseen` leaves a
   busy board's off-screen card for `face-arrivals.ts` to take when it scrolls into view, `ignore` skips the pointer's
