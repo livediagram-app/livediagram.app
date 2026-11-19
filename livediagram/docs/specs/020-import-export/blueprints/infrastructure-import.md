@@ -17,7 +17,7 @@ The spec decides; this file only adds engineering precision. Defaults applied wh
 | `packages/document/src/infra-code/parse.ts`                 | `checkInfraText`, `parseInfraText(format, text)`, `parseKubernetesText(text)`: text to plain values, or an error |
 | `packages/document/src/infra-code/hcl.ts`                   | `parseHcl(text)`: the HCL tokenizer and block parser, `HclBlock`, `hclReferences(block)`                         |
 | `packages/document/src/infra-code/part.ts`                  | `PartBuilder`: nodes and edges by slug id, the skipped-key tally                                                 |
-| `packages/document/src/infra-code/file-part.ts`             | `filePart(file, options)`: one file detected, parsed and drawn as its part                                       |
+| `packages/document/src/infra-code/file-part.ts`             | `readInfraFile(file)` (detected and parsed) and `partOf(parsed, file, env)` (drawn as its part)                  |
 | `packages/document/src/infra-code/wrangler.ts`              | `wranglerPart(config, fallbackName, env?)`: the Wrangler mapping table                                           |
 | `packages/document/src/infra-code/compose.ts`               | `composePart(config, fallbackName)`: services, dependencies, volumes, networks                                   |
 | `packages/document/src/infra-code/compose-icons.ts`         | `composeIcon(image)`: pure data, image name to technology icon id                                                |
@@ -45,6 +45,7 @@ The spec decides; this file only adds engineering precision. Defaults applied wh
 | `apps/editor/components/dialogs/infra/InfraEnvSelect.tsx`   | The Wrangler environment choice                                                                                  |
 | `apps/editor/components/dialogs/infra/InfraSourcesCard.tsx` | The From Its Files card above the formats                                                                        |
 | `apps/editor/components/dialogs/infra/useInfraFacts.ts`     | Loads the parsers lazily and reads each entry's format and environments                                          |
+| `apps/editor/components/dialogs/infra/infra-panel-io.ts`    | Both panels' file choosing and dropping (each past the cap refused, named) and their busy and error states       |
 | `apps/editor/components/dialogs/ImportTabDialog.tsx`        | Offers the card, the infra panels and the update view                                                            |
 
 ## Constants
@@ -188,10 +189,10 @@ edges; networks as groups `net-<slug>` when every service is on at most one, els
 edges. Silent top-level keys `version`, `name`, `services`, `volumes`, `networks` and `x-` keys; silent service keys
 the runtime list in `compose.ts`; other keys skip by name or as `services.*.<key>`.
 
-### `filePart(file, { env? })` and `infraGraph(files, { env? })`
+### `readInfraFile`, `partOf` and `infraGraph(files, { env? })`
 
 1. More than `INFRA_MAX_FILES` files: error `too-many-files`.
-2. Each file (`filePart`): `checkInfraText`, detect, parse, build its part; the first error stops the import and names
+2. Each file (`readInfraFile`, then `partOf`): `checkInfraText`, detect, parse, build its part; the first error stops the import and names
    the file. The fallback name is the file's folder, else the format's word (`Worker`, `Compose`, `Terraform`,
    `Kubernetes`).
 3. **Environment across files.** With `env`, a Wrangler file whose `env` table lacks it draws its top level and adds
@@ -320,7 +321,7 @@ past the first 149, listed in the last box` (count: left out) and `Lines left ou
   only once the Infrastructure panel or the update opens, so the first load is unchanged; the editor's first-load JS
   is measured before and after in the PR.
 - Worst cases, each under a CPU-time budget (`cpuBudgetMs`): a 200-service Compose file read and laid out
-  (`graph.test.ts`); a 1 MB HCL file of 10,000 resources each referencing the one before, and 1 MB of pathological
+  (`graph.test.ts`); a 1 MB HCL file of about 14,000 resources each referencing the one before, and 1 MB of pathological
   HCL (unclosed interpolations, a long run of `{`, a heredoc that never ends) (`hcl.test.ts`); a manifest of 2,000
   Kubernetes objects (`kubernetes.test.ts`); a merge of 150 boxes and 1,000 lines over an edited tab with 300 extra
   boxes (`merge.test.ts`).
@@ -330,7 +331,7 @@ past the first 149, listed in the last box` (count: left out) and `Lines left ou
 
 - The panels use the dialog's shared parts: `BackBar`, `ImportDropZone`, `Button`, `Select`, the report list, the
   alert and status roles.
-- A file row is a list item: a format badge (text, not colour alone), the name (truncated with its full text as the
+- A file row is a list item: a format badge (text, not colour alone), the name (wrapping, never cut, since a path's end tells two files apart; no native
   `title`), the state in words, and icon buttons with `aria-label`s and tooltips (Choose File, Paste, Remove or
   Keep). Rows reflow on a phone: actions wrap under the name below 400px.
 - The inline paste is a labelled textarea with Use This Text and Cancel; Escape inside it cancels it, not the dialog.

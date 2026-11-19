@@ -135,7 +135,13 @@ export function useTabActions(deps: TabActionsDeps) {
   // Import (id re-mint, content replace, JSON / Markdown / Mermaid parsing)
   // lives in useTabImport; remintTabElements is shared with the
   // Duplicate below.
-  const { importIntoActiveTab, importTextIntoActiveTab, replaceActiveTabContent } = useTabImport({
+  const {
+    importIntoActiveTab,
+    importTextIntoActiveTab,
+    importInfraFiles,
+    updateFromSources,
+    replaceActiveTabContent,
+  } = useTabImport({
     tabs,
     createTab,
     markTabLoaded,
@@ -356,6 +362,8 @@ export function useTabActions(deps: TabActionsDeps) {
     addTab,
     importIntoActiveTab,
     importTextIntoActiveTab,
+    importInfraFiles,
+    updateFromSources,
     importSceneIntoActiveTab,
     importScenesAsNewDocuments,
     toggleActiveTabLock,

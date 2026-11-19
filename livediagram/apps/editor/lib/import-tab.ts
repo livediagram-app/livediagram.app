@@ -24,6 +24,8 @@ export type ImportOutcome =
       libraries?: { id: string; name: string }[];
       // The report's line under the dialog title, when "board" is the wrong word (an infrastructure import).
       subtitle?: string;
+      // The report's heading in place of "Import complete" (an update from a tab's files).
+      title?: string;
     }
   | { status: 'cancelled' }
   | { status: 'error'; error: string };
@@ -114,24 +116,59 @@ export function parseImportedTab(text: string, from: 'file' | 'paste' = 'file'):
 // The picked file's text, plus the File itself for a format that may be
 // binary (an Excalidraw PNG export).
 // `tooBig` (its text then empty, never read) when the file is past the `maxBytes` the caller allows.
-type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
+export type PickedTabFile = { name: string; text: string; file: File; tooBig?: true };
 
-export function pickTabFile(
+type PickOptions = { maxBytes?: number; binary?: boolean };
+
+// One chosen file read as the options say: past the caller's limit it is never read (reading a huge file would hang
+// the tab before it is refused); a binary one is handed over unread.
+async function readPicked(file: File, opts: PickOptions): Promise<PickedTabFile> {
+  if (opts.maxBytes !== undefined && file.size > opts.maxBytes)
+    return { name: file.name, text: '', file, tooBig: true };
+  if (opts.binary) return { name: file.name, text: '', file };
+  return { name: file.name, text: await file.text(), file };
+}
+
+export async function pickTabFile(
   accept = 'application/json,.json,text/markdown,.md,.markdown,.mdown,.mkd,text/plain',
   // `binary`: the file is handed over unread (a .vsdx is read as bytes by its importer).
-  opts: { maxBytes?: number; binary?: boolean } = {},
+  opts: PickOptions = {},
 ): Promise<PickedTabFile | null> {
+  const files = await pickFiles(accept, false);
+  if (!files) return null;
+  try {
+    return await readPicked(files[0]!, opts);
+  } catch {
+    return null;
+  }
+}
+
+// Several files at once (the infrastructure import, docs/specs/020-import-export/infrastructure-import.md "The
+// editor"), each read as pickTabFile reads one; null on cancel, or when none could be read.
+export async function pickTabFiles(
+  accept: string,
+  opts: PickOptions = {},
+): Promise<PickedTabFile[] | null> {
+  const files = await pickFiles(accept, true);
+  if (!files) return null;
+  const read = await Promise.all(files.map((f) => readPicked(f, opts).catch(() => null)));
+  const ok = read.filter((f): f is PickedTabFile => f !== null);
+  return ok.length > 0 ? ok : null;
+}
+
+function pickFiles(accept: string, multiple: boolean): Promise<File[] | null> {
   return new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = accept;
+    input.multiple = multiple;
 
     let settled = false;
     // `picked` flips synchronously the instant `change` fires (before we
     // await the file's text), so the focus-based cancel check below never
     // misfires for a slow-reading large file.
     let picked = false;
-    const finish = (value: PickedTabFile | null) => {
+    const finish = (value: File[] | null) => {
       if (settled) return;
       settled = true;
       window.removeEventListener('focus', onFocus);
@@ -147,28 +184,10 @@ export function pickTabFile(
       }, 500);
     }
 
-    input.onchange = async () => {
-      picked = (input.files?.length ?? 0) > 0;
-      const file = input.files?.[0] ?? null;
-      if (!file) {
-        finish(null);
-        return;
-      }
-      // Past the caller's limit the file is never read: reading a huge file would hang the tab before it is refused.
-      if (opts.maxBytes !== undefined && file.size > opts.maxBytes) {
-        finish({ name: file.name, text: '', file, tooBig: true });
-        return;
-      }
-      if (opts.binary) {
-        finish({ name: file.name, text: '', file });
-        return;
-      }
-      try {
-        const text = await file.text();
-        finish({ name: file.name, text, file });
-      } catch {
-        finish(null);
-      }
+    input.onchange = () => {
+      const files = [...(input.files ?? [])];
+      picked = files.length > 0;
+      finish(picked ? files : null);
     };
 
     window.addEventListener('focus', onFocus);

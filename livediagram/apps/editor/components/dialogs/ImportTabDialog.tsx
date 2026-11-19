@@ -12,6 +12,20 @@ import type { ImportFormat as Format } from '@/hooks/persistence/useTabImport';
 import { Glyph } from '@livediagram/ui';
 import { HeroDialogHeader } from '@liveworkspace/ui/dialog-hero';
 import { importHeroArt } from '@liveworkspace/ui/dialog-hero-art/import';
+import type { DiagramSources } from '@livediagram/document';
+import type { InfraFile } from '@livediagram/document/infra-code';
+import { InfraImportPanel } from './infra/InfraImportPanel';
+import { InfraSourcesCard } from './infra/InfraSourcesCard';
+import { InfraUpdatePanel } from './infra/InfraUpdatePanel';
+
+// The infrastructure import's runners and the tab's remembered files (docs/specs/020-import-export/
+// infrastructure-import.md "The editor", "Updating a tab from its files").
+export type InfraDialogApi = {
+  // The active tab's files when it may be updated from them (an Editor's, unlocked), else null.
+  sources: DiagramSources | null;
+  importFiles: (files: InfraFile[], env?: string) => Promise<ImportOutcome>;
+  update: (files: InfraFile[], env?: string) => Promise<ImportOutcome>;
+};
 
 type ImportTabDialogProps = {
   // The active tab's name — shown in the warning so it's clear which
@@ -36,6 +50,8 @@ type ImportTabDialogProps = {
   // The formats offered, in catalogue order; absent offers every one. A single format opens straight at its
   // panel.
   formats?: readonly Format[];
+  // Absent, the Infrastructure format is not offered (the start screen's import opens the board formats only).
+  infra?: InfraDialogApi;
   onClose: () => void;
 };
 
@@ -120,10 +136,9 @@ const FORMATS: {
     key: 'infra',
     title: 'Infrastructure',
     description:
-      'A wrangler.toml or docker-compose file. Draws each Worker or service with its bindings, dependencies and networks.',
-    placeholder:
-      'services:\n  web:\n    image: nginx\n    depends_on: [api]\n  api:\n    build: .\n    depends_on: [db]\n  db:\n    image: postgres:16\n\n# or a wrangler.toml',
-    note: { article: 'importTabs', label: 'See what a wrangler.toml or Compose file draws' },
+      'wrangler.toml, Compose, Terraform or Kubernetes files, several at once. Draws each service with its bindings, dependencies and networks.',
+    placeholder: '',
+    note: { article: 'importTabs', label: 'See what each infrastructure file draws' },
   },
 ];
 
@@ -150,16 +165,23 @@ export function ImportTabDialog({
   onImportText,
   onClose,
   formats,
+  infra,
 }: ImportTabDialogProps) {
   const titleId = useId();
-  const offered = formats ? FORMATS.filter((f) => formats.includes(f.key)) : FORMATS;
+  const offered = (formats ? FORMATS.filter((f) => formats.includes(f.key)) : FORMATS).filter(
+    (f) => f.key !== 'infra' || infra !== undefined,
+  );
   // One format offered: no list to pick from, so its panel is the dialog.
   const only = offered.length === 1 ? offered[0]!.key : null;
   const [active, setActive] = useState<Format | null>(only);
+  // The update from the tab's files, opened from its From Its Files card.
+  const [updating, setUpdating] = useState(false);
   // Set once an import that met images, or brought a board across with changes, has landed: the
   // dialog then shows how it came across instead of closing.
   const [report, setReport] = useState<DoneOutcome | null>(null);
   const activeFormat = active ? FORMATS.find((f) => f.key === active) : null;
+  const onDone = (outcome: DoneOutcome) => (needsReport(outcome) ? setReport(outcome) : onClose());
+  const sources = infra?.sources ?? null;
 
   return (
     <Dialog open onClose={onClose} ariaLabel="Import into tab" size="xl" className="max-h-[90vh]">
@@ -177,11 +199,15 @@ export function ImportTabDialog({
                 : report.images
                   ? "Here's how your images came across."
                   : "Here's how your import came across."
-            : activeFormat?.file
-              ? `Import your ${activeFormat.title} file.`
-              : activeFormat
-                ? `Paste your ${activeFormat.title}, or import a file.`
-                : 'Pick a format to import into the current tab.'
+            : updating
+              ? 'Update this tab from new versions of its files.'
+              : activeFormat?.key === 'infra'
+                ? 'Add your infrastructure files, or paste one.'
+                : activeFormat?.file
+                  ? `Import your ${activeFormat.title} file.`
+                  : activeFormat
+                    ? `Paste your ${activeFormat.title}, or import a file.`
+                    : 'Pick a format to import into the current tab.'
         }
         actions={<HelpArticleLink article="importTabs" size="md" />}
         onClose={onClose}
@@ -193,7 +219,22 @@ export function ImportTabDialog({
             scene={report.scene}
             failures={report.failures}
             documents={report.documents}
+            {...(report.title ? { title: report.title } : {})}
             onDone={onClose}
+          />
+        ) : updating && infra && sources ? (
+          <InfraUpdatePanel
+            sources={sources}
+            note={
+              <HelpArticleLink
+                article="importTabs"
+                variant="text"
+                label="See what an update keeps"
+              />
+            }
+            onUpdate={infra.update}
+            onDone={onDone}
+            onBack={() => setUpdating(false)}
           />
         ) : (
           <ImportChooser
@@ -204,7 +245,9 @@ export function ImportTabDialog({
             single={only !== null}
             onImportFile={onImportFile}
             onImportText={onImportText}
-            onDone={(outcome) => (needsReport(outcome) ? setReport(outcome) : onClose())}
+            infra={infra}
+            onUpdate={sources && active === null ? () => setUpdating(true) : undefined}
+            onDone={onDone}
           />
         )}
       </div>
@@ -222,6 +265,8 @@ function ImportChooser({
   onImportText,
   onDone,
   single,
+  infra,
+  onUpdate,
 }: {
   tabName: string;
   activeFormat: (typeof FORMATS)[number] | null;
@@ -230,10 +275,23 @@ function ImportChooser({
   single: boolean;
   onImportFile: ImportTabDialogProps['onImportFile'];
   onImportText: ImportTabDialogProps['onImportText'];
+  infra?: InfraDialogApi;
+  // Offered on the format list of a tab drawn from files: opens the update.
+  onUpdate?: () => void;
   onDone: (outcome: Extract<ImportOutcome, { status: 'done' }>) => void;
 }) {
+  const note = activeFormat?.note ? (
+    <HelpArticleLink
+      article={activeFormat.note.article}
+      variant="text"
+      label={activeFormat.note.label}
+    />
+  ) : null;
   return (
     <>
+      {onUpdate && infra?.sources ? (
+        <InfraSourcesCard sources={infra.sources} onUpdate={onUpdate} />
+      ) : null}
       {/* Destructive-action warning — this overwrites the tab. */}
       <div className="mb-4 flex items-start gap-2.5 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
         <span className="mt-0.5 shrink-0">
@@ -247,20 +305,19 @@ function ImportChooser({
           <span className="pointer-coarse:hidden"> (⌘Z / Ctrl&#8209;Z)</span> brings it back.
         </span>
       </div>
-      {activeFormat?.file ? (
+      {activeFormat?.key === 'infra' && infra ? (
+        <InfraImportPanel
+          note={note}
+          onImport={infra.importFiles}
+          onDone={onDone}
+          onBack={single ? undefined : () => onPick(null)}
+        />
+      ) : activeFormat?.file ? (
         <FileImportPanel
           formatTitle={activeFormat.title}
           dropLabel={activeFormat.file.dropLabel}
           hint={activeFormat.file.hint}
-          note={
-            activeFormat.note ? (
-              <HelpArticleLink
-                article={activeFormat.note.article}
-                variant="text"
-                label={activeFormat.note.label}
-              />
-            ) : null
-          }
+          note={note}
           onImportFile={(onProgress, dropped) =>
             onImportFile(activeFormat.key, onProgress, dropped)
           }
@@ -275,15 +332,7 @@ function ImportChooser({
                grid, where it asked "Importing a Markdown outline?" of a reader
                who had not picked a format yet — an answer to a question nobody
                had. */
-          note={
-            activeFormat.note ? (
-              <HelpArticleLink
-                article={activeFormat.note.article}
-                variant="text"
-                label={activeFormat.note.label}
-              />
-            ) : null
-          }
+          note={note}
           onImportText={(text, onProgress) => onImportText(activeFormat.key, text, onProgress)}
           onImportFile={(onProgress) => onImportFile(activeFormat.key, onProgress)}
           onDone={onDone}

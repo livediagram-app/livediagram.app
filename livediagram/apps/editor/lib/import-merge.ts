@@ -32,8 +32,12 @@ export function mergeImportedTab(receiving: Tab, imported: Tab): Tab {
 }
 
 function mergeFields(receiving: Tab, imported: Tab): Tab {
+  // The files a drawing came from are the import's alone (infrastructure-import.md "Updating a tab from its
+  // files"): an infrastructure import brings its own, any other import replaces the tab with something no file drew.
+  const { sources: _forgotten, ...kept } = receiving;
   return {
-    ...receiving,
+    ...kept,
+    ...(imported.sources ? { sources: imported.sources } : {}),
     elements: imported.elements,
     kind: imported.kind ?? receiving.kind,
     // The mode the tab opens in travels with it (docs/specs/007-editor/editor-modes.md).

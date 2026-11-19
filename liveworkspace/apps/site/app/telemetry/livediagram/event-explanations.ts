@@ -1137,6 +1137,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone drew an architecture diagram in a tab from a Cloudflare wrangler.toml file.',
   'Tab|Imported|Compose':
     'Someone drew an architecture diagram in a tab from a Docker Compose file.',
+  'Tab|Imported|Terraform':
+    'Someone drew an architecture diagram in a tab from Terraform (.tf) files.',
+  'Tab|Imported|Kubernetes':
+    'Someone drew an architecture diagram in a tab from Kubernetes manifest files.',
+  'Tab|Imported|InfraUpdate':
+    'Someone updated an architecture diagram from new versions of the files it was drawn from, keeping its layout and edits.',
   'Element|Imported|Excalidraw':
     'Someone pasted or dropped a drawing copied from Excalidraw onto the canvas.',
   'Tab|Imported|ExcalidrawPng':

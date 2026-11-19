@@ -114,7 +114,7 @@ describe('ImportTabDialog on a phone', () => {
 // report in place of "board".
 describe('ImportTabDialog, infrastructure', () => {
   it('offers Infrastructure, passes the paste to it and shows its report', async () => {
-    const onImportText = vi.fn(async (): Promise<ImportOutcome> => ({
+    const importFiles = vi.fn(async (): Promise<ImportOutcome> => ({
       status: 'done',
       subtitle: "Here's how your infrastructure came across.",
       scene: {
@@ -127,21 +127,33 @@ describe('ImportTabDialog, infrastructure', () => {
       <ImportTabDialog
         tabName="Arch"
         onImportFile={vi.fn()}
-        onImportText={onImportText}
+        onImportText={vi.fn()}
+        infra={{ sources: null, importFiles, update: vi.fn() }}
         onClose={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Infrastructure/ }));
-    expect(screen.getByText('Paste your Infrastructure, or import a file.')).toBeTruthy();
-    const field = screen.getByRole('textbox', { name: 'Infrastructure to import' });
+    const field = screen.getByRole('textbox', { name: 'Or paste a file' });
     expect((field as HTMLTextAreaElement).placeholder).toContain('services:');
-    expect(screen.getByText('See what a wrangler.toml or Compose file draws')).toBeTruthy();
+    expect(screen.getByText('See what each infrastructure file draws')).toBeTruthy();
     fireEvent.change(field, { target: { value: 'name = "api"' } });
     fireEvent.click(screen.getByRole('button', { name: 'Import' }));
     const report = await screen.findByTestId('import-image-report');
-    expect(onImportText).toHaveBeenCalledWith('infra', 'name = "api"', expect.any(Function));
+    expect(importFiles).toHaveBeenCalledWith([{ text: 'name = "api"' }], undefined);
     expect(screen.getByText("Here's how your infrastructure came across.")).toBeTruthy();
     expect(report.textContent).toContain('Keys not drawn: vars');
+  });
+
+  it('leaves Infrastructure out where its runners are not given', () => {
+    render(
+      <ImportTabDialog
+        tabName="Arch"
+        onImportFile={vi.fn()}
+        onImportText={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /^Infrastructure/ })).toBeNull();
   });
 });
 
