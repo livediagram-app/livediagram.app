@@ -320,7 +320,8 @@ describe('outlineStroke: limits and failures', () => {
     expect(rings).not.toBeNull();
     // Measured about 0.5 s on a developer machine; a real bold icon (Lucide heart, 900 px) takes about 13 ms.
     expect(ms).toBeLessThan(cpuBudgetMs(1500));
-  });
+    // Coverage slows it past vitest's 5 s default on CI's shared runners (5.4 s); the CPU budget is the guard.
+  }, 30_000);
 
   it('keeps a stroke too detailed to outline a stroke at once, before any union', () => {
     // 200 bold curves in one path (33,200 ring points): the union took about 2 s to make 7,440 nodes, past a path's
