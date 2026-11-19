@@ -63,6 +63,9 @@ type TabActionsDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once replaced content has rendered (useTabEntryEffects).
   requestFit: () => void;
+  // Notes an import's view and elements, so its undo can bring the view back
+  // (@liveworkspace/workbench/hooks/canvas/useImportUndoView).
+  noteImport?: (tabId: string, elements: readonly { id: string }[]) => void;
   confirm: ReturnType<typeof useConfirm>;
   toast: ReturnType<typeof useToast>;
   // A JSON tab export's Plan items, added after its tab lands (usePlanTabImport).
@@ -87,6 +90,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setEditingId,
     setImportError,
     requestFit,
+    noteImport,
     confirm,
     toast,
   } = deps;
@@ -118,6 +122,7 @@ export function useTabActions(deps: TabActionsDeps) {
     setEditingId,
     setImportError,
     requestFit,
+    noteImport,
     importPlanItems: deps.importPlanItems,
   });
 

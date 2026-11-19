@@ -81,7 +81,12 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     collaborationSlice,
     pagesSlice,
   });
-  const historySlice = useEditorUndoState({ documentSlice, selectionSlice, pagesSlice });
+  const historySlice = useEditorUndoState({
+    documentSlice,
+    selectionSlice,
+    pagesSlice,
+    viewportSlice,
+  });
   const articlesSlice = useEditorArticles({
     documentSlice,
     selectionSlice,
@@ -99,6 +104,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     collaborationSlice,
     viewportSlice,
     pagesSlice,
+    historySlice,
   });
   const elementsSlice = useEditorElements({
     documentSlice,
