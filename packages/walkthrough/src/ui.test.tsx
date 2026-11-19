@@ -607,6 +607,35 @@ describe('recording, beyond the canvas', () => {
 
   beforeEach(() => localStorage.clear());
 
+  // Work Tracker 1287: Tools covered a Dashboard tab's right-hand slots, so they could not be pressed while picking.
+  it('steps Tools and the set-up aside while picking, so a right-hand slot can be pressed', async () => {
+    stubDevices();
+    await openDock({ hideable: board() });
+    fireEvent.click(screen.getByRole('button', { name: /Hide From Recording/ }));
+    // Tools stays open, out of sight; the set-up gives way to the picking bar, whose Done takes the focus.
+    const tools = document
+      .querySelector<HTMLElement>('[data-tools-popover]')!
+      .closest('[role="dialog"]')!;
+    expect(tools.hasAttribute('data-stepped-aside')).toBe(true);
+    expect(tools.className).toContain('invisible');
+    expect(screen.queryByRole('region', { name: 'Record a Walkthrough' })).toBeNull();
+    const bar = await screen.findByRole('toolbar', { name: 'Hide From Recording' });
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Done' }));
+    // A press on the slot picks it, counted on the bar; a press outside keeps Tools open.
+    fireEvent.pointerDown(screen.getByTestId('slot1-face'));
+    expect(presenterCss()).toContain('[data-dashboard-slot="slot1"] > *');
+    expect(bar.textContent).toContain('1');
+    fireEvent.pointerDown(document.body);
+    expect(document.querySelector('[data-tools-popover]')).not.toBeNull();
+    // Done brings Tools and the set-up back as they were.
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('toolbar', { name: 'Hide From Recording' })).toBeNull();
+    expect(tools.hasAttribute('data-stepped-aside')).toBe(false);
+    expect(tools.className).not.toContain('invisible');
+    expect(await screen.findByRole('region', { name: 'Record a Walkthrough' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Hide From Recording/ }).textContent).toContain('1');
+  });
+
   it('hides a board card and a dashboard widget, picked or selected, on screen while it films', async () => {
     stubDevices();
     const server = await openDock({ hideable: board() });
@@ -620,7 +649,7 @@ describe('recording, beyond the canvas', () => {
     expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(screen.queryByRole('button', { name: 'Done' })).toBeNull();
-    expect(screen.getByRole('region', { name: 'Record a Walkthrough' })).toBeTruthy();
+    expect(await screen.findByRole('region', { name: 'Record a Walkthrough' })).toBeTruthy();
     expect(presenterCss()).toContain('[data-plan-card="card1"] > *');
     expect(presenterCss()).toContain('[data-dashboard-slot="slot1"] > *');
     expect(presenterCss()).toContain('[data-plan-card="card2"]');
@@ -655,14 +684,15 @@ describe('recording, beyond the canvas', () => {
     fireEvent.click(screen.getByRole('button', { name: /Hide From Recording/ }));
     expect(screen.getByRole('button', { name: 'Done' })).toBeTruthy();
     can = false;
-    // The next drawing (a tab change) reads it again.
-    fireEvent.click(screen.getByRole('switch', { name: 'Camera' }));
+    // The next drawing (a tab change; here the picking bar's Hide Selection) reads it again.
+    fireEvent.click(screen.getByRole('button', { name: 'Hide Selection' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Done' })).toBeNull());
+    await screen.findByRole('region', { name: 'Record a Walkthrough' });
     expect(screen.queryByRole('button', { name: /Hide From Recording/ })).toBeNull();
     expect(screen.getByRole('button', { name: /Start Recording/ })).toBeTruthy();
     // A press on a card now does what it always does: nothing is picked.
     fireEvent.pointerDown(screen.getByTestId('card1-face'));
-    expect(presenterCss()).toBe('');
+    expect(presenterCss()).not.toContain('card1');
     // Let the devices it asked for again arrive while the stubs stand.
     await act(async () => {
       await new Promise((r) => setTimeout(r, 0));

@@ -66,6 +66,9 @@ export type ChromeToolsItem = {
   // A tool used alongside the canvas (livediagram's Slide Deck: picking elements for a slide): a press outside leaves
   // Tools open, and only its close button or Escape shuts it (owner, 2026-11-17).
   keepOpen?: boolean;
+  // A tool working on the canvas from a bar of its own (Walkthroughs picking what to hide): Tools stays open, its view
+  // kept, but steps out of sight and takes no presses until the mark clears (footer-tools-menu.md "Stepping aside").
+  stepAside?: boolean;
   /** The tool's own view, drawn inside Tools (pressing the row calls this, not `onSelect`). */
   view?: (ctx: ToolViewContext) => ReactNode;
   /** What it needs before it works, as badges beside its name in order: "Sign In" for a tool that needs an account,
@@ -372,14 +375,16 @@ export function ChromeToolsMenu({
           name={active ? `Tools, ${active.label}` : 'Tools'}
           width={width}
           onClose={closeAll}
+          hidden={!!view && !!active?.stepAside}
           levels={
             view
               ? {
                   onEscape,
-                  passEscape: modalOpen,
+                  // Stepped aside, Escape is the tool's (Walkthroughs' picking ends on it), never a step back.
+                  passEscape: active?.stepAside ? () => true : modalOpen,
                   layer: 'modal',
                   // Every press is "within" for a keep-open tool.
-                  keepOpenWithin: active?.keepOpen ? '*' : TOOL_SURFACES,
+                  keepOpenWithin: active?.keepOpen || active?.stepAside ? '*' : TOOL_SURFACES,
                 }
               : undefined
           }
