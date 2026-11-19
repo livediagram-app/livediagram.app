@@ -212,6 +212,7 @@ export function PaletteTray({
   children,
   end,
   standing = false,
+  quietOnPhone = false,
 }: {
   box: StripBox;
   // The leading icon, or a modifier's key chip.
@@ -223,6 +224,9 @@ export function PaletteTray({
   // A standing message (an empty tab's Show Templates) rather than a mode's: it steps aside while a mode message
   // is on screen, as the two share the tray's slot (`[data-mode-message]` in globals.css).
   standing?: boolean;
+  // The message is for screen readers alone on a phone, where the tray's width holds only its actions: without a
+  // place in the row it leaves no empty gap between the glyph and the first action.
+  quietOnPhone?: boolean;
 }) {
   useEffect(() => {
     countTray(1);
@@ -247,7 +251,7 @@ export function PaletteTray({
       }}
     >
       <span aria-hidden className="grow" style={{ flexBasis: Math.max(0, 2 * shift) }} />
-      <PaletteTrayCard lead={lead} end={end} standing={standing}>
+      <PaletteTrayCard lead={lead} end={end} standing={standing} quietOnPhone={quietOnPhone}>
         {children}
       </PaletteTrayCard>
       <span aria-hidden className="grow" style={{ flexBasis: Math.max(0, -2 * shift) }} />
@@ -262,11 +266,13 @@ function PaletteTrayCard({
   children,
   end,
   standing,
+  quietOnPhone = false,
 }: {
   lead: ReactNode;
   children: ReactNode;
   end?: ReactNode;
   standing: boolean;
+  quietOnPhone?: boolean;
 }) {
   return (
     <div
@@ -281,7 +287,11 @@ function PaletteTrayCard({
       <span className="flex shrink-0 items-center text-brand-700 dark:text-brand-300">{lead}</span>
       {/* A phone-width tray wraps a long message to a second line rather than cutting off the name it gives
           ("Click to drop or drag to draw Squ…"). */}
-      <span className="min-w-0 max-sm:line-clamp-2 sm:truncate">{children}</span>
+      <span
+        className={`min-w-0 sm:truncate ${quietOnPhone ? 'max-sm:sr-only' : 'max-sm:line-clamp-2'}`}
+      >
+        {children}
+      </span>
       {end ? <span className="flex shrink-0 items-center gap-1">{end}</span> : null}
     </div>
   );
@@ -316,10 +326,10 @@ export function TemplateExampleTray({
   );
   // On a phone the tray's width (the window's, traySlot) holds only the two actions, so the sentence is for screen
   // readers there.
-  const message = <span className="max-sm:sr-only">Example content shows how this works.</span>;
+  const message = 'Example content shows how this works.';
   if (strip)
     return (
-      <PaletteTray box={strip} standing lead={lead} end={end}>
+      <PaletteTray box={strip} standing quietOnPhone lead={lead} end={end}>
         {message}
       </PaletteTray>
     );
@@ -329,7 +339,7 @@ export function TemplateExampleTray({
       className="pointer-events-none fixed inset-x-0 z-[var(--z-chrome)] flex justify-center px-4 [body[data-explorer-open]_&]:hidden"
       style={pillPlace(dock, viewportHeight)}
     >
-      <PaletteTrayCard lead={lead} end={end} standing>
+      <PaletteTrayCard lead={lead} end={end} standing quietOnPhone>
         {message}
       </PaletteTrayCard>
     </div>

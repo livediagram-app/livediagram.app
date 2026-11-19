@@ -340,6 +340,10 @@ describe('the template example tray', () => {
     const tray = screen.getByRole('status');
     expect(tray.hasAttribute('data-yields-to-mode')).toBe(true);
     expect(tray.textContent).toContain('Example content shows how this works.');
+    // A phone's tray holds only the actions: the sentence leaves the row for screen readers, with no empty gap.
+    expect(screen.getByText('Example content shows how this works.').className).toContain(
+      'max-sm:sr-only',
+    );
     const [clear, keep] = screen.getAllByRole('button');
     expect(clear!.textContent).toBe('Clear Example Content');
     expect(keep!.textContent).toBe('Keep It');
