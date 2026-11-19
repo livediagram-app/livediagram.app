@@ -45,9 +45,16 @@ export function rowToImage(row: ImageRow): MediaImage {
 
 export type Caps = { maxImages: number | null; maxBytes: number | null };
 
-export async function listImages(env: Env, owner: string): Promise<MediaImage[]> {
+// The owner's uploads, newest first: every one (the data export), or its pictures alone (an app's gallery, which
+// never offers a PDF: media.md "PDFs").
+export async function listImages(
+  env: Env,
+  owner: string,
+  kinds: 'all' | 'pictures' = 'all',
+): Promise<MediaImage[]> {
+  const only = kinds === 'pictures' ? " AND content_type LIKE 'image/%'" : '';
   const { results } = await env.MEDIA_DB.prepare(
-    'SELECT * FROM images WHERE owner = ? ORDER BY created_at DESC, id',
+    `SELECT * FROM images WHERE owner = ?${only} ORDER BY created_at DESC, id`,
   )
     .bind(owner)
     .all<ImageRow>();

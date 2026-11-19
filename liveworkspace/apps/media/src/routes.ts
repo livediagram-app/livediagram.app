@@ -4,6 +4,7 @@
 // person is, and for the bytes, that the viewer may see a document that places the image.
 
 import {
+  ACCEPTED_FILE_TYPES,
   ACCEPTED_IMAGE_TYPES,
   IMAGE_HEIGHT_HEADER,
   IMAGE_NAME_HEADER,
@@ -12,6 +13,7 @@ import {
   imageSourceOf,
   MEDIA_DOCUMENT_HEADER,
   IMAGE_WIDTH_HEADER,
+  isAcceptedFileType,
   isAcceptedImageType,
   isMediaApp,
   MAX_IMAGE_BYTES,
@@ -21,7 +23,7 @@ import {
   MEDIA_REFS_PER_DOCUMENT_MAX,
   MEDIA_REFS_SYNC_MAX,
   ORIGINAL_NAME_MAX,
-  sniffImageType,
+  sniffMediaType,
   type MediaApp,
   type MediaImage,
   type MediaRefsSync,
@@ -109,6 +111,10 @@ async function imageBytes(env: Env, bucket: R2Bucket, id: string): Promise<Respo
       'X-Content-Type-Options': 'nosniff',
       // The bytes behind an id never change, but who may see them does: the app sets its own.
       'Cache-Control': 'private, no-store',
+      // A file that is not a picture (a PDF) is never active content (media.md "PDFs").
+      ...(row.content_type.startsWith('image/')
+        ? {}
+        : { 'Content-Disposition': 'attachment', 'Content-Security-Policy': 'sandbox' }),
     },
   });
 }
@@ -165,7 +171,7 @@ export async function handleApp(
     // GET /app/images?owner=: the owner's gallery, from every app.
     if (segments.length === 1 && method === 'GET') {
       if (!isId(owner)) return badRequest('invalid_owner');
-      return json({ images: await listImages(env, owner) });
+      return json({ images: await listImages(env, owner, 'pictures') });
     }
     // POST /app/images?owner=: store a file, or answer the owner's copy of the same bytes.
     if (segments.length === 1 && method === 'POST') {
@@ -314,7 +320,10 @@ function refEntries(entries: readonly unknown[]): MediaRefsSync['documents'] | n
 }
 
 const unsupported = () =>
-  json({ error: 'unsupported_type', acceptedTypes: ACCEPTED_IMAGE_TYPES }, { status: 415 });
+  json(
+    { error: 'unsupported_type', acceptedTypes: [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_FILE_TYPES] },
+    { status: 415 },
+  );
 const tooLarge = () =>
   json({ error: 'file_too_large', limitBytes: MAX_IMAGE_BYTES }, { status: 413 });
 
@@ -345,7 +354,8 @@ async function upload(
   owner: string,
 ): Promise<Response> {
   const declaredType = (request.headers.get('Content-Type') ?? '').toLowerCase();
-  if (!isAcceptedImageType(declaredType)) return unsupported();
+  const isFile = isAcceptedFileType(declaredType);
+  if (!isAcceptedImageType(declaredType) && !isFile) return unsupported();
   const declaredLength = Number(request.headers.get('Content-Length') ?? '0');
   if (!Number.isFinite(declaredLength) || declaredLength <= 0) return badRequest('missing_length');
   if (declaredLength > MAX_IMAGE_BYTES) return tooLarge();
@@ -372,9 +382,13 @@ async function upload(
     if (full) return full;
   }
 
-  const width = Number(request.headers.get(IMAGE_WIDTH_HEADER) ?? '0');
-  const height = Number(request.headers.get(IMAGE_HEIGHT_HEADER) ?? '0');
-  if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) {
+  // A PDF has no size to draw at: stored 0 by 0, whatever was sent (media.md "PDFs").
+  const width = isFile ? 0 : Number(request.headers.get(IMAGE_WIDTH_HEADER) ?? '0');
+  const height = isFile ? 0 : Number(request.headers.get(IMAGE_HEIGHT_HEADER) ?? '0');
+  if (
+    !isFile &&
+    (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0)
+  ) {
     return badRequest('invalid_dimensions');
   }
   const originalName = originalNameOf(request.headers.get(IMAGE_NAME_HEADER));
@@ -383,7 +397,7 @@ async function upload(
   const bytes = await request.arrayBuffer();
   // Content-Length is the caller's word; the body is the fact.
   if (bytes.byteLength > MAX_IMAGE_BYTES) return tooLarge();
-  const sniffed = sniffImageType(new Uint8Array(bytes.slice(0, 16)));
+  const sniffed = sniffMediaType(new Uint8Array(bytes.slice(0, 16)));
   if (!sniffed || sniffed !== declaredType) return unsupported();
 
   // The hash of the file as picked, so the same file dedupes however its metadata is stripped below.
