@@ -112,6 +112,10 @@ export function handleInternalItems(
         await communityService.mergeCopier(env, guestId, userId);
       },
       anonymise: (id, personId, guestIds) => planRoom(env, id).anonymise(personId, guestIds),
+      // An AI tool whose last token was revoked at liveworkspace: the plan forgets it and hands its cards back to the
+      // person it worked for (plan-room/assistant-revoked.ts).
+      assistantRevoked: (id, personId, client) =>
+        planRoom(env, id).assistantRevoked(personId, client),
       // The reverse of a connection made both ways (liveworkspace/docs/specs/004-index/connected-tabs.md): one
       // connected tab at the end of the plan's tab bar.
       connectedTab: (id, write) => planRoom(env, id).addConnectedTab(write),

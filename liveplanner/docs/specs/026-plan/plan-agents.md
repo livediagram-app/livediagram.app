@@ -502,6 +502,11 @@ assistant finds its cards here, works them with the tools above and hands each b
   `item ls` marks a card handed to an assistant with its name after the title.
 - **Who may**: as `change_items`: a token of an Editor or a Participant hands cards over and back; a read-only token
   only lists them (its writes are refused); a Viewer's token is refused by the item routes (403).
+- **A revoked token** (Work Tracker 1294): once its person revokes the last token that could write under the
+  assistant's name (Settings, the CLI signing out, or ending the AI tool's connection), every plan it may have reached
+  forgets it and hands each card it holds back to the person it worked for, noted in the card's history by Access
+  Revoked ([Items "When its token is revoked"](items.md#when-its-token-is-revoked)). A token that never reached a plan
+  changes nothing there. Only the token's owner can revoke it, so only their own tool's cards are ever handed back.
 
 ## Automations
 

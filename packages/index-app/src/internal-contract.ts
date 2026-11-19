@@ -126,6 +126,10 @@ export type InternalItemHandlers = {
   // Their name off one item they worked in that outlives them (anonymise.ts), and the names of the guests merged into
   // them (`guestIds`, at most 32, never the person), treated as the person's own. Idempotent.
   anonymise?: (itemId: string, personId: string, guestIds: readonly string[]) => Promise<unknown>;
+  // An AI tool's last token was revoked (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Revoking an AI
+  // tool's token"): the item forgets the person's tool named `client` (the token's name) and hands back what it was
+  // given. Idempotent. Without it the door is a 404.
+  assistantRevoked?: (itemId: string, personId: string, client: string) => Promise<unknown>;
   // The item drawn as a file (the export door). Read only: nothing is cached or written on the app's side.
   export?: (itemId: string, query: ExportQuery) => Promise<ExportResult>;
   // A new item for `owner` from a file (the Drive mirror's import door): fresh ids throughout, registered in the

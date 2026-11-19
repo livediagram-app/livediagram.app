@@ -203,6 +203,26 @@ A local stack has one more door, for the apps' MCP evaluation benches: `POST /ap
 `{accounts: [{userId, token}]}`. It needs `ADMIN_TOKEN`, as registering a client does, and exists only where
 `ENVIRONMENT` is `development` (`src/bench-accounts.ts`).
 
+### Revoking a token tells the apps
+
+An AI tool's token can be handed work in an app (a liveplanner card, [Handing a card to an AI
+assistant](../../../../liveplanner/docs/specs/026-plan/items.md#handing-a-card-to-an-ai-assistant)), where it is known
+by its name and its person, never its id (Work Tracker 1294). Revoking it (in Settings, or a CLI revoking its own,
+which is also how an MCP connection is ended: connecting an AI tool makes a token) tells the apps the tool is gone, so
+each plan forgets it and hands its cards back:
+
+- **Only when that tool is gone**: every token one person holds under the same name is one assistant, so the signal
+  goes only when the person holds no other live token that may write (not read-only, not expired) under the same name,
+  compared trimmed and case aside. A read-only token never was an assistant and sends none.
+- **Off the revoke's path**: the revoke answers first; after it (the request's `waitUntil`), accounts sends the index
+  `POST /api/index/internal/assistant-revoked {personId, client, teamIds}` with its merge key: the account, the
+  token's name and the teams the account is in. The index records it and tells each app in turn
+  ([One Explorer contracts "Revoking an AI tool's token"](../004-index/one-explorer-contracts.md#revoking-an-ai-tools-token)),
+  so a slow or unreachable app never slows or fails the revoke. A call to the index that fails is logged and
+  dropped: the revoke has happened, and the tool's cards stay handed to it, as before this signal.
+- **Only the token's owner** revokes it (Settings, by id and owner; the CLI, by its secret), so only the owner's own
+  tool is ever named.
+
 ### Expiry warnings
 
 A week before a token expires, its owner is emailed once about it, so a script or connected AI tool

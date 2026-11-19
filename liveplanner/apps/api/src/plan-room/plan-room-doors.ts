@@ -26,6 +26,8 @@ import type { CommunityLink, CommunityListing, CopySource } from '../plan-client
 import type { Copier } from '@liveworkspace/index-app';
 import { notifyProjectJoin } from '../email/notifications';
 import { anonymisePlan } from './plan-anonymise';
+import { handBackRevoked } from './assistant-revoked';
+import { withoutLegacyThread } from '@liveplanner/project';
 import { PLAN_OUTBOX } from './plan-outbox';
 import { exportProjectFile } from './project-file';
 import { addConnectedPlanTab, connectedTabArrival } from './connected-tab';
@@ -324,6 +326,43 @@ export async function joined(room: PlanRoom, planId: string, personId: string): 
   );
 }
 
+// A plan never started (or purged) holds nothing of anyone: its storage read as it is, without making the schema and
+// plan row a first query would.
+function planStarted(room: PlanRoom, planId: string): boolean {
+  const sql = room.state.storage.sql;
+  return (
+    sql.exec(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'plan'`).toArray()
+      .length > 0 &&
+    sql.exec('SELECT 1 FROM plan WHERE id = ? AND created_at > 0', planId).toArray().length > 0
+  );
+}
+
+// An AI tool whose token was revoked (assistant-revoked.ts): forgotten, and its cards handed back to its person, each
+// landed batch relayed to everyone in the room. Answers the cards handed back.
+export async function assistantRevoked(
+  room: PlanRoom,
+  planId: string,
+  personId: string,
+  client: string,
+): Promise<number> {
+  room.bindPlan(planId);
+  if (!planStarted(room, planId)) return 0;
+  const { cards } = await handBackRevoked(
+    room.requireEnv(),
+    planId,
+    personId,
+    client,
+    (items, rev) =>
+      room.broadcastOrderedSystemOp({
+        kind: 'items',
+        upserts: items.map(withoutLegacyThread),
+        removed: [],
+        rev,
+      }),
+  );
+  return cards;
+}
+
 // A closed account's name off this plan (plan-anonymise.ts): the index's person purge, through the api.
 export async function anonymise(
   room: PlanRoom,
@@ -332,14 +371,7 @@ export async function anonymise(
   guestIds: readonly string[] = [],
 ): Promise<number> {
   room.bindPlan(planId);
-  // A plan never started (or purged) holds nothing of anyone: read its storage as it is, without making the
-  // schema and plan row a first query would.
-  const sql = room.state.storage.sql;
-  const started =
-    sql.exec(`SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'plan'`).toArray()
-      .length > 0 &&
-    sql.exec('SELECT 1 FROM plan WHERE id = ? AND created_at > 0', planId).toArray().length > 0;
-  if (!started) return 0;
+  if (!planStarted(room, planId)) return 0;
   const changed = await anonymisePlan(room.requireEnv(), planId, personId, guestIds);
   // The owner may have been the one anonymised: the next grant reads the stored copy again.
   room.head.forget();

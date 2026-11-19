@@ -25,6 +25,8 @@
 //   POST   /api/internal/people/:id/purge     {items, guests?}  a closed account: drop what the app keeps for the
 //                                                            person, and anonymise them in up to 100 items, with
 //                                                            the guests merged into them (up to 32) as their own
+//   POST   /api/internal/people/:id/assistant-revoked {client, items}  an AI tool's last token was revoked: up to
+//                                                            100 items forget it and hand back its work
 //   POST   /api/internal/people/:guest/merge  {into, legacy?}  a guest became an account: move what the app keeps
 //                                                            for the guest to the account. With `legacy: true` (a
 //                                                            returning guest of the old livediagram.app claiming
@@ -85,6 +87,7 @@ import {
   MAX_CODES,
 } from './internal-contract';
 import {
+  assistantRevoked,
   badRequest,
   bodyOf,
   connectedTab,
@@ -241,6 +244,11 @@ export async function handleInternalItems(
     }
     if (parts.length === 6 && parts[5] === 'merge' && request.method === 'POST') {
       return personMerged(request, person, handlers);
+    }
+    if (parts.length === 6 && parts[5] === 'assistant-revoked' && request.method === 'POST') {
+      return handlers.assistantRevoked
+        ? assistantRevoked(request, person, handlers.assistantRevoked)
+        : notFound();
     }
     if (migratingPerson) return migratePerson(request, person, app, handlers.migratePerson);
     return notFound();

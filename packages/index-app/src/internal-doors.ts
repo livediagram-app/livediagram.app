@@ -114,6 +114,36 @@ export async function personClosed(
   );
 }
 
+// A token's name, as accounts bounds it.
+export const ASSISTANT_CLIENT_TEXT_MAX = 80;
+
+// POST /api/internal/people/:id/assistant-revoked {client, items}: an AI tool's last token was revoked, so each item
+// forgets it and hands back what it held. A 503 names the items not reached, which the index asks about again.
+export async function assistantRevoked(
+  request: Request,
+  person: string,
+  run: NonNullable<InternalItemHandlers['assistantRevoked']>,
+) {
+  if (!USER_ID.test(person)) return notFound();
+  const body = (await bodyOf(request)) ?? {};
+  const raw = body['client'];
+  const client = typeof raw === 'string' ? raw.trim() : '';
+  if (client.length === 0 || client.length > ASSISTANT_CLIENT_TEXT_MAX) {
+    return badRequest(`client must be 1 to ${ASSISTANT_CLIENT_TEXT_MAX} characters`);
+  }
+  const items = body['items'];
+  if (!Array.isArray(items) || items.length > PERSON_ITEMS_MAX || !items.every(validId)) {
+    return badRequest(`items must be up to ${PERSON_ITEMS_MAX} item ids`);
+  }
+  const { purged, unreached } = await purgeEach([...new Set(items)], (id) =>
+    run(id, person, client),
+  );
+  return json(
+    { ok: unreached.length === 0, reached: purged.length, unreached },
+    unreached.length ? 503 : 200,
+  );
+}
+
 // GET /api/internal/items/:id/export: the item as a file, or why not.
 export async function exportItem(
   url: URL,

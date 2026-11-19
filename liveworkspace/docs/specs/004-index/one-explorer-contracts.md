@@ -383,6 +383,32 @@ nothing. The record is kept, and the purge run again, for two hours, so anything
 token issued before the account closed goes too. A guest's things have no account to close; the same
 purge serves a guest id when one is asked for.
 
+## Revoking an AI tool's token
+
+An AI tool is known in an app by its token's name and its person (a liveplanner plan remembers it and can hand it
+cards, [Handing a card to an AI assistant](../../../liveplanner/docs/specs/026-plan/items.md#handing-a-card-to-an-ai-assistant)).
+Once the person's last writable token under that name is revoked
+([accounts.md "Revoking a token tells the apps"](../003-accounts/accounts.md#revoking-a-token-tells-the-apps)), every
+item that knew it must forget it, and only the index knows which items the person reaches (Work Tracker 1294):
+
+- **The door**: `POST /internal/assistant-revoked {personId, client, teamIds}` with accounts' merge key, as
+  `purge-person` takes. `personId` is an account (`user_…`), `client` the token's name (1 to 80 characters),
+  `teamIds` the teams the account is in (at most `TEAMS_MAX`). Anything else is `400`. It answers `200 {items}` once
+  the notices are recorded, and tells the apps after the answer.
+- **The notices** (`assistant_notices`, one row per person, tool, app and item): every item of an app that keeps
+  assistants (`ASSISTANT_APPS`, liveplanner alone today) the person may have reached with the token: their own, their
+  teams' that are not in the Trash, any shared with them, opened by them or in the event log as theirs. A superset,
+  as a closed account's notices are: an item that never met the tool changes nothing. At most `RECORD_MAX` (5,000)
+  items a source, recorded in one batch; the same revoke recorded twice keeps one row an item.
+- **Telling the apps**: after the answer, and on the 15-minute cron, each (person, tool, app) that is due gets
+  `POST <app>/api/internal/people/:id/assistant-revoked {client, items}` with the app's key, at most 100 items a
+  call, at most 20 calls a run. The rows go when the app answers 2xx (or the app is not configured here). Any other
+  answer, or none, is tried again an hour later, and given up on after a week, as a closed account's notices are.
+- **The app**: drops the tool from each item's remembered assistants and hands each card it holds back to the person
+  it worked for (liveplanner's [Items](../../../liveplanner/docs/specs/026-plan/items.md#when-its-token-is-revoked)).
+  Doing it twice changes nothing, so every retry is safe. It answers `503` with the items it could not reach, so the
+  index asks again.
+
 ## Folders and defaults
 
 Folders are not per app: one tree per person, and one per team, holding items from any app.

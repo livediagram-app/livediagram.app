@@ -26,6 +26,7 @@ import { listApiTokens, mintApiToken, cleanTokenName, revokeApiToken } from '../
 import { parseTimeZone } from '../send-window.ts';
 import { reportServerEvent } from '../telemetry.ts';
 import { endTokenWorkbench } from '../workbench/revoke.ts';
+import { tellAssistantRevoked } from '../assistant-revoked.ts';
 import { answer, error, json, readBody, type WaitUntil } from './http.ts';
 import { type Reader, tellAdmins } from './shared.ts';
 
@@ -65,6 +66,8 @@ export async function tokenRoutes(
     if (!(await revokeApiToken(db, owner, id))) return error(404, 'not_found');
     // Its workbench pairings go with it (workbench/revoke.ts).
     await endTokenWorkbench(env, owner, id, waitUntil);
+    // Its AI tool leaves the apps' plans, after the answer (assistant-revoked.ts).
+    tellAssistantRevoked(env, owner, id, waitUntil);
     reportServerEvent(env, 'Token', 'Removed', null, home);
     return json({ id });
   }

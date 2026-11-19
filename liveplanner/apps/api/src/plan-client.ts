@@ -105,6 +105,9 @@ export type PlanRoomClient = {
   // A closed account's name off the plan (plan-anonymise.ts), and the guests merged into it (`guestIds`) as its own:
   // answers the rows changed.
   anonymise(personId: string, guestIds?: readonly string[]): Promise<number>;
+  // An AI tool whose last token was revoked (plan-room/assistant-revoked.ts): forgotten, and the cards it held handed
+  // back to its person. Answers the cards handed back.
+  assistantRevoked(personId: string, client: string): Promise<number>;
   // A tab shared between plans (plan-room/tab-shares.ts): the tab and its holders for one joining, the join
   // recorded, and what another holder (`from`) sends.
   sharedTabCopy(tabId: string): Promise<SharedTabCopy | null>;
@@ -169,6 +172,7 @@ export function planRoom(env: Pick<Env, 'PLAN_ROOM'>, planId: string): PlanRoomC
     communityListing: (code) => room.communityListing(planId, code),
     joined: (personId) => room.joined(planId, personId),
     anonymise: (personId, guestIds = []) => room.anonymise(planId, personId, guestIds),
+    assistantRevoked: (personId, client) => room.assistantRevoked(planId, personId, client),
     sharedTabCopy: (tabId) => room.sharedTabCopy(planId, tabId),
     shareJoined: (tabId, member, seen) => room.shareJoined(planId, tabId, member, seen),
     receiveShares: (from, messages) => room.receiveShares(planId, from, messages),
@@ -225,6 +229,7 @@ export type PlanRoomRpc = {
   communityListing(planId: string, code: string): Promise<CommunityListing | null>;
   joined(planId: string, personId: string): Promise<void>;
   anonymise(planId: string, personId: string, guestIds: readonly string[]): Promise<number>;
+  assistantRevoked(planId: string, personId: string, client: string): Promise<number>;
   sharedTabCopy(planId: string, tabId: string): Promise<SharedTabCopy | null>;
   shareJoined(
     planId: string,

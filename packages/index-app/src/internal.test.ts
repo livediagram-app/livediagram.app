@@ -410,3 +410,51 @@ describe('the guest-merge door', () => {
     }
   });
 });
+
+describe('the revoked AI tool door (Work Tracker 1294)', () => {
+  const door = (body: unknown, handlers: Partial<InternalItemHandlers>, person = 'user_a') =>
+    send('POST', `/api/internal/people/${person}/assistant-revoked`, body, handlers);
+
+  it('tells each item, once, which of the person’s tools to forget', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const assistantRevoked = vi.fn(async () => {});
+    const res = await door({ client: ' Claude ', items: ['A', 'B', 'A'] }, { assistantRevoked });
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ ok: true, reached: 2, unreached: [] });
+    expect(assistantRevoked.mock.calls).toEqual([
+      ['A', 'user_a', 'Claude'],
+      ['B', 'user_a', 'Claude'],
+    ]);
+  });
+
+  it('answers 503 with the items not reached, so the index asks again', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const assistantRevoked = async (id: string) => {
+      if (id === 'B') throw new Error('down');
+    };
+    const res = await door({ client: 'Claude', items: ['A', 'B'] }, { assistantRevoked });
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({ ok: false, reached: 1, unreached: ['B'] });
+  });
+
+  it('refuses a guest, a bad name or list, and is a 404 for an app without the handler', async () => {
+    const assistantRevoked = vi.fn(async () => {});
+    expect((await door({ client: 'Claude', items: [] }, {})).status).toBe(404);
+    expect(
+      (await door({ client: 'Claude', items: [] }, { assistantRevoked }, 'guest_a')).status,
+    ).toBe(404);
+    for (const body of [
+      { items: [] },
+      { client: '  ', items: [] },
+      { client: 'x'.repeat(81), items: [] },
+      { client: 'Claude', items: 'A' },
+      { client: 'Claude' },
+      { client: 'Claude', items: [5] },
+      { client: 'Claude', items: Array.from({ length: 101 }, (_, i) => `i${i}`) },
+    ]) {
+      expect((await door(body, { assistantRevoked })).status).toBe(400);
+    }
+    expect(assistantRevoked).not.toHaveBeenCalled();
+  });
+});
