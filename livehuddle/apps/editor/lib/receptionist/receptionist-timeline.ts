@@ -24,7 +24,7 @@ import {
 const BESIDE_PERSON = 44;
 const BESIDE_PAD = 28;
 /** How far behind a reception desk's top edge he stands to answer its bell: clear of its Welcome bubble. */
-const BEHIND_DESK = 40;
+export const BEHIND_DESK = 40;
 /** A flourish or a pat comes round again this often while he stands at its stop. */
 const ENCORE_MS = 5_000;
 /** The canvas px of walking per walk frame, four frames a cycle, as everyone walks (avatar-mode.md "Walk animation"). */
@@ -191,6 +191,20 @@ export function talkDetour(
   const left = at.x < you.x;
   const to = { x: you.x + (left ? -BESIDE_PERSON : BESIDE_PERSON), y: you.y };
   return detourTo(world, now, current, 'talk', to, left ? 'right' : 'left', null);
+}
+
+type DeskBox = { x: number; y: number; width: number; height: number };
+
+/**
+ * The desk he stands behind, at its bell spot (BEHIND_DESK over its top edge) or nearer, over its width; else null.
+ * Its back is usually against a wall, so in the 3D view he is drawn towards the camera there (ReceptionistLayer).
+ */
+export function deskBehind<D extends DeskBox>(desks: readonly D[], at: Point): D | null {
+  return (
+    desks.find(
+      (d) => at.x >= d.x && at.x <= d.x + d.width && at.y < d.y && d.y - at.y <= BEHIND_DESK + 1,
+    ) ?? null
+  );
 }
 
 /**

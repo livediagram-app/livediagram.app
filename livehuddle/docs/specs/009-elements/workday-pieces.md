@@ -148,8 +148,10 @@ A round cushioned dog bed with a bone toy, and the office dog that lives in it: 
 a wagging tail.
 
 - **It wanders its room.** The dog's room is the innermost Room whose floor holds the bed's middle; a bed in no room
-  lets it wander a circle 240 px round the bed. Every 9 seconds is a **leg**: the dog trots to a spot in its room for
-  the first 3 seconds of the leg, then sits there. Every fourth leg it goes back to its bed and naps.
+  lets it wander a circle 240 px round the bed. Every 9 seconds is a **leg**. The dog walks one leg in three: it trots
+  to a spot in its room in the first 3 seconds of that leg, then lies down there and rests through the next two legs
+  (about 24 seconds), still, before it sets off again (Work Tracker 1257: a still office stays still most of the
+  time). Every fourth walk it goes back to its bed and naps.
 - **It walks, it does not glide** (the owner, 2026-11-18: "rather than just sliding across the floor like a ghost"):
   it faces the way it is going, and while it trots its legs step in diagonal pairs, swinging from the hip, and its
   body bobs once a step, at a steady pace with a short start and stop. Under reduced motion it stays in its bed.
@@ -157,10 +159,14 @@ a wagging tail.
   desk, a plant, a fence) or another room inside its own is passed over for the generator's next spot, up to 12 tries;
   a room with no clear spot in 12 keeps the dog napping that leg. Floors are walked over: rugs, grass, paths, stages,
   pads and the beds. The same spot is chosen on every screen, as the pieces are the same.
-- **The same dog for everyone, with nothing sent.** Each leg's spot comes from the bed's id and the leg's number
-  (the time, `floor(now / 9000)`), through a small seeded generator, so every screen with a clock right to a second
+- **The same dog for everyone, with nothing sent.** Each walk's spot comes from the bed's id and the walk's number
+  (the time, `floor(now / 27000)`), through a small seeded generator, so every screen with a clock right to a second
   sees the dog in the same place. Nothing is stored, nothing rides presence, and nothing runs per frame: each dog has
-  one timer that wakes once a leg and sets the next spot, and the trot between is a CSS transition.
+  one timer that wakes once a walk and sets the next spot, and the trot between is one animation along its route that
+  the browser's compositor plays, as are its steps, bob and wag ([Canvas performance](../008-canvas/canvas-performance.md#a-still-space-does-nothing)).
+- **Its tail wags as it trots**, and fast for the length of a pat. Lying down to rest, at its spot or in its bed, it
+  breathes a few slow breaths, then lies still under its "z". A dog resting asks for no work at all (Work Tracker
+  1257).
 - **Patting it**: a press on the dog pats it, for you: a small heart rises above it and its tail wags faster for a
   second and a half. Nobody else sees your pat. Its label for a screen reader is **Pat the Dog**.
 - **Under reduced motion** the dog stays curled up asleep in its bed: no wandering, no wag, and a pat shows the heart

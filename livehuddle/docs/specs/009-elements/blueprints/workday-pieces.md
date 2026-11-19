@@ -53,12 +53,25 @@ Derived from [Workday pieces](../workday-pieces.md).
   stays in the room's call. The editor's call passes each walker's `seatedOn` (and yours) with their feet; the room
   keeps the `seatedOn` of each `avatar` op (up to 64 characters) with the position, and the edge margin's points carry
   it.
-- **The dog**: leg `n = petLegAt(now)`; `petLeg(id, n, area)` is null (the bed) when `n % 4 === 3`, otherwise a
+- **The dog**: walk `n = petWalkAt(now)` (one leg in `PET_WALK_EVERY`, 3, so `floor(now / PET_WALK_MS)`); `petLeg(id, n, area)` is null (the bed) when `n % 4 === 3`, otherwise a
   point from `seeded(hashId(id) ^ n * 0x9e3779b1)` inside the area (inset by `PET_INSET`): the first of `PET_TRIES` whose
   body box (`PET_BODY` round the feet) overlaps none of the area's `blocks` (`petClear`), else the bed. The blocks are
   the boxes of every shape on the board but the floors (`PET_FLOOR_KINDS`), and every room that does not hold the bed,
   cut to the area's reach. `dogOffset` makes it relative to the bed. The areas are worked out per board change (`petAreasOf`) and published per bed. `PetDog` sets its spot with a timeout to
-  the next leg boundary (one per dog), translating from the bed with a `PET_TROT_MS` CSS transition. Reduced motion, or no area
+  the next walk boundary (`msToNextWalk`, one per dog), and trots there round the pieces (`findWalkPath`) at `DOG_SPEED` as one
+  Web Animation of its transform (`dogTrot`, `dog-trot.ts`: the route's points at offsets by length, linear, fill
+  forwards). Setting off and each turn left or right write marks on the dog's node (`data-pet-trot`, `data-pet-left`,
+  a timer per turn), never state, and its place on the floor is written to its node (`place`), never rendered, so a
+  walk renders once, as it starts, and once as it arrives and lies down to rest (`rested`: lying wherever it came to
+  rest, at a spot or in its bed; `data-pet-floor` only out of its bed): on finish the
+  drawing's own transform takes the end and the animation is cancelled, and a new goal mid-trot stands it where it had
+  got to (`dogAtTime`). Its drawing (memoised) is layered SVGs with a box of its own for each leg, the bob, the tail and
+  the sleeping breath, each kept on a layer (`will-change: transform`) so setting off and stopping change no layers,
+  and every motion is a compositor transform the stylesheet starts from the marks; every loop is several swings to one iteration (twenty on
+  a trot), so the page handles one `animationiteration` or `animationend` per loop, not one per swing. The tail is
+  keyed on a pat (a loop while trotting, eight fast wags for a pat); lying down it has no tail drawn, and the breath
+  is three breaths, once (Work Tracker 1257). Per 27 s walk a still office sees three events: setting off, arriving,
+  and the breath's end. Reduced motion, or no area
   yet: the spot is always the bed and the dog sleeps.
 - **Welcome**: `receptionAt(feet, desks)`: the desk whose front strip (`x - 0 .. x + width`, `y + 0.62 h .. y + h +
 RECEPTION_REACH`) holds your feet. A module store like the arcade's; a step re-renders nothing unless the answer
@@ -153,6 +166,7 @@ dog are presence, the clock or local.
 | ------------------ | ----- | --------------------------------------------------- |
 | `PET_LEG_MS`       | 9000  | Long enough to read as a dog settling, not a sprite |
 | `PET_TROT_MS`      | 3000  | A third of a leg spent moving                       |
+| `PET_WALK_EVERY`   | 3     | One leg walked, two rested: a still office is still |
 | `PET_RADIUS`       | 240   | A bed in no room keeps its dog close                |
 | `PET_INSET`        | 28    | The dog stays off the walls                         |
 | `PET_TRIES`        | 12    | Enough for a busy room; a packed one naps the dog   |

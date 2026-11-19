@@ -107,8 +107,15 @@ Synonyms banned: "isometric", "orbit", "perspective mode", "3D mode" (it is a vi
     bars, raised hands, call bubbles and the Receptionist's card into it (in place while flat). Being a separate 3D
     context painted after the world, nothing in it is ever sorted behind a wall; inside it each billboard stands about
     its feet under the same camera, so it lands over the same head. Each draws into a host of its own (`display: contents`) that moves between a slot in place and the overlay, never unmounted, so a half-typed message keeps its text, focus and caret and a bubble keeps floating.
-    `ReceptionistBubble` reads `useInSpace3D()`: while true it never flips under his feet, and it places itself again
-    when it changes.
+    `ReceptionistBubble` reads `useInSpace3D()`: while true it never flips under his feet (with no room over his head it
+    stands beside him once the view cannot pan to make it, blueprints/receptionist.md), it scales itself back by the camera's
+    depth (`fit`) so it reads at its flat size, and it places itself again when it changes.
+    `useFlatBillboards` keeps the overlay's text sharp (each card moved and scaled flat to where the camera stands it)
+    in passes, a frame at a time, only while something moves (Work Tracker 1257, canvas-performance.md "A still Space
+    does nothing"): a `MutationObserver` on the overlay's world (subtree, attributes and children: a card added, a
+    speaker's feet moving, a pan or zoom, its own writes) and on the camera's attributes, and a `ResizeObserver` on the
+    stage, wake it; a pass that moved a card, or ran while the camera has a running animation (a tilt or turn
+    transition), asks for the next frame, and the first pass that does neither stops.
 
 ## Interfaces and contracts
 
