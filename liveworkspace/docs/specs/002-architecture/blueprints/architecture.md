@@ -451,6 +451,14 @@ drives it with fake timers.
   IndexedDB backend, names and versions stay its own) and `@liveworkspace/workbench/lib/api/tab-calls` (each
   `lib/api/tabs.ts`). Each product's file keeps its old path and names, binds the shared one once, and lists what
   it hands in.
+- `@liveworkspace/workbench/hooks/persistence/useIdentityBootstrapCore` and `useUnloadFlushCore` are the open and the
+  unload flush of all five editors (Work Tracker 1243). Each `app/<item>/[id]/useIdentityBootstrap.ts` keeps its path,
+  props and names and hands in its setters (the two named for its item, `notFoundKey` for the warm open's not-found
+  guard), its seed and warm paint, its two arrival doors, its workbench load (livehuddle has none), its address
+  (livedesign's corrects an old `/diagram/<id>` in the bar) and its load progress, telemetry and timing, each read at
+  call time so its tests can mock them; liveplanner adds `paintsCopy`, `onWarmPaint` and `onWarmDropped` for its warm
+  plan. Each `useUnloadFlush.ts` hands in its tombstone check, save diff, beacon and Participant relay (livediagram and
+  livedesign claim placed pictures first), and livedocuments and livedesign `saveChanges`, what each tab's save changed.
 - `@liveworkspace/workbench/components/canvas/useFaceFinishPass` is the canvas finish pass of all five editors.
   liveplanner hands it a board (`FaceFinishBoard`: `ownerOf` seeds a part by its card or column, `unseen` leaves a
   busy board's off-screen card for `face-arrivals.ts` to take when it scrolls into view, `ignore` skips the pointer's
