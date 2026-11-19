@@ -305,7 +305,8 @@ you coming?"):
 
 The status bar's **cog** (an Editor's) opens one panel, 480 px wide under it (a sheet on a phone), headed **Form
 Settings** with **Show Me Around**, and switching (two tabs with icons) between **Responses Go To** (first) and
-**Settings**; a paused form's fix opens it on Responses Go To. Responses Go To leads with two tiles, **Cards on a
+**Settings**; a paused form's fix opens it on Responses Go To, and Tab Style's **Form Settings** row
+([Tab Style](../011-theme/canvas-and-theme-dialog.md)) on Settings. Responses Go To leads with two tiles, **Cards on a
 Board** and **Rows in a Sheet**, each saying what it makes; then Board and Card Type side by side, the Column chips,
 and where a response goes read as a path ("Each response → Bug card → New → Bugs"); the rest (Card Type by Answer,
 What a Response Makes, Set Automatically) stays closed until opened.

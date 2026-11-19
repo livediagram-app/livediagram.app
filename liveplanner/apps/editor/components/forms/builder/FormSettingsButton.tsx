@@ -2,7 +2,8 @@
 
 // The form's cog (docs/specs/030-forms/forms.md "Responses Go To and Settings"), at the end of the status bar as a
 // board's settings sit at the end of its header: one panel switching between Responses Go To (first) and Settings, or
-// opened on the one asked for (a paused form's Fix opens Responses Go To). An Editor's alone.
+// opened on the one asked for (a paused form's Fix opens Responses Go To; Tab Style's Form Settings row, Settings,
+// through lib/settings-open-on.ts). An Editor's alone.
 import { useState } from 'react';
 import type { Tab } from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
@@ -12,6 +13,7 @@ import { DestinationPicker } from './DestinationPicker';
 import { FormSettingsTab } from './FormSettingsTab';
 import { FormSheet } from './FormSheet';
 import { requestFormTourRelaunch } from '@/lib/form-tour';
+import { takeOpenOn } from '@/lib/settings-open-on';
 
 const CogIcon = lucideGlyph(lucideSettings, 16);
 const ResponsesIcon = lucideGlyph(lucideRoute, 15);
@@ -45,7 +47,9 @@ export function FormSettingsButton({
         aria-haspopup="dialog"
         aria-expanded={open !== false}
         data-dock-button
-        onClick={() => (open === false ? onOpen(null) : onClose())}
+        onClick={() =>
+          open === false ? onOpen(takeOpenOn<FormSettingsSection>('form')) : onClose()
+        }
         className={`flex h-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md px-2 text-[13px] font-medium transition ${
           open !== false
             ? 'bg-brand-100 text-brand-700 dark:bg-brand-500/20 dark:text-brand-100'
