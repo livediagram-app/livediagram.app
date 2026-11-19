@@ -137,6 +137,11 @@ const HELD_AT_100 = [
   // (docs/specs/004-interface-design/colour-picker.md "Reading on its ground", Work Tracker 1108).
   'src/components/colour/ContrastHint.tsx',
   'src/components/colour/useJudgedSwatch.ts',
+  // The open and the unload flush every editor bound a copy of (each product's 006-*/offline-mode.md and
+  // per-tab-storage.md "Saving", Work Tracker 1243).
+  'src/hooks/persistence/useIdentityBootstrapCore.ts',
+  'src/hooks/persistence/useUnloadFlushCore.ts',
+  'src/lib/load-progress.ts',
   // The modifier hint, the start-again tray and the category bar every editor carried a copy of (Work Tracker 1217).
   'src/components/chrome/ModifierHintBanner.tsx',
   'src/components/start/StartAgainTray.tsx',
