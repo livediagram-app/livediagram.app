@@ -26,6 +26,17 @@ const FIXTURES: Record<string, unknown[][]> = {
     [null, null, ' X ', null],
     ['Bo', { id: 'x', name: ' ' }, 'a', 'y'.repeat(250)],
   ],
+  approvalRequestedEmail: [
+    [
+      {
+        requesterName: 'Ada <a>',
+        item: { id: 'a b', name: 'N<' },
+        note: 'n & m',
+        due: '2026-11-20',
+      },
+    ],
+    [{ requesterName: null, item: { id: 'x', name: ' ' }, note: null, due: null }],
+  ],
   mentionedEmail: [
     ['Al', 'Name <1>', 'id/1', 'hi <b>there</b>'],
     [null, '', 'x', 'word '.repeat(100)],
@@ -73,6 +84,7 @@ const FIXTURES: Record<string, unknown[][]> = {
 const EXPECTED: Record<string, string> = {
   accountDeletedEmail: '40b3ce60a5f46f012a1b4b12b74f4b198a90913314d06113d96bc4cc32fe6063',
   actionAssignedEmail: '4536ec03977842845924c44bf6fabd1e0d3b799a0f6d6be72c50202c45f73c75',
+  approvalRequestedEmail: '361474115ae0159b33fd97bca3ec49b670c4ecebdb761479e0a1c9d1cd048c09',
   automationAddressEmail: '2f5c40eefb275f8b0b6abecc38caa50c704abfa46ef6cc2c8ec6b6a3b6087a62',
   automationEmail: '00459a50e9c575ca8b4fe8e82b9d5dffe7362729b54fe472ce8d0e21831333c8',
   commentNotificationEmail: 'd67533e81468cbc72d7df8b406de54a9692dc6ab98deea5ba1ad3398441490de',

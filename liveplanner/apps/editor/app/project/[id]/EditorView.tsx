@@ -47,6 +47,13 @@ import { ModifierHint } from '@liveworkspace/workbench/components/chrome/Modifie
 import { loadEditorSearchPanel } from '@/lib/editor-deferred-code';
 import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { SnapshotsDoorProvider } from '@liveworkspace/snapshots/ui';
+import {
+  ApprovalBanner,
+  ApprovalDoorProvider,
+  useEditorApprovalDoor,
+} from '@liveworkspace/explorer/approvals';
+import { indexClient } from '@liveworkspace/workbench/lib/index-client';
+import { apiTeamMembers } from '@/lib/api/team-people';
 import { AutomationsHost } from '@/components/automations/AutomationsHost';
 import { PendingStarterRules } from '@/components/automations/PendingStarterRules';
 import { useEditorAccent } from '@/hooks/ui/useEditorAccent';
@@ -226,6 +233,25 @@ export function EditorView() {
   // Automations' scope and gate (editor-view-hooks).
   const { automationsScope, automationsGate } = useEditorAutomations(ctx, isOffline);
   const snapshotsDoor = useEditorSnapshots(ctx, isOffline);
+  // Approvals (docs/specs/013-workspace/approvals.md): the corner card's badge, the approver's banner and the Share
+  // dialog's Approval tab, for a signed-in account; asking and cancelling for an Editor of the whole plan.
+  const approvalDoor = useEditorApprovalDoor({
+    hydrated: ctx.hydrated,
+    isOffline,
+    embedMode: ctx.embedMode,
+    workbench: ctx.workbench,
+    accountId: accountUserId ?? null,
+    itemId: ctx.projectId,
+    teamId: ctx.projectTeamId ?? null,
+    level: ctx.can.level,
+    isStructureReadOnly: ctx.isStructureReadOnly,
+    shareCode: ctx.sessionShareCode,
+    client: indexClient,
+    noun: 'plan',
+    teamMembers: apiTeamMembers,
+    snapshots: snapshotsDoor?.api ?? null,
+    setShareOpen: ctx.setShareDialogOpen,
+  });
   // Subscribe to Calendar's scope: the tab menu's row (editor-view-hooks).
   const { calendarFeedScope, calendarFeedGate } = useEditorCalendarFeed(ctx, isOffline);
   // Publish as Roadmap's scope (its Tools row; the dialog picks the tab), and the active tab's boards (Email to Board's).
@@ -238,7 +264,7 @@ export function EditorView() {
   // Email to Board's scope: the tab menu's row, on the same boards (editor-view-hooks).
   const { emailIntakeScope, emailIntakeGate } = useEditorEmailIntake(ctx, isOffline);
 
-  return (
+  const view = (
     // Which paper the canvas is, for every element that carries no colour of
     // its own (docs/specs/007-editor/editor-app.md). Read HERE, above both the canvas and the element
     // menus, so a swatch in a menu can't disagree with the shape it describes.
@@ -304,6 +330,10 @@ export function EditorView() {
                                           <SplitViewFrame header={header} footer={footer}>
                                             {(headerInColumn, footerInColumn) => (
                                               <div className="flex h-dvh flex-col">
+                                                {/* The approver's banner, a strip across the top, above the corner
+                                                card's zero-height layer so the card floats below it, never over its
+                                                buttons (approvals.md "Where it sits"). */}
+                                                <ApprovalBanner />
                                                 {headerInColumn}
                                                 {sessionCommunity && appChrome && hydrated ? (
                                                   <CommunityBar
@@ -467,4 +497,6 @@ export function EditorView() {
       </SnapshotsDoorProvider>
     </AutomationsHost>
   );
+  // The approvals door around the whole view: the corner card's badge, the banner and the Share dialog read it.
+  return <ApprovalDoorProvider door={approvalDoor}>{view}</ApprovalDoorProvider>;
 }

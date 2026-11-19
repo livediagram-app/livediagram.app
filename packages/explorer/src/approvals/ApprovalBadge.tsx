@@ -1,6 +1,7 @@
 'use client';
 
-// The approval's pill in the editor's header, after the visibility pill (approvals.md "In the editor"): Awaiting n of m
+// The approval's badge (approvals.md "In the editor"), first in the editor's corner card (`corner`, EditorCornerActions)
+// or as a pill after the visibility pill where a header bar has pills: Awaiting n of m
 // (amber, a clock), Changes Requested (rose, a flag), Approved (green, a checked page), Changed Since Approval (amber
 // outline, a pencil). Its hover card names the requester, the due day (and Overdue) and who has and hasn't answered.
 // For an Editor of the whole item it opens the Share dialog on its Approval tab; for anyone else it is focusable
@@ -24,6 +25,12 @@ export const BADGE_TONE: Record<StatusTone, string> = {
   changed:
     'bg-transparent text-amber-800 ring-amber-400 dark:text-amber-200 dark:ring-amber-400/60',
 };
+// The corner card's buttons' shape (EditorCornerActions' CORNER_BTN): 36px tall, its glyph beside its words, the
+// glyph alone on a phone and wherever the card drops its names (`data-compact`). Tinted and ringed in its tone, so it
+// reads as where the item stands rather than one more action.
+const CORNER =
+  'flex h-9 min-w-9 items-center justify-center gap-1.5 rounded-lg px-2.5 phone:px-0 [[data-compact]_&]:px-0 text-xs font-medium ring-1 ring-inset whitespace-nowrap';
+const CORNER_WORDS = 'phone:sr-only [[data-compact]_&]:sr-only';
 const HOVER: Record<StatusTone, string> = {
   awaiting: 'hover:ring-amber-400 dark:hover:ring-amber-400/60',
   changes: 'hover:ring-rose-400 dark:hover:ring-rose-400/60',
@@ -41,13 +48,19 @@ export function ApprovalPill({ label, tone }: { label: string; tone: StatusTone 
   );
 }
 
-export function ApprovalBadge() {
+export function ApprovalBadge({ corner = false }: { corner?: boolean }) {
   const ctx = useApprovalDoor();
   const words = statusWords(ctx?.approval ?? null);
   if (!ctx?.approval || !words) return null;
   const summary = badgeSummary(ctx.approval);
   const open = ctx.openApprovalTab;
-  const glyph = <ApprovalGlyph d={STATUS_GLYPH[words.tone]} size={11} />;
+  const shape = corner ? CORNER : PILL;
+  const glyph = <ApprovalGlyph d={STATUS_GLYPH[words.tone]} size={corner ? 14 : 11} />;
+  const label = (
+    <span className={corner ? CORNER_WORDS : 'text-optical-line text-optical-caps'}>
+      {words.label}
+    </span>
+  );
   return (
     <HoverCard title={words.label} description={summary}>
       {open ? (
@@ -56,19 +69,19 @@ export function ApprovalBadge() {
           onClick={open}
           aria-label={`${words.label}. Open the approval`}
           data-approval-status={words.tone}
-          className={`${PILL} ${BADGE_TONE[words.tone]} ${HOVER[words.tone]} relative cursor-pointer transition touch-target-y focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400`}
+          className={`${shape} ${BADGE_TONE[words.tone]} ${HOVER[words.tone]} relative cursor-pointer transition ${corner ? '' : 'touch-target-y '}focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400`}
         >
           {glyph}
-          <span className="text-optical-line text-optical-caps">{words.label}</span>
+          {label}
         </button>
       ) : (
         <span
           tabIndex={0}
           data-approval-status={words.tone}
-          className={`${PILL} ${BADGE_TONE[words.tone]} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400`}
+          className={`${shape} ${BADGE_TONE[words.tone]} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400`}
         >
           {glyph}
-          <span className="text-optical-line text-optical-caps">{words.label}</span>
+          {label}
         </span>
       )}
     </HoverCard>

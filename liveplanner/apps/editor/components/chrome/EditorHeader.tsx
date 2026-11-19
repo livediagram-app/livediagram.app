@@ -13,6 +13,7 @@ import {
   HeaderShareIcon,
   type EditorCornerActionsProps,
 } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 
 export type { SaveStatus } from '@liveworkspace/workbench/components/chrome/EditorHeader';
 
@@ -37,6 +38,7 @@ export function PlanCornerActions(
   const formShare = useFormShareHost();
   return (
     <EditorCornerActions
+      approval={<ApprovalBadge corner />}
       {...props}
       copyDescription="Duplicate this plan into your own files."
       shareAction={

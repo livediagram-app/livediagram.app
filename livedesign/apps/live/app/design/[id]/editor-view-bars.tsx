@@ -11,6 +11,7 @@ import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search
 import { track } from '@/lib/telemetry';
 import { addToDesignTargets } from '@/lib/add-to-design-targets';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
 import { TabBar } from '@/components/chrome/TabBar';
@@ -54,6 +55,7 @@ export function editorViewHeader(ctx: EditorContextValue): ReactNode {
   return zenMode || !appChrome ? null : (
     <AreaErrorBoundary area="Header" fallback="panel">
       <EditorCornerActions
+        approval={<ApprovalBadge corner />}
         leadAction={prototype}
         showShare={canShareDesign && hydrated && !anyWelcomeOpen}
         shareable={designShareable}

@@ -168,11 +168,21 @@ async function tilingPattern(
   const matrix = multiply(toBase(ctx), tileOrigin);
   const holder = els.find((e) => e.childElementCount > 0) ?? els[0]!;
   // The tile is drawn in its own stream, in the pattern's space, and its text is no part of the text layer.
-  const saved = { out: ctx.out, toRoot: ctx.toRoot, baseToRoot: ctx.baseToRoot, text: ctx.text };
+  // A tile is decoration: no figure in it.
+  const saved = {
+    out: ctx.out,
+    toRoot: ctx.toRoot,
+    baseToRoot: ctx.baseToRoot,
+    text: ctx.text,
+    tags: ctx.tags,
+    alts: ctx.alts,
+  };
   ctx.out = [];
   ctx.toRoot = multiply(ctx.toRoot, tileOrigin);
   ctx.baseToRoot = ctx.toRoot;
   ctx.text = null;
+  ctx.tags = null;
+  ctx.alts = null;
   try {
     await drawTile(holder);
     const obj = ctx.file.putStream(
