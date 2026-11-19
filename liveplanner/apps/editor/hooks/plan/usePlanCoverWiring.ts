@@ -8,7 +8,6 @@ import { isPlanTabKind, type Tab } from '@liveplanner/project';
 import { fillTabElementOf } from '@/components/plan/fill-tab';
 import { isCanvasCovered, setPlanCover } from './plan-cover-store';
 import { planTabEntries, setPlanTabList } from './plan-tab-list-store';
-import { setActiveTabName } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 
 export function usePlanCoverWiring({
   activeTab,
@@ -37,8 +36,5 @@ export function usePlanCoverWiring({
     if (tabs) setPlanTabList(planTabEntries(tabs));
   }, [tabs]);
   useLayoutEffect(() => () => setPlanTabList([]), []);
-  // The open tab's name, for the menu box (active-tab-name-store).
-  useLayoutEffect(() => setActiveTabName(activeTab.name), [activeTab.name]);
-  useLayoutEffect(() => () => setActiveTabName(''), []);
   return { canvasCovered: isCanvasCovered };
 }

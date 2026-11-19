@@ -3,12 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, render, screen } from '@testing-library/react';
 import { useRef } from 'react';
 import { menuNaturalRight } from '../canvas/menu-join';
-import {
-  menuCardFormFor,
-  NAME_SLOT_MIN_PX,
-  useMenuCardFit,
-  useMenuCardRoom,
-} from './useMenuCardRoom';
+import { menuCardFormFor, useMenuCardFit, useMenuCardRoom } from './useMenuCardRoom';
 
 // docs/specs/007-editor/toolbar-layout.md "The tab's name": the menu box never runs under the strip (Work Tracker 1038).
 
@@ -83,101 +78,80 @@ describe('useMenuCardRoom', () => {
   });
 });
 
-// Work Tracker 1038, the second pass: short of room, the mode switch drops to its icon, then the name hides; the menu
-// button and the switch are never cut.
+// Work Tracker 1038, the second pass: short of room, the mode switch drops to its icon; the menu button and the switch
+// are never capped or cut (nothing in the box gives way since the tab's name left it, Work Tracker 1289).
 describe('menuCardFormFor', () => {
   const fixed = { full: 120, icon: 60 };
-  it('stays whole while the button, the named switch and a readable name slot fit, or nothing caps it', () => {
+  it('stays whole while the whole box fits, or nothing limits it', () => {
     expect(menuCardFormFor(null, fixed)).toBe('full');
-    expect(menuCardFormFor(120 + NAME_SLOT_MIN_PX, fixed)).toBe('full');
+    expect(menuCardFormFor(120, fixed)).toBe('full');
     // Not measured yet: tried whole first.
     expect(menuCardFormFor(10, { full: null, icon: null })).toBe('full');
   });
 
-  it('stays whole where the whole box fits, a name shorter than the slot included', () => {
-    // A short name: the box is 150 whole, short of the 120 + 64 a slot would ask, and the strip stays centred.
-    expect(menuCardFormFor(150, { ...fixed, whole: 150 })).toBe('full');
-    expect(menuCardFormFor(149, { ...fixed, whole: 150 })).toBe('icon');
-    expect(menuCardFormFor(149, { ...fixed, whole: null })).toBe('icon');
-  });
-
-  it('drops the switch to its icon, then hides the name', () => {
-    expect(menuCardFormFor(120 + NAME_SLOT_MIN_PX - 1, fixed)).toBe('icon');
-    expect(menuCardFormFor(60 + NAME_SLOT_MIN_PX, fixed)).toBe('icon');
-    expect(menuCardFormFor(60 + NAME_SLOT_MIN_PX - 1, fixed)).toBe('bare');
+  it('drops the switch to its icon, then goes bare', () => {
+    expect(menuCardFormFor(119, fixed)).toBe('icon');
+    expect(menuCardFormFor(60, fixed)).toBe('icon');
+    expect(menuCardFormFor(59, fixed)).toBe('bare');
     expect(menuCardFormFor(0, fixed)).toBe('bare');
-    // The icon form not measured yet: tried before hiding the name.
+    // The icon form not measured yet: tried before going bare.
     expect(menuCardFormFor(0, { full: 120, icon: null })).toBe('icon');
   });
 });
 
 describe('useMenuCardFit', () => {
-  // A box needing 120px beside the name whole, 60 with the switch's icon alone; its name 40px wide while shown.
+  // A box 120px wide whole, 60 with the switch's icon alone.
   function FitProbe({ enabled = true }: { enabled?: boolean }) {
     const ref = useRef<HTMLDivElement>(null);
-    const { maxWidth, form } = useMenuCardFit(ref, enabled);
+    const { form } = useMenuCardFit(ref, enabled);
     return (
       <div
         ref={(el) => {
           ref.current = el;
           if (!el) return;
-          el.getBoundingClientRect = () => {
-            const shown = el.dataset.menuForm;
-            const need = shown === 'full' ? 120 : 60;
-            return new DOMRect(12, 12, need + (shown === 'bare' ? 0 : 40), 46);
-          };
+          el.getBoundingClientRect = () =>
+            new DOMRect(12, 12, el.dataset.menuForm === 'full' ? 120 : 60, 46);
         }}
         data-menu-form={form}
         data-testid="card"
       >
-        <span data-testid="state">{`${form} ${maxWidth ?? 'none'}`}</span>
-        <span
-          data-tab-name-in-box=""
-          ref={(el) => {
-            if (!el) return;
-            Object.defineProperty(el, 'offsetWidth', {
-              configurable: true,
-              get: () => (form === 'bare' ? 0 : 40),
-            });
-            // It starts where the button and the switch end, whatever the cap.
-            el.getBoundingClientRect = () =>
-              new DOMRect(12 + (form === 'full' ? 120 : 60), 12, 40, 20);
-          }}
-        />
+        <span data-testid="state">{form}</span>
       </div>
     );
   }
   const state = () => screen.getByTestId('state').textContent;
 
-  it('is whole and capped at the room where a readable name fits', () => {
+  it('is whole where the whole box fits, keeping its width for the strip to go by', () => {
     mountStrip(new DOMRect(320, 12, 425, 46));
     render(<FitProbe />);
-    expect(state()).toBe('full 300');
-    expect(screen.getByTestId('card').dataset.menuNaturalWidth).toBe('160');
+    expect(state()).toBe('full');
+    const card = screen.getByTestId('card');
+    expect(card.dataset.menuNaturalWidth).toBe('120');
+    // Never capped: nothing in the box gives way.
+    expect(card.style.maxWidth).toBe('');
   });
 
   it('drops the switch to its icon, keeping the whole width for the strip to go by', () => {
-    mountStrip(new DOMRect(170, 12, 425, 46));
+    mountStrip(new DOMRect(130, 12, 425, 46));
     render(<FitProbe />);
-    expect(state()).toBe('icon 150');
-    const card = screen.getByTestId('card');
-    // Drawn 100 wide, but the strip still sees the whole box, so it never comes back over it.
-    expect(menuNaturalRight(card)).toBe(12 + 160);
+    expect(state()).toBe('icon');
+    // Drawn 60 wide, but the strip still sees the whole box, so it never comes back over it.
+    expect(menuNaturalRight(screen.getByTestId('card'))).toBe(12 + 120);
   });
 
-  it('hides the name below a readable slot and caps nothing, so the button and the switch are never cut', () => {
-    mountStrip(new DOMRect(120, 12, 425, 46));
+  it('goes bare where even the icon form does not fit', () => {
+    mountStrip(new DOMRect(70, 12, 425, 46));
     render(<FitProbe />);
-    expect(state()).toBe('bare none');
+    expect(state()).toBe('bare');
   });
 
-  it('is whole and uncapped with no strip in its row or switched off', () => {
+  it('is whole with no strip in its row or switched off', () => {
     render(<FitProbe />);
-    expect(state()).toBe('full none');
+    expect(state()).toBe('full');
     cleanup();
-    mountStrip(new DOMRect(120, 12, 425, 46));
+    mountStrip(new DOMRect(70, 12, 425, 46));
     render(<FitProbe enabled={false} />);
-    expect(state()).toBe('full none');
+    expect(state()).toBe('full');
   });
 
   it('measures again as its parts resize', () => {
@@ -200,52 +174,9 @@ describe('useMenuCardFit', () => {
       render(<FitProbe />);
       expect(observed.length).toBeGreaterThan(0);
       act(() => resized());
-      expect(state()).toBe('full 300');
+      expect(state()).toBe('full');
     } finally {
       vi.unstubAllGlobals();
     }
-  });
-
-  it('counts the box’s own end at its UI scale, and the whole box with no name', () => {
-    function Bare({ name }: { name: boolean }) {
-      const ref = useRef<HTMLDivElement>(null);
-      const { form } = useMenuCardFit(ref, true);
-      return (
-        <div
-          ref={(el) => {
-            ref.current = el;
-            if (!el) return;
-            el.style.paddingRight = '4px';
-            el.style.borderRightWidth = '1px';
-            Object.defineProperty(el, 'offsetWidth', { configurable: true, value: 100 });
-            el.getBoundingClientRect = () => new DOMRect(12, 12, 200, 46);
-          }}
-          data-menu-form={form}
-          data-testid="card"
-        >
-          <span data-testid="state">{form}</span>
-          {name ? (
-            <span
-              data-tab-name-in-box=""
-              ref={(el) => {
-                if (!el) return;
-                Object.defineProperty(el, 'offsetWidth', { configurable: true, value: 40 });
-                el.getBoundingClientRect = () => new DOMRect(12 + 100, 12, 40, 20);
-              }}
-            />
-          ) : null}
-        </div>
-      );
-    }
-    // Room 160: 100 to the name, plus 5 of padding and border drawn at 2x, is 110; with a 64px slot, 174, too much.
-    mountStrip(new DOMRect(180, 12, 425, 46));
-    render(<Bare name />);
-    expect(state()).toBe('bare');
-    cleanup();
-    document.body.innerHTML = '';
-    // No name: the whole box, 200, never fits a slot beside it either.
-    mountStrip(new DOMRect(180, 12, 425, 46));
-    render(<Bare name={false} />);
-    expect(state()).toBe('bare');
   });
 });

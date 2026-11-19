@@ -1,9 +1,8 @@
 // @vitest-environment jsdom
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md): it toggles the Explorer and
 // hands itself over as the popover's anchor.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { setActiveTabName } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
 const viewport = vi.hoisted(() => ({ phone: false }));
@@ -14,30 +13,6 @@ vi.mock('@liveworkspace/workbench/hooks/ui/useIsMobileViewport', () => ({
 afterEach(() => {
   cleanup();
   viewport.phone = false;
-  act(() => setActiveTabName(''));
-});
-
-// The open tab's name beside the menu button (docs/specs/007-editor/toolbar-layout.md "The tab's name"), as in every
-// editor (Work Tracker #105): on a desktop, never on a phone or inline in the strip's row.
-describe('the tab name beside the menu button', () => {
-  const name = () => document.querySelector('[data-tab-name-in-box]');
-
-  it('leaves out the open tab’s name on a desktop too (experiment: no header bar)', () => {
-    act(() => setActiveTabName('Chapter One'));
-    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
-    expect(name()).toBeNull();
-  });
-
-  it('leaves it out on a phone, and inline in the strip', () => {
-    act(() => setActiveTabName('Chapter One'));
-    viewport.phone = true;
-    const { unmount } = render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
-    expect(name()).toBeNull();
-    unmount();
-    viewport.phone = false;
-    render(<ToolbarExplorerButton open={false} inline onToggle={vi.fn()} />);
-    expect(name()).toBeNull();
-  });
 });
 
 describe('ToolbarExplorerButton', () => {
@@ -112,7 +87,6 @@ describe('the menu box joined to the Contents sidebar', () => {
   });
 
   it('joined, drops its frame and spans the sidebar less the strip’s gap, at the toolbar’s scale', () => {
-    act(() => setActiveTabName('Chapter One'));
     render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} joinedWidth={236} />);
     expect(card().hasAttribute('data-menu-joined')).toBe(true);
     expect(card().className.split(' ')).toContain('border-transparent!');

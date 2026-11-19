@@ -1,18 +1,11 @@
 // @vitest-environment jsdom
 // The Toolbar layout's menu button (docs/specs/007-editor/toolbar-layout.md): it toggles the Explorer and
 // hands itself over as the popover's anchor.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import {
-  setActiveTabName,
-  usePublishTabName,
-} from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
-afterEach(() => {
-  cleanup();
-  act(() => setActiveTabName(''));
-});
+afterEach(cleanup);
 
 describe('ToolbarExplorerButton', () => {
   // It got in the way of the Explorer's app switcher (Work Tracker #101); the aria-label still names it.
@@ -86,7 +79,6 @@ describe('the menu box joined to the Contents sidebar', () => {
   });
 
   it('joined, drops its frame and spans the sidebar less the strip’s gap, at the toolbar’s scale', () => {
-    act(() => setActiveTabName('Chapter One'));
     render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} joinedWidth={236} />);
     expect(card().hasAttribute('data-menu-joined')).toBe(true);
     expect(card().className.split(' ')).toContain('border-transparent!');
@@ -100,28 +92,5 @@ describe('the menu box joined to the Contents sidebar', () => {
   it('never joins inline in the strip’s row', () => {
     render(<ToolbarExplorerButton open={false} inline onToggle={vi.fn()} joinedWidth={236} />);
     expect(card().hasAttribute('data-menu-joined')).toBe(false);
-  });
-});
-
-// docs/specs/007-editor/toolbar-layout.md "The tab's name": the editor publishes the open tab's name, and the box shows
-// it beside the menu button on a desktop, following a rename, and drops it as the editor closes.
-describe("the open tab's name in the menu box", () => {
-  function Editor({ tabName }: { tabName: string }) {
-    usePublishTabName(tabName);
-    return null;
-  }
-  const shownName = () => document.querySelector('[data-tab-name-in-box]')?.textContent ?? null;
-
-  it('leaves out the name the editor publishes on a desktop too (experiment: no header bar)', () => {
-    render(<ToolbarExplorerButton open={false} onToggle={vi.fn()} />);
-    const editor = render(<Editor tabName="Logo" />);
-    expect(shownName()).toBeNull();
-    editor.unmount();
-  });
-
-  it('shows no name inline in the strip’s row (a phone)', () => {
-    render(<Editor tabName="Logo" />);
-    render(<ToolbarExplorerButton open={false} inline onToggle={vi.fn()} />);
-    expect(shownName()).toBeNull();
   });
 });

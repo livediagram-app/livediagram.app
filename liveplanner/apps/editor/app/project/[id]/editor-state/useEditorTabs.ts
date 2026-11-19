@@ -2,7 +2,6 @@ import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { usePlanTabImport } from '@/hooks/plan/usePlanTabImport';
 import { usePlanFileImport } from '@/hooks/plan/usePlanFileImport';
 import { useTrackerImport } from '@/hooks/plan/useTrackerImport';
-import { usePublishTabRename } from '@liveworkspace/workbench/hooks/editor/active-tab-name-store';
 import { useRef } from 'react';
 import { useProjectActions } from '@/hooks/canvas/useProjectActions';
 import { track } from '@/lib/telemetry';
@@ -199,9 +198,6 @@ export function useEditorTabs(
     },
     toast,
   });
-  // The menu box renames the open tab on a click on its name (active-tab-name-store).
-  usePublishTabRename(activeId, renameTab, !isStructureReadOnly);
-
   // Tab-folder membership (docs/specs/006-project/tab-folders.md), kept separate from the busy
   // useTabActions. Menu-only: drag-reorder lives above.
   const {
