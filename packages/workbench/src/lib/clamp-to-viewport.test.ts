@@ -111,4 +111,21 @@ describe('clampToViewport', () => {
     const out = clampToViewport(r, { x: 0, y: 0 }, 16);
     expect(out.x).toBe(14);
   });
+  it('keeps the start edge of a box wider than the viewport in view, rather than its end', () => {
+    // 1300 px in a 1200 px viewport, its left edge 20 px in: pinned 8 px from the left, its end left over the right.
+    expect(clampToViewport(rect(20, 200, 1300, 100), { x: 0, y: 0 }).x).toBe(-12);
+    // Already off the left: the same pin.
+    expect(clampToViewport(rect(-40, 200, 1300, 100), { x: 0, y: 0 }).x).toBe(48);
+  });
+
+  it('keeps the top of a box taller than the viewport in view', () => {
+    expect(clampToViewport(rect(400, 30, 200, 900), { x: 0, y: 0 }).y).toBe(-22);
+  });
+
+  it('takes a plain box, a measured box with its title pill', () => {
+    expect(clampToViewport({ left: -10, right: 90, top: 4, bottom: 40 }, { x: 0, y: 0 })).toEqual({
+      x: 18,
+      y: 4,
+    });
+  });
 });
