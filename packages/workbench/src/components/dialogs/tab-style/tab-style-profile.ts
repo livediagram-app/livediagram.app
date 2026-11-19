@@ -6,8 +6,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { Finish } from '@liveworkspace/element-model/finish';
 import type { TextSize } from '@liveworkspace/model-core/basics';
 import type { FONTS } from '@liveworkspace/model-core/fonts';
-import type { createTabStyleTour } from '../../tour/TabStyleTour';
-import type { TabStyleTourApi } from '../../tour/tab-style-tour-steps';
+import type { TabStyleTourApi, TabStyleTourBinding } from '../../tour/tab-style-tour-steps';
 import type { TabLookFields, TabLookSettings } from '../../../lib/tab-looks';
 import type { Season } from '../../../lib/seasonal-looks';
 
@@ -130,7 +129,7 @@ export type TabStyleFrame =
   | {
       kind: 'modal';
       // The editor's Show Me, bound once (components/tour/TabStyleTour.tsx).
-      tour: ReturnType<typeof createTabStyleTour>;
+      tour: TabStyleTourBinding;
       // What the popover hangs below first, when it is on screen (livedocuments' page Style).
       opener?: () => Element | null;
     }
