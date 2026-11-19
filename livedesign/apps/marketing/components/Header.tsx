@@ -7,7 +7,5 @@ import { SiteHeader } from '@livedesign/ui';
 // /ai. Every marketing page's bar is the same for everyone (`buildWithAi`, marketing-site.md "Header"): Build
 // with AI (marked current on /ai itself) and Explorer; signed in, the account menu ends it (`account`).
 export function Header({ surface }: { surface: Exclude<CtaSurface, 'Help' | 'Dashboard'> }) {
-  return (
-    <SiteHeader buildWithAi={surface === 'Ai' ? 'current' : 'link'} account />
-  );
+  return <SiteHeader buildWithAi={surface === 'Ai' ? 'current' : 'link'} account />;
 }

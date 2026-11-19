@@ -9,8 +9,6 @@ export { START_BLANK_HREF };
 export function StartBlankLink({ ctaSurface }: { ctaSurface?: CtaSurface }) {
   const source = ctaSurface ? `${ctaSurface}.HeaderBlank` : null;
   return (
-    <SharedLink
-      href={isCtaSource(source) ? ctaHref(START_BLANK_HREF, source) : START_BLANK_HREF}
-    />
+    <SharedLink href={isCtaSource(source) ? ctaHref(START_BLANK_HREF, source) : START_BLANK_HREF} />
   );
 }

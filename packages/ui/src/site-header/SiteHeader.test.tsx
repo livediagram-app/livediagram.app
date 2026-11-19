@@ -70,7 +70,8 @@ describe('SiteHeader', () => {
     // A visitor's Explorer link is the quiet one, the folder alone below sm.
     expect(links[0]).toContain('!text-slate-600');
     expect(links[0]).toContain('max-sm:px-3');
-    expect(links[0]).toContain('<span class="text-optical-line max-sm:hidden">Explorer</span>');
+    expect(links[0]).toContain('<span class="text-optical-line max-sm:hidden">Explorer</span>'); // The mark alone below 375px, so Explorer and Start Blank fit a 360px phone beside the longest wordmark.
+    expect(html).toContain('max-[374px]:hidden');
   });
 
   it("is the filled Open Explorer, in the Explorer link's place, for someone signed in", () => {
@@ -86,6 +87,20 @@ describe('SiteHeader', () => {
     );
     expect(links[0]).not.toContain('!text-slate-600');
     expect(signedIn).not.toContain('Choose Template');
+  });
+
+  it("keeps Start Blank beside a centre slot (help's search) in a wide bar", () => {
+    const help = renderToStaticMarkup(
+      <SiteHeader
+        ctaSurface="Home"
+        center={<input aria-label="Search" />}
+        shareRail={false}
+        wide
+      />,
+    );
+    expect(help).toContain('max-w-7xl md:px-8');
+    expect(help).toContain('aria-label="Search"');
+    expect(rightLinks(help).map(nameOf)).toEqual(['Explorer', 'Start Blank']);
   });
 
   it('no longer says Just Draw anywhere', () => {

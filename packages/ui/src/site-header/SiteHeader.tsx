@@ -73,15 +73,8 @@ export type SiteHeaderParts<Surface extends string, Site extends string> = {
 export function createSiteHeader<Surface extends string, Site extends string>(
   parts: SiteHeaderParts<Surface, Site>,
 ) {
-  const {
-    siteId,
-    SiteSwitcher,
-    Brand,
-    ExplorerLink,
-    StartBlankLink,
-    ShareRail,
-    SiteAccount,
-  } = parts;
+  const { siteId, SiteSwitcher, Brand, ExplorerLink, StartBlankLink, ShareRail, SiteAccount } =
+    parts;
 
   // A marketing page's links, the same signed in or out (docs/specs/019-marketing/marketing-site.md "Header"):
   // Build with AI a quiet link, Explorer the one filled button, last (into the app), so the bar ends on its
@@ -118,7 +111,7 @@ export function createSiteHeader<Surface extends string, Site extends string>(
               the logo and CTA otherwise sit flush). Mobile also trims the side
               padding to reclaim width, and the CTA is shrink-0 so it never squishes. What makes the
               bar fit a phone beside the longest wordmark: the Explorer link is a 40px folder below `sm`
-              (Open Explorer too, signed in), and below 360px the logo is the mark alone (a marketing bar has its own steps, MarketingActions). */}
+              (Open Explorer too, signed in), and below 375px the logo is the mark alone (a marketing bar has its own steps, MarketingActions). */}
           <div
             className={`mx-auto flex h-full items-center justify-between gap-2 px-4 sm:gap-4 ${
               wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
@@ -128,13 +121,14 @@ export function createSiteHeader<Surface extends string, Site extends string>(
                 vertically (touch-target-y, touch-targets.md), never sideways into a neighbour's. */}
             <div className="flex shrink-0 items-center gap-2.5">
               <SiteSwitcher current={siteId}>
-                {/* The mark alone below 360px (a 320px phone), or below 480px on a marketing page, whose bar holds
-                    three links and the account menu; its name is kept in the link's aria-label. */}
+                {/* The mark alone below 375px (at 360px the longest wordmark, livedocuments', pushed Start Blank
+                    11px into the gutter), or below 480px on a marketing page, whose bar holds Explorer and the
+                    account menu; its name is kept in the link's aria-label. */}
                 <Brand
                   href="/"
                   size="md"
                   className="relative touch-target-y"
-                  wordmarkClassName={marketing ? 'max-[479px]:hidden' : 'max-[359px]:hidden'}
+                  wordmarkClassName={marketing ? 'max-[479px]:hidden' : 'max-[374px]:hidden'}
                 />
               </SiteSwitcher>
             </div>
