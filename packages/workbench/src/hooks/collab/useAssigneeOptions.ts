@@ -1,19 +1,20 @@
 'use client';
 
 import { useEffect, useMemo, useState, type Dispatch, type SetStateAction } from 'react';
-import type { ElementAction } from '@livediagram/document';
-import { apiTeamMembers } from '@/lib/api-client';
+import type { TeamMember } from '@liveworkspace/api-schema/teams';
+import type { ElementAction } from '@liveworkspace/element-model/element-action';
 import { teamMemberRows } from './team-member-rows';
-import type { PickableMember } from '@/components/dialogs/AssignActionAssigneePicker';
+import type { PickableMember } from '../../components/dialogs/AssignActionAssigneePicker';
 
-// The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4): the pinned
-// Myself row, the document team's people (joined AND invited), the preselect-on-edit resolution, whether the pick can
-// open the document, and the by-team grouping the picker renders. The dialog keeps the `assignee` selection itself.
+// The Assign Action dialog's assignee dataset (docs/specs/012-collaboration/assigned-actions.md §2 + §4), one copy
+// for every editor: the pinned Myself row, the item team's people (joined AND invited), the preselect-on-edit
+// resolution, whether the pick can open the item, and the by-team grouping the picker renders. The dialog keeps the
+// `assignee` selection itself; each editor hands in its own read of a team's people (`loadTeamMembers`).
 //
-// Only the team whose library holds this document is pickable, and its people can open the document by being in it: a
-// joined teammate is a yes, an invited one gets in on accepting. Anyone else (an action kept from before the document
-// moved) is unknown, and the email names no document they cannot open (the api decides).
-type Access = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
+// Only the team whose library holds this item is pickable, and its people can open the item by being in it: a
+// joined teammate is a yes, an invited one gets in on accepting. Anyone else (an action kept from before the item
+// moved) is unknown, and the email names no item they cannot open (the api decides).
+export type AssigneeAccess = 'unknown' | 'yes' | 'no' | 'error' | 'invited';
 
 // A member list, kept with the owner and team it was loaded for.
 type LoadedMembers = { key: string; members: PickableMember[] };
@@ -23,11 +24,11 @@ const NO_MEMBERS: PickableMember[] = [];
 function accessOf(
   assignee: PickableMember,
   selfUserId: string | null,
-  documentTeamId: string | null,
-): Access {
+  itemTeamId: string | null,
+): AssigneeAccess {
   // Self-assignment is a yes: the assigner is right here, editing it.
   if (assignee.userId !== null && assignee.userId === selfUserId) return 'yes';
-  if (assignee.teamId === null || assignee.teamId !== documentTeamId) return 'unknown';
+  if (assignee.teamId === null || assignee.teamId !== itemTeamId) return 'unknown';
   return assignee.pending ? 'invited' : 'yes';
 }
 
@@ -39,22 +40,26 @@ export function useAssigneeOptions({
   selfUserId,
   selfName,
   selfColor = null,
-  documentTeamId,
+  itemTeamId,
   assignee,
   setAssignee,
+  loadTeamMembers,
 }: {
   open: boolean;
-  existing: ElementAction | null;
+  existing: Pick<ElementAction, 'assignee'> | null;
   teams: readonly { id: string; name: string }[];
   ownerId: string | null;
   selfUserId: string | null;
   selfName: string | null;
   // The caller's own participant colour, as their cursor wears it: the Myself row's disc.
   selfColor?: string | null;
-  documentId: string | null;
-  documentTeamId: string | null;
+  // The team whose library holds the item; null for a personal item.
+  itemTeamId: string | null;
   assignee: PickableMember | null;
   setAssignee: Dispatch<SetStateAction<PickableMember | null>>;
+  // The editor's read of a team's people (its api client's `apiTeamMembers`, one request shared with the mention
+  // list's). A module-level function, so it never changes between renders.
+  loadTeamMembers: (ownerId: string, teamId: string) => Promise<readonly TeamMember[]>;
 }) {
   const [loaded, setLoaded] = useState<LoadedMembers | null>(null);
 
@@ -74,23 +79,24 @@ export function useAssigneeOptions({
     [selfUserId, selfName, selfColor],
   );
 
-  // The document's team, when the caller is in it; none for a personal document, a guest, or a share-link editor
+  // The item's team, when the caller is in it; none for a personal item, a guest, or a share-link editor
   // outside the team.
   const team = useMemo(
-    () => (ownerId ? (teams.find((t) => t.id === documentTeamId) ?? null) : null),
-    [ownerId, teams, documentTeamId],
+    () => (ownerId ? (teams.find((t) => t.id === itemTeamId) ?? null) : null),
+    [ownerId, teams, itemTeamId],
   );
-  const memberOfDocumentTeam = team !== null;
-  const key = team && ownerId ? `${ownerId}:${team.id}` : null;
-  // Null while loading. A guest picker, or a document with no team, is Myself alone.
+  const memberOfItemTeam = team !== null;
+  // A team is only ever found for a signed-in owner, so the key names both.
+  const key = team ? `${ownerId}:${team.id}` : null;
+  // Null while loading. A guest picker, or an item with no team, is Myself alone.
   const members = !key ? NO_MEMBERS : loaded?.key === key ? loaded.members : null;
 
-  // Load the team's people when the dialog opens (one request, shared with the mention list's). A failure
-  // leaves them out.
+  // Load the team's people when the dialog opens. A failure leaves them out.
   useEffect(() => {
-    if (!open || !key || !team || !ownerId) return;
+    if (!open || !team || !ownerId) return;
+    const key = `${ownerId}:${team.id}`;
     let cancelled = false;
-    void apiTeamMembers(ownerId, team.id)
+    void loadTeamMembers(ownerId, team.id)
       .then((list) => teamMemberRows(list, team, ownerId))
       .catch(() => NO_MEMBERS)
       .then((rows) => {
@@ -99,7 +105,7 @@ export function useAssigneeOptions({
     return () => {
       cancelled = true;
     };
-  }, [open, key, team, ownerId]);
+  }, [open, team, ownerId, loadTeamMembers]);
 
   // Preselect the existing assignee on edit: the Myself row when the action is self-assigned, else the matching
   // member row once loaded (by membership row first, which holds across an invitation being accepted).
@@ -123,20 +129,15 @@ export function useAssigneeOptions({
     );
   }, [open, existing, members, selfRow, setAssignee]);
 
-  const assigneeAccess: Access = assignee
-    ? accessOf(assignee, selfUserId, documentTeamId)
+  const assigneeAccess: AssigneeAccess = assignee
+    ? accessOf(assignee, selfUserId, itemTeamId)
     : 'unknown';
 
-  const grouped = useMemo(() => {
-    const byTeam = new Map<string, { teamName: string; members: PickableMember[] }>();
-    for (const m of members ?? []) {
-      if (m.teamId === null) continue;
-      const bucket = byTeam.get(m.teamId) ?? { teamName: m.teamName ?? '', members: [] };
-      bucket.members.push(m);
-      byTeam.set(m.teamId, bucket);
-    }
-    return [...byTeam.entries()];
-  }, [members]);
+  // The picker's groups: the one pickable team, under its name, once it has people to list.
+  const grouped = useMemo<[string, { teamName: string; members: PickableMember[] }][]>(
+    () => (team && members?.length ? [[team.id, { teamName: team.name, members }]] : []),
+    [team, members],
+  );
 
-  return { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess };
+  return { selfRow, members, grouped, memberOfItemTeam, assigneeAccess };
 }
