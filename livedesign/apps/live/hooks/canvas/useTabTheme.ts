@@ -3,7 +3,7 @@
 // preserve-customs walk. useTabCanvas mounts this and folds the handler
 // into its return, so callers are unchanged.
 
-import { withThemeApplied } from '@/lib/tab-theme-apply';
+import { withThemeApplied, type ThemeApplyOptions } from '@/lib/tab-theme-apply';
 import { themeTelemetryLabel } from '@/lib/theme-telemetry-label';
 import type { Tab } from '@livedesign/design';
 import { track } from '@/lib/telemetry';
@@ -28,11 +28,14 @@ export function useTabTheme(deps: {
   // the user's choice and survives. Sticky notes are skipped entirely
   // — the amber palette is iconic.
   // Widened to string: a tab's stored id may name no built-in theme, which getTheme resolves to the default.
-  const setTheme = (id: string) => {
+  // Tab Style's Element Colours on Keep as They Are (`keepElementColours`) recolours no element.
+  const setTheme = (id: string, options?: ThemeApplyOptions) => {
     if (editsBlocked) return;
     // Telemetry (docs/specs/017-telemetry/telemetry.md): `type` must stay a preset, never user content.
     track('Theme', 'Changed', themeTelemetryLabel(id));
-    commitTabs((ts) => ts.map((t) => (t.id === activeId ? withThemeApplied(t, id) : t)));
+    commitTabs((ts) =>
+      ts.map((t) => (t.id === activeId ? withThemeApplied(t, id, undefined, options) : t)),
+    );
   };
 
   return { setTheme };

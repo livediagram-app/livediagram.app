@@ -9,7 +9,6 @@ import { withPageBackgroundsFollowingTheme } from './page-theme-follow';
 import { getResolvedAppearance } from '@livedesign/ui';
 import {
   getTheme,
-  resetArrowsToTheme,
   resetThemeElementsToTheme,
   resolveTheme,
   switchThemeBackdrop,
@@ -17,11 +16,18 @@ import {
   themeViewMap,
 } from '@/lib/themes';
 
+/** How a theme pick treats the elements (docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours"): by
+ *  default every colour still on the old theme's takes the new theme's and a colour someone chose stays; with
+ *  `keepElementColours` no element changes colour (the theme still sets the tab's backdrop, its pages' theme fills
+ *  and the colours new elements take). */
+export type ThemeApplyOptions = { keepElementColours?: boolean };
+
 // The tab restyled from scratch: each of its elements a new object (withThemeApplied keeps the unchanged ones).
 function themeAppliedAnew(
   source: Tab,
   id: string,
   appearance: Appearance = getResolvedAppearance(),
+  options: ThemeApplyOptions = {},
 ): Tab {
   const theme = getTheme(id, appearance);
   // The tab as the applier sees it (docs/specs/011-theme/light-and-dark.md): its theme colours in the applier's half,
@@ -44,6 +50,23 @@ function themeAppliedAnew(
   // resolve takes the hard-reset branch.
   const prevTheme =
     t.theme === undefined ? getTheme(undefined, appearance) : resolveTheme(t.theme, appearance);
+  if (options.keepElementColours) {
+    // The elements as they are; the backdrop and the pages still follow the theme.
+    const kept = { ...source, theme: id };
+    if (!prevTheme)
+      return {
+        ...kept,
+        backgroundColor: theme.backgroundColor,
+        backgroundPattern: theme.backgroundPattern,
+        patternColor: theme.patternColor,
+        backgroundOpacity: theme.backgroundOpacity,
+      };
+    return withPageBackgroundsFollowingTheme(
+      { ...kept, ...switchThemeBackdrop(source, prevTheme, theme) },
+      prevTheme,
+      theme,
+    );
+  }
   if (!prevTheme) {
     return {
       ...t,
@@ -61,11 +84,10 @@ function themeAppliedAnew(
   // and kept when the user has set it to something else). The
   // graph-aware wrapper additionally rainbows the branches when
   // either side is a multi-colour theme (docs/specs/011-theme/multicolour-themes.md).
-  // Arrows are the exception to preserve-customs: they ALWAYS snap
-  // to the new theme's stroke (resetArrowsToTheme), so a theme pick
-  // re-tints every connector instead of leaving hand-coloured ones
-  // on the old hue. Shapes / text keep their customisations.
-  const elements = resetArrowsToTheme(switchThemeElements(t.elements, prevTheme, theme), theme);
+  // Arrows follow the same rule (docs/specs/011-theme/canvas-and-theme-dialog.md "Element colours"): a design's
+  // hand-coloured connector is part of the design, so a theme pick no longer re-tints every arrow as livediagram's
+  // does; an arrow still on the old theme's stroke takes the new one.
+  const elements = switchThemeElements(t.elements, prevTheme, theme);
   // Backdrop follows the same preserve-customs rule as the
   // elements: a deliberately-chosen pattern / colour survives a
   // theme change instead of being reset to the theme's backdrop.
@@ -79,12 +101,18 @@ function themeAppliedAnew(
   );
 }
 
-/** The tab with theme `id` applied: preserve-customs for shapes, text and backdrop; arrows always re-tinted.
+/** The tab with theme `id` applied: preserve-customs for shapes, arrows, text and backdrop, or no element recoloured
+ *  with `keepElementColours`.
  *  An element the pick leaves as it was is handed back as the same object, so its view does not render again
  *  (keepUnchangedElements; docs/specs/008-canvas/canvas-performance.md "A theme pick on a big board keeps the page
  *  answering"). */
-export function withThemeApplied(source: Tab, id: string, appearance?: Appearance): Tab {
-  const tab = themeAppliedAnew(source, id, appearance);
+export function withThemeApplied(
+  source: Tab,
+  id: string,
+  appearance?: Appearance,
+  options?: ThemeApplyOptions,
+): Tab {
+  const tab = themeAppliedAnew(source, id, appearance, options);
   return { ...tab, elements: keepUnchangedElements(source.elements, tab.elements) };
 }
 
