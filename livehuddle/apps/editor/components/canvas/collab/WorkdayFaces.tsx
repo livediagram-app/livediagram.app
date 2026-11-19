@@ -19,6 +19,7 @@ import { pieceControlProps } from '@/lib/piece-control';
 import { ringBell, useBellRings, useBellRung } from '@/lib/office/reception-bell';
 import { useAtReception, useReceptionBubbleSide } from '@/lib/office/useWorkdayPieces';
 import { PieceBubblePortal } from '../PieceBubbleLayer';
+import { KEEP_CLEAR_ATTR } from '../receptionist/keep-clear';
 import { pieceBubbleSide, pieceBubbleStyle, useSideInView } from '@/lib/piece-bubble-style';
 import { Overlay } from './SocialFaces';
 import type { ChairSitter } from './FurnitureView';
@@ -356,6 +357,8 @@ function Welcome({ element }: { element: ShapeElement }) {
         <span
           ref={bubbleRef}
           data-bubble-side={side}
+          // The Receptionist's bubble never covers it, so the Ring Bell stays pressable while he talks (Work Tracker 1256).
+          {...{ [KEEP_CLEAR_ATTR]: '' }}
           className={`lh-welcome-bubble pointer-events-none absolute ${pieceBubbleSide(side)} flex items-center gap-1.5 whitespace-nowrap rounded-xl border-2 border-slate-800 bg-white py-1 pl-2.5 pr-1 text-[10px] font-bold text-slate-800 shadow-md dark:border-slate-200 dark:bg-slate-900 dark:text-slate-100`}
           style={pieceBubbleStyle(side)}
           role="status"

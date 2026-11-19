@@ -27,13 +27,33 @@ const arrival = (over: Partial<PadArrival> = {}): PadArrival => ({
 describe('AvatarPadView', () => {
   it('draws the fixed vector table, smooth, fitted whole, with the lights shimmering', () => {
     const { container } = render(<AvatarPadView stroke="#475569" />);
-    const svg = container.querySelector('svg[data-avatar-pad]')!;
-    expect(svg.getAttribute('shape-rendering')).toBeNull();
-    expect(svg.getAttribute('preserveAspectRatio')).toBe('xMidYMid meet');
-    expect(svg.querySelectorAll('[data-pad-role]')).toHaveLength(AVATAR_PAD_ART.length);
-    expect(svg.querySelectorAll('rect')).toHaveLength(0);
-    const lights = AVATAR_PAD_ART.filter((p) => isAvatarPadLight(p.role));
-    expect(svg.querySelectorAll('.avatar-pad-shimmer')).toHaveLength(lights.length);
+    const pad = container.querySelector('[data-avatar-pad]')!;
+    expect(pad.getAttribute('role')).toBe('img');
+    const layers = [...pad.querySelectorAll('svg')];
+    for (const svg of layers) {
+      expect(svg.getAttribute('shape-rendering')).toBeNull();
+      expect(svg.getAttribute('preserveAspectRatio')).toBe('xMidYMid meet');
+    }
+    // Back to front, in the table's order.
+    expect(
+      [...pad.querySelectorAll('[data-pad-role]')].map((p) => p.getAttribute('data-pad-role')),
+    ).toEqual(AVATAR_PAD_ART.map((p) => p.role));
+    expect(pad.querySelectorAll('rect')).toHaveLength(0);
+  });
+  // canvas-performance.md "A still Space does nothing": the lights shimmer on boxes of their own, which the compositor
+  // fades, never on the SVG parts (a fade there repaints the board's layers on every step).
+  it('shimmers its lights on boxes of their own, and only its lights', () => {
+    const { container } = render(<AvatarPadView stroke="#475569" />);
+    const lit = [...container.querySelectorAll('.avatar-pad-shimmer')];
+    expect(lit.length).toBe(2);
+    for (const box of lit) expect(box.tagName).toBe('DIV');
+    const shimmering = lit.flatMap((box) =>
+      [...box.querySelectorAll('[data-pad-role]')].map((p) => p.getAttribute('data-pad-role')),
+    );
+    expect(shimmering).toEqual(
+      AVATAR_PAD_ART.filter((p) => isAvatarPadLight(p.role)).map((p) => p.role),
+    );
+    expect(container.querySelectorAll('svg .avatar-pad-shimmer')).toHaveLength(0);
   });
   it('outlines in the theme stroke and lights in the fixed cyan', () => {
     const { container } = render(<AvatarPadView stroke="#475569" />);
