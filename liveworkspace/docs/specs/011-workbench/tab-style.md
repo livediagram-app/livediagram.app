@@ -23,7 +23,8 @@ dialog shows by changing its profile, never by forking the dialog.
   the Size of New Text control; each over the product's preview.
 - **Apply to All Tabs** at the foot of the home, for an Editor of the whole item (`ApplyToAllTabsRow`). It copies
   `TAB_STYLE_KEYS` (`lib/tab-style-to-all.ts`): the canvas, the text defaults, the finish and the background new pages
-  start on (`newPageBackground`, a Pages editor's; absent elsewhere, so nothing changes there).
+  start on (`newPageBackground`, a Pages editor's) and the tab's Element Colours choice (`keepElementColours`,
+  livedesign's); each absent elsewhere, so nothing changes there.
 - **Eased changes.** Every pick eases the canvas into its new colours (`lib/tab-style-ease`).
 - **The frame.** By default the modal every editor wore: no dimming, a transparent click-catcher, the dialog hero
   header (title "Tab Style", the line for the view that is up, Show Me, the help link and the close), a popover

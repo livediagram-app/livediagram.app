@@ -117,7 +117,25 @@ export function withThemeApplied(
 }
 
 /** `target` restyled from `source` for Apply to All Tabs (docs/specs/011-theme/canvas-and-theme-dialog.md): `source`'s
- *  theme applied as picking it does, then its canvas, text defaults and finish exactly (withTabStyleOf). */
+ *  theme applied as picking it does under `source`'s Element Colours, then its canvas, text defaults, finish and
+ *  Element Colours exactly (withTabStyleOf). */
 export function withStyleOfTab(target: Tab, source: Tab): Tab {
-  return withTabStyleOf(withThemeApplied(target, source.theme ?? 'brand'), source);
+  const options = source.keepElementColours ? { keepElementColours: true } : undefined;
+  return withTabStyleOf(
+    withThemeApplied(target, source.theme ?? 'brand', undefined, options),
+    source,
+  );
+}
+
+/** The options a theme or look pick on `tab` takes when its caller gives none: the tab's own Element Colours. */
+export function themeApplyOptionsOf(tab: Tab): ThemeApplyOptions | undefined {
+  return tab.keepElementColours ? { keepElementColours: true } : undefined;
+}
+
+/** `tab` with Element Colours set: Keep as They Are stored as true, Follow the Theme clearing the key. */
+export function withKeepElementColours(tab: Tab, keep: boolean): Tab {
+  if (keep) return { ...tab, keepElementColours: true };
+  const next = { ...tab };
+  delete next.keepElementColours;
+  return next;
 }
