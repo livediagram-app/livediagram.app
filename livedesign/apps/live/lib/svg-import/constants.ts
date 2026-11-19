@@ -26,3 +26,19 @@ export const SVG_NONZERO_MAX_POINTS = 50_000;
 
 /** The arc-precision scale is recomputed when the landed scale passes the guess by this factor. */
 export const SVG_RESCALE_FACTOR = 1.5;
+
+/** An outlined stroke's centreline, and each of its round caps and joins, are traced within this, in landed px: the
+ *  outline as a whole stays within the 0.25 px budget. */
+export const SVG_OUTLINE_TOLERANCE_PX = 0.125;
+
+/** A landed stroke is outlined only past Extra thick times this (D22), so a stroke at 7 px give or take rounding
+ *  stays a stroke. */
+export const SVG_OUTLINE_SLACK = 1.001;
+
+/** Past this many traced ring points a stroke is kept a stroke, before the boolean union runs (D23): four for each
+ *  node a path may hold (`MAX_PATH_NODES`). Measured unions keep a fifth to three quarters of their ring points, so
+ *  past it the outline would almost never fit one path, and the union would spend seconds finding that out. */
+export const SVG_OUTLINE_MAX_POINTS = 20_000;
+
+/** SVG's default `stroke-miterlimit`. */
+export const SVG_MITER_LIMIT = 4;

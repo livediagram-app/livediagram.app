@@ -159,9 +159,22 @@ export const FRAME = { width: 78, height: 90, feetX: 39, feetY: 85.2 } as const;
 export const FIGURE_HEIGHT = 72;
 export const SEATED_DROP = 15;
 
+// The name chip over a head (avatar-chip.tsx, as Avatar mode draws a peer's): 18px tall, 4px over the head's top.
+export const CHIP_HEIGHT = 18;
+export const CHIP_GAP = 4;
+
+/** The head's top over the feet: the figure's height, less a seated figure's drop. */
+export const headOf = (walker: Walker) => FIGURE_HEIGHT - (walker.seated ? SEATED_DROP : 0);
+
+/** The name chip's top over the feet (negative: up). */
+export const chipTopOf = (walker: Walker) => -headOf(walker) - CHIP_GAP - CHIP_HEIGHT;
+
+/** The chip's width: about 6.5 px a letter at 11px, padded. */
+export const chipWidthOf = (walker: Walker) => Math.round([...walker.name].length * 6.5 + 16);
+
 // A bubble: 13px text at about 7 px a character (an emoji about two), padded, with the name line under it.
 export const BUBBLE_HEIGHT = 44;
-const BUBBLE_GAP = 10;
+const BUBBLE_GAP = 8;
 export function bubbleWidth(text: string): number {
   return Math.round(
     [...text].reduce((w, ch) => w + ((ch.codePointAt(0) ?? 0) > 0x2000 ? 15 : 7), 0) + 28,
@@ -172,9 +185,9 @@ export function bubbleWidth(text: string): number {
 export const BUBBLE_TAIL_INSET = 18;
 
 /**
- * Where a bubble stands over its speaker, relative to the speaker's feet: centred over the head, or leaning to the
- * walker's `lean` side, or off the copy's side when centring would put it in the keep-clear column. `tail` is the
- * tail's x within the bubble.
+ * Where a bubble stands over its speaker, relative to the speaker's feet: over the head and its name chip, centred, or
+ * leaning to the walker's `lean` side, or off the copy's side when centring would put it in the keep-clear column.
+ * `tail` is the tail's x within the bubble.
  */
 export function bubbleBox(
   stage: FloorStage,
@@ -182,8 +195,8 @@ export function bubbleBox(
   seg: Segment,
 ): { left: number; top: number; width: number; tail: number } {
   const width = bubbleWidth(seg.say ?? '');
-  const head = FIGURE_HEIGHT - (walker.seated ? SEATED_DROP : 0);
-  const top = -head - BUBBLE_GAP - BUBBLE_HEIGHT;
+  // Over the head and its name chip.
+  const top = chipTopOf(walker) - BUBBLE_GAP - BUBBLE_HEIGHT;
   const feet = seg.to;
   let left =
     walker.lean === 'left'

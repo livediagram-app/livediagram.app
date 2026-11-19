@@ -112,36 +112,48 @@ export function TrackerImportArt() {
         <text className={TEXT} x="168" y="22" fontSize="6.6" fontWeight="700">
           Roadmap
         </text>
-        {[0, 1, 2].map((c) => (
-          <rect
-            key={c}
-            className="fill-slate-100 dark:fill-slate-900"
-            x={166 + c * 38}
-            y="28"
-            width="34"
-            height="52"
-            rx="3"
-          />
+        {['Backlog', 'In Progress', 'Done'].map((name, c) => (
+          <g key={name}>
+            <rect
+              className="fill-slate-100 dark:fill-slate-900"
+              x={166 + c * 38}
+              y="27"
+              width="34"
+              height="54"
+              rx="3"
+            />
+            <text className={MUTED} x={169 + c * 38} y="34" fontSize="4.4" fontWeight="700">
+              {name}
+            </text>
+          </g>
         ))}
       </g>
-      {[
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1],
-        [2, 0],
-      ].map(([c, s], i) => (
-        <rect
-          key={i}
-          className="fa-a-pop fill-white stroke-slate-200 dark:fill-slate-700 dark:stroke-slate-600"
-          style={at(1.2 + i * 0.1)}
-          x={169 + c! * 38}
-          y={32 + s! * 16}
-          width="28"
-          height="12"
-          rx="2"
-          strokeWidth="0.6"
-        />
+      {/* The cards landing in the columns their lists named, each with its type's stripe. */}
+      {(
+        [
+          [0, 0, 'Dark mode', '#f59e0b'],
+          [0, 1, 'SSO sign-in', '#0ea5e9'],
+          [0, 2, 'Export PDF', '#0ea5e9'],
+          [1, 0, 'Billing page', '#0ea5e9'],
+          [1, 1, 'Login bug', '#ef4444'],
+          [2, 0, 'CSV import', '#0ea5e9'],
+        ] as const
+      ).map(([c, r, title, stripe], i) => (
+        <g key={title} className="fa-a-pop" style={at(1.2 + i * 0.1)}>
+          <rect
+            className="fill-white stroke-slate-200 dark:fill-slate-700 dark:stroke-slate-600"
+            x={168 + c * 38}
+            y={37 + r * 14}
+            width="30"
+            height="12"
+            rx="2"
+            strokeWidth="0.6"
+          />
+          <rect x={168 + c * 38} y={37 + r * 14} width="1.4" height="12" rx="0.7" fill={stripe} />
+          <text className={TEXT} x={171 + c * 38} y={44.6 + r * 14} fontSize="4.2" fontWeight="600">
+            {title}
+          </text>
+        </g>
       ))}
     </Scene>
   );

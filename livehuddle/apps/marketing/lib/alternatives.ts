@@ -10,20 +10,23 @@ import { SITE_URL } from '@livehuddle/ui';
 // page says it has no voice or video. The retired Miro, FigJam and Teamflow pages redirect to
 // the hub (public/_redirects).
 //
-// Every competitor claim below was checked against the competitor's own public pages on 2026-11-12 and
+// Every competitor claim below was checked against the competitor's own public pages on 2026-11-18 and
 // is dated by UPDATED. A claim no current page confirms is softened or left out, never kept from memory.
 // Sources (re-check each when bumping UPDATED):
 //   Gather: https://www.gather.town/pricing (Essential $12 per member a month after a 30-day trial, no
-//     free tier; guests not charged; Google Calendar on Essential; Smart Objects with webhooks),
-//     https://www.gather.town/ (walk up and talk, office customisation),
-//     https://support.help.gather.town/articles/1982412443-getting-started-guide (desktop app),
-//     https://support.help.gather.town/articles/4056265393 (Google Calendar and Chrome extension).
-//   Kumospace: https://www.kumospace.com/pricing (Free up to 5 members, Business $16 per member a month,
-//     roles on all plans, webinar platform, recording on Business, Windows and macOS desktop apps,
-//     furniture customisation), https://www.kumospace.com/ (spatial audio, events, Google Calendar and
-//     Outlook integrations, apps for Mac, Windows, Linux, iOS and Android),
+//     free tier; guests not charged; Google Calendar sync, Chrome extension, GitHub and Spotify, custom
+//     integrations by webhooks from Smart Objects; meeting recording, AI meeting notes and transcriptions;
+//     chat with channels and DMs; mini mode; mobile app),
+//     https://www.gather.town/download (Mac and Windows desktop apps, an iOS app, Android coming soon),
+//     https://support.gather.town/hc/en-us/articles/15909789090452 (a web browser works too, Chrome
+//     preferred), https://www.gather.town/ (walk up and talk, office customisation).
+//   Kumospace: https://www.kumospace.com/pricing (Free up to 5 members and 50 guests, Business $16 per
+//     member a month, user roles and furniture on every plan, recording and password or email allowlist
+//     access controls on Business), https://www.kumospace.com/ (spatial audio, virtual events, a webinar
+//     platform for large broadcasts, Google Calendar, Outlook, Slack, Teams, Zoom and Google Drive
+//     integrations, apps for Mac, Windows, Linux, iOS and Android),
 //     https://www.kumospace.com/help/invite (guests join without an account when the host allows it).
-const UPDATED = new Date('2026-11-12');
+const UPDATED = new Date('2026-11-18');
 
 const LIST: Alternative[] = [
   {
@@ -55,34 +58,43 @@ const LIST: Alternative[] = [
       {
         label: 'Getting in',
         us: 'Any modern browser, nothing to install',
-        them: 'The browser, or its desktop apps',
+        them: 'The browser, or its Mac, Windows and iOS apps',
+      },
+      {
+        label: 'Seeing the office',
+        us: 'A 3D View with standing walls, framed doorways and upright characters, or the flat plan',
+        them: 'A customisable pixel-art office',
       },
       {
         label: 'On the floor',
-        us: 'Stickies, stickers, and a Timer and a Stopwatch for any room',
+        us: 'Stickies, stickers, a Timer and a Stopwatch, and playable pieces like the Arcade Machine and the Ping-Pong Table',
         them: 'A customisable office with smart objects',
       },
       {
         label: 'Programmatic access',
-        us: 'A free REST API with personal tokens',
-        them: 'Integrations such as calendars',
+        us: 'A free REST API with personal tokens, and webhooks to Slack, Teams or signed JSON',
+        them: 'Calendar, GitHub and Spotify integrations, and webhooks from smart objects',
       },
     ],
     themBest: [
-      'Years of polish on its calls, from the video grid to the meeting tools around them, for teams that live in the office all day.',
-      'A desktop app that keeps the office open all day, with in-app reminders for your calendar.',
+      'Years of polish on its calls, with meeting recording, AI meeting notes and transcripts on its paid plan.',
+      'Team chat with channels and direct messages, beside the office.',
+      'Desktop apps for Mac and Windows and an iOS app that keep the office open all day, with in-app reminders for your calendar.',
       'Deep office customisation, with smart objects that connect to your other tools.',
-      'Calendar integration, so a scheduled meeting opens in the right room.',
+      'Calendar sync, so a scheduled meeting opens in the right room.',
     ],
     usBest: [
-      'Free for everyone and MIT-licensed, with no per-seat pricing, no team-size limit on a plan, and nothing to upgrade to.',
+      'Free for everyone and MIT-licensed, with no per-seat pricing, no trial that runs out, no team-size limit on a plan, and nothing to upgrade to.',
       'Open a link and you are in, with no sign-up, even to create a Space or to talk, and nothing to install.',
       'Walk up to someone and you hear them: voices fade as you walk away, a camera or a shared screen shows as a bubble above your character, and a room’s walls keep its call private.',
+      'Walk the office in 3D: walls stand up with framed doorways and windows, characters stand upright, and the walls in front of you fade as you near a room.',
+      'In Chrome or Edge, Pop Out a small window that stays on top while you work in another tab: who is near you, who is talking, raised hands and knocks, your microphone and camera, and up to four camera tiles.',
       '33 templates: a blank Space, and offices, halls, bars, gardens, galleries, games rooms, houses and whole campuses to walk round, each ready to walk into.',
       'Your own character with outfits, a status (Available, Focusing, Out to Lunch, Angry and nine more, each worn on the character), speech bubbles and five moves, and Follow to go wherever a teammate goes.',
+      'A Receptionist by the Avatar Pad who welcomes newcomers and answers how-do-I questions by pointing at the real control.',
       'A Space is also a board: sticky notes, text and stickers on the walls, and a Timer or a Stopwatch in any room.',
       'Share links for each role: an Editor reshapes the office, and a Participant, the default, walks, talks and reacts without moving a thing. Add a password or an expiry, or revoke a link at any time.',
-      'A free REST API, so your own scripts can set up and change your Spaces.',
+      'A free REST API and webhooks, so your own scripts can set up your Spaces and Slack or Teams hears when one is renamed, moved, shared or trashed.',
       'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
     ],
     sections: [
@@ -97,13 +109,15 @@ const LIST: Alternative[] = [
         heading: 'Talking as you walk',
         paragraphs: [
           'Gather’s heart is proximity video and audio: the people near you are the people you hear, and livehuddle works the same way. Walk up to a teammate and you hear each other, the voice fading as you walk apart; a little equaliser over a character shows who is talking further off. Your microphone starts muted, a camera or a shared screen shows as a bubble above your head to the people in earshot, and anyone can press a bubble to make it bigger.',
-          'A meeting room is a call of its own: nobody outside its walls hears a word, so a glass-walled room shows who is in a meeting without letting it be heard. Knock before you walk in, set Do Not Disturb when you need quiet, and speak from the All-Hands Hall’s stage to be heard by everyone in the hall, with raised hands for questions. Where Gather goes further is the years of polish around its calls, its desktop apps and its calendar integration.',
+          'A meeting room is a call of its own: nobody outside its walls hears a word, so a glass-walled room shows who is in a meeting without letting it be heard. Knock before you walk in, set Do Not Disturb when you need quiet, and speak from the All-Hands Hall’s stage to be heard by everyone in the hall, with raised hands for questions. Where Gather goes further is the years of polish around its calls, with recording and AI meeting notes, its team chat, its desktop apps and its calendar sync.',
+          'Step away from the Space and you still hear it: a soft chime when someone arrives or leaves, a Nudge from a teammate that reaches you as a desktop notification, and, in Chrome or Edge, a Pop Out window that keeps your microphone, your camera and the people near you on top of whatever you are working on.',
         ],
       },
       {
         heading: 'More than a floor plan',
         paragraphs: [
-          'Every livehuddle Space is also a board, so the walls of a room hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch on the wall, and one person can hold the facilitator baton so the timer answers to them. Bring Focus offers everyone a jump to what you mean, and comments with mentions, reactions and assigned actions keep the follow-ups with the Space.',
+          'Every livehuddle Space is also a board, so the walls of a room hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch on the wall that anyone in the room can run. Bring Focus offers everyone a jump to what you mean.',
+          'Walk the office in 3D, with its walls standing and its doorways framed, or flat as a plan. The office has a life of its own: a Receptionist welcomes newcomers, the Arcade Machine keeps a High Scores table for the whole Space, two people can play on the Ping-Pong Table while everyone watches, and a Nap Pod or a Treadmill sets your status as you sit down.',
         ],
       },
       {
@@ -165,29 +179,39 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Who can do what',
-        us: 'Editor and Participant links, with passwords and expiry',
-        them: 'Roles and permissions for members and guests',
+        us: 'Editor and Participant links with an optional expiry, and a password for the Space, free',
+        them: 'User roles on every plan; passwords and an email allowlist on its paid plan',
+      },
+      {
+        label: 'Seeing the office',
+        us: 'A 3D View with standing walls, framed doorways and upright characters, or the flat plan',
+        them: 'A customisable office with furniture and decor',
       },
       {
         label: 'Programmatic access',
-        us: 'A free REST API with personal tokens',
-        them: 'Integrations such as calendars',
+        us: 'A free REST API with personal tokens, and webhooks to Slack, Teams or signed JSON',
+        them: 'Calendar, Slack, Teams, Zoom and Google Drive integrations',
       },
     ],
     themBest: [
-      'Large events: broadcasting to a big audience, and spaces built for parties and conferences.',
-      'A webinar platform, and recording on its paid plan.',
-      'Desktop and mobile apps, and furniture and decor you can customise for an office that looks its best.',
+      'Large events: a webinar platform for broadcasting to a big audience, and spaces built for parties and conferences.',
+      'Recording, chat channels and user analytics on its paid plan.',
+      'Desktop apps for Mac, Windows and Linux and mobile apps for iOS and Android.',
+      'Integrations with the calendars and chat tools a team already uses, from Google Calendar and Outlook to Slack, Teams and Zoom.',
+      'Furniture and decor you can customise for an office that looks its best.',
     ],
     usBest: [
-      'Free for everyone and MIT-licensed: no plan limits on people or rooms, and nothing to upgrade to.',
+      'Free for everyone and MIT-licensed: no plan limits on people, guests, floors or rooms, and nothing to upgrade to.',
       'Open a link and walk in, with no sign-up, even to create a Space or to talk, and nothing to install.',
       'Voices fade as you walk away, cameras and shared screens show as bubbles above the characters, and a meeting room’s walls keep its call private.',
+      'Walk the office in 3D: walls stand up with framed doorways and windows, characters stand upright, and the walls in front of you fade as you near a room.',
+      'Floors are tabs, joined by Stairs and Elevators, on every Space for free.',
       '33 templates: a blank Space, and offices, halls, bars, gardens, galleries, games rooms, houses and whole campuses to walk round.',
       'Everyone is a character with outfits, a status (Available, Focusing, Out to Lunch, Angry and nine more, each worn on the character), speech bubbles and five moves, and Follow takes you wherever a teammate goes.',
+      'Knock before walking in on a meeting, Nudge a teammate from Collaborators, and see who came and went in a tab’s Attendance.',
       'The walls hold the meeting: sticky notes, text and stickers, with a Timer or a Stopwatch in any room.',
-      'Participant links let people walk, talk and react without moving the furniture.',
-      'A free REST API, so a script can set up a Space and share it for you.',
+      'Participant links let people walk, talk and react without moving the furniture, and a Space can take a password and any link an expiry.',
+      'A free REST API and webhooks, so a script can set up a Space and Slack or Teams hears when it is renamed, moved, shared or trashed.',
       'Your Spaces can sync to your own Google Drive, or stay in This Browser and never reach our servers.',
     ],
     sections: [
@@ -195,7 +219,7 @@ const LIST: Alternative[] = [
         heading: 'A place for the team to be',
         paragraphs: [
           'Kumospace and livehuddle both turn a remote team’s day into a place: an office with rooms, desks and a corner to chat in, where you can see who is around. In livehuddle that place is a Space. Walk in as your own character, sit at your desk, set your status to Focusing when you need quiet, and walk over to the meeting table when it is time to talk.',
-          'For the whole company there is the All-Hands Hall, with a stage at the front that everyone in the hall hears, and raised hands for the audience to ask to speak, or a Conference Venue and an Expo Hall for the bigger day, and everyone can throw a burst of confetti, sparkles, hearts, applause or fireworks when the news lands.',
+          'For the whole company there is the All-Hands Hall, with a stage at the front that everyone in the hall hears, and raised hands for the audience to ask to speak, or a Conference Venue and an Expo Hall for the bigger day. When the news lands, the whole hall can wave, cheer or dance.',
         ],
       },
       {
@@ -207,13 +231,13 @@ const LIST: Alternative[] = [
       {
         heading: 'A meeting you can write on',
         paragraphs: [
-          'Every Space is also a board. Put a sticky note per person on the wall for the stand-up, and start the Timer on the wall. Bring Focus offers everyone a jump to what you mean, and comments with mentions and assigned actions carry the follow-ups out of the meeting.',
+          'Every Space is also a board. Put a sticky note per person on the wall for the stand-up, and start the Timer on the wall. Bring Focus offers everyone a jump to what you mean, and a Snapshot keeps the wall as it was before you start again.',
         ],
       },
       {
         heading: 'Free, open and yours',
         paragraphs: [
-          'There is no paid tier and no plan to introduce one. The whole codebase is MIT-licensed and public. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. Export a tab as PNG, SVG, PDF or a JSON file that imports back, and script the rest with the free REST API.',
+          'There is no paid tier and no plan to introduce one. The whole codebase is MIT-licensed and public. Anyone can create a Space without signing up; a guest’s new Space is kept in their browser until they press Share, which syncs it in one step. Export a tab as PNG, SVG, a PDF with real, selectable text, or a JSON file that imports back, and script the rest with the free REST API.',
         ],
       },
     ],
@@ -224,7 +248,7 @@ const LIST: Alternative[] = [
       },
       {
         q: 'Can I hold an all-hands in livehuddle?',
-        a: 'Yes. The All-Hands Hall has a stage at the front and room for the whole team to walk in: whoever stands on the stage is heard by everyone in the hall, the audience raises a hand to ask to speak, and everyone can throw applause and confetti. Kumospace is the better pick for broadcasting to a very large audience.',
+        a: 'Yes. The All-Hands Hall has a stage at the front and room for the whole team to walk in: whoever stands on the stage is heard by everyone in the hall, the audience raises a hand, and the speaker presses Let Speak to give someone the floor. Kumospace is the better pick for broadcasting to a very large audience.',
       },
       {
         q: 'Can I import my Kumospace office?',

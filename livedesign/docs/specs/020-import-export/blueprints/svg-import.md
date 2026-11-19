@@ -19,6 +19,7 @@ Scope, by file (under `apps/live/`):
 | `lib/svg-import/style.ts`                | `parseDeclarations`, `StyleSheet`: the cascade's inputs                                         |
 | `lib/svg-import/walk.ts`                 | `walkSvg`, `viewportOf`: the DOM walk to `Drawn[]` plus the report                              |
 | `lib/svg-import/nonzero.ts`              | `traceContour`, `evenOddMatchesNonzero`, `resolveNonzero`                                       |
+| `lib/svg-import/outline-stroke.ts`       | `outlineStroke`, `strokeRings`: a stroke past Extra thick as the filled area it paints          |
 | `lib/svg-import/build.ts`                | `drawnToPath`, `contourAnchors`, `withThreeNodes`, `strokePreset`                               |
 | `lib/svg-import/import-svg.ts`           | `importSvgText`: limits, parse, walk, fit, resolve, build; the log line                         |
 | `lib/svg-import/landing.ts`              | `landingPage`, `landingBox`: which page, and its safe area                                      |
@@ -53,21 +54,26 @@ Scope, by file (under `apps/live/`):
 3. **Element cap.** `root.getElementsByTagName('*').length + 1 > SVG_IMPORT_MAX_ELEMENTS`: `picture / too-many-elements`.
 4. **Walk** with a guessed `pxPerUnit = min(into.width / viewport.width, into.height / viewport.height)`. Visited elements
    (uses expanded) past `SVG_IMPORT_MAX_ELEMENTS`: `picture / too-many-elements`.
-5. **Fit.** The drawn box (`contoursBox`, the curves' extremes) fitted uniformly and centred into `into`. The fit
-   scale is capped at `BORDER_STROKE_PX['extra-thick']` over the widest stroke, so no landed stroke passes the
-   thickest preset (`strokeCap`). No box, or a
+5. **Fit.** The drawn box (`drawnBox`: each element's `contoursBox`, the curves' extremes, grown by half its stroke
+   width when stroked) fitted uniformly and centred into `into`, with no cap on the scale. No box, or a
    box of no width and no height: `empty`. When the fit scale passes the guess by `SVG_RESCALE_FACTOR`, walk again at
    the fit scale (D14) and refit.
 6. **Per drawn element:** contours carried by the fit matrix; a `nonzero` filled element traced
    (`SVG_TRACE_TOLERANCE_PX`) and checked with `evenOddMatchesNonzero`; on a mismatch the boolean engine is loaded
    (once per import) and `resolveNonzero` replaces the contours with straight rings. Stroke width times the fit scale.
+   A landed stroke wider than `BORDER_STROKE_PX['extra-thick']` times `SVG_OUTLINE_SLACK` is outlined: the engine is
+   loaded (the same once per import), `outlineStroke` gives the stroke's area as even-odd rings, and the element lands
+   as its fill (stroke removed, when it has one) then the outline (filled in the stroke's colour and alpha, no
+   stroke). An outline that cannot be made (the engine throws, past `SVG_OUTLINE_MAX_POINTS` traced ring points, D23, or its
+   path past `MAX_PATH_NODES`) leaves the stroke a stroke (snapped to Extra thick).
    `drawnToPath`; a path past `MAX_PATH_NODES` nodes: `picture / too-detailed`.
 7. No paths: `empty` (with the report). Otherwise `shapes`.
 
 The walk (`walkSvg`) visits in document order. Per element: skip outside the SVG namespace (a null namespace counts as
 SVG, D15), past depth 256, or in `NEVER_DRAWN`; compute declarations (presentation attributes, then `<style>` rules
 by specificity then order, then `style`); `display: none` skips the subtree; inherited properties (`fill`, `stroke`,
-`stroke-width`, `fill-rule`, `fill-opacity`, `stroke-opacity`, `color`, `visibility`) pass down, `inherit` takes the
+`stroke-width`, `stroke-linecap`, `stroke-linejoin`, `stroke-miterlimit`, `fill-rule`, `fill-opacity`,
+`stroke-opacity`, `color`, `visibility`) pass down, `inherit` takes the
 parent's; opacity multiplies down; `clip-path`, `mask`, `filter` other than `none` count once per element. `text` and
 `image` count (unless hidden) and stop. `use` follows a local `href` (`href`, else `xlink:href`) when the target is not
 already in its chain and the depth is under `SVG_USE_MAX_DEPTH`, translated by its `x` and `y`; a `symbol` target walks
@@ -94,6 +100,27 @@ Promise<SvgImportResult>`, never throws for a bad file.
 - `svgAwareImporters({ importText, importFile, importSvg, locked, pickFile? })`: JSON to the tab import; SVG to
   `importSvg`, a locked tab refused, the picker limited to `.svg,image/svg+xml` and `SVG_IMPORT_MAX_BYTES`.
 
+### Stroke outlining
+
+`outlineStroke(engine, contours, line, tol)` works in landed px. `strokeRings` makes one ring per contour whose
+nonzero area is exactly the stroke's area, and the engine's `union` resolves them (it reads a self-crossing ring
+nonzero) into even-odd rings, simplified like Combine's (`simplifyRing`).
+
+1. **Trace.** Each segment is traced within `tol` (`SVG_OUTLINE_TOLERANCE_PX`, half the 0.25 px budget); a point where
+   two source segments meet is a corner (the declared join), a point inside a traced curve takes a round join, so the
+   outline of a curve is the disc swept along it. Repeated points are dropped.
+2. **Ring.** With unit directions `d` and left normals `n = (-d.y, d.x)` and half width `h`: the left side forward,
+   the end cap, the right side backward, the start cap. At each vertex the side away from the turn (`d_a × d_b < 0`
+   is left; a reversal counts as left) gets the join: round (arc points every `2 acos(1 - tol / h)` radians), miter
+   (the point `p + h (n_a + n_b) / (1 + d_a · d_b)` when `1 / cos(φ / 2)` is within the limit, else bevel) or bevel.
+   The inner side passes through the vertex itself (`p + h n_a`, `p`, `p + h n_b`). The ring is then the sum of every
+   segment's quad and every join's wedge, all wound one way, so its winding is positive exactly where the stroke
+   paints. Caps: butt adds nothing, square the two far corners `h` on, round a half circle.
+3. **Closed contours** have no caps and a join at the start too; the left loop and the reversed right loop are joined
+   into one ring through the start point (the bridge edges cancel).
+4. **A contour of one point** (every trace point the same) paints a circle of radius `h` with a round cap, a square
+   of side `2h` along the x-axis with a square cap, and nothing with butt.
+
 ## Data and persistence
 
 Each landed path is an ordinary `PathElement` (`pathOfContours`): `closed`, `nodes`, `subpaths?`, `fillColor?` (six-digit
@@ -114,6 +141,9 @@ above). No new field, no migration; stored, synced and undone like any other ele
 | A `use` cycle or chain deeper than 8      | Stops; draws nothing further                                                                        |
 | Point cap for the nonzero check passed    | The check is skipped and the fill stays even-odd (D17)                                              |
 | A file the picker reads past the cap      | Never read: placed as a picture from the file                                                       |
+| An outline the engine cannot make         | The stroke stays a stroke, snapped to Extra thick                                                   |
+| A dashed stroke past Extra thick          | Outlined solid (`stroke-dasharray` is a non-goal)                                                   |
+| `miter-clip` or `arcs` joins (SVG 2)      | Drawn as miter (D21)                                                                                |
 | A picture fallback with no picture route  | The unreadable message                                                                              |
 
 ## Security and trust
@@ -128,42 +158,55 @@ scanner is linear.
 
 Parsing and walking are linear in the file (2 MB cap). The nonzero check costs rings by samples by the points of rings
 whose box holds the sample (`SVG_NONZERO_SAMPLES_PER_RING` = 24), skipped past 50,000 points. Measured in the unit
-tests: a 100,000-segment path parses within a 400 ms CPU budget; a 1,000-icon file imports within 3 s. The importer
+tests: a 100,000-segment path parses within a 400 ms CPU budget; a 1,000-icon file imports within 3 s; a bold icon
+of 200 stroked curves outlined at page size within its CPU budget (`outline-stroke.test.ts`). Outlining costs one
+engine union per outlined element over its traced ring, skipped before the union past `SVG_OUTLINE_MAX_POINTS`
+(20,000) ring points: measured unions keep a fifth to three quarters of their ring points, so past four per
+`MAX_PATH_NODES` node the outline would almost never fit one path, and the union (about 1.2 to 2 s CPU for 200
+overlapping bold curves in one path) is not spent finding that out. That case now keeps its stroke within 200 ms
+(`outline-stroke.test.ts`); under the cap a union costs at most about 0.5 s CPU (16,600 ring points). The importer
 and its engine are dynamic imports: none of it reaches the editor's first bundle.
 
 ## Observability
 
-One `[svg-import]` `debugLog` per import with `route`, `outcome`, the picture `reason`, `paths`, `nodes` and the report.
+One `[svg-import]` `debugLog` per import with `route`, `outcome`, the picture `reason`, `paths`, `nodes`, `nonzero`
+(elements resolved through the engine), `outlined` (strokes outlined) and the report.
 
 ## Testing
 
-| Spec rule                                       | Test                                                                 |
-| ----------------------------------------------- | -------------------------------------------------------------------- |
-| Every path command, error recovery, linear time | `path-data.test.ts`                                                  |
-| Transforms                                      | `transform.test.ts`                                                  |
-| Basic shapes and 0.25 px precision              | `shapes.test.ts`, `import-svg.test.ts` "turns arcs under transforms" |
-| Colours, the cascade                            | `colour.test.ts`, `style.test.ts`, `import-svg.test.ts` "style"      |
-| Nonzero to even-odd                             | `nonzero.test.ts`, `import-svg.test.ts` "resolves a nonzero fill"    |
-| Nodes, presets, opacity                         | `build.test.ts`                                                      |
-| One path per element, groups, fit               | `import-svg.test.ts` "geometry"                                      |
-| Report kinds and copy                           | `import-svg.test.ts`, `landing.test.ts` "report"                     |
-| parseInert only; scripts, foreignObject, hrefs  | `import-svg.test.ts` "trust"                                         |
-| 2 MB, 5,000 elements, 5,000 nodes, tab room     | `import-svg.test.ts` "limits", `useSvgImport.test.tsx`               |
-| Landing page and box, detection, dialog routing | `landing.test.ts`                                                    |
-| Commit, selection, messages, gates              | `useSvgImport.test.tsx`                                              |
-| Drop and paste routing                          | `useClipboard.svg.test.tsx`                                          |
-| The SVG card and note                           | `ImportTabDialog.test.tsx`                                           |
+| Spec rule                                        | Test                                                                 |
+| ------------------------------------------------ | -------------------------------------------------------------------- |
+| Every path command, error recovery, linear time  | `path-data.test.ts`                                                  |
+| Transforms                                       | `transform.test.ts`                                                  |
+| Basic shapes and 0.25 px precision               | `shapes.test.ts`, `import-svg.test.ts` "turns arcs under transforms" |
+| Colours, the cascade                             | `colour.test.ts`, `style.test.ts`, `import-svg.test.ts` "style"      |
+| Nonzero to even-odd                              | `nonzero.test.ts`, `import-svg.test.ts` "resolves a nonzero fill"    |
+| Nodes, presets, opacity                          | `build.test.ts`                                                      |
+| Stroke outlining: caps, joins, miter limit, dots | `outline-stroke.test.ts`                                             |
+| Bold icons fill the page, thin strokes stay      | `import-svg.test.ts` "strokes"                                       |
+| One path per element, groups, fit                | `import-svg.test.ts` "geometry"                                      |
+| Report kinds and copy                            | `import-svg.test.ts`, `landing.test.ts` "report"                     |
+| parseInert only; scripts, foreignObject, hrefs   | `import-svg.test.ts` "trust"                                         |
+| 2 MB, 5,000 elements, 5,000 nodes, tab room      | `import-svg.test.ts` "limits", `useSvgImport.test.tsx`               |
+| Landing page and box, detection, dialog routing  | `landing.test.ts`                                                    |
+| Commit, selection, messages, gates               | `useSvgImport.test.tsx`                                              |
+| Drop and paste routing                           | `useClipboard.svg.test.tsx`                                          |
+| The SVG card and note                            | `ImportTabDialog.test.tsx`                                           |
 
 ## Constants and configuration
 
-| Constant                       | Value  | Provenance                                             |
-| ------------------------------ | ------ | ------------------------------------------------------ |
-| `SVG_IMPORT_MAX_BYTES`         | 2 MiB  | Spec                                                   |
-| `SVG_IMPORT_MAX_ELEMENTS`      | 5,000  | Spec                                                   |
-| `SVG_USE_MAX_DEPTH`            | 8      | Spec                                                   |
-| `SVG_ARC_TOLERANCE_PX`         | 0.1    | Spec (arc pieces); under the 0.25 px conversion budget |
-| `SVG_TRACE_TOLERANCE_PX`       | 0.25   | Spec                                                   |
-| `SVG_ARC_MAX_PIECE`            | π / 2  | Spec (a quarter turn)                                  |
-| `SVG_NONZERO_SAMPLES_PER_RING` | 24     | D18                                                    |
-| `SVG_NONZERO_MAX_POINTS`       | 50,000 | Combine's `COMBINE_MAX_INPUT_POINTS`                   |
-| `SVG_RESCALE_FACTOR`           | 1.5    | D14                                                    |
+| Constant                       | Value  | Provenance                                              |
+| ------------------------------ | ------ | ------------------------------------------------------- |
+| `SVG_IMPORT_MAX_BYTES`         | 2 MiB  | Spec                                                    |
+| `SVG_IMPORT_MAX_ELEMENTS`      | 5,000  | Spec                                                    |
+| `SVG_USE_MAX_DEPTH`            | 8      | Spec                                                    |
+| `SVG_ARC_TOLERANCE_PX`         | 0.1    | Spec (arc pieces); under the 0.25 px conversion budget  |
+| `SVG_TRACE_TOLERANCE_PX`       | 0.25   | Spec                                                    |
+| `SVG_ARC_MAX_PIECE`            | π / 2  | Spec (a quarter turn)                                   |
+| `SVG_NONZERO_SAMPLES_PER_RING` | 24     | D18                                                     |
+| `SVG_NONZERO_MAX_POINTS`       | 50,000 | Combine's `COMBINE_MAX_INPUT_POINTS`                    |
+| `SVG_RESCALE_FACTOR`           | 1.5    | D14                                                     |
+| `SVG_OUTLINE_TOLERANCE_PX`     | 0.125  | Spec: half the 0.25 px budget (trace, then round parts) |
+| `SVG_OUTLINE_SLACK`            | 1.001  | D22                                                     |
+| `SVG_MITER_LIMIT`              | 4      | SVG's default `stroke-miterlimit`                       |
+| `SVG_OUTLINE_MAX_POINTS`       | 20,000 | D23: four ring points per `MAX_PATH_NODES` node         |

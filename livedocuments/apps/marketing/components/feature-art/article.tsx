@@ -95,7 +95,7 @@ export function ArticlePagesArt() {
             <text
               x="58"
               y="43"
-              fontSize="8"
+              fontSize="6.8"
               fontWeight="700"
               fontFamily={SERIF}
               className={INK}

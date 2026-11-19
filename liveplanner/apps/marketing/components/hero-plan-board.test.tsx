@@ -13,7 +13,7 @@ describe('PlanBoard', () => {
     expect(Math.round((4 / 12) * 100)).toBe(33);
   });
 
-  it('holds In progress at its WIP limit and Review within it once the cards have moved', () => {
+  it('holds In Progress at its WIP limit and Review within it once the cards have moved', () => {
     const [, todo, doing, review] = settledColumns();
     expect(todo!.map((c) => c.title)).toEqual(['Pricing page', 'Release notes']);
     expect(doing).toHaveLength(3);

@@ -28,6 +28,7 @@ export function PopoverOrSheet({
   align = 'end',
   onClose,
   levels,
+  hidden = false,
   children,
 }: {
   anchor: HTMLElement;
@@ -36,6 +37,8 @@ export function PopoverOrSheet({
   align?: AnchoredAlign;
   onClose: () => void;
   levels?: PopoverOrSheetLevels;
+  // Open but out of sight, taking no press or focus (a tool stepping aside, footer-tools-menu.md "Stepping aside").
+  hidden?: boolean;
   children: (sheet: boolean) => ReactNode;
 }) {
   const sheet = useIsMobileViewport();
@@ -52,13 +55,14 @@ export function PopoverOrSheet({
         passEscape={levels?.passEscape}
         layer={levels?.layer}
         keepOpenWithin={levels?.keepOpenWithin}
+        hidden={hidden}
       >
         {children(false)}
       </AnchoredPopover>
     );
   }
   return (
-    <Drawer anchor={anchor} name={name} onClose={onClose} levels={levels}>
+    <Drawer anchor={anchor} name={name} onClose={onClose} levels={levels} hidden={hidden}>
       {children(true)}
     </Drawer>
   );
@@ -69,12 +73,14 @@ function Drawer({
   name,
   onClose,
   levels,
+  hidden,
   children,
 }: {
   anchor: HTMLElement;
   name: string;
   onClose: () => void;
   levels?: PopoverOrSheetLevels;
+  hidden: boolean;
   children: ReactNode;
 }) {
   const close = () => {
@@ -108,14 +114,14 @@ function Drawer({
       <div
         aria-hidden
         onPointerDown={close}
-        className={`fixed inset-0 ${modal ? 'z-[var(--z-modal)]' : 'z-[var(--z-popover)]'} bg-slate-900/30 motion-safe:animate-fade-in dark:bg-slate-950/55`}
+        className={`fixed inset-0 ${modal ? 'z-[var(--z-modal)]' : 'z-[var(--z-popover)]'} ${hidden ? 'invisible' : ''} bg-slate-900/30 motion-safe:animate-fade-in dark:bg-slate-950/55`}
       />
       <div
         role="dialog"
         aria-label={name}
         data-popover-sheet=""
         style={{ paddingBottom: safeInset('bottom'), ...drag.style }}
-        className={`fixed inset-x-0 bottom-0 ${modal ? 'z-[var(--z-modal)]' : 'z-[calc(var(--z-popover)+1)]'} flex max-h-[85dvh] w-full animate-sheet-up flex-col overflow-hidden rounded-t-2xl border border-b-0 border-slate-200 bg-white text-sm shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900`}
+        className={`fixed inset-x-0 bottom-0 ${modal ? 'z-[var(--z-modal)]' : 'z-[calc(var(--z-popover)+1)]'} ${hidden ? 'invisible' : ''} flex max-h-[85dvh] w-full animate-sheet-up flex-col overflow-hidden rounded-t-2xl border border-b-0 border-slate-200 bg-white text-sm shadow-[0_-8px_40px_-12px_rgb(0_0_0/0.25)] dark:border-slate-700 dark:bg-slate-900`}
       >
         {/* Over the band, which runs up under it (HeroDialogHeader `underHandle`). */}
         <SheetHandle handleProps={drag.handleProps} className="relative z-10" />

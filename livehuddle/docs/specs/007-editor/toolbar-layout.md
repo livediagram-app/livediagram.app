@@ -16,7 +16,7 @@ flyout of its tiles:
  Explorer            (Undo/Redo, zoom: the bottom-right cluster)
 ```
 
-- **Top left, before the strip: the menu button**, then the tab's name, in one card. There is no mode switch
+- **Top left, before the strip: the menu button**, in a card of its own. There is no mode switch
   ([Editor modes](editor-modes.md)). On a phone that card sits at the far left of the strip's row, the strip beside it (below).
 - **Left: the Edit | Walk toggle** ([The Edit | Walk toggle](../008-canvas/avatar-mode.md#the-edit--walk-toggle)),
   an Editor's one switch between building the board and walking it as a character. Edit is on while building. It
@@ -381,13 +381,19 @@ so a new page load starts on the palette's landing.
 
 ## The tab's name
 
-- On a desktop, the menu box (the Explorer button, top left) ends with the open tab's name, after a
-  hairline
-  (The name rides in the menu box). It is the chrome's ink, 14 px at regular weight (never bold), cut short
-  with an ellipsis past 16rem, and follows a rename at once. The box shows a name alone, never an icon beside it.
-- A click (a tap) on it renames the tab in place, for someone who may change the
-  document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
-- Not on a phone: the top row is the strip's there.
+- **Not in the menu box** (owner, 2026-11-17, the no-header-bar experiment): the menu box holds the Explorer
+  button alone. The tab strip and the window title name the open tab, and the tab is renamed there.
+  Nothing publishes the name to the box any more: the shared `TabNameInBox` and `active-tab-name-store` went
+  (Work Tracker 1289).
+- **Never under the strip.** Where the strip in the same row leaves the box less room than it wants (a tablet or
+  a narrow window, 640 to 1024px), the box steps down to the room it has up to a strip's gap (8px) short of the strip
+  (`useMenuCardRoom`, `@liveworkspace/workbench`, measured from the strip's real place as it moves;
+  `useMenuCardFit`, `menu-card-form.ts`), never capped:
+  - **Whole** wherever the whole box fits.
+  - **Bare** below that; the menu button keeps its size at every width, never capped or cut.
+
+  The strip decides where it goes from the box as it stands whole (`menuNaturalRight`, its width kept while the
+  box is compact), so a compact form never un-crowds the strip and pulls it back over the box.
 
 ## The Explorer and the other panels
 

@@ -38,7 +38,7 @@ export function StartPlanningArt({
         </g>
       ))}
 
-      {/* To do: a resting card, and a new one popping in under it. */}
+      {/* To Do: a resting card, and a new one popping in under it. */}
       <rect x={60} y={42} width={68} height={28} rx={6} fill="currentColor" fillOpacity={0.22} />
       <path d="M68 56 h40" stroke="currentColor" strokeWidth={3} strokeLinecap="round" />
       <g className="fa-pop">
@@ -61,7 +61,7 @@ export function StartPlanningArt({
         />
       </g>
 
-      {/* Doing: a card in progress. */}
+      {/* In Progress: a card under way. */}
       <rect x={156} y={42} width={68} height={28} rx={6} fill="currentColor" fillOpacity={0.22} />
       <path d="M164 56 h32" stroke="currentColor" strokeWidth={3} strokeLinecap="round" />
 

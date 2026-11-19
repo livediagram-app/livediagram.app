@@ -109,6 +109,7 @@ export function AnchoredPopover({
   scrim = false,
   align = 'start',
   layer = 'popover',
+  hidden = false,
   children,
 }: {
   anchor: HTMLElement;
@@ -140,6 +141,9 @@ export function AnchoredPopover({
   align?: AnchoredAlign;
   // The layer it draws at: over modals (the default), or with them ('modal'), so a dialog it opens draws over it.
   layer?: 'popover' | 'modal';
+  // Open but out of sight (`visibility: hidden`: no press, no focus, still laid out so what it anchors stays put), for a
+  // host that steps aside while its tool works on the canvas (PopoverOrSheet `hidden`).
+  hidden?: boolean;
   children: ReactNode;
 }) {
   const panel = useRef<HTMLDivElement>(null);
@@ -226,7 +230,7 @@ export function AnchoredPopover({
   const z = layer === 'modal' ? 'z-[var(--z-modal)]' : 'z-[calc(var(--z-popover)+1)]';
   return (
     <Portal>
-      {scrim ? (
+      {scrim && !hidden ? (
         // Under the arrow and the panel, at their layer: it takes every press outside, so nothing under it reacts,
         // and its click closes the popover (a press on its own anchor too, under it).
         <div
@@ -247,7 +251,7 @@ export function AnchoredPopover({
         <span
           aria-hidden
           data-popover-pointer={pos.side}
-          className={`pointer-events-none fixed ${z} size-3 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${
+          className={`pointer-events-none fixed ${z} ${hidden ? 'invisible' : ''} size-3 rotate-45 border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900 ${
             pos.side === 'below' ? 'border-l border-t' : 'border-b border-r'
           }`}
           style={{
@@ -267,7 +271,8 @@ export function AnchoredPopover({
         tabIndex={initialFocus === 'panel' ? -1 : undefined}
         // Over its dialog, over a tour ring drawn on that dialog (TourStage layer="modal", one below), so a
         // menu opened mid-tour is never dimmed, and over a menu's flyout (z-popover) it opens from.
-        className={`fixed ${z} overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none ${
+        data-stepped-aside={hidden ? '' : undefined}
+        className={`fixed ${z} ${hidden ? 'invisible' : ''} overflow-y-auto overscroll-contain rounded-lg shadow-lg outline-none ${
           pointer ? 'border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900' : ''
         }`}
         style={{

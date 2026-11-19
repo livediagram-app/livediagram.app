@@ -9,43 +9,52 @@ import {
   SVG_NONZERO_SAMPLES_PER_RING,
   SVG_TRACE_TOLERANCE_PX,
 } from './constants';
-import type { Contour } from './geometry';
+import type { Contour, Pt, Segment } from './geometry';
 
 // The most pieces one cubic is traced into.
 const MAX_PIECES = 256;
 
+/** The points inside one cubic from `p0`, traced uniformly within `tol` px (its ends left out). */
+export function cubicInterior(
+  p0: Pt,
+  s: Segment,
+  tol: number,
+  push: (x: number, y: number) => void,
+): void {
+  // Uniform pieces: their error is at most 3/4 of the control polygon's largest second difference over n².
+  const ddx = Math.max(
+    Math.abs(p0.x - 2 * s.c1.x + s.c2.x),
+    Math.abs(s.c1.x - 2 * s.c2.x + s.to.x),
+  );
+  const ddy = Math.max(
+    Math.abs(p0.y - 2 * s.c1.y + s.c2.y),
+    Math.abs(s.c1.y - 2 * s.c2.y + s.to.y),
+  );
+  const n = Math.min(
+    MAX_PIECES,
+    Math.max(1, Math.ceil(Math.sqrt((0.75 * Math.hypot(ddx, ddy)) / tol))),
+  );
+  for (let i = 1; i < n; i++) {
+    const t = i / n;
+    const u = 1 - t;
+    const a = u * u * u;
+    const b = 3 * u * u * t;
+    const d = 3 * u * t * t;
+    const e = t * t * t;
+    push(
+      a * p0.x + b * s.c1.x + d * s.c2.x + e * s.to.x,
+      a * p0.y + b * s.c1.y + d * s.c2.y + e * s.to.y,
+    );
+  }
+}
+
 /** A contour traced to a closed ring within `tol` px (a straight segment adds its end only). */
 export function traceContour(c: Contour, tol = SVG_TRACE_TOLERANCE_PX): Ring {
   const ring: Ring = [[c.start.x, c.start.y]];
+  const push = (x: number, y: number) => ring.push([x, y]);
   let p0 = c.start;
   for (const s of c.segments) {
-    if (!s.line) {
-      // Uniform pieces: their error is at most 3/4 of the control polygon's largest second difference over n².
-      const ddx = Math.max(
-        Math.abs(p0.x - 2 * s.c1.x + s.c2.x),
-        Math.abs(s.c1.x - 2 * s.c2.x + s.to.x),
-      );
-      const ddy = Math.max(
-        Math.abs(p0.y - 2 * s.c1.y + s.c2.y),
-        Math.abs(s.c1.y - 2 * s.c2.y + s.to.y),
-      );
-      const n = Math.min(
-        MAX_PIECES,
-        Math.max(1, Math.ceil(Math.sqrt((0.75 * Math.hypot(ddx, ddy)) / tol))),
-      );
-      for (let i = 1; i < n; i++) {
-        const t = i / n;
-        const u = 1 - t;
-        const a = u * u * u;
-        const b = 3 * u * u * t;
-        const d = 3 * u * t * t;
-        const e = t * t * t;
-        ring.push([
-          a * p0.x + b * s.c1.x + d * s.c2.x + e * s.to.x,
-          a * p0.y + b * s.c1.y + d * s.c2.y + e * s.to.y,
-        ]);
-      }
-    }
+    if (!s.line) cubicInterior(p0, s, tol, push);
     ring.push([s.to.x, s.to.y]);
     p0 = s.to;
   }

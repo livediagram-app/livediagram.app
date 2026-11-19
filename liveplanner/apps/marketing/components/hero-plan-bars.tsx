@@ -153,7 +153,7 @@ function FormBar() {
       </span>
       <span className={CHIP}>
         <span className="text-optical-line font-semibold text-slate-800 dark:text-slate-100">
-          14
+          6
         </span>
         <span className="text-optical-line">responses · 3 new</span>
       </span>

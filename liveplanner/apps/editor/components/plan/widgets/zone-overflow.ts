@@ -40,6 +40,10 @@ export type ZoneFit = {
   // What every widget and the buttons take across, all in the row: the width the zone asks for, so a zone sized by its
   // content (a header band's) is given the room it could have, however many widgets are in More.
   need: number;
+  // Not even More and the buttons fit, and no widget holds a press: the zone draws nothing rather than a More cut off
+  // at its edge (Work Tracker 1288, a 450 px Requests header beside the Form strip). Still laid out and measured, so
+  // the widgets come back with the room. A press keeps More (with its dot), so a filter never narrows cards unseen.
+  bare: boolean;
 };
 
 export const FITS_ALL: ZoneFit = {
@@ -49,6 +53,7 @@ export const FITS_ALL: ZoneFit = {
   shown: 0,
   named: true,
   need: 0,
+  bare: false,
 };
 
 export type FitInput = {
@@ -76,7 +81,8 @@ export type FitInput = {
 // 3. the Filter pins compact, More marking its press with a dot;
 // 4. the Filter goes into More with the rest, More naming its press, then with a dot.
 // A widget is never skipped to fill a gap, so the row keeps the board's order; nothing ever clips or overlaps what is
-// before the zone, short of a room under the narrowest step (More and the buttons alone). Linear in the widgets.
+// before the zone. Under the narrowest step (More and the buttons alone) the zone is bare, drawing nothing, unless a
+// widget holds a press. Linear in the widgets.
 export function fitWidgets(input: FitInput): ZoneFit {
   const { order, widths, room, controls, more, compact, pressed } = input;
   const width = (k: BoardWidgetId) => widths.get(k) ?? 0;
@@ -113,6 +119,7 @@ export function fitWidgets(input: FitInput): ZoneFit {
     shown,
     named,
     need: all,
+    bare: false,
   });
   if (order.includes(PINNED_WIDGET)) {
     const rest = order.filter((k) => k !== PINNED_WIDGET);
@@ -131,7 +138,7 @@ export function fitWidgets(input: FitInput): ZoneFit {
     const shown = best(order, null, named);
     if (shown >= 0) return fit(false, filter, shown, named);
   }
-  return fit(false, filter, 0, false);
+  return { ...fit(false, filter, 0, false), bare: pressed.size === 0 };
 }
 
 // The least the zone takes across at its narrowest kept step (the Filter compact, More with its dot, the buttons; no
@@ -262,6 +269,7 @@ const sameFit = (a: ZoneFit, b: ZoneFit) =>
   a.filter === b.filter &&
   a.named === b.named &&
   a.shown === b.shown &&
+  a.bare === b.bare &&
   Math.abs(a.need - b.need) < 0.5;
 
 // Measures the zone: the room it has, each widget's width wherever it is drawn (the row, the pinned Filter, the

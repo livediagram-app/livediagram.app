@@ -51,62 +51,104 @@ export function PagesExportArt() {
         </g>
         <g transform="translate(40 0)">
           {/* The export panel. */}
-          <Panel x={86} y={12} w={86} h={74} title="Export pages">
-            {/* Format: PDF chosen. */}
+          <Panel x={86} y={12} w={86} h={74} title="Export Tab">
+            {/* The PDF panel (apps/live ImageExportPanel, ExportPagePicker): its back bar, All pages or One
+                page, and what the download makes. */}
+            {/* The back bar: a chevron, All formats, and the format's chip. */}
             <rect
-              className="fill-slate-100 dark:fill-slate-800"
+              className="fill-white stroke-slate-200 dark:fill-slate-800 dark:stroke-slate-700"
               x="92"
+              y="24"
+              width="74"
+              height="10"
+              rx="2.5"
+              fill="#ffffff"
+              stroke="#e2e8f0"
+              strokeWidth="0.6"
+            />
+            <path
+              className="stroke-slate-400"
+              d="M97.4 27.2 L95.6 29 L97.4 30.8"
+              fill="none"
+              stroke="#94a3b8"
+              strokeWidth="0.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <text x="100.5" y="30.6" fontSize="4.2" fontWeight="600" className={INK} fill="#1e293b">
+              All formats
+            </text>
+            <rect
+              className="fill-slate-100 dark:fill-slate-700"
+              x="151"
               y="26"
+              width="13"
+              height="6"
+              rx="1.5"
+              fill="#f1f5f9"
+            />
+            <text
+              x="157.5"
+              y="30.3"
+              textAnchor="middle"
+              fontSize="3.8"
+              fontWeight="700"
+              className={INK_SOFT}
+              fill="#64748b"
+            >
+              PDF
+            </text>
+            <rect
+              className="fill-slate-100 dark:fill-slate-950"
+              x="92"
+              y="37"
               width="74"
               height="11"
               rx="3"
               fill="#f1f5f9"
             />
             <rect
-              className="fill-white dark:fill-slate-700"
+              className="fill-brand-700 dark:fill-brand-600"
               x="93"
-              y="27"
-              width="24"
+              y="38"
+              width="36"
               height="9"
               rx="2.4"
-              fill="#ffffff"
+              fill="#be123c"
             />
-            {['PDF', 'PNG', 'SVG'].map((f, i) => (
-              <text
-                key={f}
-                x={105 + i * 24.5}
-                y={33.2}
-                textAnchor="middle"
-                fontSize="4.4"
-                fontWeight="700"
-                className={i === 0 ? INK : INK_SOFT}
-                fill={i === 0 ? '#1e293b' : '#64748b'}
-              >
-                {f}
-              </text>
-            ))}
-            {[
-              ['Pages', 'All 3'],
-              ['Size', 'True size'],
-            ].map(([k, v], i) => (
-              <g key={k}>
-                <text x="92" y={47 + i * 9} fontSize="4.4" className={INK_SOFT} fill="#64748b">
-                  {k}
-                </text>
-                <text
-                  x="166"
-                  y={47 + i * 9}
-                  textAnchor="end"
-                  fontSize="4.4"
-                  fontWeight="600"
-                  className={INK}
-                  fill="#1e293b"
-                >
-                  {v}
-                </text>
-              </g>
-            ))}
-            <rect x="92" y="67" width="74" height="12" rx="3" fill={SKY} />
+            <text
+              x="111"
+              y="44.2"
+              textAnchor="middle"
+              fontSize="4.2"
+              fontWeight="700"
+              fill="#ffffff"
+            >
+              All pages
+            </text>
+            <text
+              x="147.5"
+              y="44.2"
+              textAnchor="middle"
+              fontSize="4.2"
+              fontWeight="700"
+              className={INK_SOFT}
+              fill="#64748b"
+            >
+              One page
+            </text>
+            <text x="92" y="58" fontSize="4.4" className={INK_SOFT} fill="#64748b">
+              3 pages, one PDF.
+            </text>
+            <rect
+              className="fill-brand-700 dark:fill-brand-600"
+              x="92"
+              y="67"
+              width="74"
+              height="12"
+              rx="3"
+              fill="#be123c"
+            />
             <text
               x="129"
               y="74.8"
@@ -115,7 +157,7 @@ export function PagesExportArt() {
               fontWeight="700"
               fill="#ffffff"
             >
-              Export PDF
+              Download PDF
             </text>
           </Panel>
         </g>

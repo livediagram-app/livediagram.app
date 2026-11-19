@@ -1,9 +1,15 @@
 // @vitest-environment jsdom
+import { StrictMode } from 'react';
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '../../lib/clamp-to-viewport';
 import { noteToolbarObstacle } from './toolbar-obstacle';
-import { overlapsChrome, sidewaysClear, useEdgeAwarePlacement } from './useEdgeAwarePlacement';
+import {
+  measuredBox,
+  overlapsChrome,
+  sidewaysClear,
+  useEdgeAwarePlacement,
+} from './useEdgeAwarePlacement';
 
 // Each editor's docs/specs/008-canvas/canvas-performance.md: a gesture frame never reads layout. While the selection
 // moves the box is suspended: it measures nothing, then places once when it resumes. It places in the next animation
@@ -150,6 +156,38 @@ describe('useEdgeAwarePlacement', () => {
     expect(h.measures()).toBe(before);
   });
 
+  // Work Tracker 1104: Strict Mode's unmount and mount in development cancelled the first frame but left it marked
+  // pending, so the box never placed (a phone's toolbar stayed on a page's title bar).
+  it('places under Strict Mode, after its unmount and mount again', () => {
+    const host = document.createElement('main');
+    host.getBoundingClientRect = () => rect(0, 0, 1000, 800);
+    const box = document.createElement('div');
+    host.append(box);
+    document.body.append(host);
+    let measures = 0;
+    box.getBoundingClientRect = () => {
+      measures += 1;
+      return rect(400, 0, 500, 40);
+    };
+    const view = renderHook(
+      () => {
+        const placement = useEdgeAwarePlacement(
+          { x: 400, y: 300, width: 100, height: 40 },
+          { x: 0, y: 0 },
+          1,
+          8,
+        );
+        placement.ref.current = box;
+        return placement;
+      },
+      { wrapper: StrictMode },
+    );
+    nextFrame();
+    expect(measures).toBeGreaterThan(0);
+    // At the top edge it flipped below, as it does outside Strict Mode.
+    expect(view.result.current.placeAbove).toBe(false);
+  });
+
   it('places above, centred, counter-scaled', () => {
     const h = setup(() => rect(400, 300, 500, 340));
     expect(h.result.current.placeAbove).toBe(true);
@@ -284,6 +322,52 @@ describe('useEdgeAwarePlacement and the floating chrome', () => {
     r = rect(400, 710, 500, 750);
     h.rerender({ x: 405 });
     expect(h.result.current.placeAbove).toBe(true);
+  });
+
+  // Work Tracker 1104: on a phone a logo page's title bar sits just above the page, and the multi-selection toolbar's
+  // "Selected Elements (2)" pill, drawn above the box, covered it while the box itself stayed clear.
+  it("flips below when only its title pill would sit on a page's title bar", () => {
+    const bar = document.createElement('div');
+    bar.setAttribute('data-page-title-bar', '');
+    bar.getBoundingClientRect = () => rect(300, 200, 700, 240);
+    document.body.append(bar);
+    const pillRect = rect(410, 225, 490, 245);
+    const h = setup(() => rect(400, 250, 500, 290), { initial: { x: 400 } });
+    // Without a pill the box clears the bar and stays above.
+    expect(h.result.current.placeAbove).toBe(true);
+    const pill = document.createElement('span');
+    pill.setAttribute('data-floating-title', '');
+    pill.getBoundingClientRect = () => pillRect;
+    h.box.append(pill);
+    h.rerender({ x: 401 });
+    expect(h.result.current.placeAbove).toBe(false);
+  });
+
+  it('measures the box with its pill, wherever the pill sits inside it', () => {
+    const box = document.createElement('div');
+    box.getBoundingClientRect = () => rect(400, 250, 500, 290);
+    expect(measuredBox(box)).toMatchObject({ top: 250, bottom: 290, height: 40 });
+    // A pill not drawn (no size) adds nothing.
+    const unsized = document.createElement('span');
+    unsized.setAttribute('data-floating-title', '');
+    unsized.getBoundingClientRect = () => rect(0, 0, 0, 0);
+    box.append(unsized);
+    expect(measuredBox(box)).toMatchObject({ top: 250, bottom: 290, height: 40 });
+    unsized.remove();
+    const inner = document.createElement('div');
+    const pill = document.createElement('span');
+    pill.setAttribute('data-floating-title', '');
+    pill.getBoundingClientRect = () => rect(380, 290, 520, 310);
+    inner.append(pill);
+    box.append(inner);
+    expect(measuredBox(box)).toEqual({
+      left: 380,
+      right: 520,
+      top: 250,
+      bottom: 310,
+      width: 140,
+      height: 60,
+    });
   });
 });
 

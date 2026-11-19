@@ -9,12 +9,15 @@ import { Frame } from '@liveworkspace/marketing-site/components/feature-art/shar
 import { FONT } from '../art-tokens';
 import { TEAM_POD } from '../hero-space-cast';
 import { HALL, OFFICE } from '../hero-space-places';
-import { SpaceShot, at, headOf, shotPoint } from './space-shot';
+import { SpaceShot, at, overHeadOf, shotPoint } from './space-shot';
 
-const POD_TABLE = [-215, -221, 560, 190] as const;
-// The Meeting Room down to its table, so the three sat round it are in the shot with room above them for a bubble.
-const OFFICE_MEETING = [435, -527, 580, 186] as const;
-const OFFICE_DESKS = [-375, -552, 470, 170] as const;
+// The whole table, the back row's chips over it and the front row's feet.
+const POD_TABLE = [-410, -240, 690, 220] as const;
+// The Meeting Room down to its table, so the three sat round it are in the shot with room above their chips for a
+// bubble.
+const OFFICE_MEETING = [400, -548, 680, 215] as const;
+// High enough that the chips over the two at their desks show whole, under the room's name.
+const OFFICE_DESKS = [-375, -542, 470, 170] as const;
 const HALL_FRONT = [-728, -720, 1394, 440] as const;
 
 /** A label pill in the canvas's own type: a coloured face, an optional dot, white words. */
@@ -144,7 +147,7 @@ export function TalkNearArt() {
         </g>
       }
     >
-      <Talking x={p.x} y={p.y - headOf(TEAM_POD, 'Priya') - 4} delay={0.6} />
+      <Talking x={p.x} y={p.y - overHeadOf(TEAM_POD, 'Priya')} delay={0.6} />
     </SpaceShot>
   );
 }
@@ -160,13 +163,13 @@ export function PrivateRoomArt() {
     >
       <Tag
         x={705}
-        y={-502}
+        y={-514}
         text="Meeting Room · 3 in a call"
         colour="#047857"
         dot="#a7f3d0"
         delay={0.3}
       />
-      <Talking x={priya.x} y={priya.y - headOf(OFFICE, 'Priya') - 4} delay={0.7} />
+      <Talking x={priya.x} y={priya.y - overHeadOf(OFFICE, 'Priya')} delay={0.7} />
     </SpaceShot>
   );
 }
@@ -180,8 +183,8 @@ export function CameraBubbleArt() {
       box={OFFICE_MEETING}
       cast={[{ name: 'Priya' }, { name: 'Maya' }, { name: 'Sam' }]}
     >
-      <Bubble x={p.x} y={p.y - headOf(OFFICE, 'Priya')} w={76} h={56} delay={0.4}>
-        <Face w={76} h={56} colour="#ec4899" />
+      <Bubble x={p.x} y={p.y - overHeadOf(OFFICE, 'Priya')} w={66} h={48} delay={0.4}>
+        <Face w={66} h={48} colour="#ec4899" />
       </Bubble>
     </SpaceShot>
   );
@@ -198,7 +201,7 @@ export function ScreenShareArt() {
       box={OFFICE_MEETING}
       cast={[{ name: 'Priya' }, { name: 'Maya' }, { name: 'Sam' }]}
     >
-      <Bubble x={m.x} y={m.y - headOf(OFFICE, 'Maya')} w={w} h={h} delay={0.4}>
+      <Bubble x={m.x} y={m.y - overHeadOf(OFFICE, 'Maya')} w={w} h={h} delay={0.4}>
         <rect x={6} y={6} width={w - 12} height={h - 12} rx={7} fill="#ffffff" />
         <rect x={14} y={14} width={48} height={6} rx={3} fill="#cbd5e1" />
         {[22, 34, 28, 44].map((bh, i) => (
@@ -217,7 +220,7 @@ export function ScreenShareArt() {
       </Bubble>
       <Tag
         x={m.x + 104}
-        y={m.y - headOf(OFFICE, 'Maya') - 36}
+        y={m.y - overHeadOf(OFFICE, 'Maya') - 50}
         text="Sharing"
         colour="#be123c"
         dot="#fecdd3"
@@ -234,16 +237,16 @@ export function StageArt() {
   const q = shotPoint(HALL, { name: 'Priya' });
   return (
     <SpaceShot spec={HALL} box={HALL_FRONT} cast={cast}>
-      <Talking x={ana.x} y={ana.y - headOf(HALL, 'Ana') - 4} delay={0.6} />
+      <Talking x={ana.x} y={ana.y - overHeadOf(HALL, 'Ana')} delay={0.6} />
       <Tag
-        x={ana.x}
-        y={ana.y - headOf(HALL, 'Ana') - 30}
+        x={ana.x + 110}
+        y={ana.y - overHeadOf(HALL, 'Ana') + 2}
         text="Speaking to everyone"
         colour="#047857"
         dot="#a7f3d0"
         delay={0.2}
       />
-      <g transform={`translate(${q.x + 22} ${q.y - headOf(HALL, 'Priya') - 10})`}>
+      <g transform={`translate(${q.x + 22} ${q.y - overHeadOf(HALL, 'Priya') - 20})`}>
         <g className="fa-a-pop" style={at(1.1)}>
           <circle r={20} fill="#f59e0b" />
           <text y={7} textAnchor="middle" fontSize={20}>
@@ -328,21 +331,16 @@ export function KnockArt() {
   );
 }
 
-/** Quiet when you need it: Leo on Do Not Disturb at his desk, the red bar above his head. */
+/** Quiet when you need it: Leo on Do Not Disturb at his desk, said in his name chip with its barred dot. */
 export function DoNotDisturbArt() {
-  const leo = shotPoint(OFFICE, { name: 'Leo' });
   const ana = shotPoint(OFFICE, { name: 'Ana' });
   return (
-    <SpaceShot spec={OFFICE} box={OFFICE_DESKS} cast={[{ name: 'Leo' }, { name: 'Ana' }]}>
-      <Tag
-        x={leo.x}
-        y={leo.y - headOf(OFFICE, 'Leo') - 4}
-        text="Do Not Disturb"
-        colour="#be123c"
-        dot="#fecdd3"
-        delay={0.4}
-      />
-      <Talking x={ana.x} y={ana.y - headOf(OFFICE, 'Ana') - 4} delay={0.8} />
+    <SpaceShot
+      spec={OFFICE}
+      box={OFFICE_DESKS}
+      cast={[{ name: 'Leo', status: 'dnd' }, { name: 'Ana' }]}
+    >
+      <Talking x={ana.x} y={ana.y - overHeadOf(OFFICE, 'Ana')} delay={0.8} />
     </SpaceShot>
   );
 }

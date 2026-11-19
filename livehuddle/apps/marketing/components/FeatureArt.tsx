@@ -15,3 +15,9 @@ export { PresenceArt, RealtimeArt } from './feature-art/together';
 export { ExpiryArt, RevokeArt, ShareLinksArt, TeamsArt } from './feature-art/sharing';
 export { ApiArt } from './feature-art/foundations';
 export * from './feature-art/calls';
+// What a Space holds beyond its rooms and calls: the 3D View, the Receptionist, the Room Builder, the games, the Mini
+// View, snapshots and webhooks.
+export * from './feature-art/space-life';
+export * from './feature-art/space-games';
+export * from './feature-art/space-mini-view';
+export * from './feature-art/space-panels';

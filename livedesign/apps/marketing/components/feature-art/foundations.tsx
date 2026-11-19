@@ -1,14 +1,12 @@
 // Feature illustrations for livedesign's open edges: the REST API from your own scripts, an AI
-// tool building a screen flow over MCP, and export that is a faithful picture of the canvas. Same
+// tool wireframing a screen flow over MCP, and export that is a faithful picture of the canvas. Same
 // vocabulary as ./features (panel chrome with a light and a dark half, the Default canvas, the
 // fa-b-* loops); under reduced motion each shows its finished state.
 //
 // Split from FeatureArt.tsx; see ./shared for Frame and the colour constants.
 
 import {
-  Arrow,
   MiniWindow,
-  Node,
   PANEL,
   PanelShadow,
   STRONG,
@@ -21,6 +19,7 @@ import {
   SKY,
   VIOLET,
 } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import { MiniPage } from './page-tiles';
 
 const VIEW = '0 0 300 96';
 
@@ -81,27 +80,34 @@ export function ApiArt() {
           <text x="47" y="56.6" textAnchor="middle" fontSize="5.6" fontWeight="700" fill="#6ee7b7">
             200 OK
           </text>
+          {/* The list's real shape (help: developers/working-with-designs): { designs: [{ id, name, ... }] }. */}
           <text x="32" y="69" {...mono}>
-            <tspan fill={TERM.dim}>[{'{'} </tspan>
-            <tspan fill={TERM.key}>&quot;title&quot;</tspan>
+            <tspan fill={TERM.dim}>{'{'} </tspan>
+            <tspan fill={TERM.key}>&quot;designs&quot;</tspan>
+            <tspan fill={TERM.dim}>: [</tspan>
+            <tspan fill={TERM.dim}>{'{'} </tspan>
+            <tspan fill={TERM.key}>&quot;id&quot;</tspan>
+            <tspan fill={TERM.dim}>: </tspan>
+            <tspan fill={TERM.string}>&quot;k3f9x2&quot;</tspan>
+            <tspan fill={TERM.dim}>, </tspan>
+            <tspan fill={TERM.key}>&quot;name&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
             <tspan fill={TERM.string}>&quot;Bloom brand&quot;</tspan>
-            <tspan fill={TERM.dim}>, </tspan>
-            <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
-            <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.flag}>3</tspan>
             <tspan fill={TERM.dim}> {'}'},</tspan>
           </text>
-          <text x="38" y="79" {...mono}>
+          <text x="84" y="79" {...mono}>
             <tspan fill={TERM.dim}>{'{'} </tspan>
-            <tspan fill={TERM.key}>&quot;title&quot;</tspan>
+            <tspan fill={TERM.key}>&quot;id&quot;</tspan>
+            <tspan fill={TERM.dim}>: </tspan>
+            <tspan fill={TERM.string}>&quot;p7d2qa&quot;</tspan>
+            <tspan fill={TERM.dim}>, </tspan>
+            <tspan fill={TERM.key}>&quot;name&quot;</tspan>
             <tspan fill={TERM.dim}>: </tspan>
             <tspan fill={TERM.string}>&quot;App screens&quot;</tspan>
-            <tspan fill={TERM.dim}>, </tspan>
-            <tspan fill={TERM.key}>&quot;tabs&quot;</tspan>
-            <tspan fill={TERM.dim}>: </tspan>
-            <tspan fill={TERM.flag}>5</tspan>
-            <tspan fill={TERM.dim}> {'}'}]</tspan>
+            <tspan fill={TERM.dim}>
+              {' '}
+              {'}'}] {'}'}
+            </tspan>
           </text>
         </g>
         {/* The caret, waiting while the call is in flight. */}
@@ -205,14 +211,11 @@ export function McpArt() {
 
         {/* What lands in livedesign. */}
         <MiniWindow x={176} y={8} w={112} h={80} title="Sign-in flow">
+          {/* Three phone screens, the flow the agent wireframed. */}
           <g className="fa-b-late">
-            <Node x={190} y={30} w={36} h={16} label="Sign in" r={8} />
-            <Node x={240} y={30} w={36} h={16} label="Verify" />
-            <Node x={240} y={62} w={36} h={16} label="Home" />
-            <Node x={190} y={62} w={36} h={16} label="Retry" />
-            <Arrow d="M226 38 H234" head={[239, 38, 0]} />
-            <Arrow d="M258 46 V56" head={[258, 61, 90]} />
-            <Arrow d="M240 70 H232" head={[227, 70, 180]} />
+            <MiniPage x={184} y={24} w={28} h={58} kind="phone" title="Sign in" />
+            <MiniPage x={218} y={24} w={28} h={58} kind="phone" title="Verify" />
+            <MiniPage x={252} y={24} w={28} h={58} kind="phone" title="Home" />
           </g>
         </MiniWindow>
       </svg>

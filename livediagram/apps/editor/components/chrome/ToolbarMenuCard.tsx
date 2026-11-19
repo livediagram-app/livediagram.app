@@ -42,12 +42,11 @@ export function ToolbarMenuCard({
   // strip, which is scaled already.
   const scale = useUiScale('toolbar');
   const scaled = !inline && scale !== 1;
-  // Never under the strip: a long tab name truncates short of it (useMenuCardRoom, toolbar-layout.md "The tab's
-  // name"). Only the name gives way: the button and the mode switch keep their size (shrink-0 below), the switch
-  // dropping to its icon and then the name hiding where the room runs short (`form`, menu-card-form.ts). Not inline,
-  // where the strip's row holds the card, nor joined, where it spans the sidebar.
+  // Never under the strip (useMenuCardRoom, toolbar-layout.md "The tab's name"): the button and the mode switch keep
+  // their size (shrink-0 below), the switch dropping to its icon where the room runs short (`form`,
+  // menu-card-form.ts). Not inline, where the strip's row holds the card, nor joined, where it spans the sidebar.
   const cardRef = useRef<HTMLDivElement>(null);
-  const { maxWidth: room, form } = useMenuCardFit(cardRef, !inline);
+  const { form } = useMenuCardFit(cardRef, !inline);
   const withLogo = !inline && !!logo;
   const card = (
     <div
@@ -64,12 +63,11 @@ export function ToolbarMenuCard({
         ...(scaled && !withLogo
           ? { ...uiScaleStyle(scale), top: toSurfacePx(12, scale), left: toSurfacePx(12, scale) }
           : undefined),
-        ...(room !== null ? { maxWidth: toSurfacePx(room, scale) } : undefined),
       }}
       className={
         inline
           ? 'isolate flex items-center gap-1'
-          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>:not([data-tab-name-in-box])]:shrink-0`
+          : `pointer-events-auto ${withLogo ? MENU_CARD_IN_ROW : 'absolute left-3 top-3 z-[var(--z-toolbar)]'} flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-md shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40 ${PHONE_TOOLBAR_ITEMS} [&>*]:shrink-0`
       }
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => {

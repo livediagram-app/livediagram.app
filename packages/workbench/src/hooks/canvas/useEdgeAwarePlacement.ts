@@ -17,11 +17,27 @@ import { TOOLBAR_OBSTACLE_EVENT } from './toolbar-obstacle';
 type XY = { x: number; y: number };
 
 // The floating chrome over the canvas a selection's toolbar keeps off: the palette, the panels, the top-centre toolbar
-// (`data-floating-panel`), and a panel that is no floating panel but must not be covered either (`data-toolbar-obstacle`:
-// livediagram's Quick Style panel, which sits at the canvas's left edge beside whatever is selected there).
-const CHROME = '[data-floating-panel], [data-toolbar-obstacle]';
+// (`data-floating-panel`), a panel that is no floating panel but must not be covered either (`data-toolbar-obstacle`:
+// livediagram's Quick Style panel, which sits at the canvas's left edge beside whatever is selected there), and a page's
+// own title bar (`data-page-title-bar`), which on a phone sits just above its page, where an element's toolbar lands.
+const CHROME = '[data-floating-panel], [data-toolbar-obstacle], [data-page-title-bar]';
 
 type Box = { left: number; right: number; top: number; bottom: number };
+type Measured = Box & { width: number; height: number };
+
+/** The floating box on screen with its title pill (`data-floating-title`, drawn outside the box above or below it), so
+ *  the pill is kept off the chrome and inside the canvas area as the box is. */
+export function measuredBox(node: Element): Measured {
+  const r = node.getBoundingClientRect();
+  const pill = node.querySelector('[data-floating-title]');
+  const t = pill?.getBoundingClientRect();
+  if (!t || t.width === 0 || t.height === 0) return r;
+  const left = Math.min(r.left, t.left);
+  const right = Math.max(r.right, t.right);
+  const top = Math.min(r.top, t.top);
+  const bottom = Math.max(r.bottom, t.bottom);
+  return { left, right, top, bottom, width: right - left, height: bottom - top };
+}
 
 const overlaps = (r: Box, b: Box) =>
   r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top;
@@ -117,7 +133,7 @@ export function useEdgeAwarePlacement(
   // wrapper), centred on the selection with the current sideways nudge.
   const coversOnlyThisSide = (
     keepOff: Rect,
-    rect: DOMRect,
+    rect: Measured,
     area: { top: number; bottom: number },
   ): boolean => {
     const w = rect.width / zoom;
@@ -146,7 +162,7 @@ export function useEdgeAwarePlacement(
       flipSigRef.current = sig;
       flippedRef.current = false;
     }
-    const rect = node.getBoundingClientRect();
+    const rect = measuredBox(node);
     // The chrome's boxes, read at most once a placement: the flip check and the sideways slide both use them, and each
     // read walks the whole document (a 1,000-element board's every node) and measures every panel.
     let chrome: Box[] | null = null;
@@ -229,7 +245,15 @@ export function useEdgeAwarePlacement(
   // time: renders before it come share it, and a suspension or unmount cancels it.
   const frame = useRef(0);
   const inFrame = useRef(false);
-  useEffect(() => () => cancelAnimationFrame(frame.current), []);
+  // Cleared as well as cancelled: React's Strict Mode unmounts and mounts again in development, and a frame left set but
+  // cancelled stopped every later placement (each saw a frame pending), so a toolbar never left where it first drew.
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(frame.current);
+      frame.current = 0;
+    },
+    [],
+  );
   useLayoutEffect(() => {
     if (suspended) {
       cancelAnimationFrame(frame.current);

@@ -92,14 +92,17 @@ function Grid({
 /** The y of a cell's text baseline in row `r` of a grid at `y`. */
 const rowText = (y: number, r: number) => y + HEAD_H + r * ROW_H + 8.6;
 
+// A status chip's width: the Pill's own, held to its text for the longer In Progress so it stays in its cell.
+const chipW = (text: string) => (text.length > 8 ? text.length * 3.3 + 8 : undefined);
+
 // Dropdowns and checkboxes: a Status column of coloured chips with one open to pick from, and a Done
 // column of tick boxes that a COUNTIF counts.
 export function SheetValidationArt() {
   const rows = [
     { task: 'Wireframes', status: 'Done', tone: 'emerald' as const, ticked: true },
-    { task: 'Copy', status: 'Doing', tone: 'amber' as const, ticked: false },
-    { task: 'Images', status: 'To do', tone: 'neutral' as const, ticked: false },
-    { task: 'QA', status: 'Doing', tone: 'amber' as const, ticked: false },
+    { task: 'Copy', status: 'In Progress', tone: 'amber' as const, ticked: false },
+    { task: 'Images', status: 'To Do', tone: 'neutral' as const, ticked: false },
+    { task: 'QA', status: 'In Progress', tone: 'amber' as const, ticked: false },
   ];
   const x = 14;
   const y = 8;
@@ -112,7 +115,13 @@ export function SheetValidationArt() {
               <text className={TEXT_STRONG} x={x + 16} y={rowText(y, i)} fontSize="5.8">
                 {r.task}
               </text>
-              <Pill x={x + 71} y={rowText(y, i) - 6.6} text={r.status} tone={r.tone} />
+              <Pill
+                x={x + 71}
+                y={rowText(y, i) - 6.6}
+                text={r.status}
+                tone={r.tone}
+                w={chipW(r.status)}
+              />
               <rect
                 x={x + 130}
                 y={rowText(y, i) - 6}
@@ -170,8 +179,8 @@ export function SheetValidationArt() {
             />
           </g>
           {[
-            ['To do', 'neutral'],
-            ['Doing', 'amber'],
+            ['To Do', 'neutral'],
+            ['In Progress', 'amber'],
             ['Done', 'emerald'],
           ].map(([t, tone], i) => (
             <g key={t}>
@@ -185,7 +194,7 @@ export function SheetValidationArt() {
                   rx="2"
                 />
               ) : null}
-              <Pill x={171} y={26.6 + i * 13} text={t!} tone={tone as 'neutral'} />
+              <Pill x={171} y={26.6 + i * 13} text={t!} tone={tone as 'neutral'} w={chipW(t!)} />
             </g>
           ))}
         </g>

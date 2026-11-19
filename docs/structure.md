@@ -568,7 +568,12 @@ Each step is its own PR, and both products build and pass their tests after ever
      Offline Mode store (`lib/offline/offline-store-core`, `createOfflineStore`: each `lib/offline/offline-store.ts`
      keeps its IndexedDB backend, names and versions, and its own extra writes). The api client's tab calls
      (`lib/api/tab-calls`, `createTabCalls`: each `lib/api/tabs.ts` hands in its path, id key, grant, open marker
-     and save headers). Still per editor: the selection editing, the boxed drag and the clipboard, which read the
+     and save headers). The open and the unload flush (`hooks/persistence/useIdentityBootstrapCore` and
+     `useUnloadFlushCore`, Work Tracker 1243: each `app/<item>/[id]/useIdentityBootstrap.ts` and `useUnloadFlush.ts`
+     hands in its setters, seed, arrival, beacon and modules, and liveplanner its warm plan), with the load's progress
+     and watchdog (`lib/load-progress`, `createLoadProgress`: each `lib/load-progress.ts` hands in its step, telemetry
+     name and storage key): about 2,700 fewer lines across the editors and about 870 in `packages/workbench`, with
+     1,290 of tests. Still per editor: the selection editing, the boxed drag and the clipboard, which read the
      element union on the pointer path.
    - Tenth slice (Work Tracker 1250), the assigned-action pieces the four editors kept as near-copies, one copy each
      with each editor's words and wiring handed in. The assignee picker (`components/dialogs/AssignActionAssigneePicker`:

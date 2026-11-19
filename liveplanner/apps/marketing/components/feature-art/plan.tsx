@@ -31,7 +31,7 @@ import {
   type TypeKey,
 } from './plan-parts';
 
-/** A board: a teammate carries a card into Doing, past its WIP limit of 2, and the count turns amber. */
+/** A board: a teammate carries a card into In Progress, past its WIP limit of 2, and the count turns amber. */
 export function PlanBoardArt() {
   const cols = [20, 112, 204];
   return (
@@ -62,14 +62,14 @@ export function PlanBoardArt() {
           strokeWidth="0.8"
         />
       ))}
-      <ColumnHead x={25} y={26.5} name="To do" count="1" />
-      <ColumnHead x={117} y={26.5} name="Doing" />
+      <ColumnHead x={25} y={26.5} name="To Do" count="1" />
+      <ColumnHead x={117} y={26.5} name="In Progress" />
       <ColumnHead x={209} y={26.5} name="Done" count="2" />
 
-      {/* Doing's count against its limit: 2 / 2 until the card lands, then over, in amber. */}
+      {/* In Progress's count against its limit: 2 / 2 until the card lands, then over, in amber. */}
       <text
         className="fa-f-out fill-slate-500 dark:fill-slate-400"
-        x={142}
+        x={162}
         y={26.5}
         fontSize="6"
         fontWeight="600"
@@ -80,17 +80,17 @@ export function PlanBoardArt() {
       <g className="fa-f-on">
         <rect
           className="fill-amber-100 dark:fill-amber-500/25"
-          x={140}
+          x={160}
           y={20.7}
           width="27"
           height="8.6"
           rx="4.3"
           fill="#fef3c7"
         />
-        <path d="M145 22.7 L147.6 27.3 L142.4 27.3 Z" fill="#f59e0b" />
+        <path d="M165 22.7 L167.6 27.3 L162.4 27.3 Z" fill="#f59e0b" />
         <text
           className="fill-amber-700 dark:fill-amber-200"
-          x={149.6}
+          x={169.6}
           y={27.1}
           fontSize="6"
           fontWeight="700"
@@ -106,7 +106,7 @@ export function PlanBoardArt() {
       <PlanCard x={208} y={31} w={68} title="Logo refresh" id="IDEA-3" type="idea" who={AK} />
       <PlanCard x={208} y={51.5} w={68} title="Onboarding" id="TSK-11" who={SM} />
 
-      {/* The teammate's card, carried from To do into Doing. */}
+      {/* The teammate's card, carried from To Do into In Progress. */}
       <g className="fa-f-carry" style={at(0, { '--fx': '-92px', '--fy': '-22px' })}>
         <PlanCard x={116} y={72} w={68} title="Beta invites" id="TSK-16" who={JR} ring={TEAMMATE} />
         <g transform="translate(170 75)">
@@ -159,7 +159,7 @@ export function SharedItemsArt() {
               strokeWidth="0.8"
             />
           ))}
-          <ColumnHead x={b.x + 10} y={31} name="To do" />
+          <ColumnHead x={b.x + 10} y={31} name="To Do" />
           <ColumnHead x={b.x + 72} y={31} name="Done" />
           <PlanCard
             x={b.x + 9}

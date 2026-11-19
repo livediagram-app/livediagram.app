@@ -6,11 +6,8 @@ import type { CSSProperties } from 'react';
 
 import { TEAMMATE, YOU } from '@/components/art-tokens';
 import {
-  ARROW,
   Caret,
   HAIRLINE,
-  INK,
-  INK_TEXT,
   PANEL,
   SHADOW,
   Scene,
@@ -19,15 +16,17 @@ import {
   TEXT_STRONG,
 } from '@liveworkspace/marketing-site/components/feature-art/canvas-marks';
 import { Cursor, Frame, MONO } from '@liveworkspace/marketing-site/components/feature-art/shared';
+import { MiniPage } from './page-tiles';
 
-// The search panel: "logo" typed after ⌘K, a matching tab above, then the Actions group with the
-// Logo Kit export and the Laser Pointer tool, the first action highlighted to run on Enter.
+// The search panel: "logo" typed after ⌘K, one hit in each of its groups in their order (Designs, Tabs,
+// Actions, Help; packages/workbench/src/lib/editor-search/build-search-results.ts): a design, a tab, Mirror Copy
+// (its keywords take "logo" on a logo page's selection) highlighted to run on Enter, and the Logo Pages article.
 export function SearchPaletteArt() {
   const rows = [
-    { group: 'Tabs', label: 'Logo ideas', hint: 'Tab' },
-    { group: 'Actions', label: 'Logo Kit', hint: '↵', active: true },
-    { group: '', label: 'Logo Layouts', hint: '' },
-    { group: '', label: 'Laser Pointer', hint: 'Tool' },
+    { group: 'Designs', label: 'Bloom Logo', hint: '' },
+    { group: 'Tabs', label: 'Logo Concepts', hint: '' },
+    { group: 'Actions', label: 'Mirror Copy', hint: '↵', active: true },
+    { group: 'Help', label: 'Logo Pages', hint: '' },
   ];
   return (
     <Frame canvas>
@@ -104,27 +103,15 @@ export function SearchPaletteArt() {
 }
 
 // Follow along: your view (the frame) gliding to where a teammate is looking, their cursor on the
-// shape they mean, and the Following pill at the top of your canvas.
+// screen they mean, and the Following pill at the top of your canvas.
 export function FollowAlongArt() {
   return (
     <Frame canvas>
       <Scene>
-        <rect className={INK} x="22" y="30" width="46" height="24" rx="3" strokeWidth="1" />
-        <text className={INK_TEXT} x="45" y="44.6" fontSize="6.2" textAnchor="middle">
-          Sign up
-        </text>
-        <line className={ARROW} x1="68" x2="98" y1="42" y2="42" strokeWidth="1" />
-        <path className="fill-(--art-arrow)" d="M102 42 l-4.6 -2.7 v5.4z" />
-        <rect className={INK} x="102" y="30" width="46" height="24" rx="3" strokeWidth="1" />
-        <text className={INK_TEXT} x="125" y="44.6" fontSize="6.2" textAnchor="middle">
-          Verify
-        </text>
-        <line className={ARROW} x1="148" x2="196" y1="42" y2="58" strokeWidth="1" />
-        <path className="fill-(--art-arrow)" d="M200 59.4 l-5.3 -0.4 l1.7 -5.1z" />
-        <rect className={INK} x="200" y="50" width="56" height="26" rx="3" strokeWidth="1" />
-        <text className={INK_TEXT} x="228" y="65.4" fontSize="6.2" textAnchor="middle">
-          Retry email
-        </text>
+        <MiniPage x={24} y={36} w={36} h={36} kind="logo" />
+        <MiniPage x={92} y={30} w={28} h={50} kind="phone" title="Sign in" />
+        <MiniPage x={146} y={30} w={28} h={50} kind="phone" title="Home" />
+        <MiniPage x={198} y={40} w={30} h={44} kind="phone" title="Verify" />
         {/* Your view, following theirs across the canvas. */}
         <g className="fa-d-move" style={{ '--fx': '-150px', '--fy': '-14px' } as CSSProperties}>
           <rect
@@ -138,7 +125,7 @@ export function FollowAlongArt() {
             strokeWidth="1.2"
             strokeDasharray="4 2.5"
           />
-          <g transform="translate(244 66)">
+          <g transform="translate(220 56)">
             <Cursor color={TEAMMATE} name="Maya" />
           </g>
         </g>
@@ -168,8 +155,8 @@ export function FollowAlongArt() {
   );
 }
 
-// A live image in a README: the Markdown pasted on the left, and the rendered page on the right
-// showing the design as it is now, a fresh box arriving after the latest save.
+// A live image in a README: the Markdown the Share dialog copies, pasted on the left, and the rendered
+// README on the right showing the design as it is now, the dark logo added after the latest save.
 export function LiveImageArt() {
   return (
     <Frame>
@@ -183,29 +170,32 @@ export function LiveImageArt() {
         </text>
         <line className={HAIRLINE} x1="10" x2="128" y1="27" y2="27" strokeWidth="0.8" />
         <text className={TEXT_STRONG} x="18" y="39" fontSize="6.4" fontFamily={MONO}>
-          ## Architecture
+          ## Brand
         </text>
-        <text className={TEXT_BODY} x="18" y="53" fontSize="5.6" fontFamily={MONO}>
-          ![logo](https://
+        <text className={TEXT_BODY} x="18" y="52" fontSize="5" fontFamily={MONO}>
+          ![design](https://www.
         </text>
-        <text className={TEXT_BODY} x="18" y="62" fontSize="5.6" fontFamily={MONO}>
-          livedesign.app/…/live.svg)
+        <text className={TEXT_BODY} x="18" y="60" fontSize="5" fontFamily={MONO}>
+          livedesign.app/api/share/
+        </text>
+        <text className={TEXT_BODY} x="18" y="68" fontSize="5" fontFamily={MONO}>
+          9fk2/image.svg)
         </text>
         <rect
           className="fa-d-ring fill-brand-500/10 stroke-brand-500 dark:stroke-brand-400"
           x="15"
-          y="46"
+          y="45"
           width="108"
-          height="20"
+          height="27"
           rx="2"
           strokeWidth="0.8"
         />
-        {/* The rendered page. */}
+        {/* The rendered README: the heading, then the live image of the design as it is now. */}
         <g className={SHADOW}>
           <rect className={PANEL} x="140" y="10" width="150" height="76" rx="4" strokeWidth="0.8" />
         </g>
         <text className={TEXT_STRONG} x="148" y="24" fontSize="7" fontWeight="700">
-          Architecture
+          Brand
         </text>
         <rect
           x="148"
@@ -216,23 +206,15 @@ export function LiveImageArt() {
           className="fill-(--art-paper) stroke-slate-200 dark:stroke-slate-700"
           strokeWidth="0.6"
         />
-        <rect className={INK} x="156" y="44" width="32" height="18" rx="2" strokeWidth="0.9" />
-        <text className={INK_TEXT} x="172" y="55" fontSize="5.4" textAnchor="middle">
-          Web
-        </text>
-        <line className={ARROW} x1="188" x2="200" y1="53" y2="53" strokeWidth="0.9" />
-        <path className="fill-(--art-arrow)" d="M203 53 l-3.6 -2.1 v4.2z" />
-        <rect className={INK} x="203" y="44" width="32" height="18" rx="2" strokeWidth="0.9" />
-        <text className={INK_TEXT} x="219" y="55" fontSize="5.4" textAnchor="middle">
-          API
-        </text>
-        {/* The box added after the latest save, already in the image. */}
+        <MiniPage x={156} y={35} w={38} h={38} kind="logo" />
+        <MiniPage x={202} y={33} w={24} h={42} kind="phone" />
+        {/* The page added after the latest save, already in the image. */}
         <g className="fa-d-land" style={{ animationDelay: '0.8s' }}>
-          <line className={ARROW} x1="235" x2="244" y1="53" y2="53" strokeWidth="0.9" />
-          <path className="fill-(--art-arrow)" d="M247 53 l-3.6 -2.1 v4.2z" />
-          <rect className={INK} x="247" y="44" width="30" height="18" rx="2" strokeWidth="0.9" />
-          <text className={INK_TEXT} x="262" y="55" fontSize="5.4" textAnchor="middle">
-            Queue
+          <rect x="234" y="35" width="38" height="38" rx="1.6" fill="#0f172a" />
+          <circle cx="253" cy="51" r="7.2" fill="none" stroke="#7dd3fc" strokeWidth="2.8" />
+          <circle cx="253" cy="51" r="2.8" fill="#c4b5fd" />
+          <text x="253" y="67" fontSize="5.7" fontWeight="800" textAnchor="middle" fill="#f8fafc">
+            Bloom
           </text>
         </g>
       </Scene>

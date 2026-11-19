@@ -72,7 +72,7 @@ export function DashboardArt() {
 
       {/* Row two: a board, a chart, a Sheet. */}
       <Slot x={14} y={42} w={86} h={46} label="Sprint Board" d={0.6}>
-        {['To Do', 'Doing', 'Done'].map((col, c) => (
+        {['To Do', 'In Progress', 'Done'].map((col, c) => (
           <g key={col}>
             <rect
               className={WELL}
@@ -118,7 +118,7 @@ export function DashboardArt() {
         ))}
       </Slot>
 
-      <Slot x={106} y={42} w={86} h={46} label="Cards by Person" d={0.75}>
+      <Slot x={106} y={42} w={86} h={46} label="Cards by Assignee" d={0.75}>
         {bars.map((b, i) => (
           <g key={b.label}>
             <text

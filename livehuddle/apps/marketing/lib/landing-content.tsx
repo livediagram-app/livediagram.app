@@ -20,23 +20,30 @@ import {
   FollowArt,
   FourSpacesArt,
   FurnitureArt,
+  GamesArt,
   KnockArt,
+  MiniViewArt,
   NoteUndoArt,
   PortalArt,
   PresenceArt,
   PrivateRoomArt,
   ReactArt,
   RealtimeArt,
+  ReceptionistArt,
   RevokeArt,
+  RoomBuilderArt,
   ScreenShareArt,
   SelectedNoteArt,
   SessionToolsArt,
   ShareLinksArt,
+  SnapshotsArt,
+  Space3DArt,
   StageArt,
   StatusArt,
   TalkNearArt,
   TeamsArt,
   WalkInArt,
+  WebhooksArt,
 } from '@/components/FeatureArt';
 import type { FeatureProps } from '@liveworkspace/marketing-site/components/Section';
 
@@ -80,14 +87,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
     cta: 'Explore Spaces',
     title: 'Walk in and meet in a Space',
     description:
-      'Walk into a Space as your own little character, find the team round the table, and talk it through: status above your head, a speech bubble for a quick hello, a cheer when it goes well.',
+      'Walk into a Space as your own little character and see it stand up around you in 3D. Find the team round the table and talk it through: status above your head, a speech bubble for a quick hello, a cheer when it goes well.',
     metaDescription:
-      'Walk into a Space as your own character: offices, team pods and halls to meet in, with status, speech bubbles and reactions for the whole room.',
+      'Walk into a Space as your own character and see it in 3D: thirty-two offices, campuses, halls and homes to meet in, with status, bubbles and reactions.',
     highlights: [
       'Walk in as yourself',
-      'Eighteen Spaces to start from',
+      'See the Space in 3D',
+      'Thirty-two Spaces to start from',
       'Status at a glance',
-      'Say it in a bubble',
     ],
     items: [
       {
@@ -97,6 +104,14 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Walk in as yourself',
         description:
           'Pick Avatar and a little pixel character stands on the board in your colour. Click or tap where you want to go and it walks there, steer it with the arrow keys, and press Space to hop and wave a flag. The board stays as it is while you walk, so nobody moves a sticky by accident.',
+      },
+      {
+        art: <Space3DArt />,
+        href: '/help/selection-modes/avatar-mode/',
+        group: 'Walk in',
+        title: 'See the Space in 3D',
+        description:
+          'Walk a Space and it tilts back like a map: walls stand up with framed doorways and windows, characters stand upright, and the walls in front of you fade so you can see into a room before you go in. The 3D View is on from the start, and one press of the 3D View switch lays the Space flat again.',
       },
       {
         art: <CharacterArt />,
@@ -110,9 +125,9 @@ export const LANDING_SECTIONS: LandingSection[] = [
         art: <FourSpacesArt />,
         href: '/help/palette/virtual-office/',
         group: 'Rooms to meet in',
-        title: 'Eighteen Spaces to start from',
+        title: 'Thirty-two Spaces to start from',
         description:
-          'Open a Virtual Office of rooms either side of a corridor, a Team Pod with a board for the week, an All-Hands Hall of chairs facing a stage, or a whole Company Campus of buildings, floors and doors. Each is ready to walk into, with no floor plan to draw first.',
+          'Open a Virtual Office of rooms either side of a corridor, a Team Pod with a board for the week, an All-Hands Hall facing a stage, a whole Company Campus, a house with stairs between its floors, a games room, a Festival Field or an Art Gallery. Each has an Avatar Pad to arrive on and is ready to walk into, with no floor plan to draw first.',
       },
       {
         art: <ArriveArt />,
@@ -128,7 +143,31 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Rooms to meet in',
         title: 'Desks, sofas and a coffee machine',
         description:
-          'Build your own rooms from walls with doorways, desks, chairs, sofas, a meeting table, rugs, plants and bookshelves. Walk onto a chair to sit down, and walk up to the water cooler or the coffee machine to come away holding a drink.',
+          'Furnish it with desks, chairs, sofas, a meeting table, rugs, plants, a kitchenette and an office dog. Walk onto a chair to sit down, walk up to the coffee machine to come away holding a drink, lie back in the Nap Pod to show Focusing, or step into the Phone Booth to show Busy.',
+      },
+      {
+        art: <RoomBuilderArt />,
+        href: '/help/palette/virtual-office/',
+        group: 'Rooms to meet in',
+        title: 'Draw any room',
+        description:
+          'Click the corners of an L-shaped open plan with the Room Builder, join rooms with Corridors, and snap a Door, a Double Door, a Sliding Door or a Window onto any wall. Give a room glass walls so everyone sees who is in, while its call stays private.',
+      },
+      {
+        art: <ReceptionistArt />,
+        href: '/help/selection-modes/avatar-mode/avatar-tour/',
+        group: 'Rooms to meet in',
+        title: 'A host at the door',
+        description:
+          'The Receptionist lives by the Avatar Pad and goes about his day until someone arrives, then walks over to welcome them. Ask him how anything works and he answers in a speech bubble, pointing at the real control. Ring the Reception Desk bell to call him over.',
+      },
+      {
+        art: <GamesArt />,
+        href: '/help/palette/virtual-office/',
+        group: 'Rooms to meet in',
+        title: 'Games to play together',
+        description:
+          'Sit at either end of the Ping-Pong Table for a real game for two, watched live by everyone on the tab. Fly Moon Mail on the Arcade Machine and post your best run to its High Scores, shared by the whole Space.',
       },
       {
         art: <PortalArt />,
@@ -235,7 +274,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Talk',
         title: 'Share your screen',
         description:
-          'Editors can share a screen, a window or a browser tab, and it shows over your head to the people near you, tuned so text reads clearly. Put a Screen on a meeting room’s wall and a share in that room plays on it for everyone inside.',
+          'Editors can share a screen, a window or a browser tab, and it shows over your head to the people near you, tuned so text reads clearly. In Chrome and Edge you stay on the Space as you share, so you never lose sight of the room. Put a Screen on a meeting room’s wall and a share there plays on it for everyone inside.',
       },
       {
         art: <StageArt />,
@@ -243,7 +282,15 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Talk',
         title: 'Speak from the stage',
         description:
-          'Walk onto a Stage and the whole Space hears you, in any room or none, while the audience whisper to their neighbours unheard. Raise Hand asks to speak, and whoever is on the stage can let you.',
+          'Walk onto a Stage and the whole Space hears you, in any room or none, while the audience whisper to their neighbours unheard. Stand at a Podium and your voice carries three times as far. Raise Hand asks to speak, and whoever is on the stage can let you.',
+      },
+      {
+        art: <MiniViewArt />,
+        href: '/help/collaboration/proximity-audio/',
+        group: 'Talk',
+        title: 'Keep the Space in view',
+        description:
+          'In Chrome and Edge, press Pop Out and the Mini View stays on top while you work in another tab: who is near you, who is talking, raised hands, knocks with Let In and Not Now, your microphone and camera, and up to four camera tiles.',
       },
       {
         art: <DoNotDisturbArt />,
@@ -291,7 +338,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Run the room',
         title: 'A Space for every meeting',
         description:
-          'Start from a Team Pod for the stand-up, an All-Hands Hall with a stage, a Conference Venue or an Expo Hall for the big day, a whole Virtual Office, or a blank Space you furnish yourself.',
+          'Start from a Team Pod for the stand-up, an Interview Suite or a Client Lounge for people from outside, a Classroom or a Hackathon Hall, an All-Hands Hall with a stage, a Conference Venue for the big day, or a blank Space you furnish yourself.',
       },
       {
         art: <AttendanceArt />,
@@ -326,7 +373,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Work together live',
         title: 'Live presence',
         description:
-          'See who is in the Space from the participant avatars on each tab. Status rings show online, away or stale.',
+          'See who is in the Space from the participant avatars on each tab, with status rings for online, away or offline. A soft chime says when someone arrives or leaves, and arrows at the edge of the screen point to anyone out of view.',
       },
       {
         art: <RealtimeArt />,
@@ -415,6 +462,22 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Share a Space with the Community',
         description:
           'Publish a Space you are proud of to the Community gallery, filed under offices, meetings or socials, so another team can start their next meeting from yours.',
+      },
+      {
+        art: <SnapshotsArt />,
+        href: '/help/collaboration/snapshots/',
+        group: 'Your Spaces, your way',
+        title: 'Snapshots to go back to',
+        description:
+          'Before a big rearrange, press Take Snapshot in History. The latest five are kept, and Revert puts the whole Space back as it was in one step, taking a Before revert snapshot first in case you change your mind.',
+      },
+      {
+        art: <WebhooksArt />,
+        href: '/help/explorer/explorer-page/',
+        group: 'Your Spaces, your way',
+        title: 'Webhooks to Slack and Teams',
+        description:
+          'Signed in, add a webhook to a Space and it tells a Slack or Microsoft Teams channel, or any address as signed JSON, when it is renamed, moved, shared or sent to the Trash.',
       },
       {
         art: <ApiArt />,

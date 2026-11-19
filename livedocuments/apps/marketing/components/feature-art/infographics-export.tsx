@@ -50,72 +50,100 @@ export function PagesExportArt() {
           ))}
         </g>
         <g transform="translate(40 0)">
-          {/* The export panel. */}
-          <Panel x={86} y={12} w={86} h={74} title="Export pages">
-            {/* Format: PDF chosen. */}
+          {/* The export panel as the editor's Export Tab dialog shows PDF (livedocuments/apps/editor/components/
+              dialogs/ImageExportPanel.tsx): back to All formats, All pages or One page, the preview, Download PDF. */}
+          <Panel x={86} y={8} w={86} h={82} title="Export Tab">
+            <path
+              d="M93.6 22.4l-1.6 1.6 1.6 1.6"
+              fill="none"
+              className="stroke-slate-400"
+              stroke="#94a3b8"
+              strokeWidth="0.7"
+              strokeLinecap="round"
+            />
+            <text x="96" y="25.6" fontSize="4" className={INK_SOFT} fill="#64748b">
+              All formats
+              <tspan dx="2">/</tspan>
+              <tspan dx="2" fontWeight="700" className={INK} fill="#1e293b">
+                PDF
+              </tspan>
+            </text>
+            {/* Pages to export: All pages chosen. */}
             <rect
               className="fill-slate-100 dark:fill-slate-800"
               x="92"
-              y="26"
+              y="29"
               width="74"
-              height="11"
+              height="10"
               rx="3"
               fill="#f1f5f9"
             />
             <rect
               className="fill-white dark:fill-slate-700"
               x="93"
-              y="27"
-              width="24"
-              height="9"
+              y="30"
+              width="36"
+              height="8"
               rx="2.4"
               fill="#ffffff"
             />
-            {['PDF', 'PNG', 'SVG'].map((f, i) => (
+            {['All pages', 'One page'].map((f, i) => (
               <text
                 key={f}
-                x={105 + i * 24.5}
-                y={33.2}
+                x={111 + i * 36.5}
+                y={35.5}
                 textAnchor="middle"
-                fontSize="4.4"
-                fontWeight="700"
+                fontSize="4.2"
+                fontWeight={i === 0 ? 700 : 500}
                 className={i === 0 ? INK : INK_SOFT}
                 fill={i === 0 ? '#1e293b' : '#64748b'}
               >
                 {f}
               </text>
             ))}
-            {[
-              ['Pages', 'All 3'],
-              ['Size', 'A4, true size'],
-            ].map(([k, v], i) => (
-              <g key={k}>
-                <text x="92" y={47 + i * 9} fontSize="4.4" className={INK_SOFT} fill="#64748b">
-                  {k}
-                </text>
-                <text
-                  x="166"
-                  y={47 + i * 9}
-                  textAnchor="end"
-                  fontSize="4.4"
-                  fontWeight="600"
-                  className={INK}
-                  fill="#1e293b"
-                >
-                  {v}
-                </text>
-              </g>
-            ))}
-            <rect x="92" y="67" width="74" height="12" rx="3" fill={SKY} />
+            {/* The page as it will download. */}
+            <rect
+              className="fill-slate-50 stroke-slate-200 dark:fill-slate-950 dark:stroke-slate-700"
+              x="92"
+              y="42"
+              width="74"
+              height="29"
+              rx="2.4"
+              fill="#f8fafc"
+              stroke="#e2e8f0"
+              strokeWidth="0.6"
+            />
+            <Page x={120} y={45} w={18} h={23}>
+              <rect
+                x={122.5}
+                y={47.5}
+                width="13"
+                height="5"
+                rx="0.8"
+                fill={SKY}
+                fillOpacity="0.85"
+              />
+              <Lines x={122.5} y={55} w={12} count={3} gap={2.6} height={0.9} />
+            </Page>
+            {/* Download PDF: the panel's primary button, brand-filled, at the right. */}
+            <rect
+              className="fill-brand-700 dark:fill-brand-600"
+              x="122"
+              y="75"
+              width="44"
+              height="10"
+              rx="3"
+              fill="#b45309"
+            />
             <text
-              x="129"
-              y="74.8"
+              x="144"
+              y="81.6"
               textAnchor="middle"
-              fontSize="4.8"
+              fontSize="4.6"
               fontWeight="700"
               fill="#ffffff"
             >
-              Export PDF
+              Download PDF
             </text>
           </Panel>
         </g>
