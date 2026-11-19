@@ -115,6 +115,38 @@ describe('the tab PUT', () => {
     );
   });
 
+  // docs/specs/027-repositories/diagram-sources.md "Writing the record": a re-read's record the saver had not heard of
+  // is newer than the copy its save carries.
+  it('keeps the sources record a changeset wrote over the copy a save from behind it carries', async () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const record = (readAt: number) => ({
+      bridge: 'infra',
+      files: [{ name: 'wrangler.toml', format: 'wrangler', hash: String(readAt) }],
+      readAt,
+      nodes: {},
+      edges: {},
+    });
+    const sourcesOf = () =>
+      (
+        JSON.parse(
+          db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
+        ) as {
+          sources?: unknown;
+        }
+      ).sources;
+    const db = await documentWith([box('a')]);
+    const seen = revOf(db);
+    recordAdd(db, box('n'));
+    db.sql
+      .prepare("UPDATE tabs SET data = ?, rev = rev + 1 WHERE id = 't1'")
+      .run(JSON.stringify({ elements: stored(db), sources: record(2) }));
+    await save(db, [box('a')], { 'X-Changeset-Seen': String(seen) }, { sources: record(1) });
+    expect(sourcesOf()).toEqual(record(2));
+    // A save that has seen every changeset writes its own.
+    await save(db, [box('a')], { 'X-Changeset-Seen': String(revOf(db)) }, { sources: record(3) });
+    expect(sourcesOf()).toEqual(record(3));
+  });
+
   it('merges nothing the saver has already seen', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = await documentWith([box('a')]);

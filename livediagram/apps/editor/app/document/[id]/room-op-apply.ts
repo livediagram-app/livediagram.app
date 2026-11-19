@@ -34,6 +34,13 @@ import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops'
 // peer's card that reaches a full box takes the place of the newest of them. The baseline never does.
 export type PendingIdeaIds = (tabId: string, elementId: string) => readonly string[];
 
+function withSources(tabs: Tab[], tabId: string, sources: Tab['sources'] | null): Tab[] {
+  return updateTab(tabs, tabId, (tab) => {
+    const { sources: _previous, ...rest } = tab;
+    return sources === null || sources === undefined ? rest : { ...rest, sources };
+  });
+}
+
 export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: PendingIdeaIds): Tab[] {
   switch (op.kind) {
     case 'tab': {
@@ -71,10 +78,14 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp, pendingIdeaIds?: Pend
       // relayed without its element ops (over the relay cap) brings only a created tab here: the
       // editor re-fetches the content.
       const ops = op.elementOps ?? [];
-      const withTab =
+      const created =
         op.tab && !tabs.some((t) => t.id === op.tabId)
           ? [...tabs, { ...op.tab, id: op.tabId, elements: [] }]
           : tabs;
+      // A replace that drew the tab from files, or forgot them, says so (docs/specs/027-repositories/diagram-sources.md
+      // "Writing the record"): the record is set or removed before the elements it describes land.
+      const withTab =
+        op.sources === undefined ? created : withSources(created, op.tabId, op.sources);
       if (ops.length === 0) return withTab;
       return applyElementRun(withTab, op.tabId, ops);
     }

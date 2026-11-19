@@ -135,6 +135,10 @@ export type ReplaceOptions = ApplyOptions & {
   themeId?: string;
   // The new tab's finish (docs/specs/008-canvas/finish.md); only a replace that creates the tab sets one.
   finish?: Finish;
+  // The files the tab was drawn from, as sent (replace-sources.ts); absent: the tab has no record after the replace.
+  sources?: unknown;
+  // When the record was read (ms since the epoch); Date.now() by default.
+  now?: number;
 };
 
 export type ReplaceBody =

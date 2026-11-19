@@ -819,6 +819,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
+      "sources": {
+        "$ref": "#/components/schemas/ChangesetReplaceSources"
+      },
       "template": {
         "type": "string"
       },
@@ -826,6 +829,41 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       }
     },
+    "type": "object"
+  },
+  "ChangesetReplaceSources": {
+    "additionalProperties": false,
+    "properties": {
+      "bridge": {
+        "const": "infra",
+        "type": "string"
+      },
+      "edges": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "env": {
+        "type": "string"
+      },
+      "files": {
+        "items": {
+          "$ref": "#/components/schemas/DiagramSourceFile"
+        },
+        "type": "array"
+      },
+      "nodes": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/DiagramSourceNode"
+        },
+        "type": "object"
+      }
+    },
+    "required": [
+      "bridge",
+      "files"
+    ],
     "type": "object"
   },
   "ChangesetRequest": {

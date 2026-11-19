@@ -224,6 +224,7 @@ function compile(
       name: body.name ?? 'Tab',
       ...(body.theme ? { themeId: body.theme } : {}),
       ...(body.finish ? { finish: body.finish } : {}),
+      ...(body.sources !== undefined ? { sources: body.sources } : {}),
     });
   }
   if (!stored)
