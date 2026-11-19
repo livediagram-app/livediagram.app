@@ -272,8 +272,10 @@ Its `dev` script makes `.dev.vars` from `.dev.vars.example` when there is none (
 local migrations before it starts ([sign-in.md](../003-accounts/sign-in.md#local-clients)).
 
 `corepack pnpm dev:workspace` from the repo root runs it with the other liveworkspace APIs, and
-`corepack pnpm dev:media` runs it alone. Point an app's api at it with
-`MEDIA_URL=http://localhost:8792/api/media` and `MEDIA_KEY=dev-<app>-media-key` in its `.dev.vars`.
+`corepack pnpm dev:media` runs it alone. Each app's `apps/api/.dev.vars.example` already sets
+`MEDIA_URL=http://localhost:8792/api/media` and `MEDIA_KEY=dev-<app>-media-key` (the value in the media Worker's
+`MEDIA_KEY_<APP>`), so a fresh checkout uploads images with no manual step; a `.dev.vars` made before these lines
+existed needs them added by hand.
 
 ## Deploys
 

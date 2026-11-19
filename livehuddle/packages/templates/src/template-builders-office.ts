@@ -67,9 +67,11 @@ const ROOMS: RoomSpec[] = [
       { side: 'w', at: 140 },
     ],
     pieces: [
-      // The front desk against the back wall, facing whoever walks in: its Welcome and its bell are the first thing
-      // you reach (docs/specs/009-elements/workday-pieces.md "Reception Desk").
-      { kind: 'reception-desk', x: 200, y: 48 },
+      // The front desk, facing whoever walks in: its Welcome and its bell are the first thing you reach
+      // (docs/specs/009-elements/workday-pieces.md "Reception Desk"). Far enough off the back wall for him to stand
+      // behind it on the floor, so the 3D view never shows him on the wall's far side (receptionist.md "Answering the
+      // bell").
+      { kind: 'reception-desk', x: 200, y: 84 },
       // The World Clock beside it, the team's time zones at a glance (docs/specs/009-elements/social-pieces.md).
       { kind: 'world-clock', x: 16, y: 44 },
       { kind: 'plant', x: 22, y: 124 },

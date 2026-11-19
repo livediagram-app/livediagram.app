@@ -4,8 +4,11 @@ import { roomInterior } from '@livehuddle/avatar/office-geometry';
 import {
   hashId,
   msToNextLeg,
+  msToNextWalk,
   PET_INSET,
   PET_LEG_MS,
+  PET_WALK_EVERY,
+  PET_WALK_MS,
   PET_NAP_EVERY,
   PET_BODY,
   PET_RADIUS,
@@ -14,6 +17,7 @@ import {
   petClear,
   petLeg,
   petLegAt,
+  petWalkAt,
   seeded,
   type PetArea,
 } from './pet-wander';
@@ -82,6 +86,16 @@ describe('the office dog', () => {
     expect(msToNextLeg(0)).toBe(PET_LEG_MS);
     expect(msToNextLeg(PET_LEG_MS + 1000)).toBe(PET_LEG_MS - 1000);
     expect(msToNextLeg(-1000)).toBe(1000);
+  });
+
+  it('walks one leg in PET_WALK_EVERY and rests through the others', () => {
+    expect(PET_WALK_MS).toBe(PET_LEG_MS * PET_WALK_EVERY);
+    expect(petWalkAt(0)).toBe(0);
+    expect(petWalkAt(PET_LEG_MS * (PET_WALK_EVERY - 1))).toBe(0);
+    expect(petWalkAt(PET_WALK_MS)).toBe(1);
+    expect(msToNextWalk(0)).toBe(PET_WALK_MS);
+    expect(msToNextWalk(PET_WALK_MS + 1000)).toBe(PET_WALK_MS - 1000);
+    expect(msToNextWalk(-1000)).toBe(1000);
   });
 
   it('never ends a leg behind or under a piece, or in another room, the same spot on every screen', () => {

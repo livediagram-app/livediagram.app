@@ -5,7 +5,6 @@ import type { Element as CanvasElement } from '@livediagram/document';
 import {
   focusView,
   pickMainElement,
-  PHONE_FOCUS_MAX_ZOOM,
   PHONE_READABLE_ZOOM,
   tabOpeningView,
 } from './tab-opening-view';
@@ -118,15 +117,16 @@ describe('focusView', () => {
   const size = { width: 390, height: 700 };
   const content = { x: 0, y: 0, width: 4000, height: 3000 };
 
-  it('centres a normal node at 100%', () => {
+  it('centres the main element at the readable zoom', () => {
     const view = focusView(size, content, { x: 2000, y: 1500, width: 160, height: 80 }, 60);
-    expect(view.zoom).toBe(PHONE_FOCUS_MAX_ZOOM);
+    expect(view.zoom).toBe(PHONE_READABLE_ZOOM);
     expect(centreOf(view)).toEqual({ x: 2080, y: 1540 });
   });
 
-  it('zooms out to show a big main element, never below the readable zoom', () => {
-    const wide = focusView(size, content, { x: 1000, y: 1000, width: 300, height: 100 }, 60);
-    expect(wide.zoom).toBeCloseTo(270 / 300);
+  // Work Tracker 1200: fitting a small main element zoomed a template's landing in to 100%, a box or two of it.
+  it('never zooms in past the readable zoom to fit a small or a big main element', () => {
+    const small = focusView(size, content, { x: 1000, y: 1000, width: 60, height: 30 }, 60);
+    expect(small.zoom).toBe(PHONE_READABLE_ZOOM);
     const huge = focusView(size, content, { x: 1000, y: 1000, width: 3000, height: 100 }, 60);
     expect(huge.zoom).toBe(PHONE_READABLE_ZOOM);
   });
@@ -135,10 +135,11 @@ describe('focusView', () => {
     const main = { x: 0, y: 0, width: 100, height: 50 };
     const view = focusView(size, content, main, 60);
     const c = centreOf(view);
-    // Visible padded span at 100%: 270 x 580, so the window starts at the content's corner.
-    expect(c).toEqual({ x: 135, y: 290 });
-    expect(main.x).toBeGreaterThanOrEqual(c.x - 135);
-    expect(main.x + main.width).toBeLessThanOrEqual(c.x + 135);
+    // Visible padded span at 60%: 450 x 966.67, so the window starts at the content's corner.
+    expect(c.x).toBeCloseTo(225);
+    expect(c.y).toBeCloseTo(580 / PHONE_READABLE_ZOOM / 2);
+    expect(main.x).toBeGreaterThanOrEqual(c.x - 225);
+    expect(main.x + main.width).toBeLessThanOrEqual(c.x + 225);
   });
 
   it('centres an axis on the content when the content is narrower than the screen', () => {
@@ -174,9 +175,29 @@ describe('tabOpeningView', () => {
     const els = big();
     expect(tabFitView(canvas(), els)!.zoom).toBeLessThan(PHONE_READABLE_ZOOM);
     const view = tabOpeningView(canvas(), els, true)!;
-    expect(view.zoom).toBe(1);
-    // s7 sits at (800, 300); its centre is (850, 325).
-    expect(centreOf(view)).toEqual({ x: 850, y: 325 });
+    expect(view.zoom).toBe(PHONE_READABLE_ZOOM);
+    // s7 sits at (800, 300); its centre is (850, 325). The content (1700 x 950) is wider than the padded screen at
+    // 60%, so x stays on s7; it is shorter than the screen, so y centres on the content.
+    expect(centreOf(view)).toEqual({ x: 850, y: 475 });
+  });
+
+  // Work Tracker 1200: a template-sized board (C4 Component, about 1100 x 900) lands at the readable zoom on a
+  // 390-wide phone, showing its whole height and several of its boxes across rather than one box at 100%.
+  it('lands a template-sized board on a phone at the readable zoom, its whole height in view', () => {
+    const els: CanvasElement[] = [];
+    for (let i = 0; i < 9; i += 1)
+      els.push(shape(`c${i}`, (i % 3) * 500, Math.floor(i / 3) * 400, 160, 80));
+    for (let i = 1; i < 9; i += 1) els.push(arrow(`a${i}`, 'c4', `c${i === 4 ? 0 : i}`));
+    const view = tabOpeningView(canvas(), els, true)!;
+    expect(tabFitView(canvas(), els)!.zoom).toBeLessThan(PHONE_READABLE_ZOOM);
+    expect(view.zoom).toBe(PHONE_READABLE_ZOOM);
+    // The canvas shows 390 / 0.6 = 650 x 700 / 0.6 = 1167 canvas px: every row, and the hub's neighbours either side.
+    const c = centreOf(view);
+    const seen = { left: c.x - 325, right: c.x + 325, top: c.y - 583, bottom: c.y + 583 };
+    expect(seen.top).toBeLessThanOrEqual(0);
+    expect(seen.bottom).toBeGreaterThanOrEqual(880);
+    expect(seen.left).toBeLessThanOrEqual(500);
+    expect(seen.right).toBeGreaterThanOrEqual(660);
   });
 
   it('leaves an empty tab and an unmeasured canvas as Fit to Screen has them', () => {

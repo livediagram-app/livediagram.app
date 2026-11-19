@@ -24,9 +24,9 @@ like them it is somewhere a character goes. The tile reads
   shaded toward the room. A ring of brand-cyan light is set into a recessed well in the top, with a soft glow round a
   bright core where the character stands, and five small lamps glow along the rim's front. It scales cleanly at any
   size and zoom: no pixel grid, no blocky edges.
-- **Alive, not busy.** The ring, its glow and the lamps breathe on a slow, gentle pulse (a fine-stepped fade, so it
-  reads as eased while restyling only on its steps), so a pad on a still board still reads as switched on. It stops
-  under reduced motion.
+- **Alive, not busy.** The ring, its glow and the lamps breathe on a slow, gentle pulse (an eased fade the browser's
+  compositor plays, so a still board does no work for it: [Canvas performance](../008-canvas/canvas-performance.md#a-still-space-does-nothing)),
+  so a pad on a still board still reads as switched on. It stops under reduced motion.
 - **Theme lines, fixed light.** The outline and body follow the theme on light and dark paper, as every piece of
   furniture does, so the pad sits in the room. The light (ring, glow, core, lamps) keeps the avatar's own brand
   cyan whatever the theme, as a plant keeps its leaves: it is the part that says "the characters arrive here".

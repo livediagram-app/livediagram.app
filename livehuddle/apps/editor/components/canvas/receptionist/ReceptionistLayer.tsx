@@ -5,10 +5,10 @@
 // while you walk on a tab with an Avatar Pad. Owns its own clock (useReceptionist), so his frames redraw this layer alone.
 
 import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
-import { useEffect, useRef } from 'react';
-import type { Element } from '@livehuddle/document';
+import { useEffect, useMemo, useRef } from 'react';
+import type { Element, ShapeElement } from '@livehuddle/document';
 import type { PadArrival } from '@livehuddle/avatar/pad';
-import type { AvatarPoint } from '@livehuddle/avatar/walk';
+import { AVATAR_HEAD_CHROME, AVATAR_HEIGHT, type AvatarPoint } from '@livehuddle/avatar/walk';
 import { avatarScale } from '@livehuddle/avatar/config';
 import { headPoint } from '@livehuddle/avatar/speech';
 import { reactionPose } from '@livehuddle/avatar/reactions';
@@ -23,6 +23,8 @@ import {
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { RECEPTIONIST_COLOUR, RECEPTIONIST_LOOK } from '@/lib/receptionist/receptionist-look';
 import { RECEPTIONIST_TOPICS } from '@/lib/receptionist/receptionist-topics';
+import { deskBehind } from '@/lib/receptionist/receptionist-timeline';
+import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
 import { useReceptionist } from './useReceptionist';
 import { ReceptionistBubble } from './ReceptionistBubble';
 import { track } from '@/lib/telemetry';
@@ -135,8 +137,24 @@ export function ReceptionistLayer({
 
   // He faces the way the turned 3D camera sees him (3d-view.md "Turning the camera").
   const turn = useSpace3DTurn();
+  const desks = useMemo(
+    () =>
+      elements.filter(
+        (el): el is ShapeElement => el.type === 'shape' && el.shape === 'reception-desk',
+      ),
+    [elements],
+  );
   if (!receptionist || !pose) return null;
   const scale = avatarScale(RECEPTIONIST_LOOK.size);
+  // Behind a desk he stands a stride off the wall at its back, and in the 3D view a figure facing the camera leans
+  // back from its feet, so the wall cut through him and hid all but his name tag's edge. There he is drawn towards
+  // the camera by his whole height, chip and all (the stylesheet's `--space-seat-lift`; nothing flat), which keeps
+  // him in front of the wall and still behind the desk's front, as if he stood that much further into the room
+  // (receptionist.md "Answering the bell", the coordinator 2026-11-18). Only with the camera facing the desk's front.
+  const wallLift =
+    !pose.walking && turnQuarter(turn) === 0 && deskBehind(desks, pose.at)
+      ? Math.ceil((AVATAR_HEIGHT + AVATAR_HEAD_CHROME) * scale)
+      : 0;
   const top = headPoint(pose.at, scale);
   const head = { x: top.x, y: top.y - OVER_NAME * scale };
   return (
@@ -154,6 +172,7 @@ export function ReceptionistLayer({
         name="Receptionist"
         host
         standingOn={null}
+        seatLift={wallLift}
         chipShift={chipShift}
       />
       <button
