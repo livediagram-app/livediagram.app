@@ -22,11 +22,9 @@ describe('boardPreviewSvg', () => {
     for (const branch of palette.slice(0, 3)) expect(seen).toContain(branch.stroke.toLowerCase());
   });
 
-  it('bars every column in one ink on a single-colour theme, the default included', () => {
-    for (const theme of ['office', 'brand']) {
-      const svg = boardPreviewSvg('professional', { background: '#ffffff', theme });
-      expect(svg.match(/board-preview-bar-/g)?.length ?? 3, theme).toBeGreaterThan(0);
-    }
+  it('bars every column in one ink on a single-colour theme', () => {
+    const svg = boardPreviewSvg('professional', { background: '#ffffff', theme: 'brand' });
+    expect(fills(svg).filter((f) => f === '#64748b')).toHaveLength(3);
   });
 
   it('sets every label at the size new text takes', () => {

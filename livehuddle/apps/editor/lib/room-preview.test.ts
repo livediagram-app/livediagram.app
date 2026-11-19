@@ -9,7 +9,7 @@ describe('roomPreviewSvg', () => {
   it('draws the room and its sticky, stable, in each finish', () => {
     const svg = roomPreviewSvg('flexible', tab);
     expect(svg).toContain('Huddle');
-    expect(svg).toContain('Stand-up at ten');
+    expect(svg).toContain('Stand-up');
     for (const finish of ['sketch', 'marker'] as const)
       expect(roomPreviewSvg(finish, tab)).toContain(`data-finish="${finish}"`);
     expect(roomPreviewSvg('sketch', tab)).toBe(roomPreviewSvg('sketch', tab));

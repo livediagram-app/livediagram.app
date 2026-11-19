@@ -34,7 +34,7 @@ export function roomPreviewSvg(finish: Finish, tab: RoomPreviewTab): string {
     name: 'Room preview',
     finish,
     backgroundColor: tab.background,
-    ...(tab.floor ? { backgroundPattern: tab.floor } : {}),
+    backgroundPattern: tab.floor ?? 'blank',
     ...(tab.floorOpacity !== undefined ? { backgroundOpacity: tab.floorOpacity } : {}),
     ...(tab.patternColor ? { patternColor: tab.patternColor } : {}),
     ...(tab.font ? { font: tab.font } : {}),

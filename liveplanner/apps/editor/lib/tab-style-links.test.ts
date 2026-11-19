@@ -1,3 +1,4 @@
+// @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { setBoardConfiguring, useBoardConfiguring } from '@/hooks/plan/board-configure-store';

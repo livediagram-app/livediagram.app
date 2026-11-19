@@ -43,7 +43,7 @@ export function boardPreviewSvg(
   const elements: Element[] = [];
   let column = -1;
   for (const el of themed) {
-    if (!isCard(el)) {
+    if (el.type === 'text') {
       column += 1;
       const bar: ShapeElement = {
         id: `board-preview-bar-${column}`,
@@ -60,8 +60,9 @@ export function boardPreviewSvg(
       elements.push(el, bar);
       continue;
     }
+    // The rest are the cards (the sample is names and cards only).
     elements.push({
-      ...el,
+      ...(el as ShapeElement),
       fillColor: first.fillColor,
       strokeColor: first.strokeColor,
       textColor: first.textColor,

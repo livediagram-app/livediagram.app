@@ -27,18 +27,18 @@ describe('TAB_LOOKS', () => {
   it('fills five pages of six after the Mashup card, in order, each built only from settings that exist', () => {
     expect(TAB_LOOKS.map((l) => l.label)).toEqual([
       'Everyday',
-      'Textbook',
+      'Gallery',
       'Spectrum',
-      'Whiteboard',
+      'Meeting Room',
       'Boardroom',
-      'Notebook',
+      'Cabin',
       'Seaside',
-      'Doodle',
+      'Playroom',
       'Editorial',
       'Midnight',
       'Poster',
       'Sandstone',
-      'Graph Paper',
+      'Lab',
       'Daydream',
       'Engineer',
       'Lagoon',
@@ -50,11 +50,11 @@ describe('TAB_LOOKS', () => {
       'Coffeehouse',
       'Schematic',
       'Flipchart',
-      'Sketchbook',
-      'Greenboard',
+      'Atelier',
+      'Classroom',
       'Picnic',
       'Mural',
-      'Field Notes',
+      'Potting Shed',
     ]);
     expect(TAB_LOOKS.length + 1).toBe(LOOKS_PER_PAGE * 5);
     for (const look of TAB_LOOKS) {

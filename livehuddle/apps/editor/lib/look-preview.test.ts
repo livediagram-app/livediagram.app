@@ -35,8 +35,8 @@ describe('lookPreviewSvg', () => {
     const garden = lookPreviewSvg(tabLookById('garden')!);
     expect(garden).toContain('lvd-look-garden-bg');
     expect(garden).not.toContain('lvd-export-bg');
-    // A look on None draws no floor at all.
-    expect(lookPreviewSvg(tabLookById('whiteboard')!)).not.toContain('<pattern');
+    // Every look stands on a floor, the Meeting Room on its carpet tiles too.
+    expect(lookPreviewSvg(tabLookById('whiteboard')!)).toContain('lvd-look-whiteboard-bg');
   });
 
   it('bleeds the canvas colour and floor past the view, so a wider card shows floor at its sides', () => {
