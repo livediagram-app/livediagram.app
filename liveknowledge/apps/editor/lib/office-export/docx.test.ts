@@ -211,7 +211,8 @@ describe('Word export', () => {
 
   it('takes the article’s look: its accent, faces and A4 page', async () => {
     const { doc, bytes } = await everyBlockFile();
-    expect(doc.page.widthPx).toBeLessThan(doc.page.heightPx);
+    // A continuous page is no paper size: the file is an A4 sheet, whatever the page's stored height.
+    expect([doc.page.widthPx, doc.page.heightPx, doc.page.landscape]).toEqual([794, 1123, false]);
     const parts = await partsOf(bytes);
     expect(parts.get('word/document.xml')).toMatch(/<w:pgSz w:w="\d+" w:h="\d+"\/>/);
     expect(parts.get('word/numbering.xml')).toContain('D97706');

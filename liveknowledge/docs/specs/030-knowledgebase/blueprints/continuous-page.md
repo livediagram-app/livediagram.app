@@ -127,7 +127,8 @@ always `CONTINUOUS_PAGE_WIDTH` and its height `continuousPageHeight(stored)`. An
   break to and draws nothing.
 - **PDF export** draws the page as it is on the canvas, so a continuous page exports as one tall PDF page, not A4
   sheets. Making the PDF paginate means laying the writing out a second time in A4 columns off screen, which is not
-  a small change and is not built. Word export writes the blocks and Word paginates them.
+  a small change and is not built. Word export writes the blocks on an A4 sheet (`docx-build.ts`: a continuous page is no paper
+  size, so its stored width and height are not the file's) and Word paginates them.
 
 ## Security and trust
 

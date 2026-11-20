@@ -15,6 +15,7 @@ import {
   articleTopMarginPx,
   legibleOn,
   nextArticleBlockId,
+  isContinuousPage,
   pageDimensions,
   pageUnits,
   pagesOf,
@@ -155,7 +156,10 @@ export async function buildDocx(
       await yieldToBrowser();
     }
   }
-  const dims = first ? pageDimensions(first) : { width: 794, height: 1123 };
+  // A knowledgebase page is continuous (as wide as its column and margins, as tall as its writing): that is no
+  // paper size, so Word gets an A4 sheet and paginates the blocks itself. A page kept in a paper size keeps it.
+  const dims =
+    first && !isContinuousPage(first) ? pageDimensions(first) : { width: 794, height: 1123 };
   progress.onProgress?.(1);
   return {
     title: input.title,
