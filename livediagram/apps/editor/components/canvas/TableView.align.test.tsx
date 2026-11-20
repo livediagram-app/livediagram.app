@@ -26,7 +26,15 @@ const cellOf = (text: string) => screen.getByText(text).parentElement!;
 // wrapped line included. Centred only by flex, a wrapped header's lines sat on the left until it was edited.
 describe('TableView cell alignment', () => {
   it('aligns a cell’s lines with the table, centred by default', () => {
-    render(<TableView element={table()} readOnly tabSummaries={[]} onCommitTable={vi.fn()} />);
+    render(
+      <TableView
+        element={table()}
+        isSelected={false}
+        readOnly
+        tabSummaries={[]}
+        onCommitTable={vi.fn()}
+      />,
+    );
     expect(cellOf('A rather long heading that wraps').style.textAlign).toBe('center');
     expect(cellOf('Ada').style.textAlign).toBe('center');
   });
@@ -35,6 +43,7 @@ describe('TableView cell alignment', () => {
     render(
       <TableView
         element={table({ textAlignX: 'right', cellStyles: [[{ alignX: 'left' }]] })}
+        isSelected={false}
         readOnly
         tabSummaries={[]}
         onCommitTable={vi.fn()}
