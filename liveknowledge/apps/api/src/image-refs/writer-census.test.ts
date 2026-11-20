@@ -39,6 +39,10 @@ const KNOWN_WRITERS: Record<string, number> = {
   // save (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"). It changes no element, so the body's
   // image references and its element count stay as they were.
   'api/src/document-room/page-tree-store.ts': 2,
+  // writePageKnowledge (its two forms, set and remove): a page's knowledge fields written into its body by Verify
+  // and the Page Health card (docs/specs/030-knowledgebase/verification.md). It changes no element, so the body's
+  // image references and its element count stay as they were.
+  'api/src/knowledge/page-knowledge.ts': 2,
   // The test database's stand-in for a document's purge (its object deletes everything it stores); the
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,

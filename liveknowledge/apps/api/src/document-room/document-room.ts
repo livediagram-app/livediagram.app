@@ -93,6 +93,9 @@ import {
   roomInternal,
 } from './document-room-wiring';
 import { dropSession, roomPeople, broadcastPresence } from './document-room-presence';
+import { RoomKnowledge } from '../knowledge/room-knowledge';
+import { CONFLICT_CHECK_DELAY_MS, oweConflictChecks } from '../knowledge/conflict-check';
+import { runKnowledgeWork } from '../knowledge/knowledge-turn';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -221,6 +224,8 @@ export class DocumentRoom extends DurableObject<Env> {
   maintenanceAt: number | null = null;
   // When the document's Community post next asks where it stands (null: no post).
   communityAt: number | null = null;
+  // The knowledgebase's index, backfill and owed work (knowledge/room-knowledge.ts).
+  readonly knowledge: RoomKnowledge;
 
   // The tab write queue. Every write this room makes to this document's tabs
   // runs through here ONE AT A TIME. A Durable Object only serialises the
@@ -253,30 +258,46 @@ export class DocumentRoom extends DurableObject<Env> {
   constructor(state: DurableObjectState, env?: Env) {
     super(state, env as Env);
     this.state = state;
-    this.db = new ItemDb(state.storage.sql, {
-      transaction: (fn) => state.storage.transactionSync(fn),
-      ensureSchema: () => ensureSchema(this),
-      onWrite: () => noteWrite(this),
-    });
+    this.knowledge = new RoomKnowledge(state.storage, () => this.armAlarm());
+    // A page indexed anew owes a conflict check; the alarm's turn runs what is owed (knowledge/knowledge-turn.ts).
+    this.knowledge.onIndexed = (pages) => {
+      const now = Date.now();
+      if (oweConflictChecks(state.storage.sql, pages, now) > 0)
+        this.knowledge.wake(now + CONFLICT_CHECK_DELAY_MS);
+    };
+    this.knowledge.work = async (now) =>
+      this.roomEnv && this.documentId
+        ? runKnowledgeWork(this.roomEnv, state.storage.sql, this.documentId, now)
+        : null;
+    this.db = new ItemDb(
+      state.storage.sql,
+      this.knowledge.hooks({
+        transaction: (fn) => state.storage.transactionSync(fn),
+        ensureSchema: () => ensureSchema(this),
+        onWrite: () => noteWrite(this),
+      }),
+    );
+    // The same database with no write note: the drains' bookkeeping and the knowledge bookkeeping (a read counted,
+    // a question logged) are not edits.
+    const quiet = new ItemDb(
+      state.storage.sql,
+      this.knowledge.hooks({
+        transaction: (fn) => state.storage.transactionSync(fn),
+        ensureSchema: () => ensureSchema(this),
+        onWrite: () => {},
+      }),
+    ).asD1();
     this.roomEnv = env
       ? {
           ...env,
           DOCUMENT_DB: this.db.asD1(),
+          KNOWLEDGE_DB: quiet,
           DOCUMENT_ROOM: localNamespace(this, env.DOCUMENT_ROOM),
           ROOM_PEOPLE: () => roomPeople(this),
           SNAPSHOT_REVERTED: () => closeAllReverted(this),
         }
       : undefined;
-    this.drainEnv = this.roomEnv
-      ? {
-          ...this.roomEnv,
-          DOCUMENT_DB: new ItemDb(state.storage.sql, {
-            transaction: (fn) => state.storage.transactionSync(fn),
-            ensureSchema: () => ensureSchema(this),
-            onWrite: () => {},
-          }).asD1(),
-        }
-      : undefined;
+    this.drainEnv = this.roomEnv ? { ...this.roomEnv, DOCUMENT_DB: quiet } : undefined;
     this.ledger = new RoomLedgerStore(state.storage, LEDGER_RULES);
     this.head = roomHead(this);
     this.participantWrites = roomParticipantWrites(this);
@@ -596,6 +617,7 @@ export class DocumentRoom extends DurableObject<Env> {
       this.shares.at,
       this.communityAt,
       this.maintenanceAt,
+      this.knowledge.at,
       nextGrantDue(this),
     ];
     // Never sooner than a second from now, and no write when it already stands there (api-kit room-alarm.ts).
@@ -615,6 +637,8 @@ export class DocumentRoom extends DurableObject<Env> {
     if (this.shares.due(now)) await drainShares(this);
     if (this.communityAt !== null && this.communityAt <= now) await checkCommunity(this, now);
     if (this.maintenanceAt !== null && this.maintenanceAt <= now) await maintain(this, now);
+    if (this.knowledge.at !== null && this.knowledge.at <= now && this.schemaReady)
+      await this.knowledge.turn(now);
     this.armAlarm();
   }
 

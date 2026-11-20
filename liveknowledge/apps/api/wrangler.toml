@@ -123,6 +123,16 @@ type = "ratelimit"
 namespace_id = "1006"
 simple = { limit = 120, period = 60 }
 
+# Per-caller throttle for a knowledgebase's search (GET /api/documents/<id>/search,
+# docs/specs/030-knowledgebase/search-and-ask.md "Bounds"): search as you type sends a request a pause, so 120/60s
+# is ample for a person and stops a script walking the index. Keyed on the token, the person, or a link
+# visitor's network. Separate namespace. Absent binding → allow.
+[[unsafe.bindings]]
+name = "SEARCH_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
+simple = { limit = 120, period = 60 }
+
 # The image gallery's caps (500 images and 1 GB per person, across every app) are the media service's
 # (liveworkspace/docs/specs/006-media/media.md "Uploads"), not this worker's.
 
@@ -301,6 +311,12 @@ simple = { limit = 60, period = 60 }
 name = "API_TOKEN_READ_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1006"
+simple = { limit = 120, period = 60 }
+
+[[env.staging.unsafe.bindings]]
+name = "SEARCH_RATE_LIMITER"
+type = "ratelimit"
+namespace_id = "1007"
 simple = { limit = 120, period = 60 }
 
 # Email, restated because bindings don't inherit (liveworkspace/docs/specs/003-accounts/email.md). Staging sends real email from

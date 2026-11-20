@@ -1136,6 +1136,230 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AskEvent": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "const": "delta",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "text"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "gaps": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "model": {
+            "type": "string"
+          },
+          "notUsed": {
+            "items": {
+              "$ref": "#/components/schemas/AskNotUsed"
+            },
+            "type": "array"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/AskSource"
+            },
+            "type": "array"
+          },
+          "text": {
+            "type": "string"
+          },
+          "type": {
+            "const": "done",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "text",
+          "sources",
+          "notUsed",
+          "gaps",
+          "model"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "type": {
+            "const": "error",
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "kind",
+          "message"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "Ask answers as server-sent events, in this order: `delta` (the answer's next piece), then one `done`; or one `error` in place of either."
+  },
+  "AskNotUsed": {
+    "additionalProperties": false,
+    "properties": {
+      "firstBlock": {
+        "type": "string"
+      },
+      "headings": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "lastBlock": {
+        "type": "string"
+      },
+      "number": {
+        "type": "number"
+      },
+      "passageId": {
+        "type": "string"
+      },
+      "reason": {
+        "type": "string"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "trust": {
+        "$ref": "#/components/schemas/KnowledgeTrustState"
+      },
+      "verifiedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "firstBlock",
+      "headings",
+      "lastBlock",
+      "number",
+      "passageId",
+      "reason",
+      "tab",
+      "text",
+      "title",
+      "trust"
+    ],
+    "type": "object"
+  },
+  "AskRequest": {
+    "additionalProperties": false,
+    "properties": {
+      "question": {
+        "type": "string"
+      },
+      "turns": {
+        "items": {
+          "$ref": "#/components/schemas/AskTurn"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "question"
+    ],
+    "type": "object"
+  },
+  "AskSource": {
+    "additionalProperties": false,
+    "description": "A passage an answer cites, or one it found and set aside.",
+    "properties": {
+      "firstBlock": {
+        "type": "string"
+      },
+      "headings": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "lastBlock": {
+        "type": "string"
+      },
+      "number": {
+        "type": "number"
+      },
+      "passageId": {
+        "type": "string"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "trust": {
+        "$ref": "#/components/schemas/KnowledgeTrustState"
+      },
+      "verifiedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "number",
+      "passageId",
+      "tab",
+      "title",
+      "headings",
+      "text",
+      "trust",
+      "firstBlock",
+      "lastBlock"
+    ],
+    "type": "object"
+  },
+  "AskTurn": {
+    "additionalProperties": false,
+    "properties": {
+      "answer": {
+        "type": "string"
+      },
+      "question": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "question",
+      "answer"
+    ],
+    "type": "object"
+  },
   "AttachPoint": {
     "enum": [
       "top-left",
@@ -3923,6 +4147,506 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "KnowledgeAgent": {
+    "additionalProperties": false,
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "readsThisWeek": {
+        "description": "Pages read in the last seven days.",
+        "type": "number"
+      },
+      "topPages": {
+        "description": "The pages it read most this week, at most three.",
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "tab": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "tab",
+            "title"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "name",
+      "readsThisWeek",
+      "topPages"
+    ],
+    "type": "object"
+  },
+  "KnowledgeAiSettings": {
+    "additionalProperties": false,
+    "description": "`GET .../ai` (search-and-ask.md \"Ask\"): never the key, only whether one is set and its last characters.",
+    "properties": {
+      "hasKey": {
+        "type": "boolean"
+      },
+      "keyHint": {
+        "type": "string"
+      },
+      "model": {
+        "type": "string"
+      },
+      "models": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "label": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "id",
+            "label"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "hasKey",
+      "keyHint",
+      "model",
+      "models"
+    ],
+    "type": "object"
+  },
+  "KnowledgeBacklink": {
+    "additionalProperties": false,
+    "description": "A page that links here (links-and-embeds.md \"Backlinks\"), in tree order.",
+    "properties": {
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "title"
+    ],
+    "type": "object"
+  },
+  "KnowledgeBacklinksResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "backlinks": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeBacklink"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "backlinks"
+    ],
+    "type": "object"
+  },
+  "KnowledgeConflict": {
+    "additionalProperties": false,
+    "properties": {
+      "a": {
+        "$ref": "#/components/schemas/KnowledgeConflictSide"
+      },
+      "b": {
+        "$ref": "#/components/schemas/KnowledgeConflictSide"
+      },
+      "foundAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "question": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "question",
+      "a",
+      "b",
+      "foundAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeConflictSide": {
+    "additionalProperties": false,
+    "properties": {
+      "passageId": {
+        "type": "string"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "text": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "trust": {
+        "$ref": "#/components/schemas/KnowledgeTrustState"
+      },
+      "verifiedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "passageId",
+      "tab",
+      "title",
+      "text",
+      "trust"
+    ],
+    "type": "object"
+  },
+  "KnowledgeContextPage": {
+    "additionalProperties": false,
+    "properties": {
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "tokens": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "tab",
+      "title",
+      "tokens"
+    ],
+    "type": "object"
+  },
+  "KnowledgeHealthCounts": {
+    "additionalProperties": false,
+    "properties": {
+      "neverVerified": {
+        "type": "number"
+      },
+      "reviewDue": {
+        "type": "number"
+      },
+      "total": {
+        "type": "number"
+      },
+      "verified": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "verified",
+      "reviewDue",
+      "neverVerified",
+      "total"
+    ],
+    "type": "object"
+  },
+  "KnowledgeOverviewResponse": {
+    "additionalProperties": false,
+    "description": "`GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md).",
+    "properties": {
+      "agents": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeAgent"
+        },
+        "type": "array"
+      },
+      "conflicts": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeConflict"
+        },
+        "type": "array"
+      },
+      "context": {
+        "additionalProperties": false,
+        "properties": {
+          "budget": {
+            "type": "number"
+          },
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/KnowledgeContextPage"
+            },
+            "type": "array"
+          },
+          "used": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "budget",
+          "used",
+          "pages"
+        ],
+        "type": "object"
+      },
+      "hasKey": {
+        "type": "boolean"
+      },
+      "health": {
+        "$ref": "#/components/schemas/KnowledgeHealthCounts"
+      },
+      "questions": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeQuestion"
+        },
+        "type": "array"
+      },
+      "suggestions": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSuggestion"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "agents",
+      "questions",
+      "conflicts",
+      "suggestions",
+      "context",
+      "health",
+      "hasKey"
+    ],
+    "type": "object"
+  },
+  "KnowledgeQuestion": {
+    "additionalProperties": false,
+    "properties": {
+      "agents": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "asked": {
+              "type": "number"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "name",
+            "asked"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "asked": {
+        "type": "number"
+      },
+      "byPeople": {
+        "description": "Asks by people: a count of asks, not of distinct people (no asker's identity is kept).",
+        "type": "number"
+      },
+      "key": {
+        "type": "string"
+      },
+      "lastAt": {
+        "type": "number"
+      },
+      "question": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "key",
+      "question",
+      "asked",
+      "byPeople",
+      "agents",
+      "lastAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeRecentPage": {
+    "additionalProperties": false,
+    "properties": {
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "updatedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "tab",
+      "title",
+      "updatedAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeReviewEvery": {
+    "enum": [
+      30,
+      90,
+      180,
+      365,
+      "never"
+    ],
+    "type": [
+      "number",
+      "string"
+    ]
+  },
+  "KnowledgeSearchResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "results": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSearchResult"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "results"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSearchResult": {
+    "additionalProperties": false,
+    "description": "One search result: a page's title row, or a passage of its writing. `titleMarked` and `snippet` wrap each matched word in U+0002 and U+0003, so a client marks them without parsing HTML.",
+    "properties": {
+      "firstBlock": {
+        "type": "string"
+      },
+      "headings": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "id": {
+        "type": "string"
+      },
+      "isTitle": {
+        "type": "boolean"
+      },
+      "lastBlock": {
+        "type": "string"
+      },
+      "snippet": {
+        "type": "string"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "titleMarked": {
+        "type": "string"
+      },
+      "trust": {
+        "$ref": "#/components/schemas/KnowledgeTrustState"
+      },
+      "verifiedAt": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "tab",
+      "isTitle",
+      "title",
+      "titleMarked",
+      "headings",
+      "snippet",
+      "firstBlock",
+      "lastBlock",
+      "trust"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSuggestion": {
+    "additionalProperties": false,
+    "properties": {
+      "agent": {
+        "type": "string"
+      },
+      "createdAt": {
+        "type": "number"
+      },
+      "id": {
+        "type": "string"
+      },
+      "summary": {
+        "type": "string"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "id",
+      "tab",
+      "title",
+      "agent",
+      "summary",
+      "createdAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSummaryResponse": {
+    "additionalProperties": false,
+    "description": "`GET .../summary` (knowledgebase-home.md): what Home shows of one knowledgebase.",
+    "properties": {
+      "health": {
+        "$ref": "#/components/schemas/KnowledgeHealthCounts"
+      },
+      "pages": {
+        "type": "number"
+      },
+      "recent": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeRecentPage"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "pages",
+      "health",
+      "recent"
+    ],
+    "type": "object"
+  },
+  "KnowledgeTrustState": {
+    "description": "A page's verified state, worked out when read (verification.md \"States\").",
+    "enum": [
+      "verified",
+      "review-due",
+      "never-verified"
+    ],
+    "type": "string"
+  },
   "Layer": {
     "additionalProperties": false,
     "properties": {
@@ -5131,6 +5855,36 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       }
     ]
   },
+  "PageHealthResponse": {
+    "additionalProperties": false,
+    "description": "Page Health (verification.md): the fields, and the reads of the last seven days.",
+    "properties": {
+      "knowledge": {
+        "$ref": "#/components/schemas/PageKnowledge"
+      },
+      "reads": {
+        "additionalProperties": false,
+        "properties": {
+          "agents": {
+            "type": "number"
+          },
+          "people": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "people",
+          "agents"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "knowledge",
+      "reads"
+    ],
+    "type": "object"
+  },
   "PageImageFill": {
     "additionalProperties": false,
     "properties": {
@@ -5208,6 +5962,85 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "slide"
     ],
     "type": "string"
+  },
+  "PageKnowledge": {
+    "additionalProperties": false,
+    "description": "A page's knowledge fields with what is worked out from them.",
+    "properties": {
+      "changedSinceVerified": {
+        "description": "More than a fifth of the writing changed since it was verified.",
+        "type": "boolean"
+      },
+      "context": {
+        "const": true,
+        "type": "boolean"
+      },
+      "owner": {
+        "type": "string"
+      },
+      "reviewAt": {
+        "description": "When the review comes due; absent for a page never verified or one that does not age.",
+        "type": "number"
+      },
+      "reviewEvery": {
+        "$ref": "#/components/schemas/KnowledgeReviewEvery",
+        "description": "Absent is the default, 90 days."
+      },
+      "state": {
+        "$ref": "#/components/schemas/KnowledgeTrustState"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "tokens": {
+        "description": "The page's size against the Always in Context budget.",
+        "type": "number"
+      },
+      "verifiedAt": {
+        "type": "number"
+      },
+      "verifiedBy": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "state",
+      "changedSinceVerified",
+      "tokens"
+    ],
+    "type": "object"
+  },
+  "PageKnowledgePatch": {
+    "additionalProperties": false,
+    "description": "`PUT .../pages/<tab>/knowledge`: each field optional; `owner: null` clears it.",
+    "properties": {
+      "context": {
+        "type": "boolean"
+      },
+      "owner": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "reviewEvery": {
+        "$ref": "#/components/schemas/KnowledgeReviewEvery"
+      }
+    },
+    "type": "object"
+  },
+  "PageKnowledgeResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "knowledge": {
+        "$ref": "#/components/schemas/PageKnowledge"
+      }
+    },
+    "required": [
+      "knowledge"
+    ],
+    "type": "object"
   },
   "PageMotion": {
     "enum": [
@@ -5916,6 +6749,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "input",
       "candidates",
       "stale"
+    ],
+    "type": "object"
+  },
+  "ReportGapRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../questions`: an agent's `report_gap`.",
+    "properties": {
+      "question": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "question"
     ],
     "type": "object"
   },
@@ -7395,6 +8241,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "id": {
         "$ref": "#/components/schemas/TabId"
       },
+      "knowledge": {
+        "$ref": "#/components/schemas/TabKnowledge"
+      },
       "layers": {
         "items": {
           "$ref": "#/components/schemas/Layer"
@@ -7482,6 +8331,39 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "TabId": {
     "type": "string"
   },
+  "TabKnowledge": {
+    "additionalProperties": false,
+    "description": "A page's knowledge fields as stored. Every one is optional: absent is no owner, never verified, a review every 90 days, not in context.",
+    "properties": {
+      "context": {
+        "const": true,
+        "type": "boolean"
+      },
+      "owner": {
+        "type": "string"
+      },
+      "reviewEvery": {
+        "enum": [
+          30,
+          90,
+          180,
+          365,
+          "never"
+        ],
+        "type": [
+          "number",
+          "string"
+        ]
+      },
+      "verifiedAt": {
+        "type": "number"
+      },
+      "verifiedBy": {
+        "type": "string"
+      }
+    },
+    "type": "object"
+  },
   "TabRecord": {
     "additionalProperties": false,
     "properties": {
@@ -7538,6 +8420,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "id": {
         "$ref": "#/components/schemas/TabId"
+      },
+      "knowledge": {
+        "$ref": "#/components/schemas/TabKnowledge"
       },
       "layers": {
         "items": {

@@ -28,6 +28,8 @@ import {
 import { drainOutbox } from './document-outbox';
 import type { DocumentRoom } from './document-room';
 import { closeSockets } from './document-room-sockets';
+import { pruneKnowledge } from '../knowledge/room-knowledge';
+import { knowledgeWorkDueAt } from '../knowledge/knowledge-work';
 
 // The document's own daily upkeep: old changesets go.
 export const MAINTENANCE_EVERY_MS = 24 * 60 * 60 * 1000;
@@ -52,6 +54,8 @@ export function restoreContentState(room: DocumentRoom, maintenanceAt: number | 
     .exec<{ checked_at: number }>('SELECT checked_at FROM community_post LIMIT 1')
     .toArray()[0];
   room.communityAt = post ? post.checked_at + COMMUNITY_CHECK_MS : null;
+  // Pages still queued for the index, and work the alarm owes (knowledge/room-knowledge.ts).
+  room.knowledge.restore(Date.now(), knowledgeWorkDueAt(sql));
 }
 
 // The schema on first use (document-schema.ts), and the document's row once its id is known, so the content's
@@ -150,6 +154,8 @@ export async function maintain(room: DocumentRoom, now: number): Promise<void> {
     // Automatic versions past their age on tabs nobody has edited since (docs/specs/006-document/version-history.md).
     const pruned = await deleteOldVersions(env, now - VERSION_AUTO_MAX_AGE_MS);
     if (pruned > 0) console.info('[versions] pruned', { documentId, deleted: pruned });
+    // Reads past 90 days, counters past their window, questions past the cap (blueprint "Wiring").
+    pruneKnowledge(room.state.storage.sql, now);
   } catch (error) {
     console.warn('[document-room] upkeep failed', { documentId, error: String(error) });
   }

@@ -1,6 +1,7 @@
 import { DatabaseSync } from 'node:sqlite';
 import { ItemDb } from '@liveworkspace/index-app';
 import { migrateDocumentSchema } from './document-room/document-schema';
+import { withKnowledgeIndex } from './knowledge/knowledge-index';
 import {
   bindTestRooms,
   nodeItemSql,
@@ -71,11 +72,15 @@ export function sqliteD1(base: Partial<Env> = {}): SqliteD1 {
     drain: async (id) => (await import('./document-room/document-outbox')).drainOutbox(env, id),
   });
 
-  const documentDb = new ItemDb(documentSql, {
-    transaction: nodeTransaction(sql),
-    ensureSchema: () => {},
-    onWrite: () => {},
-  });
+  // The knowledge index is kept in step as the room keeps it (knowledge/knowledge-index.ts).
+  const documentDb = new ItemDb(
+    documentSql,
+    withKnowledgeIndex(documentSql, {
+      transaction: nodeTransaction(sql),
+      ensureSchema: () => {},
+      onWrite: () => {},
+    }),
+  );
   const env = { ...base, DOCUMENT_DB: documentDb.asD1() } as unknown as DocumentEnv;
   Object.defineProperty(env, TEST_GRANT_HOOK, {
     value: (documentId: string, who: TestGrantCaller) => testGrantFor(sql, documentId, who),

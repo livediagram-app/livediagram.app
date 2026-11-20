@@ -174,7 +174,14 @@ async function routeApiRequest(
   // Nor does a view-only room ticket (docs/specs/015-api/api.md, the MCP view's live updates): it writes nothing
   // and admits only a watcher, at view.
   const isViewOnlyTicket = isViewOnlyRoomTicketMint(request.method, segments, url, 'documents');
-  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isViewOnlyTicket) {
+  // Asking a question and reporting a gap change no page: a read-only token may do both (routes/knowledge-routes.ts).
+  // Ask's own limits and the caller's role still apply.
+  const isKnowledgeAsk =
+    request.method === 'POST' &&
+    segments.length === 4 &&
+    segments[1] === 'documents' &&
+    (segments[3] === 'ask' || segments[3] === 'questions');
+  if (tokenAuth?.readOnly && isWrite && !isSelfRevoke && !isViewOnlyTicket && !isKnowledgeAsk) {
     return forbidden('read_only_token');
   }
   // Reject oversized bodies up front so a hostile payload never reaches a route's

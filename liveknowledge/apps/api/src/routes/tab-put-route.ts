@@ -3,6 +3,7 @@
 // PUT"). A token is refused; the save is merged with every recorded changeset its editor had not
 // seen and with the room's collaboration ledger, then written at the revision it read.
 
+import { keepStoredKnowledge } from '../knowledge/page-knowledge';
 import {
   CHANGESET_MERGE_WINDOW_MS,
   CHANGESET_SEEN_HEADER,
@@ -158,6 +159,9 @@ export async function writeTabSave(
     // The name cap (docs/specs/006-document/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
+    // A page's knowledge fields are the knowledge routes' to write (knowledge/page-knowledge.ts): a whole-tab save
+    // keeps what is stored, so an editor that has not heard of a Verify cannot undo it.
+    keepStoredKnowledge(body, existingTab);
     // A tab's name is structure (docs/specs/013-workspace/tab-scoped-share-links.md): a tab-scoped
     // editor's save stores its content under the name the tab already has, and never makes a tab: its
     // tab gone (deleted while its editor was open) reads as missing rather than coming back.

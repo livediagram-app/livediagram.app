@@ -175,6 +175,11 @@ None of these can be done by an agent.
   accounts, `DRIVE_KEY_LIVEKNOWLEDGE`, `COMMUNITY_KEY_LIVEKNOWLEDGE`, `DATA_EXPORT_KEY_LIVEKNOWLEDGE`) and on
   liveknowledge's api under the name it reads (`INDEX_KEY`, `MEDIA_KEY`, `TELEMETRY_KEY`, `DRIVE_KEY`,
   `COMMUNITY_KEY`, `DATA_EXPORT_KEY`), production and staging.
+- **`AI_KEY_SECRET`** on liveknowledge's api, production and staging (`wrangler secret put AI_KEY_SECRET`, a fresh
+  `openssl rand -hex 32` each): what the knowledgebases' Claude API keys are sealed under
+  ([Search and Ask](../030-knowledgebase/search-and-ask.md) "Ask"). Until it is set, no key can be stored and Ask
+  answers `ask_unavailable`; nothing else waits on it. It is never rotated casually: a new value makes every stored
+  key unreadable, and each team sets its key again.
 - **Google:** `application/vnd.liveknowledge+json` (`.liveknowledge`) added to the Google Cloud project's Drive UI
   MIME types, and the new domain among the Google sign-in origins.
 - **KV namespaces** for the MCP Worker's OAuth state, production and staging, replacing the ids the fork carries in

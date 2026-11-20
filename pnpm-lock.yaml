@@ -4305,6 +4305,9 @@ importers:
       '@liveknowledge/edit-operations':
         specifier: workspace:*
         version: link:../../packages/edit-operations
+      '@liveknowledge/knowledge':
+        specifier: workspace:^
+        version: link:../../packages/knowledge
       '@liveknowledge/templates':
         specifier: workspace:*
         version: link:../../packages/templates

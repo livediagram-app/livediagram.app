@@ -12,7 +12,13 @@ import {
   type PagesRequest,
   type RoomOp,
 } from '@liveknowledge/api-schema';
-import { diffToElementOps, pageStepsOf, plural, type Tab } from '@liveknowledge/document';
+import {
+  diffToElementOps,
+  pageByTitleIn,
+  pageStepsOf,
+  plural,
+  type Tab,
+} from '@liveknowledge/document';
 import {
   applyArticleWrite,
   applyPageChanges,
@@ -80,6 +86,16 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
   return ops;
 }
 
+const pageLinksOf = (document: DocumentDTO) => ({
+  pageByTitle: pageByTitleIn(
+    document.tabs.map((t) => ({
+      id: t.id,
+      name: t.name,
+      parent: (t as { parent?: string }).parent,
+    })),
+  ),
+});
+
 export async function submitPages(args: PagesArgs): Promise<PagesResult> {
   const { env, document, tabId, request } = args;
   const where = { documentId: document.id, tabId };
@@ -98,7 +114,8 @@ export async function submitPages(args: PagesArgs): Promise<PagesResult> {
     let wrote: { flow: string; created: boolean } | null = null;
     if ('pages' in request) out = applyPageChanges(stored.tab, request.pages);
     else {
-      const w = applyArticleWrite(stored.tab, request.article);
+      // `[[Title]]` links to the page of that title, the first in tree order (the document's tab summaries).
+      const w = applyArticleWrite(stored.tab, request.article, {}, pageLinksOf(document));
       out = w;
       if (!('refusal' in w)) wrote = { flow: w.flow, created: w.created };
     }

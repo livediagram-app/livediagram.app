@@ -27,6 +27,18 @@ const OUTPUT = resolve(here, '../src/openapi/schemas.generated.ts');
 // that references a type missing here fails the drift test's reference check;
 // add the type below and regenerate.
 export const ROOT_TYPES = [
+  // The knowledge routes (docs/specs/015-api/api.md "Knowledge").
+  'KnowledgeSearchResponse',
+  'KnowledgeBacklinksResponse',
+  'PageKnowledgeResponse',
+  'PageHealthResponse',
+  'PageKnowledgePatch',
+  'KnowledgeSummaryResponse',
+  'KnowledgeAiSettings',
+  'AskRequest',
+  'AskEvent',
+  'KnowledgeOverviewResponse',
+  'ReportGapRequest',
   'LiveDoc',
   'DocumentSummary',
   'SharedTabsSummary',

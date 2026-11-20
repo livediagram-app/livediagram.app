@@ -18,6 +18,9 @@ import { handleCommentRoutes } from './comment-routes';
 import { handleNotifyAction } from './notify-action-route';
 import { handleAgentPresenceRoute } from './agent-presence-routes';
 import { handleTabRender } from './tab-render-route';
+import { handleKnowledgeRoutes } from './knowledge-routes';
+import { countRead } from '../knowledge/knowledge-reads';
+import { readerOf } from '../knowledge/knowledge-caller';
 import {
   COMMUNITY_CONTENT,
   deniedOnTab,
@@ -41,6 +44,9 @@ export async function handleDocumentSubresources(
   // Version history (docs/specs/006-document/version-history.md).
   const versions = await handleVersionRoutes(ctx);
   if (versions) return versions;
+  // Search, verification, Ask and AI Knowledge (docs/specs/030-knowledgebase; routes/knowledge-routes.ts).
+  const knowledge = await handleKnowledgeRoutes(ctx);
+  if (knowledge) return knowledge;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so
@@ -129,6 +135,8 @@ export async function handleDocumentSubresources(
       if (!tab) return notFound();
       // An agent's read shows it on this tab (docs/specs/024-agents/agent-presence.md "Presence").
       if (caller !== null) refreshAfterRead(ctx, existing, tabId, caller);
+      // One open of a page is a read (ai-knowledge.md "Reads"); a document view is an agent's `read_page`.
+      await countRead(env, tabId, readerOf(ctx), caller);
       // Blank other people's comment author ids before handing the tab
       // to a non-owner: a visitor should only ever see their OWN author
       // id (so they can delete-own), never another participant's owner

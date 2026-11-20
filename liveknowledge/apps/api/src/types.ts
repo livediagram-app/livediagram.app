@@ -82,6 +82,12 @@ export type Env = {
   // liveknowledge' secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY);
   // unset, this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
+  // The secret the knowledgebases' Claude API keys are sealed under (docs/specs/030-knowledgebase/search-and-ask.md
+  // "Ask"; @liveknowledge/knowledge key-seal.ts). A secret (wrangler secret put AI_KEY_SECRET). Unset: no key can be
+  // stored, Ask answers `ask_unavailable`, and search and everything else work.
+  AI_KEY_SECRET?: string;
+  // Per-caller limiter for a knowledgebase's search (GET /api/documents/<id>/search). Absent binding: allowed.
+  SEARCH_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // liveknowledge' secret on liveworkspace's Drive mirror (liveworkspace/docs/specs/005-drive/drive.md "Contracts > The apps"), the
   // same value as the service's DRIVE_KEY_LIVEKNOWLEDGE: it opens the internal export door (its `file` format) and
   // the import door, nothing else. A secret (wrangler secret put DRIVE_KEY); unset, the mirror has no way in.
@@ -152,6 +158,9 @@ export type Env = {
 // ledger and closes every socket with SNAPSHOT_REVERTED_CLOSE.
 export type DocumentEnv = Env & {
   DOCUMENT_DB: D1Database;
+  // The same database with no write note (knowledge/knowledge-db.ts): what the knowledge bookkeeping writes
+  // through, so a counted read or a logged question is never recorded as an edit. Absent in a test's env.
+  KNOWLEDGE_DB?: D1Database;
   ROOM_PEOPLE?: () => ReadonlySet<string>;
   SNAPSHOT_REVERTED?: (generation: number) => void;
 };

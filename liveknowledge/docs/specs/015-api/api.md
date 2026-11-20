@@ -181,6 +181,44 @@ the index mints is long enough, from the CSPRNG, that guessing one is out of rea
 | GET    | `/api/preferences` | owner (any path) | Returns `{ prefs }` for the resolved owner (the `sub` of the account's or the guest's token), kept by the liveworkspace accounts Worker: its `all` scope and this app's as one flat set. `{ prefs: null }` when there is nowhere to keep them (no accounts Worker on this deployment, or an owner it has no place for), and the editor keeps them in the browser alone; `503 preferences_unavailable` when the accounts Worker is out of reach. The blob is opaque to the worker; the client owns the shape (`apps/editor/lib/user-preferences.ts`'s `UserPreferences` type).                     |
 | PUT    | `/api/preferences` | owner (any path) | Body `{ prefs }`, a **patch**: each key it names takes its new value whole, `null` deletes the key, keys it leaves out stay. Returns 204. The body is capped at 16 KB (`PREFERENCES_PATCH_MAX`, the accounts Worker's own limit on one scope); over it, or not an object, is `400`, and the accounts Worker's own refusal passes on (`413` for its size cap). `404 preferences_not_stored` where `GET` answers `{ prefs: null }`. Same hybrid auth as `GET`. Last-write-wins per key; the client tolerates failure by keeping its localStorage cache authoritative until the next successful PUT. |
 
+### Knowledge
+
+Search, verification, Ask and the AI Knowledge tab ([Knowledgebase](../030-knowledgebase/README.md)), each under
+`/api/documents/<id>/` and answered inside the knowledgebase's Durable Object
+(`routes/knowledge-routes.ts`; the wiring is in the
+[knowledge blueprint](../030-knowledgebase/blueprints/knowledge-package.md#wiring-what-the-room-and-its-callers-do)).
+The caller's grant is the gate: reading is every role's, a share link's visitor included; a write is an Editor's. A
+link confined to one page reaches that page's own routes and search over that page, nothing else.
+
+| Route                         | Who                           | What                                                                                                                                          |
+| ----------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET search?q=`               | every role                    | titles first, then passages; 20 at most; `q` over 200 characters is `400 query_too_long`; `SEARCH_RATE_LIMITER`, 120 a minute a caller        |
+| `GET summary`                 | every role                    | page count, Verified / Review Due / Never Verified, the eight pages changed last; `Cache-Control: private, max-age=60`                        |
+| `GET pages/<tab>/backlinks`   | every role                    | the pages whose writing links here, in tree order                                                                                             |
+| `GET pages/<tab>/health`      | every role                    | the fields, the state now, Changed since verified, the size in tokens, the week's reads by people and by agents                               |
+| `POST pages/<tab>/verify`     | Editor with an account        | verified now by the caller, who owns a page with no owner                                                                                     |
+| `PUT pages/<tab>/knowledge`   | Editor                        | `owner` (or `null`), `reviewEvery`, `context`, each optional; `400 owner_no_access`, `409 context_budget`                                     |
+| `GET ai`                      | every role                    | `{ hasKey, keyHint, model, models }`; the hint to an Editor only; never the key                                                               |
+| `PUT ai/key`, `DELETE ai/key` | Editor                        | the team's Claude API key, sealed under `AI_KEY_SECRET`; `503 ask_unavailable` with no secret                                                 |
+| `PUT ai/model`                | Editor                        | one of the listed model ids                                                                                                                   |
+| `POST ask`                    | a signed-in account, any role | server-sent events: `delta`, then `done` (sources, found but not used, gaps), or `error`; `409` or `503 ask_unavailable`; `429` at the limits |
+| `GET knowledge`               | every role                    | agents, unanswered questions, conflicts, Always in Context pages, health                                                                      |
+| `POST questions`              | a signed-in account, any role | an agent's `report_gap`                                                                                                                       |
+| `DELETE questions/<key>`      | Editor                        | Dismiss                                                                                                                                       |
+| `POST conflicts/<id>/dismiss` | Editor                        | Not a Conflict                                                                                                                                |
+
+- A page's fields are written into its tab's body (`Tab.knowledge`) with the tab's revision advanced, and told to
+  open editors as a `tab-meta` patch. The whole-tab save keeps the stored fields whatever it is sent, so an editor
+  that has not heard of a Verify cannot undo it, and no save can forge one.
+- `PUT`, not `PATCH`, for the fields: the Worker's write gates (the write limiter, read-only tokens, CORS) know
+  `POST`, `PUT` and `DELETE`.
+- A read-only API token may `POST ask` and `POST questions`: neither changes a page. Every other write it presents
+  is refused as before.
+- Opening a page (`GET tabs/<tab>`) counts a read: a person's once a page a day, an agent's (an API token, the MCP,
+  the CLI) every time, under the name its client sends in `X-Liveknowledge-Agent`, else "MCP", "CLI" or "API Token".
+- The knowledge bookkeeping (reads, counters, questions, conflicts, the key) is written through a handle that
+  notes no write, so none of it is recorded as an edit in History, Most Used or the outbox.
+
 ### Document dates
 
 A document's dates are its `createdAt` (shown as created) and `savedAt` (last

@@ -6,8 +6,8 @@ Derived from [Search and Ask](../search-and-ask.md), [Verification](../verificat
 
 `@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask and the conflict
 check. It is pure: it writes no storage, reads no environment and starts no timer. The room runs the SQL it makes; the
-caller hands in `fetch`, the team's key and the clock. **Built: the package and its tests. Not built: every caller**
-(the room, the api routes, the editor, the MCP tools); "Wiring" below is what they must do.
+caller hands in `fetch`, the team's key and the clock. **Built: the package, the room's wiring and the api's
+routes** ("Wiring" below). **Not built:** the editor, the MCP tools, the Offline matcher and the three emails.
 
 ## Domain and naming
 
@@ -278,10 +278,11 @@ is made in a Worker with an injected `fetch`; no SDK is a dependency.
   (rejected), no assistant prefill (rejected), no forced tool (rejected).
 - **Models** (`CLAUDE_MODELS`): `claude-fable-5-2` (the default), `claude-opus-5-5`, `claude-sonnet-5-5`,
   `claude-haiku-5-5`: the current generation of each line. A stored id that is none of them reads as the default.
-- **Refusals.** A safety classifier may decline a request (HTTP 200, `stop_reason: "refusal"`). For the three models
-  that take it, the request carries `fallbacks: "default"` with `anthropic-beta: server-side-fallback-2026-07-01`,
-  so the API answers on another model instead (billed at that model's rates, on the team's key); Claude Haiku 5.5
-  rejects the field and is sent without it. A reply that still ends in `refusal` is the failure kind `refused`.
+- **Refusals.** A safety classifier may decline a request (HTTP 200, `stop_reason: "refusal"`): that is the failure
+  kind `refused`. The API can answer on another model instead (`fallbacks: "default"` with
+  `anthropic-beta: server-side-fallback-2026-07-01`), and the request and header know how to ask, but the switch
+  (`ClaudeModel.fallbacks`) is **off for every model**: a fallback bills the team's own key at another model's
+  rate, and a team must be able to predict what a question costs.
 - **The stream** is server-sent events; the client reads each `data:` line's JSON by its `type`: `message_start`
   (the model that answered), `content_block_delta` with a `text_delta` (the text; thinking and signature deltas are
   ignored), `message_delta` (`stop_reason`), `message_stop`, and `error`. A stream that ends without `message_stop`
@@ -337,58 +338,71 @@ is made in a Worker with an injected `fetch`; no SDK is a dependency.
 - A value that is empty or over `MAX_API_KEY_CHARS` (512) is refused before it is sealed. No error holds the key, the
   secret or the envelope.
 
-## Wiring: what the room and its callers must do
+## Wiring: what the room and its callers do
 
-None of this is built. `tab` is the tab's id; `flow` is the page's `ArticleFlow`; "run" means `sql.exec(sql,
-...params)`, and "in one transaction" means inside one `ctx.storage.transactionSync()`.
+Built in `apps/api/src/knowledge/` and `apps/api/src/routes/knowledge-*.ts` ([api.md](../../015-api/api.md)
+"Knowledge" lists the routes). `tab` is the tab's id.
 
-- **When the room makes its schema:** run every statement of `KNOWLEDGE_SCHEMA`.
-- **On a tab save** (the writing or the title changed), in one transaction with the tab's own write:
-  1. If a conflict check may follow, first read `SELECT id, text_hash AS textHash FROM passages WHERE tab = ? AND
-ordinal >= 0` for `conflictProbes`.
-  2. `passages = pagePassages(tab, flow)`, `links = pageLinkTargets(flow)`, `fields =
-parseKnowledgeFields(tab.knowledge)`.
-  3. Run `replacePageIndex({ tab, title, passages, links, trust: { verifiedAt: fields.verifiedAt, reviewDays:
-reviewDays(fields) } })`.
-- **On Verify, a change of interval or a rename with no change of writing:** run `putPageTrust(tab, title, trust)`
-  (and, for a rename, `replacePageIndex`, since the title row holds the title's words).
-- **On a page delete** (each page of the deleted subtree): run `deletePageIndex(tab)`.
-- **On a read** (a page opened in the editor, a `read_page`, each search result served to an agent): run
-  `recordRead(tab, reader, now)`. Page Health reads `countPageReads(tab, now)` through `pageReads`; Connected agents
-  reads `countAgentReads(now)` through `agentReads`.
-- **On search** (`GET` search, `search_pages`): `searchPassages(query, { now })`; `undefined` is no results; else run
-  it and map the rows with `foundPassage`. Rate-limit the caller (the room's own limiter; not in this package). An
-  agent's search with no rows logs a question (below).
-- **On Ask:**
-  1. Refuse an anonymous share-link visitor and a knowledgebase with no key.
-  2. `counters = askCounters(person, now)`; read both; `askRefusal(question, used)`; on a refusal answer it in words.
-  3. Run `counters.bump`, then `askSearch`, `chooseAskPassages`, `askRequest` (model from `readSetting('ai_model')`).
-  4. `apiKey = await openApiKey(env.AI_KEY_SECRET, envelope, documentId)`; `callClaude({ fetch, apiKey, request,
-onText })`, piping `askAnswerStream(passages).push(piece)` to the client.
-  5. `finish()`: send the citations, Found but Not Used and the gaps; log each gap with `upsertQuestion(
-questionKey(gap), gap, asker, now)` (skip an empty key).
-  6. On a `ClaudeCallError`, send `error.kind` and its words; log the kind, never the key or the request.
-- **On a key change** (Editor only): `putAiKey(await sealApiKey(secret, apiKey, documentId), keyHint(apiKey))`;
-  Remove is `removeAiKey()`; Settings reads only `ai_key_hint` and `ai_model`. The key never returns to a client.
-- **On `report_gap` and an agent's empty search:** `upsertQuestion` as above. Dismiss is `dismissQuestion(key)`. The
-  list is `listQuestions()` and `listQuestionAgents()` through `questionGroups`.
-- **After a save or a Verify, when the knowledgebase has a key** (in the background, never in the save's
-  transaction): read `lastConflictCheck(tab)` and `readCounter(CONFLICT_CHECK_SCOPE, dayOf(now))`;
-  `conflictCheckRefusal`; then `noteConflictCheck` and `bumpCounter`; `conflictProbes`; run each `probeSearch`;
-  `chooseConflictCandidates(lookups, known)`; with no candidates stop (no model call); else `conflictRequest`,
-  `callClaude`, `parseConflictVerdicts`, and `insertConflict` for each. The list is `listConflicts()` through
-  `conflictOfRow`; "Not a Conflict" is `dismissConflict(id)`.
-- **Once a day** (the room's alarm): `pruneReads(now)`, `pruneCounters(now)`, `pruneQuestions()`.
-- **`get_context`:** the pages whose fields have `context`, in tree order, each as `articleToMarkdown(flow)`, through
-  `assembleContext`. Setting Always in Context checks `fitsContextBudget(estimateTokens(markdown), usedTokens)`.
-- **Changed since verified:** the room needs the writing as it stood at `verifiedAt` (`writingText(flow)` of the
-  version kept then) to hand to `changedSinceVerified(before, writingText(flow))`. Where that text is kept is the
-  wiring's to settle; this package stores none.
-- **Offline knowledgebases** search in the browser over `pagePassages` of each page; the SQL is the room's alone. The
-  browser's matcher is not built here.
-- **The editor and the room** take the page link's run shape from `PAGE_LINK_KEY` and `isPageLinkRun`. The article
-  model's run reader (`parseRun` in `@liveknowledge/document`) must keep the `page` field for a link to be stored at
-  all: today it drops unknown fields.
+- **The schema** is step 12 of the room's own (`document-schema.ts`, `knowledge/knowledge-schema.ts`):
+  `KNOWLEDGE_SCHEMA`, then three tables of the room's. `knowledge_dirty (tab, queued, tries)`: the pages whose index
+  is behind their tab. `knowledge_pages (tab, index_hash, trust_hash, chars, verified_print)`: what the index was
+  last built from, the page's size, and the writing's print at Verify. `knowledge_work (kind, key, due_at,
+payload)`: what the alarm owes.
+- **How a write reaches the index.** Three triggers on `tabs` (insert, update of `data` or `name`, delete) mark the
+  page in `knowledge_dirty`, so every writer is covered (the save, a seed, an import, a rename, a room op's swap, a
+  revert, a delete) and a compare-and-swap that lost marks nothing. The room's database hooks
+  (`withKnowledgeIndex`, over `@liveworkspace/index-app` `ItemDb`) settle the marked pages at the end of the
+  batch's transaction, inside it (`ctx.storage.transactionSync`, confirmed: it is the only transaction the room
+  uses), so a tab and its passages, links and trust land together or not at all. A single statement outside a
+  batch (a rename) is settled straight after it in the same synchronous turn, which a Durable Object commits as
+  one write.
+- **A settle** (`settlePage`) reads the stored tab, takes `pagePassages`, `pageLinkTargets` and
+  `parseKnowledgeFields`, and compares two hashes with `knowledge_pages`: `index_hash` (the title, the passages' ids
+  and text hashes, the links) and `trust_hash` (`verifiedAt`, the review days). Both the same: nothing is written.
+  Only the trust: `putPageTrust`. Else `replacePageIndex`. No tab: `deletePageIndex`. A page's writing is its
+  articles' blocks in page order.
+- **Bounds.** One write settles at most 12 pages inline (`SETTLE_INLINE_MAX`); more (an import of 500 pages) are
+  queued and the alarm settles 12 a turn, a second apart (`SETTLE_BATCH`, `BACKFILL_GAP_MS`). The schema step queues
+  every tab stored before it, so a room that predates the index is backfilled the same way, never in one
+  transaction. A tab whose body cannot be read is tried three times, then left out until its next write.
+- **Verify and the fields** (`page-knowledge.ts`): `json_set(data, '$.knowledge', ...)` at the revision read
+  (`rev = rev + 1`), the trigger marks the page, the settle writes its trust row. Verify also keeps the writing's
+  print (below). The whole-tab save keeps the stored fields (`keepStoredKnowledge`).
+- **Changed since verified.** What is kept is `sealWritingPrint(writingPrint(text))` in
+  `knowledge_pages.verified_print`: for each distinct sentence an 8 character hash and its characters, and how
+  much lay past the bounds; never the words. About 13 bytes a sentence, at most 8,000 sentences
+  (`WRITING_PRINT_MAX_SENTENCES`): 104 KB at worst, 16 KB for a 100,000 character page. Read with
+  `changedSincePrint(openWritingPrint(stored), writingText(...))`.
+- **Reads** (`countRead`): an agent's every read; a person's once a page a day, held by a `usage_counters` row
+  keyed `read:<hash of the person and the page>` for the day, written only on the first open and pruned with the
+  other counters. No reader's id is stored.
+- **Search**: `searchPassages`, then `foundPassage`; a link confined to one page is shown that page's rows. The
+  limiter is the Worker's binding `SEARCH_RATE_LIMITER`.
+- **Ask** (`routes/knowledge-ask-route.ts`): the steps this blueprint gave, streamed as server-sent events. The
+  counters are bumped before the model is called. The only way out is `claudeDoor`: HTTPS to `api.anthropic.com`.
+- **The key** (`ai-settings.ts`): `sealApiKey(env.AI_KEY_SECRET, key, documentId)`; no secret, no key or an envelope
+  that does not open is `ask_unavailable` in words.
+- **Conflict checks** (`conflict-check.ts`): a settle that indexed a page anew reads the page's passage hashes as
+  they stood (only when a key is set) and the room owes a check in `knowledge_work`, due a minute on; saves inside
+  that minute are one check against the first baseline. The alarm runs it outside any transaction, three pieces of
+  work a turn; a page checked under 10 minutes ago is put off until the 10 minutes are up.
+- **Once a day** (the room's upkeep): `pruneReads`, `pruneCounters`, `pruneQuestions`.
+- **Bookkeeping is not an edit.** Reads, counters, questions, conflicts and the key are written through
+  `env.KNOWLEDGE_DB`, the room's database with no write note, so none reaches History, Most Used or the outbox.
+- **Page links**: `ArticleRun.page` is kept by `parseRun` (`@liveknowledge/document`; `ARTICLE_PAGE_LINK_KEY` is
+  `PAGE_LINK_KEY`, pinned by a test). Markdown writes a link as `[[Title]]`; an agent's article write resolves
+  `[[Title]]` to the first page of that title in tree order (`withPageLinksResolved`, `pageByTitleIn`); a Markdown
+  export to files writes `[Title](relative/path.md)` (`withPageLinksAsFiles`, `pageFilePaths`, `relativePagePath`).
+
+**Not built:** the three emails (`knowledge-emails.ts` says why: the shared notifier has no notice or account
+setting for them); `get_context` and the MCP tools; the editor; the Offline matcher; current titles in an agent's
+Markdown read (`withPageLinkTitles` is there, `document-views` does not call it yet); the Markdown export's call
+to `withPageLinksAsFiles` (the editor's dialog); a list of an agent's pending suggestions (the changeset store
+holds applied changesets only, so `GET knowledge` answers none).
+
+**FTS5 in workerd: not confirmed by a test.** The api's tests run in Node on `node:sqlite` (the same FTS5 the
+package's tests use), not in the Workers pool: `porter`, `bm25()`, `snippet()` and `highlight()` are proven there,
+inside the real routes, and remain unproven in workerd itself.
 
 ## Errors and edge cases
 
@@ -514,7 +528,7 @@ change's file while this was written; they move there when it is committed.
 | D8  | Which of a page's passages a conflict check looks up       | The 5 longest whose text changed in the save                                                         |
 | D9  | How many unanswered questions are kept and listed          | 500 groups kept (oldest asked go first), 50 listed, 50 conflicts listed                              |
 | D10 | Failure kinds beyond bad key, no credit and rate limit     | `overloaded`, `model-unavailable`, `refused`, `other`                                                |
-| D11 | What a refused request does                                | Server-side fallback on the models that take it; else the failure kind `refused`                     |
+| D11 | What a refused request does                                | The failure kind `refused`; server-side fallback is off for every model (owner, 2026-11-20)          |
 | D12 | What the envelope is bound to                              | The knowledgebase's id, as AES-GCM additional data                                                   |
 | D13 | Whether a dismissed conflict outlives a changed passage    | No: the row goes when either passage changes, since the pair dismissed no longer exists              |
 | D14 | The heading line in a passage                              | The first passage of a section starts with its heading's text                                        |
@@ -523,9 +537,13 @@ change's file while this was written; they move there when it is committed.
 
 - **"Verified pages first" among passages, not among title rows.** Title rows are ordered by bm25 alone among
   themselves and come before every passage, as "page titles first, then passages" asks.
-- **`people` is asks by people, not distinct people.** The spec's row reads "3 people and the Coding Agent", and also
-  says no reader's identity is kept. Without identities, two asks by one person count as two. The spec's wording
-  should become "asked 3 times by people" or the count stay as it is; this is the spec's to settle.
+- **`people` is asks by people, not distinct people.** No reader's identity is kept, so two asks by one person
+  count as two; the spec now reads "Asked 4 times by people and the Coding Agent".
+- **A page's size in tokens is its passages' characters** (`knowledge_pages.chars`, `tokensOfChars`), not its
+  Markdown's: the index already holds the count, and no page is parsed to list the context pages.
+- **An owner must be reachable by the index as a person.** `PUT pages/<tab>/knowledge` takes the caller, the
+  knowledgebase's owner, or someone the index grants directly; a member who reaches it only through a team is
+  refused (`owner_no_access`) until the index can say who may open an item.
 - **Found but Not Used is the model's judgement.** The spec has a passage "set aside because it is stale and
   disagrees with a newer verified one"; the package asks the model to name such passages (`<not_used>`) and validates
   the numbers, and does not decide staleness itself.

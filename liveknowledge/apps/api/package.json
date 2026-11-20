@@ -21,6 +21,7 @@
     "@liveknowledge/document": "workspace:*",
     "@liveknowledge/document-views": "workspace:*",
     "@liveknowledge/edit-operations": "workspace:*",
+    "@liveknowledge/knowledge": "workspace:^",
     "@liveknowledge/templates": "workspace:*",
     "@liveworkspace/api-kit": "workspace:*",
     "@liveworkspace/api-schema": "workspace:*",
