@@ -28,7 +28,7 @@ is the only way the editor links to a help article. It:
 
 - takes an `article` key (see the registry below), not a raw URL;
 - renders either a `?` icon button (`variant="icon"`, default) for placing
-  next to a control label or in a panel's header chrome, or a `"Learn more"`
+  next to a control label or in a panel's header chrome, or a `"Learn More"`
   text link (`variant="text"`) for dialog headers / empty states;
 - draws that `?` as **one look everywhere**: a bare glyph that picks up a soft
   rounded hover background, the same affordance the floating panels' own
@@ -41,7 +41,7 @@ is the only way the editor links to a help article. It:
   `md` for a dialog header, matching `DialogCloseButton`'s `h-7`);
 - opens `/help/<slug>/` in a new tab (`target="_blank"`,
   `rel="noreferrer noopener"`), matching the existing header Help link;
-- wraps the `?` and Help triggers in the shared `HoverCard` (a **Learn more** text link has none: its own
+- wraps the `?` and Help triggers in the shared `HoverCard` (a **Learn More** text link has none: its own
   words say where it goes; never a native `title`; see
   [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)). The hover card's copy comes
   from `HELP_LINK_COPY` in `apps/editor/lib/help-articles.ts`, one entry per
@@ -50,7 +50,7 @@ is the only way the editor links to a help article. It:
   article does for them ("Tips and tricks to help you get the most out of
   the Explorer."). A surface passes its own `title` / `description` only
   when it needs a different framing; none does today. Before this table
-  every floating panel's `?` said a bare "Learn more" with no description,
+  every floating panel's `?` said a bare "Learn More" with no description,
   which told the reader nothing about where it went;
 - fires `track('UI', 'Opened', <article id>)` on click, reusing the existing
   `UI`/`Opened` telemetry pair. The `type` is the article's **telemetry id**
@@ -94,7 +94,7 @@ Grouped by priority; each links the keyed article.
 
 - Share dialog - expiry dropdown -> `share-link-expiry`
 - Share dialog - password section -> `share-passwords`
-- Share dialog - Approval tab (a "Learn more" link under the form or status) -> `request-approval`
+- Share dialog - Approval tab (a "Learn More" link under the form or status) -> `request-approval`
 - Share dialog - header (roles / real-time) -> `sharing`
 - Palette settings - auto-attach arrows -> `auto-attach-arrows`
 - Palette settings - alignment guides -> `alignment-guides`

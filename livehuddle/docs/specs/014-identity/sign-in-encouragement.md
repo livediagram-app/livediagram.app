@@ -1,7 +1,7 @@
 # Sign-in encouragement
 
 A dismissible bottom-of-screen banner that nudges unsigned (guest)
-visitors to sign in, plus a "Learn more" modal that lists the concrete
+visitors to sign in, plus a "Learn More" modal that lists the concrete
 benefits. It shows on the Explorer and, after a delay, inside the
 editor. Pure encouragement, never a wall: the canvas and the Explorer
 keep working without signing in (see
@@ -73,7 +73,7 @@ never triggers it; staying in one for 5+ minutes does.
   that spaces sync ("Share with your team, sync across devices, connect
   scripts with API tokens."). livehuddle has no MCP server, so unlike the
   other apps it never says "AI", a primary **Sign In**
-  button (→ `/sign-in/`), a secondary **Learn more** button (opens the
+  button (→ `/sign-in/`), a secondary **Learn More** button (opens the
   reasons modal), and a dismiss (×) control.
 - Responsive: the copy and buttons stack / shrink gracefully on a
   phone width. On a phone held sideways (the `landscape-phone` variant: a touch screen under 500px

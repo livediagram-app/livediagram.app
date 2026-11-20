@@ -24,7 +24,7 @@ import { ClockIcon, CloseIcon, ContentsIcon } from './chrome-icons';
 import { HelpHero } from './HelpHero';
 import { ArticlePager, StillNeedHelp } from './ArticlePager';
 
-/** Sidebar card: shows the TOC and/or a "Learn more" list of related
+/** Sidebar card: shows the TOC and/or a "Learn More" list of related
  *  guides. Renders nothing visible if both are empty (CSS hides it). */
 function SidebarCard({
   subArticles,

@@ -217,7 +217,7 @@ host builds a door from its gate and hands it to the provider; nothing is read f
     the owner and link visitors), each with their avatar and how they reach it (Team, Owner, Link), with a filter field
     once there are more than eight; **Note** (optional); **Due** (optional, a date); **Save this version as a
     snapshot** where the editor offers Snapshots; and **Request Approval**, off until someone is ticked. Under the
-    form, and under a request's status, a **Learn more** link opens the app's Request Approval help article (the Share
+    form, and under a request's status, a **Learn More** link opens the app's Request Approval help article (the Share
     dialog's `helpHref('requestApproval')`). Empty: "Nobody
     else can open this <noun> yet. Share it, or move it to a team, to ask someone to approve it."
   - With a request: its status pill, who asked and when, the note and due day, the snapshot it points at, and each

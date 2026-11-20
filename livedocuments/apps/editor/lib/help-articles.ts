@@ -106,7 +106,7 @@ export type HelpArticleKey = keyof typeof HELP_ARTICLES;
 // looking at, and one line saying what the article will do for them. One
 // table, so a panel, a dialog header and a settings row that all point at
 // the same article say the same thing, and a `?` never falls back to a bare
-// "Learn more" that tells the reader nothing about where it goes.
+// "Learn More" that tells the reader nothing about where it goes.
 export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description: string }> = {
   pagesTour: {
     title: 'Learn about the Pages Tour',

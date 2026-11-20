@@ -621,7 +621,7 @@ and the dialog stays as the one complete, browsable index of them.
   rather than a card per row. A cell holds the **label** with a **short
   description** under it (one or two lines; the long paragraphs that used to
   sit as a footnote under each row's own card made the dialog impossible to
-  skim) and the **control** beside them; a **Learn more** link and an
+  skim) and the **control** beside them; a **Learn More** link and an
   **"Also in ..."** line close the description. Labels are **Title Case**.
   A row nested under a parent row (`parent`) renders inside the same card,
   indented and faintly tinted, beneath it. What every row of a section shares
@@ -672,7 +672,7 @@ and the dialog stays as the one complete, browsable index of them.
 
   **Getting Started** is a category of its own: one switch per guided tour, **Plan Tours** (over **Boards Tour**, **Card
   Types Tour**, **Board Setup Tour**, **Sheets Tour** and **Dashboards Tour**) and **Forms Tour**, each with a line saying where it runs and a
-  **Learn more** to its article, under one **Offer Again** section note. Every tour is started from the footer's
+  **Learn More** to its article, under one **Offer Again** section note. Every tour is started from the footer's
   Get Started button, which offers a tour until it is taken ([Editor tours](editor-tour.md) "Where it appears"); the
   switches are the record of which have been taken, and switching one back on puts its tour back on the button. Switch one back on and close Settings to take it
   again straight away when it is on offer where you are; otherwise nothing starts, and the button is there once it

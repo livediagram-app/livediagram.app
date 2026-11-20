@@ -24,7 +24,7 @@ type HelpArticleLinkProps = {
   /**
    * `icon` (default): a bare `?` ghost button to sit beside a control label
    *   or in a panel's header chrome. ONE look everywhere (see below).
-   * `text`: a "Learn more" inline link for dialog headers / empty states.
+   * `text`: a "Learn More" inline link for dialog headers / empty states.
    * `button`: a full button (help glyph + "Help" label) that matches a
    *   neighbouring primary button's shape but stays neutral, not brand —
    *   for header action rows (e.g. beside the explorer "+ Create" button).
@@ -68,7 +68,7 @@ export function HelpArticleLink({
   description = HELP_LINK_COPY[article].description,
   variant = 'icon',
   size = 'sm',
-  label = 'Learn more',
+  label = 'Learn More',
   icon,
   className,
 }: HelpArticleLinkProps) {
@@ -81,7 +81,7 @@ export function HelpArticleLink({
     onClick,
   } as const;
 
-  // A "Learn more" link says where it goes in its own words: no hover card.
+  // A "Learn More" link says where it goes in its own words: no hover card.
   if (variant === 'text') {
     return (
       <a
@@ -115,7 +115,7 @@ export function HelpArticleLink({
               label rules (docs/specs/004-interface-design/optical-alignment.md); without them the
               content sat over half a pixel right of centre. */}
           {icon ?? <HelpMarkIcon />}
-          <span className="text-optical-line">{label === 'Learn more' ? 'Help' : label}</span>
+          <span className="text-optical-line">{label === 'Learn More' ? 'Help' : label}</span>
         </a>
       </HoverCard>
     );

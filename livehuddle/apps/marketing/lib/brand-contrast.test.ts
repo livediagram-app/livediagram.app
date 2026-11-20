@@ -54,7 +54,7 @@ describe('brand text contrast', () => {
   const LIGHT_PAIRS = [
     ['white', 'brand-700'], // CTA panel heading and button-adjacent copy
     ['brand-50', 'brand-700'], // CTA panel body
-    ['brand-700', 'white'], // eyebrows, FAQ links, "Learn more"
+    ['brand-700', 'white'], // eyebrows, FAQ links, "Learn More"
     ['brand-700', 'slate-50'],
   ] as const;
   const DARK_PAIRS = [

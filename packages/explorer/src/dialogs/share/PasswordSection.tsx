@@ -95,8 +95,8 @@ export function PasswordSection({
       data-tour-id="share-password"
       className="border-t border-slate-100 pt-4 dark:border-slate-800"
     >
-      {/* The Settings dialog's own row, as a card: the words, Learn more, and the switch, which a press anywhere on
-          the row flips (its hit area covers the row; Learn more sits above it and keeps its own click). Below it, in
+      {/* The Settings dialog's own row, as a card: the words, Learn More, and the switch, which a press anywhere on
+          the row flips (its hit area covers the row; Learn More sits above it and keeps its own click). Below it, in
           the card, the detail. */}
       <div className="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
         <div

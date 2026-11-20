@@ -223,7 +223,7 @@ export function GoogleDriveRow({ cloudSync }: { cloudSync: CloudSync }) {
                 rel="noopener"
                 className="font-medium text-slate-700 underline underline-offset-2 dark:text-slate-200"
               >
-                Learn more
+                Learn More
               </a>
             </>
           ) : undefined

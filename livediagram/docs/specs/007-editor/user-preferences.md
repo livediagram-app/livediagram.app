@@ -683,7 +683,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Grouped rows.** Each section of a category is **one card** (`SettingsGroup`),
   iOS grouped-list style: its rows are cells inside it, split by hairlines,
   rather than a card per row. A cell holds the **label** with a **short
-  description** under it (one or two lines, so the dialog stays skimmable) and the **control** beside them; a **Learn more** link and an
+  description** under it (one or two lines, so the dialog stays skimmable) and the **control** beside them; a **Learn More** link and an
   **"Also in ..."** line close the description. Labels are **Title Case**.
   A row nested under a parent row (`parent`) renders inside the same card,
   indented and faintly tinted, beneath it. What every row of a section shares
@@ -736,7 +736,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Getting Started** is a category of its own: one switch per guided tour, **Diagram
-  Tour**, **Workshop Tour** and **Draw Tour**, each with a line saying where it is on offer and a **Learn more**
+  Tour**, **Workshop Tour** and **Draw Tour**, each with a line saying where it is on offer and a **Learn More**
   to its article, under one **Offer Again** section note: switch one back on
   and close Settings to take it again, straight away if it is on offer where you
   are, otherwise from the footer's Get Started button when you get there. (Until
