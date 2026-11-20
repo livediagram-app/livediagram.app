@@ -94,7 +94,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, router
 │  ├─ packages/                @livehuddle/*, with avatar of its own (Avatar mode, the walk, the furniture and its turning, the wire shapes)
 │  └─ docs/specs               its specs, folded back to the code (build plan step 9)
-└─ liveknowledge/              forked from livedocuments in-tree (a team wiki, and a knowledge base for AI)
+└─ liveknowledge/              forked from livedocuments in-tree (a team knowledgebase, for people and for AI)
    ├─ apps/                    the same set as livedocuments': editor, api, mcp, cli, marketing, router
    ├─ packages/                @liveknowledge/*
    └─ docs/specs               its specs (005-project-roadmap/build-plan.md has the steps)

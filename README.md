@@ -13,7 +13,7 @@ liveplanner/     liveplanner.app
 livedocuments/   livedocuments.app: articles, slides and infographics
 livedesign/      livedesign.app: logos, wireframes and photos
 livehuddle/      livehuddle.app: meetings and workshops, forked from livediagram in-tree
-liveknowledge/   liveknowledge.app: a team wiki that is also a knowledge base for AI, forked from livedocuments in-tree
+liveknowledge/   liveknowledge.app: a team knowledgebase, for people and for AI, forked from livedocuments in-tree
 docs/            how this repo is laid out, CI and deploys, and the move from the historical livediagram.app
 scripts/         the root's git hooks, ts-source-hooks.mjs (Node type stripping for repo scripts), and the parts every product's e2e stack shares (scripts/e2e-stack)
 ```
