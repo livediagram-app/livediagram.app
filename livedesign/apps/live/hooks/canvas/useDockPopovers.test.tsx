@@ -42,3 +42,20 @@ describe('useDockPopovers panel-open telemetry', () => {
     expect(result.current.activeDockPanel).toBe('explorer');
   });
 });
+
+// A popover's width here is what its anchor clamps against, so it must be the width the panel draws, or a panel
+// wider than the table says runs off the right edge (the Photo panel did, at 360 px against 280).
+describe('the popover width table', () => {
+  it('matches each panel’s drawn width', async () => {
+    const { readFileSync } = await import('node:fs');
+    const { join } = await import('node:path');
+    const { POPOVER_WIDTHS } = await import('./useDockPopovers');
+    // Vitest runs from the app's folder.
+    const drawn = (file: string) => {
+      const src = readFileSync(join(process.cwd(), 'components', file), 'utf8');
+      return Number(/popoverWidth="w-\[(\d+)px\]"/.exec(src)?.[1]);
+    };
+    expect(POPOVER_WIDTHS['photo-panel']).toBe(drawn('photo/PhotoPanel.tsx'));
+    expect(POPOVER_WIDTHS.contents).toBe(drawn('canvas/PageContentsPanel.tsx'));
+  });
+});
