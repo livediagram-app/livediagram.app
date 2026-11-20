@@ -79,6 +79,18 @@ tab summaries and the api's rows can all be read by the same functions.
   before the save does (`usePerTabLoad` swaps the placeholder for the fetched tab): the move is lost and has to be
   made again. Not seen in a test; the window is one fetch.
 
+## Where a new knowledgebase is saved (built)
+
+`/new` decides at commit (`useNewDocumentLocation.resolveSaveLocation`, `defaultSaveLocationFor`): the account for a
+signed-in person (`apiCreateDocument` with no placement, which the index files in Private), Offline for a guest. It
+decides as the page mounts, before sign-in has answered, so a browser that `looksSignedIn`
+(`lib/signed-in-hint.ts`) waits for the session first. That was the `lkb_signed_in` hint cookie alone. The signed-in
+test build (`NEXT_PUBLIC_E2E_AUTH=1`, `E2EAuthBridge`) keeps its session in `localStorage` and sets no cookie, so
+there a signed-in person read as a guest and every new knowledgebase started Offline (seen by the owner on the local
+stack, 2026-11-20); `looksSignedIn` now also counts that stored session, in a test build only (`e2eAuthEnabled` is a
+compile-time constant a real bundle drops). The production default was already the account. Tested in
+`useNewDocumentLocation.test.tsx`. The start's switch (`StartSaveSwitch`, the shared `SaveSwitch`) is unchanged.
+
 ## The room's check (built)
 
 Every write that can change the tree is judged by `page-tree-store.ts` before it is taken, and only a change is

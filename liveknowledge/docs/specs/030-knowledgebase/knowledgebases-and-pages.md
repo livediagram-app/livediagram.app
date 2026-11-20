@@ -30,6 +30,13 @@ Public) already own the word.
 
 - A new knowledgebase opens with one page, **Start Here**, the caret in its title. Its name is "Untitled Knowledgebase"
   until a person names it: a page's Title names that page, never the knowledgebase.
+- **Where a new knowledgebase is saved.** A signed-in person's is saved to their account, in Private, so Verify,
+  Ask, AI Knowledge and sharing work from the first page. A guest's, and a signed-out person's, is kept Offline in
+  this browser, as every app's is ([Save locations](../006-document/save-locations.md)). The start's **Sync
+  Knowledgebase to Server** switch moves an empty one either way, so a signed-in person can still choose Offline.
+  A browser that looks signed in waits for its session's answer before the create chooses, so a signed-in person is
+  never handed an Offline knowledgebase because sign-in had not answered yet; that holds in the test build too,
+  whose stored session sets no hint cookie (`looksSignedIn`).
 - Every page is made the same way, whoever makes it (New Page, a template, an agent's `add_tab`, a tab built from
   elements): one article on one page, an empty Title and a first paragraph (`newKnowledgebasePageContent`). A page
   added later is "Untitled Page" until it is named.

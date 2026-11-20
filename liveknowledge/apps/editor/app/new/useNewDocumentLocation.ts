@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react';
 import { defaultSaveLocationFor, type SaveLocationId } from '@/lib/save-locations';
-import { readSignedInHint } from '@/lib/signed-in-hint';
+import { looksSignedIn, readSignedInHint } from '@/lib/signed-in-hint';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { debugLog } from '@liveworkspace/workbench/lib/debug-log';
 
@@ -22,7 +22,7 @@ const answered = (s: {
 // creating"); nobody is asked. Every create decides once, at commit: a `/new?folder=` / `?team=` context names a server
 // place, so it is liveknowledge whoever is creating; otherwise a guest is known at once and never waits, and a browser
 // that looks signed in (the `lkb_signed_in` hint, docs/specs/014-identity/auth-and-guest-access.md "Who is a guest,
-// before sign-in answers") waits for identity (`settle`, the page's own wait) and then reads the settled answer, so a
+// before sign-in answers"; a test build's stored session too, `looksSignedIn`) waits for identity (`settle`, the page's own wait) and then reads the settled answer, so a
 // signed-in person is never handed a document kept Offline.
 export function useNewDocumentLocation(opts: {
   authLoaded: boolean;
@@ -40,7 +40,7 @@ export function useNewDocumentLocation(opts: {
     if (hasPlacementParams) return 'liveknowledge';
     // A browser that looks signed in waits for its session's own answer: the page's 5 s give-up settles
     // `authLoaded` with no one in it, and reading that as a guest made a signed-in person's create Offline.
-    if (!latest.current.accountUserId && readSignedInHint()) {
+    if (!latest.current.accountUserId && looksSignedIn()) {
       if (!latest.current.authLoaded) await settle();
       const until = Date.now() + SESSION_WAIT_MS;
       while (!answered(latest.current) && Date.now() < until) await sleep(100);

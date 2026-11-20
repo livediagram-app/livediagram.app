@@ -62,9 +62,11 @@ afterEach(() => vi.clearAllMocks());
 const view = () => render(<StartSaveSwitch palette={PALETTE} />);
 
 describe('StartSaveSwitch', () => {
-  it('names the switch for a document and shows it on, on the server, for a signed-in owner', () => {
+  it('names the switch for a knowledgebase and shows it on, on the server, for a signed-in owner', () => {
     view();
-    const sw = screen.getByRole('switch', { name: 'Sync Document to Server' });
+    // The item's noun is the app's (kindWords('liveknowledge')), never the fork's "Document".
+    expect(screen.queryByRole('switch', { name: /document/i })).toBeNull();
+    const sw = screen.getByRole('switch', { name: 'Sync Knowledgebase to Server' });
     expect(sw.getAttribute('aria-checked')).toBe('true');
     expect(screen.getByText('Saved to your account, on every device.')).toBeTruthy();
   });

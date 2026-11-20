@@ -43,26 +43,28 @@ describe('a start search, best match first', () => {
 
   it('leads with the template whose name is what was typed, and lists it once', () => {
     const { search } = pages();
-    fireEvent.change(search, { target: { value: 'slide deck' } });
+    // A writing template: liveknowledge lists no slide deck (not-in-liveknowledge.md), which the fork's test typed.
+    fireEvent.change(search, { target: { value: 'meeting notes' } });
     const best = screen.getByRole('region', { name: 'Best Match' });
     const first = best.querySelector('[data-start-card]')!.getAttribute('data-start-card');
-    expect(first).toBe('slide-deck');
-    expect(document.querySelectorAll('[data-start-card="slide-deck"]')).toHaveLength(1);
-    // Before the groups, Blank Pages' Blank Slide Deck among them.
-    expect(sections().indexOf('Best Match')).toBeLessThan(sections().indexOf('Blank Pages'));
+    expect(first).toBe('meeting-notes');
+    expect(document.querySelectorAll('[data-start-card="meeting-notes"]')).toHaveLength(1);
+    // Before every group.
+    expect(sections().indexOf('Best Match')).toBe(0);
     fireEvent.keyDown(search, { key: 'ArrowDown' });
-    expect(document.activeElement?.getAttribute('data-start-card')).toBe('slide-deck');
+    expect(document.activeElement?.getAttribute('data-start-card')).toBe('meeting-notes');
   });
 
   it('has no Best Match when no name begins with the words', () => {
     const { search } = pages();
-    fireEvent.change(search, { target: { value: 'chart' } });
+    fireEvent.change(search, { target: { value: 'table' } });
     expect(screen.queryByRole('region', { name: 'Best Match' })).toBeNull();
   });
 
   it('moves between the cards with the arrow keys, Up from the first back to the search', () => {
     const { search } = pages();
-    fireEvent.change(search, { target: { value: 'chart' } });
+    // Several writing templates hold a table (the fork's test searched for charts, which liveknowledge lists none of).
+    fireEvent.change(search, { target: { value: 'table' } });
     fireEvent.keyDown(search, { key: 'ArrowDown' });
     const all = [...document.querySelectorAll<HTMLElement>('[data-start-card]')];
     expect(all.length).toBeGreaterThan(2);
@@ -121,7 +123,8 @@ describe('the chosen rail count', () => {
     expect(contrastRatio(palette.text, pill)).toBeGreaterThanOrEqual(4.5);
   });
 
-  // The chosen row's name: the accent on its 14% tint over the card. Brand blue there read 3.4:1 in light.
+  // The chosen row's name: the accent on its 14% tint over the card, darkened until it reads (chosenLabelInk). Lime as
+  // it is read 4.17:1 in light.
   it.each<CanvasSurface>(['dark', 'light'])('names the chosen group at AA in %s', (surface) => {
     appearance.value = surface;
     render(
@@ -149,12 +152,13 @@ describe('the start header band', () => {
   it("draws the app's own band and title mark behind the header, hidden from screen readers", () => {
     pages();
     const band = document.querySelector('header [data-start-band]');
-    expect(band?.getAttribute('data-start-band')).toBe('typesetter');
+    // liveknowledge's hero is the page tree (the fork's test named livedocuments' typesetter).
+    expect(band?.getAttribute('data-start-band')).toBe('tree');
     expect(band?.getAttribute('aria-hidden')).toBe('true');
     const mark = document.querySelector('header [data-start-title-mark]');
-    expect(mark?.getAttribute('data-start-title-mark')).toBe('typesetter');
-    // The title in the hero's face: serif for the Typesetter alone.
+    expect(mark?.getAttribute('data-start-title-mark')).toBe('tree');
+    // The title in the hero's face: serif is the Typesetter's alone.
     const title = document.querySelector('header h2')!;
-    expect(title.className.includes('font-serif')).toBe(true);
+    expect(title.className.includes('font-serif')).toBe(false);
   });
 });

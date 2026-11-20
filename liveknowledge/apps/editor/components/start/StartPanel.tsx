@@ -5,6 +5,7 @@
 // (@liveworkspace/workbench/components/start/StartPanel); this binds it to this editor's card grid, tint and help
 // link for the start, which never closes: an empty tab holds no page until something is chosen ("A choice first"), so it is no sheet to drag, with no × or grab handle.
 import { createStartPanel } from '@liveworkspace/workbench/components/start/StartPanel';
+import { chosenLabelInk } from '@liveworkspace/workbench/components/start/start-chosen-ink';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { StartCardGrid, startTint } from '@liveworkspace/workbench/components/start/StartCard';
 
@@ -15,5 +16,8 @@ export const StartPanel = createStartPanel({
   HelpLink: HelpArticleLink,
   CardGrid: StartCardGrid,
   tint: startTint,
+  // The chosen rail row's label: the accent, darkened as far as it needs to read at AA on its tint (lime as it is
+  // read 4.17:1 in light).
+  chosenInk: chosenLabelInk,
   sheet: false,
 });

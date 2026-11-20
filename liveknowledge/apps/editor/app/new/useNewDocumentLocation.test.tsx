@@ -9,6 +9,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useNewDocumentLocation } from './useNewDocumentLocation';
 
+// Whether this is a test build (NEXT_PUBLIC_E2E_AUTH=1): a compile-time constant, turned on a test at a time.
+const e2e = vi.hoisted(() => ({ enabled: false }));
+vi.mock('@liveworkspace/workbench/lib/auth-config', async (original) => ({
+  ...(await original<typeof import('@liveworkspace/workbench/lib/auth-config')>()),
+  get e2eAuthEnabled() {
+    return e2e.enabled;
+  },
+}));
+
 function setHint(signedIn: boolean) {
   document.cookie = signedIn
     ? 'lkb_signed_in=1'
@@ -22,6 +31,8 @@ const render = (initial: Props) =>
 describe('useNewDocumentLocation', () => {
   afterEach(() => {
     setHint(false);
+    e2e.enabled = false;
+    localStorage.clear();
   });
 
   describe('resolveSaveLocation', () => {
@@ -66,6 +77,35 @@ describe('useNewDocumentLocation', () => {
       await new Promise((r) => setTimeout(r, 250));
       hook.rerender({ authLoaded: true, sessionAnswered: true, accountUserId: 'user_1' });
       await expect(pending).resolves.toBe('liveknowledge');
+    });
+
+    // The signed-in test build (and a stack driven by hand) keeps its session in localStorage and sets no hint
+    // cookie: /new read that person as a guest, and their new knowledgebase started Offline.
+    it('waits for a test build’s stored session too, so its signed-in person saves to their account', async () => {
+      e2e.enabled = true;
+      localStorage.setItem('liveknowledge:e2e:session', '{"userId":"user_1"}');
+      const hook = render({ authLoaded: false, accountUserId: null });
+      const settle = vi.fn(async () => {
+        hook.rerender({ authLoaded: true, accountUserId: 'user_1' });
+      });
+      await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe(
+        'liveknowledge',
+      );
+      expect(settle).toHaveBeenCalledOnce();
+    });
+
+    it('reads no stored session in a real build, and none that is not there in a test build', async () => {
+      localStorage.setItem('liveknowledge:e2e:session', '{"userId":"user_1"}');
+      const real = render({ authLoaded: false, accountUserId: null });
+      const settle = vi.fn(() => new Promise<void>(() => {}));
+      await expect(real.result.current.resolveSaveLocation(false, settle)).resolves.toBe('browser');
+      e2e.enabled = true;
+      localStorage.clear();
+      const signedOut = render({ authLoaded: false, accountUserId: null });
+      await expect(signedOut.result.current.resolveSaveLocation(false, settle)).resolves.toBe(
+        'browser',
+      );
+      expect(settle).not.toHaveBeenCalled();
     });
 
     it('keeps a folder or team link on liveknowledge', async () => {
