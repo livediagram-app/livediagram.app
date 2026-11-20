@@ -43,8 +43,13 @@ Email Routing checks SPF, DKIM and DMARC as it receives a message and writes the
   (Email Routing's, `mx.cloudflare.net`). A header a sender wrote further down, or one naming another server, is
   never read: anyone can write one.
 - A message **passes** when `dmarc=pass`; or, when the result has no DMARC verdict (`dmarc=none` or absent: the
-  sender's domain publishes no policy), when `dkim=pass` or `spf=pass` and the header `From:` address is the
-  envelope sender. Anything else (`dmarc=fail`, no trusted header, neither passing) **fails**.
+  sender's domain publishes no policy), when the header `From:` address is the envelope sender and one method
+  passed **for that address's domain**: `spf=pass` (SPF proves the envelope's domain), or a `dkim=pass` whose
+  signing domain (`header.d`, else the domain of `header.i`) is the From's domain or a parent of it. A DKIM pass
+  by any other domain proves nothing about the sender: anyone can sign a forged `From:` with a domain of their
+  own. Anything else (`dmarc=fail`, no trusted header, neither passing) **fails**.
+  - [x] IA1: `dkim=pass header.d=other.example` with `dmarc=none` and no SPF pass fails (`unaligned`); with the
+        From's own domain it passes.
 - The verdict is `pass` or `fail`, with the reason for a log (`dmarc_fail`, `no_results`, `unaligned`, `none_passed`).
 
 ### Quoted replies

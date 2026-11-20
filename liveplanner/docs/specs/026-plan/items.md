@@ -716,7 +716,13 @@ Every write is applied by the home plan to the thread as stored, so concurrent w
 - **Trash and Archive** keep a card's threads; restoring brings them back as they were.
 - **Deleting a card for good** takes it off its threads; a thread on no other card is deleted with it. Undoing that
   delete puts the card back on its threads (a thread it was alone on comes back whole, keeping author ids only on the
-  restorer's own comments).
+  restorer's own comments). A thread another plan stores (one shared in before threads stayed in one plan) takes
+  the card back only while it still lists another card of this plan: what the restore names is never what lets a
+  plan onto another plan's thread, so a card that was this plan's only one on it comes back without it.
+  - [x] TR1: an Editor of one plan, whatever their role on another, cannot put a card onto that plan's thread by
+        creating a card that names the thread: the thread is unchanged, and their plan neither lists nor reads it.
+  - [x] TR2: a plan adds only its own cards to a thread; the plan that stores a thread refuses another plan's card
+        sent through a third.
 - **Copies**: a copied plan takes the threads its own cards hold (stored in it), on the copied cards; a thread
   shared in from another plan stays that plan's and is not copied.
 - **Exports**: a tab's JSON export carries no comments (they name people), as before.

@@ -35,6 +35,7 @@ import { itemPersonId, type Item } from '@liveplanner/items';
 import { sqliteD1, testCopyPlan, testShareLink, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleProjects } from './projects';
+import { SYSTEM_ACTOR, writeThread } from '../plan-room/card-thread-store';
 
 // A card's comment threads (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "REST"): starting,
 // replying, editing and deleting comments, resolving, renaming, Add Thread to Card in this plan and another, deleting a
@@ -589,6 +590,91 @@ describe('Add Thread to Card', () => {
     expect(
       sql.sql.prepare(`SELECT COUNT(*) AS n FROM card_thread_links WHERE plan_id = 'p2'`).get()!.n,
     ).toBe(0);
+  });
+
+  // A create's body names the thread and its home, and every reader of a thread knows both (items.md "Cards coming
+  // and going", TR1): it is never what lets a plan onto another plan's thread.
+  it("never puts a card on another plan's thread because its create names it", async () => {
+    const links = () =>
+      sql.sql.prepare(`SELECT COUNT(*) AS n FROM card_thread_links WHERE plan_id = 'p2'`).get()!.n;
+    // p2's owner, an Editor there and nobody on p1, restores a card "back onto" p1's thread, three ways: the thread
+    // as p1 stores it, as if it listed a p2 card, and naming p1 itself as the plan it comes through.
+    const named = [
+      t.cards,
+      [...t.cards, { projectId: 'p2', itemId: 'ghost', key: 9 }],
+      [{ projectId: 'p1', itemId: a.id, key: a.key }],
+    ];
+    for (const cards of named) {
+      const made = await call<ItemResponse>(
+        'p2',
+        'POST',
+        '/items',
+        { type: 'task', fields: { title: 'Graft' }, threads: [{ ...t, cards }] },
+        { owner: 'other' },
+      );
+      expect(made.status).toBe(201);
+      const bulk = await call(
+        'p2',
+        'POST',
+        '/items/bulk',
+        { items: [{ type: 'task', fields: { title: 'Graft' }, threads: [{ ...t, cards }] }] },
+        { owner: 'other' },
+      );
+      expect(bulk.status).toBe(201);
+    }
+    const [held] = await threads('p1');
+    expect(held!.cards).toEqual(t.cards);
+    expect(held!.rev).toBe(t.rev);
+    expect(await threads('p2', { owner: 'other' })).toEqual([]);
+    expect(links()).toBe(0);
+    for (const [method, path, body] of [
+      ['POST', `/threads/${t.id}/comments`, { text: 'In' }],
+      ['DELETE', `/threads/${t.id}/comments/${t.comments[0]!.id}`, undefined],
+    ] as const) {
+      expect((await call('p2', method, path, body, { owner: 'other' })).status).toBe(404);
+    }
+    expect((await threads('p1'))[0]!.comments).toHaveLength(1);
+  });
+
+  it('puts a restored card back on a thread shared in before the rule while the plan has another card on it', async () => {
+    const other = await card('p2', 'Over there', { owner: 'other' });
+    sql.sql
+      .prepare(
+        `INSERT INTO card_thread_links (plan_id, item_id, thread_id, home, added_at, open_comments)
+         VALUES ('p2', ?, ?, 'p1', 1, 1)`,
+      )
+      .run(other.id, t.id);
+    const cards = [...t.cards, { projectId: 'p2', itemId: other.id, key: other.key }];
+    sql.sql
+      .prepare(`UPDATE card_threads SET cards = ? WHERE plan_id = 'p1' AND id = ?`)
+      .run(JSON.stringify(cards), t.id);
+    const back = await call<ItemResponse>(
+      'p2',
+      'POST',
+      '/items',
+      { type: 'task', fields: { title: 'Back' }, threads: [{ ...t, cards }] },
+      { owner: 'other' },
+    );
+    expect(back.status).toBe(201);
+    expect((await threads('p1'))[0]!.cards.map((c) => c.itemId)).toEqual([
+      a.id,
+      other.id,
+      back.body.item.id,
+    ]);
+  });
+
+  // TR2: the plan that stores a thread takes a card of the plan asking, or its own, never a third plan's.
+  it("refuses another plan's card sent through a plan the thread is on", async () => {
+    const op = (projectId: string) => ({
+      kind: 'change' as const,
+      change: { kind: 'addCard' as const, card: { projectId, itemId: 'x1', key: 1 } },
+      actor: SYSTEM_ACTOR,
+    });
+    expect(await writeThread(sql.env, 'p1', t.id, op('p3'), 'p1', () => {})).toEqual({
+      ok: false,
+      error: 'thread_not_found',
+    });
+    expect((await threads('p1'))[0]!.cards).toEqual(t.cards);
   });
 
   it('keeps a thread shared into another plan before the rule: read and written from there by role', async () => {
