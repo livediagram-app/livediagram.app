@@ -320,5 +320,29 @@ The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), ov
 
 ## Where this differs from the specs
 
-- **The spec files were not edited with this work**: each held another change's uncommitted edits while it was
-  written, and a commit of the file would have taken those with it. What differs is recorded here until they can be.
+Each spec's Status line says what is built and points here; their bodies were left as written, because each file
+held another change's uncommitted edits while this was made (only the Status line was committed from them).
+
+| Spec says                                                      | Built                                                                                    |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| "The top bar's field" searches                                 | The Search field is at the head of the page tree: the editor has no header bar           |
+| The meta row says "Edited <when> by <name>"                    | Not shown: no route says it ("Verification", "Not built, or not known")                  |
+| Hovering a link shows its first lines                          | Only for a page this editor has already opened ("Page links", "Not built, or not known") |
+| An embed is a card with a picture re-read every five minutes   | The platform's live embed ("Embeds from other apps")                                     |
+| Verify: Editor only                                            | An Editor signed in to an account (the route's rule: Verify says who vouches)            |
+| Offline knowledgebases search in the browser over the passages | Over the pages this editor holds; a page not loaded is found by its title alone          |
+
+## Still open, across the whole of it
+
+- **Nothing here has been seen in a browser.** Unit and component tests only. In particular: the meta row's and
+  Linked From's place and spacing inside the writing, the right rail beside the canvas chrome's own corners and
+  cluster, the page framing between the tree and the rail, a page link's title drawn by its CSS rule and the caret
+  beside it, the picker's place under the `[[`, and the search dialog over the chrome.
+- **First-load size was not measured.** The editor now imports `@liveknowledge/knowledge` (trust, passages, the
+  search words) on its main path; the package is side-effect free, so only what is imported should be kept, but no
+  build was run to confirm it.
+- **Cmd or Ctrl K no longer opens the editor's command search** (it keeps Cmd or Ctrl `.`); the shortcuts list and
+  the help that name Cmd or Ctrl K for it were not changed.
+- **The command search's own "load every page"** (`openSearchWithPrefetch`) fetches each page with `GET tabs/<tab>`,
+  which counts a read of every page for that person that day. It is the fork's, untouched here, and it skews
+  "reads by people".

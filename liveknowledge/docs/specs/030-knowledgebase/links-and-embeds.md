@@ -1,6 +1,9 @@
 # Links and embeds
 
-Status: **spec**, not built ([Build plan](../005-project-roadmap/build-plan.md) step 6).
+Status: **built in the editor, not yet verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md)
+step 6; [blueprint](blueprints/knowledge-ui.md)). Page links and Linked From are built as written here, except that a link's hover card
+shows first lines only for a page this editor has already opened. Embeds from other apps are the platform's live
+embed, placed from the slash menu, which is not the card described below: the blueprint lists each difference.
 
 ## Page links
 

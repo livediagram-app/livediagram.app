@@ -1,6 +1,8 @@
 # Search and Ask
 
-Status: **spec**, not built ([Build plan](../005-project-roadmap/build-plan.md) steps 8 and 9).
+Status: **Search is built, not yet verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 8;
+[blueprint](blueprints/knowledge-ui.md)): the editor has no header bar, so its field stands at the head of the page
+tree. Ask (step 9) is its own change.
 
 ## Search
 

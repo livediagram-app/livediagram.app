@@ -61,16 +61,20 @@ Public) already own the word.
 - **Move:** drag a row to reorder it among siblings or drop it on a page to make it a subpage; the row menu has Move
   Up, Move Down, Indent and Outdent for keyboards and touch. A page moves with its subpages. A page is never dropped
   inside its own subtree.
-- **Row menu** (icon-left verb rows under the page's name): Rename, Add Subpage, Duplicate, Copy Link, Move Up,
-  Move Down, Indent, Outdent, then Delete last, under a separator. A verb that cannot run stays, greyed, and says
-  why. Delete is not red: the shared menu row never colours a verb. Verify joins it with
-  [Verification](verification.md).
+- **Row menu** (icon-left verb rows under the page's name): Rename, Add Subpage, Duplicate, Copy Link, Verify,
+  Always in Context (a checkmark row), Move Up, Move Down, Indent, Outdent, then Delete last, under a separator. A
+  verb that cannot run stays, greyed, and says why. Delete is not red: the shared menu row never colours a verb.
+  Verify and Always in Context are [Verification](verification.md)'s and [AI Knowledge](ai-knowledge.md)'s, and an
+  Editor's.
+- A row shows its page's verified state at its right: a tick, or a Review Due pill; nothing for a page never
+  verified. The state is part of the row's name for a screen reader.
+- **Search** stands at the sidebar's head, under the knowledgebase's name ([Search and Ask](search-and-ask.md)).
 - **Duplicate** copies the page beside it, under the same parent, without its subpages.
 - **Copy Link** copies the page's address: the knowledgebase's, with the page in its fragment (`#t=<page>`).
 - **Delete** removes the page and its subpages after one confirmation that names the count ("Delete Release Process
   and 3 Subpages?"). There is no page trash: Undo brings them back, and the confirmation says so. The last page is
   never deleted, and a locked page is unlocked first. Links to a deleted page show struck through with "Deleted
-  Page" (not built: [Links and embeds](links-and-embeds.md)).
+  Page" ([Links and embeds](links-and-embeds.md)).
 - **Breadcrumb:** the page's ancestors sit above its title, in the page's title row; each is a link. A top-level
   page has none. Not shown on a phone, whose title row has no room for it.
 - On a phone the tree is a sheet opened from a Pages button in the top bar, its rows 44 px tall.

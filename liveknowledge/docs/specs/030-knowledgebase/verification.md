@@ -1,6 +1,9 @@
 # Verification
 
-Status: **spec**, not built ([Build plan](../005-project-roadmap/build-plan.md) step 7).
+Status: **the states, Verify, the meta row, the tree's tick and Page Health are built, not yet verified in a browser**
+([Build plan](../005-project-roadmap/build-plan.md) step 7; [blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>"
+(no route says when a page's writing was last edited, or by whom) and Reminders. Verify needs an account, and a
+knowledgebase kept Offline has none.
 
 A wiki is only useful, to a person or to an agent, while it is right. Each page says who vouches for it and when they
 last did.

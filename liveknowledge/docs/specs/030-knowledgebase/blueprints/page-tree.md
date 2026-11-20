@@ -173,6 +173,11 @@ All of it is in `apps/editor/components/page-tree/`.
   Export, Lock, Clear and Add to Document. Its Rename asks the tree to rename the page in its row. The tab folder
   rows are not offered.
 - **Presence:** `TabPresenceStack` in the row of the page each person is on.
+- **Knowledge in the tree** ([knowledge UI blueprint](knowledge-ui.md)): `usePageTreeModel` hands `PageTree` a
+  `knowledge` prop (`PageTreeKnowledge`): each page's tick or pill (`trustMarks` over the tab list, which carries
+  every page's fields from the summaries), the pages in Always in Context, and Verify and the context toggle for
+  the row menu. A row takes its mark as a plain string, so a change renders the rows whose mark changed. The
+  Search field (`SearchField`) stands under the knowledgebase's name, on the rail and in the phone sheet.
 
 ## Tab actions in tree terms (built)
 
