@@ -261,7 +261,7 @@ export function LinkCard() {
         height={132}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* The preview image: a simple picture in brand tints. */}
       <g className="help-art-as-drawn">

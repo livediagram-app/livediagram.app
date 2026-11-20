@@ -23,7 +23,7 @@ export function Field({ x, y, w, value }: { x: number; y: number; w: number; val
         height={20}
         rx={5}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={x + 7} y={y + 11} size={10} tone="body">
         {value}
@@ -133,7 +133,7 @@ export function LineDataDialog() {
           height={20}
           rx={5}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <Label x={338} y={103} anchor="middle" size={11} tone="body">
           +

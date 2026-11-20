@@ -152,3 +152,28 @@ export function ToolbarCategoryFlyout() {
     </Scene>
   );
 }
+
+/** The editor's top row on its own, each part named under it: the logo, the menu and the mode switch, the palette strip,
+ *  then Share and Sign In (or, with `initial`, Share and the account). */
+export function TopRowParts({ initial }: { initial?: string }) {
+  const sx = topRowStripX(W);
+  const leader = { className: 'stroke-slate-300', strokeWidth: 0.75 } as const;
+  const name = (x: number, text: string) => (
+    <g key={text}>
+      <line x1={x} y1={38} x2={x} y2={47} {...leader} />
+      <Label x={x} y={54} size={9.5} anchor="middle" weight={500} tone="muted">
+        {text}
+      </Label>
+    </g>
+  );
+  return (
+    <Scene w={W} h={70}>
+      <TopRow w={W} initial={initial} />
+      {name(8 + LOGO_W / 2, 'Logo')}
+      {name(8 + LOGO_W + 6 + 14, 'Menu')}
+      {name(8 + LOGO_W + 6 + 60, 'Mode switch')}
+      {name(sx + 129, 'Palette')}
+      {name(W - 8 - CORNER_W / 2, initial ? 'Share, account' : 'Share, Sign In')}
+    </Scene>
+  );
+}

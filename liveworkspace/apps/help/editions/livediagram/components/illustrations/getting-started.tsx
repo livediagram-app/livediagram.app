@@ -47,7 +47,7 @@ export function GuestVsAccount() {
         height={200}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={110} y={40} anchor="middle" size={12} weight={700} tone="strong">
         Guest

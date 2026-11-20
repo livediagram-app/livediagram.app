@@ -212,7 +212,7 @@ export function StartSearchOtherModes() {
           height={card.h}
           rx={9}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <rect
           x={card.x + 6}

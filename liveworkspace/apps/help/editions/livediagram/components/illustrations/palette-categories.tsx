@@ -231,7 +231,7 @@ export function StickersSheet() {
                   height={36}
                   rx={14}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
                 <rect x={tx + 7} y={118} width={114} height={24} rx={10} className={b.fill} />
                 <Label x={tx + 64} y={131} anchor="middle" size={11} weight={700} tone="onAccent">
@@ -262,7 +262,7 @@ export function StickersSheet() {
                   height={36}
                   rx={11}
                   className="fill-white stroke-slate-200"
-                  strokeWidth={1.5}
+                  strokeWidth={0.75}
                 />
                 <text
                   x={tx + 18}

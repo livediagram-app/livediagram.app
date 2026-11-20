@@ -3,6 +3,7 @@
 // and tables. Composed only from the shared primitives so the house style
 // holds. (Data / chart tiles are handled in a sibling file.)
 
+import { Sticky } from './editor-canvas';
 import {
   Scene,
   Shape,
@@ -159,26 +160,20 @@ export function ImagePicker() {
   );
 }
 
-/** A small wall of coloured sticky notes with text, the way a brainstorm looks. */
+/** A small wall of sticky notes as the editor places them, the way a brainstorm looks: square, borderless, a soft drop
+ *  under each, their words at the top left. */
 export function StickyNotes() {
-  const notes: [number, number, string, string][] = [
-    [48, 50, 'fill-amber-100', 'fill-amber-300'],
-    [186, 38, 'fill-emerald-100', 'fill-emerald-300'],
-    [300, 70, 'fill-rose-100', 'fill-rose-300'],
-    [120, 132, 'fill-violet-100', 'fill-violet-300'],
-    [256, 140, 'fill-brand-100', 'fill-brand-300'],
+  const notes: [number, number, 'amber' | 'emerald' | 'rose' | 'violet' | 'sky', string[]][] = [
+    [44, 30, 'amber', ['Offline', 'mode']],
+    [148, 22, 'emerald', ['Faster', 'export']],
+    [252, 34, 'rose', ['Fix the', 'sign-in loop']],
+    [96, 124, 'violet', ['Dark', 'theme']],
+    [204, 128, 'sky', ['Share', 'by link']],
   ];
   return (
-    <Scene w={420} h={220}>
-      {notes.map(([x, y, fill, bar], i) => (
-        <g key={i}>
-          {/* Square corners and no border, as a sticky draws by default */}
-          <rect x={x} y={y} width={84} height={68} className={fill} />
-          <rect x={x} y={y} width={84} height={68} className="fill-slate-900/5" />
-          <TextBar x={x + 12} y={y + 18} w={56} />
-          <TextBar x={x + 12} y={y + 32} w={44} tone="faint" />
-          <rect x={x + 12} y={y + 48} width={20} height={8} rx={2} className={bar} />
-        </g>
+    <Scene w={420} h={222}>
+      {notes.map(([x, y, tone, text], i) => (
+        <Sticky key={i} x={x} y={y} s={80} tone={tone} text={text} />
       ))}
     </Scene>
   );
