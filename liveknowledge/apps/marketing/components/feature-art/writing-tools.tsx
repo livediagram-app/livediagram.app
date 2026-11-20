@@ -336,7 +336,6 @@ export function ArticleExportArt() {
     ['Print', '#94a3b8'],
     ['PNG', '#0ea5e9'],
     ['SVG', '#8b5cf6'],
-    ['GIF', '#f59e0b'],
     ['Word', WORD_BLUE],
     ['Markdown', '#64748b'],
     ['JSON', '#475569'],

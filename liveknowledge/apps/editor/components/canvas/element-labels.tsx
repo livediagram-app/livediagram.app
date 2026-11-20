@@ -34,7 +34,6 @@ import type { TextAnimView } from './useTextAnimation';
 import { wordmarkTextStyle } from './label-style';
 import { WordmarkArcLabel } from './WordmarkArcLabel';
 import { EmptyTextPrompt } from '@liveworkspace/workbench/components/canvas/EmptyTextPrompt';
-import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
 export function renderLabel(
   element: BoxedElement,
@@ -176,7 +175,6 @@ export function renderLabel(
         alignY={alignY}
         padding={padding}
         fontFamily={fontFamily}
-        omitAttr={GIF_OMIT_ATTR}
       />
     );
   }

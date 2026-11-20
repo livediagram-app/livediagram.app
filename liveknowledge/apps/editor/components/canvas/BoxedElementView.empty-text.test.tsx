@@ -48,8 +48,6 @@ describe('the empty text prompt', () => {
     const prompt = viewOf('').querySelector(PROMPT);
     expect(prompt?.textContent).toBe('Text');
     expect(prompt?.getAttribute('aria-hidden')).toBe('true');
-    // The animated GIF snapshots the canvas, and drops what carries the omit mark.
-    expect(prompt?.hasAttribute('data-gif-omit')).toBe(true);
     expect(viewOf('   ').querySelector(PROMPT)).not.toBeNull();
   });
 

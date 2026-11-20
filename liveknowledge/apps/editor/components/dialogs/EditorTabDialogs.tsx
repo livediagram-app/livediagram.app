@@ -71,8 +71,6 @@ function OpenEditorTabDialogs() {
     documentId,
     setShareDialogOpen,
     syncToCloud,
-    setSelectedId,
-    setMultiSelectedIds,
     accountUserId,
     accountDisplayName,
     documentTeamId,
@@ -122,10 +120,6 @@ function OpenEditorTabDialogs() {
           documentName={documentName}
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
           documentTabs={tabs}
-          onClearSelection={() => {
-            setSelectedId(null);
-            setMultiSelectedIds(new Set());
-          }}
           imageContext={imageContext}
           onClose={() => setExportOpen(false)}
         />

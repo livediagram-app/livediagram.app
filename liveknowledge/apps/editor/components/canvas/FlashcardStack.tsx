@@ -6,7 +6,6 @@ import { lucideChevronLeft, lucideChevronRight } from '@liveworkspace/icons/luci
 import { pageIsDark, type LaidOutPage } from '@liveknowledge/document';
 import { lucideGlyph } from '@liveknowledge/ui';
 import { track } from '@/lib/telemetry';
-import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 import { pageSheetStyle } from '@/lib/page-paint';
 import { stackSheets, type CardStack } from '@/lib/flashcard-stack';
 
@@ -34,7 +33,6 @@ export function FlashcardStackSheets({
           <div
             key={page.id}
             aria-hidden
-            {...{ [GIF_OMIT_ATTR]: '' }}
             data-flashcard-behind=""
             // A flip eases each card to its new place in the fan (keyed by its page, so it moves, never redraws): its
             // offset and tilt are a transform from the card in front's place, so only they ease. The stack itself
@@ -63,7 +61,6 @@ export function FlashcardStackSheets({
       {sheets.length > 0 ? (
         <div
           aria-hidden
-          {...{ [GIF_OMIT_ATTR]: '' }}
           data-flashcard-lift=""
           // The rim's tone: from the card's own background, else the app's light or dark (a card with no background
           // of its own is white, or slate in dark mode).
@@ -175,7 +172,6 @@ export function PageStackNav({
 }) {
   return (
     <div
-      {...{ [GIF_OMIT_ATTR]: '' }}
       data-page-stack-nav=""
       className="pointer-events-none absolute z-[2] whitespace-nowrap"
       style={{

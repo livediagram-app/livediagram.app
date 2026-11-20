@@ -9,7 +9,7 @@ a chevron button or a chain of crumbs. With nowhere to go back to, it stands as 
 
 ## Where it is
 
-- The Import and Export format panels, the animated GIF's among them: **All Formats** then the format.
+- The Import and Export format panels: **All Formats** then the format.
 - The Tab Style panels: **Tab Style** then **Colours**.
 - The palette's category browse: **Icons** then **People**.
 - Folder placement (Save to, Move): **Choose a Space** as the heading of the spaces; inside one, **Choose a Space**

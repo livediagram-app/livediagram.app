@@ -26,7 +26,6 @@ import {
   PagesArt,
   PagesBackgroundsArt,
   PagesExportArt,
-  PagesGifArt,
   PowerPointImportArt,
   PresenceArt,
   PresentLocallyArt,
@@ -341,13 +340,6 @@ export const LANDING_SECTIONS: LandingSection[] = [
         title: 'Every page, print-ready',
         description:
           'Export every page as one PDF at true print size, or one page as a PNG or SVG. Add pages to a slide deck and present them full screen, one page at a time.',
-      },
-      {
-        art: <PagesGifArt />,
-        href: '/help/pages/exporting-pages/',
-        title: 'Pages as an animated GIF',
-        description:
-          'Export the pages as one animated GIF for a chat, an email, a README or a social post. Every animation on a page plays in it, each page holds for 1 to 20 seconds, and it comes in three sizes up to 1440 pixels.',
       },
       {
         art: <ThemesArt />,

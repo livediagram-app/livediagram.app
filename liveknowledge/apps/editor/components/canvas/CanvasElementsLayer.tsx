@@ -39,7 +39,6 @@ import { ZoomedLaserOverlay } from '@/components/canvas/view-readers';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { PageClip } from '@/components/canvas/PageClip';
 import { shownPagesOf } from '@/lib/flashcard-stack';
-import { GifOmit } from './GifOmit';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -358,8 +357,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           />
         </PageClip>
 
-        {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
-        <GifOmit>
+        {/* Editor-only marks. */}
+        <>
           {/* The line or arrow being drawn (docs/specs/008-canvas/canvas-and-palette.md "Adding
           elements — tap-to-drop or drag-to-draw"): the element the release lands, after every
           element, where it will land. */}
@@ -398,7 +397,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
           {/* What a relayed changeset touched (docs/specs/024-agents/agent-changesets.md "In the editor"):
           above the elements, below the selection chrome. */}
           <ChangesetRevealOverlay elements={elements} tabId={props.activeTabId ?? ''} />
-        </GifOmit>
+        </>
 
         {/* The grips layer (docs/specs/008-canvas/canvas-and-palette.md "Resize"): above every element, so
           no grip is ever covered. The canvas's own grips go in here; each element's are portalled in. */}

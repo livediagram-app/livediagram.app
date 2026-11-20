@@ -1745,8 +1745,7 @@ whether the tab stands as a stack, not its kind. **Stack Pages** in Contents Opt
 
 The Export dialog exports **pages**, not the tab's content bounds.
 
-- **Formats**: **PDF**, **PNG**, **SVG** and **GIF** (an animated GIF of the pages, moving as they
-  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), **PowerPoint** for a
+- **Formats**: **PDF**, **PNG** and **SVG**, **PowerPoint** for a
   slide tab and **Word** for an article tab (editable `.pptx` and `.docx`:
   [PowerPoint and Word export](../020-import-export/office-export.md)), **Print** on every kind (the current
   page or the whole document, to the printer: [Print](../020-import-export/print.md)), plus **JSON** (the tab

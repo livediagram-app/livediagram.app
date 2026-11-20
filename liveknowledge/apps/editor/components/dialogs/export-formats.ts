@@ -12,7 +12,6 @@ export const PAGES_FORMATS: readonly Format[] = [
   'print',
   'png',
   'svg',
-  'gif',
   'pptx',
   'docx',
   'markdown',
@@ -33,7 +32,7 @@ export const ARTICLE_MARKDOWN_BLURB =
   "This article as Markdown, in the form Import reads back. Edit it here to copy a variant; your edits don't change the article.";
 
 // The format keys ('file' is the liveknowledge .json).
-export type Format = 'markdown' | 'pdf' | 'print' | 'png' | 'svg' | 'gif' | OfficeFormat | 'file';
+export type Format = 'markdown' | 'pdf' | 'print' | 'png' | 'svg' | OfficeFormat | 'file';
 
 // The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
@@ -75,12 +74,6 @@ export const CARDS: { kind: Format; title: string; description: string }[] = [
     title: 'Print',
     description:
       'Send the current page or the whole document to your printer, each page its own sheet.',
-  },
-  {
-    // Pages mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
-    kind: 'gif',
-    title: 'GIF',
-    description: 'An animated image of the pages, moving as they move on the canvas.',
   },
   // A slide tab's or an article tab's only (docs/specs/020-import-export/office-export.md "Where it is offered").
   { kind: 'pptx', ...OFFICE_CARDS.pptx },

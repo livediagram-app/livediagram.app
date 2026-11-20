@@ -395,7 +395,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     items: [
       {
         q: 'Can I export my work?',
-        a: 'Yes. Export pages as PNG, SVG, one print-ready PDF or an animated GIF, a deck as an editable PowerPoint file, an article as an editable Word document, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
+        a: 'Yes. Export pages as PNG, SVG or one print-ready PDF, a deck as an editable PowerPoint file, an article as an editable Word document, and any tab as a portable JSON file to import back with full fidelity. Hidden layers stay out of image exports unless you switch them on.',
       },
       {
         q: 'Can I bring in writing from elsewhere?',

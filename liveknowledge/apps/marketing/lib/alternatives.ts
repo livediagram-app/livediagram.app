@@ -42,7 +42,7 @@ const LIST: Alternative[] = [
       },
       {
         label: 'Export',
-        us: 'An editable PowerPoint file, PDF, PNG, SVG and an animated GIF of the deck',
+        us: 'An editable PowerPoint file, PDF, PNG and SVG',
         them: 'PowerPoint, PDF and images',
       },
       {
@@ -65,7 +65,7 @@ const LIST: Alternative[] = [
       'Builds bring a slide’s points in one click at a time, with Appear, Fade or Rise, in the order you set.',
       'Review a deck before it goes out: ask named people to approve it, keep named versions of each tab, and snapshot the whole document to revert in one step.',
       'Leave a deck running on a screen: auto-advance every 5 to 60 seconds and loop back to the start.',
-      'Export the deck as an editable PowerPoint file, speaker notes included, or as an animated GIF for a chat, an email or a README.',
+      'Export the deck as an editable PowerPoint file, speaker notes included.',
       'Real-time editing with live cursors, comments and assigned actions, for anyone with the link, no account needed.',
       'An AI assistant connected over MCP can build the deck for you from slide layouts.',
       '36 templates to start from, from a launch keynote and a class lesson to a board update.',

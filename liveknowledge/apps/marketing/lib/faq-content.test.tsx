@@ -102,7 +102,7 @@ describe('filterFaq', () => {
   });
 
   it('needs every word, in any case, across question, answer and category', () => {
-    const hits = filterFaq(FAQ_CATEGORIES, 'GIF export').flatMap((c) => c.items.map((i) => i.q));
+    const hits = filterFaq(FAQ_CATEGORIES, 'PDF export').flatMap((c) => c.items.map((i) => i.q));
     expect(hits).toContain('Can I export my work?');
     expect(hits.every((q) => q !== 'Is it really free?')).toBe(true);
   });

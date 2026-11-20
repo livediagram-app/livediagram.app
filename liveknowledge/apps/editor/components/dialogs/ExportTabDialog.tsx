@@ -61,8 +61,6 @@ const loadPreviewImages = async (tab: Tab, imageContext: ExportTabDialogProps['i
   await ensureMapGeometryFor(tab.elements);
   return imageContext ? await loadTabImages(tab, imageContext) : undefined;
 };
-// A GIF's panel draws its own frames, so it loads no preview.
-const isGif = (f: Format) => f === 'gif';
 
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
@@ -72,7 +70,6 @@ const EXPORT_LABEL: Record<Exclude<Format, 'print'>, string> = {
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
-  gif: 'GIF',
   pptx: 'PagesPPTX',
   docx: 'PagesDOCX',
 };
@@ -95,9 +92,6 @@ const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
   pdf: 'PagesPDFPages',
 };
 
-// The animated GIF's panel and its capture, loaded only when the GIF card opens
-// (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
-const GifExportPanel = lazy(() => import('./gif/GifExportPanel'));
 // The PowerPoint and Word panel and its writers, loaded only when that card opens
 // (docs/specs/020-import-export/office-export.md "Performance").
 const OfficeExportPanel = lazy(() => import('./office/OfficeExportPanel'));
@@ -122,8 +116,6 @@ type ExportTabDialogProps = {
   pages?: LaidOutPage[];
   // The document's tabs, for the name a stored tab window's frame shows (docs/specs/009-elements/tab-window.md).
   documentTabs?: readonly Tab[];
-  // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
-  onClearSelection?: () => void;
   // The Slide Deck, for the PowerPoint export's speaker notes and hidden slides
   // (docs/specs/020-import-export/office-export.md).
   deck?: Deck;
@@ -144,7 +136,6 @@ export function ExportTabDialog({
   imageContext,
   pages,
   documentTabs,
-  onClearSelection,
   deck,
 }: ExportTabDialogProps) {
   const titleId = useId();
@@ -162,11 +153,9 @@ export function ExportTabDialog({
   // Print's Current Page or Whole Document (docs/specs/020-import-export/print.md "The panel").
   const [printScope, setPrintScope] = useState<PrintScope>('page');
   const cards = pages
-    ? // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
-      // PowerPoint for a deck and Word for an article, neither for any other kind.
+    ? // PowerPoint for a deck and Word for an article, neither for any other kind.
       PAGES_FORMATS.filter(
         (kind) =>
-          (kind !== 'gif' || pages.length > 0) &&
           (!isOfficeFormat(kind) || kind === officeFormat) &&
           // Markdown is an article's writing (docs/specs/020-import-export/markdown-import.md "Markdown export").
           (kind !== 'markdown' || officeFormat === 'docx'),
@@ -174,8 +163,8 @@ export function ExportTabDialog({
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // A selection has no pages, so no Print, GIF, PowerPoint or Word.
-      CARDS.filter((c) => c.kind !== 'gif' && c.kind !== 'print' && !isOfficeFormat(c.kind));
+    : // A selection has no pages, so no Print, PowerPoint or Word.
+      CARDS.filter((c) => c.kind !== 'print' && !isOfficeFormat(c.kind));
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -193,7 +182,6 @@ export function ExportTabDialog({
     imageContext,
     isTextFormat,
     load: loadPreviewImages,
-    skipLoad: isGif,
   });
 
   // The open text format's text, built once per format and tab change rather than on every render.
@@ -355,15 +343,13 @@ export function ExportTabDialog({
 
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
-    ? active === 'gif'
-      ? 'Set how the pages play, then download the GIF.'
-      : active === 'print'
-        ? 'Print the current page or the whole document.'
-        : isOfficeFormat(active)
-          ? OFFICE_SUBTITLE[active]
-          : isTextFormat(active!)
-            ? `Copy this tab as ${activeCard.title}, or download a file.`
-            : `Set the image options for ${activeCard.title}, then download.`
+    ? active === 'print'
+      ? 'Print the current page or the whole document.'
+      : isOfficeFormat(active)
+        ? OFFICE_SUBTITLE[active]
+        : isTextFormat(active!)
+          ? `Copy this tab as ${activeCard.title}, or download a file.`
+          : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -392,23 +378,6 @@ export function ExportTabDialog({
           onCopied={() => trackTextExport(active)}
           onBack={() => setActive(null)}
         />
-      ) : active === 'gif' && pages && page ? (
-        <Suspense
-          fallback={
-            <p className="text-xs text-slate-500 dark:text-slate-400">Preparing the GIF options…</p>
-          }
-        >
-          <GifExportPanel
-            tab={tab}
-            pages={pages}
-            page={page}
-            baseName={baseName}
-            onPick={setPageIndex}
-            onDone={onClose}
-            onBack={() => setActive(null)}
-            onClearSelection={onClearSelection}
-          />
-        </Suspense>
       ) : isOfficeFormat(active) && pages && pages.length > 0 ? (
         <Suspense
           fallback={

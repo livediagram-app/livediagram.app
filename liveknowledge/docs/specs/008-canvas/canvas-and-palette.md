@@ -955,7 +955,7 @@ A free-floating text element. The text **is** the element; there is no border or
   copy, [Template example content](../006-document/template-examples.md)) draws a faint **"Text"** in its own ink at
   35%, at its size and alignment, the word its editor shows while typing, so a double-click there opens it without a
   jump. Only an **Editor** sees it: a Participant, a Viewer, an embed and a locked tab or text see nothing, as before.
-  It is never content: not exported (image, vector, PDF, the animated GIF), not read aloud, never stored. A text that hugs its words (`sizing`) has none.
+  It is never content: not exported (image, vector, PDF), not read aloud, never stored. A text that hugs its words (`sizing`) has none.
 
 **Text styles.** Write's text tiles are the styles a document is written in, each a plain `text` element whose fields
 are set as the style says (no style is stored: it is a starting point, and the context menu restyles it like any text).

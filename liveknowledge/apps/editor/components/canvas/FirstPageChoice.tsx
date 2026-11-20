@@ -9,7 +9,6 @@
 import type { PageKind } from '@liveknowledge/document';
 import { useRef } from 'react';
 import { kindCardIsWide, moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
-import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
 export function FirstPageChoice({
   zoom,
@@ -22,10 +21,7 @@ export function FirstPageChoice({
   return (
     // Above the canvas's + after the page (AddPageButton, later in the same layer): on a phone the page is
     // narrower than the card, and the + sat over the Article card, taking its press.
-    <div
-      {...{ [GIF_OMIT_ATTR]: '' }}
-      className="absolute inset-0 z-10 flex items-center justify-center"
-    >
+    <div className="absolute inset-0 z-10 flex items-center justify-center">
       <div
         role="group"
         aria-labelledby="first-page-choice-title"
