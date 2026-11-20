@@ -58,6 +58,7 @@ export function usePhotoEditor<V extends PagesModeView>({
   canInspect,
   presence,
   toast,
+  requestFit,
 }: {
   pagesModeView: V | null;
   pages: readonly LaidOutPage[] | null;
@@ -80,6 +81,8 @@ export function usePhotoEditor<V extends PagesModeView>({
   // Who is on which layer (docs/specs/031-photo/photo-pages.md "Collaboration").
   presence: PhotoPresence;
   toast: ReturnType<typeof useToast>;
+  // Frames the open tab (the Photo Edit sample's pages once they are set).
+  requestFit: () => void;
 }) {
   const tabId = activeTab.id;
   const scopeRef = useLatest(scope);
@@ -91,7 +94,7 @@ export function usePhotoEditor<V extends PagesModeView>({
     return () => photoUploads.setTransport(null);
   }, [ready, scopeRef]);
   // The Photo Edit template's sample, set once its files are stored (usePhotoEditSample.ts), outside the undo history.
-  usePhotoEditSample({ activeTab, tickTabs, ready, canEdit });
+  usePhotoEditSample({ activeTab, tickTabs, ready, canEdit, land: requestFit });
   // The working parts arrive once the tab has a photo page (runtime.ts): a design without one never
   // downloads the pixel engine.
   const hasPhotoPage = !!pages?.some((p) => p.kind === 'photo');

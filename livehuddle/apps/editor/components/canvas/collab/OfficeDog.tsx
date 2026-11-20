@@ -213,7 +213,7 @@ export function PetDog({ element }: { element: ShapeElement }) {
         <button
           type="button"
           aria-label="Pat the Dog"
-          className="pointer-events-auto absolute inset-0 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-sky-500"
+          className="pointer-events-auto absolute inset-0 cursor-pointer rounded-full focus-visible:outline-2 focus-visible:outline-brand-600"
           {...pieceControlProps}
           onClick={(e) => {
             e.stopPropagation();

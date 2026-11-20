@@ -332,7 +332,12 @@ function ArrowViewImpl({
         }
         // A shared end's pattern anchored there (arrow-dash.ts); a flowing arrow marches its own.
         strokeDashoffset={flowPathDash ? undefined : dashOffset}
-        {...arrowEndMarkers(arrow.arrowEnds, startMarker, headMarker)}
+        // Marker's second layer can hold the line's last stroke; the head at that end then hangs there.
+        {...arrowEndMarkers(
+          arrow.arrowEnds,
+          startMarker,
+          sketch?.endsOver ? undefined : headMarker,
+        )}
         style={arrowFlowStyle({
           flow: arrow.flow,
           flowRepeat: arrow.flowRepeat,
@@ -346,6 +351,11 @@ function ArrowViewImpl({
         // Marker's second layer of strokes, crossing the first at every bend (marker.ts).
         <path
           d={sketch.lineOver}
+          markerEnd={
+            sketch.endsOver
+              ? arrowEndMarkers(arrow.arrowEnds, startMarker, headMarker).markerEnd
+              : undefined
+          }
           mask={behindMask}
           fill="none"
           stroke={baseStroke}

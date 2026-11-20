@@ -208,7 +208,7 @@ function DropForm({
         placeholder="Share an idea. Nobody sees who wrote it."
         aria-label="Suggestion"
         rows={4}
-        className={`resize-none rounded-md border border-slate-200 bg-white px-2 py-1.5 ${z.field} outline-none focus:border-sky-500 dark:border-slate-600 dark:bg-slate-900`}
+        className={`resize-none rounded-md border border-slate-200 bg-white px-2 py-1.5 ${z.field} outline-none focus:border-brand-600 dark:border-slate-600 dark:bg-slate-900`}
       />
       <div className="flex items-center gap-2">
         <span className={`${z.meta} tabular-nums text-slate-500 dark:text-slate-400`}>
@@ -291,7 +291,7 @@ function EditorNotes({
             type="button"
             aria-label="Refresh the notes"
             onClick={refresh}
-            className="ml-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            className="ml-auto flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <RefreshIcon />
           </button>

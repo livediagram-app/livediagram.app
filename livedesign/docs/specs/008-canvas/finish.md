@@ -137,7 +137,9 @@ Sketch is a pencil's wandering double line, Marker is one bold stroke per edge, 
   the tab's font. A code block keeps its monospace font.
 - **Arrows** are drawn as one hand-drawn stroke. A line arrowhead is one chevron stroke, a triangle a solid marker
   wedge with rounded corners, and a hollow triangle a closed outline the line stops short of. Circle and diamond
-  heads keep their shapes, as under Sketch.
+  heads keep their shapes, as under Sketch. The line's strokes alternate between the ink's two layers at each bend,
+  so a head kept as a marker (an ER relationship's two ends) hangs on the layer that holds that end's stroke: on an
+  angled line the far end's head sits at the end, never at a bend. A flowing arrow draws its strokes in order as one.
 - **Dashes:** a dashed or dotted border or arrow stays dashed or dotted, along the marker line.
 - **Icons** without their own weight draw Bold, a marker's line. Stickers keep their art.
 - **Faces: frames and shapes.** What an element draws for itself is drawn in marker where it is a frame or a shape:

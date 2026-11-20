@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo, useSyncExternalStore } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useClickOutside } from '@liveworkspace/ui';
 import type { HelpScope, SearchEntry } from '@liveworkspace/help-registry';
 import { articleHref, scopeHref, withQuery } from '@liveworkspace/help-registry/hrefs';
@@ -46,7 +47,25 @@ function resultHref(article: SearchEntry, scope: HelpScope | undefined, here: bo
 
 const noSubscription = () => () => {};
 
-export function SearchInput({ large = false }: { large?: boolean }) {
+/** Where a search box sits (help-centre.md "Choosing an app"): the home hero's (`large`), the header's, or the row
+ *  under the header on a phone (`bar`). */
+type Placement = 'large' | 'header' | 'bar';
+
+export function SearchInput({ large = false, bar = false }: { large?: boolean; bar?: boolean }) {
+  const placement: Placement = large ? 'large' : bar ? 'bar' : 'header';
+  // The home's hero holds the search, so the header (and the phone row) leave it out there.
+  const pathname = usePathname();
+  if (placement !== 'large' && isHome(pathname)) return null;
+  return <SearchBox placement={placement} />;
+}
+
+/** The help home, whose hero has the search box. A static export's paths end in `/`. */
+export function isHome(pathname: string | null): boolean {
+  return pathname === '/' || pathname === '';
+}
+
+function SearchBox({ placement }: { placement: Placement }) {
+  const large = placement === 'large';
   const client = useHelpClient();
   const scope = client.facts.scope;
   const siteHref = useSiteHref();
@@ -207,54 +226,60 @@ export function SearchInput({ large = false }: { large?: boolean }) {
   const grouped = scope !== undefined && scope !== 'all';
 
   return (
-    <div ref={wrapperRef} className="relative flex w-full items-center gap-2 text-left">
-      {scope && (
-        <div className={large ? 'hidden sm:block' : 'hidden lg:block'}>
-          <AppSwitch size={large ? 'large' : 'header'} />
-        </div>
-      )}
-      <div className="relative min-w-0 flex-1">
-        <SearchIcon
-          className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
-          size={large ? 22 : 18}
-        />
-        <input
-          ref={inputRef}
-          data-help-search={large ? 'large' : 'header'}
-          type="text"
-          placeholder={large ? 'Search help articles...' : 'Search help'}
-          value={query}
-          onChange={(e) => {
-            prepareSearch();
-            setQuery(e.target.value);
-            setDismissed(false);
-          }}
-          onFocus={() => {
-            prepareSearch();
-            setDismissed(false);
-          }}
-          onPointerEnter={prepareSearch}
-          onKeyDown={(e) => {
-            if (e.key !== 'Escape') return;
-            if (isOpen) setDismissed(true);
-            else e.currentTarget.blur();
-          }}
-          aria-label="Search help articles"
-          aria-keyshortcuts="/"
-          className={`w-full rounded-xl border border-slate-200 bg-white text-slate-900 placeholder-slate-400 shadow-sm transition-all duration-micro focus:border-brand-500 focus:outline-none focus:ring-1 focus:ring-brand-500/50 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100 ${
-            large ? 'py-4 pl-12 pr-12 text-lg' : 'py-2.5 pl-10 pr-10 text-sm'
-          }`}
-        />
-        {query === '' && (
-          <kbd
-            aria-hidden
-            className={`pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-md border pointer-coarse:hidden border-slate-200 bg-slate-50 font-sans font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 ${
-              large ? 'right-4 px-2 py-0.5 text-sm' : 'right-3 px-1.5 text-xs'
-            }`}
-          >
-            /
-          </kbd>
+    <div ref={wrapperRef} className="relative w-full text-left">
+      {/* One box: the app switch at its left edge, then the field. The box rings only when the field has focus; the
+          switch rings itself. */}
+      <div
+        className={`flex w-full items-stretch rounded-xl border border-slate-200 bg-white shadow-sm transition-all duration-micro has-[input:focus]:border-brand-500 has-[input:focus]:ring-1 has-[input:focus]:ring-brand-500/50 dark:border-slate-800 dark:bg-slate-900 ${
+          large ? 'min-h-[3.75rem]' : 'min-h-[2.625rem]'
+        }`}
+      >
+        {scope && (
+          <AppSwitch large={large} label={large ? 'sm' : placement === 'bar' ? 'always' : 'lg'} />
         )}
+        <div className="relative min-w-0 flex-1">
+          <SearchIcon
+            className={`absolute top-1/2 -translate-y-1/2 text-slate-400 ${large ? 'left-4' : 'left-3'}`}
+            size={large ? 22 : 18}
+          />
+          <input
+            ref={inputRef}
+            data-help-search={placement}
+            type="text"
+            placeholder={large ? 'Search help articles...' : 'Search help'}
+            value={query}
+            onChange={(e) => {
+              prepareSearch();
+              setQuery(e.target.value);
+              setDismissed(false);
+            }}
+            onFocus={() => {
+              prepareSearch();
+              setDismissed(false);
+            }}
+            onPointerEnter={prepareSearch}
+            onKeyDown={(e) => {
+              if (e.key !== 'Escape') return;
+              if (isOpen) setDismissed(true);
+              else e.currentTarget.blur();
+            }}
+            aria-label="Search help articles"
+            aria-keyshortcuts="/"
+            className={`h-full w-full rounded-r-xl bg-transparent text-slate-900 placeholder-slate-400 focus:outline-none dark:text-slate-100 ${
+              scope ? '' : 'rounded-l-xl'
+            } ${large ? 'py-4 pl-12 pr-12 text-lg' : 'py-2.5 pl-10 pr-10 text-sm'}`}
+          />
+          {query === '' && (
+            <kbd
+              aria-hidden
+              className={`pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-md border pointer-coarse:hidden border-slate-200 bg-slate-50 font-sans font-semibold text-slate-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-500 ${
+                large ? 'right-4 px-2 py-0.5 text-sm' : 'right-3 px-1.5 text-xs'
+              }`}
+            >
+              /
+            </kbd>
+          )}
+        </div>
       </div>
       {isOpen && shown > 0 && (
         <div

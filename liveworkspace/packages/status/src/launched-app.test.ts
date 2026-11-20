@@ -25,7 +25,6 @@ describe('the MCP check, optional per app', () => {
       'livehuddle:realtime',
       'livehuddle:editor',
       'livehuddle:marketing',
-      'livehuddle:help',
       'livehuddle:router',
     ]);
     expect(appGroup(huddle, 'development').services[0]!.check).toMatchObject({

@@ -2,9 +2,12 @@
 // "Decks a template seeds"), found on the tab it built. Pure: the editor, the MCP and the api reach for the same
 // answer. The slides themselves are data (template-slides-data.ts); here each anchor is found by its label, its panel
 // (the smallest element around it, short of a board-sized one) joins it, and the slide shows every element whose
-// centre lies in the region they cover. Arrows are left out: a slide shows an arrow whose two ends are on it.
+// centre lies in the region they cover. A connector pinned at both ends is left out (a slide shows one whose two ends
+// are on it by itself); a drawn line with a free end (a Gantt's week rules and Today line, a timeline's axis) is
+// written onto the overview, which shows the whole board, and onto no section, where it would point at what is cut.
 import {
   appendToStoredPresentation,
+  type ArrowElement,
   type Element,
   type Slide,
   type Tab,
@@ -74,11 +77,28 @@ export function templateSlides(kind: TemplateKind, tab: Tab, newId: () => string
   for (const spec of specs) {
     const elementIds = spec.anchors
       ? sectionMembers(spec, boxed, board)
-      : boxed.map((b) => b.el.id);
+      : overviewMembers(tab, new Set(boxed.map((b) => b.el.id)));
     if (elementIds.length === 0) continue;
     slides.push({ id: newId(), name: spec.name, tabId: tab.id, elementIds, notes: spec.notes });
   }
   return slides;
+}
+
+// The whole board, in paint order: every drawn element, and every line with a free end whose pinned end (if any) is
+// on an element the board shows.
+function overviewMembers(tab: Tab, drawn: Set<string>): string[] {
+  const on = (end: ArrowElement['from']) =>
+    end.kind === 'free' || (end.kind === 'pinned' && drawn.has(end.elementId));
+  return tab.elements
+    .filter(
+      (el) =>
+        drawn.has(el.id) ||
+        (el.type === 'arrow' &&
+          (el.from.kind === 'free' || el.to.kind === 'free') &&
+          on(el.from) &&
+          on(el.to)),
+    )
+    .map((el) => el.id);
 }
 
 function sectionMembers(

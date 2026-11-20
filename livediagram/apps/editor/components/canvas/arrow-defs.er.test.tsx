@@ -70,3 +70,53 @@ describe('ER ends on the canvas', () => {
     expect(container.querySelectorAll('marker#arrowhead-rel line')).toHaveLength(3);
   });
 });
+
+// docs/specs/008-canvas/finish.md "Marker": the felt-tip draws an elbow in two layers that alternate at each bend,
+// so the head at the far end hangs on whichever layer holds the line's last stroke, never at a bend.
+describe('ER ends under the Marker finish', () => {
+  const last = (d: string) =>
+    d
+      .trim()
+      .split(/[\s,]+/)
+      .filter((t) => /^-?[\d.]+$/.test(t))
+      .slice(-2)
+      .map(Number);
+  const first = (d: string) =>
+    d
+      .trim()
+      .split(/[\s,]+/)
+      .filter((t) => /^-?[\d.]+$/.test(t))
+      .slice(0, 2)
+      .map(Number);
+
+  it.each([
+    ['an angled line', { x: 150, y: 120 }],
+    ['a straight line', { x: 150, y: 20 }],
+  ])('hangs each head at its own end of %s', async (_, to) => {
+    vi.resetModules();
+    vi.stubGlobal('CSS', { supports: () => true });
+    const { DrawnArrowPreview } = await import('./DrawnArrowPreview');
+    const { container } = render(
+      <DrawnArrowPreview
+        arrow={{
+          ...relationship,
+          to: { kind: 'free', ...to },
+          arrowStyle: 'angled',
+          finish: 'marker',
+          arrowheadShape: 'zero-or-many',
+        }}
+        elementIndex={new Map()}
+        occluders={[]}
+        draftLayout={() => null}
+        withDefs={false}
+      />,
+    );
+    const ink = [...container.querySelectorAll('path')];
+    const starts = ink.filter((p) => p.getAttribute('marker-start'));
+    const ends = ink.filter((p) => p.getAttribute('marker-end'));
+    expect(starts).toHaveLength(1);
+    expect(ends).toHaveLength(1);
+    expect(first(starts[0]!.getAttribute('d')!)).toEqual([10, 20]);
+    expect(last(ends[0]!.getAttribute('d')!)).toEqual([to.x, to.y]);
+  });
+});

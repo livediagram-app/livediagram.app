@@ -80,7 +80,7 @@ export function ArcadeFace({ element }: { element: ShapeElement }) {
               e.stopPropagation();
               setOpen(true);
             }}
-            className="group pointer-events-auto absolute inset-0 cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-sky-500"
+            className="group pointer-events-auto absolute inset-0 cursor-pointer rounded-md outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
           >
             {/* Drawn over the characters (PieceBubbleLayer), so nobody standing at the machine covers it; still the
                 cabinet's press, its click reaching the button through the portal. */}

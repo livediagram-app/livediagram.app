@@ -1,25 +1,32 @@
 import { lucideGlyph } from '@livediagram/ui';
-import { lucideChartLine, lucideLayoutGrid, lucideUsers } from '@liveworkspace/icons/lucide';
+import {
+  lucideChartLine,
+  lucideCircleHelp,
+  lucideLayoutGrid,
+  lucideUsers,
+} from '@liveworkspace/icons/lucide';
 import type { ReactNode } from 'react';
 import { AccountControl } from './AccountControl';
 import { HeaderLogo } from './HeaderLogo';
 import { SiteRail } from './SiteRail';
 import { Wordmark } from './Wordmark';
 
-// Left out on a phone, where the wordmark and the account control fill the bar; the footer lists them
-// all.
+// Left out below 768px (a phone or a narrow window), where the wordmark and the account control fill the
+// bar; the footer lists them all.
 const AppsIcon = lucideGlyph(lucideLayoutGrid, 16);
 const CommunityIcon = lucideGlyph(lucideUsers, 16);
 const TelemetryIcon = lucideGlyph(lucideChartLine, 16);
+const HelpIcon = lucideGlyph(lucideCircleHelp, 16);
 
 const NAV: { href: string; label: string; icon: ReactNode }[] = [
   { href: '/#apps', label: 'Our Apps', icon: <AppsIcon /> },
   { href: '/community', label: 'Community', icon: <CommunityIcon /> },
   { href: '/telemetry', label: 'Telemetry', icon: <TelemetryIcon /> },
+  { href: '/help', label: 'Help', icon: <HelpIcon /> },
 ];
 
 // The header on every page (liveworkspace/docs/specs/010-site/site.md "The header"): the wordmark, whose hover lists
-// every site (liveworkspace/docs/specs/010-site/site-switcher.md), three links, each with its icon, and Sign in or the
+// every site (liveworkspace/docs/specs/010-site/site-switcher.md), four links, each with its icon, and Sign in or the
 // account menu. The sign-in pages leave the account control out: they are the sign-in, and under an app's address
 // they wear that app's logo (HeaderLogo).
 //
@@ -44,7 +51,7 @@ export function Header({ account = true, share = false }: { account?: boolean; s
               <a
                 key={item.href}
                 href={item.href}
-                className="relative touch-target-y inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 max-sm:hidden dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+                className="relative touch-target-y inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2.5 py-1.5 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 max-md:hidden dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
               >
                 <span className="text-slate-400 dark:text-slate-500">{item.icon}</span>
                 {item.label}

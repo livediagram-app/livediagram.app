@@ -172,7 +172,7 @@ function PersonArrow({
         data-people-arrow={person.id}
         data-fresh={fresh ? 'true' : 'false'}
         onClick={() => onPress(person.id)}
-        className="lh-people-arrow pointer-events-none absolute left-0 top-0 origin-center cursor-pointer rounded-full outline-none will-change-transform focus-visible:ring-2 focus-visible:ring-sky-400"
+        className="lh-people-arrow pointer-events-none absolute left-0 top-0 origin-center cursor-pointer rounded-full outline-none will-change-transform focus-visible:ring-2 focus-visible:ring-brand-600"
         style={{ width: ARROW_SIZE, height: ARROW_SIZE, opacity: 0, ...identityVars(person.color) }}
       >
         <span className="lh-people-arrow-lift absolute inset-0 block">

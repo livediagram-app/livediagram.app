@@ -34,9 +34,10 @@ The APIs are Workers on more specific routes of the same origin, so the pages ca
 ### The header
 
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(the current site highlighted), links to Our Apps, Community (`/community`, every app's posts) and Telemetry, each
-with its icon, and the account
-control. On a phone the wordmark and the account control show; the footer has the rest. The
+(the current site highlighted), links to Our Apps, Community (`/community`, every app's posts), Telemetry and Help (`/help`, the help centre's
+All Apps view), each with its icon, and the account
+control. Below 768px (a phone or a narrow window) only the wordmark and the account control show; the footer has the
+rest. The
 Appearance toggle is never in the header: it is on the rail. The sign-in pages served under an app's own
 address wear that app's logo in place of the wordmark, linking to the app's home, with that app highlighted in the
 switcher (`HeaderLogo`), so the person stays in the app they came from; the page's first render, before it knows its
@@ -227,7 +228,9 @@ why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclo
 
 `www.liveworkspace.app/help*` is the one help centre's ([Help centre](../017-help/help-centre.md)): All Apps' help,
 built from `liveworkspace/apps/help` and served by its Worker, which takes the route before the site's own files (a
-dev server forwards `/help*` to it on 3020, `next.config.ts`). The site has no help pages of its own: the platform's
+dev server forwards `/help*` to it on 3020, `next.config.ts`, a page's address with the trailing slash the help
+centre's own pages take and a file's as it is, since the site drops a trailing slash and the two would otherwise
+redirect each other for ever). The site has no help pages of its own: the platform's
 features that are the same in every app (Google Drive sync, the Explorer in no app, teams, sharing across apps,
 guest or account) are articles that apply to every app, read in each app's help and under All Apps. The old
 addresses (`/help/google-drive`, `/help/explorer/teams`, `/help/explorer/moving`, `/help/explorer/sharing`,

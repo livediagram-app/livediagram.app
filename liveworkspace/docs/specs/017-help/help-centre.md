@@ -29,11 +29,15 @@ its app in the `x-help-app` header, so the address bar keeps the app's name and 
 
 ## Choosing an app
 
-Every page carries the **app switch**, in the home's search box and in the header's search on other pages: a
-segment naming the current scope with a caret, and an **All Apps** segment. The caret opens a menu of three groups:
-**This App** (the app whose address this is, ticked), **All Apps** (with its guide count), and **Another App** (the
-other apps, each with its logo and guide count). On liveworkspace.app the first segment reads **Choose App** and
-**All Apps** is selected.
+Every search box carries the **app switch**: one dropdown at the box's left edge, inside it, naming the scope the
+box searches. It reads **All Apps** (with a small grid of the apps' marks) on liveworkspace.app, and the app's mark
+and name on an app's own address; on a narrow box it shows the mark alone, its name kept in its label. It opens one
+menu: **All Apps** first, then **Apps**, every app with its logo, each row with its guide count and the current
+scope ticked.
+
+The search, and so the switch, sits in the hero on a help home and in the header on every other page. The home's
+header has no search, as the hero's box is just below it. On a phone, where the header has no room for it, the
+search sits in a row under the header instead, on every page but the home.
 
 Choosing moves the reader, never just the filter:
 
@@ -285,7 +289,7 @@ download cannot grow unnoticed.
 
 **Keys and accessibility.** The search box answers `/` from anywhere on the page (unless focus is already in a text
 field, or a modifier is held) and shows a `/` key hint at its right edge while empty (not on a touch screen). On a
-home the large box takes the key, elsewhere the header's. `Escape` closes the results, and a second `Escape` leaves
+home the hero's box takes the key, elsewhere the header's (or, on a phone, the row's under it). `Escape` closes the results, and a second `Escape` leaves
 the box. Each result shows its category as a small label above its title. A polite live region says what the dropdown
 holds ("3 articles found", "No articles found for ...") and the list is a region named Search results, since the
 results appear below the field with nothing else to tell a screen reader they came.

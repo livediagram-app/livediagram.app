@@ -43,7 +43,7 @@ const TimerLengthPopover = dynamic(
 // placement preview (`live` false) draws the idle face with no buttons and no ticking.
 
 const PILL =
-  'pointer-events-auto flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-2 py-[2px] text-[9px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-sky-500 dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700';
+  'pointer-events-auto flex cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-2 py-[2px] text-[9px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700';
 
 /** The readout and phase at `now`, as one string so equal ticks keep the render. */
 function readKey(kind: TimerPieceKind, state: PieceTimer, now: number): string {
