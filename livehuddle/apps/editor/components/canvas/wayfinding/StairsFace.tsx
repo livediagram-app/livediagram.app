@@ -171,7 +171,7 @@ function FlightRow({
       aria-hidden
       className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
         on
-          ? 'bg-sky-600 text-white group-hover:bg-sky-700 dark:bg-sky-500 dark:text-slate-950 dark:group-hover:bg-sky-400'
+          ? 'bg-brand-700 text-white group-hover:bg-brand-800 dark:bg-brand-500 dark:text-slate-950 dark:group-hover:bg-brand-400'
           : 'bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-400'
       }`}
     >
@@ -224,7 +224,7 @@ function FlightRow({
         type="button"
         aria-label={`${WORD[dir]} to ${flight.name}`}
         onClick={() => onTake(flight)}
-        className="group flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-500 active:scale-[0.99] dark:hover:bg-slate-800/60"
+        className="group flex w-full cursor-pointer items-center gap-2.5 rounded-lg px-1.5 py-1.5 text-left transition hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 active:scale-[0.99] dark:hover:bg-slate-800/60"
       >
         {arrow(true)}
         {text}

@@ -202,7 +202,7 @@ export function RoomSignView({
               background: `linear-gradient(${t.brassLit}, ${t.brass})`,
               boxShadow: `inset 0 0 0 1px ${t.brassEdge}, 0 1px 1px rgb(0 0 0 / 0.25)`,
             }}
-            className={`flex h-full w-full items-center justify-center gap-1 rounded-full font-semibold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-400 motion-reduce:transition-none ${
+            className={`flex h-full w-full items-center justify-center gap-1 rounded-full font-semibold leading-none transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 motion-reduce:transition-none ${
               knocked
                 ? 'cursor-default opacity-60'
                 : 'cursor-pointer hover:brightness-110 active:scale-95'

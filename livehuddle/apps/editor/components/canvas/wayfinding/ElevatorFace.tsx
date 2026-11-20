@@ -241,7 +241,7 @@ function FloorHeading({
         {name}
       </span>
       {current ? (
-        <span className="rounded-full bg-sky-100 px-1.5 py-[1px] text-[9.5px] font-semibold text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+        <span className="rounded-full bg-brand-100 px-1.5 py-[1px] text-[9.5px] font-semibold text-brand-700 dark:bg-brand-950 dark:text-brand-300">
           You Are Here
         </span>
       ) : null}

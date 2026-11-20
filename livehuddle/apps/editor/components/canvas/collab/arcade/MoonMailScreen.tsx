@@ -32,7 +32,7 @@ export function MoonMailScreen({ game, result }: { game: MoonMailGame; result: R
         aria-label="Moon Mail. Arrow Up or W hops out, Arrow Down or S hops in, P pauses."
         data-moon-mail-screen=""
         onPointerDown={game.onScreenPointerDown}
-        className="relative aspect-square w-full cursor-pointer touch-none select-none overflow-hidden rounded-lg bg-[#060a1c] shadow-inner outline-none ring-1 ring-slate-900/20 focus-visible:ring-2 focus-visible:ring-sky-400 dark:ring-white/10"
+        className="relative aspect-square w-full cursor-pointer touch-none select-none overflow-hidden rounded-lg bg-[#060a1c] shadow-inner outline-none ring-1 ring-slate-900/20 focus-visible:ring-2 focus-visible:ring-brand-600 dark:ring-white/10"
       >
         <canvas ref={canvasRef} aria-hidden className="absolute inset-0 h-full w-full" />
         {phase === 'ready' ? (
@@ -126,7 +126,7 @@ function Strip({ game }: { game: MoonMailGame }) {
             type="button"
             aria-label="Pause"
             onClick={game.pause}
-            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
           >
             <PauseIcon />
           </button>
@@ -144,7 +144,7 @@ function ShieldMark({ on }: { on: boolean }) {
   return (
     <span
       aria-hidden
-      className={on ? 'text-sky-600 dark:text-sky-300' : 'text-slate-300 dark:text-slate-600'}
+      className={on ? 'text-brand-700 dark:text-brand-300' : 'text-slate-300 dark:text-slate-600'}
     >
       <ShieldIcon />
     </span>

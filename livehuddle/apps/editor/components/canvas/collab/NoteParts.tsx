@@ -93,7 +93,7 @@ export function NoteAddForm({
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Title (optional)"
         aria-label="Note title"
-        className={`rounded-md border border-slate-200 bg-white px-2 py-1 ${z.field} outline-none focus:border-sky-500 dark:border-slate-600 dark:bg-slate-900`}
+        className={`rounded-md border border-slate-200 bg-white px-2 py-1 ${z.field} outline-none focus:border-brand-600 dark:border-slate-600 dark:bg-slate-900`}
       />
       <textarea
         value={text}
@@ -102,7 +102,7 @@ export function NoteAddForm({
         placeholder="Write a note"
         aria-label="Note"
         rows={3}
-        className={`resize-none rounded-md border border-slate-200 bg-white px-2 py-1 ${z.field} outline-none focus:border-sky-500 dark:border-slate-600 dark:bg-slate-900`}
+        className={`resize-none rounded-md border border-slate-200 bg-white px-2 py-1 ${z.field} outline-none focus:border-brand-600 dark:border-slate-600 dark:bg-slate-900`}
       />
       <div className="flex items-center gap-1.5">
         <div role="radiogroup" aria-label="Note colour" className="flex gap-1">
@@ -116,7 +116,7 @@ export function NoteAddForm({
               onClick={() => setColor(c)}
               className={`h-4 w-4 cursor-pointer rounded-full border ${
                 color === c
-                  ? 'border-slate-700 ring-2 ring-sky-500 dark:border-slate-200'
+                  ? 'border-slate-700 ring-2 ring-brand-600 dark:border-slate-200'
                   : 'border-slate-300 dark:border-slate-600'
               }`}
               style={{ background: NOTE_PAPER[c] }}
