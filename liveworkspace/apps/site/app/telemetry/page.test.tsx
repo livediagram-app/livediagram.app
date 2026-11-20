@@ -92,12 +92,12 @@ async function answer(i: number, body: TelemetrySummary) {
 }
 
 describe('the telemetry dashboard while it loads', () => {
-  it('shows the chrome and the All apps skeleton on the first load, then the numbers', async () => {
+  it('shows the chrome and the All Apps skeleton on the first load, then the numbers', async () => {
     act(() => root!.render(<TelemetryDashboard />));
     expectChrome();
     expect(skeleton()).not.toBeNull();
     expect(skeleton()!.getAttribute('aria-busy')).toBe('true');
-    // Shaped like All apps: its section titles and a card per app.
+    // Shaped like All Apps: its section titles and a card per app.
     expect(skeleton()!.textContent).toContain('Apps Compared');
     expect(skeleton()!.textContent).toContain('Busiest Events');
     expect(pending).toHaveLength(1);
@@ -125,8 +125,8 @@ describe('the telemetry dashboard while it loads', () => {
     expect(skeleton()).toBeNull();
     expect(host!.querySelector('[data-testid="livediagram-body"]')?.textContent).toBe('42 today');
 
-    // Back to All apps: already fetched, so it shows at once with no skeleton and no request.
-    act(() => chip('All apps')!.click());
+    // Back to All Apps: already fetched, so it shows at once with no skeleton and no request.
+    act(() => chip('All Apps')!.click());
     expect(skeleton()).toBeNull();
     expect(pending).toHaveLength(2);
     expect(host!.textContent).toContain('Events by App');
@@ -141,7 +141,7 @@ describe('the window across app switches', () => {
       b.textContent?.includes(label),
     );
 
-  it('keeps the window when switching from All apps to an app, between apps, and back', async () => {
+  it('keeps the window when switching from All Apps to an app, between apps, and back', async () => {
     act(() => root!.render(<TelemetryDashboard />));
     await answer(0, summary(7));
     act(() => windowTile('Last 30 days')!.click());
@@ -158,7 +158,7 @@ describe('the window across app switches', () => {
       host!.querySelector('[data-testid="liveplanner-body"]')?.getAttribute('data-window'),
     ).toBe('last30');
 
-    act(() => chip('All apps')!.click());
+    act(() => chip('All Apps')!.click());
     expect(windowTile('Last 30 days')!.getAttribute('aria-pressed')).toBe('true');
     expect(windowTile('Last 7 days')!.getAttribute('aria-pressed')).toBe('false');
   });

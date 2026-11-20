@@ -10,7 +10,7 @@ import { SelectionStoreProvider } from '@liveworkspace/workbench/hooks/canvas/us
 import { planBoardTarget } from '@/hooks/plan/plan-board-targets';
 
 // docs/specs/026-plan/plan-board.md "A column's own settings" (a right-click on a column's background opens its
-// settings, for an Editor) and "Add card steps aside" (a cell's Add card row folds while a drop gap shows there).
+// settings, for an Editor) and "Add Card steps aside" (a cell's Add Card row folds while a drop gap shows there).
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 afterEach(() => {
@@ -103,7 +103,7 @@ describe('a right-click on a column’s background', () => {
     ).toBe('true');
   });
 
-  it('opens it from the Add card row too, and never selects the column’s name', () => {
+  it('opens it from the Add Card row too, and never selects the column’s name', () => {
     draw();
     fireEvent.contextMenu(cell('doing').querySelector('[data-add-card-trigger]')!);
     expect(screen.getByRole('dialog', { name: 'In Progress column' })).toBeTruthy();
@@ -139,7 +139,7 @@ describe('a right-click on a column’s background', () => {
   });
 });
 
-describe('a cell’s Add card row while a drop gap shows there', () => {
+describe('a cell’s Add Card row while a drop gap shows there', () => {
   it('folds (inert, faded, its row closed) and comes back once the gap leaves', () => {
     draw();
     const target = planBoardTarget('b-menu')!;
@@ -167,7 +167,7 @@ describe('a cell’s Add card row while a drop gap shows there', () => {
   });
 });
 
-describe('the Add card row and the drop gap', () => {
+describe('the Add Card row and the drop gap', () => {
   it('move on one length and easing, so the gap closing and the row returning are one motion', async () => {
     const { GAP_MOTION_MS, GAP_MOTION_EASE } = await import('./useGapMotion');
     draw();

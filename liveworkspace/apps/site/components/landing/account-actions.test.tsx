@@ -37,8 +37,8 @@ describe('the front door’s account asks', () => {
       const { text, links } = page();
       expect(links).toEqual([
         ['Create your account', '/sign-up?return=%2F'],
-        ['Create your free account', '/sign-up?return=%2F'],
-        ['Pick an app', '#apps'],
+        ['Create Your Free Account', '/sign-up?return=%2F'],
+        ['Pick an App', '#apps'],
       ]);
       expect(text).toContain('No sign-up needed');
       expect(text).toContain('Or start your work as a guest without signing in at all.');
@@ -51,7 +51,7 @@ describe('the front door’s account asks', () => {
     expect(links).toEqual([
       ['Open your Explorer', '/explorer'],
       ['Open Explorer', '/explorer'],
-      ['Pick an app', '#apps'],
+      ['Pick an App', '#apps'],
     ]);
     expect(text).not.toMatch(/sign[- ]?up|create your|without signing in/i);
     expect(links.some(([, href]) => href?.includes('/sign-up'))).toBe(false);

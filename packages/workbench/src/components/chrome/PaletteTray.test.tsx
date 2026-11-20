@@ -8,6 +8,7 @@ import {
   pillPlace,
   TemplateExampleTray,
   traySlot,
+  TEMPLATE_EXAMPLE_TRAY_MIN_WIDTH_PX,
   usePaletteStripBox,
   usePaletteTrayShown,
   useToolbarBox,
@@ -234,6 +235,17 @@ describe('traySlot', () => {
       left: 460,
       width: PALETTE_TRAY_MIN_WIDTH_PX,
     });
+  });
+
+  it('takes a wider minimum when a message asks for one (the template example tray)', () => {
+    // A 472 px strip (a slide deck's) centred at 600: the 520 px slot runs from 340 to 860.
+    expect(
+      traySlot(
+        { left: 364, width: 472, top: 12, bottom: 58 },
+        1200,
+        TEMPLATE_EXAMPLE_TRAY_MIN_WIDTH_PX,
+      ),
+    ).toEqual({ left: 340, width: TEMPLATE_EXAMPLE_TRAY_MIN_WIDTH_PX });
   });
 
   it('stays 8 px inside the window', () => {

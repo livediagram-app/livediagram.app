@@ -175,7 +175,7 @@ function NoticeBoardFace({ element, walking }: { element: ShapeElement; walking:
             fill="#7c4a1e"
             opacity={0.8}
           >
-            No Notes Yet
+            No notes yet
           </text>
         ) : (
           shown.map((note, i) => {

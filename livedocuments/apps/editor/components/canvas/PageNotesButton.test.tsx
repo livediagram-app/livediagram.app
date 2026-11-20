@@ -39,7 +39,7 @@ describe('PageNotesButton', () => {
     const button = screen.getByRole('button', { name: 'Notes' });
     expect(button.textContent).toBe('Notes');
     fireEvent.click(button);
-    expect(screen.getByText('No Notes Yet')).toBeTruthy();
+    expect(screen.getByText('No notes yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add First Card' }));
     // A new card's id ends in random characters (newNoteCardId), so only its stem is fixed.
     expect(deck.setNoteCards).toHaveBeenCalledWith('s1', [

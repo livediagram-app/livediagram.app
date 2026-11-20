@@ -32,4 +32,15 @@ describe('InsetContent', () => {
     expect(box.style.bottom).toBe('0px');
     expect(box.textContent).toBe('Label');
   });
+
+  it('pulls the content area in from each side, for a slanted kind', () => {
+    const { container } = render(
+      <InsetContent inset={{ top: 0, bottom: 0, side: 22 }}>
+        <p>Label</p>
+      </InsetContent>,
+    );
+    const box = container.firstElementChild as HTMLElement;
+    expect(box.style.left).toBe('22px');
+    expect(box.style.right).toBe('22px');
+  });
 });

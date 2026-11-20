@@ -93,16 +93,21 @@ function header(k: Kit, bleed: number): Element[] {
   ];
 }
 
-// The main column: the profile, then the experience down a rail.
-function main(k: Kit): Element[] {
-  const { width: W } = k.box;
+// The main column: the profile, then the experience down a rail, on paper of its own. Its ink is locked
+// like the rest of the résumé, so the paper is too: on a dark theme's page the dark ink would vanish.
+function main(k: Kit, bleed: number): Element[] {
+  const { width: W, height: H } = k.box;
   const { u } = k;
   const w = W * MAIN_W;
+  const paperTop = u * HEADER_BOTTOM;
   const top = u * (HEADER_BOTTOM + 5);
   const expTop = top + u * 26;
   const railX = u * 1;
   const textX = u * 5;
   const els: Element[] = [
+    panel(k, -bleed, paperTop, W * SIDE_X + bleed, H - paperTop + bleed, PAPER, {
+      borderRadius: 'none',
+    }),
     ...sectionHead(k, 0, top, w, 'PROFILE'),
     k.text(0, top + u * 7, w, u * 17, PROFILE, {
       textSize: 'sm',
@@ -219,5 +224,5 @@ function side(k: Kit, bleed: number): Element[] {
 export function buildResume(): Element[] {
   const [k] = pageKits(resumePages());
   const bleed = pageMargin(RESUME_PAGE);
-  return [...header(k!, bleed), ...side(k!, bleed), ...main(k!)];
+  return [...header(k!, bleed), ...side(k!, bleed), ...main(k!, bleed)];
 }

@@ -80,7 +80,7 @@ export function FeatureGrid({ items }: { items: FeatureProps[] }) {
 }
 
 function FeatureCard({ title, description, art, href }: FeatureProps) {
-  // Full-height flex column: the text block grows to fill, so the "Learn more"
+  // Full-height flex column: the text block grows to fill, so the "Learn More"
   // footer bar pins to the bottom edge and lines up across every card in a row
   // (grid rows stretch all cards to a shared height) instead of floating at the
   // end of whichever description happened to be longest.
@@ -96,7 +96,7 @@ function FeatureCard({ title, description, art, href }: FeatureProps) {
       {href ? (
         <div className="flex items-center justify-between gap-2 border-t border-slate-100 bg-slate-50/70 px-6 py-3 text-sm font-medium text-brand-700 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-brand-500/15 group-hover:text-brand-800 dark:border-slate-700 dark:bg-slate-800/40 dark:text-brand-300 dark:group-hover:text-brand-200">
           <span>
-            Learn more<span className="sr-only"> (opens in a new tab)</span>
+            Learn More<span className="sr-only"> (opens in a new tab)</span>
           </span>
           <ChevronRightIcon
             size={15}

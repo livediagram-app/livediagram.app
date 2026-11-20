@@ -1,6 +1,6 @@
 'use client';
 
-// A cell's + Add card row, folding away while a drop gap shows in the cell (docs/specs/026-plan/plan-board.md "Add
+// A cell's + Add Card row, folding away while a drop gap shows in the cell (docs/specs/026-plan/plan-board.md "Add
 // card steps aside"): its grid row closes from 1fr to 0fr and it fades, over the drop gap's 180 ms, and opens again once the gap
 // leaves. Its own room and the cell's gap before it close together (a negative top margin of the cell's gap), so
 // nothing above it moves and the cell loses exactly the row. Pure CSS on a prop the board already renders with: no

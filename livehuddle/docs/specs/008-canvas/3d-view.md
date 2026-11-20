@@ -150,6 +150,12 @@ not laggy.
 - **In the scene**: pieces, walls and characters are sorted by depth together, so a character behind a desk is
   hidden by it, one in front of a bookshelf stands over it, and a piece behind a wall is hidden by the wall (unless
   the wall is cut away in front of you).
+- **Against a wall**: a character stands up about its feet facing the camera, so it leans back from them, and a wall
+  just behind its feet (as the camera sees it, within the figure's height and chip) cut through it: a peer or the
+  Receptionist standing in front of a room's wall showed only their feet. Standing there, a character is drawn towards
+  the camera by its whole height and chip (the sitter's `--space-seat-lift`, as the Receptionist behind a desk is), so
+  it stands whole in front of the wall. Only walls taller than a character count, never a fence, the grass or a stage
+  (`apps/editor/lib/space-3d/space-3d-wall-lift.ts`).
 - **Standing at a piece** (a Treadmill's belt, a Standing Desk) is drawn as sitting near its front is, in front of
   it, so the piece never covers you (the owner, 2026-11-18: "I seem to be hidden behind it"); one standing behind
   theirs (a Podium's speaker) has their legs hidden under its front.

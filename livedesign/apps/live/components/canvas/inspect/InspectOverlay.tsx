@@ -207,7 +207,7 @@ function SelectedOutline({
   target: InspectTarget;
   measured: ReadonlySet<string>;
 }) {
-  const label = `${inspectNumber(target.rect.width)} × ${inspectNumber(target.rect.height)}`;
+  const label = `${inspectNumber(target.rect.width)} x ${inspectNumber(target.rect.height)}`;
   const w = pillWidth(label);
   const at = sizePillAt(b, w, measured, canvasView());
   return (

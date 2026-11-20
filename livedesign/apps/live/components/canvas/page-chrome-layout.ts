@@ -68,7 +68,10 @@ export function pageChromeLayout(
   };
   // The buttons name themselves on a desktop while the page is wide enough on screen to hold
   // them named; zoomed out further they drop to their icons, as a phone shows them.
-  const labelled = titleBarNamed(room, buttons, mobile);
+  // With the Quick Style bar beside it, both must fit named, or the pair would run off the page's left edge (into the
+  // Contents panel on a narrow page): the bar follows the title bar, so both drop to their icons together.
+  const quickStyleNamed = quickStyleRoom?.pageId === page.id ? quickStyleRoom.namedPx : 0;
+  const labelled = titleBarNamed(room - quickStyleNamed, buttons, mobile);
   // A phone's Appearance is named while the page on screen holds it (appearanceNamed).
   const appearanceLabelled = mobile && appearanceNamed(room, buttons);
   const fixedRoom = titleBarFixedRoom(buttons, mobile ? appearanceLabelled : labelled, mobile);

@@ -50,7 +50,7 @@ export function GalleryView() {
       ) : (
         <EmptyState
           icon={<ImageIcon size={28} />}
-          title="No Image Gallery here"
+          title="No image gallery here"
           description={`${kind.many} keep no images of their own.`}
         />
       )}
@@ -113,7 +113,7 @@ export function ShapeLibrariesView() {
       ) : (
         <EmptyState
           icon={<ShapesIcon size={28} />}
-          title="No Shape Libraries here"
+          title="No shape libraries here"
           description={`${kind.many} keep no shape libraries.`}
         />
       )}

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A cell's Add card (docs/specs/026-plan/plan-board.md "Working on a board") on a touch screen
+// A cell's Add Card (docs/specs/026-plan/plan-board.md "Working on a board") on a touch screen
 // (docs/specs/004-interface-design/touch-targets.md): a 44px-tall row to tap.
 
 import { cleanup, render, screen } from '@testing-library/react';
@@ -16,11 +16,11 @@ describe('AddCardButton on a touch screen', () => {
       <AddCardButton
         palette={planPalette('light', {})}
         types={[]}
-        label="Add your first card"
+        label="Add Your First Card"
         onAdd={() => {}}
       />,
     );
-    const button = screen.getByRole('button', { name: /Add your first card/ });
+    const button = screen.getByRole('button', { name: /Add Your First Card/ });
     expect(button.className).toMatch(/\bpointer-coarse:min-h-11\b/);
   });
 });

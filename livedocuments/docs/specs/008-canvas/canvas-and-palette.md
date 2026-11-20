@@ -513,7 +513,7 @@ Twenty general-purpose and device shape kinds are covered here, all rendered as 
 | `hexagon`       | SVG overlay drawing `polygon points="25,0 75,0 100,50 75,100 25,100 0,50"` (flat-top). Preparation / labelled milestone.                                                                                                           | Free        |
 | `document`      | SVG overlay drawing a rectangle with a wavy bottom edge (two cubic curves). Output document in flowcharts.                                                                                                                         | Free        |
 
-A cylinder's label sits on the front of its body, from under the lid (27% down the box) to over the base (97%), so more lines grow down the body, never up over the lid: on the canvas, while editing and in every export (`labelBodyInset`).
+A cylinder's label sits on the front of its body, from under the lid (27% down the box) to over the base (97%), so more lines grow down the body, never up over the lid: on the canvas, while editing and in every export (`labelBodyInset`). A parallelogram's label keeps a tenth of the box in from each side and a trapezoid's 12%, where their slanted sides cross the middle, so a long label wraps inside the outline instead of running over its slants.
 
 Styling: a `brand-500` outline over a faint `brand-50` fill, with a subtle drop shadow. Same colours for every kind; only the geometry differs. Fill / stroke colours can be overridden per element via the element's right-click context menu (Colours category).
 
@@ -601,7 +601,7 @@ Every template opens on pages of its own. `templateCanvasOverrides(kind)` ships 
 | Group card          | Two Portrait post (4:5) pages: the Cover (the theme's Glow) and the Inside (the plain paper), standing as a stack.                                                                                                |
 | Event Poster        | One A3 portrait page.                                                                                                                                                                                             |
 | Year in Review      | Four A4 portrait pages: Cover, Numbers, Timeline, Thanks.                                                                                                                                                         |
-| Résumé              | One A4 portrait page.                                                                                                                                                                                             |
+| Résumé              | One A4 portrait page, on paper of its own: its ink is locked against the theme, so the main column's white and the side column's tint are too (on a dark theme's paper the ink would vanish).                     |
 | Recipe Card         | A Square page (the dish) and a Portrait post (4:5) page (the method).                                                                                                                                             |
 | Design              | One page each: the Storyboard and Floor plan, A3 landscape.                                                                                                                                                       |
 

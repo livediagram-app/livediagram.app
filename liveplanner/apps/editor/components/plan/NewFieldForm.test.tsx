@@ -178,7 +178,7 @@ describe('Pick', () => {
     expect(screen.getByText('Session votes, Top Voted and sorting')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Votes/ }));
     expect(onAddBuiltIn).toHaveBeenCalledWith('votes');
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Comments');
     expect(screen.queryByRole('region', { name: 'Ready to use' })).toBeNull();
     fireEvent.change(name(), { target: { value: 'Design Review' } });
@@ -328,7 +328,7 @@ describe('Shape', () => {
     expect(screen.getByText('Or make your own')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /^Due Date/ }));
     expect(onAddBuiltIn).toHaveBeenCalledWith('due');
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Person');
     expect(readyToUse()).toEqual(['Assignee']);
     fireEvent.change(name(), { target: { value: 'Reviewer' } });
@@ -355,13 +355,13 @@ describe('Shape', () => {
     open({ missing: [] });
     pick('Labels');
     expect(preview().getByPlaceholderText('Add a label')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Checklist');
     expect(preview().getByRole('textbox', { name: 'Add a step' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Colour');
     expect(preview().getByRole('button', { name: /: None$/ })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Image');
     expect(preview().getByText('photo.png')).toBeTruthy();
     expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
@@ -371,7 +371,7 @@ describe('Shape', () => {
     const { onAddCustom } = open();
     pick('Text');
     expect(screen.getByRole('form', { name: 'New Text field' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: /^All kinds/ }).textContent).toBe('All kindsText');
+    expect(screen.getByRole('button', { name: /^All Kinds/ }).textContent).toBe('All KindsText');
     expect(document.activeElement).toBe(name());
     expect(addButton().textContent).toBe('Add Text Field');
     expect(addButton()).toHaveProperty('disabled', true);
@@ -386,7 +386,7 @@ describe('Shape', () => {
     );
   });
 
-  it('goes back to Pick with All kinds or Escape, the search kept and the kind focused', () => {
+  it('goes back to Pick with All Kinds or Escape, the search kept and the kind focused', () => {
     const { onClose } = open();
     type('mon');
     pick('Currency');
@@ -399,7 +399,7 @@ describe('Shape', () => {
     pick('Rating');
     // The rail stays beside Shape, the category marked.
     expect(current()).toBe('numbers');
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     expect(document.activeElement).toBe(kind('Rating'));
   });
 
@@ -431,7 +431,7 @@ describe('Shape', () => {
     open();
     pick('Text');
     fireEvent.change(name(), { target: { value: 'Size' } });
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Number');
     expect((name() as HTMLInputElement).value).toBe('Size');
     expect(preview().getByRole('spinbutton', { name: 'Size' })).toBeTruthy();
@@ -562,14 +562,14 @@ describe('Shape', () => {
       expect.objectContaining({ label: 'Reviewers', kind: 'person', multiple: true }),
     );
     // A Person holds one, with no switch either.
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Person');
     expect(screen.queryByRole('switch', { name: 'Holds Several' })).toBeNull();
   });
 
   it('makes each variant with its option and no switch: Time Tracking, Date and Time Range, Blocked By, Formula', () => {
     const { onAddCustom } = open({ missing: [] });
-    const back = () => fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    const back = () => fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     const made = (tile: string, expected: Record<string, unknown>, label = tile) => {
       pick(tile);
       for (const name of ['Holds Several', 'Blocks', 'Track Time', 'Include Time'])
@@ -651,7 +651,7 @@ describe('Shape', () => {
     expect(onAddCustom).toHaveBeenLastCalledWith(
       expect.objectContaining({ kind: 'email', required: true }),
     );
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Checkbox');
     expect(screen.queryByRole('switch', { name: 'Required' })).toBeNull();
     fireEvent.click(addButton());
@@ -672,7 +672,7 @@ describe('Shape', () => {
     expect(onAddCustom).toHaveBeenLastCalledWith(
       expect.objectContaining({ kind: 'person', notifies: true }),
     );
-    fireEvent.click(screen.getByRole('button', { name: /^All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^All Kinds/ }));
     pick('Email');
     expect(screen.queryByRole('switch', { name: 'Notifies' })).toBeNull();
   });

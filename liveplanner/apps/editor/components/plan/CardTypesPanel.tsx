@@ -149,7 +149,7 @@ export function CardTypesPanel({
         {types.length === 0 ? (
           <EmptyState
             icon={<PlanCardsIcon size={18} />}
-            title="No Card Types Yet"
+            title="No card types yet"
             description={
               canEdit
                 ? 'Add a card type of your own, or add a board that brings its types.'

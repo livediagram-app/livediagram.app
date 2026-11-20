@@ -578,7 +578,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (one section per such field, as above), and on no other card. It is generated, never saved into the type: the
     type editor neither lists nor counts it, and a type keeps its 6 tabs. Its label carries the number of cards
     linked here, each card once however many fields link it (a quiet pill beside the name, left out at none).
-    With no cards linked at all, the tab opens on an empty state, **No Linked Cards Yet**, "Cards that link to
+    With no cards linked at all, the tab opens on an empty state, **No linked cards yet**, "Cards that link to
     this one show here." ("... Make one already linked, or link one you already have." for someone who may add
     cards), then, for someone who may add cards, each section's heading and its New {Type} and Link Existing
     buttons, without the per-section "No cards link here" note. A type that has a tab of its own named Linked Cards
@@ -1137,7 +1137,7 @@ card and cleaning it up.
   from then on, editing it never changes the template, and editing or removing the template never changes a card made
   from it.
 - <a id="the-add-card-picker"></a>**Where a card is added, its templates are offered.** Every place a person picks a
-  card type to add (a cell's **+ Add card** and the board's **N** key, a slot column's +, a Gantt chart's **Add
+  card type to add (a cell's **+ Add Card** and the board's **N** key, a slot column's +, a Gantt chart's **Add
   Card**) opens the **Add a Card** menu ([Plan board](plan-board.md#working-on-a-board)), which lists each type's
   templates right under the type, so a template is one press away, as the type is. The type's own row still adds a
   blank card (its new-card title). Each template row is indented under its type: a template glyph on a tint of the
@@ -1299,7 +1299,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   The type editor's footer offers **Duplicate** too, for a type that exists. Telemetry: `Plan` ·
   `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end; the panel offers no way to add the five default types in one press. The panel does not reorder types: the catalogue keeps
   its order (the order boards brought them in, then added types in the order they were added).
-- **With no types**, the list's place holds an empty state (the Cards glyph): **No Card Types Yet**, and "Add a card
+- **With no types**, the list's place holds an empty state (the Cards glyph): **No card types yet**, and "Add a card
   type of your own, or add a board that brings its types." for someone who may edit, "This
   project has no card types yet." for anyone else. Add Type sits under it as always.
 - **With no types**, Plan's bottom-right strip shows only **Card Types**: Find a Card would surface
@@ -1452,7 +1452,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       **Checklist**, then **Labels** and every other custom field a template holds as Details rows (the label beside
       the control on desktop, above it on a phone). Under them a quiet line: "A card started from it takes its state
       and place from where it is made." Fields a template never holds are not shown.
-    - **Empty**: a type with no templates shows the compact empty state (the template glyph, "No Templates Yet",
+    - **Empty**: a type with no templates shows the compact empty state (the template glyph, "No templates yet",
       "A template fills in a new {Name} card: its title, description, checklist, labels and fields.") with
       **New Template** as its one way forward, and the same help link beside it (the text link for everyone else).
     - **What stops Save**: a template with no name ("Give every template a name."), two with one name ("Two
@@ -1625,7 +1625,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         Enter or Space presses the one focused; Enter in the search, with a search typed, picks the first match.
         Tab reaches the search, the close cross, the rail and the tiles in turn, and wraps within the modal. Escape
         clears a typed search first, then closes the modal.
-    - **Shape** (step 2, after a kind is picked): a header with **All kinds** (a left chevron; back to Pick with
+    - **Shape** (step 2, after a kind is picked): a header with **All Kinds** (a left chevron; back to Pick with
       the search as it was, focus on the tile that was picked, the list scrolled to it) and the kind as a pill (its
       icon and name, read as "Kind: Choice"; a variant's name while its option is on, "Kind: Several People"); then, when the type lacks a built-in field of this kind, **Ready to use**: a row per such
       field (its icon, its name and what uses it: Assignee "Notifies them, and fills My Work and Workload", Labels
@@ -1687,7 +1687,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       gallery first, then a typed search clears, then it closes) leave the draft as it was; Save writes the field
       into the type editor's draft and closes. Focus goes back to the pencil. Nothing reaches the plan until the
       type editor's own **Save**.
-    - **Another type**: **All kinds** goes back to the gallery, the field's own tile tagged **Current**. Picking
+    - **Another type**: **All Kinds** goes back to the gallery, the field's own tile tagged **Current**. Picking
       another tile opens Shape for it with the name typed so far and Required kept; picking its own tile again gives
       the field back as it was. A Choice or Multiple Choice made from another type starts with the distinct values
       the field's cards hold as its options (each list's items one by one, at most 20), so they all fit.
@@ -1832,7 +1832,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     leaves it out; ticking one adds it at the end of Order; Select All adds every listed status not yet on, in board
     order, at the end; Deselect All turns every listed status off (one nothing lists any more stays). All may be off, and then a note
     says a card of this type stays in the state it is made in and can never be moved to another. With no columns
-    on the tab's boards it shows an empty state, **No States Yet**: "When you add states to a board that takes this type, they’re added here automatically." At most 128 may be on: then every status still
+    on the tab's boards it shows an empty state, **No states yet**: "When you add states to a board that takes this type, they’re added here automatically." At most 128 may be on: then every status still
     off is disabled, and a note says "A type can use at most 128 states. Turn one off to turn on another."
     Under them, **Default State**: a menu of every state still on, each once and by its own name, in the type's order,
     after **None** (left out for a ready-made type whose named state the project has: that state shows picked until
@@ -1874,7 +1874,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
 
 ## Where types show
 
-- **Boards** offer the types they show as their header's card type chips and in Add card, to add a card of one
+- **Boards** offer the types they show as their header's card type chips and in Add Card, to add a card of one
   (Plan mode has [no palette](plan-mode.md#no-palette), so no Cards category lists them).
 - **Cards** draw a type's colour (behind the card number) and glyph (an item's own [Colour](items.md#colour) is a dot beside them,
   never in their place); the item panel's type picker lists the catalogue; the Add a

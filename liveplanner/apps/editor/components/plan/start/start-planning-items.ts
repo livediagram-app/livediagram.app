@@ -169,7 +169,17 @@ const START_KEYWORDS: Readonly<Record<string, readonly string[]>> = {
     'progress',
     'lean',
   ],
-  'board:todo': ['checklist', 'tasks', 'list', 'personal', 'simple', 'actions', 'chores'],
+  'board:todo': [
+    'todo',
+    'to do',
+    'checklist',
+    'tasks',
+    'list',
+    'personal',
+    'simple',
+    'actions',
+    'chores',
+  ],
   'board:sprint': [
     'scrum',
     'agile',

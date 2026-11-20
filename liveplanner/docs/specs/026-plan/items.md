@@ -865,10 +865,10 @@ In the card panel, on a tab of its own, **Activity**, never mixed with the threa
   and time in a tooltip either way.
 - **Entries past the first 20** wait under **Show N More** (the number left) at the timeline's end.
 - **While it loads**: a skeleton of three rows on the rail (still, with reduced motion). **No history yet** (a card
-  made before history, or past its age): the shared compact empty state, a history glyph, **No Activity Yet** and
+  made before history, or past its age): the shared compact empty state, a history glyph, **No activity yet** and
   "Changes to this card show here: who moved it, what they set, and when."; a failed read: **Couldn't Load
   Activity**, "Check your connection and try again." and **Try Again**.
-- **Offline** plans keep no history: the tab says **No Activity Offline** and "Offline plans
+- **Offline** plans keep no history: the tab says **No activity Offline** and "Offline plans
   keep no card history." in place of the timeline.
 - A panel with no plan to read from (a preview) still shows the tab, with the Offline note's sibling: **No
   Activity Here** and "Activity shows on cards in a plan."
@@ -912,7 +912,7 @@ card and read one card at a time).
 - The Plan strip has **no New Card button**: a card is added where it will live, from a board's
   [card type chips](plan-board.md#card-type-chips) (a click, or a drag into a column and row) or a cell's **Add
   card**. A card made off any board in the strip made people go and find it again, and a button that adds without
-  placing was the least convenient way in. On a phone, where the header has no chips, each cell's **Add card** is
+  placing was the least convenient way in. On a phone, where the header has no chips, each cell's **Add Card** is
   the way in; a Sheet's card table adds rows of its own, and a linked card's **New {Type}** makes one beside the card
   it links to.
 

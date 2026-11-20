@@ -174,7 +174,7 @@ describe('the Calendar Wall month', () => {
     expect(
       screen.getByRole('button', { name: '7 November, today' })?.getAttribute('aria-pressed'),
     ).toBe('true');
-    expect(screen.getByText('No Notes Yet')).toBeTruthy();
+    expect(screen.getByText('No notes yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: '20 November, 1 note' }));
     expect(screen.getByText('note a')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Note'), { target: { value: 'Offsite' } });
@@ -356,7 +356,7 @@ describe('the Suggestion Box', () => {
     );
     expect(screen.queryByText('This box is closed.')).toBeNull();
     expect(screen.getByLabelText('Suggestion')).toBeTruthy();
-    await screen.findByText('No Notes Yet');
+    await screen.findByText('No notes yet');
   });
 
   it('lets an Editor read, refresh and remove notes, putting one back when a remove fails', async () => {
@@ -388,7 +388,7 @@ describe('the Suggestion Box', () => {
 
     api.apiListSuggestions.mockResolvedValue([]);
     fireEvent.click(screen.getByRole('button', { name: 'Refresh the notes' }));
-    await screen.findByText('No Notes Yet');
+    await screen.findByText('No notes yet');
   });
 
   it('offers Try Again when the notes do not load', async () => {

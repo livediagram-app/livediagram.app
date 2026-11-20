@@ -80,7 +80,7 @@ centred and never mirrored, at every facing.
   or agent read, Community post or Download All My Data; nothing but the box's own read below reaches them.
 - **Editors read them**: an Editor's box opens on the notes, newest day first (and newest first within a day), each
   with its day ("5 Nov") and **Remove**, the add box below theirs too. A **Refresh** fetches again: a drop is not sent
-  live. The box reads **No Notes Yet** when empty.
+  live. The box reads **No notes yet** when empty.
 - **Up to 200 notes a box.** A full box refuses a drop (**The box is full. An Editor can empty it.**). A box never
   closes otherwise: livehuddle has no element lock ([Element and Tab Locking](../002-project-scope/not-in-livehuddle.md#element-and-tab-locking)).
 - **Where notes go**: deleting the box leaves its notes unread (undo brings the box back with them); they go with

@@ -200,7 +200,8 @@ Eight ship, eight colours each: **Vivid** (the built-in ramp, named so it can be
 picked deliberately rather than only landed on), **Ocean**, **Forest**,
 **Sunset**, **Berry**, **Earth**, **Grey** (for print, and for a chart whose
 point is the shape of the data), **Contrast** (maximally separated hues, for the
-chart read from the back of a room).
+chart read from the back of a room). A palette's first two colours, the two largest slices or the first two series, stay plainly apart (a
+CIELAB ΔE of 15 or more), so even Forest's dark run starts green-900 then green-700.
 
 They are the chart's **Presets** grid ([Style presets](../010-palette/style-presets.md)): a chart styles per slice from
 its Data category, so a "look" for it is the ramp, not a fill and a border. The

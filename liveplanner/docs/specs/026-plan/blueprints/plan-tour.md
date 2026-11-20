@@ -102,7 +102,7 @@ then `begin()` (mark taken, `Started` · `DashboardTour`) or `cancel()`; Show Me
   root for `DEAL_MS` (900), and `plan.practise(creates)` with `PRACTICE_CARD_TITLES` in the first column. Unmount:
   `endPractice(false)` (a no-op once kept). Under Strict Mode the remount ends the first practice and deals again.
 - Ctx per render: the practice cards from `plan.context.items`, the open item id, the dealt ids.
-- Capture: as it deals, `plan.capturePractice(c => c.place.status is one of the board's columns)`, so Add card on
+- Capture: as it deals, `plan.capturePractice(c => c.place.status is one of the board's columns)`, so Add Card on
   the board makes a practice card (`add-card` is done when one not dealt appears); cleared on unmount and by
   `endPractice` (so kept cards are made real, not captured again). `addItem` sends no `Plan` · `Added` for one.
 - WIP: `overWipColumn(setup.columns, items)` gone over during a mission sets a note once, shown in place of that

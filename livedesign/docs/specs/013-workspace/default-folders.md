@@ -230,7 +230,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 - Settings holds a **Designs** category, for guests and accounts alike, led by **Default Folders**.
 - **Default Folders** has one row per entry, in list order, under one line saying what they share
   ("Where each kind of new design is saved when you create it without choosing a place.") and the
-  article's **Learn more**, said once rather than under every row.
+  article's **Learn More**, said once rather than under every row.
 - A row names the entry, in the title case of every Settings label ("Pages Designs"), and beneath it where those designs go: the folder's name (a team folder adds its
   team: "Logos · Design team", with a small folder mark), or **My Work** when there is
   no default. Until the

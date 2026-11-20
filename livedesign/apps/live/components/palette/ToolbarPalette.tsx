@@ -173,9 +173,10 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
   // The category bar names its categories while the strip has room for the names (useBarLabels); on a phone,
   // where the bar swipes sideways, always (owner, 2026-11-09: "on mobile, show the labels on the palette categories, its okay, we can scroll"; livehuddle
   // has since 2026-11-07).
+  // A photo page's tool categories in their place name themselves the same way (PhotoToolCategories).
   const fittedLabels = useBarLabels(cardRef, {
-    enabled: categoryBar && !isMobile,
-    categoriesKey: barCategories.map((c) => c.label).join('|'),
+    enabled: (categoryBar || photoInPlace) && !isMobile,
+    categoriesKey: photoInPlace ? 'photo-tools' : barCategories.map((c) => c.label).join('|'),
     scale,
   });
   const leadingRef = useRef<HTMLDivElement>(null);
@@ -431,7 +432,13 @@ export function ToolbarPalette(props: ToolbarPaletteProps) {
                         {swipe ? null : <Divider />}
                       </>
                       {photoInPlace ? (
-                        props.photoTools!.node
+                        // Glyphs alone while the strip has no room for the names (useBarLabels).
+                        <span
+                          className="contents"
+                          data-strip-glyphs={fittedLabels ? undefined : ''}
+                        >
+                          {props.photoTools!.node}
+                        </span>
                       ) : categoryBar ? (
                         <CategoryBarButtons
                           bar={bar}

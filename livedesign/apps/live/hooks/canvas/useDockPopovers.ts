@@ -15,11 +15,11 @@ import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-sca
 // scaled width or a scaled popover runs off the right edge.
 const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
-const POPOVER_WIDTHS: Partial<Record<string, number>> = {
+export const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   // The Contents popover's `w-[380px]` (docs/specs/007-editor/pages-mode.md "Contents").
   contents: 380,
-  // The Photo panel's 280 px (docs/specs/031-photo/photo-pages.md "The Photo panel").
-  'photo-panel': 280,
+  // The Photo panel's `w-[360px]` (docs/specs/031-photo/photo-pages.md "The Photo panel").
+  'photo-panel': 360,
   // The Explorer's `w-[60rem]`: its rail beside a pane (docs/specs/013-workspace/explorer-structure.md).
   explorer: 960,
 };

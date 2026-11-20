@@ -67,7 +67,7 @@ export const CHART_PALETTES: readonly ChartPalette[] = [
     name: 'Forest',
     colors: [
       '#14532d',
-      '#166534',
+      '#15803d',
       '#16a34a',
       '#4ade80',
       '#a3e635',

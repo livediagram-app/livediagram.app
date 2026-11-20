@@ -49,6 +49,8 @@ import {
 } from '@/lib/space-3d/space-3d-pieces';
 import { seatRowBox } from '@/lib/space-3d/space-3d-rows';
 import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
+import { spaceWalls } from '@/lib/space-3d/space-3d-walls';
+import { wallLiftAt, wallsTallerThanFigures } from '@/lib/space-3d/space-3d-wall-lift';
 import { useSpace3DTurn } from '@/components/canvas/space-3d/useSpace3DView';
 import { useWayfindingPeople } from './wayfinding/useWayfindingPeople';
 import type { useCanvasAvatar } from './useCanvasAvatar';
@@ -131,8 +133,20 @@ export function CanvasCharactersLayer({
     if (!piece || !builtIn3D(piece)) return piece;
     return turnQuarter(turn) === 0 ? seatRowBox(piece, at) : null;
   };
-  const liftOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
-    seatedOn && at ? seatLift(seatBox(seatedOn, at), at, turn) : 0;
+  // The walls a standing figure leans into (3d-view.md "Against a wall"), once per board change while you walk.
+  const figureWalls = useMemo(
+    () => (inMode ? wallsTallerThanFigures(spaceWalls(props.elements)) : []),
+    [inMode, props.elements],
+  );
+  // A sitter's lift is their seat's; one standing with a wall just behind is drawn towards the camera clear of it.
+  const liftOf = (
+    seatedOn: string | null | undefined,
+    at: { x: number; y: number } | null,
+    scale: number,
+  ) =>
+    seatedOn && at
+      ? seatLift(seatBox(seatedOn, at), at, turn)
+      : wallLiftAt(figureWalls, at, turn, scale);
   const behindOf = (seatedOn: string | null | undefined, at: { x: number; y: number } | null) =>
     !!seatedOn && !!at && seatBehind(seatBox(seatedOn, at), at, turn);
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
@@ -261,40 +275,43 @@ export function CanvasCharactersLayer({
       {/* Where people can hear you while you talk, on the floor under every character, unless Settings
         turned it off (docs/specs/012-collaboration/proximity-audio.md "Your hearing ring"). */}
       {props.settings.hearingRing !== false ? <HearingRing {...call.ring} /> : null}
-      {remoteAvatars.map((peer) => (
-        <AvatarWalker
-          turn={turn}
-          key={peer.id}
-          pos={{ x: peer.avatar.x, y: peer.avatar.y }}
-          facing={peer.avatar.facing}
-          // Parsed, not trusted: an older peer omits the costume entirely and
-          // a future one may send an option this build doesn't know.
-          config={peerAvatarConfig(peer.avatar.config)}
-          walking={peer.avatar.walking}
-          stepFrame={peer.avatar.stepFrame}
-          lift={peer.avatar.lift}
-          wave={peer.avatar.wave}
-          seated={sitsDown(peer.avatar.seatedOn)}
-          // Parsed, not trusted: anything but a known drink draws an empty hand.
-          holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
-          status={parseAvatarStatus(peer.avatar.status)}
-          // Replayed locally from the kind + elapsed time in their packet, by
-          // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
-          pose={
-            peer.avatar.reaction
-              ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
-              : null
-          }
-          shirt={peer.color}
-          name={peer.name}
-          standingOn={null}
-          glideMs={peer.glideMs}
-          chipShift={chipShifts.get(peer.id)}
-          seatLift={liftOf(peer.avatar.seatedOn, peer.avatar)}
-          seatBehind={behindOf(peer.avatar.seatedOn, peer.avatar)}
-          raised={standsRaised(stageBoxes, peer.avatar)}
-        />
-      ))}
+      {remoteAvatars.map((peer) => {
+        // Parsed, not trusted: an older peer omits the costume entirely and
+        // a future one may send an option this build doesn't know.
+        const config = peerAvatarConfig(peer.avatar.config);
+        return (
+          <AvatarWalker
+            turn={turn}
+            key={peer.id}
+            pos={{ x: peer.avatar.x, y: peer.avatar.y }}
+            facing={peer.avatar.facing}
+            config={config}
+            walking={peer.avatar.walking}
+            stepFrame={peer.avatar.stepFrame}
+            lift={peer.avatar.lift}
+            wave={peer.avatar.wave}
+            seated={sitsDown(peer.avatar.seatedOn)}
+            // Parsed, not trusted: anything but a known drink draws an empty hand.
+            holding={isDrinkKind(peer.avatar.holding) ? peer.avatar.holding : null}
+            status={parseAvatarStatus(peer.avatar.status)}
+            // Replayed locally from the kind + elapsed time in their packet, by
+            // the same pure function the sender used (docs/specs/008-canvas/avatar-mode.md).
+            pose={
+              peer.avatar.reaction
+                ? reactionPose(peer.avatar.reaction.kind, peer.avatar.reaction.elapsedMs)
+                : null
+            }
+            shirt={peer.color}
+            name={peer.name}
+            standingOn={null}
+            glideMs={peer.glideMs}
+            chipShift={chipShifts.get(peer.id)}
+            seatLift={liftOf(peer.avatar.seatedOn, peer.avatar, avatarScale(config.size))}
+            seatBehind={behindOf(peer.avatar.seatedOn, peer.avatar)}
+            raised={standsRaised(stageBoxes, peer.avatar)}
+          />
+        );
+      })}
       {/* The Receptionist (docs/specs/008-canvas/receptionist.md): the host by the tab's Avatar Pad, drawn while you
         walk. Owns his own clock, so his frames redraw his layer alone. */}
       {inMode ? (
@@ -305,6 +322,7 @@ export function CanvasCharactersLayer({
           self={feet}
           zoom={viewportZoom}
           onStanding={setHostAt}
+          walls={figureWalls}
           chipShift={chipShifts.get(HOST_CHIP)}
         />
       ) : null}
@@ -337,7 +355,7 @@ export function CanvasCharactersLayer({
         shirt={props.selfParticipant.color}
         standingOn={avatarStandingOn}
         chipShift={chipShifts.get(SELF_CHIP)}
-        seatLift={liftOf(avatar.seatedOn, feet)}
+        seatLift={liftOf(avatar.seatedOn, feet, selfScale)}
         seatBehind={behindOf(avatar.seatedOn, feet)}
         raised={standsRaised(stageBoxes, feet)}
       />

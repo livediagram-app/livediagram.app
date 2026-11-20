@@ -214,7 +214,7 @@ describe('projectBoard', () => {
   });
 });
 
-describe('the To-do List preset (docs/specs/026-plan/plan-board.md "The To-do List board")', () => {
+describe('the To-Do List preset (docs/specs/026-plan/plan-board.md "The To-Do List board")', () => {
   it('runs Actions from To Do to Done, on Detailed cards, with Completion and Due Soon', () => {
     const todo = presetSetup('todo');
     expect(todo.columns.map((c) => c.name)).toEqual(['To Do', 'Done']);

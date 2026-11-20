@@ -1597,11 +1597,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Opened|Share': 'Someone opened the Share dialog.',
   'UI|Opened|Shortcuts': 'Someone opened the keyboard-shortcuts dialog.',
   'UI|Opened|SignInReasons':
-    'Someone clicked "Learn more" on the guest sign-in banner to read why they should sign in. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
+    'Someone clicked "Learn More" on the guest sign-in banner to read why they should sign in. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
   'UI|Opened|SignInReasonsEditor':
-    'Someone clicked "Learn more" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
+    'Someone clicked "Learn More" on the guest sign-in banner shown in the editor, opening the reasons-to-sign-in card.',
   'UI|Opened|SignInReasonsExplorer':
-    'Someone clicked "Learn more" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
+    'Someone clicked "Learn More" on the guest sign-in banner shown in the Explorer, opening the reasons-to-sign-in card.',
   'UI|Opened|PageContents':
     "Someone opened Pages mode's Contents: every page of the tab in a list.",
   'UI|Used|PageContentsJump': "Someone went to a page from Pages mode's Contents list.",
@@ -2499,7 +2499,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|View|PlanTourStepBoard':
     'The Plan tour reached its "Your Board" step, highlighting the person\'s board (placing an example board until October 2026).',
   'UI|View|PlanTourStepAddCards':
-    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add card (adding example cards until October 2026).',
+    'The Plan tour reached its "Add Cards" step, pointing at a column\'s Add Card (adding example cards until October 2026).',
   'UI|View|PlanTourStepMoveCard':
     'The Plan tour reached its "Move Work Along" step, pointing at a card on the board (moving an example card until October 2026).',
   'UI|View|PlanTourStepCardPanel':

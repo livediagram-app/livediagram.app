@@ -10,7 +10,7 @@ import {
 } from '@liveworkspace/telemetry';
 import { AllApps } from './AllApps';
 
-// All apps' Apps Compared (liveworkspace/docs/specs/008-telemetry/telemetry.md "Apps Compared"): the events chart with
+// All Apps' Apps Compared (liveworkspace/docs/specs/008-telemetry/telemetry.md "Apps Compared"): the events chart with
 // a line per app and the Total, the visitors and accounts for every app or one, the tables beside the charts, the
 // window from the page, and the empty states.
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -160,8 +160,8 @@ describe('Apps Compared', () => {
 
   it('says so when nothing has arrived', () => {
     show(quiet);
-    expect(text()).toContain('No Events Yet');
-    expect(text()).toContain('No Visitors Yet');
+    expect(text()).toContain('No events yet');
+    expect(text()).toContain('No visitors yet');
   });
 
   it('follows the window it is given and hands a pick back to the page', () => {
@@ -213,6 +213,6 @@ describe('Project Kits', () => {
 
   it('says so when no kit has been used', () => {
     show(quiet);
-    expect(section().textContent).toContain('No Project Kits Yet');
+    expect(section().textContent).toContain('No project kits yet');
   });
 });

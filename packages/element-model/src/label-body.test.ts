@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createShape, createSticky } from './testing/elements';
 import { type BoxedElement } from './element';
-import { CYLINDER_BASE_BOTTOM, CYLINDER_LID_BOTTOM, labelBodyInset } from './label-body';
+import {
+  CYLINDER_BASE_BOTTOM,
+  CYLINDER_LID_BOTTOM,
+  PARALLELOGRAM_SIDE,
+  TRAPEZOID_SIDE,
+  labelBodyInset,
+} from './label-body';
+import { labelMaxWidth } from './svg-render-primitives';
 import { shapeGeometry } from './shape-geometry';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Shape primitives": a cylinder's label sits on the
@@ -28,8 +35,25 @@ describe('labelBodyInset', () => {
       expect(labelBodyInset(createShape(kind, 0, 0) as BoxedElement)).toEqual({
         top: 0,
         bottom: 0,
+        side: 0,
       });
     }
-    expect(labelBodyInset(createSticky(0, 0))).toEqual({ top: 0, bottom: 0 });
+    expect(labelBodyInset(createSticky(0, 0))).toEqual({ top: 0, bottom: 0, side: 0 });
+  });
+
+  it("keeps a slanted kind's label inside its slants where they cross the middle", () => {
+    const at = (kind: 'parallelogram' | 'trapezoid') =>
+      labelBodyInset({ ...createShape(kind, 0, 0), width: 200, height: 80 });
+    expect(at('parallelogram')).toEqual({ top: 0, bottom: 0, side: 20 });
+    expect(at('trapezoid').side).toBeCloseTo(24, 9);
+    // The drawn outlines: the parallelogram's left side runs 20,0 to 0,100 (x 10 at mid-height), the
+    // trapezoid's 22,4 to 2,96 (x 12).
+    expect(PARALLELOGRAM_SIDE).toBe((20 + 0) / 2 / 100);
+    expect(TRAPEZOID_SIDE).toBe((22 + 2) / 2 / 100);
+  });
+
+  it("wraps a slanted kind's export label inside its slants", () => {
+    const shape = { ...createShape('parallelogram', 0, 0), width: 200, height: 80 } as BoxedElement;
+    expect(labelMaxWidth(shape, 6)).toBe(200 - 12 - 40);
   });
 });

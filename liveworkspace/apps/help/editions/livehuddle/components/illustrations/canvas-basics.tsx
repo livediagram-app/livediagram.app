@@ -31,7 +31,7 @@ export {
 
 /** The canvas with the menu button and tab name top-left, the palette strip across the top
  *  (the canvas-tool and category dropdowns, the tiles, More and Search) and the bottom-right
- *  cluster (Undo and Redo, the Theme & canvas paintbrush, then the zoom controls). */
+ *  cluster (Undo and Redo, the Theme & Canvas paintbrush, then the zoom controls). */
 export function CanvasPaletteOverview() {
   const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   return (

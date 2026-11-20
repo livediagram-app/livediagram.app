@@ -76,14 +76,14 @@ describe('quick-style-bar-slots', () => {
     const roomOf = () => rooms.at(-1);
     expect(roomOf()).toBeNull();
     act(() => setQuickStyleBarRoom('r', 120.4));
-    expect(roomOf()).toEqual({ pageId: 'r', px: 120 });
+    expect(roomOf()).toEqual({ pageId: 'r', px: 120, namedPx: 120 });
     const same = roomOf();
     act(() => setQuickStyleBarRoom('r', 120.2));
     expect(roomOf()).toBe(same);
     // The bar moving on: the old page's give-back never clears the new page's room.
     act(() => setQuickStyleBarRoom('s', 80));
     act(() => setQuickStyleBarRoom('r', 0));
-    expect(roomOf()).toEqual({ pageId: 's', px: 80 });
+    expect(roomOf()).toEqual({ pageId: 's', px: 80, namedPx: 80 });
     act(() => setQuickStyleBarRoom('s', -5));
     expect(roomOf()).toBeNull();
   });

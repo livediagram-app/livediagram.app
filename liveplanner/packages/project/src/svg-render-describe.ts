@@ -392,9 +392,9 @@ export function describeBoxedExport(
         text: el.label,
         x:
           alignX === 'right'
-            ? boxX + boxW - padX
+            ? boxX + boxW - padX - body.side
             : alignX === 'left'
-              ? boxX + padX + bodyInset
+              ? boxX + padX + bodyInset + body.side
               : boxX + boxW / 2,
         y:
           alignY === 'top'

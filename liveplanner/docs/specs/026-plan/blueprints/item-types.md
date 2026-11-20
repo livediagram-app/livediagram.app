@@ -698,7 +698,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
   `linkedGroups.length > 0 ? linkedCardCount(linkedGroups) : null`, so the tab follows `linkedCardsOf` (a group for
   every Card field whose types include the card's, cards or none). `LinkedCardsTab.tsx` draws the groups:
   `linkedCardCount` (distinct card ids across groups); at none a `CompactEmptyState` (small, the Lucide link glyph,
-  dashed border, "No Linked Cards Yet", the line with or without the adding half), then for `canAdd` the groups with
+  dashed border, "No linked cards yet", the line with or without the adding half), then for `canAdd` the groups with
   `emptyNote={false}`; a Viewer gets the empty state alone. The tab is never in the type: the type editor, its
   6-tab limit and `readTabs` never see it. A card picked onto it keeps it while `shownTabs` holds it, and the panel
   falls back to the first tab when it goes (`current` is `shownTabs[0]` when `picked` is not found). Tab pill: 11px
@@ -927,7 +927,7 @@ retried }`.
     `goTo(arriveAt)` or `spy`) brings the rail in step.
   - Step 2 is `AddFieldShape.tsx`, a `<form>` (`aria-label` "New {Kind} field"; `onSubmit` adds when ready, so Enter
     in Name submits; option rows and selects take their own Enter): a header with the back button (`ChevronLeft`,
-    "All kinds") and the pill (`<span><span class="sr-only">Kind: </span>{label}</span>` with its icon); when
+    "All Kinds") and the pill (`<span><span class="sr-only">Kind: </span>{label}</span>` with its icon); when
     `readyBuiltIns(kind, missing)` is not empty, a `section` headed **Ready to use** (`aria-labelledby`) of one
     button per built-in (`fieldIconOf(id)`, its `BUILT_IN_FIELD_LABELS` name, its `BUILT_IN_ROLES` line, a plus;
     `onAddBuiltIn(id)`), then a rule labelled **Or make your own**, and only that section when `canAddCustom` is
@@ -1472,7 +1472,7 @@ cards, children)` adds "{names} will keep a copy of its settings."
   (the variants: "Several People", "Time Tracking", "Date and Time Range", "Several Cards", "Blocked By",
   "Formula", "Rollup", "Lookup") and descriptions, the Ready to use lines, "No fields match “…”", "No {Category} fields match “…”", "Try a word like
   money, date or parent.", "N fields match", "Remove a custom field to add another",
-  "This type holds the most custom fields it can (12). Remove one to add another.", "All kinds", "Kind: {Kind}",
+  "This type holds the most custom fields it can (12). Remove one to add another.", "All Kinds", "Kind: {Kind}",
   "Name", "Field name", "Options", "Add an option", "or paste a list", "Option {n}", "Remove option {n}", "Scale",
   "Currency", "Calculation", "Required", "Try It", "Nothing here is saved", "Preview", "Shows on a real card",
   "Example card", "Write an email address like sam@example.com", "Write a link that starts https://", "Add {Name}", "Add {Kind} Field", "Name the

@@ -274,6 +274,8 @@ function VoteTurnout({ vote, participantCount }: { vote: TabVote; participantCou
   // Someone in the room who hasn't cast a single dot yet. Clamped: a
   // participant can leave mid-vote leaving more voters than people.
   const notStarted = Math.max(0, participantCount - started);
+  // Everyone has started but someone still holds dots: not done yet, so never "Everyone here has voted".
+  const stillVoting = started - finished;
   const dotsCast = spends.reduce((a, b) => a + b, 0);
   const dotsTotal = Math.max(participantCount, started) * budget;
 
@@ -329,7 +331,9 @@ function VoteTurnout({ vote, participantCount }: { vote: TabVote; participantCou
           ? `${notStarted} ${notStarted === 1 ? 'person hasn’t' : 'people haven’t'} voted yet`
           : started === 0
             ? 'No dots cast yet'
-            : 'Everyone here has voted'}
+            : stillVoting > 0
+              ? `${stillVoting} ${stillVoting === 1 ? 'person has' : 'people have'} dots left`
+              : 'Everyone here has voted'}
       </p>
     </>
   );

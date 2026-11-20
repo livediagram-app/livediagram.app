@@ -29,11 +29,12 @@ export const PALETTE_TRAY_MIN_WIDTH_PX = 360;
  *  A phone too, where the strip's card sits beside the menu button and is narrower than the minimum (at most the
  *  window less 8 px each side): kept to the card's width, a tray's actions ran past its edge ("Keep It" at 390 px,
  *  "Show Templates" at 320 px) and its message wrapped to a second line. */
-export function traySlot(box: StripBox, viewportWidth: number): { left: number; width: number } {
-  const width = Math.min(
-    Math.max(box.width, PALETTE_TRAY_MIN_WIDTH_PX),
-    Math.max(0, viewportWidth - 16),
-  );
+export function traySlot(
+  box: StripBox,
+  viewportWidth: number,
+  minWidth: number = PALETTE_TRAY_MIN_WIDTH_PX,
+): { left: number; width: number } {
+  const width = Math.min(Math.max(box.width, minWidth), Math.max(0, viewportWidth - 16));
   if (width === box.width) return { left: box.left, width };
   const centred = box.left + box.width / 2 - width / 2;
   return { left: Math.max(8, Math.min(centred, viewportWidth - 8 - width)), width };
@@ -213,6 +214,7 @@ export function PaletteTray({
   end,
   standing = false,
   quietOnPhone = false,
+  minWidth,
 }: {
   box: StripBox;
   // The leading icon, or a modifier's key chip.
@@ -227,6 +229,8 @@ export function PaletteTray({
   // The message is for screen readers alone on a phone, where the tray's width holds only its actions: without a
   // place in the row it leaves no empty gap between the glyph and the first action.
   quietOnPhone?: boolean;
+  // The narrowest the slot gets (traySlot), when the message and its actions need more than the default.
+  minWidth?: number;
 }) {
   useEffect(() => {
     countTray(1);
@@ -234,7 +238,7 @@ export function PaletteTray({
   }, []);
   if (typeof document === 'undefined') return null;
   const host = trayHost();
-  const slot = traySlot(box, window.innerWidth);
+  const slot = traySlot(box, window.innerWidth, minWidth);
   // The card centres under the strip's card, not the slot: a slot kept inside the window (a phone, where the strip
   // sits off the window's centre beside the menu button) is not centred on the strip. Two growing spacers do it with
   // no measuring: the one on the strip's side starts twice the offset wide, so the card's centre lands on the
@@ -299,6 +303,11 @@ function PaletteTrayCard({
 
 const SparklesGlyph = lucideGlyph(lucideSparkles, 15);
 
+/** The narrowest the template example tray's slot gets, in px: its glyph, its whole sentence and both actions
+ *  ("Clear Example Content", "Keep It"), which a narrow strip (a slide deck's, livediagram's, about 470 px) cut to
+ *  "Example content shows how this ...". */
+export const TEMPLATE_EXAMPLE_TRAY_MIN_WIDTH_PX = 520;
+
 /**
  * A template's example content (liveworkspace/docs/specs/002-architecture/blueprints/template-examples.md): while
  * the open tab still holds example values a template landed with, an Editor's palette tray says so, with Clear
@@ -329,7 +338,14 @@ export function TemplateExampleTray({
   const message = 'Example content shows how this works.';
   if (strip)
     return (
-      <PaletteTray box={strip} standing quietOnPhone lead={lead} end={end}>
+      <PaletteTray
+        box={strip}
+        standing
+        quietOnPhone
+        minWidth={TEMPLATE_EXAMPLE_TRAY_MIN_WIDTH_PX}
+        lead={lead}
+        end={end}
+      >
         {message}
       </PaletteTray>
     );

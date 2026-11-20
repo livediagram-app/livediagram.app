@@ -1573,7 +1573,9 @@ article**, **Move article left / right**, **Delete article**. On a **slide page*
 - Each is one tab edit (one undo step, synced to everyone). At the page limit (**100** pages,
   `MAX_PAGES`) Duplicate is disabled (also when an article's copy would pass it), like
   Add page is absent; Move left / right are disabled at the row's ends.
-- **A new page comes into view**: after Add page or Duplicate the view frames the new page.
+- **A new page comes into view**: after Add page or Duplicate the view frames the new page. The caret's reveal
+  in a new article page's title holds off until that glide lands: begun from where the view was, it pulled the view
+  back to show only the page's edge, framing the page before it.
 - **A delete never leaves you looking at nothing**: after Delete the view glides to the page
   before the deleted one (its last page, for an article), or to the next when the first page went,
   as it glides to a new page (instant under reduced motion).
@@ -1778,7 +1780,7 @@ The Export dialog exports **pages**, not the tab's content bounds.
   exports white; elements are inked for the page's own surface. An element (an arrow by its
   resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
-- The Background pattern option is not offered: a page is its own background.
+- The Background Pattern option is not offered: a page is its own background.
 - There is no Hidden layers option (retired with the Layers panel, [Layers](../006-document/layers.md) "Retired: the
   Layers panel"): a hidden layer's elements stay out of the export as they stay off its canvas.
 

@@ -208,7 +208,7 @@ describe('New {Type} of a type with templates', () => {
 });
 
 // Work Tracker 972 (docs/specs/004-interface-design/menus.md "Opening on the side with room"): a long Add a Card
-// menu (a type's 10 templates and 20 more types, 31 rows) on a 1440 x 900 screen, from an Add card button low on it,
+// menu (a type's 10 templates and 20 more types, 31 rows) on a 1440 x 900 screen, from an Add Card button low on it,
 // opens above the button rather than being nudged up over it; from a button high up it opens below as before.
 describe('a long Add a Card menu on a 1440 x 900 screen', () => {
   const ROW_PX = 36;
@@ -249,7 +249,7 @@ describe('a long Add a Card menu on a 1440 x 900 screen', () => {
     expect(screen.getAllByRole('menuitem').length).toBeGreaterThanOrEqual(30);
   });
 
-  it('opens above an Add card button low on the screen, held to the screen and scrolling', () => {
+  it('opens above an Add Card button low on the screen, held to the screen and scrolling', () => {
     const menuEl = longMenu(820);
     expect(menuEl.style.transform).toBe('translate(0px, calc(-100% - 4px))');
     expect(menuEl.style.overflowY).toBe('auto');

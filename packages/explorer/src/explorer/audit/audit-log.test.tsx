@@ -234,7 +234,7 @@ describe('the Audit Log', () => {
     expect(screen.getByText('1 event match')).toBeTruthy();
     // Their name stays offered when no loaded row names them any more.
     fireEvent.change(screen.getByLabelText('Event'), { target: { value: 'deleted' } });
-    expect(await screen.findByText('No Events Match')).toBeTruthy();
+    expect(await screen.findByText('No events match')).toBeTruthy();
     expect(person.value).toBe('user_gone');
     expect(person.selectedOptions[0]!.textContent).toBe('Cy Old (not in the team)');
 
@@ -271,15 +271,15 @@ describe('the Audit Log', () => {
     await open(index);
     await waitFor(() => expect(rows().length).toBe(1));
     fireEvent.change(screen.getByLabelText('Event'), { target: { value: 'deleted' } });
-    expect(await screen.findByText('No Events Match')).toBeTruthy();
-    const empty = screen.getByText('No Events Match').closest('[data-empty-state]') as HTMLElement;
+    expect(await screen.findByText('No events match')).toBeTruthy();
+    const empty = screen.getByText('No events match').closest('[data-empty-state]') as HTMLElement;
     fireEvent.click(within(empty).getByRole('button', { name: 'Clear Filters' }));
     await waitFor(() => expect(rows().length).toBe(1));
   });
 
   it('says so when the team has no events yet', async () => {
     await open(createFakeIndex());
-    expect(await screen.findByText('No Audit Events Yet')).toBeTruthy();
+    expect(await screen.findByText('No audit events yet')).toBeTruthy();
     expect(screen.getByText('No events')).toBeTruthy();
     expect((screen.getByRole('button', { name: 'Export CSV' }) as HTMLButtonElement).disabled).toBe(
       true,
@@ -294,7 +294,7 @@ describe('the Audit Log', () => {
       screen.getByRole('button', { name: 'Export CSV' }) as HTMLButtonElement;
     expect(exportButton().disabled).toBe(false);
     fireEvent.change(screen.getByLabelText('Event'), { target: { value: 'deleted' } });
-    expect(await screen.findByText('No Events Match')).toBeTruthy();
+    expect(await screen.findByText('No events match')).toBeTruthy();
     expect(exportButton().disabled).toBe(true);
     expect(exportButton().title).toBe('Nothing to export');
     fireEvent.click(screen.getAllByRole('button', { name: 'Clear Filters' })[0]!);

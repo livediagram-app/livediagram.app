@@ -217,7 +217,7 @@ describe('the Walkthroughs row in Tools', () => {
       'Record yourself talking through it.',
     );
     fireEvent.click(document.querySelector<HTMLElement>('[data-tools-item="walkthroughs"]')!);
-    expect(screen.getByText('No Walkthroughs Yet')).toBeTruthy();
+    expect(screen.getByText('No walkthroughs yet')).toBeTruthy();
     fireEvent.click(screen.getByText('Record Walkthrough'));
     expect(await screen.findByRole('region', { name: 'Record a Walkthrough' })).toBeTruthy();
     expect(screen.getByRole('dialog', { name: /^Tools/ })).toBeTruthy();

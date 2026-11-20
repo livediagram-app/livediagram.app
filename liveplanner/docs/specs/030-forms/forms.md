@@ -148,7 +148,7 @@ side panel. Until the form's responses have somewhere to go (no board and no she
 dimmed and cannot be selected, changed, moved or added to (no add bar; an empty form reads "Choose where responses go
 above, then add questions."): the connect box under the title is the one thing to do first. Its heading, description
 and Settings stay editable. The Form tab shows the form as respondents will see it, centred in a column 640 px wide (880 px when its
-[Width](#responses-go-to-and-settings) is Wide; full width less 16 px gutters on a phone), on the tab theme's background. The form's **status bar** (see
+[Width](#responses-go-to-and-settings) is Wide; full width less 16 px gutters on a phone), on the tab theme's background. The column holds still as the form grows past the screen: room for the scrollbar is kept on both sides from the start, so selecting a question (which opens its settings) never nudges the form sideways. The form's **status bar** (see
 [Hearing about responses](#hearing-about-responses)) is its palette: on a desktop it sits where every other tab's
 palette does, centred in the top row at the menu box's height (12 px down, at the toolbar's UI scale), drawn as the
 shared toolbar card (hairline border, soft shadow, 36 px controls, hairlines between its groups, as livehuddle's

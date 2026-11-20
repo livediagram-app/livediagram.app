@@ -1039,7 +1039,7 @@ allowing. On a phone the header keeps its desktop look (100px, the mark, the tit
   On a phone the filters are laid out for a thumb: the search across the full width (40 px tall, 14 px text), then
   one row of the **All Triggers** select (taking the room) and an **All / On / Off** segmented control, both 40 px
   tall, the same radius, border and brand focus ring as the search, 8 px apart.
-- **Empty**: the bolt glyph, **No Rules Yet**, "A rule watches this plan and does the routine steps for you:
+- **Empty**: the bolt glyph, **No rules yet**, "A rule watches this plan and does the routine steps for you:
   moving, assigning, labelling and telling people about cards. Start from one below or build your own.", **New
   Rule** and **How Rules Work** (the help article), then **Start From a Template** with the gallery below.
 - **Templates** (the tab, and under the empty state): category chips **All**, **Status**, **Assigning**, **Due

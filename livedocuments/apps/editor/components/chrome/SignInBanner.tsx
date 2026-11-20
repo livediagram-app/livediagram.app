@@ -2,7 +2,7 @@
 
 // The editor's sign-in encouragement banner (docs/specs/014-identity/sign-in-encouragement.md). A floating,
 // gradient bottom-of-screen card shown to guest visitors, with a
-// primary Sign in CTA, a Learn more button that opens the reasons
+// primary Sign In CTA, a Learn More button that opens the reasons
 // modal, and a dismiss control. Visibility (sign-in enabled, not signed
 // in, not dismissed, the delay) is decided by the host (EditorView);
 // this component just renders the card and owns the modal-open state. The host passes `onDismiss` so the
@@ -18,7 +18,7 @@ import { useChromeFloor } from '@liveworkspace/ui/toast';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
 
-// Lazy-load the reasons modal: it only matters once Learn more is
+// Lazy-load the reasons modal: it only matters once Learn More is
 // clicked, so its content (and icon set) stays out of the eager
 // editor chunk. Same pattern as AuthControls' DeleteAccountDialog.
 const SignInReasonsModal = dynamic(
@@ -96,7 +96,7 @@ export function SignInBanner({
               }}
               className="rounded-lg border border-white/40 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/15"
             >
-              Learn more
+              Learn More
             </button>
             <Link
               href={signInHref}
@@ -122,7 +122,7 @@ export function SignInBanner({
       </div>
 
       {/* Only mount once opened so the dynamic chunk fetches on the
-          first Learn more click, not on every editor load. */}
+          first Learn More click, not on every editor load. */}
       {reasonsOpen ? (
         <SignInReasonsModal open onClose={() => setReasonsOpen(false)} onSignIn={trackSignIn} />
       ) : null}

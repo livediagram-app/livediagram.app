@@ -3,7 +3,7 @@
 Status: **retired** (Work Tracker 751). Comment threads on canvas elements are retired
 ([Plan mode](../026-plan/plan-mode.md#no-comment-thread-on-any-canvas-element)): comments live on cards and Sheet
 cells. No Plan surface places a panel, and a stored one draws its thread **read-only**: the header, the bubbles (or
-**No Comments Yet**) and the green **Resolved** chip once resolved, with no composer, no **Resolve** chip, no **Reopen
+**No comments yet**) and the green **Resolved** chip once resolved, with no composer, no **Resolve** chip, no **Reopen
 Thread** bar and no delete. Its `commentThread` is kept as stored, the export still draws it, and a `?open=comments`
 link or a Collaborate panel jump lands on it without opening anything. The rest of this page records the panel as it
 was built; where it describes writing to the thread, that no longer happens.

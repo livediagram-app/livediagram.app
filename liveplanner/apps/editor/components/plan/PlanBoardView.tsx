@@ -403,16 +403,16 @@ export function PlanBoardView({
   // The board's filter hides every card it holds, for this viewer (docs/specs/026-plan/board-widgets.md "When the
   // filter hides every card"): a hint in the columns. Never on a phone or in a Dashboard slot, where no filter applies.
   const filterHidesAll = !loading && hidesAll && !phone && !simplified;
-  // Every board shows, and Add card offers, every card type (docs/specs/026-plan/plan-board.md).
+  // Every board shows, and Add Card offers, every card type (docs/specs/026-plan/plan-board.md).
   const addTypes = boardAddTypes(setup, types);
 
   const columnTemplate = slotBoard
     ? slotColumnTemplate(bodySize?.width ?? null, setup.columns)
     : boardColumnTemplate(setup.columns, look.columns, shutColumns);
-  // A slot board's column + (its head's, the cards' Add card row otherwise; rows keep their own rows' buttons, an All
+  // A slot board's column + (its head's, the cards' Add Card row otherwise; rows keep their own rows' buttons, an All
   // Cards board's rows by status being the one kind a slot board keeps).
   const addInHead = simplified && !withLanes;
-  // Add card is offered: someone who may add, once loaded, on a board that takes new cards and some type to add.
+  // Add Card is offered: someone who may add, once loaded, on a board that takes new cards and some type to add.
   const mayAdd = canEditCards && !loading && !setup.archive && addTypes.length > 0;
   // A new card at the foot of a cell, opened at once to be named (plan-board.md "Open an item").
   const addInto =

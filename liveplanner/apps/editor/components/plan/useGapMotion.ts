@@ -22,7 +22,7 @@ function still(): boolean {
 }
 
 // A list the gap opens into empty (or leaves empty) is hidden while empty, so it appearing or going would add or take
-// the cell's own gap after it (between the list and the Add card row) in one step. While it holds only a gap, the
+// the cell's own gap after it (between the list and the Add Card row) in one step. While it holds only a gap, the
 // list's bottom margin takes that gap back (from minus the gap to nothing as a gap opens, and back as it closes), so
 // the list's room grows and shrinks with the gap and nothing below it jumps. One fold per list.
 const listFolds = new WeakMap<HTMLElement, Animation>();

@@ -59,7 +59,7 @@ describe('a stored Comment panel', () => {
 
   it('says it has no comments, and invites none, when its thread is empty', () => {
     draw(panel());
-    expect(screen.getByText('No Comments Yet')).toBeTruthy();
+    expect(screen.getByText('No comments yet')).toBeTruthy();
     expect(screen.queryByText('Start the Conversation')).toBeNull();
     expect(screen.queryByRole('textbox')).toBeNull();
   });

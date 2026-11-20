@@ -30,7 +30,7 @@ export type SettingsUiKit = {
     query: string;
     onClear: () => void;
   }>;
-  // A row's or a section note's "Learn more" link. Absent: no link.
+  // A row's or a section note's "Learn More" link. Absent: no link.
   HelpLink?: ComponentType<{ article: string }>;
   // The Sign In link a note row ends with. Absent: no link.
   SignInLink?: ComponentType;

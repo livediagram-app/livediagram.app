@@ -156,9 +156,9 @@ export function StylePanel({
 }
 
 export const LIST_OPTIONS: { id: ArticleListKind; label: string; short: string; keys: string }[] = [
-  { id: 'bullet', label: 'Bulleted list', short: 'Bullets', keys: 'Mod-Shift-8' },
-  { id: 'numbered', label: 'Numbered list', short: 'Numbers', keys: 'Mod-Shift-7' },
-  { id: 'todo', label: 'To-do list', short: 'To-do', keys: 'Mod-Shift-9' },
+  { id: 'bullet', label: 'Bulleted List', short: 'Bullets', keys: 'Mod-Shift-8' },
+  { id: 'numbered', label: 'Numbered List', short: 'Numbers', keys: 'Mod-Shift-7' },
+  { id: 'todo', label: 'To-Do List', short: 'To-do', keys: 'Mod-Shift-9' },
 ];
 
 export function ListPanel({
@@ -189,13 +189,13 @@ export function ListPanel({
         <>
           <Rule />
           <Row
-            label="Increase indent"
+            label="Increase Indent"
             icon={<PanelIcons.indent />}
             keys="Tab"
             onPick={() => onIndent(1)}
           />
           <Row
-            label="Decrease indent"
+            label="Decrease Indent"
             icon={<PanelIcons.outdent />}
             keys="Shift-Tab"
             onPick={() => onIndent(-1)}
@@ -374,7 +374,7 @@ export function MorePanel({
         onPick={() => onAction('strike')}
       />
       <Row
-        label="Inline code"
+        label="Inline Code"
         icon={<PanelIcons.code />}
         keys="Mod-e"
         selected={selection.marks.has('code')}
@@ -394,13 +394,13 @@ export function MorePanel({
       />
       <Rule />
       <Row
-        label="Clear formatting"
+        label="Clear Formatting"
         icon={<PanelIcons.clear />}
-        keys="Mod-\\"
+        keys={'Mod-\\'}
         onPick={() => onAction('clear')}
       />
       <Row
-        label={card ? 'Card style' : 'Article style'}
+        label={card ? 'Card Style' : 'Article Style'}
         icon={<PanelIcons.style />}
         onPick={() => onAction('style')}
       />

@@ -383,7 +383,7 @@ the header's end. Its frame (header, rail, list) is shared with [Add Field](item
   | Board      | Widgets                        | Why                                                             |
   | ---------- | ------------------------------ | --------------------------------------------------------------- |
   | Kanban     | Completion, WIP Alerts, Filter | Flow against its limits, and finding a card                     |
-  | To-do List | Completion, Due Soon           | How much is done, and what is due; a short list needs no Filter |
+  | To-Do List | Completion, Due Soon           | How much is done, and what is due; a short list needs no Filter |
   | Sprint     | Points, Completion, Filter     | Burn-up in points; its rows already show who has what           |
   | Bug Triage | Item Count, Unassigned, Filter | Bugs nobody owns; its rows already show severity                |
   | Retro      | Top Voted                      | Notes are hidden until revealed, so nothing else to read        |

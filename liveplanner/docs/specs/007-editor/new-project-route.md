@@ -309,7 +309,7 @@ plan"**; everything else stays put.
   three-column board (To do, Doing, Done) whose cards settle in, then a
   collaborator cursor labelled "You" picks a card up from To do and carries it
   to Doing while the cards below close the gap, moves the Doing card on to
-  Done where it gets its tick, and presses "+ Add card" for a fresh card; the
+  Done where it gets its tick, and presses "+ Add Card" for a fresh card; the
   column counts keep up, then the cards dissolve and the loop restarts. The
   cards are white (dark: slate) with a coloured accent each. livediagram keeps
   its diagram loader; each app's loader shows that app's own work.

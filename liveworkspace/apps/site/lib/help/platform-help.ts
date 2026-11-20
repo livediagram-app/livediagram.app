@@ -77,5 +77,5 @@ const VIEW_ARTICLE: Record<string, string> = {
 /** The path of the article a view's Help button opens, or undefined for a view with none. */
 export const explorerViewArticlePath = (kind: string): string | undefined => VIEW_ARTICLE[kind];
 
-/** The article the sign-in banner's Learn more opens. */
+/** The article the sign-in banner's Learn More opens. */
 export const SIGN_IN_ARTICLE_PATH = explorerArticlePath('signing-in');

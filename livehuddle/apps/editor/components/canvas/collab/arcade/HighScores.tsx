@@ -39,7 +39,7 @@ export function HighScores({
         High Scores
       </h3>
       {rows.length === 0 ? (
-        <CompactEmptyState size="small" icon={<TrophyIcon />} title="No Scores Yet" />
+        <CompactEmptyState size="small" icon={<TrophyIcon />} title="No scores yet" />
       ) : (
         <ol className="flex flex-col" data-arcade-scores="">
           {rows.map((s, i) => {

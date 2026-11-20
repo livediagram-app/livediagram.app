@@ -223,7 +223,7 @@ export function NoteCardList({
         <CompactEmptyState
           size="small"
           icon={<NoteCardsIcon />}
-          title="No Notes Yet"
+          title="No notes yet"
           description="Write what you'll say as cards, one point each. You flip through them while you present."
           action={
             <Button size="xs" variant="primary" onClick={() => add(null)} data-note-card-add="">

@@ -322,7 +322,7 @@ describe('useFocusTrap', () => {
                 <li>Stamp the Finish Date</li>
               </ul>
             ) : (
-              <p>No Rules Yet</p>
+              <p>No rules yet</p>
             )}
           </Layer>
           <Layer label="Rule">

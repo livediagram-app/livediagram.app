@@ -172,6 +172,22 @@ describe('Word export', () => {
     expect(body.numberedRuns).toBe(2);
   });
 
+  it('gives a list run’s last item a paragraph’s space after it, as the canvas does', () => {
+    const look = docxLook(undefined, '#2563eb');
+    const blocks: DocxBlock[] = [
+      { id: '1', type: 'list', list: 'bullet', runs: [{ text: 'a' }] },
+      { id: '2', type: 'list', list: 'todo', runs: [{ text: 'b' }] },
+      { id: '3', type: 'paragraph', runs: [{ text: 'after' }] },
+      { id: '4', type: 'list', list: 'numbered', runs: [{ text: 'last' }] },
+    ];
+    const paras = docxBody(blocks, look, 10).xml.split('</w:p>');
+    const para = Math.round(look.paragraphSpace * look.bodyPx * look.lineHeight * 15);
+    // Only the item a paragraph follows: not one inside the run, nor the article's last block.
+    expect(paras[0]).not.toContain('w:spacing');
+    expect(paras[1]).toContain(`<w:spacing w:after="${para}"/>`);
+    expect(paras[3]).not.toContain('w:spacing');
+  });
+
   it('writes a second article on a new page, in the row’s order', async () => {
     const { tab: base } = everyBlockArticle();
     const first = pagesOf(base)[0]!;

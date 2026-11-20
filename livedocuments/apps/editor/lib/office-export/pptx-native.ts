@@ -210,12 +210,12 @@ function textBodyOf(el: BoxedElement, label: Label, opacity: number, ctx: Native
         : label.valign === 'bottom'
           ? ('b' as const)
           : ('ctr' as const),
-    insets: [pad * e, (body.top + pad) * e, pad * e, (body.bottom + pad) * e] as [
-      number,
-      number,
-      number,
-      number,
-    ],
+    insets: [
+      (body.side + pad) * e,
+      (body.top + pad) * e,
+      (body.side + pad) * e,
+      (body.bottom + pad) * e,
+    ] as [number, number, number, number],
     paragraphs,
   };
 }

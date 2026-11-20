@@ -120,7 +120,7 @@ Every track shows its missions in one small panel, the **mission strip**, the sa
   column's settings, a card's panel), so it never sits over the window being worked in. It is measured again as the
   page changes (a panel opening, the window or the visible viewport resizing). (Owner, 2026-11-09: "Review the new
   tours on mobile, they break the UI, for example on planner it says to hit the Card Types, but it covers it".)
-- **Names the control.** Each mission rings the control it names (**Types**, **Add card**, a column's cog) while it
+- **Names the control.** Each mission rings the control it names (**Types**, **Add Card**, a column's cog) while it
   is being done, the most specific one drawn on screen first, and names it in bold in its line. A control another
   window covers (the Add a Field picker over Add Field) is never ringed: the ring would float over that window.
 - **What it shows.** The track's name (**Practice Sprint**, **Card Types**, **Board Setup**, **Five Small Wins**,
@@ -135,7 +135,7 @@ Every track shows its missions in one small panel, the **mission strip**, the sa
   changes without sliding.
 - **Hints climb.** Each press of **Hint** shows the next of the mission's hints: first a nudge in words, then where
   to look, with a pulsing ring round the control or the place it means. A ring a hint asks for first brings its
-  control into view, once, when it sits scrolled out of its column or the window (Add card under a long column), so
+  control into view, once, when it sits scrolled out of its column or the window (Add Card under a long column), so
   "where to look" is always somewhere on screen; the ring round the control a mission names while it is being done
   never scrolls anything. A hint never does the mission for them.
 - **The end.** After the last mission the strip shows the track's finish: a line of thanks, the track's own choices
@@ -183,10 +183,10 @@ The Practice Sprint's cards live **on this screen alone**:
    another into the board's first column, each dropping in and settling (80 ms apart; placed at once with reduced
    motion).
 2. **Missions**, in order:
-   - **Add a Card** (`add-card`): add a card from the first column's **Add card**. While the sprint runs, a card
+   - **Add a Card** (`add-card`): add a card from the first column's **Add Card**. While the sprint runs, a card
      added on its board (in one of its columns) is a practice card too: dashed, never sent, gone at the end unless
      kept. Done when a practice card that was not dealt appears. Lesson: a new card lands where you add it, ready for
-     its title. Hints: where Add card sits, then a ring round it.
+     its title. Hints: where Add Card sits, then a ring round it.
    - **Move one on** (`move-card`): drag a practice card into the next column. Done when any practice card leaves
      the first column. Lesson: work moves left to right; on a real card everyone in the plan sees it move. Hints:
      "Press and drag a dashed card to the right", then a ring round the next column. On a phone the instruction says
@@ -286,8 +286,8 @@ stores it, with an undo step as ever); the card added is a practice card.
    Hints: a ring round **Types**, then round the editor's name field.
 2. **Give It a Field** (`edit-type`): open the new type again and add a field. Done when its fields differ from how
    it was first saved. Hints: a ring round Types, then round **Add Field**.
-3. **Add One to the Board** (`use-type`): add a card of the new type from the first column's Add card. A board that
-   names its types takes the new one as it is made, so Add card offers it. The card is a practice card. Done when a
+3. **Add One to the Board** (`use-type`): add a card of the new type from the first column's Add Card. A board that
+   names its types takes the new one as it is made, so Add Card offers it. The card is a practice card. Done when a
    practice card of the new type appears.
 4. **The finish** (`outro`): "<Type> is ready." with **Keep the Type** and **Put It Back** (the type is deleted and the
    board's types are as they were). The practice card goes either way.

@@ -119,7 +119,7 @@ describe('the item panel’s tabs', () => {
     expect(track).toHaveBeenCalledWith('Plan', 'Toggled', 'ActivityOn');
     await act(async () => {});
     expect(fetchItemHistory).toHaveBeenCalledTimes(1);
-    expect(screen.getByText('No Activity Yet')).toBeTruthy();
+    expect(screen.getByText('No activity yet')).toBeTruthy();
     // Picking it again where it already is sends nothing more.
     fireEvent.click(screen.getByRole('tab', { name: 'Activity' }));
     expect(track).toHaveBeenCalledTimes(1);

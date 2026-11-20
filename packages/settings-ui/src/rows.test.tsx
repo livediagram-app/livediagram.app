@@ -38,7 +38,7 @@ describe('SettingsRowShell', () => {
       />,
     );
     expect(screen.queryByText('All apps')).toBeNull();
-    expect(screen.getByRole('link', { name: 'Learn more' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'Learn More' }).getAttribute('href')).toBe(
       '/help/minimap',
     );
   });

@@ -233,7 +233,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
   - **What it shows**: a slim header (the board's title and how many cards it shows), then the columns, then the
     cards. Each column's head is its colour dot, its name, its count (against its WIP limit, in the warning colour
     when over it) and, for someone who may add cards, a **+** (**Add a card to <column>**, opening the Add a Card
-    menu, without **Add Card Type**). There is no Add card row under the cards (but an All Cards board's
+    menu, without **Add Card Type**). There is no Add Card row under the cards (but an All Cards board's
     rows by status, below, keep theirs).
   - **Working the cards**: drag a card between columns and within one, click (or Enter) to open it, right-click or
     hold for its menu, add one from a column's **+** (or the N key). The share roles are a Board tab's: an Editor and
@@ -258,7 +258,7 @@ it holds, `add_board` and `add_sheet` take any tab, and a changeset may add one 
     A failed load still shows **Couldn't load items · Retry**, and a board not set up yet still offers **Set Up
     Board**, so a new board can be started from its slot.
   - **Maximised** from its slot the board is the whole board again, as on its tab: its own card size, swimlanes, the
-    widgets and their **+**, reordering and ×, the example cards' notice, column cogs and adding a column, Add card
+    widgets and their **+**, reordering and ×, the example cards' notice, column cogs and adding a column, Add Card
     under each cell, the form strip, renaming, Reveal, Add Card Type and, for an Editor, the **Board Settings**
     cog (its board sections, then the slot's **Slot** section). **Restore** returns it to the simplified slot board.
     Focus stays off (a slot has no place on the canvas to glide to).
@@ -488,7 +488,7 @@ offered.
 - A **Visualisation tab** exports its one chart filling the page (1376 by 720 px inside the margin).
 - The pictures are drawn from the same models as the live views. The Sheets are read when the Export dialog opens
   (the sheets engine loads then, and only for an image with a Sheet or a figure from one); the preview waits for them.
-- **Background pattern** is not offered for a Board, Sheet or Dashboard tab (they are not
+- **Background Pattern** is not offered for a Board, Sheet or Dashboard tab (they are not
   drawn on a canvas); Hidden layers neither.
 - **Markdown** of a Board tab is its board's outline (each column and its cards); **JSON** of a Dashboard tab is the
   file its Import reads back.
@@ -562,8 +562,9 @@ rows and columns are inserted, deleted or moved (they are named by stable row an
   which opens its source picker, as does **Change Source** once set (an Editor's tile in the slot cog's Slot section,
   never a hover button, one menu per item): the project's Sheets
   (each its title and its tab's name; "No sheets in this project yet." when there are none), then, for a figure, the
-  sheet's labelled numbers (numbers with text to their left, and ranges named for one cell; the foot of the sheet
-  first, at most 12) or any cell typed as A1, and an optional target the same way; for a summary or a trend, the
+  sheet's labelled numbers (ranges named for one cell, then the first number after each text in a row, the text
+  found across empty cells, so a Total row labelled columns away and a summary block beside a table both count;
+  totals first, then the foot of the sheet first, at most 24) or any cell typed as A1, and an optional target the same way; for a summary or a trend, the
   columns holding numbers (each its header and how many numbers) and, for a summary, the stat. Each choice is one
   step. The project's tabs are fetched as the picker opens, so every Sheet is offered.
 - **Missing**: a sheet deleted says "This sheet was deleted." with Clear Slot; a cell or column whose row or column

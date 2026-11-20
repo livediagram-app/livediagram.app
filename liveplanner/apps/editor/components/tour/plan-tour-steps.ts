@@ -92,13 +92,13 @@ export function sprintMissions(shape: SprintShape): Mission<SprintCtx>[] {
   const add: Mission<SprintCtx> = {
     id: 'add-card',
     title: 'Add a Card',
-    why: `Press **Add card** in ${shape.firstName} and pick a type.`,
+    why: `Press **Add Card** in ${shape.firstName} and pick a type.`,
     points: [`${cellOf(shape.boardId, shape.firstStatus)} [data-add-card-trigger]`],
     lesson:
       'A new card lands where you add it, and opens so you can name it. This one is practice too: name it, then close it.',
     onPage: true,
     hints: [
-      { text: `Add card sits at the foot of ${shape.firstName}, under the dashed cards.` },
+      { text: `Add Card sits at the foot of ${shape.firstName}, under the dashed cards.` },
       {
         text: 'This one.',
         ring: () => `${cellOf(shape.boardId, shape.firstStatus)} [data-add-card-trigger]`,

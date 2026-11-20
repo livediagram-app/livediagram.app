@@ -96,7 +96,7 @@ small modules beside it. Each rule below names its home.
 - `paletteKindForPage('flashcard')` is `'flashcard'`. `ToolbarPalette` docks the page toolbar for `article` and
   `flashcard`, and hides Search for `flashcard`.
 - `PageToolbar` reads the docked article's page kind: on a card no Insert, Comment or Assign Action, and More
-  Formatting's style entry reads "Card style".
+  Formatting's style entry reads "Card Style".
 - `ArticleEditor` `card` prop: slash items filtered to `FLASHCARD_SLASH_KINDS` (style, list, quote, code, divider);
   the paste plugin's image and element intake is off (`onInsert` refused), so a paste keeps its text only.
 - The commit guard (`useEditorState`) runs `guardFlashcards` after `guardLockedPagesIn` and announces

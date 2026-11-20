@@ -187,7 +187,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 
 ## Isometric export
 
-The Export dialog ([Editor app](../007-editor/editor-app.md) `ExportTabDialog`) carries an **Isometric view**
+The Export dialog ([Editor app](../007-editor/editor-app.md) `ExportTabDialog`) carries an **Isometric View**
 iOS-style toggle, **off by default**. When on, the image exports (PNG / SVG /
 PDF) tilt the rendered scene into the same isometric projection as the on-canvas
 view; JSON / Markdown ignore it. The export applies the projection's 2D affine

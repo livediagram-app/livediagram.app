@@ -193,7 +193,7 @@ export function ColumnLane({
   );
 }
 
-// "+ Add card" at a column's foot (its centre line at `y`), sliding down `dy` from `d` to make room as a
+// "+ Add Card" at a column's foot (its centre line at `y`), sliding down `dy` from `d` to make room as a
 // card is carried in.
 export function AddCardRow({ x, y, dy = 0, d }: { x: number; y: number; dy?: number; d?: number }) {
   const row = (
@@ -205,7 +205,7 @@ export function AddCardRow({ x, y, dy = 0, d }: { x: number; y: number; dy?: num
         strokeLinecap="round"
       />
       <text x={x + 15} y={y + 3} fontFamily={FONT} fontSize="8.5" fontWeight="500">
-        Add card
+        Add Card
       </text>
     </g>
   );

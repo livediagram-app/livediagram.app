@@ -283,9 +283,9 @@ describe('ArcadePanel', () => {
     expect(rows).toEqual(['1Bo1,2405 Nov', '2Ann ExampleYou3005 Nov']);
   });
 
-  it('reads No Scores Yet on an empty table', () => {
+  it('reads No scores yet on an empty table', () => {
     open();
-    expect(screen.getByText('No Scores Yet')).toBeTruthy();
+    expect(screen.getByText('No scores yet')).toBeTruthy();
   });
 
   it('shows a Viewer the High Scores alone, with no game and no keys taken', () => {

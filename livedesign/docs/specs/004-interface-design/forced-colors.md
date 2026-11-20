@@ -41,7 +41,7 @@ gradient or a shadow says nothing. Without this spec's rule, in a dark contrast 
   also sets a solid background colour under it (the gradient's end), so with gradients dropped it is still opaque.
 - **A button is never its fill alone.** A button whose only shape is its fill (a primary action: the shared
   `Button`'s primary and solid variants, the account pages' Continue with email, Verify and Continue, the front door's
-  Create your free account) takes the `forced-edge` utility, a 1 px `ButtonBorder` edge under forced colours only, so
+  Create Your Free Account) takes the `forced-edge` utility, a 1 px `ButtonBorder` edge under forced colours only, so
   it still reads as a button once its fill is repainted as Canvas. Normal themes are unchanged.
 - The canvas, which is the user's own content, keeps the colours it is drawn with: element fills and strokes are SVG
   presentation colours, which forced colours keep.

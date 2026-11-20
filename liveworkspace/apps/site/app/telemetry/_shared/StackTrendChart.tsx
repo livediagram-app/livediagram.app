@@ -16,7 +16,7 @@ import { linePath, plot, VIEW_H, VIEW_W } from './TrendChart';
 // line is which.
 
 // `app` scopes the series to an app's accent: its group carries `data-app`, so a `color` of
-// `var(--color-brand-500)` is that app's (telemetry.css), as All apps' comparison draws each app. `className` styles
+// `var(--color-brand-500)` is that app's (telemetry.css), as All Apps' comparison draws each app. `className` styles
 // the group (a neutral Total in `currentColor`), and `dashed` draws the line dashed. `key` names the line where two
 // could share a label (the label otherwise); `total` makes it the tooltip's Total row.
 export type StackSeries = {

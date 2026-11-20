@@ -110,7 +110,7 @@ describe('the Templates gallery', () => {
   it('sits under the empty list with its copy, and its chips narrow the tiles', async () => {
     list([]);
     render(<Harness />);
-    const empty = await screen.findByText('No Rules Yet');
+    const empty = await screen.findByText('No rules yet');
     expect(empty.closest('[data-rules-empty]')!.textContent).toContain(
       'moving, assigning, labelling and telling people about cards',
     );

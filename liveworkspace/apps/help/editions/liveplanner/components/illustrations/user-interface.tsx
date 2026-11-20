@@ -142,7 +142,7 @@ function QuickControlsRow({ x, y, labelled = true }: { x: number; y: number; lab
   );
 }
 
-/** The bottom-right corner cluster: Undo / Redo, Layers, the Theme & canvas
+/** The bottom-right corner cluster: Undo / Redo, Layers, the Theme & Canvas
  *  paintbrush, then the zoom controls (minus, the level, plus). */
 function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
   return (

@@ -36,7 +36,7 @@ export function Deliveries({ deliveries }: { deliveries: WebhookDelivery[] | nul
       <CompactEmptyState
         size="small"
         icon={<SettingsSharedGlyph id="webhooks" />}
-        title="No Deliveries Yet"
+        title="No deliveries yet"
         description="Send a test to try it, or wait for something to happen to this document."
       />
     );

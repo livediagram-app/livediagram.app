@@ -18,10 +18,10 @@ export function HeroActions() {
   return (
     <div className="mt-9 flex flex-wrap justify-center gap-3 sm:justify-start">
       <a href="/sign-up?return=%2F" className={PRIMARY}>
-        Create your free account
+        Create Your Free Account
       </a>
       <a href="#apps" className={SECONDARY}>
-        Explore the apps
+        Explore the Apps
       </a>
     </div>
   );

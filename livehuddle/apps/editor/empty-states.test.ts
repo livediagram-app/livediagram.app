@@ -28,6 +28,8 @@ const BARE_EMPTY = [
 const DRAWN_FACES = [
   'components/canvas/entity/EntityView.tsx',
   'components/canvas/collab/estimate/EstimateEmpty.tsx',
+  // The Notice Board's drawn face on the canvas.
+  'components/canvas/collab/SocialFaces.tsx',
   'components/canvas/collab/temperature/MoodMeter.tsx',
 ];
 

@@ -324,7 +324,7 @@ describe('HintRing', () => {
   });
 
   // docs/specs/026-plan/plan-tour.md "Hints climb": a hint's ring brings a target scrolled out of view back into it
-  // (Add card at the foot of a long column); the passive ring round a mission's control never scrolls anything.
+  // (Add Card at the foot of a long column); the passive ring round a mission's control never scrolls anything.
   it('brings a hint’s target into view, and only a hint’s', () => {
     const reveal = vi.mocked(revealInScrollers);
     reveal.mockClear();
@@ -364,14 +364,14 @@ describe('Emphasis', () => {
   });
 
   it('draws a mission’s why with its bold parts in the strip', () => {
-    const bold: Mission<Ctx>[] = [{ ...M('one', 'a'), why: 'Press **Add card** now.' }];
+    const bold: Mission<Ctx>[] = [{ ...M('one', 'a'), why: 'Press **Add Card** now.' }];
     function Strip() {
       const run = useMissions({ missions: bold, ctx: { a: false, b: false }, active: true });
       return <MissionStrip name="Practice Sprint" run={run} onEnd={() => {}} finish={null} />;
     }
     render(<Strip />);
     const strip = screen.getByRole('region', { name: 'Practice Sprint' });
-    expect(strip.textContent).toContain('Press Add card now.');
-    expect(strip.querySelector('strong')?.textContent).toBe('Add card');
+    expect(strip.textContent).toContain('Press Add Card now.');
+    expect(strip.querySelector('strong')?.textContent).toBe('Add Card');
   });
 });

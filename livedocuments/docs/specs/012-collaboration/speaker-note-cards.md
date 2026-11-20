@@ -55,7 +55,7 @@ The cards are written in one place, an Editor's: the page's title-bar **Notes** 
   button, so a speaker can write their cards on the train.
 - **Header**: "Speaker Notes", then the count and the slide's total speaking time ("3 cards · 2 min"), or nothing
   while there are none.
-- **Empty state**: a stack-of-cards badge, **No Notes Yet**, the line "Write what you'll say as cards, one point
+- **Empty state**: a stack-of-cards badge, **No notes yet**, the line "Write what you'll say as cards, one point
   each. You flip through them while you present.", and **Add First Card**.
 - **A card**: a small index card (white, a hairline border, a thin brand rule across its top, a soft shadow), its
   number at the top left ("1"), its speaking time at the bottom right, its text below the number (up to 6 lines,

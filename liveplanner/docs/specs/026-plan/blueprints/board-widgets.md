@@ -382,7 +382,7 @@ canEditCards`, `write = plan.setBoardFilter(element.id, ·)`.
 - **Hides every card** (board-widgets.md "When the filter hides every card"): `usePlanBoardProjection` answers
   `hidesAll` (a filter narrows, the projection holds cards, and no column or lane shows one); `PlanBoardView` sets
   `filterHidesAll` off a phone, a slot and loading; `PlanBoardGrid` draws `FilterEmptyHint` in the first open column's
-  first open lane, before its Add card row, with `onShowAll = showAll` only when `canFilter`. Built on
+  first open lane, before its Add Card row, with `onShowAll = showAll` only when `canFilter`. Built on
   `CompactEmptyState` and `noMatchTitle` with the board palette as its ink.
 - **Testing**: `board-filter.test.ts` (checks, read, from, resolve, key), `participant-content.board-filter.test.ts`
   (a Participant's filter lands, other set-up fields stay, a bad filter is refused), `validate-shape` and

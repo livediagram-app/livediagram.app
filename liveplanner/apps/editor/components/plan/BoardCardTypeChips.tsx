@@ -2,7 +2,7 @@
 
 // A board's card type chips (docs/specs/026-plan/plan-board.md "Card type chips"): in its header, after the title, a
 // chip per card type the board takes, each a small card in its type's colour with its glyph, then its name. A click
-// (or Enter or Space) adds a card of the type and opens it to be named, as Add card does; a drag carries one onto the
+// (or Enter or Space) adds a card of the type and opens it to be named, as Add Card does; a drag carries one onto the
 // board, into the column and row it is let go over (useCardTypeDrag). PlanBoardView decides whether they show
 // (chipsShown); in a header band they lead the header, straight after the menu box that holds the board's name. A
 // type with card templates opens the Add a Card menu with that type alone instead (docs/specs/026-plan/item-types.md

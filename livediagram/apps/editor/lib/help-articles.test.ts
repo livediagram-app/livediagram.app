@@ -110,7 +110,7 @@ describe('HELP_LINK_COPY (docs/specs/018-help/contextual-help-links.md)', () => 
   // The hover card on every help link: a "Learn about …" title naming what the
   // reader is looking at, and one line on what the article does for them.
   // The Record type already forces an entry per key; this guards the shape
-  // of the copy, so a `?` never says a bare "Learn more" again.
+  // of the copy, so a `?` never says a bare "Learn More" again.
   it('gives every article a "Learn about" title and a one-line description', () => {
     for (const key of Object.keys(HELP_ARTICLES) as (keyof typeof HELP_ARTICLES)[]) {
       const { title, description } = HELP_LINK_COPY[key];

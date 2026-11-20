@@ -46,7 +46,7 @@ const cardX = (l: Layout, c: number) => colX(l, c) + 6;
 const cardW = (l: Layout) => l.colW - 12;
 const slotY = (l: Layout, s: number) => l.head + 32 + s * PITCH;
 
-// "+ Add card" at a column's foot, sliding down a slot (`dy`) to make room as a card is carried in.
+// "+ Add Card" at a column's foot, sliding down a slot (`dy`) to make room as a card is carried in.
 function AddRow({
   l,
   c,

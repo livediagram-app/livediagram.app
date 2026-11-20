@@ -128,7 +128,7 @@ test.describe('Hover card', () => {
 
     const card = page.locator(HOVER_CARD);
     await expect(card).toBeVisible({ timeout: INSTANT_MS });
-    await expect(card).toContainText('Theme & canvas');
+    await expect(card).toContainText('Theme & Canvas');
     await expect(card).toContainText("Change this tab's theme and canvas background.");
     expectNoPageErrors(pageErrors);
   });

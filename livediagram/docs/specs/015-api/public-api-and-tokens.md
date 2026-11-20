@@ -242,7 +242,7 @@ Explorer page for them and no `/explorer/tokens` route.
 The category holds one row, the **token manager** (`kind: 'tokens'`), laid
 out top to bottom:
 
-- **Overview.** The row's own header (the key tile, the title and the line on what tokens are for, with Learn more)
+- **Overview.** The row's own header (the key tile, the title and the line on what tokens are for, with Learn More)
   over the **capacity meter**: "3 of 10" over ten pips, one per slot, filled for each
   live token (brand; amber from 8; rose at the cap), with a **New** button beside it (accessible name "New token")
   that opens the composer; at the cap it is disabled and the meter says to revoke one first. The title and line are

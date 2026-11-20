@@ -25,6 +25,7 @@ import { RECEPTIONIST_COLOUR, RECEPTIONIST_LOOK } from '@/lib/receptionist/recep
 import { RECEPTIONIST_TOPICS } from '@/lib/receptionist/receptionist-topics';
 import { deskBehind } from '@/lib/receptionist/receptionist-timeline';
 import { turnQuarter } from '@/lib/space-3d/space-3d-turn';
+import { wallLiftAt } from '@/lib/space-3d/space-3d-wall-lift';
 import { useReceptionist } from './useReceptionist';
 import { ReceptionistBubble } from './ReceptionistBubble';
 import { track } from '@/lib/telemetry';
@@ -37,6 +38,7 @@ const TALK_REACH = 400;
 // Walking this much further from him than the nearest you have been while his bubble is open is walking away
 // (docs/specs/008-canvas/receptionist.md "His bubble"): about two strides, so a shuffle beside him keeps it.
 const WALK_AWAY_PX = 96;
+const NO_WALLS: readonly { a: AvatarPoint; b: AvatarPoint }[] = [];
 // The box a press on him lands in, round his feet, in canvas px.
 const PRESS_W = 40;
 const PRESS_H = 84;
@@ -51,6 +53,7 @@ export function ReceptionistLayer({
   zoom,
   onStanding,
   chipShift,
+  walls = NO_WALLS,
 }: {
   active: boolean;
   elements: readonly Element[];
@@ -62,6 +65,8 @@ export function ReceptionistLayer({
   onStanding?: (at: AvatarPoint | null) => void;
   // How far his chip moves sideways, from that spread.
   chipShift?: number;
+  // The walls a standing figure leans into (space-3d-wall-lift.ts), so one just behind him never cuts through him.
+  walls?: readonly { a: AvatarPoint; b: AvatarPoint }[];
 }) {
   const receptionist = useReceptionist({ active, elements, arrivals, self });
   const { chat } = useReceptionistState();
@@ -151,10 +156,12 @@ export function ReceptionistLayer({
   // the camera by his whole height, chip and all (the stylesheet's `--space-seat-lift`; nothing flat), which keeps
   // him in front of the wall and still behind the desk's front, as if he stood that much further into the room
   // (receptionist.md "Answering the bell", the coordinator 2026-11-18). Only with the camera facing the desk's front.
+  // Anywhere else a wall just behind him cuts through him the same way, so he is lifted the same (3d-view.md "Against
+  // a wall").
   const wallLift =
     !pose.walking && turnQuarter(turn) === 0 && deskBehind(desks, pose.at)
       ? Math.ceil((AVATAR_HEIGHT + AVATAR_HEAD_CHROME) * scale)
-      : 0;
+      : wallLiftAt(walls, pose.at, turn, scale);
   const top = headPoint(pose.at, scale);
   const head = { x: top.x, y: top.y - OVER_NAME * scale };
   return (

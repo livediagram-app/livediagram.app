@@ -57,7 +57,7 @@ const card = (n: number, of: number) => screen.getByRole('group', { name: `Card 
 describe('NoteCardList', () => {
   it('starts empty with a way to add the first card, which opens for writing', () => {
     render(<Harness initial={[]} />);
-    expect(screen.getByText('No Notes Yet')).toBeTruthy();
+    expect(screen.getByText('No notes yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add First Card' }));
     const box = screen.getByRole('textbox', { name: 'Card 1' });
     expect(document.activeElement).toBe(box);
@@ -159,7 +159,7 @@ describe('NoteCardList', () => {
   it('keeps the Undo when the last card goes, on the empty state', () => {
     render(<Harness initial={[{ id: 'c1', text: 'Only' }]} />);
     fireEvent.keyDown(card(1, 1), { key: 'Backspace' });
-    expect(screen.getByText('No Notes Yet')).toBeTruthy();
+    expect(screen.getByText('No notes yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Undo' }));
     expect(ids()).toBe('c1:Only');
   });

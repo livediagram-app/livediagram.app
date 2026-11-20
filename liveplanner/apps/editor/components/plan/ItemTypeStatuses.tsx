@@ -101,7 +101,7 @@ export function ItemTypeStatuses({
     return (
       <CompactEmptyState
         icon={<StatesGlyph />}
-        title="No States Yet"
+        title="No states yet"
         description="When you add states to a board that takes this type, they’re added here automatically."
       />
     );

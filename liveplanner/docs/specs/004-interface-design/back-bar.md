@@ -13,7 +13,7 @@ a chevron button or a chain of crumbs. With nowhere to go back to, it stands as 
   choice (**liveplanner Tab**, **Trello**).
 - The Tab Style panels: **Tab Style** then **Colours**.
 - A dashboard slot's Add to Slot: **Add to Slot** then **Metrics**.
-- Add Field, once a kind is picked: **All kinds** then the kind (**Text**).
+- Add Field, once a kind is picked: **All Kinds** then the kind (**Text**).
 - Add Filter, once a field is picked: **Filter by** then **State is**.
 - The card panel's trail ([Plan board](../026-plan/plan-board.md) "Breadcrumb"): the card opened before this one
   (**#1 Website**) then this card's number (**#2**).

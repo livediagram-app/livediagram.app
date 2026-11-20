@@ -67,7 +67,9 @@ Avatar Pad, the Portal, the Door and the Focus Button), adding one previews **th
   A drag applies the drag's alignment snap, as the ghost does. A kind the art layer does not draw (a Portal, a mode
   button) shows the dashed footprint and glyph instead.
 - **No box to draw.** A press-and-drag with a placed tile armed places the piece at its own size, centred where
-  the press began, and the draw-to-size outline never shows. A tap places it centred on the tap, as before. The
+  the press began, and the draw-to-size outline never shows. While the press is held the preview stays where the press began, where the
+  piece will land, rather than following the pointer to a place it never goes (a Glass Room dragged across the
+  canvas used to land a screen away from its preview). A tap places it centred on the tap, as before. The
   selection's size is not inherited (a placed piece has one size).
 - Over a panel or the strip, or off the canvas, the preview hides. It is `pointer-events-none`, listens to the
   pointer only while a placed piece is being added, and moves at most once a frame.

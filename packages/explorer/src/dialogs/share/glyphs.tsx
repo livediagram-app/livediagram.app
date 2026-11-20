@@ -1,5 +1,5 @@
 // The Share dialog's own small glyphs: the copy menus' rows (image, Markdown, code), the ⋯ that marks a button as
-// opening a menu, the clock on an expiring pass, Show Me's footprints, the status line's globe and Learn more's arrow.
+// opening a menu, the clock on an expiring pass, Show Me's footprints, the status line's globe and Learn More's arrow.
 
 import { Glyph } from '../../ui/icons';
 
@@ -70,7 +70,7 @@ export function GlobeGlyph() {
   );
 }
 
-// The opens-in-a-new-tab arrow after a Learn more link.
+// The opens-in-a-new-tab arrow after a Learn More link.
 export function ArrowOutGlyph() {
   return (
     <Glyph size={11} units={20}>

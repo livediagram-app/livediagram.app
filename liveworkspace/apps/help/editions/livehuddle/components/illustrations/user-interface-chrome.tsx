@@ -1,6 +1,6 @@
 // The editor's fixed chrome the User Interface figures (user-interface.tsx) are composed from: the
 // glyphs, the top corners' cards (the logo, Share and the account), the bottom bar with its tab card,
-// tab pill and quick controls, and the bottom-right corner cluster (Undo / Redo, the Theme & canvas
+// tab pill and quick controls, and the bottom-right corner cluster (Undo / Redo, the Theme & Canvas
 // paintbrush, zoom). livehuddle's cluster has no Layers button, and its icon buttons can be drawn
 // pressed in the brand colour.
 
@@ -224,7 +224,7 @@ export function BottomBar({
   );
 }
 
-/** The bottom-right corner cluster: Undo / Redo, the Theme & canvas
+/** The bottom-right corner cluster: Undo / Redo, the Theme & Canvas
  *  paintbrush, then the zoom controls (minus, the level, plus). */
 export function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
   return (

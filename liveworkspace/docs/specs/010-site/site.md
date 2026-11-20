@@ -232,7 +232,7 @@ features that are the same in every app (Google Drive sync, the Explorer in no a
 guest or account) are articles that apply to every app, read in each app's help and under All Apps. The old
 addresses (`/help/google-drive`, `/help/explorer/teams`, `/help/explorer/moving`, `/help/explorer/sharing`,
 `/help/explorer/signing-in`) redirect to them (`packages/help-registry/src/catalogue/redirects.ts`). In no app the
-Explorer's view Help button opens the article for its view, the sign-in banner's Learn more opens
+Explorer's view Help button opens the article for its view, the sign-in banner's Learn More opens
 `/help/account-and-data/signing-in/`, and Search lists the Explorer articles under **liveworkspace Help**; their
 names and addresses are in `lib/help/platform-help.ts`. On an app's address all three keep that app's own help.
 Settings › Profile › Cloud Sync links to the Google Drive article.
@@ -256,7 +256,7 @@ the list still fails.
 
 Each app compares itself with the tools it answers on its own site, at `/alternatives` and
 `/alternatives/<slug>` ([@liveworkspace/comparisons](../../../../packages/comparisons/README.md)). This page
-only points at them: a card per app (its logo, its pitch and **See how <app> compares**, in its deep
+only points at them: a card per app (its logo, its pitch and **See How <app> Compares**, in its deep
 accent), linked from the footer as **Comparison**. It has no data of its own, so a comparison
 added in an app needs nothing here.
 

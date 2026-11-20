@@ -91,7 +91,7 @@ const NEW_CARD: Card = { id: 'f', col: 0, slot: 2, color: '#6366f1', title: 44 }
 const cardX = (c: Card) => colX(c.col) + 6;
 const cardY = (c: Card) => SLOTS[c.slot]!;
 
-// The "+ Add card" button under To do, and the moment it is pressed.
+// The "+ Add Card" button under To do, and the moment it is pressed.
 const ADD = { x: colX(0) + 6, y: SLOTS[3]! + 4, w: CARD_W, h: 20 };
 const PRESS = 64;
 const NEW_AT = 66;
@@ -372,7 +372,7 @@ export function BoardBuildAnimation({
           </g>
         ))}
 
-        {/* "+ Add card" under To do: pressed as the new card arrives. */}
+        {/* "+ Add Card" under To do: pressed as the new card arrives. */}
         <g className="lbb-add">
           <rect
             x={ADD.x}

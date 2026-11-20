@@ -149,7 +149,7 @@ describe('Edit Field on a built-in field', () => {
     editor();
     const dialog = openEdit('Status');
     expect(within(dialog).getByText('Its states are set in States.')).toBeTruthy();
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     const number = within(dialog).getByRole('button', { name: /^Number: / });
     expect(number.getAttribute('aria-disabled')).toBe('true');
     expect(number.getAttribute('aria-label')).toMatch(/Status places the card in a column/);
@@ -160,7 +160,7 @@ describe('Edit Field on a built-in field', () => {
   it('keeps Comments apart: Text is dimmed', () => {
     editor();
     const dialog = openEdit('Comments');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     const text = within(dialog).getByRole('button', { name: /^Text: / });
     expect(text.getAttribute('aria-disabled')).toBe('true');
   });
@@ -168,7 +168,7 @@ describe('Edit Field on a built-in field', () => {
   it('makes it a custom field on another tile, asking first with what stops reading it', () => {
     const onSave = editor();
     const dialog = openEdit('Priority');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Text' }));
     const status = within(dialog).getByRole('status');
     expect(status.textContent).toContain('2 cards have a value; every one is kept as a Text.');
@@ -191,7 +191,7 @@ describe('Edit Field on a built-in field', () => {
     editor();
     setPlan({ planTabs: () => [] });
     const dialog = openEdit('Due Date');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Text' }));
     expect(within(dialog).getByText('Nothing else in the plan reads it.')).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
@@ -222,7 +222,7 @@ describe('a type saved with a built-in made a custom field', () => {
     } as unknown as PlanSlice;
     render(<PlanSheetsHost plan={slice} />);
     const dialog = openEdit('Priority');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Text' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Change Values' }));

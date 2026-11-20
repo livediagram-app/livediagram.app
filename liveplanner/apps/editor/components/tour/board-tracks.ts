@@ -74,12 +74,12 @@ export function typesMissions(boardId: string, firstName: string): Mission<Types
       id: 'use-type',
       onPage: true,
       title: 'Add One to the Board',
-      why: `Press **Add card** in ${firstName} and pick your new type.`,
+      why: `Press **Add Card** in ${firstName} and pick your new type.`,
       points: [`${boardRoot(boardId)} [data-add-card-trigger]`],
       lesson:
         'The board takes it like any other. This card is practice, so it goes when you finish.',
       hints: [
-        { text: `Add card sits at the foot of ${firstName}.` },
+        { text: `Add Card sits at the foot of ${firstName}.` },
         {
           text: 'This one.',
           ring: () => `${boardRoot(boardId)} [data-add-card-trigger]`,

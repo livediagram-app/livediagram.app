@@ -52,7 +52,7 @@ export function ContentsAddPage({
   const limit = `A tab holds up to ${MAX_PAGES} pages`;
   const screens = lastPage.kind === 'wireframe' && add ? add : undefined;
   return (
-    <div className="flex items-center gap-2 border-t border-slate-100 p-3 dark:border-slate-800">
+    <div className="flex items-center gap-1.5 border-t border-slate-100 p-3 dark:border-slate-800">
       <Tooltip label={full ? limit : another}>
         {/* Reads Add Page, with the add icon; what it adds (another page like the last) is its tooltip, and its
             name says both, so the tooltip repeats the name. */}
@@ -63,7 +63,7 @@ export function ContentsAddPage({
           disabled={full || !addLike}
           data-contents-add=""
           onClick={() => addLike?.()}
-          className={`${BUTTON} ${IDLE} min-w-0 flex-1 px-3 py-2`}
+          className={`${BUTTON} ${IDLE} min-w-0 flex-1 px-2.5 py-2`}
         >
           <AddIcon />
           <span className="truncate">{short}</span>

@@ -5,7 +5,7 @@ import { MiniLogo, MiniWireframe } from '@liveworkspace/help-site/art/work';
 const CHROME = 'fill-white stroke-slate-200';
 
 // The bottom-right cluster's buttons, left to right (Panel Layout): Undo, Redo, the page navigator, Contents, the
-// Theme & canvas button and the zoom, each with its centre and width.
+// Theme & Canvas button and the zoom, each with its centre and width.
 const CLUSTER = [
   { label: '↶', x: 206, w: 18 },
   { label: '↷', x: 226, w: 18 },
@@ -16,7 +16,7 @@ const CLUSTER = [
 
 // User Interface: the editor laid out, with numbered callouts on its parts (Panel Layout): 1 the menu button and
 // the tab's name, 2 the palette strip, 3 the bottom-right cluster (undo and redo, the page navigator, Contents and
-// Theme & canvas) and 4 the tab bar with the quick controls at its end, round a logo artboard and a phone wireframe.
+// Theme & Canvas) and 4 the tab bar with the quick controls at its end, round a logo artboard and a phone wireframe.
 export function UserInterfaceArt() {
   return (
     <Stage>

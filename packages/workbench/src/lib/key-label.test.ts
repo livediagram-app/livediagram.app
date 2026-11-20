@@ -13,4 +13,12 @@ describe('keyLabel', () => {
     expect(keyLabel('Shift-Mod-V', false)).toBe('Shift+Ctrl+V');
     expect(keyLabel('Alt-Mod-1', false)).toBe('Alt+Ctrl+1');
   });
+
+  it('reads a letter key as its capital, as a keymap writes it in lower case', () => {
+    expect(keyLabel('Mod-e', true)).toBe('⌘E');
+    expect(keyLabel('Mod-Shift-x', true)).toBe('⌘⇧X');
+    expect(keyLabel('Mod-Shift-l', false)).toBe('Ctrl+Shift+L');
+    expect(keyLabel('Mod-\\', true)).toBe('⌘\\');
+    expect(keyLabel('Shift-Tab', true)).toBe('⇧Tab');
+  });
 });

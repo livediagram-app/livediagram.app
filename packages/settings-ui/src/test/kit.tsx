@@ -30,7 +30,7 @@ export const TEST_KIT: SettingsUiKit = {
       </button>
     </p>
   ),
-  HelpLink: ({ article }) => <a href={`/help/${article}`}>Learn more</a>,
+  HelpLink: ({ article }) => <a href={`/help/${article}`}>Learn More</a>,
   SignInLink: () => <a href="/sign-in">Sign In</a>,
 };
 

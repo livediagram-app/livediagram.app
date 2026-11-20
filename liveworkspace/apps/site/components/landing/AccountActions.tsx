@@ -51,10 +51,10 @@ export function ClosingActions() {
       </p>
       <div className="mt-9 flex flex-wrap justify-center gap-3">
         <a href={inside ? EXPLORER_HREF : SIGN_UP_HREF} className={PRIMARY}>
-          {inside ? 'Open Explorer' : 'Create your free account'}
+          {inside ? 'Open Explorer' : 'Create Your Free Account'}
         </a>
         <a href="#apps" className={SECONDARY}>
-          Pick an app
+          Pick an App
         </a>
       </div>
     </div>

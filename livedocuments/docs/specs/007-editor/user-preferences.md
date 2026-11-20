@@ -655,7 +655,7 @@ and the dialog stays as the one complete, browsable index of them.
   rather than a card per row. A cell holds the **label** with a **short
   description** under it (one or two lines; the long paragraphs that used to
   sit as a footnote under each row's own card made the dialog impossible to
-  skim) and the **control** beside them; a **Learn more** link and an
+  skim) and the **control** beside them; a **Learn More** link and an
   **"Also in ..."** line close the description. Labels are **Title Case**.
   A row nested under a parent row (`parent`) renders inside the same card,
   indented and faintly tinted, beneath it. What every row of a section shares
@@ -709,7 +709,7 @@ and the dialog stays as the one complete, browsable index of them.
   Pan): a phone has no hover and no middle button.
 
   **Getting Started** is a category of its own: **Pages Tours** (over **Slides Tour**, **Infographic Tour**, **Article
-  Tour** and **Flashcards Tour**), with a line saying where it runs and a **Learn more** to its article, under
+  Tour** and **Flashcards Tour**), with a line saying where it runs and a **Learn More** to its article, under
   one **Offer Again** section note. No tour offers itself: every tour is started from the footer's
   **Get Started** button, left of Tools, and leaves it once taken until its switch here is turned back on ([Pages tour](pages-tour.md)).
   These rows record which tours have been taken; switching a Pages track back on and closing Settings starts the Pages

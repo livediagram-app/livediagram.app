@@ -98,6 +98,8 @@ livedocuments file that holds tabs ([Document](../006-document/document.md)). Th
 | `zone`      | `zone`: object or drawing; `wrap`; `align`; `width`; `height`; `at` | A box the size of the zone, its elements drawn over it            |
 
 - `align`: left (default), centre, right, justify; on paragraphs and list items.
+- A run of list items sits a quarter line apart, and its last item keeps a paragraph's space after it, so the
+  writing after a list stands as clear of it as the writing before it (on the canvas and in Word).
 - `lang`: the language a Markdown fence names (` ```js `), its first word: 1 to 32 letters, digits or `_ + # . -`.
   Kept so the block's Markdown names it again (an import, an agent's write, a paste, then an export or an agent's
   read); anything else is dropped and the block stays code. The article shows no language of its own.
@@ -193,9 +195,9 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   as you type (names, then keywords), Up / Down to move, Enter or Tab to choose, Escape to close;
   it closes when the caret leaves the `/`. With nothing matching it says so ("No blocks match"
   and what was typed). Entries: **Text**, **Title**, **Subtitle**, **Heading
-  1 to 3**, **Bulleted list**, **Numbered list**, **To-do list**, **Quote**, **Code**,
-  **Divider**, **Page break**, **Table**, **Table of Contents**, **Footnote**, **Image**, **Bar chart**, **Pie
-  chart**, **Line chart**, **Drawing**, **Callout**, **Sticky note**. **Table** puts a table block
+  1 to 3**, **Bulleted List**, **Numbered List**, **To-Do List**, **Quote**, **Code**,
+  **Divider**, **Page Break**, **Table**, **Table of Contents**, **Footnote**, **Image**, **Bar Chart**, **Pie
+  Chart**, **Line Chart**, **Drawing**, **Callout**, **Sticky Note**. **Table** puts a table block
   in the text; the palette's table element still places a table freely, as an object zone or loose on
   a page. (An icon comes in from the palette, where one is chosen: dropped or placed on the writing
   it lands as an object zone.) Inside a table cell the slash menu does not open: a cell holds text.
@@ -249,8 +251,8 @@ footnote's reference (see "Footnotes"). Code blocks keep plain text.
   - **Link**;
   - **Lists** (a menu: bulleted, numbered, to-do; indent and outdent);
   - **Alignment** (a menu: left, centre, right, justify);
-  - **More Formatting** (a menu: strikethrough, inline code, superscript, subscript, clear
-    formatting, Article style, which opens the page panel on Style, and at its foot the article's
+  - **More Formatting** (a menu: **Strikethrough**, **Inline Code**, **Superscript**, **Subscript**,
+    **Clear Formatting**, **Article Style**, which opens the page panel on Style, and at its foot the article's
     **Word Count**);
   - **Insert** (a menu: Image, Bar Chart, Pie Chart, Line Chart, then Table, Table of Contents, Footnote, Divider,
     Page break, Quote, Code; a drawing starts from a shape dropped on the page or the slash menu's **Drawing**, a

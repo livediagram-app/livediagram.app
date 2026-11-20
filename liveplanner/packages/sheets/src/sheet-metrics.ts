@@ -23,7 +23,7 @@ export const COLUMN_STAT_NAMES: Record<ColumnStat, string> = {
 
 // The most rows a column read takes, and the most suggestions offered: a figure stays cheap on a huge sheet.
 const METRIC_ROWS_MAX = 2000;
-const FIGURE_SUGGESTIONS_MAX = 12;
+const FIGURE_SUGGESTIONS_MAX = 24;
 
 const isNumber = (v: Value): v is number => typeof v === 'number' && Number.isFinite(v);
 
@@ -100,8 +100,10 @@ function labelAt(wb: Workbook, sheet: Sheet, r: number, c: number): string {
   return formatA1(r, c);
 }
 
-// The cells most worth showing as a figure: numbers named by text to their left (a "Total" row, a "Budget" line) and
-// a range named for a single cell, the last rows first (totals sit at the foot), at most FIGURE_SUGGESTIONS_MAX.
+// The cells most worth showing as a figure: a range named for a single cell, then numbers named by text to their left
+// (a "Total" row, a "Budget" line), the first number after each such text in a row (a summary block beside a table
+// counts as well as the table's own line), the text found across empty cells as labelAt finds it (a Total row's label
+// sits columns away). Totals lead, then the last rows first (totals sit at the foot), at most FIGURE_SUGGESTIONS_MAX.
 export function figureSuggestions(
   wb: Workbook,
   sheet: Sheet,
@@ -119,21 +121,28 @@ export function figureSuggestions(
   };
   for (const n of sheet.layout.names ?? [])
     if (n.r1 === n.r2 && n.c1 === n.c2) add({ r: n.r1, c: n.c1 });
+  const named = out.length;
   const { rows, cols } = wb.extent(sheet.id);
   for (
     let r = Math.min(rows, METRIC_ROWS_MAX) - 1;
     r >= 0 && out.length < FIGURE_SUGGESTIONS_MAX;
     r--
   )
-    for (let c = 1; c < cols; c++) {
+    for (let c = 0, labelled = false; c < cols; c++) {
       const v = wb.value(sheet.id, r, c);
-      const left = wb.value(sheet.id, r, c - 1);
-      if (isNumber(v) && typeof left === 'string' && left.trim()) {
-        add({ r: sheet.layout.rows[r]!, c: sheet.layout.cols[c]! });
-        break;
+      if (typeof v === 'string' && v.trim()) labelled = true;
+      else if (isNumber(v)) {
+        if (labelled) add({ r: sheet.layout.rows[r]!, c: sheet.layout.cols[c]! });
+        labelled = false;
       }
     }
-  return out;
+  // A named cell keeps its place; of the rest, a total leads (the figure a dashboard most often wants).
+  const rest = out.slice(named);
+  return [
+    ...out.slice(0, named),
+    ...rest.filter((f) => TOTAL_LABEL.test(f.label)),
+    ...rest.filter((f) => !TOTAL_LABEL.test(f.label)),
+  ];
 }
 
 type SheetColumn = {

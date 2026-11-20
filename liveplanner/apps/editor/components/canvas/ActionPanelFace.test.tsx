@@ -72,7 +72,7 @@ describe('ActionPanelFace (docs/specs/012-collaboration/action-panel.md "The car
   it('offers to add the first action when it has none', () => {
     const onAdd = vi.fn();
     render(<ActionPanelFace element={card()} textColor="#000" selfId={null} onAdd={onAdd} />);
-    expect(screen.getByText('No Actions Yet')).toBeTruthy();
+    expect(screen.getByText('No actions yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Add Action' }));
     expect(onAdd).toHaveBeenCalledOnce();
   });

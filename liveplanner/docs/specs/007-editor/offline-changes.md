@@ -13,7 +13,7 @@ too.
 A **waiting change** is a card or sheet write this browser made that the server has not answered yet because there
 was no connection. It waits in the plan's **queue**:
 
-- **Cards:** every item write made from the editor: adding a card (Add card, a card type chip, a copy), changing its
+- **Cards:** every item write made from the editor: adding a card (Add Card, a card type chip, a copy), changing its
   fields (title, description, status, assignee, dates, checklists, custom fields, flag, archive), moving it (one or a
   group), the Trash and delete, time entries, and undo and redo of any of these. Card comment threads are their own
   store and do not wait (below).

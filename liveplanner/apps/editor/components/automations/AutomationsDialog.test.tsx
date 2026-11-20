@@ -119,7 +119,7 @@ describe('the Rules list', () => {
   it('shows the empty state, whose New Rule opens the builder', async () => {
     list([]);
     wrap(<Harness />);
-    expect(await screen.findByText('No Rules Yet')).toBeTruthy();
+    expect(await screen.findByText('No rules yet')).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Learn about automations' })).toBeTruthy();
     fireEvent.click(
       within(document.querySelector('[data-rules-empty]')!).getByRole('button', {
@@ -286,7 +286,7 @@ describe('the Audit Trail', () => {
     });
     expect(await screen.findByRole('button', { name: /Clear/ })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Clear/ }));
-    expect(await screen.findByText('No Runs Yet')).toBeTruthy();
+    expect(await screen.findByText('No runs yet')).toBeTruthy();
   });
 
   it('opened on a rule that is gone, reads every rule’s runs as its Rule select says', async () => {

@@ -121,11 +121,16 @@ export function PlacementPreview({
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
   if (!kind && at) setAt(null);
 
+  // A palette drag carries the piece with the pointer; an armed tile's press-and-drag places it where the press began.
+  const fromPalette = !!dragged;
   useEffect(() => {
     if (!kind) return;
     let frame: number | null = null;
     let latest: { x: number; y: number } | null = null;
     const track = (e: PointerEvent | DragEvent) => {
+      // Held down with an armed tile: the piece lands centred where the press began (palette-drag-ghost.md "No box to
+      // draw"), so the preview stays there, set by the press itself, rather than following the pointer.
+      if (!fromPalette && e.type === 'pointermove' && (e as PointerEvent).buttons !== 0) return;
       const rect = wrapperRef.current?.getBoundingClientRect();
       const overCanvas = !!(e.target as HTMLElement | null)?.closest?.('main');
       latest =
@@ -138,13 +143,15 @@ export function PlacementPreview({
       });
     };
     window.addEventListener('pointermove', track);
+    window.addEventListener('pointerdown', track);
     document.addEventListener('dragover', track);
     return () => {
       window.removeEventListener('pointermove', track);
+      window.removeEventListener('pointerdown', track);
       document.removeEventListener('dragover', track);
       if (frame !== null) cancelAnimationFrame(frame);
     };
-  }, [kind, wrapperRef, zoom]);
+  }, [kind, wrapperRef, zoom, fromPalette]);
 
   // The art is drawn once per kind, at the origin, and only its box moves: a pointer move re-renders a div, not the
   // piece (a Door and a Window are the exceptions, as their wall turns them).

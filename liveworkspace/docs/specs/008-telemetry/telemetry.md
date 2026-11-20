@@ -171,15 +171,15 @@ the app's to report, so each change is counted once.
 - **The dashboards.** Each app's checks scan the site's emitter beside the accounts Worker
   (`apps/site/app/telemetry/platform-emitters.ts`), through that app's vocabulary, and read its
   computed types from `EXPLORER_TELEMETRY_EVENTS`; every one has a chart on each app's dashboard.
-  All apps adds `liveworkspace.app`'s own events (the Explorer on All Apps) to its totals.
+  All Apps adds `liveworkspace.app`'s own events (the Explorer on All Apps) to its totals.
 
 ## The dashboard
 
-`https://www.liveworkspace.app/telemetry` shows **All apps**. `?app=livediagram.app`,
+`https://www.liveworkspace.app/telemetry` shows **All Apps**. `?app=livediagram.app`,
 `?app=liveplanner.app`, `?app=livedocuments.app`, `?app=livedesign.app` or `?app=livehuddle.app` opens one app's own dashboard, with all of
 its tabs, catalogues and explanations. Picking an app on the page updates the link.
 
-- **All apps** adds every app's events together. It shows the three windows (today, last 7 days,
+- **All Apps** adds every app's events together. It shows the three windows (today, last 7 days,
   last 30 days) and the 30-day trend line, then **Apps Compared** (its own section, below), then **Project Kits**
   (liveworkspace.app's own kit events, [../004-index/kits.md](../004-index/kits.md) "Telemetry": Started, Retried,
   Completed and Removed a day, every kit together, with each window's totals), then **Forum Checks** (the Community
@@ -192,7 +192,7 @@ its tabs, catalogues and explanations. Picking an app on the page updates the li
   data in `<app>/`, which only loads when that app is picked.
 
 ```
-app/telemetry/_all        All apps' Apps Compared: its figures (apps-compared.ts), charts and tables
+app/telemetry/_all        All Apps' Apps Compared: its figures (apps-compared.ts), charts and tables
 app/telemetry/_shared     the views and their logic, once: AppDashboard, the tabs, cards, charts, rankings
 app/telemetry/<app>       the app's data: config.ts, its catalogue, event explanations, retired events, tests
 ```
@@ -214,13 +214,13 @@ every app's config (`_shared/test-apps.ts`).
 
 **The window.** Today, Last 7 days and Last 30 days are the three windows, picked on the panel at the top, and
 every number under it follows the one picked. The page holds the window, not each dashboard, so picking another
-app (or All apps) keeps it: a switch never starts again at Last 7 days. A reload does, since the window is in
+app (or All Apps) keeps it: a switch never starts again at Last 7 days. A reload does, since the window is in
 neither the URL nor storage. There is no 90-day window: the events are kept 60 days.
 
 **Loading.** The page never goes blank while numbers load: on the first visit, on picking an app
 whose summary hasn't come yet, and while that app's own dashboard code downloads. The header, the
 app chips and the closing note stay put, and where the numbers go a skeleton holds their shapes in
-the layout they will take: the three window tiles and the trend chart, then for All apps Apps
+the layout they will take: the three window tiles and the trend chart, then for All Apps Apps
 Compared's charts, tiles and table rows and the busiest-event rows under their real titles, and for one app the tab row and a
 grid of metric cards. The skeleton reserves the heights of the panel and tabs above the fold, so
 nothing above the cards moves when the data lands. It is static markup with a gentle pulse that
@@ -241,14 +241,14 @@ the cache, not D1. In development the cache is off.
 
 ### Apps Compared
 
-All apps' comparison of the apps, in place of the per-app cards it had until November 2026. Each block reads the
+All Apps' comparison of the apps, in place of the per-app cards it had until November 2026. Each block reads the
 window above and compares it with the same number of days just before it.
 
 1. **Events by App.** One chart of every app's daily events over the 30 days, each app's line in its own accent,
    with a dashed Total; the window is shaded. A legend entry per line hides or shows it (hiding the Total spreads
    the apps' lines over the chart). Under it, a table: each app's events in the window, its share of them, its
    change against the span before, and its events per visit, then liveworkspace.app's own events (the Explorer and
-   Settings on All apps) when it has any, and the Total. An app's name opens its dashboard.
+   Settings on All Apps) when it has any, and the Total. An app's name opens its dashboard.
 2. **Visitors and Accounts.** For All Apps (every app added up) or one app, picked beside the title: six tiles
    (Avg Daily Visitors, New Visitors, Returning Share, Sign-Ups, Sign-Ins, Sign-Ups per 100 New), each with its
    arrow against the span before where it has one; a chart of new and returning visitors per day and one of
@@ -409,7 +409,7 @@ Workers' `TELEMETRY_KEY`. The apps reach the service over HTTPS, not a service b
 
 An app registered before its launch ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch))
 goes in `HELD_TELEMETRY_APPS` instead of `TELEMETRY_APPS` for step 1: the service stores its events and takes its
-key, and the dashboard's app picker and All apps view, which read `TELEMETRY_APPS`, leave it out, so step 3 waits
+key, and the dashboard's app picker and All Apps view, which read `TELEMETRY_APPS`, leave it out, so step 3 waits
 for its launch. No app is held today. livehuddle was: it launched (Work Tracker #189) before its dashboard was
 built, and moved into `TELEMETRY_APPS` with its dashboard (Work Tracker #400). It is checked against its own
 api-schema's vocabulary (`@livehuddle/api-schema`). Its dashboard has no MCP or CLI views, and its checks leave
@@ -422,7 +422,7 @@ out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle d
   in the batch (the batch's events are added up first, so 100 of the same event are one update).
 - **Summary**: one read of the day counts per filter, at most once per 5 minutes per edge location.
   It reads one row per day, app and event, never the events. Until November 2026 it grouped every event
-  of the 59 days instead: on a local SQLite copy with 1 million events, All apps took 1.5 to 2.3 s (3.4 to 32.5 s
+  of the 59 days instead: on a local SQLite copy with 1 million events, All Apps took 1.5 to 2.3 s (3.4 to 32.5 s
   when the events were stored out of order) and one app 0.25 to 0.4 s, growing with every event, so it would
   near D1's 30-second limit at about 10 million events in 60 days, and every cache miss was billed a
   row read per event. The counts make it a few milliseconds, whatever the traffic (blueprint
@@ -430,7 +430,7 @@ out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle d
   (59 days × 2 apps × 1,500 events) inside a time budget.
 - **Apps Compared** adds no query, statement or table: the five audience events are found with one map lookup
   per day-count row in the fold the summary already makes, and add about 1,000 numbers (a few KB, before gzip) to
-  the All apps answer: six senders (the five apps and liveworkspace.app, whose stay 0), five numbers, 30 days,
+  the All Apps answer: six senders (the five apps and liveworkspace.app, whose stay 0), five numbers, 30 days,
   plus three windows twice. The page works them out once per window or scope pick (memoised), and draws three
   charts of at most six 30-point lines.
 - **Tooltips**: a pointer move costs one read of the chart's box and one division per animation frame, at most (the
@@ -443,7 +443,7 @@ out livehuddle's `apps/mcp`, `apps/cli` and `packages/agent-verbs`: livehuddle d
 - **The counts' first fill**: the migration that adds them counts every event already stored, in one
   statement, so the dashboard shows the same numbers on the day it ships. In production that was
   44,203 events (6,238 day counts) in November 2026, about 30 ms of D1 time.
-- **Dashboard**: "All apps" loads none of the apps' catalogues. Each app's dashboard is split out and
+- **Dashboard**: "All Apps" loads none of the apps' catalogues. Each app's dashboard is split out and
   loads when picked. Its styles are its own stylesheet, loaded only on `/telemetry`: the site's
   other pages carry 9.5 KB of CSS (gzipped), and the dashboard adds 16.6 KB.
 - **One set of views** (October 2026): the four apps' dashboards were near-copies (420 files, 65,261

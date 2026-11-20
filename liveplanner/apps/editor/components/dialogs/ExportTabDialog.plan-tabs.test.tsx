@@ -82,7 +82,7 @@ describe('ExportTabDialog on a Plan tab', () => {
     await waitFor(() => expect(document.body.innerHTML).toContain('Write the spec'));
     expect(document.body.innerHTML).not.toContain('Hidden Under');
     // No canvas pattern.
-    expect(screen.queryByText(/Background pattern/)).toBeNull();
+    expect(screen.queryByText(/Background Pattern/)).toBeNull();
   });
 
   it('offers a Sheet tab its picture alone', () => {
@@ -124,8 +124,8 @@ describe('ExportTabDialog on a Plan tab', () => {
     expect(cardTitles()).toEqual(['JSON', 'Markdown', 'PNG', 'SVG', 'PDF']);
     fireEvent.click(screen.getByRole('button', { name: /PNG/ }));
     await waitFor(() => expect(document.body.innerHTML).toContain('Not Started'));
-    expect(screen.queryByText(/Background pattern/)).not.toBeNull();
+    expect(screen.queryByText(/Background Pattern/)).not.toBeNull();
     // The isometric export went (docs/specs/008-canvas/canvas-and-palette.md "Retired features").
-    expect(screen.queryByText(/Isometric view/)).toBeNull();
+    expect(screen.queryByText(/Isometric View/)).toBeNull();
   });
 });

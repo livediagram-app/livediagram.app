@@ -63,7 +63,7 @@ const templatesTab = () => screen.getByRole('tab', { name: /Templates/ });
 describe('the Templates tab', () => {
   it('starts empty with a way to add one, which is chosen with its name selected', () => {
     const onSave = open(BUG);
-    expect(screen.getByText('No Templates Yet')).toBeTruthy();
+    expect(screen.getByText('No templates yet')).toBeTruthy();
     expect(
       screen.getByText(
         'A template fills in a new Bug card: its title, description, checklist, labels and fields.',
@@ -152,7 +152,7 @@ describe('the Templates tab', () => {
     // The last one removed leaves the type with none.
     fireEvent.click(within(list).getByRole('button', { name: 'More for Bug Report' }));
     fireEvent.click(screen.getByRole('menuitem', { name: 'Remove' }));
-    expect(screen.getByText('No Templates Yet')).toBeTruthy();
+    expect(screen.getByText('No templates yet')).toBeTruthy();
     expect(save(onSave).templates).toBeUndefined();
   });
 
@@ -252,7 +252,7 @@ describe('the Templates tab', () => {
     expect(screen.getByLabelText<HTMLTextAreaElement>('Title').disabled).toBe(true);
     cleanup();
     open(BUG, { canEdit: false });
-    expect(screen.getByText('No Templates Yet')).toBeTruthy();
+    expect(screen.getByText('No templates yet')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'New Template' })).toBeNull();
   });
 

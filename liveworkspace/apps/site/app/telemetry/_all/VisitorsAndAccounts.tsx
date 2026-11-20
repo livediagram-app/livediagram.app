@@ -81,7 +81,7 @@ export function VisitorsAndAccounts({
       {!counted || !daily ? (
         <CompactEmptyState
           icon={<ActivityGlyph />}
-          title="No Visitors Yet"
+          title="No visitors yet"
           description="No new or returning visitor, sign-up or sign-in has been counted in the last 30 days."
           className="mt-4"
         />

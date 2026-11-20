@@ -87,7 +87,7 @@ describe('typesMissions', () => {
     expect(use!.done(typesCtx({ types, practice: [card('p1', 'risk')] }))).toBe(true);
   });
 
-  it('rings the Types button, the editor’s fields and the board’s Add card', () => {
+  it('rings the Types button, the editor’s fields and the board’s Add Card', () => {
     expect(make!.hints[0]!.ring!()).toBe('[data-tour-id="card-types"]');
     expect(make!.hints[1]!.ring!()).toBe('[data-tour-id="card-type-general"] input');
     expect(edit!.hints[0]!.ring!()).toBe('[data-tour-id="card-types"]');

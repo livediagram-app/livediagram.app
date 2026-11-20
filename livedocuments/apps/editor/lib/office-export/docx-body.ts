@@ -303,7 +303,7 @@ class BodyWriter {
     let out = '';
     // The num of the numbered run in progress: a new one each time another block ends a run.
     let numbered: number | null = null;
-    for (const b of blocks) {
+    for (const [i, b] of blocks.entries()) {
       // Any other block ends a numbered run, and so does a bullet or to-do at the top level (it restarts that
       // level's count); one nested deeper leaves the run going (D74).
       if (b.type !== 'list' || (b.list !== 'numbered' && (b.level ?? 0) === 0)) numbered = null;
@@ -330,13 +330,19 @@ class BodyWriter {
         case 'list': {
           const level = Math.min(LIST_LEVELS - 1, Math.max(0, b.level ?? 0));
           const jc = b.align && b.align !== 'left' ? `<w:jc w:val="${JC[b.align]}"/>` : '';
+          // The last item of a run keeps a paragraph's space after it, as the canvas does, so the writing after a list
+          // stands as clear of it as the writing before it.
+          const after =
+            blocks[i + 1] !== undefined && blocks[i + 1]?.type !== 'list'
+              ? `<w:spacing w:after="${Math.round(this.look.paragraphSpace * this.look.bodyPx * this.look.lineHeight * TWIPS_PER_PX)}"/>`
+              : '';
           if (b.list === 'todo') {
             // A to-do is a list item with its box written in, ticked and struck through when done.
             const box = { text: b.checked ? TODO_DONE : TODO_OPEN };
             const done = b.checked ? { strike: true, colour: this.look.muted } : {};
             const indent = `<w:ind w:left="${Math.round((20 + 28 * level) * TWIPS_PER_PX)}"/>`;
             out += this.paragraph(
-              `<w:pStyle w:val="${LIST_STYLE_ID}"/>${indent}${jc}`,
+              `<w:pStyle w:val="${LIST_STYLE_ID}"/>${after}${indent}${jc}`,
               this.run(box) + this.runs(b.runs, done),
             );
             break;
@@ -350,7 +356,7 @@ class BodyWriter {
             numId = numbered;
           }
           out += this.paragraph(
-            `<w:pStyle w:val="${LIST_STYLE_ID}"/><w:numPr><w:ilvl w:val="${level}"/><w:numId w:val="${numId}"/></w:numPr>${jc}`,
+            `<w:pStyle w:val="${LIST_STYLE_ID}"/><w:numPr><w:ilvl w:val="${level}"/><w:numId w:val="${numId}"/></w:numPr>${after}${jc}`,
             this.runs(b.runs),
           );
           break;

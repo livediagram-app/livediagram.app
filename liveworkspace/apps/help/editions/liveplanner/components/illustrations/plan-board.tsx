@@ -7,7 +7,7 @@ import { Card, Widget, Cog, Column, Arrow2 } from './plan-parts';
 import { StartBandLanes, StartTitleMarkLanes } from './start-band';
 
 /** A Kanban board in Plan mode: header widgets, a column over its WIP limit (the preset's 3) with its
- *  cog, Task and Action cards (the types Kanban takes) with their type stripes, a card being dragged into the gap it opens, and + Add card. */
+ *  cog, Task and Action cards (the types Kanban takes) with their type stripes, a card being dragged into the gap it opens, and + Add Card. */
 export function PlanBoardScene() {
   const colW = 124;
   const xs = [18, 148, 278];
@@ -52,7 +52,7 @@ export function PlanBoardScene() {
       {/* To Do: one card left, its neighbour is on its way to Review. */}
       <Card x={xs[0]! + 7} y={66} w={cw} type="action" num={15} title="Pick a date" />
       <Label x={xs[0]! + 11} y={110} size={10} tone="muted">
-        + Add card
+        + Add Card
       </Label>
 
       <Card x={xs[1]! + 7} y={66} w={cw} type="task" num={9} title="Fix login" />
@@ -87,7 +87,7 @@ export function PlanBoardPickerScene() {
   const tiles: { name: string; cols: number; rows?: boolean }[] = [
     { name: 'Blank', cols: 0 },
     { name: 'Kanban', cols: 5 },
-    { name: 'To-do List', cols: 2 },
+    { name: 'To-Do List', cols: 2 },
     { name: 'Sprint', cols: 4, rows: true },
     { name: 'Retro', cols: 3 },
     { name: 'Roadmap', cols: 3 },

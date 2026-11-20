@@ -221,7 +221,7 @@ describe('its states', () => {
     fetchItemHistory.mockResolvedValue([]);
     show();
     await flush();
-    expect(screen.getByText('No Activity Yet')).toBeTruthy();
+    expect(screen.getByText('No activity yet')).toBeTruthy();
   });
 
   it('says an offline plan keeps no history', async () => {
@@ -248,7 +248,7 @@ describe('its states', () => {
         <CardActivityTab item={card()} />
       </Provide>,
     );
-    expect(screen.getByText('No Activity Here')).toBeTruthy();
+    expect(screen.getByText('No activity here')).toBeTruthy();
     cleanup();
     render(<CardActivityTab item={card()} />);
     expect(screen.getByText('Activity shows on cards in a plan.')).toBeTruthy();

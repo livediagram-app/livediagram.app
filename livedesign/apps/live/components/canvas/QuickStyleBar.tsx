@@ -30,9 +30,7 @@ import {
   sectionShows,
   sectionTitle,
 } from './quick-style-sections';
-
-// Screen px between the bar and the title bar (the row's `gap-2`), counted in the room the bar takes.
-export const QUICK_STYLE_BAR_GAP = 8;
+import { QUICK_STYLE_BAR_GAP, quickStyleBarNamedRoom } from './quick-style-bar-room';
 
 // The swatch whose custom-colour popover is open.
 type Editing = { role: QuickSwatchRole; slot: QuickSwatchSlot; anchor: HTMLButtonElement };
@@ -63,6 +61,9 @@ export function QuickStyleBar({
   const desk = shown && !isMobile;
   const phone = shown && isMobile;
   const sections = view ? QUICK_BAR_SECTIONS.filter((s) => sectionShows(s.id, view)) : [];
+  // Its room with its buttons named, whichever way it draws: the title bar names its buttons only while the page holds
+  // both named, so the row never runs off the page.
+  const namedRoom = quickStyleBarNamedRoom(sections.map((s) => s.id));
 
   // On a phone, the rows its page's Appearance lists, each with its value as its icon; taken back as the bar goes.
   useLayoutEffect(() => {
@@ -90,7 +91,8 @@ export function QuickStyleBar({
   useLayoutEffect(() => {
     const bar = barRef.current;
     if (!desk || !bar || !pageId) return;
-    const publish = () => setQuickStyleBarRoom(pageId, bar.offsetWidth + QUICK_STYLE_BAR_GAP);
+    const publish = () =>
+      setQuickStyleBarRoom(pageId, bar.offsetWidth + QUICK_STYLE_BAR_GAP, namedRoom);
     publish();
     const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(publish);
     observer?.observe(bar);
@@ -98,7 +100,7 @@ export function QuickStyleBar({
       observer?.disconnect();
       setQuickStyleBarRoom(pageId, 0);
     };
-  }, [desk, pageId, slot]);
+  }, [desk, pageId, slot, namedRoom]);
 
   // A custom-colour popover outlives neither the bar nor its swatch.
   const editedColours = editing && view ? view.sections[sectionOfRole(editing.role)] : undefined;

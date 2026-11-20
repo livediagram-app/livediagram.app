@@ -223,7 +223,7 @@ function WebhooksList() {
             {/* The tool's explainer (footer-tools-menu.md "Explainers"): nothing set up yet. */}
             <ToolExplainer
               art={webhooksArt}
-              title="No Webhooks Yet"
+              title="No webhooks yet"
               description={`Tell Slack, Teams or your own service the moment this ${one} changes. Only this ${one}: your other ${ITEM(app).many.toLowerCase()} have their own.`}
               steps={[
                 'Add a webhook with the address your service gives you.',
