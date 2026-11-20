@@ -79,10 +79,13 @@ export async function nameOpenPage(page: Page, name: string): Promise<void> {
   await expect(pageRow(page, name)).toBeVisible();
 }
 
+/** The key that takes the caret to the foot of the writing: Cmd and Down on a Mac, Ctrl and End elsewhere. */
+export const END_OF_WRITING = process.platform === 'darwin' ? 'Meta+ArrowDown' : 'Control+End';
+
 /** Writes lines under the Title: the caret goes to the end of the writing, and each line is a new paragraph. */
 export async function writeLines(page: Page, ...lines: string[]): Promise<void> {
   await writing(page).focus();
-  await page.keyboard.press('ControlOrMeta+End');
+  await page.keyboard.press(END_OF_WRITING);
   for (const line of lines) {
     await page.keyboard.press('Enter');
     await page.keyboard.type(line);

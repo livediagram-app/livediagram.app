@@ -8,7 +8,7 @@ import {
   throttleCpu,
 } from '@liveworkspace/e2e-kit/perf/main-thread-probe';
 import { adoptGuest, expect, mintGuest, ownerHeaders, seedDocumentItem, test } from '../fixtures';
-import { pageTree, paragraphs, titleOf, writing } from '../knowledgebase';
+import { END_OF_WRITING, pageTree, paragraphs, titleOf, writing } from '../knowledgebase';
 
 // The knowledgebase's typing and tree probes (docs/specs/030-knowledgebase/blueprints/continuous-page.md
 // "Performance and limits", page-tree.md "Performance and limits"; build plan step 15 "measure"): typing at the
@@ -19,7 +19,7 @@ import { pageTree, paragraphs, titleOf, writing } from '../knowledgebase';
 
 const LONG_PAGE_PARAGRAPHS = 100;
 const PARAGRAPH_CHARS = 1000;
-const KEYS = 60;
+const KEYS = Number(process.env.PERF_KEYS ?? 60);
 const TREE_PAGES = 500;
 
 const sentence = 'The queue worker restarts with the blue lever and reports to the duty engineer. ';
@@ -84,14 +84,21 @@ test('typing at the foot of a 100,000 character page', async ({ page, browser, b
   const reference = await probeThrottle(browser, process.env.PERF_THROTTLE);
 
   for (const rate of [1, reference]) {
+    const opened = Date.now();
     await page.goto(`/document/${id}`);
     await titleOf(page).waitFor({ timeout: 60_000 });
-    await expect(paragraphs(page)).toHaveCount(LONG_PAGE_PARAGRAPHS, { timeout: 60_000 });
+    // Every paragraph drawn (the second run finds the lines the first one typed as well).
+    await expect
+      .poll(() => paragraphs(page).count(), { timeout: 60_000 })
+      .toBeGreaterThanOrEqual(LONG_PAGE_PARAGRAPHS);
+    const shownMs = Date.now() - opened;
     const chars = (await writing(page).textContent())!.length;
-    // The caret at the very end of the writing.
-    await paragraphs(page).last().scrollIntoViewIfNeeded();
-    await paragraphs(page).last().click();
-    await page.keyboard.press('ControlOrMeta+End');
+    // The caret at the very end of the writing: the writing takes the focus, and the end key goes to its foot
+    // (the view follows the caret; a 35,000 px page has no scroll position for a click to scroll to), and the
+    // last paragraph is on screen before a key is timed.
+    await writing(page).focus();
+    await page.keyboard.press(END_OF_WRITING);
+    await expect(paragraphs(page).last()).toBeInViewport();
     await page.keyboard.type(' ');
     await page.waitForTimeout(1500);
 
@@ -128,7 +135,7 @@ test('typing at the foot of a 100,000 character page', async ({ page, browser, b
     const keys = Math.min(KEYS, text.length);
     console.log(
       [
-        `\n[perf] typing, ${chars.toLocaleString('en')} characters, ${keys} keys @${rate}x`,
+        `\n[perf] typing, ${chars.toLocaleString('en')} characters, ${keys} keys @${rate}x (the page's writing shown ${shownMs} ms after navigation)`,
         `  key to second frame: median ${quantile(times, 0.5).toFixed(1)} ms, p95 ${quantile(times, 0.95).toFixed(1)} ms, max ${(times[times.length - 1] ?? 0).toFixed(1)} ms`,
         `  ${describeReading('main thread', rate, reading)}`,
         `  long tasks over 50 ms: ${reading.longTasks.length} in ${keys} keys`,
@@ -151,7 +158,6 @@ test('opening the tree of a 500 page knowledgebase', async ({ page, browser, bas
       tabs.push(pageOf(crypto.randomUUID(), `Page ${top + 1}.${child + 1}`, ['A page.'], parent));
   }
   const id = await seed(page, baseURL!, 'Five hundred pages', tabs);
-  // Every section open, as a browser that had opened them remembers.
   const reference = await probeThrottle(browser, process.env.PERF_THROTTLE);
 
   for (const rate of [1, reference]) {
@@ -165,21 +171,13 @@ test('opening the tree of a 500 page knowledgebase', async ({ page, browser, bas
     const writingMs = Date.now() - started;
     const rows = await pageTree(page).getByRole('treeitem').count();
 
-    // Opening every section: all 500 rows drawn.
-    await startMainThreadProbe(page);
-    const expandStarted = Date.now();
-    await page.evaluate(() => {
-      for (const button of document.querySelectorAll<HTMLElement>('[data-row-action="toggle"]'))
-        if (button.getAttribute('aria-label')?.startsWith('Expand')) button.click();
-    });
+    // A new browser shows every section open, so all 500 rows are drawn by the open itself.
     await expect(pageTree(page).getByRole('treeitem')).toHaveCount(TREE_PAGES, { timeout: 120_000 });
-    const expandMs = Date.now() - expandStarted;
-    const reading = await readMainThreadProbe(page);
+    const allRowsMs = Date.now() - started;
     console.log(
       [
         `\n[perf] tree of ${TREE_PAGES} pages @${rate}x`,
-        `  navigation to the first row ${treeMs} ms, to the writing ${writingMs} ms, rows drawn on open ${rows}`,
-        `  every section opened (${TREE_PAGES} rows) in ${expandMs} ms; ${describeReading('main thread', rate, reading)}`,
+        `  navigation to the first row ${treeMs} ms, to the writing ${writingMs} ms, to all ${rows} rows ${allRowsMs} ms`,
       ].join('\n'),
     );
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 });
