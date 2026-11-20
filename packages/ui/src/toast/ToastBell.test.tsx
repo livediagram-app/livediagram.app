@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ToastBell } from './ToastBell';
 import { TOAST_BELL_ATTR } from './toast-collapse';
@@ -72,12 +72,14 @@ describe('ToastBell', () => {
     ).toEqual(['Clear']);
   });
 
-  it('Clear empties the list; empty, it says so', async () => {
+  it('Clear empties the list and closes it; reopened empty, it says so', async () => {
     act(() => recordToast({ id: 'a', tone: 'info', message: 'One' }, 'live'));
     render(<ToastBell className="" />);
     fireEvent.click(bell());
     fireEvent.click(await screen.findByRole('button', { name: 'Clear' }));
-    expect(screen.getByText('No notifications yet')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    fireEvent.click(bell());
+    expect(await screen.findByText('No notifications yet')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Clear' }).hasAttribute('disabled')).toBe(true);
   });
 
