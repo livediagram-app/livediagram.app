@@ -65,6 +65,12 @@ reads as one family; the icon says the tone at a glance, and an error or warning
 
 The last button is the primary one (the brand-coloured answer: Undo, Reload); any before it are secondary.
 
+**A destructive answer** (an action's `destructive`) is the primary one in rose instead of the brand colour
+(rose-700, rose-300 in dark, each over 4.5:1 on the card), for the rare toast whose answer removes something for good:
+"This image isn't used anywhere else. Delete it from storage? It can't be undone.", **Keep** and **Delete from
+Storage** (each product's `docs/specs/009-elements/images.md` "Deleting an unused picture"). Its message says it
+can't be undone, and timing out or closing it is the safe answer.
+
 ## Timing
 
 - A plain toast times out after its tone's time (above). One with buttons stays up for 10 seconds

@@ -205,6 +205,12 @@ Participant sends no beacon, so nothing else shares it.
   (liveworkspace/docs/specs/006-media/media.md "Usage"). No tab body read,
   each item once per image, as `{ id, name, app, trashed? }` ordered by name. With no references it answers
   `{ usage: {}, unchecked: [] }` without asking the index.
+- `GET /api/images/unused?d=<design>&ids=a,b`: signed-in owner only (`ctx.accountUserId`; a guest, an API token and a
+  design-scope workbench session get 401 or 403); the ids parsed by `@liveworkspace/media`'s `parseUnusedImageIds`
+  (1 to 50 gallery ids, else 400 `invalid_ids`), `d` an id (else 400 `invalid_design`); then one
+  `media.unused(mediaOwner(owner), d, ids)`, its `{ unused }` passed on, a service failure answered as its status.
+  The editor's `apiUnusedImages` answers `[]` for anything but 200, and `useUnusedImagePrompt`
+  (`@liveworkspace/workbench`) decides and offers ([Deleting an unused picture](../images.md#deleting-an-unused-picture)).
 
 ### Retention
 
@@ -511,6 +517,7 @@ O1 exists. O2 to O5 do not; Observability stays unchecked until GB5 lands.
 | Read: owner, share + grant, other app, 404 otherwise | `the byte read` suite                                    | `apps/api/src/routes/images.test.ts`             |
 | Tab-scoped read                                      | `asks whether the scoped tab…`                           | `apps/api/src/routes/images.test.ts`             |
 | Delete: owner, idempotent, 403                       | three DELETE tests                                       | `apps/api/src/routes/images.test.ts`             |
+| Unused after a delete: owner, guest, ids, service    | `GET /api/images/unused` suite                           | `apps/api/src/routes/images.test.ts`             |
 | Outbox, its push, account delete and merge           | `a design's references`, `the account`                   | `apps/api/src/media.test.ts`                     |
 | Hosted profile points at each media service          | `turns telemetry on and points each environment…`        | `apps/api/src/hosted-vars.test.ts`               |
 | Caps, sniff, strip, dedupe                           | the media service's own tests                            |                                                  |

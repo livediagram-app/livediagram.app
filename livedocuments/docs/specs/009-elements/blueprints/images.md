@@ -175,6 +175,12 @@ max-age=86400`.
   `{ usage: {}, unchecked: [], unknown: true }`, so the Gallery never calls a placed image unused
   (liveworkspace/docs/specs/006-media/media.md "Usage"). It keeps those whose `app` matches and the owner's, named as the index has them. No tab body
   read, each item once per image, as `{ id, name, app, trashed? }` ordered by name.
+- `GET /api/images/unused?d=<document>&ids=a,b`: signed-in owner only (`ctx.accountUserId`; a guest, an API token and a
+  document-scope workbench session get 401 or 403); the ids parsed by `@liveworkspace/media`'s `parseUnusedImageIds`
+  (1 to 50 gallery ids, else 400 `invalid_ids`), `d` an id (else 400 `invalid_document`); then one
+  `media.unused(mediaOwner(owner), d, ids)`, its `{ unused }` passed on, a service failure answered as its status.
+  The editor's `apiUnusedImages` answers `[]` for anything but 200, and `useUnusedImagePrompt`
+  (`@liveworkspace/workbench`) decides and offers ([Deleting an unused picture](../images.md#deleting-an-unused-picture)).
 
 ### Retention
 
@@ -542,6 +548,7 @@ O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([medi
 | Read of another app's upload through a document         | `serves an image uploaded in another app…`                                                     | `apps/api/src/routes/images.test.ts`                                       |
 | Workbench session read                                  | `under a workbench session` suite                                                              | `apps/api/src/routes/images.test.ts`                                       |
 | Delete: owner, idempotent, forgotten here               | `DELETE` suite                                                                                 | `apps/api/src/routes/images.test.ts`                                       |
+| Unused after a delete: owner, guest, ids, service       | `GET /api/images/unused` suite                                                                 | `apps/api/src/routes/images.test.ts`                                       |
 | A document's images pushed on save, link, unlink, purge | `a document's images` suite                                                                    | `apps/api/src/media.test.ts`                                               |
 | Account deletion and guest merge reach the service      | `the account` suite                                                                            | `apps/api/src/media.test.ts`                                               |
 | Hosted profile points at the media service              | `turns telemetry on and points each environment…`                                              | `apps/api/src/hosted-vars.test.ts`                                         |
