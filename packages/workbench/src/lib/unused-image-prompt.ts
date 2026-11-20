@@ -29,6 +29,50 @@ export type UnusedImagePromptDeps = {
   settle?: () => Promise<void>;
 };
 
+/** Who an editor may make the offer to (images.md "Only the picture's owner"): signed in, in an item saved to their
+ *  account, with the whole of it open to them as its owner or an Editor. The api then answers only their own pictures. */
+export type UnusedImageGate = {
+  itemId: string | null;
+  signedIn: boolean;
+  offline: boolean;
+  embedded: boolean;
+  workbench: boolean;
+  // A Viewer, or a tab-scoped link's visitor: the item's structure is read-only to them.
+  structureReadOnly: boolean;
+  // A Participant: they add content, but a delete of theirs asks nothing.
+  participating: boolean;
+};
+
+export function mayOfferUnusedImages(gate: UnusedImageGate): boolean {
+  return (
+    gate.itemId !== null &&
+    gate.signedIn &&
+    !gate.offline &&
+    !gate.embedded &&
+    !gate.workbench &&
+    !gate.structureReadOnly &&
+    !gate.participating
+  );
+}
+
+/** Every picture the tabs name, by the editor's own reader of a tab (its image elements', its pages' backgrounds). */
+export function picturesOfTabs<T>(
+  tabs: readonly T[],
+  tabImageIds: (tab: T) => readonly string[],
+): Set<string> {
+  const ids = new Set<string>();
+  for (const tab of tabs) for (const id of tabImageIds(tab)) ids.add(id);
+  return ids;
+}
+
+/** Whether every tab is here whole: loaded, or holding elements (a tab made in this session). */
+export function everyTabLoaded(
+  tabs: readonly { id: string; elements: readonly unknown[] }[],
+  loaded: ReadonlySet<string>,
+): boolean {
+  return tabs.every((tab) => loaded.has(tab.id) || tab.elements.length > 0);
+}
+
 /** The toast's words for `n` pictures: the offer, the answers' names, what a delete says after. */
 export function unusedImageWords(n: number) {
   const one = n === 1;

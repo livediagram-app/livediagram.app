@@ -3,6 +3,9 @@ import { UNUSED_IMAGE_IDS_MAX } from '@liveworkspace/media';
 import type { ToastActionSpec } from '@liveworkspace/ui/toast';
 import {
   createUnusedImagePrompt,
+  everyTabLoaded,
+  mayOfferUnusedImages,
+  picturesOfTabs,
   nextTask,
   UNUSED_IMAGE_TOAST_KEY,
   unusedImageWords,
@@ -241,5 +244,46 @@ describe('the answers', () => {
     expect(h.errors).toEqual(['Couldn’t delete 2 images from storage. Try again.']);
     expect(h.dismissed).toEqual([UNUSED_IMAGE_TOAST_KEY]);
     expect(unusedImageWords(1).failed).toBe('Couldn’t delete the image from storage. Try again.');
+  });
+});
+
+describe('who is offered it', () => {
+  const owner = {
+    itemId: 'd1',
+    signedIn: true,
+    offline: false,
+    embedded: false,
+    workbench: false,
+    structureReadOnly: false,
+    participating: false,
+  };
+
+  it('is the signed-in owner or Editor of a whole cloud item', () => {
+    expect(mayOfferUnusedImages(owner)).toBe(true);
+  });
+
+  it('is never a guest, an Offline item, an embed, a workbench, a Viewer, a tab-scoped visitor or a Participant', () => {
+    expect(mayOfferUnusedImages({ ...owner, itemId: null })).toBe(false);
+    expect(mayOfferUnusedImages({ ...owner, signedIn: false })).toBe(false);
+    expect(mayOfferUnusedImages({ ...owner, offline: true })).toBe(false);
+    expect(mayOfferUnusedImages({ ...owner, embedded: true })).toBe(false);
+    expect(mayOfferUnusedImages({ ...owner, workbench: true })).toBe(false);
+    expect(mayOfferUnusedImages({ ...owner, structureReadOnly: true })).toBe(false);
+    expect(mayOfferUnusedImages({ ...owner, participating: true })).toBe(false);
+  });
+});
+
+describe('reading the item', () => {
+  it('gathers every tab’s pictures once', () => {
+    const tabs = [{ ids: ['a', 'b'] }, { ids: ['b', 'c'] }];
+    expect([...picturesOfTabs(tabs, (t) => t.ids)]).toEqual(['a', 'b', 'c']);
+  });
+
+  it('counts a tab whole when loaded or holding elements', () => {
+    const loaded = new Set(['t1']);
+    expect(everyTabLoaded([{ id: 't1', elements: [] }, { id: 't2', elements: [1] }], loaded)).toBe(
+      true,
+    );
+    expect(everyTabLoaded([{ id: 't3', elements: [] }], loaded)).toBe(false);
   });
 });
