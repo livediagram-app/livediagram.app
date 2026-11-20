@@ -266,7 +266,7 @@ Derived from [Search and Ask](../search-and-ask.md) "Search".
   moment and try again."; anything else that the search is not answering.
 - **Opening a result** (`goToBlock`): the page opens with no reload; for a passage, its first block is looked for
   every 50 ms (4 s at most, a page not yet opened loads first), brought into view (`rangeRect`, `scrollIntoView`)
-  and lit for 1.6 s (`article-search-hit`; a steady tint under reduced motion).
+  and tinted for 1.6 s (`article-search-hit`, a steady tint with no animation: the motion budget allows none that long).
 - **Offline** (`searchLoadedPages`): the same dialog over the pages this editor holds, with the room's own
   passages (`pagePassages`) and words (`searchTerms`): every word must be in the title or in one passage, titles
   first, 20 at most, the matched words marked the same way. No ranking beyond that order, and a page whose writing

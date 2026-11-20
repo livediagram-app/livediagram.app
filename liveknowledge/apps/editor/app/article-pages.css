@@ -632,22 +632,9 @@ html[data-presenting] .article-flow .article-note {
   vertical-align: bottom;
 }
 
-/* A block a search result opened at (lib/knowledge/go-to-block.ts): lit for a moment, then as it was. */
-@keyframes article-search-hit {
-  from {
-    background-color: color-mix(in srgb, var(--article-accent) 22%, transparent);
-  }
-  to {
-    background-color: transparent;
-  }
-}
+/* A block a search result opened at (lib/knowledge/go-to-block.ts): tinted while the script holds the class on it
+   (1.6 s), then as it was. No animation of its own, so it is the same under reduced motion. */
 .article-flow .article-search-hit {
   border-radius: 4px;
-  animation: article-search-hit 1.6s ease-out;
-}
-@media (prefers-reduced-motion: reduce) {
-  .article-flow .article-search-hit {
-    animation: none;
-    background-color: color-mix(in srgb, var(--article-accent) 14%, transparent);
-  }
+  background-color: color-mix(in srgb, var(--article-accent) 18%, transparent);
 }

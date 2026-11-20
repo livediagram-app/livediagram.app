@@ -5,7 +5,7 @@ import type { EditorContextValue } from '@/app/document/[id]/EditorContext';
 import { selectPage } from '@/components/page-tree/select-page';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 
-/** How long a found block stays lit (ms); the CSS animation runs as long. */
+/** How long a found block stays lit (ms). */
 export const BLOCK_HIT_MS = 1600;
 const HIT_CLASS = 'article-search-hit';
 // A page not opened this session loads first: the block is looked for every 50 ms, for 4 s at most.
