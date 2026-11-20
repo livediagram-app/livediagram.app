@@ -54,6 +54,7 @@ import {
   oneOfRule,
 } from '@liveworkspace/model-core/validate-primitives';
 import { isRecord } from '@liveworkspace/model-core/is-record';
+import { parseTabParent } from './page-tree';
 import { LIVE_EMBED_CHECKS } from '@liveworkspace/element-model/live-item';
 
 export type { ElementValidationIssue } from '@liveworkspace/model-core/validate-primitives';
@@ -384,6 +385,12 @@ export function isValidElement(el: unknown): el is Element {
 // background) are cosmetic and left unchecked.
 export function isValidTab(tab: unknown): tab is Tab {
   if (!isRecord(tab) || !isNonEmptyStr(tab.id) || typeof tab.name !== 'string') return false;
+  // A page's parent in the page tree is another page's id: never a value that is no id, never the page itself.
+  if (
+    tab.parent !== undefined &&
+    (parseTabParent(tab.parent) === undefined || tab.parent === tab.id)
+  )
+    return false;
   if (!boundedArray(tab.elements, MAX_ELEMENTS_PER_TAB)) return false;
   const ids = new Set<string>();
   for (const el of tab.elements) {

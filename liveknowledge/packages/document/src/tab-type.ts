@@ -13,6 +13,11 @@ import type { Element } from './element-union';
 export type Tab = {
   id: TabId;
   name: string;
+  // The page this page sits under in the page tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The
+  // page tree"): a tab id of the same knowledgebase. Absent is the top level; so is a parent that no longer exists,
+  // or one that would close a cycle (read via `pageParents`, page-tree.ts). Stored in the tab's body and synced in
+  // a `tab-meta` patch, as its name is.
+  parent?: TabId;
   // Pages mode's pages (docs/specs/007-editor/pages-mode.md "The pages"): the A4 sheets,
   // in row order, each portrait or landscape, that everyone lays the tab out on. Absent = one page
   // (read via `pagesOf`).

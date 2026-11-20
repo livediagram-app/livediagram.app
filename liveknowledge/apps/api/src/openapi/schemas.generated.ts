@@ -7422,6 +7422,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "parent": {
+        "$ref": "#/components/schemas/TabId"
+      },
       "patternColor": {
         "type": "string"
       },
@@ -7565,6 +7568,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/Page"
         },
         "type": "array"
+      },
+      "parent": {
+        "$ref": "#/components/schemas/TabId"
       },
       "patternColor": {
         "type": "string"

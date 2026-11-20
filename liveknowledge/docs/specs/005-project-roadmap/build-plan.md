@@ -11,7 +11,7 @@ its own. Specs first at every step.
 | 2   | Platform registration ([Platform registration](../016-platform/platform-registration.md))                                     | done, see below |
 | 3   | Cut down to the article engine ([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md))                         | started         |
 | 4   | The knowledgebase noun and the continuous page ([Knowledgebases and pages](../030-knowledgebase/knowledgebases-and-pages.md)) | started         |
-| 5   | The page tree                                                                                                                 |                 |
+| 5   | The page tree                                                                                                                 | started         |
 | 6   | Page links, backlinks, embeds ([Links and embeds](../030-knowledgebase/links-and-embeds.md))                                  |                 |
 | 7   | Verification ([Verification](../030-knowledgebase/verification.md))                                                           |                 |
 | 8   | Search ([Search and Ask](../030-knowledgebase/search-and-ask.md))                                                             |                 |

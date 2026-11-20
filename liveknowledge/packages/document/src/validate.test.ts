@@ -259,6 +259,14 @@ describe('isValidTab', () => {
     ).toBe(true);
   });
 
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree".
+  it('takes a parent that is another page’s id, and none that is no id or the page itself', () => {
+    const tab = { id: 't', name: 'Guide', elements: [] };
+    expect(isValidTab({ ...tab, parent: 'start' })).toBe(true);
+    for (const parent of ['', 7, null, {}, 't'])
+      expect(isValidTab({ ...tab, parent }), JSON.stringify(parent)).toBe(false);
+  });
+
   it('accepts an empty tab', () => {
     expect(isValidTab({ id: 't', name: '', elements: [] })).toBe(true);
   });
