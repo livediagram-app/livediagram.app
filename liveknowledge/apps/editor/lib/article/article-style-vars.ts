@@ -13,6 +13,8 @@ import {
   type ArticleStyle,
 } from '@liveknowledge/document';
 
+import { pageLinkColour } from '@/lib/knowledge/page-link-colour';
+
 const MONO = resolveFontStack('roboto-mono')!;
 
 export type ArticleInk = { tone: string; dark: boolean };
@@ -34,6 +36,8 @@ export function articleStyleVars(
     '--article-leading': String(ARTICLE_LINE_HEIGHT[r.lineSpacing]),
     '--article-para': String(ARTICLE_PARAGRAPH_SPACE[r.paragraphSpacing]),
     '--article-accent': accent,
+    // A page link is the brand's, on any paper (lib/knowledge/page-link-colour.ts).
+    '--article-page-link': pageLinkColour(ink),
     '--article-ink': text,
     '--article-heading-color': r.accentHeadings ? accent : text,
     '--article-muted': ink.dark ? '#94a3b8' : '#64748b',

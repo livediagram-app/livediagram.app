@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { canManageWebhooks as canManageWebhooksOf } from '@liveworkspace/workbench/lib/can-manage-webhooks';
-import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import type { ExplorerMenuActions } from '@/components/panels/Explorer.types';
 import { track } from '@/lib/telemetry';
@@ -19,7 +18,6 @@ export function useCanvasHostExplorer(): {
     canShareDocument,
     hydrated,
     isReadOnly,
-    loadAllTabs,
     participating,
     sessionTabScope,
     setExportOpen,
@@ -56,7 +54,8 @@ export function useCanvasHostExplorer(): {
         setExportOpen(true);
       },
       onWebhooks: canManageWebhooks ? () => setWebhooksOpen(true) : undefined,
-      onSearch: () => openSearchWithPrefetch(setSearchOpen, loadAllTabs),
+      // Loads no page: the command search reads what this editor holds (a page fetched counts as read).
+      onSearch: () => setSearchOpen(true),
       onOpenSettings: () => {
         setSettingsOpen(true);
         track('UI', 'Opened', 'Settings');

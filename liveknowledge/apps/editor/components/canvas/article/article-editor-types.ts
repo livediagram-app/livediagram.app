@@ -7,6 +7,7 @@ import type {
 } from '@liveknowledge/document';
 import type { ArticleInk } from '@/lib/article/article-style-vars';
 import type { ArticleInsert } from '@/hooks/editor/useArticles';
+import type { FocusAt } from '@/lib/article/article-focus-selection';
 
 export type FlowLayout = {
   flow: string;
@@ -25,7 +26,7 @@ export type FlowLayout = {
   local: boolean;
 };
 
-export type FocusRequest = { flow: string; at: 'start' | 'end'; seq: number } | null;
+export type FocusRequest = { flow: string; at: FocusAt; seq: number } | null;
 
 export type ArticleEditorProps = {
   flow: string;

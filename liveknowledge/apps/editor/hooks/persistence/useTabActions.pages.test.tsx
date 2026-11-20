@@ -9,6 +9,7 @@ import {
 } from '@liveknowledge/document';
 import { pageTitleOf } from '@/lib/article/page-title';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
+import { takeTitleFocus } from '@/lib/page-title-focus';
 import { useTabActions } from './useTabActions';
 
 // The tab actions in tree terms (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree" and "Share
@@ -73,6 +74,24 @@ function setup(over: Record<string, unknown> = {}) {
 }
 
 describe('adding a page', () => {
+  it('asks for the caret in the Title of the page it opens (New Page, Add Subpage)', () => {
+    const s = setup();
+    s.actions().addTab();
+    expect(takeTitleFocus('new')).toBe(true);
+    s.actions().addTab('e');
+    expect(takeTitleFocus('new')).toBe(true);
+    // Refused, or a session that may not add: nothing is asked.
+    setup({ canEditStructure: false }).actions().addTab();
+    expect(takeTitleFocus('new')).toBe(false);
+  });
+
+  it('a page made by Create Page takes the caret in its Title when it is first opened', () => {
+    const s = setup();
+    expect(s.actions().addNamedSubpage('a', 'Rollback')).toBe('new');
+    expect(s.deps.setActiveId).not.toHaveBeenCalled();
+    expect(takeTitleFocus('new')).toBe(true);
+  });
+
   it('adds an Untitled Page at the top level, and opens it', () => {
     const s = setup();
     s.actions().addTab();

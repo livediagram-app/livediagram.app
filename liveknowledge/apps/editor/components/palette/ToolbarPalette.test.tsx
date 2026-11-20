@@ -5,7 +5,6 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
-import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import type { Element } from '@liveknowledge/document';
 import { requestToolbarSearch } from '@liveworkspace/workbench/lib/toolbar-search-request';
 import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
@@ -81,10 +80,9 @@ const openFlyout = (name: string) => {
 };
 
 describe('ToolbarPalette', () => {
-  it("shows Pages' categories on the strip, with the selection mode and Search", () => {
+  it("shows Pages' categories on the strip, with the selection mode", () => {
     show();
     expect(screen.getByRole('button', { name: 'Selection mode' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Search elements' })).toBeTruthy();
     // Every name one word.
     expect(barNames()).toEqual([
       'Shapes',
@@ -245,109 +243,21 @@ describe('ToolbarPalette', () => {
     expect(root.classList.contains('hidden')).toBe(false);
   });
 
-  describe('Search (docs/specs/007-editor/toolbar-layout.md "Search: every element type")', () => {
-    // The icon catalogues load as a chunk of their own, as the editor loads them on its first paint: loaded
-    // before the searches run, so what they find never depends on whether the chunk happened to land.
-    beforeAll(() => ensureIconCatalogs());
-
-    const openSearch = () => {
-      fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
-      return document.querySelector('[data-toolbar-search]') as HTMLElement;
-    };
-    const type = (popover: HTMLElement, q: string) =>
-      fireEvent.change(within(popover).getByRole('textbox', { name: 'Search elements' }), {
-        target: { value: q },
-      });
-
-    it('ends the strip', () => {
+  // A knowledgebase is searched by its pages (Cmd or Ctrl K): the fork's Search Elements is not on the strip, and S
+  // opens nothing (docs/specs/002-project-scope/not-in-liveknowledge.md).
+  describe('no Search Elements', () => {
+    it('has no Search button on the strip', () => {
       show();
-      const buttons = within(strip()).getAllByRole('button');
-      expect(buttons.at(-1)?.getAttribute('aria-label')).toBe('Search elements');
+      expect(screen.queryByRole('button', { name: /search elements/i })).toBeNull();
+      expect(document.querySelector('[data-toolbar-search-button]')).toBeNull();
     });
 
-    it('opens focused, and finds a tile from any category of the mode', () => {
-      const { h } = show();
-      const popover = openSearch();
-      expect(document.activeElement).toBe(
-        within(popover).getByRole('textbox', { name: 'Search elements' }),
-      );
-      type(popover, 'database');
-      fireEvent.click(within(popover).getByRole('button', { name: 'Add Cylinder' }));
-      expect(h.onAddShape).toHaveBeenCalledWith('cylinder', expect.anything());
-      // Used, so closed: the canvas is clear to draw on.
-      expect(document.querySelector('[data-toolbar-search]')).toBeNull();
-    });
-
-    it('lists only the element types on the tab before anything is typed', () => {
-      show({
-        tabElements: [
-          { id: 'a', type: 'shape', shape: 'diamond', x: 0, y: 0, width: 1, height: 1 },
-        ] as unknown as Element[],
-      });
-      const popover = openSearch();
-      expect(popover.textContent).toContain('On This Page');
-      expect(
-        within(popover)
-          .getAllByRole('button')
-          .map((b) => b.getAttribute('aria-label'))
-          .filter((l) => l?.startsWith('Add ')),
-      ).toEqual(['Add Diamond']);
-      cleanup();
-      show();
-      expect(openSearch().textContent).toContain('No elements on this page yet');
-    });
-
-    it('opens on S where it is shown, and leaves S to Select where it is not', () => {
+    it('answers no request for it: a key typed outside the writing opens nothing', () => {
       show();
       act(() => {
-        expect(requestToolbarSearch()).toBe(true);
-      });
-      expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
-      cleanup();
-      show({ hidden: true });
-      expect(requestToolbarSearch()).toBe(false);
-    });
-
-    it('uses the best match on Enter', () => {
-      const { h } = show();
-      const popover = openSearch();
-      type(popover, 'circle');
-      fireEvent.keyDown(within(popover).getByRole('textbox', { name: 'Search elements' }), {
-        key: 'Enter',
-      });
-      expect(h.onAddShape).toHaveBeenCalledWith('circle', expect.anything());
-    });
-
-    it('says so when nothing matches anywhere', () => {
-      show();
-      const popover = openSearch();
-      type(popover, 'zzqqxx');
-      expect(popover.textContent).toContain('No elements match “zzqqxx”');
-    });
-
-    it("is one strip menu at a time with a category's flyout, and closes on Escape", () => {
-      show();
-      openFlyout('Icons');
-      const searchButton = screen.getByRole('button', { name: 'Search elements' });
-      fireEvent.pointerDown(searchButton);
-      fireEvent.click(searchButton);
-      expect(flyout()).toBeNull();
-      expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
-      act(() => {
-        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+        expect(requestToolbarSearch()).toBe(false);
       });
       expect(document.querySelector('[data-toolbar-search]')).toBeNull();
-    });
-
-    it('starts afresh each time it opens', () => {
-      show();
-      let popover = openSearch();
-      type(popover, 'pie chart');
-      fireEvent.click(screen.getByRole('button', { name: 'Search elements' }));
-      popover = openSearch();
-      expect(
-        within(popover).getByRole<HTMLInputElement>('textbox', { name: 'Search elements' }).value,
-      ).toBe('');
     });
   });
 });

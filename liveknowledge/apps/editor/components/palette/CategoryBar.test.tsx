@@ -399,33 +399,6 @@ describe('a category opening closes the strip’s other popovers', () => {
     fireEvent.pointerEnter(button(name), mouse);
     wait(HOVER_OPEN_MS + 10);
   };
-  const searchPopover = () => document.querySelector('[data-toolbar-search]');
-
-  it('closes Search on a rest, and keeps a typed query through a pass', () => {
-    show();
-    fireEvent.click(button('Search elements'));
-    const field = screen.getByRole<HTMLInputElement>('textbox', { name: 'Search elements' });
-    fireEvent.change(field, { target: { value: 'pie' } });
-    fireEvent.pointerEnter(button('Shapes'), mouse);
-    wait(HOVER_OPEN_MS - 30);
-    fireEvent.pointerLeave(button('Shapes'), mouse);
-    wait(HOVER_OPEN_MS);
-    expect(flyout()).toBeNull();
-    expect(searchPopover()).not.toBeNull();
-    expect(field.value).toBe('pie');
-    restOn('Components');
-    expect(flyout()).not.toBeNull();
-    expect(searchPopover()).toBeNull();
-  });
-
-  it('closes Search when a category button takes the focus', () => {
-    show();
-    fireEvent.click(button('Search elements'));
-    expect(searchPopover()).not.toBeNull();
-    fireEvent.focus(button('Shapes'));
-    expect(searchPopover()).toBeNull();
-  });
-
   it('closes the Library', () => {
     libraryOn.value = true;
     show();

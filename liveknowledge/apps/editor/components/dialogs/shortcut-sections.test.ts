@@ -46,7 +46,8 @@ const singleKeyRows = EDITOR_SECTIONS.flatMap((section) =>
 describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
-    expect(singleKeyRows.length).toBeGreaterThan(13);
+    // One fewer than the fork's: S for Search Elements is not in liveknowledge.
+    expect(singleKeyRows.length).toBeGreaterThan(12);
     expect(handledKeys.size).toBeGreaterThan(19);
   });
 

@@ -36,6 +36,7 @@ import {
   type Tab,
 } from '@liveknowledge/document';
 import { withPageTitle } from '@/lib/article/page-title';
+import { wantTitleFocus } from '@/lib/page-title-focus';
 import {
   deletePageTitle,
   pageAfterDelete,
@@ -127,8 +128,8 @@ export function useTabActions(deps: TabActionsDeps) {
     toast,
   } = deps;
 
-  // A new page, the last subpage of `parent` or the last top-level page. It opens with the caret in its Title (the
-  // article's own first-focus rule on a page made here).
+  // A new page, the last subpage of `parent` or the last top-level page. It opens with the caret in its Title
+  // (wantTitleFocus, answered by usePageTitleFocus once the page's writing is on screen).
   const addTab = (parent?: string) => {
     // A session that cannot change the knowledgebase's pages adds none, whichever control asked.
     if (!deps.canEditStructure) return;
@@ -146,6 +147,7 @@ export function useTabActions(deps: TabActionsDeps) {
     commitTabs((ts) => withPageAddedTo(ts, tab, parent));
     markTabLoaded(tab.id);
     track('Tab', 'Created');
+    wantTitleFocus(tab.id);
     setActiveId(tab.id);
     setSelectedId(null);
     setEditingId(null);
@@ -168,6 +170,8 @@ export function useTabActions(deps: TabActionsDeps) {
     commitTabs((ts) => withPageAddedTo(ts, tab, parent));
     markTabLoaded(tab.id);
     track('Tab', 'Created', 'FromPageLink');
+    // Not opened now; the first time it is, the caret is at the end of its Title.
+    wantTitleFocus(tab.id);
     return tab.id;
   };
 

@@ -24,7 +24,7 @@ someone is on, each opening a flyout of its tiles:
   by the page kind's palette layout, [Pages](pages-mode.md) "The palette's kind"), rendered by the shared
   `PaletteTile`, so the strip and its popovers stay alike. On an article page the strip holds the article's
   formatting instead ([Article pages](article-pages.md) "The page toolbar").
-- **Far right: Search** (a magnifier) (see "Search: every element type").
+- **Far right:** the Library, where there is one. The fork's Search is not in liveknowledge (see "Search: every element type").
 
 ## The category bar
 
@@ -159,6 +159,9 @@ height, so switching group never moves the flyout. Each reopens on the group it 
 **Icons holds the stickers** (owner, 2026-11-15): one category, an **Icons | Stickers** switch beside its search box picking which catalogue the panes browse (remembered in this browser), and one search over both whose results come in two labelled groups, Icons then Stickers ([Canvas and palette](../008-canvas/canvas-and-palette.md) "Icons category"). A layout without stickers shows the icons alone, with no switch.
 
 ## Search: every element type
+
+**Not in liveknowledge** ([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md) "Unreachable, to
+delete"): the strip has no Search, and S is the Select alias alone. What follows describes the fork's.
 
 A strip shows one category at a time, so finding an element means knowing which category holds it.
 **Search** finds it by name instead, across every category.

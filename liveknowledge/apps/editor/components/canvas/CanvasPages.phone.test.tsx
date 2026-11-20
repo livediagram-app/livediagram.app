@@ -60,8 +60,8 @@ const names = () =>
   within(bar())
     .getAllByRole('button')
     .map((b) => b.getAttribute('aria-label'));
-const label = (container: HTMLElement) =>
-  container.querySelector('button.group\\/label')?.parentElement?.closest('div.absolute');
+// The row above the page's top-left corner: the breadcrumb's (the fork's label card is not in liveknowledge).
+const label = (container: HTMLElement) => container.querySelector('[data-page-title-row]');
 
 describe("a page's title bar on a phone", () => {
   it('holds Appearance and the cog alone: no Style, Layout, Background, Tidy or lock', () => {
@@ -125,6 +125,9 @@ describe("a page's title bar on a desktop", () => {
       expect(shown).toContain(name);
     expect(shown).toContain('Tidy');
     expect(label(container)?.className ?? '').not.toContain('hidden');
+    // The row names no size or kind: the fork's label card ("Fit to Content · Article") is gone.
+    expect(container.querySelector('[data-page-label]')).toBeNull();
+    expect(label(container)?.textContent ?? '').not.toMatch(/Fit to Content|Article/);
   });
 });
 

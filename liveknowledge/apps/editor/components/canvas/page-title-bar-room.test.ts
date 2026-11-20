@@ -3,6 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   appearanceNamed,
+  BREADCRUMB_MIN,
   LABEL_MIN,
   titleBarFixedRoom,
   titleBarNamed,
@@ -22,6 +23,25 @@ describe('the title bar', () => {
     expect(titleBarNamed(named + LABEL_MIN, infographic, false)).toBe(true);
     // Zoomed out a step further: icons.
     expect(titleBarNamed(named + LABEL_MIN - 1, infographic, false)).toBe(false);
+  });
+
+  it('drops to icons sooner on a page with ancestors, so its breadcrumb keeps its room', () => {
+    // A knowledgebase page's bar: Style, Text, Background, the lock and the cog.
+    const article = {
+      edit: true,
+      locked: false,
+      notes: false,
+      page: false,
+      article: true,
+      tidy: false,
+    };
+    const named = titleBarFixedRoom(article, true);
+    // A top-level page names its buttons down to the label's least.
+    expect(titleBarNamed(named + LABEL_MIN, article, false)).toBe(true);
+    // The same width on a subpage would leave its breadcrumb 40 px: the buttons give way instead.
+    expect(titleBarNamed(named + LABEL_MIN, article, false, BREADCRUMB_MIN)).toBe(false);
+    expect(titleBarNamed(named + BREADCRUMB_MIN, article, false, BREADCRUMB_MIN)).toBe(true);
+    expect(titleBarNamed(named + BREADCRUMB_MIN - 1, article, false, BREADCRUMB_MIN)).toBe(false);
   });
 
   it('keeps a phone on icons however wide the page', () => {

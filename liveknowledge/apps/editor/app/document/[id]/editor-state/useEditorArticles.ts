@@ -3,7 +3,7 @@ import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { useMemo, useRef } from 'react';
 import { isBoxed, elementActions } from '@liveknowledge/document';
 import { useArticles } from '@/hooks/editor/useArticles';
-import { articleTitleName } from '@/lib/article/article-document-name';
+import { usePageTitleFocus } from '@/hooks/editor/usePageTitleFocus';
 import { pageDeckControls } from '@/lib/page-deck-controls';
 import { useElementCreation } from '../useElementCreation';
 import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
@@ -41,9 +41,9 @@ export function useEditorArticles({
 }) {
   // Unmemoised by the React Compiler, as the one hook it was cut from was (see ../useEditorState.ts).
   'use no memo';
-  const { tabs, localEditSeqRef, tickTabs, commitTabs } = documentSlice;
+  const { localEditSeqRef, tickTabs, commitTabs } = documentSlice;
   const { activeId, setSelectedId, setMultiSelectedIds } = selectionSlice;
-  const { openComments, documentName, setDocumentName, isReadOnly, participant } = sessionSlice;
+  const { openComments, isReadOnly, participant } = sessionSlice;
   const { activeTab } = collaborationSlice;
   const { scrollIntoView, slideDeck } = viewportSlice;
   const { openActionPopover, openAssignActionDialog } = commentsSlice;
@@ -60,12 +60,8 @@ export function useEditorArticles({
     canEdit: !isReadOnly,
     // A Participant writes in an article too (docs/specs/013-workspace/share-roles.md), each commit through its guard.
     canWrite: participant.participating && participant.can.writeArticle,
-    // An article's Title names a still-untitled document, as the first label does (a Participant names nothing).
-    onWritten: (flow, blocks) => {
-      if (isReadOnly) return;
-      const name = articleTitleName(documentName, tabs[0], flow, blocks);
-      if (name) setDocumentName(name);
-    },
+    // A Title names its page and nothing else (usePageNameFromTitle): the knowledgebase keeps "Untitled Knowledgebase"
+    // until a person names it (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase").
     commitTabs: participant.participating ? guardedCommitTabs : commitTabs,
     tickTabs,
     undo,
@@ -93,6 +89,14 @@ export function useEditorArticles({
     },
   });
   useAssignRef(articleFocusRef, (flow: string) => articles?.requestFocus(flow, 'start'));
+  // A page made here (New Page, Add Subpage, Create Page, a new knowledgebase's first) opens with the caret in its
+  // Title (usePageTitleFocus).
+  const requestArticleFocus = articles?.requestFocus;
+  usePageTitleFocus({
+    activeTab,
+    editable: !isReadOnly,
+    focusTitle: requestArticleFocus ? (flow) => requestArticleFocus(flow, 'title') : null,
+  });
   // Set once element creation exists (below): an Insert at the caret places through it.
   const placeIntentAtRef = useRef<ReturnType<typeof useElementCreation>['placeIntentAt'] | null>(
     null,

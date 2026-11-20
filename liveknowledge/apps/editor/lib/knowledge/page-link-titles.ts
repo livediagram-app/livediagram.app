@@ -1,8 +1,8 @@
 // What a page link reads as (docs/specs/030-knowledgebase/links-and-embeds.md "Page links"): always the page's
 // current title, never the words stored with the link. The writing draws a link as `a.article-page-link[data-page]`
 // with its stored words hidden; here each page of the knowledgebase gets one CSS rule that writes its title into
-// the link and gives it a live link's look. A link no rule names keeps the base look: "Deleted Page", struck
-// through. So a rename shows in every link at once with no change to any writing, and typing costs nothing.
+// the link and gives it a live link's look, in the brand's colour (page-link-colour.ts). A link no rule names keeps
+// the base look: "Deleted Page", struck through, in the writing's own ink and inert. So a rename shows in every link at once with no change to any writing, and typing costs nothing.
 
 export type LinkedPage = { id: string; name: string };
 
@@ -22,7 +22,7 @@ export function pageLinkCss(pages: readonly LinkedPage[]): string {
   const titles = pages
     .map((page) => `${link(page.id)}::before{content:${cssString(page.name.trim() || UNTITLED)}}`)
     .join('');
-  return `${live}{color:var(--article-accent);opacity:1;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;cursor:pointer}${titles}`;
+  return `${live}{color:var(--article-page-link,var(--article-accent));opacity:1;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:2px;cursor:pointer}${titles}`;
 }
 
 /** The pages as one string a reader compares by value: a typing commit changes no page's id or name. */

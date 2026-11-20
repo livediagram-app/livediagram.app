@@ -41,8 +41,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     heading: 'Tools',
     rows: [
-      { keys: ['V'], label: 'Select Tool  (or 1)' },
-      { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
+      { keys: ['V'], label: 'Select Tool  (or 1, or S)' },
       { keys: ['H'], label: 'Hand Tool' },
       { keys: ['K'], label: 'Laser Pointer' },
       { keys: ['Z'], label: 'Zen Mode (focus)' },
@@ -66,7 +65,8 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     heading: 'Navigate & select',
     rows: [
-      { keys: ['⌘', 'K'], label: 'Search & Commands  (or ⌘ .)' },
+      { keys: ['⌘', 'K'], label: 'Search Pages' },
+      { keys: ['⌘', '.'], label: 'Search & Commands' },
       { keys: ['⌘', '+'], label: 'Zoom In' },
       { keys: ['⌘', '-'], label: 'Zoom Out' },
       { keys: ['⌘', '0'], label: 'Reset Zoom to 100%' },

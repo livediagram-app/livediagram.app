@@ -66,21 +66,16 @@ function setup(
 describe('commitLabel', () => {
   const cylinder = createShape('cylinder', 0, 0);
 
-  // docs/specs/006-document/document-structure.md "The first label names the document, in every mode".
-  it.each(['Untitled Whiteboard', 'Untitled Illustration', 'Untitled Plan', 'Untitled Session'])(
-    'names a document still called %s after its first element',
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase": its name is "Untitled Knowledgebase"
+  // until a person names it. The fork named a still untitled document after its first label.
+  it.each(['Untitled Knowledgebase', 'Untitled Article', 'Roadmap'])(
+    'leaves a knowledgebase called %s its name when a first label is typed',
     (name) => {
       const s = setup(cylinder, false, null, name);
       s.editing.commitLabel(cylinder.id, 'Launch plan');
-      expect(s.setDocumentName).toHaveBeenCalledWith('Launch plan');
+      expect(s.setDocumentName).not.toHaveBeenCalled();
     },
   );
-
-  it('keeps a name someone gave the document', () => {
-    const s = setup(cylinder);
-    s.editing.commitLabel(cylinder.id, 'Launch plan');
-    expect(s.setDocumentName).not.toHaveBeenCalled();
-  });
 
   it('saves a label without newlines or spaces at either end', () => {
     const s = setup(cylinder);

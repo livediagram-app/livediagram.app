@@ -40,6 +40,10 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
 - **Editor, PowerPoint:** `lib/office-export/pptx-*.ts`, `lib/office-import/pptx*.ts` and `build-deck.ts`, and the
   `powerpoint` and `pptx` keys of the Import and Export dialogs.
 - **Editor, the palette:** the `design` and `slide` palette kinds (`lib/palette-kind.ts`) and the tiles only they show.
+- **Editor, Search Elements:** removed (the strip's last button, its popover and the S key that opened it:
+  `ToolbarSearch.tsx` is deleted). A knowledgebase is searched by its pages. Left unreferenced, to delete:
+  `components/palette/palette-tile-search.ts` and `palette-catalogue-search.ts` with their tests, and
+  `packages/workbench`'s `toolbar-search-request` stays the platform's.
 - **`packages/document`:** `slide-deck*.ts`, `slide-builds.ts`, the paper and slide sizes and orientations
   (`page-sizes.ts`), the page kinds other than `article`, and the page row's edits (`pages-edits.ts`, the page-count
   half of `article-pages.ts`).

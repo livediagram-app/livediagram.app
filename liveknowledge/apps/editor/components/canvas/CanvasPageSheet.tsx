@@ -6,16 +6,16 @@ import { useBlurredPageImage } from '@liveworkspace/workbench/hooks/canvas/useBl
 import { pageImageSrc } from '@/lib/page-image-paint';
 import { memo } from 'react';
 import { FirstPageChoice } from './FirstPageChoice';
-import { PageLabelCard } from '@liveworkspace/workbench/components/canvas/PageLabelCard';
 import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/EmptyPageInvite';
 import { layoutInviteShows } from '@/lib/layout-invite';
 import { track } from '@/lib/telemetry';
 import { PageMotionLayer } from './PageMotionLayer';
-import { PageBreadcrumb } from '@/components/page-tree/PageBreadcrumb';
+import { PageBreadcrumb, usePageHasAncestors } from '@/components/page-tree/PageBreadcrumb';
 import { PageSheetTitleBar, steady } from './PageSheetTitleBar';
 import { useQuickStyleBarRoom } from '@/lib/quick-style-bar-slots';
 import {
   appearanceNamed,
+  BREADCRUMB_MIN,
   LABEL_MIN,
   titleBarFixedRoom,
   titleBarNamed,
@@ -26,7 +26,6 @@ import {
   articleTopMarginPx,
   pageIsDark,
   pageKindOf,
-  pageLabel,
   type ArticleStyle,
   type LaidOutPage,
   type PageBackground,
@@ -166,13 +165,10 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           documentName,
         )
       : null;
-  // No "Page n": the page navigator under the page says which it is.
-  const label = pageLabel({ ...page, name: shownName }, page.index, 1);
-  // The name (when the page has one) and the rest (its size and kind), as pageLabel joins them.
-  const labelParts = shownName
-    ? { name: shownName, rest: label.slice(shownName.length + 3) }
-    : { name: '', rest: label };
-  // The label fits the page's on-screen width, less the title bar's buttons; too narrow, it
+  // No label card names the page here (the fork's "Release Process · Fit to Content · Article"): the breadcrumb and
+  // the Title already do, and a knowledgebase page has one size and one kind
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Breadcrumb").
+  // The breadcrumb fits the page's on-screen width, less the title bar's buttons; too narrow, it
   // hides. The title bar's room on screen: the page's width at this zoom. The cog takes its
   // corner.
   const room = page.rect.width * zoom;
@@ -211,7 +207,10 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
   };
   // The buttons name themselves on a desktop while the page is wide enough on screen to hold
   // them named; zoomed out further they drop to their icons, as a phone shows them.
-  const labelled = titleBarNamed(room, buttons, mobile);
+  // A page with ancestors keeps room for them first: the buttons drop to their icons before the breadcrumb is
+  // squeezed to nothing (BREADCRUMB_MIN), where a top-level page has nothing to keep room for.
+  const hasAncestors = usePageHasAncestors();
+  const labelled = titleBarNamed(room, buttons, mobile, hasAncestors ? BREADCRUMB_MIN : 0);
   // A phone's Appearance is named while the page on screen holds it (appearanceNamed).
   const appearanceLabelled = mobile && appearanceNamed(room, buttons);
   const fixedRoom = titleBarFixedRoom(buttons, mobile ? appearanceLabelled : labelled, mobile);
@@ -260,8 +259,9 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
         />
       ) : null}
       <div
+        data-page-title-row=""
         // As tall as the title bar beside it, so the two sit on one line.
-        // None on a phone ("Beside the cog"): the name is in Contents and the cog sheet.
+        // None on a phone ("Beside the cog"): its title row has no room for the breadcrumb.
         className={`absolute left-0 flex h-[34px] items-center gap-1 ${labelRoom < LABEL_MIN || bare || mobile ? 'hidden' : ''}`}
         style={{
           bottom: '100%',
@@ -272,12 +272,6 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
       >
         {/* The page's ancestors, each a link; nothing for a top-level page (PageBreadcrumb). */}
         <PageBreadcrumb />
-        <PageLabelCard
-          label={label}
-          name={labelParts.name}
-          rest={labelParts.rest}
-          onClick={() => act.goToPage(page)}
-        />
       </div>
       {editable ? (
         <PageSheetTitleBar

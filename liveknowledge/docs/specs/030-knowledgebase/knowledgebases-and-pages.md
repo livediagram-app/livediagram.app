@@ -28,7 +28,8 @@ Public) already own the word.
 
 ## A knowledgebase
 
-- A new knowledgebase opens with one page, **Start Here**, the caret in its title. Its name is "Untitled Knowledgebase" until named.
+- A new knowledgebase opens with one page, **Start Here**, the caret in its title. Its name is "Untitled Knowledgebase"
+  until a person names it: a page's Title names that page, never the knowledgebase.
 - Every page is made the same way, whoever makes it (New Page, a template, an agent's `add_tab`, a tab built from
   elements): one article on one page, an empty Title and a first paragraph (`newKnowledgebasePageContent`). A page
   added later is "Untitled Page" until it is named.
@@ -54,7 +55,11 @@ Public) already own the word.
 - The tree is a real tree for the keyboard: Up and Down move through the rows, Right opens a page or enters it, Left
   closes it or goes to its parent, Enter opens the page, F2 renames it, and the menu key opens its menu.
 - **Add:** "New Page" at the foot adds a top-level page; a row's **+** adds a subpage, as its last. The new page
-  opens with the caret in its title.
+  opens with the caret in its title, so what is typed next is its name. A page made from the writing (Create Page
+  in the page link picker) is not opened; the first time it is, the caret is at the end of its title.
+- A key typed outside the writing opens nothing: the editor has no element search (the fork's Search Elements, on
+  S and at the end of the palette). Cmd or Ctrl K, the page search, is the knowledgebase's search, and the command
+  search (Cmd or Ctrl `.`) reads the pages already open in this browser and loads no other.
 - **Name:** a page's name and its Title are one thing. Typing in the Title renames the page, once, when the typing
   stops. Renaming the page in the tree (F2, a double click, Rename) rewrites its Title; a page whose writing has not
   loaded yet is opened first, and renamed as soon as it has.
@@ -75,8 +80,11 @@ Public) already own the word.
   and 3 Subpages?"). There is no page trash: Undo brings them back, and the confirmation says so. The last page is
   never deleted, and a locked page is unlocked first. Links to a deleted page show struck through with "Deleted
   Page" ([Links and embeds](links-and-embeds.md)).
-- **Breadcrumb:** the page's ancestors sit above its title, in the page's title row; each is a link. A top-level
-  page has none. Not shown on a phone, whose title row has no room for it.
+- **Breadcrumb:** the page's ancestors sit above its title, in the page's title row; each is a link. It shows as soon
+  as a page with a parent opens, whether or not the page has a title yet. A top-level page has none. Nothing else
+  stands in that row's left side: no label naming the page, its paper size or its kind. The row's buttons (Style,
+  Text, Background, Lock, the cog) drop to their icons before the breadcrumb is squeezed. Not shown on a phone,
+  whose title row has no room for it.
 - On a phone the tree is a sheet opened from a Pages button in the top bar, its rows 44 px tall.
 - Whoever is on a page shows in its row, as they showed on its tab.
 

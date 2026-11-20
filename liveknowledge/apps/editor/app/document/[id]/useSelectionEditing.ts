@@ -1,6 +1,5 @@
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { useRef, type Dispatch, type SetStateAction } from 'react';
-import { isUntitledName } from '@liveknowledge/api-schema';
 import {
   hasRichFormatting,
   isBoxed,
@@ -95,8 +94,6 @@ export function useSelectionEditing(opts: {
     adoptLayerName,
     formatSourceId,
     formatToolActive,
-    documentName,
-    tabs,
     activeTab,
     commit,
     tickTabs,
@@ -110,7 +107,6 @@ export function useSelectionEditing(opts: {
     setEditingId,
     setEditCursorAtEnd,
     setMultiSelectedIds,
-    setDocumentName,
     setContextMenu,
   } = set;
 
@@ -215,24 +211,12 @@ export function useSelectionEditing(opts: {
       debugLog('[text-hug] removed an empty text box', elementId);
       setSelectedId(null);
     }
-    // While the document is still on its default name, mirror the label of
-    // the very first element of the very first tab into the document title:
-    // typing on the welcome rectangle is a strong signal of intent. Once
-    // the user has explicitly named the document (or named it via another
-    // path), we stop tracking.
-    // Capped + whitespace-collapsed (docs/specs/006-document/name-length.md). This is the path the cap
-    // exists for: paste a paragraph into the welcome rectangle and the whole
-    // paragraph used to become the document's name, newlines and all.
+    // A label names nothing above it: the knowledgebase keeps "Untitled Knowledgebase" until a person names it
+    // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase"), where the fork named a still
+    // untitled document after its first element.
     const trimmed = truncateName(label);
-    // A Participant names nothing: the document, its tabs and its layers are an Editor's.
+    // A Participant names nothing: the pages and their layers are an Editor's.
     if (isReadOnly) return;
-    if (isUntitledName(documentName)) {
-      const firstTab = tabs[0];
-      const firstEl = firstTab?.elements[0];
-      if (firstEl && firstEl.id === elementId) {
-        if (trimmed) setDocumentName(trimmed);
-      }
-    }
     // Parallel auto-rename for the active tab while its name still matches
     // the default `Tab N` pattern: the first element's label becomes the
     // tab name. Fires at most once per tab (any non-default name stops the

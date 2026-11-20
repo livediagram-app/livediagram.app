@@ -1,12 +1,10 @@
 'use client';
 
 import { PHONE_EDGE_LEFT_IN_ROW } from '@liveworkspace/workbench/components/chrome/MenuCardLogo';
-import type { Element, Page } from '@liveknowledge/document';
-import { useEffect, useEffectEvent, useMemo, useRef, useState, type ReactNode } from 'react';
-import { onToolbarSearchRequest } from '@liveworkspace/workbench/lib/toolbar-search-request';
+import type { Page } from '@liveknowledge/document';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { atLeastInset, safeInlinePadding } from '@liveknowledge/ui';
 import { LANDSCAPE_HANDLE_ROOM } from '@/components/chrome/LandscapeBars';
-import { track } from '@/lib/telemetry';
 import { SnapWidth } from '@liveworkspace/workbench/components/primitives/SnapWidth';
 import { PACKED_TOOLBAR_ITEMS } from '@liveworkspace/workbench/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CARD } from '@liveworkspace/workbench/components/chrome/toolbar-surface';
@@ -28,7 +26,6 @@ import {
   TOOLBAR_LIBRARY_SELECTOR,
   ToolbarLibraryButton,
 } from '@liveworkspace/workbench/components/palette/ToolbarLibraryButton';
-import { TOOLBAR_SEARCH_SELECTOR, ToolbarSearchButton, ToolbarSearchPanel } from './ToolbarSearch';
 import { BrowseMemoryContext, useBrowseMemory } from './PaletteCategoryBrowser';
 import { setPalettePopoverOpen } from '@liveworkspace/workbench/lib/palette-popover-open';
 import { useBarFold } from '@liveworkspace/workbench/components/palette/useBarFold';
@@ -45,8 +42,9 @@ import { docksPageToolbar, usePaletteKind } from '@/lib/palette-kind';
 
 // The Palette (docs/specs/007-editor/toolbar-layout.md): one horizontal strip pinned to the top centre of the
 // canvas, the way Excalidraw's tool bar works. The selection mode on the left, then the category bar (each
-// category a button opening a flyout of its tiles), and Search at the far right, which finds any element. With the
-// palette's kind Article, the article's formatting takes the bar's place.
+// category a button opening a flyout of its tiles). With the palette's kind Article, the article's formatting takes
+// the bar's place. The fork's Search (every element type, on S) is not here: a knowledgebase is searched by its pages
+// (Cmd or Ctrl K, docs/specs/030-knowledgebase/search-and-ask.md), and a key typed outside the writing opens nothing.
 //
 // The tiles, handlers and category bodies come from usePaletteCatalogue, so this file is only layout.
 
@@ -67,8 +65,6 @@ type Props = Pick<
     // The screen width of Pages mode's Contents sidebar while the menu box heads it (docs/specs/007-editor/pages-mode.md
     // "Joined to the menu box"): the strip centres in what shows beside it, as a page is framed beside it.
     besideWidth?: number;
-    // The active tab's elements: Search lists their element types before anything is typed.
-    tabElements?: readonly Element[];
     // The tab's pages in Pages mode, whose kind is the palette's (lib/palette-kind.ts).
     tabPages?: readonly Pick<Page, 'kind'>[] | null;
   };
@@ -126,8 +122,7 @@ export function ToolbarPalette(props: Props) {
   // The strip's popovers (ToolbarStripPopover): only the popover and its own button count as inside, so pressing
   // anything else on the strip closes it.
   const rootRef = useRef<HTMLDivElement>(null);
-  const search = useStripPopover(rootRef, TOOLBAR_SEARCH_SELECTOR);
-  // The Library, icon only beside Search, not a category (liveworkspace/docs/specs/006-media/libraries.md).
+  // The Library, icon only at the strip's end, not a category (liveworkspace/docs/specs/006-media/libraries.md).
   const library = useStripPopover(rootRef, TOOLBAR_LIBRARY_SELECTOR);
   // The category bar and its flyout (CategoryBar).
   // The selection mode's menu, held here so a category opening closes it (useCategoryBar's onOpen).
@@ -136,7 +131,6 @@ export function ToolbarPalette(props: Props) {
   // time"), as moving between categories swaps one flyout for the next.
   const bar = useCategoryBar(rootRef, {
     onOpen: () => {
-      search.setOpen(false);
       library.setOpen(false);
       setSelectionModeOpen(false);
     },
@@ -144,7 +138,7 @@ export function ToolbarPalette(props: Props) {
   // Icons, Stickers and Tech reopen on the group they were left on, for the page load (BrowseMemory).
   const browseMemory = useBrowseMemory();
   // The template start steps aside while a popover hangs from the strip (palette-popover-open).
-  const popoverOpen = bar.popover.open || search.open || library.open;
+  const popoverOpen = bar.popover.open || library.open;
   useEffect(() => {
     setPalettePopoverOpen(popoverOpen);
     return () => setPalettePopoverOpen(false);
@@ -159,19 +153,17 @@ export function ToolbarPalette(props: Props) {
   } = usePaletteCatalogue({
     ...props,
     paletteKind,
-    // A tile used from a flyout or Search closes it, so the canvas is clear to draw on.
+    // A tile used from a flyout closes it, so the canvas is clear to draw on.
     onTileUsed: () => {
-      search.setOpen(false);
       library.setOpen(false);
       bar.popover.setOpen(false);
     },
   });
-  // The Library leaves the categories for its own button beside Search.
+  // The Library leaves the categories for its own button at the strip's end.
   const libraryTab = catalogueTabs.find((t) => t.id === 'library');
   const tabs = useMemo(() => catalogueTabs.filter((t) => t.id !== 'library'), [catalogueTabs]);
   const toggleLibrary = (button: HTMLElement) => {
     if (library.open) return library.setOpen(false);
-    search.setOpen(false);
     bar.popover.setOpen(false);
     library.openFrom(button);
   };
@@ -222,34 +214,6 @@ export function ToolbarPalette(props: Props) {
   const between = leading == null;
   const dockGivesWay = crowded && articleDock;
   const giveWay = swipe || dockGivesWay;
-
-  // Opening the Search starts a new choice: a tile armed to place (its "Click to drop" banner) is let go first.
-  const beforeSearch = () => {
-    if (pendingDraw) tileActions.cancelDraw?.();
-  };
-  // S asks for the Search (lib/toolbar-search-request): answered only while it is on show, so the
-  // key keeps its Select meaning with the chrome away.
-  const searchButtonRef = useRef<HTMLDivElement>(null);
-  const openSearchFromKey = useEffectEvent(() => {
-    const button = searchButtonRef.current?.querySelector<HTMLElement>(
-      '[data-toolbar-search-button]',
-    );
-    if (!button || search.open) return;
-    bar.popover.setOpen(false);
-    beforeSearch();
-    track('UI', 'Opened', 'ToolbarSearch');
-    search.openFrom(button);
-  });
-  useEffect(() => {
-    if (hidden) return;
-    return onToolbarSearchRequest(() => openSearchFromKey());
-  }, [hidden]);
-  const toggleSearch = (button: HTMLElement) => {
-    if (search.open) return search.setOpen(false);
-    beforeSearch();
-    track('UI', 'Opened', 'ToolbarSearch');
-    search.openFrom(button);
-  };
 
   return (
     <div
@@ -358,14 +322,13 @@ export function ToolbarPalette(props: Props) {
                       }
                     />
                   )}
-                  {/* Search, last: any element type (docs/specs/007-editor/toolbar-layout.md
-                      "Search: every element type"). The bar ends on its last category; Search brings its own
-                      divider. */}
-                  <Divider />
-                  {libraryInBar ? null : libraryButton}
-                  <div ref={searchButtonRef} className="flex">
-                    <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
-                  </div>
+                  {/* The Library, last, behind its own divider when it does not ride in the bar. */}
+                  {libraryInBar || !libraryButton ? null : (
+                    <>
+                      <Divider />
+                      {libraryButton}
+                    </>
+                  )}
                 </div>
               </CardWidth>
             </StripRow>
@@ -377,21 +340,6 @@ export function ToolbarPalette(props: Props) {
               isMobile={isMobile}
               scale={scale}
             />
-            {search.open ? (
-              <StripPopover
-                right={search.right}
-                isMobile={isMobile}
-                scale={scale}
-                label="Search Elements"
-                dataAttr="data-toolbar-search"
-              >
-                <ToolbarSearchPanel
-                  actions={tileActions}
-                  pendingDraw={pendingDraw}
-                  tabElements={props.tabElements ?? []}
-                />
-              </StripPopover>
-            ) : null}
             {library.open && libraryTab ? (
               <StripPopover
                 right={library.right}

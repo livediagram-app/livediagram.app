@@ -57,6 +57,18 @@ function Crumbs({ store }: { store: EditorChromeStore }) {
   );
 }
 
+const noStore = () => () => {};
+
+/** Whether the open page has a parent: its title row then keeps room for the breadcrumb. False with no editor store. */
+export function usePageHasAncestors(): boolean {
+  const store = useContext(EditorChromeContext);
+  return useSyncExternalStore(
+    store ? store.subscribe : noStore,
+    () => (store ? pageAncestors(store.get().tabs, store.get().activeId).length > 0 : false),
+    () => false,
+  );
+}
+
 export function PageBreadcrumb() {
   // Drawn on its own (a test, a thumbnail) a page sheet has no editor store, and so no breadcrumb.
   const store = useContext(EditorChromeContext);

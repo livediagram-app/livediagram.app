@@ -9,7 +9,6 @@
 // where the writing reaches (how many pages, where each zone landed) and reports it, so the host
 // can add or remove pages and move zones' elements (useArticles).
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Selection } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { applyArticleOps, diffArticleFlow, type ArticleFlow } from '@liveknowledge/document';
 import { docToBlocks } from '@/lib/article/article-convert';
@@ -25,6 +24,7 @@ import {
   type ArticleEditorHandle,
 } from '@/lib/article/article-editor-store';
 import { articleSchema } from '@/lib/article/article-schema';
+import { focusSelection } from '@/lib/article/article-focus-selection';
 import { columnAt } from '@/lib/article/article-flow-geometry';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
 import { removeSlashQuery } from '@/lib/article/article-slash';
@@ -378,13 +378,11 @@ export default function ArticleEditor(props: ArticleEditorProps) {
   useEffect(() => {
     const view = viewRef.current;
     if (!view || !request || request.flow !== props.flow || !props.editable) return;
-    const sel =
-      request.at === 'start' ? Selection.atStart(view.state.doc) : Selection.atEnd(view.state.doc);
-    view.dispatch(view.state.tr.setSelection(sel));
+    view.dispatch(view.state.tr.setSelection(focusSelection(view.state.doc, request.at)));
     view.focus();
     props.onFocusTaken?.(request.seq);
-    // oxlint-disable-next-line react/exhaustive-deps -- runs once per request, keyed on its seq
-  }, [request?.seq]);
+    // oxlint-disable-next-line react/exhaustive-deps -- once per request (its seq), and again should the page become writable
+  }, [request?.seq, props.editable]);
 
   return (
     <>

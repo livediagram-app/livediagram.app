@@ -366,7 +366,6 @@ function CanvasChromeView(props: CanvasChromeProps) {
             ) : undefined
           }
           {...(menuJoin.joinedWidth === undefined ? {} : { besideWidth: menuJoin.joinedWidth })}
-          tabElements={elements}
           tabPages={props.pagesMode?.pages}
         />
       ) : null}

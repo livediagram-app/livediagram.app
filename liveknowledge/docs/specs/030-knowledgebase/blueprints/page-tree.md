@@ -138,6 +138,7 @@ All of it is in `apps/editor/components/page-tree/`.
 | the props from the editor's store       | `usePageTreeModel.tsx`                                               |
 | its place in the canvas chrome          | `usePageTreeChrome.tsx`                                              |
 | the breadcrumb                          | `PageBreadcrumb.tsx` (mounted by `CanvasPageSheet`)                  |
+| a made page's caret in its Title        | `lib/page-title-focus.ts`, `hooks/editor/usePageTitleFocus.ts`       |
 | what is closed, kept in this browser    | `apps/editor/lib/page-tree-open.ts`                                  |
 
 - **Where it stands.** In the canvas chrome's docked-sidebar slot (`useCanvasChromePanels` calls
@@ -173,6 +174,17 @@ All of it is in `apps/editor/components/page-tree/`.
   Export, Lock, Clear and Add to Document. Its Rename asks the tree to rename the page in its row. The tab folder
   rows are not offered.
 - **Presence:** `TabPresenceStack` in the row of the page each person is on.
+- **The breadcrumb's row.** `CanvasPageSheet` draws `PageBreadcrumb` alone at the left of the page's title row; the
+  fork's label card ("Release Process · Fit to Content · Article") is not drawn. `usePageHasAncestors` tells the row
+  the open page has a parent, and `titleBarNamed(room, buttons, mobile, BREADCRUMB_MIN)` then names the row's buttons
+  only while 240 px are left for the breadcrumb (a top-level page keeps the fork's `LABEL_MIN`, 40). Before this the
+  buttons named themselves down to 40 px of room, which left a subpage's breadcrumb a sliver.
+- **The caret in a made page's Title.** `addTab` and `addNamedSubpage` call `wantTitleFocus(id)`; `/new` does for
+  the one blank page of a knowledgebase made from no template. `usePageTitleFocus` (in `useEditorArticles`) spends
+  the ask once that page is the open one, its writing is held and the session may write: it asks the article for
+  the caret (`requestFocus(flow, 'title')`), and the page's `ArticleEditor` takes the request as it mounts
+  (`focusSelection`: the end of the first text block). The fork asked nothing here, so the pressed button kept the
+  focus and the first keys went to the canvas.
 - **Knowledge in the tree** ([knowledge UI blueprint](knowledge-ui.md)): `usePageTreeModel` hands `PageTree` a
   `knowledge` prop (`PageTreeKnowledge`): each page's tick or pill (`trustMarks` over the tab list, which carries
   every page's fields from the summaries), the pages in Always in Context, and Verify and the context toggle for
@@ -192,6 +204,11 @@ All of it is in `apps/editor/components/page-tree/`.
 | `stepPage`, `indentPage`, `outdentPage` | `withPageStepped`, `withPageIndented`, `withPageOutdented` (the menu)                                                                                                                    |
 | `renameTab(id, name)`                   | the name and the Title together (`withPageTitle`); a page not loaded is opened and renamed once it has loaded                                                                            |
 | `renameTabFromTitle`                    | the name alone, by `tickTabs` (no undo step of its own)                                                                                                                                  |
+
+**Nothing names the knowledgebase but a person.** The fork named a still untitled document after the Title typed on
+its first tab (`articleTitleName`, deleted) and after its first label (`commitLabel` in `useSelectionEditing.ts`);
+neither is here, so the sidebar's head and Home's card keep "Untitled Knowledgebase" until it is renamed
+(`knowledgebase-name.test.ts`).
 
 Every one answers nothing for a session that may not change the pages (`canEditStructure`). **The page's name
 follows its Title:** `usePageNameFromTitle` (`hooks/editor/`) renames the page `PAGE_NAME_SETTLE_MS` (600) after the
@@ -260,8 +277,11 @@ diff, a peer's list and a resync. The sidebar: `page-tree-view.test.ts` (rows, k
 `PageTree.test.tsx` (the tree's roles and attributes, the keyboard, the menu, the drag, a role at a time),
 `PageTree.perf.test.tsx` (500 rows), `PageTreeSidebar.test.tsx` (the shell, the rail, the sheet, the tint's
 contrast), `PageBreadcrumb.test.tsx`, `page-tree-open.test.ts`; the actions: `page-tree-edits.test.ts`,
-`useTabActions.pages.test.tsx`, `page-title.test.ts`, `usePageNameFromTitle.test.tsx`. Nothing is verified in a
-browser.
+`useTabActions.pages.test.tsx`, `page-title.test.ts`, `usePageNameFromTitle.test.tsx`; the caret:
+`usePageTitleFocus.test.tsx`, `article-focus-selection.test.ts`; the row: `page-title-bar-room.test.ts`,
+`CanvasPages.phone.test.tsx`; the name: `knowledgebase-name.test.ts`. The owner drove the built app in a browser on
+2026-11-20 and found the caret, the name and the label card wrong; their fixes are tested as above and have not been
+seen in a browser since.
 
 ## Constants and configuration
 
@@ -275,4 +295,5 @@ browser.
 | `PAGE_TREE_INDENT`                     | 20     | `page-tree-view.ts`       | The spec's indent: the chevron's own width                            |
 | `PAGE_TREE_ROW`, `PAGE_TREE_TOUCH_ROW` | 32, 44 | `page-tree-view.ts`       | A dense list with a mouse; a finger's 44 px                           |
 | `PAGE_NAME_SETTLE_MS`                  | 600    | `usePageNameFromTitle.ts` | The autosave's own pause                                              |
+| `BREADCRUMB_MIN`                       | 240    | `page-title-bar-room.ts`  | Two ancestors at a readable width before the buttons name themselves  |
 | `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                            |

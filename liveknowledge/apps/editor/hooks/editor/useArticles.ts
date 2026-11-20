@@ -56,6 +56,7 @@ import {
 } from '@/lib/article/article-grow-store';
 import { track } from '@/lib/telemetry';
 import type { FlowLayout, FocusRequest } from '@/components/canvas/article/ArticleEditor';
+import type { FocusAt } from '@/lib/article/article-focus-selection';
 
 export type ArticlesView = {
   // Each article's writing, by its id.
@@ -71,7 +72,7 @@ export type ArticlesView = {
   undo: () => void;
   redo: () => void;
   focusRequest: FocusRequest;
-  requestFocus: (flow: string, at: 'start' | 'end') => void;
+  requestFocus: (flow: string, at: FocusAt) => void;
   // The editor took the request: it is spent, so a remounted editor never takes it again.
   focusTaken: (seq: number) => void;
   // The caret, as a canvas rect, brought into sight as it is written on (the editor's onRevealCaret).
@@ -207,7 +208,7 @@ export function useArticles(deps: {
     (taken: number) => setFocusRequest((r) => (r && r.seq === taken ? null : r)),
     [],
   );
-  const requestFocus = useCallback((flow: string, at: 'start' | 'end') => {
+  const requestFocus = useCallback((flow: string, at: FocusAt) => {
     seq.current += 1;
     setFocusRequest({ flow, at, seq: seq.current });
   }, []);

@@ -19,6 +19,9 @@ import {
 const COG_ROOM = TITLE_BAR_BUTTON;
 const LABEL_GAP = 8;
 export const LABEL_MIN = 40;
+// The room a page's breadcrumb keeps before the buttons beside it may name themselves: two ancestors at a readable
+// width (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Breadcrumb").
+export const BREADCRUMB_MIN = 240;
 
 type TitleBarButtons = {
   // Someone may edit: the cog and the lock show.
@@ -69,9 +72,15 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean, phone = fa
 /** Whether the buttons name themselves: on a desktop, while the page on screen (`room`, its width at
  *  this zoom) holds them named and still leaves the label its least room. Zoomed out further, or on
  *  a phone, they are icons. */
-export function titleBarNamed(room: number, b: TitleBarButtons, mobile: boolean): boolean {
+export function titleBarNamed(
+  room: number,
+  b: TitleBarButtons,
+  mobile: boolean,
+  // What the row's left side must keep (a breadcrumb's BREADCRUMB_MIN); never under the label's own least.
+  least = 0,
+): boolean {
   // A phone's buttons are always icons.
-  return !mobile && room - titleBarFixedRoom(b, true) >= LABEL_MIN;
+  return !mobile && room - titleBarFixedRoom(b, true) >= Math.max(LABEL_MIN, least);
 }
 
 /** Whether a phone's Appearance names itself: while the page on screen (`room`) holds the bar with it named. A phone

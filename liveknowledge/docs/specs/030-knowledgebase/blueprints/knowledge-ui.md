@@ -150,6 +150,12 @@ Derived from [Links and embeds](../links-and-embeds.md) "Page links".
 | the hover card                                         | `components/knowledge/PageLinkHoverCard.tsx`             |
 | a subpage made from the writing                        | `addNamedSubpage` (`hooks/persistence/useTabActions.ts`) |
 
+- **The colour.** A live link is the brand's, not the article style's accent: `pageLinkColour` (`lib/knowledge/
+page-link-colour.ts`) is brand-700 `#3f6212` on light paper and brand-300 `#bef264` on dark, passed through
+  `legibleOn` at 4.5:1 for a paper of any colour, and handed to the writing as `--article-page-link`
+  (`articleStyleVars`); `pageLinkCss` paints with it. A link to a page that is gone has no rule, so it keeps the base
+  look in `app/article-pages.css`: the writing's ink at 0.65, struck through, a default cursor (4.7:1 on white).
+  Tested in `page-link-colour.test.ts`.
 - **The model.** A page link is the mark `pageLink` (`attrs.page`, the tab id) over the words stored with it.
   `marksOf` makes it from `pageOfRun(run)` (the page wins over an `href`; the mark excludes `link`), and
   `docToBlocks` writes `page` back onto the run, so `ArticleRun` is not widened and a block nobody typed in reads
@@ -341,8 +347,11 @@ held another change's uncommitted edits while this was made (only the Status lin
 - **First-load size was not measured.** The editor now imports `@liveknowledge/knowledge` (trust, passages, the
   search words) on its main path; the package is side-effect free, so only what is imported should be kept, but no
   build was run to confirm it.
-- **Cmd or Ctrl K no longer opens the editor's command search** (it keeps Cmd or Ctrl `.`); the shortcuts list and
-  the help that name Cmd or Ctrl K for it were not changed.
-- **The command search's own "load every page"** (`openSearchWithPrefetch`) fetches each page with `GET tabs/<tab>`,
-  which counts a read of every page for that person that day. It is the fork's, untouched here, and it skews
-  "reads by people".
+- **Cmd or Ctrl K no longer opens the editor's command search** (it keeps Cmd or Ctrl `.`); the shortcuts list
+  (`shortcut-sections.ts`) says Search Pages for Cmd K and Search & Commands for Cmd `.`.
+- **The command search loads no page.** The fork's `openSearchWithPrefetch` fetched every page with `GET
+tabs/<tab>` when the command search opened, which counted a read of every page for that person that day. Its three
+  doors (the bottom bar, the canvas menu, Cmd or Ctrl `.`) now only open the panel, which reads the pages this editor
+  holds; only opening a page fetches it. The fork's Search Elements (S, and the palette's last button) is removed:
+  `ToolbarSearch.tsx` is deleted and S is the Select alias alone. Still loading every page, on purpose: Apply to All
+  Tabs, the split view and a whole-knowledgebase export.

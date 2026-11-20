@@ -1,6 +1,5 @@
 import { pageStep } from '@liveworkspace/workbench/lib/page-step';
 import { useLibraryElementInsert } from '@/hooks/canvas/useLibraryElementInsert';
-import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { useRef } from 'react';
 import { selectAllIds } from '@/lib/select-all-ids';
 import { currentPageIdNow } from '@/lib/current-page-kind';
@@ -88,7 +87,7 @@ export function useEditorInput({
     isReadOnly,
     participant,
   } = sessionSlice;
-  const { loadAllTabs, activeTab } = collaborationSlice;
+  const { activeTab } = collaborationSlice;
   const {
     setViewportZoom,
     zoomRef,
@@ -392,7 +391,8 @@ export function useEditorInput({
     onZoomReset: () => setViewportZoom(1),
     zenMode: panelLayout.zenMode,
     onToggleZen: toggleZenMode,
-    onOpenSearch: () => openSearchWithPrefetch(dialogs.setSearchOpen, loadAllTabs),
+    // Loads no page: the command search reads what this editor holds (a page fetched counts as read).
+    onOpenSearch: () => dialogs.setSearchOpen(true),
     enabled: keyboardEnabled,
   });
 

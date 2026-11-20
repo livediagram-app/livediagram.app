@@ -9,7 +9,6 @@ import type { VisibilityActions } from '@liveworkspace/workbench/components/chro
 import { memo } from 'react';
 import type { Tab } from '@liveknowledge/document';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
-import { openSearchWithPrefetch } from '@liveworkspace/workbench/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
 import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
@@ -175,9 +174,9 @@ function EditorViewFooterBar(view: { isOffline: boolean; landscapeShown: boolean
             chrome.get().setSettingsOpen(true);
             track('UI', 'Opened', 'Settings');
           }}
-          onOpenSearch={() =>
-            openSearchWithPrefetch(chrome.get().setSearchOpen, chrome.get().loadAllTabs)
-          }
+          // The command search reads the pages this editor already holds: it loads none (a page fetched counts as
+          // read by this person, docs/specs/030-knowledgebase/ai-knowledge.md).
+          onOpenSearch={() => chrome.get().setSearchOpen(true)}
           // History, between Search and Settings, on a document stored on the server, for every role.
           onOpenHistory={history ? () => openHistoryFromFooter(chrome.get().activeId) : undefined}
           // Canvas right-click (desktop) + long-press (touch) open the current page's menu with the canvas sections
