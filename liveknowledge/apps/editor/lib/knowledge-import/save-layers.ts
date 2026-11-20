@@ -25,6 +25,10 @@ export type OpenKnowledgebaseDeps = {
   /** Resolves true once the autosave has stored the page, false when `timeoutMs` passes first. */
   whenSaved(documentId: string, tabId: string, timeoutMs: number): Promise<boolean>;
   saveWaitMs?: number;
+  /** A page already in the knowledgebase that a written page of the same id takes the place of, in the same edit
+   *  as its batch (Describe to Set Up: the untouched first page becomes the structure's first). It keeps its place
+   *  in the tree. */
+  replaceId?: string;
 };
 
 // The list with each page added under its parent, and the pages the tree refused, each with why.
@@ -46,18 +50,36 @@ function addPages(tabs: Tab[], pages: readonly Tab[]) {
 export function openKnowledgebaseLayer(deps: OpenKnowledgebaseDeps): ImportSaveLayer {
   return {
     async writeBatch(pages, flow): Promise<BatchResult> {
+      // The page that takes an existing page's place, when this batch holds it and the page is still there.
+      const replacement =
+        deps.replaceId !== undefined && deps.getTabs().some((t) => t.id === deps.replaceId)
+          ? pages.find((page) => page.id === deps.replaceId)
+          : undefined;
+      const fresh = replacement ? pages.filter((page) => page !== replacement) : pages;
       // What the tree takes, judged against the pages as they are now (the limits are the tree's own, and the room
       // checks them again).
-      const { added, refused } = addPages(deps.getTabs(), pages);
-      if (added.length === 0) return { failed: refused };
-      for (const page of added) {
+      const { added, refused } = addPages(deps.getTabs(), fresh);
+      const written = replacement ? [replacement, ...added] : added;
+      if (written.length === 0) return { failed: refused };
+      for (const page of written) {
         deps.markTabLoaded(page.id);
         deps.markArticleSettle(page.id, flow);
       }
       // One edit for the batch; made again over the list the edit lands on, which a peer may have changed.
-      deps.commitTabs((tabs) => addPages(tabs, added).list);
+      deps.commitTabs((tabs) => {
+        const swapped = replacement
+          ? tabs.map((tab) => {
+              if (tab.id !== replacement.id) return tab;
+              // Where the page sits is the tree's, not the new writing's.
+              const { parent: _parent, ...rest } = replacement;
+              void _parent;
+              return tab.parent ? { ...rest, parent: tab.parent } : rest;
+            })
+          : tabs;
+        return addPages(swapped, added).list;
+      });
       const saved = await Promise.all(
-        added.map((page) =>
+        written.map((page) =>
           deps.whenSaved(deps.documentId, page.id, deps.saveWaitMs ?? IMPORT_SAVE_WAIT_MS),
         ),
       );

@@ -16,6 +16,8 @@ import {
 import type { ShapeMarker } from '@liveknowledge/document';
 import type { CommandSearchItem } from './search';
 import { selectionCommands } from './editor-commands-selection';
+import { openSetup } from '@/lib/knowledge-setup/setup-open';
+import { ADD_PAGES_BUTTON } from '@/lib/knowledge-setup/setup-words';
 
 // A runnable command: the searchable shape (id / name / keywords) plus the
 // thunk the editor runs when it's picked.
@@ -59,6 +61,9 @@ export type CommandContext = {
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table):
   // no ownership powers, so neither Share nor Delete document.
   workbench?: boolean;
+  // A signed-in Editor of a knowledgebase that is no longer empty (docs/specs/030-knowledgebase/describe-to-set-up.md
+  // "The control"): Describe to Add Pages is offered.
+  canDescribePages?: boolean;
   // The canvas tool in force, so the command for the CURRENT tool is dropped
   // (offering "Hand tool" while holding the hand does nothing).
   canvasTool: string;
@@ -332,6 +337,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
         run: h.renumberSteps,
       });
     }
+  }
+  if (ctx.canDescribePages) {
+    out.push({
+      id: 'describe-to-add-pages',
+      name: ADD_PAGES_BUTTON,
+      keywords: 'describe add pages ai structure suggest set up outline generate',
+      run: () => openSetup('add'),
+    });
   }
   out.push({
     id: 'import',

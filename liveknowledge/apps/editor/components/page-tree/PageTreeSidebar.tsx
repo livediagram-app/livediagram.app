@@ -16,6 +16,7 @@ import { PageTree, type PageTreeProps } from './PageTree';
 import { PAGE_RENAME_FIELD } from './PageTreeRow';
 import { AddIcon, CollapseIcon, ExpandIcon } from './page-tree-icons';
 import { SearchField } from '@/components/knowledge/SearchField';
+import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
 
 const SURFACE =
@@ -197,6 +198,7 @@ export function PageTreeSidebar({
       {tree.canEdit ? (
         <div className="border-t border-slate-200 p-3 dark:border-slate-800">
           {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
+          <DescribeToSetUpButton />
           <NewPageButton tabs={tree.tabs} onAdd={() => tree.actions.onAdd()} />
         </div>
       ) : null}

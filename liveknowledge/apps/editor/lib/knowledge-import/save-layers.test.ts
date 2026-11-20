@@ -11,7 +11,7 @@ const tab = (id: string, parent?: string): Tab => ({
   ...(parent ? { parent } : {}),
 });
 
-function openLayer(start: Tab[], saved: (id: string) => boolean = () => true) {
+function openLayer(start: Tab[], saved: (id: string) => boolean = () => true, replaceId?: string) {
   let tabs = start;
   const loaded: string[] = [];
   const settled: string[] = [];
@@ -27,6 +27,7 @@ function openLayer(start: Tab[], saved: (id: string) => boolean = () => true) {
     markArticleSettle: (id) => settled.push(id),
     whenSaved: async (_doc, id) => saved(id),
     saveWaitMs: 5,
+    ...(replaceId ? { replaceId } : {}),
   });
   return { layer, loaded, settled, commits, tabs: () => tabs };
 }
@@ -49,6 +50,43 @@ describe('openKnowledgebaseLayer', () => {
     ]);
     expect(open.loaded).toEqual(['a', 'b', 'c']);
     expect(open.settled).toEqual(['a', 'b', 'c']);
+  });
+
+  it('puts a page of the same id in an existing page place, in the same edit as its batch', async () => {
+    const open = openLayer(
+      [tab('home'), { ...tab('start', 'home'), name: 'Start Here' }],
+      undefined,
+      'start',
+    );
+    const first = { ...tab('start'), name: 'Getting Started' };
+    const result = await open.layer.writeBatch([first, tab('a', 'start'), tab('b')], 'art-1');
+    expect(result).toEqual({ failed: new Map() });
+    // One edit: the swap and the two new pages together.
+    expect(open.commits).toEqual([4]);
+    // The page keeps its place in the tree; its name and writing are the new page's.
+    expect(open.tabs().map((t) => [t.id, t.name, t.parent])).toEqual([
+      ['home', 'home', undefined],
+      ['start', 'Getting Started', 'home'],
+      ['a', 'a', 'start'],
+      ['b', 'b', undefined],
+    ]);
+    expect(open.loaded).toEqual(['start', 'a', 'b']);
+    expect(open.settled).toEqual(['start', 'a', 'b']);
+  });
+
+  it('adds the page as any other when the page to replace has gone, and waits for a replaced page to save', async () => {
+    const gone = openLayer([tab('home')], undefined, 'start');
+    await gone.layer.writeBatch([tab('start'), tab('a', 'start')], 'art-1');
+    expect(gone.tabs().map((t) => t.id)).toEqual(['home', 'start', 'a']);
+    // A later batch never holds the replaced id: nothing is swapped twice.
+    const later = openLayer([tab('start')], undefined, 'start');
+    await later.layer.writeBatch([tab('x')], 'art-1');
+    expect(later.tabs().map((t) => t.id)).toEqual(['start', 'x']);
+    const unsaved = openLayer([tab('start')], (id) => id !== 'start', 'start');
+    expect(await unsaved.layer.writeBatch([tab('start')], 'art-1')).toEqual({
+      failed: new Map(),
+      stalled: true,
+    });
   });
 
   it('answers the pages the tree refuses, each with why, and adds the rest', async () => {

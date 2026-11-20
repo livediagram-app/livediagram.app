@@ -306,6 +306,17 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(name(true)).toBe('Exit zen mode');
   });
 
+  it('offers Describe to Add Pages only to a session it is offered to, and opens it', () => {
+    expect(ids(base)).not.toContain('describe-to-add-pages');
+    const command = buildEditorCommands({ ...base, canDescribePages: true }, handlers()).find(
+      (c) => c.id === 'describe-to-add-pages',
+    )!;
+    expect(command.name).toBe('Describe to Add Pages');
+    expect(ids({ ...base, canDescribePages: true, isReadOnly: true })).not.toContain(
+      'describe-to-add-pages',
+    );
+  });
+
   it('dispatches the app-level handlers', () => {
     const h = handlers();
     const cmds = buildEditorCommands({ ...base, canUndo: true, canRedo: true }, h);

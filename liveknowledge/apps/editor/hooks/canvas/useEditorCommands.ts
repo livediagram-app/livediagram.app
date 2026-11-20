@@ -25,6 +25,7 @@ import {
 import type { CommandSearchItem } from '@/lib/search';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@liveworkspace/workbench/hooks/ui/useLatest';
+import { usePublishedSetupOffered } from '@/lib/knowledge-setup/setup-open';
 
 // What the catalogue is built with: which commands exist, and their words, depend on the context
 // alone, never on the handlers, so the searchable list needs none.
@@ -123,6 +124,8 @@ export function useEditorCommands(open: boolean): {
   // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
   const isOffline = useIsOfflineDocument(documentId);
+  // Describe to Add Pages, for a signed-in Editor of a knowledgebase with writing in it.
+  const canDescribePages = usePublishedSetupOffered() === 'add';
   // Spotlight is desktop-only, so the tool commands need the same viewport
   // answer the palette's tool dropdown uses.
   const isMobile = useIsMobileViewport();
@@ -165,6 +168,7 @@ export function useEditorCommands(open: boolean): {
       canShare: canShareDocument,
       isOffline,
       workbench: workbenchMode,
+      canDescribePages,
       canvasTool,
       // Same emptiness test the palette's tool dropdown uses to disable the
       // content-dependent tools, so search can never offer a tool the palette
@@ -189,6 +193,7 @@ export function useEditorCommands(open: boolean): {
       canShareDocument,
       isOffline,
       workbenchMode,
+      canDescribePages,
       canvasTool,
       canvasEmpty,
       isMobile,

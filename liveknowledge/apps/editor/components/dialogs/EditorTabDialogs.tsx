@@ -15,6 +15,7 @@ import { documentHandOver, shareHelpHref, trackShare } from '@/lib/explorer-shar
 import { randomName } from '@/lib/identity';
 import { useToast } from '@/hooks/ui/useToast';
 import { useKnowledgeImportProps } from '@/components/dialogs/knowledge-import/useKnowledgeImportProps';
+import { SetupWhenOpen } from '@/components/setup/SetupHost';
 
 const ExportTabDialog = dynamic(
   () => import('@/components/dialogs/ExportTabDialog').then((m) => m.ExportTabDialog),
@@ -192,6 +193,8 @@ function OpenEditorTabDialogs() {
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}
+      {/* Describe to Set Up (describe-to-set-up.md): its code is fetched when it is first opened. */}
+      <SetupWhenOpen />
     </>
   );
 }
