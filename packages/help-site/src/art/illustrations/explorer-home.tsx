@@ -2,6 +2,7 @@
 // You Recently. Drawn from the real labels in the shared Explorer's HomePane. Composed from the shared
 // primitives, so the house style holds. A product names its own recent items.
 
+import { appSamples } from '../app-samples';
 import { Label, Scene } from '../primitives';
 
 // --- Local parts -------------------------------------------------------------
@@ -143,12 +144,10 @@ function Snapshot({
   );
 }
 
-const MOST_USED = ['Roadmap', 'Payments', 'Onboarding', 'Data model'];
-const RECENT = ['Retro', 'Auth flow', 'Sprint 12', 'Brainstorm'];
-
 /** Home: Most Used, then Recent with See More, each a section of its own, then Shared With You Recently. */
-export function HomeOverview({ recent = RECENT }: { recent?: readonly string[] }) {
-  const tiles = [MOST_USED, recent];
+export function HomeOverview({ recent }: { recent?: readonly string[] }) {
+  const { work } = appSamples();
+  const tiles = [work.slice(0, 4), recent ?? work.slice(4, 8)];
   return (
     <Scene w={420} h={298} bg="plain">
       <Pane h={274} />

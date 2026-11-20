@@ -1,5 +1,6 @@
 // Collaboration illustrations: Teams (members, their roles, and the shared tree). Re-exported
 // from ./collaboration, where the help pages import them.
+import { appSamples } from '../app-samples';
 import { Scene, Avatar, Panel, Button, Label } from '../primitives';
 import { plural } from '../noun';
 
@@ -156,11 +157,12 @@ export function TeamMembers() {
 /** A team's shared library: the Team designs breadcrumb (the product's `noun`) with the view toggle and
  *  Create, above the folders and work of the level you are in. */
 export function TeamSharedTree({ noun }: { noun: string }) {
+  const { folders, work } = appSamples();
   const rows: { label: string; folder: boolean; meta: string }[] = [
-    { label: 'Architecture', folder: true, meta: `4 ${plural(noun)}` },
-    { label: 'Onboarding', folder: true, meta: `2 ${plural(noun)}` },
-    { label: 'System overview', folder: false, meta: 'Edited 2h ago' },
-    { label: 'Retro notes', folder: false, meta: 'Edited yesterday' },
+    { label: folders[0], folder: true, meta: `4 ${plural(noun)}` },
+    { label: folders[1], folder: true, meta: `2 ${plural(noun)}` },
+    { label: work[0], folder: false, meta: 'Edited 2h ago' },
+    { label: work[4], folder: false, meta: 'Edited yesterday' },
   ];
   return (
     <Scene w={420} h={230} bg="plain">

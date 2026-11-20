@@ -5,6 +5,7 @@
 // Strength, Pattern and Radius grids (BorderControls.tsx, palette-style-previews.tsx). Composed from
 // the shared primitives so the house style holds.
 
+import { appSamples } from '../app-samples';
 import type { ReactNode } from 'react';
 import { Scene, Shape, SelectionBox, Label, stickyOnly } from '../primitives';
 
@@ -359,7 +360,7 @@ export function ColoursSection() {
         y={192}
         w={96}
         h={34}
-        label="API"
+        label={appSamples().element}
         fill="fill-brand-50"
         stroke="stroke-blue-600"
       />

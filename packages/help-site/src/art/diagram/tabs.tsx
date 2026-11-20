@@ -1,4 +1,4 @@
-// A diagram editor's category scene, the same in livediagram and livehuddle (art/diagram in the README); each
+// A diagram editor's category scene, livediagram's (art/diagram in the README); each
 // app's components/category-art/index.tsx maps it to its category.
 
 import { Arrow, Label, Shape } from '../primitives';

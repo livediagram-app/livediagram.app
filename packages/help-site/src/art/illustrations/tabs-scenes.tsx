@@ -3,6 +3,7 @@
 // before/after cleanup and a locked tab. Each product's illustrations/tabs.tsx re-exports the ones it uses.
 // Composed only from the shared primitives so the house style holds.
 
+import { appSamples } from '../app-samples';
 import { Scene, Shape, Arrow, Label, Dialog, Cursor } from '../primitives';
 import { TabPill, AddTabButton, FolderIcon, FolderGroup, TabBar, PickTile } from './tabs-parts';
 import { Glyph } from './element-indicators';
@@ -31,6 +32,7 @@ export function TabBarOverview() {
 /** Renaming a tab inline: the tab's name editor open with a text caret. */
 export function RenamingTab() {
   const barY = 70;
+  const { tabs } = appSamples();
   return (
     <Scene w={420} h={150} bg="plain">
       <TabBar y={barY} w={420} />
@@ -47,11 +49,18 @@ export function RenamingTab() {
           strokeWidth={2}
         />
         <Label x={90} y={barY + 21} size={11} weight={600} tone="strong">
-          Payments
+          {tabs[0]}
         </Label>
-        <rect x={146} y={barY + 13} width={1.5} height={16} className="fill-brand-500" />
+        {/* The caret just after the name (11-unit semibold runs about 6.3 units a letter). */}
+        <rect
+          x={Math.min(188, 92 + tabs[0].length * 6.3)}
+          y={barY + 13}
+          width={1.5}
+          height={16}
+          className="fill-brand-500"
+        />
       </g>
-      <TabPill x={204} y={barY + 8} w={58} label="Billing" />
+      <TabPill x={204} y={barY + 8} w={58} label={tabs[1]} />
       <AddTabButton x={268} y={barY + 8} />
       <Label x={78} y={barY - 14} size={10} tone="muted">
         Double-click the active tab, Enter to save
