@@ -41,6 +41,8 @@ page is and offers; this section is the basics.
   **its settings cog** above its top-right, both held at one screen size at any
   zoom. The cog (tooltip **Page settings**, or **Page 2 settings**) opens the
   **page panel** ("The page panel").
+  Every size the app prints reads `W x H` this way: the label, the device picker, the Photo panel's size and its
+  dialogs, and Inspect's size pill.
   A viewer who cannot edit (a view role, a locked tab) gets no cog and no add
   button.
 - **Adding a page:** a round **+** sits in the gap's width to the right of the

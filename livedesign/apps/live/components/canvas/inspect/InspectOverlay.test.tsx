@@ -70,7 +70,7 @@ describe('Inspect on the canvas', () => {
     store.setSelectedId('a');
     render(<Harness store={store} />);
     expect(overlay()).not.toBeNull();
-    expect(pills()).toContain('120 × 44');
+    expect(pills()).toContain('120 x 44');
     expect(pills()).toContain('20');
     expect(pills()).toContain('16');
   });
@@ -80,7 +80,7 @@ describe('Inspect on the canvas', () => {
     store.setSelectedId('a');
     render(<Harness store={store} />);
     hover('b');
-    expect(pills()).toEqual(expect.arrayContaining(['120 × 44', '20']));
+    expect(pills()).toEqual(expect.arrayContaining(['120 x 44', '20']));
     expect(pills()).not.toContain('16');
     act(() => {
       document.querySelector('[data-testid="wrapper"]')!.dispatchEvent(new Event('pointerleave'));
