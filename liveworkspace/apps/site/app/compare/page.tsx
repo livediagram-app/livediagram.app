@@ -61,7 +61,7 @@ export default function ComparePage() {
                   {app.pitch}.
                 </span>
                 <span className="mt-auto flex items-center justify-between pt-6 text-sm font-medium text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]">
-                  See how {app.name} compares
+                  See How {app.name} Compares
                   <span className="flex size-8 items-center justify-center rounded-full bg-slate-100 transition group-hover:bg-[var(--lw-ink)] group-hover:text-white motion-reduce:transition-none dark:bg-slate-800">
                     <ArrowIcon />
                   </span>

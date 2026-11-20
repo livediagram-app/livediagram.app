@@ -256,7 +256,7 @@ the list still fails.
 
 Each app compares itself with the tools it answers on its own site, at `/alternatives` and
 `/alternatives/<slug>` ([@liveworkspace/comparisons](../../../../packages/comparisons/README.md)). This page
-only points at them: a card per app (its logo, its pitch and **See how <app> compares**, in its deep
+only points at them: a card per app (its logo, its pitch and **See How <app> Compares**, in its deep
 accent), linked from the footer as **Comparison**. It has no data of its own, so a comparison
 added in an app needs nothing here.
 
