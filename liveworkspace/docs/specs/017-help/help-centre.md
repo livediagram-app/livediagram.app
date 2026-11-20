@@ -335,7 +335,9 @@ One rule for every public page, shared with the marketing sites' SEO rules; an a
   changed today, so the deploy builds from full history.
 - **Structured data.** Category landings carry `CollectionPage` whose `ItemList` names the articles the landing
   lists, in order; a home carries `WebSite` with no `SearchAction` (Google retired the sitelinks search box, and the
-  `q` carry is not an indexed search page). Every page carries a `BreadcrumbList` rooted at the home.
+  `q` carry is not an indexed search page). Every page but a home carries a `BreadcrumbList` rooted at the home.
+- **A home has no breadcrumb bar.** The home is the trail's root, so its bar held only the Help icon, a link to the
+  page already open; every other page keeps the sticky bar.
 - **A sub-article's parent crumb and its `TechArticle` url come from its route**, one folder up and its own route,
   never rebuilt from the page's `categorySlug` prop (which names the top category on some pages and the parent's path
   on others). The category crumb is the route's first segment, so it never shares a URL with the parent; a sub-article
