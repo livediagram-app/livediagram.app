@@ -3,7 +3,8 @@
 // Built from the chrome kit (./editor-chrome) and the page content (./design-content).
 
 import { Arrow, Cursor, Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { BottomBar, Card, DesignPage, HAIR } from './editor-chrome';
+import { BottomBar, Card, HAIR } from './editor-chrome';
+import { DesignPage } from './editor-frame';
 import { LogoMark, PhoneScreen } from './design-content';
 
 /** A linked button: its link badge on top, the hover card naming the target tab, and the bar with that tab. */

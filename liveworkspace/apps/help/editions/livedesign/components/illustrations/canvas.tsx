@@ -11,7 +11,8 @@ import {
   SelectionBox,
   Tile,
 } from '@liveworkspace/help-site/art/primitives';
-import { CornerControls, DesignPage, EditorFrame, Strip, stripCategory } from './editor-chrome';
+import { CornerControls, Strip, stripCategory } from './editor-chrome';
+import { DesignPage, EditorFrame } from './editor-frame';
 import { PhoneScreen } from './design-content';
 import { APP_PAGES, AppScreens } from './user-interface';
 

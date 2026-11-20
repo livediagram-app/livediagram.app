@@ -3,7 +3,8 @@
 // pages. Built from the chrome kit (./editor-chrome) and the page content (./design-content).
 
 import { Arrow, Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { BottomBar, Card, DesignPage, EditorFrame } from './editor-chrome';
+import { BottomBar, Card } from './editor-chrome';
+import { DesignPage, EditorFrame } from './editor-frame';
 import { Glyph } from './editor-glyphs';
 import { PhoneScreen } from './design-content';
 import { APP_PAGES, AppScreens } from './user-interface';

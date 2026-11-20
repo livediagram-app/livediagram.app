@@ -3,7 +3,8 @@
 // device; the phone shows the phone layout (the menu button and an icon strip across the top, the page, the tabs).
 
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { BAR_H, DesignPage, EditorFrame } from './editor-chrome';
+import { BAR_H } from './editor-chrome';
+import { DesignPage, EditorFrame } from './editor-frame';
 import { Glyph, type GlyphName } from './editor-glyphs';
 import { PhoneScreen } from './design-content';
 import { APP_PAGES, AppScreens } from './user-interface';

@@ -4,7 +4,7 @@
 
 import { Arrow, Scene, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
 import { PickerTrigger } from './selection-modes';
-import { DesignPage, PagesRail } from './editor-chrome';
+import { DesignPage, PagesRail } from './editor-frame';
 import { ModeScreen, phoneThumb } from './design-content';
 import { GrabHand } from './canvas';
 

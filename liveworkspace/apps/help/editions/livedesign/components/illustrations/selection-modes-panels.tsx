@@ -4,7 +4,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { DesignPage } from './editor-chrome';
+import { DesignPage } from './editor-frame';
 import { BrowserScreen, ModeScreen, PhoneScreen } from './design-content';
 import { PainterGlyph } from '@liveworkspace/help-site/art/illustrations/palette-modes-parts';
 import { Chevron, PickerTrigger } from './selection-modes-picker';

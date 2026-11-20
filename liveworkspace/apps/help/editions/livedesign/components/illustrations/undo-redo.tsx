@@ -2,7 +2,8 @@
 // back or put back on a phone screen, the keys that do it, and the Undo / Redo card in the corner controls.
 
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { CornerControls, DesignPage } from './editor-chrome';
+import { CornerControls } from './editor-chrome';
+import { DesignPage } from './editor-frame';
 import { PhoneScreen } from './design-content';
 
 function Keycap({ x, y, keys }: { x: number; y: number; keys: string }) {

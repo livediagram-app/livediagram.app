@@ -2,7 +2,8 @@
 // builds, with a design's page in it rather than another app's work.
 
 import { Arrow, Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import { Card, DesignPage } from './editor-chrome';
+import { Card } from './editor-chrome';
+import { DesignPage } from './editor-frame';
 import { LogoMark } from './design-content';
 
 /** The public, MIT-licensed code on the left, and the livedesign it builds on the right, a logo page open in it. */

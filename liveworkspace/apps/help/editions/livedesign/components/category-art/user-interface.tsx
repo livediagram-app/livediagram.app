@@ -1,6 +1,6 @@
 import { Stage } from '@liveworkspace/help-site/art/parts';
 import { Label } from '@liveworkspace/help-site/art/primitives';
-import { EditorFrame } from '../illustrations/editor-chrome';
+import { EditorFrame } from '../illustrations/editor-frame';
 import { APP_PAGES, AppScreens } from '../illustrations/user-interface';
 
 // The numbered callouts on the editor's parts (Panel Layout), in stage units over the scaled window.

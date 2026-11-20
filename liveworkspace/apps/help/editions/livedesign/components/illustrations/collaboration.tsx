@@ -10,7 +10,8 @@ import {
   SelectionBox,
   TextBar,
 } from '@liveworkspace/help-site/art/primitives';
-import { BottomBar, Card, DesignPage, HAIR, textW } from './editor-chrome';
+import { BottomBar, Card, HAIR, textW } from './editor-chrome';
+import { DesignPage } from './editor-frame';
 import { BrowserScreen, LogoMark, PhoneScreen } from './design-content';
 
 /** Two pages of a design with three people's cursors on them, and their initials on the open tab. */

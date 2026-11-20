@@ -3,18 +3,8 @@
 // kit (./editor-chrome), which follows apps/live: the Pages rail, ToolbarPalette, ChromeControls and TabBar.
 
 import { Label, Scene } from '@liveworkspace/help-site/art/primitives';
-import {
-  AccountCard,
-  BottomBar,
-  Card,
-  CornerControls,
-  DesignPage,
-  EditorFrame,
-  PagesRail,
-  RAIL_W,
-  STRIP_W,
-  Strip,
-} from './editor-chrome';
+import { AccountCard, BottomBar, Card, CornerControls, STRIP_W, Strip } from './editor-chrome';
+import { DesignPage, EditorFrame, PagesRail, RAIL_W } from './editor-frame';
 import { BrowserScreen, LogoMark, PhoneScreen, phoneThumb } from './design-content';
 
 export const APP_PAGES = [

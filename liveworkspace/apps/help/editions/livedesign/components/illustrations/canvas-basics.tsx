@@ -9,7 +9,7 @@
 
 import type { ReactNode } from 'react';
 import { Scene, Shape, Arrow, Panel } from '@liveworkspace/help-site/art/primitives';
-import { EditorFrame } from './editor-chrome';
+import { EditorFrame } from './editor-frame';
 import { APP_PAGES, AppScreens } from './user-interface';
 
 // The Font tiles and the Text, Colours and Canvas panels are drawn once for every product, in

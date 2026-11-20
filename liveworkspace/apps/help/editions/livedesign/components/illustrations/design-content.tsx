@@ -3,7 +3,7 @@
 // livedesign's own kind of work rather than another app's (a flowchart, a board).
 
 import { Label, TextBar } from '@liveworkspace/help-site/art/primitives';
-import { DesignPage } from './editor-chrome';
+import { DesignPage } from './editor-frame';
 
 /** A phone screen wireframe, top-left at (x, y): the status notch, a title, an image block, copy and a solid
  *  call-to-action. `variant` changes the middle so a row of screens reads as a flow. */

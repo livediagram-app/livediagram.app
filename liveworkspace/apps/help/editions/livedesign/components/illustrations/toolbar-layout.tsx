@@ -3,7 +3,8 @@
 // (./editor-chrome), drawn the way apps/live ToolbarPalette lays it out.
 
 import { Label, Panel, Scene, Tile } from '@liveworkspace/help-site/art/primitives';
-import { DesignPage, EditorFrame, stripCategory, stripX } from './editor-chrome';
+import { stripCategory } from './editor-chrome';
+import { DesignPage, EditorFrame, stripX } from './editor-frame';
 import { PhoneScreen } from './design-content';
 
 // The flyout's tiles, drawn as the simple outlines the real tiles use.
