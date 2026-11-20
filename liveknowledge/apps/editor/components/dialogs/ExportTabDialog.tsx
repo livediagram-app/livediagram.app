@@ -344,7 +344,7 @@ export function ExportTabDialog({
   const activeCard = active ? CARDS.find((c) => c.kind === active) : null;
   const subtitle = activeCard
     ? active === 'print'
-      ? 'Print the current page or the whole document.'
+      ? 'Print the current page or the whole knowledgebase.'
       : isOfficeFormat(active)
         ? OFFICE_SUBTITLE[active]
         : isTextFormat(active!)
@@ -354,7 +354,7 @@ export function ExportTabDialog({
       ? 'Pick a format to export the selected elements.'
       : pages
         ? 'Pick a format to export the pages.'
-        : 'Pick a format to export the current tab.';
+        : 'Pick a format to export the current page.';
 
   return exportTabDialogFrame({
     isSelection,

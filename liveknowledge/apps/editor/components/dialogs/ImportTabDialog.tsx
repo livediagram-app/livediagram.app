@@ -137,7 +137,7 @@ export function ImportTabDialog({
   const activeFormat = active ? FORMATS.find((f) => f.key === active) : null;
 
   return (
-    <Dialog open onClose={onClose} ariaLabel="Import into tab" size="xl" className="max-h-[90vh]">
+    <Dialog open onClose={onClose} ariaLabel="Import Into Page" size="xl" className="max-h-[90vh]">
       {/* The dialog hero header (dialog-hero-header.md): files coming in. */}
       <HeroDialogHeader
         art={importHeroArt}
@@ -156,7 +156,7 @@ export function ImportTabDialog({
                   ? `Paste your ${activeFormat.title}, or import a file.`
                   : knowledgebase
                     ? 'Import into this page, or bring in a whole Knowledgebase.'
-                    : 'Pick a format to import into the current tab.'
+                    : 'Pick a format to import into the current page.'
         }
         actions={<HelpArticleLink article="importTabs" size="md" />}
         onClose={onClose}
@@ -221,8 +221,9 @@ function ImportChooser({
   // Destructive-action warning: a single-file import overwrites the page.
   const warning = (
     <Callout tone="warning" className="mb-4">
-      This replaces everything on <strong className="font-semibold">{tabName || 'this tab'}</strong>{' '}
-      with the imported content. Undo brings it back.
+      This replaces everything on{' '}
+      <strong className="font-semibold">{tabName || 'this page'}</strong> with the imported content.
+      Undo brings it back.
     </Callout>
   );
   if (!activeFormat && onPickSource) {

@@ -73,7 +73,7 @@ export const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'print',
     title: 'Print',
     description:
-      'Send the current page or the whole document to your printer, each page its own sheet.',
+      'Send the current page or the whole knowledgebase to your printer, each page its own sheet.',
   },
   // A slide tab's or an article tab's only (docs/specs/020-import-export/office-export.md "Where it is offered").
   { kind: 'pptx', ...OFFICE_CARDS.pptx },
@@ -94,7 +94,7 @@ export const TEXT_PANELS: Record<
 > = {
   file: {
     blurb:
-      "This tab as a liveknowledge JSON export. Edit it here to copy a variant; your edits don't change the tab.",
+      "This page as a liveknowledge JSON export. Edit it here to copy a variant; your edits don't change the page.",
     downloadLabel: 'Download .json',
     ext: 'liveknowledge-tab.json',
     mime: 'application/json',
@@ -102,7 +102,7 @@ export const TEXT_PANELS: Record<
   },
   markdown: {
     blurb:
-      "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
+      "This page as a Markdown outline. Edit it here to copy a variant; your edits don't change the page.",
     downloadLabel: 'Download .md',
     ext: 'md',
     mime: 'text/markdown',

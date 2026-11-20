@@ -11,38 +11,40 @@ describe('describeLink', () => {
     );
   });
 
-  it('names a document link', () => {
+  it('names a knowledgebase link', () => {
     expect(describeLink({ kind: 'document', documentId: 'd1', name: 'Roadmap' })).toBe(
-      'Document: Roadmap',
+      'Knowledgebase: Roadmap',
     );
   });
 
   it('names the target tab when it is in the tab list', () => {
-    expect(describeLink({ kind: 'tab', tabId: 't1' }, tabs)).toBe('Goes to tab "Overview"');
+    expect(describeLink({ kind: 'tab', tabId: 't1' }, tabs)).toBe('Goes to page "Overview"');
   });
 
   it('falls back to a generic phrase when the tab is not found', () => {
     expect(describeLink({ kind: 'tab', tabId: 'gone' }, tabs)).toBe(
-      'Goes to a tab in this document',
+      'Goes to a page in this knowledgebase',
     );
-    expect(describeLink({ kind: 'tab', tabId: 't1' })).toBe('Goes to a tab in this document');
+    expect(describeLink({ kind: 'tab', tabId: 't1' })).toBe('Goes to a page in this knowledgebase');
   });
 
   it('describes an element link with the resolved tab name', () => {
     expect(describeLink({ kind: 'element', tabId: 't1', elementId: 'e1' }, tabs)).toBe(
-      'An element on tab "Overview"',
+      'An element on page "Overview"',
     );
   });
 
   it('falls back generically for an element link with no matching tab', () => {
     expect(describeLink({ kind: 'element', tabId: 'gone', elementId: 'e1' }, tabs)).toBe(
-      'An element on a tab in this document',
+      'An element on a page in this knowledgebase',
     );
   });
 
   it('treats a whitespace-only tab name as no name', () => {
     const blank: { id: string; name: string }[] = [{ id: 't1', name: '   ' }];
-    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe('Goes to a tab in this document');
+    expect(describeLink({ kind: 'tab', tabId: 't1' }, blank)).toBe(
+      'Goes to a page in this knowledgebase',
+    );
   });
 
   it('covers every ElementLink kind', () => {

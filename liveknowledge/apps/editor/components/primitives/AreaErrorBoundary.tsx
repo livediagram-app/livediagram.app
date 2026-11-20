@@ -12,8 +12,8 @@ export const { AreaErrorBoundary, MenuErrorBoundary } = createAreaErrorBoundary(
   labels: {
     Canvas: 'the canvas',
     Header: 'the header',
-    TabBar: 'the tab bar',
-    TabDialogs: 'a tab dialog',
+    TabBar: 'the bottom bar',
+    TabDialogs: 'a page dialog',
     Collaborators: 'the collaborators panel',
     Presentation: 'the presentation',
     VersionHistory: 'Version History',

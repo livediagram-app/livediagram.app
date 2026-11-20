@@ -175,7 +175,7 @@ describe('collaboratorRowDetail', () => {
       collaboratorRowDetail(p('x', { agent: true, statusLine: 'reviewing' }), false, now),
     ).toBe('reviewing');
     expect(collaboratorRowDetail(p('x', { agent: true, lastActiveAt: 0 }), false, now)).toBe(
-      'Working on this tab',
+      'Working on this page',
     );
   });
 });

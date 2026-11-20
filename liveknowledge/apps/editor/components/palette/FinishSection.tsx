@@ -75,7 +75,7 @@ const FINISH_ROWS: OptionRow[] = [
   {
     id: FOLLOW_TAB,
     label: 'Follow Page',
-    detail: 'As the tab is',
+    detail: 'As the page is',
     icon: <LinkIcon />,
   },
   ...FINISHES.map((f) => ({

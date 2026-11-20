@@ -16,10 +16,10 @@ export type CreateFailure = {
 
 const PLACEMENT_MESSAGES: Record<PlacementRejection, string> = {
   team_forbidden:
-    'You’re not a member of that team, so the document can’t be filed in its library.',
+    'You’re not a member of that team, so the knowledgebase can’t be filed in its library.',
   folder_not_found: 'That folder no longer exists, or isn’t yours.',
   folder_scope_mismatch: 'That folder belongs to a different space from the one you chose.',
-  placement_invalid: 'That isn’t a place a document can be filed.',
+  placement_invalid: 'That isn’t a place a knowledgebase can be filed.',
 };
 
 const CONNECTION_FAILURE: CreateFailure = {
@@ -27,7 +27,7 @@ const CONNECTION_FAILURE: CreateFailure = {
   eyebrow: 'Connection error',
   title: 'Couldn’t create the knowledgebase',
   message:
-    'We couldn’t reach the server to create your document. Check your connection and try again.',
+    'We couldn’t reach the server to create your knowledgebase. Check your connection and try again.',
   actionLabel: 'Try again',
 };
 

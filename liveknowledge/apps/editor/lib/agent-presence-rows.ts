@@ -70,7 +70,7 @@ export function splitPresenceFrame(frame: {
 
 // An agent row's second line, in its hover card and its Collaborators row: what it said it is doing, else that it is
 // at work on the tab.
-export const AGENT_AT_WORK = 'Working on this tab';
+export const AGENT_AT_WORK = 'Working on this page';
 export function agentRowDetail(row: Pick<Participant, 'statusLine'>): string {
   return row.statusLine ?? AGENT_AT_WORK;
 }

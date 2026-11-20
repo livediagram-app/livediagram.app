@@ -25,7 +25,7 @@ describe('IdentityPrompt', () => {
     expect(screen.getByRole('heading', { name: "Welcome to 'API sketch'" })).toBeTruthy();
     cleanup();
     prompt();
-    expect(screen.getByRole('heading', { name: 'Welcome to this document' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Welcome to This Knowledgebase' })).toBeTruthy();
   });
 
   it('joins with the name typed, or the one they had when left empty', () => {

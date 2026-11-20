@@ -667,7 +667,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Enable Map',
         desktopOnly: MINIMAP_DESKTOP_ONLY,
         description:
-          'An overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Drag it to move around.',
+          'An overview of the whole canvas in the bottom-left corner, once a page has a few elements. Drag it to move around.',
         read: (p) => p.showMinimap !== false,
         write: (p, v) => ({ ...p, showMinimap: v }),
         event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
@@ -709,7 +709,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Enable Collaborate Panel',
         keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
         description:
-          "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
+          "Lists the page's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
         event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
       }),
       {
@@ -902,7 +902,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     aliases: ['/documents'],
     sectionNotes: {
       'Default Folders': {
-        note: 'Where each kind of new document is saved when you create it without choosing a place.',
+        note: 'Where a new knowledgebase is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
     },
@@ -938,10 +938,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         kind: 'defaultFolders',
         key: 'defaultFolders',
         section: 'Default Folders',
-        label: 'Where New Documents Go',
+        label: 'Where New Knowledgebases Go',
         keywords:
-          'default folder where new documents go save location place file automatically always save placement template',
-        description: 'New documents you make without choosing a place are saved in this folder.',
+          'default folder where new knowledgebases documents go save location place file automatically always save placement template',
+        description:
+          'New knowledgebases you make without choosing a place are saved in this folder.',
       },
     ],
   },
@@ -956,7 +957,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Guest',
         keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name and email come from your account. Signed out, your documents belong to this browser.',
+          'Your name and email come from your account. Signed out, your knowledgebases belong to this browser.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -975,7 +976,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your liveknowledge documents, folders and settings, then signs you out. There is no undo.',
+          'Removes your liveknowledge knowledgebases, folders and settings, then signs you out. There is no undo.',
       },
     ],
   },
@@ -991,7 +992,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          'A brief note when something happens off screen, like moving a document to a folder. Errors and warnings always show.',
+          'A brief note when something happens off screen, like moving a knowledgebase to a folder. Errors and warnings always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -1008,14 +1009,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your knowledgebases, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Document',
-        description: 'Someone leaves a comment on a document you own.',
+        label: 'Someone Comments on My Knowledgebase',
+        description: 'Someone leaves a comment on a knowledgebase you own.',
       }),
       emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
@@ -1038,8 +1039,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       emailSwitch('notifyDocumentJoin', {
         event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
         keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Document',
-        description: 'A new person opens one of your shared documents.',
+        label: 'Someone Joins My Knowledgebase',
+        description: 'A new person opens one of your shared knowledgebases.',
       }),
       emailSwitch('notifyTips', {
         event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },
@@ -1051,7 +1052,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
         keywords: 'email milestone achievement celebrate',
         label: 'Milestones',
-        description: 'A note when you hit one, like sharing your first document.',
+        description: 'A note when you hit one, like sharing your first knowledgebase.',
       }),
     ],
   },
@@ -1101,7 +1102,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'analytics tracking usage data privacy anonymous',
         label: 'Send Anonymous Usage Events',
         description:
-          'Small events like “a tab was added” that show us which features help. Never your content or who you are, and no third-party trackers. Every event we collect is listed in public, with how often each is sent.',
+          'Small events like “a page was added” that show us which features help. Never your content or who you are, and no third-party trackers. Every event we collect is listed in public, with how often each is sent.',
         link: { href: `${PLATFORM_SITE.url}/telemetry`, label: 'See Every Event' },
         helpArticle: 'whatWeCollect',
         read: (p) => p.telemetryEnabled !== false,

@@ -23,7 +23,7 @@ const origin = () => (typeof window === 'undefined' ? '' : window.location.origi
 export const documentHandOver: ShareHandOver = {
   embedUrl: (link) => embedUrlFor(origin(), link.code),
   liveImageUrl: (link, tabId) => liveImageUrlFor(origin(), link.code, tabId),
-  liveImageAlt: 'liveknowledge tab',
+  liveImageAlt: 'liveknowledge page',
 };
 
 const SHARE_HELP: Record<ShareHelpArticle, HelpArticleKey> = {

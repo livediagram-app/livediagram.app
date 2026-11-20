@@ -67,7 +67,7 @@ const SEARCH: EditorSearchConfig<'document', 'documents'> = {
   library: {
     kind: 'document',
     key: 'documents',
-    label: 'Documents',
+    label: 'Knowledgebases',
     untitled: 'Untitled Knowledgebase',
   },
   tableCells: true,

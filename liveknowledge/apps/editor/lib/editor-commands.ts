@@ -280,16 +280,16 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (!ctx.zenMode && !ctx.workbench) {
     out.push({
       id: 'rename-document',
-      name: 'Rename Document',
-      keywords: 'rename document diagram title name relabel',
+      name: 'Rename Knowledgebase',
+      keywords: 'rename knowledgebase document diagram title name relabel',
       run: h.renameDocument,
     });
   }
   if (!ctx.workbench) {
     out.push({
       id: 'delete-document',
-      name: 'Delete Document',
-      keywords: 'delete document diagram remove trash destroy',
+      name: 'Delete Knowledgebase',
+      keywords: 'delete knowledgebase document diagram remove trash destroy',
       run: h.deleteDocument,
     });
   }
@@ -308,8 +308,8 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',
-      name: 'Share Document',
-      keywords: 'share document diagram link invite collaborate publish embed export',
+      name: 'Share Knowledgebase',
+      keywords: 'share knowledgebase document diagram link invite collaborate publish embed export',
       run: h.openShare,
     });
   }

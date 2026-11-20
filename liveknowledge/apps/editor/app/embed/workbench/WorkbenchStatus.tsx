@@ -16,9 +16,10 @@ const COPY: Record<
   { opening: string; refusedHeading: string; refusedBody: string }
 > = {
   document: {
-    opening: 'Opening your document…',
-    refusedHeading: 'Open this document from your workbench',
-    refusedBody: 'This link works once, for a minute. Open the document again from your workbench.',
+    opening: 'Opening your knowledgebase…',
+    refusedHeading: 'Open This Knowledgebase From Your Workbench',
+    refusedBody:
+      'This link works once, for a minute. Open the knowledgebase again from your workbench.',
   },
   workspace: {
     opening: 'Opening your workspace…',

@@ -3,7 +3,7 @@
 Derived from [Knowledgebases and pages](../knowledgebases-and-pages.md) "A knowledgebase", "The page tree" and "Share
 roles". **Built so far: the model** (`Tab.parent`, its reading and validation, the limits, and the pure tree
 functions), **its storage and sync, the room's check, the share roles, the sidebar, the phone sheet, the breadcrumb
-and the tab actions in tree terms. Not built: the copy sweep, and what "Not built" lists.** The sections below say which is which; "Not built" is the work left, written
+and the tab actions in tree terms, and the editor's copy. Not built: what "Not built" lists.** The sections below say which is which; "Not built" is the work left, written
 so it can be picked up cold.
 
 ## Domain and naming
@@ -234,16 +234,15 @@ there is no New Page or knowledgebase rename. Tested a role at a time in `PageTr
 
 ## Not built
 
-1. **The rest of the copy sweep.** Done: the strings a person reads on a control or in a toast that said "tab" now
-   say "page" (the canvas menu, Find in Page, Import to Page, the export formats, the link picker, the commands
-   Create New Page and Rename Page, version history, the shortcuts list, the help keys in `lib/help-articles.ts`),
-   and the item's noun reads "Knowledgebase" on the loading, trashed, archived and load-error cards, the create
-   failures, the Add to Knowledgebase and link pickers, Whole Knowledgebase in Print, Sync Knowledgebase, the
-   sign-in pitches and the help keys. Left: `components/dialogs/settings/settings-catalogue.ts` (four "Document"
-   labels: liveworkspace.app keeps a copy of this catalogue, held equal by `settings-site-catalogue.test.ts`, so the
-   two change together); running prose inside dialogs and panels that the sweep's exact-string pass did not reach
-   (search `apps/editor/components` for "document" and "tab" in JSX text); the shared dialogs in `packages/`, which
-   are the platform's; the end-to-end specs; marketing and the help articles.
+1. **The copy sweep, what is left.** Done: every string a person reads in the editor says "page" and
+   "Knowledgebase" (controls, toasts, dialogs and their running prose, the 404 card through the shared card's
+   `noun`, the Share dialog's Offline panel, the sign-in prompt's Move Offline Knowledgebases, the write failures,
+   the command names, the link labels, version history, the settings catalogue and liveworkspace.app's copy of it,
+   regenerated). Kept on purpose: "Word document" (a `.docx` is one), the flowchart shape named Document, telemetry
+   types (`Document`, `Tab`), the settings category id `documents` and its `/documents` alias, and keywords that
+   still match "document" in the command search. Left: the start panel's Blank Pages line (it names slides and
+   infographics, which liveknowledge has none of), the unreachable presenting chrome, the shared dialogs in
+   `packages/` that take no noun, the end-to-end specs, marketing and the help articles.
 2. **Nothing is verified in a browser.** Unit and component tests only: the sidebar's look, the menu box joined
    above it, the rail, the drag's insertion line, the phone button's place and the breadcrumb's place in the title
    row have not been seen on screen.

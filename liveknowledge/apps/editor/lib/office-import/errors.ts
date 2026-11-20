@@ -58,6 +58,6 @@ export function officeErrorMessage(
     case 'too-many-blocks':
       return `This document makes ${n(count ?? 0)} blocks; an article holds at most ${n(MAX_ARTICLE_BLOCKS)}.`;
     case 'too-large-for-tab':
-      return 'This is more than one tab holds. Split it into smaller files and import each into its own tab.';
+      return 'This is more than one page holds. Split it into smaller files and import each into its own page.';
   }
 }

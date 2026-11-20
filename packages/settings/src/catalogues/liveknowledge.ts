@@ -253,7 +253,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'showMinimap',
           label: 'Enable Map',
           description:
-            'An overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Drag it to move around.',
+            'An overview of the whole canvas in the bottom-left corner, once a page has a few elements. Drag it to move around.',
           keywords: 'minimap overview thumbnail navigator birds eye hide show turn off enable',
           section: 'Map',
           key: 'showMinimap',
@@ -333,7 +333,7 @@ export const CATALOGUE: AppCatalogue = {
           id: 'collaboratePanelEnabled',
           label: 'Enable Collaborate Panel',
           description:
-            "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
+            "Lists the page's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
           keywords: 'collaborate comments threads actions tasks panel enable hide show turn off',
           section: 'Collaborate',
           key: 'collaboratePanelEnabled',
@@ -399,8 +399,8 @@ export const CATALOGUE: AppCatalogue = {
         {
           kind: 'toggle',
           id: 'notifyDocumentJoin',
-          label: 'Someone Joins My Document',
-          description: 'A new person opens one of your shared documents.',
+          label: 'Someone Joins My Knowledgebase',
+          description: 'A new person opens one of your shared knowledgebases.',
           keywords: 'email join collaborator opened',
           section: 'Email',
           key: 'notifyDocumentJoin',

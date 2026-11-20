@@ -123,7 +123,7 @@ export function LinkPickerDialog({
         subtitle={
           urlOnly
             ? urlOnly.subtitle
-            : 'Jump to a tab, open another document, or go to a web address.'
+            : 'Jump to a page, open another knowledgebase, or go to a web address.'
         }
       >
         {/* The picker sets a link card's, a video's or a table cell's link (element links are retired,

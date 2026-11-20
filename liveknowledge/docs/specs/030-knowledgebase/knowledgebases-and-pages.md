@@ -6,8 +6,8 @@ Built: one page kind, every tab a page of writing, with slides and infographics 
 name, the continuous page ([blueprint](blueprints/continuous-page.md)), and the page tree
 ([blueprint](blueprints/page-tree.md)): its model, its storage and sync, the server's check of the limits, the share
 roles, the sidebar that replaces the tab bar, the phone sheet, the breadcrumb, and the page's name following its
-Title. The editor's controls and toasts say "page" and "Knowledgebase"; some running prose and the settings
-catalogue still say "tab" and "document". Not built yet: what the blueprint's "Not built" lists.
+Title. The editor says "page" and "Knowledgebase" throughout, its settings catalogue included. Not built yet: what
+the blueprint's "Not built" lists.
 
 ## Domain language
 

@@ -185,7 +185,7 @@ export function AddTabToDocumentDialog({
   return (
     <OrganiseDialogFrame
       title="Add to Knowledgebase"
-      sub="Link this tab into another document. It stays one live tab: edits show in both places."
+      sub="Link this page into another knowledgebase. It stays one live page: edits show in both places."
       onClose={onClose}
     >
       <input

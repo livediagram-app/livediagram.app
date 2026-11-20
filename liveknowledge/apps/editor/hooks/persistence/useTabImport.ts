@@ -123,7 +123,7 @@ export function useTabImport({
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
-      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
+      return { status: 'error', error: 'This page is locked. Unlock it before importing.' };
     }
 
     if (format === 'markdown') {
@@ -149,7 +149,7 @@ export function useTabImport({
   const importIntoActiveTab = async (format: TextImportFormat): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
-      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
+      return { status: 'error', error: 'This page is locked. Unlock it before importing.' };
     }
     const accept =
       format === 'markdown'
@@ -171,7 +171,7 @@ export function useTabImport({
   ): Promise<ImportOutcome> => {
     const active = tabs.find((t) => t.id === activeId);
     if (active?.locked) {
-      return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
+      return { status: 'error', error: 'This page is locked. Unlock it before importing.' };
     }
     const [{ importOfficeFile, officeErrorMessage }, { isOfflineIdSync }] = await Promise.all([
       import('@/lib/office-import'),

@@ -103,7 +103,7 @@ export const TAB_STYLE_PROFILE: TabStyleProfile<TabLook, BackgroundPattern> = {
     ),
     copy: tabStyleCopy({
       viewLines: {
-        looks: 'Pick a look for the tab’s pages, then fine-tune any part of it.',
+        looks: 'Pick a look for the page, then fine-tune any part of it.',
         canvas: 'The background new pages start on, and the canvas around the pages.',
       },
       panelTitles: { canvas: 'New Page Background' },

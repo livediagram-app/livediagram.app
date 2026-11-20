@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// A search result for a document saved only in this browser carries the Offline pill as a
+// A search result for a knowledgebase saved only in this browser carries the Offline pill as a
 // plain label (docs/specs/006-document/offline-mode.md#offline-pill).
 
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
@@ -12,7 +12,7 @@ import { SearchPanel } from './SearchPanel';
 afterEach(cleanup);
 
 describe('SearchPanel', () => {
-  it('labels a document kept Offline result, with what it means', () => {
+  it('labels a knowledgebase kept Offline result, with what it means', () => {
     render(
       <SearchPanel
         documents={[
@@ -52,7 +52,7 @@ describe('SearchPanel', () => {
       <SearchPanel documents={[]} folders={[]} onSelectDocument={vi.fn()} onClose={vi.fn()} />,
     );
     expect(screen.getByRole('dialog', { name: 'Search' }).getAttribute('aria-modal')).toBe('true');
-    expect(document.activeElement).toBe(screen.getByPlaceholderText(/Search documents/));
+    expect(document.activeElement).toBe(screen.getByPlaceholderText(/Search knowledgebases/));
     unmount();
     expect(document.activeElement).toBe(opener);
     opener.remove();

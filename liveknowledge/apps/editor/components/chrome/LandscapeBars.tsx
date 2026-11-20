@@ -32,8 +32,8 @@ export function LandscapeBarFold({ shown, children }: { shown: boolean; children
  *  `--landscape-handle-room` on the row, which adds it to its right gutter. */
 export const LANDSCAPE_HANDLE_ROOM = 'landscape-phone:[--landscape-handle-room:3.375rem]';
 
-export const SHOW_BARS_LABEL = 'Show Header and Tabs';
-export const HIDE_BARS_LABEL = 'Hide Header and Tabs';
+export const SHOW_BARS_LABEL = 'Show Header and Bottom Bar';
+export const HIDE_BARS_LABEL = 'Hide Header and Bottom Bar';
 
 /** The bars handle: a chevron card at the canvas's top-right corner, drawn only on a phone held
  *  sideways. Placed in the editor's column right after the header, in a zero-height row, so it sits

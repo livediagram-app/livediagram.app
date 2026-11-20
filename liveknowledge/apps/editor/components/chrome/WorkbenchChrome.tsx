@@ -28,7 +28,7 @@ const BackGlyph = lucideGlyph(lucideArrowLeft, 18);
 export function WorkbenchOpenLink({
   href,
   labelled,
-  description = 'Opens this document in a full tab.',
+  description = 'Opens this knowledgebase in a full tab.',
 }: {
   href: string;
   labelled: boolean;

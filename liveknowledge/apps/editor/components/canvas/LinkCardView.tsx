@@ -39,7 +39,7 @@ function describeCard(
       const name = tabs?.find((t) => t.id === link.tabId)?.name?.trim();
       return {
         title: link.kind === 'element' ? 'Element' : 'Tab',
-        destination: name ? name : 'this document',
+        destination: name ? name : 'this knowledgebase',
       };
     }
   }

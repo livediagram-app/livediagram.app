@@ -74,7 +74,7 @@ describe('exportOfficeFile', () => {
       ok: false,
       failure: 'gone',
     });
-    expect(OFFICE_EXPORT_MESSAGES.gone).toMatch(/no pages/);
+    expect(OFFICE_EXPORT_MESSAGES.gone).toMatch(/nothing to export/);
   });
 
   it('names a browser that will not read its canvas back', async () => {

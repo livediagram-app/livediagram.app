@@ -25,7 +25,7 @@ type ZoomControlsProps = {
 const ZOOM_COPY = {
   out: 'Zoom out by 10%.',
   in: 'Zoom in by 10%.',
-  fit: 'Pan and zoom so everything on the tab fits.',
+  fit: 'Pan and zoom so everything on the page fits.',
 } as const;
 
 // Floating zoom controls, bottom-right of the canvas. Three

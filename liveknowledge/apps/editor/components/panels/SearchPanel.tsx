@@ -328,8 +328,8 @@ export function SearchPanel({
             aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
             placeholder={
               tabs
-                ? 'Search documents, folders, teams, tabs, elements, help...'
-                : 'Search documents, folders, teams, help...'
+                ? 'Search knowledgebases, folders, teams, pages, elements, help...'
+                : 'Search knowledgebases, folders, teams, help...'
             }
             className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
@@ -364,8 +364,8 @@ export function SearchPanel({
                 className="py-6"
                 things={
                   tabs
-                    ? 'documents, tabs, elements or help articles'
-                    : 'documents, folders or help articles'
+                    ? 'knowledgebases, pages, elements or help articles'
+                    : 'knowledgebases, folders or help articles'
                 }
                 query={query}
                 onClear={() => setQuery('')}

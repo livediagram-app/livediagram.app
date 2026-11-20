@@ -18,7 +18,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   const { phase } = prompt;
   if (phase.kind === 'idle') return null;
 
-  const title = 'Move Offline Documents to Your Account?';
+  const title = 'Move Offline Knowledgebases to Your Account?';
   if (phase.kind === 'moving') {
     return (
       <Dialog open onClose={() => {}} ariaLabel={title} size="md">
@@ -54,7 +54,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
             ))}
           </ul>
           <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">
-            Try Sync Document on it later from the Explorer.
+            Try Sync Knowledgebase on it later from the Explorer.
           </p>
         </div>
         <DialogFooter>
@@ -79,7 +79,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
       </DialogHeader>
       <div className="px-6 py-5">
         <ImportChecklist
-          legend="Offline Documents"
+          legend="Offline Knowledgebases"
           rows={prompt.rows}
           checked={prompt.checked}
           onToggle={prompt.toggle}

@@ -34,7 +34,7 @@ describe('SiteFooter', () => {
   });
 
   it("puts the Explorer second under Product, opening this app's Explorer Home", () => {
-    expect(labels.slice(0, 3)).toEqual(['New Document', 'Explorer', 'Build with AI']);
+    expect(labels.slice(0, 3)).toEqual(['New Knowledgebase', 'Explorer', 'Build with AI']);
     expect(footerNav).toContain('<a href="/explorer/home" class="');
   });
 

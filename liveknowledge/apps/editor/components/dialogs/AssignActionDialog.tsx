@@ -321,14 +321,14 @@ export function AssignActionDialog({
                 // invite acceptance, no owner action needed.
                 <>
                   {assignee?.name} hasn&apos;t accepted the team invite yet; they&apos;ll get access
-                  to this document when they join.
+                  to this knowledgebase when they join.
                 </>
               ) : (
                 <>
                   {assignee?.name}{' '}
                   {assigneeAccess === 'no'
-                    ? "can't open this document yet"
-                    : 'may not be able to open this document'}
+                    ? "can't open this knowledgebase yet"
+                    : 'may not be able to open this knowledgebase'}
                   : share it or move it to the team library.
                 </>
               )}

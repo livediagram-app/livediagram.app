@@ -35,8 +35,8 @@ const REFUSED: Record<
   Exclude<RestoreOutcome, { kind: 'restored' | 'unchanged' }>['reason'],
   string
 > = {
-  held: 'Someone is working on part of this tab. Try again once they let go.',
-  busy: 'The tab kept changing. Try again.',
+  held: 'Someone is working on part of this page. Try again once they let go.',
+  busy: 'The page kept changing. Try again.',
   gone: 'That version is no longer kept.',
   other: 'The version could not be restored. Try again.',
 };
@@ -139,7 +139,7 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
   const previewTab = version ? versionTab : nowTab;
   const previewLabel = version
     ? `Version kept ${whenWords(version.savedAt, now)}`
-    : 'The tab as it is';
+    : 'The page as it is';
 
   return (
     <div

@@ -119,7 +119,7 @@ function imageWhy(reason: ImageReason): string {
     case 'images-unavailable':
       return "image uploads aren't available on this server";
     case 'offline-budget':
-      return 'an offline document takes at most 8 MB of images an import';
+      return 'an Offline knowledgebase takes at most 8 MB of images an import';
     case 'upload-failed':
       return 'the upload failed';
     case 'over-cap':

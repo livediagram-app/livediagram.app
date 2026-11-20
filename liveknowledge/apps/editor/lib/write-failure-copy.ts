@@ -11,8 +11,8 @@ const failure =
     `Could not ${verb} ${toastName(name) ?? fallback}. Try again.`;
 
 export const DOCUMENT_FAILURE = {
-  rename: failure('rename', 'the document'),
-  move: failure('move', 'the document'),
-  delete: failure('delete', 'the document'),
-  duplicate: failure('duplicate', 'the document'),
+  rename: failure('rename', 'the knowledgebase'),
+  move: failure('move', 'the knowledgebase'),
+  delete: failure('delete', 'the knowledgebase'),
+  duplicate: failure('duplicate', 'the knowledgebase'),
 } as const satisfies Record<string, FailureCopy>;

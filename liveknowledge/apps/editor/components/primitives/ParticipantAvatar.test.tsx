@@ -66,7 +66,7 @@ describe('ParticipantAvatar', () => {
   it('says only what an agent row is doing, or that it is at work on the tab', () => {
     const row = { ...webber, name: "Webber's Agent", agent: true as const, lastActiveAt: 1 };
     expect(hoverText({ ...row, statusLine: 'reviewing' })).toMatch(/Webber's Agentreviewing$/);
-    expect(hoverText(row)).toMatch(/Webber's AgentWorking on this tab$/);
+    expect(hoverText(row)).toMatch(/Webber's AgentWorking on this page$/);
     expect(hoverText(webber)).toMatch(/WebberOnline$/);
   });
 });

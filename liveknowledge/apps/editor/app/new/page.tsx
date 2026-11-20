@@ -130,7 +130,7 @@ export default function NewDocumentPage() {
   });
 
   useEffect(() => {
-    document.title = 'New Document | liveknowledge';
+    document.title = 'New Knowledgebase | liveknowledge';
     // Fetch the editor's chunk while identity + the create run. Fire-and-forget: a failure here
     // just leaves `dynamic` to retry the import at handoff.
     loadEditor().catch(() => {});

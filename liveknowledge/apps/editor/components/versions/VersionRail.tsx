@@ -81,7 +81,7 @@ export function VersionRail(props: RailProps) {
             className="px-3 py-6 text-center text-sm text-slate-600 dark:text-slate-300"
             role="alert"
           >
-            <p>{list.gone ? 'This tab is gone.' : 'The versions could not be read.'}</p>
+            <p>{list.gone ? 'This page is gone.' : 'The versions could not be read.'}</p>
             {list.gone ? null : (
               <Button variant="ghost" size="xs" className="mt-2" onClick={props.onRetry}>
                 Try Again
@@ -239,7 +239,7 @@ function NameField({
       const code = err && typeof err === 'object' && 'code' in err ? err.code : null;
       setError(
         code === 'too_many_names'
-          ? 'This tab has as many named versions as it can keep. Remove a name first.'
+          ? 'This page has as many named versions as it can keep. Remove a name first.'
           : 'The name could not be saved. Try again.',
       );
       setBusy(false);

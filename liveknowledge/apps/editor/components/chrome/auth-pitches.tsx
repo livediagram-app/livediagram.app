@@ -72,7 +72,7 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
     tone: 'sky',
     icon: SPARKLE,
     title: 'Connect your AI assistant',
-    line: 'Let it find, read and write your documents.',
+    line: 'Let it find, read and write your knowledgebases.',
   },
   {
     tone: 'amber',
@@ -87,7 +87,7 @@ export const CONNECT_PITCH_ROWS: readonly PitchRow[] = [
     tone: 'emerald',
     icon: PULSE,
     title: 'Changes show live',
-    line: 'Edits land in your documents like a teammate’s.',
+    line: 'Edits land in your knowledgebases like a teammate’s.',
   },
   {
     tone: 'sky',
@@ -117,7 +117,7 @@ export function ConnectPitch() {
   return (
     <AuthPitch
       eyebrow="Connect"
-      heading="Your documents, wherever you work."
+      heading="Your Knowledgebases, Wherever You Work"
       rows={CONNECT_PITCH_ROWS}
     />
   );
