@@ -45,6 +45,9 @@ export function Footer({ base = '' }: { base?: string }) {
           <a href={`${base}/telemetry`} className={linkClass}>
             Telemetry
           </a>
+          <a href={`${base}/help`} className={linkClass}>
+            Help
+          </a>
           <a href={`${base}/status`} className={linkClass}>
             Status
           </a>

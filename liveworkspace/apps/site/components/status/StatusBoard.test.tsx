@@ -84,7 +84,7 @@ describe('StatusBoard', () => {
     expect(row('liveplanner:api')?.textContent).toContain('No answer');
     expect(row('liveplanner:realtime')?.getAttribute('data-state')).toBe('down');
     expect(row('liveplanner:router')?.getAttribute('data-state')).toBe('up');
-    expect(host!.querySelector('#liveplanner')?.textContent).toContain('2 of 7 down');
+    expect(host!.querySelector('#liveplanner')?.textContent).toContain('2 of 6 down');
     expect(host!.querySelector('[role="status"]')?.textContent).toBe('Some services are down');
   });
 
