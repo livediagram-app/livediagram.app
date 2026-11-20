@@ -75,10 +75,10 @@ export const PLAN_BOARD_PRESETS: Readonly<
       hideWriting: false,
     },
   },
-  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-do List board"): To Do and Done, Detailed
+  // A to-do list of Actions (docs/specs/026-plan/plan-board.md "The To-Do List board"): To Do and Done, Detailed
   // cards showing who has each, when it is due and its checklist.
   todo: {
-    label: 'To-do List',
+    label: 'To-Do List',
     setup: {
       title: 'To-do list',
       columns: [statusColumn('todo', 'To Do'), statusColumn('done', 'Done', { done: true })],

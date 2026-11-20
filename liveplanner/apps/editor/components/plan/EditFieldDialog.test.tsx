@@ -119,7 +119,7 @@ describe('Edit Field', () => {
   it('makes a Person Several People, keeping every value without asking', () => {
     const onSave = editor();
     const dialog = openEdit('Owner');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Several People' }));
     // Nothing to rewrite: one person reads as a list of one, so no line and no question.
     expect(within(dialog).queryByRole('status')).toBeNull();
@@ -130,7 +130,7 @@ describe('Edit Field', () => {
   it('says how many values a lossy change clears, and asks before saving it', () => {
     const onSave = editor();
     const dialog = openEdit('Size');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Number' }));
     expect(
       within(dialog).getByText(
@@ -154,7 +154,7 @@ describe('Edit Field', () => {
   it('starts a Choice made from text with the values cards hold', () => {
     editor();
     const dialog = openEdit('Size');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Choice' }));
     const options = within(dialog)
       .getAllByRole('textbox', { name: /^Option \d/ })
@@ -166,7 +166,7 @@ describe('Edit Field', () => {
   it('dims the tiles a field can’t become, each saying why, and tags its own', () => {
     editor();
     const dialog = openEdit('Size');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     const comments = within(dialog).getByRole('button', { name: /^Comments: / });
     expect(comments.getAttribute('aria-disabled')).toBe('true');
     expect(comments.getAttribute('aria-label')).toMatch(/Comments hold threads, not values/);
@@ -216,7 +216,7 @@ describe('saving a type whose field changed type', () => {
   it('writes the cards’ values with the type, handing their undo step to the type’s save', () => {
     const { saveType, reshapeValues, removeFieldFilters } = host(true);
     const dialog = openEdit('Size');
-    fireEvent.click(within(dialog).getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(within(dialog).getByRole('button', { name: /All Kinds/ }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Number' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Save' }));
     fireEvent.click(within(dialog).getByRole('button', { name: 'Change Values' }));

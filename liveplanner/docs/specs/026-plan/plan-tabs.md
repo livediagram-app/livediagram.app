@@ -562,8 +562,9 @@ rows and columns are inserted, deleted or moved (they are named by stable row an
   which opens its source picker, as does **Change Source** once set (an Editor's tile in the slot cog's Slot section,
   never a hover button, one menu per item): the project's Sheets
   (each its title and its tab's name; "No sheets in this project yet." when there are none), then, for a figure, the
-  sheet's labelled numbers (numbers with text to their left, and ranges named for one cell; the foot of the sheet
-  first, at most 12) or any cell typed as A1, and an optional target the same way; for a summary or a trend, the
+  sheet's labelled numbers (ranges named for one cell, then the first number after each text in a row, the text
+  found across empty cells, so a Total row labelled columns away and a summary block beside a table both count;
+  totals first, then the foot of the sheet first, at most 24) or any cell typed as A1, and an optional target the same way; for a summary or a trend, the
   columns holding numbers (each its header and how many numbers) and, for a summary, the stat. Each choice is one
   step. The project's tabs are fetched as the picker opens, so every Sheet is offered.
 - **Missing**: a sheet deleted says "This sheet was deleted." with Clear Slot; a cell or column whose row or column

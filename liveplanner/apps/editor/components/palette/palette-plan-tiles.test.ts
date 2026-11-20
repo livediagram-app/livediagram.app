@@ -27,7 +27,7 @@ describe('card tiles from the project', () => {
 describe('the board tiles', () => {
   const boards = PLAN_TILES.filter((t) => t.section === 'plan-boards').map((t) => t.id);
 
-  it('offer a tile for every preset, the To-do List after Kanban', () => {
+  it('offer a tile for every preset, the To-Do List after Kanban', () => {
     expect(PLAN_BOARD_TILES.map((t) => t.preset).sort()).toEqual([...PLAN_BOARD_PRESET_IDS].sort());
     expect(boards.indexOf('plan:board-todo')).toBe(boards.indexOf('plan:board-kanban') + 1);
   });

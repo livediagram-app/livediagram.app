@@ -13,7 +13,7 @@ a chevron button or a chain of crumbs. With nowhere to go back to, it stands as 
   (**Logo Kit**, **Photo**).
 - The Tab Style panels: **Tab Style** then **Colours**.
 - The palette's category browse: **Icons** then **People**.
-- The first page's Choose a Device: **All kinds** then **Wireframe**.
+- The first page's Choose a Device: **All Kinds** then **Wireframe**.
 - A photo page's adjustment layer settings: **All Adjustments** then the adjustment (**Levels**).
 - Folder placement (Save to, Move): **Choose a Space** as the heading of the spaces; inside one, **Choose a Space**
   then **My Work**; inside a folder, the level above then the folder.

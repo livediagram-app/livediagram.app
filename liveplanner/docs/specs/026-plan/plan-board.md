@@ -254,8 +254,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   every type unless their types are set. (Stored as `addTypes`; before this rule it limited new cards only, so a
   board that already named types now hides the others, which is what it says.)
   Defaults: Retro, Note and Idea (an action is tracked on a board of its own); Sprint, Task and Action; Bug Triage, Task; Roadmap, Project; Kanban and
-  Week, Task, Action and Note; To-do List, Action; Blank and All Cards, every type.
-- **The To-do List board** (preset `todo`, after Kanban in the lists): two columns, **To Do** and **Done** (the done
+  Week, Task, Action and Note; To-Do List, Action; Blank and All Cards, every type.
+- **The To-Do List board** (preset `todo`, after Kanban in the lists): two columns, **To Do** and **Done** (the done
   column), for Action cards only, Detailed cards showing who has each action and when it is due (its checklist
   progress in the card's footer), and the Completion and Due Soon widgets.
 - **Setup Board**: a board with no columns (the Blank board starts so, and starts taller than a set-up board: 880 px

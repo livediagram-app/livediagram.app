@@ -38,7 +38,7 @@ export const PLAN_BOARD_TILES: {
   },
   {
     preset: 'todo',
-    caption: 'To-do List',
+    caption: 'To-Do List',
     description: 'Actions to tick off, from To Do to Done.',
   },
   {

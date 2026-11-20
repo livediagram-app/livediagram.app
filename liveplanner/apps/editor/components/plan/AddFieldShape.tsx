@@ -1,6 +1,6 @@
 'use client';
 
-// Add Field's second step, Shape (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): All kinds back to
+// Add Field's second step, Shape (docs/specs/026-plan/item-types.md "Fields and Tabs": Add Field): All Kinds back to
 // Pick, the kind as a pill, the built-in fields of the kind the type lacks as Ready to use (one press adds one), then
 // "Or make your own": the field's Name, only the settings its kind needs, Required (and Notifies, a Person's), a
 // card holding it to try (AddFieldTryIt), and one button, "Add {Name}", off until the field is ready (and saying what is missing).
@@ -134,7 +134,7 @@ export function AddFieldShape({
       }}
     >
       <div className="px-2 pt-2">
-        <BackBar label="All kinds" current={kindLabel} onClick={onBack} gap="tight" />
+        <BackBar label="All Kinds" current={kindLabel} onClick={onBack} gap="tight" />
       </div>
       {ready.length > 0 ? (
         <ReadyToUse

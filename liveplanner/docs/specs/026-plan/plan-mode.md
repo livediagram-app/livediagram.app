@@ -97,7 +97,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
     one line, the search on the next, no line under the title; the rail's chips scroll the chosen one into view; each
     card is a row (its picture 96 by 72 px at the left, its name, badge and line, two lines at most, beside it, no
     card-type chips), so a screen holds several.
-    - **Recommended** ("The quickest ways to start, picked for most teams."): the Roadmap, Kanban and To-do List boards,
+    - **Recommended** ("The quickest ways to start, picked for most teams."): the Roadmap, Kanban and To-Do List boards,
       the Overview dashboard, the Empty Sheet, and the Feedback form. Import is not among them: it is the rail's own
       entry, above Connect File. A search still finds it, for an Editor, by "import", a tool's name (Trello, Asana,
       Jira, Linear), "csv", "json", "migrate" and the like, as a card under its own **Import** heading ("Bring work in
@@ -147,7 +147,7 @@ Every Project is a Plan project, so what Plan reads is read from the first load:
       adds ("4 Tabs", `planTemplateTabCount`). Choosing one applies the template to this
       tab, its later tabs after it.
   - **A card**: a large picture (112 px tall) on a soft panel of the tab's column colour, then its name with a small
-    badge of its kind (**Board**, **Sheet**, **Dashboard**, **Template**) where the grid mixes kinds (Recommended, a search), its line
+    badge of its kind (**Board**, **Sheet**, **Dashboard**, **Template**) where the grid mixes kinds (Recommended; a search heads each group with its category instead), its line
     (two lines at most), and for a board the card types it takes, as chips with each type's colour (up to three, then
     "+2"; a Blank board says **You Choose**, All Cards **Every Card**). A colour too dark to show on a dark card (a
     Project's black) is lifted to 3:1, as a card face lifts it ([Item types](item-types.md#an-item-type)). On hover or focus it lifts and its border takes the
@@ -254,7 +254,7 @@ A board placed by any of these paths takes its preset's set-up: a column takes t
 name, and any other column a status of its own, so it starts empty
 ([Plan board](plan-board.md#the-board-set-up), "One name, one status").
 
-- **Each preset takes the card types its work is made of**: Kanban takes Tasks and Actions; To-do List,
+- **Each preset takes the card types its work is made of**: Kanban takes Tasks and Actions; To-Do List,
   Actions; Sprint, Stories, Tasks and Bugs; Retro, Notes and Ideas; Roadmap, Projects; Bug Triage, Bugs; Week,
   Tasks, Actions and Notes. Blank asks in Setup Board; Archive and All Cards show cards by what they are.
 - **A preset brings its card types**, all of them [ready-made types](plan-templates.md#ready-made-card-types)

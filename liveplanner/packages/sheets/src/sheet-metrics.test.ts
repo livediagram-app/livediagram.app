@@ -63,6 +63,45 @@ describe('a figure from a Sheet', () => {
     expect(s[0]).toMatchObject({ label: 'Total', value: 1640 });
     expect(s.map((f) => f.label)).toContain('Rent');
   });
+
+  // The Budget template's shape (sheet.md "Sheet templates"): an Item column between the label and the figures, a
+  // Total row labelled two columns away, a summary block beside the table and chart data under it.
+  it('reaches a total labelled columns away, a summary beside the table, and every line under chart data', () => {
+    const cells: Record<string, string> = {
+      A1: 'Monthly Budget',
+      A3: 'Category',
+      B3: 'Item',
+      C3: 'Planned',
+      D3: 'Actual',
+      H3: 'Summary',
+      A12: 'Total',
+      C12: '=SUM(C4:C11)',
+      D12: '=SUM(D4:D11)',
+      H4: 'Monthly Income',
+      I4: '3200',
+      H5: 'Left Over',
+      I5: '=I4-D12',
+    };
+    for (let r = 4; r <= 11; r++)
+      Object.assign(cells, {
+        [`A${r}`]: 'Home',
+        [`B${r}`]: `Line ${r}`,
+        [`C${r}`]: '100',
+        [`D${r}`]: '90',
+      });
+    for (let r = 15; r <= 20; r++)
+      Object.assign(cells, { [`A${r}`]: `Group ${r}`, [`B${r}`]: '50' });
+    const [sheet] = makeSheets({ Budget: cells });
+    const wb = new Workbook({ sheets: [sheet!], locale: 'en-GB' });
+    const s = figureSuggestions(wb, sheet!, 'en-GB');
+    expect(s[0]).toMatchObject({ label: 'Total', value: 800, a1: 'C12' });
+    const labels = s.map((f) => f.label);
+    expect(labels).toEqual(
+      expect.arrayContaining(['Monthly Income', 'Left Over', 'Line 4', 'Group 20']),
+    );
+    // One figure per label: a line's Actual sits after its Planned, not named again.
+    expect(s.filter((f) => f.label === 'Line 4')).toHaveLength(1);
+  });
 });
 
 describe('a column from a Sheet', () => {

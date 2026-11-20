@@ -32,7 +32,7 @@ describe('FirstPageChoice', () => {
     render(<FirstPageChoice zoom={1} onChoose={onChoose} />);
     fireEvent.click(screen.getByRole('button', { name: /Wireframe/ }));
     expect(screen.getByText('Choose a Device')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /All kinds/ }));
+    fireEvent.click(screen.getByRole('button', { name: /All Kinds/ }));
     expect(screen.getByText('What Is This Page For?')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Wireframe/ }));
     fireEvent.click(document.querySelector('[data-device-tile="android"]')!);
@@ -40,7 +40,7 @@ describe('FirstPageChoice', () => {
   });
 
   it('is its own scroll box, capped to the window, so the back bar pins to its top', () => {
-    // Without one the sticky All kinds bar pinned to the editor's frame, outside the canvas's transform,
+    // Without one the sticky All Kinds bar pinned to the editor's frame, outside the canvas's transform,
     // and floated over the device tiles.
     render(<FirstPageChoice zoom={1} onChoose={vi.fn()} />);
     const card = document.querySelector('[data-first-page-choice]')!;

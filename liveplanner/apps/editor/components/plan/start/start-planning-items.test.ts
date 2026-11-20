@@ -82,6 +82,14 @@ describe('Start Planning’s choices', () => {
     expect(itemsIn(items, 'dashboards').map((d) => d.name)).toContain('Two by Two');
   });
 
+  it('finds the To-Do List board as people type it, "todo" or "to do"', () => {
+    for (const q of ['todo', 'to do', 'to-do']) {
+      expect(searchStartItems(items, q).flatMap((g) => g.items.map((i) => i.id))).toContain(
+        'board:todo',
+      );
+    }
+  });
+
   it('searches names, lines, kinds and card types, grouped by kind', () => {
     expect(searchStartItems(items, 'bug').flatMap((g) => g.items.map((i) => i.id))).toContain(
       'board:bug-triage',

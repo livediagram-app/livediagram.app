@@ -87,7 +87,7 @@ export function PlanBoardPickerScene() {
   const tiles: { name: string; cols: number; rows?: boolean }[] = [
     { name: 'Blank', cols: 0 },
     { name: 'Kanban', cols: 5 },
-    { name: 'To-do List', cols: 2 },
+    { name: 'To-Do List', cols: 2 },
     { name: 'Sprint', cols: 4, rows: true },
     { name: 'Retro', cols: 3 },
     { name: 'Roadmap', cols: 3 },

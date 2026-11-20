@@ -1625,7 +1625,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
         Enter or Space presses the one focused; Enter in the search, with a search typed, picks the first match.
         Tab reaches the search, the close cross, the rail and the tiles in turn, and wraps within the modal. Escape
         clears a typed search first, then closes the modal.
-    - **Shape** (step 2, after a kind is picked): a header with **All kinds** (a left chevron; back to Pick with
+    - **Shape** (step 2, after a kind is picked): a header with **All Kinds** (a left chevron; back to Pick with
       the search as it was, focus on the tile that was picked, the list scrolled to it) and the kind as a pill (its
       icon and name, read as "Kind: Choice"; a variant's name while its option is on, "Kind: Several People"); then, when the type lacks a built-in field of this kind, **Ready to use**: a row per such
       field (its icon, its name and what uses it: Assignee "Notifies them, and fills My Work and Workload", Labels
@@ -1687,7 +1687,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       gallery first, then a typed search clears, then it closes) leave the draft as it was; Save writes the field
       into the type editor's draft and closes. Focus goes back to the pencil. Nothing reaches the plan until the
       type editor's own **Save**.
-    - **Another type**: **All kinds** goes back to the gallery, the field's own tile tagged **Current**. Picking
+    - **Another type**: **All Kinds** goes back to the gallery, the field's own tile tagged **Current**. Picking
       another tile opens Shape for it with the name typed so far and Required kept; picking its own tile again gives
       the field back as it was. A Choice or Multiple Choice made from another type starts with the distinct values
       the field's cards hold as its options (each list's items one by one, at most 20), so they all fit.
