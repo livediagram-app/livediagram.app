@@ -8,6 +8,9 @@ import type { SqlStatement } from './statement';
 export const askPersonScope = (person: string): string => `ask:person:${person}`;
 /** The scope of every question asked of the knowledgebase. */
 export const ASK_KNOWLEDGEBASE_SCOPE = 'ask:knowledgebase';
+/** The scope of one person's Describe to Set Up suggestions, and of the knowledgebase's (setup-limits.ts). */
+export const setupPersonScope = (person: string): string => `setup:person:${person}`;
+export const SETUP_KNOWLEDGEBASE_SCOPE = 'setup:knowledgebase';
 /** The scope of the knowledgebase's conflict checks. */
 export const CONFLICT_CHECK_SCOPE = 'conflicts:check';
 
@@ -31,14 +34,21 @@ export const pruneCounters = (now: number): SqlStatement => ({
   params: [daysBefore(now, 1)],
 });
 
-/** The reads and the writes one question costs: its person's hour and the knowledgebase's day. */
-export function askCounters(person: string, now: number) {
-  const personScope = askPersonScope(person);
+// The reads and the writes one model call costs against a person's hour and the knowledgebase's day.
+function hourAndDayCounters(personScope: string, knowledgebaseScope: string, now: number) {
   const hour = hourOf(now);
   const day = dayOf(now);
   return {
     readPerson: readCounter(personScope, hour),
-    readKnowledgebase: readCounter(ASK_KNOWLEDGEBASE_SCOPE, day),
-    bump: [bumpCounter(personScope, hour), bumpCounter(ASK_KNOWLEDGEBASE_SCOPE, day)],
+    readKnowledgebase: readCounter(knowledgebaseScope, day),
+    bump: [bumpCounter(personScope, hour), bumpCounter(knowledgebaseScope, day)],
   };
 }
+
+/** The reads and the writes one question costs: its person's hour and the knowledgebase's day. */
+export const askCounters = (person: string, now: number) =>
+  hourAndDayCounters(askPersonScope(person), ASK_KNOWLEDGEBASE_SCOPE, now);
+
+/** The same for one Describe to Set Up suggestion, counted apart from Ask's questions. */
+export const setupCounters = (person: string, now: number) =>
+  hourAndDayCounters(setupPersonScope(person), SETUP_KNOWLEDGEBASE_SCOPE, now);

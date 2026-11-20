@@ -125,6 +125,24 @@ export type AskEvent =
     }
   | { type: 'error'; kind: string; message: string; provider?: KnowledgeAiProvider };
 
+/** `POST .../setup/suggest` (describe-to-set-up.md "The model"): what the knowledgebase is for and, when adding
+ *  pages, the titles already there in tree order with their depth (1 is the top). */
+export type KnowledgeSetupRequest = {
+  description: string;
+  existing?: { title: string; depth: number }[];
+};
+/** One proposed page. `parent` is the `id` of a page earlier in the list, or null at the top; `depth` is 1 to 3. */
+export type KnowledgeSetupPage = {
+  id: string;
+  title: string;
+  summary: string;
+  headings: string[];
+  parent: string | null;
+  depth: number;
+};
+/** A proposed structure: a name for the knowledgebase and up to 30 pages in tree order. Plain text throughout. */
+export type KnowledgeSetupSuggestion = { name: string; pages: KnowledgeSetupPage[] };
+
 /** How an agent connects: the MCP server, the command line, or an API token used directly. */
 export type KnowledgeAgentDoor = 'mcp' | 'cli' | 'token';
 /** One connection of AI Knowledge's Connected Agents (ai-knowledge.md "Connected agents"). What the room knows of
