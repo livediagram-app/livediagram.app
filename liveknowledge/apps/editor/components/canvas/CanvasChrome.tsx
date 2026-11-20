@@ -24,7 +24,6 @@ import { pageTreeClearancePx } from '@/components/page-tree/page-tree-view';
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
-import { ThemeStrip } from '@/components/canvas/ThemeStrip';
 import { UndoRedoClusterStrip } from '@liveworkspace/workbench/components/canvas/UndoRedoClusterStrip';
 import { Fragment, useCallback, useRef } from 'react';
 import { useCornerDocking } from '@/hooks/ui/useCornerDocking';
@@ -90,7 +89,6 @@ function CanvasChromeView(props: CanvasChromeProps) {
     marquee,
     commentRows,
     actionRows,
-    onOpenCanvasTheme,
     onConfirmIdentity,
     onRedo,
     onCancelIdentity,
@@ -467,9 +465,6 @@ function CanvasChromeView(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
-            {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
-                read-only sessions pass no handler): see ThemeStrip. */}
-            {!zenMode ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
             {/* No zoom cluster (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"). Zen keeps
                 its way out here, and a session with no formatting bar its way in. */}
             {onToggleZen && (zenMode || readOnly) ? (

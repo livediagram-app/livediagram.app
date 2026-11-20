@@ -34,7 +34,6 @@ import {
 import { useCanvasGesture } from '@liveworkspace/workbench/lib/canvas-gesture';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import {
-  requestStylePanel,
   useArticleLinkRequest,
   useArticleCommentRequest,
 } from '@/lib/article/article-editor-store';
@@ -217,11 +216,6 @@ export function PageToolbar({
     if (handle.run(tableCommand(name))) track('Element', 'Changed', 'ArticleTableShape');
   };
   const more = (action: MoreAction) => {
-    if (action === 'style') {
-      handle.flush();
-      if (shown.pageId) requestStylePanel(shown.pageId);
-      return;
-    }
     run(
       action === 'strike'
         ? toggleStrike

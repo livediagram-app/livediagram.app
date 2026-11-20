@@ -75,23 +75,12 @@ export function articleTabOverrides(
   blocks: ArticleBlock[],
   style?: ArticleStyle,
 ): Partial<Tab> {
-  // The continuous page has no paper pages to head, foot or number: a template's header, footer and page numbers
-  // are left out, and a page break in its writing is dropped.
-  const {
-    header: _header,
-    footer: _footer,
-    pageNumbers: _numbers,
-    differentFirstPage: _first,
-    ...look
-  } = style ?? {};
-  void _header;
-  void _footer;
-  void _numbers;
-  void _first;
-  const doc: ArticleFlow = {
-    blocks: blocks.filter((b) => b.type !== 'pageBreak'),
-    ...(Object.keys(look).length > 0 ? { style: look } : {}),
-  };
+  // A knowledgebase page has no style of its own (docs/specs/030-knowledgebase/page-surface.md "What a page no
+  // longer has"): a template's look, fonts, margins, header, footer and page numbers are left out, every page is
+  // drawn in the knowledgebase's style, and a page break in its writing is dropped (the continuous page has no
+  // paper pages).
+  void style;
+  const doc: ArticleFlow = { blocks: blocks.filter((b) => b.type !== 'pageBreak') };
   return { pages: [articlePage(flow)], articles: { [flow]: doc } };
 }
 

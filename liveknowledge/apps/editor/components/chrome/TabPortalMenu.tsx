@@ -6,12 +6,7 @@ import { BottomSheet } from '@liveworkspace/workbench/components/primitives/Bott
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { clampToViewport } from '@liveworkspace/workbench/lib/clamp-to-viewport';
 import { FileExportIcon, FileImportIcon } from '@/components/palette/palette-icons';
-import {
-  ClearIcon,
-  FolderMenuIcon,
-  MoveIcon,
-  TabLockIcon,
-} from '@/components/chrome/tab-bar-icons';
+import { ClearIcon, FolderMenuIcon, MoveIcon } from '@/components/chrome/tab-bar-icons';
 import {
   MenuActionRow,
   MenuGroupSeparator,
@@ -51,7 +46,6 @@ export function PortalMenu({
   onImport,
   onExport,
   onCopyTo,
-  onToggleLock,
   locked,
   selfId,
   otherDocuments,
@@ -307,19 +301,9 @@ export function PortalMenu({
                 active={sideBySide.closing}
               />
             ) : null}
-            {/* Lock and Delete sit together at the right edge, apart from
-              the everyday verbs: both change what the tab will let you
-              do next rather than doing something to it. */}
+            {/* Delete sits at the right edge, apart from the everyday verbs. A page has no lock
+              (docs/specs/030-knowledgebase/page-surface.md "What a page no longer has"). */}
             <div className="ml-auto flex items-center gap-0.5">
-              <MenuToolButton
-                icon={<TabLockIcon />}
-                label={locked ? 'Unlock Page' : 'Lock Page'}
-                description={
-                  locked ? 'Make this page editable again.' : 'Make this page read-only.'
-                }
-                onClick={onToggleLock}
-                active={locked}
-              />
               <MenuToolButton
                 icon={<TrashIcon />}
                 label="Delete"

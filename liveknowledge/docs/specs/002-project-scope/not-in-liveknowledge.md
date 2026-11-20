@@ -58,6 +58,22 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   a paper size (an imported livedocuments tab); a knowledgebase page draws `PageSurfaceSheet`. With them, the sheet's
   shadow and letterbox, `PageMotionLayer.tsx`, `page-title-bar-room.ts` and the canvas pattern code behind
   `resolveTabBackdrop` in the editor's view (`lib/canvas-backgrounds.ts`, `AnimatedCanvasBackground.tsx`).
+- **Editor, a page's own look and lock** ([The page surface](../030-knowledgebase/page-surface.md) "What a page no
+  longer has"; a stored background, style or lock is dropped as a tab is read, `page-looks.ts`):
+  `components/canvas/PageSheetTitleBar.tsx`, `PageArticleButtons.tsx`, `PageBackgroundButton.tsx`,
+  `PageAppearanceButton.tsx`, `PageTabStyleButton.tsx`, `TitlePopoverButton.tsx`, `PagePanel.tsx` and
+  `page-panel-sections.tsx`, `page-background-*.tsx`, `article/ArticleStyleSection.tsx`,
+  `article/ArticleBandsSection.tsx`, `article/PageBands.tsx`, `lib/page-background-preview.ts`,
+  `lib/page-panel-request.ts`, `requestStylePanel` and `useStylePanelRequest` in
+  `lib/article/article-editor-store.ts`, `setArticleStyle`, `previewArticleStyle` and `stylePreview` in
+  `hooks/editor/useArticles.ts`, the page lock (`setLocked` in `page-edits.ts`, `lib/article/article-lock.ts`,
+  `usePageLockedIds.ts`, `Tab.locked` and every `tabLocked` read), the Tab Style dialog and its door
+  (`components/dialogs/CanvasThemeDialog.tsx`, `tab-style-profile.tsx`, `tab-style-pages.ts`,
+  `NewPageBackgroundPanel.tsx`, `TabStylePreview.tsx`, `ArticleStyleRow.tsx`, `lib/tab-style-opener.ts`,
+  `lib/tab-looks.ts`, `lib/new-page-background.ts`, `components/canvas/ThemeStrip.tsx`,
+  `components/tour/TabStyleTour.tsx`), the Pages tours (`components/tour/PageTour.tsx`, `article-tour-steps.ts`,
+  `lib/pages-tour.ts`), and in Settings the Map rows (`showMinimap`, `mapDimOutside`, `mapSize`), Middle-Mouse Pan
+  and the Pages tours' rows, with their copy on liveworkspace.app's settings page and their help articles.
 - **`packages/document`:** `slide-deck*.ts`, `slide-builds.ts`, the paper and slide sizes and orientations
   (`page-sizes.ts`), the page kinds other than `article`, and the page row's edits (`pages-edits.ts`, the page-count
   half of `article-pages.ts`).

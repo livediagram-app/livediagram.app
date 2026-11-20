@@ -345,7 +345,7 @@ function PickerTitle({ children, divided = false }: { children: ReactNode; divid
   );
 }
 
-export type MoreAction = 'strike' | 'code' | 'sup' | 'sub' | 'clear' | 'style';
+export type MoreAction = 'strike' | 'code' | 'sup' | 'sub' | 'clear';
 
 /** The less used formats, clearing them, and the article's style. */
 export function MorePanel({
@@ -396,7 +396,6 @@ export function MorePanel({
         keys={'Mod-\\'}
         onPick={() => onAction('clear')}
       />
-      <Row label="Article Style" icon={<PanelIcons.style />} onPick={() => onAction('style')} />
       {counts ? (
         <>
           <Rule />

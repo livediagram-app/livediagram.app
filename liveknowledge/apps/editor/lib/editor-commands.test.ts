@@ -68,11 +68,17 @@ describe('buildEditorCommands — document/tab commands', () => {
         'rename-tab',
         'rename-document',
         'delete-document',
-        'open-theme',
-        'open-canvas',
         'share',
       ]),
     );
+  });
+
+  // docs/specs/030-knowledgebase/page-surface.md "What a page no longer has": the look is the knowledgebase's.
+  it('offers no Open Theme and no Open Canvas Options, to any role', () => {
+    for (const isReadOnly of [false, true]) {
+      expect(ids({ ...base, isReadOnly })).not.toContain('open-theme');
+      expect(ids({ ...base, isReadOnly })).not.toContain('open-canvas');
+    }
   });
 
   it('hides Share for non-owners', () => {

@@ -44,7 +44,9 @@ describe('restoredTab', () => {
       folder: 'f',
     } as unknown as Parameters<typeof restoredTab>[1];
     const next = restoredTab(stored, body);
-    expect(next).toMatchObject({ id: 't1', name: 'Now', locked: true });
+    expect(next).toMatchObject({ id: 't1', name: 'Now' });
+    // A lock is not in liveknowledge: neither the stored tab's nor the version's survives a restore.
+    expect(next).not.toHaveProperty('locked');
     expect(next).not.toHaveProperty('folder');
     expect(next.elements.map((e) => e.id)).toEqual(['a', 'c']);
     expect(next.elements[0]).toMatchObject({ label: 'old', commentThread: thread });

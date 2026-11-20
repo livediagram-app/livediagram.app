@@ -61,7 +61,9 @@ describe('rowToTab', () => {
       }),
     );
     expect((dto as unknown as { theme: string }).theme).toBe('cobalt');
-    expect((dto as unknown as { locked: boolean }).locked).toBe(true);
+    // A lock is not in liveknowledge: a stored one reads as unlocked (docs/specs/030-knowledgebase/page-surface.md
+    // "What a page no longer has").
+    expect(dto).not.toHaveProperty('locked');
   });
 
   it('preserves elements from the parsed body in array order', () => {

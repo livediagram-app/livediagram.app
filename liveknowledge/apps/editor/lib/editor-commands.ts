@@ -286,18 +286,8 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       run: h.deleteDocument,
     });
   }
-  out.push({
-    id: 'open-theme',
-    name: 'Open Theme',
-    keywords: 'theme colour color scheme style appearance palette',
-    run: h.openTheme,
-  });
-  out.push({
-    id: 'open-canvas',
-    name: 'Open Canvas Options',
-    keywords: 'canvas background pattern grid options style backdrop',
-    run: h.openCanvasOptions,
-  });
+  // No Open Theme and no Open Canvas Options (docs/specs/030-knowledgebase/page-surface.md "What a page no longer
+  // has"): the look is the knowledgebase's, chosen in Knowledgebase Settings.
   if (ctx.canShare && !ctx.isOffline && !ctx.workbench) {
     out.push({
       id: 'share',

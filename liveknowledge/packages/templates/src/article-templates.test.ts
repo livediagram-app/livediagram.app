@@ -98,20 +98,18 @@ describe('the written templates', () => {
     // On the continuous page the proposal's title page is its opening, not a page of its own.
     const proposal = flowOf('business-proposal');
     expect(proposal.blocks.filter((b) => b.type === 'pageBreak')).toHaveLength(0);
-    expect(proposal.style).toEqual({ look: 'report' });
+    expect(proposal.style).toBeUndefined();
     expect(flowOf('design-doc').blocks.some((b) => b.type === 'code')).toBe(true);
   });
 
   // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page": no paper pages to head, foot,
   // number or break to.
-  it('carry the look a document of their kind would, and no header, footer, page numbers or page break', () => {
-    expect(flowOf('lesson-plan').style).toEqual({ look: 'notebook' });
-    expect(flowOf('cover-letter').style).toEqual({ look: 'classic', margins: 'wide' });
+  // docs/specs/030-knowledgebase/page-surface.md "What a page no longer has": every page is drawn in the
+  // knowledgebase's style, so a template carries no look, fonts or margins of its own.
+  it('carry no style of their own, and no page break', () => {
     for (const kind of KINDS) {
       const { style, blocks } = flowOf(kind);
-      expect(style?.header, kind).toBeUndefined();
-      expect(style?.footer, kind).toBeUndefined();
-      expect(style?.pageNumbers, kind).toBeUndefined();
+      expect(style, kind).toBeUndefined();
       expect(
         blocks.some((b) => b.type === 'pageBreak'),
         kind,

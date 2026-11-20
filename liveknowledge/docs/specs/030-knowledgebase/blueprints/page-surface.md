@@ -123,6 +123,24 @@ browser's.
 | The minimap                        | already unreachable: it draws only on a tab without pages                               |
 | The off-screen content hint        | `Canvas` always answers false                                                           |
 
+## What a page no longer has (built)
+
+- **Stored fields.** `withoutPageLooks` (`packages/document/src/page-looks.ts`) runs in `migrateStoredTab`, which
+  every stored tab passes on its way in (the api's tab read, a version restored, the offline store's load, a file
+  import) and every incoming one (`migrateIncomingTab`: an api write, a peer's op). It removes an article page's
+  `background` and `locked`, the tab's `locked`, and each article's `style`, and answers the same tab when it holds
+  none. So nothing downstream draws or honours one, and the next save writes the tab without them. A page of
+  another kind (a slide a JSON import still carries) keeps its own.
+- **Templates** carry no article style (`articleTabOverrides`): a template is its writing.
+- **The controls.** A knowledgebase page draws `PageSurfaceSheet`, which has no title bar, so Style, Text,
+  Background, Lock and the page panel behind them are not drawn. Also removed: the Theme & Canvas brush in the
+  bottom-right cluster, the Open Theme and Open Canvas Options commands, Article Style in the bar's More menu, and
+  Lock Page in the page's menu.
+- **Not removed, and unreachable or inert:** the Map, Middle-Mouse Pan and the Pages tours' rows in Settings (their
+  catalogue is mirrored by liveworkspace.app's settings page and pinned by twenty tests; taking the rows out is its
+  own change), the help centre's articles on them, and `write_article`'s `look` and `accent`, which are still
+  accepted, stored and then dropped on the next read.
+
 ## Performance and limits
 
 - **A scroll:** one passive listener that reads `scrollTop` and writes two numbers. No React render, no layout pass
@@ -142,6 +160,8 @@ browser's.
 | The page's scroll keys                                                | `page-keys.test.ts`                                              |
 | The ground follows the appearance alone                               | `view-backdrop.test.ts`                                          |
 | No zoom chords, no Hand, no Fit                                       | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts` |
+| A stored background, style or lock is dropped as a tab is read        | `page-looks.test.ts`, `tab-row.test.ts`                          |
+| Templates carry no style; no Open Theme command                       | `article-templates.test.ts`, `editor-commands.test.ts`           |
 
 Not covered by a test: `usePageSurface` (it reads layout boxes jsdom does not lay out), the scroll container's
 extent, the rail's inset, and everything a browser would show.
