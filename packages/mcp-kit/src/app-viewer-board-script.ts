@@ -103,8 +103,7 @@ const BOARD = String.raw`
   function load(documentId, tabId, quiet) {
     if (!quiet) { subject = { documentId: documentId, tabId: tabId }; say('Loading…'); }
     request('tools/call', { name: 'view_tab', arguments: viewArgs(documentId, { tabId: tabId }) }).then(function (res) {
-      var s = res && res.structuredContent;
-      if (!s || res.isError || !Array.isArray(s.boards)) throw new Error('no view');
+      var s = drawn(res, function (b) { return Array.isArray(b.boards); });
       if (quiet && (subject.documentId !== documentId || subject.tabId !== s.tabId)) return;
       var at = quiet ? placeOf() : null;
       shown = s;
@@ -116,9 +115,9 @@ const BOARD = String.raw`
       if (at) keepPlace(at);
       say(s.boards.length ? '' : 'This plan has no board yet.');
       if (LIVE_ON) follow(documentId);
-    }).catch(function () {
+    }).catch(function (err) {
       if (quiet) return;
-      shown = null; boardEl.textContent = ''; say('This board could not be shown.');
+      shown = null; boardEl.textContent = ''; say('This board could not be shown.' + why(err));
     });
   }
   function quietLoad() { if (subject && shown) load(subject.documentId, subject.tabId, true); }

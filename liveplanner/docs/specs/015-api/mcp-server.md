@@ -1140,6 +1140,12 @@ mcp-server.md "Interactive view (MCP Apps)"); liveplanner's view shows a **board
   column in one pass. A test holds building the view of a 2,000-card board to a CPU budget and its size to under
   64 KB.
 
+**The reason, said.** When the view's own call fails, its note says why in brackets after the sentence: the host's
+refusal with its code ("host -32601: ..."), the tool's own error text, or "the answer held no drawing". A view that
+only said it could not be shown left nobody able to tell a host that refuses the view's calls from a tool that
+failed: production counted no successful `view_tab` in the five days after the view shipped, and nothing said which
+(`drawn`, `why`, `../packages/mcp-kit/src/app-viewer-script.ts`).
+
 ## 6. Rollout
 
 1. **`apps/mcp` skeleton**: worker, Hono, MCP SDK, service binding to api,
