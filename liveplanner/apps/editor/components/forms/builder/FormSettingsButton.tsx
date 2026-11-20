@@ -77,7 +77,7 @@ export function FormSettingsButton({
               Show Me Around
             </button>
           </div>
-          <Sections tabs={tabs} link={link} first={open} onLeave={onClose} />
+          <Sections tabs={tabs} link={link} first={open} />
         </FormSheet>
       ) : null}
     </>
@@ -88,13 +88,10 @@ function Sections({
   tabs,
   link,
   first,
-  onLeave,
 }: {
   tabs: readonly Tab[];
   link: FormLinkState;
   first: FormSettingsSection | null;
-  // Closes the panel, for a choice that opens something of its own (the card type's editor).
-  onLeave: () => void;
 }) {
   const [shown, setShown] = useState<FormSettingsSection>(first ?? 'destination');
   const tab = (id: FormSettingsSection, name: string, icon: React.ReactNode) => (
@@ -125,7 +122,7 @@ function Sections({
       </div>
       <div role="tabpanel" aria-label={shown === 'destination' ? 'Responses Go To' : 'Settings'}>
         {shown === 'destination' ? (
-          <DestinationPicker tabs={tabs} onLeave={onLeave} />
+          <DestinationPicker tabs={tabs} />
         ) : (
           <FormSettingsTab link={link} />
         )}

@@ -2,8 +2,8 @@
 
 // Responses Go To (docs/specs/030-forms/forms.md "Responses Go To and Settings"): what every response makes, a card
 // of a type in a column (New Card Type the type's last choice), never a board. A sentence reads the choice back with
-// the boards its cards show on, worked out from every board of the plan; a pencil beside Card Type opens that type's
-// editor. A choice no board shows (or whose column or type is gone) says so and offers Add a Board for {Type}, and the
+// the boards its cards show on, worked out from every board of the plan. The card type itself is edited from its
+// board, never here. A choice no board shows (or whose column or type is gone) says so and offers Add a Board for {Type}, and the
 // form takes no responses until it is fixed, so nobody's cards are made where nobody sees them. Column offers only
 // the columns the card type uses on the boards that take it ("Columns follow the card type"); Add Questions for
 // {Type}'s Fields, Add Fields for Questions, Card Type by Answer and Set Automatically sit with it.
@@ -25,9 +25,8 @@ import {
   targetColumns,
   typeFieldLabel,
 } from '@liveplanner/items';
-import { PencilIcon, PlusIcon, Select, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import { PlusIcon, Select, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideArrowRight, lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
-import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
 import { sheetsOf } from '@liveplanner/templates';
 import { boardsShowingOf, planBoardsOf } from '../form-destination';
@@ -48,14 +47,7 @@ const ShowsIcon = lucideGlyph(lucideSquareKanban, 13);
 // The value of each select's last choice, New Sheet or New Card Type.
 const NEW = '__new';
 
-// `onLeave` closes the panel holding it: the card type's editor is a dialog of its own, never under the panel.
-export function DestinationPicker({
-  tabs,
-  onLeave,
-}: {
-  tabs: readonly Tab[];
-  onLeave?: () => void;
-}) {
+export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
   const b = useFormBuilder();
   const sheets = sheetsOf(tabs);
   const toSheet = !!b.form.sheet;
@@ -89,11 +81,7 @@ export function DestinationPicker({
           }}
         />
       </div>
-      {toSheet ? (
-        <SheetDestination tabs={tabs} />
-      ) : (
-        <BoardDestination tabs={tabs} onLeave={onLeave} />
-      )}
+      {toSheet ? <SheetDestination tabs={tabs} /> : <BoardDestination tabs={tabs} />}
     </div>
   );
 }
@@ -146,11 +134,10 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
   );
 }
 
-// Cards on a Board: the card type (with its editor) and the column, a sentence reading them back, and the boards the
+// Cards on a Board: the card type and the column, a sentence reading them back, and the boards the
 // cards show on.
-function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: () => void }) {
+function BoardDestination({ tabs }: { tabs: readonly Tab[] }) {
   const b = useFormBuilder();
-  const plan = usePlan();
   const dest = b.form.destination;
   const boards = planBoardsOf(tabs);
   const setups = boards.map((x) => x.setup);
@@ -198,45 +185,29 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
   return (
     <div className="flex flex-col gap-4">
       <SettingsField label="Card Type">
-        <div className="flex items-center gap-1">
-          <Select
-            className="min-w-0 flex-1"
-            selectClassName="text-[13px]"
-            value={type ? type.id : ''}
-            disabled={!b.canEdit}
-            onChange={(e) => {
-              if (e.target.value === NEW) return b.actions.newCardType();
-              // Its column and set values; an empty form then takes the type's questions, a step of its own. A type
-              // no board has a column for gets its board at once, as there is no column to choose.
-              if (!b.actions.setDestinationType(e.target.value))
-                b.actions.newResponsesBoard(e.target.value);
-            }}
-          >
-            <option value="" disabled>
-              {b.types.length ? 'Choose a card type…' : 'No card types yet'}
+        <Select
+          className="w-full"
+          selectClassName="text-[13px]"
+          value={type ? type.id : ''}
+          disabled={!b.canEdit}
+          onChange={(e) => {
+            if (e.target.value === NEW) return b.actions.newCardType();
+            // Its column and set values; an empty form then takes the type's questions, a step of its own. A type
+            // no board has a column for gets its board at once, as there is no column to choose.
+            if (!b.actions.setDestinationType(e.target.value))
+              b.actions.newResponsesBoard(e.target.value);
+          }}
+        >
+          <option value="" disabled>
+            {b.types.length ? 'Choose a card type…' : 'No card types yet'}
+          </option>
+          {b.types.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
             </option>
-            {b.types.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-            {b.canEdit && dest ? <option value={NEW}>+ New Card Type</option> : null}
-          </Select>
-          {/* The card type's own editor (its fields, display and tabs), to shape it before mapping answers. */}
-          {b.canEdit && plan && type ? (
-            <button
-              type="button"
-              aria-label={`Edit card type ${type.label}`}
-              onClick={() => {
-                onLeave?.();
-                plan.editType({ id: type.id });
-              }}
-              className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-            >
-              <PencilIcon />
-            </button>
-          ) : null}
-        </div>
+          ))}
+          {b.canEdit && dest ? <option value={NEW}>+ New Card Type</option> : null}
+        </Select>
       </SettingsField>
       {b.canEdit && type && toAsk.length ? (
         <DashedAdd

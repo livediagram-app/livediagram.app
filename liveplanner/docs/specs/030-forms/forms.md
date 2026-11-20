@@ -332,7 +332,7 @@ What a Response Makes, Set Automatically) stays closed until opened.
   choose: **Card Type** (every card type of the plan,
   its last choice **+ New Card Type**: a type named after the form, which the board its cards show on also takes when it confines its types,
   made with [a field for each question](#fields-from-the-forms-questions)),
-  **Column** (the columns that type can be seen in, as chips); a pencil beside Card Type opens that type's editor (its fields), to shape it before mapping answers. A sentence under it reads the result back: "Each response becomes a
+  **Column** (the columns that type can be seen in, as chips). The card type itself is edited from its board, not here. A sentence under it reads the result back: "Each response becomes a
   **Bug** card in **New**.", and under that the boards the card shows on, worked out from every board of the plan
   and never chosen: "Shows on **Bugs** and **Triage**" (each Board tab holding a live board with that column that
   takes that type; the one the form was last seen on first). A destination that no longer holds says why instead.
