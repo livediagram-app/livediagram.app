@@ -110,7 +110,7 @@ describe('templateSlides', () => {
         arrow('pin', free, { kind: 'pinned', elementId: card.id, anchor: 'w' }),
         arrow('lost', free, { kind: 'pinned', elementId: 'gone', anchor: 'w' }),
       ],
-    } as Tab;
+    };
     const [overview, ...sections] = templateSlides('pyramid', withLines, counter());
     expect(overview!.elementIds).toEqual(expect.arrayContaining([base.id, 'pin']));
     expect(overview!.elementIds).not.toContain('lost');
