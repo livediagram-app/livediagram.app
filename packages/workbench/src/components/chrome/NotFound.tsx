@@ -8,6 +8,7 @@
 
 // The new-file sparkle, shared with the template picker's footer so
 // the two create-new surfaces can't drift.
+import { markRequestIntent } from '../request-access/request-intent';
 import { SparkleIcon } from '../palette/template-picker-icons';
 import {
   Button,
@@ -78,10 +79,17 @@ export type NotFoundProps = {
 
 // The line under the body for the cases a colleague reaches from an editor address someone copied (signed out, or
 // signed in without access): only a share link lets them in.
-function shareHintOf(reason: NotFoundReason, noun: string, asking: boolean): string | null {
+function shareHintOf(
+  reason: NotFoundReason,
+  noun: string,
+  asking: boolean,
+  canSignIn: boolean,
+): string | null {
   if (asking)
     return `Joining a colleague on this ${noun}? Request access, and whoever runs it is asked to share it with you.`;
-  return reason === 'sign-in' || reason === 'missing'
+  if (reason === 'sign-in' && canSignIn)
+    return `Joining a colleague on this ${noun}? Sign in to request access, and whoever runs it is asked to share it with you.`;
+  return reason === 'missing' || reason === 'sign-in'
     ? `If you are joining a colleague on this ${noun}, ask them to share a URL via the Share button.`
     : null;
 }
@@ -116,7 +124,7 @@ export function NotFound({
 }: NotFoundProps) {
   const Noun = capitalised(noun);
   const asking = !embed && reason === 'missing' && requestAccess ? requestAccess : null;
-  const shareHint = shareHintOf(reason, noun, asking !== null);
+  const shareHint = shareHintOf(reason, noun, asking !== null, !!signInHref);
   if (archived) {
     return (
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
@@ -161,9 +169,9 @@ export function NotFound({
   const createNew = deadLink && embed ? undefined : onCreateNew;
   return (
     <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-      {/* Asking, the card is a step wider so its three buttons keep one row. */}
+      {/* Asking (or offering Sign In to Request Access), the card is a step wider so its buttons keep one row. */}
       <div
-        className={`pointer-events-auto flex ${asking ? 'max-w-lg' : 'max-w-md'} animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900`}
+        className={`pointer-events-auto flex ${asking || signIn ? 'max-w-lg' : 'max-w-md'} animate-pop-in flex-col items-center rounded-xl border border-slate-200 bg-white px-8 py-10 text-center shadow-lg shadow-slate-900/10 dark:border-slate-700 dark:bg-slate-900`}
       >
         {deadLink ? (
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
@@ -222,10 +230,15 @@ export function NotFound({
               </Button>
             ) : null}
             {signIn ? (
-              <a href={signIn} className={buttonClassName({ size: 'md', className: 'shadow-sm' })}>
+              // Signs in, then back here with the request's note open (request-intent.ts).
+              <a
+                href={signIn}
+                onClick={markRequestIntent}
+                className={buttonClassName({ size: 'md', className: 'shadow-sm' })}
+              >
                 <ButtonContent>
                   <SignInIcon />
-                  Sign In
+                  Sign In to Request Access
                 </ButtonContent>
               </a>
             ) : createNew ? (
