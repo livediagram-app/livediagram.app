@@ -98,6 +98,14 @@ const notifier = createNotifier<Env, RenderedEmail>({
   },
 });
 
+// The Knowledgebase Reviews notices (docs/specs/030-knowledgebase/verification.md "Reminders"; liveworkspace
+// accounts.md "An app's own notices"): each account its own email, at its verified address, unless it turned
+// Knowledgebase Reviews off. Answers the ids emailed.
+export const notifyKnowledgeReviews = (
+  env: Env,
+  emails: ReadonlyMap<string, RenderedEmail>,
+): Promise<string[]> => notifier.notifyAccounts(env, { setting: 'notifyKnowledgeReviews', emails });
+
 // The owner just made a document: the tenth celebrates, once (docs/specs/014-identity/transactional-email.md #6).
 export const notifyMilestone = (env: Env, ownerId: string): Promise<void> =>
   notifier.notifyMilestone(env, ownerId);

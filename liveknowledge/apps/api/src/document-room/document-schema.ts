@@ -23,6 +23,7 @@ import { NAMED_STORE_STEP } from '../versions/named-store-schema';
 import { VERSION_SCHEMA } from '../versions/version-schema';
 import { knowledgeSchemaStep } from '../knowledge/knowledge-schema';
 import { agentSeenSchemaStep } from '../knowledge/agent-seen';
+import { emailMarksSchemaStep } from '../knowledge/email-marks';
 
 // Elements live in one JSON row per tab (`tabs.data`), capped at MAX_TAB_BYTES (limits.ts), under the 2 MB a
 // Durable Object SQLite row or string may hold. Chunking a tab's body over rows (or a row per element) is the
@@ -335,6 +336,10 @@ const V12 = knowledgeSchemaStep;
 // connection's scopes from. Additive, IF NOT EXISTS.
 const V13 = agentSeenSchemaStep;
 
+// What the Knowledgebase Reviews emails remember for their caps, and the first review check of a knowledgebase
+// that already holds verified pages (knowledge/email-marks.ts). Additive, IF NOT EXISTS.
+const V14 = emailMarksSchemaStep;
+
 const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V1,
   V2,
@@ -349,6 +354,7 @@ const STEPS: readonly (string | ((exec: Exec) => void))[] = [
   V11,
   V12,
   V13,
+  V14,
 ];
 
 export const DOCUMENT_SCHEMA_VERSION = STEPS.length;

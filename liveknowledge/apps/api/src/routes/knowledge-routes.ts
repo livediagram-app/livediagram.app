@@ -10,6 +10,8 @@
 //   POST   ask                                              knowledge-ask-route.ts
 //   GET    knowledge, POST questions, DELETE questions/<key>, POST conflicts/<id>/dismiss
 //                                                           knowledge-overview-routes.ts
+//   POST   conflicts/<id>/ask-owners, POST knowledge/remind-owners
+//                                                           knowledge-email-routes.ts
 //   POST   pages/<tab>/suggestions, GET suggestions, POST suggestions/<id>/accept, POST suggestions/<id>/dismiss
 //                                                           knowledge-suggestion-routes.ts
 //   GET    pages, GET pages/<tab>, GET context, POST pages, POST pages/<tab>/move, PUT agents/<token>/scopes
@@ -33,6 +35,7 @@ import { doorOf, noteAgentSeen } from '../knowledge/agent-seen';
 import { frontDoorOf } from '../changesets/front-door';
 import { handleAiRoutes } from './knowledge-ai-routes';
 import { handleAsk } from './knowledge-ask-route';
+import { handleEmailRoutes } from './knowledge-email-routes';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
 import {
   handleBacklinks,
@@ -138,6 +141,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
   if (segments.length === 5)
     return (
       (segments[3] === 'ai' && (segments[4] === 'key' || segments[4] === 'model')) ||
+      (segments[3] === 'knowledge' && segments[4] === 'remind-owners') ||
       segments[3] === 'questions' ||
       segments[3] === 'pages'
     );
@@ -150,7 +154,8 @@ function isKnowledgePath(segments: readonly string[]): boolean {
           segments[5] === 'knowledge' ||
           segments[5] === 'suggestions' ||
           segments[5] === 'move')) ||
-      (segments[3] === 'conflicts' && segments[5] === 'dismiss') ||
+      (segments[3] === 'conflicts' &&
+        (segments[5] === 'dismiss' || segments[5] === 'ask-owners')) ||
       (segments[3] === 'suggestions' && (segments[5] === 'accept' || segments[5] === 'dismiss')) ||
       (segments[3] === 'agents' && segments[5] === 'scopes')
     );
@@ -193,6 +198,7 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   return (
     (await handleAgentRoutes(route)) ??
     (await handleSuggestionRoutes(route)) ??
+    (await handleEmailRoutes(route)) ??
     (await handleOverviewRoutes(route)) ??
     notFound()
   );

@@ -250,6 +250,9 @@ type UserPreferences = {
   // When false, suppress the "someone first opened one of my shared
   // documents" email. Defaults to true (notify).
   notifyDocumentJoin?: boolean;
+  // When false, suppress the Knowledgebase Reviews emails: a page I own is due for review, disagrees with
+  // another page, or an Editor reminds the owners. Defaults to true (notify).
+  notifyKnowledgeReviews?: boolean;
   // When false, suppress the "someone accepted/declined a team invite I
   // sent" email (sent to the team's admins). Defaults to true (notify).
   notifyInviteResponse?: boolean;

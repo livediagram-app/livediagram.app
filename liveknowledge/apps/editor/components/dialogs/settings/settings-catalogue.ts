@@ -50,6 +50,7 @@ import type { SettingsIllustrationId } from '@liveworkspace/workbench/components
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
 type EmailKey =
   | 'notifyDocumentJoin'
+  | 'notifyKnowledgeReviews'
   | 'notifyInviteResponse'
   | 'notifyComments'
   | 'notifyActionAssigned'
@@ -1041,6 +1042,17 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email join collaborator opened',
         label: 'Someone Joins My Knowledgebase',
         description: 'A new person opens one of your shared knowledgebases.',
+      }),
+      emailSwitch('notifyKnowledgeReviews', {
+        event: {
+          category: 'UI',
+          on: 'NotifyKnowledgeReviewsOn',
+          off: 'NotifyKnowledgeReviewsOff',
+        },
+        keywords: 'email review due verify owner remind reminder pages disagree conflict',
+        label: 'Knowledgebase Reviews',
+        description:
+          'A page you own is due for review, disagrees with another page, or an Editor reminds its owners.',
       }),
       emailSwitch('notifyTips', {
         event: { category: 'UI', on: 'NotifyTipsOn', off: 'NotifyTipsOff' },

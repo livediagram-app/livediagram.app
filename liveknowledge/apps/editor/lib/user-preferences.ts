@@ -160,6 +160,9 @@ export type UserPreferences = {
   //
   // "Someone first opened one of my shared documents."
   notifyDocumentJoin?: boolean;
+  // "A page I own is due for review, disagrees with another page, or an Editor reminds the owners"
+  // (docs/specs/030-knowledgebase/verification.md "Reminders").
+  notifyKnowledgeReviews?: boolean;
   // "Someone accepted / declined a team invite I sent" (to the team's admins).
   notifyInviteResponse?: boolean;
   notifyComments?: boolean;

@@ -2,12 +2,14 @@
 
 // Pages That Disagree (docs/specs/030-knowledgebase/ai-knowledge.md "Pages that disagree"): the question a pair of
 // passages answers differently, both passages side by side with each page's trust, and the two ways to settle it.
-// "Ask Both Owners" waits for the knowledgebase's emails and is not drawn. The passages are text.
+// Ask Both Owners emails the two pages' owners once (knowledge-email-routes.ts); once asked, the row says when in
+// its place. The passages are text.
 import type { KnowledgeConflict, KnowledgeConflictSide } from '@liveknowledge/api-schema';
 import { Button, CompactEmptyState } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
+import { ownersEmailedText } from '@/lib/knowledge-ask/email-words';
 import { trustText } from '@/lib/knowledge-ask/source-meta';
-import { ConflictIcon } from './ai-knowledge-icons';
+import { ConflictIcon, MailIcon } from './ai-knowledge-icons';
 import { AI_MUTED, AiSection } from './AiSection';
 
 function Side({
@@ -43,21 +45,26 @@ export function ConflictsSection({
   hasKey,
   canResolve,
   canManageAi,
+  canAskOwners,
   busy,
   now,
   onOpenPage,
   onDismiss,
+  onAskOwners,
   onOpenAiSettings,
 }: {
   conflicts: readonly KnowledgeConflict[];
   hasKey: boolean;
   canResolve: boolean;
   canManageAi: boolean;
+  // A signed-in Editor, where this deployment sends email.
+  canAskOwners: boolean;
   busy: ReadonlySet<string>;
   now: number;
   // The page, at the block where the passage begins when one is named.
   onOpenPage: (tab: string, block?: string) => void;
   onDismiss: (id: string) => void;
+  onAskOwners: (id: string) => void;
   onOpenAiSettings: () => void;
 }) {
   return (
@@ -124,6 +131,23 @@ export function ConflictsSection({
                       {conflict.b.title || 'The Second Page'} Is Right, Fix the Other
                     </span>
                   </Button>
+                  {!canAskOwners ? null : conflict.askedAt === undefined ? (
+                    <Button
+                      variant="secondary"
+                      size="xs"
+                      busy={busy.has(`ask:${conflict.id}`)}
+                      onClick={() => onAskOwners(conflict.id)}
+                      className="phone:min-h-11"
+                    >
+                      <MailIcon />
+                      Ask Both Owners
+                    </Button>
+                  ) : (
+                    <span className={`flex items-center gap-1.5 px-1 text-xs ${AI_MUTED}`}>
+                      <MailIcon />
+                      {ownersEmailedText('ask', conflict.askedAt, now)}
+                    </span>
+                  )}
                   <Button
                     variant="ghost"
                     size="xs"

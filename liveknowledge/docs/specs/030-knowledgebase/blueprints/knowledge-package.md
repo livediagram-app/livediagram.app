@@ -7,8 +7,9 @@ Derived from [Search and Ask](../search-and-ask.md), [Verification](../verificat
 `@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask and the conflict
 check. It is pure: it writes no storage, reads no environment and starts no timer. The room runs the SQL it makes; the
 caller hands in `fetch`, the team's key and the clock. **Built: the package, the room's wiring and the api's
-routes** ("Wiring" below); the editor's side is the [knowledge UI blueprint](knowledge-ui.md). **Not built:** the
-MCP tools and the three emails.
+routes** ("Wiring" below); the editor's side is the [knowledge UI blueprint](knowledge-ui.md). The MCP tools are
+the [agents blueprint](../../024-agents/blueprints/knowledgebase-for-agents.md)'s; the three emails are "The review
+emails" below.
 
 ## Domain and naming
 
@@ -395,13 +396,96 @@ payload)`: what the alarm owes.
   `[[Title]]` to the first page of that title in tree order (`withPageLinksResolved`, `pageByTitleIn`); a Markdown
   export to files writes `[Title](relative/path.md)` (`withPageLinksAsFiles`, `pageFilePaths`, `relativePagePath`).
 
-**Not built:** the three emails (`knowledge-emails.ts` says why: the shared notifier has no notice or account
-setting for them); the Offline matcher; current titles in the pages view of `document-views` (`read_page` and
+**Not built:** the Offline matcher; current titles in the pages view of `document-views` (`read_page` and
 `GET pages/<page>` do print them, through `withPageLinkTitles`).
 
 **Built since, in step 13** ([Knowledgebase for agents](../../024-agents/blueprints/knowledgebase-for-agents.md)):
 `get_context` and the MCP's page tools, an agent's pending suggestions (`suggestions`, listed by `GET knowledge`),
 scopes, and the Markdown export's `withPageLinksAsFiles` (the CLI's `export`).
+
+## The review emails
+
+Derived from [Verification](../verification.md) "Reminders" and [AI Knowledge](../ai-knowledge.md) "Pages that
+disagree", "Knowledge Health". Built in the api; tested over the fake sender and the fake accounts service; never
+sent from a deployed Worker.
+
+| Where (`apps/api/src`)                 | What                                                                                          |
+| -------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `email/brand-layout.ts`                | The product's email look and shell, shared by `templates.ts` and the review templates         |
+| `email/knowledge-templates.ts`         | `reviewDueEmail`, `remindOwnersEmail`, `pagesDisagreeEmail`, `EMAIL_PAGES_LISTED`             |
+| `email/notifications.ts`               | `notifyKnowledgeReviews(env, emails)`: the notifier's `notifyAccounts` behind the switch      |
+| `knowledge/email-marks.ts`             | `knowledge_email_marks`, `claimMark`, `dropMark`, `marksOf`, `putMarks`, `reserveEmails`      |
+| `knowledge/knowledge-emails.ts`        | `runReviewEmails`, `remindOwners`, `askConflictOwners`, `ownersWhoReach`, `runKnowledgeEmail` |
+| `knowledge/knowledge-review-timing.ts` | `REVIEW_EMAIL_GAP_MS`, `REMIND_OWNERS_GAP_MS`, `REVIEW_CHECK_DELAY_MS`                        |
+| `routes/knowledge-email-routes.ts`     | `POST conflicts/<id>/ask-owners`, `POST knowledge/remind-owners`                              |
+
+- **The setting.** `notifyKnowledgeReviews`, liveknowledge's own scope at accounts, on unless stored `false`;
+  declared in the editor's Settings catalogue (`emailSwitch`, "Knowledgebase Reviews") and copied to
+  `@liveworkspace/settings`' catalogue of this app by its generator. `notifyRecipients` reads it with the
+  addresses in two requests whatever the count.
+- **Storage.** `knowledge_email_marks (kind, key, at, PRIMARY KEY (kind, key))`, schema step 14
+  (`emailMarksSchemaStep`): `review-page` / the tab (`at` the `reviewAt` its owner was told of), `review-owner` /
+  the owner (when last emailed), `remind` / `owners`, `ask` / the conflict's id. Ids and times, never an address
+  or a word. The day's count is `usage_counters` scope `emails`, period the UTC day. All through `knowledgeDb`.
+  Pruned daily: page marks whose tab is gone, ask marks whose conflict is gone (`pruneEmailMarks`).
+- **Who is emailed** (`sendTo`): account ids only; `ownersWhoReach` keeps the knowledgebase's owner, the joined
+  people of its team (one `teamPeople` read) and anyone the index grants as a delegate (one request each of the
+  rest); a failed check is no. `reserveEmails(wanted)` takes what is left of `KNOWLEDGE_EMAILS_PER_DAY` (50) in one
+  transaction and counts emails tried. `notifyKnowledgeReviews` then drops whoever turned the switch off or has
+  no verified address, and answers the ids sent.
+- **Review Due** (`runReviewEmails`, the alarm's `review-email` / `daily` work). The pages are the document's tab
+  summaries (`parseKnowledgeFields`, `trustState`): no page's writing is read. A due page is new while its mark
+  is not its `reviewAt`. An owner with a new page and no email in `REVIEW_EMAIL_GAP_MS` (24 hours) gets
+  `reviewDueEmail` of all their due pages; their pages are then marked, sent or not (the switch off, or no longer
+  theirs to open, is settled too), and the owner is marked when sent. An owner inside the 24 hours, or held by
+  the ceiling, keeps their pages unmarked. Answers when to run again: the earliest of the next `reviewAt` not yet
+  due, an owner's 24 hours ending, and the next UTC day when the ceiling held someone; `null` (the row goes) when
+  nothing is left to wait for or the deployment sends no email.
+- **What owes the check.** `settlePage` answers `trust` or `indexed-trust` when a page's trust hash changed (a
+  Verify, a new interval; not a page first indexed unverified); `Settled.trust` counts them and
+  `KnowledgeIndexEvents.onTrust` tells the room once a write, which owes the row at now plus
+  `REVIEW_CHECK_DELAY_MS` (one minute) and wakes its alarm. The schema step owes it at once for a room that
+  already holds a verified page that ages. Never on a write's own path: the email is the alarm's.
+- **Remind the Owners** (`remindOwners`): `unavailable` with email off; `nothing_due`; `no_owners`; else
+  `claimMark('remind', 'owners', now, now - REMIND_OWNERS_GAP_MS)` (one statement: two presses send once), or
+  `already_sent` with `sentAt` and `nextAt`. Each owner gets `remindOwnersEmail` of their Review Due and Never
+  Verified pages. Nothing sent gives the mark back (`dropMark`) and answers `daily_limit` or `no_recipients`.
+- **Ask Both Owners** (`askConflictOwners`): the conflict is read open, with both passages (`openConflicts`), else
+  `404 conflict_unknown`; the owners are the two pages' (one email for one person); `claimMark('ask', id, now,
+null)` takes the mark only when there is none, else `already_sent`. `GET knowledge` answers `askedAt` on the
+  conflict and `reviewEmails: { available, remindedAt }`.
+- **The routes** take a signed-in Editor in person (`role === 'edit'`, no token, an account); anyone else `403`.
+  Each answers `200` with a `KnowledgeEmailResult`.
+- **The emails.** Subjects in Title Case, one line, at most 80 characters (`subjectText`): "Pages Due for Review
+  in <name>", "Pages to Review in <name>", "Two Pages Disagree in <name>". HTML through the shared shell, lime, with
+  the settings link in the footer and as `List-Unsubscribe`; a plain-text alternative with the same links. Names,
+  titles, the question and the passages are escaped (`xmlEscape`); a passage is one line of at most 280
+  characters cut at a word (`mentionQuote`). A page's link is `<base>/document/<id>#t=<tab>`, the conflict's
+  `<base>/document/<id>?view=ai`. `EMAIL_PAGES_LISTED` is 100: measured, a 500 page email of 100 rows and a count
+  is under 60 KB, where 500 rows would pass the 102 KB at which Gmail clips. Telemetry kinds `ReviewDue`,
+  `OwnersReminded`, `PagesDisagree`.
+- **Cost.** A review check is one read of the document's outline, two reads of marks, one team read, at most one
+  index request an owner outside the team, two accounts requests, one send an owner, and the marks written in
+  batches of 33 (500 pages: 16 statements). Measured in `knowledge-email-routes.test.ts`: 500 due pages of one
+  owner, one email, inside a 1.5 second CPU budget on the test database. **Not ruled out:** a knowledgebase whose
+  owners are mostly outside its team costs an index request each a check (bounded by its owners, then by the 50 a
+  day); and the alarm's turn does three pieces of work, so a review check queues behind conflict checks.
+- **Observability.** `[knowledge] review emails` (owners, tried, sent, held, pages), `owners reminded`, `owners
+asked`, `email asked` (the route's outcome), `email not sent` (`email_off`), `email work unknown`. Ids and
+  counts, never an address or a title.
+
+| Rule                                                                 | Test                                                 |
+| -------------------------------------------------------------------- | ---------------------------------------------------- |
+| One email an owner of all their due pages; a page told once a review | `routes/knowledge-email-routes.test.ts` "Review Due" |
+| One a day an owner; 50 a knowledgebase a day; the rest the next day  | the same                                             |
+| The setting off, an owner who cannot open it, a guest, email off     | the same                                             |
+| 500 due pages are one email under 102 KB                             | the same; `email/knowledge-templates.test.ts`        |
+| Remind: per role, once a week, each reason nothing was sent          | `routes/knowledge-email-routes.test.ts`              |
+| Ask: per role, once a conflict, one person owning both, 404          | the same                                             |
+| Escaping, one-line subjects, the text alternative, the excerpt's cut | `email/knowledge-templates.test.ts`                  |
+| The three emails byte for byte                                       | `email/knowledge-templates.test.ts` (pinned hashes)  |
+| What owes the review check                                           | `knowledge/review-check-owed.test.ts`                |
+| The notifier's door                                                  | `packages/index-app/src/notifier.test.ts`            |
 
 **FTS5 in workerd: not confirmed by a test.** The api's tests run in Node on `node:sqlite` (the same FTS5 the
 package's tests use), not in the Workers pool: `porter`, `bm25()`, `snippet()` and `highlight()` are proven there,

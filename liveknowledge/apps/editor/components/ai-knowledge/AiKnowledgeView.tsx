@@ -5,6 +5,7 @@
 // after each action here. Everyone sees it; settling a conflict, drafting or dismissing a question, accepting or
 // dismissing a suggestion and Always in Context are an Editor's.
 import { useState } from 'react';
+import type { KnowledgeEmailResult } from '@liveknowledge/api-schema';
 import { Button, EmptyState } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
@@ -22,6 +23,12 @@ import {
   apiDismissKnowledgeQuestion,
   apiSetPageKnowledge,
 } from '@/lib/api/knowledge';
+import { apiAskConflictOwners, apiRemindOwners } from '@/lib/api/knowledge-emails';
+import {
+  emailFailureText,
+  emailResultText,
+  type OwnersEmail,
+} from '@/lib/knowledge-ask/email-words';
 import { agentSample } from '@/lib/knowledge-ask/overview-words';
 import {
   apiAcceptKnowledgeSuggestion,
@@ -87,6 +94,22 @@ function AiKnowledge({ session }: { session: AskSession }) {
       (err) => knowledgeFailureText(err, 'context'),
     );
   const inContext = new Set(overview?.context.pages.map((page) => page.tab));
+  // Ask Both Owners and Remind the Owners: one request, then what happened in words (sent to two owners, already
+  // reminded this week), and the overview read again for the date that takes the button's place.
+  const canEmailOwners = rights.emailOwners && (overview?.reviewEmails.available ?? false);
+  const emailOwners = (
+    kind: OwnersEmail,
+    id: string,
+    send: () => Promise<KnowledgeEmailResult>,
+  ) => {
+    if (!canEmailOwners) return;
+    track('UI', 'Used', kind === 'ask' ? 'OwnersAsked' : 'OwnersReminded');
+    void run(
+      id,
+      async () => toast.info(emailResultText(await send(), kind, Date.now())),
+      (err) => emailFailureText(err, kind),
+    );
+  };
 
   return (
     <>
@@ -147,6 +170,10 @@ function AiKnowledge({ session }: { session: AskSession }) {
                 hasKey={overview.hasKey}
                 canResolve={rights.resolve}
                 canManageAi={rights.manageAi}
+                canAskOwners={canEmailOwners}
+                onAskOwners={(id) =>
+                  emailOwners('ask', `ask:${id}`, () => apiAskConflictOwners(who, documentId, id))
+                }
                 busy={busy}
                 now={now}
                 onOpenPage={openPage}
@@ -202,7 +229,16 @@ function AiKnowledge({ session }: { session: AskSession }) {
                   );
                 }}
               />
-              <HealthSection health={overview.health} />
+              <HealthSection
+                health={overview.health}
+                canRemind={canEmailOwners}
+                remindedAt={overview.reviewEmails.remindedAt}
+                reminding={busy.has('remind-owners')}
+                now={now}
+                onRemind={() =>
+                  emailOwners('remind', 'remind-owners', () => apiRemindOwners(who, documentId))
+                }
+              />
               <ContextSection
                 context={overview.context}
                 canEdit={rights.context}

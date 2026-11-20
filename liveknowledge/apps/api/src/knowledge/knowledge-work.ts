@@ -1,9 +1,9 @@
 // What a knowledgebase's alarm owes (`knowledge_work`, knowledge-schema.ts): a conflict check after a save or a
-// Verify, an owner's review email, the weekly reminder. A row a kind and key, so asking twice is one piece of work,
+// Verify, and the review check that emails owners of pages come due (one row, `review-email` / `daily`). A row a kind and key, so asking twice is one piece of work,
 // and a turn of the alarm does what is due and answers when the next is.
 import type { ItemSql } from '@liveworkspace/index-app';
 
-export type WorkKind = 'conflict' | 'review-email' | 'remind-owners' | 'ask-owners';
+export type WorkKind = 'conflict' | 'review-email';
 export type Work = { kind: WorkKind; key: string; dueAt: number; payload: string };
 
 /** Owe a piece of work at `dueAt`; one already owed keeps its earlier time and its own payload (a conflict check's

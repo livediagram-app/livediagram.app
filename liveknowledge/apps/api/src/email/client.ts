@@ -31,6 +31,8 @@ type EmailMessage = {
   to: string;
   subject: string;
   html: string;
+  // The plain-text alternative, when the template carries one.
+  text?: string;
   // For opt-out emails: a URL where the recipient can manage / turn off this
   // category. Emitted as a `List-Unsubscribe` header so mail clients can surface
   // a native unsubscribe affordance (we point it at the profile page rather than
@@ -49,6 +51,7 @@ export async function sendEmail(env: Env, msg: EmailMessage): Promise<{ sent: bo
       to: msg.to,
       subject: msg.subject,
       html: msg.html,
+      ...(msg.text !== undefined && { text: msg.text }),
       ...(msg.unsubscribeUrl && { unsubscribeUrl: msg.unsubscribeUrl }),
     });
     // One anonymous telemetry row per outcome (docs/specs/017-telemetry/telemetry.md), written server-side

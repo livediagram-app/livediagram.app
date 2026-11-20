@@ -97,7 +97,13 @@ notifyInviteResponse?: boolean;  // someone accepts/declines a team invite I (an
 notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/specs/012-collaboration/comment-mentions.md)
 notifyActionAssigned?: boolean;  // a teammate assigns me an action (docs/specs/012-collaboration/assigned-actions.md)
 notifyMilestones?: boolean;      // my tenth document, and my first share link (transactional-email.md #6)
+notifyKnowledgeReviews?: boolean; // a page I own is due for review, disagrees with another, or an Editor reminds the owners
 ```
+
+`notifyKnowledgeReviews` (**Knowledgebase Reviews**) is liveknowledge's own, kept in its own scope like
+`notifyDocumentJoin`: one switch for the three review emails
+([Verification](../030-knowledgebase/verification.md#reminders)), sent through the notifier's `notifyAccounts`
+(`notifyKnowledgeReviews`, `apps/api/src/email/notifications.ts`).
 
 All **default on** (undefined === true): the user asked to be told, so the
 toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-preferences.md)'s `notificationsEnabled`. The
@@ -121,7 +127,7 @@ The emails that can reach several people at once (a mention, an assignment, some
 read the switch together with the address, for everyone in one go: `notifyRecipients(env, ids, key)`
 (`apps/api/src/person/notify.ts`, on `notificationRecipients` from `@liveworkspace/auth-client`) asks the
 accounts Worker for the verified addresses and for that one key in the scope it lives in (`all`, or
-`liveknowledge.app` for `notifyDocumentJoin`), two requests whatever the number of people
+`liveknowledge.app` for `notifyDocumentJoin` and `notifyKnowledgeReviews`), two requests whatever the number of people
 ([liveworkspace/docs/specs/003-accounts/accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md) "Notification emails"). A switch read
 that fails counts as on; an address read that fails reaches nobody.
 

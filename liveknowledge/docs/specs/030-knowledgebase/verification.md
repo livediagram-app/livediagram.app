@@ -2,8 +2,9 @@
 
 Status: **the states, Verify, the meta row, the tree's tick and Page Health are built, not yet verified in a browser**
 ([Build plan](../005-project-roadmap/build-plan.md) step 7; [blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>"
-(no route says when a page's writing was last edited, or by whom) and Reminders. Verify needs an account, and a
-knowledgebase kept Offline has none.
+(no route says when a page's writing was last edited, or by whom). The Review Due email is built and tested over
+a fake sender, not yet sent from a deployed Worker. Verify needs an account, and a knowledgebase kept Offline has
+none.
 
 A wiki is only useful, to a person or to an agent, while it is right. Each page says who vouches for it and when they
 last did.
@@ -38,8 +39,21 @@ On the page (`Tab.wiki`): `owner` (a person with access to the wiki), `verifiedA
 
 - The [Wiki Home](wiki-home.md) lists **Yours to Review**: pages you own that are due, oldest first, each with
   **Still Right** (verifies it) and a link to the page.
-- An owner gets one email when a page of theirs comes due, batched to at most one email a day, through the platform's
-  email package. It honours the account's email settings. No email is sent for wikis kept Offline.
+- An owner gets one email when pages of theirs come due: **Pages Due for Review**. It lists every page of theirs
+  that is due (the first 100 by name, the rest counted, so the email is never clipped), each a link to its page,
+  and goes at most once a day an owner a knowledgebase. A page is told of once for each review that comes due:
+  verified again, it is told of again when that review comes due.
+- It goes through the platform's notifier ([accounts.md "An app's own notices"](../../../liveworkspace/docs/specs/003-accounts/accounts.md#notification-emails)),
+  to the owner's verified address, and only while their **Knowledgebase Reviews** setting is on (Settings, Account,
+  Notifications; on by default; one switch for this email, a conflict's Ask Both Owners and Knowledge Health's
+  Remind the Owners, which [AI Knowledge](ai-knowledge.md) specifies). The knowledgebase keeps no address.
+- Only someone who can still open the knowledgebase is emailed: its own owner, a joined member of its team, or
+  someone the index still grants it to. An owner who is a guest has no address and gets none.
+- The three emails together are at most 50 a knowledgebase a day; an owner the ceiling leaves out is emailed the
+  next day. A deployment that sends no email sends none of them.
+- Nothing is sent when a page is written: the knowledgebase's room wakes by its own alarm when the next review
+  comes due, and after a page is verified or its interval changes.
+- No email is sent for a knowledgebase kept Offline: it lives in one browser and has no room to send from.
 
 ## Share roles
 

@@ -21,6 +21,7 @@ describe('who may do what in Ask and AI Knowledge', () => {
       resolve: true,
       context: true,
       grantAgents: true,
+      emailOwners: true,
     });
   });
 
@@ -32,6 +33,7 @@ describe('who may do what in Ask and AI Knowledge', () => {
       resolve: false,
       context: false,
       grantAgents: false,
+      emailOwners: false,
     });
   });
 
@@ -48,10 +50,13 @@ describe('who may do what in Ask and AI Knowledge', () => {
       resolve: false,
       context: false,
       grantAgents: false,
+      emailOwners: false,
     });
   });
 
   it('gives an Editor through a link confined to one page no Editor actions', () => {
     expect(session('edit', { isStructureReadOnly: true }).manageAi).toBe(false);
+    // A guest who may edit emails nobody: the owners are told an Editor asked.
+    expect(session('edit', { accountUserId: null }).emailOwners).toBe(false);
   });
 });

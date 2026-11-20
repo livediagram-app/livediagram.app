@@ -78,7 +78,9 @@ export function pageSourceOf(tab: string, title: string, data: string): PageSour
 export const trustHashOf = (fields: KnowledgeFields): string =>
   `${fields.verifiedAt ?? ''}/${reviewDays(fields) ?? ''}`;
 
-export type SettledPage = 'indexed' | 'trust' | 'unchanged' | 'removed' | 'unreadable';
+// `indexed-trust`: the writing was indexed anew and the page's verification changed with it.
+export type SettledPage =
+  'indexed' | 'indexed-trust' | 'trust' | 'unchanged' | 'removed' | 'unreadable';
 
 /** A page whose writing was indexed anew, with its passages' hashes as they stood before (for the conflict check's
  *  probes, read only when the knowledgebase has a key: conflicts.ts `conflictProbes`). */
@@ -145,7 +147,10 @@ export function settlePage(sql: ItemSql, tab: string, indexed?: IndexedPage[]): 
     trustHash,
     chars,
   );
-  return writingChanged ? 'indexed' : 'trust';
+  // A page first indexed with no verification has no review to wait for.
+  const trustChanged =
+    was?.t !== trustHash && (was !== undefined || fields.verifiedAt !== undefined);
+  return writingChanged ? (trustChanged ? 'indexed-trust' : 'indexed') : 'trust';
 }
 
 /** The writing of a stored page as text (no Markdown syntax), for the print Verify keeps and its comparison. */
@@ -160,7 +165,8 @@ export function storedWritingText(sql: ItemSql, tab: string): string | null {
   }
 }
 
-export type Settled = { pages: number; indexed: IndexedPage[]; queued: number };
+/** `trust` counts the pages whose verification or review interval changed. */
+export type Settled = { pages: number; indexed: IndexedPage[]; queued: number; trust: number };
 
 // Settle the marked pages of one kind (`queued` 0: this write's; 1: the alarm's), at most `limit`.
 function settleMarked(sql: ItemSql, queued: 0 | 1, limit: number): Settled {
@@ -168,8 +174,10 @@ function settleMarked(sql: ItemSql, queued: 0 | 1, limit: number): Settled {
     .exec('SELECT tab, tries FROM knowledge_dirty WHERE queued = ? LIMIT ?', queued, limit)
     .toArray() as { tab: string; tries: number }[];
   const indexed: IndexedPage[] = [];
+  let trust = 0;
   for (const { tab, tries } of marked) {
     const outcome = settlePage(sql, tab, indexed);
+    if (outcome === 'trust' || outcome === 'indexed-trust') trust++;
     if (outcome === 'unreadable' && tries + 1 < SETTLE_MAX_TRIES) {
       sql.exec('UPDATE knowledge_dirty SET tries = tries + 1, queued = 1 WHERE tab = ?', tab);
       continue;
@@ -177,7 +185,7 @@ function settleMarked(sql: ItemSql, queued: 0 | 1, limit: number): Settled {
     if (outcome === 'unreadable') console.warn('[knowledge] page left out of the index', { tab });
     sql.exec('DELETE FROM knowledge_dirty WHERE tab = ?', tab);
   }
-  return { pages: marked.length, indexed, queued: 0 };
+  return { pages: marked.length, indexed, queued: 0, trust };
 }
 
 /** Settle what this write marked; pages past SETTLE_INLINE_MAX are queued for the alarm. */
@@ -205,6 +213,8 @@ export type KnowledgeIndexEvents = {
   onQueued?: () => void;
   /** These pages' writing was indexed anew (a conflict check may follow). */
   onIndexed?: (pages: readonly IndexedPage[]) => void;
+  /** A page's verification or review interval changed (the review check may have a new date to wait for). */
+  onTrust?: () => void;
 };
 
 /** The database hooks with the index kept in step (see the head of this file). */
@@ -216,6 +226,7 @@ export function withKnowledgeIndex(
   const tell = (settled: Settled) => {
     if (settled.queued > 0) events.onQueued?.();
     if (settled.indexed.length > 0) events.onIndexed?.(settled.indexed);
+    if (settled.trust > 0) events.onTrust?.();
   };
   return {
     ensureSchema: hooks.ensureSchema,

@@ -20,6 +20,8 @@ export type AskRights = {
   context: boolean;
   /** Allow a connected agent to write here, or stop it. */
   grantAgents: boolean;
+  /** Ask a conflict's owners, or remind the owners: a signed-in Editor's (the api refuses a guest). */
+  emailOwners: boolean;
 };
 
 export function askRights(input: {
@@ -36,5 +38,6 @@ export function askRights(input: {
     resolve: editor,
     context: editor,
     grantAgents: editor,
+    emailOwners: editor && !!input.accountUserId,
   };
 }

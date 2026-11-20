@@ -753,6 +753,30 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404, 405, 410],
   },
   {
+    method: 'POST',
+    path: '/documents/{id}/conflicts/{conflictId}/ask-owners',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Ask Both Owners: email each owner of a conflict's two pages once, naming both pages and passages. An Editor in person (a token is refused). Sent through the account's Knowledgebase Reviews setting, at most once a conflict and within the knowledgebase's 50 review emails a day. Answers what was sent or why nothing was (`already_sent`, `no_owners`, `no_recipients`, `daily_limit`, `unavailable`); 404 `conflict_unknown` for a conflict that is closed or dismissed.",
+    auth: 'clerk',
+    tokenUsable: false,
+    responseSchema: 'KnowledgeEmailResult',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/knowledge/remind-owners',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Remind the Owners: email each page owner one list of their pages that are Review Due or Never Verified. An Editor in person (a token is refused). Sent through the account's Knowledgebase Reviews setting, at most once a week a knowledgebase and within its 50 review emails a day. Answers what was sent or why nothing was (`already_sent` with when it may be sent again, `nothing_due`, `no_owners`, `no_recipients`, `daily_limit`, `unavailable`).",
+    auth: 'clerk',
+    tokenUsable: false,
+    responseSchema: 'KnowledgeEmailResult',
+    statuses: [200, 401, 403, 404, 405, 410],
+  },
+  {
     method: 'GET',
     path: '/documents/{id}/pages',
     segment: 'documents',

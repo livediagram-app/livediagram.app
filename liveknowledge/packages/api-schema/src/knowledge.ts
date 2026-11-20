@@ -170,7 +170,17 @@ export type KnowledgeConflict = {
   a: KnowledgeConflictSide;
   b: KnowledgeConflictSide;
   foundAt: number;
+  /** When both pages' owners were emailed about it (Ask Both Owners): once a conflict. */
+  askedAt?: number;
 };
+/** What `POST conflicts/<id>/ask-owners` and `POST knowledge/remind-owners` answer: what was sent, or why nothing
+ *  was. `sent` counts the owners emailed of `owners` named; `no_recipients` is owners who turned the emails off,
+ *  have no verified address or can no longer open the knowledgebase; `daily_limit` the knowledgebase's ceiling of
+ *  emails a day; `unavailable` a deployment that sends no email. */
+export type KnowledgeEmailResult =
+  | { outcome: 'sent'; sent: number; owners: number }
+  | { outcome: 'already_sent'; sentAt: number; nextAt?: number }
+  | { outcome: 'no_owners' | 'nothing_due' | 'unavailable' | 'daily_limit' | 'no_recipients' };
 /** An agent's edit waiting for an Editor (ai-knowledge.md "Edits suggested by agents"): a passage of the page's
  *  Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty). */
 export type KnowledgeSuggestion = {
@@ -276,6 +286,9 @@ export type KnowledgeOverviewResponse = {
   context: { budget: number; used: number; pages: KnowledgeContextPage[] };
   health: KnowledgeHealthCounts;
   hasKey: boolean;
+  /** The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last
+   *  reminded (Remind the Owners is once a week). */
+  reviewEmails: { available: boolean; remindedAt?: number };
 };
 /** `POST .../questions`: an agent's `report_gap`. */
 export type ReportGapRequest = { question: string };

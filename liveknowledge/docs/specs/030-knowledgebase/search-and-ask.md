@@ -46,7 +46,8 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
   **Found but Not Used** for a passage set aside because it is stale and disagrees with a newer verified one.
 - **It does not guess.** The model is told to say so when the passages do not answer the question or part of it. That
   part is recorded as an unanswered question ([AI Knowledge](ai-knowledge.md)) and shown as a **Knowledge Gap** card
-  with **Draft a Page From What We Know** and, once the knowledgebase's emails are built, **Ask <owner> to Write It**.
+  with **Draft a Page From What We Know** and, once it has an email of its own (the review emails are built; this
+  one is not), **Ask <owner> to Write It**.
 - **Scope:** an answer reads only pages the asker can open. A follow-up keeps the conversation (up to 10 turns).
   Recent questions are kept per person, per knowledgebase, in the browser.
 - **Bounds:** 20 questions a person an hour and 200 a knowledgebase a day (`ASK_*` limits, checked in the room); a question is at

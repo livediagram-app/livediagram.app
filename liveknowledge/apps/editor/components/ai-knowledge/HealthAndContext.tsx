@@ -2,17 +2,19 @@
 
 // Knowledge Health and Always in Context (docs/specs/030-knowledgebase/ai-knowledge.md). Health is one stacked bar:
 // Verified, Review Due and Never Verified, dark, mid and light, so the three differ in lightness as well as hue,
-// with a legend that says each count. "Remind the Owners" waits for the knowledgebase's emails and is not drawn.
+// with a legend that says each count. Remind the Owners emails each owner their due and never-verified pages, once
+// a week (knowledge-email-routes.ts); in that week the section says when they were reminded in the button's place.
 // Always in Context lists the pages every agent is handed first, each with its size, against the budget.
 import type { KnowledgeContextPage, KnowledgeHealthCounts } from '@liveknowledge/api-schema';
 import { Button, CompactEmptyState, HoverCard } from '@liveknowledge/ui';
+import { ownersEmailedText, remindedThisWeek } from '@/lib/knowledge-ask/email-words';
 import {
   budgetText,
   healthParts,
   tokensText,
   type HealthPart,
 } from '@/lib/knowledge-ask/overview-words';
-import { AddIcon, ContextIcon, DismissIcon, HealthIcon } from './ai-knowledge-icons';
+import { AddIcon, ContextIcon, DismissIcon, HealthIcon, RemindIcon } from './ai-knowledge-icons';
 import { AI_MUTED, AiSection } from './AiSection';
 
 // Light theme: dark, mid, light. Dark theme: light, mid, dark. Each neighbour is a clear step of lightness apart.
@@ -22,13 +24,49 @@ const HEALTH_FILL: Record<HealthPart['key'], string> = {
   neverVerified: 'bg-slate-300 dark:bg-slate-600',
 };
 
-export function HealthSection({ health }: { health: KnowledgeHealthCounts }) {
+export function HealthSection({
+  health,
+  canRemind,
+  remindedAt,
+  reminding,
+  now,
+  onRemind,
+}: {
+  health: KnowledgeHealthCounts;
+  // A signed-in Editor, where this deployment sends email.
+  canRemind: boolean;
+  remindedAt: number | undefined;
+  reminding: boolean;
+  now: number;
+  onRemind: () => void;
+}) {
   const { parts, label } = healthParts(health);
+  // Nobody to remind while every page is verified.
+  const toReview = health.reviewDue + health.neverVerified;
   return (
     <AiSection
       id="ai-health"
       title="Knowledge Health"
       about="How much of this knowledgebase someone vouches for, worked out now from each page's review date."
+      action={
+        !canRemind || toReview === 0 ? undefined : remindedThisWeek(remindedAt, now) ? (
+          <span className={`flex min-h-8 items-center gap-1.5 text-xs ${AI_MUTED}`}>
+            <RemindIcon />
+            {ownersEmailedText('remind', remindedAt!, now)}
+          </span>
+        ) : (
+          <Button
+            variant="secondary"
+            size="xs"
+            busy={reminding}
+            onClick={onRemind}
+            className="phone:min-h-11"
+          >
+            <RemindIcon />
+            Remind the Owners
+          </Button>
+        )
+      }
     >
       {health.total === 0 ? (
         <CompactEmptyState

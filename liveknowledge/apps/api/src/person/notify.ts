@@ -21,8 +21,13 @@ import { SETTINGS_APP } from './settings';
 import { isAccountOwner } from './owner';
 
 // The email switches liveknowledge reads at accounts (docs/specs/014-identity/profile-and-email-notifications.md).
+// `notifyKnowledgeReviews` is liveknowledge's own (docs/specs/030-knowledgebase/verification.md "Reminders").
 export type NotifySetting =
-  'notifyMilestones' | 'notifyDocumentJoin' | 'notifyActionAssigned' | 'notifyMentions';
+  | 'notifyMilestones'
+  | 'notifyDocumentJoin'
+  | 'notifyActionAssigned'
+  | 'notifyMentions'
+  | 'notifyKnowledgeReviews';
 
 // The verified addresses of these accounts who have not turned `setting` off, by id. Guests are dropped.
 export async function notifyRecipients(

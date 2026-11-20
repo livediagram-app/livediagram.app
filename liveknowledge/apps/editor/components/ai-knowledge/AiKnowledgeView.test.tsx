@@ -26,6 +26,8 @@ vi.mock('@/lib/api/knowledge', async (actual) => ({
   ...(await actual<typeof import('@/lib/api/knowledge')>()),
   ...api,
 }));
+const emailsApi = vi.hoisted(() => ({ apiAskConflictOwners: vi.fn(), apiRemindOwners: vi.fn() }));
+vi.mock('@/lib/api/knowledge-emails', () => emailsApi);
 const agentsApi = vi.hoisted(() => ({ apiSetAgentScopes: vi.fn() }));
 vi.mock('@/lib/api/knowledge-agents', () => agentsApi);
 const suggestionsApi = vi.hoisted(() => ({
@@ -132,6 +134,7 @@ const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewR
   },
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   hasKey: true,
+  reviewEmails: { available: true },
   ...over,
 });
 const empty = (): KnowledgeOverviewResponse =>
@@ -266,8 +269,6 @@ describe('what it shows', () => {
     expect(conflicts.getByText('Never Verified')).toBeTruthy();
     expect(conflicts.getByText('<b>We release on Fridays.</b>')).toBeTruthy();
     expect(document.querySelector('[data-conflict] b')).toBeNull();
-    // Email is not built.
-    expect(screen.queryByRole('button', { name: /Ask Both Owners|Remind the Owners/ })).toBeNull();
   });
 
   it('a question: how often it was asked and by whom', async () => {
@@ -356,6 +357,8 @@ describe.each(ROLES)('as %s', (role) => {
     expect(has(conflicts, 'Release Process Is Right, Fix the Other')).toBe(editor);
     expect(has(conflicts, 'Hotfixes Is Right, Fix the Other')).toBe(editor);
     expect(has(conflicts, 'Not a Conflict')).toBe(editor);
+    expect(has(conflicts, 'Ask Both Owners')).toBe(editor);
+    expect(has(section('Knowledge Health'), 'Remind the Owners')).toBe(editor);
     const questions = section('Questions Nobody Could Answer');
     expect(has(questions, 'Draft a Page')).toBe(editor);
     expect(has(questions, 'Dismiss: Who approves a release?')).toBe(editor);
@@ -601,5 +604,85 @@ describe('allowing an agent to write', () => {
     await open();
     expect(card().getByText(/Its token is read-only/)).toBeTruthy();
     expect(card().queryByRole('button', { name: 'More for Coding Agent' })).toBeNull();
+  });
+});
+
+// ai-knowledge.md "Pages that disagree", "Knowledge Health": the two emails an Editor asks for.
+describe('emailing the owners', () => {
+  const health = () => section('Knowledge Health');
+  const conflicts = () => section('Pages That Disagree');
+
+  it('asks both owners of a conflict, says what was sent, and shows when in the button’s place', async () => {
+    emailsApi.apiAskConflictOwners.mockResolvedValue({ outcome: 'sent', sent: 2, owners: 2 });
+    await open();
+    const asked = new Date(2026, 10, 14).getTime();
+    const [conflict] = full().conflicts;
+    api.apiKnowledgeOverview.mockResolvedValue(
+      full({ conflicts: [{ ...conflict!, askedAt: asked }] }),
+    );
+    fireEvent.click(conflicts().getByRole('button', { name: 'Ask Both Owners' }));
+    await waitFor(() => expect(toast.info).toHaveBeenCalledWith('Sent to 2 owners.'));
+    expect(emailsApi.apiAskConflictOwners).toHaveBeenCalledWith(WHO, 'd1', 'c1');
+    await waitFor(() =>
+      expect(conflicts().queryByRole('button', { name: 'Ask Both Owners' })).toBeNull(),
+    );
+    expect(conflicts().getByText(/^Owners asked 14 Nov/)).toBeTruthy();
+  });
+
+  it('reminds the owners, and says so when they were already reminded this week', async () => {
+    emailsApi.apiRemindOwners.mockResolvedValue({
+      outcome: 'already_sent',
+      sentAt: new Date(2026, 10, 18).getTime(),
+      nextAt: new Date(2026, 10, 25).getTime(),
+    });
+    await open();
+    fireEvent.click(health().getByRole('button', { name: 'Remind the Owners' }));
+    await waitFor(() =>
+      expect(toast.info).toHaveBeenCalledWith(
+        expect.stringMatching(
+          /^The owners were already reminded this week\. They can be reminded again on 25 Nov/,
+        ),
+      ),
+    );
+    expect(emailsApi.apiRemindOwners).toHaveBeenCalledWith(WHO, 'd1');
+    expect(api.apiKnowledgeOverview).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows when the owners were reminded instead of the button, for a week', async () => {
+    api.apiKnowledgeOverview.mockResolvedValue(
+      full({ reviewEmails: { available: true, remindedAt: Date.now() - 86_400_000 } }),
+    );
+    await open();
+    expect(health().queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    expect(health().getByText(/^Owners reminded /)).toBeTruthy();
+  });
+
+  it('says a refusal above the sections', async () => {
+    emailsApi.apiRemindOwners.mockRejectedValue(new ApiError('remind owners', 403, 'forbidden'));
+    await open();
+    fireEvent.click(health().getByRole('button', { name: 'Remind the Owners' }));
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'Only a signed-in Editor can email the owners.',
+    );
+    expect(toast.info).not.toHaveBeenCalled();
+  });
+
+  it('draws neither button where no email is sent, for a guest, or with every page verified', async () => {
+    api.apiKnowledgeOverview.mockResolvedValue(full({ reviewEmails: { available: false } }));
+    const first = await open();
+    expect(screen.queryByRole('button', { name: 'Ask Both Owners' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    first.unmount();
+    api.apiKnowledgeOverview.mockResolvedValue(full());
+    const guest = await open('edit', { accountUserId: null });
+    expect(screen.queryByRole('button', { name: 'Ask Both Owners' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    guest.unmount();
+    api.apiKnowledgeOverview.mockResolvedValue(
+      full({ health: { verified: 64, reviewDue: 0, neverVerified: 0, total: 64 } }),
+    );
+    await open();
+    expect(screen.queryByRole('button', { name: 'Remind the Owners' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'Ask Both Owners' })).toBeTruthy();
   });
 });

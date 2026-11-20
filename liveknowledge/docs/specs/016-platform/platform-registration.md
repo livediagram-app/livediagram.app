@@ -180,6 +180,12 @@ None of these can be done by an agent.
   ([Search and Ask](../030-knowledgebase/search-and-ask.md) "Ask"). Until it is set, no key can be stored and Ask
   answers `ask_unavailable`; nothing else waits on it. It is never rotated casually: a new value makes every stored
   key unreadable, and each team sets its key again.
+- **Email sending** for `liveknowledge.app`: the domain onboarded for sending on the account's Email Service, so
+  the api Worker's `EMAIL` binding (`hello@liveknowledge.app`, already in `wrangler.toml`) delivers. Every
+  notification waits on it, the Knowledgebase Reviews emails included
+  ([Verification](../030-knowledgebase/verification.md#reminders)); until then each answers `unavailable` or sends
+  nothing. Those emails add no secret, binding or migration: their account setting, `notifyKnowledgeReviews`, is
+  a key in the settings accounts already stores, on by default.
 - **Google:** `application/vnd.liveknowledge+json` (`.liveknowledge`) added to the Google Cloud project's Drive UI
   MIME types, and the new domain among the Google sign-in origins.
 - **KV namespaces** for the MCP Worker's OAuth state, production and staging, replacing the ids the fork carries in

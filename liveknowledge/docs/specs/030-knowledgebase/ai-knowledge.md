@@ -44,7 +44,14 @@ to an agent. No reader's identity is kept beyond the agent's name.
   facts. A found pair is a **conflict**: the question it answers, both passages, and each page's verified state.
 - Resolving: **<Page> Is Right, Fix the Other** opens the other page with the passage selected and a margin note
   quoting the right one; **Ask Both Owners** emails them; **Not a Conflict** dismisses the pair for good.
-- A conflict closes by itself when either passage changes. Bounds: 50 checks a wiki a day; at most 5 candidate
+- **Ask Both Owners** sends each owner of the two pages one email, **Two Pages Disagree**: the question, both
+  pages by name with a link each, each passage as a plain text excerpt of at most 280 characters, and a link to
+  this view. At most once a conflict (one person who owns both pages gets one email). It is a
+  [Knowledgebase Reviews](verification.md#reminders) email: the same setting, the same check that the owner can
+  still open the knowledgebase, the same 50 a day. The answer says what happened: sent to how many owners, already
+  asked and when, nobody owns either page, the owners cannot be reached, the day's emails are spent, or this
+  server sends no email.
+- A conflict closes by itself when either passage changes. Bounds: 50 checks a knowledgebase a day; at most 5 candidate
   passages a check. Without a key the section explains that it needs one.
 
 ## Edits suggested by agents
@@ -65,6 +72,12 @@ or here. The list shows each page's size in tokens (characters / 4, rounded up t
 Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, and **Remind the Owners**
 (one email each, at most once a week per wiki).
 
+**Remind the Owners** sends each owner one email, **Pages to Review**, listing their pages that are Review Due or
+Never Verified (each named with its state and linked; the first 100, the rest counted). It is a
+[Knowledgebase Reviews](verification.md#reminders) email. A week runs from the last reminder that reached someone:
+a press that sent nothing does not spend it. The answer says what happened, as Ask Both Owners does, and also that
+every page is verified when there is nothing to remind anyone of.
+
 ## The view, as built
 
 - One read of `GET .../knowledge` each time the view opens and one after each action taken in it. Nothing is polled.
@@ -81,15 +94,21 @@ Counts of Verified, Review Due and Never Verified pages as one stacked bar with 
   once and go back, with a toast saying why, when the change is refused. A connection that cannot write whatever
   is granted (a read-only token, or one acting for someone who is not an Editor) has no menu and says why.
 - **Pages That Disagree:** the question, the two passages side by side (stacked on a phone) each with its page's
-  trust, **<Page> Is Right, Fix the Other** for each side (it opens the other page) and **Not a Conflict**. Without
-  a key the section says it needs one.
+  trust, **<Page> Is Right, Fix the Other** for each side (it opens the other page), **Ask Both Owners** and **Not
+  a Conflict**. Once the owners were asked, "Owners asked 14 Nov" stands in the button's place. Without a key the
+  section says it needs one.
 - **Questions Nobody Could Answer:** rows of the question, "Asked 4 times by people and the Coding Agent", **Draft a
   Page** and a dismiss button.
 - **Edits Suggested by Agents:** a card each: the page, the agent, the reason's first line, the lines taken out and
   put in (a sign and a strike as well as a colour), **Accept**, **Open the Page**, **Dismiss**. A suggestion that no
   longer fits its page says so in words.
 - **Knowledge Health:** one stacked bar, Verified, Review Due and Never Verified, dark, mid and light so they differ
-  in lightness as well as hue, with one spoken label and a legend of the three counts.
+  in lightness as well as hue, with one spoken label and a legend of the three counts. **Remind the Owners** sits
+  at the section's right while a page is Review Due or Never Verified; for a week after a reminder "Owners reminded
+  14 Nov" stands in its place.
+- **The two email buttons** are a signed-in Editor's and are drawn only where the deployment sends email (the read
+  says so). Each shows what happened in a toast, in words ("Sent to 2 owners.", "The owners were already reminded
+  this week. They can be reminded again on 25 Nov."); a request that fails outright is said above the sections.
 - **Always in Context:** the budget bar ("4,410 of 8,000 tokens"), each page with its size and a remove button, and
   **Add a Page**, which opens a page picker. A page that would pass the budget is refused in the route's own words.
 - **What an Agent Sees:** a dark card with a short sample of how one search result reads to an agent, built from a
@@ -100,7 +119,9 @@ Counts of Verified, Review Due and Never Verified pages as one stacked bar with 
 
 ## Not built
 
-- **Ask Both Owners** and **Remind the Owners**: no email route exists, so neither is drawn.
+- **Ask <Owner> to Write It** on a Knowledge Gap card ([Search and Ask](search-and-ask.md)): it has no email and
+  is not drawn.
+- The emails have been sent only through a fake sender in tests, never from a deployed Worker.
 - **Fix the Other** opens the other page, not the passage with a margin note quoting the right one.
 - **Edits Suggested by Agents** is built against the wire type and its two routes and tested over a fake; it has not
   been exercised against a running api.
@@ -115,4 +136,4 @@ Counts of Verified, Review Due and Never Verified pages as one stacked bar with 
 | Accept or dismiss a suggestion, resolve a conflict      | yes    | no          | no     |
 | Draft a page, dismiss a question, set Always in Context | yes    | no          | no     |
 | Allow an agent to write, or stop it                     | yes    | no          | no     |
-| Remind the owners                                       | yes    | no          | no     |
+| Ask both owners of a conflict; remind the owners        | yes    | no          | no     |

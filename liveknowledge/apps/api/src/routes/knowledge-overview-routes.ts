@@ -3,6 +3,7 @@
 //   POST   /api/documents/<id>/questions               { question }: an agent's `report_gap`
 //   DELETE /api/documents/<id>/questions/<key>         Dismiss (Editor)
 //   POST   /api/documents/<id>/conflicts/<id>/dismiss  Not a Conflict (Editor)
+//   (Ask Both Owners and Remind the Owners are knowledge-email-routes.ts.)
 // Seeing the tab is every role's; resolving is an Editor's. All of it is the room's own bookkeeping: no model.
 import {
   ASK_MAX_QUESTION_CHARS,
@@ -33,6 +34,8 @@ import type {
 import { seenAgents } from '../knowledge/agent-seen';
 import { readAiSettings } from '../knowledge/ai-settings';
 import { connectedAgents } from '../knowledge/connected-agents';
+import { marksOf } from '../knowledge/email-marks';
+import { emailEnabled } from '../email/client';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll, sqlOf } from '../knowledge/knowledge-db';
 import { contextPages, knowledgeHealthCounts } from '../knowledge/knowledge-reads';
@@ -62,7 +65,7 @@ const trustOf = (row: SideRow, now: number): KnowledgeTrustState =>
 
 // The open conflicts with each side's passage and page as they stand, read in bounded statements (at most 50
 // passage ids a statement, under the 100 bound values a query may take).
-async function openConflicts(
+export async function openConflicts(
   env: KnowledgeRoute['ctx']['env'],
   now: number,
 ): Promise<KnowledgeConflict[]> {
@@ -112,18 +115,32 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
   const { env } = ctx;
   const now = Date.now();
   const titles = new Map(document.tabs.map((t) => [t.id, t.name]));
-  const [reads, seen, questions, questionAgents, conflicts, pages, health, ai, suggestions] =
-    await Promise.all([
-      rowsOf<AgentReadsRow>(env, countAgentReads(now)),
-      seenAgents(env, now),
-      rowsOf<QuestionRow>(env, listQuestions()),
-      rowsOf<QuestionAgentRow>(env, listQuestionAgents()),
-      openConflicts(env, now),
-      contextPages(env, document.id),
-      knowledgeHealthCounts(env, document.id, now),
-      readAiSettings(env, grant.role === 'edit'),
-      pendingSuggestions(route, now),
-    ]);
+  const [
+    reads,
+    seen,
+    questions,
+    questionAgents,
+    conflicts,
+    pages,
+    health,
+    ai,
+    suggestions,
+    asked,
+    reminded,
+  ] = await Promise.all([
+    rowsOf<AgentReadsRow>(env, countAgentReads(now)),
+    seenAgents(env, now),
+    rowsOf<QuestionRow>(env, listQuestions()),
+    rowsOf<QuestionAgentRow>(env, listQuestionAgents()),
+    openConflicts(env, now),
+    contextPages(env, document.id),
+    knowledgeHealthCounts(env, document.id, now),
+    readAiSettings(env, grant.role === 'edit'),
+    pendingSuggestions(route, now),
+    // What the review emails remember (knowledge/email-marks.ts): a row a conflict asked about, one for the week.
+    marksOf(env, 'ask'),
+    marksOf(env, 'remind'),
+  ]);
   const lastAt = new Map(questions.map((q) => [q.key, q.lastAt]));
   const overview: KnowledgeOverviewResponse = {
     agents: connectedAgents({
@@ -141,7 +158,10 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
       agents: Object.entries(q.agents).map(([name, asked]) => ({ name, asked })),
       lastAt: lastAt.get(q.key) ?? 0,
     })),
-    conflicts,
+    conflicts: conflicts.map((conflict) => {
+      const askedAt = asked.get(conflict.id);
+      return askedAt === undefined ? conflict : { ...conflict, askedAt };
+    }),
     // Agents' edits waiting for an Editor (knowledge-suggestion-routes.ts), newest first.
     suggestions,
     context: {
@@ -151,6 +171,10 @@ async function handleOverview(route: KnowledgeRoute): Promise<Response> {
     },
     health,
     hasKey: ai.hasKey,
+    reviewEmails: {
+      available: emailEnabled(env),
+      ...(reminded.has('owners') ? { remindedAt: reminded.get('owners') } : {}),
+    },
   };
   return json(overview);
 }

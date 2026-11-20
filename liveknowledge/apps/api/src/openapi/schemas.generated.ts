@@ -4530,6 +4530,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "a": {
         "$ref": "#/components/schemas/KnowledgeConflictSide"
       },
+      "askedAt": {
+        "description": "When both pages' owners were emailed about it (Ask Both Owners): once a conflict.",
+        "type": "number"
+      },
       "b": {
         "$ref": "#/components/schemas/KnowledgeConflictSide"
       },
@@ -4629,6 +4633,71 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeEmailResult": {
+    "anyOf": [
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "const": "sent",
+            "type": "string"
+          },
+          "owners": {
+            "type": "number"
+          },
+          "sent": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "outcome",
+          "sent",
+          "owners"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "nextAt": {
+            "type": "number"
+          },
+          "outcome": {
+            "const": "already_sent",
+            "type": "string"
+          },
+          "sentAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "outcome",
+          "sentAt"
+        ],
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "outcome": {
+            "enum": [
+              "no_owners",
+              "nothing_due",
+              "unavailable",
+              "daily_limit",
+              "no_recipients"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome"
+        ],
+        "type": "object"
+      }
+    ],
+    "description": "What `POST conflicts/<id>/ask-owners` and `POST knowledge/remind-owners` answer: what was sent, or why nothing was. `sent` counts the owners emailed of `owners` named; `no_recipients` is owners who turned the emails off, have no verified address or can no longer open the knowledgebase; `daily_limit` the knowledgebase's ceiling of emails a day; `unavailable` a deployment that sends no email."
+  },
   "KnowledgeHealthCounts": {
     "additionalProperties": false,
     "properties": {
@@ -4704,6 +4773,22 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         "type": "array"
       },
+      "reviewEmails": {
+        "additionalProperties": false,
+        "description": "The Knowledgebase Reviews emails: whether this deployment sends email, and when the owners were last reminded (Remind the Owners is once a week).",
+        "properties": {
+          "available": {
+            "type": "boolean"
+          },
+          "remindedAt": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "available"
+        ],
+        "type": "object"
+      },
       "suggestions": {
         "items": {
           "$ref": "#/components/schemas/KnowledgeSuggestion"
@@ -4718,7 +4803,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "suggestions",
       "context",
       "health",
-      "hasKey"
+      "hasKey",
+      "reviewEmails"
     ],
     "type": "object"
   },

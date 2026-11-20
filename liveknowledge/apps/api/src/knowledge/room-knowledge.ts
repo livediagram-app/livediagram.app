@@ -9,6 +9,7 @@ import {
   pruneReads,
 } from '@liveknowledge/knowledge';
 import { pruneAgentSeen } from './agent-seen';
+import { pruneEmailMarks } from './email-marks';
 import { pruneSuggestions } from './suggestions';
 import {
   hasQueuedPages,
@@ -36,6 +37,8 @@ export class RoomKnowledge {
   private readonly arm: () => void;
   /** Told the pages whose writing a write indexed anew. */
   onIndexed: ((pages: readonly IndexedPage[]) => void) | null = null;
+  /** Told that a page's verification or review interval changed. */
+  onTrust: (() => void) | null = null;
 
   constructor(storage: KnowledgeStorage, arm: () => void) {
     this.storage = storage;
@@ -47,6 +50,7 @@ export class RoomKnowledge {
     return withKnowledgeIndex(this.storage.sql, base, {
       onQueued: () => this.wake(Date.now() + BACKFILL_GAP_MS),
       onIndexed: (pages) => this.onIndexed?.(pages),
+      onTrust: () => this.onTrust?.(),
     });
   }
 
@@ -74,6 +78,7 @@ export class RoomKnowledge {
         console.info('[knowledge] backfill', { pages: settled.pages, queued: settled.queued });
       if (settled.queued > 0) next = now + BACKFILL_GAP_MS;
       if (settled.indexed.length > 0) this.onIndexed?.(settled.indexed);
+      if (settled.trust > 0) this.onTrust?.();
     } catch (error) {
       console.warn('[knowledge] backfill failed', { error: String(error) });
     }
@@ -94,6 +99,7 @@ export function pruneKnowledge(sql: ItemSql, now: number): void {
     ...pruneQuestions(),
     ...pruneSuggestions(now),
     pruneAgentSeen(now, READS_KEPT_DAYS),
+    ...pruneEmailMarks(),
   ])
     sql.exec(statement.sql, ...statement.params);
 }

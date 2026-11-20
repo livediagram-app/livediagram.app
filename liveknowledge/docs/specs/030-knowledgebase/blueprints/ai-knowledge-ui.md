@@ -13,6 +13,7 @@ and AI Settings. **Nothing here is verified in a browser.**
 | the sections                              | `AgentsSection.tsx`, `ConflictsSection.tsx`, `QuestionsSection.tsx`, `SuggestionsSection.tsx`, `HealthAndContext.tsx` |
 | an agent's card, its menu and its change  | `AgentCard.tsx`, `useAgentWrite.ts`, `AgentWriteDialog.tsx`; `lib/api/knowledge-agents.ts`                            |
 | Connect an Agent                          | `ConnectAgentDialog.tsx`                                                                                              |
+| the owner emails' requests and words      | `lib/api/knowledge-emails.ts`, `lib/knowledge-ask/email-words.ts`                                                     |
 | the words                                 | `lib/knowledge-ask/overview-words.ts`                                                                                 |
 | accept and dismiss a suggestion, refusals | `lib/knowledge-ask/suggestions-api.ts`                                                                                |
 
@@ -33,15 +34,15 @@ and one read.
 Each is `AiSection`: a `section` named by its heading's words (the count sits beside them in a `CountBadge`, outside
 the name), one line about it, an optional action at the right, then its rows or a `CompactEmptyState`.
 
-| Section                       | Rows from             | Empty state                                                   | Editor's actions                                    |
-| ----------------------------- | --------------------- | ------------------------------------------------------------- | --------------------------------------------------- |
-| Connected Agents              | `agents`              | "No Agents Yet", Connect an Agent                             | Allow Writing; Stop Writing                         |
-| Pages That Disagree           | `conflicts`, `hasKey` | "No Disagreements Yet"; with no key, a note that it needs one | each side's Is Right, Fix the Other; Not a Conflict |
-| Questions Nobody Could Answer | `questions`           | "No Unanswered Questions Yet"                                 | Draft a Page; Dismiss                               |
-| Edits Suggested by Agents     | `suggestions`         | "No Suggested Edits Yet"                                      | Accept; Dismiss (Open the Page is everyone's)       |
-| Knowledge Health              | `health`              | "No Pages Yet"                                                | none                                                |
-| Always in Context             | `context`             | "No Pages in Context Yet"                                     | Add a Page; remove                                  |
-| What an Agent Sees            | the read, or nothing  | a made-up page                                                | none                                                |
+| Section                       | Rows from             | Empty state                                                   | Editor's actions                                                     |
+| ----------------------------- | --------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Connected Agents              | `agents`              | "No Agents Yet", Connect an Agent                             | Allow Writing; Stop Writing                                          |
+| Pages That Disagree           | `conflicts`, `hasKey` | "No Disagreements Yet"; with no key, a note that it needs one | each side's Is Right, Fix the Other; Ask Both Owners; Not a Conflict |
+| Questions Nobody Could Answer | `questions`           | "No Unanswered Questions Yet"                                 | Draft a Page; Dismiss                                                |
+| Edits Suggested by Agents     | `suggestions`         | "No Suggested Edits Yet"                                      | Accept; Dismiss (Open the Page is everyone's)                        |
+| Knowledge Health              | `health`              | "No Pages Yet"                                                | Remind the Owners                                                    |
+| Always in Context             | `context`             | "No Pages in Context Yet"                                     | Add a Page; remove                                                   |
+| What an Agent Sees            | the read, or nothing  | a made-up page                                                | none                                                                 |
 
 - **Agents.** `agentDoor(agent)`: the row's `door` when the room noted its token; else, from the name, "MCP", "CLI"
   and "API Token" (what the api counts a client under when it sends none), any other name being the client's own.
@@ -59,6 +60,13 @@ the name), one line about it, an optional action at the right, then its rows or 
   opens A, each at the passage that disagrees: a side carries `firstBlock` (the passage's `first_block`, from the
   overview route), and `openPassage(chrome, tab, block)` brings that block into view and lights it, the search
   dialog's own way in (`goToBlock`). A side's title opens its page at its passage the same way. Not a Conflict is `apiDismissKnowledgeConflict`.
+- **The owner emails.** `canEmailOwners` is `askRights.emailOwners` (an Editor of the whole knowledgebase with an
+  account) and `reviewEmails.available`. **Ask Both Owners** (a mail icon, `secondary`) sits before Not a Conflict
+  while the conflict has no `askedAt`; with one, `ownersEmailedText('ask', …)` ("Owners asked 14 Nov") is there
+  instead. **Remind the Owners** (a bell icon) is the Health section's action while `reviewDue + neverVerified`
+  is over zero; while `remindedThisWeek(remindedAt, now)` it is "Owners reminded 14 Nov". Each press is `run` under
+  `ask:<id>` or `remind-owners` (the button's busy look, one at a time), then `toast.info(emailResultText(result,
+kind, now))` and the overview read again; a thrown request is `emailFailureText` in the error callout.
 - **Questions.** `askedByText`: "Asked once" or "Asked N times", then "by people" and "the <agent>" for each agent
   that asked, joined with commas and "and". Draft a Page is `useDraftPage(session, hasKey)` (ask-ui.md "Pages made
   here"); the row stays until dismissed (`apiDismissKnowledgeQuestion`).
@@ -96,14 +104,15 @@ Again**. Offline: one `EmptyState` for the view. Ready: the sections, in the ord
 | Accept or dismiss a suggestion                                     | yes    | no          | no     |
 | Add a page to Always in Context, or take one out                   | yes    | no          | no     |
 | Allow Writing; Stop Writing                                        | yes    | no          | no     |
+| Ask Both Owners; Remind the Owners (signed in)                     | yes    | no          | no     |
 
-Gated on `askRights` (`resolve`, `makePages`, `context`, `manageAi`, `grantAgents`): without the flag the control is not drawn, and
+Gated on `askRights` (`resolve`, `makePages`, `context`, `manageAi`, `grantAgents`, `emailOwners`): without the flag the control is not drawn, and
 each handler checks it again. Tests, a role at a time: `components/ai-knowledge/AiKnowledgeView.test.tsx` "as edit",
 "as participate", "as view".
 
 ## Telemetry
 
-`UI·Opened·ConnectAgent`; `UI·Used·AgentWriteAllowed`, `AgentWriteStopped`, `ConflictDismissed`, `QuestionDismissed`, `SuggestionAccepted`,
+`UI·Opened·ConnectAgent`; `UI·Used·AgentWriteAllowed`, `AgentWriteStopped`, `OwnersAsked`, `OwnersReminded`, `ConflictDismissed`, `QuestionDismissed`, `SuggestionAccepted`,
 `SuggestionDismissed`; `UI·Added·ContextPage`, `UI·Removed·ContextPage`. No words, names or ids.
 
 ## Tests

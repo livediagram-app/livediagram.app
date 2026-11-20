@@ -96,6 +96,8 @@ import { dropSession, roomPeople, broadcastPresence } from './document-room-pres
 import { RoomKnowledge } from '../knowledge/room-knowledge';
 import { CONFLICT_CHECK_DELAY_MS, oweConflictChecks } from '../knowledge/conflict-check';
 import { runKnowledgeWork } from '../knowledge/knowledge-turn';
+import { oweWork } from '../knowledge/knowledge-work';
+import { REVIEW_CHECK_DELAY_MS } from '../knowledge/knowledge-review-timing';
 
 // One SQLite-backed Durable Object per document id (docs/specs/015-api/api.md "Storage" and "Realtime model"). It
 // is two things at once:
@@ -264,6 +266,13 @@ export class DocumentRoom extends DurableObject<Env> {
       const now = Date.now();
       if (oweConflictChecks(state.storage.sql, pages, now) > 0)
         this.knowledge.wake(now + CONFLICT_CHECK_DELAY_MS);
+    };
+    // A page verified, or its interval changed: the review check looks again, since the next date to wait for
+    // may have moved (knowledge/knowledge-emails.ts). One row however many pages changed.
+    this.knowledge.onTrust = () => {
+      const dueAt = Date.now() + REVIEW_CHECK_DELAY_MS;
+      oweWork(state.storage.sql, { kind: 'review-email', key: 'daily', dueAt, payload: '' });
+      this.knowledge.wake(dueAt);
     };
     this.knowledge.work = async (now) =>
       this.roomEnv && this.documentId
