@@ -58,7 +58,7 @@ describe('blanks of a page kind', () => {
       expect(isBlankTemplate(kind)).toBe(kind === 'blank-article');
       expect(templateCategory(kind)).toBeNull();
     }
-    expect(untitledNameForTemplate('blank-article')).toBe('Untitled Page');
+    expect(untitledNameForTemplate('blank-article')).toBe('Untitled Knowledgebase');
   });
 
   it('answers nothing for any other template', () => {

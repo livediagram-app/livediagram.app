@@ -79,13 +79,13 @@ export type TemplateDescriptor = {
 export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank',
-    title: 'Blank Page',
-    description: 'An empty page: a title and a first paragraph to write.',
+    title: 'Blank Knowledgebase',
+    description: 'An empty knowledgebase: one page, ready to write.',
   },
   {
     kind: 'blank-article',
-    title: 'Blank Page',
-    description: 'One empty page: a title and a first paragraph to write.',
+    title: 'Blank Knowledgebase',
+    description: 'One empty knowledgebase: a first page to write on.',
     extra: true,
   },
   {

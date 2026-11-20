@@ -17,7 +17,6 @@ describe('isDefaultDocumentName', () => {
   it("counts every template's untitled name, and the plain untitled", () => {
     for (const name of [
       'Untitled Knowledgebase',
-      'Untitled Page',
       'Untitled Meeting Notes',
       'Untitled Project Brief',
     ])
