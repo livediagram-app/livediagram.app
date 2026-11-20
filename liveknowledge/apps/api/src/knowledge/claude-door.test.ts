@@ -1,7 +1,14 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CLAUDE_HOST, claudeDoor, claudeDoorFor } from './claude-door';
+import {
+  CLAUDE_HOST,
+  E2E_VERIFIED_AT_HEADER,
+  claudeDoor,
+  claudeDoorFor,
+  underE2eStack,
+  verifyMoment,
+} from './claude-door';
 
 const MESSAGES = `https://${CLAUDE_HOST}/v1/messages`;
 
@@ -82,5 +89,28 @@ describe('claudeDoorFor', () => {
       const text = readFileSync(fileURLToPath(new URL(file, import.meta.url)), 'utf8');
       expect(text, file).not.toContain('E2E_CLAUDE_STAND_IN');
     }
+  });
+});
+
+describe('verifyMoment', () => {
+  const NOW = 1_800_000_000_000;
+  const asking = (value: string) =>
+    new Request('https://kb.test/verify', { headers: { [E2E_VERIFIED_AT_HEADER]: value } });
+  const stack = { E2E_CLAUDE_STAND_IN: 'http://127.0.0.1:9000' };
+
+  it('is now on every deployment, whatever the header says', () => {
+    expect(underE2eStack({})).toBe(false);
+    expect(verifyMoment({}, asking(String(NOW - 1000)), NOW)).toBe(NOW);
+    expect(
+      verifyMoment({ E2E_CLAUDE_STAND_IN: 'https://example.com' }, asking(String(NOW - 1000)), NOW),
+    ).toBe(NOW);
+  });
+
+  it('takes an earlier moment under the e2e stack, and nothing else', () => {
+    expect(underE2eStack(stack)).toBe(true);
+    expect(verifyMoment(stack, asking(String(NOW - 1000)), NOW)).toBe(NOW - 1000);
+    expect(verifyMoment(stack, new Request('https://kb.test/verify'), NOW)).toBe(NOW);
+    for (const value of [String(NOW + 1), '-5', '1.5', 'yesterday'])
+      expect(verifyMoment(stack, asking(value), NOW)).toBe(NOW);
   });
 });

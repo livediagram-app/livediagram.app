@@ -48,3 +48,21 @@ export function claudeDoorFor(env: ClaudeDoorEnv): typeof fetch {
     return fetch(`${standIn}${url.pathname}${url.search}`, init);
   };
 }
+
+/** Whether this Worker runs under the e2e stack: its stand-in is named, on the loopback. No deployment does. */
+export const underE2eStack = (env: ClaudeDoorEnv): boolean =>
+  standInOrigin(env.E2E_CLAUDE_STAND_IN) !== undefined;
+
+/** The header an e2e spec sends with Verify to say when the page was verified (routes/knowledge-page-routes.ts). */
+export const E2E_VERIFIED_AT_HEADER = 'X-E2E-Verified-At';
+
+/**
+ * When a Verify counts from: now. Under the e2e stack alone a spec may name an earlier moment in
+ * `X-E2E-Verified-At` (epoch ms), so a page can be due for review without a test waiting 30 days; anywhere else the
+ * header is ignored, and a moment in the future always is.
+ */
+export function verifyMoment(env: ClaudeDoorEnv, request: Request, now: number): number {
+  if (!underE2eStack(env)) return now;
+  const asked = Number(request.headers.get(E2E_VERIFIED_AT_HEADER));
+  return Number.isInteger(asked) && asked > 0 && asked <= now ? asked : now;
+}

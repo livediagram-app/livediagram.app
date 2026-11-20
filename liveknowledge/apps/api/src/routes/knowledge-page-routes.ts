@@ -5,6 +5,7 @@
 //   POST  /api/documents/<id>/pages/<tab>/verify      Verify: now, by the caller, who owns a page with no owner
 //   PUT   /api/documents/<id>/pages/<tab>/knowledge   owner, review interval, Always in Context (each optional)
 // Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles").
+import { verifyMoment } from '../knowledge/claude-door';
 import { pageTreeRows } from '@liveknowledge/document';
 import {
   CONTEXT_BUDGET_TOKENS,
@@ -122,7 +123,9 @@ export function handleVerify(
   // Verify says who vouches for the page: an account, never a guest's or a link visitor's id.
   const person = accountOf(ctx);
   if (!person) return forbidden();
-  return saveFields(ctx, document, tab, async (page) => verified(page.fields, person, Date.now()), {
+  // Now; the e2e stack alone may say earlier (verifyMoment).
+  const at = verifyMoment(ctx.env, ctx.request, Date.now());
+  return saveFields(ctx, document, tab, async (page) => verified(page.fields, person, at), {
     verified: true,
   });
 }

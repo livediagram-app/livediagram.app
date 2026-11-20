@@ -20,6 +20,11 @@ export const pageTree = (page: Page): Locator => page.getByRole('tree', { name: 
 /** A row of the page tree by its page's name (and its verified state, when it has one: "Runbook, Verified"). */
 export const pageRow = (page: Page, name: string | RegExp): Locator =>
   pageTree(page).getByRole('treeitem', { name, exact: true });
+/** A row by its page's name alone, whatever its verified state says after it. */
+export const pageRowNamed = (page: Page, name: string): Locator =>
+  pageTree(page).getByRole('treeitem', {
+    name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(, (Verified|Review Due))?$`),
+  });
 /** The names of the tree's rows, top to bottom, each with its level: "1 Start Here". */
 export const treeShape = (page: Page): Promise<string[]> =>
   pageTree(page)
@@ -101,7 +106,7 @@ export async function openPage(page: Page, name: string): Promise<void> {
 
 /** A row's menu (its controls mount while the row is hovered or focused), ready for a verb to be pressed. */
 export async function openRowMenu(page: Page, name: string): Promise<Locator> {
-  const row = pageRow(page, name);
+  const row = pageRowNamed(page, name);
   await row.hover();
   await row.getByRole('button', { name: `Page Options for ${name}` }).click();
   const menu = page.getByRole('menu', { name: 'Page Options' });
