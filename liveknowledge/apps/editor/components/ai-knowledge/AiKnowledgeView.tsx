@@ -61,8 +61,11 @@ function AiKnowledge({ session }: { session: AskSession }) {
     track('UI', 'Opened', 'ConnectAgent');
     chrome.get().openSettingsOn('tokens');
   };
-  const openPage = (tab: string) => {
-    if (!openPassage(chrome, tab)) toast.info('That page is no longer in this knowledgebase.');
+  // A page, at a passage's first block when one is named (a conflict's side): brought into view and lit, as a
+  // search result's is (openPassage).
+  const openPage = (tab: string, block = '') => {
+    if (!openPassage(chrome, tab, block))
+      toast.info('That page is no longer in this knowledgebase.');
   };
   const setContext = (tab: string, context: boolean) =>
     run(

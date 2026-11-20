@@ -1,14 +1,14 @@
 'use client';
 
 // One answer (docs/specs/030-knowledgebase/search-and-ask.md "What an answer shows"): the text with its citation
-// chips, the trust line, an amber note for each part the pages do not cover, and its footer. The answer is drawn as
-// text with the page's own marks, never as HTML. Memoised on its turn, so an earlier answer is not drawn again when
+// chips, the trust line, an amber note for each part the pages do not cover, and its footer. The answer's Markdown
+// is formatted once it has ended (AnswerBody), from text and elements made here, never as HTML. Memoised on its turn, so an earlier answer is not drawn again when
 // a later one arrives.
-import { memo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { Button, HoverCard } from '@liveknowledge/ui';
 import { Callout } from '@liveworkspace/ui/callout';
 import { REVIEW_DUE_PILL, VERIFIED_PILL } from '@/components/knowledge/TrustBadge';
-import { answerMarkdown, answerParts } from '@/lib/knowledge-ask/answer-parts';
+import { answerMarkdown } from '@/lib/knowledge-ask/answer-parts';
 import type { AskConversation, AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
 import { askFailureWords } from '@/lib/knowledge-ask/ask-failure-words';
 import { answerTrust } from '@/lib/knowledge-ask/ask-trust';
@@ -23,7 +23,7 @@ import {
   VerifiedIcon,
   WarningIcon,
 } from './ask-icons';
-import { CitationChip } from './CitationChip';
+import { AnswerBody } from './AnswerBody';
 import { StreamingAnswer } from './StreamingAnswer';
 
 const CARD =
@@ -45,24 +45,13 @@ export type AskAnswerCardProps = {
 };
 
 function AnswerText({ turn, onCite }: { turn: AskTurnView; onCite: AskAnswerCardProps['onCite'] }) {
-  const titles = new Map(turn.sources.map((source) => [source.number, source.title]));
-  const parts = answerParts(turn.text, new Set(titles.keys()));
+  // The same map while the turn is the same, so the answer's Markdown is read once (AnswerBody).
+  const titles = useMemo(
+    () => new Map(turn.sources.map((source) => [source.number, source.title])),
+    [turn.sources],
+  );
   return (
-    <p data-ask-answer="" className="whitespace-pre-wrap break-words">
-      {parts.map((part, at) =>
-        part.kind === 'text' ? (
-          part.text
-        ) : (
-          <CitationChip
-            // A marker has no id of its own; its place in the answer is stable once the answer has ended.
-            key={`${at}-${part.number}`}
-            number={part.number}
-            title={titles.get(part.number) ?? ''}
-            onPress={() => onCite(turn.id, part.number)}
-          />
-        ),
-      )}
-    </p>
+    <AnswerBody text={turn.text} titles={titles} onCite={(number) => onCite(turn.id, number)} />
   );
 }
 

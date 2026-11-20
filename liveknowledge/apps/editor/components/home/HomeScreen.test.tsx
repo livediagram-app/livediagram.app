@@ -277,6 +277,38 @@ describe('the field', () => {
     ]);
   });
 
+  // A passage's result opens its page at the passage, as a result in the knowledgebase's own search does: Home
+  // hands the editor the passage's first block (it opened the page at its top before). A title's result hands none.
+  it('hands the editor the passage a result names, and nothing for a title', async () => {
+    api.apiSearchKnowledge.mockImplementation(async (_who: unknown, id: string) =>
+      id === 'a'
+        ? [found('a1', { firstBlock: 'b7' }), found('a2', { isTitle: true, firstBlock: '' })]
+        : [],
+    );
+    await home();
+    fireEvent.focus(screen.getByRole('textbox', { name: 'Search or ask' }));
+    type('release');
+    const results = await waitFor(() => {
+      const rows = document.querySelectorAll<HTMLElement>('[data-home-result]');
+      expect(rows.length).toBe(2);
+      return [...rows];
+    });
+    const title = results.find((row) => row.getAttribute('href') === '/document/a#t=tab-a2')!;
+    const passage = results.find((row) => row.getAttribute('href') === '/document/a#t=tab-a1')!;
+    // The link itself is followed by the browser: the handoff rides beside it.
+    title.addEventListener('click', (e) => e.preventDefault());
+    passage.addEventListener('click', (e) => e.preventDefault());
+    fireEvent.click(title);
+    expect(sessionStorage.getItem(ARRIVAL_KEY)).toBeNull();
+    fireEvent.click(passage);
+    expect(JSON.parse(sessionStorage.getItem(ARRIVAL_KEY)!)).toMatchObject({
+      kind: 'passage',
+      documentId: 'a',
+      tab: 'tab-a1',
+      block: 'b7',
+    });
+  });
+
   it('aborts the words before when new words are typed', async () => {
     const signals: AbortSignal[] = [];
     api.apiSearchKnowledge.mockImplementation(

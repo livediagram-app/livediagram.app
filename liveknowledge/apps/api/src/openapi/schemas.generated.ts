@@ -4518,6 +4518,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "KnowledgeConflictSide": {
     "additionalProperties": false,
     "properties": {
+      "firstBlock": {
+        "description": "The passage's first block on its page: where the page opens when this side is the one to fix.",
+        "type": "string"
+      },
       "passageId": {
         "type": "string"
       },
@@ -4540,6 +4544,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "required": [
       "passageId",
       "tab",
+      "firstBlock",
       "title",
       "text",
       "trust"

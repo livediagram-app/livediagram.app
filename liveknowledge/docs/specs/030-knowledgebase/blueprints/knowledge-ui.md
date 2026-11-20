@@ -79,6 +79,9 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   here shows until the tab's own `knowledge` changes (the room's patch, or a peer's later change).
 - **Page Health** is read (`GET pages/<tab>/health`) once per page for the session, when the page opens; concurrent
   asks share one request. A failed read leaves the fields showing from the tab and the reads as a dash.
+- **Last Verified** shows the date and who verified, each whole: the value is two blocks (`data-verified-date`,
+  `data-verified-by`) in a row that wraps (`Row`'s `wrap`), so at the card's width the name takes a line of its own
+  under the date. It was one truncated line ("Nov 20 by Priya N…"). The other rows keep one line.
 - **The right rail** is 280 px (`PAGE_RAIL_WIDTH`), docked down the canvas's right from the toolbar's row on a
   window at least 1,280 px wide (`PAGE_RAIL_MIN_WINDOW`): the right corner stacks and the bottom-right cluster stand
   clear of it (`CanvasChrome`), and the page framing centres the page between the tree and the rail

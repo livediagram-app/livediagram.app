@@ -44,6 +44,7 @@ const invalid = (error: string, message: string) => json({ error, message }, { s
 type SideRow = {
   id: string;
   tab: string;
+  firstBlock: string;
   text: string;
   title: string | null;
   verifiedAt: number | null;
@@ -72,8 +73,8 @@ async function openConflicts(
     const found = await rowsOf<SideRow>(
       env,
       sqlOf(
-        `SELECT p.id AS id, p.tab AS tab, p.text AS text, t.title AS title, t.verified_at AS verifiedAt,
-                t.review_days AS reviewDays
+        `SELECT p.id AS id, p.tab AS tab, p.first_block AS firstBlock, p.text AS text, t.title AS title,
+                t.verified_at AS verifiedAt, t.review_days AS reviewDays
            FROM passages p LEFT JOIN page_trust t ON t.tab = p.tab
           WHERE p.id IN (${chunk.map(() => '?').join(', ')})`,
         ...chunk,
@@ -87,6 +88,7 @@ async function openConflicts(
     return {
       passageId: row.id,
       tab: row.tab,
+      firstBlock: row.firstBlock,
       title: row.title ?? '',
       text: row.text,
       trust: trustOf(row, now),

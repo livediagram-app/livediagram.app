@@ -12,16 +12,19 @@ vi.mock('next/dynamic', () => ({
   },
 }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
+vi.mock('@/lib/knowledge/go-to-block', () => ({ BLOCK_HIT_MS: 1600, goToBlock: vi.fn() }));
 
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
 import { track } from '@/lib/telemetry';
 import { showKnowledgeView } from '@/lib/knowledge-ask/knowledge-view';
 import { handArrival } from '@/lib/knowledge-home/arrival-handoff';
+import { goToBlock } from '@/lib/knowledge/go-to-block';
 import { KnowledgeCornerSwitch, KnowledgeSwitchRow, KnowledgeViewHost } from './KnowledgeViewHost';
 import { chromeValue, renderInEditor } from './test-chrome';
 
 afterEach(() => {
   cleanup();
+  vi.mocked(goToBlock).mockClear();
   sessionStorage.clear();
   window.history.replaceState(null, '', '/document/d1');
   vi.clearAllMocks();
@@ -137,6 +140,30 @@ describe('Import handed over by the Knowledgebase Home', () => {
     const setImportOpen = vi.fn();
     renderInEditor(<KnowledgeViewHost />, chromeValue(role, { setImportOpen }));
     expect(setImportOpen.mock.calls).toEqual(opens ? [[true]] : []);
+  });
+
+  // A search result's passage, pressed on Home: the page opens at the passage's first block, by the search
+  // dialog's own way in (goToBlock), for every role, once.
+  it.each(['edit', 'participate', 'view'] as const)(
+    'opens the page at the passage Home handed over, as %s',
+    (role) => {
+      handArrival({ kind: 'passage', documentId: 'd1', tab: 'p2', block: 'b7' });
+      renderInEditor(<KnowledgeViewHost />, chromeValue(role)).unmount();
+      expect(vi.mocked(goToBlock).mock.calls.map((call) => call.slice(1))).toEqual([['p2', 'b7']]);
+      renderInEditor(<KnowledgeViewHost />, chromeValue(role));
+      expect(goToBlock).toHaveBeenCalledTimes(1);
+    },
+  );
+
+  it('waits for the knowledgebase, leaves another knowledgebase’s passage alone, and opens no page that is gone', () => {
+    handArrival({ kind: 'passage', documentId: 'd1', tab: 'p2', block: 'b7' });
+    renderInEditor(<KnowledgeViewHost />, chromeValue('edit', { hydrated: false })).unmount();
+    expect(goToBlock).not.toHaveBeenCalled();
+    renderInEditor(<KnowledgeViewHost />, chromeValue('edit', { documentId: 'other' })).unmount();
+    expect(goToBlock).not.toHaveBeenCalled();
+    handArrival({ kind: 'passage', documentId: 'd1', tab: 'gone', block: 'b7' });
+    renderInEditor(<KnowledgeViewHost />, chromeValue('edit'));
+    expect(goToBlock).not.toHaveBeenCalled();
   });
 
   it('opens once', () => {

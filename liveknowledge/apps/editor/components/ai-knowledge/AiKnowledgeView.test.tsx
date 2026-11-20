@@ -85,6 +85,7 @@ const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewR
       a: {
         passageId: 'p1:0',
         tab: 'p1',
+        firstBlock: 'b7',
         title: 'Release Process',
         text: 'We release on Thursdays.',
         trust: 'verified',
@@ -93,6 +94,7 @@ const full = (over: Partial<KnowledgeOverviewResponse> = {}): KnowledgeOverviewR
       b: {
         passageId: 'p2:0',
         tab: 'p2',
+        firstBlock: 'b3',
         title: 'Hotfixes',
         text: '<b>We release on Fridays.</b>',
         trust: 'never-verified',
@@ -358,7 +360,10 @@ describe('an Editor’s actions', () => {
     fireEvent.click(
       conflicts.getByRole('button', { name: 'Release Process Is Right, Fix the Other' }),
     );
-    expect(vi.mocked(goToBlock).mock.calls[0]!.slice(1)).toEqual(['p2', '']);
+    // The other page, at the passage that disagrees (it opened the page alone before, at its top).
+    expect(vi.mocked(goToBlock).mock.calls[0]!.slice(1)).toEqual(['p2', 'b3']);
+    fireEvent.click(conflicts.getByRole('button', { name: 'Hotfixes Is Right, Fix the Other' }));
+    expect(vi.mocked(goToBlock).mock.calls[1]!.slice(1)).toEqual(['p1', 'b7']);
   });
 
   it('dismisses a question, then reads again', async () => {

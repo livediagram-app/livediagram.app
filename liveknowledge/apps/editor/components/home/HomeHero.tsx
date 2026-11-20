@@ -11,6 +11,7 @@ import { markedParts } from '@/lib/knowledge/knowledge-search';
 import { trustMark } from '@/lib/knowledge/page-trust';
 import type { HomeKnowledgebase } from '@/lib/knowledge-home/home-data';
 import { pageHref } from '@/lib/knowledge-home/home-links';
+import { handArrival } from '@/lib/knowledge-home/arrival-handoff';
 import { AskIcon, PageIcon, SearchIcon } from './home-icons';
 import { HomeIllustration } from './HomeIllustration';
 import type { HomeSearch } from './useHomeSearch';
@@ -65,6 +66,18 @@ function Results({ search, onClear }: { search: HomeSearch; onClear: () => void 
                 <a
                   href={pageHref(result.documentId, result.tab)}
                   data-home-result=""
+                  // A passage's result opens its page at the passage (a title's opens the page at its top). Handed
+                  // over as the link is followed; a click that opens another tab carries nothing, and the page
+                  // opens at its top there.
+                  onClick={() => {
+                    if (!result.isTitle && result.firstBlock)
+                      handArrival({
+                        kind: 'passage',
+                        documentId: result.documentId,
+                        tab: result.tab,
+                        block: result.firstBlock,
+                      });
+                  }}
                   className="flex min-h-11 cursor-pointer items-start gap-2.5 rounded-lg px-3 py-2 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-100 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-600 dark:hover:bg-slate-800"
                 >
                   <span aria-hidden className="mt-0.5 shrink-0 text-slate-500 dark:text-slate-400">

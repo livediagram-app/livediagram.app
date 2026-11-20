@@ -30,11 +30,27 @@ export type PageHealthCardProps = {
   onVerify: (() => void) | undefined;
 };
 
-function Row({ label, children }: { label: string; children: ReactNode }) {
+// `wrap`: a value of two parts (a date and a name) that are each read in full: it wraps onto a second line at the
+// card's width, where a one-part value truncates.
+function Row({
+  label,
+  wrap = false,
+  children,
+}: {
+  label: string;
+  wrap?: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className="flex min-h-7 items-center justify-between gap-3">
+    <div
+      className={`flex min-h-7 justify-between gap-3 ${wrap ? 'items-baseline py-1' : 'items-center'}`}
+    >
       <dt className="shrink-0 text-slate-500 dark:text-slate-400">{label}</dt>
-      <dd className="min-w-0 truncate text-right font-medium text-slate-900 dark:text-slate-100">
+      <dd
+        className={`min-w-0 text-right font-medium text-slate-900 dark:text-slate-100 ${
+          wrap ? 'break-words' : 'truncate'
+        }`}
+      >
         {children}
       </dd>
     </div>
@@ -89,10 +105,26 @@ export function PageHealthCard({
             (ownerName ?? (owner ? 'Someone Else' : 'No Owner'))
           )}
         </Row>
-        <Row label="Last Verified">
-          {verifiedAt === undefined
-            ? 'Never'
-            : `${shortDate(verifiedAt, now)}${verifier ? ` by ${verifier}` : ''}`}
+        {/* The date and who verified, each whole: the name takes a line of its own rather than being cut short
+            ("Nov 20 by Priya N…" at the card's width). */}
+        <Row label="Last Verified" wrap={verifiedAt !== undefined && !!verifier}>
+          {verifiedAt === undefined ? (
+            'Never'
+          ) : (
+            <>
+              <span data-verified-date="" className="block whitespace-nowrap">
+                {shortDate(verifiedAt, now)}
+              </span>
+              {verifier ? (
+                <span
+                  data-verified-by=""
+                  className="block font-normal text-slate-600 dark:text-slate-400"
+                >
+                  by {verifier}
+                </span>
+              ) : null}
+            </>
+          )}
         </Row>
         <Row label="Review">
           {onSetReviewEvery ? (

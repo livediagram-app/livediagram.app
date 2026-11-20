@@ -1,5 +1,5 @@
 // What Home hands the editor it is about to open (docs/specs/030-knowledgebase/knowledgebase-home.md): a question
-// for Ask, or Import to open. Kept in `sessionStorage` for the one navigation: read once on arrival and removed, and
+// for Ask, Import to open, or the passage a search result named. Kept in `sessionStorage` for the one navigation: read once on arrival and removed, and
 // ignored when older than two minutes or meant for another knowledgebase.
 
 export const ARRIVAL_KEY = 'liveknowledge:home-arrival:v1';
@@ -8,7 +8,10 @@ export const ARRIVAL_TTL_MS = 120_000;
 export type Arrival =
   | { kind: 'ask'; documentId: string; question: string }
   // `documentId` null: the knowledgebase /new is about to make.
-  | { kind: 'import'; documentId: string | null };
+  | { kind: 'import'; documentId: string | null }
+  // A search result's passage: the page opens at `block`, its first block, as a result in the knowledgebase's own
+  // search does (lib/knowledge/go-to-block.ts).
+  | { kind: 'passage'; documentId: string; tab: string; block: string };
 
 type Stored = Arrival & { at: number };
 

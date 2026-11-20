@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { takeArrival } from '@/lib/knowledge-home/arrival-handoff';
+import { goToBlock } from '@/lib/knowledge/go-to-block';
 import { useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -68,11 +69,27 @@ function useImportArrival(offered: boolean): void {
   }, [offered, documentId, canImport, chrome]);
 }
 
+// A search result's passage, pressed on the Knowledgebase Home (knowledgebase-home.md "The field"): once this
+// knowledgebase is here its page opens at the passage's first block, brought into view and lit, as a result in the
+// knowledgebase's own search dialog does (goToBlock, which waits for the page's writing to draw).
+function usePassageArrival(): void {
+  const chrome = useEditorChromeStore();
+  const documentId = useEditorChrome((s) => s.documentId);
+  const hydrated = useEditorChrome((s) => s.hydrated);
+  useEffect(() => {
+    if (!documentId || !hydrated) return;
+    const passage = takeArrival('passage', documentId);
+    if (passage && chrome.get().tabs.some((t) => t.id === passage.tab))
+      goToBlock(() => chrome.get(), passage.tab, passage.block);
+  }, [documentId, hydrated, chrome]);
+}
+
 /** Ask or AI Knowledge over the editor; nothing while Pages shows. */
 export function KnowledgeViewHost() {
   const view = useKnowledgeView();
   const offered = useKnowledgeViewsOffered();
   useImportArrival(offered);
+  usePassageArrival();
   if (!offered || view === 'pages') return null;
   return (
     <>

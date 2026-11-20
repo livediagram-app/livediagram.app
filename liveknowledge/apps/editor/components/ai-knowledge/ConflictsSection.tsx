@@ -17,13 +17,13 @@ function Side({
 }: {
   side: KnowledgeConflictSide;
   now: number;
-  onOpen: (tab: string) => void;
+  onOpen: (tab: string, block?: string) => void;
 }) {
   return (
     <div className="min-w-0 rounded-xl border border-slate-200 p-3 dark:border-slate-800">
       <button
         type="button"
-        onClick={() => onOpen(side.tab)}
+        onClick={() => onOpen(side.tab, side.firstBlock)}
         className="block w-full cursor-pointer truncate rounded text-left text-sm font-semibold text-slate-900 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 phone:min-h-11 dark:text-white"
       >
         {side.title || 'Untitled Page'}
@@ -55,7 +55,8 @@ export function ConflictsSection({
   canManageAi: boolean;
   busy: ReadonlySet<string>;
   now: number;
-  onOpenPage: (tab: string) => void;
+  // The page, at the block where the passage begins when one is named.
+  onOpenPage: (tab: string, block?: string) => void;
   onDismiss: (id: string) => void;
   onOpenAiSettings: () => void;
 }) {
@@ -106,7 +107,7 @@ export function ConflictsSection({
                   <Button
                     variant="secondary"
                     size="xs"
-                    onClick={() => onOpenPage(conflict.b.tab)}
+                    onClick={() => onOpenPage(conflict.b.tab, conflict.b.firstBlock)}
                     className="max-w-full phone:min-h-11"
                   >
                     <span className="truncate">
@@ -116,7 +117,7 @@ export function ConflictsSection({
                   <Button
                     variant="secondary"
                     size="xs"
-                    onClick={() => onOpenPage(conflict.a.tab)}
+                    onClick={() => onOpenPage(conflict.a.tab, conflict.a.firstBlock)}
                     className="max-w-full phone:min-h-11"
                   >
                     <span className="truncate">

@@ -121,6 +121,7 @@ console after a save, Remove with its question, the model, and the controls per 
 | the conversations and recent questions of the tab | `lib/knowledge-ask/ask-session-store.ts`                                                  |
 | recent questions in `localStorage`                | `lib/knowledge-ask/recent-questions.ts`                                                   |
 | an answer as parts, a passage's marks, Markdown   | `lib/knowledge-ask/answer-parts.ts`                                                       |
+| a finished answer's Markdown as blocks, and drawn | `lib/knowledge-ask/answer-blocks.ts`, `components/ask/AnswerBody.tsx`                     |
 | the trust line                                    | `lib/knowledge-ask/ask-trust.ts`                                                          |
 | a failure in words                                | `lib/knowledge-ask/ask-failure-words.ts`                                                  |
 | a source card's last line                         | `lib/knowledge-ask/source-meta.ts`                                                        |
@@ -148,9 +149,21 @@ console after a save, Remove with its question, the model, and the controls per 
   the person has not scrolled away from it, by an `IntersectionObserver` on a 1px foot). Before the first words it
   says "Reading the pages…". The stream is `aria-hidden`; a visually hidden status says "Answering." and "The answer
   is ready."
-- **When it ends**, the card draws `answerParts(text, cited)`: a marker (`[2]`, `[1, 3]`) whose numbers are all
-  among the sources becomes `CitationChip` buttons (named "Source 2: <page>"); any other marker stays text. The
-  paragraph is `whitespace-pre-wrap`; no element is ever made from the answer's own characters.
+- **When it ends**, the card draws the answer's Markdown, formatted (`AnswerBody` over `answerBlocks(text, cited)`,
+  `lib/knowledge-ask/answer-blocks.ts`). The Markdown is read by the article's own reader (`parseMarkdownBlocks`,
+  the one a pasted or imported page goes through) and cut down to what an answer may show: paragraphs, headings
+  (drawn as `h3` to `h5`, under the page's own), quotes, bulleted, numbered and to-do lists with their nesting, code
+  blocks, rules and tables, with bold, italic, struck and inline code. A marker (`[2]`, `[1, 3]`) whose numbers are
+  all among the sources becomes `CitationChip` buttons (named "Source 2: <page>") wherever it stands but in code;
+  any other marker stays text (`answerParts`, per run).
+- **Nothing is HTML.** Every piece is a React text node or an element `AnswerBody` makes: a tag the model wrote
+  (`<img onerror>`, `<script>`) is the characters it was. A link keeps its address only when `safeHref` reads it as
+  `http` or `https`; it opens in a new tab with `rel="noopener noreferrer nofollow"`. Any other link (`javascript:`,
+  `data:`, `mailto:`, a relative path) is its words alone.
+- **Streaming is untouched.** While the answer streams it is still the one text node; the Markdown is read once,
+  when the answer has ended (the card is memoised on its turn and `AnswerBody` on the text), never per token.
+  Measured (`answer-blocks.test.ts`): a 40,000 character answer of dense Markdown is read in 27 ms of CPU, held
+  under `cpuBudgetMs(100)`; 15,000 unclosed marks stay under `cpuBudgetMs(150)`.
 - **`askConversationFor(who, documentId)`** keeps one conversation per person and knowledgebase in a module map (four
   at most; the oldest is reset and dropped), so the view can unmount and mount again around it. `onAsked` sends
   `UI·Used·AskQuestion` and remembers the question; `onEnded` re-reads the AI settings after `ask_unavailable`.
@@ -215,7 +228,8 @@ not cover", "the answer footer", "a failure, in words with the next step").
 ### Not built, or not known
 
 - **Ask <owner> to Write It** is not drawn: no email route exists.
-- **Markdown in an answer** (a list, bold) shows as the characters the model wrote.
+- **Markdown while an answer streams** still shows as the characters the model writes; it is formatted when the
+  answer ends ("When it ends"). Formatting each finished block as it streams is not built.
 - **The draft's Ask call** spends one of the person's 20 questions and, when the pages still do not cover the
   question, counts it again as asked under AI Knowledge.
 - **A conversation is not kept across a reload**, and feedback goes nowhere but telemetry's count.

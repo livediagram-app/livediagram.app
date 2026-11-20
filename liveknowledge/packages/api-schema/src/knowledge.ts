@@ -139,6 +139,8 @@ export type KnowledgeQuestion = {
 export type KnowledgeConflictSide = {
   passageId: string;
   tab: string;
+  /** The passage's first block on its page: where the page opens when this side is the one to fix. */
+  firstBlock: string;
   title: string;
   text: string;
   trust: KnowledgeTrustState;

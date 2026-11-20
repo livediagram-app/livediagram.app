@@ -92,6 +92,10 @@ which is the one `/new` is about to make) and under `ARRIVAL_TTL_MS` (120,000) o
   can ask, starts a new question and asks it.
 - **Import:** `{ kind: 'import', documentId }`, then the knowledgebase (`/new?blank=1` with none). The views' host
   takes it once the knowledgebase is here, for someone who may change its pages, and opens the Import dialog.
+- **A search result's passage:** `{ kind: 'passage', documentId, tab, block }`, handed as the result's link is
+  followed (a passage's result alone; a title's opens the page at its top). The views' host (`usePassageArrival`)
+  takes it once the knowledgebase has loaded and calls `goToBlock`, so the page opens at the passage's first block,
+  in view and lit, for every role. A result opened in another browser tab carries no handoff and opens at the top.
 
 ## Share roles
 

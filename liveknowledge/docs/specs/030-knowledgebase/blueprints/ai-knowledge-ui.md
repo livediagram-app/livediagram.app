@@ -46,7 +46,9 @@ the name), one line about it, an optional action at the right, then its rows or 
   suggestion is this agent's. A top page is a button that shows Pages at that page (`openPassage`).
 - **Conflicts.** Each side shows its title (a button to its page), `trustText` and the passage
   (`whitespace-pre-wrap`, six lines at most). `<A> Is Right, Fix the Other` opens B; `<B> Is Right, Fix the Other`
-  opens A. Not a Conflict is `apiDismissKnowledgeConflict`.
+  opens A, each at the passage that disagrees: a side carries `firstBlock` (the passage's `first_block`, from the
+  overview route), and `openPassage(chrome, tab, block)` brings that block into view and lights it, the search
+  dialog's own way in (`goToBlock`). A side's title opens its page at its passage the same way. Not a Conflict is `apiDismissKnowledgeConflict`.
 - **Questions.** `askedByText`: "Asked once" or "Asked N times", then "by people" and "the <agent>" for each agent
   that asked, joined with commas and "and". Draft a Page is `useDraftPage(session, hasKey)` (ask-ui.md "Pages made
   here"); the row stays until dismissed (`apiDismissKnowledgeQuestion`).

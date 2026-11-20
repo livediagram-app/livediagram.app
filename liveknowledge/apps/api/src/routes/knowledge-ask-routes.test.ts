@@ -436,9 +436,22 @@ describe('pages that disagree', () => {
     const overview = await (
       await kit.call('viewer', 'GET', '/api/documents/kb/knowledge')
     ).json<{
-      conflicts: { id: string; question: string; a: { tab: string }; b: { tab: string } }[];
+      conflicts: {
+        id: string;
+        question: string;
+        a: { tab: string; firstBlock: string };
+        b: { tab: string; firstBlock: string };
+      }[];
     }>();
     expect(overview.conflicts).toHaveLength(1);
+    // Each side says where its passage begins on its page, so Fix the Other opens the page at it.
+    for (const side of [overview.conflicts[0]!.a, overview.conflicts[0]!.b]) {
+      const first = kit.db.sql
+        .prepare('SELECT first_block FROM passages WHERE tab = ? AND first_block = ?')
+        .all(side.tab, side.firstBlock);
+      expect(first.length).toBeGreaterThan(0);
+      expect(side.firstBlock).not.toBe('');
+    }
     expect(overview.conflicts[0]).toMatchObject({ question: 'When do deploys go out?' });
     expect([overview.conflicts[0]!.a.tab, overview.conflicts[0]!.b.tab].sort()).toEqual([
       'deploys',
