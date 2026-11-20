@@ -11,6 +11,7 @@ import {
   KNOWLEDGE_VIEW_KEEP,
   KnowledgeViewFrame,
 } from './KnowledgeViewFrame';
+import { AiSettingsHost } from './AiSettingsDialog';
 import { KnowledgeViewSwitch } from './KnowledgeViewSwitch';
 import { useKnowledgeViewsOffered } from './useKnowledgeViewsOffered';
 
@@ -49,10 +50,14 @@ export function KnowledgeViewHost() {
   const offered = useKnowledgeViewsOffered();
   if (!offered || view === 'pages') return null;
   return (
-    <KnowledgeViewFrame key={view} label={view === 'ask' ? 'Ask' : 'AI Knowledge'}>
-      <AreaErrorBoundary area="KnowledgeView" fallback="panel" fallbackClassName="flex-1">
-        {view === 'ask' ? <AskView /> : <AiKnowledgeView />}
-      </AreaErrorBoundary>
-    </KnowledgeViewFrame>
+    <>
+      <KnowledgeViewFrame key={view} label={view === 'ask' ? 'Ask' : 'AI Knowledge'}>
+        <AreaErrorBoundary area="KnowledgeView" fallback="panel" fallbackClassName="flex-1">
+          {view === 'ask' ? <AskView /> : <AiKnowledgeView />}
+        </AreaErrorBoundary>
+      </KnowledgeViewFrame>
+      {/* The knowledgebase's key and model, opened from either view. */}
+      <AiSettingsHost />
+    </>
   );
 }

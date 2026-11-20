@@ -64,3 +64,47 @@ case the views are not offered in, the inert editor, the modal guard, the way ba
   `ResizeObserver` turn, one frame late.
 - `inert` is set on DOM the editor's components own. React does not write that attribute for them, so nothing
   fights over it; a column child mounted while a view shows is not made inert.
+
+## AI Settings
+
+| Piece                      | File                                     |
+| -------------------------- | ---------------------------------------- |
+| who may do what            | `lib/knowledge-ask/ask-rights.ts`        |
+| the settings, read once    | `lib/knowledge-ask/ai-settings-store.ts` |
+| the words                  | `lib/knowledge-ask/ai-settings-words.ts` |
+| whether the dialog is open | `lib/knowledge-ask/ai-settings-open.ts`  |
+| the session's slices       | `components/ask/useAskSession.ts`        |
+| the dialog and its host    | `components/ask/AiSettingsDialog.tsx`    |
+| the key's field            | `components/ask/AiKeyForm.tsx`           |
+| the header button          | `components/ask/AiSettingsButton.tsx`    |
+
+- **Where it is.** A dialog (`Dialog`, `md`, a sheet on a phone), drawn by the views' host (`AiSettingsHost`) and
+  opened by `openAiSettings()`. Not a Settings category: `SETTINGS_CATEGORIES` is copied to liveworkspace.app by
+  `settings-site-catalogue.test.ts`, where no knowledgebase is open, and every row there is a preference of the
+  person. The platform's catalogue copy is unchanged.
+- **`askRights({ can, isStructureReadOnly, accountUserId, offline })`** answers `askOff` (`'offline'`,
+  `'signed-out'` or `null`) and four flags an Editor of the whole knowledgebase holds when it is not kept Offline:
+  `manageAi`, `makePages`, `resolve`, `context`.
+- **`aiSettingsStore`** holds `GET ai`'s answer per knowledgebase: `idle`, `loading`, `ready` or `failed`.
+  `load(who, id)` asks once (concurrent asks share the request; a failure is asked again next time); `set(id,
+settings)` takes a write's answer. It has no field a key could be put in.
+- **The key.** `AiKeyForm`'s input is uncontrolled: `type="password"`, `autocomplete="off"` on it and its form,
+  no spellcheck, marked for password managers to ignore. React state holds one boolean (whether anything is typed).
+  On submit the value is read, the field is emptied and the boolean cleared before the request is made, then the
+  string is handed to `apiSetKnowledgeAiKey` and dropped. A refusal is worded from its code and status alone
+  (`aiSettingsFailureText`): `invalid_key`, `invalid_model`, `ask_unavailable` (the server keeps no key), 403, 429,
+  else the action's own fallback.
+- **States.** Loading: the dialog's body keeps its height (`min-h-[23rem]`) and the state line is empty. Failed
+  read: an error callout with **Try Again**. No key: "No Key Yet", the field labelled "Add a Key", **Save Key**.
+  A key: "Key Ending 4f2a" (or "Key Added" when the route sends no ending), **Remove**, the field labelled
+  "Replace the Key", **Replace**. Remove asks in a `ConfirmDialog` ("Remove the Key?").
+- **Roles.** Without `manageAi` the field, Remove and the model's select are not drawn; the model shows as text and
+  one line says only an Editor can change these (or, Offline, that there is no Ask).
+- **Telemetry:** `UI·Opened·AiSettings`, `UI·Added·AiKey`, `UI·Removed·AiKey`, `UI·Changed·AiModel`. No value.
+
+### Tests
+
+`lib/knowledge-ask/ask-rights.test.ts` (each role, signed out, Offline, a page-scoped link) and
+`components/ask/AiSettingsDialog.test.tsx`: the state line, the field's attributes, the field cleared while the
+request is out and after a refusal, the key absent from the DOM, the store, both browser stores, telemetry and the
+console after a save, Remove with its question, the model, and the controls per role.

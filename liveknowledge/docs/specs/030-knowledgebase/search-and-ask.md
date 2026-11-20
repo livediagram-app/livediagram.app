@@ -19,12 +19,12 @@ Status: **spec**, not built ([Build plan](../005-project-roadmap/build-plan.md) 
 Ask answers a question in plain words from the wiki's own pages, and says where each part came from.
 
 - **Bring your own key.** liveknowledge is free and pays for no model. Ask is offered once an Editor adds the wiki's
-  **Claude API key** in Settings > AI. Without a key the Ask tab explains this with one button to Settings, and
+  **Claude API key** in **AI Settings**. Without a key the Ask tab explains this with one button to AI Settings, and
   search still works.
 - **The key** is sent once over TLS to the api, encrypted with AES-GCM under the Worker's `AI_KEY_SECRET`, and kept in
-  the wiki's Durable Object. It is never sent back to any client: Settings shows only "Key ending 4f2a", **Replace**
+  the wiki's Durable Object. It is never sent back to any client: AI Settings shows only "Key Ending 4f2a", **Replace**
   and **Remove**. Logs and telemetry never hold it. A wiki kept Offline has no Ask.
-- **Model:** Claude, `claude-fable-5-2` by default; Settings > AI offers the current Claude models, since the team
+- **Model:** Claude, `claude-fable-5-2` by default; AI Settings offers the current Claude models, since the team
   pays for what it uses.
 - **Answering:** the api takes the question, finds the best passages with the search index (up to 12, verified pages
   first), and asks the model to answer only from them, citing each claim. The answer streams to the page.
@@ -50,6 +50,19 @@ Ask answers a question in plain words from the wiki's own pages, and says where 
 | Draft a page from a gap                 | yes    | no          | no     |
 
 Ask through an anonymous share link is off: it would spend the team's key for strangers.
+
+## AI Settings
+
+- A dialog of the knowledgebase, opened by **AI Settings** in the Ask view's and AI Knowledge's header. It is not a
+  category of the Settings panel: Settings holds a person's own preferences on a device and an account, and has a
+  copy on liveworkspace.app where no knowledgebase is open; the key and the model belong to one knowledgebase and
+  are the same for everyone in it.
+- It shows the key's state ("No Key Yet", "Key Ending 4f2a"; "Key Added" to someone the ending is not told), a
+  password field to add or **Replace** it, **Remove** (asked first), the **Model** and two sentences: the key is
+  encrypted and never shown again, and the team pays Anthropic for what Ask uses.
+- The typed key is held only in the field. It is read once when sent and the field is cleared in the same turn,
+  whatever the answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.
+- An Editor has the controls; a Participant and a Viewer see the state and the model with none.
 
 ## The three views
 
