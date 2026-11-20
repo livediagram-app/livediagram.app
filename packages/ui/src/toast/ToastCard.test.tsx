@@ -101,6 +101,47 @@ describe('ToastCard', () => {
     expect(keep.hasAttribute('data-toast-destructive')).toBe(false);
   });
 
+  // toasts.md "A switch on a toast".
+  it('carries one switch under the message that flips without answering or closing', () => {
+    const onChange = vi.fn();
+    const onClose = vi.fn();
+    const keep = vi.fn();
+    const toggle = { label: 'Remember My Choice', onChange };
+    const { rerender } = render(
+      <ToastCard
+        tone="info"
+        message="This image isn't used anywhere else."
+        actions={[{ label: 'Keep', onSelect: keep }]}
+        toggle={toggle}
+        onClose={onClose}
+      />,
+    );
+    const remember = screen.getByRole('switch', { name: 'Remember My Choice' });
+    expect(remember.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(remember);
+    expect(onChange).toHaveBeenLastCalledWith(true);
+    expect(remember.getAttribute('aria-checked')).toBe('true');
+    expect(keep).not.toHaveBeenCalled();
+    expect(onClose).not.toHaveBeenCalled();
+    // The same toggle on a re-render keeps where it was put; a newer one starts again.
+    rerender(<ToastCard tone="info" message="Still here" toggle={toggle} onClose={onClose} />);
+    expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('true');
+    rerender(
+      <ToastCard
+        tone="info"
+        message="A newer delete"
+        toggle={{ label: 'Remember My Choice', onChange }}
+        onClose={onClose}
+      />,
+    );
+    expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('false');
+  });
+
+  it('has no switch unless given one', () => {
+    render(<ToastCard tone="info" message="Moved" onClose={() => {}} />);
+    expect(screen.queryByRole('switch')).toBeNull();
+  });
+
   it('is an alert for an error, and tints its border for a problem only', () => {
     const { rerender } = render(
       <ToastCard tone="error" message="Couldn't save." onClose={() => {}} />,

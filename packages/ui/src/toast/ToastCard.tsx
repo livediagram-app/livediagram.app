@@ -4,7 +4,7 @@
 // actions, close, on one row. The message keeps its buttons beside it, wrapping onto a second line itself, while it
 // has 10rem to wrap in; only then do the buttons drop to a row of their own at its end (a phone's sign-in toast had
 // Sign In stranded under a one-line message, the owner, 2026-11-20). The close stays in the top row's corner. Presentational: the stack owns timing and leaving.
-import type { HTMLAttributes, ReactNode, Ref } from 'react';
+import { useState, type HTMLAttributes, type ReactNode, type Ref } from 'react';
 import {
   lucideCircleAlert,
   lucideCircleCheck,
@@ -14,7 +14,8 @@ import {
 } from '@liveworkspace/icons/lucide';
 import { CloseIcon } from '../icons/actions';
 import { lucideGlyph } from '../icons/lucide-glyph';
-import type { ToastTone } from './toast-queue';
+import { SwitchRow } from '../Switch';
+import type { ToastTone, ToastToggle } from './toast-queue';
 
 /** The toast's card look, shared with the notices that are not in the stack (the new-version prompt). */
 export const TOAST_SURFACE =
@@ -79,10 +80,32 @@ function actionLook(action: ToastCardAction, highlight: boolean): string {
   return action.primary ? ACTION_PRIMARY : ACTION_SECONDARY;
 }
 
+// The toast's switch (toasts.md "A switch on a toast"), on a row of its own under the message: the house SwitchRow, its
+// words and track one button. It holds its own state, started again for each new toggle a newer upsert brings.
+function ToastSwitch({ toggle, highlight }: { toggle: ToastToggle; highlight: boolean }) {
+  const [state, setState] = useState({ of: toggle, on: toggle.checked === true });
+  const on = state.of === toggle ? state.on : toggle.checked === true;
+  return (
+    <SwitchRow
+      checked={on}
+      track="start"
+      layout="flex items-center gap-2 rounded-md text-left"
+      className={`touch-target relative -ml-0.5 mb-1 py-1 text-sm font-medium ${highlight ? 'text-white' : 'text-slate-700 dark:text-slate-200'}`}
+      onChange={(next) => {
+        setState({ of: toggle, on: next });
+        toggle.onChange(next);
+      }}
+    >
+      {toggle.label}
+    </SwitchRow>
+  );
+}
+
 export function ToastCard({
   tone,
   message,
   actions = [],
+  toggle,
   onClose,
   leaving = false,
   full = false,
@@ -95,6 +118,7 @@ export function ToastCard({
   tone: ToastTone;
   message: ReactNode;
   actions?: readonly ToastCardAction[];
+  toggle?: ToastToggle;
   onClose: () => void;
   leaving?: boolean;
   // Arrived on a full stack: the bolder entrance (toast-in-full), so a new toast on a busy stack is seen.
@@ -135,6 +159,11 @@ export function ToastCard({
                 {action.label}
               </button>
             ))}
+          </div>
+        ) : null}
+        {toggle ? (
+          <div className="basis-full" data-toast-toggle="">
+            <ToastSwitch toggle={toggle} highlight={highlight} />
           </div>
         ) : null}
       </div>
