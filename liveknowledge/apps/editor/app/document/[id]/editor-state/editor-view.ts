@@ -294,7 +294,11 @@ export function editorView({
     renameTabFolder: tabsSlice.renameTabFolder,
     moveTabToFolder: tabsSlice.moveTabToFolder,
     removeTabFromFolder: tabsSlice.removeTabFromFolder,
-    reorderTabs: tabsSlice.reorderTabs,
+    // The page tree's edits (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree").
+    movePage: tabsSlice.movePage,
+    stepPage: tabsSlice.stepPage,
+    indentPage: tabsSlice.indentPage,
+    outdentPage: tabsSlice.outdentPage,
     resetColorsSelected: styleSlice.resetColorsSelected,
     // Style-preset hover preview + click commit (docs/specs/010-palette/style-presets.md).
     clearStylePreview: styleSlice.clearStylePreview,

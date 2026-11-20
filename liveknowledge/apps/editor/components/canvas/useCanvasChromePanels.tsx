@@ -13,7 +13,7 @@ import type { RenameCurrentRequest } from '@liveworkspace/workbench/hooks/editor
 import type { CanvasChromeProps } from './CanvasChrome';
 import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
-import { useContentsChrome } from './useContentsChrome';
+import { usePageTreeChrome, type PageTreeChrome } from '@/components/page-tree/usePageTreeChrome';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
@@ -60,12 +60,9 @@ export function useCanvasChromePanels({
   // The Explorer, a popover under the menu button (docs/specs/007-editor/toolbar-layout.md).
   explorerEl: ReactNode;
   collaborateEl: ReactNode;
-  // Pages mode's Contents (docs/specs/007-editor/pages-mode.md "Contents"): the popover,
-  // or docked as the sidebar (useContentsChrome).
-  contentsPopoverEl: ReactNode;
-  contentsSidebarEl: ReactNode;
-  contentsDocked: boolean;
-  menuJoined: boolean;
+  // The page tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"): docked as the sidebar
+  // down the left, where the fork's Contents sidebar stood, or a phone's Pages button (usePageTreeChrome).
+  pageTree: PageTreeChrome;
   paletteTint: ReturnType<typeof usePaletteChrome>['paletteTint'];
 } {
   const {
@@ -149,13 +146,9 @@ export function useCanvasChromePanels({
   );
   // The three tool-config panels (laser / spotlight / format), see useCanvasToolPanels. They share one
   // contract: on screen only while their own tool is active.
-  // Contents belongs to Pages mode: its popover, or the sidebar docked in its place.
-  const { contentsDocked, menuJoined, contentsSidebarEl, contentsPopoverEl } = useContentsChrome({
-    props,
-    chromeHidden,
-    isMobile,
-    closeDockPanel,
-  });
+  // The page tree takes the docked sidebar's place (Contents listed a tab's paper pages; a knowledgebase page has
+  // one).
+  const pageTree = usePageTreeChrome({ chromeHidden, zenMode: props.zenMode === true, isMobile });
   const { laserEl, spotlightEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,
@@ -277,10 +270,7 @@ export function useCanvasChromePanels({
     explorerEl,
     // The cluster popovers, rendered beside the corner layer rather than in it (see panelEls).
     collaborateEl,
-    contentsPopoverEl,
-    contentsSidebarEl,
-    contentsDocked,
-    menuJoined,
+    pageTree,
     paletteTint,
   };
 }

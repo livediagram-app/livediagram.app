@@ -2,8 +2,8 @@
 
 Derived from [Knowledgebases and pages](../knowledgebases-and-pages.md) "A knowledgebase", "The page tree" and "Share
 roles". **Built so far: the model** (`Tab.parent`, its reading and validation, the limits, and the pure tree
-functions), **its storage and sync, the room's check and the share roles. Not built: the sidebar, the breadcrumb and
-the phone sheet.** The sections below say which is which; "Not built" is the work left, written
+functions), **its storage and sync, the room's check, the share roles, the sidebar, the phone sheet, the breadcrumb
+and the tab actions in tree terms. Not built: the copy sweep, and what "Not built" lists.** The sections below say which is which; "Not built" is the work left, written
 so it can be picked up cold.
 
 ## Domain and naming
@@ -119,48 +119,121 @@ then refused `unknown_page`; the autosave writes it again with the next save, by
 - **Tests:** `room-op-gate.test.ts` "the knowledgebase share roles, in the room" (a row per role and action),
   `document-room-participant.test.ts`, `editor-capabilities.test.ts`.
 
+## The sidebar (built)
+
+All of it is in `apps/editor/components/page-tree/`.
+
+| Piece                                   | File                                                                 |
+| --------------------------------------- | -------------------------------------------------------------------- |
+| rows on screen, keys, the drop          | `page-tree-view.ts` (`visiblePageRows`, `treeKeyAction`, `dropMove`) |
+| the pointer's state, outside React      | `page-tree-ui.ts` (`createPageTreeUi`, `useRowMark`)                 |
+| the list: tree, keyboard, menu, drag    | `PageTree.tsx`                                                       |
+| one row                                 | `PageTreeRow.tsx`                                                    |
+| the row menu and why a verb is disabled | `PageTreeRowMenu.tsx` (`pageMenuRefusals`)                           |
+| the sidebar's shell, the rail, New Page | `PageTreeSidebar.tsx`                                                |
+| a phone's Pages button and sheet        | `PageTreeSheet.tsx`                                                  |
+| the props from the editor's store       | `usePageTreeModel.tsx`                                               |
+| its place in the canvas chrome          | `usePageTreeChrome.tsx`                                              |
+| the breadcrumb                          | `PageBreadcrumb.tsx` (mounted by `CanvasPageSheet`)                  |
+| what is closed, kept in this browser    | `apps/editor/lib/page-tree-open.ts`                                  |
+
+- **Where it stands.** In the canvas chrome's docked-sidebar slot (`useCanvasChromePanels` calls
+  `usePageTreeChrome` where the fork called `useContentsChrome`): an `aside` down the canvas's left that sets
+  `data-contents-sidebar`, so the page framing and Zoom to Fit centre the page beside it, joined to the menu box as
+  its top row. `CanvasChrome` clears it at its own width (`PAGE_TREE_WIDTH` 264, `pageTreeClearancePx`) for the left
+  corner stacks, the bottom-right cluster and the strip. Hidden in zen mode, behind the welcome flow and in an
+  embed.
+- **Collapsed** (`readTreeCollapsed`, per browser): a rail `PAGE_TREE_RAIL_WIDTH` (48) wide under the menu box,
+  which keeps its own card, with Show Pages and, for an Editor, New Page.
+- **Rows.** `visiblePageRows(tabs, closed, activeId)` once per change of the list, of what is closed or of the
+  current page; 20 px a level (`PAGE_TREE_INDENT`); 32 px tall, 44 px on a touch screen. A row is `role="treeitem"`
+  with `aria-level`, `aria-posinset`, `aria-setsize`, `aria-expanded` (a page with subpages) and `aria-current` (the
+  current page, in `brand-100` with `brand-900` text: 10.1:1). One row is the Tab stop (roving tabindex): the last one
+  focused, else the current page.
+- **A row's controls** (Add Subpage, Page Options) and its title's tooltip mount only while the row is under the
+  pointer, holds focus or has its menu open; their 50 px is always kept, so nothing shifts. On a touch screen the
+  menu button is always there and Add Subpage is in the menu.
+- **One set of handlers.** The list listens once for every row: a click, a double click (rename), a key, a hover and
+  the drag are read off the row the event came from (`data-page-row`, `data-row-action`), so rows carry no handlers.
+- **Drag** (HTML drag and drop, as the tab bar used): a row's top and bottom quarters are its edges (an insertion
+  line), its middle the row (it highlights, and opens on the drop). `dropMove` turns the row and zone into a
+  `PageMove`; a move the tree refuses (`pageMoveRefusal`: its own subtree, too deep) or that changes nothing takes no
+  drop and shows no mark. Worked out once per row and zone entered, not per pointer move.
+- **Closed pages** are kept per knowledgebase in `localStorage` (`liveknowledge:v2:page-tree-closed`, the 50 most
+  recent knowledgebases); a page with subpages is open until closed. The current page's ancestors are open whatever
+  is stored, which is how a page opened by its link (`#t=<page>`) shows where it is.
+- **Phone:** no sidebar. `PageTreeSheet`'s Pages button rides in the strip's row beside the menu button (an Editor's
+  phone), or stands under the menu box (a reader's, which has no strip); it opens the same `PageTree` in the shared
+  `BottomSheet`, which closes when a page is chosen or added.
+- **The bottom bar** (`components/chrome/BottomBar.tsx`, in place of `TabBar.tsx`) keeps Tools, Settings and the
+  appearance, and still draws the canvas right-click menu (`TabPortalMenu`), which keeps the current page's Import,
+  Export, Lock, Clear and Add to Document. Its Rename asks the tree to rename the page in its row. The tab folder
+  rows are not offered.
+- **Presence:** `TabPresenceStack` in the row of the page each person is on.
+
+## Tab actions in tree terms (built)
+
+`hooks/persistence/useTabActions.ts`, over the pure list edits in `hooks/persistence/page-tree-edits.ts`:
+
+| Action                                  | Edit                                                                                                                                                                                     |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addTab(parent?)`                       | `withPageAddedTo`; refused at a limit with a toast (`pageTreeRefusalText`)                                                                                                               |
+| `duplicateTab(id)`                      | `withPageDuplicated`: beside the original, same parent, no subpages; its Title says its name                                                                                             |
+| `deleteTab(id)`                         | one `confirm` naming the count (`deletePageTitle`), then `withPageAndSubpagesDeleted` in one commit (links to the deleted pages stripped); the page after them opens (`pageAfterDelete`) |
+| `movePage(id, to)`                      | `withPageMoved` (the drop)                                                                                                                                                               |
+| `stepPage`, `indentPage`, `outdentPage` | `withPageStepped`, `withPageIndented`, `withPageOutdented` (the menu)                                                                                                                    |
+| `renameTab(id, name)`                   | the name and the Title together (`withPageTitle`); a page not loaded is opened and renamed once it has loaded                                                                            |
+| `renameTabFromTitle`                    | the name alone, by `tickTabs` (no undo step of its own)                                                                                                                                  |
+
+Every one answers nothing for a session that may not change the pages (`canEditStructure`). **The page's name
+follows its Title:** `usePageNameFromTitle` (`hooks/editor/`) renames the page `PAGE_NAME_SETTLE_MS` (600) after the
+Title last changed, only for a title this editor typed (the local edit counter moved), so a page loading or a peer
+typing writes nothing here; a rename still waiting when the person opens another page is made at once.
+
+Share roles in the editor: the tree is handed `canEdit = can.editPages && !isStructureReadOnly`
+(`usePageTreeModel`). Without it a row has no Add Subpage, no drag and no rename, the menu holds Copy Link alone, and
+there is no New Page or knowledgebase rename. Tested a role at a time in `PageTree.test.tsx`,
+`PageTreeSidebar.test.tsx` and `useTabActions.pages.test.tsx`.
+
 ## Not built
 
-Each item names the files it touches.
-
-1. **The sidebar,** replacing the tab bar. The slot exists: `useContentsChrome` (`components/canvas/`) answers
-   `contentsSidebarEl`, `contentsDocked` and `menuJoined`, and `CanvasChrome` already makes room for a docked left
-   sidebar and joins the menu box to its top; a sidebar that sets `data-contents-sidebar` is measured by the page
-   framing and Zoom to Fit. It is closed with `CUT_FROM_FORK` today. Build `PageTreeSidebar` in its own file: 264 px
-   wide (a product constant: the shared `CONTENTS_SIDEBAR_WIDTH` is 236 and belongs to `packages/workbench`), a
-   `slate-50` ground, a right border; rows from `pageTreeRows` indented 20 px a level; a chevron on a page with
-   subpages (open or closed kept per browser, the current page's ancestors always open); the current page in the
-   brand tint; a row's **+** for a subpage; "New Page" at the foot; the row menu as `MenuActionRow`s under a
-   `MenuHeader` (Rename, Add Subpage, Duplicate, Copy Link, Move Up, Move Down, Indent, Outdent, Delete last and
-   red); the delete confirmation naming the count ("Delete Release Process and 3 Subpages?"); drag to reorder among
-   siblings or onto a page to nest, never into its own subtree (`pageMoveRefusal`). Controls at a limit are disabled
-   with a `Tooltip` that says why (`pageAddRefusal`). The footer `TabBar` (`EditorViewFooterBar` in
-   `app/document/[id]/editor-view-bars.tsx`) goes, and its tab menu's Import, Export and Lock move to the row menu or
-   the page's title bar.
-2. **Tab actions in tree terms.** `useTabActions` (`hooks/persistence/useTabActions.ts`): `addTab` takes a parent and
-   uses `withPageAdded`; `deleteTab` uses `withPageDeleted` (and its confirmation the count); `duplicateTab` copies
-   the page beside the original with the same parent; `reorderTabs` becomes `withPageMoved`. Tab folders
-   (`useTabFolders`) are not offered: the tree replaces them.
-3. **The page's name follows its title.** A page's title is its writing's Title block. Where `useEditorArticles`
-   already names the knowledgebase from the first title (`articleTitleName`), a page whose name is still a default
-   (`isDefaultPageName`) or still equals its last title should take the new title in the same commit; Rename in the
-   row menu sets the name alone.
-4. **The breadcrumb** of `pageAncestors` above the page's title, each a link that selects that page.
-5. **On a phone** the tree is a sheet opened from the top bar, built from the workbench sheet pieces; touch targets
-   at least 44 px.
-6. **Share roles in the tree:** gate every tree action on `can.editPages` in the editor, and ship a test per role
-   (Editor, Participant, Viewer) for add, rename, move, duplicate and delete, following
-   `docs/instructions/gate-a-feature-by-share-role.md`.
-7. **The word "tab"** in the editor's copy becomes "page", and "Document" becomes "Knowledgebase" where a person
+1. **The word "tab"** in the editor's copy becomes "page", and "Document" becomes "Knowledgebase" where a person
    reads the item's noun (about 200 strings in `apps/editor`; the shared dialogs in `packages/` are the platform's).
+   The page tree, its menu, its toasts and the delete confirmation already say "page".
+2. **Nothing is verified in a browser.** Unit and component tests only: the sidebar's look, the menu box joined
+   above it, the rail, the drag's insertion line, the phone button's place and the breadcrumb's place in the title
+   row have not been seen on screen.
+3. **Delete is not red.** The shared `MenuActionRow` never colours a verb; a red Delete needs a decision there.
+4. **The breadcrumb on a phone.** The page's title row hides its left side on a phone, and the breadcrumb with it.
+5. **A rename of a page that is not loaded reaches peers only once it has loaded here** (it is opened to load it).
+   Undoing typing in a Title does not rename the page back until the Title is typed in again.
+6. **The fork's files this replaces are left unreferenced:** `components/canvas/useContentsChrome.tsx` and its test,
+   `hooks/persistence/useTabFolders.ts`. The end-to-end specs under `apps/editor/e2e` that drive the tab bar are not
+   updated.
+7. **Connected tabs** show in the tree as any page; their short menu (Connect Again, Remove) is not in the row menu.
 
 ## Performance and limits
 
 `pageParents` is O(pages x depth); every other function is one pass over the list after it. A full knowledgebase
 (500 pages, 8 levels) draws as rows, moves a subtree and is checked in about 1 ms, held under `cpuBudgetMs(150)` by
-`page-tree.test.ts`. The sidebar should read `pageTreeRows` once per change of the list (ids, parents, names), never
-per row and never on a typing commit, which changes none of them (`sameTabsForBar` already compares tabs without
-their writing).
+`page-tree.test.ts`.
+
+The sidebar, measured 2026-11-20 in jsdom (`PageTree.perf.test.tsx`; a browser's DOM is several times faster):
+
+| What                                      | Measured                                           | Held by the test                     |
+| ----------------------------------------- | -------------------------------------------------- | ------------------------------------ |
+| First render of 500 rows                  | 184 to 194 ms CPU, every row once                  | `cpuBudgetMs(1500)`                  |
+| A hover moving from one row to the next   | 2 row renders (the row left, the entered)          | exactly that                         |
+| A drag across 100 rows, 400 pointer moves | 399 row renders, 650 to 680 ms CPU (1.7 ms a move) | at most 2 a move, none inside a zone |
+| The current page changing                 | 2 row renders                                      | exactly that                         |
+| A typing commit                           | 0 renders of the tree                              | `editor-chrome.test.tsx`             |
+
+So the list is not windowed: 500 rows are 500 light elements (a row's buttons and tooltip mount only while it is
+active), and nothing renders them all again but a change of the list itself. `visiblePageRows` reads `pageTreeRows`
+once per change of the list (ids, parents, names), never per row and never on a typing commit, which changes none of
+them (`sameTabsForBar` compares tabs without their writing). The pointer's state lives outside React
+(`page-tree-ui.ts`): a change notifies 500 subscribers, each a string compare, and renders the rows whose mark
+changed.
 
 ## Testing
 
@@ -168,12 +241,23 @@ their writing).
 `page-tree-store.test.ts` covers the write checks (500 pages, level 8, a cycle, a parent in another document, two
 pages trading places, a full knowledgebase within budget); `page-tree-routes.test.ts` the summaries, the metadata
 save's parents and both saves' refusals over the api; `page-tree-sync.test.ts` (editor) the placeholders, the save
-diff, a peer's list and a resync. Nothing of the tree is drawn yet, so nothing is browser-verified.
+diff, a peer's list and a resync. The sidebar: `page-tree-view.test.ts` (rows, keys, the drop),
+`PageTree.test.tsx` (the tree's roles and attributes, the keyboard, the menu, the drag, a role at a time),
+`PageTree.perf.test.tsx` (500 rows), `PageTreeSidebar.test.tsx` (the shell, the rail, the sheet, the tint's
+contrast), `PageBreadcrumb.test.tsx`, `page-tree-open.test.ts`; the actions: `page-tree-edits.test.ts`,
+`useTabActions.pages.test.tsx`, `page-title.test.ts`, `usePageNameFromTitle.test.tsx`. Nothing is verified in a
+browser.
 
 ## Constants and configuration
 
-| Constant                  | Value | Where          | Why                                                     |
-| ------------------------- | ----- | -------------- | ------------------------------------------------------- |
-| `MAX_KNOWLEDGEBASE_PAGES` | 500   | `page-tree.ts` | The spec's limit                                        |
-| `MAX_PAGE_DEPTH`          | 8     | `page-tree.ts` | The spec's limit: a top-level page is level 1           |
-| `PARENT_ID_MAX`           | 128   | `page-tree.ts` | A tab id is a UUID (36); anything far longer is not one |
+| Constant                               | Value  | Where                     | Why                                                                   |
+| -------------------------------------- | ------ | ------------------------- | --------------------------------------------------------------------- |
+| `MAX_KNOWLEDGEBASE_PAGES`              | 500    | `page-tree.ts`            | The spec's limit                                                      |
+| `MAX_PAGE_DEPTH`                       | 8      | `page-tree.ts`            | The spec's limit: a top-level page is level 1                         |
+| `PARENT_ID_MAX`                        | 128    | `page-tree.ts`            | A tab id is a UUID (36); anything far longer is not one               |
+| `PAGE_TREE_WIDTH`                      | 264    | `page-tree-view.ts`       | The spec's width; the shared Contents sidebar's 236 is the platform's |
+| `PAGE_TREE_RAIL_WIDTH`                 | 48     | `page-tree-view.ts`       | One 32 px button with its inset                                       |
+| `PAGE_TREE_INDENT`                     | 20     | `page-tree-view.ts`       | The spec's indent: the chevron's own width                            |
+| `PAGE_TREE_ROW`, `PAGE_TREE_TOUCH_ROW` | 32, 44 | `page-tree-view.ts`       | A dense list with a mouse; a finger's 44 px                           |
+| `PAGE_NAME_SETTLE_MS`                  | 600    | `usePageNameFromTitle.ts` | The autosave's own pause                                              |
+| `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                            |

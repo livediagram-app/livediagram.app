@@ -22,7 +22,7 @@ import {
   AddTabToDocumentDialog,
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
-import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
+import type { CanvasMenuActions, CanvasMenuTarget } from './BottomBar';
 import {
   DuplicateIcon,
   MenuTreeContext,
@@ -84,10 +84,12 @@ export function PortalMenu({
   // Viewer identity for the Add to Document dialog's thumbnail fetches.
   selfId: string;
   otherDocuments: { id: string; name: string; savedAt?: number }[];
-  folderNames: string[];
-  currentFolder: string | null;
-  onMoveToFolder: (folderName: string) => void;
-  onRemoveFromFolder: () => void;
+  // Tab folders (docs/specs/006-document/tab-folders.md) are not offered in a knowledgebase: the page tree is how
+  // pages are organised. The rows show only for a caller that hands the folder actions in.
+  folderNames?: string[];
+  currentFolder?: string | null;
+  onMoveToFolder?: (folderName: string) => void;
+  onRemoveFromFolder?: () => void;
   onDelete: () => void;
   canDelete: boolean;
   canClearContent: boolean;
@@ -197,11 +199,11 @@ export function PortalMenu({
       />
     );
   }
-  if (view === 'folder') {
+  if (view === 'folder' && onMoveToFolder && onRemoveFromFolder) {
     return (
       <AddTabToFolderDialog
-        folderNames={folderNames}
-        currentFolder={currentFolder}
+        folderNames={folderNames ?? []}
+        currentFolder={currentFolder ?? null}
         onMoveToFolder={onMoveToFolder}
         onRemoveFromFolder={onRemoveFromFolder}
         onClose={closePicker}
@@ -223,12 +225,14 @@ export function PortalMenu({
           }}
         />
       ) : null}
-      <MenuActionRow
-        plain
-        icon={<FolderMenuIcon />}
-        label="Organise in Tab Folder"
-        onClick={() => setView('folder')}
-      />
+      {onMoveToFolder ? (
+        <MenuActionRow
+          plain
+          icon={<FolderMenuIcon />}
+          label="Organise in Tab Folder"
+          onClick={() => setView('folder')}
+        />
+      ) : null}
       {/* Three verbs at most, so plain rows, Remove last under a hairline: an icon row would hold the bin alone. */}
       <MenuGroupSeparator />
       <MenuActionRow
@@ -351,12 +355,14 @@ export function PortalMenu({
           {/* The rest as full-width rows, no categories: the menu is short enough to show it
             all (docs/specs/007-editor/editor-app.md "Tab menu"). Separators part the related groups:
             where the tab lives and what is on it. */}
-          <MenuActionRow
-            plain
-            icon={<FolderMenuIcon />}
-            label="Organise in Tab Folder"
-            onClick={() => setView('folder')}
-          />
+          {onMoveToFolder ? (
+            <MenuActionRow
+              plain
+              icon={<FolderMenuIcon />}
+              label="Organise in Tab Folder"
+              onClick={() => setView('folder')}
+            />
+          ) : null}
           <MenuActionRow
             plain
             icon={<MoveIcon />}

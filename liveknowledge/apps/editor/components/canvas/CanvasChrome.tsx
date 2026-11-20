@@ -21,11 +21,7 @@ import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handler
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
-import {
-  CONTENTS_SIDEBAR_WIDTH,
-  contentsClusterLeft,
-  contentsSidebarClearancePx,
-} from '@liveworkspace/workbench/lib/contents-sidebar';
+import { pageTreeClearancePx } from '@/components/page-tree/page-tree-view';
 import { ContentsClusterSegment } from '@liveworkspace/workbench/components/canvas/ContentsClusterSegment';
 import { PagesClusterStrip } from './PagesClusterStrip';
 import { PageNavigatorClusterStrip } from './PageNavigatorClusterStrip';
@@ -183,16 +179,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
     },
   });
   // Panel elements + their wiring live in useCanvasChromePanels.
-  const {
-    panelEls,
-    explorerEl,
-    collaborateEl,
-    contentsPopoverEl,
-    contentsSidebarEl,
-    contentsDocked,
-    menuJoined,
-    paletteTint,
-  } = useCanvasChromePanels({
+  const { panelEls, explorerEl, collaborateEl, pageTree, paletteTint } = useCanvasChromePanels({
     props,
     renameCurrent,
     chromeHidden,
@@ -213,8 +200,9 @@ function CanvasChromeView(props: CanvasChromeProps) {
   const panelScale = useUiScale('panels');
   // Heading Pages mode's Contents sidebar while it is docked beneath it (docs/specs/007-editor/pages-mode.md "Joined
   // to the menu box"); never from the strip's row, where a phone (which has no sidebar) puts it.
-  const menuJoin =
-    menuJoined && !menuInStrip ? { joinedWidth: CONTENTS_SIDEBAR_WIDTH * panelScale } : {};
+  // The page tree stands where that sidebar stood, at its own width (usePageTreeChrome); its rail joins nothing.
+  const { docked: contentsDocked, menuJoined } = pageTree;
+  const menuJoin = menuJoined && !menuInStrip ? { joinedWidth: pageTree.width * panelScale } : {};
   // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
   const { workbenchBack } = props;
   const explorerMenuButton = workbenchBack ? (
@@ -237,7 +225,8 @@ function CanvasChromeView(props: CanvasChromeProps) {
   const cornerScale = useUiScale('cornerButtons');
   // Beside Pages mode's Contents sidebar, never under it (useContentsChrome): short of it, where the cluster wraps
   // upward instead (contentsClusterLeft).
-  const clusterLeft = contentsClusterLeft(!isMobile && contentsDocked, panelScale);
+  const clusterLeft =
+    !isMobile && contentsDocked ? pageTreeClearancePx(pageTree.width, panelScale) : null;
   // The bar across the top that the top corners give way to: the strip.
   const topBar = isMobile ? null : stripShown ? STRIP_SELECTOR : null;
   const topBarCrowds = useStripCrowdsCorners(
@@ -280,7 +269,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
                   : undefined),
               // Beside Pages mode's Contents sidebar, never under it.
               ...(contentsDocked && corner.endsWith('left')
-                ? { left: contentsSidebarClearancePx(panelScale) }
+                ? { left: pageTreeClearancePx(pageTree.width, panelScale) }
                 : undefined),
             }}
             className={`pointer-events-none absolute flex gap-4 ${DOCK_CORNER_CLASS[corner]}`}
@@ -345,8 +334,9 @@ function CanvasChromeView(props: CanvasChromeProps) {
       {/* The Collaborate popover (docs/specs/012-collaboration/assigned-actions.md §5): it positions
           against the canvas, so it renders outside the corner layer. */}
       {zenMode ? null : collaborateEl}
-      {contentsSidebarEl}
-      {contentsPopoverEl}
+      {pageTree.sidebarEl}
+      {/* A reader's phone has no strip for the Pages button to ride in: it stands under the menu box. */}
+      {isMobile && !menuInStrip ? pageTree.phoneButton?.(true) : null}
       {paletteShown ? (
         <ToolbarPalette
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
@@ -359,7 +349,15 @@ function CanvasChromeView(props: CanvasChromeProps) {
           {...pickPaletteAddHandlers(props)}
           pendingDraw={pendingDraw}
           themeTint={paletteTint}
-          leading={menuInStrip ? explorerMenuButton : undefined}
+          leading={
+            menuInStrip ? (
+              <>
+                {explorerMenuButton}
+                {/* The page tree on a phone: a sheet opened from the top bar. */}
+                {pageTree.phoneButton?.(false)}
+              </>
+            ) : undefined
+          }
           {...(menuJoin.joinedWidth === undefined ? {} : { besideWidth: menuJoin.joinedWidth })}
           tabElements={elements}
           tabPages={props.pagesMode?.pages}

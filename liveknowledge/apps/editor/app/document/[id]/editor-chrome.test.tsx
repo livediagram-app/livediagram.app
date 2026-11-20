@@ -24,16 +24,14 @@ vi.mock('@liveworkspace/workbench/components/chrome/EditorCornerActions', () => 
     return <h1>Corner</h1>;
   },
 }));
-vi.mock('@/components/chrome/TabBar', () => ({
-  TabBar: (p: { tabs: Tab[]; isOutOfScope?: (id: string) => boolean }) => {
+vi.mock('@/components/chrome/BottomBar', () => ({
+  BottomBar: () => {
     renders.tabBar++;
-    // A tab out of a tab-scoped link's scope is marked, as the real bar greys it.
-    return (
-      <nav>
-        {p.tabs.map((t) => `${t.name}${p.isOutOfScope?.(t.id) ? ' (out of scope)' : ''}`).join(',')}
-      </nav>
-    );
+    return <footer />;
   },
+}));
+vi.mock('@/hooks/ui/useToast', () => ({
+  useToast: () => ({ success: () => {}, error: () => {}, info: () => {} }),
 }));
 // Each dialog's code loads on demand: here it is a marker naming that something opened.
 vi.mock('next/dynamic', () => ({ default: () => () => <div data-testid="opened" /> }));
@@ -106,6 +104,27 @@ vi.mock('@liveknowledge/ui', async (original) => {
 const { EditorChromeContext, EditorContext, usePublishEditorChrome, useEditorContext } =
   await import('./EditorContext');
 const { EditorViewFooter, EditorViewHeader, sameTabsForBar } = await import('./editor-view-bars');
+const { usePageTreeModel } = await import('@/components/page-tree/usePageTreeModel');
+
+// How many times the page tree's reader rendered.
+const treeRenders = { count: 0 };
+const treeRendered = () => {
+  treeRenders.count += 1;
+};
+
+// The page tree's reader (components/page-tree): what the sidebar is handed, with a page out of a tab-scoped link's
+// scope marked, as the real tree names it Not Shared.
+function TreeProbe() {
+  treeRendered();
+  const { tabs, isOutOfScope } = usePageTreeModel();
+  return (
+    <nav>
+      {(tabs as Tab[])
+        .map((t) => `${t.name}${isOutOfScope?.(t.id) ? ' (out of scope)' : ''}`)
+        .join(',')}
+    </nav>
+  );
+}
 const { sameDepsButWriting, sameSlice, sameTabButWriting } = await import('./editor-chrome-equal');
 const { EditorTabDialogs } = await import('@/components/dialogs/EditorTabDialogs');
 const { CollaboratorsHost } = await import('@/components/dialogs/CollaboratorsHost');
@@ -243,6 +262,10 @@ const HOSTS = (
   </Profiler>
 );
 
+// One element for every render of the page, as the canvas chrome holds the sidebar's: it renders when its own
+// slices change, never as a child of the page's render.
+const TREE = <TreeProbe />;
+
 function Page({ value, children }: { value: EditorContextValue; children?: ReactNode }) {
   const chrome = usePublishEditorChrome(value);
   return (
@@ -254,7 +277,8 @@ function Page({ value, children }: { value: EditorContextValue; children?: React
           isMobileViewport={false}
           landscapeShown
         />
-        <EditorViewFooter isOffline={false} landscapeShown onSelectTab={() => {}} />
+        <EditorViewFooter isOffline={false} landscapeShown />
+        {TREE}
         {HOSTS}
         <DocumentReader />
         {children}
@@ -272,27 +296,32 @@ describe('the chrome store', () => {
     const { rerender } = render(<Page value={base} />);
     expect(screen.getByRole('heading').textContent).toBe('Corner');
     for (const k of Object.keys(renders) as (keyof typeof renders)[]) renders[k] = 0;
+    const treeBefore = treeRenders.count;
     let value = base;
     for (let i = 0; i < 5; i++) {
       value = typed(value);
       rerender(<Page value={value} />);
     }
     expect(renders).toEqual({ header: 0, tabBar: 0, hosts: 0, reader: 5 });
+    expect(treeRenders.count).toBe(treeBefore);
   });
 
   it('renders the piece whose slice changed, and only it', () => {
     const { rerender } = render(<Page value={base} />);
     for (const k of Object.keys(renders) as (keyof typeof renders)[]) renders[k] = 0;
+    const treeBefore = treeRenders.count;
     rerender(<Page value={{ ...typed(base), documentName: 'Renamed' }} />);
-    // The corner card never reads the name: a rename leaves it be.
+    // The corner card never reads the name: a rename leaves it be. The page tree shows it, and renders once.
     expect(renders.header).toBe(0);
     expect(renders.tabBar).toBe(0);
     expect(renders.hosts).toBe(0);
-    // A tab renamed renders the tab bar.
+    expect(treeRenders.count).toBe(treeBefore + 1);
+    // A page renamed renders the page tree, and not the bottom bar, which lists no page.
     const renamed = { ...tab, name: 'Deck' };
     rerender(<Page value={{ ...base, tabs: [renamed], activeTab: renamed }} />);
     expect(screen.getByRole('navigation').textContent).toBe('Deck');
-    expect(renders.tabBar).toBe(1);
+    expect(treeRenders.count).toBe(treeBefore + 2);
+    expect(renders.tabBar).toBe(0);
   });
 
   it('opens a dialog as its flag is set, before the next paint', () => {
@@ -311,8 +340,8 @@ describe('the chrome store', () => {
 });
 
 describe('a tab-scoped link', () => {
-  // Work Tracker 946: the scope is set after mount (the share-code bootstrap), and the bar marks the other tabs then.
-  // It subscribes to `isOutOfScope`, which useTabScope makes afresh only when the scope changes.
+  // Work Tracker 946: the scope is set after mount (the share-code bootstrap), and the tree marks the other pages
+  // then. It subscribes to `isOutOfScope`, which useTabScope makes afresh only when the scope changes.
   it('marks the tabs out of scope once the scope is set after mount', () => {
     const other = { ...tab, id: 't2', name: 'Two' };
     const both: EditorContextValue = { ...base, tabs: [tab, other] };

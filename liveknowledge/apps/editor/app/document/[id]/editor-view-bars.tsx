@@ -1,6 +1,6 @@
 'use client';
 
-// The editor view's two bars: the site header and the tab bar (its footer). Built here and handed to
+// The editor view's two bars: the site header and the bottom bar (its footer). Built here and handed to
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
@@ -16,7 +16,7 @@ import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
-import { TabBar } from '@/components/chrome/TabBar';
+import { BottomBar } from '@/components/chrome/BottomBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { offersHistory, openHistoryFromFooter } from '@/components/versions/history-tools-item';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
@@ -104,8 +104,8 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   );
 });
 
-// The tab list as the tab bar reads it: a typing commit changes a tab's writing (its `elements` and `articles`),
-// never its name, folder, lock or place, so a list whose tabs differ only there is the same list to the bar.
+// The tab list as the page tree reads it: a typing commit changes a tab's writing (its `elements` and `articles`),
+// never its name, parent, lock or place, so a list whose tabs differ only there is the same list to the tree.
 const TAB_CONTENT = new Set(['elements', 'articles']);
 export function sameTabsForBar(a: readonly Tab[], b: readonly Tab[]): boolean {
   if (a === b) return true;
@@ -113,34 +113,24 @@ export function sameTabsForBar(a: readonly Tab[], b: readonly Tab[]): boolean {
   return a.every((x, i) => sameTabExcept(x, b[i]!, TAB_CONTENT));
 }
 
-// The tab bar, the editor's footer. Hidden through the welcome flow, in zen mode and in embeds.
-// Side by side (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
-function EditorViewFooterBar(view: {
-  isOffline: boolean;
-  landscapeShown: boolean;
-  onSelectTab: (tabId: string) => void;
-}) {
+// The bottom bar, the editor's footer: Tools, Settings and the appearance. The pages are the page tree, down the
+// editor's left (components/page-tree). Hidden through the welcome flow, in zen mode and in embeds. Side by side
+// (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
+function EditorViewFooterBar(view: { isOffline: boolean; landscapeShown: boolean }) {
   const chrome = useEditorChromeStore();
   const hidden = useEditorChrome((s) => s.anyWelcomeOpen || s.zenMode || s.embedMode);
-  const tabs = useEditorChrome((s) => s.tabs, sameTabsForBar);
-  const activeId = useEditorChrome((s) => s.activeId);
-  const followingId = useEditorChrome((s) => s.followMe.followingId);
-  const followerCount = useEditorChrome((s) => s.followMe.followerCount);
+  const tabCount = useEditorChrome((s) => s.tabs.length);
   const activeTabHasContent = useEditorChrome((s) => s.activeTab.elements.length > 0);
+  const activeTabLocked = useEditorChrome((s) => s.activeTab.locked === true);
   const documentId = useEditorChrome((s) => s.documentId);
   const documentList = useEditorChrome((s) => s.documentList);
   const workbenchShareCode = useEditorChrome((s) => s.workbench?.shareCode ?? null);
   const inWorkbench = useEditorChrome((s) => s.workbench !== null);
   const isOwner = useEditorChrome((s) => s.isOwner);
+  // A tab-scoped visitor edits their page's writing at most, never the pages around it
+  // (docs/specs/013-workspace/tab-scoped-share-links.md); a Participant or a Viewer changes no page.
   const readOnly = useEditorChrome((s) => s.isStructureReadOnly);
-  // `isOutOfScope` answers from the session's tab scope and is made afresh only when the scope changes (useTabScope),
-  // so the bar subscribes to the function itself: a scope set after mount (a tab-scoped link) marks the other tabs.
-  // A `chrome.get()` here was kept at its first value by the React Compiler (Work Tracker 946).
-  const isOutOfScope = useEditorChrome((s) => s.isOutOfScope);
-  const renameTabNonce = useEditorChrome((s) => s.renameTabNonce);
-  const participantsByTab = useEditorChrome((s) => s.participantsByTab);
   const selfId = useEditorChrome((s) => s.selfParticipant.id);
-  const sessionRole = useEditorChrome((s) => s.sessionRole);
   const canvasMenu = useEditorChrome((s) =>
     s.contextMenu?.mode === 'canvas' ? s.contextMenu : null,
   );
@@ -148,7 +138,7 @@ function EditorViewFooterBar(view: {
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the gate's own slices.
   const hydrated = useEditorChrome((s) => s.hydrated);
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
-  const { isOffline, onSelectTab } = view;
+  const { isOffline } = view;
   if (hidden) return null;
   // The bar is already hidden in an embed and behind a welcome, so those two answer false here.
   const history = offersHistory({
@@ -160,10 +150,11 @@ function EditorViewFooterBar(view: {
     welcomeOpen: false,
     community: communityVisitor,
   });
+  const close = () => chrome.get().closeContextMenu();
   return (
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
-        <TabBar
+        <BottomBar
           workbenchLink={
             inWorkbench && documentId
               ? (labelled) => (
@@ -174,47 +165,6 @@ function EditorViewFooterBar(view: {
                 )
               : undefined
           }
-          tabs={tabs}
-          activeId={activeId}
-          // Clicking an avatar in a presence stack opens the Collaborators
-          // modal (docs/specs/012-collaboration/collaborator-enhancements.md), which is where Follow (docs/specs/012-collaboration/follow-me-viewport.md) lives.
-          followingId={followingId}
-          followerCount={followerCount}
-          onOpenCollaborators={(...a) => chrome.get().openCollaborators(...a)}
-          onMoveTabToFolder={(...a) => chrome.get().moveTabToFolder(...a)}
-          onRemoveTabFromFolder={(...a) => chrome.get().removeTabFromFolder(...a)}
-          onRenameFolder={(...a) => chrome.get().renameTabFolder(...a)}
-          activeTabHasContent={activeTabHasContent}
-          onSelect={onSelectTab}
-          onAdd={() => chrome.get().addTab()}
-          onRename={(...a) => chrome.get().renameTab(...a)}
-          onDuplicate={(...a) => chrome.get().duplicateTab(...a)}
-          onDelete={(...a) => chrome.get().deleteTab(...a)}
-          onConnectAgain={(id) => void chrome.get().connectedTabs.connectAgainTab(id)}
-          onClearContent={() => void chrome.get().clearTabContent()}
-          onImportTab={() => chrome.get().setImportOpen(true)}
-          onExportTab={() => {
-            chrome.get().setExportScope('tab');
-            chrome.get().setExportOpen(true);
-          }}
-          otherDocuments={addToDocumentTargets({
-            documentId,
-            documentList,
-            isOffline,
-            workbench: inWorkbench,
-            isOwner,
-          })}
-          onCopyTabTo={(...a) => chrome.get().linkActiveTabTo(...a)}
-          onToggleLockTab={(...a) => chrome.get().toggleActiveTabLock(...a)}
-          onReorder={(...a) => chrome.get().reorderTabs(...a)}
-          // A tab-scoped visitor edits their tab's content at most, never the
-          // tabs around it (docs/specs/013-workspace/tab-scoped-share-links.md).
-          readOnly={readOnly}
-          isOutOfScope={isOutOfScope}
-          renameActiveNonce={renameTabNonce}
-          participantsByTab={participantsByTab}
-          selfId={selfId}
-          selfRole={sessionRole}
           onOpenSettings={() => {
             // Preferences are user-scoped, not document-scoped, so
             // view-role visitors can still flip them for their own
@@ -227,17 +177,66 @@ function EditorViewFooterBar(view: {
           }
           // History, between Search and Settings, on a document stored on the server, for every role.
           onOpenHistory={history ? () => openHistoryFromFooter(chrome.get().activeId) : undefined}
-          // Canvas right-click (desktop) + long-press (touch) open the active
-          // tab's menu with the canvas sections folded in, rendered by the
-          // TabBar so it reuses every tab handler. Element / multi context
-          // menus stay on EditorContextMenu below.
+          // Canvas right-click (desktop) + long-press (touch) open the current page's menu with the canvas sections
+          // folded in. Element / multi context menus stay on EditorContextMenu below.
           canvasMenu={canvasMenu}
-          onCloseCanvasMenu={() => chrome.get().closeContextMenu()}
+          onCloseCanvasMenu={close}
           canvasActions={{
             // Paste straight from the empty-canvas right-click (docs/specs/008-canvas/canvas-and-palette.md).
             onPaste: () => chrome.get().pasteFromClipboard(),
             canPaste: hasClipboard,
           }}
+          pageMenu={
+            readOnly
+              ? undefined
+              : {
+                  canDelete: tabCount > 1,
+                  canClearContent: activeTabHasContent && !activeTabLocked,
+                  locked: activeTabLocked,
+                  selfId,
+                  otherDocuments: addToDocumentTargets({
+                    documentId,
+                    documentList,
+                    isOffline,
+                    workbench: inWorkbench,
+                    isOwner,
+                  }),
+                  // The page is renamed in its row of the page tree.
+                  onRename: () => {
+                    close();
+                    chrome.get().requestRenameTab();
+                  },
+                  onDuplicate: () => {
+                    close();
+                    chrome.get().duplicateTab(chrome.get().activeId);
+                  },
+                  onClearContent: () => {
+                    close();
+                    void chrome.get().clearTabContent();
+                  },
+                  onImport: () => {
+                    close();
+                    chrome.get().setImportOpen(true);
+                  },
+                  onExport: () => {
+                    close();
+                    chrome.get().setExportScope('tab');
+                    chrome.get().setExportOpen(true);
+                  },
+                  onCopyTo: async (target) => {
+                    await chrome.get().linkActiveTabTo(target);
+                    close();
+                  },
+                  onToggleLock: () => {
+                    close();
+                    chrome.get().toggleActiveTabLock();
+                  },
+                  onDelete: () => {
+                    close();
+                    void chrome.get().deleteTab(chrome.get().activeId);
+                  },
+                }
+          }
         />
       </AreaErrorBoundary>
     </LandscapeBarFold>

@@ -1,6 +1,10 @@
 // Tab-lifecycle actions, lifted out of editor-page.tsx: add / import /
-// rename / duplicate / delete / reorder tabs, the active-tab lock,
+// rename / duplicate / delete / move tabs, the active-tab lock,
 // linking a tab into another document, and clearing a tab's content.
+//
+// A tab is a page of the knowledgebase's page tree (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The
+// page tree"): a page is added under a parent, deleted with its subpages, duplicated beside itself and moved with
+// the tree's own checked edits (page-tree-edits.ts), and its name and its Title block are kept the same.
 //
 // This is the busiest of the extracted hooks because tab lifecycle
 // genuinely touches a lot: history (`commit` / `commitTabs`),
@@ -15,20 +19,36 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { defaultTabName } from '@liveknowledge/document';
+import { useEffect, useRef } from 'react';
 import {
-  normalizeFolderOrder,
-  tabFolderName,
+  NEW_PAGE_NAME,
+  pageAddRefusal,
+  pageMoveRefusal,
+  pageSubtreeIds,
+  subpageCount,
   truncateName,
+  withPageIndented,
+  withPageMoved,
+  withPageOutdented,
+  withPageStepped,
   type Element,
+  type PageMove,
   type Tab,
 } from '@liveknowledge/document';
+import { withPageTitle } from '@/lib/article/page-title';
+import {
+  deletePageTitle,
+  pageAfterDelete,
+  pageTreeRefusalText,
+  withPageAddedTo,
+  withPageAndSubpagesDeleted,
+  withPageDuplicated,
+} from './page-tree-edits';
 import { apiLinkTab } from '@/lib/api-client';
 import { connectionOf } from '@liveworkspace/workbench/components/connect/tab-connection';
 import { newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';
 import { remintTabElements, useTabImport } from './useTabImport';
-import { trackTabFolderTransition } from '@liveworkspace/workbench/hooks/persistence/tab-folder-reporting';
 import type { useConfirm } from '@liveworkspace/workbench/hooks/ui/useConfirm';
 import type { useToast } from '@/hooks/ui/useToast';
 import { toastName } from '@liveworkspace/workbench/lib/toast-name';
@@ -51,6 +71,8 @@ type TabActionsDeps = {
   createTab: (name: string) => Tab;
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   commitTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
+  // A change that is no undo step of its own (the page's name following its Title as it is typed).
+  tickTabs: (mapTabs: (ts: Tab[]) => Tab[]) => void;
   // Mark a freshly-created tab as loaded so the lazy per-tab fetch
   // (docs/specs/006-document/per-tab-storage.md) skips it — a locally-created tab has no server row to
   // pull, so without this the canvas would flash its loading overlay
@@ -90,6 +112,7 @@ export function useTabActions(deps: TabActionsDeps) {
     createTab,
     commit,
     commitTabs,
+    tickTabs,
     markTabLoaded,
     isTabLoaded,
     setActiveId,
@@ -104,16 +127,23 @@ export function useTabActions(deps: TabActionsDeps) {
     toast,
   } = deps;
 
-  const addTab = () => {
-    // A session that cannot change the document's tabs adds none, whichever control asked.
+  // A new page, the last subpage of `parent` or the last top-level page. It opens with the caret in its Title (the
+  // article's own first-focus rule on a page made here).
+  const addTab = (parent?: string) => {
+    // A session that cannot change the knowledgebase's pages adds none, whichever control asked.
     if (!deps.canEditStructure) return;
-    // The new tab takes the active tab's look (newTabSeed).
+    // At a limit the controls are disabled with the reason; a shortcut or the command palette hears it here.
+    const refused = pageAddRefusal(tabs, parent);
+    if (refused) {
+      toast.error(pageTreeRefusalText(refused));
+      return;
+    }
+    // The new page takes the active page's look (newTabSeed).
     // Skips the look when the active tab can't be resolved (mid-mount, or removed in another
-    // window), falling back to brand defaults the same way Tab 1 does.
+    // window), falling back to brand defaults the same way the first page does.
     const seed = newTabSeed(tabs.find((t) => t.id === activeId));
-    // A new tab opens on Start Making Pages (start-diagramming.md).
-    const tab: Tab = { ...createTab(defaultTabName(tabs.length + 1)), ...seed };
-    commitTabs((ts) => [...ts, tab]);
+    const tab: Tab = { ...createTab(NEW_PAGE_NAME), ...seed };
+    commitTabs((ts) => withPageAddedTo(ts, tab, parent));
     markTabLoaded(tab.id);
     track('Tab', 'Created');
     setActiveId(tab.id);
@@ -154,14 +184,52 @@ export function useTabActions(deps: TabActionsDeps) {
     }
   };
 
+  // A rename asked of a page whose writing is not held here yet: applied once it has loaded, so its Title is
+  // rewritten with its name and both are saved with the page (an unloaded page's body is never saved).
+  const pendingRenames = useRef(new Map<string, string>());
+
+  const applyRename = (id: string, trimmed: string) => {
+    commitTabs((ts) =>
+      ts.map((t) => (t.id === id ? withPageTitle({ ...t, name: trimmed }, trimmed) : t)),
+    );
+    track('Tab', 'Renamed');
+  };
+
+  // Renames a page, and rewrites its Title to match (the page's name follows its Title, and the Title its name).
   const renameTab = (id: string, name: string) => {
+    if (!deps.canEditStructure) return;
     const previous = tabs.find((t) => t.id === id)?.name ?? '';
-    // Capped here rather than at each input, so every route in (the tab
-    // pill's inline rename, the command palette, an import) lands under the
-    // same limit (docs/specs/006-document/name-length.md).
+    // Capped here rather than at each input, so every route in (the page tree's inline rename, the command palette,
+    // an import) lands under the same limit (docs/specs/006-document/name-length.md).
     const trimmed = truncateName(name);
-    if (trimmed === previous.trim()) return;
-    commitTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
+    if (!trimmed || trimmed === previous.trim()) return;
+    if (!isTabLoaded(id)) {
+      // Opening the page loads its writing; the effect below renames it then.
+      pendingRenames.current.set(id, trimmed);
+      setActiveId(id);
+      return;
+    }
+    applyRename(id, trimmed);
+  };
+
+  useEffect(() => {
+    if (pendingRenames.current.size === 0) return;
+    for (const [id, name] of [...pendingRenames.current]) {
+      const tab = tabs.find((t) => t.id === id);
+      if (tab && !isTabLoaded(id)) continue;
+      pendingRenames.current.delete(id);
+      if (tab && tab.name !== name) applyRename(id, name);
+    }
+  });
+
+  // The page's name following its Title as it is typed (the caller debounces: one write when typing stops). No
+  // undo step of its own, so undoing the typing is one step.
+  const renameTabFromTitle = (id: string, title: string) => {
+    if (!deps.canEditStructure) return;
+    const trimmed = truncateName(title);
+    const tab = tabs.find((t) => t.id === id);
+    if (!trimmed || !tab || tab.name === trimmed || tab.locked === true) return;
+    tickTabs((ts) => ts.map((t) => (t.id === id ? { ...t, name: trimmed } : t)));
     track('Tab', 'Renamed');
   };
 
@@ -188,17 +256,25 @@ export function useTabActions(deps: TabActionsDeps) {
     refreshDocumentList(ownerId);
   };
 
+  // A copy of the page beside it, under the same parent, without its subpages.
   const duplicateTab = (id: string) => {
+    if (!deps.canEditStructure) return;
     const src = tabs.find((t) => t.id === id);
     // A connected tab is never duplicated (connected-tabs.md "How it looks"): a copy would hold a connection the index
     // opens only in its own tab.
     if (!src || connectionOf(src)) return;
+    // The copy is one more page under the same parent: no deeper, so only the page limit can refuse it.
+    const refused = pageAddRefusal(tabs, src.parent);
+    if (refused) {
+      toast.error(pageTreeRefusalText(refused));
+      return;
+    }
     // A still-loading source is an empty placeholder — copying it (and
     // marking the copy loaded below) would persist a permanently empty
-    // tab. The lazy fetch resolves in well under a second; asking the
+    // page. The lazy fetch resolves in well under a second; asking the
     // user to retry beats silently duplicating nothing.
     if (!isTabLoaded(id)) {
-      toast.error('That tab is still loading. Try again in a moment.');
+      toast.error('That page is still loading. Try again in a moment.');
       return;
     }
     // Re-mint ids (arrow endpoints remapped): element ids must be
@@ -207,18 +283,10 @@ export function useTabActions(deps: TabActionsDeps) {
     // the copy too, since remote selections resolve by element id.
     const reminted = remintTabElements({ ...src, elements: src.elements.map((el) => ({ ...el })) });
     // Capped like every name the editor makes (docs/specs/006-document/name-length.md): a full-length name's copy ran
-    // past it.
-    const copy: Tab = {
-      ...reminted,
-      id: crypto.randomUUID(),
-      name: truncateName(`${src.name} copy`),
-    };
-    const srcIndex = tabs.findIndex((t) => t.id === id);
-    commitTabs((ts) => {
-      const next = [...ts];
-      next.splice(srcIndex + 1, 0, copy);
-      return next;
-    });
+    // past it. The copy's Title says its name, as every page's does.
+    const name = truncateName(`${src.name} copy`);
+    const copy: Tab = withPageTitle({ ...reminted, id: crypto.randomUUID(), name }, name);
+    commitTabs((ts) => withPageDuplicated(ts, id, copy));
     markTabLoaded(copy.id);
     setActiveId(copy.id);
     setSelectedId(null);
@@ -226,92 +294,64 @@ export function useTabActions(deps: TabActionsDeps) {
     track('Tab', 'Duplicated');
   };
 
-  // Asks nothing: one commit, so undo brings the tab back (the tab menu asks first only when deleting does what an
-  // undo cannot take back, deleteTabWarning). The
-  // menu's Delete item is already gated on `canDelete` (tabs.length > 1);
-  // the guards here are belt-and-suspenders.
-  const deleteTab = (id: string) => {
-    if (tabs.length <= 1) return;
-    const idx = tabs.findIndex((t) => t.id === id);
-    if (idx < 0) return;
-    // A locked tab is protected: its elements can't be deleted, so the
-    // tab that holds them can't be deleted out from under them either.
-    // Unlock it first. (The TabBar also gates the Delete row on this.)
-    if (tabs[idx]?.locked === true) return;
+  // Deletes a page and its subpages after one confirmation that names the count. One commit, so undo brings them
+  // all back. The row menu's Delete is already disabled on the last page and on a locked one; the guards here are
+  // belt-and-suspenders.
+  const deleteTab = async (id: string) => {
+    if (!deps.canEditStructure) return;
+    const target = tabs.find((t) => t.id === id);
+    const gone = new Set(pageSubtreeIds(tabs, id));
+    // A knowledgebase always has a page.
+    if (!target || gone.size === 0 || gone.size >= tabs.length) return;
+    // A locked page is protected: its writing can't be deleted, so the page that holds it can't be deleted out
+    // from under it either, nor with a page above it. Unlock it first.
+    if (tabs.some((t) => gone.has(t.id) && t.locked === true)) {
+      toast.error('Unlock the page before deleting it.');
+      return;
+    }
+    const subpages = subpageCount(tabs, id);
+    const ok = await confirm({
+      title: deletePageTitle(target.name, subpages),
+      message:
+        subpages === 0
+          ? 'The page is removed for everyone. Undo (Cmd/Ctrl-Z) brings it back.'
+          : 'The page and its subpages are removed for everyone. Undo (Cmd/Ctrl-Z) brings them back.',
+      confirmLabel: 'Delete',
+    });
+    if (!ok) return;
     track('Tab', 'Deleted');
-    // Drop the tab AND strip any links on remaining elements that point to
-    // it, so we don't leave dangling cross-tab references. Bundled into one
-    // commit so undo restores both.
-    commitTabs((ts) =>
-      ts
-        .filter((t) => t.id !== id)
-        .map((t) => ({
-          ...t,
-          elements: t.elements.map((el) => {
-            if (!el.link) return el;
-            // Tab-level deletion only cleans up links pointing AT the
-            // gone tab. Document + url links target somewhere else
-            // entirely, so they survive; only tab / element links carry
-            // a tabId to check.
-            if (el.link.kind !== 'tab' && el.link.kind !== 'element') return el;
-            if (el.link.tabId !== id) return el;
-            const { link: _drop, ...rest } = el;
-            return rest;
-          }),
-        })),
-    );
-    if (activeId === id) {
-      const fallback = tabs[idx + 1] ?? tabs[idx - 1];
-      if (fallback) setActiveId(fallback.id);
+    // Drop the pages AND strip any links on the remaining ones that point at them, so no dangling cross-page
+    // references are left. One commit, so undo restores both.
+    commitTabs((ts) => withPageAndSubpagesDeleted(ts, id));
+    if (gone.has(activeId)) {
+      const fallback = pageAfterDelete(tabs, id);
+      if (fallback) setActiveId(fallback);
     }
     setSelectedId(null);
     setEditingId(null);
   };
 
-  const reorderTabs = (sourceId: string, targetId: string, placeBefore = true) => {
-    if (sourceId === targetId) return;
-    const srcIdx0 = tabs.findIndex((t) => t.id === sourceId);
-    const tgtIdx0 = tabs.findIndex((t) => t.id === targetId);
-    if (srcIdx0 < 0 || tgtIdx0 < 0) return;
-    // A drag ADOPTS the drop target's folder membership (docs/specs/006-document/tab-folders.md): dropping
-    // a tab among a folder's pills joins that folder, dropping it among
-    // loose tabs makes it loose, and dropping onto the folder chip (which
-    // targets the run's first member) joins too. So one drag both reorders
-    // AND moves the tab in / out of a folder. (Closure values drive the
-    // telemetry below; the mutation itself recomputes from
-    // live state inside the commit.)
-    const srcFolder = tabFolderName(tabs[srcIdx0]!);
-    const targetFolder = tabFolderName(tabs[tgtIdx0]!);
-    commitTabs((ts) => {
-      const sIdx = ts.findIndex((t) => t.id === sourceId);
-      const tIdx = ts.findIndex((t) => t.id === targetId);
-      if (sIdx < 0 || tIdx < 0) return ts;
-      const folder = tabFolderName(ts[tIdx]!);
-      const next = [...ts];
-      const [moved] = next.splice(sIdx, 1);
-      // Recompute the target's index AFTER removing the source (removing an
-      // earlier source shifts the target left by one), then land before or
-      // after it per `placeBefore`. This makes the drop deterministic: the
-      // caret the user saw is exactly where the tab goes, regardless of drag
-      // direction.
-      const insertBase = next.findIndex((t) => t.id === targetId);
-      const insertIdx = placeBefore ? insertBase : insertBase + 1;
-      next.splice(insertIdx, 0, { ...moved!, folder: folder ?? undefined });
-      // Re-normalize so every folder stays one contiguous run (docs/specs/006-document/tab-folders.md).
-      return normalizeFolderOrder(next);
-    });
-    // A drag that crosses a folder boundary reports the membership change, not
-    // the reorder that came with it — and reports it through the same module the
-    // ellipsis menu uses, so the two controls can't drift again. (Leaving a
-    // folder by drag used to count as `Tab·Reordered` while the menu counted it
-    // as `Tab·Removed`, which made "how do people manage tab folders?"
-    // unanswerable from the numbers.)
-    if (srcFolder !== targetFolder) {
-      trackTabFolderTransition(srcFolder, targetFolder);
-    } else {
-      track('Tab', 'Reordered');
-    }
+  // A tree edit the tree itself checks (page-tree.ts): it answers null when it is refused or changes nothing, and
+  // the list then stays as it is.
+  const editTree = (edit: (ts: Tab[]) => Tab[] | null) => {
+    if (!deps.canEditStructure) return;
+    commitTabs((ts) => edit(ts) ?? ts);
+    track('Tab', 'Reordered');
   };
+
+  // Moves a page, its subpages with it, under `to.parent` and before its subpage `to.before`: the drag's drop.
+  const movePage = (id: string, to: PageMove) => {
+    const refused = pageMoveRefusal(tabs, id, to);
+    if (refused) {
+      toast.error(pageTreeRefusalText(refused));
+      return;
+    }
+    editTree((ts) => withPageMoved(ts, id, to));
+  };
+  // The row menu's verbs, for keyboards and touch.
+  const stepPage = (id: string, by: -1 | 1) => editTree((ts) => withPageStepped(ts, id, by));
+  const indentPage = (id: string) => editTree((ts) => withPageIndented(ts, id));
+  const outdentPage = (id: string) => editTree((ts) => withPageOutdented(ts, id));
 
   const clearTabContent = async () => {
     // Wiping a whole tab is a big, easy-to-misfire action, so gate it on
@@ -320,7 +360,7 @@ export function useTabActions(deps: TabActionsDeps) {
     // (one commit), which the message notes.
     const ok = await confirm({
       title: 'Reset This Canvas?',
-      message: 'Every element on this tab is removed. Undo (Cmd/Ctrl-Z) brings it back.',
+      message: 'Everything on this page is removed. Undo (Cmd/Ctrl-Z) brings it back.',
       confirmLabel: 'Reset canvas',
     });
     if (!ok) return;
@@ -337,10 +377,14 @@ export function useTabActions(deps: TabActionsDeps) {
     importFileIntoActiveTab,
     toggleActiveTabLock,
     renameTab,
+    renameTabFromTitle,
     linkActiveTabTo,
     duplicateTab,
     deleteTab,
-    reorderTabs,
+    movePage,
+    stepPage,
+    indentPage,
+    outdentPage,
     clearTabContent,
   };
 }

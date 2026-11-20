@@ -1,0 +1,96 @@
+'use client';
+
+// The page tree in the canvas chrome (docs/specs/030-knowledgebase/blueprints/page-tree.md "The sidebar"): docked as
+// the sidebar down the canvas's left on a desktop, joined to the menu box above it, or collapsed to its rail; on a
+// phone, a Pages button that opens the same tree in a sheet. It stands where the fork's Contents sidebar stood, so
+// the chrome's geometry (the corner stacks, the bottom-right cluster, the strip, the page framing) clears it the
+// same way, at this sidebar's own width.
+import { useCallback, useContext, useState, useSyncExternalStore, type ReactNode } from 'react';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
+import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
+import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
+import { readTreeCollapsed, writeTreeCollapsed } from '@/lib/page-tree-open';
+import { track } from '@/lib/telemetry';
+import { PageTreeSheet } from './PageTreeSheet';
+import { PageTreeSidebar } from './PageTreeSidebar';
+import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
+import { usePageTreeModel } from './usePageTreeModel';
+
+const noSubscribe = () => () => {};
+
+function PageTreeSidebarHost(props: {
+  collapsed: boolean;
+  onSetCollapsed: (collapsed: boolean) => void;
+  top: number;
+  joined: boolean;
+}) {
+  return <PageTreeSidebar {...usePageTreeModel()} {...props} />;
+}
+
+function PageTreeSheetHost({ floating, top }: { floating: boolean; top: number }) {
+  const model = usePageTreeModel();
+  // A reader's phone has no strip: the button stands under the menu box.
+  return floating ? (
+    <div className="pointer-events-none absolute left-3 z-[var(--z-panel)]" style={{ top }}>
+      <PageTreeSheet {...model} />
+    </div>
+  ) : (
+    <PageTreeSheet {...model} />
+  );
+}
+
+export type PageTreeChrome = {
+  // The sidebar (or its rail) is on screen down the left: the left corners and the cluster make room.
+  docked: boolean;
+  // The menu box heads the sidebar as its top row; never the rail, which stands under it.
+  menuJoined: boolean;
+  // The sidebar's width on screen now, at the panels' UI scale: the rail's when collapsed.
+  width: number;
+  sidebarEl: ReactNode;
+  // A phone's Pages button: in the strip's row, or `floating` at the top left where there is no strip.
+  phoneButton: ((floating: boolean) => ReactNode) | null;
+};
+
+export function usePageTreeChrome({
+  chromeHidden,
+  zenMode,
+  isMobile,
+}: {
+  chromeHidden: boolean;
+  zenMode: boolean;
+  isMobile: boolean;
+}): PageTreeChrome {
+  const toolbarScale = useUiScale('toolbar');
+  // Rendered on its own (a test, a workbench preview) the chrome has no editor store, and so no tree.
+  const store = useContext(EditorChromeContext);
+  const embed = useSyncExternalStore(
+    store?.subscribe ?? noSubscribe,
+    () => store?.get().embedMode ?? false,
+    () => false,
+  );
+  const [collapsed, setCollapsedState] = useState(readTreeCollapsed);
+  const setCollapsed = useCallback((next: boolean) => {
+    // Sent before the change is kept, as every settings flip is.
+    track('UI', 'Changed', next ? 'PageTreeCollapsed' : 'PageTreeExpanded');
+    writeTreeCollapsed(next);
+    setCollapsedState(next);
+  }, []);
+  const shown = store !== null && !chromeHidden && !zenMode && !embed;
+  const docked = shown && !isMobile;
+  const top = toolbarTopClearancePx(toolbarScale);
+  return {
+    docked,
+    menuJoined: docked && !collapsed,
+    width: collapsed ? PAGE_TREE_RAIL_WIDTH : PAGE_TREE_WIDTH,
+    sidebarEl: docked ? (
+      <PageTreeSidebarHost
+        collapsed={collapsed}
+        onSetCollapsed={setCollapsed}
+        top={top}
+        joined={!collapsed}
+      />
+    ) : null,
+    phoneButton:
+      shown && isMobile ? (floating) => <PageTreeSheetHost floating={floating} top={top} /> : null,
+  };
+}

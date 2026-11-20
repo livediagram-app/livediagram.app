@@ -11,6 +11,7 @@ import { EmptyPageInvite } from '@liveworkspace/workbench/components/canvas/Empt
 import { layoutInviteShows } from '@/lib/layout-invite';
 import { track } from '@/lib/telemetry';
 import { PageMotionLayer } from './PageMotionLayer';
+import { PageBreadcrumb } from '@/components/page-tree/PageBreadcrumb';
 import { PageSheetTitleBar, steady } from './PageSheetTitleBar';
 import { useQuickStyleBarRoom } from '@/lib/quick-style-bar-slots';
 import {
@@ -261,7 +262,7 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
       <div
         // As tall as the title bar beside it, so the two sit on one line.
         // None on a phone ("Beside the cog"): the name is in Contents and the cog sheet.
-        className={`absolute left-0 flex h-[34px] items-center ${labelRoom < LABEL_MIN || bare || mobile ? 'hidden' : ''}`}
+        className={`absolute left-0 flex h-[34px] items-center gap-1 ${labelRoom < LABEL_MIN || bare || mobile ? 'hidden' : ''}`}
         style={{
           bottom: '100%',
           marginBottom: 6 / zoom,
@@ -269,6 +270,8 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           ...steady(zoom, 'bottom left'),
         }}
       >
+        {/* The page's ancestors, each a link; nothing for a top-level page (PageBreadcrumb). */}
+        <PageBreadcrumb />
         <PageLabelCard
           label={label}
           name={labelParts.name}

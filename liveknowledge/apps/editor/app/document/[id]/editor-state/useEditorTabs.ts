@@ -1,3 +1,4 @@
+import { usePageNameFromTitle } from '@/hooks/editor/usePageNameFromTitle';
 import { useRef } from 'react';
 import type { Tab } from '@liveknowledge/document';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
@@ -96,7 +97,11 @@ export function useEditorTabs({
     linkActiveTabTo,
     duplicateTab,
     deleteTab,
-    reorderTabs,
+    movePage,
+    stepPage,
+    indentPage,
+    outdentPage,
+    renameTabFromTitle,
     clearTabContent,
   } = useTabActions({
     tabs,
@@ -108,6 +113,7 @@ export function useEditorTabs({
     createTab,
     commit,
     commitTabs,
+    tickTabs,
     markTabLoaded,
     isTabLoaded: (id: string) => loadedTabIdsRef.current.has(id),
     setActiveId,
@@ -121,6 +127,13 @@ export function useEditorTabs({
     refreshDocumentList: () => refreshDocumentList(),
     confirm,
     toast,
+  });
+  // The page's name follows its Title as it is typed (usePageNameFromTitle).
+  usePageNameFromTitle({
+    activeTab,
+    canEdit: !isStructureReadOnly,
+    localEditSeq: documentSlice.localEditSeqRef,
+    rename: renameTabFromTitle,
   });
   // Connected tabs (liveworkspace/docs/specs/004-index/connected-tabs.md): the Connect list's add and the move to the new
   // tab, the host's grant for opening one, and Connect Again.
@@ -281,7 +294,11 @@ export function useEditorTabs({
     linkActiveTabTo,
     duplicateTab,
     deleteTab,
-    reorderTabs,
+    movePage,
+    stepPage,
+    indentPage,
+    outdentPage,
+    renameTabFromTitle,
     clearTabContent,
     connectedTabs,
     moveTabToFolder,

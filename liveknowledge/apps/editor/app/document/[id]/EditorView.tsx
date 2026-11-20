@@ -377,11 +377,7 @@ export function EditorView() {
     );
   const footer =
     anyWelcomeOpen || zenMode || embedMode ? null : (
-      <EditorViewFooter
-        isOffline={isOffline}
-        onSelectTab={selectTab}
-        landscapeShown={landscapeBars.shown}
-      />
+      <EditorViewFooter isOffline={isOffline} landscapeShown={landscapeBars.shown} />
     );
 
   // The bars handle, at the canvas's top-right corner: only on a phone held sideways (CSS), and only
