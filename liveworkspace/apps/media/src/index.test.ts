@@ -10,6 +10,7 @@ import type {
 import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
+import { UNUSED_SQL } from './images';
 import type { Env } from './env';
 import { testDb, type TestDb } from './test-sqlite-d1';
 
@@ -583,5 +584,19 @@ describe('unused after a delete', () => {
     expect(await status('owner=user_1&ids=a')).toBe(400);
     expect(await status('owner=user_1&document=d1')).toBe(400);
     expect(await status('owner=user_1&document=d1&ids=a,,b')).toBe(400);
+  });
+
+  it('probes each asked id by its key, never the owner’s whole index', () => {
+    const plan = db.sql
+      .prepare(`EXPLAIN QUERY PLAN ${UNUSED_SQL}`)
+      .all('user_1', 'livediagram.app', 'd1', '["a"]')
+      .map((r) => String((r as { detail: string }).detail));
+    expect(plan[0]).toMatch(/SCAN j/);
+    expect(
+      plan.some((d) =>
+        /SEARCH i USING (INDEX sqlite_autoindex_images_1|INTEGER PRIMARY KEY) \(id=\?\)/.test(d),
+      ),
+    ).toBe(true);
+    expect(plan.some((d) => /images_owner/.test(d))).toBe(false);
   });
 });

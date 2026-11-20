@@ -149,6 +149,15 @@ export async function usageOf(env: Env, owner: string): Promise<MediaUsageRespon
 // Which of the owner's images of `ids` nothing but `document` (in `app`) uses (media.md "Unused after a delete"): no
 // other document's reference in any app, no Library item's, no unconfirmed reference but that document's own. One read,
 // the release's rule without its claim, so an editor offers to delete only what nothing could miss.
+// The asked ids drive it (CROSS JOIN keeps json_each outermost): each is one primary-key probe, so its cost is the
+// 50 ids at most, never the owner's image count. Joined the other way SQLite walks the owner's index instead, every
+// image they have: 52 ms at 100,000 against 0.05 ms this way.
+export const UNUSED_SQL = `SELECT i.id FROM json_each(?4) j CROSS JOIN images i ON i.id = j.value
+  WHERE i.owner = ?1
+    AND NOT EXISTS (SELECT 1 FROM refs r WHERE r.image_id = i.id AND NOT (r.app = ?2 AND r.document = ?3))
+    AND NOT EXISTS (SELECT 1 FROM pending_refs p WHERE p.image_id = i.id AND NOT (p.app = ?2 AND p.document = ?3))
+  ORDER BY i.id`;
+
 export async function unusedOf(
   env: Env,
   app: MediaApp,
@@ -156,13 +165,7 @@ export async function unusedOf(
   document: string,
   ids: readonly string[],
 ): Promise<string[]> {
-  const { results } = await env.MEDIA_DB.prepare(
-    `SELECT i.id FROM images i JOIN json_each(?4) j ON j.value = i.id
-      WHERE i.owner = ?1
-        AND NOT EXISTS (SELECT 1 FROM refs r WHERE r.image_id = i.id AND NOT (r.app = ?2 AND r.document = ?3))
-        AND NOT EXISTS (SELECT 1 FROM pending_refs p WHERE p.image_id = i.id AND NOT (p.app = ?2 AND p.document = ?3))
-      ORDER BY i.id`,
-  )
+  const { results } = await env.MEDIA_DB.prepare(UNUSED_SQL)
     .bind(owner, app, document, JSON.stringify(ids))
     .all<{ id: string }>();
   return results.map((r) => r.id);
