@@ -21,6 +21,9 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
   (a share link's `s`) and the hash (`#t=<page>`).
 - **Why the query and not the hash:** `useTabEntryEffects` rewrites the whole hash to `#t=<id>` whenever it is not
   exactly that, so a view kept there would be lost on the first load.
+- **A link's address** is `useKnowledgeViewHref(activePageId)`: this path and query with the view set, at
+  `#t=<the open page>`. It is built from the page's id, not the hash on show, which the editor writes a moment after
+  a page opens. No component reads `window` while rendering.
 - **`showKnowledgeView(view, { replace })`** is `history.pushState` (or `replaceState`) with the router's own state
   handed back, then a notify. `subscribeKnowledgeView` also hears `popstate`, so Back and Forward move the view.
   `useKnowledgeView()` is `useSyncExternalStore` over the two; on the server it is `pages`.
@@ -49,7 +52,8 @@ the [knowledge UI blueprint](knowledge-ui.md) describes. **Nothing here is verif
   - `KnowledgeViewHeader` is 70px tall at least (the top row's 12px, 46px and 12px) and pads its right by the top
     row's card's measured width plus 12px (`useChromeBox`: one `ResizeObserver` on the card and on the column child
     above the anchor, and the window's `resize`), so its controls never sit under the card.
-- **Loading:** each view is `next/dynamic` with `ssr: false`, fetched when first shown. A view's render crash stays
+- **Loading:** each view is `next/dynamic` with `ssr: false`, fetched when first shown, and so is the AI Settings
+  dialog, fetched when first opened: the editor's first load carries the switch, the host and the two small stores. A view's render crash stays
   in the `KnowledgeView` error area.
 
 ### Tests

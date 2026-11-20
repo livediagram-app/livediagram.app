@@ -7,6 +7,7 @@ import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 import { useEditorChrome, useEditorChromeStore } from '@/app/document/[id]/EditorContext';
 import { takeArrival } from '@/lib/knowledge-home/arrival-handoff';
+import { useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
 import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import {
@@ -14,7 +15,6 @@ import {
   KNOWLEDGE_VIEW_KEEP,
   KnowledgeViewFrame,
 } from './KnowledgeViewFrame';
-import { AiSettingsHost } from './AiSettingsDialog';
 import { KnowledgeViewSwitch } from './KnowledgeViewSwitch';
 import { useKnowledgeViewsOffered } from './useKnowledgeViewsOffered';
 
@@ -23,6 +23,15 @@ const AiKnowledgeView = dynamic(
   () => import('@/components/ai-knowledge/AiKnowledgeView').then((m) => m.AiKnowledgeView),
   { ssr: false },
 );
+
+// The knowledgebase's key and model (AiSettingsDialog.tsx): its code is fetched the first time it is opened.
+const AiSettingsDialogHost = dynamic(
+  () => import('./AiSettingsDialog').then((m) => m.AiSettingsHost),
+  { ssr: false },
+);
+function AiSettingsWhenOpen() {
+  return useAiSettingsOpen() ? <AiSettingsDialogHost /> : null;
+}
 
 /** The switch, for the top row's card. Hidden on a phone, which has a row of its own. */
 export function KnowledgeCornerSwitch() {
@@ -73,7 +82,7 @@ export function KnowledgeViewHost() {
         </AreaErrorBoundary>
       </KnowledgeViewFrame>
       {/* The knowledgebase's key and model, opened from either view. */}
-      <AiSettingsHost />
+      <AiSettingsWhenOpen />
     </>
   );
 }
