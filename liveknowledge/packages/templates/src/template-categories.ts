@@ -29,42 +29,27 @@ type CategoryInfo = {
   searchWords?: string;
 };
 
+// Events, Home and Pitches held only slide and infographic templates, which liveknowledge does not list
+// (docs/specs/002-project-scope/not-in-liveknowledge.md): their ids stay in TemplateCategory for the unlisted kinds'
+// rows below, and no picker shows them.
 const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
     id: 'careers',
     label: 'Careers',
     searchWords: 'job jobs cv application hiring',
-    description: 'Résumés and cover letters for the next job.',
-  },
-  {
-    id: 'events',
-    label: 'Events',
-    searchWords: 'celebrations celebration party birthday wedding celebrate invitation',
-    description: 'Posters and group cards for the big days ahead.',
-  },
-  {
-    id: 'home',
-    label: 'Home',
-    searchWords: 'hobbies hobby personal family cooking house',
-    description: 'Recipes to share and floor plans of a home.',
+    description: 'Cover letters for the next job you apply for.',
   },
   {
     id: 'learning',
     label: 'Learning',
     searchWords: 'lessons lesson school teacher teaching class education student',
-    description: 'Lesson plans and class slides for a classroom.',
+    description: 'Lesson plans for a class, an hour at a time.',
   },
   {
     id: 'marketing',
     label: 'Marketing',
     searchWords: 'social media content ad advert campaign',
-    description: 'Social posts, explainers, ads and comparisons.',
-  },
-  {
-    id: 'pitches',
-    label: 'Pitches',
-    searchWords: 'launches launch pitch investor startup sales keynote',
-    description: 'Decks to pitch an idea or launch a product.',
+    description: 'Newsletters and case studies to send round.',
   },
   {
     id: 'plans',
@@ -76,13 +61,13 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'reports',
     label: 'Reports',
     searchWords: 'report review update results numbers',
-    description: 'Status reports, reviews and stories in numbers.',
+    description: 'Status reports and research, written to be read.',
   },
   {
     id: 'team',
     label: 'Teams',
     searchWords: 'meetings meeting team onboarding workshop agenda',
-    description: 'Meeting notes, workshops and welcomes for a team.',
+    description: 'Meeting notes and handbooks for a whole team.',
   },
 ];
 
@@ -144,13 +129,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
 export const TEMPLATE_ALSO_IN: Readonly<
   Partial<Record<TemplateKind, readonly TemplateCategory[]>>
 > = {
-  // An explainer teaches.
-  'how-it-works': ['learning'],
-  // A poster is how an event is marketed.
-  'event-poster': ['marketing'],
-  // A one-pager is how a product idea is pitched; a board update is a pitch for the next decision.
-  'product-one-pager': ['pitches'],
-  'board-update': ['pitches'],
   // A team's newsletter goes round the team; a case study proposes the next project.
   newsletter: ['team'],
   'case-study': ['plans'],

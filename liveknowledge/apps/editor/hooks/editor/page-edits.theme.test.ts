@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { defaultPageBackground, getBuiltInTheme, pagesOf, type Tab } from '@liveknowledge/document';
 import { pageEdits } from './page-edits';
 
+// The row of pages is closed in liveknowledge (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to
+// delete"): these tests open the door to keep the engine behind it honest until it is deleted.
+vi.mock('@/lib/not-in-liveknowledge', () => ({ CUT_FROM_FORK: true }));
+
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // docs/specs/007-editor/pages-mode.md "A new page's background": a new infographic page

@@ -35,28 +35,28 @@ describe('filterGallery', () => {
   });
 
   it('matches the title, case-insensitively', () => {
-    expect(filterGallery(all, 'STORYBOARD').map((t) => t.kind)).toEqual(['storyboard']);
+    expect(filterGallery(all, 'NEWSLETTER').map((t) => t.kind)).toEqual(['newsletter']);
   });
 
   it('matches the description and the category name', () => {
-    expect(filterGallery(all, 'cooking').map((t) => t.kind)).toContain('recipe-card');
-    expect(filterGallery(all, 'hobbies').map((t) => t.kind)).toContain('floor-plan');
+    expect(filterGallery(all, 'onboarding').map((t) => t.kind)).toContain('onboarding-handbook');
+    expect(filterGallery(all, 'careers').map((t) => t.kind)).toContain('cover-letter');
     expect(filterGallery(all, 'minutes').map((t) => t.kind)).toEqual(['meeting-notes']);
   });
 
   it('needs every word to hit somewhere', () => {
-    const kinds = filterGallery(all, 'floor plan').map((t) => t.kind);
-    expect(kinds).toContain('floor-plan');
-    expect(kinds).not.toContain('storyboard');
-    expect(filterGallery(all, 'storyboard zebra')).toEqual([]);
+    const kinds = filterGallery(all, 'design doc').map((t) => t.kind);
+    expect(kinds).toContain('design-doc');
+    expect(kinds).not.toContain('newsletter');
+    expect(filterGallery(all, 'newsletter zebra')).toEqual([]);
   });
 });
 
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
-    const groups = groupGallery(filterGallery(galleryTemplates(), 'storyboard'));
-    expect(groups.map((g) => g.label)).toEqual(['Marketing']);
-    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['storyboard']);
+    const groups = groupGallery(filterGallery(galleryTemplates(), 'handbook'));
+    expect(groups.map((g) => g.label)).toEqual(['Teams']);
+    expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['onboarding-handbook']);
   });
 
   it('runs the categories alphabetically by name, Blank Slate first', () => {
@@ -70,17 +70,16 @@ describe('groupGallery', () => {
     const browse = groupGallery(galleryTemplates());
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('slide-deck')).toEqual(['pitches']);
-    expect(holding('floor-plan')).toEqual(['home']);
+    expect(holding('design-doc')).toEqual(['plans']);
     expect(holding('lesson-plan')).toEqual(['learning']);
     // A cross-listed template shows on each of its categories.
-    expect(holding('how-it-works')).toEqual(['learning', 'marketing']);
+    expect(holding('newsletter')).toEqual(['marketing', 'team']);
   });
 
   it('finds a template by its search words, as the editor does', () => {
-    expect(filterGallery(galleryTemplates(), 'cv').map((t) => t.kind)).toContain('resume');
-    expect(filterGallery(galleryTemplates(), 'cooking').map((t) => t.kind)).toContain(
-      'recipe-card',
+    expect(filterGallery(galleryTemplates(), 'rfc').map((t) => t.kind)).toContain('design-doc');
+    expect(filterGallery(galleryTemplates(), 'minutes').map((t) => t.kind)).toContain(
+      'meeting-notes',
     );
   });
 });
@@ -91,11 +90,7 @@ describe('the shelves, as the template step lays them out', () => {
   it('opens on Blank Slate, only the blanks, then every category in catalogue order', () => {
     const shelves = galleryShelves();
     expect(shelves[0]?.id).toBe('popular');
-    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual([
-      'blank-illustration',
-      'blank-slide-deck',
-      'blank-article',
-    ]);
+    expect(shelves[0]?.templates.map((t) => t.kind)).toEqual(['blank-article']);
     for (const t of popularTemplates()) expect(isBlankTemplate(t.kind), t.kind).toBe(true);
     expect(shelves.slice(1).map((s) => s.id)).toEqual(
       groupGallery(galleryTemplates()).map((g) => g.id),
@@ -124,10 +119,11 @@ describe('the shelf order', () => {
         .map((t) => t.kind);
       return g.templates.map((t) => t.kind).join() !== catalogue.join();
     });
-    expect(shuffled.length).toBeGreaterThan(first.length / 2);
-    // Every shelf of two or more comes out mixed.
+    // (A shelf of one template has no order to mix: liveknowledge's catalogue has several.)
+    expect(shuffled.length).toBeGreaterThan(0);
+    // Every shelf of three or more comes out mixed (a seeded mix of two may land as it was).
     const unmixed = first
-      .filter((g) => g.templates.length > 1 && !shuffled.includes(g))
+      .filter((g) => g.templates.length > 2 && !shuffled.includes(g))
       .map((g) => g.id);
     expect(unmixed).toEqual([]);
   });

@@ -1,4 +1,5 @@
 import { actionNoteOpens } from '@/lib/action-note-open';
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { useMemo, useRef } from 'react';
 import { isBoxed, elementActions } from '@liveknowledge/document';
 import { useArticles } from '@/hooks/editor/useArticles';
@@ -128,7 +129,12 @@ export function useEditorArticles({
     [currentDeck, activeId, isReadOnly, deckVerbs],
   );
   const pagesModeView = useMemo(
-    () => ({ ...pagesMode, ...(articles ? { articles } : {}), deck: pageDeck }),
+    // No deck: a knowledgebase page is never a slide, so no Notes, Add to Slides or Present From Here.
+    () => ({
+      ...pagesMode,
+      ...(articles ? { articles } : {}),
+      ...(CUT_FROM_FORK ? { deck: pageDeck } : {}),
+    }),
     [pagesMode, articles, pageDeck],
   );
 

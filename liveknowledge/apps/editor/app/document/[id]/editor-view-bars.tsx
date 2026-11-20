@@ -4,6 +4,7 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import type { VisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { memo } from 'react';
 import type { Tab } from '@liveknowledge/document';
@@ -82,7 +83,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
         copyDescription="Duplicate this document into your own files."
         // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
         present={
-          hydrated && !anyWelcomeOpen && !isMobileViewport && slideCount > 0
+          CUT_FROM_FORK && hydrated && !anyWelcomeOpen && !isMobileViewport && slideCount > 0
             ? {
                 slideCount,
                 starting: startingDeck,

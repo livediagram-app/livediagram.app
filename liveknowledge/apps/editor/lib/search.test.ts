@@ -38,7 +38,7 @@ describe('buildSearchResults', () => {
   const liveDocs = [
     { id: 'd1', name: 'Flowchart' },
     { id: 'd2', name: 'Mind map' },
-    { id: 'd3', name: '' }, // untitled, falls back to "Untitled document"
+    { id: 'd3', name: '' }, // untitled, falls back to "Untitled Knowledgebase"
   ];
   const folders = [
     { id: 'f1', name: 'Projects' },
@@ -81,7 +81,7 @@ describe('buildSearchResults', () => {
     expect(out).toEqual([]);
   });
 
-  it('falls back to "Untitled document" for documents with empty names', () => {
+  it('falls back to "Untitled Knowledgebase" for documents with empty names', () => {
     const out = buildSearchResults({
       query: 'untitled',
       documents: liveDocs,
@@ -92,7 +92,7 @@ describe('buildSearchResults', () => {
     expect(documentGroup.items[0]).toMatchObject({
       kind: 'document',
       id: 'd3',
-      name: 'Untitled document',
+      name: 'Untitled Knowledgebase',
     });
   });
 

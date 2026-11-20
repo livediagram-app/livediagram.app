@@ -3,7 +3,7 @@
 // backdrop. Shared by /new and the
 // workspace frame's New document (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB58), so a document
 // made in either is the same document.
-import type { Tab } from '@liveknowledge/document';
+import { newKnowledgebasePageContent, START_PAGE_NAME, type Tab } from '@liveknowledge/document';
 import type { TemplateKind } from '@liveknowledge/templates';
 import { buildTemplatedTabs } from '@/lib/template-builders';
 import { templateTabName } from '@/lib/template-tab-name';
@@ -27,29 +27,35 @@ export async function newDocumentContent(input: {
   tabId: string;
   templateChosen?: boolean;
 }): Promise<NewDocumentContent> {
-  const { templateKind, themeId, tabId, templateChosen = true } = input;
+  const { templateKind, themeId, tabId } = input;
   // A template makes its tabs; the first opens.
-  const built = templateKind ? buildTemplatedTabs(templateKind, themeId, tabId, 'Tab 1') : null;
+  const built = templateKind
+    ? buildTemplatedTabs(templateKind, themeId, tabId, START_PAGE_NAME)
+    : null;
   // The first tab is named after its template unless the template names it (template-tab-name.ts).
   const tabs =
-    built && templateKind && built[0]!.name === 'Tab 1'
-      ? [{ ...built[0]!, name: templateTabName(templateKind) ?? 'Tab 1' }, ...built.slice(1)]
+    built && templateKind && built[0]!.name === START_PAGE_NAME
+      ? [
+          { ...built[0]!, name: templateTabName(templateKind) ?? START_PAGE_NAME },
+          ...built.slice(1),
+        ]
       : built;
   const theme = getTheme(themeId);
   const tab: Tab = tabs
     ? tabs[0]!
     : {
-        // A blank canvas with the theme's backdrop, so the editor loads in the person's style with no seeded
-        // elements.
+        // One page to write on, Start Here (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A
+        // knowledgebase"), on the theme's backdrop.
         id: tabId,
-        name: 'Tab 1',
+        name: START_PAGE_NAME,
         elements: [],
         theme: themeId,
         backgroundColor: theme.backgroundColor,
         backgroundPattern: theme.backgroundPattern,
         patternColor: theme.patternColor,
         ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
-        ...(templateChosen ? { templateChosen: true } : {}),
+        templateChosen: true,
+        ...newKnowledgebasePageContent(),
       };
   return { tabs, tab };
 }

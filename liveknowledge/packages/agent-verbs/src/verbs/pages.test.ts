@@ -3,7 +3,7 @@ import type { PagesAnswer } from '@liveknowledge/api-schema';
 import { VerbRefusal } from '../define';
 import { changePages, pagesTabOf, readArticle, writeArticle } from '../pages/pages-calls';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
-import { articleGet, articleSet, pageLs, pageSet } from './pages';
+import { articleGet, articleSet, pageLs } from './pages';
 
 // The Pages verbs and calls (docs/specs/024-agents/pages-for-agents.md "The front doors",
 // "Which tab").
@@ -224,7 +224,7 @@ describe('the calls', () => {
   });
 });
 
-describe('page ls and page set', () => {
+describe('page ls', () => {
   it('refuses a tab it cannot read, as the api refuses it', async () => {
     const { ctx } = setUp({ [ONE]: ARTICLE_TAB });
     await expect(pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A, tab: TWO }))).rejects.toThrow(
@@ -238,104 +238,6 @@ describe('page ls and page set', () => {
     expect(pageLs.text!(out)).toEqual(['tab one · pages']);
     const fitted = await pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A, budget: 50 }));
     expect(fitted.text).toBe('tab one · fitted');
-  });
-
-  it('makes one change from the flags', async () => {
-    const cases: [Record<string, unknown>, unknown][] = [
-      [
-        { add: 'slide', layout: 'slide-title', name: 'Cover' },
-        { op: 'add', kind: 'slide', name: 'Cover', layout: 'slide-title' },
-      ],
-      [
-        { page: '2', delete: true },
-        { op: 'delete', page: 2 },
-      ],
-      [
-        { page: 'Cover', duplicate: true },
-        { op: 'duplicate', page: 'Cover' },
-      ],
-      [
-        { page: '1', backgroundToAll: true },
-        { op: 'apply_background_to_all', page: 1 },
-      ],
-      [
-        { add: 'slide', move: 2, name: 'Cover' },
-        { op: 'add', kind: 'slide', name: 'Cover', at: 2 },
-      ],
-      [
-        { page: '2', move: 1 },
-        { op: 'move', page: 2, to: 1 },
-      ],
-      [
-        { page: '2', layout: 'quote' },
-        { op: 'layout', page: 2, layout: 'quote' },
-      ],
-      [
-        { page: '2', size: 'a3', orientation: 'landscape' },
-        { op: 'set', page: 2, size: 'a3', orientation: 'landscape' },
-      ],
-    ];
-    for (const [flags, change] of cases) {
-      const { ctx, sent } = setUp();
-      const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags }));
-      expect(sent).toEqual([{ pages: [change] }]);
-      expect(pageSet.text!(out)).toEqual([
-        '~ Added page 2 (slide, Slide (16:9)).',
-        '1  slide  slide  -960,-540 1920x1080  Cover',
-      ]);
-      expect(pageSet.quiet!(out)).toEqual(['page-1']);
-    }
-  });
-
-  it('adds a page with no layout, and lists an unnamed page without a name', async () => {
-    const unnamed = { ...ANSWER, pages: [{ ...ANSWER.pages[0]!, name: null }] };
-    const { ctx, sent } = setUp(undefined, () => Response.json(unnamed));
-    const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'slide' }));
-    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
-    expect(pageSet.text!(out)[1]).toBe('1  slide  slide  -960,-540 1920x1080');
-  });
-
-  it('takes a JSON list of changes, on the tab named', async () => {
-    const { ctx, sent } = setUp(undefined, undefined, '[{"op":"add","kind":"slide"}]');
-    await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, tab: 'Details', changes: 'c.json' }));
-    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
-    const one = setUp(undefined, undefined, '{"op":"add","kind":"slide"}');
-    await pageSet.run!(one.ctx, pageSet.input.parse({ doc: DOC_A, changes: '-' }));
-    expect(one.sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
-  });
-
-  it('refuses no change, bad JSON, too many changes and the api’s refusal', async () => {
-    const run = async (flags: Record<string, unknown>, input = '') => {
-      const { ctx } = setUp(
-        undefined,
-        () =>
-          Response.json({ error: 'page_unknown', message: 'No page.', change: 0 }, { status: 400 }),
-        input,
-      );
-      return pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags })).catch(
-        (e: unknown) => e,
-      );
-    };
-    expect(await run({})).toBeInstanceOf(VerbRefusal);
-    expect(await run({ page: '2' })).toBeInstanceOf(VerbRefusal);
-    // Flags for two changes, or beside --changes, are refused rather than one of them dropped.
-    for (const flags of [
-      { page: '2', name: 'Cover', layout: 'quote' },
-      { page: '2', delete: true, name: 'X' },
-      { page: '2', move: 1, duplicate: true },
-      { add: 'slide', page: '2' },
-      { add: 'slide', delete: true },
-      { changes: 'c', name: 'X' },
-    ]) {
-      const refused = await run(flags, '[{"op":"add","kind":"slide"}]');
-      expect(refused).toBeInstanceOf(VerbRefusal);
-      expect((refused as Error).message).toContain('more than one change');
-    }
-    expect(await run({ changes: 'c' }, 'not json')).toBeInstanceOf(VerbRefusal);
-    expect(await run({ changes: 'c' }, '[]')).toBeInstanceOf(VerbRefusal);
-    const refused = await run({ page: '9', delete: true });
-    expect(refused).toBeInstanceOf(VerbRefusal);
-    expect((refused as Error).message).toContain('change 1: No page.');
   });
 });
 
@@ -367,9 +269,6 @@ describe('article get and article set', () => {
         append: true,
         look: 'report',
         accent: '#ff0066',
-        pageNumbers: true,
-        size: 'letter',
-        orientation: 'portrait',
       }),
     );
     expect(sent).toEqual([
@@ -378,11 +277,8 @@ describe('article get and article set', () => {
           markdown: '# Hello',
           article: 'Brief',
           mode: 'append',
-          size: 'letter',
-          orientation: 'portrait',
           look: 'report',
           accent: '#ff0066',
-          pageNumbers: true,
         },
       },
     ]);
@@ -433,10 +329,7 @@ describe('article get and article set', () => {
     expect(once.sent).toHaveLength(1);
   });
 
-  it('starts a new article, and refuses what the api refuses', async () => {
-    const { ctx, sent } = setUp(undefined, undefined, 'x');
-    await articleSet.run!(ctx, articleSet.input.parse({ doc: DOC_A, file: '-', new: true }));
-    expect(sent).toEqual([{ article: { markdown: 'x', new: true } }]);
+  it('refuses what the api refuses', async () => {
     const refused = setUp(
       undefined,
       () => Response.json({ error: 'article_ambiguous', message: 'Name one.' }, { status: 400 }),

@@ -4,6 +4,7 @@
 // as a sidebar down the canvas's left on a desktop until the person minimises it, else the popover
 // over its cluster button (a bottom sheet on a phone, which never has the sidebar). Where it sits is
 // the person's own choice, in their synced preferences (lib/contents-placement.ts).
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import dynamic from 'next/dynamic';
 import { useCallback, useEffect, type ReactNode } from 'react';
 import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
@@ -56,7 +57,9 @@ export function useContentsChrome({
   const { activeDockPanel, activeDockAnchor, pagesMode, userPreferences, selfParticipant } = props;
   const toolbarScale = useUiScale('toolbar');
   const placement = readContentsPlacement(userPreferences);
-  const shown = !!pagesMode && !chromeHidden && !props.zenMode;
+  // Contents listed a tab's paper pages (add, reorder, slides): a knowledgebase page has one, and the page tree is the
+  // sidebar (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree").
+  const shown = CUT_FROM_FORK && !!pagesMode && !chromeHidden && !props.zenMode;
   // A single page keeps the button: there is nothing to find your way round.
   const contentsDocked =
     shown &&
@@ -87,7 +90,7 @@ export function useContentsChrome({
     place('sidebar');
   }, [closeDockPanel, place]);
 
-  if (!pagesMode) {
+  if (!pagesMode || !CUT_FROM_FORK) {
     return {
       contentsDocked: false,
       menuJoined: false,

@@ -86,11 +86,13 @@ describe('the hero', () => {
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
     expect(screen.queryByRole('list', { name: 'Matching templates' })).toBeNull();
-    fireEvent.change(box, { target: { value: 'poster' } });
+    fireEvent.change(box, { target: { value: 'handbook' } });
     const list = screen.getByRole('list', { name: 'Matching templates' });
     const links = within(list).getAllByRole('link');
     expect(links.length).toBeGreaterThan(0);
-    expect(links[0]!.getAttribute('href')).toBe('/new?template=event-poster&via=Home.HeroSearch');
+    expect(links[0]!.getAttribute('href')).toBe(
+      '/new?template=onboarding-handbook&via=Home.HeroSearch',
+    );
     expect(screen.getByRole('link', { name: /Browse every template/ }).getAttribute('href')).toBe(
       '#templates',
     );
@@ -102,7 +104,7 @@ describe('the hero', () => {
     render(<Hero />);
     const box = screen.getByLabelText<HTMLInputElement>('Search templates');
     box.focus();
-    fireEvent.change(box, { target: { value: 'storyboard' } });
+    fireEvent.change(box, { target: { value: 'handbook' } });
     fireEvent.keyDown(box, { key: 'ArrowDown' });
     const first = within(screen.getByRole('list', { name: 'Matching templates' })).getAllByRole(
       'link',
@@ -111,7 +113,7 @@ describe('the hero', () => {
     fireEvent.keyDown(first, { key: 'ArrowUp' });
     expect(document.activeElement).toBe(box);
     fireEvent.submit(box.form!);
-    expect(assign).toHaveBeenCalledWith('/new?template=storyboard&via=Home.HeroSearch');
+    expect(assign).toHaveBeenCalledWith('/new?template=onboarding-handbook&via=Home.HeroSearch');
     fireEvent.keyDown(box, { key: 'Escape' });
     expect(box.value).toBe('');
   });
@@ -120,7 +122,7 @@ describe('the hero', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'poster' } });
+    fireEvent.change(box, { target: { value: 'handbook' } });
     expect(screen.getByRole('list', { name: 'Matching templates' })).toBeTruthy();
     const blank = within(screen.getByRole('search')).getByRole('link', { name: 'Start Blank' });
     fireEvent.focus(blank);
@@ -138,12 +140,12 @@ describe('the hero', () => {
     render(<Hero />);
     const box = screen.getByLabelText('Search templates');
     fireEvent.focus(box);
-    fireEvent.change(box, { target: { value: 'poster' } });
+    fireEvent.change(box, { target: { value: 'handbook' } });
     expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start' });
     rect.mockReturnValue({ bottom: 10 } as DOMRect);
     scrollIntoView.mockClear();
     fireEvent.change(box, { target: { value: '' } });
-    fireEvent.change(box, { target: { value: 'storyboard' } });
+    fireEvent.change(box, { target: { value: 'handbook' } });
     expect(scrollIntoView).not.toHaveBeenCalled();
     rect.mockRestore();
   });

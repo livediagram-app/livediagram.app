@@ -8,14 +8,14 @@ afterEach(() => localStorage.clear());
 
 describe('closeStartForBlank', () => {
   it('closes the start of a blank', () => {
-    expect(closeStartForBlank('t', 'blank-illustration')).toBe(true);
+    expect(closeStartForBlank('t', 'blank-article')).toBe(true);
     expect(emptyCardDismissed('t:pages')).toBe(true);
-    expect(closeStartForBlank('u', 'blank-slide-deck')).toBe(true);
+    expect(closeStartForBlank('u', 'blank')).toBe(true);
     expect(emptyCardDismissed('u:pages')).toBe(true);
   });
 
   it('leaves a template and no template alone', () => {
-    expect(closeStartForBlank('t', 'slide-deck')).toBe(false);
+    expect(closeStartForBlank('t', 'meeting-notes')).toBe(false);
     expect(closeStartForBlank('t', null)).toBe(false);
     expect(emptyCardDismissed('t:pages')).toBe(false);
   });

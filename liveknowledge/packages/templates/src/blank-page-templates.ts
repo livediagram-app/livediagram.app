@@ -4,6 +4,7 @@
 // (withPageKindChosen on an unchosen page), so a blank of a kind and a chosen Blank Illustration are the same page.
 // Pure: merged in by templateCanvasOverrides, so every application path (the picker, /new, the MCP worker) lands it.
 import {
+  newKnowledgebasePageContent,
   pagesOf,
   withDefaultPageBackgrounds,
   withPageBackgroundsFollowingTheme,
@@ -34,6 +35,9 @@ function isBlankPageTemplate(kind: TemplateKind): kind is BlankPageTemplateKind 
 /** The tab data of a blank of a page kind (its one page, and an article's empty writing), or undefined for any other
  *  template. */
 export function blankPageTemplateOverrides(kind: TemplateKind): Partial<Tab> | undefined {
+  // liveknowledge's Blank Page, made by name (an agent's add_tab, a `/new?blank` link): a page to write on, as every
+  // page of a knowledgebase is (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page").
+  if (kind === 'blank') return newKnowledgebasePageContent();
   if (!isBlankPageTemplate(kind)) return undefined;
   // The page a new Pages tab starts on, never chosen.
   const unchosen = { elements: [], pages: pagesOf(undefined) };

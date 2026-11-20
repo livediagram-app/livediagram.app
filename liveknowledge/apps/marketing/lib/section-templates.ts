@@ -22,36 +22,11 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'newsletter',
     'blank-article',
   ],
-  slides: [
-    'slide-deck',
-    'launch-keynote',
-    'board-update',
-    'quarterly-review',
-    'class-lesson',
-    'team-welcome',
-    'blank-slide-deck',
-  ],
-  infographics: [
-    'data-story',
-    'how-it-works',
-    'event-poster',
-    'versus',
-    'social-carousel',
-    'year-in-review',
-    'recipe-card',
-    'live-card',
-    'blank-infographic',
-  ],
-  collaboration: [
-    'live-card',
-    'meeting-notes',
-    'workshop-kickoff',
-    'article',
-    'design-doc',
-    'team-welcome',
-    'onboarding-handbook',
-    'storyboard',
-  ],
+  // Slides and infographics are not in liveknowledge (docs/specs/002-project-scope/not-in-liveknowledge.md): their
+  // pages, still to be rewritten with the marketing site, list no template.
+  slides: [],
+  infographics: [],
+  collaboration: ['meeting-notes', 'article', 'design-doc', 'onboarding-handbook'],
 };
 
 const BY_KIND = new Map(TEMPLATES.map((t) => [t.kind, t]));

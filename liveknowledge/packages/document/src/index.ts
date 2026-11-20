@@ -143,6 +143,7 @@ export * from './article-footnotes';
 export * from './article-bands';
 export * from './article-flow-ops';
 export * from './article-pages';
+export * from './knowledgebase-page';
 export * from './speaking-time';
 export * from './article-style';
 export * from './article-zones';

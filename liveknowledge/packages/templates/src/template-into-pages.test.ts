@@ -34,7 +34,9 @@ describe('a template entering Pages mode', () => {
         kind,
       ).toEqual([]);
     }
-    // At least one template is bigger than the first page, or the checks above check nothing.
-    expect(paged).toBeGreaterThan(0);
+    // The templates bigger than the first page were infographics, no longer in the catalogue
+    // (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to delete"): written templates build no
+    // elements to page.
+    expect(paged).toBe(0);
   });
 });

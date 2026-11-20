@@ -9,12 +9,7 @@ import { mcpChangeThreads, mcpListThreads } from '../mcp/thread-tools';
 import { mcpViewLive, mcpViewTab } from '../mcp/view-tool';
 import { mcpArchiveDocument, mcpUnarchiveDocument } from '../mcp/archive-tools';
 import { mcpListVersions, mcpRestoreVersion } from '../mcp/version-tools';
-import {
-  changePagesOutput,
-  changePagesShape,
-  writeArticleOutput,
-  writeArticleShape,
-} from '../mcp/pages-schema';
+import { writeArticleOutput, writeArticleShape } from '../mcp/pages-schema';
 import { listImagesOutput, listImagesShape } from '@liveworkspace/agent-verbs/mcp/image-schema';
 import { mcpDeleteImage, mcpUploadImage } from '@liveworkspace/agent-verbs/mcp/image-tools';
 import {
@@ -101,12 +96,11 @@ export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document of pages: a slide deck or presentation (a tab from the "blank-slide-deck" template, then ' +
-    'change_pages adds the slides), an article or report (a tab from "blank-article", then write_article), an ' +
-    'infographic or a poster. Each tab holds pages; a tab may start from a "template" (a kind from ' +
-    'list_templates: ready-made pages with sample text) or take "elements" for its first page (the ' +
+    'Create a new knowledgebase: pages of writing. Each tab is one page, written with write_article (a tab from ' +
+    '"blank-article", then write_article); a tab may start from a "template" (a kind from list_templates: a ' +
+    'ready-made page with sample text) or take "elements" for pictures, charts and drawings on it (the ' +
     'full format is documented inline on the "tabs" argument below). Pass one tab, or several to build a ' +
-    'multi-tab document in one call. The server validates, lays ' +
+    'knowledgebase of several pages in one call. The server validates, lays ' +
     "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
     "files it at the root of the user's My Work (or in their default folder for what that " +
     'document is made as, when they have set one), and returns the link, the folder, and an inline ' +
@@ -209,40 +203,20 @@ export const mcpListImages = mcpTool('list_images', {
   outputSchema: listImagesOutput,
 });
 
-export const mcpChangePages = mcpTool('change_pages', {
-  behaviour: 'destructive',
-  title: 'Change pages',
-  description:
-    'Build a slide deck or presentation or an infographic: change the pages of a tab, in ' +
-    'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
-    'infographic or slide page, set {page, name, size, orientation, background, locked}, layout ' +
-    '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
-    "other page of its kind, every slide say, takes that page's background). The answer gives every page with its rectangle in canvas " +
-    'coordinates, the ' +
-    "same as an element's x and y in update_document (the layout view prints positions from the content's " +
-    'corner instead). A layout fills a page with sample text: read_document view "pages" lists it, with each ' +
-    "list's items, to replace. A layout's colours are the tab's theme (create_document's and add_tab's theme: " +
-    'mocha, ocean, forest...), a page\u2019s background its own. Articles are written with write_article. ' +
-    'Everyone with the document open sees it at once.',
-  inputSchema: changePagesShape,
-  outputSchema: changePagesOutput,
-});
-
+// No change_pages: a page is one continuous page of writing (docs/specs/002-project-scope/not-in-liveknowledge.md).
 export const mcpWriteArticle = mcpTool('write_article', {
   behaviour: 'destructive',
   title: 'Write an article',
   description:
-    'Write an article (a document of text on pages) from Markdown: a new one, or replace ' +
-    'or append to one named by id or title, with its look. The editor flows the text onto as many pages as ' +
-    'it needs. read_document with view "pages" shows each article as Markdown to edit and write back. Not for ' +
-    'slides: an article flows as running text, where a slide deck is slide pages, made with change_pages.',
+    'Write a page from Markdown: its writing anew, or appended after its last block, with its look. A page is ' +
+    'one continuous page, as tall as its writing. read_document with view "pages" shows each page’s writing ' +
+    'as Markdown to edit and write back.',
   inputSchema: writeArticleShape,
   outputSchema: writeArticleOutput,
 });
 
 // Every tool, in the order the server registers them.
 export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
-  mcpChangePages,
   mcpWriteArticle,
   mcpListImages,
   mcpUploadImage,

@@ -1,7 +1,7 @@
 // Every icon a layout or a template places is one the icon set draws (docs/specs/007-editor/pages-mode.md
 // "Layouts"): an id the catalogue lacks renders as the framed question mark (PLACEHOLDER_ICON) for good.
 import { beforeAll, describe, expect, it } from 'vitest';
-import { PAGE_LAYOUTS, SLIDE_LAYOUTS, TEMPLATES, buildTemplate } from '@liveknowledge/templates';
+import { PAGE_LAYOUTS, SLIDE_LAYOUTS } from '@liveknowledge/templates';
 import { ensureIconCatalogs } from '@liveworkspace/workbench/lib/icon-registry';
 import { getIcon, PLACEHOLDER_ICON } from './icons';
 
@@ -33,13 +33,6 @@ describe('icons in layouts and templates', () => {
     ]) {
       for (const l of [...PAGE_LAYOUTS, ...SLIDE_LAYOUTS]) iconIdsIn(l.build(box), l.id, found);
     }
-    expect(found.length).toBeGreaterThan(0);
-    expect(unknown(found)).toEqual([]);
-  });
-
-  it('every template places only icons the icon set has', () => {
-    const found: string[][] = [];
-    for (const { kind } of TEMPLATES) iconIdsIn(buildTemplate(kind, 0, 0), kind, found);
     expect(found.length).toBeGreaterThan(0);
     expect(unknown(found)).toEqual([]);
   });

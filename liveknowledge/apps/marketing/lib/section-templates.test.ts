@@ -16,6 +16,12 @@ describe('each category page’s templates', () => {
 
   it.each(LANDING_SECTION_IDS)('%s lists up to nine listed templates, each once', (id) => {
     const kinds = SECTION_TEMPLATE_KINDS[id] ?? [];
+    // Slides and infographics are not in liveknowledge (docs/specs/002-project-scope/not-in-liveknowledge.md): their
+    // pages list no template until the marketing site is rewritten.
+    if (id === 'slides' || id === 'infographics') {
+      expect(kinds).toEqual([]);
+      return;
+    }
     expect(kinds.length).toBeGreaterThan(0);
     expect(kinds.length).toBeLessThanOrEqual(SECTION_TEMPLATES_MAX);
     expect(new Set(kinds).size).toBe(kinds.length);

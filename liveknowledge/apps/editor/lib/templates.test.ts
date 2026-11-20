@@ -30,59 +30,21 @@ describe('TEMPLATES catalogue', () => {
   // the catalogue. If a new kind lands in the union, both this list
   // AND the catalogue must grow; the test below catches a drift in
   // either direction.
-  const ALL_KINDS: TemplateKind[] = [
-    'blank',
-    'blank-illustration',
-    'blank-slide-deck',
-    'blank-article',
-    'blank-infographic',
-    'slide-deck',
-    'live-card',
-    'storyboard',
-    'floor-plan',
-    'working-backwards',
-    'article',
-    'event-poster',
-    'year-in-review',
-    'resume',
-    'recipe-card',
-    'data-story',
-    'how-it-works',
-    'versus',
-    'social-carousel',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
-    'meeting-notes',
-    'lesson-plan',
-    'business-proposal',
-    'design-doc',
-    'status-report',
-    'cover-letter',
-    'class-lesson',
-    'product-one-pager',
-    'research-report',
-    'newsletter',
-    'case-study',
-    'onboarding-handbook',
-    'board-update',
-  ];
 
   // Hidden templates are buildable but never listed, so every user-facing
   // count (the picker grids, the MCP catalogue) is over the listed subset.
   // The mechanism is generic; nothing ships hidden today.
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 36 templates (1 default + 35 extra)', () => {
-    expect(listed).toHaveLength(36);
+  it('lists exactly 15 templates (1 default + 14 extra)', () => {
+    expect(listed).toHaveLength(15);
   });
 
-  it('splits cleanly into 1 default + 35 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 1 default + 14 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(1);
-    expect(extras).toHaveLength(35);
+    expect(extras).toHaveLength(14);
   });
 
   it('ships no hidden templates', () => {
@@ -100,42 +62,6 @@ describe('TEMPLATES catalogue', () => {
       const category = templateCategory(t.kind);
       if (isBlankTemplate(t.kind)) expect(category, t.kind).toBeNull();
       else expect(category !== null && known.has(category), t.kind).toBe(true);
-    }
-  });
-
-  it('lists every TemplateKind member exactly once', () => {
-    const kinds = new Set(TEMPLATES.map((t) => t.kind));
-    for (const kind of ALL_KINDS) {
-      expect(kinds.has(kind)).toBe(true);
-    }
-    expect(kinds.size).toBe(ALL_KINDS.length);
-  });
-
-  it('every kind builds without throwing (the buildTemplate switch handles every union member)', () => {
-    for (const kind of ALL_KINDS) {
-      const tab = buildTemplatedTab(kind, 'brand', `tab-${kind}`, 'name');
-      // The blanks are intentionally empty (docs/specs/007-editor/new-document-route.md): Blank Tab and Blank
-      // Illustration are one empty page that asks what it is for, a blank of a page kind one empty page of its kind.
-      // An article's writing is tab data, not elements (templateCanvasOverrides). Every other kind seeds content.
-      // Either way the switch must handle the union member.
-      const empty =
-        isBlankTemplate(kind) ||
-        kind === 'article' ||
-        kind === 'working-backwards' ||
-        [
-          'meeting-notes',
-          'lesson-plan',
-          'business-proposal',
-          'design-doc',
-          'status-report',
-          'cover-letter',
-          'product-one-pager',
-          'research-report',
-          'newsletter',
-          'case-study',
-          'onboarding-handbook',
-        ].includes(kind);
-      expect(tab.elements.length).toBeGreaterThan(empty ? -1 : 0);
     }
   });
 });
@@ -215,10 +141,6 @@ describe('templateCanvasOverrides', () => {
       ['Inside', 'social', 'portrait', 'infographic'],
     ]);
   });
-
-  it('leaves the blank template to inherit the theme backdrop', () => {
-    expect(templateCanvasOverrides('blank')).toEqual({});
-  });
 });
 
 // Layered templates (docs/specs/006-document/layers.md "Layered templates"): a layered template's
@@ -252,57 +174,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
   // counts pin the ROLE split — a new element silently landing on the
   // wrong band shows up here as a count drift even though the lockstep
   // test above still passes.
-  const LAYERED_BANDS: Partial<
-    Record<TemplateKind, { names: [string, string]; scaffold: number; content: number }>
-  > = {
-    // Frames: the footer (deck name + page number) of the five content slides; the slides
-    // themselves are pages. Content: the title slide's nine pieces, each other
-    // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
-    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 63 },
-    // Frames: six panel cards, their number chips and the how-to.
-    storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
-    // Shell: title + outer wall + 7 rooms, their 7 zone washes, 7 captions
-    // and 7 doorways; two dimension chains (4 ticks + 3 spans each); the
-    // scale bar + caption; the north arrow (N, ring, arrow); and the key
-    // (2 headings, the zone legend, 6 symbol rows of glyph + name).
-    // Furniture is the 21 movable pieces.
-    'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 64, content: 21 },
-  };
-
-  it('pins each layered template’s names and scaffold / content split', () => {
-    // Every layered kind has a table entry and vice versa, so adding a
-    // layered template forces a deliberate row here.
-    const layeredKinds = TEMPLATES.map((t) => t.kind).filter((k) => templateLayers(k));
-    expect(layeredKinds.sort()).toEqual(Object.keys(LAYERED_BANDS).sort());
-
-    for (const [kind, expected] of Object.entries(LAYERED_BANDS) as [
-      TemplateKind,
-      NonNullable<(typeof LAYERED_BANDS)[TemplateKind]>,
-    ][]) {
-      const layers = templateLayers(kind)!;
-      // Scaffold at the bottom, content LAST (top): the default active
-      // layer, so new elements land with the content (docs/specs/006-document/layers.md). Scaffold
-      // ships unlocked and visible: locking is one click away.
-      expect(
-        layers.map((l) => l.name),
-        kind,
-      ).toEqual(expected.names);
-      expect(layers.map((l) => l.id)).toEqual([
-        TEMPLATE_SCAFFOLD_LAYER_ID,
-        TEMPLATE_CONTENT_LAYER_ID,
-      ]);
-      for (const l of layers) {
-        expect(l.locked).toBeUndefined();
-        expect(l.visible).toBeUndefined();
-      }
-      const elements = buildTemplate(kind, 0, 0);
-      const scaffold = elements.filter((el) => el.layerId === TEMPLATE_SCAFFOLD_LAYER_ID);
-      const content = elements.filter((el) => el.layerId === TEMPLATE_CONTENT_LAYER_ID);
-      expect(scaffold.length, `${kind} scaffold`).toBe(expected.scaffold);
-      expect(content.length, `${kind} content`).toBe(expected.content);
-      expect(scaffold.length + content.length, kind).toBe(elements.length);
-    }
-  });
 
   it('buildTemplatedTab lands the layers on the tab and theming keeps the stamps', () => {
     const tab = buildTemplatedTab('slide-deck', 'slate', 'tab-1', 'slides');
@@ -394,13 +265,9 @@ describe('slide deck and storyboard templates', () => {
 });
 
 describe('untitledNameForTemplate', () => {
-  it('names a templated document in title case after its template title', () => {
-    expect(untitledNameForTemplate('slide-deck')).toBe('Untitled Slide Deck');
-    expect(untitledNameForTemplate('event-poster')).toBe('Untitled Event Poster');
-  });
-  it('keeps "Untitled document" for blank or no template', () => {
-    expect(untitledNameForTemplate('blank')).toBe('Untitled document');
-    expect(untitledNameForTemplate(null)).toBe('Untitled document');
+  it('keeps "Untitled Knowledgebase" for blank or no template', () => {
+    expect(untitledNameForTemplate('blank')).toBe('Untitled Knowledgebase');
+    expect(untitledNameForTemplate(null)).toBe('Untitled Knowledgebase');
   });
 });
 

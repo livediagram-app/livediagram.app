@@ -63,7 +63,7 @@ function harness(refuseAt = 0) {
 }
 
 describe('create_document with a template and elements', () => {
-  it.each(['blank-infographic', 'blank-slide-deck'])(
+  it.each(['blank-article', 'meeting-notes'])(
     'adds the elements to the new %s tab',
     async (template) => {
       const { call, changesets } = harness();
@@ -82,10 +82,10 @@ describe('create_document with a template and elements', () => {
 
   it('writes no changeset for a template alone or empty elements', async () => {
     const { call, changesets } = harness();
-    await call('create_document', { name: 'Doc', tabs: [{ template: 'blank-infographic' }] });
+    await call('create_document', { name: 'Doc', tabs: [{ template: 'blank-article' }] });
     await call('create_document', {
       name: 'Doc',
-      tabs: [{ template: 'blank-infographic', elements: [] }],
+      tabs: [{ template: 'blank-article', elements: [] }],
     });
     expect(changesets).toHaveLength(0);
   });
@@ -94,7 +94,7 @@ describe('create_document with a template and elements', () => {
     const { call, changesets } = harness();
     const result = await call('create_document', {
       name: 'Doc',
-      tabs: [{ name: 'T', template: 'blank-infographic', elements: [{ ...picture, bogus: 1 }] }],
+      tabs: [{ name: 'T', template: 'blank-article', elements: [{ ...picture, bogus: 1 }] }],
     });
     expect(result.isError).toBe(true);
     expect(result.content![0]!.text).toContain('Tab "T"');
@@ -105,7 +105,7 @@ describe('create_document with a template and elements', () => {
     const { call } = harness(1);
     const result = await call('create_document', {
       name: 'Doc',
-      tabs: [{ name: 'T', template: 'blank-infographic', elements: [picture] }],
+      tabs: [{ name: 'T', template: 'blank-article', elements: [picture] }],
     });
     expect(result.isError).toBe(true);
     expect(result.content![0]!.text).toContain('The document was made');
@@ -118,7 +118,7 @@ describe('add_tab with a template and elements', () => {
     const result = await call('add_tab', {
       documentId: 'd',
       name: 'T',
-      template: 'blank-infographic',
+      template: 'blank-article',
       elements: [picture],
     });
     expect(result.isError).toBeFalsy();
@@ -132,7 +132,7 @@ describe('add_tab with a template and elements', () => {
     const { call } = harness(2);
     const result = await call('add_tab', {
       documentId: 'd',
-      template: 'blank-infographic',
+      template: 'blank-article',
       elements: [picture],
     });
     expect(result.isError).toBe(true);
@@ -143,7 +143,7 @@ describe('add_tab with a template and elements', () => {
     const { call } = harness();
     const result = await call('add_tab', {
       documentId: 'd',
-      template: 'blank-infographic',
+      template: 'blank-article',
       elements: [{ ...picture, type: 'arrow', from: 'nowhere', to: 'pic' }],
     });
     expect(result.isError).toBe(true);

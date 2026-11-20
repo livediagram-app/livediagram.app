@@ -62,10 +62,6 @@ describe('chooseTemplate and the frame', () => {
     expect(requestFit).toHaveBeenCalledOnce();
     expect(putToolDown).not.toHaveBeenCalled();
   });
-
-  it('leaves the view where it is on Blank, which lands no page', async () => {
-    expect((await pick('blank')).requestFit).not.toHaveBeenCalled();
-  });
 });
 
 // Work Tracker 1177: a written template with one chart opens on its writing, the chart not selected.

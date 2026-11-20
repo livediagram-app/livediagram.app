@@ -22,7 +22,7 @@ const FILE = new URL('../../templates/welcome.json', import.meta.url);
 const WELCOME_TEMPLATES_MAX = 8;
 const WELCOME_BLANKS_MAX = 5;
 const BLANKS: readonly TemplateKind[] = [BLANK_TEMPLATE, ...EXTRA_BLANK_TEMPLATES];
-const FAN: readonly TemplateKind[] = ['slide-deck', 'event-poster', 'year-in-review'];
+const FAN: readonly TemplateKind[] = ['article', 'meeting-notes', 'design-doc'];
 
 function start(kind: TemplateKind) {
   const t = TEMPLATES.find((d) => d.kind === kind);

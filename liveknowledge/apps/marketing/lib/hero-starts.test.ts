@@ -17,7 +17,7 @@ import {
 // docs/specs/019-marketing/marketing-site.md "Hero": the search's matches, and the fan's deal.
 describe('heroSearch', () => {
   it('still lists a template for a query one typo away', () => {
-    expect(heroSearch('resme').length).toBeGreaterThan(0);
+    expect(heroSearch('handbok').length).toBeGreaterThan(0);
     expect(heroSearch('qqqqzzzz')).toEqual([]);
   });
 
@@ -39,9 +39,9 @@ describe('heroSearch', () => {
   });
 
   it('puts a title match before one found only through its description or category', () => {
-    const kinds = heroSearch('poster').map((t) => t.kind);
-    expect(kinds[0]).toBe('event-poster');
-    const titled = heroSearch('poster', 50).map((t) => t.title.toLowerCase().includes('poster'));
+    const kinds = heroSearch('report').map((t) => t.kind);
+    expect(['status-report', 'research-report']).toContain(kinds[0]);
+    const titled = heroSearch('report', 50).map((t) => t.title.toLowerCase().includes('report'));
     // Every title match comes before every other match.
     expect(titled.indexOf(false) === -1 || titled.lastIndexOf(true) < titled.indexOf(false)).toBe(
       true,
@@ -49,8 +49,10 @@ describe('heroSearch', () => {
   });
 
   it('finds the blanks too, and through search words, as the editor does', () => {
-    expect(heroSearch('blank article').map((t) => t.kind)).toContain('blank-article');
-    expect(heroSearch('powerpoint').map((t) => t.kind)).toContain('blank-slide-deck');
+    expect(heroSearch('blank page').map((t) => t.kind)).toContain('blank-article');
+    expect(heroSearch('rfc').map((t) => t.kind)).toContain('design-doc');
+    // Slides are not in liveknowledge: nothing is found for them.
+    expect(heroSearch('powerpoint')).toEqual([]);
   });
 
   it('never lists a template twice', () => {

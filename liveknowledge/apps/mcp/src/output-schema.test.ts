@@ -234,11 +234,6 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', teamId: 't1' },
   },
   {
-    tool: 'change_pages',
-    output: 'changePagesOutput',
-    args: { documentId: 'd1', changes: [{ op: 'add', kind: 'slide', layout: 'slide-title' }] },
-  },
-  {
     tool: 'write_article',
     output: 'writeArticleOutput',
     args: { documentId: 'd1', markdown: '# Brief', look: 'report' },

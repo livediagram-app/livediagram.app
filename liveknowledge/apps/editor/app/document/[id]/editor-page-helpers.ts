@@ -1,7 +1,7 @@
 // Pure Tab helpers lifted out of editor-page.tsx to slim the page
 // component. No React, no editor state — just shape transforms on
 // Tab[] used by the document-hydration + autosave paths.
-import type { Tab } from '@liveknowledge/document';
+import { newKnowledgebasePageContent, START_PAGE_NAME, type Tab } from '@liveknowledge/document';
 import type { AccessLevel } from '@liveknowledge/api-schema';
 import { carryConnection } from '@liveworkspace/workbench/components/connect/tab-connection';
 
@@ -10,7 +10,16 @@ export function createTab(name: string): Tab {
   // to small (docs/specs/004-interface-design/fonts.md); elements added from the palette inherit it via
   // `defaultTextSize`. A new tab added to an existing document still inherits
   // the active tab's explicit size where it has one (see useTabActions).
-  return { id: crypto.randomUUID(), name, elements: [], defaultTextSize: 'sm' };
+  // Every tab is a knowledgebase page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md): one article on one
+  // page, its Title and first paragraph ready to write, never the start's choice of a page kind.
+  return {
+    id: crypto.randomUUID(),
+    name,
+    elements: [],
+    defaultTextSize: 'sm',
+    templateChosen: true,
+    ...newKnowledgebasePageContent(),
+  };
 }
 
 // Build the lazy-load placeholder tabs from a document's tab summaries.
@@ -24,7 +33,7 @@ export function createTab(name: string): Tab {
 export function placeholdersFromSummaries(
   summaries: { id: string; name: string; folder?: string; connection?: unknown }[],
 ): Tab[] {
-  if (summaries.length === 0) return [createTab('Tab 1')];
+  if (summaries.length === 0) return [createTab(START_PAGE_NAME)];
   // Carry `folder` (docs/specs/006-document/tab-folders.md) so the tab bar renders folders from the
   // first paint; the lazy per-tab content fetch fills `elements` later
   // without touching folder (it's link metadata, not body content).

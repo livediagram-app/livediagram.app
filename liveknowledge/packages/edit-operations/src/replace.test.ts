@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   applyElementOps,
   getBuiltInTheme,
+  isKnowledgebasePage,
   type Tab,
   type ThemeDefinition,
 } from '@liveknowledge/document';
@@ -101,8 +102,7 @@ describe('applyReplace on an existing tab', () => {
   });
 
   it('builds a template with the tab theme', () => {
-    const { tab } = applied(applyReplace(themed('ocean'), { template: 'storyboard' }, options));
-    expect(tab.elements.length).toBeGreaterThan(0);
+    const { tab } = applied(applyReplace(themed('ocean'), { template: 'article' }, options));
     expect(tab.name).toBe('Checkout flow');
   });
 
@@ -154,7 +154,7 @@ describe('applyReplace for a new tab', () => {
   });
 
   it('builds a template tab whole, with its pages', () => {
-    const { tab } = applied(applyReplace(null, { template: 'slide-deck' }, options));
+    const { tab } = applied(applyReplace(null, { template: 'article' }, options));
     expect(tab).toMatchObject({ id: 'new-tab', templateChosen: true });
     expect(tab.pages?.length).toBeGreaterThan(0);
   });
@@ -164,7 +164,9 @@ describe('applyReplace for a new tab', () => {
       { id: 'x', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 },
     ];
     const { tab } = applied(applyReplace(null, { elements }, options));
-    expect(tab).toMatchObject({ id: 'new-tab', theme: 'brand' });
+    expect(tab).toMatchObject({ id: 'new-tab', theme: 'brand', templateChosen: true });
+    // A knowledgebase page: the elements sit on its one page of writing.
+    expect(isKnowledgebasePage(tab)).toBe(true);
   });
 
   it('logs the source and the element count, and a theme it could not paint', () => {
@@ -192,7 +194,12 @@ describe('applyReplace refusals', () => {
   it('names the templates for an unknown one', () => {
     const rejection = refusal({ template: 'nope' });
     expect(rejection.details).toEqual(['template="nope": not a template']);
-    expect(rejection.hint).toContain('slide-deck');
+    expect(rejection.hint).toContain('meeting-notes');
+    // No slide or infographic template is named, nor built when asked for by kind.
+    expect(rejection.hint).not.toContain('slide-deck');
+    expect(refusal({ template: 'slide-deck' }).details).toEqual([
+      'template="slide-deck": not a template',
+    ]);
     expect(refusal({ template: 7 }).code).toBe('invalid_value');
   });
 

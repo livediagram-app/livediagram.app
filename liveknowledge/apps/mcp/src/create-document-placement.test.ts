@@ -77,7 +77,7 @@ describe('create_document intent', () => {
     expect(posted[0]!.intent).toEqual({ mode: 'pages' });
   });
 
-  it.each(['blank-slide-deck', 'article', 'event-poster', 'floor-plan'])(
+  it.each(['blank-article', 'article', 'meeting-notes', 'design-doc'])(
     'sends pages for a %s template tab',
     async (template) => {
       const { run, posted } = harness(undefined);

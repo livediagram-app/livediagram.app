@@ -9,6 +9,7 @@
 // limits"): the sheet renders for its page's writing on every typing commit, and this row
 // reads none of it, so it skips those renders.
 
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { memo, type CSSProperties } from 'react';
 import { PageLockButton } from '@liveworkspace/workbench/components/canvas/PageLockButton';
 import { PageCog, PageTitleBar } from '@liveworkspace/workbench/components/canvas/PageTitleBar';
@@ -200,8 +201,8 @@ function PageSheetTitleBarView({
             ) : null,
           ],
           [
-            // No lock on a phone: the cog sheet holds it (PagePanel's actions).
-            mobile ? null : (
+            // On a phone too: the cog sheet that held it there is not offered.
+            mobile && CUT_FROM_FORK ? null : (
               <PageLockButton
                 key="lock"
                 locked={locked}
@@ -209,13 +210,17 @@ function PageSheetTitleBarView({
                 onToggle={() => act.setLocked(id, !locked)}
               />
             ),
-            <PageCog
-              key="cog"
-              name={`${shownName ?? (many ? `Page ${page.index + 1}` : 'Page')} settings`}
-              open={open}
-              onToggle={() => act.toggle(id)}
-              cogRef={(el) => act.cogRef(id, el)}
-            />,
+            // The page's panel (its paper size, turn, place in the row, copy and delete) is not a knowledgebase
+            // page's: the page tree names, moves, copies and deletes a page.
+            CUT_FROM_FORK ? (
+              <PageCog
+                key="cog"
+                name={`${shownName ?? (many ? `Page ${page.index + 1}` : 'Page')} settings`}
+                open={open}
+                onToggle={() => act.toggle(id)}
+                cogRef={(el) => act.cogRef(id, el)}
+              />
+            ) : null,
           ],
         ]}
       />

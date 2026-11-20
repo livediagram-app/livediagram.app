@@ -5,14 +5,12 @@ import type { TemplateKind } from './templates';
 
 // The gallery's shelf. The blanks lead, so the picker needs no separate blank card.
 export const POPULAR_TEMPLATE_KINDS: readonly TemplateKind[] = [
-  'blank-illustration',
-  'blank-slide-deck',
   'blank-article',
   'article',
-  'slide-deck',
-  'event-poster',
-  'year-in-review',
-  'social-carousel',
-  'how-it-works',
-  'launch-keynote',
+  'meeting-notes',
+  'design-doc',
+  'status-report',
+  'onboarding-handbook',
+  'research-report',
+  'working-backwards',
 ];

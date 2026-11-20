@@ -98,7 +98,6 @@ describe('the interactive view', () => {
       .sort();
     expect(linked).toEqual([
       'add_tab',
-      'change_pages',
       'create_document',
       'read_document',
       'update_document',

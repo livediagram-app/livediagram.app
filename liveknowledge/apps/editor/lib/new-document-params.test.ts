@@ -17,7 +17,7 @@ describe('newDocumentKind (docs/specs/007-editor/new-document-route.md)', () => 
   });
 
   it('reads ?template=<kind> for a catalogue kind', () => {
-    expect(newDocumentKind('?template=slide-deck')).toBe('slide-deck');
+    expect(newDocumentKind('?template=design-doc')).toBe('design-doc');
     expect(newDocumentKind('?team=t1&template=article')).toBe('article');
   });
 
@@ -30,7 +30,7 @@ describe('newDocumentKind (docs/specs/007-editor/new-document-route.md)', () => 
   });
 
   it('lets blank win when both are present', () => {
-    expect(newDocumentKind('?template=slide-deck&blank=1')).toBe('blank');
+    expect(newDocumentKind('?template=design-doc&blank=1')).toBe('blank');
   });
 
   it('reads back the link the templates package builds for the gallery', () => {

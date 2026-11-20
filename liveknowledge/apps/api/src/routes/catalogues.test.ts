@@ -18,14 +18,16 @@ describe('GET /api/templates', () => {
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe(CATALOGUE_CACHE_CONTROL);
     const body = await res.json<{ categories: unknown[]; templates: { kind: string }[] }>();
-    expect(body.templates.some((t) => t.kind === 'slide-deck')).toBe(true);
+    expect(body.templates.some((t) => t.kind === 'design-doc')).toBe(true);
+    // Slides and infographics are not in liveknowledge.
+    expect(body.templates.some((t) => t.kind === 'slide-deck')).toBe(false);
     expect(logs).toEqual(['[catalogues] templates 200']);
   });
 
   it('shows one template as an outline, or its JSON', async () => {
-    const text = await get('/api/templates/slide-deck').text();
-    expect(text).toMatch(/^tab slide-deck "Slide[^"]*" · \d+ elements/);
-    const json = await get('/api/templates/slide-deck?json=1').json<{
+    const text = await get('/api/templates/design-doc').text();
+    expect(text).toMatch(/^tab design-doc "Design[^"]*" · \d+ elements/);
+    const json = await get('/api/templates/design-doc?json=1').json<{
       elements?: unknown[];
     }>();
     expect(json).toBeTypeOf('object');
@@ -36,9 +38,11 @@ describe('GET /api/templates', () => {
     expect(res.status).toBe(404);
     expect(await res.json()).toMatchObject({
       error: 'unknown_template',
-      kinds: expect.arrayContaining(['slide-deck']),
+      kinds: expect.arrayContaining(['design-doc']),
     });
-    expect(get('/api/templates/slide-deck/x').status).toBe(404);
+    expect(get('/api/templates/design-doc/x').status).toBe(404);
+    // A slide template is no template here.
+    expect(get('/api/templates/slide-deck').status).toBe(404);
   });
 
   it('answers a malformed percent-escape as an unknown template, never a 500', async () => {

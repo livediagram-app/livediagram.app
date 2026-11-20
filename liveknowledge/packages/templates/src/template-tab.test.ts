@@ -39,7 +39,10 @@ describe('buildTemplateTab', () => {
 
 describe('resolveTemplate', () => {
   it('resolves a catalogue kind and refuses an unknown one', () => {
-    expect(resolveTemplate('slide-deck')).toBe('slide-deck');
+    expect(resolveTemplate('meeting-notes')).toBe('meeting-notes');
+    // Slides and infographics are not in liveknowledge: their kinds name no template.
+    expect(resolveTemplate('slide-deck')).toBeNull();
+    expect(resolveTemplate('event-poster')).toBeNull();
     // livedesign's wireframes are no kind here.
     expect(resolveTemplate('mobile-wireframe')).toBeNull();
     expect(resolveTemplate('nope')).toBeNull();
@@ -61,13 +64,7 @@ describe('buildTemplateTabs', () => {
       elements: tab.elements.map(({ id: _id, ...rest }) => rest.type),
     });
     // Not an article's: its writing's block ids are fresh each build too.
-    for (const kind of [
-      'blank',
-      'slide-deck',
-      'event-poster',
-      'floor-plan',
-      'storyboard',
-    ] as const) {
+    for (const kind of ['slide-deck', 'event-poster', 'floor-plan', 'storyboard'] as const) {
       const tabs = buildTemplateTabs({ id: 's', name: 'Mine' }, kind, newId);
       expect(tabs.map(shape), kind).toEqual([shape(buildTemplateTab('s', 'Mine', kind))]);
     }
@@ -75,19 +72,21 @@ describe('buildTemplateTabs', () => {
 });
 
 describe('templateTabName', () => {
-  it('takes the name given, else Tab 1', () => {
+  it('takes the name given, else Untitled Page', () => {
     expect(templateTabName('Pitch', 'slide-deck')).toBe('Pitch');
-    expect(templateTabName(undefined, 'slide-deck')).toBe('Tab 1');
-    expect(templateTabName('  ', 'event-poster')).toBe('Tab 1');
+    expect(templateTabName(undefined, 'slide-deck')).toBe('Untitled Page');
+    expect(templateTabName('  ', 'event-poster')).toBe('Untitled Page');
   });
 });
 
 // docs/specs/015-api/mcp-server.md §4.5: an unknown kind is refused with the ones it most likely meant.
 describe('closestTemplateKinds', () => {
   it('offers the kinds with a word starting with a word of it', () => {
-    expect(closestTemplateKinds('keynote')).toEqual(['launch-keynote']);
-    expect(closestTemplateKinds('Recipe Card')).toContain('recipe-card');
-    expect(closestTemplatesHint('poster')).toBe('Closest: event-poster. ');
+    expect(closestTemplateKinds('handbook')).toEqual(['onboarding-handbook']);
+    expect(closestTemplateKinds('Status Report')).toContain('status-report');
+    expect(closestTemplatesHint('newsletter')).toBe('Closest: newsletter. ');
+    // A slide or infographic kind is offered to nobody.
+    expect(closestTemplateKinds('keynote')).toEqual([]);
   });
 
   it('offers nothing for a word under 3 letters or one no template has', () => {
@@ -97,6 +96,7 @@ describe('closestTemplateKinds', () => {
   });
 
   it('offers at most CLOSEST_TEMPLATES_MAX', () => {
-    expect(closestTemplateKinds('blank')).toHaveLength(CLOSEST_TEMPLATES_MAX);
+    expect(closestTemplateKinds('blank').length).toBeGreaterThan(0);
+    expect(closestTemplateKinds('blank').length).toBeLessThanOrEqual(CLOSEST_TEMPLATES_MAX);
   });
 });

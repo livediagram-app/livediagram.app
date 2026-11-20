@@ -1,5 +1,6 @@
 'use client';
 
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { pageImageBlurSigma } from '@liveknowledge/document';
 import { useBlurredPageImage } from '@liveworkspace/workbench/hooks/canvas/useBlurredPageImage';
 import { pageImageSrc } from '@/lib/page-image-paint';
@@ -306,7 +307,8 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           act={act}
         />
       ) : null}
-      {pageButtons &&
+      {CUT_FROM_FORK &&
+      pageButtons &&
       layoutInviteShows(page, {
         editable,
         placing,
@@ -326,7 +328,7 @@ export const CanvasPageSheet = memo(function CanvasPageSheet({
           }}
         />
       ) : null}
-      {choosing && editable ? (
+      {CUT_FROM_FORK && choosing && editable ? (
         <FirstPageChoice zoom={zoom} onChoose={(kind) => act.choosePageKind(id, kind)} />
       ) : null}
       {bands ? (

@@ -25,7 +25,6 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   list_images: 'image ls',
   upload_image: 'image add',
   delete_image: 'image rm',
-  change_pages: 'page set',
   write_article: 'article set',
   list_versions: 'api GET /documents/<id>/tabs/<tabId>/versions',
   restore_version: 'api POST /documents/<id>/tabs/<tabId>/versions/<versionId>/restore',

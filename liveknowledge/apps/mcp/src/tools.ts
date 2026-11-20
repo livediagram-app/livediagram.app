@@ -5,7 +5,14 @@
 // shared result / auth / tab-building plumbing lives in tool-helpers.ts.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { DocumentResponse, ShareLinkResponse } from '@liveknowledge/api-schema';
-import { buildTab, isValidTab, normaliseElements, type Tab } from '@liveknowledge/document';
+import {
+  buildTab,
+  isValidTab,
+  NEW_PAGE_NAME,
+  newKnowledgebasePageContent,
+  normaliseElements,
+  type Tab,
+} from '@liveknowledge/document';
 import {
   buildTemplateTabs,
   templateTabName,
@@ -123,13 +130,13 @@ export function registerTools(server: McpServer, env: Env): void {
       const tabs: Tab[] = [];
       // Elements given beside a template, added to its first tab once the document exists.
       const withTemplate: { tab: Tab; operations: unknown[] }[] = [];
-      for (const [index, given] of inputTabs.entries()) {
+      for (const given of inputTabs) {
         const tabId = crypto.randomUUID();
         // A template tab's name follows the templates' rule; any other unnamed tab is "Tab n".
         const kindOf = given.template ? resolveTemplate(given.template) : null;
         const t = {
           ...given,
-          name: kindOf ? templateTabName(given.name, kindOf) : (given.name ?? `Tab ${index + 1}`),
+          name: kindOf ? templateTabName(given.name, kindOf) : (given.name ?? NEW_PAGE_NAME),
         };
         // Template tab (docs/specs/015-api/mcp-server.md §4.5): materialise the curated scaffold
         // instead of expecting elements.
@@ -174,7 +181,12 @@ export function registerTools(server: McpServer, env: Env): void {
               'be well-formed.',
           );
         }
-        tabs.push(buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme));
+        // A knowledgebase page: the elements sit on its one page of writing (edit-operations' replace does the same).
+        tabs.push({
+          ...buildTab(tabId, t.name, candidate.elements, args.layout, t.theme ?? args.theme),
+          templateChosen: true,
+          ...newKnowledgebasePageContent(),
+        });
       }
       // The finish asked for (docs/specs/008-canvas/finish.md) is every new tab's.
       if (args.finish) for (const t of tabs) t.finish = args.finish;

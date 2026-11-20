@@ -195,7 +195,6 @@ describe('registerTools', () => {
     expect(registered.map((r) => r.name).sort()).toEqual([
       'add_tab',
       'archive_document',
-      'change_pages',
       'change_threads',
       'create_document',
       'delete_document',
@@ -338,9 +337,7 @@ describe('tool annotations', () => {
     delete_image: 'destructive',
     update_document: 'destructive',
     delete_document: 'destructive',
-    // docs/specs/024-agents/pages-for-agents.md: change_pages deletes pages and replaces their
-    // content; write_article replaces an article's text.
-    change_pages: 'destructive',
+    // docs/specs/024-agents/pages-for-agents.md: write_article replaces an article's text.
     write_article: 'destructive',
   };
 
@@ -419,7 +416,6 @@ describe('tool annotations', () => {
       .sort();
     expect(destructive).toEqual([
       'archive_document',
-      'change_pages',
       'change_threads',
       'delete_document',
       'delete_image',

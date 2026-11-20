@@ -79,7 +79,7 @@ const HELP_PATH = '/help';
 // router answers `/oembed` itself, asking liveworkspace's previews whether the link may unfold.
 const { isOEmbedPath, oembed } = createOEmbed({
   app: 'liveknowledge',
-  untitled: 'Untitled document',
+  untitled: 'Untitled Knowledgebase',
 });
 
 // Whose Community the page at /community is here: liveknowledge's posts, at its canonical address, in its words.

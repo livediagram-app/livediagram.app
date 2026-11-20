@@ -1,9 +1,9 @@
 // The Pages tools (docs/specs/024-agents/pages-for-agents.md, docs/specs/015-api/mcp-server.md
-// §4.9d): change_pages and write_article, over the verbs the CLI shares (@liveknowledge/agent-verbs). Pages are
+// §4.9d): write_article, over the verbs the CLI shares (@liveknowledge/agent-verbs). Pages are
 // named by id, place or name, articles by id or title; a refusal is a tool error that says what is there.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { changePages, writeArticle, type PagesDone } from '@liveknowledge/agent-verbs';
-import { mcpChangePages, mcpWriteArticle } from '@liveknowledge/agent-verbs/mcp';
+import { writeArticle, type PagesDone } from '@liveknowledge/agent-verbs';
+import { mcpWriteArticle } from '@liveknowledge/agent-verbs/mcp';
 import { clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
@@ -28,24 +28,6 @@ export function registerPagesTools(server: McpServer, env: Env): void {
   registerTool(
     server,
     env,
-    mcpChangePages,
-    async (args, extra) => {
-      const api = clientFor(env, requireToken(extra));
-      const done = await changePages(
-        api,
-        args.documentId,
-        { ...(args.tabId ? { tabId: args.tabId } : {}), changes: args.changes },
-        'mcp',
-      );
-      if (!done.ok) return errorResult(refusalText(done));
-      return textResult(answerOf(env, done));
-    },
-    VIEW_TOOL_META,
-  );
-
-  registerTool(
-    server,
-    env,
     mcpWriteArticle,
     async (args, extra) => {
       const api = clientFor(env, requireToken(extra));
@@ -53,7 +35,7 @@ export function registerPagesTools(server: McpServer, env: Env): void {
       // Only what was given: an absent field keeps the article's own.
       const write = Object.fromEntries(
         Object.entries(given).filter(([, v]) => v !== undefined),
-      ) as Parameters<typeof writeArticle>[2];
+      ) as unknown as Parameters<typeof writeArticle>[2];
       const done = await writeArticle(api, documentId, write, 'mcp');
       if (!done.ok) return errorResult(refusalText(done));
       if (!done.article) return errorResult('The article was written but could not be read back.');

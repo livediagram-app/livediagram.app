@@ -12,6 +12,6 @@ export const SHARE_PITCH =
 export const { isSharePagePath, sharePage } = createSharePage({
   app: 'liveknowledge',
   pagePath: /^\/(?:document|diagram)\/shared\/?$/,
-  untitled: 'Untitled document',
+  untitled: 'Untitled Knowledgebase',
   pitch: SHARE_PITCH,
 });

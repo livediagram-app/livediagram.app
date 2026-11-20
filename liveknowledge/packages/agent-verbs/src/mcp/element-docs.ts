@@ -265,18 +265,13 @@ tabs in a create_document call.
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
 export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, archive and unarchive, delete (to the Trash) and restore the user's liveknowledge documents. An archived document is its owner's alone: it can't be read or changed until unarchive_document moves it out, and find_documents lists archived documents only with archived true.
-A document holds tabs, and each tab holds pages: infographics, slides and articles (documents of text on pages).
-change_pages adds, changes, lays out (from a ready-made layout), moves, copies and deletes infographic and slide pages
-and answers each page's rectangle on the canvas, where update_document puts elements; write_article
-writes an article from Markdown, new or over an existing one, and the editor flows it onto pages. Asked to write a
-document, a report or a brief, write an article; asked for a deck, add slide pages;
-asked for a poster or an infographic, add an infographic page. A new document starts with create_document and one tab
-whose template is "blank-slide-deck" for a deck (one empty slide; change_pages adds the rest, each change an object
-such as {"op": "add", "kind": "slide", "layout": ...}), "blank-article" for an article, or "blank-infographic"
-otherwise; the other templates (slide-deck, article, event-poster, resume, ...) start
-from ready-made pages, and list_templates lists them all. A layout's elements hold sample text: read_document with view
-"pages" lists each page's elements with their refs and text, to replace with update_document. It also shows each
-article as Markdown.
+A document here is a knowledgebase, and each of its tabs is one page of writing: a title and its text on one
+continuous page, as tall as the writing. write_article writes a page from Markdown, anew or appended, and
+read_document with view "pages" shows each page's writing as Markdown to edit and write back. A new knowledgebase
+starts with create_document and one tab whose template is "blank-article"; add_tab adds a page;
+the other templates (article, meeting-notes, design-doc, status-report, ...) start from a ready-made page of sample writing, and
+list_templates lists them all. Pictures, charts and drawings sit in the writing as elements, which update_document
+adds and changes.
 The calling model produces the elements on a page AND decides their layout; this server validates, persists, and
 renders them, and only auto-arranges boxes and arrows when you ask it to (or leave nodes unplaced). The full element
 format is documented inline on each tool's element argument, so the tool definitions are the complete reference for
@@ -286,8 +281,7 @@ its own). Stickies, tables, code blocks and charts carry content fields, documen
 Pictures make a document its subject's own: asked about a product, a place, a team or a game, use real pictures of it,
 never only shapes and sample text. Use what the person gave you or what list_images already holds; else, when you can
 search the web, find pictures they may use, add each with upload_image (a public https URL is enough) and put it on an
-image element's "imageId". A layout's picture frames start empty (the pages view marks each "no-picture"): fill them,
-or pick a layout without one. With no way to find pictures, say so and ask the person for some.
+image element's "imageId". With no way to find pictures, say so and ask the person for some.
 search_icons finds icon ids for "iconId"; list_images lists the user's pictures for an image element's "imageId".
 list_versions lists a tab's earlier versions (kept after a pause in editing and before each of your changes), and
 restore_version makes one the tab's content again; restoring the undoVersionId it answers takes that back.`;

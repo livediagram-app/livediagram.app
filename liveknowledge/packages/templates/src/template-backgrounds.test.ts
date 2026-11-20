@@ -22,8 +22,9 @@ describe('template backgrounds', () => {
       }
     }
     expect(own).toEqual([]);
-    // The guard reads real backgrounds (the animated decks and the gradients), not none.
-    expect(fills).toBeGreaterThan(20);
+    // liveknowledge lists writing only, whose pages are on the paper: the animated decks and gradients this guard read
+    // are no longer in the catalogue (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to delete").
+    expect(fills).toBe(0);
   });
 
   it('lands on the theme it is applied in, animated slides included', () => {

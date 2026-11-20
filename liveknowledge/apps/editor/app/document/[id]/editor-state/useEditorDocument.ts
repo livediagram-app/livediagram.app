@@ -1,7 +1,7 @@
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from '@liveworkspace/workbench/lib/editor-surface';
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { stampNewElementLayers, type Tab } from '@liveknowledge/document';
+import { START_PAGE_NAME, stampNewElementLayers, type Tab } from '@liveknowledge/document';
 import { settleChipsInTabs } from '@/lib/settle-tabs';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
@@ -33,7 +33,7 @@ export function useEditorDocument(opts: { surface?: EditorSurface } = {}) {
   const workbench = useWorkbenchDocumentSession();
   // The tabs before the document loads: only their first value is read (the history's start, the first active tab), so
   // they are made once, not at every render.
-  const [initialTabs] = useState<Tab[]>(() => [createTab('Tab 1')]);
+  const [initialTabs] = useState<Tab[]>(() => [createTab(START_PAGE_NAME)]);
 
   // Embed page-view telemetry (docs/specs/013-workspace/embeds.md) is emitted by editor-page.tsx —
   // exactly one site, so an embed render can't be double-counted.

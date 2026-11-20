@@ -1,11 +1,10 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CommunityStartPost } from '@liveknowledge/api-schema';
 import { resetCommunityEnabledForTests } from '@liveworkspace/community-ui';
 import { resetCommunityStartForTests } from '@liveworkspace/community-ui/start';
 import { track } from '@/lib/telemetry';
-import { templatePageKind, type TemplateKind } from '@liveknowledge/templates';
 import { StartFromTemplates } from './StartFromTemplates';
 import { closeStartForBlank } from './close-start-for-blank';
 
@@ -42,14 +41,7 @@ const mount = (onTemplate = vi.fn(), tabId = 't1', leave = vi.fn()) =>
 describe('StartFromTemplates', () => {
   it('names its start', () => {
     mount();
-    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
-  });
-
-  it('lands a chosen template', () => {
-    const onTemplate = vi.fn();
-    mount(onTemplate);
-    fireEvent.click(document.querySelector('[data-start-card="blank-slide-deck"]')!);
-    expect(onTemplate).toHaveBeenCalledWith('blank-slide-deck');
+    expect(screen.getByRole('heading', { name: 'Start a Page' })).toBeTruthy();
   });
 
   it('cannot be closed: no ×, no grab handle, and Escape only clears a search', () => {
@@ -61,16 +53,16 @@ describe('StartFromTemplates', () => {
     fireEvent.keyDown(search, { key: 'Escape' });
     expect((search as HTMLInputElement).value).toBe('');
     fireEvent.keyDown(search, { key: 'Escape' });
-    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Start a Page' })).toBeTruthy();
   });
 
   it('opens closed only for an explicit blank, per tab', () => {
     closeStartForBlank('t-blank', 'blank');
     mount(vi.fn(), 't-blank');
-    expect(screen.queryByRole('heading', { name: 'Start Making Pages' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'Start a Page' })).toBeNull();
     cleanup();
     mount(vi.fn(), 't2');
-    expect(screen.getByRole('heading', { name: 'Start Making Pages' })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: 'Start a Page' })).toBeTruthy();
   });
 });
 
@@ -78,7 +70,7 @@ describe('StartFromTemplates', () => {
 // stay in reach; with the bars folded away (a sideways phone) there is nothing to stand on.
 describe('StartFromTemplates on a phone', () => {
   const frameOf = () =>
-    screen.getByRole('heading', { name: 'Start Making Pages' }).closest('section')!.parentElement!;
+    screen.getByRole('heading', { name: 'Start a Page' }).closest('section')!.parentElement!;
 
   it('stands on the edge with no tab bar showing', () => {
     mount();
@@ -127,30 +119,6 @@ describe('StartFromTemplates, from the Community', () => {
     anonymous: false,
     authorName: 'Ada',
     line: 'How our quarter went.',
-  });
-  const cardIds = () =>
-    [...document.querySelectorAll('[data-start-card]')].map((c) =>
-      c.getAttribute('data-start-card'),
-    );
-
-  it("follows a group's templates with its Community tiles, badged, the rail counting templates only", async () => {
-    startTiles = { reports: [tile('r1', 'Annual Report'), tile('r2', 'Board Update')] };
-    mount();
-    const rail = document.querySelector<HTMLElement>('[data-rail="reports"]')!;
-    const count = rail.textContent;
-    fireEvent.click(rail);
-    const first = await screen.findByRole('button', { name: /^Annual Report from the Community/ });
-    expect(within(first).getByText('Community')).toBeTruthy();
-    expect(within(first).getByText('By Ada')).toBeTruthy();
-    expect(first.querySelector('img')!.getAttribute('src')).toBe('/api/share/CODE-r1/image.svg');
-    const ids = cardIds();
-    expect(ids.slice(-2)).toEqual(['community:r1', 'community:r2']);
-    expect(ids.slice(0, -2).length).toBeGreaterThan(0);
-    expect(ids.slice(0, -2).every((id) => !id!.startsWith('community:'))).toBe(true);
-    expect(rail.textContent).toBe(count);
-    // Blank Pages stays the blanks only.
-    fireEvent.click(document.querySelector('[data-rail="blank-pages"]')!);
-    expect(cardIds().some((id) => id!.startsWith('community:'))).toBe(false);
   });
 
   it("opens the person's own copy of a chosen tile, counted as a copy", async () => {
@@ -201,48 +169,5 @@ describe('StartFromTemplates, from the Community', () => {
     mount(vi.fn(), 't-closed');
     await new Promise((resolve) => setTimeout(resolve, 0));
     expect(fetch).not.toHaveBeenCalled();
-  });
-});
-
-// docs/specs/007-editor/start-diagramming.md "Page type"
-describe('StartFromTemplates, by page type', () => {
-  const chip = () => screen.getByRole('button', { name: /^Page type: / });
-  const choose = (name: string) => {
-    fireEvent.click(chip());
-    fireEvent.click(screen.getByRole('menuitemradio', { name: new RegExp(`^${name}`) }));
-  };
-  const shownKinds = () =>
-    [...document.querySelectorAll('[data-start-card]')].map(
-      (c) => c.getAttribute('data-start-card') as TemplateKind,
-    );
-
-  it('leads the rail with the page type, All Pages each time it opens', () => {
-    mount();
-    expect(chip().getAttribute('aria-label')).toBe('Page type: All Pages');
-    choose('Slide Deck');
-    expect(chip().getAttribute('aria-label')).toBe('Page type: Slide Deck');
-    cleanup();
-    mount();
-    expect(chip().getAttribute('aria-label')).toBe('Page type: All Pages');
-  });
-
-  it('narrows every group and the search to that kind of page', () => {
-    mount();
-    choose('Slide Deck');
-    const rail = [...document.querySelectorAll<HTMLElement>('[data-rail]')]
-      .map((r) => r.getAttribute('data-rail')!)
-      .filter((id) => id !== 'connect');
-    expect(rail.length).toBeGreaterThan(0);
-    for (const id of rail) {
-      fireEvent.click(document.querySelector(`[data-rail="${id}"]`)!);
-      const kinds = shownKinds();
-      expect(kinds.length, id).toBeGreaterThan(0);
-      for (const k of kinds) expect(templatePageKind(k), k).toBe('slide');
-    }
-    fireEvent.change(screen.getByRole('textbox', { name: 'Find a template' }), {
-      target: { value: 'article' },
-    });
-    expect(shownKinds()).not.toContain('article');
-    for (const k of shownKinds()) expect(templatePageKind(k), k).toBe('slide');
   });
 });

@@ -10,6 +10,10 @@ import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { track } from '@/lib/telemetry';
 import { CanvasPages } from './CanvasPages';
 
+// The row of pages is closed in liveknowledge (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to
+// delete"): these tests open the door to keep the engine behind it honest until it is deleted.
+vi.mock('@/lib/not-in-liveknowledge', () => ({ CUT_FROM_FORK: true }));
+
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 afterEach(() => cleanup());

@@ -32,7 +32,7 @@ afterEach(() => {
 
 describe('seeded tabs compiled on create', () => {
   it('records the CLI as the source of a seeded create', async () => {
-    const res = await create([{ id: 't1', name: 'Deck', template: 'blank-slide-deck' }], {
+    const res = await create([{ id: 't1', name: 'Deck', template: 'blank-article' }], {
       source: 'cli',
     });
     expect(res.status).toBe(201);
@@ -46,12 +46,12 @@ describe('seeded tabs compiled on create', () => {
   });
 
   it('builds a template tab and derives the intent from it when none is given', async () => {
-    expect((await create([{ id: 't1', name: 'Deck', template: 'blank-slide-deck' }])).status).toBe(
+    expect((await create([{ id: 't1', name: 'Deck', template: 'blank-article' }])).status).toBe(
       201,
     );
     expect((await getTab(db.env, 'd1', 't1'))?.pages?.length).toBeGreaterThan(0);
     expect(
-      compileSeededTabs([{ id: 't1', name: 'Deck', template: 'blank-slide-deck' }], 'd1'),
+      compileSeededTabs([{ id: 't1', name: 'Deck', template: 'blank-article' }], 'd1'),
     ).toMatchObject({ intent: { mode: 'pages' } });
   });
 
@@ -77,8 +77,8 @@ describe('compileSeededTabs', () => {
   it('passes through what is not a template seed: elements, a template beside elements, no id, not a tab', () => {
     const tabs = [
       { id: 'a', name: 'A', elements: [] },
-      { id: 'b', name: 'B', elements: [], template: 'blank-slide-deck' },
-      { name: 'C', template: 'blank-slide-deck' },
+      { id: 'b', name: 'B', elements: [], template: 'blank-article' },
+      { name: 'C', template: 'blank-article' },
       'not a tab',
     ];
     expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null });
@@ -89,7 +89,7 @@ describe('compileSeededTabs', () => {
       [
         {
           id: 't1',
-          template: 'blank-slide-deck',
+          template: 'blank-article',
           theme: 'ocean',
           background: 'dots',
         },

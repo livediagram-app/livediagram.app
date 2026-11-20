@@ -73,62 +73,19 @@ export type TemplateDescriptor = {
   hidden?: boolean;
 };
 
+// liveknowledge lists writing only (docs/specs/002-project-scope/not-in-liveknowledge.md): the slide and infographic
+// templates the fork brought are not in the catalogue, so no picker, link, agent or script can name one (isTemplateKind
+// reads this list). Their kinds stay in TemplateKind, and their builders in place, until the dead code is deleted.
 export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank',
-    title: 'Blank Tab',
-    description: 'An empty tab: one page that asks what it is for.',
-  },
-  {
-    kind: 'blank-illustration',
-    title: 'Blank Illustration',
-    description: 'An empty page for an infographic, an article or a slide.',
-    extra: true,
-  },
-  {
-    kind: 'blank-slide-deck',
-    title: 'Blank Slide Deck',
-    description: 'One empty 16:9 slide, ready for your first idea.',
-    extra: true,
+    title: 'Blank Page',
+    description: 'An empty page: a title and a first paragraph to write.',
   },
   {
     kind: 'blank-article',
-    title: 'Blank Article',
-    description: 'One empty article page: a title and a first paragraph to write.',
-    extra: true,
-  },
-  {
-    kind: 'blank-infographic',
-    title: 'Blank Infographic',
-    description: 'One empty A4 infographic page: lay it out yourself or start from a layout.',
-    extra: true,
-  },
-  {
-    kind: 'slide-deck',
-    title: 'Slide Deck',
-    description:
-      'A six-slide pitch (title, problem, solution, traction, team, the ask) on 16:9 slide pages.',
-    extra: true,
-  },
-  {
-    kind: 'live-card',
-    title: 'Group Card',
-    description:
-      'A greeting card the whole team signs, opened like a real one: a cover with a photo, then an inside of signed notes with a slot for yours.',
-    extra: true,
-  },
-  {
-    kind: 'storyboard',
-    title: 'Storyboard',
-    description:
-      'A 30-second ad in six shots: shot and timing chips, sketches, action and sound lines.',
-    extra: true,
-  },
-  {
-    kind: 'floor-plan',
-    title: 'Floor Plan',
-    description:
-      'A two-bed flat with study drawn to scale: furniture, colour zones, dimensions and a key.',
+    title: 'Blank Page',
+    description: 'One empty page: a title and a first paragraph to write.',
     extra: true,
   },
   {
@@ -143,90 +100,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Project Brief',
     description:
       'A project brief for a real change: the summary, why now, the goals in a table, the plan and the open questions, with a header and page numbers.',
-    extra: true,
-  },
-  {
-    kind: 'event-poster',
-    title: 'Event Poster',
-    description:
-      'An A3 poster for a community night market: a bold title, the date, time and place, a photo and three highlights.',
-    extra: true,
-  },
-  {
-    kind: 'year-in-review',
-    title: 'Year in Review',
-    description:
-      "A four-page team report: a cover, the year's headline numbers, a timeline of its moments and a thank-you.",
-    extra: true,
-  },
-  {
-    kind: 'resume',
-    title: 'Résumé',
-    description:
-      'A one-page A4 résumé: name and role, a short profile, an experience timeline, skills and education.',
-    extra: true,
-  },
-  {
-    kind: 'recipe-card',
-    title: 'Recipe Card',
-    description:
-      'A recipe to share in two pages: the dish with serves and timings, then the ingredients and the method in steps.',
-    extra: true,
-  },
-  {
-    kind: 'data-story',
-    title: 'Data Story',
-    description:
-      'An A4 infographic that tells one story in numbers: a headline stat, pictograms, a then-and-now comparison and a source line.',
-    extra: true,
-  },
-  {
-    kind: 'how-it-works',
-    title: 'How It Works',
-    description:
-      'A tall explainer for a story or a phone screen: five illustrated steps down a winding path, from first tap to done.',
-    extra: true,
-  },
-  {
-    kind: 'versus',
-    title: 'Versus',
-    description:
-      'Two options side by side on a social post: a split page, matched rows of pros and cons, and a verdict at the foot.',
-    extra: true,
-  },
-  {
-    kind: 'social-carousel',
-    title: 'Social Carousel',
-    description:
-      'Five square slides for a LinkedIn or Instagram carousel, stacked to flip through: a hook, three tips and a call to action.',
-    extra: true,
-  },
-  {
-    kind: 'launch-keynote',
-    title: 'Launch Keynote',
-    description:
-      'A six-slide launch keynote on an animated aurora: the hook, what is new, the beta in three numbers, the launch plan and the ask, its points building one at a time.',
-    extra: true,
-  },
-  {
-    kind: 'quarterly-review',
-    title: 'Quarterly Review',
-    description:
-      'A six-slide quarterly business review on a moving mesh: the agenda, the quarter in a chart, goals as progress rings and the roadmap.',
-    extra: true,
-  },
-  {
-    kind: 'team-welcome',
-    title: 'Team Welcome',
-    description:
-      'A six-slide welcome for a new joiner on floating bokeh: their manager, their first week, how the team works and who to ask.',
-    extra: true,
-  },
-  {
-    kind: 'workshop-kickoff',
-    title: 'Workshop Kickoff',
-    description:
-      'A six-slide workshop opener on rolling waves: the outcomes, the agenda, how each round runs, the one rule and the close.',
     extra: true,
   },
   {
@@ -272,13 +145,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'class-lesson',
-    title: 'Class Lesson',
-    description:
-      'A six-slide science lesson on drifting colour: what we will learn, a question, the steps, a check and the homework.',
-    extra: true,
-  },
-  {
     kind: 'product-one-pager',
     title: 'Product One-Pager',
     description:
@@ -313,13 +179,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
       "A new joiner's first month: contents, the first week as a checklist, who to ask and the tools in tables, time off and pay.",
     extra: true,
   },
-  {
-    kind: 'board-update',
-    title: 'Board Update',
-    description:
-      'A seven-slide quarterly update to a board: the quarter in three numbers, revenue against plan on a chart, goals as rings, the one risk and the decision.',
-    extra: true,
-  },
 ];
 
 // True when `value` names a template in the catalogue. The guard for a kind
@@ -346,7 +205,7 @@ export function templateCreateHref(kind: TemplateKind): string {
 // Default name for a freshly-created document: "Untitled <Template Title>" in
 // title case so a templated document is recognisable in the Explorer (e.g.
 // "Untitled Event Poster"), while a blank one (or no template) keeps the plain
-// "Untitled document" (UNTITLED_DOCUMENT_NAME, untitled.ts).
+// "Untitled Knowledgebase" (UNTITLED_DOCUMENT_NAME, untitled.ts).
 
 export function untitledNameForTemplate(kind: TemplateKind | null): string {
   if (!kind || kind === 'blank') return UNTITLED_DOCUMENT_NAME;
@@ -355,7 +214,7 @@ export function untitledNameForTemplate(kind: TemplateKind | null): string {
   return title ? `Untitled ${titleCase(title)}` : UNTITLED_DOCUMENT_NAME;
 }
 
-// Every name a document is given before anyone names it: each template's untitled name, plus "Untitled document" and
+// Every name a document is given before anyone names it: each template's untitled name, plus "Untitled Knowledgebase" and
 // its legacy spelling. Built once, at first use.
 let DEFAULT_NAMES: ReadonlySet<string> | null = null;
 

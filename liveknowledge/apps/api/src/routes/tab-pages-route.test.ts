@@ -6,7 +6,6 @@ import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 import { pagesRoomOps } from '../changesets/pages';
-import { layoutCatalogueFor } from '@liveknowledge/templates';
 
 // POST /api/documents/:id/tabs/:tabId/pages (docs/specs/024-agents/pages-for-agents.md
 // "The route"): page changes or an article write, at the tab's revision, relayed to the room as an
@@ -84,90 +83,43 @@ const stored = (db: SqliteD1) => {
 
 afterEach(() => vi.restoreAllMocks());
 
+// docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page": a page is one article on one
+// page, so no page is added, laid out, moved, copied or deleted.
 describe('page changes', () => {
-  it('writes the pages at the next revision and relays them', async () => {
-    const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { db, room } = await setUp();
-    const res = await call(db, {
-      pages: [
-        { op: 'add', kind: 'slide' },
-        { op: 'add', kind: 'slide', name: 'Two' },
-      ],
-    });
-    expect(res.status).toBe(200);
-    const body = await res.json<PagesAnswer>();
-    expect(body.lines[0]).toBe('Added page 1 (slide, Slide (16:9)).');
-    expect(body.pages.map((p) => [p.place, p.kind, p.name])).toEqual([
-      [1, 'slide', null],
-      [2, 'slide', 'Two'],
-    ]);
-    expect(body.changesetId).toBeNull();
-    const tab = stored(db);
-    expect(tab.pages).toHaveLength(2);
-    expect(body.tab.rev).toBe(tab.rev);
-    expect(room.bodies.map((b) => b.op.kind)).toEqual(['tab-meta']);
-    expect(room.bodies[0]!.op).toMatchObject({ tabId: 't1', patch: { pages: tab.pages } });
-    expect(info).toHaveBeenCalledWith(
-      '[pages-agent] applied',
-      expect.objectContaining({ kind: 'pages', changes: 2 }),
-    );
-  });
-
-  it('lands a layout’s elements as a changeset, relayed before the pages', async () => {
+  it('are refused whole, writing and relaying nothing', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
-    const layout = layoutCatalogueFor('slide').layouts[0]!.id;
-    const res = await call(db, { pages: [{ op: 'add', kind: 'slide', layout }] });
-    const body = await res.json<PagesAnswer>();
-    expect(body.changesetId).toMatch(/^cs_/);
-    expect(body.pages[0]!.elements).toBeGreaterThan(0);
-    expect(room.bodies.map((b) => b.op.kind)).toEqual(['changeset', 'tab-meta']);
-    expect(stored(db).elements.length).toBe(body.pages[0]!.elements);
-  });
-
-  it('refuses a malformed body and an engine refusal with 400 and the code', async () => {
-    vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { db } = await setUp();
-    const bad = await call(db, { pages: [{ op: 'fly' }] });
-    expect(bad.status).toBe(400);
-    expect(await bad.json()).toMatchObject({ error: 'invalid_value', change: 0 });
-    const res = await call(db, { pages: [{ op: 'delete', page: 4 }] });
-    expect(res.status).toBe(400);
-    expect(await res.json()).toMatchObject({ error: 'page_unknown', change: 0 });
+    for (const pages of [
+      [{ op: 'add', kind: 'slide' }],
+      [{ op: 'add', kind: 'infographic' }],
+      [{ op: 'delete', page: 1 }],
+      [{ op: 'set', page: 1, size: 'letter' }],
+    ]) {
+      const res = await call(db, { pages });
+      expect(res.status).toBe(400);
+      expect(await res.json()).toMatchObject({ error: 'kind_not_offered' });
+    }
     expect(stored(db).pages).toBeUndefined();
+    expect(room.bodies).toHaveLength(0);
   });
+});
+
+describe('the route', () => {
+  const write = { article: { markdown: 'x' } };
 
   it('is gated like any write (a read-only token is refused in index.ts): a stranger is refused, a missing tab is 404', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db } = await setUp();
-    expect(
-      (await call(db, { pages: [{ op: 'add', kind: 'slide' }] }, { owner: 'user_x' })).status,
-    ).toBe(403);
-    expect(
-      (
-        await call(
-          db,
-          { pages: [{ op: 'add', kind: 'slide' }] },
-          { path: '/api/documents/D/tabs/nope/pages' },
-        )
-      ).status,
-    ).toBe(404);
-    expect(
-      (
-        await call(
-          db,
-          { pages: [{ op: 'add', kind: 'slide' }] },
-          { path: '/api/documents/Z/tabs/t1/pages' },
-        )
-      ).status,
-    ).toBe(404);
+    expect((await call(db, write, { owner: 'user_x' })).status).toBe(403);
+    expect((await call(db, write, { path: '/api/documents/D/tabs/nope/pages' })).status).toBe(404);
+    expect((await call(db, write, { path: '/api/documents/Z/tabs/t1/pages' })).status).toBe(404);
   });
 
   it('keeps the write when the room cannot be reached, logging it', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const { db } = await setUp(500);
-    const res = await call(db, { pages: [{ op: 'add', kind: 'slide' }] });
+    const res = await call(db, write);
     expect(res.status).toBe(200);
     expect(stored(db).pages).toHaveLength(1);
     expect(warn).toHaveBeenCalledWith(
@@ -256,14 +208,12 @@ describe('held paragraphs', () => {
     expect(res.status).toBe(200);
   });
 
-  it("never holds a person's own write, or page changes, and asks the room nothing for them", async () => {
+  it("never holds a person's own write, and asks the room nothing for it", async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp(204, tab);
     room.holds.push(samHolds);
     const res = await call(db, { article: { article: 'f', markdown: 'Mine' } }, { token: false });
     expect(res.status).toBe(200);
-    const pages = await call(db, { pages: [{ op: 'set', page: 1, name: 'Cover' }] });
-    expect(pages.status).toBe(200);
     expect(room.holdReads).toEqual([]);
   });
 

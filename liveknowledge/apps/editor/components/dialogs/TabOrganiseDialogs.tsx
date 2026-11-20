@@ -132,7 +132,7 @@ export function AddTabToFolderDialog({
 
 // A destination-document tile: the document's snapshot preview (docs/specs/006-document/document-snapshots.md) over
 // its name, so the user picks by recognising the canvas rather than parsing
-// a list of near-identical "Untitled document" names. Styled to match the
+// a list of near-identical "Untitled Knowledgebase" names. Styled to match the
 // PlacementCard tile grid, but its own component: the preview area is a
 // full-width box, not the icon-glyph slot the shared card centres.
 function DocumentPickCard({
@@ -157,7 +157,7 @@ function DocumentPickCard({
         className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {liveDoc.name || 'Untitled document'}
+        {liveDoc.name || 'Untitled Knowledgebase'}
       </span>
     </button>
   );
@@ -180,7 +180,7 @@ export function AddTabToDocumentDialog({
 }) {
   const [query, setQuery] = useState('');
   const visible = otherDocuments.filter(
-    (d) => !query.trim() || matches(query, d.name || 'Untitled document'),
+    (d) => !query.trim() || matches(query, d.name || 'Untitled Knowledgebase'),
   );
   return (
     <OrganiseDialogFrame

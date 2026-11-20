@@ -46,11 +46,11 @@ describe('blanks of a page kind', () => {
 
   it('are blanks: in no category, keeping the tab name rules of a blank', () => {
     for (const kind of KINDS) {
-      expect(isBlankTemplate(kind)).toBe(true);
+      // Only Blank Page is a listed blank; the slide and infographic blanks are in no listing.
+      expect(isBlankTemplate(kind)).toBe(kind === 'blank-article');
       expect(templateCategory(kind)).toBeNull();
     }
-    expect(untitledNameForTemplate('blank-slide-deck')).toBe('Untitled Slide Deck');
-    expect(untitledNameForTemplate('blank-infographic')).toBe('Untitled Infographic');
+    expect(untitledNameForTemplate('blank-article')).toBe('Untitled Page');
   });
 
   it('answers nothing for any other template', () => {

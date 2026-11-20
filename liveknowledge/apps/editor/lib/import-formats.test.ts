@@ -7,12 +7,11 @@ const tab = (pages: unknown[] | undefined, elements: unknown[] = []) =>
 
 describe('importFormatsFor: Import offers each format on its own kind of tab', () => {
   it('offers every format on an empty tab, which the import then gives its kind', () => {
-    expect(importFormatsFor(tab(undefined))).toEqual(['json', 'markdown', 'word', 'powerpoint']);
+    expect(importFormatsFor(tab(undefined))).toEqual(['json', 'markdown', 'word']);
     expect(importFormatsFor(tab([{ id: 'p', orientation: 'portrait' }]))).toEqual([
       'json',
       'markdown',
       'word',
-      'powerpoint',
     ]);
   });
 
@@ -20,7 +19,7 @@ describe('importFormatsFor: Import offers each format on its own kind of tab', (
     expect(
       importFormatsFor(tab([{ id: 'a', orientation: 'portrait', kind: 'article', flow: 'f' }])),
     ).toEqual(['json', 'markdown', 'word']);
-    expect(importFormatsFor(tab([newSlidePage('s')]))).toEqual(['json', 'powerpoint']);
+    expect(importFormatsFor(tab([newSlidePage('s')]))).toEqual(['json']);
   });
 
   it('offers JSON alone on an infographic, and on an unchosen page with something on it', () => {

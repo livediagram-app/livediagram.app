@@ -1,13 +1,10 @@
 // The Pages verbs (docs/specs/024-agents/pages-for-agents.md "The front doors"): `page ls` (the pages
-// view), `page set` (change_pages), `article get` (one article as Markdown) and `article set` (write_article),
-// over the calls the MCP's change_pages and write_article share. Pages are named by id, place or name; articles
-// by id or title.
+// view), `article get` (one article as Markdown) and `article set` (write_article), over the calls the MCP's
+// write_article shares. Articles are named by id or title.
 import { z } from 'zod';
-import { PAGE_CHANGES_MAX, type PageChange } from '@liveknowledge/api-schema';
-import { ARTICLE_LOOK_IDS, type ArticleLookId, type PageSizeId } from '@liveknowledge/document';
+import { ARTICLE_LOOK_IDS, type ArticleLookId } from '@liveknowledge/document';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import {
-  changePages,
   pagesTabOf,
   readArticle,
   writeArticle,
@@ -24,7 +21,6 @@ const tabFlag = z
   .optional()
   .describe('A tab name or id prefix; the first tab when omitted');
 const LS_HINT = 'list the pages with: liveknowledge page ls <doc>';
-const CHANGES_HINT = 'see the changes with: liveknowledge help page set';
 // A paragraph someone is typing in (spec "Held paragraphs"): waiting is the way through, not another listing.
 const HELD_HINT = 'wait for them to pause with: --wait-held <seconds>';
 
@@ -32,7 +28,7 @@ const refusal = (r: PagesRefused) =>
   new VerbRefusal({
     status: r.code === 'tab_needed' || r.code.endsWith('_unknown') ? 404 : 400,
     code: r.code,
-    message: r.change === undefined ? r.message : `change ${r.change + 1}: ${r.message}`,
+    message: r.message,
     hint: r.code === 'paragraphs_held' ? HELD_HINT : LS_HINT,
   });
 
@@ -68,9 +64,6 @@ const doneOf = (done: PagesDone): z.infer<typeof doneOutput> => ({
   pages: done.pages,
   rev: done.tab.rev,
 });
-const pageLine = (p: z.infer<typeof pageOutput>) =>
-  `${p.place}  ${p.kind}  ${p.size}  ${p.rect.x},${p.rect.y} ${p.rect.width}x${p.rect.height}  ${p.name ?? ''}`.trimEnd();
-
 export const pageLs = defineVerb({
   id: 'page.ls',
   summary: "List a tab's pages and articles",
@@ -99,175 +92,6 @@ export const pageLs = defineVerb({
     prints: 'the pages view as the api serves it',
   },
 });
-
-const sizeArg = z
-  .string()
-  .optional()
-  .describe('A page size id: a4, letter, a3, square, slide, ...');
-
-export const pageSet = defineVerb({
-  id: 'page.set',
-  summary: "Change a tab's pages",
-  description:
-    'Adds, changes, lays out, moves, duplicates or deletes pages, as one edit: --changes takes a JSON list (a file, or - for stdin) of up to 50, or the flags make one.',
-  behaviour: 'destructive',
-  input: z.object({
-    doc: docArg,
-    tab: tabFlag,
-    changes: z.string().optional().describe('A JSON file of page changes, or - for stdin'),
-    add: z.enum(['infographic', 'slide']).optional().describe('Add a page of this kind'),
-    page: z.string().optional().describe('The page to change: its id, place or name'),
-    name: z.string().optional().describe('Name the page'),
-    size: sizeArg,
-    orientation: z.enum(['portrait', 'landscape']).optional().describe('Turn the page'),
-    layout: z.string().optional().describe('Lay the page out (a layout id from page ls)'),
-    move: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .optional()
-      .describe('Move the page to this place (with --add, add it there)'),
-    duplicate: z.boolean().optional().describe('Copy the page'),
-    backgroundToAll: z.boolean().optional().describe('Its background onto every page of its kind'),
-    delete: z.boolean().optional().describe('Delete the page and what is on it'),
-  }),
-  output: doneOutput,
-  run: async (ctx, input) => {
-    // --changes is the whole edit: a change flag beside it would be dropped without a word.
-    if (input.changes !== undefined && changeFlagsGiven(input).length)
-      throw combined(['--changes', ...changeFlagsGiven(input)]);
-    const changes =
-      input.changes !== undefined ? await changesFrom(ctx, input.changes) : [changeFrom(input)];
-    const at = await where(ctx, input.doc, input.tab);
-    const done = await changePages(
-      ctx.api,
-      at.documentId,
-      { ...(at.tabId ? { tabId: at.tabId } : {}), changes },
-      'cli',
-    );
-    if (!done.ok) throw refusal(done);
-    return doneOf(done);
-  },
-  text: ({ lines, pages }) => [...lines.map((l) => `~ ${l}`), ...pages.map(pageLine)],
-  quiet: ({ pages }) => pages.map((p) => p.id),
-  cli: {
-    positionals: ['doc'],
-    examples: [
-      'liveknowledge page set "Pitch deck" --add slide --layout slide-title',
-      'liveknowledge page set 3f9c --changes changes.json',
-    ],
-    prints: 'what changed, then each page: place, kind, size, rectangle, name',
-  },
-});
-
-async function changesFrom(ctx: VerbContext, source: string): Promise<PageChange[]> {
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(await ctx.readInput(source));
-  } catch {
-    throw new VerbRefusal({
-      status: 400,
-      code: 'invalid_value',
-      message: '--changes is not JSON',
-      hint: CHANGES_HINT,
-    });
-  }
-  const list = Array.isArray(parsed) ? parsed : [parsed];
-  if (list.length === 0 || list.length > PAGE_CHANGES_MAX)
-    throw new VerbRefusal({
-      status: 400,
-      code: 'invalid_value',
-      message: `--changes holds 1 to ${PAGE_CHANGES_MAX} page changes`,
-      hint: CHANGES_HINT,
-    });
-  // The api reads each one strictly and names the one it refuses.
-  return list as PageChange[];
-}
-
-type ChangeFlags = {
-  add?: 'infographic' | 'slide';
-  page?: string;
-  name?: string;
-  size?: string;
-  orientation?: 'portrait' | 'landscape';
-  layout?: string;
-  move?: number;
-  duplicate?: boolean;
-  backgroundToAll?: boolean;
-  delete?: boolean;
-};
-
-// Each change flag by its name on the command line, when given.
-const FLAG_NAMES: [keyof ChangeFlags, string][] = [
-  ['add', '--add'],
-  ['page', '--page'],
-  ['delete', '--delete'],
-  ['duplicate', '--duplicate'],
-  ['backgroundToAll', '--background-to-all'],
-  ['move', '--move'],
-  ['layout', '--layout'],
-  ['name', '--name'],
-  ['size', '--size'],
-  ['orientation', '--orientation'],
-];
-const given = (flags: ChangeFlags, key: keyof ChangeFlags) =>
-  flags[key] !== undefined && flags[key] !== false && flags[key] !== '';
-const changeFlagsGiven = (flags: ChangeFlags) =>
-  FLAG_NAMES.filter(([key]) => given(flags, key)).map(([, name]) => name);
-
-// Flags that make more than one change, refused rather than half sent: one change a run, so none is ever dropped
-// while the command says it worked (docs/specs/024-agents/pages-for-agents.md).
-const combined = (names: readonly string[]) =>
-  new VerbRefusal({
-    status: 400,
-    code: 'invalid_value',
-    message: `${names.join(', ')} make more than one change; the flags make one, so give several with --changes <file>`,
-    hint: CHANGES_HINT,
-  });
-
-function changeFrom(flags: ChangeFlags): PageChange {
-  const fields = {
-    ...(flags.name !== undefined ? { name: flags.name } : {}),
-    ...(flags.size ? { size: flags.size as PageSizeId } : {}),
-    ...(flags.orientation ? { orientation: flags.orientation } : {}),
-  };
-  if (flags.add) {
-    // An add is named, sized, turned, laid out and put at a place (--move) in one change; nothing else goes with it.
-    const other = (['page', 'delete', 'duplicate', 'backgroundToAll'] as const).filter((k) =>
-      given(flags, k),
-    );
-    if (other.length) throw combined(changeFlagsGiven(flags));
-    return {
-      op: 'add',
-      kind: flags.add,
-      ...fields,
-      ...(flags.layout ? { layout: flags.layout } : {}),
-      ...(flags.move !== undefined ? { at: flags.move } : {}),
-    };
-  }
-  const none = () =>
-    new VerbRefusal({
-      status: 400,
-      code: 'invalid_value',
-      message: 'say what to do: --add <kind>, or --page <page> with a change, or --changes <file>',
-      hint: CHANGES_HINT,
-    });
-  if (!flags.page) throw none();
-  const page = /^\d+$/.test(flags.page) ? Number(flags.page) : flags.page;
-  // The changes the flags ask of the page: one each for delete, duplicate, background to all, move and layout, and
-  // one set for any of name, size and orientation.
-  const asked: PageChange[] = [
-    ...(flags.delete ? [{ op: 'delete', page } as const] : []),
-    ...(flags.duplicate ? [{ op: 'duplicate', page } as const] : []),
-    ...(flags.backgroundToAll ? [{ op: 'apply_background_to_all', page } as const] : []),
-    ...(flags.move !== undefined ? [{ op: 'move', page, to: flags.move } as const] : []),
-    ...(flags.layout ? [{ op: 'layout', page, layout: flags.layout } as const] : []),
-    ...(Object.keys(fields).length ? [{ op: 'set', page, ...fields } as const] : []),
-  ];
-  if (asked.length > 1) throw combined(changeFlagsGiven(flags).filter((n) => n !== '--page'));
-  if (asked.length === 0) throw none();
-  return asked[0]!;
-}
 
 export const articleGet = defineVerb({
   id: 'article.get',
@@ -315,19 +139,12 @@ export const articleSet = defineVerb({
     tab: tabFlag,
     file: z.string().describe('The Markdown file, or - for stdin'),
     article: z.string().optional().describe('The article by id or title'),
-    new: z.boolean().optional().describe('Start a new article'),
     append: z.boolean().optional().describe('Add after the last block instead of replacing'),
-    size: sizeArg,
-    orientation: z
-      .enum(['portrait', 'landscape'])
-      .optional()
-      .describe('A new article’s orientation'),
     look: z
       .enum(ARTICLE_LOOK_IDS as [ArticleLookId, ...ArticleLookId[]])
       .optional()
       .describe('clean, classic, report, notebook or bold'),
     accent: z.string().optional().describe('The accent colour, a hex'),
-    pageNumbers: z.boolean().optional().describe('Page numbers on'),
     // A paragraph a person is typing in holds the write back (docs/specs/024-agents/pages-for-agents.md "Held
     // paragraphs"): retried every HELD_RETRY_INTERVAL_MS while the next try fits in the seconds given.
     waitHeld: writeFlags.waitHeld.describe(
@@ -346,13 +163,9 @@ export const articleSet = defineVerb({
           ...(at.tabId ? { tabId: at.tabId } : {}),
           markdown,
           ...(input.article ? { article: input.article } : {}),
-          ...(input.new ? { new: true } : {}),
           ...(input.append ? { mode: 'append' as const } : {}),
-          ...(input.size ? { size: input.size as PageSizeId } : {}),
-          ...(input.orientation ? { orientation: input.orientation } : {}),
           ...(input.look ? { look: input.look } : {}),
           ...(input.accent ? { accent: input.accent } : {}),
-          ...(input.pageNumbers !== undefined ? { pageNumbers: input.pageNumbers } : {}),
         },
         'cli',
       );
@@ -381,4 +194,5 @@ export const articleSet = defineVerb({
   },
 });
 
-export const pagesVerbs: readonly Verb[] = [pageLs, pageSet, articleGet, articleSet] as Verb[];
+// No `page set`: a page is one continuous page of writing (docs/specs/002-project-scope/not-in-liveknowledge.md).
+export const pagesVerbs: readonly Verb[] = [pageLs, articleGet, articleSet] as Verb[];

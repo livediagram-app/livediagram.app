@@ -4,6 +4,7 @@
 // size, orientation and background, and move, copy and go as one. Each is one tab edit (one undo
 // step, synced to everyone) that moves the content of every page it shifts along with it
 // (withPages), re-reading the tab at commit time so two quick edits compose.
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { cutText } from '@liveworkspace/model-core/text-cut';
 import {
   elementIdsOnPage,
@@ -461,25 +462,27 @@ export function pageEdits({
     canTidy,
     previewTidy,
     previewInk,
-    setOrientation,
-    setSize,
+    setOrientation: CUT_FROM_FORK ? setOrientation : () => {},
+    setSize: CUT_FROM_FORK ? setSize : () => {},
     rename,
     setBackground,
     movePage,
     movePageTo,
     canMove,
-    addPage: room ? addPage : undefined,
-    addPageLike: room ? addPageLike : undefined,
-    choosePageKind,
-    duplicatePage: room ? duplicatePage : undefined,
+    // A knowledgebase page is one article on one page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The
+    // continuous page"): no page is added, copied, removed, split or given another kind, size or turn.
+    addPage: CUT_FROM_FORK && room ? addPage : undefined,
+    addPageLike: CUT_FROM_FORK && room ? addPageLike : undefined,
+    choosePageKind: CUT_FROM_FORK ? choosePageKind : () => {},
+    duplicatePage: CUT_FROM_FORK && room ? duplicatePage : undefined,
     canDuplicate: (pageId: string) => {
       const flow = page(pageId)?.flow;
       const size = flow ? current.filter((p) => p.flow === flow).length : 1;
       return current.length + size <= MAX_PAGES;
     },
-    removePage,
-    splitPage,
-    applyLayout,
+    removePage: CUT_FROM_FORK ? removePage : undefined,
+    splitPage: CUT_FROM_FORK ? splitPage : () => {},
+    applyLayout: CUT_FROM_FORK ? applyLayout : async () => {},
     contentCount,
     isLocked,
     setLocked,

@@ -7,6 +7,7 @@
 import type { EditRejection } from '@liveknowledge/api-schema';
 import {
   buildTab,
+  newKnowledgebasePageContent,
   chipLabelIssue,
   coerceShapeKind,
   contentOrigin,
@@ -66,7 +67,13 @@ function fromElements(
   );
   return {
     elements: buildTab('elements', 'elements', coerced, layout, themeId).elements,
-    tab: (tabId, name) => buildTab(tabId, name, valid, layout, themeId),
+    // A new tab is a knowledgebase page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous
+    // page"): the elements sit on its one page of writing, never on a free canvas of an unchosen kind.
+    tab: (tabId, name) => ({
+      ...buildTab(tabId, name, valid, layout, themeId),
+      templateChosen: true,
+      ...newKnowledgebasePageContent(),
+    }),
   };
 }
 

@@ -8,6 +8,10 @@ import { readUserPreferences, writeUserPreferences } from '@/lib/user-preference
 import type { CanvasChromeProps } from './CanvasChrome';
 import { useContentsChrome } from './useContentsChrome';
 
+// The row of pages is closed in liveknowledge (docs/specs/002-project-scope/not-in-liveknowledge.md "Unreachable, to
+// delete"): these tests open the door to keep the engine behind it honest until it is deleted.
+vi.mock('@/lib/not-in-liveknowledge', () => ({ CUT_FROM_FORK: true }));
+
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 // docs/specs/007-editor/pages-mode.md "Contents": docked as a sidebar on a desktop until the

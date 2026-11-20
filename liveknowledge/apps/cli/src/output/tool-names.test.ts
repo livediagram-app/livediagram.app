@@ -17,8 +17,8 @@ describe('the CLI words for MCP tools', () => {
   });
 
   it('writes a tool in a message as the command', () => {
-    expect(inCliWords('That document has no page 4. Add one with change_pages.')).toBe(
-      'That document has no page 4. Add one with liveknowledge page set.',
+    expect(inCliWords('That tab has no article. Write one with write_article.')).toBe(
+      'That tab has no article. Write one with liveknowledge article set.',
     );
     expect(inCliWords('read_document lists its pages; read_documents stays')).toBe(
       'liveknowledge document view lists its pages; read_documents stays',
@@ -26,10 +26,14 @@ describe('the CLI words for MCP tools', () => {
   });
 
   it('prints an error in those words, text and JSON alike', () => {
-    const failure = { exit: 3 as const, code: 'page_none', message: 'Add one with change_pages.' };
-    expect(formatError(failure, false)).toBe('error: Add one with liveknowledge page set.\n');
+    const failure = {
+      exit: 3 as const,
+      code: 'page_none',
+      message: 'Write one with write_article.',
+    };
+    expect(formatError(failure, false)).toBe('error: Write one with liveknowledge article set.\n');
     expect((JSON.parse(formatError(failure, true)) as { message: string }).message).toBe(
-      'Add one with liveknowledge page set.',
+      'Write one with liveknowledge article set.',
     );
   });
 });

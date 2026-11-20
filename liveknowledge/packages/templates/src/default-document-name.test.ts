@@ -5,27 +5,21 @@ import { isDefaultDocumentName, untitledNameForTemplate } from './templates';
 // it after itself while its name is still a default one.
 describe('untitledNameForTemplate', () => {
   it('names a document after its template', () => {
-    expect(untitledNameForTemplate('event-poster')).toBe('Untitled Event Poster');
+    expect(untitledNameForTemplate('meeting-notes')).toBe('Untitled Meeting Notes');
     expect(untitledNameForTemplate('article')).toBe('Untitled Project Brief');
-    expect(untitledNameForTemplate('blank-slide-deck')).toBe('Untitled Slide Deck');
-    expect(untitledNameForTemplate('blank')).toBe('Untitled document');
-  });
-
-  it('keeps an accented title as it is written', () => {
-    expect(untitledNameForTemplate('resume')).toBe('Untitled Résumé');
+    // A kind liveknowledge does not list names nothing.
+    expect(untitledNameForTemplate('blank-slide-deck')).toBe('Untitled Knowledgebase');
+    expect(untitledNameForTemplate('blank')).toBe('Untitled Knowledgebase');
   });
 });
 
 describe('isDefaultDocumentName', () => {
   it("counts every template's untitled name, and the plain untitled", () => {
     for (const name of [
-      'Untitled document',
-      'Untitled Illustration',
-      'Untitled Slide Deck',
-      'Untitled Event Poster',
-      'Untitled Résumé',
-      // As a résumé was named before titleCase knew accented letters.
-      'Untitled RéSumé',
+      'Untitled Knowledgebase',
+      'Untitled Page',
+      'Untitled Meeting Notes',
+      'Untitled Project Brief',
     ])
       expect(isDefaultDocumentName(name)).toBe(true);
   });
@@ -34,8 +28,8 @@ describe('isDefaultDocumentName', () => {
     for (const name of [
       'Q3 roadmap',
       'Untitled',
-      'untitled event poster',
-      'Untitled Event Poster 2',
+      'untitled meeting notes',
+      'Untitled Meeting Notes 2',
       '',
     ])
       expect(isDefaultDocumentName(name)).toBe(false);

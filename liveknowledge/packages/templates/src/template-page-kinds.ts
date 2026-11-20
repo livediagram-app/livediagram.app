@@ -7,6 +7,7 @@ import type { TemplateKind } from './templates';
 // pages (templateCanvasOverrides builds them), so the start screen's filter never draws the builders into the
 // editor's first load; template-page-kinds.test.ts checks each against the pages the template really makes.
 const PAGE_KIND_OF: Readonly<Partial<Record<TemplateKind, PageKind>>> = {
+  blank: 'article',
   'blank-slide-deck': 'slide',
   'blank-article': 'article',
   'blank-infographic': 'infographic',

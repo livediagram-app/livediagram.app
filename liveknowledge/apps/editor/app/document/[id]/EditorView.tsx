@@ -328,7 +328,10 @@ export function EditorView() {
   const { takeOffline, syncToCloud } = useOfflineConversions(offlineOwnerId);
   const takeOfflineNow = useLatest(() => {
     if (documentId)
-      void takeOffline({ id: documentId, name: ctx.documentName?.trim() || 'Untitled document' });
+      void takeOffline({
+        id: documentId,
+        name: ctx.documentName?.trim() || 'Untitled Knowledgebase',
+      });
   });
   const takeThisOffline = useCallback(() => takeOfflineNow.current(), [takeOfflineNow]);
   const mayTakeOffline =
@@ -355,7 +358,7 @@ export function EditorView() {
       ? () =>
           void syncToCloud({
             id: documentId,
-            name: ctx.documentName?.trim() || 'Untitled document',
+            name: ctx.documentName?.trim() || 'Untitled Knowledgebase',
           })
       : undefined,
     openShare: () => ctx.setShareDialogOpen(true),

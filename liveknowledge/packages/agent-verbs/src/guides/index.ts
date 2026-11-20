@@ -8,16 +8,15 @@ export const GUIDE_TOPICS = {
     summary: 'build a document from scratch',
     text: `Build a document
 
-Start from a template, or empty, then write an article or add slides:
+Start from a template, or empty, then write the page:
 
   liveknowledge template ls                 starting points for --template
-  liveknowledge document create Launch --template slide-deck
+  liveknowledge document create Launch --template design-doc
 
   liveknowledge document create Brief
-  liveknowledge article set Brief brief.md  Markdown, flowed onto pages
+  liveknowledge article set Brief brief.md  Markdown, on one continuous page
 
-  liveknowledge page set Launch --add slide --layout slide-title
-  liveknowledge page ls Launch              each page's rectangle and the layouts
+  liveknowledge page ls Launch              the page's rectangle and its writing
 
 Change what is on a page with edit operations, each box placed beside the one it names:
 

@@ -46,13 +46,13 @@ export function heroSearch(query: string, limit = HERO_SEARCH_LIMIT): HeroMatch[
 // HTML (no script) shows this opening hand, left to right: all seven on a very wide screen
 // (HERO_FAN_FULL_MIN_PX), the middle five on a laptop, the middle three on a phone.
 export const HERO_FAN_OPENING: readonly TemplateKind[] = [
-  'resume',
-  'year-in-review',
-  'data-story',
-  'slide-deck',
+  'meeting-notes',
+  'research-report',
+  'design-doc',
+  'onboarding-handbook',
   'article',
-  'recipe-card',
-  'event-poster',
+  'status-report',
+  'working-backwards',
 ];
 
 // How many cards the fan holds at once, and the window width from which all of them show: seven

@@ -53,26 +53,12 @@ async function call(
 }
 
 describe('the Pages tools', () => {
-  it('change pages on the first Pages tab and answer the pages', async () => {
-    const { handler, sent } = api(() => done());
+  // docs/specs/002-project-scope/not-in-liveknowledge.md: no tool changes pages.
+  it('have no change_pages', async () => {
+    const { handler } = api(() => done());
     const out = await call(handler, 'change_pages', { changes: [{ op: 'add', kind: 'slide' }] });
-    expect(out.isError).toBeFalsy();
-    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
-    expect(out.structuredContent).toMatchObject({ tabId: 't1', rev: 4, lines: ['Wrote it.'] });
-  });
-
-  it('name the change a refusal stopped at, counting from 1', async () => {
-    const { handler } = api(() =>
-      Response.json({ error: 'page_unknown', message: 'No page "9".', change: 1 }, { status: 400 }),
-    );
-    const out = await call(handler, 'change_pages', {
-      changes: [
-        { op: 'add', kind: 'slide' },
-        { op: 'delete', page: 9 },
-      ],
-    });
     expect(out.isError).toBe(true);
-    expect(out.content[0]!.text).toBe('Change 2: No page "9".');
+    expect(out.content[0]!.text).toContain('change_pages not found');
   });
 
   it('write an article, sending only what was given', async () => {

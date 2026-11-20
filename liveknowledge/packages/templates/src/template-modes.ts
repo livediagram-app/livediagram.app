@@ -1,17 +1,13 @@
 // The blanks (docs/specs/008-canvas/canvas-and-palette.md "Templates").
 import type { TemplateKind } from './templates';
 
-/** The blank (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Illustration, one empty page that asks
- *  what it is for. */
-export const BLANK_TEMPLATE: TemplateKind = 'blank-illustration';
+/** The blank (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Page, one empty page to write on. */
+export const BLANK_TEMPLATE: TemplateKind = 'blank-article';
 
 // The blanks beyond Blank Illustration (docs/specs/007-editor/start-diagramming.md "Groups"): one empty
 // page of a chosen kind, beside Blank Illustration, in the order the landing page's Blank Slate lists them.
-export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [
-  'blank-slide-deck',
-  'blank-article',
-  'blank-infographic',
-];
+// liveknowledge has one page kind, so no further blanks (docs/specs/002-project-scope/not-in-liveknowledge.md).
+export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = [];
 
 /** True for the blanks: Blank Illustration, the blanks of a page kind, and Blank Tab (the plain empty tab an agent or a
  *  `/new?blank` link makes by name). Quick-picks on Popular, never on a category shelf or tile. */

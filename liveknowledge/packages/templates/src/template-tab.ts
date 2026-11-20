@@ -3,7 +3,7 @@
 // `replace` body. Here rather than in @liveknowledge/document because the catalogue lives here and
 // this package already imports the document one (the reverse would be a cycle).
 
-import { buildTab, getBuiltInTheme, type Tab } from '@liveknowledge/document';
+import { buildTab, getBuiltInTheme, NEW_PAGE_NAME, type Tab } from '@liveknowledge/document';
 import { withBlankPageThemed } from './blank-page-templates';
 import { buildTemplate, templateTabs } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
@@ -75,7 +75,7 @@ export function buildTemplateTab(
 // template name, so no two tabs share one. With no name given, the template's own first name, else Tab 1.
 export function templateTabName(given: string | undefined, kind: TemplateKind): string {
   const [first, ...later] = templateTabs(kind).map((d) => d.name);
-  if (given === undefined || !given.trim()) return first ?? 'Tab 1';
+  if (given === undefined || !given.trim()) return first ?? NEW_PAGE_NAME;
   const key = given.trim().toLowerCase();
   return first && later.some((n) => n?.trim().toLowerCase() === key) ? first : given;
 }

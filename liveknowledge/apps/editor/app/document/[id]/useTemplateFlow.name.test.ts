@@ -45,24 +45,24 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
 
 describe('chooseTemplate names the document', () => {
   it('after the template, while its name is still a default one', async () => {
-    expect(await pick('event-poster', 'Untitled document')).toHaveBeenCalledWith(
-      'Untitled Event Poster',
+    expect(await pick('meeting-notes', 'Untitled Knowledgebase')).toHaveBeenCalledWith(
+      'Untitled Meeting Notes',
     );
     // A blank made by /new ("Untitled Slide Deck") is a default name too.
-    expect(await pick('year-in-review', 'Untitled Slide Deck')).toHaveBeenCalledWith(
-      'Untitled Year In Review',
+    expect(await pick('status-report', 'Untitled Slide Deck')).toHaveBeenCalledWith(
+      'Untitled Status Report',
     );
   });
 
   it('keeps a name someone gave it', async () => {
-    expect(await pick('event-poster', 'Q3 roadmap')).not.toHaveBeenCalled();
+    expect(await pick('meeting-notes', 'Q3 roadmap')).not.toHaveBeenCalled();
   });
 
   it("leaves the document's name to its first tab", async () => {
-    expect(await pick('event-poster', 'Untitled document', 't2')).not.toHaveBeenCalled();
+    expect(await pick('meeting-notes', 'Untitled Knowledgebase', 't2')).not.toHaveBeenCalled();
   });
 
   it('does nothing when the name would not change', async () => {
-    expect(await pick('event-poster', 'Untitled Event Poster')).not.toHaveBeenCalled();
+    expect(await pick('meeting-notes', 'Untitled Meeting Notes')).not.toHaveBeenCalled();
   });
 });

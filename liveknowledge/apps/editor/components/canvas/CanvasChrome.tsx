@@ -1,4 +1,5 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
@@ -443,7 +444,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
             ) : null}
             {/* Contents (docs/specs/007-editor/pages-mode.md "Contents"): in Pages mode,
                 for every role and on a phone too. The deck is built from its rows' menus ("Slides"). */}
-            {!zenMode && props.pagesMode ? (
+            {CUT_FROM_FORK && !zenMode && props.pagesMode ? (
               <PagesClusterStrip
                 contents={
                   // Docked as the sidebar, Contents has no button (useContentsChrome).

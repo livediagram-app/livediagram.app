@@ -5,15 +5,6 @@ import {
   HIDE_CURSORS_HINT,
   HIDE_CURSORS_LABEL,
 } from '@liveworkspace/workbench/components/dialogs/HideCursorsSwitch';
-import {
-  AUTO_ADVANCE_CHOICES,
-  readPresentationConfig,
-  SLIDE_SPEEDS,
-  SLIDE_TRANSITIONS,
-  SLIDE_ZOOMS,
-  withPresentationConfig,
-  type PresentationConfig,
-} from '@/lib/presentation-config';
 import type {
   SettingsCategoryId,
   SettingsIconId,
@@ -53,11 +44,6 @@ import {
   type UiScalePart,
 } from '@liveworkspace/workbench/lib/ui-scale';
 import { setUiScalePreview } from '@liveworkspace/workbench/lib/ui-scale-preview';
-import {
-  readContentsPlacement,
-  withContentsPlacement,
-  type ContentsPlacement,
-} from '@/lib/contents-placement';
 import type { SettingsIllustrationId } from '@liveworkspace/workbench/components/dialogs/settings/settings-illustrations';
 
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
@@ -453,39 +439,6 @@ function tourTracksSwitch(
 
 type TourSeenKey = 'pagesTourSeen' | 'elementToursSeen';
 
-// A presenter setting's row (docs/specs/012-collaboration/presentation-mode.md "Settings"): read and written through
-// lib/presentation-config, which keeps the whole config in one preference. The telemetry token is the one the
-// cog's change already sends, `Presentation-<field>`.
-type PresentingKey = Exclude<keyof PresentationConfig, 'autoAdvanceSeconds'>;
-function presentingToggle(
-  field: { [K in PresentingKey]: PresentationConfig[K] extends boolean ? K : never }[PresentingKey],
-  row: Pick<SettingsToggleRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'alsoIn'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `presentation-${field}`,
-    helpArticle: 'slideDeck',
-    ...row,
-    read: (p) => readPresentationConfig(p)[field],
-    write: (p, v) => withPresentationConfig(p, { [field]: v }),
-    event: { category: 'UI', on: `Presentation-${field}On`, off: `Presentation-${field}Off` },
-  };
-}
-function presentingChoice(
-  field: 'transition' | 'speed' | 'zoom',
-  row: Pick<SettingsChoiceRowSpec, 'section' | 'label' | 'description' | 'keywords' | 'options'>,
-): SettingsChoiceRowSpec {
-  return {
-    kind: 'choice',
-    key: `presentation-${field}`,
-    helpArticle: 'slideDeck',
-    ...row,
-    read: (p) => readPresentationConfig(p)[field],
-    write: (p, v) => withPresentationConfig(p, { [field]: v }),
-    event: { category: 'UI', changed: `Presentation-${field}` },
-  };
-}
-
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'editor',
@@ -570,120 +523,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         write: (p, v) => ({ ...p, middleMousePan: v }),
         event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
       },
-      {
-        // Pages mode's own settings (docs/specs/007-editor/pages-mode.md "Contents"), in Editor's Pages section.
-        // docs/specs/007-editor/pages-mode.md "Contents": the sidebar's minimise and the
-        // popover's dock button write the same choice.
-        kind: 'choice',
-        key: 'contentsPlacement',
-        keywords:
-          'contents pages page list sidebar side bar left panel filmstrip slides navigator thumbnails minimise minimize maximise maximize dock button',
-        section: 'Pages',
-        label: 'Contents',
-        description:
-          'Where the list of pages sits on a computer: docked down the left, or tucked into its button. A phone always has the button.',
-        options: [
-          { id: 'sidebar', label: 'Sidebar' },
-          { id: 'button', label: 'Button' },
-        ],
-        read: readContentsPlacement,
-        write: (p, v) => withContentsPlacement(p, v as ContentsPlacement),
-        event: { category: 'UI', changed: 'ContentsPlacement' },
-      },
     ],
   },
-  {
-    // The presenter settings (docs/specs/012-collaboration/presentation-mode.md "Settings"): how slides change, how
-    // the deck plays and what shows while presenting. They follow the account; the cog in a running presentation
-    // keeps only Transition, Speed and the two clocks, the things changed in front of the room.
-    // A category of its own, right after Editor (docs/specs/007-editor/user-preferences.md).
-    id: 'presenting',
-    label: 'Presenting',
-    // Presenting sat under Editor in the Settings panel's merged rail: its id there still lands here.
-    aliases: ['/editor/presenting'],
-    rows: [
-      presentingChoice('transition', {
-        section: 'Slides',
-        label: 'Transition',
-        description: 'How one slide gives way to the next.',
-        keywords: 'slide transition animation fade cut move present presentation',
-        options: SLIDE_TRANSITIONS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      presentingChoice('speed', {
-        section: 'Slides',
-        label: 'Speed',
-        description: 'How long a transition takes.',
-        keywords: 'transition speed quick slow duration present presentation',
-        options: SLIDE_SPEEDS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      presentingChoice('zoom', {
-        section: 'Slides',
-        label: 'Slide Size',
-        description:
-          'Fill Screen blows a small slide up to fill the screen; Actual Size never zooms past 100%.',
-        keywords: 'zoom fill screen actual size scale present presentation',
-        options: SLIDE_ZOOMS.map((t) => ({ id: t.id, label: t.label })),
-      }),
-      {
-        kind: 'choice',
-        key: 'presentationAutoAdvance',
-        section: 'Playback',
-        label: 'Auto-Advance',
-        description:
-          'Move to the next slide on its own after this long; Off moves only when you say.',
-        keywords: 'auto advance timer kiosk loop slideshow seconds present presentation',
-        helpArticle: 'slideDeck',
-        options: AUTO_ADVANCE_CHOICES.map((c) => ({ id: String(c.seconds), label: c.label })),
-        read: (p) => String(readPresentationConfig(p).autoAdvanceSeconds),
-        write: (p, v) => withPresentationConfig(p, { autoAdvanceSeconds: Number(v) }),
-        event: { category: 'UI', changed: 'Presentation-autoAdvanceSeconds' },
-      },
-      presentingToggle('advanceOnClick', {
-        section: 'Playback',
-        label: 'Click to Advance',
-        description: "Off if you'd rather only the keys and buttons move the deck.",
-        keywords: 'click advance next mouse present presentation',
-      }),
-      presentingToggle('loop', {
-        section: 'Playback',
-        label: 'Loop the Deck',
-        description: 'After the last slide, start again rather than ending.',
-        keywords: 'loop repeat kiosk restart present presentation',
-      }),
-      presentingToggle('showPosition', {
-        section: 'While Presenting',
-        label: 'Show Position',
-        description: "The 7 / 23 counter and the slide's name.",
-        keywords: 'position counter slide number name hud present presentation',
-      }),
-      presentingToggle('keepControls', {
-        section: 'While Presenting',
-        label: 'Keep Controls Visible',
-        description: 'Stop the controls fading out when the pointer rests.',
-        keywords: 'controls hud fade visible present presentation',
-      }),
-      presentingToggle('hidePointer', {
-        section: 'While Presenting',
-        label: 'Hide the Pointer',
-        description: 'A still cursor left on a projector is a distraction.',
-        keywords: 'cursor pointer mouse hide projector present presentation',
-      }),
-      presentingToggle('showElapsed', {
-        section: 'While Presenting',
-        label: 'Show Elapsed Time',
-        description: 'A clock counting from the moment you started.',
-        keywords: 'clock timer elapsed time pacing present presentation',
-        alsoIn: "a presentation's cog",
-      }),
-      presentingToggle('showBudget', {
-        section: 'While Presenting',
-        label: 'Show Slide Budget',
-        description: 'Time on this slide against the minutes it was given.',
-        keywords: 'budget minutes pacing timer slide time present presentation',
-        alsoIn: "a presentation's cog",
-      }),
-    ],
-  },
+  // No Presenting category and no Contents row: liveknowledge has no slides and no row of paper pages
+  // (docs/specs/002-project-scope/not-in-liveknowledge.md).
   {
     id: 'appearance',
     label: 'Appearance',

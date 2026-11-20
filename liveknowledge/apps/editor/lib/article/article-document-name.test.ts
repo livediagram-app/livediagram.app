@@ -16,7 +16,7 @@ describe('articleTitleName', () => {
     expect(articleTitleName('Untitled Article', tab, 'a', [title('Q3 Report'), body])).toBe(
       'Q3 Report',
     );
-    expect(articleTitleName('Untitled document', tab, 'a', [title('  Q3\n Report ')])).toBe(
+    expect(articleTitleName('Untitled Knowledgebase', tab, 'a', [title('  Q3\n Report ')])).toBe(
       'Q3 Report',
     );
   });

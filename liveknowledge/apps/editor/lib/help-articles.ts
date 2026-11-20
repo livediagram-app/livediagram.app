@@ -39,7 +39,6 @@ export const HELP_ARTICLES = {
   laser: 'selection-modes/laser',
   spotlight: 'selection-modes/spotlight',
   formatPainter: 'selection-modes/format-painter',
-  slideDeck: 'selection-modes/slide-deck',
   // AI
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
@@ -167,10 +166,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   formatPainter: {
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
-  },
-  slideDeck: {
-    title: 'Learn about presenting',
-    description: 'Tips for building a deck from your pages and presenting it.',
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',

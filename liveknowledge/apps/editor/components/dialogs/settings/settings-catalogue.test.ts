@@ -38,25 +38,6 @@ describe('settings catalogue', () => {
     }
   });
 
-  it("offers where Pages mode's Contents sits, the sidebar until chosen otherwise", () => {
-    // docs/specs/007-editor/pages-mode.md "Contents": the sidebar by default, the button by choice, in Editor's Pages
-    // section. Pages' old category id still lands on Editor (a remembered category, a `?settings=pages` link).
-    expect(SETTINGS_CATEGORIES.some((c) => (c.id as string) === 'pages')).toBe(false);
-    const editor = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!;
-    expect(editor.aliases).toEqual(['pages']);
-    const row = editor.rows.find((r) => r.key === 'contentsPlacement');
-    if (row?.kind !== 'choice') throw new Error('no Contents choice row');
-    expect(row.section).toBe('Pages');
-    expect(row.label).toBe('Contents');
-    expect(row.options.map((o) => [o.id, o.label])).toEqual([
-      ['sidebar', 'Sidebar'],
-      ['button', 'Button'],
-    ]);
-    expect(row.read({})).toBe('sidebar');
-    expect(row.write({}, 'button')).toEqual({ contentsPlacement: 'button' });
-    expect(row.event).toEqual({ category: 'UI', changed: 'ContentsPlacement' });
-  });
-
   it('round-trips every toggle through read/write in both directions', () => {
     // The catalogue is the only place that knows how a setting maps onto
     // UserPreferences, so a row whose write does not land where its read
@@ -392,26 +373,6 @@ describe('settings catalogue', () => {
 
 // Panels and Account hold sub-categories; Editor holds none (docs/specs/007-editor/user-preferences.md).
 describe('settings sub-categories', () => {
-  it('nests nothing under Editor, and puts Presenting, a category of its own, right after it', () => {
-    const ids = SETTINGS_CATEGORIES.map((c) => c.id);
-    expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor')).toEqual([]);
-    const presenting = SETTINGS_CATEGORIES.find((c) => c.id === 'presenting')!;
-    expect(presenting.parent).toBeUndefined();
-    expect(ids[ids.indexOf('editor') + 1]).toBe('presenting');
-  });
-
-  it("keeps Editor's settings on Editor, Pages mode's own in its Pages section", () => {
-    const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows;
-    expect(rows.map((r) => [r.key, r.section])).toEqual([
-      ['alignmentGuides', 'Canvas'],
-      ['autoRebindArrows', 'Canvas'],
-      ['elementIndicatorStyle', 'Canvas'],
-      ['quickAddOnHover', 'Mouse'],
-      ['middleMousePan', 'Mouse'],
-      ['contentsPlacement', 'Pages'],
-    ]);
-  });
-
   it('files each panel as a section of Panels, after Panel Opacity', () => {
     expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels')).toEqual([]);
     const panels = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!;

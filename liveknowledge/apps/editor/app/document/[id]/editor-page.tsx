@@ -109,7 +109,7 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // Untitled when the document has no name yet). Updates as the user renames.
   useBrowserTabTitle(
     editorTabTitle(
-      state.documentName?.trim() || 'Untitled document',
+      state.documentName?.trim() || 'Untitled Knowledgebase',
       state.activeTab?.name,
       'liveknowledge',
     ),

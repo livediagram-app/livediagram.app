@@ -6,7 +6,7 @@
 // empty page of each kind. Choosing a template lands it on the tab at once. After each group's templates come its
 // Community tiles (@liveworkspace/community-ui/start), the month's most liked posts in that category, badged Community;
 // choosing one opens the person's own copy of it.
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo } from 'react';
 import { lucideGlyph } from '@liveknowledge/ui';
 import {
   lucideBriefcase,
@@ -42,9 +42,7 @@ import { StartSaveSwitch } from './StartSaveSwitch';
 import { templateCard } from './template-card';
 import { setStartPanelOpen } from '@liveworkspace/workbench/components/start/start-panel-open';
 import { startClosedKey } from './start-closed-key';
-import { templateStartFor, type StartPageType } from './start-template-items';
-import { START_PAGE_TYPES } from './start-page-types';
-import { StartKindFilter } from '@liveworkspace/workbench/components/start/StartKindFilter';
+import { TEMPLATE_START } from './start-template-items';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { useConnectStart } from '@/components/connect/useConnectStart';
 
@@ -71,8 +69,8 @@ const RAIL_ICONS: Readonly<Record<string, ReturnType<typeof lucideGlyph>>> = {
 const FALLBACK_ICON = glyph(lucideLightbulb);
 
 const COPY: { title: string; line: string; noMatch: string; help: HelpArticleKey } = {
-  title: 'Start Making Pages',
-  line: 'Pick something to make, or start from a blank page under Blank Pages.',
+  title: 'Start a Page',
+  line: 'Pick a template to write from, or start from a blank page.',
   noMatch: 'page templates',
   help: 'templates',
 };
@@ -97,10 +95,9 @@ export function StartFromTemplates({
     note: communityStartCreditNote(palette.muted),
   };
   // The page type the start shows (start-diagramming.md "Page type"): All Pages each time it opens.
-  const [pageType, setPageType] = useState<StartPageType>('all');
-  // The Community's tiles show only under All Pages: a post's page type is not known to the start.
-  const withCommunity = pageType === 'all';
-  const start = templateStartFor(pageType);
+  // One page kind (docs/specs/002-project-scope/not-in-liveknowledge.md): the start has no page type to filter by.
+  const withCommunity = true;
+  const start = TEMPLATE_START;
   const copy = COPY;
   const categories = useMemo(
     () =>
@@ -143,16 +140,7 @@ export function StartFromTemplates({
       helpArticle={copy.help}
       palette={palette}
       categories={categories}
-      // Leading the rail, where livediagram's start has its mode switch: the page type.
-      lead={
-        <StartKindFilter
-          label="Page type"
-          options={START_PAGE_TYPES}
-          value={pageType}
-          onChange={setPageType}
-        />
-      }
-      initialCategory="blank-pages"
+      initialCategory={categories[0]?.id ?? 'plans'}
       cardsIn={(id) => [
         ...(start.groups.find((g) => g.id === id)?.kinds ?? []).map(templateCard),
         ...(withCommunity ? communityStartCardsIn(community, id, tiles) : []),

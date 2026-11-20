@@ -12,7 +12,7 @@ export const PAGES_FORMATS: readonly Format[] = [
   'print',
   'png',
   'svg',
-  'pptx',
+  // No PowerPoint: liveknowledge has no slides (docs/specs/002-project-scope/not-in-liveknowledge.md).
   'docx',
   'markdown',
   'file',

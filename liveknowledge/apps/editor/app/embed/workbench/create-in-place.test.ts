@@ -11,10 +11,10 @@ const HOME = { kind: 'explorer', node: { kind: 'home' } } as const;
 
 describe('createInPlaceOf', () => {
   it('takes the wizard href’s place and template first', () => {
-    expect(createInPlaceOf('/new?folder=f1&template=slide-deck', ORIGIN, HOME)).toEqual({
+    expect(createInPlaceOf('/new?folder=f1&template=design-doc', ORIGIN, HOME)).toEqual({
       folderId: 'f1',
       teamId: null,
-      templateKind: 'slide-deck',
+      templateKind: 'design-doc',
     });
     expect(createInPlaceOf('/new?team=t1', ORIGIN, HOME)).toEqual({
       folderId: undefined,
@@ -47,7 +47,7 @@ describe('createDocumentInPlace', () => {
     api.apiCreateDocument.mockResolvedValue({} as never);
   });
 
-  it('makes a blank that opens on the editor’s start, in the asked folder', async () => {
+  it('makes one page to write on, its start never shown, in the asked folder', async () => {
     const id = await createDocumentInPlace('user_1', {
       folderId: 'f1',
       teamId: null,
@@ -56,9 +56,16 @@ describe('createDocumentInPlace', () => {
 
     const [owner, made] = api.apiCreateDocument.mock.calls[0]!;
     expect(owner).toBe('user_1');
-    expect(made).toMatchObject({ id, name: 'Untitled document', folderId: 'f1', teamId: null });
+    expect(made).toMatchObject({
+      id,
+      name: 'Untitled Knowledgebase',
+      folderId: 'f1',
+      teamId: null,
+    });
     expect(made.tabs).toHaveLength(1);
-    expect(made.tabs?.[0]?.templateChosen).toBeUndefined();
+    expect(made.tabs?.[0]?.templateChosen).toBe(true);
+    expect(made.tabs?.[0]?.name).toBe('Start Here');
+    expect(made.tabs?.[0]?.pages).toHaveLength(1);
     expect(made.tabs?.[0]?.elements).toEqual([]);
   });
 
@@ -66,11 +73,11 @@ describe('createDocumentInPlace', () => {
     await createDocumentInPlace('user_1', {
       folderId: undefined,
       teamId: null,
-      templateKind: 'slide-deck',
+      templateKind: 'design-doc',
     });
 
     const [, made] = api.apiCreateDocument.mock.calls[0]!;
-    expect(made.name).not.toBe('Untitled document');
+    expect(made.name).not.toBe('Untitled Knowledgebase');
     expect(made.tabs?.[0]?.templateChosen).toBe(true);
     expect(made.intent).toBeDefined();
   });

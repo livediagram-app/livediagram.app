@@ -1,6 +1,6 @@
 // The global SearchPanel's results (docs/specs/008-canvas/canvas-and-palette.md "Search panel"): this editor's
 // binding of the shared search (@liveworkspace/workbench/lib/editor-search), with its own nouns
-// ("Documents", "Untitled document"), its element types and what a palette pick adds; a table with no label is
+// ("Documents", "Untitled Knowledgebase"), its element types and what a palette pick adds; a table with no label is
 // found by the first of its cells that matches. The matcher, caps and section order are the shared module's.
 //
 // Lives in lib/ rather than next to the component so the test suite can import it directly without the 'use client'
@@ -68,7 +68,7 @@ const SEARCH: EditorSearchConfig<'document', 'documents'> = {
     kind: 'document',
     key: 'documents',
     label: 'Documents',
-    untitled: 'Untitled document',
+    untitled: 'Untitled Knowledgebase',
   },
   tableCells: true,
 };

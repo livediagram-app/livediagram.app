@@ -19,11 +19,8 @@ describe('template categories', () => {
   it('are the use-case categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
       'Careers',
-      'Events',
-      'Home',
       'Learning',
       'Marketing',
-      'Pitches',
       'Plans',
       'Reports',
       'Teams',
@@ -54,15 +51,12 @@ describe('template categories', () => {
   it('pins the primary counts', () => {
     const counts = ids.map((id) => TEMPLATES.filter((t) => templateCategory(t.kind) === id).length);
     expect(Object.fromEntries(ids.map((id, i) => [id, counts[i]]))).toEqual({
-      careers: 2,
-      events: 2,
-      home: 2,
-      learning: 2,
-      marketing: 6,
-      pitches: 2,
+      careers: 1,
+      learning: 1,
+      marketing: 2,
       plans: 5,
-      reports: 6,
-      team: 4,
+      reports: 2,
+      team: 2,
     });
   });
 
@@ -75,11 +69,10 @@ describe('template categories', () => {
       expect(also, kind).not.toContain(templateCategory(kind as TemplateKind));
       expect(new Set(also).size, kind).toBe(also.length);
     }
-    expect(isInTemplateCategory('slide-deck', 'pitches')).toBe(true);
-    expect(isInTemplateCategory('floor-plan', 'home')).toBe(true);
-    // Cross-listed: an explainer teaches.
-    expect(templateCategories('how-it-works')).toEqual(['marketing', 'learning']);
-    expect(isInTemplateCategory('blank', 'pitches')).toBe(false);
+    expect(isInTemplateCategory('design-doc', 'plans')).toBe(true);
+    // Cross-listed: a team's newsletter goes round the team.
+    expect(templateCategories('newsletter')).toEqual(['marketing', 'team']);
+    expect(isInTemplateCategory('blank', 'plans')).toBe(false);
   });
 
   it('leaves no category empty', () => {
@@ -103,25 +96,21 @@ describe('template search words', () => {
   it('finds templates by the words people use', () => {
     const find = (q: string) =>
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
-    expect(find('powerpoint')).toEqual(expect.arrayContaining(['slide-deck', 'blank-slide-deck']));
-    expect(find('cv')).toContain('resume');
+    // No slide or infographic template is listed, so none is found.
+    expect(find('powerpoint')).toEqual([]);
+    expect(find('instagram')).toEqual([]);
     expect(find('prfaq')).toEqual(['working-backwards']);
-    expect(find('instagram')).toContain('social-carousel');
-    expect(find('floorplan')).toContain('floor-plan');
     // A category label finds what is in it; every word must match.
-    expect(find('marketing storyboard')).toContain('storyboard');
-    expect(find('marketing storyboard')).not.toContain('resume');
-    expect(find('careers')).toEqual(expect.arrayContaining(['resume', 'cover-letter']));
-    // A category's search words find what is in it, cross-listed or not.
-    expect(find('school')).toEqual(
-      expect.arrayContaining(['lesson-plan', 'class-lesson', 'how-it-works']),
-    );
+    expect(find('marketing newsletter')).toContain('newsletter');
+    expect(find('marketing newsletter')).not.toContain('cover-letter');
+    expect(find('careers')).toEqual(['cover-letter']);
+    // A category's search words find what is in it.
+    expect(find('school')).toEqual(['lesson-plan']);
     expect(find('minutes')).toEqual(['meeting-notes']);
     expect(find('rfc')).toEqual(['design-doc']);
     expect(find('handbook')).toEqual(['onboarding-handbook']);
     expect(find('footnotes')).toEqual(['research-report']);
     expect(find('case study')).toEqual(['case-study']);
-    expect(find('board')).toContain('board-update');
     expect(find('newsletter')).toEqual(['newsletter']);
     expect(find('poster zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
@@ -130,11 +119,11 @@ describe('template search words', () => {
   it('reads punctuation and hyphens as no part of a word, in the query and the templates alike', () => {
     const find = (q: string) =>
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
-    expect(find('how-it-works')).toContain('how-it-works');
-    expect(find('howitworks')).toContain('how-it-works');
+    expect(find('case-study')).toContain('case-study');
+    expect(find('casestudy')).toContain('case-study');
     expect(find('pr-faq')).toContain('working-backwards');
-    // Run together, a hyphenated name is found too ("floor plan" from the kind floor-plan).
-    expect(find('floor plan')).toContain('floor-plan');
+    // Run together, a hyphenated name is found too ("design doc" from the kind design-doc).
+    expect(find('design doc')).toContain('design-doc');
     // A query of punctuation alone is no query.
     expect(find(' - ')).toHaveLength(TEMPLATES.length);
   });

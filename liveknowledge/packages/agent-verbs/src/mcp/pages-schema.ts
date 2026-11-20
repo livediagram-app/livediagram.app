@@ -230,7 +230,7 @@ export const writeArticleShape = {
         'The text, in Markdown: # ## ### headings, paragraphs, - and 1. lists (indent two spaces a level), ' +
         '- [ ] to-dos, > quotes, ``` code, --- dividers, **bold**, *italic*, ~~strike~~, `code`, [links](https://…). ' +
         'Front matter sets the title and subtitle: a first line ---, then title: …, subtitle: …, then ---. ' +
-        'A line \\pagebreak starts a new page; a line [zone <id>] keeps an existing zone there. ' +
+        'A line [zone <id>] keeps an existing zone there. ' +
         'A pipe table (| a | b |, then |---|---|, then rows) is a table, its first line the header row (an empty first ' +
         'line: no header row); <br> is a line break in a cell. A line [TOC] is a table of contents ([TOC 1] or [TOC 2] ' +
         'for fewer heading levels).',
@@ -239,23 +239,17 @@ export const writeArticleShape = {
     .string()
     .optional()
     .describe(
-      'Which article, by id or title. Absent: the tab’s only one, or a new one if it has none.',
+      'Which article, by id or title. Absent: the page’s own (a page holds one), or a new one if it has none.',
     ),
-  new: z.boolean().optional().describe('Always start a new article.'),
   mode: z
     .enum(['replace', 'append'])
     .optional()
     .describe('replace (default) writes the text anew; append adds it after the last block.'),
-  size: size
-    .optional()
-    .describe('A new article’s paper: a4 (default), letter, a3, square, social or wide.'),
-  orientation: orientation.optional(),
   look: z
     .enum(ARTICLE_LOOK_IDS as [ArticleLookId, ...ArticleLookId[]])
     .optional()
     .describe('The article’s look: clean, classic, report, notebook or bold.'),
   accent: hex.optional().describe('The accent colour, a hex.'),
-  pageNumbers: z.boolean().optional().describe('Page numbers in the bottom margin on or off.'),
 };
 
 export const writeArticleOutput = {

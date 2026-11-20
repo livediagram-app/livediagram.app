@@ -1,4 +1,4 @@
-import type { Tab } from '@liveknowledge/document';
+import { isKnowledgebasePage, type Tab } from '@liveknowledge/document';
 import { describe, expect, it } from 'vitest';
 import {
   mayShareDocument,
@@ -22,9 +22,14 @@ function foldered(id: string, folder: string): Tab {
 
 describe('createTab', () => {
   it('mints a tab with a fresh id, the given name, and no elements', () => {
-    const t = createTab('Tab 1');
-    expect(t.name).toBe('Tab 1');
+    const t = createTab('Release Process');
+    expect(t.name).toBe('Release Process');
     expect(t.elements).toEqual([]);
+    // A knowledgebase page: one article on one page, its start never shown
+    // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "A knowledgebase").
+    expect(isKnowledgebasePage(t)).toBe(true);
+    expect(t.pages).toHaveLength(1);
+    expect(t.templateChosen).toBe(true);
     expect(typeof t.id).toBe('string');
     expect(t.id.length).toBeGreaterThan(0);
   });
@@ -35,12 +40,12 @@ describe('createTab', () => {
 });
 
 describe('placeholdersFromSummaries', () => {
-  it('materialises a fresh Tab 1 when the API returns zero summaries (never empty)', () => {
+  it('materialises a fresh Start Here page when the API returns zero summaries (never empty)', () => {
     // An empty tabs array makes activeTab undefined and crashes the
     // editor on first elements read, so this guard is load-bearing.
     const out = placeholdersFromSummaries([]);
     expect(out).toHaveLength(1);
-    expect(out[0]!.name).toBe('Tab 1');
+    expect(out[0]!.name).toBe('Start Here');
     expect(out[0]!.elements).toEqual([]);
   });
 

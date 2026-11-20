@@ -7,9 +7,9 @@ import { offersPageKindChoice, pageKindOf, pagesOf, type Tab } from '@liveknowle
 /** The import formats, in the dialog's catalogue order. */
 export type ImportFormatKey = 'json' | 'markdown' | 'word' | 'powerpoint';
 
-const EVERY: readonly ImportFormatKey[] = ['json', 'markdown', 'word', 'powerpoint'];
+// PowerPoint made a slide deck, which liveknowledge does not have (docs/specs/002-project-scope/
+// not-in-liveknowledge.md): its key stays for the importer's code until that is deleted, and no tab offers it.
 const ARTICLE: readonly ImportFormatKey[] = ['json', 'markdown', 'word'];
-const SLIDE: readonly ImportFormatKey[] = ['json', 'powerpoint'];
 const JSON_ONLY: readonly ImportFormatKey[] = ['json'];
 
 /** The formats the Import dialog offers on this tab. */
@@ -18,7 +18,6 @@ export function importFormatsFor(
 ): readonly ImportFormatKey[] {
   const pages = pagesOf(tab);
   const first = pages[0];
-  if (!first || offersPageKindChoice(pages, first.id, tab.elements.length)) return EVERY;
-  const kind = pageKindOf(first);
-  return kind === 'article' ? ARTICLE : kind === 'slide' ? SLIDE : JSON_ONLY;
+  if (!first || offersPageKindChoice(pages, first.id, tab.elements.length)) return ARTICLE;
+  return pageKindOf(first) === 'article' ? ARTICLE : JSON_ONLY;
 }

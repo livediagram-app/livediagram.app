@@ -8,7 +8,6 @@ import { MCP_TOOL_VERBS, mcpShareDocument } from './mcp-tools';
 describe('the MCP tool verbs', () => {
   it('name each tool once, under an id of its own, with words and a behaviour', () => {
     expect(MCP_TOOL_VERBS.map((v) => v.mcp.tool)).toEqual([
-      'change_pages',
       'write_article',
       'list_images',
       'upload_image',
