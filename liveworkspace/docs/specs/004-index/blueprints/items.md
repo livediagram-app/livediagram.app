@@ -53,8 +53,10 @@ trashedAt, trashReason, archivedAt, summary, access, lastOpenedAt, hiddenFromRec
 4. A team must be joined now (`403 not_team_member`); a folder must be in the item's scope (`404 folder_not_found`).
 5. No `folderId` key, no team and an intent: the person's default folder ([default-folders.md](default-folders.md)).
 6. No signing key: `503 grants_unavailable` before any row.
-7. `insertItem`: the row and its `created` event (`synced` when `synced: true`, an offline item put back) in one
-   batch; a taken id is `409 item_exists`. A non-`person` source puts `{ source }` in the event's detail.
+7. A named id with a `purge_tombstones` row: `drainTombstonesSoon([id])` first (the app asked to drop the content
+   now). `insertItem`: the row and its `created` event (`synced` when `synced: true`, an offline item put back) in one
+   batch, the row inserted `WHERE NOT EXISTS` a tombstone for its id; none inserted is `ItemPurgingError` →
+   `409 item_purging`, and no event (the event reads the row). A taken id is `409 item_exists`. A non-`person` source puts `{ source }` in the event's detail.
 8. `201 { item, grant }` (an `edit` grant for the maker); logged `[index] created { app, team, filed }`.
 
 ### The name cap

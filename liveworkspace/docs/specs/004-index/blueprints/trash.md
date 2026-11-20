@@ -22,7 +22,7 @@ Scope, by file:
 | ------------- | ----------------------------------------------- | ----------------------------------------------------------------------- |
 | Trashed       | `trashed_at`, `trash_reason` `deleted`/`empty`  | In the Trash; purged 30 days on                                         |
 | Purged        | the row deleted, a `purge_tombstones` row added | Gone from the index; the app still to drop the content                  |
-| Tombstone     | `purge_tombstones (item_id)`                    | Kept until the app confirms                                             |
+| Tombstone     | `purge_tombstones (item_id)`                    | Kept until the app confirms; no item is made under its id meanwhile     |
 | Person purge  | `person_purges (person_id)`                     | A closed account's purge, run again for 2 hours                         |
 | Person notice | `person_app_notices (person, app, item)`        | What an app must hear about a closed account (`item ''` for the person) |
 | Notice guest  | `person_notice_guests (person, guest)`          | A guest merged into a closed account, named in its notices' `guests`    |

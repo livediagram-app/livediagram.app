@@ -195,7 +195,8 @@ as malformed. The parts of an item an app names (a tab, the cards' `~cards`, an 
 |                                |                     | rows, in the same batch; each statement still stops at its `LIMIT`.                    |
 | `POST /items`                  | person              | `{app, id?, title?, folderId?, teamId?, intent?, source?}` → 201                       |
 |                                |                     | `{item, grant}`. The index makes the id unless the client names the one it             |
-|                                |                     | minted (409 `item_exists` when taken); the item's Durable Object                       |
+|                                |                     | minted (409 `item_exists` when taken, 409 `item_purging` while a purged item           |
+|                                |                     | of that id still has content in its app); the item's Durable Object                    |
 |                                |                     | starts empty the first time it is opened with a grant.                                 |
 | `GET /items/:id`               | person or link      | `{item, tabId, publicCode}`: the tab a link confines the caller to, and the            |
 |                                |                     | public link's code when that is their only way in (previews.md)                        |
@@ -245,6 +246,18 @@ never gives its taker a way in.
 app key). Each purged item leaves a tombstone until its app confirms: the index tells the app at once for
 the first few, and a cron every 15 minutes works through the rest, up to 300 a run, trying a failed one
 again at most once an hour.
+
+**No item under a purged id until its content is gone.** An app keeps content by item id and serves it to whoever
+the index says may read the item, and an item's id is known to everyone who ever opened it. So while an id has a
+tombstone, `POST /items` naming it (and the migration handoff) makes nothing: 409 `item_purging`. The check is part
+of the insert itself, so a purge landing at the same moment cannot slip a row in. A create that names such an id
+first asks the app to drop the content at once, so an offline item put back under its own id usually goes straight
+through; when the app cannot be reached the answer is `item_purging` and the client tries again later.
+
+- [x] PG1: with a tombstone standing, a create naming the id answers 409 `item_purging` for its old owner and for
+      anyone else, and makes no row and no event.
+- [x] PG2: with the app reachable, a create naming a tombstoned id has the app drop the old content first, then
+      makes the item.
 
 **The empty clean-up.** The same daily run first moves to the Trash every live item with nothing in it (its
 summary's `hasContent` is false, or it never pushed a summary) that has not changed for 30 days, with
@@ -824,7 +837,8 @@ the item for the person and has that app write it.
   else is 400. Limited to 60 a minute per person (`MIGRATION_LIMITER`; absent, not limited): 429 `rate_limited`.
 - The index makes the item as `POST /items` would: `id` the payload's, the given app's kind, owned by the person,
   no team, no folder (the top of their space, `p:<person>`), `source: 'import'`, created and updated now, with
-  its `created` event in the same batch. An id already taken is 409 `item_exists`.
+  its `created` event in the same batch. An id already taken is 409 `item_exists`; one whose purged item's content
+  is still in its app is 409 `item_purging` ("Purging").
 - Then it calls the app's migration door, `PUT ${APP_ORIGIN_<APP>}/api/internal/items/:id/migration`, with that
   app's key, the payload as the body (`ownerId` set to the person and `teamId` to null, whatever was sent), and
   30 seconds to answer. If the app fails, the item row is deleted again (its events go with it) and the

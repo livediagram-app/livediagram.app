@@ -14,7 +14,7 @@ import { sendDriveSignals } from './drive';
 import type { Env } from './env';
 import { readTitle } from './folders';
 import { badRequest, conflict, fail, forbidden, json, notFound, unauthorized } from './http';
-import { insertItem } from './items';
+import { insertItem, ItemPurgingError } from './items';
 import type { ItemRow } from './rows';
 
 type HandoffApp = HandoffRequest['app'];
@@ -103,6 +103,7 @@ export async function handleMigrationHandoff(
   try {
     await insertItem(env, row, { source: 'import' }, 'created');
   } catch (err) {
+    if (err instanceof ItemPurgingError) return conflict('item_purging');
     if (String(err).includes('UNIQUE')) return conflict('item_exists');
     throw err;
   }

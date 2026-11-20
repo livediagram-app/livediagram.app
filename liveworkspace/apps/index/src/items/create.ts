@@ -14,6 +14,7 @@ import { signingKey, mintGrant } from '../grants';
 import { readObject, badRequest, forbidden, notFound, fail, conflict, json } from '../http';
 import { type ItemRow, type Access, decorate } from '../rows';
 import { eventStatements } from '../events';
+import { drainTombstonesSoon } from '../purge';
 import { DEFAULT_TITLE } from './shared';
 
 export async function itemFor(env: Env, person: Person | null, row: ItemRow, access: Access) {
@@ -38,7 +39,8 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   if (!optionalId(body.teamId)) return badRequest('invalid_team');
   if (!optionalId(body.folderId)) return badRequest('invalid_folder');
   // A client may name the id it minted (an offline item synced up, an API client that made one): 409
-  // `item_exists` when it is taken.
+  // `item_exists` when it is taken, 409 `item_purging` while a purged item of that id still has content in its app
+  // (below).
   if (body.id !== undefined && !isId(body.id)) return badRequest('invalid_body');
   const intent = body.intent ?? null;
   if (intent !== null && (typeof intent !== 'string' || intent.length > INTENT_MAX)) {
@@ -82,6 +84,10 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
     trash_reason: null,
     archived_at: null,
   };
+  // A named id whose purged item is still waiting for its app to drop the content: ask the app now, so an offline
+  // item put back under its own id is not kept waiting for the cron. insertItem refuses while the tombstone stands.
+  if (body.id !== undefined && (await isPurging(env, row.id)))
+    await drainTombstonesSoon(env, [row.id]);
   try {
     await insertItem(
       env,
@@ -90,6 +96,7 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
       body.synced === true ? 'synced' : 'created',
     );
   } catch (err) {
+    if (err instanceof ItemPurgingError) return conflict('item_purging');
     if (String(err).includes('UNIQUE')) return conflict('item_exists');
     throw err;
   }
@@ -112,8 +119,24 @@ export async function createItem(ctx: PersonContext): Promise<Response> {
   return json({ item: await itemFor(env, person, row, access), grant }, { status: 201 });
 }
 
+/** An id whose purged item's content its app has not dropped yet (a `purge_tombstones` row): no item is made under
+ *  it. The app keeps content by item id and serves it to whoever the index says may read the item, so a new row
+ *  would hand the purged item's content to whoever made it, and the pending purge would then wipe what they saved. */
+export class ItemPurgingError extends Error {
+  constructor() {
+    super('item_purging');
+  }
+}
+
+const isPurging = async (env: Env, id: string): Promise<boolean> =>
+  (await env.INDEX_DB.prepare('SELECT 1 FROM purge_tombstones WHERE item_id = ?')
+    .bind(id)
+    .first()) !== null;
+
 // The row, and its `created` event (`synced` for an offline item put back) in the same batch. The migration's
-// handoff makes its items with it too (migration-handoff.ts).
+// handoff makes its items with it too (migration-handoff.ts). The row is made only when its id has no tombstone, in
+// the insert itself, so a purge landing at the same moment cannot slip a row in (ItemPurgingError); the event reads
+// the row, so none is written without it.
 export async function insertItem(
   env: Env,
   row: ItemRow,
@@ -124,7 +147,8 @@ export async function insertItem(
   const insert = db
     .prepare(
       `INSERT INTO items (id, app, kind, owner_id, team_id, scope, folder_id, title, source, intent, summary,
-       created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       created_at, updated_at) SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+       WHERE NOT EXISTS (SELECT 1 FROM purge_tombstones WHERE item_id = ?)`,
     )
     .bind(
       row.id,
@@ -140,8 +164,9 @@ export async function insertItem(
       row.summary,
       row.created_at,
       row.updated_at,
+      row.id,
     );
-  await db.batch([
+  const [made] = await db.batch([
     insert,
     ...eventStatements(db, {
       itemId: row.id,
@@ -151,6 +176,7 @@ export async function insertItem(
       at: row.created_at,
     }),
   ]);
+  if ((made?.meta.changes ?? 0) === 0) throw new ItemPurgingError();
 }
 
 // /items/:id and below.

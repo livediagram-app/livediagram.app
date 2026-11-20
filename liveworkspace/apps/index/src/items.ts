@@ -8,6 +8,6 @@ export {
   handleItemList,
   handleTrash,
 } from './items/list-routes';
-export { createItem, insertItem } from './items/create';
+export { createItem, insertItem, ItemPurgingError } from './items/create';
 export { handleItem } from './items/item-routes';
 export { useDayOf, useDayStatements, sharedWithUpsert } from './items/opens';

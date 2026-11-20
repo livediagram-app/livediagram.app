@@ -397,6 +397,8 @@ export const INDEX_ERRORS = [
   'not_team_member',
   'folder_exists',
   'item_exists',
+  // A named id whose purged item's content its app has not dropped yet: try again shortly.
+  'item_purging',
   'folder_not_found',
   'cycle',
   'password_required',
