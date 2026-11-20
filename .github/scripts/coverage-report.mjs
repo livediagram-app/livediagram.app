@@ -31,7 +31,7 @@ export const REPORT_END = '<!-- liveworkspace:coverage-report:end -->';
 const BASE_RUNS_SCANNED = 50;
 
 const ARTIFACT =
-  /^coverage-(livediagram|liveplanner|livedesign|livedocuments|livehuddle|platform)-(tests|editor-\d+)$/;
+  /^coverage-(livediagram|liveplanner|livedesign|livedocuments|livehuddle|liveknowledge|platform)-(tests|editor-\d+)$/;
 
 /** @typedef {{ files: number, lines: number, hits: number, misses: number, partials: number }} Totals */
 /** @typedef {import('./lcov.mjs').Coverage} Coverage */
@@ -225,6 +225,7 @@ const PRODUCT_NAMES = {
   livedesign: 'livedesign',
   livedocuments: 'livedocuments',
   livehuddle: 'livehuddle',
+  liveknowledge: 'liveknowledge',
   platform: 'Platform (packages, liveworkspace)',
 };
 

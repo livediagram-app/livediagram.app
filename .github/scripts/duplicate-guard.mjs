@@ -21,7 +21,14 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 export const BASELINE = '.github/scripts/duplicate-baseline.txt';
-export const PRODUCTS = ['livedesign', 'livediagram', 'livedocuments', 'livehuddle', 'liveplanner'];
+export const PRODUCTS = [
+  'livedesign',
+  'livediagram',
+  'livedocuments',
+  'livehuddle',
+  'liveknowledge',
+  'liveplanner',
+];
 
 const SOURCE = /\.(?:[cm]?[jt]s|[jt]sx)$/;
 const TEST = /\.(?:test|spec)\.[cm]?[jt]sx?$|(?:^|\/)__tests__\//;

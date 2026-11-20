@@ -22,6 +22,9 @@ livehuddle/apps/api/src/openapi/manifest.ts
 livehuddle/apps/editor/components/dialogs/settings/settings-catalogue.ts
 livehuddle/packages/avatar/src/furniture-art.ts
 livehuddle/packages/document/src/office-social.ts
+liveknowledge/apps/api/src/openapi/manifest.ts
+liveknowledge/apps/editor/components/dialogs/settings/settings-catalogue.ts
+liveknowledge/packages/document/src/element-types.ts
 liveplanner/apps/api/src/openapi/manifest.ts
 liveplanner/apps/editor/components/dialogs/settings/settings-catalogue.ts
 liveplanner/packages/agent-verbs/src/mcp/plan-schema.ts
@@ -40,6 +43,8 @@ liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts
 liveworkspace/apps/site/app/telemetry/livedocuments/catalogue/features.ts
 liveworkspace/apps/site/app/telemetry/livedocuments/event-explanations.ts
 liveworkspace/apps/site/app/telemetry/livehuddle/event-explanations.ts
+liveworkspace/apps/site/app/telemetry/liveknowledge/catalogue/features.ts
+liveworkspace/apps/site/app/telemetry/liveknowledge/event-explanations.ts
 liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/content.ts
 liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts
 packages/icons/src/sticker-catalog.ts

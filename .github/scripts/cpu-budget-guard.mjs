@@ -48,7 +48,14 @@ export function wallClockAdditions(diff) {
 }
 
 // The product folders: a forked product's file at the same path as another's is a copy of it.
-const PRODUCTS = ['livediagram', 'liveplanner', 'livedocuments', 'livedesign', 'livehuddle'];
+const PRODUCTS = [
+  'livediagram',
+  'liveplanner',
+  'livedocuments',
+  'livedesign',
+  'livehuddle',
+  'liveknowledge',
+];
 
 /**
  * The finds that aren't copies: a line another product already has, at the same path under its folder, in the
