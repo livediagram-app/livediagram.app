@@ -71,7 +71,8 @@ export async function readDocumentOutline(
 ): Promise<DocumentOutline> {
   const [tabs, document] = await env.DOCUMENT_DB.batch([
     env.DOCUMENT_DB.prepare(
-      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection
+      `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder, t.connection,
+              CASE WHEN json_valid(t.data) THEN json_extract(t.data, '$.parent') END AS parent
          FROM document_tabs dt
          JOIN tabs t ON t.id = dt.tab_id
         WHERE dt.document_id = ?
@@ -408,12 +409,23 @@ export function copyImageIds(copy: DocumentCopy): string[] {
 // Re-point the tab / element links inside one tab's stored `data` JSON at the copy's tab ids. The data is only
 // parsed when it mentions a tab id, so the common link-free tab is copied byte for byte.
 export function remapTabDataLinks(data: string, tabIdMap: Map<string, string>): string {
-  // A tab or element link, or a Tab Window's tab: nothing to re-point without one.
-  if (!data.includes('"tabId"') && !data.includes('"windowTabId"')) return data;
+  // A tab or element link, a Tab Window's tab, or the page it sits under: nothing to re-point without one.
+  const links = data.includes('"tabId"') || data.includes('"windowTabId"');
+  if (!links && !data.includes('"parent"')) return data;
   try {
-    const parsed = JSON.parse(data) as { elements?: Element[] };
-    if (!Array.isArray(parsed.elements)) return data;
-    return JSON.stringify({ ...parsed, elements: remapTabLinks(parsed.elements, tabIdMap) });
+    const parsed = JSON.parse(data) as { elements?: Element[]; parent?: unknown };
+    // The page tree goes with the copy (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"): a parent
+    // is re-pointed at its copy, and one the copy does not carry (a tab-scoped copy) is dropped, so the page
+    // surfaces at the top level.
+    const { parent: _was, ...rest } = parsed;
+    void _was;
+    const parent = typeof parsed.parent === 'string' ? tabIdMap.get(parsed.parent) : undefined;
+    const placed = parent === undefined ? rest : { ...rest, parent };
+    if (!Array.isArray(parsed.elements)) {
+      return 'parent' in parsed ? JSON.stringify(placed) : data;
+    }
+    if (!links && !('parent' in parsed)) return data;
+    return JSON.stringify({ ...placed, elements: remapTabLinks(parsed.elements, tabIdMap) });
   } catch {
     return data;
   }

@@ -13,7 +13,7 @@
 
 import type { LiveDoc, DocumentSummary, TabSummary } from '@liveknowledge/api-schema';
 import { utcDay } from '@liveknowledge/api-schema';
-import { drawnCount, migrateStoredTab } from '@liveknowledge/document';
+import { drawnCount, migrateStoredTab, parseTabParent } from '@liveknowledge/document';
 import type { Tab } from '@liveknowledge/document';
 import { DocumentTrashedError } from '../document-trashed';
 import {
@@ -133,14 +133,31 @@ export function applyMeta(
   rec: OfflineDocumentRecord,
   patch: {
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    tabs?: { id: string; folder?: string; parent?: unknown }[];
     // Absent leaves the stored deck alone; null clears it. Same contract as
     // the server's PUT, so an offline document behaves identically.
     presentation?: string | null;
   },
   at: number,
 ): OfflineDocumentRecord {
-  return applyMetaShared(rec, patch, at);
+  const next = applyMetaShared(rec, patch, at);
+  // A page's parent rides the metadata save (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"), as on
+  // the server: an entry that carries the key places its page.
+  const placed = new Map(
+    (patch.tabs ?? []).filter((t) => Object.hasOwn(t, 'parent')).map((t) => [t.id, t.parent]),
+  );
+  if (placed.size === 0) return next;
+  return {
+    ...next,
+    tabs: next.tabs.map((tab) => {
+      if (!placed.has(tab.id)) return tab;
+      const parent = parseTabParent(placed.get(tab.id));
+      if (tab.parent === parent) return tab;
+      const { parent: _gone, ...rest } = tab;
+      void _gone;
+      return parent === undefined ? rest : { ...rest, parent };
+    }),
+  };
 }
 
 // Upsert one tab body into a record (the autosave path). A new tab id is
@@ -255,7 +272,11 @@ export async function offlineCreateDocument(
 
 export async function offlineSaveDocumentMeta(
   id: string,
-  patch: { name?: string; tabs?: { id: string; folder?: string }[]; presentation?: string | null },
+  patch: {
+    name?: string;
+    tabs?: { id: string; folder?: string; parent?: unknown }[];
+    presentation?: string | null;
+  },
   now: number,
 ): Promise<void> {
   await writeLive(id, (rec) => applyMeta(rec, patch, now));

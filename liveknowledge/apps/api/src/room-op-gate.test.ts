@@ -35,24 +35,47 @@ describe('gateClientOp', () => {
     expect(gateClientOp(tab, as('admin'))).toEqual(DROP);
   });
 
-  it("routes a participant's element op and article frame through the text rules, and drops its other mutations", () => {
+  it("routes a participant's element op through the comment rules, and drops its other mutations", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',
     });
-    expect(gateClientOp({ kind: 'article', tabId: 't' }, as('participate'))).toEqual({
-      kind: 'participant-article',
-    });
-    for (const kind of ['tab', 'tab-meta', 'el-delta', 'document-meta']) {
+    for (const kind of ['tab', 'tab-meta', 'el-delta', 'document-meta', 'article']) {
       expect(gateClientOp({ kind, tabId: 't' }, as('participate')), kind).toEqual(DROP);
     }
   });
 
-  it("drops a participant's article frame for a tab outside its link", () => {
-    const scoped = as('participate', { tabScope: 't1' });
-    expect(gateClientOp({ kind: 'article', tabId: 't1' }, scoped)).toEqual({
-      kind: 'participant-article',
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": one row a role and action.
+  describe('the knowledgebase share roles, in the room', () => {
+    const page = { id: 't', elements: [] };
+    const actions: [string, unknown][] = [
+      ['write on a page', { kind: 'article', tabId: 't', flow: 'art-1', ops: [] }],
+      ['add or duplicate a page', { kind: 'tab', tabId: 't', tab: page }],
+      ['rename a page', { kind: 'tab-meta', tabId: 't', patch: { name: 'Renamed' } }],
+      ['indent or outdent a page', { kind: 'tab-meta', tabId: 't', patch: { parent: 'p' } }],
+      ['move or delete a page', { kind: 'document-meta', name: 'K', tabs: [] }],
+    ];
+    it.each(actions)('an Editor may %s', (_label, op) => {
+      expect(gateClientOp(op, as('edit'))).toEqual(relay(false));
     });
-    expect(gateClientOp({ kind: 'article', tabId: 't2' }, scoped)).toEqual(DROP);
+    it.each(actions)('a Participant may not %s', (_label, op) => {
+      expect(gateClientOp(op, as('participate'))).toEqual(DROP);
+    });
+    it.each(actions)('a Viewer may not %s', (_label, op) => {
+      expect(gateClientOp(op, as('view'))).toEqual(DROP);
+    });
+    it('commenting: an Editor relays, a Participant goes through the comment rules, a Viewer is dropped', () => {
+      const comment = { kind: 'el', tabId: 't', op: { kind: 'update', id: 'e' } };
+      expect(gateClientOp(comment, as('edit'))).toEqual(relay(false));
+      expect(gateClientOp(comment, as('participate'))).toEqual({ kind: 'participant-content' });
+      expect(gateClientOp(comment, as('view'))).toEqual(DROP);
+    });
+  });
+
+  it("drops a participant's op for a tab outside its link", () => {
+    const scoped = as('participate', { tabScope: 't1' });
+    expect(gateClientOp({ kind: 'el', tabId: 't1' }, scoped)).toEqual({
+      kind: 'participant-content',
+    });
     expect(gateClientOp({ kind: 'el', tabId: 't2' }, scoped)).toEqual(DROP);
   });
 

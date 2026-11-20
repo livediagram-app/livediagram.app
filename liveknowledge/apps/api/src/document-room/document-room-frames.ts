@@ -1,5 +1,8 @@
 // One inbound frame on a room socket (document-room.ts webSocketMessage) and what it asks of the room: hello, identity,
 // grant, sync (catch-up), the selection lock, a follow, and a relayed op. Each takes the room.
+import type { PageTreeRefusal } from '@liveknowledge/document';
+import { OP_REFUSED_ID_MAX } from '@liveworkspace/api-schema/room-refusal';
+import { readStoredPagesSync, treeOpRefusal } from './page-tree-store';
 import { DOCUMENT_FORMAT, isRoomOpRef, parseBuildId } from '@liveknowledge/api-schema';
 import { opForTheWire, stampCommentAuthor } from '@liveknowledge/document';
 import { selectionFromOp } from '../room-selections';
@@ -127,20 +130,21 @@ export function webSocketMessage(
       tabScope: session.tabScope ?? null,
     });
     if (gate.kind === 'drop') return;
-    if (gate.kind === 'participant-content' || gate.kind === 'participant-article') {
+    if (gate.kind === 'participant-content') {
       const writer = {
         ws,
         presenceId: sender.id,
         documentId: session.documentId ?? null,
       };
-      if (gate.kind === 'participant-content')
-        void room.participantWrites.applyContentOp(writer, msg.op, msg.ref);
-      else void room.participantWrites.applyArticleOp(writer, msg.op, msg.ref);
+      void room.participantWrites.applyContentOp(writer, msg.op, msg.ref);
       return;
     }
     // An Editor's element op the validator refuses goes nowhere; its sender alone hears why
     // (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
     if (!gate.presence && refusesElementOp(room, ws, msg)) return;
+    // Nor does one that would break the page tree (docs/specs/030-knowledgebase/blueprints/page-tree.md "The
+    // room's check").
+    if (!gate.presence && refusesPageTreeOp(room, ws, session.documentId ?? null, msg)) return;
     const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;
     const isPresenceOp = gate.presence;
     // A paragraph hold is the room's to give, never relayed as sent (docs/specs/007-editor/article-pages.md
@@ -261,6 +265,42 @@ export function refusesElementOp(
   const refused = room.elementGate(msg.op, msg.ref);
   if (refused) sendTo(room, ws, refused);
   return refused !== null;
+}
+
+// An Editor's op that would break the page tree (page-tree-store.ts): over the page limit, below the deepest level,
+// under a page of another knowledgebase or inside its own subtree. Its sender alone hears why; nobody else gets it.
+// Only an op that can place a page reads the stored tree, so a typing stream costs no read.
+export function refusesPageTreeOp(
+  room: DocumentRoom,
+  ws: WebSocket,
+  documentId: string | null,
+  msg: { op: unknown; ref?: unknown },
+): boolean {
+  const op = msg.op as { kind?: unknown; tabId?: unknown } | null;
+  const kind = op?.kind;
+  if (kind !== 'tab' && kind !== 'tab-meta' && kind !== 'document-meta') return false;
+  const id = documentId ?? room.documentId;
+  const sql = room.state.storage.sql;
+  if (!id || !sql) return false;
+  let reason: PageTreeRefusal | null;
+  try {
+    reason = treeOpRefusal(readStoredPagesSync(sql, id), op);
+  } catch {
+    // No schema yet (nothing stored): there is no tree to break.
+    return false;
+  }
+  if (!reason) return false;
+  console.warn('[room] page tree op refused', { op: kind, reason });
+  sendTo(room, ws, {
+    kind: 'op-refused',
+    op: kind,
+    reason,
+    ...(typeof op?.tabId === 'string' ? { tabId: op.tabId.slice(0, OP_REFUSED_ID_MAX) } : {}),
+    ...(typeof msg.ref === 'number' && Number.isSafeInteger(msg.ref) && msg.ref > 0
+      ? { ref: msg.ref }
+      : {}),
+  });
+  return true;
 }
 
 // Who this session follows (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): kept on the

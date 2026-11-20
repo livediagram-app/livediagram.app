@@ -147,21 +147,19 @@ describe('useFindReplace', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Used', 'FindReplaceAll');
   });
 
-  it('lets a Participant replace only its text, and says what it left', () => {
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant writes nothing.
+  it('lets a Participant find but never replace', () => {
     const s = setup('participate');
     chord('h', true);
+    expect(s.find().open).toBe(true);
+    expect(s.find().canReplace).toBe(false);
     search(s, 'plan');
-    expect(s.find().heldCount).toBe(1);
+    expect(s.find().count).toBe(12);
+    act(() => s.find().setReplaceOpen(true));
     act(() => s.find().replaceAll());
-    expect(s.deps.notify).toHaveBeenCalledWith(
-      "Replaced 11 matches. 1 match in text you can't edit was left as it is.",
-    );
-    expect(s.find().count).toBe(1);
-    expect(s.find().currentHeld).toBe('role');
-    // The held one cannot be replaced on its own either.
     act(() => s.find().replace());
-    expect(s.deps.commits).toBe(1);
-    expect([...getFindHighlights().elements.values()]).toEqual(['current']);
+    expect(s.find().replaceOpen).toBe(false);
+    expect(s.deps.commits).toBe(0);
   });
 
   it('lets a Viewer find but never replace', () => {

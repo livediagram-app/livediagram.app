@@ -31,7 +31,21 @@ import {
   type CreationIntent,
 } from '@liveknowledge/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
-import { badRequest, CORS_HEADERS, forbidden, json, notFound, payloadTooLarge } from '../responses';
+import {
+  badRequest,
+  conflict,
+  CORS_HEADERS,
+  forbidden,
+  json,
+  notFound,
+  payloadTooLarge,
+} from '../responses';
+import {
+  placedEntries,
+  readStoredPages,
+  tabListRefusal,
+  writeTabParents,
+} from '../document-room/page-tree-store';
 import { documentDates, isDocumentSource } from '@liveknowledge/api-schema';
 import {
   redactDocumentForCommunity,
@@ -458,6 +472,19 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
           ? capStoredName(body.name, existing.name, 'document')
           : existing.name;
       if (!name) return badRequest('missing name');
+      // The page tree the list asks for (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"): each
+      // entry's `parent` places its page. One the tree does not take refuses the save whole, before anything is
+      // written; a list that names no parent reads nothing.
+      const placed = placedEntries(body.tabs);
+      const places = placed.some((entry) => Object.hasOwn(entry, 'parent'));
+      const storedPages = places ? await readStoredPages(env, id) : [];
+      if (places) {
+        const refused = tabListRefusal(storedPages, placed);
+        if (refused) {
+          console.warn('[document-save] page tree refused', { documentId: id, reason: refused });
+          return conflict(refused);
+        }
+      }
       const deck = readDeckWrite(body);
       if (deck instanceof Response) return deck;
       // The deck first: one refused (past the deck cap, as sent or as merged) changes nothing, not even the name.
@@ -474,6 +501,7 @@ export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<
       } else if (deck.kind === 'set') await setDocumentPresentation(env, id, deck.presentation);
       await renameDocument(env, id, name, Date.now());
       if (order) await reorderTabs(env, id, order);
+      if (places) await writeTabParents(env, storedPages, placed);
       const liveDoc = await getDocument(env, id);
       // An agent's rename reaches the open editors (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab
       // renames"); an editor sends its own rename to the room itself.

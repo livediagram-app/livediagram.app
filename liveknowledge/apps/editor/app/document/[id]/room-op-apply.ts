@@ -4,6 +4,7 @@ import { carryConnection } from '@liveworkspace/workbench/components/connect/tab
 import {
   applyArticleOps,
   pagesOf,
+  parseTabParent,
   settleTabFields,
   isArticleId,
   parseArticleOps,
@@ -135,12 +136,18 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
         if (local) {
           const folder = summary.folder;
           return carryConnection(
-            (local.folder ?? undefined) === (folder ?? undefined) ? local : { ...local, folder },
+            withSummaryParent(
+              (local.folder ?? undefined) === (folder ?? undefined) ? local : { ...local, folder },
+              summary,
+            ),
             summary,
           );
         }
         return carryConnection(
-          { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+          withSummaryParent(
+            { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+            summary,
+          ),
           summary,
         );
       });
@@ -222,4 +229,17 @@ function mergeOpOverLocal(tab: Tab, op: Extract<ElementOp, { kind: 'add' | 'upda
   const local = tab.elements.find((e) => e.id === op.element.id);
   if (!local) return op;
   return { ...op, element: mergeIncomingElement(local, op.element) };
+}
+
+// A summary's `parent` on a tab (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"): a summary that
+// carries the key places the page, whether its body is loaded here or not; one without it leaves the tab's own.
+// The same tab back when it already sits there.
+function withSummaryParent(tab: Tab, summary: { parent?: string | null }): Tab {
+  if (!Object.hasOwn(summary, 'parent')) return tab;
+  const parent = parseTabParent(summary.parent);
+  if ((tab.parent ?? undefined) === parent) return tab;
+  if (parent !== undefined) return { ...tab, parent };
+  const { parent: _gone, ...rest } = tab;
+  void _gone;
+  return rest;
 }

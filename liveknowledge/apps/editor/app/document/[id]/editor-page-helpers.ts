@@ -31,7 +31,13 @@ export function createTab(name: string): Tab {
 // first `activeTab.elements` read. The seeded tab autosaves back to the
 // API on the next save cycle, healing the document.
 export function placeholdersFromSummaries(
-  summaries: { id: string; name: string; folder?: string; connection?: unknown }[],
+  summaries: {
+    id: string;
+    name: string;
+    folder?: string;
+    parent?: string;
+    connection?: unknown;
+  }[],
 ): Tab[] {
   if (summaries.length === 0) return [createTab(START_PAGE_NAME)];
   // Carry `folder` (docs/specs/006-document/tab-folders.md) so the tab bar renders folders from the
@@ -40,7 +46,14 @@ export function placeholdersFromSummaries(
   // A connected tab's connection too (liveworkspace/docs/specs/004-index/connected-tabs.md), so it shows as one at once.
   return summaries.map((summary) =>
     carryConnection(
-      { id: summary.id, name: summary.name, elements: [], folder: summary.folder },
+      {
+        id: summary.id,
+        name: summary.name,
+        elements: [],
+        folder: summary.folder,
+        // The page tree (docs/specs/030-knowledgebase/blueprints/page-tree.md) draws from the summaries alone.
+        ...(summary.parent !== undefined ? { parent: summary.parent } : {}),
+      },
       summary,
     ),
   );
@@ -196,7 +209,10 @@ export function computeTabSaveDiff(
         prevTabs[i]?.id !== t.id ||
         // Coalesce '' / whitespace to undefined so a loose tab never
         // looks "changed" against another loose representation.
-        (prevTabs[i]?.folder?.trim() || undefined) !== (t.folder?.trim() || undefined),
+        (prevTabs[i]?.folder?.trim() || undefined) !== (t.folder?.trim() || undefined) ||
+        // A page's parent rides the same save (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"), so a
+        // page moved before its body ever loaded is still stored.
+        (prevTabs[i]?.parent ?? undefined) !== (t.parent ?? undefined),
     );
   const nameChanged = currentName !== prevName;
   const deletedIds = prevTabs

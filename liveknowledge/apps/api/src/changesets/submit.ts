@@ -1,3 +1,4 @@
+import { MAX_KNOWLEDGEBASE_PAGES } from '@liveknowledge/document';
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import type {
   ChangesetResponse,
@@ -68,6 +69,16 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     ]);
     if (!stored) {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
+      // A changeset that makes a page meets the page limit (docs/specs/030-knowledgebase/blueprints/page-tree.md
+      // "The room's check"); it is made at the top level, so no depth is at stake.
+      if (document.tabs.length >= MAX_KNOWLEDGEBASE_PAGES) {
+        changesetLog('info', '[changeset] page-limit', where);
+        return refusal(
+          409,
+          'page_limit',
+          `a knowledgebase holds at most ${MAX_KNOWLEDGEBASE_PAGES} pages`,
+        );
+      }
     }
     const compiled = compile(args, stored, selections);
     if ('errors' in compiled) return rejected(args, stored, compiled.errors, where);

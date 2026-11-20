@@ -12,7 +12,7 @@ const shape = (extra: Record<string, unknown> = {}) =>
 describe('resolveEditorCapabilities', () => {
   it('gives an Editor everything', () => {
     const can = resolveEditorCapabilities('edit');
-    expect(can.takePart && can.writeArticle).toBe(true);
+    expect(can.takePart && can.writeArticle && can.editPages).toBe(true);
     expect(can.writeText(shape()) && can.writeText(shape({ locked: true }))).toBe(true);
     // Find and replace: an Editor replaces anywhere it finds.
     expect(can.replace).toBe('any');
@@ -30,20 +30,38 @@ describe('resolveEditorCapabilities', () => {
     }
   });
 
-  it('lets a Participant comment and write text, on anything not locked', () => {
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant comments, and that is all.
+  it('lets a Participant comment, and nothing else: no writing, no page tree, no replace', () => {
     const can = resolveEditorCapabilities('participate');
-    expect(can.takePart && can.writeArticle).toBe(true);
-    expect(can.writeText(shape())).toBe(true);
-    expect(can.writeText(sticky())).toBe(true);
-    expect(can.writeText(shape({ locked: true }))).toBe(false);
-    // Find and replace: only in the text it may write (docs/specs/007-editor/find-and-replace.md "Share roles").
-    expect(can.replace).toBe('text');
+    expect(can.takePart).toBe(true);
+    for (const [key, value] of Object.entries(can)) {
+      if (key === 'level' || key === 'takePart') continue;
+      if (typeof value === 'function') {
+        for (const el of [sticky(), shape()]) expect(value(el), key).toBe(false);
+      } else expect(value, key).toBe(false);
+    }
   });
 
-  // Text only: nothing that adds, moves, resizes, restyles or removes an element is a capability at all, so no
-  // gesture can open one for a Participant by accident.
-  it('holds no flag beyond the text ones', () => {
+  // One row a role: writing on a page, changing the page tree, commenting.
+  it.each([
+    ['edit', true, true, true],
+    ['participate', false, false, true],
+    ['view', false, false, false],
+  ] as const)(
+    '%s: writes %s, edits the page tree %s, comments %s',
+    (level, writes, tree, comments) => {
+      const can = resolveEditorCapabilities(level);
+      expect(can.writeArticle).toBe(writes);
+      expect(can.editPages).toBe(tree);
+      expect(can.takePart).toBe(comments);
+    },
+  );
+
+  // Nothing that adds, moves, resizes, restyles or removes an element is a capability at all, so no gesture can
+  // open one by accident.
+  it('holds no flag beyond these', () => {
     expect(Object.keys(resolveEditorCapabilities('participate')).sort()).toEqual([
+      'editPages',
       'level',
       'replace',
       'takePart',

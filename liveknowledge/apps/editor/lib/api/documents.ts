@@ -122,7 +122,8 @@ export async function apiSaveDocumentMeta(
   d: {
     id: string;
     name?: string;
-    tabs?: { id: string; folder?: string }[];
+    // `parent`: the page each sits under, null at the top level (the page tree's storage).
+    tabs?: { id: string; folder?: string; parent?: unknown }[];
     tabIds?: string[];
     // Slide deck (docs/specs/012-collaboration/presentation-mode.md), serialised. Absent leaves the stored deck alone,
     // which is what every save that isn't about the deck sends; null clears

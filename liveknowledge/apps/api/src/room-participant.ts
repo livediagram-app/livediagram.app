@@ -14,23 +14,13 @@
 //     (`catchup { resync: true }`).
 
 import { isRoomOpRef, type ServerMessage } from '@liveknowledge/api-schema';
-import {
-  isArticleId,
-  parseArticleOps,
-  type ArticleOp,
-  type ElementOp,
-  type Tab,
-} from '@liveknowledge/document';
+import { type ElementOp, type Tab } from '@liveknowledge/document';
 import {
   TabChangeQueue,
   type TabChange,
   type TabSwapResult,
 } from '@liveworkspace/api-kit/tab-swap';
-import {
-  participantArticleChange,
-  participantOpChange,
-  participantTabStore,
-} from './participant-write';
+import { participantOpChange, participantTabStore } from './participant-write';
 import type { DocumentEnv } from './types';
 
 // How many of one socket's writes may wait on the queue (blueprint SR12): far above a person's pace (the autosave
@@ -62,20 +52,6 @@ function isElFrame(op: unknown): op is ElFrame {
   if (frame.kind !== 'el' || typeof frame.tabId !== 'string') return false;
   const inner = frame.op as { kind?: unknown } | null;
   return typeof inner === 'object' && inner !== null && typeof inner.kind === 'string';
-}
-
-type ArticleFrame = { tabId: string; flow: string; ops: ArticleOp[] };
-
-// A writing frame, read defensively: an article named, its ops parsed as a receiver parses them. A frame that
-// removes or creates an article is never writing.
-function articleFrameOf(op: unknown): ArticleFrame | null {
-  if (typeof op !== 'object' || op === null) return null;
-  const frame = op as { kind?: unknown; tabId?: unknown; flow?: unknown; ops?: unknown };
-  if (frame.kind !== 'article' || typeof frame.tabId !== 'string' || !isArticleId(frame.flow))
-    return null;
-  if ('removed' in frame || 'created' in frame) return null;
-  const ops = parseArticleOps(frame.ops);
-  return ops ? { tabId: frame.tabId, flow: frame.flow, ops } : null;
 }
 
 export class RoomParticipantWrites {
@@ -116,25 +92,6 @@ export class RoomParticipantWrites {
     }
     if (!outcome.changed) return;
     this.relay(sender, { kind: 'el', tabId, op: outcome.op }, ref);
-  }
-
-  // One `article` frame from a Participant's socket: its writing in an article already on the tab.
-  async applyArticleOp(sender: ParticipantSender, frame: unknown, ref?: unknown): Promise<void> {
-    const article = articleFrameOf(frame);
-    if (!article) return;
-    const { tabId, flow, ops } = article;
-    const result = await this.queued(sender, tabId, participantArticleChange(flow, ops));
-    if (!result) return;
-    const outcome = result.answer;
-    if (outcome.result === 'refused') {
-      // The writing is block by block, so there is no one op that puts the sender back: it re-hydrates.
-      console.info('[participant-write] article refused', { tabId, reason: outcome.reason });
-      return this.resync(sender);
-    }
-    if (!outcome.changed) return;
-    // `grow`: a Participant never adds the pages its writing needs, so an editor that is not its writer grows them
-    // (docs/specs/007-editor/article-pages.md "Collaboration").
-    this.relay(sender, { kind: 'article', tabId, flow, ops, grow: true }, ref);
   }
 
   // One change on the room's tab write queue, drained with the others waiting on its tab, bounded per socket. Null

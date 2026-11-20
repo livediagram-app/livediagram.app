@@ -35,6 +35,10 @@ const KNOWN_WRITERS: Record<string, number> = {
   // tabWriteStatements (the app's insertTab), and a later body from another holder replaces the data in the same
   // batch as this file's bodyTaken, which stamps the element count and replaces its references.
   'api/src/document-room/tab-shares.ts': 1,
+  // writeTabParents (its two forms, set and remove): a moved page's `parent` written into its body by the metadata
+  // save (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"). It changes no element, so the body's
+  // image references and its element count stay as they were.
+  'api/src/document-room/page-tree-store.ts': 2,
   // The test database's stand-in for a document's purge (its object deletes everything it stores); the
   // references go with the tabs by their foreign key.
   'api/src/test-sqlite-d1.ts': 1,

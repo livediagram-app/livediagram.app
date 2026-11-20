@@ -249,47 +249,42 @@ describe('DocumentRoom: a Participant edits text only', () => {
     expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
   });
 
-  it('writes in an article: persisted, and relayed marked for an editor to grow its pages', async () => {
+  // Writing on a page is an Editor's alone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles").
+  it("drops a Participant's writing in an article: nothing stored, nothing relayed", async () => {
     const { room, join } = newRoom();
     store.data = articleTab('Hello');
     const editor = join('E', 'edit');
     const part = join('P', 'participate');
+    await send(
+      room,
+      part,
+      {
+        kind: 'article',
+        tabId: 't1',
+        flow: 'f1',
+        ops: [{ kind: 'put', block: paragraph('Hello there') }],
+      },
+      3,
+    );
+    await send(room, part, { kind: 'article', tabId: 't1', flow: 'f1', removed: true });
+    expect(storedTab().articles).toEqual({ f1: { blocks: [paragraph('Hello')] } });
+    expect(store.writes).toBe(0);
+    expect(ops(editor)).toEqual([]);
+  });
+
+  it("relays an Editor's writing in an article as sent", async () => {
+    const { room, join } = newRoom();
+    store.data = articleTab('Hello');
+    const editor = join('E', 'edit');
+    const reader = join('V', 'view');
     const frame = {
       kind: 'article',
       tabId: 't1',
       flow: 'f1',
       ops: [{ kind: 'put', block: paragraph('Hello there') }],
     };
-    await send(room, part, frame, 3);
-    expect(storedTab().articles).toEqual({ f1: { blocks: [paragraph('Hello there')] } });
-    expect(ops(editor)).toEqual([
-      expect.objectContaining({ from: 'P', op: { ...frame, grow: true } }),
-    ]);
-    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'cursor', ref: 3 }));
-  });
-
-  it("drops an article's restyle, removal or creation, and re-hydrates the sender", async () => {
-    const { room, join } = newRoom();
-    store.data = articleTab('Hello');
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate');
-    await send(room, part, {
-      kind: 'article',
-      tabId: 't1',
-      flow: 'f1',
-      ops: [{ kind: 'style', style: { look: 'bold' } }],
-    });
-    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
-    await send(room, part, { kind: 'article', tabId: 't1', flow: 'f1', removed: true });
-    await send(room, part, {
-      kind: 'article',
-      tabId: 't1',
-      flow: 'f2',
-      created: true,
-      ops: [{ kind: 'put', block: paragraph('New') }],
-    });
-    expect(store.writes).toBe(0);
-    expect(ops(editor)).toEqual([]);
+    await send(room, editor, frame);
+    expect(ops(reader)).toEqual([expect.objectContaining({ from: 'E', op: frame })]);
   });
 
   it('drops writing on a tab outside its link', async () => {

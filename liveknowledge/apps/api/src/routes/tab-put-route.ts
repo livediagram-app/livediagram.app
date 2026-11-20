@@ -35,6 +35,7 @@ import { MAX_TAB_BYTES, bodyExceedsCap, storeTab } from '../limits';
 import { capStoredName } from '../names';
 import { badRequest, conflict, json, notFound, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
+import { readStoredPages, tabParentRefusal } from '../document-room/page-tree-store';
 import type { TabSaveDocument } from '../db/tab-save-document';
 import { grantOn, readBody, type DocumentRouteContext } from './context';
 
@@ -137,6 +138,16 @@ export async function writeTabSave(
       mergeUnseenChangesets(ctx, incoming, seen),
       fetchRoomLedger(env, id, tabId, request.headers.get('X-Room-Cursor')),
     ]);
+    // The page tree's check (docs/specs/030-knowledgebase/blueprints/page-tree.md "The room's check"): a new page
+    // past the limit, or a page placed where the tree does not take it, is refused before anything is merged or
+    // written. A stored page saved where it already sits reads nothing more.
+    if (!existingTab || (existingTab.parent ?? undefined) !== (incoming.parent ?? undefined)) {
+      const refused = tabParentRefusal(await readStoredPages(env, id), tabId, incoming.parent);
+      if (refused) {
+        console.warn('[tab-save] page tree refused', { documentId: id, tabId, reason: refused });
+        return conflict(refused);
+      }
+    }
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent, merged over the tab as this attempt read it.

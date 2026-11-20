@@ -43,6 +43,7 @@ export async function connectedTabArrival(
       id: t.id,
       name: t.name,
       orderIndex: t.orderIndex,
+      parent: t.parent ?? null,
       ...(t.folder ? { folder: t.folder } : {}),
       ...(t.connection ? { connection: t.connection } : {}),
     })),

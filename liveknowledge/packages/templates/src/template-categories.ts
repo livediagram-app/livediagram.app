@@ -1,26 +1,17 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): liveknowledge'
-// own, grouped by what the document is for (the use case) rather than its page kind, so a deck and an article for the same
-// job sit together. Every template but the blanks has exactly one primary category and may
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): the five a
+// knowledgebase's pages are filed under, grouped by what the page is for (the use case). Every template but the blanks
+// has exactly one primary category and may
 // be cross-listed in others where people would genuinely look for it.
 // Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
 // three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
-export type TemplateCategory =
-  | 'careers'
-  | 'events'
-  | 'home'
-  | 'learning'
-  | 'marketing'
-  | 'pitches'
-  | 'plans'
-  | 'reports'
-  | 'team';
+export type TemplateCategory = 'engineering' | 'handbooks' | 'onboarding' | 'product' | 'support';
 
-// Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
-// are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set.
-// Labels are a word each, so a picker's rail fits each on one line; the longer names they once had (Events and
-// Celebrations, Plans and Proposals) live on in `searchWords`, so a search for either half still finds them.
+// Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place.
+// The ids, labels and descriptions are the Community's categories for liveknowledge.app (packages/community
+// `categories.ts`; `community-categories.test.ts` pins the two together), so Start With can show the Community's
+// best beside its own templates. Labels are a word each, so a picker's rail fits each on one line.
 // `searchWords`: what a search also finds the category's templates by, beyond its label.
 type CategoryInfo = {
   id: TemplateCategory;
@@ -29,45 +20,36 @@ type CategoryInfo = {
   searchWords?: string;
 };
 
-// Events, Home and Pitches held only slide and infographic templates, which liveknowledge does not list
-// (docs/specs/002-project-scope/not-in-liveknowledge.md): their ids stay in TemplateCategory for the unlisted kinds'
-// rows below, and no picker shows them.
 const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
-    id: 'careers',
-    label: 'Careers',
-    searchWords: 'job jobs cv application hiring',
-    description: 'Cover letters for the next job you apply for.',
+    id: 'engineering',
+    label: 'Engineering',
+    searchWords: 'runbook architecture code technical spec',
+    description: 'Runbooks, architecture notes and how the code works.',
   },
   {
-    id: 'learning',
-    label: 'Learning',
-    searchWords: 'lessons lesson school teacher teaching class education student',
-    description: 'Lesson plans for a class, an hour at a time.',
+    id: 'handbooks',
+    label: 'Handbooks',
+    searchWords: 'team policy policies values habits',
+    description: 'How a team works: its policies, habits and values.',
   },
   {
-    id: 'marketing',
-    label: 'Marketing',
-    searchWords: 'social media content ad advert campaign',
-    description: 'Newsletters and case studies to send round.',
+    id: 'onboarding',
+    label: 'Onboarding',
+    searchWords: 'welcome joining starter induction',
+    description: 'First weeks: what to read, set up and who to meet.',
   },
   {
-    id: 'plans',
-    label: 'Plans',
-    searchWords: 'proposals plan planning proposal spec project',
-    description: 'Briefs, proposals, PR/FAQs and design docs.',
+    id: 'product',
+    label: 'Product',
+    searchWords: 'plans proposals plan planning proposal project decisions',
+    description: 'Specs, decisions and research behind a product.',
   },
   {
-    id: 'reports',
-    label: 'Reports',
-    searchWords: 'report review update results numbers',
-    description: 'Status reports and research, written to be read.',
-  },
-  {
-    id: 'team',
-    label: 'Teams',
-    searchWords: 'meetings meeting team onboarding workshop agenda',
-    description: 'Meeting notes and handbooks for a whole team.',
+    id: 'support',
+    label: 'Support',
+    searchWords: 'customers customer answers help fixes',
+    description: 'Answers, how-tos and fixes for the people you help.',
   },
 ];
 
@@ -86,42 +68,45 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 type BlankKind =
   'blank' | 'blank-illustration' | 'blank-slide-deck' | 'blank-article' | 'blank-infographic';
 
-// Every non-blank template's primary category: the job it does.
+// Every non-blank template's primary category: the job it does in a knowledgebase. The slide and infographic kinds
+// liveknowledge does not list (docs/specs/002-project-scope/not-in-liveknowledge.md) keep a row, since the Record is
+// over every kind; no picker shows them.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
-  resume: 'careers',
-  'cover-letter': 'careers',
-  'event-poster': 'events',
-  'live-card': 'events',
-  'recipe-card': 'home',
-  'floor-plan': 'home',
-  'lesson-plan': 'learning',
-  'class-lesson': 'learning',
-  'social-carousel': 'marketing',
-  versus: 'marketing',
-  'how-it-works': 'marketing',
-  // A 30-second ad in six shots.
-  storyboard: 'marketing',
-  // A six-slide pitch.
-  'slide-deck': 'pitches',
-  'launch-keynote': 'pitches',
+  // The written templates, the 13 every picker lists.
+  'design-doc': 'engineering',
+  'status-report': 'engineering',
+  'meeting-notes': 'handbooks',
+  newsletter: 'handbooks',
+  'onboarding-handbook': 'onboarding',
+  'lesson-plan': 'onboarding',
+  'cover-letter': 'onboarding',
   // The Project Brief.
-  article: 'plans',
-  'working-backwards': 'plans',
-  'business-proposal': 'plans',
-  'design-doc': 'plans',
-  'year-in-review': 'reports',
-  'quarterly-review': 'reports',
-  'data-story': 'reports',
-  'status-report': 'reports',
-  'meeting-notes': 'team',
-  'workshop-kickoff': 'team',
-  'team-welcome': 'team',
-  'product-one-pager': 'plans',
-  'research-report': 'reports',
-  'board-update': 'reports',
-  newsletter: 'marketing',
-  'case-study': 'marketing',
-  'onboarding-handbook': 'team',
+  article: 'product',
+  'working-backwards': 'product',
+  'business-proposal': 'product',
+  'product-one-pager': 'product',
+  'research-report': 'product',
+  // How a customer was helped.
+  'case-study': 'support',
+  // Not listed.
+  resume: 'onboarding',
+  'event-poster': 'handbooks',
+  'live-card': 'handbooks',
+  'recipe-card': 'support',
+  'floor-plan': 'engineering',
+  'class-lesson': 'onboarding',
+  'social-carousel': 'product',
+  versus: 'product',
+  'how-it-works': 'support',
+  storyboard: 'product',
+  'slide-deck': 'product',
+  'launch-keynote': 'product',
+  'year-in-review': 'handbooks',
+  'quarterly-review': 'product',
+  'data-story': 'product',
+  'workshop-kickoff': 'handbooks',
+  'team-welcome': 'onboarding',
+  'board-update': 'product',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -129,9 +114,9 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
 export const TEMPLATE_ALSO_IN: Readonly<
   Partial<Record<TemplateKind, readonly TemplateCategory[]>>
 > = {
-  // A team's newsletter goes round the team; a case study proposes the next project.
-  newsletter: ['team'],
-  'case-study': ['plans'],
+  // The onboarding handbook is a handbook; a case study argues for the next piece of the product.
+  'onboarding-handbook': ['handbooks'],
+  'case-study': ['product'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

@@ -400,7 +400,15 @@ describe('useAutosave and new tabs', () => {
     });
     expect(apiSaveDocumentMeta).toHaveBeenCalledTimes(1);
     expect(apiSaveDocumentMeta.mock.calls[0]).toEqual(
-      expect.arrayContaining([expect.objectContaining({ tabs: [{ id: 't1' }, { id: 't2' }] })]),
+      expect.arrayContaining([
+        expect.objectContaining({
+          // Each entry carries the page's parent (null at the top level): the page tree rides this save.
+          tabs: [
+            { id: 't1', parent: null },
+            { id: 't2', parent: null },
+          ],
+        }),
+      ]),
     );
     apiSaveTab.mockReset();
     apiSaveTab.mockImplementation(() => Promise.resolve(null));

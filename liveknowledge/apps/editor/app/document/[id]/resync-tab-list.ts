@@ -23,6 +23,9 @@ export function tabListOf(document: {
       id: t.id,
       name: t.name,
       orderIndex: i,
+      // The stored tree (docs/specs/030-knowledgebase/blueprints/page-tree.md "Storage"): null is the top level.
+      // A tab outside this session's scope is told nothing of where it sits.
+      ...(t.outOfScope ? {} : { parent: t.parent ?? null }),
       ...(t.folder !== undefined ? { folder: t.folder } : {}),
       ...(t.outOfScope ? { outOfScope: true as const } : {}),
       ...(t.connection ? { connection: t.connection } : {}),

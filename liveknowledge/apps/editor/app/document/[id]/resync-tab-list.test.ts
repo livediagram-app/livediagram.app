@@ -31,7 +31,7 @@ describe('tabListOf', () => {
       kind: 'document-meta',
       name: 'Doc',
       tabs: [
-        { id: 'a', name: 'A', orderIndex: 0 },
+        { id: 'a', name: 'A', orderIndex: 0, parent: null },
         { id: 'b', name: '', orderIndex: 1, outOfScope: true },
       ],
     });

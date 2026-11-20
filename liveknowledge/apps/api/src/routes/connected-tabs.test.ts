@@ -326,8 +326,8 @@ describe('the reverse write', () => {
       kind: 'document-meta',
       name: 'Board',
       tabs: [
-        { id: 't1', name: 'Board', orderIndex: 0 },
-        { id: tabId, name: 'Roadmap', orderIndex: 1, connection: CONNECTION },
+        { id: 't1', name: 'Board', orderIndex: 0, parent: null },
+        { id: tabId, name: 'Roadmap', orderIndex: 1, parent: null, connection: CONNECTION },
       ],
     });
   });

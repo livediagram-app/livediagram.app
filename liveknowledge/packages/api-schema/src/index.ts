@@ -158,6 +158,9 @@ export type TabSummary = {
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
+  // The page this one sits under (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"); absent
+  // at the top level. Stored in the tab's body and read out for the summary, so the tree draws before any body loads.
+  parent?: string;
   // Set for a tab outside a tab-scoped visitor's scope (docs/specs/013-workspace/tab-scoped-share-links.md):
   // its name is blanked, its folder dropped, and its content never served.
   outOfScope?: true;

@@ -8,8 +8,6 @@ type OpGate =
   | { kind: 'drop' }
   /** A Participant's `el` op: through the participant content rule (text only), never relayed as sent. */
   | { kind: 'participant-content' }
-  /** A Participant's `article` frame: through the participant writing rule, never relayed as sent. */
-  | { kind: 'participant-article' }
   /** Relayed: unordered when `presence`. */
   | { kind: 'relay'; presence: boolean };
 
@@ -63,13 +61,14 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
   if (!keepsToItsTab(op)) return DROP;
   const presence = isPresenceOpKind(opKind);
-  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's `el` op and
-  // `article` frame go through the participant rules (text only) and never relay as sent; everything else needs an
-  // Editor.
+  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's `el` op goes
+  // through the participant rules (its comments and replies) and never relays as sent; everything else needs an
+  // Editor. Writing on a page is an Editor's alone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share
+  // roles"): a Participant's `article` frame is dropped like a Viewer's, and so is every change to the page tree
+  // (`tab`, `tab-meta`, `document-meta`).
   const level = parseStoredLevel(sender.role);
   if (!presence && level !== 'edit') {
     if (level === 'participate' && opKind === 'el') return { kind: 'participant-content' };
-    if (level === 'participate' && opKind === 'article') return { kind: 'participant-article' };
     return DROP;
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only

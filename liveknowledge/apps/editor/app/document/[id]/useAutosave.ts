@@ -69,6 +69,9 @@ const DEPS: AutosaveDeps<
   apiDeleteTab: (...args) => apiDeleteTab(...args),
   apiSaveMeta: (...args) => apiSaveDocumentMeta(...args),
   metaKind: 'document-meta',
+  // A page's parent rides the metadata save and its op (docs/specs/030-knowledgebase/blueprints/page-tree.md
+  // "Storage"): null at the top level, so a page moved out to it says so.
+  metaTabFields: (tab) => ({ parent: tab.parent ?? null }),
   reportSaveFailure: (err) => reportSaveFailure(err),
   saveFailureStatus: (err) => saveFailureStatus(err),
   isItemDeleted: (id) => isDocumentDeleted(id),

@@ -7630,6 +7630,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "const": true,
         "type": "boolean"
       },
+      "parent": {
+        "type": "string"
+      },
       "updatedAt": {
         "type": "number"
       }

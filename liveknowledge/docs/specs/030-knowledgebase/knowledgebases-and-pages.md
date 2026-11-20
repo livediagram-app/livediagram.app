@@ -4,10 +4,10 @@ Status: **partly built** ([Build plan](../005-project-roadmap/build-plan.md) ste
 every tab a page of writing, with slides and infographics unreachable
 ([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md) "Unreachable, to delete"), the item's default
 name, the continuous page ([blueprint](blueprints/continuous-page.md)), and the page tree's model: `Tab.parent`, the
-limits and the tree functions ([blueprint](blueprints/page-tree.md)). Not built yet: everything of the page tree a
-person sees (the sidebar still to replace the tab bar, the breadcrumb, the phone sheet), the tree in the tab
-summaries, the server's check of the limits, the share-role change below (a Participant can still write on a page),
-and the word Knowledgebase in the rest of the editor's copy. The blueprint lists each with its files.
+limits and the tree functions, the tree in the tab summaries and in every save, the server's check of the limits and
+the share roles below ([blueprint](blueprints/page-tree.md)). Not built yet: everything of the page tree a person
+sees (the sidebar still to replace the tab bar, the breadcrumb, the phone sheet), and the word Knowledgebase in the
+rest of the editor's copy. The blueprint lists each with its files.
 
 ## Domain language
 
@@ -41,7 +41,7 @@ Public) already own the word.
 ## The page tree
 
 - `Tab.parent` is the id of the page it sits under; absent is top level. Siblings keep the order the knowledgebase's tab list
-  gives them. A parent that no longer exists reads as absent (the page surfaces at the top level, never lost).
+  gives them. The parent is saved with the list as well as with the page, so a page that was never opened can be moved. A parent that no longer exists reads as absent (the page surfaces at the top level, never lost).
 - A tree is never a cycle: one read from storage is cut at its first page, which keeps the rest of it as its
   subpages. Reading is forgiving and every edit is checked: a move, an indent or an add that would break a limit
   is refused and changes nothing.
@@ -92,3 +92,6 @@ A page is one article that never breaks onto paper pages while it is being writt
 | Add, rename, move, duplicate, delete pages | yes    | no          | no     |
 
 Every gate reads `can`, on the client and again in the room, and ships a test per role.
+
+A Participant comments in threads and replies in a margin note's thread. Starting a margin note puts a mark in the
+writing, which is writing: it is an Editor's until the room has a rule that takes a mark and nothing else.

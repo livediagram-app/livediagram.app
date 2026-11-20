@@ -1,4 +1,4 @@
-import { migrateStoredTab, type Tab } from '@liveknowledge/document';
+import { migrateStoredTab, parseTabParent, type Tab } from '@liveknowledge/document';
 import { storedTabConnection } from '@liveworkspace/index-app';
 import type { TabDTO, TabSummaryDTO } from './types';
 
@@ -24,12 +24,22 @@ export type TabRow = {
   // A connected tab's connection (liveworkspace/docs/specs/004-index/connected-tabs.md), `tabs.connection`: JSON of
   // `{ id, app, itemId }`, or NULL for every other tab. Read sites that don't select it leave it undefined.
   connection?: string | null;
+  // The page this one sits under (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"), read out
+  // of the body by the outline alone (`json_extract(data, '$.parent')`), so the tree draws from the summaries. Read
+  // sites that do not select it leave it undefined.
+  parent?: unknown;
 };
 
 // The connection a row carries, as the wire shape spreads it: absent for a tab that is not connected.
 function connectionField(row: TabRow) {
   const connection = storedTabConnection(row.connection);
   return connection ? { connection } : {};
+}
+
+// The parent a row carries: absent at the top level, and for anything stored there that is not an id.
+function parentField(row: TabRow) {
+  const parent = parseTabParent(row.parent);
+  return parent === undefined ? {} : { parent };
 }
 
 // Pure mapper from a stored tab row to the wire-format DTO. Pulled out of db.ts
@@ -82,6 +92,7 @@ export function rowToTabSummary(row: TabRow): TabSummaryDTO {
     orderIndex: row.order_index,
     updatedAt: row.updated_at,
     folder: row.folder ?? undefined,
+    ...parentField(row),
     ...connectionField(row),
   };
 }

@@ -209,7 +209,19 @@ export type ServerMessage =
   // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
   // The session's own collab key, to its socket alone (docs/specs/013-workspace/share-roles.md "The collab key").
   | CollabKeyMessage
-  | OpRefusedMessage;
+  | OpRefusedMessage
+  | PageTreeRefusedMessage;
+
+// The room's answer to an Editor's op that would break the page tree
+// (docs/specs/030-knowledgebase/blueprints/page-tree.md "The room's check"): the same frame an element refusal is,
+// to the sender's socket alone, with the tree's own reason. The op was not relayed.
+export type PageTreeRefusedMessage = {
+  kind: 'op-refused';
+  op: string;
+  reason: 'page_limit' | 'depth_limit' | 'own_subtree' | 'unknown_page';
+  tabId?: string;
+  ref?: number;
+};
 
 // The room's wire pieces every product's room shares (@liveworkspace/api-schema/room-wire): the op `ref` echo,
 // the format frame, grant renewal, the close codes, the index grant header and the keepalive.
@@ -338,6 +350,10 @@ export type RoomOp =
         name: string;
         orderIndex: number;
         folder?: string;
+        // The page it sits under (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree"): a
+        // string, or null at the top level. A summary that carries the key sets the tab's parent, loaded or not; one
+        // without it (the room's rename relay) leaves the tab's own.
+        parent?: string | null;
         outOfScope?: true;
         connection?: TabConnectionWire;
       }[];
@@ -481,7 +497,8 @@ export type RoomIncoming =
   | GrantRenewMessage
   // An element op the room refused (docs/specs/012-collaboration/realtime-conflict-resolution.md "An invalid element").
   | CollabKeyMessage
-  | OpRefusedMessage;
+  | OpRefusedMessage
+  | PageTreeRefusedMessage;
 
 // The room's size (ROOM_MAX_CONNECTIONS) and the close code past it (ROOM_FULL_CLOSE), shared by every product's room.
 export {
