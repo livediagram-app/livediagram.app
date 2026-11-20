@@ -385,7 +385,7 @@ describe('changing items', () => {
   // A move that lost a race ranks against the column as it is on the retry, not as it was first read.
   it('reads the neighbours again when a move retries', async () => {
     const b = (await add({ title: 'B', status: 'done' })).body.item;
-    const listed = vi.spyOn(db, 'listItems');
+    const listed = vi.spyOn(db, 'listItemPlaces');
     const updated = vi.spyOn(db, 'updateItemAtRev').mockResolvedValueOnce(null);
     const res = await call<ItemResponse>({
       path: `/items/${item.id}/move`,

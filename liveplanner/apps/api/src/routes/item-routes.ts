@@ -33,6 +33,7 @@ import {
   deleteItemRow,
   fieldsGrowth,
   getItemsRev,
+  listItemPlaces,
   listItems,
   planFullFor,
   readItem,
@@ -321,7 +322,7 @@ async function move(ctx: PlanRouteContext, projectId: string, itemId: string): P
       applyMove(
         item,
         mappedWrite(caller, item, input, body.undo === true),
-        await listItems(ctx.env, projectId),
+        await listItemPlaces(ctx.env, projectId),
         { now: Date.now(), by },
       ),
     { undo: body.undo === true },

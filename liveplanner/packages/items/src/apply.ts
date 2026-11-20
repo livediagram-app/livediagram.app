@@ -23,29 +23,40 @@ export interface WriteContext {
   by: ItemPerson;
 }
 
+// What ranking reads of a card: its id, key, rank and status (`fields.status`). A store read for placing alone
+// carries only these (the api's `listItemPlaces`), so a move in a large plan never parses every card's fields.
+export type RankedItem = Pick<Item, 'id' | 'key' | 'rank' | 'fields'>;
+
 // Items in one status's column, in rank order (ties by key).
-export function columnItems(
-  items: Iterable<Item>,
+export function columnItems<T extends RankedItem>(
+  items: Iterable<T>,
   status: string | undefined,
   exceptId?: string,
-): Item[] {
-  const out: Item[] = [];
+): T[] {
+  const out: T[] = [];
   for (const it of items) if (it.id !== exceptId && itemStatus(it) === status) out.push(it);
   return out.sort(byRank);
 }
 
-export function byRank(a: Item, b: Item): number {
+export function byRank(a: RankedItem, b: RankedItem): number {
   return compareRank(a.rank, b.rank) || a.key - b.key;
 }
 
 // The rank that places an item at `place` among `items` (the item itself
 // excluded). A neighbour that is gone, or in another column, means the end.
-export function rankForPlace(items: Iterable<Item>, place: ItemPlace, exceptId?: string): string {
+export function rankForPlace(
+  items: Iterable<RankedItem>,
+  place: ItemPlace,
+  exceptId?: string,
+): string {
   return rankInColumn(columnItems(items, place.status, exceptId), place).rank;
 }
 
 // Where `place` lands in `column` (its items in rank order): the index it goes in at and its rank.
-function rankInColumn(column: readonly Item[], place: ItemPlace): { index: number; rank: string } {
+function rankInColumn(
+  column: readonly RankedItem[],
+  place: ItemPlace,
+): { index: number; rank: string } {
   const at = (id: string | null | undefined) => (id ? column.findIndex((i) => i.id === id) : -1);
   let index: number;
   if (place.after !== undefined) {
@@ -77,12 +88,12 @@ function rankInColumn(column: readonly Item[], place: ItemPlace): { index: numbe
 interface ItemPlacer {
   rankFor: (place: ItemPlace) => string;
   // Records a placed item (its rank from rankFor) so the next create sees it.
-  add: (item: Item) => void;
+  add: (item: RankedItem) => void;
 }
 
-export function itemPlacer(items: Iterable<Item>): ItemPlacer {
+export function itemPlacer(items: Iterable<RankedItem>): ItemPlacer {
   const pool = [...items];
-  const columns = new Map<string | undefined, Item[]>();
+  const columns = new Map<string | undefined, RankedItem[]>();
   const columnOf = (status: string | undefined) => {
     let column = columns.get(status);
     if (!column) {
@@ -110,7 +121,7 @@ export function itemPlacer(items: Iterable<Item>): ItemPlacer {
 // adds the made item to the placer.
 export function makeItem(
   create: ItemCreate,
-  ctx: WriteContext & { id: string; key: number; items: Iterable<Item> | ItemPlacer },
+  ctx: WriteContext & { id: string; key: number; items: Iterable<RankedItem> | ItemPlacer },
 ): Item {
   const fields: ItemFields = { ...create.fields };
   if (create.votes && Object.keys(create.votes).length) fields['votes'] = { ...create.votes };
@@ -165,7 +176,7 @@ export function applyPatch(item: Item, patch: ItemPatch, ctx: WriteContext): Ite
 export function applyMove(
   item: Item,
   move: ItemMove,
-  items: Iterable<Item>,
+  items: Iterable<RankedItem>,
   ctx: WriteContext,
 ): Item {
   const status = move.status ?? itemStatus(item);

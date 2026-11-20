@@ -407,7 +407,7 @@ CREATE UNIQUE INDEX items_plan_key ON items(plan_id, item_key);
 - Writes: one `batch` per write in the plan's store: `UPDATE plan SET items_rev = items_rev + 1 [, items_next_key = ...]
 WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by `rev = ?` (update) or
   `INSERT` (create). A lost `rev` race retries up to `ITEM_WRITE_RETRIES` from a fresh read, then `409 item_busy`.
-- `apps/api/src/db/items.ts`: `getItemStoreHead`, `listItems`, `readItem`, `readItems`, `insertItems`,
+- `apps/api/src/db/items.ts`: `getItemStoreHead`, `listItems`, `listItemPlaces`, `readItem`, `readItems`, `insertItems`,
   `updateItemAtRev`, `updateItemsAtRev`, `deleteItemRow`; `itemFromRow`: row ↔ `Item`.
 
 ## Interfaces and contracts: REST
@@ -465,7 +465,7 @@ agent's import's emails to the plan's team, answering only a joined member of it
   it alone (`writeLimitedTo`).
 - `/items/moves` (`routes/item-moves-route.ts`, items.md "Move many") moves many items as one write: the body is
   read as `/items/patches`' is (`readItemMove` per entry, `400` naming the item), the gate is participate, and every
-  id must exist (and be in a tab-scoped grant's scope). Each attempt reads the whole store (`listItems`) for the
+  id must exist (and be in a tab-scoped grant's scope). Each attempt reads every card's place (`listItemPlaces`: id, key, rank and status, no fields parsed) for the
   neighbours, lays each wanted item's stored copy over it, then applies the moves **in order** against that pool
   (`applyMoves`, packages/items `group-moves.ts`), so a move naming an earlier one (`after: <id>`) ranks after it as
   moved. Every resulting item is checked as a patch's are (`status_excluded`, `field_calculated`,
@@ -486,10 +486,11 @@ agent's import's emails to the plan's team, answering only a joined member of it
   nothing is judged. Runs live in memory (`RemovalGuard.runs`, at most `REMOVAL_RUNS_MAX` (200), ended runs swept on each
   admit). A run's first removal reads the board tabs and the store once and counts each board: about 20 ms of CPU for
   ten boards over 10,000 cards (`removal-guard.perf.test.ts`); each removal after is O(boards x run size).
-- A create, bulk create or seed (`createMany`) reads the store once per attempt: a named key is free when that
+- A create, bulk create or seed (`createMany`) reads every card's place once per attempt (`listItemPlaces`; the
+  api's routes; ranking takes a `RankedItem`, so a large plan's fields are never parsed to place a card): a named key is free when that
   read's keys lack it (a key a racing write took fails the insert, which retries), and one `itemPlacer` ranks every
   create, so n creates cost no per-create query and one sort per column.
-- A move reads its neighbours on every attempt (`writeItem`'s change may be async): a retry ranks against the
+- A move reads its neighbours' places (`listItemPlaces`) on every attempt (`writeItem`'s change may be async): a retry ranks against the
   column as it then is.
 - Routes live in `apps/api/src/routes/item-routes.ts` (`/items/patches` in `item-patches-route.ts`, the parts they
   share, such as the caller, refusals and relay, in `item-route-kit.ts`, the creates they write in `item-creates.ts`), dispatched from

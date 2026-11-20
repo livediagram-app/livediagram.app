@@ -10,6 +10,7 @@ import {
   type Item,
   type ItemFields,
   type ItemPerson,
+  type RankedItem,
 } from '@liveplanner/items';
 import type { PlanEnv } from '../types';
 
@@ -159,6 +160,26 @@ export async function listItems(env: PlanEnv, projectId: string): Promise<Item[]
     .bind(projectId)
     .all<ItemRow>();
   return (res.results ?? []).map(itemFromRow);
+}
+
+// Every card as ranking needs it (`RankedItem`): id, key, rank and status, the status read by SQLite, so no card's
+// fields are parsed. For a write that only places cards among the others: a create, a move.
+// Nested, because only a CASE is sure to stop at its first true branch: fields that are not JSON (the table's
+// triggers refuse them, so none should be stored) never reach json_type, which would throw and fail the read.
+const STATUS_TEXT = `CASE WHEN json_valid(fields) THEN
+  CASE WHEN json_type(fields, '$.status') = 'text' THEN json_extract(fields, '$.status') END END`;
+
+export async function listItemPlaces(env: PlanEnv, projectId: string): Promise<RankedItem[]> {
+  const res = await env.PLAN_DB.prepare(
+    `SELECT id, item_key, rank, ${STATUS_TEXT} AS status FROM items WHERE plan_id = ?`,
+  )
+    .bind(projectId)
+    .all<{ id: string; item_key: number; rank: string; status: string | null }>();
+  return (res.results ?? []).map((row) => {
+    const fields: ItemFields = {};
+    if (row.status !== null) fields['status'] = row.status;
+    return { id: row.id, key: row.item_key, rank: row.rank, fields };
+  });
 }
 
 export async function readItem(env: PlanEnv, projectId: string, id: string): Promise<Item | null> {

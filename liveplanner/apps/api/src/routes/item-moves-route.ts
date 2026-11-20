@@ -14,8 +14,9 @@ import {
   type Item,
   type ItemMoveOf,
   type ItemRejection,
+  type RankedItem,
 } from '@liveplanner/items';
-import { listItems } from '../db';
+import { listItemPlaces } from '../db';
 import { badRequest, forbidden, json } from '../responses';
 import { readBody, type PlanRouteContext } from './context';
 import {
@@ -75,8 +76,10 @@ export async function moves(ctx: PlanRouteContext, projectId: string): Promise<R
     async (pending, stored, read) => {
       // On the first read, a missing item refuses the request; a retried one deleted meanwhile is left out.
       if (read.attempt === 1 && read.missing > 0) return itemNotFound();
-      // The whole store for the neighbours, each wanted item as just read (its rev guards the write).
-      const pool = new Map((await listItems(ctx.env, projectId)).map((i) => [i.id, i]));
+      // Every card's place for the neighbours (no fields parsed), each wanted item as just read (its rev guards the write).
+      const pool = new Map<string, Item | RankedItem>(
+        (await listItemPlaces(ctx.env, projectId)).map((i) => [i.id, i]),
+      );
       for (const [id, item] of stored) pool.set(id, item);
       const applied = applyMoves(pool.values(), pending, { now, by });
       if (!applied.ok) return itemNotFound();
