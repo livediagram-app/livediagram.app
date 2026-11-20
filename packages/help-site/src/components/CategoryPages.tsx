@@ -5,7 +5,7 @@ import { BrowsePage } from './BrowsePage';
 import { CategoryCard } from './CategoryCard';
 import { featuresDescription } from '../lib/features-description';
 
-// The listing routes every help centre has (docs/specs/018-help/help-pages.md "Category pages"): a support
+// The listing routes every help centre has (liveworkspace/docs/specs/017-help/help-centre.md "Category pages"): a support
 // category's page of article cards, and the features index of category cards. A support category's copy (title,
 // lede, the description search engines show) is the product's, passed in by its route file; the features index's
 // description is made from the catalogue.

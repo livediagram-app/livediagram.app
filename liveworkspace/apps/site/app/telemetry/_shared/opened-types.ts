@@ -10,5 +10,6 @@ export const isSettingsCategory = (type: string | null): boolean =>
   type !== 'Settings' && (type ?? '').startsWith('Settings');
 
 // A help article opened from inside the editor: its telemetry id is the
-// article's lowercase slug, where every other UI·Opened type is PascalCase.
-export const isHelpArticleType = (type: string | null): boolean => /^[a-z]/.test(type ?? '');
+// article's lowercase slug (which may start with a digit, as `3d-view` does), where every other UI·Opened type is
+// PascalCase.
+export const isHelpArticleType = (type: string | null): boolean => /^[a-z0-9]/.test(type ?? '');

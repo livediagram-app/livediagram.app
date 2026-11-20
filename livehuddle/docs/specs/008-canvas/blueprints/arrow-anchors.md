@@ -9,33 +9,33 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                             | Role                                                                                               |
-| ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `livediagram/packages/document/src/arrow-types.ts`               | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
-| `../packages/element-model/src/anchors.ts`                       | The anchor table: side, position class, box fraction, outward vector                               |
-| `packages/document/src/shape-outline.ts`                         | Anchoring outlines, outline projection, point-inside test                                          |
-| `../packages/model-core/src/svg-path-outline.ts`                 | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
-| `livediagram/packages/document/src/anchor-layouts.ts`            | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
-| `packages/document/src/shape-geometry.ts`                        | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
-| `packages/document/src/geometry.ts`                              | `anchorPosition`                                                                                   |
-| `livediagram/packages/document/src/anchor-choice.ts`             | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
-| `livediagram/packages/document/src/arrow-path.ts`                | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
-| `livediagram/packages/document/src/arrow-path-hits.ts`           | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
-| `livediagram/packages/document/src/arrow-rebind.ts`              | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
-| `livediagram/packages/document/src/arrow-rebind-swap.ts`         | `swapCrossingEnds`                                                                                 |
-| `livediagram/packages/document/src/arrow-endpoint-spread.ts`     | Quarter fans                                                                                       |
-| `packages/document/src/validate.ts`                              | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
-| `packages/document/src/legacy-groups.ts`                         | Legacy group anchors resolved through the table                                                    |
-| `packages/document/src/duplicate.ts`                             | Endpoint copy without `manual`                                                                     |
-| `apps/editor/lib/user-preferences.ts`                            | `autoRebindArrowsEnabled`: on unless `false`                                                       |
-| `apps/editor/hooks/canvas/useEditorDrag.ts`                      | Live rebind per drag frame                                                                         |
-| `apps/editor/hooks/canvas/useNudgeSelection.ts`                  | Rebind per nudge                                                                                   |
-| `livediagram/apps/editor/app/document/[id]/useArrowConnect.ts`   | Click-to-connect: creation anchors only, no rebind                                                 |
-| `livediagram/apps/editor/hooks/canvas/arrow-endpoint-resolve.ts` | Stops writing `manual`                                                                             |
-| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`               | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
-| `apps/editor/components/dialogs/settings/settings-catalogue.ts`  | Setting copy                                                                                       |
-| `apps/help/app/palette/auto-attach-arrows/page.mdx`              | Help article                                                                                       |
-| `apps/api/src/openapi/schemas.generated.ts`                      | Regenerated `Anchor` enum and pinned endpoint schema                                               |
+| File                                                              | Role                                                                                               |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| `livediagram/packages/document/src/arrow-types.ts`                | `Anchor` (16 ids), `ALL_ANCHORS`, `Endpoint`                                                       |
+| `../packages/element-model/src/anchors.ts`                        | The anchor table: side, position class, box fraction, outward vector                               |
+| `packages/document/src/shape-outline.ts`                          | Anchoring outlines, outline projection, point-inside test                                          |
+| `../packages/model-core/src/svg-path-outline.ts`                  | `sampleSvgPath`: an outline polygon from a drawn path (cloud, document)                            |
+| `livediagram/packages/document/src/anchor-layouts.ts`             | `anchorLayoutPoint`: face-placed anchors of triangle, hexagon, parallelogram, trapezoid            |
+| `packages/document/src/shape-geometry.ts`                         | `ACTOR_HULL`, the actor's anchoring hull (D8)                                                      |
+| `packages/document/src/geometry.ts`                               | `anchorPosition`                                                                                   |
+| `livediagram/packages/document/src/anchor-choice.ts`              | `exitSideTowards`, `facingSideTowards`, `anchorAimPoint`, `bestAnchorTowards`                      |
+| `livediagram/packages/document/src/arrow-path.ts`                 | `arrowPathPolyline` (exported centreline), side-aware curve/elbow rules                            |
+| `livediagram/packages/document/src/arrow-path-hits.ts`            | `arrowPolyline`, `pathPassesThrough`, `pathsCross`, `pinnedBoxedElement`, `passesThroughOwnShapes` |
+| `livediagram/packages/document/src/arrow-rebind.ts`               | `rebindArrowAnchorsAfterMove`, `arrowReferencesAny`                                                |
+| `livediagram/packages/document/src/arrow-rebind-swap.ts`          | `swapCrossingEnds`                                                                                 |
+| `livediagram/packages/document/src/arrow-endpoint-spread.ts`      | Quarter fans                                                                                       |
+| `packages/document/src/validate.ts`                               | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
+| `packages/document/src/legacy-groups.ts`                          | Legacy group anchors resolved through the table                                                    |
+| `packages/document/src/duplicate.ts`                              | Endpoint copy without `manual`                                                                     |
+| `apps/editor/lib/user-preferences.ts`                             | `autoRebindArrowsEnabled`: on unless `false`                                                       |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`                       | Live rebind per drag frame                                                                         |
+| `apps/editor/hooks/canvas/useNudgeSelection.ts`                   | Rebind per nudge                                                                                   |
+| `livediagram/apps/editor/app/document/[id]/useArrowConnect.ts`    | Click-to-connect: creation anchors only, no rebind                                                 |
+| `livediagram/apps/editor/hooks/canvas/arrow-endpoint-resolve.ts`  | Stops writing `manual`                                                                             |
+| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`                | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
+| `apps/editor/components/dialogs/settings/settings-catalogue.ts`   | Setting copy                                                                                       |
+| `liveworkspace/apps/help/app/palette/auto-attach-arrows/page.mdx` | Help article                                                                                       |
+| `apps/api/src/openapi/schemas.generated.ts`                       | Regenerated `Anchor` enum and pinned endpoint schema                                               |
 
 ## Domain and naming
 

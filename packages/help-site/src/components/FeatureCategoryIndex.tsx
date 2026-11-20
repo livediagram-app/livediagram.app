@@ -8,7 +8,7 @@ import { FeatureArticleCard } from './FeatureArticleCard';
 import { HelpHero } from './HelpHero';
 
 // Shared index page for a feature-guide category (User Interface, Explorer, Palette, Canvas, Tabs, Collaboration,
-// Tools, ...: docs/specs/018-help/help-pages.md "Category pages"). The category's header with its scene, then its
+// Tools, ...: liveworkspace/docs/specs/017-help/help-centre.md "Category pages"). The category's header with its scene, then its
 // feature landings as cards, in named groups when the category has them, with a jump list beside the groups on a
 // wide screen. Each app/<slug>/page.tsx is a thin wrapper around this so the category indexes stay in one place.
 
@@ -39,8 +39,10 @@ export function FeatureCategoryIndex({ site, slug }: { site: HelpSite; slug: str
   const cat = category(site, slug);
   const groups = site.catalogue.getCategoryGroups(slug);
   const grouped = groups.length > 1;
+  // The apps the landing holds articles for, read by the app switch (AppSwitch, HELP_APPLIES_ATTR).
+  const apps = site.scope ? cat.apps : undefined;
   return (
-    <div>
+    <div {...(apps && { 'data-help-applies': apps.join(',') })}>
       <JsonLd
         data={site.collectionJsonLd({
           title: cat.title,

@@ -5,6 +5,7 @@
 // primary. Pressing it opens an optional note in place, under the row, with Send Request and Cancel (Ctrl or Cmd with
 // Enter sends, Escape cancels). Sent, the button becomes a green Requested and a line says what happens next; the
 // answer is the same for every address, so it says nothing about whether the item exists.
+import { takeRequestIntent } from './request-intent';
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { ACCESS_REQUEST_NOTE_MAX } from '@liveworkspace/index-client';
 import { Button, TextArea, Tooltip, lucideGlyph } from '@liveworkspace/ui';
@@ -35,7 +36,8 @@ export function RequestAccess({
   ask?: AskForAccess;
 }) {
   const { requested, sending, failed, send } = useAskForAccess(itemId, ask);
-  const [writing, setWriting] = useState(false);
+  // Back from Sign In to Request Access: the note opens at once (request-intent.ts).
+  const [writing, setWriting] = useState(takeRequestIntent);
   const [note, setNote] = useState('');
   const noteId = useId();
   const field = useRef<HTMLTextAreaElement>(null);

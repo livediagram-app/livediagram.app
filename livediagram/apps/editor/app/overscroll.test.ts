@@ -14,8 +14,12 @@ describe('the editor root', () => {
   });
 
   it('leaves the marketing site and the help centre pulling to refresh', () => {
-    for (const app of ['marketing', 'help']) {
-      expect(read(`../../${app}/app/layout.tsx`)).not.toMatch(/overscroll-(none|contain)/);
+    // The help centre is the one help app on liveworkspace (liveworkspace/apps/help).
+    for (const layout of [
+      '../../marketing/app/layout.tsx',
+      '../../../../liveworkspace/apps/help/app/layout.tsx',
+    ]) {
+      expect(read(layout)).not.toMatch(/overscroll-(none|contain)/);
     }
   });
 

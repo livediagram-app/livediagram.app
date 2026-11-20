@@ -1,6 +1,8 @@
 import {
   lucideArrowLeft,
   lucideArrowRight,
+  lucideCheck,
+  lucideChevronDown,
   lucideChevronUp,
   lucideClock,
   lucideExternalLink,
@@ -20,6 +22,8 @@ import { lucideGlyph } from '@liveworkspace/ui';
 export const ClockIcon = lucideGlyph(lucideClock, 14);
 export const ContentsIcon = lucideGlyph(lucideTextAlignStart, 16);
 export const ChevronUpIcon = lucideGlyph(lucideChevronUp, 16);
+export const ChevronDownIcon = lucideGlyph(lucideChevronDown, 16);
+export const CheckIcon = lucideGlyph(lucideCheck, 16);
 export const FileIcon = lucideGlyph(lucideFile, 12);
 export const ArrowRightIcon = lucideGlyph(lucideArrowRight, 14);
 export const ArrowLeftIcon = lucideGlyph(lucideArrowLeft, 14);

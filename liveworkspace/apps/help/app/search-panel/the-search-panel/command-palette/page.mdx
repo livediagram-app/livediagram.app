@@ -1,0 +1,256 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SearchCommandPalette } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchCommandPalette as LivedocumentsSearchCommandPalette } from '@/editions/livedocuments/components/illustrations/search-panel';
+import { SearchCommandPalette as LivehuddleSearchCommandPalette } from '@/editions/livehuddle/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'The Command Palette (⌘K)',
+  description:
+    'Run any editor command by name with Cmd/Ctrl+K: undo, export, settings and more, straight from the search panel.',
+  path: '/help/search-panel/the-search-panel/command-palette/',
+});
+
+<ArticleLayout
+  path="search-panel/the-search-panel/command-palette"
+  title="The Command Palette (⌘K)"
+  description="Run any editor action by typing its name. The search panel doubles as a command palette on Cmd/Ctrl+K."
+  categoryTitle="Search Panel"
+  categorySlug="search-panel/the-search-panel"
+>
+
+The [search panel](/help/search-panel/the-search-panel/) isn't only for finding things, it's also a **command palette**: type the name of an action and run it, without hunting through menus. If you've used ⌘K in tools like VS Code, Linear, or Slack, this is the same idea.
+
+## Opening it
+
+- **Keyboard:** press `Cmd` / `Ctrl` + `K` anywhere in the editor. The older `Cmd` / `Ctrl` + `.` opens the same panel; they're interchangeable.
+- **Button:** open **Tools** in the bottom bar and choose **Search…**.
+- It works in **read-only** views, just like opening search.
+
+<AppNote app="livedesign,livediagram,livedocuments,liveplanner">
+  It also works in **[zen mode](/help/tools/zen-mode/)**.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  The conventional command-palette shortcut is `⌘K`, so it's the one to reach for. **Search…** is
+  the first row of the **Tools** menu.
+</AppNote>
+
+<AppNote app="liveplanner">**Search** in the bottom bar opens it too.</AppNote>
+
+The palette and search are one surface, so you can find a <Noun /> and run a command from the same box. Commands only exist inside a <Noun />: on the Explorer page, search finds things but has no actions to run.
+
+## Running a command
+
+Start typing and matching commands appear in an **Actions** group, below any <Noun plural />, tabs or elements that also match. Click the one you want, or arrow down to it and press `Enter`. Commands match on their name and on a few related words. At most 10 actions show at once, so type a little more to narrow a long list.
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  "tidy" finds Auto Layout and "front" finds Bring to Front.
+</AppNote>
+
+<AppNote app="livehuddle">
+  "tidy" finds Auto-align to Grid and "front" finds Bring to Front.
+</AppNote>
+
+<AppNote app="liveplanner">
+  "download" finds Export… and "hotkeys" finds Keyboard Shortcuts. Actions sit below any plans or
+  tabs that also match.
+</AppNote>
+
+<AppNote app="livediagram">
+  Type several words and each one only has to appear somewhere: "export png" finds Export….
+</AppNote>
+
+Commands only show once you've typed something, so an empty box just lists places to jump to and never runs an action by accident.
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  Because the Actions group sits below the navigation groups, the preselected first result is still
+  a place to go when your query also names a tab or element; arrow down to the command to run it
+  deliberately.
+</AppNote>
+
+<Figure
+  app="livedesign,livediagram"
+  caption="Typing a verb lists the matching actions; the first is preselected when nothing else matches."
+>
+  <SearchCommandPalette />
+</Figure>
+<Figure
+  app="livedocuments"
+  caption="Typing a verb lists the matching actions; the first is preselected when nothing else matches."
+>
+  <LivedocumentsSearchCommandPalette />
+</Figure>
+<Figure
+  app="livehuddle"
+  caption="Typing a verb lists the matching actions; the first is preselected when nothing else matches."
+>
+  <LivehuddleSearchCommandPalette />
+</Figure>
+
+Every command does exactly what its menu item or shortcut does: it's the same action under a different name, so nothing behaves differently depending on how you reach it.
+
+## What you can run
+
+The list follows what you're doing, so it only offers commands that apply right now:
+
+<AppNote app="livedesign">
+  - **With something selected:** Delete Selection, Duplicate Selection, Lock / Unlock Selection,
+  Bring to Front and Send to Back. For a single shape or other boxed element also Rotate 90°, 180°
+  or 270°, Reset Rotation, Add / Edit Note and Add Comment, plus Clear Animation when it (or an
+  arrow) has one and the shape markers (Add … Marker, Clear Marker) for a plain shape. On a logo
+  page, a selection also offers Unite, Subtract, Intersect and Exclude Shapes, and Mirror Copy. -
+  **History:** Undo and Redo, shown only when there's something to undo or redo. - **Design and
+  tab:** Create New Tab, Rename Tab, Rename Design, Delete Design, Open Theme, Open Canvas Options,
+  Share Design (for the owner, or a member of the team whose library holds the design; not for a
+  design saved only in this browser), and Renumber Steps when the tab holds [step
+  numbers](/help/palette/badges-and-step-numbers/). - **Layout cleanup** (only here, not in any
+  menu): Auto Layout (tidy up), one Auto Layout command per layout style (Flowchart (down),
+  Flowchart (right), Tree and Mindmap), and Auto-align to Grid. See [Layout
+  Cleanup](/help/tools/layout-cleanup/). - **Dialogs:** Export…, Import…, Open Settings, and
+  Keyboard Shortcuts. - **View:** Enter (or Exit) zen mode, Fit to Screen, and Collaborators, which
+  opens the [list of people in the design](/help/collaboration/live-presence/#collaborators). -
+  **Tools:** pick up the Select Tool, Hand Tool, Eraser Tool, Format Painter, Laser Pointer or
+  Spotlight without opening the palette. Type "laser" and you get the laser, not just the article
+  about it. - **On a [wireframe](/help/pages/wireframe-pages/) tab:** also the Inspect Tool (see
+  [Inspect](/help/pages/wireframe-pages/inspect/)) and Show (or Hide) Flow View.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **With something selected:** Delete Selection, Duplicate Selection, Lock / Unlock Selection,
+  Bring to Front and Send to Back. For a single shape or other boxed element also Rotate 90°, 180°
+  or 270°, Reset Rotation, Add / Edit Note and Add Comment, plus Clear Animation when it (or an
+  arrow) has one and the shape markers (Add … Marker, Clear Marker) for a plain shape. -
+  **History:** Undo and Redo, shown only when there's something to undo or redo. - **Canvas and
+  tab:** Create New Tab, Rename Tab, Rename Canvas, Delete Canvas, Open Theme, Open Canvas Options,
+  and Share Canvas (for the owner and the canvas's team members, and not for a canvas saved only in
+  this browser). - **Layout cleanup:** Auto Layout (tidy up), one Auto Layout command per layout
+  style (Flowchart (down), Flowchart (right), Tree and Mindmap), and Auto-align to Grid, all also on
+  the **Tidy** button in Diagram mode, plus Renumber Steps when the tab has step numbers. See
+  [Layout Cleanup](/help/tools/layout-cleanup/). - **Dialogs:** Export…, Import…, Open Settings, and
+  Keyboard Shortcuts. - **View:** Enter (or Exit) zen mode, Fit to Screen, and Collaborators, which
+  opens the [list of people in the canvas](/help/collaboration/live-presence/#collaborators). -
+  **Tools:** pick up the Select Tool, Hand Tool, Eraser Tool, Format Painter, Laser Pointer,
+  Spotlight or Isometric View without opening the palette. Type "laser" and you get the laser, not
+  just the article about it. **Slide Deck** is listed here too: it opens the [Slide
+  Deck](/help/selection-modes/slide-deck/) in the bottom bar's Tools.
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **With something selected:** Delete Selection, Duplicate Selection, Lock / Unlock Selection,
+  Bring to Front and Send to Back. For a single shape or other boxed element also Rotate 90°, 180°
+  or 270°, Reset Rotation and Add Comment, plus Clear Animation when it (or an arrow) has one and
+  the shape markers (Add … Marker, Clear Marker) for a plain shape. - **History:** Undo and Redo,
+  shown only when there's something to undo or redo. - **Document and tab:** Create New Tab, Rename
+  Tab, Rename Document, Delete Document, Open Theme, Open Canvas Options, and Share Document (owner
+  only, and not for a document saved only in this browser). - **Layout cleanup** (only here, not in
+  any menu): Auto Layout (tidy up), one Auto Layout command per layout style (Layered (down),
+  Layered (right), Tree and Radial), and Auto-align to Grid, plus Renumber Steps when the tab has
+  step numbers. See [Layout Cleanup](/help/tools/layout-cleanup/). - **Find:** Find in Tab opens the
+  Find bar, and Find and Replace opens it with its Replace row. - **Dialogs:** Export…, Import…,
+  Open Settings, and Keyboard Shortcuts. - **View:** Enter (or Exit) zen mode, Fit to Screen, and
+  Collaborators, which opens the [list of people in the
+  document](/help/collaboration/live-presence/#collaborators). - **Tools:** pick up the Select Tool,
+  Hand Tool, Format Painter, Laser Pointer or Spotlight without opening the palette. Type "laser"
+  and you get the laser, not just the article about it.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **With something selected:** Delete Selection, Duplicate Selection, Bring to Front and Send to
+  Back. For a single shape or other boxed element also Rotate 90°, 180° or 270° and Reset Rotation,
+  plus Clear Animation when it has one and the shape markers (Add … Marker, Clear Marker) for a
+  plain shape. When the selection holds a piece of furniture that turns, Rotate Left and Rotate
+  Right turn it a quarter at a time. - **History:** Undo and Redo, shown only when there's something
+  to undo or redo. - **Canvas and tab:** Create New Tab, Rename Tab, Rename Space, Delete Space,
+  Open Theme, Open Canvas Options, and Share Space (for the owner and the space's team members, and
+  not for a space saved only in this browser). - **Layout cleanup** (only here, not in any menu):
+  Auto-align to Grid. See [Layout Cleanup](/help/tools/layout-cleanup/). - **Dialogs:** Export…,
+  Import…, Open Settings, and Keyboard Shortcuts. - **View:** Fit to Screen, and Collaborators,
+  which opens the [list of people in the space](/help/collaboration/live-presence/#collaborators). -
+  **Edit and Walk:** the two sides of the [Edit | Walk toggle](/help/selection-modes/select/). Type
+  "walk" and you start walking, not just read the article about it. The side you're already on isn't
+  offered.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **History:** **Undo** and **Redo**, shown only when there's something to undo or redo. - **Plan
+  and tab:** **Create New Tab**, **Rename Tab**, **Rename Plan**, **Delete Plan**, and **Share
+  Plan** (for the owner or a member of the plan's team, and not for a plan saved only in this
+  browser). - **Look:** **Open Theme**, which opens the tab's [Style](/help/user-interface/themes/)
+  dialog. - **Files:** **Export…** and **Import…**, the tab's [export](/help/tabs/export-tabs/) and
+  [import](/help/tabs/import-tabs/). - **Settings:** **Open Settings**, and **Keyboard Shortcuts**,
+  which opens Settings on its Keyboard category. - **View:** **Enter zen mode** (or **Exit zen
+  mode**), and **Collaborators**, which opens the [list of people in the
+  plan](/help/collaboration/live-presence/).
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  A few rules keep the tool list honest, matching the palette's own tool menu: the tool you're
+  already holding isn't offered; everything except Select and Hand needs something on the canvas
+  first; and Spotlight is desktop-only.
+</AppNote>
+
+<AppNote app="livediagram">
+  Slide Deck is desktop-only too, and the Format Painter isn't offered on a Draw whiteboard, whose
+  dock replaces it. On an Event Storming board, **Add Notes from a Photo** joins the list too, where
+  reading a wall photo is available.
+</AppNote>
+
+<AppNote app="livehuddle">
+  While you walk, Undo, Redo, Open Theme and Open Canvas Options step out of the list. The [Format
+  Painter](/help/selection-modes/format-painter/) isn't here: it is a button on the selection
+  toolbar, above whatever you have selected.
+</AppNote>
+
+<AppNote app="livedesign,livediagram">
+  On a [locked tab](/help/tabs/locking-tabs/) the palette offers nothing that would change its
+  elements: no selection commands, no layout cleanup, and no Eraser Tool or Format Painter.
+</AppNote>
+
+<AppNote app="livediagram">A locked tab also gets no Add Notes from a Photo.</AppNote>
+
+<AppNote app="livedocuments">
+  On a [locked tab](/help/canvas/locking/) nothing that edits its elements is offered: no selection
+  commands, no layout cleanup and no Format Painter.
+</AppNote>
+
+## In read-only views
+
+When you're on a Viewer or Participant share link, the palette still offers the actions that don't change anything. Every command that would change the <Noun /> simply isn't listed.
+
+<AppNote app="livedesign">
+  The palette still offers Enter or Exit zen mode, Fit to Screen, Export…, Collaborators, and the
+  tools that only change how you look at the canvas (Select, Hand, Laser Pointer and Spotlight, plus
+  the Inspect Tool and Show or Hide Flow View on a wireframe tab). The Eraser Tool and the Format
+  Painter aren't listed.
+</AppNote>
+
+<AppNote app="livediagram">
+  The palette still offers Enter or Exit zen mode, Fit to Screen, Export…, Collaborators, and the
+  tools that only change how you look at the canvas (Select, Hand, Laser Pointer, Spotlight and
+  Isometric View). The Eraser, the Format Painter and Slide Deck aren't listed.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The palette still offers Enter or Exit zen mode, Fit to Screen, Find in Tab, Export…,
+  Collaborators, and the tools that only change how you look at the canvas (Select, Hand, Laser
+  Pointer and Spotlight). A Participant also gets Find and Replace, since they may edit the text.
+  The Format Painter isn't listed.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The palette still offers Fit to Screen, Export… and Collaborators. Participants and Viewers are
+  always walking, so Walk is never offered, and nothing takes them out of it.
+</AppNote>
+
+<AppNote app="liveplanner">
+  On a Viewer or Participant link, the palette keeps the commands that change nothing: Enter or Exit
+  zen mode, Export… and Collaborators.
+</AppNote>
+
+<Tip>
+  Forgotten a shortcut? Open the palette with `⌘K`, type the first few letters of what you want to
+  do (like "export" or "layout"), and run it, no need to remember where it lives.
+</Tip>
+
+</ArticleLayout>

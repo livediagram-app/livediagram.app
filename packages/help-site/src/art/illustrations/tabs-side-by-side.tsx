@@ -1,4 +1,4 @@
-// Side by side tabs (docs/specs/007-editor/split-view.md, docs/specs/018-help/help-app.md): a tab
+// Side by side tabs (docs/specs/007-editor/split-view.md, liveworkspace/docs/specs/017-help/help-centre.md): a tab
 // dragged to the right edge with the drop ghost showing, and the open split, one header and one tab
 // bar across both panes, the editor's chrome in the pane being edited and the seam's two buttons.
 // Composed only from the shared primitives so the house style holds.

@@ -1,0 +1,70 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  MakeSizesDialogScene,
+  ExportAllSizesScene,
+} from '@/editions/livedesign/components/illustrations/photo-make-sizes';
+
+export const metadata = helpMetadata({
+  title: 'Make Sizes',
+  description:
+    'Turn one photo into a photo page for every social format you need, then export them all as one .zip.',
+  path: '/help/pages/photo-pages/make-sizes/',
+});
+
+<ArticleLayout path="pages/photo-pages/make-sizes" title="Make Sizes" description="One photo in every size a post needs, each its own photo page, and all of them in one .zip." categoryTitle="Pages" categorySlug="pages" parentArticle={{ title: "Photo Pages", slug: "photo-pages" }} subArticles={getSubArticles("photo-pages").filter((a) => a.slug !== "make-sizes")}>
+
+A post, a story, a cover and a thumbnail all want the same picture in different shapes. **Make Sizes** copies the photo page you are on into a new photo page for each format you tick, the picture scaled to fill the format and cropped about the centre. It works on [photo pages](/help/pages/photo-pages/) only.
+
+## Making the sizes
+
+<Step n={1}>
+  Open the photo page you want to start from. Make Sizes needs a started photo: on one with no
+  layers yet it says "Start the photo first: there is nothing to make sizes from."
+</Step>
+<Step n={2}>
+  Choose **Make Sizes…** at the bottom of the page's **Image** menu, or search for **Photo: Make
+  Sizes** in the command palette.
+</Step>
+<Step n={3}>
+  Tick the formats you want. Each tile shows your photo in the format's shape, with its name and
+  size.
+</Step>
+<Step n={4}>Press **Make 3 Sizes** (the button counts your ticks).</Step>
+
+<Figure caption="The Make Sizes dialog: each tile previews the crop, and the button counts the sizes you ticked.">
+  <MakeSizesDialogScene />
+</Figure>
+
+The formats are **Instagram Post** (1080 x 1350), **Instagram Story** (1080 x 1920), **LinkedIn Post** (1200 x 627), **LinkedIn Banner** (1584 x 396), **X Post** (1600 x 900), **X Header** (1500 x 500), **Facebook Cover** (851 x 315) and **YouTube Thumbnail** (1280 x 720). **Custom** shows width and height fields once ticked, for any size from 1 pixel up to the photo limit; a size past the limit is refused under the fields.
+
+**Select All** ticks as many as fit and **Clear** unticks them all. The dialog remembers your ticks in this browser for next time.
+
+A tab holds up to **10** photo pages. As the ticks fill the room, the other tiles switch off ("A tab holds up to 10 photo pages.") and a line under the grid says how many more fit. If the tab is already full, Make Sizes says "A tab holds up to 10 photo pages. Delete one to make sizes."
+
+## What you get
+
+Each size is a photo page of its own, named for its format ("Instagram Post", "X Post" and so on), placed right after the page it came from. The new pages land together as one edit, so one undo takes them all back, and everyone in the design sees them at once. The view goes to the first.
+
+Every layer comes along: names, order, visibility, opacity, blend modes, masks and effects. Pixel layers are scaled to fill the format, then the edges are set about the centre, and the pixels past the edges are kept, so you can slide the picture with the **Move** tool to choose another crop. Text layers keep their words and scale with the picture. Text, shapes and stickers placed on top of the photo stay on the page they are on.
+
+Nothing is linked: a later change to the original or to any size changes that page alone.
+
+## Exporting all sizes
+
+When the sizes are made, a message says "Made 3 sizes." with **Export All Sizes**. It downloads one .zip of every photo page in the tab as PNGs, with their elements.
+
+For more control, open **Export** and choose the **Photo** card, then **All Sizes** (it appears once the tab has two photo pages or more). Pick **PNG** or **JPEG** and whether to **Include Elements**. The .zip is named after the design, `Design Name - All Sizes.zip`, and holds one file per page at its own pixel size, named like `Instagram Post 1080x1350.png`.
+
+<Figure caption="The toast after Make Sizes offers Export All Sizes; the Export dialog's Photo card has All Sizes as a format.">
+  <ExportAllSizesScene />
+</Figure>
+
+## Who can use it
+
+- **Editors** make sizes and export them, provided they may add pages.
+- **Participants** can look closer (the **Eyedropper** and a read-only **Photo** panel) but have no editing tools, so no Make Sizes.
+- **Viewers** see the photo and have no Make Sizes. Where the design allows exports, they can still export, **All Sizes** included.
+
+</ArticleLayout>

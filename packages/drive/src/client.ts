@@ -120,8 +120,9 @@ export type DriveClient = ReturnType<typeof createDriveClient>;
 export const DRIVE_CONNECT_PATH = '/drive/connect';
 export const DRIVE_CONNECTED_PATH = '/drive/connected';
 export const DRIVE_OPEN_PATH = '/drive/open';
-/** The platform's help article on Google Drive sync, on liveworkspace's origin. */
-export const DRIVE_HELP_PATH = '/help/google-drive';
+/** The help article on Google Drive sync (the one help centre's, every app's and All Apps'), on whichever address
+ *  links it. */
+export const DRIVE_HELP_PATH = '/help/account-and-data/google-drive/';
 /** The query parameter /drive/connect reads the return page from. */
 export const DRIVE_RETURN_PARAM = 'return';
 

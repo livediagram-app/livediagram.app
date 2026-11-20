@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Live Service Status',
+  description:
+    "Bind a shape to a service's public status URL, and a badge shows whether the service is up, degraded or down while the canvas is open.",
+  path: '/help/canvas/links/live-status/',
+});
+
+<ArticleLayout path="canvas/links/live-status" title="Live Service Status" description="Bind a shape to a service's public status URL, and a badge on it shows whether the service is up, degraded or down while the canvas is open." categoryTitle="Canvas" categorySlug="canvas" parentArticle={{ title: "Links and Link Cards", slug: "links" }} subArticles={getSubArticles("links").filter((a) => a.slug !== "live-status")}>
+
+An architecture diagram usually says what a system looks like, not whether it is working. **Live status** closes that gap: bind a shape to the public status URL of the service it stands for, and a small badge on the shape's bottom-right corner shows **Up**, **Degraded**, **Down** or **Unknown** while anyone has the canvas open. The diagram and the dashboard become one tab.
+
+## Binding a Shape
+
+<Step n={1}>
+  Right-click the shape, open **Resources** at the foot of its menu and press **Live Status…**,
+  below Add Link and Add Note.
+</Step>
+
+<Step n={2}>
+  Paste the service's **Status URL** and press **Save** (or Enter). Leave off the `https://` and it
+  is added for you.
+</Step>
+
+<Step n={3}>
+  Within a few seconds the badge appears. The canvas checks the address about once a minute for as
+  long as it is open. An address that keeps not answering within 5 seconds is checked less often, up
+  to every 8 minutes, until it answers again.
+</Step>
+
+To change the address, open **Live Status…** again; **Remove** takes the binding off. Both are one step you can undo.
+
+## Which Addresses Work
+
+The address has to be public: an `https` address on the open internet that the service answers without signing in.
+
+- **A status page's API**, such as Atlassian Statuspage's `/api/v2/status.json` (for example `https://www.githubstatus.com/api/v2/status.json`). Its indicator decides the state.
+- **A health check**, such as `https://api.example.com/healthz`. A JSON answer whose `status`, `state` or `health` says `ok`, `up` or `pass` reads Up; `warn` or `degraded` reads Degraded; `fail` or `down` reads Down.
+- **Any https page** that answers when the service is up. A normal answer reads Up; an error code, no answer within 5 seconds or an address that doesn't resolve reads Down.
+
+Addresses that can't be checked are refused as you type: anything that isn't `https`, an IP address, `localhost`, and internal names such as `.local`, `.internal` or `.lan`. An address that redirects reads Unknown; use the address it moves to.
+
+<Note>
+  The address is part of the canvas, so anyone who can open it can read the address. Never put a key
+  or a token in it.
+</Note>
+
+## What the Badge Means
+
+| Badge        | What it means                                                                                                                                                                        |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Up**       | The service answered and says it is working.                                                                                                                                         |
+| **Degraded** | The service reports a partial outage or maintenance.                                                                                                                                 |
+| **Down**     | The service reports an outage, answered with an error, or didn't answer.                                                                                                             |
+| **Unknown**  | The address redirects or can't be checked, the canvas holds too many status links (more than 25), or it hasn't been checked in the last 3 minutes (10 for one that isn't answering). |
+
+Hover the badge to see why, when it was last checked and which host it asked.
+
+## Who Sees It
+
+Everyone who opens the canvas sees the badges: Editors, Participants and Viewers, on a share link and in a presentation. Only an **Editor** can bind, change or remove a status URL.
+
+The badge is live, so it never appears in a PNG, SVG or PDF export, and readers of a Community post don't see it.
+
+<Tip>
+  The checks happen once for the canvas, not once per person, so ten people looking at the same
+  diagram cost the service one request a minute. Nobody looking means no checks at all.
+</Tip>
+
+## When It Isn't Offered
+
+Live status is part of livediagram.app. On a self-hosted copy that hasn't turned the checks on, **Live Status…** isn't in the menu and a shape bound elsewhere shows no badge, but it keeps its binding.
+
+</ArticleLayout>

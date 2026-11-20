@@ -2,27 +2,6 @@
 # Written by .github/scripts/duplicate-guard.mjs --update; it may only shrink (docs/ci.md).
 livedesign/apps/cli/src/output/cli-error.ts	livediagram/apps/cli/src/output/cli-error.ts	livedocuments/apps/cli/src/output/cli-error.ts	liveplanner/apps/cli/src/output/cli-error.ts
 livedesign/apps/cli/src/render/png.ts	livedocuments/apps/cli/src/render/png.ts	liveplanner/apps/cli/src/render/png.ts
-livedesign/apps/help/app/account-and-data/page.tsx	livediagram/apps/help/app/account-and-data/page.tsx	livedocuments/apps/help/app/account-and-data/page.tsx	livehuddle/apps/help/app/account-and-data/page.tsx	liveplanner/apps/help/app/account-and-data/page.tsx
-livedesign/apps/help/app/canvas/page.tsx	livediagram/apps/help/app/canvas/page.tsx	livedocuments/apps/help/app/canvas/page.tsx	livehuddle/apps/help/app/canvas/page.tsx
-livedesign/apps/help/app/collaboration/page.tsx	livediagram/apps/help/app/collaboration/page.tsx	livedocuments/apps/help/app/collaboration/page.tsx	livehuddle/apps/help/app/collaboration/page.tsx	liveplanner/apps/help/app/collaboration/page.tsx
-livedesign/apps/help/app/explorer/my-work/page.tsx	livediagram/apps/help/app/explorer/my-work/page.tsx	livedocuments/apps/help/app/explorer/my-work/page.tsx	livehuddle/apps/help/app/explorer/my-work/page.tsx	liveplanner/apps/help/app/explorer/my-work/page.tsx
-livedesign/apps/help/app/explorer/page.tsx	livediagram/apps/help/app/explorer/page.tsx	livedocuments/apps/help/app/explorer/page.tsx	livehuddle/apps/help/app/explorer/page.tsx	liveplanner/apps/help/app/explorer/page.tsx
-livedesign/apps/help/app/features/page.tsx	livediagram/apps/help/app/features/page.tsx	livedocuments/apps/help/app/features/page.tsx	livehuddle/apps/help/app/features/page.tsx	liveplanner/apps/help/app/features/page.tsx
-livedesign/apps/help/app/pages/page.tsx	livedocuments/apps/help/app/pages/page.tsx
-livedesign/apps/help/app/palette/favourites/page.tsx	livediagram/apps/help/app/palette/favourites/page.tsx	livehuddle/apps/help/app/palette/favourites/page.tsx
-livedesign/apps/help/app/palette/page.tsx	livediagram/apps/help/app/palette/page.tsx	livedocuments/apps/help/app/palette/page.tsx	livehuddle/apps/help/app/palette/page.tsx
-livedesign/apps/help/app/palette/popular/page.tsx	livediagram/apps/help/app/palette/popular/page.tsx	livehuddle/apps/help/app/palette/popular/page.tsx
-livedesign/apps/help/app/robots.ts	livediagram/apps/help/app/robots.ts	livedocuments/apps/help/app/robots.ts	livehuddle/apps/help/app/robots.ts	liveplanner/apps/help/app/robots.ts
-livedesign/apps/help/app/search-panel/page.tsx	livediagram/apps/help/app/search-panel/page.tsx	livedocuments/apps/help/app/search-panel/page.tsx	livehuddle/apps/help/app/search-panel/page.tsx	liveplanner/apps/help/app/search-panel/page.tsx
-livedesign/apps/help/app/selection-modes/page.tsx	livediagram/apps/help/app/selection-modes/page.tsx	livedocuments/apps/help/app/selection-modes/page.tsx	livehuddle/apps/help/app/selection-modes/page.tsx
-livedesign/apps/help/app/sitemap.ts	livediagram/apps/help/app/sitemap.ts	livedocuments/apps/help/app/sitemap.ts	livehuddle/apps/help/app/sitemap.ts	liveplanner/apps/help/app/sitemap.ts
-livedesign/apps/help/app/tabs/page.tsx	livediagram/apps/help/app/tabs/page.tsx	livedocuments/apps/help/app/tabs/page.tsx	livehuddle/apps/help/app/tabs/page.tsx	liveplanner/apps/help/app/tabs/page.tsx
-livedesign/apps/help/app/tools/page.tsx	livediagram/apps/help/app/tools/page.tsx	livedocuments/apps/help/app/tools/page.tsx	livehuddle/apps/help/app/tools/page.tsx	liveplanner/apps/help/app/tools/page.tsx
-livedesign/apps/help/app/user-interface/page.tsx	livediagram/apps/help/app/user-interface/page.tsx	livedocuments/apps/help/app/user-interface/page.tsx	livehuddle/apps/help/app/user-interface/page.tsx	liveplanner/apps/help/app/user-interface/page.tsx
-livedesign/apps/help/app/user-interface/power-user-mode/page.tsx	livediagram/apps/help/app/user-interface/power-user-mode/page.tsx	livedocuments/apps/help/app/user-interface/power-user-mode/page.tsx	livehuddle/apps/help/app/user-interface/power-user-mode/page.tsx	liveplanner/apps/help/app/user-interface/power-user-mode/page.tsx
-livedesign/apps/help/components/ArticleLayout.tsx	livediagram/apps/help/components/ArticleLayout.tsx	livedocuments/apps/help/components/ArticleLayout.tsx	livehuddle/apps/help/components/ArticleLayout.tsx	liveplanner/apps/help/components/ArticleLayout.tsx
-livedesign/apps/help/components/category-art/index.tsx	livedocuments/apps/help/components/category-art/index.tsx
-livedesign/apps/help/lib/seo.ts	livediagram/apps/help/lib/seo.ts	livedocuments/apps/help/lib/seo.ts	livehuddle/apps/help/lib/seo.ts	liveplanner/apps/help/lib/seo.ts
 livedesign/apps/live/app/oauth/consent/page.tsx	livediagram/apps/editor/app/oauth/consent/page.tsx	livedocuments/apps/editor/app/oauth/consent/page.tsx	liveplanner/apps/editor/app/oauth/consent/page.tsx
 livedesign/apps/live/app/oauth/device/page.tsx	livediagram/apps/editor/app/oauth/device/page.tsx	livedocuments/apps/editor/app/oauth/device/page.tsx	liveplanner/apps/editor/app/oauth/device/page.tsx
 livedesign/apps/live/components/canvas/boxed-shared.ts	livedocuments/apps/editor/components/canvas/boxed-shared.ts
@@ -87,7 +66,6 @@ livediagram/apps/editor/lib/explorer-thumbnail.tsx	livehuddle/apps/editor/lib/ex
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
 livediagram/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
 livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts
-livediagram/apps/help/components/category-art/index.tsx	livehuddle/apps/help/components/category-art/index.tsx
 livediagram/apps/marketing/app/page.tsx	livehuddle/apps/marketing/app/page.tsx
 livediagram/apps/marketing/components/art-tokens.ts	livehuddle/apps/marketing/components/art-tokens.ts
 livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs

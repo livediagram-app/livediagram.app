@@ -1,0 +1,136 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SessionTools } from '@liveworkspace/help-site/art/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'Session Tools',
+  description:
+    'A shared timer, and in some apps live dot-voting and polls, for running a live session, synced to every participant.',
+  path: '/help/collaboration/session-tools/',
+});
+
+<ArticleLayout path="collaboration/session-tools" title="Session Tools" description="Keep a live session to time with a shared timer, and in some apps vote and poll on the spot." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
+
+Session tools make a shared <Noun /> interactive for live sessions. They sync to everyone in real time, and the one every session needs is a clock: a **timer** for time-boxing an activity.
+
+<AppNote app="livediagram">
+  There are three tools: a **timer** for time-boxing an activity, **dot-voting** for prioritising as a group, and **polls** for asking the room a question. Anyone who can edit the canvas can run them (or only the [facilitator](/help/collaboration/facilitator/), once someone takes that role), so they pair naturally with collaborative boards like retros, brainstorms, and planning sessions.
+
+  <Figure caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
+    <SessionTools />
+  </Figure>
+</AppNote>
+
+<AppNote app="liveplanner">
+  There are two tools: a **timer** for time-boxing an activity, and **dot-voting** for prioritising cards as a group. Anyone who can edit the plan can run them, which suits a session such as a retrospective.
+
+  <Figure caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
+    <SessionTools poll={false} />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  The clock lives in the room itself: place a **Timer** or a **Stopwatch** from the palette's **Meet** category, and everyone in the Space sees it tick in sync. Because they're pieces rather than a button in the toolbar, every room can keep its own time: a stand-up corner with a 15 minute Timer, a meeting room with a Stopwatch, a focus booth with a 25 minute Timer. Each runs on its own.
+
+To point everyone at the same spot before you start, press [Bring Focus](/help/palette/behaviour/bring-focus/).
+
+</AppNote>
+
+## Where to Find Them
+
+Where the tools sit depends on the app.
+
+<AppNote app="livediagram">
+  The tools live in the bottom bar: **Timer**, **Vote**, and **Poll** sit together in one group, right after Undo and Redo, and they stay there in Zen. [Workshop mode](/help/canvas/workshop-mode/) has all three, and so does an [Event Storming board](/help/canvas/event-storming-boards/); Diagram and Draw mode have none, even while a tool runs, so switch to Workshop to run a session.
+
+Each button opens its tool in a popover above it. While a tool is idle its button is just an icon, and pressing it opens the set-up. Once it is going the button shows what is happening: the **Timer** shows its clock, the **Vote** button shows how many dots you have left, and a green dot marks a running poll once you have answered it (or if you started it). Visitors on a Participant or Viewer pass see the **Timer** and **Vote** buttons only while those tools are running; a Participant gets the **Poll** button once they have answered, and a Viewer never gets it.
+
+On a desktop, a running vote's or poll's popover stays open while you work on the canvas: only pressing its button again puts it away, and it closes by itself when the activity ends. The timer's popover, and any set-up popover, closes as soon as you click elsewhere: the clock stays on the **Timer** button.
+
+While someone else is facilitating, the set-up, and a running timer's controls, say who at the top and are greyed out.
+
+The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again. **Polls are the exception**: they are never saved to the canvas, and vanish completely when you end one. While a poll runs, anyone who joins late or reloads is still asked.
+
+- **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown on its button in the bottom bar. See [The Timer](/help/collaboration/session-tools/timer/).
+- **Dot-voting** lets each participant spend a budget of dots on the elements they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
+- **Polls** ask everyone a question (yes/no, a rating, a choice, a person in the room, or free text) and tally the answers live, saving nothing unless you keep the results as a chart. See [Polls](/help/collaboration/session-tools/polls/).
+
+You can also put a timer, a vote or a poll **on the canvas** as a [session button](/help/palette/behaviour/session-buttons/), so a template can carry its own running order.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+  The tools live in the bottom-right cluster: **Timer** and **Vote** sit together in one strip, right after Undo and Redo and before the Trash and Card Types. They show on a tab whose board is made for voting, one that takes a card type with a **Votes** field, such as the Retro board of the **Team Retro** template (its Notes and Ideas), or any board whose card types you have given Votes. See [Card Types](/help/plan/card-types/). They never show on a Dashboard tab, and a timer or vote already running keeps its button so it can be seen and stopped.
+
+Each button opens its tool in a popover above it. While a tool is idle its button is just an icon, and pressing it opens the set-up. Once it is going the button shows what is happening: the **Timer** shows its clock, and the **Vote** button shows how many dots you have left. Visitors on a Participant or Viewer link see the buttons only while those tools are running. The strip stays in [Zen mode](/help/tools/zen-mode/), so a facilitator can still run the session there.
+
+On a desktop, a running vote's popover stays open while you work on the board: only pressing its button again puts it away, and it closes by itself when the vote ends. The timer's popover, and any set-up popover, closes as soon as you click elsewhere: the clock stays on the **Timer** button.
+
+The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else in the plan. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again.
+
+- **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown on its button in the bottom bar. See [The Timer](/help/collaboration/session-tools/timer/).
+- **Dot-voting** lets each participant spend a budget of dots on the cards they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Timer and Stopwatch**: place one, then start, pause, reset or set it with the buttons under
+  it. See [Timer and Stopwatch](/help/collaboration/session-tools/timer/).
+</AppNote>
+
+## Who Can Do What
+
+Session tools follow the <Noun />'s roles automatically. Editors run the controls and take part. Viewers can still watch: they see the timer ticking, but they cannot control the session.
+
+<AppNote app="livediagram,liveplanner">
+What a viewer actually sees during a vote also depends on its privacy settings: with **Hide running counts** on, nobody sees anyone else's dots until the results are revealed.
+</AppNote>
+
+<AppNote app="livediagram">
+  Anyone with an **Editor** pass (and the owner, and team members) can run the controls and take part: starting the timer, casting votes. Visitors on a **Participant** pass take part but never run anything: they cast dots and answer estimates, temperature checks, the Done check, quizzes and the idea box, while starting, revealing and clearing stay with editors. Visitors on a **Viewer** pass can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot, and they only get a tool's button in the bottom bar while it is running (never the Poll button). Typically the facilitator holds an Editor pass, the team shares a Participant pass, and observers follow a Viewer pass.
+
+**A vote is narrower still.** Anyone who can take part (an Editor or a Participant) can cast dots, but only the person who _started_ the vote (or the facilitator) can end it, reveal the results, clear it, or drive the results walkthrough. Ending a vote can't be undone, so it isn't something a participant should be able to do by accident. See [Dot Voting](/help/collaboration/session-tools/voting/).
+
+**Polls follow the same rule**: Participants and editors are asked and can answer; a Viewer isn't asked and sees neither the question nor the results. To hear back from an audience, share a Participant pass. Starting and ending a poll still needs edit access.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Anyone with an **Editor** link (and the owner, and team members) can run the controls and take part: starting the timer, casting votes. Visitors on a **Participant** link take part but never run anything: they cast dots, while starting, revealing and clearing stay with editors. Visitors on a **Viewer** link can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot, and they only get a tool's button in the bottom bar while it is running. Typically whoever runs the session holds an Editor link, the team shares a Participant link, and observers follow a Viewer link.
+
+**A vote is narrower still.** Anyone who can take part (an Editor or a Participant) can cast dots, but only the person who _started_ the vote can end it, reveal the results, clear it, or drive the results walkthrough. Ending a vote can't be undone, so it isn't something a participant should be able to do by accident. See [Dot Voting](/help/collaboration/session-tools/voting/).
+</AppNote>
+
+<AppNote app="livehuddle">
+  Anyone with an **Editor** or **Participant** pass can run a Timer or Stopwatch, so whoever is
+  talking can keep time. A **Viewer** watches it tick. Placing and moving the pieces is an Editor's.
+</AppNote>
+
+## What Does and Does Not Get Recorded
+
+None of the tools adds to Undo: starting a timer is not the kind of thing you would want to Ctrl+Z. A <Noun /> kept Offline has no live room to share them with.
+
+<AppNote app="livediagram">
+  Placing a dot or answering a poll is not added to [Undo](/help/canvas/undo/) either. See [Offline
+  mode](/help/privacy-and-security/offline-mode/) for a canvas kept Offline.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Placing a dot is not added to [Undo](/help/user-interface/undo/) either. When a vote ends, each
+  card keeps the dots it gathered as its **Votes**. See [Offline
+  mode](/help/privacy-and-security/offline-mode/) for a plan kept Offline.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Starting, pausing and resetting don't go on [Undo](/help/canvas/undo/). A [Space kept
+  Offline](/help/privacy-and-security/offline-mode/) has no live room to share them with, but its
+  pieces still run for you.
+</AppNote>
+
+<Tip>
+  Share a Participant link with everyone who should take part, and a Viewer link with anyone who
+  only needs to watch. The roles do the gating for you, with no extra setup.
+</Tip>
+
+<AppNote app="livehuddle">Keep an Editor pass for whoever arranges the Space.</AppNote>
+
+</ArticleLayout>

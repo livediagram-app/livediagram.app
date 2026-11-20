@@ -8,22 +8,26 @@ import {
   helpArticleTelemetryId,
   type HelpArticleKey,
 } from './help-articles';
+import { articles, categories } from '@livediagram/help-registry';
 
-// The editor deep-links into the help centre (apps/help) by the slugs in
-// HELP_ARTICLES, so a stale slug ships a 404 link. The editor depends on
-// help's URL structure at runtime, so reading help's app/ here to confirm
-// every link resolves is a legitimate cross-app guard: if help moves an
-// article, that link really is broken and this should fail. (Stronger than
-// checking against @livediagram/help-registry: the filesystem is what
-// actually serves the page.)
-const HELP_APP = fileURLToPath(new URL('../../help/app', import.meta.url));
+// The editor deep-links into the help centre by the paths in HELP_ARTICLES, so a stale path ships a 404 link. The
+// help is the one help centre now (liveworkspace/apps/help, liveworkspace/docs/specs/017-help/help-centre.md), whose
+// app/ holds every app's articles: a link resolves when its page is on disk AND livediagram's help shows it (an article
+// that applies to livediagram, in @livediagram/help-registry's slice, or one of its category landings or fixed pages), since an
+// article for other apps only answers livediagram's address with a redirect away. Reading help's app/ here is a
+// legitimate cross-app guard: the filesystem is what actually serves the page.
+const HELP_APP = fileURLToPath(new URL('../../../../liveworkspace/apps/help/app', import.meta.url));
+const SHOWN_ARTICLES = new Set(articles.map((a) => `${a.categorySlug}/${a.slug}`));
+const SHOWN_LANDINGS = new Set(['contact', 'features', ...categories.map((c) => c.slug)]);
 
 describe('HELP_ARTICLES deep links resolve to a real help page', () => {
-  it('every mapped path has a page.mdx (article) or page.tsx (category landing)', () => {
-    const missing = Object.entries(HELP_ARTICLES).filter(
-      ([, slug]) =>
-        !existsSync(`${HELP_APP}/${slug}/page.mdx`) && !existsSync(`${HELP_APP}/${slug}/page.tsx`),
-    );
+  it("every mapped path is an article (page.mdx) or a landing (page.tsx) that livediagram's help shows", () => {
+    const missing = Object.entries(HELP_ARTICLES).filter(([, slug]) => {
+      const path = slug.split('#')[0]!.replace(/\/$/, '');
+      if (existsSync(`${HELP_APP}/${path}/page.mdx`)) return !SHOWN_ARTICLES.has(path);
+      if (existsSync(`${HELP_APP}/${path}/page.tsx`)) return !SHOWN_LANDINGS.has(path);
+      return true;
+    });
     expect(missing).toEqual([]);
   });
 });

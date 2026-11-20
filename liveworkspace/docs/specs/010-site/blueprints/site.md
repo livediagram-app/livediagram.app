@@ -215,13 +215,22 @@ rows, filters and CSV export, which only a team's admins ever draw. It is now a 
 History and Webhooks are (`Dialogs.tsx`). Measured the same way: 389,241 to 379,814 bytes (380.1 to 370.9 KiB), the
 same 19 scripts. The budget stays at 380 KiB.
 
+**The team card loads with the team view (2026-11-19, Work Tracker 1315).** Holding the Inbox's done rows across a
+reload (`packages/explorer/src/data/inbox-settled.ts`) took `/explorer` to 380.5 KiB, over its budget. The team view
+imported the team card (`packages/explorer/src/teams/TeamCard.tsx`) statically, and Home's spaces and Invites took
+`initialsOf` from the same module, so every first load carried the card's member rows, menus and Invite by Link
+dialog. What the view needs before the card (`useTeamDetails`, `teamHeadline`, `initialsOf`) is now
+`teams/team-details.ts`, and the card is a `lazy` import inside `Suspense`, its members skeleton standing in, fetched
+by the Explorer's idle preload with the lazy sections. Measured the same way: 380.5 to 377.5 KiB (386,555 bytes), the
+same 19 scripts. `panes-lazy-load.test.ts` keeps the card out of a static import. The budget stays at 380 KiB.
+
 **Closing a toast stays inside the budget (2026-11-20, #2058).** Closing a toast now dismisses it (it fades in place
 and leaves the notification list) and a popover risen from the bottom chrome is a toast floor. The toast provider,
 stack and floor hook are in `/explorer`'s first load, and the first cut added 135 bytes gzipped (389,052 to 389,187,
 over 380 KiB by 67). The close now runs through the same `answer` and `retire` path as an offer, with how a toast
 left kept in `leaving` (`'closed'`) and the record removed by `settleToast(id, 'closed')` rather than a new export, and
 the floor hook marks the rect it already measures (`rises`) instead of copying it: 389,119 bytes, the same 19 scripts.
-The budget stays at 380 KiB.
+On top of the lazy team card above it measures 386,312 bytes. The budget stays at 380 KiB.
 
 ## Presentation and UX
 
@@ -265,13 +274,6 @@ The pages, their layout and their states are in [site.md](../site.md); the share
 | `/explorer/timeline`        | `liveworkspace/apps/site/app/explorer/timeline/page.tsx`        | A retired Explorer address, kept so links already out there land somewhere real: ExplorerShell (the layout) replaces it with Home (lib/explorer/host.ts).                   |
 | `/explorer/trash`           | `liveworkspace/apps/site/app/explorer/trash/page.tsx`           |                                                                                                                                                                             |
 | `/explorer/unsorted`        | `liveworkspace/apps/site/app/explorer/unsorted/page.tsx`        | A retired Explorer address, kept so links already out there land somewhere real: ExplorerShell (the layout) replaces it with My Work, whose root lists what is in no folde… |
-| `/help/explorer`            | `liveworkspace/apps/site/app/help/explorer/page.tsx`            | The Explorer's overview article (`components/help/ExplorerHelpPage.tsx`).                                                                                                   |
-| `/help/explorer/folders`    | `liveworkspace/apps/site/app/help/explorer/folders/page.tsx`    | Folders.                                                                                                                                                                    |
-| `/help/explorer/moving`     | `liveworkspace/apps/site/app/help/explorer/moving/page.tsx`     | Moving Work.                                                                                                                                                                |
-| `/help/explorer/sharing`    | `liveworkspace/apps/site/app/help/explorer/sharing/page.tsx`    | Sharing Across Apps.                                                                                                                                                        |
-| `/help/explorer/signing-in` | `liveworkspace/apps/site/app/help/explorer/signing-in/page.tsx` | Guest or Account, the sign-in banner's article.                                                                                                                             |
-| `/help/explorer/teams`      | `liveworkspace/apps/site/app/help/explorer/teams/page.tsx`      | Teams.                                                                                                                                                                      |
-| `/help/google-drive`        | `liveworkspace/apps/site/app/help/google-drive/page.tsx`        |                                                                                                                                                                             |
 | `/join/decline`             | `liveworkspace/apps/site/app/join/decline/page.tsx`             |                                                                                                                                                                             |
 | `/join`                     | `liveworkspace/apps/site/app/join/page.tsx`                     |                                                                                                                                                                             |
 | `/kits`                     | `liveworkspace/apps/site/app/kits/page.tsx`                     | Start a Project: the kits, the setup and a run (components/kits/, [kits.md](../../004-index/kits.md)).                                                                      |
@@ -695,7 +697,6 @@ The site sends its own telemetry through `@liveworkspace/telemetry-client` (`lib
 - `liveworkspace/apps/site/lib/first-load/budget.test.ts`
 - `liveworkspace/apps/site/lib/explorer/guest-consent.test.ts`
 - `liveworkspace/apps/site/lib/explorer/host.test.ts`
-- `liveworkspace/apps/site/components/help/explorer-articles.test.tsx`
 - `liveworkspace/apps/site/lib/explorer/imports.test.tsx`
 - `liveworkspace/apps/site/lib/explorer/inbox-local.test.ts`
 - `liveworkspace/apps/site/lib/explorer/inbox.test.tsx`

@@ -1,3 +1,9 @@
+import {
+  articleHref,
+  canonicalArticleUrl,
+  canonicalScope,
+  type HelpScope,
+} from '@liveworkspace/help-registry';
 import type { Metadata, MetadataRoute } from 'next';
 import type { ReactNode } from 'react';
 import { articleDates } from './lib/article-dates';
@@ -24,6 +30,9 @@ export type { HelpCard } from './lib/help-cards';
 
 export interface HelpSite extends ArticleNeighbours {
   facts: HelpFacts;
+  /** The one help centre's scope (liveworkspace/docs/specs/017-help/help-centre.md), or undefined for a help
+   *  centre of one product alone. */
+  scope: HelpScope | undefined;
   catalogue: HelpCatalogue;
   art: HelpArt;
   /** Per-page metadata with a complete Open Graph block, so each page carries its own canonical and OG
@@ -58,6 +67,8 @@ export function createHelpSite(config: HelpSiteConfig): HelpSite {
     siteUrl: config.siteUrl,
     helpUrl: `${config.siteUrl}/help`,
     contactFormUrl: config.contactFormUrl,
+    ...(config.scope && { scope: config.scope }),
+    ...(config.guideCounts && { guideCounts: config.guideCounts }),
   };
   const { catalogue, art } = config;
   const name = helpName(facts);
@@ -70,14 +81,55 @@ export function createHelpSite(config: HelpSiteConfig): HelpSite {
     return { url: `${facts.helpUrl}/og/${route}.png`, alt: `${card.title}, ${name} Centre` };
   };
 
+  // The one help centre's canonicals (help-centre.md "Canonical"): an article for one app is canonical on that app's
+  // address, one for several on liveworkspace.app, so search engines index one copy. Every other page is canonical
+  // where it is shown.
+  const scope = config.scope;
+  const byPath = new Map(catalogue.articles.map((a) => [`/help${articleHref(a)}`, a]));
+  const canonicalOf = (path: string): string | undefined => {
+    const article = scope ? byPath.get(path) : undefined;
+    return article ? canonicalArticleUrl(article) : undefined;
+  };
+
+  const wordedMetadata = <T extends { title: string; description: string; path: `/${string}` }>(
+    input: T,
+  ): T => {
+    const article = scope && scope !== 'all' ? byPath.get(input.path) : undefined;
+    const own = article && scope && scope !== 'all' ? article.byApp?.[scope] : undefined;
+    if (!article || !own) return input;
+    return {
+      ...input,
+      ...(own.title !== undefined && { title: article.title }),
+      ...(own.description !== undefined && { description: article.description }),
+    };
+  };
+
   return {
     facts,
+    scope,
     catalogue,
     art,
     ...createArticleNeighbours(catalogue),
-    helpMetadata: ({ title, description, path }) =>
+    helpMetadata: (input) => {
+      // An article an app words its own way (help-centre.md "Per-app wording") takes that wording in the app's
+      // help, in place of the shared words its MDX passes.
+      const { title, description, path } = wordedMetadata(input);
       // An article or category landing previews with its own card; any other page with the brand card.
-      config.pageMetadata({ title, description, path, siteName: name, image: cardImage(path) }),
+      const metadata = config.pageMetadata({
+        title,
+        description,
+        path,
+        siteName: name,
+        image: cardImage(path),
+      });
+      const canonical = canonicalOf(path);
+      if (!canonical) return metadata;
+      return {
+        ...metadata,
+        alternates: { ...metadata.alternates, canonical },
+        ...(metadata.openGraph && { openGraph: { ...metadata.openGraph, url: canonical } }),
+      };
+    },
     rootMetadata: (extra = {}) => ({
       metadataBase: new URL(facts.siteUrl),
       // Consistent document titles: every page reads "<Page Title> | <product>" (the template reaches every
@@ -103,7 +155,18 @@ export function createHelpSite(config: HelpSiteConfig): HelpSite {
     collectionJsonLd: (input) => collectionJsonLd(facts, input),
     featureColour: (slug, categorySlug) => featureColour(art, slug, categorySlug),
     featureIcon: (slug, categorySlug) => featureIcon(art, slug, categorySlug),
-    sitemap: () => helpSitemap(facts.helpUrl, catalogue, articleDates()),
+    // A scope lists the articles canonical on its own address, and its own landings.
+    sitemap: () =>
+      helpSitemap(
+        facts.helpUrl,
+        scope
+          ? {
+              ...catalogue,
+              articles: catalogue.articles.filter((a) => canonicalScope(a, scope) === scope),
+            }
+          : catalogue,
+        articleDates(),
+      ),
     // Fully crawlable, with a pointer to the sitemap.
     robots: () => ({
       rules: { userAgent: '*', allow: '/' },

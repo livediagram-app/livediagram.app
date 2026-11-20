@@ -165,7 +165,7 @@ Vitals app, and the `Community` CTA surface (`/community`, header slots only, [t
 - `apps/live/app/design/[id]/editor-page-helpers.test.ts`: a community link opens as a view with no owner.
 - `../packages/workbench/src/hooks/canvas/useAutoCopyParam.test.tsx`: copies once, only on a Community link.
 - `apps/router/src/index.test.ts`: `/community*` forwarded and stripped.
-- `apps/help/lib/community-help.test.ts`: `COMMUNITY_HELP` names registered articles.
+- `liveworkspace/apps/help/editions/livedesign/tests/community-help.test.ts`: `COMMUNITY_HELP` names registered articles.
 - `packages/api-schema/src/cta-sources.test.ts`: the `Community` surface and `/community` path.
 - The api's tests (section 16).
 - liveworkspace.app: `liveworkspace/apps/site/lib/explorer/share.test.ts` and `community-apps.test.tsx`.

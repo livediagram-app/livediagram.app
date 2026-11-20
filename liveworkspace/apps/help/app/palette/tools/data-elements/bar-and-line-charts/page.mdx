@@ -1,0 +1,161 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { BarAndLineCharts } from '@liveworkspace/help-site/art/illustrations/palette-data';
+import { LineDataDialog } from '@liveworkspace/help-site/art/illustrations/tools-menus';
+
+export const metadata = helpMetadata({
+  title: 'Bar and Line Charts',
+  description:
+    'Add a column or bar chart that compares values side by side, or a multi-series line, area or scatter chart built from an editable grid or imported from a CSV.',
+  path: '/help/palette/tools/data-elements/bar-and-line-charts/',
+});
+
+<ArticleLayout
+  path="palette/tools/data-elements/bar-and-line-charts"
+  title="Bar and Line Charts"
+  description="Column and bar charts you edit as label and value rows, and line, area and scatter charts you edit as a grid or import from a CSV."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Data and Chart Elements', slug: 'data-elements' }}
+  subArticles={getSubArticles('data-elements').filter((a) => a.slug !== 'bar-and-line-charts')}
+>
+
+Where a [pie chart](/help/palette/tools/data-elements/pie-chart/) shows one total split into slices, a **bar chart** compares values side by side, one bar per category, and a **line chart** plots one or more series across shared categories, so it suits trends over time. Both are ordinary canvas elements: they drop in with sample data and take their colours from the active [theme](/help/canvas/themes/).
+
+<Figure caption="A bar chart comparing four categories, and a line chart with two series across the same months.">
+  <BarAndLineCharts />
+</Figure>
+
+## Adding one
+
+<Step n={1}>
+  Open the **Data** category on the palette strip, or use the [search
+  panel](/help/search-panel/the-search-panel/search-add-to-canvas/): type "bar chart" or "line
+  chart".
+</Step>
+
+<AppNote app="livediagram">
+  The **Data** category is on the palette strip in [Workshop](/help/canvas/workshop-mode/); in
+  Diagram mode, use the search panel.
+</AppNote>
+
+<AppNote app="livedesign">A logo page has no Data category, so use the search panel there.</AppNote>
+
+<Step n={2}>
+  Pick **Column** or **Line**, then tap the canvas to drop it, or drag to draw it at a size. It
+  lands with sample data so it looks finished straight away.
+</Step>
+
+## Chart types
+
+Any chart can draw its data seven ways, named as Google Sheets and Excel name them. Right-click it, open **Tools**, then **Chart Type**, and pick one:
+
+- **Column**: upright bars, one per category. The palette's **Column** tile makes one.
+- **Bar**: the same bars lying down, growing to the right, which leaves room for long category names.
+- **Line**: a line with a point per category, for each series.
+- **Area**: the lines, with the space under each one filled in its colour, so a total's shape reads at a glance.
+- **Scatter**: a point per category, no lines. When every category is a number, each point sits at its number along the bottom, so it shows how two measures relate.
+- **Pie** and **Doughnut**: slices of a whole; a doughnut leaves the middle open.
+
+Switching keeps the chart's size, colours, legend and animation. Moving between a column, bar or pie chart and a line, area or scatter chart moves the data too: the bars become one series named Series 1, or the first series becomes the bars.
+
+## Editing a column or bar chart
+
+A column or bar chart holds one value per bar, the same way a pie chart holds one per slice. Right-click it, open **Tools**, then **Data**: each row is a bar, with a swatch for its colour, a label and a value. Edit them in place, remove a bar with **×**, or add one with **+ Add Slice**. The chart updates as soon as you leave a field.
+
+<AppNote app="livedocuments">
+  A negative value hangs below the baseline (or to its left on a bar chart), as in any spreadsheet
+  chart.
+</AppNote>
+
+## Editing a line, area or scatter chart
+
+A line chart's data is a grid (an area or scatter chart's too), too wide for the menu, so its **Tools** then **Data** section lists the series and offers **Edit Data**. That opens the **Chart Data** dialog:
+
+- **Edit the grid** directly: a row per category, a column per series. Add a series with the **+** at the end of the header row, add a category with **+ Add row**, and remove either with its **×** (a chart always keeps at least one of each).
+- **Import CSV** loads a file: the header row's first cell labels the category column and the rest name the series, and each row below is a category and its values (up to 12 series and 200 rows), so you can save a sheet from a spreadsheet and load it straight in. Importing replaces what the grid held.
+
+Changes apply as you make them (a typed cell when you leave it); **Done** closes the dialog.
+
+<Figure caption="The Chart Data dialog: Import CSV, a column per series, a row per category, and + Add row.">
+  <LineDataDialog />
+</Figure>
+
+## Display and colours
+
+Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**, and the **Animation** row's **Chart** section offers **Grow**, **Pop**, **Spin** and **Pulse**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off. Below it, **Show Axis** adds the value axis, with tick values and gridlines, to a column, bar, line, area or scatter chart. On a line, area or scatter chart of two or more series, **Right Axis** draws one series (or **None**) against a scale of its own on the right, for a series whose numbers sit far from the rest.
+
+<AppNote app="livedesign">
+  The series list in **Data** marks the right-axis series **(right)**. The **Shape** section beside
+  **Animation** moves the whole chart instead, such as a bounce or a float.
+</AppNote>
+
+<AppNote app="livedocuments">The **Data** summary marks the right-axis series **(right)**.</AppNote>
+
+Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Appearance** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
+
+## Link a Chart to a liveplanner Sheet
+
+Instead of typing the numbers in, a chart can take them from a range of a liveplanner Sheet and keep in step with it. It stays a native chart, drawn in your theme and styled as usual; only its numbers come from the sheet.
+
+<AppNote app="livediagram">
+
+Instead of typing the numbers in, a pie, column, bar or line chart can take them from a range of a liveplanner Sheet and keep in step with it. It stays a livediagram chart, drawn in your theme and styled as usual; only its numbers come from the sheet.
+
+<Step n={1}>
+  Right-click the chart, open **Tools**, then **Data**, and choose **Link to Sheet…** under the
+  rows.
+</Step>
+<Step n={2}>
+  Pick one of your plans, one of its Sheets, and type a range as you would in a spreadsheet, such as
+  `B2:E9`. A preview shows what the chart will draw, or why the range can't be used.
+</Step>
+<Step n={3}>Press **Link**. The chart takes the sheet's values in one undoable step.</Step>
+
+While a linked chart is hovered or selected, a quiet line under it names the plan and how fresh the numbers are ("updated 2 min ago"). The chart reads the sheet again when the canvas opens, when you switch tabs and whenever the sheet changes. In **Data**, the sheet and range take the place of the rows, with **Update** (read again now), **Change…** and **Unlink**, which keeps the last values.
+
+- Everyone sees the numbers with their own access. Someone who can't open the plan sees the values last saved on the canvas, marked as saved.
+- If rows or columns at a corner of the range are deleted, the chart keeps its values and says the range is gone, so you can pick it again with **Change…**.
+- Exports draw the saved values and carry no link. A duplicate or a copy and paste within livediagram stays linked.
+- Linking, Update, Change and Unlink are an Editor's. Participants and Viewers see the line and the live values.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+Instead of typing the numbers in, a chart can take them from a range of a [liveplanner](https://www.liveplanner.app) Sheet and keep in step with it. It stays a native chart, drawn in your theme and styled and exported like any other: only its numbers come from the sheet.
+
+<Step n={1}>
+  Right-click the chart, open **Tools**, then **Data**, and choose **Link to Sheet…** under the
+  rows.
+</Step>
+<Step n={2}>
+  Pick one of your plans, then one of its Sheets, and type the range as in a spreadsheet, such as
+  `B2:E9` (it starts filled with the sheet's filled cells). A preview shows what the chart will
+  draw.
+</Step>
+<Step n={3}>Press **Link**. The chart takes the range's values in one undo step.</Step>
+
+While the design is open, a linked chart reads its sheet again whenever the sheet changes, so an edit in liveplanner shows on the chart without you doing anything. A line below the chart, while it is hovered or selected, says where the numbers come from and how fresh they are ("Linked to Q3 Budget · updated 2 min ago").
+
+- **The Data section changes.** While linked it shows the plan, the sheet and the range in place of the rows, since the next read would overwrite a hand edit. Chart type, palette, legend, values, axis and animation stay yours to set.
+- **Update**, **Change…** and **Unlink** sit under it. Unlink keeps the last values and turns the chart back into one you edit by hand.
+- **Everyone sees the numbers.** The values are saved in the design, so someone who can't open the plan still sees the chart as last saved (the line says "saved" rather than "updated"). Exports draw the saved values too.
+- **Only an Editor** can link, update, change or unlink. A Participant or a Viewer sees the chart and its line but changes nothing.
+- If a row or column at a corner of the range is deleted, the chart keeps its values and the line says **The linked range is gone**: use **Change…** to pick it again.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  Linking a chart to a Sheet is covered in [Charts linked to a
+  sheet](/help/palette/tools/data-elements/).
+</AppNote>
+
+<Tip>
+  For a single percentage rather than a series, a [progress bar or
+  ring](/help/palette/tools/data-elements/progress-elements/) reads more clearly than a one-bar
+  chart.
+</Tip>
+
+</ArticleLayout>

@@ -106,7 +106,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
   adds it); its background pattern is livediagram's own `BackgroundPattern`
   ([Canvas and palette](./canvas-and-palette.md), `packages/document/src/background-pattern.ts`); and its help art
   (`IsometricGlyph`, the `iso` projection and `IsoCard`, and the Isometric scene) is in the help app
-  (`apps/help/components/illustrations/palette-modes-parts.tsx` and `palette-modes.tsx`), beside a re-export of the
+  (`liveworkspace/apps/help/editions/livediagram/components/illustrations/palette-modes-parts.tsx` and `palette-modes.tsx`), beside a re-export of the
   shared mode glyphs from `@liveworkspace/help-site`.
 - The projection math lives in its own helper (`apps/editor/lib/isometric.ts`):
   the camera transform builder, elevation clamp, and per-element extrusion

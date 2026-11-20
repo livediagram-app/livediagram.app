@@ -1,0 +1,93 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { DevicesCategory as DesignDevicesCategory } from '@/editions/livedesign/components/illustrations/palette-pages-categories';
+import { DevicesCategory as DocumentsDevicesCategory } from '@/editions/livedocuments/components/illustrations/palette-pages-categories';
+
+export const metadata = helpMetadata({
+  title: 'Devices',
+  description:
+    'Device frames (browser, monitor, laptop, phone, tablet, foldable, and smartwatch) for UI mockups, found by search.',
+  path: '/help/palette/devices/',
+});
+
+<ArticleLayout
+  path="palette/devices"
+  title="Devices"
+  description="Device frames for UI mockups, from a web browser down to a smartwatch."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("devices")}
+>
+
+The **Devices** are device frames for UI mockups. Each is a realistic outline of a screen you can build a design inside.
+
+<AppNote app="livediagram,livedesign">They are for wireframing too.</AppNote>
+
+<AppNote app="livedocuments">They suit screenshots as much as mockups.</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  The **Devices** row sits in the palette's **Components** category.
+</AppNote>
+
+## Finding them
+
+<AppNote app="livediagram">
+  No mode's palette strip shows the device frames, but they work in every mode: search for one by
+  name ("phone", "browser") in the **Search** at the end of the palette strip ([Toolbar
+  Layout](/help/palette/toolbar-layout/#search)), or in the editor's [Search
+  panel](/help/search-panel/the-search-panel/search-add-to-canvas/) under **Add to canvas**.
+</AppNote>
+
+<AppNote app="livedesign">
+  Rest on **Components** on the palette strip, or click it, then rest on or click its **Devices** row: the frames open in a second panel beside it, the desktop frames, then the mobile ones. Tap a frame to add it, or drag it to where you want it. Search finds each frame by name too ("phone", "browser"), in the palette strip's [Search](/help/palette/toolbar-layout/#search) and the editor's [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/). A wireframe page leaves the row out (a wireframe is its device already) and a logo page has no Components, but the frames still work there: search for one by name and add it.
+
+<Figure caption="The Devices row opens its frames in a panel beside Components, each with a line on what it is for.">
+  <DesignDevicesCategory />
+</Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  Rest on **Components** on the palette strip, or click it, then rest on or click the **Devices** row in its **Layout** group: the frames open in a second panel beside it, the desktop frames, then the mobile ones. Tap a frame to add it, or drag it to where you want it. Search finds each frame by name too ("phone", "browser"), in the palette strip's [Search](/help/palette/toolbar-layout/#search) and the editor's [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/).
+
+<Figure caption="The Devices row opens its frames in a panel beside Components, each with a line on what it is for.">
+  <DocumentsDevicesCategory />
+</Figure>
+</AppNote>
+
+## The frames
+
+- **Browser** for a desktop web page, with window dots, back, forward and reload, and an address bar.
+- **Monitor** for a full-screen desktop layout, on a stand.
+- **Laptop** for a portable-screen view.
+- **Phone** for a mobile app or page.
+- **Tablet** for a larger touch layout.
+- **Foldable** for a book-style phone, opened out to its inner screen with the fold down the middle.
+- **Watch** for a compact smartwatch screen.
+
+Frames pick up the tab theme's colours when you drop them, like any other shape.
+
+## How to use a device frame
+
+Drop a frame onto the canvas, then build your mockup inside or on top of it using shapes, text, images, and icons. The frame gives your design a true-to-life boundary so the proportions read correctly to anyone reviewing the work. Sketch a flow across several phone frames to show a journey, or pair a monitor with a phone to show a responsive layout side by side.
+
+A device frame is an ordinary element, not a container: dragging it does not carry what you have drawn on it.
+
+<Tip>
+  Draw a frame around your finished mockup and its device, so the screen and its contents move
+  together when you rearrange the <Noun />.
+</Tip>
+
+<AppNote app="livediagram">See [Frames](/help/palette/build/frames/).</AppNote>
+
+<AppNote app="livedesign">
+  See [Frames](/help/palette/frames/). The palette strip leaves frames out, so press `F` or add one
+  from the search panel.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Use a [stack](/help/palette/stacks/) for this. It sits beside Devices, in the Components
+  category's Layout group.
+</AppNote>
+
+</ArticleLayout>

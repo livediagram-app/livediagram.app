@@ -240,8 +240,9 @@ coverage, and a row per product the run reached against `main`.
 The monorepo's pre-push hook runs what CI's Checks and Tests would fail on, for what a push
 changes, this product's workspaces included (the liveworkspace root's `docs/ci.md` "Before a push").
 
-The help app's `test` and `test:coverage` tasks declare the repository's tracked text as turbo
-inputs (`turbo.json`), so a docs-only change never replays a cached pass of those guards.
+The help centre's `test` and `test:coverage` tasks (`liveworkspace/apps/help`, whose `editions/livediagram/tests/` hold this
+product's guards) declare the repository's tracked text as turbo inputs (`turbo.json`), so a docs-only change
+never replays a cached pass of those guards.
 
 ## What's tested now, what's ahead
 
@@ -299,7 +300,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   - `packages/template-previews`: preview SVGs, their bounds and motion. The
     template builders themselves (`packages/templates`, which has no suite of
     its own) are covered from their callers: `apps/editor`'s template and
-    builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
+    builder tests, `apps/marketing`'s gallery, and `liveworkspace/apps/help`'s article guard.
   - `../packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
   - `packages/oxlint-config`: the shared lint config, linting scratch files
@@ -324,7 +325,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     category grouping/ordering, row labels, colours, metric series and
     emitters, ranking rules, the CTA funnel, and the hover-card explanations'
     never-blank guarantee.
-  - `apps/help`: the article registry's consistency with the
+  - `liveworkspace/apps/help`: the article registry's consistency with the
     filesystem (slugs ↔ `page.mdx`, per-category counts), the internal-link,
     UI-label, template and shortcut guards over article text, search and
     article telemetry, the schema.org JSON-LD builders, and the docs guards: every repo path quoted in

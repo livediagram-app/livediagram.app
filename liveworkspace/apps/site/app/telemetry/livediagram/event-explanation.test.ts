@@ -1,7 +1,11 @@
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { COMPUTED, scanEmitters } from '../emitter-scan';
-import { sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import {
+  sharedClientEmitters,
+  sharedSiteEmitters,
+  helpEditionEmitters,
+} from '../platform-emitters';
 import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
@@ -24,6 +28,8 @@ const EMITS = [
   }),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
+  // This app's edition of the one help centre (Repair this Browser).
+  ...helpEditionEmitters('livediagram'),
 ];
 const LAST_RESORT = /^Someone did /;
 

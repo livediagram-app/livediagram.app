@@ -1,0 +1,1271 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { CliDeviceSignIn, CliConsent } from '@liveworkspace/help-site/art/illustrations/cli';
+
+export const metadata = helpMetadata({
+  title: 'The CLI',
+  description:
+    'Install the CLI from npm, sign in by browser, device code or API token, then read, build, edit and export your work from a terminal or agent.',
+  path: '/help/developers/cli/',
+});
+
+<ArticleLayout
+  path="developers/cli"
+  title="The CLI"
+  description="Read, build, edit and discuss your work from a terminal: install, sign in, the commands, and profiles."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+<AppNote app="livediagram">
+
+`livediagram` is a command line for the livediagram API. It is built first for **coding agents** (an agent working in your repository, or one changing a diagram while you talk to it) and second for **scripts**: finding canvases, reading a tab as text, changing it with edit operations, answering comments, and syncing canvases to files.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+`liveplanner` is a command line for the liveplanner API. It is built first for **coding agents** (an agent working in your repository, or one updating your board while you talk to it) and second for **scripts**: finding plans, reading a tab as text, adding and moving cards, filling in Sheets, answering comments, and syncing plans to files.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+`livedocuments` is a command line for the livedocuments API. It is built first for **coding agents** (an agent working in your repository, or one changing a document while you talk to it) and second for **scripts**: finding documents, reading a tab as text, changing it with edit operations, answering comments, and syncing documents to files.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+`livedesign` is a command line for the livedesign API. It is built first for **coding agents** (an agent working in your repository, or one changing a design while you talk to it) and second for **scripts**: finding designs, reading a tab as text, changing it with edit operations, answering comments, and syncing designs to files.
+
+</AppNote>
+
+It sits beside the [MCP server](/help/account-and-data/connect-ai-mcp/), not in place of it. Both call the same [API](/help/developers/api-overview/) with an [API token](/help/account-and-data/api-tokens/), and the API owns every change, so an older copy of the CLI never writes the old way.
+
+## Install
+
+<AppNote app="livediagram">
+
+The CLI is the npm package `@livediagram/cli` and needs **Node 22 or later**. Run it without installing:
+
+```bash
+npx @livediagram/cli --help
+```
+
+or install it, which gives you the `livediagram` command:
+
+```bash
+npm install -g @livediagram/cli
+livediagram --version
+```
+
+The examples below use the installed `livediagram`; with `npx`, put `npx @livediagram/cli` in its place.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+The CLI is the npm package `@liveplanner/cli` and needs **Node 22 or later**. Run it without installing:
+
+```bash
+npx @liveplanner/cli --help
+```
+
+or install it, which gives you the `liveplanner` command:
+
+```bash
+npm install -g @liveplanner/cli
+liveplanner --version
+```
+
+The examples below use the installed `liveplanner`; with `npx`, put `npx @liveplanner/cli` in its place.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+The CLI is the npm package `@livedocuments/cli` and needs **Node 22 or later**. Run it without installing:
+
+```bash
+npx @livedocuments/cli --help
+```
+
+or install it, which gives you the `livedocuments` command:
+
+```bash
+npm install -g @livedocuments/cli
+livedocuments --version
+```
+
+The examples below use the installed `livedocuments`; with `npx`, put `npx @livedocuments/cli` in its place.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+The CLI is the npm package `@livedesign/cli` and needs **Node 22 or later**. Run it without installing:
+
+```bash
+npx @livedesign/cli --help
+```
+
+or install it, which gives you the `livedesign` command:
+
+```bash
+npm install -g @livedesign/cli
+livedesign --version
+```
+
+The examples below use the installed `livedesign`; with `npx`, put `npx @livedesign/cli` in its place.
+
+</AppNote>
+
+## Sign In
+
+You need a <AppName /> account: the CLI acts as you, through an API token, and never as a guest. There are three ways to give it one. Whichever you use, the CLI checks the token with the API before keeping it.
+
+### In the Browser
+
+<AppNote app="livediagram">
+
+```bash
+livediagram auth login
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner auth login
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments auth login
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign auth login
+```
+
+</AppNote>
+
+The CLI opens a sign-in page in your browser (and prints its address, in case the browser does not open). Sign in if you are not already, and you reach an approval card, **Connect <AppName /> CLI**. Leave **Read-only access** off to let the CLI change <Noun plural />, or switch it on so it can find and view <Noun plural /> but not create, edit, delete or share them. The card also says where the access goes: your own computer, `127.0.0.1` and a port number. Choose **Connect**, and the page says **You're signed in**: return to your terminal.
+
+<Figure
+  app="livediagram"
+  caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
+  width="narrow"
+>
+  <CliConsent product="livediagram" noun="canvas" />
+</Figure>
+
+<Figure
+  app="liveplanner"
+  caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
+  width="narrow"
+>
+  <CliConsent product="liveplanner" noun="plan" />
+</Figure>
+
+<Figure
+  app="livedocuments"
+  caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
+  width="narrow"
+>
+  <CliConsent product="livedocuments" noun="document" />
+</Figure>
+
+<Figure
+  app="livedesign"
+  caption="The approval card: an optional Read-only access switch, where the access goes, then Connect."
+  width="narrow"
+>
+  <CliConsent product="livedesign" noun="design" />
+</Figure>
+
+The terminal waits up to ten minutes for you. If the browser cannot reach it (on a remote machine, say), use a device code instead.
+
+### On a Machine Without a Browser
+
+<AppNote app="livediagram">
+
+```bash
+livediagram auth login --device
+```
+
+The terminal prints a page address, `https://www.livediagram.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livediagram CLI** card saying when, and roughly where, the sign-in started, with the same **Read-only access** switch. Only connect if you started it in your own terminal just now: choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner auth login --device
+```
+
+The terminal prints a page address, `https://www.liveplanner.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect liveplanner CLI** card saying when, and roughly where, the sign-in started, with the same **Read-only access** switch. Only connect if you started it in your own terminal just now: choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments auth login --device
+```
+
+The terminal prints a page address, `https://www.livedocuments.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livedocuments CLI** card saying when, and roughly where, the sign-in started, with the same **Read-only access** switch. Only connect if you started it in your own terminal just now: choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign auth login --device
+```
+
+The terminal prints a page address, `https://www.livedesign.app/oauth/device`, and a code of eight letters such as `BCDF-GHJK`. Open the page on any device, sign in, type the code under **Code shown in your terminal** and choose **Continue**. You then see a **Connect livedesign CLI** card saying when, and roughly where, the sign-in started, with the same **Read-only access** switch. Only connect if you started it in your own terminal just now: choose **Connect**, and the page says **You're connected**. The terminal carries on by itself.
+
+</AppNote>
+
+<Figure
+  app="livediagram"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
+  <CliDeviceSignIn product="livediagram" />
+</Figure>
+
+<Figure
+  app="liveplanner"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
+  <CliDeviceSignIn product="liveplanner" />
+</Figure>
+
+<Figure
+  app="livedocuments"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
+  <CliDeviceSignIn product="livedocuments" />
+</Figure>
+
+<Figure
+  app="livedesign"
+  caption="Device sign-in: the terminal shows the page and a code, which you enter under Connect a terminal on any device."
+>
+  <CliDeviceSignIn product="livedesign" />
+</Figure>
+
+A code lasts **ten minutes**. If the page says it couldn't find the code, check it and try again; if it has expired, run the command again for a new one. Choosing **Cancel** on the page stops the terminal waiting. Only enter a code that a terminal you are using is showing you.
+
+### With an API Token
+
+<AppNote app="livediagram,livedocuments,livedesign">
+
+For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, **Developers**, **API Tokens** (in any liveworkspace app, or on [liveworkspace.app](https://www.liveworkspace.app/explorer?settings=tokens)), and either set it for the commands you run:
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+For CI, sandboxes and agents, [create a token](/help/account-and-data/api-tokens/) in **Settings**, **Developers**, **API Tokens** (in liveplanner, any liveworkspace app, or on liveworkspace.app), and either set it for the commands you run:
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+```bash
+export LIVEDIAGRAM_TOKEN=lwt_your_token_here
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+export LIVEPLANNER_TOKEN=lwt_your_token_here
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+export LIVEDOCUMENTS_TOKEN=lwt_your_token_here
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+export LIVEDESIGN_TOKEN=lwt_your_token_here
+```
+
+</AppNote>
+
+or store it for this machine, reading it from stdin:
+
+<AppNote app="livediagram">
+
+```bash
+printf %s "$TOKEN" | livediagram auth login --with-token
+```
+
+`LIVEDIAGRAM_TOKEN` takes precedence over a stored sign-in. There is deliberately no `--token` flag, because a token on the command line ends up in shell history and transcripts.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+printf %s "$TOKEN" | liveplanner auth login --with-token
+```
+
+`LIVEPLANNER_TOKEN` takes precedence over a stored sign-in. There is deliberately no `--token` flag, because a token on the command line ends up in shell history and transcripts.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+printf %s "$TOKEN" | livedocuments auth login --with-token
+```
+
+`LIVEDOCUMENTS_TOKEN` takes precedence over a stored sign-in. There is deliberately no `--token` flag, because a token on the command line ends up in shell history and transcripts.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+printf %s "$TOKEN" | livedesign auth login --with-token
+```
+
+`LIVEDESIGN_TOKEN` takes precedence over a stored sign-in. There is deliberately no `--token` flag, because a token on the command line ends up in shell history and transcripts.
+
+</AppNote>
+
+## Check or Sign Out
+
+<AppNote app="livediagram">
+
+```bash
+livediagram auth status    # host, account, token name, role, expiry, and where it came from
+livediagram auth logout    # revoke the stored token and forget it
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner auth status    # host, account, token name, role, expiry, and where it came from
+liveplanner auth logout    # revoke the stored token and forget it
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments auth status    # host, account, token name, role, expiry, and where it came from
+livedocuments auth logout    # revoke the stored token and forget it
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign auth status    # host, account, token name, role, expiry, and where it came from
+livedesign auth logout    # revoke the stored token and forget it
+```
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token, so within a minute it stops working everywhere. It will not revoke a token from `LIVEDIAGRAM_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **Settings**, **Developers**, **API Tokens**.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token, so within a minute it stops working everywhere. It will not revoke a token from `LIVEPLANNER_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **Settings**, **Developers**, **API Tokens**.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token, so within a minute it stops working everywhere. It will not revoke a token from `LIVEDOCUMENTS_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **Settings**, **Developers**, **API Tokens**.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+`auth status` never prints the token itself, and warns you when it has under 14 days left. `auth logout` revokes the token, so within a minute it stops working everywhere. It will not revoke a token from `LIVEDESIGN_TOKEN`, which is not the CLI's to revoke: unset the variable, or revoke that token in **Settings**, **Developers**, **API Tokens**.
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+
+The browser and device sign-ins create an ordinary API token named **<AppName /> CLI**. It appears with your other tokens in **Settings**, **Developers**, **API Tokens** (marked read-only if you chose that), lasts six months, and counts towards your 20. Signing in again on the same machine replaces it and revokes the old one.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+The browser and device sign-ins create an ordinary API token named **liveplanner CLI**. It appears in your token list in **Settings**, **Developers**, **API Tokens** beside any others (with a **Read only** badge if you chose that), lasts six months, and counts towards your 20. Signing in again on the same machine replaces it and revokes the old one.
+
+</AppNote>
+
+## Where Your Token Is Kept
+
+<AppNote app="livediagram">
+
+A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/livediagram/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/liveplanner/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/livedocuments/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+A stored token goes in your operating system's own secret store: the macOS Keychain, the Secret Service on Linux (through `secret-tool`), or on Windows the token sealed to your user account by Windows' own data protection. Where that store is unavailable, the token is kept in `~/.config/livedesign/credentials.json`, readable only by you, and the CLI tells you so when it stores it there. If it finds that file readable by others, it tightens it and warns you.
+
+</AppNote>
+
+## Find and Read <Noun plural capital />
+
+<AppNote app="livediagram,livedocuments">
+
+Commands are a resource, then a verb. `doc` and `el` are short for `document` and `element`.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+Commands are a resource, then a verb.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+Commands are a resource, then a verb. `doc` and `el` are short for `design` and `element`.
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+```bash
+livediagram document ls auth                  # documents whose name contains "auth"
+livediagram tab ls "Auth flow"                # the document's tabs
+livediagram tab view "Auth flow"              # the first tab, as an outline
+livediagram tab view "Auth flow" --tab Flow --view graph
+livediagram tab lint "Auth flow"              # what is wrong with how it is drawn
+livediagram tab render "Auth flow" --png auth.png
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner project ls sprint                 # projects whose name contains "sprint"
+liveplanner project view "Sprint 14"          # one line per tab
+liveplanner tab view "Sprint 14"              # the first tab, as an outline
+liveplanner tab view "Sprint 14" --tab Flow --view show --ref 0a78
+liveplanner tab render "Sprint 14" --png sprint.png
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments document ls launch                # documents whose name contains "launch"
+livedocuments tab ls "Launch deck"              # the document's tabs
+livedocuments tab view "Launch deck"            # the first tab, as an outline
+livedocuments tab view "Launch deck" --tab Slides --view graph
+livedocuments tab lint "Launch deck"            # what is wrong with how it is drawn
+livedocuments tab render "Launch deck" --png launch.png
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign design ls auth                  # designs whose name contains "auth"
+livedesign tab ls "Auth flow"                # the design's tabs
+livedesign tab view "Auth flow"              # the first tab, as an outline
+livedesign tab view "Auth flow" --tab Flow --view graph
+livedesign tab lint "Auth flow"              # text that does not fit where it is drawn
+livedesign tab render "Auth flow" --png auth.png
+```
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+
+`document ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a <Noun />, you can give its **name**, the start of its **id**, or a pasted **<AppName /> link**; a share link acts through that link. A name that matches more than one <Noun /> is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+`project ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a plan, you can give its **name**, the start of its **id**, or a pasted **liveplanner link**; a share link acts through that link. A name that matches more than one plan is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+`design ls` covers your personal library and every team you have joined, newest first. Wherever a command takes a design, you can give its **name**, the start of its **id**, or a pasted **livedesign link**; a share link acts through that link. A name that matches more than one design is refused with the candidates, rather than guessed. `--tab` takes a tab name or the start of its id, and the first tab is used when you leave it out.
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+`tab view` reads a tab as text, the outline by default; `--view` picks `comments`, `show` (one element, with `--ref`) or `find` (with `--text`), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`), `find` (with `--text`) or `pages` (a tab's pages and articles), and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+`tab view` reads a tab as text, the outline by default; `--view` picks `graph`, `layout`, `comments`, `show` (one element, with `--ref`), `find` (with `--text`) or `pages`, and `--budget` fits it to about that many tokens. `tab render` writes a PNG or SVG preview and prints its path and size, never image bytes.
+
+</AppNote>
+
+A few commands read <AppName />'s catalogues rather than your <Noun plural />, which helps before writing anything:
+
+<AppNote app="livediagram">
+
+```bash
+livediagram template ls                       # the templates a document or tab can start from
+livediagram template view retrospective       # one template, as the outline of the tab it builds
+livediagram icon search "message queue"       # icons by name, best match first, for iconId=
+livediagram schema sticky                     # the element kinds, or one kind's fields and values
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner template ls                       # the templates a project or tab can start from
+liveplanner template view kanban              # one template, as the outline of the tab it builds
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments template ls                       # the templates a document or tab can start from
+livedocuments template view slide-deck          # one template, as the outline of the tab it builds
+livedocuments icon search "message queue"       # icons by name, best match first, for iconId=
+livedocuments schema sticky                     # the element kinds, or one kind's fields and values
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign template ls                         # the templates a design or tab can start from
+livedesign template view wireframe-mobile-app  # one template, as the outline of the tab it builds
+livedesign icon search "message queue"         # icons by name, best match first, for iconId=
+livedesign schema sticky                       # the element kinds, or one kind's fields and values
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+**Build and Change Plans**
+
+```bash
+liveplanner project create "Sprint 14" --template kanban
+liveplanner project create "Budget 2027" --template budget-planner
+liveplanner tab add "Sprint 14" Roadmap --template project-planner   # a new tab, empty or from a template
+liveplanner tab rename "Sprint 14" Roadmap "Roadmap 2027"
+liveplanner tab rm "Sprint 14" Scratch                                # delete one tab; the others stay
+liveplanner edit "Sprint 14" --tab Flow -f ops.txt                    # edit operations on a tab
+liveplanner changeset revert "Sprint 14" cs_tbrfqcvm1w
+```
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+**Change a Diagram**
+
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+
+**Change a <Noun capital />**
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+```bash
+livediagram document create "Shop" -f arch.json            # from a graph, Mermaid or elements file
+livediagram document create "Retro" --template start-stop-continue
+livediagram element set "Auth flow" n3 label="Sign in" shape=stadium
+livediagram edit "Auth flow" -f ops.txt                     # many edit operations at once
+livediagram changeset revert "Auth flow" cs_8k2m4q7d1x
+livediagram tab add "Auth flow" Details -f detail.mmd       # a new tab, empty, from a file or --template
+livediagram tab rm "Auth flow" Scratch                      # delete one tab; the others stay
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments document create "Shop" -f arch.json            # from an elements file
+livedocuments document create "Pitch" --template slide-deck
+livedocuments element set "Launch deck" n3 label="Beta" shape=stadium
+livedocuments edit "Launch deck" -f ops.txt                   # many edit operations at once
+livedocuments changeset revert "Launch deck" cs_8k2m4q7d1x
+livedocuments tab add "Launch deck" Details -f detail.json    # a new tab, empty, from a file or --template
+livedocuments tab rm "Launch deck" Scratch                    # delete one tab; the others stay
+livedocuments document share "Launch deck" --role participate  # a share link: view (the default), participate or edit
+livedocuments image add chart.png                              # upload a picture and print its id for imageId=
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign design create "Shop" -f arch.json            # from an elements file
+livedesign design create "Coffee app" --template wireframe-mobile-app
+livedesign element set "Auth flow" n3 label="Sign in" shape=stadium
+livedesign edit "Auth flow" -f ops.txt                     # many edit operations at once
+livedesign changeset revert "Auth flow" cs_8k2m4q7d1x
+livedesign tab add "Auth flow" Details -f detail.json      # a new tab, empty, from a file or --template
+livedesign tab rm "Auth flow" Scratch                      # delete one tab; the others stay
+livedesign design rename "Auth flow" "Sign-in flow"
+livedesign design share "Auth flow" --role edit --expiry week
+```
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livediagram guide edit` explains how edit operations read.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+A change to a tab is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `liveplanner guide edit` explains how [edit operations](/help/developers/working-with-projects/edit-operations/) read; for cards, boards, sheets and forms, the commands below are simpler.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livedocuments guide edit` explains how edit operations read.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `livedesign guide edit` explains how edit operations read.
+
+`design share` makes a share link: `view` unless you give `--role participate` or `--role edit`, and lasting for ever unless you give `--expiry week`, `month` or `sixMonths`.
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments">
+
+`document rm` moves a <Noun /> to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete. `document archive` puts a <Noun /> you own away in Archived, out of every list with its share links ended, and `document unarchive` moves it back, to the top of My Work or the folder (`--folder`) or team (`--team`) you name; `document ls --archived` lists what is there.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+`project rm` moves a plan to the [Trash](/help/account-and-data/trash/) for 30 days, and `project restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete. `project archive` puts a plan you own away in Archived, out of every list with its share links ended, and `project unarchive` moves it back, to the top of My Work or the folder (`--folder`) or team (`--team`) you name; `project ls --archived` lists what is there.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+`design rm` moves a design to the [Trash](/help/account-and-data/trash/) for 30 days, and `design restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete. `design archive` puts a design you own away in Archived, out of every list with its share links ended, and `design unarchive` moves it back, to the top of My Work or the folder (`--folder`) or team (`--team`) you name; `design ls --archived` lists what is there.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+**Cards, Boards and Sheets**
+
+```bash
+liveplanner item ls "Sprint 14"                      # the cards, by number such as #12
+liveplanner item ls "Sprint 14" --status "To Do" --status Doing --type bug   # only these columns and card types
+liveplanner item ls "Sprint 14" --query checkout --updated-since 2026-11-01  # open cards holding "checkout", changed since
+liveplanner item add "Sprint 14" "Fix login" --type task --status "To Do" --fields priority=high
+liveplanner item move "Sprint 14" "#12" "In Progress"
+liveplanner item set "Sprint 14" "#12" --fields assignee=Sam --clear due
+liveplanner item ls "Sprint 14" --handed-to-me          # the open cards handed to this token's AI assistant
+liveplanner item hand-back "Sprint 14" "#12"              # give one back to its person when done
+liveplanner board add "Sprint 14" --preset sprint
+liveplanner board set "Sprint 14" Kanban --columns "To Do,Doing,Review,Done"
+liveplanner board set "Sprint 14" Kanban --add-widgets "Budget Sum,due"    # show widgets in the board's header
+liveplanner board set "Sprint 14" Kanban --remove-widgets people           # hide one again
+liveplanner type ls "Sprint 14"                      # card types and their fields
+liveplanner type apply "Sprint 14" -f types.json     # add, change or delete card types
+liveplanner sheet add "Budget 2027" --title Costs --csv costs.csv
+liveplanner sheet get "Budget 2027" Costs A1:D20     # a sheet's cells by A1, formulas worked out
+liveplanner sheet set "Budget 2027" Costs B2 1200 =B2*12
+```
+
+Cards, boards and sheets are named the way the editor shows them: a column by its name, a card by its number, a sheet by its title. These writes are not changesets: each lands at once, for everyone with the plan open.
+
+To empty a field, name it in `--clear` (`--clear due`). A field that holds several values, such as Blocked By, also clears with `key=` and nothing after it (`--fields "Blocked By="`). To flag a card for attention, set `--fields flagged=true` on `item add` or `item set`; `--clear flagged` (or `flagged=false`) takes the flag off, and `item ls` ends a flagged card's line with `flagged`. `board set --add-widgets` and `--remove-widgets` take widget names or ids, separated by commas.
+
+A card [handed to an AI assistant](/help/plan/cards/#hand-a-card-to-an-ai-assistant) is handed to a token: `--handed-to-me` lists the open ones handed to the token you run with, `--fields assignee=me` hands one to it, and `item hand-back` gives one back to the token's person. A session (no token) has no assistant, so each of these is refused.
+
+`item ls` lists every card unless you narrow it. `--type` and `--status` take a card type or a column, and repeat for several. `--query` keeps the cards whose title or description holds the text, and `--updated-since` the ones changed since a date or time (`2026-11-01`, `2026-11-01T09:00:00Z`). With either of those two, closed cards (in a done column such as Done, trashed or archived) are left out, as they are for an AI assistant, and the last line says how many: add `--include-closed` to list them too, or name their column with `--status`.
+
+</AppNote>
+
+## Comments and Waiting
+
+<AppNote app="livediagram">
+
+```bash
+livediagram comment ls "Shop"
+livediagram comment add "Shop" api "Should this be idempotent?"
+livediagram wait "Shop" --for comment --timeout 600
+livediagram watch "Shop"                         # stream changes until you stop it
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner comment ls "Sprint 14"
+liveplanner comment add "Budget" 1e17 --cell B4 "Is hosting monthly or yearly?"
+liveplanner thread ls "Sprint 14" --item "#12"
+liveplanner thread reply "Sprint 14" th-3k9 "Fixed in #131."
+liveplanner wait "Sprint 14" --for comment --timeout 600
+liveplanner watch "Sprint 14"                        # stream changes until you stop it
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments comment ls "Shop"
+livedocuments comment add "Shop" api "Should this be idempotent?"
+livedocuments wait "Shop" --for comment --timeout 600
+livedocuments watch "Shop"                         # stream changes until you stop it
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign comment ls "Shop"
+livedesign comment add "Shop" api "Should this be idempotent?"
+livedesign wait "Shop" --for comment --timeout 600
+livedesign watch "Shop"                         # stream changes until you stop it
+```
+
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+
+`wait` blocks until someone comments or the <Noun /> changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+`wait` blocks until someone comments or the plan changes (a burst of edits counts as one change), prints it and exits, which lets an agent respond to the people working beside it. Comments the CLI adds are yours, marked Generated by AI. `comment` works the threads on Sheet cells (`--cell`), `thread` the comment threads on cards ([Comments and Presence for Agents](/help/developers/agent-comments-presence/#list-the-threads)).
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+**Pages and Articles**
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+**Pages**
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+A tab's [pages](/help/pages/working-with-pages/) (infographics, slides and flashcards) and articles have their own commands:
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+A tab's [pages](/help/pages/working-with-pages/) (logos, wireframes and photos) have their own commands:
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments page ls "Pitch deck"                                  # each page, its refs, articles and layouts
+livedocuments page set "Pitch deck" --add slide --layout slide-title  # add, lay out, move, copy or delete pages
+livedocuments article get "Project brief" > brief.md                # an article as Markdown
+livedocuments article set "Project brief" brief.md                  # write it back, or a new one
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign page ls "Brand kit"                                       # each page, its refs and layouts
+livedesign page set "Brand kit" --add logo --layout logo-icon-above  # add, lay out, move, copy or delete pages
+```
+
+`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`.
+
+**Components and Images**
+
+A design's components (a main, and instances of it that redraw when it changes) have commands of their own:
+
+```bash
+livedesign component ls "Shop"                                  # each main and the elements an instance overrides
+livedesign component make "Shop" logo menu cart --name "Nav bar"  # these elements become a main, and one instance takes their place
+livedesign component set "Shop" "Nav bar" --name "Top bar"      # rename, --archived, --restore, or --patch a JSON file
+livedesign element detach "Shop" nav-bar                        # an instance back into plain elements
+```
+
+`component make` takes up to 200 elements, but no image, video, link card or locked element. An instance is placed with an ordinary `element add instance componentId=<main>`.
+
+The image gallery your designs draw from:
+
+```bash
+livedesign image ls                                    # your pictures: id, pixels, size, name
+livedesign image add chart.png                         # a PNG, JPEG, WebP or GIF up to 10 MB, or a public https URL
+livedesign image rm 3f9c2a1e                           # kept, and named where it is used, unless --force
+```
+
+`image add` prints the id an image element's `imageId` takes. Uploading the same picture again gives back the one you already have. There is no Trash for pictures.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+`page set` makes one change from its flags, or up to 50 from a JSON list with `--changes`. `article set` writes over the article you name with `--article`, adds after its last block with `--append`, or starts another with `--new`, and the editor flows the text onto as many pages as it needs. When someone is typing in a paragraph the write would change, it is refused rather than overwriting them; `--wait-held 30` keeps trying for up to that many seconds.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+**Automations**
+
+A plan's [Automations](/help/plan/automations/#agents-and-the-cli) rules have their own commands. A rule is named by its id or its exact name, a card by its number:
+
+```bash
+liveplanner rule ls "Sprint 14"                       # a line a rule: on, off or paused, last run, its sentence
+liveplanner rule get "Sprint 14" "Done stamp"         # one rule whole, as JSON
+liveplanner rule add "Sprint 14" done-stamp.json      # a new rule from JSON (or - for stdin)
+liveplanner rule set "Sprint 14" "Done stamp" steps.json
+liveplanner rule off "Sprint 14" "Done stamp"         # and rule on, rule duplicate, rule rm
+liveplanner rule test "Sprint 14" "Done stamp" "#12"  # what it would do on a card, nothing changed
+liveplanner rule run "Sprint 14" "Escalate" "#12"     # a Run from a Card rule, now
+liveplanner rule log "Sprint 14" --rule "Done stamp"  # the Audit Trail, newest first
+```
+
+A rule's JSON names columns, card types, fields and people as the board shows them: `{"name":"Done stamp","trigger":{"kind":"card_moved","to":["Done"]},"steps":[{"kind":"add_label","label":"shipped"}]}`. Rules need an Editor of the whole plan; a read-only token lists them and nothing else.
+
+**Forms**
+
+A [form](/help/plan/forms/) on a Form tab has its own commands, so an agent can build one, publish it and check where its answers land:
+
+```bash
+liveplanner form add --starter rsvp --name "Summer Party"   # a new project with a Form tab
+liveplanner form get "Summer Party"                         # its questions, where responses go, its link
+liveplanner form change "Summer Party" changes.json         # up to 50 changes, all or nothing
+liveplanner form share "Summer Party" publish               # or close, or delete_link
+liveplanner form try "Summer Party" answers.json            # one test response, as the builder's Preview sends
+```
+
+A test response makes a card (or sheet row) titled **Preview:**, so you can see each answer land where you expect, then delete it.
+
+The changes file takes the same changes as the MCP server's `change_form`, among them `set_field` (a card field every response gets without a question, such as `{"op":"set_field","field":"Due Date","submitted":{"days":7}}`; `"value": null` stops it) and `add_column`, `set_column` and `delete_column` for a sheet's extra columns. `form get` lists them after the questions.
+
+</AppNote>
+
+## Files, Exports and Pictures
+
+<AppNote app="livediagram">
+
+```bash
+livediagram pull "Shop" --to docs --svg            # docs/shop.livediagram.json, plus an SVG per tab
+livediagram push docs/shop.livediagram.json        # send back each tab whose elements changed
+livediagram export --all --to backup --format json,svg,md
+livediagram graph lint flow.mmd                    # check a graph or Mermaid file before writing it
+livediagram graph render flow.mmd --png flow.png
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner pull "Sprint 14" --to backup --svg     # backup/sprint-14.liveplanner.json, plus an SVG per tab
+liveplanner push backup/sprint-14.liveplanner.json # send back each tab whose elements changed
+liveplanner export --all --to backup --format json,svg,md
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments pull "Shop" --to docs --svg            # docs/shop.livedocuments.json, plus an SVG per tab
+livedocuments push docs/shop.livedocuments.json        # send back each tab whose elements changed
+livedocuments export --all --to backup --format json,svg,md
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign pull "Shop" --to docs --svg            # docs/shop.livedesign.json, plus an SVG per tab
+livedesign push docs/shop.livedesign.json        # send back each tab whose elements changed
+livedesign export --all --to backup --format json,svg,md
+```
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+To keep a repository's diagrams in step with livediagram, link it instead: see [Diagrams in Your Repository](/help/developers/repositories/). To draw beside your agent inside a developer tool, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+To work in a plan beside your agent inside a developer tool, see [liveplanner in Your Developer Tools](/help/developers/workbenches/).
+
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+
+To draw beside your agent inside a developer tool, see [<Noun plural capital /> in Your Developer Tools](/help/developers/workbenches/).
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+`pull` writes the canvas in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on livediagram since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the canvas lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or canvas is ever deleted by a push. `export --all` writes every canvas you can read, for backups and docs. `graph lint` and `graph render` work on the file alone and send nothing.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+`pull` writes the plan in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on liveplanner since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the plan lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or plan is ever deleted by a push. Cards travel with the plan's item store, not with a tab, so a push never changes them. `export --all` writes every plan you can read, for backups and docs.
+
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+
+`pull` writes the <Noun /> in the format the editor imports, and never overwrites a file holding changes you have not pushed yet (add `--force` to drop them). `push` sends each changed tab as a changeset; a tab that changed on <AppName /> since you pulled it is refused and named, so pull again. Only elements travel: each changed tab's elements are replaced by the file's, so an element you removed from the file is removed from the tab, and a tab the <Noun /> lacks is created. Changes to a tab's name, theme or background are not sent (a tab a push creates goes up with its name), and no tab or <Noun /> is ever deleted by a push. `export --all` writes every <Noun /> you can read, for backups and docs.
+
+</AppNote>
+
+## Help, Guides and the Agent Skill
+
+<AppNote app="livediagram">
+
+```bash
+livediagram --help                 # the resources and four starting commands
+livediagram tab --help             # a resource's verbs
+livediagram tab view --help        # usage, flags and examples
+livediagram guide                  # how-tos: build, edit, views, comments, collaborate, workbench
+livediagram skill install --to ~/.claude/skills
+livediagram skill print > SKILL.md
+```
+
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `livediagram api GET /documents` calls any API path with your sign-in, as an escape hatch.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+liveplanner --help                 # the resources and three starting commands
+liveplanner tab --help             # a resource's verbs
+liveplanner tab view --help        # usage, flags and examples
+liveplanner guide                  # how-tos: build, edit, views, comments, collaborate, workbench
+liveplanner skill install --to ~/.claude/skills
+liveplanner skill print > SKILL.md
+```
+
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `liveplanner api GET /projects` calls any API path with your sign-in, as an escape hatch.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+livedocuments --help                 # the resources and four starting commands
+livedocuments tab --help             # a resource's verbs
+livedocuments tab view --help        # usage, flags and examples
+livedocuments guide                  # how-tos: build, edit, views, comments, collaborate, workbench
+livedocuments skill install --to ~/.claude/skills
+livedocuments skill print > SKILL.md
+```
+
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `livedocuments api GET /documents` calls any API path with your sign-in, as an escape hatch.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+livedesign --help                 # the resources and four starting commands
+livedesign tab --help             # a resource's verbs
+livedesign tab view --help        # usage, flags and examples
+livedesign guide                  # how-tos: build, edit, views, comments, collaborate, workbench
+livedesign skill install --to ~/.claude/skills
+livedesign skill print > SKILL.md
+```
+
+Help is kept short so an agent pays only for what it asks. `skill install` writes a `SKILL.md` that tells a coding agent when to reach for the CLI; without `--to` it lists the usual skills folders (such as `~/.claude/skills` for Claude Code). `skill print` writes the same file to stdout, for agents that keep their skills somewhere else. `livedesign api GET /designs` calls any API path with your sign-in, as an escape hatch.
+
+</AppNote>
+
+## Output and Exit Codes
+
+<AppNote app="livediagram">
+
+The CLI never prompts when its input or output is not a terminal, so it is safe in pipes, scripts and CI. (In a terminal, only `link init` without `--folder` or `--doc` asks you to pick a folder.) **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
+
+</AppNote>
+
+<AppNote app="liveplanner,livedocuments,livedesign">
+
+The CLI never prompts when its input or output is not a terminal, so it is safe in pipes, scripts and CI. **stdout carries only data**; hints, warnings and errors go to stderr. Output is compact text; `--json` gives the same data as JSON, `--json=id,name` picks fields, and `-q` prints only refs or ids. A list that was cut short ends with a line saying how to see the rest.
+
+</AppNote>
+
+| Exit code | Meaning                                                    |
+| --------- | ---------------------------------------------------------- |
+| `0`       | Done                                                       |
+| `1`       | Refused: the input was understood but not accepted         |
+| `2`       | Usage: the command line does not parse                     |
+| `3`       | Not found, or ambiguous: a <Noun />, tab or element        |
+| `4`       | Not signed in, or not allowed (a read-only token's writes) |
+| `5`       | Conflict: the tab changed since you read it; read, retry   |
+| `6`       | Rate limited                                               |
+| `7`       | Network or server failure                                  |
+
+<AppNote app="livediagram">
+
+Every error names what was wrong and suggests one command that fixes it. Set `LIVEDIAGRAM_DEBUG=1` to see what the CLI is doing, on stderr.
+
+**Another Server**
+
+The CLI talks to `https://www.livediagram.app` unless you point it elsewhere, for example at a local development server. For one command, add `--host https://diagrams.example.com`; for a shell, set `LIVEDIAGRAM_HOST`. To keep several, name them as profiles in `~/.config/livediagram/config.toml` and choose one with `--profile` or `LIVEDIAGRAM_PROFILE`:
+
+```toml
+default_profile = "work"
+
+[profiles.work]
+host = "https://diagrams.example.com"
+```
+
+Each profile keeps its own sign-in, and a profile for another host never contacts livediagram.app. `LIVEDIAGRAM_TOKEN` goes to whichever host is active, so set `LIVEDIAGRAM_HOST` beside it. A server without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+Every error names what was wrong and suggests one command that fixes it. Set `LIVEPLANNER_DEBUG=1` to see what the CLI is doing, on stderr.
+
+**Hosts and Profiles**
+
+The CLI talks to `https://www.liveplanner.app` unless you point it at another liveplanner host. For one command, add `--host https://planner.example.com`; for a shell, set `LIVEPLANNER_HOST`. To keep several, name them as profiles in `~/.config/liveplanner/config.toml` and choose one with `--profile` or `LIVEPLANNER_PROFILE`:
+
+```toml
+default_profile = "work"
+
+[profiles.work]
+host = "https://planner.example.com"
+```
+
+Each profile keeps its own sign-in, and a profile for another host never contacts liveplanner.app. `LIVEPLANNER_TOKEN` goes to whichever host is active, so set `LIVEPLANNER_HOST` beside it. A host without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+Every error names what was wrong and suggests one command that fixes it. Set `LIVEDOCUMENTS_DEBUG=1` to see what the CLI is doing, on stderr.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+Every error names what was wrong and suggests one command that fixes it. Set `LIVEDESIGN_DEBUG=1` to see what the CLI is doing, on stderr.
+
+**Profiles**
+
+The CLI talks to `https://www.livedesign.app` unless you point it elsewhere, such as a local development server. For one command, add `--host https://design.example.com`; for a shell, set `LIVEDESIGN_HOST`. To keep several, name them as profiles in `~/.config/livedesign/config.toml` and choose one with `--profile` or `LIVEDESIGN_PROFILE`:
+
+```toml
+default_profile = "work"
+
+[profiles.work]
+host = "https://design.example.com"
+```
+
+Each profile keeps its own sign-in, and a profile for another host never contacts livedesign.app. `LIVEDESIGN_TOKEN` goes to whichever host is active, so set `LIVEDESIGN_HOST` beside it. A host without accounts has no tokens, so the CLI cannot act there and says so; one without the sign-in server offers no browser or device sign-in, so use `--with-token`. If an instance needs a newer CLI for writes, the CLI refuses them and names the version to install.
+
+</AppNote>
+
+## Errors and Rate Limits
+
+The CLI is subject to the same limits as any API client, per token: on the hosted service, **300 writes** and **120 reads a minute**. Over that, a command exits with `6` and asks you to wait a minute and retry. A read-only token's writes exit with `4`. [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) has the full list and the status codes behind these exit codes.
+
+## Usage Counts
+
+<AppNote app="livediagram">
+
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your canvases or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livediagram telemetry off`, `LIVEDIAGRAM_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your plans or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your documents or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livedocuments telemetry off`, `LIVEDOCUMENTS_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+The CLI counts which commands succeed, and which fail because of the server or the network, by the command's name only (never its arguments, your designs or the host), and sends the count to the host it talks to, as anonymous [telemetry](/help/privacy-and-security/what-we-collect/). The first time it counts one, it says so. Turn it off with `livedesign telemetry off`, `LIVEDESIGN_TELEMETRY=0` or `DO_NOT_TRACK=1`.
+
+</AppNote>
+
+## Updates
+
+<AppNote app="livediagram">
+
+Once a day at most, the CLI asks npm in the background whether a newer version is out. When one is, the next command that succeeds says so in one line, for example `livediagram 1.4.0 is out (you have 1.2.1). Update: npm i -g @livediagram/cli`, at most once a day. It never asks in CI or when its messages are not going to a terminal, and it never slows a command down. Turn it off with `LIVEDIAGRAM_NO_UPDATE_CHECK=1`.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+Once a day at most, the CLI asks npm in the background whether a newer version is out. When one is, the next command that succeeds says so in one line, for example `liveplanner 1.4.0 is out (you have 1.2.1). Update: npm i -g @liveplanner/cli`, at most once a day. It never asks in CI or when its messages are not going to a terminal, and it never slows a command down. Turn it off with `LIVEPLANNER_NO_UPDATE_CHECK=1`.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+Once a day at most, the CLI asks npm in the background whether a newer version is out. When one is, the next command that succeeds says so in one line, for example `livedocuments 1.4.0 is out (you have 1.2.1). Update: npm i -g @livedocuments/cli`, at most once a day. It never asks in CI or when its messages are not going to a terminal, and it never slows a command down. Turn it off with `LIVEDOCUMENTS_NO_UPDATE_CHECK=1`.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+Once a day at most, the CLI asks npm in the background whether a newer version is out. When one is, the next command that succeeds says so in one line, for example `livedesign 1.4.0 is out (you have 1.2.1). Update: npm i -g @livedesign/cli`, at most once a day. It never asks in CI or when its messages are not going to a terminal, and it never slows a command down. Turn it off with `LIVEDESIGN_NO_UPDATE_CHECK=1`.
+
+</AppNote>
+
+## Keep It Safe
+
+<AppNote app="livediagram">
+
+<Note>
+  A full-access token can change and share everything you can. Give an agent a **Read-only access**
+  token when it only needs to read, keep `LIVEDIAGRAM_TOKEN` out of source control and logs, and
+  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livediagram auth logout`)
+  the moment you no longer need it or think it may have leaked.
+</Note>
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+<Note>
+  A full-access token can change and share everything you can. Give an agent a read-only token when
+  it only needs to read, keep `LIVEPLANNER_TOKEN` out of source control and logs, and revoke a token
+  in **Settings**, **Developers**, **API Tokens** (or with `liveplanner auth logout`) the moment you
+  no longer need it or think it may have leaked.
+</Note>
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+<Note>
+  A full-access token can change and share everything you can. Give an agent a **Read-only access**
+  token when it only needs to read, keep `LIVEDOCUMENTS_TOKEN` out of source control and logs, and
+  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livedocuments auth
+  logout`) the moment you no longer need it or think it may have leaked.
+</Note>
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+<Note>
+  A full-access token can change and share everything you can. Give an agent a **Read-only access**
+  token when it only needs to read, keep `LIVEDESIGN_TOKEN` out of source control and logs, and
+  revoke a token in **Settings**, **Developers**, **API Tokens** (or with `livedesign auth logout`)
+  the moment you no longer need it or think it may have leaked.
+</Note>
+
+</AppNote>
+
+</ArticleLayout>

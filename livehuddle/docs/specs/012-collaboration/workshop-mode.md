@@ -158,7 +158,7 @@ Every gate reads the session's `can`, never `isReadOnly` alone.
 - No Workshop mode article and no Workshop tour. The Session tools article covers the Timer and Stopwatch pieces; the
   the Receptionist article ([the Receptionist](../008-canvas/receptionist.md)) is the one guide to a Space.
 - Help articles for what leaves are removed in the part that removes it, with redirects to the nearest article that
-  stays ([Help app](../018-help/help-app.md)).
+  stays ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)).
 
 ## Existing tabs
 

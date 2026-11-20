@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 
-// The help URLs that have moved (docs/specs/018-help/help-pages.md). The help app is a static export, so a retired
+// The help URLs that have moved (liveworkspace/docs/specs/017-help/help-centre.md). The help app is a static export, so a retired
 // path keeps resolving through a stub page that renders `Redirect` with `href` and `label`. Each stub is noindex and
 // names the new page canonical, so search engines consolidate on it rather than on the thin redirect.
 //

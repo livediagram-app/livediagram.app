@@ -5,6 +5,7 @@ import type { LicenceApp } from '@liveworkspace/licences/tables';
 // liveworkspace/apps/ is missing here.
 export const LICENCE_APPS: readonly LicenceApp[] = [
   { id: 'site', label: 'Website', side: 'browser', bundler: 'next' },
+  { id: 'help', label: 'Help centre', side: 'browser', bundler: 'next' },
   { id: 'accounts', label: 'Accounts', side: 'server', bundler: 'worker' },
   { id: 'community', label: 'Community', side: 'server', bundler: 'worker' },
   { id: 'drive', label: 'Google Drive sync', side: 'server', bundler: 'worker' },

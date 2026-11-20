@@ -388,7 +388,7 @@ for its 30 seconds; [Web performance](../016-platform/web-performance.md)).
 
 - The Explorer panel's footer row of links (Home, Explorer, **Community**, Help).
 - The shared site footer, and the marketing sitemap (`/community`).
-- The Share dialog's **Community** section, and the [help articles](../018-help/help-app.md) **Sharing to the
+- The Share dialog's **Community** section, and the [help articles](../../../../liveworkspace/docs/specs/017-help/help-centre.md) **Sharing to the
   Community** and **Finding Canvases in the Community** under Collaboration, Sharing and Embeds.
 
 ## Help

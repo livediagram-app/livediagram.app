@@ -1,0 +1,97 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'Real-Time Collaboration Problems',
+  description:
+    "A checklist for when presence or collaborators' edits do not show up: access, the live connection, locks, and what to try next.",
+  path: '/help/troubleshooting/collaboration-issues/',
+});
+
+<ArticleLayout path="troubleshooting/collaboration-issues" title="Real-Time Collaboration Problems" description="What to check when you cannot see collaborators, or edits are slow to arrive." categoryTitle="Troubleshooting" categorySlug="troubleshooting">
+
+Real-time collaboration in <AppName /> works through a per-<Noun /> room: everyone editing the same <Noun /> connects to it over a live connection, and that room relays cursors, who is selecting what, which tab people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
+
+<Figure caption="When the room is connected, everyone in the work sees each other's cursors and selections live.">
+  <LiveCursors />
+</Figure>
+
+## When You See No One Else
+
+1. **Confirm everyone is in the same <Noun />.** Live presence is per <Noun />. Two people on different <Noun plural />, or on different copies, will not see each other.
+2. **Make sure others actually have access.** Collaborators need a valid [share link](/help/collaboration/sharing/) (or to be the owner, or a member of the team the <Noun /> belongs to). If their link expired, was revoked, or needs a password, they may not be connected at all. See [share link security](/help/privacy-and-security/share-link-security/).
+3. **Reload the page.** A refresh re-establishes the live connection and re-sends presence. This clears most transient glitches.
+4. **Check your network.** Real-time relies on a live connection that some corporate networks, VPNs, or firewalls block. Try a different network or a mobile hotspot to confirm.
+
+## When Edits or Cursors Lag or Stall
+
+1. **Give it a moment, then reload.** After a short drop, the editor reconnects on its own and catches up on what it missed, without reloading the page. If the connection was out for longer (more than about half a minute, for example after sleep or a long Wi-Fi outage), it stops retrying: reload the page to rejoin. If it still seems stuck, the affected person refreshing re-arms the connection.
+2. **Remember not every link can edit.** A Viewer link only looks. If someone's changes are not landing, check whether they need an Editor link.
+3. **Avoid editing the exact same thing at once.** Edits to different elements, even on the same tab, merge cleanly. Two people changing the same thing is the one case where the last change to arrive wins, which is why something someone else has selected (an Editor or a Participant) shows as locked for you until they let go and their change is saved, which takes a moment (everything in a multi-selection locks; a Viewer's selection never locks anything).
+4. **If something stays locked,** the person holding it has probably left it selected and walked away (what someone has just let go of also stays locked until their change is saved, about 10 seconds at most when the save keeps failing). Ask them to click away.
+5. **Watch for a dropped link mid-session.** If a share link is revoked, or the password changes, visitors using it are disconnected (or sent back to the password prompt). If the <Noun /> is moved to the [Trash](/help/account-and-data/trash/), everyone in it is told it was deleted. An expired link lets people already inside carry on until their next load, save or reconnect. Ask the owner for a fresh link.
+
+<AppNote app="livediagram">
+  A Participant link can add stickies, write text, comment and vote, but cannot move or restyle the
+  drawing. To free a lock yourself, right-click the element and choose their Release row in the **In
+  use** menu: see [freeing an element someone left
+  selected](/help/collaboration/live-presence/#freeing-an-element-someone-left-selected). The
+  facilitator can do this, or any Editor while nobody is facilitating.
+</AppNote>
+
+<AppNote app="livedesign">
+  A Participant link can comment, add stickies, text and pictures, write on any element and move
+  stickies and pictures, but cannot move or restyle anything else, or delete what someone else
+  added. A change it may not make is put back as soon as it is sent. To free a lock yourself,
+  right-click the element and choose their Release row in the **In use** menu ([freeing an element
+  someone left
+  selected](/help/collaboration/live-presence/#freeing-an-element-someone-left-selected)). Any
+  Editor can do this.
+</AppNote>
+
+<AppNote app="livedocuments">
+  A Participant link can edit text and comment, but cannot add, move, restyle or delete anything. To
+  free a lock yourself, right-click the element and choose their Release row in the **In use** menu
+  ([freeing an element someone left
+  selected](/help/collaboration/live-presence/#freeing-an-element-someone-left-selected)). Any
+  Editor can do this.
+</AppNote>
+
+<AppNote app="livehuddle">
+  A legacy Viewer link (livehuddle no longer makes new ones) only looks. A Participant link walks,
+  talks and reacts, but adds, writes and moves nothing. To free a lock yourself, right-click the
+  element and choose their Release row in the **In use** menu ([freeing an element someone left
+  selected](/help/collaboration/live-presence/#freeing-an-element-someone-left-selected)). The
+  facilitator can do this, or any Editor while nobody is facilitating.
+</AppNote>
+
+<AppNote app="liveplanner">
+  A Participant link can add and move cards, edit their fields, write in Sheet cells, comment and
+  vote, but cannot change a board's columns or settings, format a Sheet, or add or delete tabs.
+  Edits to different cards or cells, even on the same tab, merge cleanly. [Live
+  Presence](/help/collaboration/live-presence/#seeing-what-others-are-working-on) explains the hold.
+  A lock also frees itself when the person holding it switches tab or leaves.
+</AppNote>
+
+## If It Still Will Not Connect
+
+1. **Try a different browser or device** to separate a local issue from a <Noun /> one. See [browser compatibility](/help/troubleshooting/browser-compatibility/).
+2. **Disable extensions** that might interfere with live connections, then retry in an incognito window.
+3. **Confirm the <Noun /> loads at all.** If it will not even open, start with the "will not load" article for your app.
+
+<AppNote app="livediagram,livedocuments,livehuddle">
+  See [A File Will Not Load](/help/troubleshooting/document-not-loading/).
+</AppNote>
+
+<AppNote app="livedesign">
+  See [A Design Will Not Load](/help/troubleshooting/design-not-loading/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  See [A Plan Will Not Load](/help/troubleshooting/project-not-loading/).
+</AppNote>
+
+Your changes are saved independently of the live room, so a presence hiccup does not lose work. If a save does fail, a message at the bottom of the screen says so; see [My Changes Are Missing](/help/troubleshooting/missing-changes/). If collaboration still will not come through, [contact us](/help/contact/) with the <Noun /> URL and what each person sees.
+
+</ArticleLayout>

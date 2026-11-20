@@ -20,6 +20,7 @@
 // No catalogue here: every help page sends an id, and a registry lookup would put
 // the whole catalogue in each page's JavaScript.
 
+import type { AppId } from './apps';
 import type { Article } from './types';
 
 /** An article's full path under /help, e.g. `selection-modes/format-painter`. */
@@ -60,3 +61,30 @@ export function createHelpTelemetryIds(
     },
   };
 }
+
+/**
+ * Each app's overrides (above), the one copy: tokens for articles whose slug another article of the same app's help
+ * already uses, keyed by the article's path. The one help centre reads the scope's (All Apps: every app's at once,
+ * since a path means one article whichever app's help shows it); each app's slice exports its own.
+ */
+export const HELP_TELEMETRY_OVERRIDES: Readonly<Record<AppId, Readonly<Record<string, string>>>> = {
+  livediagram: {
+    'tips-and-tricks/format-painter': 'tips-format-painter',
+    'tips-and-tricks/command-palette': 'tips-command-palette',
+  },
+  liveplanner: {
+    'tips-and-tricks/command-palette': 'tips-command-palette',
+  },
+  livedocuments: {
+    'tips-and-tricks/format-painter': 'tips-format-painter',
+    'tips-and-tricks/command-palette': 'tips-command-palette',
+  },
+  livedesign: {
+    'tips-and-tricks/format-painter': 'tips-format-painter',
+    'tips-and-tricks/command-palette': 'tips-command-palette',
+  },
+  livehuddle: {
+    'tips-and-tricks/format-painter': 'tips-format-painter',
+    'tips-and-tricks/command-palette': 'tips-command-palette',
+  },
+};

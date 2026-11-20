@@ -103,7 +103,7 @@ whether or not the document exists.
 - The same path twice in a row is not counted twice. This suppresses React
   StrictMode's dev-only double effect; in production a path can't repeat
   without a navigation in between, and a real reload starts a fresh page.
-- `Help·View·<slug>` ([Help app](../018-help/help-app.md)) stays. It predates this, is keyed by slug and
+- `Help·View·<slug>` ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)) stays. It predates this, is keyed by slug and
   drives the Pages & Help tab's Help section; the two overlap for articles by design.
 
 ## Who emits
@@ -113,7 +113,7 @@ existing emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
 [User preferences](../007-editor/user-preferences.md) per-browser opt-out, which every app on the origin reads from the same
 preferences key.
 
-- **editor** (`apps/editor`) and **help centre** (`apps/help`): already emitting.
+- **editor** (`apps/editor`) and **help centre** (`liveworkspace/apps/help`): already emitting.
 - **marketing** (`apps/marketing`): its _only_ event is the page view: it mounts the shared
   `PageViewBoot` and nothing else, and deliberately no error tracking (the
   privacy policy promises page views only). The landing funnel

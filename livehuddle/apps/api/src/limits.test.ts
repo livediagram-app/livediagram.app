@@ -17,7 +17,7 @@ describe('image cap', () => {
     const quoted = `${MAX_IMAGE_MB} MB`;
     for (const doc of [
       'docs/specs/009-elements/images.md',
-      'apps/help/app/explorer/image-gallery/page.mdx',
+      '../liveworkspace/apps/help/app/explorer/image-gallery/page.mdx',
     ]) {
       const source = readFileSync(`${ROOT}/${doc}`, 'utf8');
       // Guard against passing by absence if a file is ever renamed.

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { ReactNode } from 'react';
 import { articleHref, categoryHref, type Category } from '@liveworkspace/help-registry';
 import { buttonClassName, ButtonContent, GlyphDisc } from '@liveworkspace/ui';
 import type { HelpHomeLayout } from '../lib/home';
@@ -9,7 +10,7 @@ import { ArrowRightIcon, ExternalLinkIcon, MessageIcon } from './chrome-icons';
 import { HelpHero } from './HelpHero';
 import { SearchInput } from './SearchInput';
 
-// The help centre's front page (docs/specs/018-help/help-pages.md "Home page"): the hero with the search and the
+// The help centre's front page (liveworkspace/docs/specs/017-help/help-centre.md "Home page"): the hero with the search and the
 // popular topics, Start here, the product's category sections, and the closing Still stuck band. The layout and the
 // hero's lede are the product's; an open-source product adds a link to its issue tracker in the closing band.
 
@@ -64,9 +65,18 @@ export function HelpHome({
   home,
   lede,
   issuesUrl,
+  title = 'How can we help?',
+  note = 'Search them from inside the editor too',
+  afterHero,
 }: {
   site: HelpSite;
   home: HelpHomeLayout;
+  /** The hero's title; the All Apps home says "Help for every app". */
+  title?: string;
+  /** The hero's second chip, beside the guide count. */
+  note?: string;
+  /** A section between the hero and Start Here (the All Apps home's Pick an App). */
+  afterHero?: ReactNode;
   /** The hero's line under "How can we help?". */
   lede: string;
   /** An open-source product's issue tracker, for the closing band's "Report a bug on GitHub". */
@@ -83,7 +93,7 @@ export function HelpHome({
   return (
     <div>
       <Breadcrumb items={[]} helpUrl={site.facts.helpUrl} />
-      <HelpHero home title="How can we help?" lede={lede}>
+      <HelpHero home title={title} lede={lede}>
         <div className="mx-auto mt-5 flex flex-wrap justify-center gap-2">
           <span className="inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)">
             <span aria-hidden className="size-1.5 rounded-full bg-emerald-500" />
@@ -91,7 +101,7 @@ export function HelpHome({
           </span>
           <span className="inline-flex items-center gap-2 rounded-full border border-(--hero-chip-border) bg-(--hero-chip-bg) px-3 py-1 text-xs font-medium text-(--hero-chip-text)">
             <span aria-hidden className="size-1.5 rounded-full bg-brand-500" />
-            Search them from inside the editor too
+            {note}
           </span>
         </div>
         <div className="mx-auto mt-8 max-w-2xl">
@@ -113,6 +123,8 @@ export function HelpHome({
           ))}
         </nav>
       </HelpHero>
+
+      {afterHero}
 
       {/* Start here. */}
       <section aria-labelledby="start-here" className="mx-auto max-w-7xl px-4 pt-14 md:px-8">

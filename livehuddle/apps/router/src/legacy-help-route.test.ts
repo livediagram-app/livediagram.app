@@ -39,22 +39,22 @@ describe('legacyHelpRedirect', () => {
         '/help/getting-started/sharing-your-document/',
       ],
       ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
-      // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface").
-      ['/help/canvas/whiteboards/', '/help/canvas/draw-mode/'],
+      // Whiteboarding became Draw mode, which livehuddle's help does not have: the Canvas.
+      ['/help/canvas/whiteboards/', '/help/canvas/'],
       // Pages mode (once Infographics, then Illustrate) left livehuddle: every article of the three
-      // sections lands on Editor Modes (docs/specs/007-editor/editor-modes.md).
-      ['/help/canvas/illustrate/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/illustrate/illustrate-tour/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/illustrate/slide-pages', '/help/canvas/editor-modes'],
-      ['/help/canvas/infographics/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/infographics/exporting-infographics/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/pages-mode/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/pages-mode/pages-tour/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/pages-mode/wireframe-pages/', '/help/canvas/editor-modes/'],
+      // sections lands on Selection Modes (livehuddle's help has no Editor Modes article).
+      ['/help/canvas/illustrate/', '/help/selection-modes/'],
+      ['/help/canvas/illustrate/illustrate-tour/', '/help/selection-modes/'],
+      ['/help/canvas/illustrate/slide-pages', '/help/selection-modes'],
+      ['/help/canvas/infographics/', '/help/selection-modes/'],
+      ['/help/canvas/infographics/exporting-infographics/', '/help/selection-modes/'],
+      ['/help/canvas/pages-mode/', '/help/selection-modes/'],
+      ['/help/canvas/pages-mode/pages-tour/', '/help/selection-modes/'],
+      ['/help/canvas/pages-mode/wireframe-pages/', '/help/selection-modes/'],
       // Plan mode left livehuddle for liveplanner the same way.
-      ['/help/canvas/plan-mode/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/plan-mode/boards/', '/help/canvas/editor-modes/'],
-      ['/help/canvas/plan-mode/sheet-functions', '/help/canvas/editor-modes'],
+      ['/help/canvas/plan-mode/', '/help/selection-modes/'],
+      ['/help/canvas/plan-mode/boards/', '/help/selection-modes/'],
+      ['/help/canvas/plan-mode/sheet-functions', '/help/selection-modes'],
       [
         '/help/developers/working-with-documents/plan-sheets-images/',
         '/help/developers/working-with-documents/images-and-copies/',
@@ -91,8 +91,8 @@ describe('legacyHelpRedirect', () => {
       ['/help/activity-panel/what-it-is/', '/help/canvas/undo/'],
       ['/help/activity-panel/how-it-works/', '/help/canvas/undo/'],
       ['/help/activity-panel/reverting-changes/', '/help/canvas/undo/'],
-      // The Welcome Tour became the Diagram Tour (docs/specs/007-editor/editor-tour.md).
-      ['/help/getting-started/welcome-tour/', '/help/getting-started/diagram-tour/'],
+      // The Welcome Tour became the Diagram Tour, which livehuddle's help does not have: Your First Space.
+      ['/help/getting-started/welcome-tour/', '/help/getting-started/your-first-space/'],
       // The Self-Hosting category was retired: its pages land on the help centre home.
       ['/help/self-hosting/', '/help/'],
       ['/help/self-hosting', '/help/'],
