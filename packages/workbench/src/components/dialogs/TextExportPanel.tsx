@@ -70,13 +70,9 @@ export function TextExportPanel({
       ) : null}
       <div className="mt-4 flex items-center justify-end gap-3">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => void copy()}
-            className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-brand-300 hover:bg-brand-50/40 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:border-brand-500/60"
-          >
+          <Button variant="secondary" size="md" onClick={() => void copy()}>
             {copied ? 'Copied!' : 'Copy'}
-          </button>
+          </Button>
           <Button variant="primary" size="md" onClick={() => onDownload(text)}>
             {downloadLabel}
           </Button>
