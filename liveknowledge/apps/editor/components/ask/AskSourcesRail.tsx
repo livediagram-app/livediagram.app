@@ -1,0 +1,179 @@
+'use client';
+
+// The Sources rail (docs/specs/030-knowledgebase/search-and-ask.md "What an answer shows"): a card for each passage
+// the showing answer cites, then the passages it found and set aside. A card opens its page at the passage. Passages
+// are other people's text: drawn as text, the matched words softly marked by the page itself.
+import { memo, useEffect, useRef } from 'react';
+import type { AskNotUsed, AskSource } from '@liveknowledge/api-schema';
+import { parseKnowledgeFields } from '@liveknowledge/knowledge';
+import { CompactEmptyState } from '@liveknowledge/ui';
+import { markedParts } from '@/lib/knowledge-ask/answer-parts';
+import type { AskTurnView } from '@/lib/knowledge-ask/ask-conversation';
+import { pagePathText, trustText } from '@/lib/knowledge-ask/source-meta';
+import { SourcesIcon } from './ask-icons';
+import { NUMBER_CHIP } from './CitationChip';
+
+export type SourcePage = { id: string; name: string; parent?: string; knowledge?: unknown };
+
+const SECTION_LABEL =
+  'text-[11px] font-semibold uppercase tracking-wider text-slate-600 dark:text-slate-400';
+const CARD =
+  'block w-full cursor-pointer rounded-xl border bg-white p-3 text-left motion-safe:transition-[border-color,box-shadow] motion-safe:duration-micro hover:border-slate-300 hover:shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:bg-slate-900 dark:hover:border-slate-600';
+// amber-800 on amber-100 is over 4.5:1 (TrustBadge.test.tsx holds the pair).
+const STALE_PILL =
+  'inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:bg-amber-500/20 dark:text-amber-200';
+
+function Passage({ text, question }: { text: string; question: string }) {
+  return (
+    <span className="mt-1.5 line-clamp-6 block break-words text-[13px] leading-5 text-slate-700 dark:text-slate-300">
+      {markedParts(text, question).map((part, at) =>
+        part.marked ? (
+          // The page's own mark over a matched word: a soft brand wash, the words still text.
+          <mark
+            key={at}
+            className="rounded-[3px] bg-brand-100 px-0.5 text-inherit dark:bg-brand-500/25"
+          >
+            {part.text}
+          </mark>
+        ) : (
+          part.text
+        ),
+      )}
+    </span>
+  );
+}
+
+function SourceCard({
+  source,
+  question,
+  pages,
+  nameOf,
+  now,
+  lit,
+  stale,
+  onOpen,
+}: {
+  source: AskSource | AskNotUsed;
+  question: string;
+  pages: readonly SourcePage[];
+  nameOf: (id: string | undefined) => string | undefined;
+  now: number;
+  lit: boolean;
+  stale: boolean;
+  onOpen: (source: AskSource) => void;
+}) {
+  const card = useRef<HTMLButtonElement>(null);
+  // A pressed citation brings its card into view and takes the focus there.
+  useEffect(() => {
+    if (!lit) return;
+    card.current?.scrollIntoView?.({ block: 'nearest', behavior: 'auto' });
+    card.current?.focus({ preventScroll: true });
+  }, [lit]);
+  const page = pages.find((p) => p.id === source.tab);
+  const verifier = nameOf(parseKnowledgeFields(page?.knowledge).verifiedBy);
+  const headings = source.headings.join(' › ');
+  return (
+    <li>
+      <button
+        ref={card}
+        type="button"
+        data-source={source.number}
+        data-lit={lit ? '' : undefined}
+        onClick={() => onOpen(source)}
+        className={`${CARD} ${
+          lit
+            ? 'border-brand-500 ring-2 ring-brand-500/30'
+            : stale
+              ? 'border-amber-300 dark:border-amber-500/40'
+              : 'border-slate-200 dark:border-slate-800'
+        }`}
+      >
+        <span className="flex items-center gap-2">
+          <span aria-hidden className={NUMBER_CHIP}>
+            <span className="text-optical-centre">{source.number}</span>
+          </span>
+          <span className="sr-only">Source {source.number}:</span>
+          <span className="min-w-0 flex-1 truncate text-sm font-semibold text-slate-900 dark:text-slate-100">
+            {source.title || 'Untitled Page'}
+          </span>
+          {stale ? <span className={STALE_PILL}>Stale</span> : null}
+        </span>
+        {headings ? (
+          <span className="mt-0.5 block truncate text-xs text-slate-600 dark:text-slate-400">
+            {headings}
+          </span>
+        ) : null}
+        <Passage text={source.text} question={question} />
+        {'reason' in source && source.reason ? (
+          <span className="mt-1.5 block break-words text-[13px] leading-5 text-amber-900 dark:text-amber-200">
+            {source.reason}
+          </span>
+        ) : null}
+        <span className="mt-2 block truncate text-xs text-slate-600 dark:text-slate-400">
+          {pagePathText(pages, source.tab, source.title)} ·{' '}
+          {trustText(source.trust, source.verifiedAt, verifier, now)}
+        </span>
+      </button>
+    </li>
+  );
+}
+
+export const AskSourcesRail = memo(function AskSourcesRail({
+  turn,
+  pages,
+  nameOf,
+  now,
+  lit,
+  onOpen,
+}: {
+  // The answer whose sources show: the newest, or the one a citation was pressed in.
+  turn: AskTurnView | null;
+  pages: readonly SourcePage[];
+  nameOf: (id: string | undefined) => string | undefined;
+  now: number;
+  // The source a pressed citation names.
+  lit: number | null;
+  onOpen: (source: AskSource) => void;
+}) {
+  const sources = turn?.sources ?? [];
+  const notUsed = turn?.notUsed ?? [];
+  const shared = { question: turn?.question ?? '', pages, nameOf, now, onOpen };
+  return (
+    <div data-ask-sources="" className="flex flex-col gap-3 p-4">
+      <h2 className={SECTION_LABEL}>Sources</h2>
+      {sources.length === 0 ? (
+        <CompactEmptyState
+          icon={<SourcesIcon />}
+          title="No Sources Yet"
+          description={
+            turn?.status === 'done'
+              ? 'This answer cites no passage.'
+              : 'The passages an answer cites show here, each with its page and who verified it.'
+          }
+        />
+      ) : (
+        <ul className="flex flex-col gap-2">
+          {sources.map((source) => (
+            <SourceCard
+              key={source.passageId}
+              source={source}
+              lit={lit === source.number}
+              stale={false}
+              {...shared}
+            />
+          ))}
+        </ul>
+      )}
+      {notUsed.length > 0 ? (
+        <>
+          <h2 className={`${SECTION_LABEL} mt-2`}>Found but Not Used</h2>
+          <ul className="flex flex-col gap-2">
+            {notUsed.map((source) => (
+              <SourceCard key={source.passageId} source={source} lit={false} stale {...shared} />
+            ))}
+          </ul>
+        </>
+      ) : null}
+    </div>
+  );
+});

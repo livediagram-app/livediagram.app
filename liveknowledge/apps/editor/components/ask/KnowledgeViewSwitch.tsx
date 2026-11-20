@@ -6,13 +6,13 @@
 // it is the view showing; a plain press moves in place, as a new history entry.
 import type { MouseEvent, ReactNode } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
+import { useEditorChrome } from '@/app/document/[id]/EditorContext';
 import {
   KNOWLEDGE_VIEWS,
-  knowledgeViewHref,
   showKnowledgeView,
   type KnowledgeView,
 } from '@/lib/knowledge-ask/knowledge-view';
-import { useKnowledgeView } from '@/lib/knowledge-ask/useKnowledgeView';
+import { useKnowledgeView, useKnowledgeViewHref } from '@/lib/knowledge-ask/useKnowledgeView';
 import { track } from '@/lib/telemetry';
 import { AiViewIcon, AskViewIcon, PagesViewIcon } from './ask-icons';
 
@@ -57,8 +57,7 @@ export function KnowledgeViewSwitch({
   placement: 'corner' | 'row';
 }) {
   const current = useKnowledgeView();
-  const href = (view: KnowledgeView) =>
-    typeof window === 'undefined' ? '#' : knowledgeViewHref(window.location.href, view);
+  const href = useKnowledgeViewHref(useEditorChrome((s) => (s.hydrated ? s.activeId : null)));
   const corner = placement === 'corner';
   return (
     <nav

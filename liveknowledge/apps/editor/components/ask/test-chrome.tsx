@@ -21,6 +21,8 @@ export const page = (id: string, name: string, parent?: string): Tab => ({
   ...(parent ? { parent } : {}),
 });
 
+const PAGES = [page('p1', 'Release Process'), page('p2', 'Hotfixes', 'p1')];
+
 export function chromeValue(
   role: Role = 'edit',
   over: Record<string, unknown> = {},
@@ -41,8 +43,17 @@ export function chromeValue(
     accountUserId: 'me',
     can: resolveEditorCapabilities(role),
     isStructureReadOnly: role !== 'edit',
-    tabs: [page('p1', 'Release Process'), page('p2', 'Hotfixes', 'p1')],
+    tabs: PAGES,
     activeId: 'p1',
+    activeTab: PAGES[0],
+    commentMentions: { candidates: [] },
+    commitTabs: () => {},
+    markTabLoaded: () => {},
+    setActiveId: () => {},
+    setSelectedId: () => {},
+    setMultiSelectedIds: () => {},
+    setEditingId: () => {},
+    setFormatSourceId: () => {},
     ...over,
   } as unknown as EditorContextValue;
 }

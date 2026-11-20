@@ -44,6 +44,11 @@ export const aiSettingsStore = {
     inFlight.set(documentId, request);
     return request;
   },
+  /** Read them again whatever is held (an answer said the key had gone). */
+  refresh(who: KnowledgeCaller, documentId: string): Promise<void> {
+    if (states.get(documentId)?.status === 'ready') states.delete(documentId);
+    return aiSettingsStore.load(who, documentId);
+  },
   /** What a write answered: the settings as they are now. */
   set(documentId: string, settings: KnowledgeAiSettings): void {
     put(documentId, { status: 'ready', settings });
