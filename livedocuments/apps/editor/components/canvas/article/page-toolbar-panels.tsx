@@ -189,13 +189,13 @@ export function ListPanel({
         <>
           <Rule />
           <Row
-            label="Increase indent"
+            label="Increase Indent"
             icon={<PanelIcons.indent />}
             keys="Tab"
             onPick={() => onIndent(1)}
           />
           <Row
-            label="Decrease indent"
+            label="Decrease Indent"
             icon={<PanelIcons.outdent />}
             keys="Shift-Tab"
             onPick={() => onIndent(-1)}
@@ -396,7 +396,7 @@ export function MorePanel({
       <Row
         label="Clear Formatting"
         icon={<PanelIcons.clear />}
-        keys="Mod-\\"
+        keys={'Mod-\\'}
         onPick={() => onAction('clear')}
       />
       <Row

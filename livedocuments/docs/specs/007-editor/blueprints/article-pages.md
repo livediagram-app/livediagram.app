@@ -803,8 +803,8 @@ ops): ArticleFlow` (never empty). For any `a`, `b`: `applyArticleOps(a, diffArti
 Copy and layout as the spec. Labels: toolbar **Article Formatting**; buttons **Style: <style>**,
 **Bold**, **Italic**, **Underline**, **Colour**, **Link**, **Lists**, **Alignment**, **More
 Formatting**, **Insert**, **Comment**, **Assign Action** (each tooltip with its shortcut, ⌘ or
-Ctrl spelled by platform via `keyLabel`); menus **Text Style**, **Lists** (with **Increase
-indent** / **Decrease indent** while in a list), **Alignment** (**Align Left**, **Align Centre**, **Align Right**, **Justify**), **Colour** (titles **Text Colour** / **Highlight**; pickers **Text colour** / **Highlight**,
+Ctrl spelled by platform via `keyLabel`, a letter key in capitals: ⌘E); menus **Text Style**, **Lists** (with **Increase
+Indent** / **Decrease Indent** while in a list), **Alignment** (**Align Left**, **Align Centre**, **Align Right**, **Justify**), **Colour** (titles **Text Colour** / **Highlight**; pickers **Text colour** / **Highlight**,
 **Default colour** / **No highlight**), **Link** (placeholder "Paste or type a link", **Apply**,
 **Remove**), **Insert**, **More Formatting** (**Strikethrough**, **Inline Code**, **Superscript**,
 **Subscript**, **Clear Formatting**, **Article Style**, then the **Word Count** line); slash menu **Insert a block** with each
