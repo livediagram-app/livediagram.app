@@ -22,6 +22,8 @@ import {
   knowledgePath,
   pageRefOf,
   resultTrustOf,
+  reviewPeriodLine,
+  reviewPeriodOf,
   trustFieldsOf,
   trustLine,
 } from '../knowledge';
@@ -54,7 +56,7 @@ export const context = defineVerb({
   id: 'context',
   summary: 'The pages every agent reads first',
   description:
-    'Prints the knowledgebase’s Always in Context pages as Markdown, in the order of the page tree and within the context budget, with how far each can be trusted, and what this credential may do there (its role and scopes). Run it first.',
+    'Prints the knowledgebase’s Always in Context pages as Markdown, in the order of the page tree and within the context budget, with how far each can be trusted, the knowledgebase’s Review Period (how long after it was verified a page comes due for review), and what this credential may do there (its role and scopes). Run it first.',
   behaviour: 'read',
   input: z.object({ doc: docArg }),
   output: z.object(getContextOutput).omit({ next: true }),
@@ -65,6 +67,7 @@ export const context = defineVerb({
       knowledgebase: c.name,
       role: c.role,
       scopes: c.scopes,
+      review_period: reviewPeriodOf(c.reviewEvery),
       budget_tokens: c.budget,
       tokens: c.tokens,
       pages: c.pages.map((p) => ({
@@ -78,7 +81,7 @@ export const context = defineVerb({
     };
   },
   text: (o) => [
-    `${o.knowledgebase} · ${o.page_count} pages · you act as ${o.role} · scopes: ${o.scopes.join(', ')} · ${o.tokens} of ${o.budget_tokens} tokens`,
+    `${o.knowledgebase} · ${o.page_count} pages · ${reviewPeriodLine(o.review_period)} · you act as ${o.role} · scopes: ${o.scopes.join(', ')} · ${o.tokens} of ${o.budget_tokens} tokens`,
     ...o.pages.flatMap((p) => ['', `--- ${named(p)} · ${trustLine(p)}`, p.markdown.trimEnd()]),
     ...o.left_out.map((p) => `left out (over the budget): ${named(p)}, ${p.tokens} tokens`),
   ],
@@ -93,7 +96,7 @@ export const pages = defineVerb({
   id: 'pages',
   summary: 'The page tree',
   description:
-    'Prints the knowledgebase’s pages in tree order: each page’s title and id, indented under its parent, with how far it can be trusted (verified, review due, never verified, in conflict). --under prints one page and the pages under it.',
+    'Prints the knowledgebase’s pages in tree order: each page’s title and id, indented under its parent, with how far it can be trusted (verified, review due, never verified, in conflict), after one line saying the knowledgebase’s Review Period. --under prints one page and the pages under it.',
   behaviour: 'read',
   input: z.object({
     doc: docArg,
@@ -113,7 +116,8 @@ export const pages = defineVerb({
       ...(row.context ? { always_in_context: true as const } : {}),
       ...trustFieldsOf(row.trust),
     }));
-    if (input.under === undefined) return { count: rows.length, pages: rows };
+    const review_period = reviewPeriodOf(listed.reviewEvery);
+    if (input.under === undefined) return { count: rows.length, review_period, pages: rows };
     const key = input.under.toLowerCase().replace(/\s+/g, ' ').trim();
     const tops = rows.filter(
       (r) => r.page === input.under || r.title.toLowerCase().replace(/\s+/g, ' ').trim() === key,
@@ -132,21 +136,26 @@ export const pages = defineVerb({
     const at = rows.indexOf(tops[0]!);
     const end = rows.findIndex((r, i) => i > at && r.depth <= tops[0]!.depth);
     const under = rows.slice(at, end < 0 ? rows.length : end);
-    return { count: under.length, pages: under };
+    return { count: under.length, review_period, pages: under };
   },
   text: (o) =>
     o.pages.length === 0
       ? ['no pages']
-      : o.pages.map(
-          (p) =>
-            `${'  '.repeat(p.depth - 1)}${p.title}  (${p.page})  ${trustLine(p)}` +
-            (p.always_in_context ? ', always in context' : ''),
-        ),
+      : [
+          // Once, for every row's review date.
+          `${o.count} ${o.count === 1 ? 'page' : 'pages'} · ${reviewPeriodLine(o.review_period)}`,
+          ...o.pages.map(
+            (p) =>
+              `${'  '.repeat(p.depth - 1)}${p.title}  (${p.page})  ${trustLine(p)}` +
+              (p.always_in_context ? ', always in context' : ''),
+          ),
+        ],
   quiet: (o) => o.pages.map((p) => p.page),
   cli: {
     positionals: ['doc'],
     examples: ['liveknowledge pages Handbook', 'liveknowledge pages Handbook --under Deploys -q'],
-    prints: 'one line a page: its title, id and trust, indented by depth',
+    prints:
+      'the page count and the Review Period, then one line a page: its title, id and trust, indented by depth',
   },
 });
 

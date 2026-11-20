@@ -4,6 +4,7 @@
 // names the next tool to call.
 import { z } from 'zod';
 import { ARTICLE_MARKDOWN_MAX, NAME_MAX_LENGTH, truncateName } from '@liveknowledge/document';
+import { REVIEW_PERIODS } from '../knowledge/trust';
 
 /** The most one suggestion holds (the api's SUGGESTION_MAX_CHARS). */
 export const SUGGEST_MAX_CHARS = 20_000;
@@ -42,7 +43,12 @@ export const trustFields = {
     ),
   verified_at: z.string().optional().describe('When it was last verified.'),
   verified_by: z.string().optional().describe('Who verified it, where their name is known.'),
-  review_due: z.string().optional().describe('When its review is, or was, due.'),
+  review_due: z
+    .string()
+    .optional()
+    .describe(
+      'When its review is, or was, due: verified_at plus the knowledgebase’s Review Period. Absent when that period is "never".',
+    ),
   stale: z
     .boolean()
     .describe('True when its review is due: right when verified, unconfirmed since.'),
@@ -51,6 +57,13 @@ export const trustFields = {
     .optional()
     .describe('Pages that state the opposite: the team has not settled which is right.'),
 };
+
+/** The knowledgebase's Review Period, stated once an answer (get_context, list_pages). */
+export const reviewPeriod = z
+  .enum(REVIEW_PERIODS)
+  .describe(
+    'The knowledgebase’s Review Period: how long after it was last verified a page comes due for review. One period for every page, set by an Editor in Knowledgebase Settings; "never" means no page comes due. No tool sets it, and no page has a period of its own.',
+  );
 
 export const getContextShape = { documentId };
 export const getContextOutput = {
@@ -63,6 +76,7 @@ export const getContextOutput = {
     .describe(
       'What this connection may do here: read; suggest (suggest_edit, create_page); write (write_page, move_page).',
     ),
+  review_period: reviewPeriod,
   budget_tokens: z.number().describe('The most the Always in Context pages may hold together.'),
   tokens: z.number().describe('What the pages below hold.'),
   pages: z
@@ -96,6 +110,7 @@ export const listPagesShape = {
 };
 export const listPagesOutput = {
   count: z.number().describe('How many pages matched, before limit and offset.'),
+  review_period: reviewPeriod,
   pages: z
     .array(
       z.object({

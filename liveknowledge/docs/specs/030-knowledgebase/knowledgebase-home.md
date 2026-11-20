@@ -14,6 +14,8 @@ marketing site sends a signed-in person on). Someone not signed in is sent to `/
 - **Knowledgebases:** a card per knowledgebase the person can open (most recent first, up to 12, then "See All" to the Explorer): name,
   description, page count and the share of pages verified as a bar.
 - **Yours to Review:** [Verification](verification.md) "Reminders"; also pages with an agent's suggestion waiting.
+  Due is due under each knowledgebase's own Review Period, as its card's verified share is; a period changed in
+  this browser shows on the next visit.
 - **Recently Updated:** the eight pages changed most recently across those knowledgebases, each with who and when.
 - **Start a Page From:** How-To Guide, Decision Record, Meeting Notes, and **Import**
   ([Knowledgebase import](../020-import-export/knowledgebase-import.md)). Each asks which knowledgebase, or makes one.

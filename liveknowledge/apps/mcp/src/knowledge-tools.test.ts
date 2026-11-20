@@ -104,6 +104,7 @@ const CONTEXT: KnowledgeAgentContextResponse = {
   ],
   leftOut: [{ tab: 'holidays', title: 'Holidays', tokens: 9000 }],
   pageCount: 4,
+  reviewEvery: 90,
 };
 
 type Sent = {
@@ -133,7 +134,8 @@ async function connect(answers: Record<string, () => Response> = {}) {
     const given = answers[`${request.method} ${path}`];
     if (given) return given();
     if (path === '/context') return Response.json(CONTEXT);
-    if (path === '/pages' && request.method === 'GET') return Response.json({ pages: ROWS });
+    if (path === '/pages' && request.method === 'GET')
+      return Response.json({ reviewEvery: 'never', pages: ROWS });
     if (path === '/search') return Response.json({ results: [passage()] });
     if (path === '/questions') return Response.json({ key: 'k' }, { status: 201 });
     if (path === '/pages' && request.method === 'POST')
@@ -226,6 +228,8 @@ describe('get_context', () => {
       budget_tokens: 8000,
       tokens: 20,
       page_count: 4,
+      // The knowledgebase's Review Period, said once.
+      review_period: '90 days',
       left_out: [{ page: 'holidays', title: 'Holidays', tokens: 9000 }],
     });
     expect((out.pages as object[])[0]).toEqual({
@@ -240,6 +244,18 @@ describe('get_context', () => {
     });
     expect(out.next).toContain('left_out');
     expect(out.next).toContain('search_pages');
+  });
+
+  it('takes no per-page interval anywhere: no tool has an input for a review period', async () => {
+    const { client } = await connect();
+    const { tools } = await client.listTools();
+    for (const tool of tools) {
+      const inputs = Object.keys((tool.inputSchema as { properties?: object }).properties ?? {});
+      expect(inputs.filter((name) => /review|interval|period/i.test(name))).toEqual([]);
+    }
+    const described = (name: string) => tools.find((t) => t.name === name)!.description!;
+    expect(described('get_context')).toContain('Review Period');
+    expect(described('list_pages')).toContain('Review Period');
   });
 
   it('says so when no page is marked', async () => {
@@ -258,6 +274,8 @@ describe('list_pages', () => {
     const { out } = await call('list_pages', {});
     expect(out.count).toBe(4);
     expect(out.more).toBe(0);
+    // The knowledgebase's Review Period, said once for every row: this one's pages never come due.
+    expect(out.review_period).toBe('never');
     const pages = out.pages as Record<string, unknown>[];
     expect(pages.map((p) => [p.page, p.depth])).toEqual([
       ['ops', 1],

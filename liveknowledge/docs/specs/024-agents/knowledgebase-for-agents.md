@@ -13,8 +13,8 @@ words). The page tools replace livedocuments' element and page-layout tools:
 
 | Tool           | Does                                                                                                                                                    |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `get_context`  | The knowledgebase's Always in Context pages as Markdown, in tree order, within the budget. Call it first.                                               |
-| `list_pages`   | The page tree: ids, titles, depth, verified state, owner, review date.                                                                                  |
+| `get_context`  | The knowledgebase's Always in Context pages as Markdown, in tree order, within the budget, with its Review Period (`review_period`). Call it first.     |
+| `list_pages`   | The page tree: ids, titles, depth, verified state, owner, review date, and once for them all the knowledgebase's Review Period (`review_period`).       |
 | `search_pages` | Passages matching a query, each with its page, heading, verified state and date, `stale` and any `conflicts_with`.                                      |
 | `read_page`    | One page as Markdown with the same trust fields, its backlinks and its subpages.                                                                        |
 | `create_page`  | A new page from Markdown under a parent. Never Verified.                                                                                                |
@@ -52,6 +52,12 @@ the [blueprint](blueprints/knowledgebase-for-agents.md).
 - **Every page and passage answer carries the trust fields**: `verified` (`verified`, `review-due`,
   `never-verified`), `verified_at`, `verified_by` (the verifier's name, on `read_page`, where the accounts service
   has one), `review_due`, `stale` (the review is due) and `conflicts_with` (the pages an open conflict names).
+- **The Review Period is the knowledgebase's, and no tool sets it.** `review_due` and `stale` are worked out from
+  the knowledgebase's one period ([Verification](../030-knowledgebase/verification.md) "The Review Period") when an
+  answer is made. `get_context` and `list_pages` (the CLI's `context` and `pages`) state it once as
+  `review_period`: `30 days`, `90 days`, `180 days`, `365 days` or `never`, under which no page is `review-due` and
+  none has a `review_due`. No tool or command takes a per-page interval; an Editor changes the period in
+  Knowledgebase Settings (a token granted `write` may `PUT knowledge-settings`, which no tool wraps).
 - **Scopes sit on the platform's tokens, which are read-only or full and nothing between.** A read-only token (the
   consent screen's choice, as before) holds `read`. A full token holds `read` and `suggest`, the default for a new
   connection. `write` is granted to one token in one knowledgebase by an Editor, in person

@@ -14,6 +14,7 @@ Derived from [Knowledgebase for agents](../knowledgebase-for-agents.md), with
 | Scope          | `AgentScope`: `read`, `suggest`, `write`                         | What a token may do in one knowledgebase                                          |
 | Suggestion     | `KnowledgeSuggestion`, table `suggestions`, id `sg_` + 10 base32 | A passage replaced, or Markdown appended, waiting for an Editor                   |
 | Trust fields   | `KnowledgePageTrust` (api), `TrustFields` (tools)                | `verified`, `verified_at`, `verified_by`, `review_due`, `stale`, `conflicts_with` |
+| Review Period  | `KnowledgeReviewEvery` (api), `ReviewPeriod` (tools)             | `review_period`: `30 days`, `90 days`, `180 days`, `365 days`, `never`            |
 | Agent name     | `X-Liveknowledge-Agent`                                          | The MCP client's name, as reads are counted under it                              |
 
 ## Modules
@@ -211,16 +212,17 @@ every tool does.
 
 ## Testing
 
-| Rule                                                                 | Test                                                                     |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| Scopes by token kind, role and grant                                 | `packages/api-schema/src/agent-scopes.test.ts`                           |
-| Suggest, accept, dismiss by role; stale; the cap; the prune          | `apps/api/src/routes/knowledge-suggestion-routes.test.ts`                |
-| The agent routes by role and scope; a page by title; `page_verified` | `apps/api/src/routes/knowledge-agent-routes.test.ts`                     |
-| `page_review_due`; Connected Agents per role; the hourly write       | `apps/api/src/routes/knowledge-agent-routes.test.ts`                     |
-| Allow Writing and Stop Writing per role, the confirm, the rollback   | `apps/editor/components/ai-knowledge/AiKnowledgeView.test.tsx`           |
-| Sections, cuts and passages                                          | `packages/knowledge/src/page-markdown.test.ts`                           |
-| One request a tool, the name sent, trust fields, sizes, refusals     | `apps/mcp/src/knowledge-tools.test.ts`                                   |
-| The client's name                                                    | `apps/mcp/src/agent-name.test.ts`                                        |
-| The tools' words and shapes                                          | `packages/agent-verbs/src/verbs/mcp-tools.test.ts`, `mcp/schema.test.ts` |
-| The CLI's commands                                                   | `packages/agent-verbs/src/verbs/knowledge.test.ts`                       |
-| Export, import, the zip reader                                       | `apps/cli/src/commands/knowledge-files.test.ts`, `zip-reader.test.ts`    |
+| Rule                                                                 | Test                                                                                       |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Scopes by token kind, role and grant                                 | `packages/api-schema/src/agent-scopes.test.ts`                                             |
+| Suggest, accept, dismiss by role; stale; the cap; the prune          | `apps/api/src/routes/knowledge-suggestion-routes.test.ts`                                  |
+| The agent routes by role and scope; a page by title; `page_verified` | `apps/api/src/routes/knowledge-agent-routes.test.ts`                                       |
+| `page_review_due`; Connected Agents per role; the hourly write       | `apps/api/src/routes/knowledge-agent-routes.test.ts`                                       |
+| Allow Writing and Stop Writing per role, the confirm, the rollback   | `apps/editor/components/ai-knowledge/AiKnowledgeView.test.tsx`                             |
+| Sections, cuts and passages                                          | `packages/knowledge/src/page-markdown.test.ts`                                             |
+| One request a tool, the name sent, trust fields, sizes, refusals     | `apps/mcp/src/knowledge-tools.test.ts`                                                     |
+| `review_period` said once; no tool takes a review interval           | `apps/mcp/src/knowledge-tools.test.ts`, `packages/agent-verbs/src/verbs/knowledge.test.ts` |
+| The client's name                                                    | `apps/mcp/src/agent-name.test.ts`                                                          |
+| The tools' words and shapes                                          | `packages/agent-verbs/src/verbs/mcp-tools.test.ts`, `mcp/schema.test.ts`                   |
+| The CLI's commands                                                   | `packages/agent-verbs/src/verbs/knowledge.test.ts`                                         |
+| Export, import, the zip reader                                       | `apps/cli/src/commands/knowledge-files.test.ts`, `zip-reader.test.ts`                      |

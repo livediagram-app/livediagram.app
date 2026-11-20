@@ -26,6 +26,7 @@ import {
   knowledgePath,
   pageRefOf,
   resultTrustOf,
+  reviewPeriodOf,
   trustFieldsOf,
 } from '@liveknowledge/agent-verbs';
 import { knowledgeApi } from './knowledge-client';
@@ -56,6 +57,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
       knowledgebase: context.name,
       role: context.role,
       scopes: context.scopes,
+      review_period: reviewPeriodOf(context.reviewEvery),
       budget_tokens: context.budget,
       tokens: context.tokens,
       pages: context.pages.map((p) => ({
@@ -78,7 +80,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
 
   registerTool(server, env, mcpListPages, async (args, extra) => {
     const api = await knowledgeApi(server, env, extra);
-    const { pages } = await api.json<KnowledgePagesResponse>(
+    const { pages, reviewEvery } = await api.json<KnowledgePagesResponse>(
       knowledgePath(args.documentId, 'pages'),
     );
     let rows = pages;
@@ -94,6 +96,7 @@ export function registerKnowledgeReadTools(server: McpServer, env: Env): void {
     const more = Math.max(0, rows.length - offset - shown.length);
     return textResult({
       count: rows.length,
+      review_period: reviewPeriodOf(reviewEvery),
       pages: shown.map(rowOf),
       more,
       next:

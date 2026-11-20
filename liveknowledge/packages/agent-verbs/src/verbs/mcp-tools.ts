@@ -57,15 +57,16 @@ export type { McpToolVerb };
 export { mcpDeleteImage, mcpUploadImage };
 
 const TRUST =
-  'Each carries its trust: verified ("verified", "review-due" or "never-verified"), verified_at, review_due, ' +
-  'stale and, when pages disagree, conflicts_with.';
+  'Each carries its trust: verified ("verified", "review-due" or "never-verified"), verified_at, review_due ' +
+  '(worked out from the knowledgebase’s one Review Period), stale and, when pages disagree, conflicts_with.';
 
 export const mcpGetContext = mcpTool('get_context', {
   behaviour: 'read',
   title: 'Get the knowledgebase’s context',
   description:
     'Call this first. Returns the pages the team marked Always in Context, whole, as Markdown, in the order of ' +
-    'the page tree and within the context budget, and what this connection may do here (its role and scopes). ' +
+    'the page tree and within the context budget, what this connection may do here (its role and scopes), and ' +
+    'the knowledgebase’s Review Period (review_period: how long after it was verified a page comes due). ' +
     `${TRUST} Then search_pages for what a task needs.`,
   inputSchema: getContextShape,
   outputSchema: getContextOutput,
@@ -76,7 +77,8 @@ export const mcpListPages = mcpTool('list_pages', {
   title: 'List the pages',
   description:
     'The page tree of a knowledgebase: each page’s id, title, depth, parent, how many pages sit under it, its ' +
-    `owner and whether it is Always in Context. ${TRUST} No page’s writing is returned: read_page reads one, ` +
+    'owner and whether it is Always in Context, and once for them all the knowledgebase’s Review Period ' +
+    `(review_period). ${TRUST} No page’s writing is returned: read_page reads one, ` +
     'search_pages finds a passage.',
   inputSchema: listPagesShape,
   outputSchema: listPagesOutput,

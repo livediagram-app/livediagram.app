@@ -85,30 +85,56 @@ describe('context', () => {
     ],
     leftOut: [{ tab: 'holidays', title: 'Holidays', tokens: 9000 }],
     pageCount: 4,
+    reviewEvery: 90,
   };
 
   it('prints the context pages with their trust, and what the credential may do', async () => {
     const { ctx, api } = setup({ [`${base}/context`]: answer });
     const out = await run(context, ctx, { doc: DOC_A });
     expect(api.calls).toEqual([base, `${base}/context`]);
-    expect(out).toMatchObject({ knowledgebase: 'Handbook', budget_tokens: 8000, page_count: 4 });
+    expect(out).toMatchObject({
+      knowledgebase: 'Handbook',
+      budget_tokens: 8000,
+      page_count: 4,
+      review_period: '90 days',
+    });
     expect(context.text!(out)).toEqual([
-      'Handbook · 4 pages · you act as participate · scopes: read, suggest · 20 of 8000 tokens',
+      'Handbook · 4 pages · reviews every 90 days · you act as participate · scopes: read, suggest · 20 of 8000 tokens',
       '',
       '--- "Deploys" (deploys) · verified 2026-10-01, review due 2026-12-30',
       'On Tuesdays.',
       'left out (over the budget): "Holidays" (holidays), 9000 tokens',
     ]);
   });
+
+  it('states the knowledgebase’s Review Period once, whatever it is', async () => {
+    for (const [reviewEvery, period, words] of [
+      [30, '30 days', 'reviews every 30 days'],
+      [365, '365 days', 'reviews every 365 days'],
+      ['never', 'never', 'no review period'],
+      // An api that does not say reads as the default.
+      [undefined, '90 days', 'reviews every 90 days'],
+      // So does a period this client does not know.
+      [45, '90 days', 'reviews every 90 days'],
+    ] as const) {
+      const { ctx } = setup({ [`${base}/context`]: { ...answer, reviewEvery } });
+      const out = await run(context, ctx, { doc: DOC_A });
+      expect(out.review_period).toBe(period);
+      expect(context.text!(out)[0]).toContain(` · ${words} · `);
+    }
+  });
 });
 
 describe('pages', () => {
   it('prints the tree, each page with its trust', async () => {
-    const { ctx, api } = setup({ [`${base}/pages`]: { pages: ROWS } });
+    const { ctx, api } = setup({ [`${base}/pages`]: { reviewEvery: 180, pages: ROWS } });
     const out = await run(pages, ctx, { doc: DOC_A });
     expect(api.calls).toEqual([base, `${base}/pages`]);
     expect(out.count).toBe(4);
+    // The Review Period once, for every row's review date.
+    expect(out.review_period).toBe('180 days');
     expect(pages.text!(out)).toEqual([
+      '4 pages · reviews every 180 days',
       'Operations  (ops)  verified 2026-10-01, review due 2026-12-30',
       '  Deploys  (deploys)  never verified, always in context',
       '    Rollbacks  (rollbacks)  never verified',
@@ -124,7 +150,8 @@ describe('pages', () => {
     const under = await run(pages, ctx, { doc: DOC_A, under: ' deploys' });
     expect(under.pages.map((p) => p.page)).toEqual(['deploys', 'rollbacks']);
     const last = await run(pages, ctx, { doc: DOC_A, under: 'holidays' });
-    expect(last).toMatchObject({ count: 1 });
+    expect(last).toMatchObject({ count: 1, review_period: '90 days' });
+    expect(pages.text!(last)[0]).toBe('1 page · reviews every 90 days');
   });
 
   it('refuses a page that is not there, or a title two pages share', async () => {
@@ -146,7 +173,7 @@ describe('pages', () => {
   });
 
   it('says so when there are none', () => {
-    expect(pages.text!({ count: 0, pages: [] })).toEqual(['no pages']);
+    expect(pages.text!({ count: 0, review_period: 'never', pages: [] })).toEqual(['no pages']);
   });
 });
 

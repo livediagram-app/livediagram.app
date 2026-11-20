@@ -1,12 +1,30 @@
 // The trust fields every page and passage answer carries (docs/specs/024-agents/knowledgebase-for-agents.md), from
 // the api's: the state under `verified`, dates as ISO timestamps a model reads without arithmetic, `stale` for a
-// review that is due, and the pages an open conflict names. The MCP's tools and the CLI's commands answer the same
+// review that is due (under the knowledgebase's one Review Period, which the api works the dates out from), and
+// the pages an open conflict names. The MCP's tools and the CLI's commands answer the same
 // fields, so an agent reads a page the same way through either door.
 import type {
   KnowledgePageRef,
   KnowledgePageTrust,
+  KnowledgeReviewEvery,
   KnowledgeSearchResult,
 } from '@liveknowledge/api-schema';
+
+/** The knowledgebase's Review Period as an answer states it, once: how long after it was last verified a page
+ *  comes due for review. One period for every page; `never` is a knowledgebase whose pages do not come due. */
+export const REVIEW_PERIODS = ['30 days', '90 days', '180 days', '365 days', 'never'] as const;
+export type ReviewPeriod = (typeof REVIEW_PERIODS)[number];
+/** An api that does not say (one from before the period was the knowledgebase's) reads as the default. */
+export function reviewPeriodOf(every: KnowledgeReviewEvery | undefined): ReviewPeriod {
+  const period = every === 'never' ? 'never' : `${every ?? 90} days`;
+  return (REVIEW_PERIODS as readonly string[]).includes(period)
+    ? (period as ReviewPeriod)
+    : '90 days';
+}
+
+/** The period as one phrase of a listing's first line: "reviews every 90 days", "no review period". */
+export const reviewPeriodLine = (period: ReviewPeriod): string =>
+  period === 'never' ? 'no review period' : `reviews every ${period}`;
 
 export type TrustFields = {
   verified: KnowledgePageTrust['state'];

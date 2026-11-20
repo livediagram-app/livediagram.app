@@ -70,7 +70,9 @@ or here. The list shows each page's size in tokens (characters / 4, rounded up t
 ## Knowledge Health
 
 Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, and **Remind the Owners**
-(one email each, at most once a week per knowledgebase).
+(one email each, at most once a week per knowledgebase). The counts are worked out under the knowledgebase's one
+Review Period ([Verification](verification.md) "The Review Period") when the view is read: under Never no page is
+Review Due.
 
 **Remind the Owners** sends each owner one email, **Pages to Review**, listing their pages that are Review Due or
 Never Verified (each named with its state and linked; the first 100, the rest counted). It is a
