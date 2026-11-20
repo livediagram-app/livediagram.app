@@ -85,8 +85,12 @@ deleted.`). An agent replacing a starter page writes `[add, delete 1]`, and with
   A locked page keeps its own and the line says how many did ("Gave 34 other wireframe pages the background of page 1;
   2 locked kept their own"). With no other page of the kind it is refused (`no_other_pages`). It is how an agent
   gives a whole set of pages one background: `set` the first page's, then this, in the same call.
-- **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`); any other is refused (`layout_unknown`)
-  naming the kind's layouts. Laid out in the page's content box, in the tab's theme.
+- **Layouts**: a layout id the page's kind offers (`layoutCatalogueFor`). **A layout by its plain name**: ids carry
+  their page kind as a prefix (`wf-`, `logo-`), which a caller does not know before a first refusal, so a name is also read
+  without it, in any case and with spaces for hyphens, when exactly one of the kind's layouts has it (a wireframe asked for `settings` is `wf-settings`, a logo asked for `wordmark` is `logo-wordmark`;
+  `layoutNamed`, `../packages/edit-operations/src/layout-named.ts`). Any other is refused (`layout_unknown`)
+  naming what was asked, the closest ids when some are near, and the kind's layouts. Laid out in the page's content
+  box, in the tab's theme.
 - **Locks**: a locked page refuses every change but `set { locked: false }` (`page_locked`).
 - **Limit**: a tab holds at most 100 pages (`MAX_PAGES`); an `add` or `duplicate` past it is refused
   (`page_limit`).

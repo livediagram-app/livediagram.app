@@ -145,13 +145,9 @@ function omittedOf(closed: number, rich: boolean): ListItemsOmitted | undefined 
   };
 }
 
-// The characters one more card adds to the answer's text: its JSON, indented four more spaces a line under `items`,
-// and the comma and line break before the next.
+// The characters one more card adds to the answer's text: its JSON on one line, and the comma before the next.
 function cardCost(card: ListedItem): number {
-  const text = JSON.stringify(card, null, 2);
-  let lines = 1;
-  for (let i = text.indexOf('\n'); i >= 0; i = text.indexOf('\n', i + 1)) lines += 1;
-  return text.length + 4 * lines + 2;
+  return JSON.stringify(card).length + 1;
 }
 
 const isClosed = (isDone: (status: string | undefined) => boolean, i: Item) =>
@@ -235,7 +231,7 @@ export function listItemsPage(
     omitted: omittedOf(closed, !page.includeRich),
     nextCursor: `${CURSOR_PREFIX}${kept.at(-1)?.key ?? 0}`,
   };
-  let size = JSON.stringify(largest, null, 2).length + 4;
+  let size = JSON.stringify(largest).length;
   const items: ListedItem[] = [];
   let at = kept.findIndex((i) => i.key > page.after);
   if (at < 0) at = kept.length;

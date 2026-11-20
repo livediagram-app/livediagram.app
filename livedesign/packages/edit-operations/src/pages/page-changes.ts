@@ -2,6 +2,7 @@
 // "change_pages"), through the page panel's own edits (@livedesign/design pages-edits) so
 // an agent's edit is a person's. In order, each against the tab as the ones before it left it; the
 // first refusal stops them all and nothing is written.
+import { layoutNamed } from '@liveworkspace/edit-operations/layout-named';
 import type { PagesRefusal, PageBackgroundInput, PageChange } from '@livedesign/api-schema';
 import {
   elementIdsOnPage,
@@ -172,14 +173,16 @@ export function applyPageChanges(
       const layOut = (page: Page, layout: string): string => {
         const kind = pageKindOf(page);
         const offered = layoutCatalogueFor(kind, pageDeviceClass(page)).layouts;
-        const found = offered.find((l) => l.id === layout);
+        const named = layoutNamed(offered, layout);
+        const found = named.layout;
         if (!found)
           stop(
             'layout_unknown',
             kind === 'photo'
               ? 'A photo page takes no layout: its picture is edited in the editor.'
               : offered.length
-                ? `A ${kindWord(kind)} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`
+                ? `No ${kindWord(kind)} layout "${layout}".${named.closest.length ? ` Closest: ${named.closest.join(', ')}.` : ''} ` +
+                  `A ${kindWord(kind)} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`
                 : 'A blank page takes no layouts: add a logo or wireframe page for one.',
           );
         const laid = layOutPages(pages()).find((p) => p.id === page.id)!;

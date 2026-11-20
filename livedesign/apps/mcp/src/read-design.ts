@@ -1,6 +1,7 @@
 // read_design (docs/specs/015-api/mcp-server.md §4.2; docs/specs/024-agents/design-views.md "Where
 // views are made"): a tab read as a view, the outline by default and fitted to a token budget, instead
 // of its element JSON. The elements on request (`format: "json"`), a PNG only with `image: true`.
+import { tabIdNamed } from '@liveworkspace/mcp-kit/tab-named';
 import {
   isRefErrorBody,
   type DesignResponse,
@@ -93,8 +94,11 @@ export async function readDesign(
     `/designs/${encodeURIComponent(args.designId)}`,
   );
   const summary =
-    args.tabId === undefined ? design.tabs[0] : design.tabs.find((t) => t.id === args.tabId);
-  const tabId = args.tabId ?? summary?.id;
+    args.tabId === undefined
+      ? design.tabs[0]
+      : design.tabs.find((t) => t.id === tabIdNamed(design.tabs, args.tabId!));
+  // An id, or a name one tab alone has; an unknown one is named back in the refusal below.
+  const tabId = summary?.id ?? args.tabId;
   if (tabId === undefined) return errorResult('That design has no tabs.');
   // Every tab, in order, so a caller can read the others.
   const tabs = [...design.tabs]

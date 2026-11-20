@@ -5,6 +5,7 @@
 // result lives in image-result.ts and the pure tab builders in @liveplanner/project
 // and @liveplanner/templates. tools.ts keeps the registrations.
 
+import { tabIdNamed } from '@liveworkspace/mcp-kit/tab-named';
 import type { Project, ProjectResponse, TabRecord, TabResponse } from '@liveplanner/api-schema';
 import { apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
@@ -35,9 +36,14 @@ export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
 export const shareUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
   `${appBase(env)}/project/shared?s=${encodeURIComponent(code)}`;
 
-// A refusal after some changes went through says which did (the Plan and Sheet tools' many-change writes).
+// A refusal after some changes went through says which did (the Plan and Sheet tools' many-change writes), and that
+// they are done: a refusal that ends "make the same call again" (the rate limit) would otherwise make them twice.
 export const stopped = (message: string, applied: readonly string[]) =>
-  errorResult(applied.length ? `${message} Applied before it: ${applied.join('; ')}.` : message);
+  errorResult(
+    applied.length
+      ? `${message} Applied before it (done: leave these out of the next call): ${applied.join('; ')}.`
+      : message,
+  );
 
 // Load a project and one of its tabs: the named tab, or the first one when the
 // caller didn't name one (the default every tab-scoped tool applies). Null when
@@ -54,7 +60,8 @@ export async function loadTab(
     token,
     `/projects/${encodeURIComponent(projectId)}`,
   );
-  const id = tabId ?? liveDoc.tabs[0]?.id;
+  // A tab by its id, or by its name when one tab alone has it (@liveworkspace/mcp-kit/tab-named).
+  const id = tabId === undefined ? liveDoc.tabs[0]?.id : (tabIdNamed(liveDoc.tabs, tabId) ?? tabId);
   if (!id) return null;
   if (!liveDoc.tabs.some((t) => t.id === id))
     throw new ToolInputError(

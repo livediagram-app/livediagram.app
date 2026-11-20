@@ -25,11 +25,18 @@ vi.mock('./api', () => ({
   },
 }));
 
-const { imageResult, tabFontIds, tabPreview } = await import('./image-result');
+const { EMPTY_TAB_NOTE, imageResult, tabFontIds, tabPreview } = await import('./image-result');
+
+// A tab with one box on it: an empty tab answers no picture.
+const DRAWN = {
+  id: 't',
+  name: 'T',
+  elements: [{ id: 'a', type: 'shape', shape: 'square', x: 0, y: 0, width: 120, height: 60 }],
+} as never;
 
 describe('imageResult', () => {
   it('puts the structured result first, then the notes, then the preview', async () => {
-    const result = await imageResult({ id: 'd' }, { id: 't', name: 'T', elements: [] }, undefined, [
+    const result = await imageResult({ id: 'd' }, DRAWN, undefined, [
       'empty · 0 boxes · 0 texts → clean',
     ]);
     expect(result.content.map((block) => block.type)).toEqual(['text', 'text', 'image']);
@@ -41,8 +48,19 @@ describe('imageResult', () => {
   });
 
   it('adds no note when given none', async () => {
-    const result = await imageResult({ id: 'd' }, { id: 't', name: 'T', elements: [] });
+    const result = await imageResult({ id: 'd' }, DRAWN);
     expect(result.content.map((block) => block.type)).toEqual(['text', 'image']);
+  });
+
+  it('answers no picture of a tab with nothing on it, and says so after the notes', async () => {
+    const result = await imageResult({ id: 'd' }, { id: 't', name: 'T', elements: [] }, undefined, [
+      'a note',
+    ]);
+    expect(result.content).toEqual([
+      { type: 'text', text: '{"id":"d"}' },
+      { type: 'text', text: 'a note' },
+      { type: 'text', text: EMPTY_TAB_NOTE },
+    ]);
   });
 });
 

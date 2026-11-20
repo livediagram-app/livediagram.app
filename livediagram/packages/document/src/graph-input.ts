@@ -529,6 +529,97 @@ export function graphShapeError(graph: GraphInput): string | undefined {
 export const MERMAID_AGENT_UNSUPPORTED_ERROR =
   'Only Mermaid flowcharts (graph / flowchart), state diagrams (stateDiagram), ER diagrams (erDiagram) and sequence diagrams (sequenceDiagram) are supported, not class, gantt or other diagram types.';
 
+// The most of one kind a note lists by name before it counts the rest.
+const NOTE_NAMES_MAX = 5;
+const named = (names: readonly string[]) =>
+  names.slice(0, NOTE_NAMES_MAX).join(', ') +
+  (names.length > NOTE_NAMES_MAX ? ` and ${names.length - NOTE_NAMES_MAX} more` : '');
+const count = (n: number, one: string) => `${n} ${one}${n === 1 ? '' : 's'}`;
+
+// What the drawing of a graph leaves out of what was asked, said rather than dropped (mcp-server.md §4.7 "What a
+// graph leaves out"): an edge naming no node or group is not drawn, a long node label becomes a heading with its
+// full text in the node's note, and a long edge label is cut. A caller told nothing took the diagram for complete.
+export function graphInputNotes(graph: GraphInput): string[] {
+  const notes: string[] = [];
+  const ids = new Set([
+    ...graph.nodes.map((n) => n.id),
+    ...(graph.groups ?? []).map((g) => g.id),
+    ...graph.nodes.flatMap((n) => (n.group ? [n.group] : [])),
+  ]);
+  const loose = graph.edges.filter((e) => !ids.has(e.from) || !ids.has(e.to));
+  if (loose.length)
+    notes.push(
+      `${count(loose.length, 'edge')} left out, naming no node or group: ` +
+        named(loose.map((e) => `${e.from} → ${e.to}`)),
+    );
+  // A sequence message stays whole, and an event-storming note holds its whole text.
+  if (graph.style === 'sequence' || graph.style === 'storm') return notes;
+  const headed = graph.nodes.filter((n) => n.label && capLabel(n.label).cut);
+  if (headed.length)
+    notes.push(
+      `${count(headed.length, 'node label')} shortened to a heading of up to ${GRAPH_LABEL_MAX} characters, the ` +
+        `full text kept in the node's note: ${named(headed.map((n) => `${n.id} reads "${capLabel(n.label!).label}"`))}`,
+    );
+  const cut = graph.edges.filter((e) => e.label && capLabel(e.label).cut && !loose.includes(e));
+  if (cut.length)
+    notes.push(
+      `${count(cut.length, 'edge label')} cut to fit an arrow (up to ${GRAPH_LABEL_MAX} characters): ` +
+        named(cut.map((e) => `${e.from} → ${e.to} reads "${capLabel(e.label!).label}"`)),
+    );
+  return notes;
+}
+
+// What to give instead of a Mermaid diagram type that is not read, by its opening word: each has a form this
+// server draws well, and a refusal that only listed the four types read left the caller to guess it.
+const MERMAID_INSTEAD: readonly (readonly [RegExp, string])[] = [
+  [
+    /^pie\b/i,
+    'For a pie chart, give "elements" with one shape "pie-chart" and its "pieSlices" ([{ label, value }]).',
+  ],
+  [
+    /^mindmap\b/i,
+    'For a mind map, give "graph" with style "mindmap": the first node the centre, an edge from each parent to its child.',
+  ],
+  [
+    /^gantt\b/i,
+    'For a Gantt chart, start the tab from the "gantt" template (list_templates) and fill in its rows.',
+  ],
+  [
+    /^classDiagram\b/i,
+    'For classes, give "elements" with one shape "entity" a class (its members as "entityFields") and arrows between them, or an erDiagram.',
+  ],
+  [
+    /^(timeline|journey)\b/i,
+    'For a timeline, give "elements" with one shape "timeline-rail" and its "conceptRows" ([{ label, note }], note the date).',
+  ],
+  [
+    /^(quadrantChart|xychart(-beta)?)\b/i,
+    'For a chart, give "elements" with a shape "bar-chart", "line-chart" or "pie-chart" and its data.',
+  ],
+  [
+    /^sankey(-beta)?\b/i,
+    'For a Sankey diagram, give "elements" with one shape "sankey" and its "sankeyFlows" ([{ from, to, value }]).',
+  ],
+  [
+    /^C4(Context|Container|Component|Dynamic|Deployment)\b/,
+    'For a C4 diagram, give "graph" with style "c4" and a "c4Kind" on each node.',
+  ],
+];
+
+/** The form to give instead of an unread Mermaid type, as a sentence; empty for one with no closer form. */
+export function mermaidInstead(mermaid: string): string {
+  // Front matter and comments come before the type's own word.
+  const body = mermaid.replace(/^\s*---[\s\S]*?---/, '');
+  const first = body.split('\n').find((line) => line.trim() && !line.trim().startsWith('%%'));
+  const word = first?.trim() ?? '';
+  return MERMAID_INSTEAD.find(([type]) => type.test(word))?.[1] ?? '';
+}
+
+const instead = (mermaid: string) => {
+  const form = mermaidInstead(mermaid);
+  return form ? ` ${form}` : '';
+};
+
 export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }): {
   graph?: GraphInput;
   error?: string;
@@ -539,13 +630,19 @@ export function resolveGraphInput(args: { graph?: GraphInput; mermaid?: string }
     // The MCP schema caps these too; this holds for every caller (graph-limits.ts).
     const tooLarge = graphTooLargeError(args.graph.nodes.length, args.graph.edges.length);
     const shape = tooLarge ?? graphShapeError(args.graph);
-    return shape ? { error: shape } : { graph: args.graph };
+    if (shape) return { error: shape };
+    const notes = graphInputNotes(args.graph);
+    return { graph: args.graph, ...(notes.length ? { notes } : {}) };
   }
   if (args.mermaid === undefined) return {};
   const parsed = graphFromMermaid(args.mermaid);
+  const said = parsed.ok ? [...(parsed.notes ?? []), ...graphInputNotes(parsed.graph)] : [];
   return parsed.ok
-    ? { graph: parsed.graph, ...(parsed.notes ? { notes: parsed.notes } : {}) }
+    ? { graph: parsed.graph, ...(said.length ? { notes: said } : {}) }
     : {
-        error: `Could not read the Mermaid: ${parsed.error === MERMAID_UNSUPPORTED_ERROR ? MERMAID_AGENT_UNSUPPORTED_ERROR : parsed.error}`,
+        error:
+          parsed.error === MERMAID_UNSUPPORTED_ERROR
+            ? `Could not read the Mermaid: ${MERMAID_AGENT_UNSUPPORTED_ERROR}${instead(args.mermaid)}`
+            : `Could not read the Mermaid: ${parsed.error}`,
       };
 }

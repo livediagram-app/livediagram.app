@@ -13,6 +13,7 @@ import { registerOauthRoutes, type OauthServer } from './oauth';
 import type { OauthEnv } from './oauth-clients';
 import { runInRequest } from './request-scope';
 import { bearerChallenge, watchTokenRefusal } from './token-refusal';
+import { compactToolListResponse, isToolListCall } from './tool-list-compact';
 
 // The largest /mcp request body: room for upload_image's base64 of a picture at the gallery's 10 MB cap (4/3 of it,
 // about 13.4 MB) and its JSON around it, where the SDK's default of 4 MiB would refuse a picture over about 3 MB. The
@@ -127,6 +128,8 @@ export function createMcpApp<E extends OauthEnv>(options: {
     }
     // The api is the one judge of the token: when it refuses it, the whole request answers 401 with the same
     // challenge, so the client signs in again instead of retrying a dead token (token-refusal.ts).
+    // A tools/list answer says each long description once (tool-list-compact.ts).
+    const listsTools = await isToolListCall(c.req.raw);
     const watch = watchTokenRefusal(c.env);
     const server = options.buildServer(watch.env);
     const transport = new WebStandardStreamableHTTPServerTransport({
@@ -142,7 +145,7 @@ export function createMcpApp<E extends OauthEnv>(options: {
         authInfo: { token, clientId: 'mcp', scopes: [] },
       }),
     );
-    if (!watch.refused()) return response;
+    if (!watch.refused()) return listsTools ? compactToolListResponse(response) : response;
     console.warn('[mcp] token refused by the api: asking the client to sign in again');
     return c.json(
       {

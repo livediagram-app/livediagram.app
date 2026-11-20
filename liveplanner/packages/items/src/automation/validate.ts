@@ -103,6 +103,30 @@ function readRotate(v: unknown, path: string): string[] {
   return people;
 }
 
+// The actions readAction reads, as a refusal lists them.
+const ACTION_KINDS: readonly AutomationAction['kind'][] = [
+  'move',
+  'set_field',
+  'clear_field',
+  'assign',
+  'add_label',
+  'remove_label',
+  'comment',
+  'flag',
+  'unflag',
+  'archive',
+  'create_card',
+  'email',
+  'set_type',
+  'set_colour',
+  'restore',
+  'resolve_threads',
+  'copy_card',
+  'add_checklist',
+  'link_card',
+  'mention',
+];
+
 function readAction(v: unknown, path: string, place: ValuePlace = {}): AutomationAction {
   const a = obj(v, path);
   const text_ = (x: unknown, p: string, max: number) => text(x, p, max, place);
@@ -246,7 +270,10 @@ function readAction(v: unknown, path: string, place: ValuePlace = {}): Automatio
       };
     }
     default:
-      return refuse(`${path}.kind`, `${path}.kind is not an action`);
+      return refuse(
+        `${path}.kind`,
+        `${path}.kind is not an action (the actions: ${ACTION_KINDS.join(', ')})`,
+      );
   }
 }
 

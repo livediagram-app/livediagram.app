@@ -140,4 +140,16 @@ describe('colour-on-themed, judged on what set the colour', () => {
       'u sets its fill on a themed tab',
     ]);
   });
+
+  it('leaves a C4 element in its kind\x27s colours: a locked fill with its edge, and a C4 boundary', () => {
+    const report = lint(
+      themed(
+        'ocean',
+        box('card', 0, 0, { fillColor: '#1168bd', strokeColor: '#0b4884', themeLockFill: true }),
+        box('sys', 300, 0, { shape: 'boundary', boundaryStyle: 'c4', strokeColor: '#1168bd' }),
+        box('stray', 600, 0, { strokeColor: '#654321' }),
+      ),
+    );
+    expect(of(report, 'colour-on-themed').map((f) => f.refs[0])).toEqual(['stray']);
+  });
 });

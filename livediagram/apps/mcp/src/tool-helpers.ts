@@ -5,6 +5,7 @@
 // result lives in image-result.ts and the pure tab builders in @livediagram/document
 // and @livediagram/templates. tools.ts keeps the registrations.
 
+import { tabIdNamed } from '@liveworkspace/mcp-kit/tab-named';
 import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@livediagram/api-schema';
 import { apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
@@ -50,7 +51,8 @@ export async function loadTab(
     token,
     `/documents/${encodeURIComponent(documentId)}`,
   );
-  const id = tabId ?? liveDoc.tabs[0]?.id;
+  // A tab by its id, or by its name when one tab alone has it (@liveworkspace/mcp-kit/tab-named).
+  const id = tabId === undefined ? liveDoc.tabs[0]?.id : (tabIdNamed(liveDoc.tabs, tabId) ?? tabId);
   if (!id) return null;
   if (!liveDoc.tabs.some((t) => t.id === id))
     throw new ToolInputError(

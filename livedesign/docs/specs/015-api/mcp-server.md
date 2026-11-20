@@ -978,7 +978,8 @@ helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each find
 Every tool declares an MCP **`outputSchema`**: the JSON Schema of the object it
 returns on success. A successful result carries that object twice: as
 **`structuredContent`**, which a client can parse and validate without reading
-prose, and serialised as the first text block, for clients that only read
+prose, and serialised as the first text block (JSON on one line: indentation was a third or more of a nested
+answer's characters and a model reads it the same), for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_design`, `create_design`, `add_tab`,
 `update_design`) add the inline PNG after it (`read_design` only when asked with `image: true`) ([§5](#5-visualise-inline-image-render)).
@@ -1037,6 +1038,23 @@ descriptions.
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
   that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveworkspace/icons/resolve`).
+
+### 4.18 What the tool list and an answer cost
+
+Every client pays for the whole tool list in each session, and for every answer's text, so both are kept as small
+as they can be without saying less.
+
+- **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
+  `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  listing changes; a call is validated against the tool's own schema
+  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+- **An answer's text** is its structured result as one-line JSON (§4.17).
+- **A tab by its name.** Where a tool reads a tab (`read_design`, `update_design` and the tools that load a tab the same
+  way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
+  (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was
+  already refused with every tab's name beside its id: a call spent to learn what the name said. A name two tabs
+  share, or none has, is refused as before, naming the tabs. Renaming and deleting a tab still take its id.
 
 ## 5. Visualise: inline image render
 
@@ -1121,6 +1139,11 @@ Worker (no DOM, no React).
   and Technology marks draw their brand tile instead of the old
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
+
+**An empty tab.** A write whose tab has nothing on it yet (a new design from a blank template, a tab emptied by a
+replace) answers no picture, and a line saying so ("No preview: the tab has nothing on it yet."): a blank page told
+the caller nothing, and a blank slide's background was a 120 KB picture on the first call of every deck. `read_design`
+with `image: true` still draws what it is asked.
 
 ## 5a. Interactive view (MCP Apps)
 

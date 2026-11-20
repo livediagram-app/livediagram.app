@@ -76,7 +76,7 @@ describe('the rule tools', () => {
     expect(out.isError).toBe(true);
     expect(textOf(out)).toBe(
       'The api refused the rule (automation_invalid at steps.0.status): steps.0.status must be an id. Fix that ' +
-        'part and send the change again. Applied before it: ~ rule "Done stamp" off.',
+        'part and send the change again. Applied before it (done: leave these out of the next call): ~ rule "Done stamp" off.',
     );
     expect(sent.filter((s) => !s.startsWith('GET'))).toEqual([
       'POST /projects/d1/automations/r1/toggle',

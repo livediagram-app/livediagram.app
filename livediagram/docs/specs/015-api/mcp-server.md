@@ -785,6 +785,32 @@ grouped, a direction and style that fit the subject. Nodes are set in one fixed
 text size (`md` up to 12 nodes, else `sm`; what the sizing measures against), not the shape default that
 scales text to fill each box.
 
+#### What a graph leaves out
+
+A graph is drawn as well as it can be, and what the drawing could not keep is said in the answer's `notes`, never
+dropped without a word and never a reason to refuse the whole diagram:
+
+- **An edge naming no node or group** is left out, and the note names it (`a → ghost`), up to five and a count of
+  the rest.
+- **A node label over the cap** becomes its heading, with the full text in the node's note; **an edge label over
+  the cap** is cut. The note says which and what each now reads. A sequence message and an event-storming note stay
+  whole.
+- **An icon that names none** is left off its node, and the note names the node, what was asked and the icons like
+  it, with the edit that sets one (`set <node> iconId=<id>`). An icon is decoration: a guessed id ("envelope" for
+  `mail`) used to refuse the whole diagram, a second call of the same graph for one glyph. `iconId` on a raw
+  element is still refused, where the caller wrote the element by hand.
+
+The same holds for a graph given as Mermaid (`graphInputNotes`, `../packages/document/src/graph-input.ts`;
+`graphInputOf`, `apps/mcp/src/graph-input-of.ts`).
+
+#### A Mermaid type that is not read
+
+The refusal of a Mermaid type this server does not read names the form to give instead, by the type's opening
+word: a `pie` is a `pie-chart` element, a `mindmap` a graph with style `mindmap`, a `gantt` the `gantt` template,
+a `classDiagram` `entity` elements, a `timeline` or `journey` a `timeline-rail`, a chart a chart element, a
+`sankey` a `sankey` element, a `C4Context` a graph with style `c4` (`mermaidInstead`). A type with no closer form
+is refused as before.
+
 ### 4.7a Content-carrying element kinds
 
 These kinds hold content of their own, and the element format documents their
@@ -1272,7 +1298,8 @@ helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each find
 Every tool declares an MCP **`outputSchema`**: the JSON Schema of the object it
 returns on success. A successful result carries that object twice: as
 **`structuredContent`**, which a client can parse and validate without reading
-prose, and serialised as the first text block, for clients that only read
+prose, and serialised as the first text block (JSON on one line: indentation was a third or more of a nested
+answer's characters and a model reads it the same), for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_document`, `create_document`, `add_tab`,
 `update_document`) add the inline PNG after it (`read_document` only when asked with `image: true`) ([§5](#5-visualise--inline-image-render)).
@@ -1351,6 +1378,23 @@ such as `archive_document` and `unarchive_document`, is served under its own nam
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
   that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveworkspace/icons/resolve`).
+
+### 4.18 What the tool list and an answer cost
+
+Every client pays for the whole tool list in each session, and for every answer's text, so both are kept as small
+as they can be without saying less.
+
+- **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
+  `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  listing changes; a call is validated against the tool's own schema
+  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+- **An answer's text** is its structured result as one-line JSON (§4.17).
+- **A tab by its name.** Where a tool reads a tab (`read_document`, `update_document` and the tools that load a tab the same
+  way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
+  (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was
+  already refused with every tab's name beside its id: a call spent to learn what the name said. A name two tabs
+  share, or none has, is refused as before, naming the tabs. Renaming and deleting a tab still take its id.
 
 ## 5. Visualise: inline image render
 
@@ -1435,6 +1479,11 @@ Worker (no DOM, no React).
   and Technology marks draw their brand tile instead of the old
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
+
+**An empty tab.** A write whose tab has nothing on it yet (a new document from a blank template, a tab emptied by a
+replace) answers no picture, and a line saying so ("No preview: the tab has nothing on it yet."): a blank page told
+the caller nothing, and a blank slide's background was a 120 KB picture on the first call of every deck. `read_document`
+with `image: true` still draws what it is asked.
 
 ## 5a. Interactive view (MCP Apps)
 
