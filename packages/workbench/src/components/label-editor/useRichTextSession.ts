@@ -1,7 +1,7 @@
 // The LABEL rich-text editor's session state (docs/specs/008-canvas/canvas-and-palette.md "Labels",
 // liveworkspace/docs/specs/011-workbench/label-editor.md): everything that is
 // specific to editing an element's label on the canvas, the element-derived
-// run styling, the mount caret policy, the toolbar flip, the focus guards for
+// run styling, the mount caret policy, the focus guards for
 // the context menu riding alongside, and the commit-on-blur-or-unmount
 // lifecycle. LabelEditor keeps the JSX and its event handlers and mounts
 // what this returns.
@@ -10,7 +10,7 @@
 // restore, active format, format commands) lives in useRichTextRuns,
 // shared with the note editor (docs/specs/009-elements/rich-text-notes.md).
 
-import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useLayoutEffect, useRef } from 'react';
 import {
   runsFromPlainText,
   runsPlainText,
@@ -66,7 +66,6 @@ export function useRichTextSession({
   // which blurs the editor with an unreliable relatedTarget; this flag is
   // the robust "don't commit, we're using the toolbar" signal for onBlur.
   const pointerInToolbarRef = useRef(false);
-  const [placeBelow, setPlaceBelow] = useState(false);
   // Type-to-edit sessions must start with the caret at the END; see the
   // mount effect. Consumed by the first beforeinput.
   const needsEndCaretRef = useRef(false);
@@ -205,25 +204,6 @@ export function useRichTextSession({
     };
   }, []);
 
-  // Flip the toolbar below the element when there isn't room above it. Measure
-  // the EDITOR (a fixed reference), not the toolbar, the toolbar moves when
-  // it flips, which would otherwise ping-pong. ~52px clears the toolbar +
-  // its gap.
-  useLayoutEffect(() => {
-    const measure = () => {
-      const el = editorRef.current;
-      if (!el) return;
-      setPlaceBelow(el.getBoundingClientRect().top < 52);
-    };
-    measure();
-    window.addEventListener('scroll', measure, true);
-    window.addEventListener('resize', measure);
-    return () => {
-      window.removeEventListener('scroll', measure, true);
-      window.removeEventListener('resize', measure);
-    };
-  });
-
   const commitNow = () => {
     if (settledRef.current) return;
     settledRef.current = true;
@@ -260,7 +240,6 @@ export function useRichTextSession({
     pointerInToolbarRef,
     needsEndCaretRef,
     active,
-    placeBelow,
     basePx,
     placeCaretAtEnd,
     syncFromDom,

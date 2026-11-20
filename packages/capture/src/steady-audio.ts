@@ -2,8 +2,10 @@
 // read straight by MediaRecorder, come out about a quarter too long: slowed, deep and garbled on playback (measured on
 // an NZXT USB mic in Brave: 5 s recorded as 6.36 s, whatever the processing settings). Passed through Web Audio first
 // (a source into a stream destination) the same microphone records true to time. Video tracks pass through untouched.
+// The context plays to no speaker (recordingContext), since one clocked by an output device that runs off true brought
+// the slow sound back (Work Tracker 1314).
 
-import { primedAudio } from './level';
+import { primedAudio, recordingContext } from './level';
 
 type SteadyContext = {
   createMediaStreamSource: (stream: MediaStream) => MediaStreamAudioSourceNode;
@@ -21,7 +23,7 @@ const sharedOrNew = (): { context: SteadyContext; shared: boolean } => {
   const primed = primedAudio() as SteadyContext | null;
   return primed
     ? { context: primed, shared: true }
-    : { context: new AudioContext(), shared: false };
+    : { context: recordingContext(), shared: false };
 };
 
 export function steadyAudio(

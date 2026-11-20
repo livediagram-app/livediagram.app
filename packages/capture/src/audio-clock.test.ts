@@ -207,3 +207,64 @@ describe('a context that will not resume or close', () => {
     await Promise.resolve();
   });
 });
+
+describe('recordingContext', () => {
+  const PINNED = { sampleRate: 48000, sinkId: { type: 'none' } };
+  // A stand-in AudioContext that refuses the options a browser might not take, and keeps what it was asked.
+  const contextClass = (refuses: (options?: AudioContextOptions) => boolean) => {
+    const asked: (AudioContextOptions | undefined)[] = [];
+    const Class = vi.fn(function AudioContext(options?: AudioContextOptions) {
+      asked.push(options);
+      if (refuses(options)) throw new DOMException('refused', 'NotSupportedError');
+      return { options };
+    });
+    return { Class: Class as unknown as new (o?: AudioContextOptions) => AudioContext, asked };
+  };
+  const optionsOf = (ctx: AudioContext) => (ctx as unknown as { options?: unknown }).options;
+
+  it('asks for no speaker at 48 kHz, so a recording runs on wall time at the Opus rate', async () => {
+    const { level } = await load();
+    const { Class, asked } = contextClass(() => false);
+    expect(optionsOf(level.recordingContext(Class))).toEqual(PINNED);
+    expect(asked).toHaveLength(1);
+  });
+
+  it('drops the rate for a browser that refuses it, keeping no speaker', async () => {
+    const { level } = await load();
+    const { Class, asked } = contextClass((o) => o?.sampleRate !== undefined);
+    expect(optionsOf(level.recordingContext(Class))).toEqual({ sinkId: { type: 'none' } });
+    expect(asked).toHaveLength(2);
+  });
+
+  it('falls back to the default context for a browser that refuses both, so it still records', async () => {
+    const { level } = await load();
+    const { Class, asked } = contextClass((o) => o !== undefined);
+    expect(optionsOf(level.recordingContext(Class))).toBeUndefined();
+    expect(asked).toEqual([PINNED, { sinkId: { type: 'none' } }, undefined]);
+  });
+
+  it('is what the Record press primes, the meter shares and the recorder falls back to', async () => {
+    const { level, steady } = await load();
+    const asked: unknown[] = [];
+    const made: Ctx[] = [];
+    vi.stubGlobal(
+      'AudioContext',
+      vi.fn(function AudioContext(options?: AudioContextOptions) {
+        asked.push(options);
+        const ctx = context();
+        made.push(ctx);
+        return ctx;
+      }),
+    );
+    level.primeAudio();
+    expect(asked).toEqual([PINNED]);
+    // The meter keeps reading the primed context rather than making one.
+    level.levelMeter(mic()).close();
+    expect(made).toHaveLength(1);
+    expect(made[0]!.createMediaStreamSource).toHaveBeenCalled();
+    // Once it is closed, the recorder makes its own the same way.
+    made[0]!.state = 'closed';
+    steady.steadyAudio(mic()).close();
+    expect(asked).toEqual([PINNED, PINNED]);
+  });
+});
