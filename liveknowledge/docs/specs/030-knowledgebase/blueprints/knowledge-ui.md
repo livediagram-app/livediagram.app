@@ -232,6 +232,53 @@ section 0 times; a commit that changed a link sends one request, 3 seconds later
 Not known: a peer's new link to the page being read shows the next time the page opens, not while it is open (no
 room message says the link table moved).
 
+## Search (built)
+
+Derived from [Search and Ask](../search-and-ask.md) "Search".
+
+| Piece                                                    | File                                           |
+| -------------------------------------------------------- | ---------------------------------------------- |
+| marks, one request at a time, the Offline search         | `lib/knowledge/knowledge-search.ts`            |
+| whether the dialog is open, the chord                    | `lib/knowledge/search-open.ts`                 |
+| a page opened at a block                                 | `lib/knowledge/go-to-block.ts`                 |
+| the dialog                                               | `components/knowledge/SearchDialog.tsx`        |
+| its host: the chord, the search itself, opening a result | `components/knowledge/KnowledgeSearchHost.tsx` |
+| the Search field                                         | `components/knowledge/SearchField.tsx`         |
+
+- **The doors.** The editor has no header bar, so the **Search** field stands at the head of the page tree (under
+  the knowledgebase's name; an icon on the collapsed rail; first in a phone's Pages sheet). **Cmd or Ctrl K** opens
+  the same dialog from anywhere (a capture listener ahead of the editor's own keys), except in the writing while
+  words are selected, where it stays the link field's. The editor's command search, which Cmd or Ctrl K used to
+  open, keeps Cmd or Ctrl `.` and its doors in Tools.
+- **The dialog** is the shared `Dialog`, centred, at one size whatever it lists (`h-[min(70dvh,560px)]`), the field
+  at its head (`role="combobox"`) over a `listbox`. Each result: the page's title with the matched words marked,
+  its tick or pill, where it is (the page's ancestors, then the passage's headings) and, for a passage, the matching
+  lines. Page titles come first, then passages, as the route orders them. Up and Down move (wrapping), Enter or a
+  press opens. Nothing typed: one line saying what is searched. Nothing found: the shared `NoMatches`. The last
+  results stay listed while the next search is on its way.
+- **Snippets are text.** `markedParts` splits the server's snippet on U+0002 and U+0003 into text and marked text,
+  drawn as `<span>` and `<mark>`; nothing is ever set as HTML.
+- **One request at a time.** `createSearchRunner`: each keystroke cancels the pending timer and aborts the request
+  in flight, then waits `SEARCH_DEBOUNCE_MS` (150) and sends; an answer for a query that was replaced is dropped.
+  Closing the dialog stops it.
+- **Refusals in words.** Past 200 characters nothing is sent and the dialog says "A search is at most 200
+  characters." (the route's own `query_too_long` reads the same); a 429 says "Too many searches at once. Wait a
+  moment and try again."; anything else that the search is not answering.
+- **Opening a result** (`goToBlock`): the page opens with no reload; for a passage, its first block is looked for
+  every 50 ms (4 s at most, a page not yet opened loads first), brought into view (`rangeRect`, `scrollIntoView`)
+  and lit for 1.6 s (`article-search-hit`; a steady tint under reduced motion).
+- **Offline** (`searchLoadedPages`): the same dialog over the pages this editor holds, with the room's own
+  passages (`pagePassages`) and words (`searchTerms`): every word must be in the title or in one passage, titles
+  first, 20 at most, the matched words marked the same way. No ranking beyond that order, and a page whose writing
+  this browser has not loaded is found by its title alone.
+- Every role searches; the dialog and its doors are given no role.
+
+Measured (`knowledge-search.test.tsx`, fake timers): three keystrokes inside 150 ms send one request; a newer
+search aborts the one in flight before it is sent, so never two are in flight; a search past 200 characters sends
+none.
+
+Not known: how the dialog sits over the canvas chrome, and the result rows' look, in a browser.
+
 ## Not built
 
 The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), over the client above.

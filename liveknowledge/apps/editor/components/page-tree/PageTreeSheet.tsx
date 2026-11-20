@@ -6,6 +6,7 @@
 import { useMemo, useState } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
+import { SearchField } from '@/components/knowledge/SearchField';
 import { PageTree, type PageTreeProps } from './PageTree';
 import { NewPageButton } from './PageTreeSidebar';
 import { PagesIcon } from './page-tree-icons';
@@ -56,6 +57,9 @@ export function PageTreeSheet({ name, ...tree }: PageTreeProps & { name: string 
           <p className="truncate px-4 pb-1 pt-1 text-sm font-semibold text-slate-900 dark:text-slate-100">
             {name.trim() || 'Untitled Knowledgebase'}
           </p>
+          <div className="px-4 pb-1 pt-2">
+            <SearchField />
+          </div>
           <p className="px-4 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             Pages
           </p>

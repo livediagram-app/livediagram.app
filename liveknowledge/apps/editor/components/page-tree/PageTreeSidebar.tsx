@@ -15,6 +15,7 @@ import { pageTreeRefusalText } from '@/hooks/persistence/page-tree-edits';
 import { PageTree, type PageTreeProps } from './PageTree';
 import { PAGE_RENAME_FIELD } from './PageTreeRow';
 import { AddIcon, CollapseIcon, ExpandIcon } from './page-tree-icons';
+import { SearchField } from '@/components/knowledge/SearchField';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
 
 const SURFACE =
@@ -110,6 +111,7 @@ export function PageTreeSidebar({
             <ExpandIcon />
           </button>
         </HoverCard>
+        <SearchField compact />
         {tree.canEdit ? (
           <HoverCard
             title="New Page"
@@ -183,6 +185,10 @@ export function PageTreeSidebar({
             <CollapseIcon />
           </button>
         </HoverCard>
+      </div>
+      {/* Search the knowledgebase (search-and-ask.md "Search"): the same dialog Cmd or Ctrl K opens. */}
+      <div className="px-3 pt-2">
+        <SearchField />
       </div>
       <p className="px-[18px] pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
         Pages
