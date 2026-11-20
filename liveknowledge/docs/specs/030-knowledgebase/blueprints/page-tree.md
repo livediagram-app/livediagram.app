@@ -223,9 +223,12 @@ neither is here, so the sidebar's head and Home's card keep "Untitled Knowledgeb
 (`knowledgebase-name.test.ts`).
 
 Every one answers nothing for a session that may not change the pages (`canEditStructure`). **The page's name
-follows its Title:** `usePageNameFromTitle` (`hooks/editor/`) renames the page `PAGE_NAME_SETTLE_MS` (600) after the
+follows its Title:** `usePageNameFromTitle` (`hooks/editor/`) renames the page `PAGE_NAME_SETTLE_MS` (50) after the
 Title last changed, only for a title this editor typed (the local edit counter moved), so a page loading or a peer
-typing writes nothing here; a rename still waiting when the person opens another page is made at once.
+typing writes nothing here; a rename still waiting when the person opens another page is made at once. The wait is
+short because the Title only changes when the writing commits, which already waits for the typing to pause: inside
+the autosave's own 600 ms the name rides the same save as the Title, so a page closed just after its Title was
+typed never keeps the Title and loses the name (it did at 600, found by the end-to-end suite under load).
 
 Share roles in the editor: the tree is handed `canEdit = can.editPages && !isStructureReadOnly`
 (`usePageTreeModel`). Without it a row has no Add Subpage, no drag and no rename, the menu holds Copy Link alone, and
@@ -305,6 +308,6 @@ seen in a browser since.
 | `PAGE_TREE_RAIL_WIDTH`                 | 48     | `page-tree-view.ts`       | One 32 px button with its inset                                       |
 | `PAGE_TREE_INDENT`                     | 20     | `page-tree-view.ts`       | The spec's indent: the chevron's own width                            |
 | `PAGE_TREE_ROW`, `PAGE_TREE_TOUCH_ROW` | 32, 44 | `page-tree-view.ts`       | A dense list with a mouse; a finger's 44 px                           |
-| `PAGE_NAME_SETTLE_MS`                  | 600    | `usePageNameFromTitle.ts` | The autosave's own pause                                              |
+| `PAGE_NAME_SETTLE_MS`                  | 50     | `usePageNameFromTitle.ts` | Well inside the autosave's pause, so the name saves with the Title    |
 | `BREADCRUMB_MIN`                       | 240    | `page-title-bar-room.ts`  | Two ancestors at a readable width before the buttons name themselves  |
 | `PAGE_TREE_KEPT`                       | 50     | `lib/page-tree-open.ts`   | Knowledgebases whose closed pages are kept                            |

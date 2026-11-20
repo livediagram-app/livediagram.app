@@ -6,8 +6,14 @@ import { useEffect, useRef, type RefObject } from 'react';
 import type { Tab } from '@liveknowledge/document';
 import { pageTitleOf } from '@/lib/article/page-title';
 
-/** How long the Title rests before the page takes its name: the autosave's own pause. */
-export const PAGE_NAME_SETTLE_MS = 600;
+/**
+ * How long a new Title rests before the page takes its name. Short on purpose: the Title only changes when the
+ * writing commits, which already waits for the typing to pause (ArticleEditor's ARTICLE_IDLE_COMMIT_MS), and the
+ * autosave waits 600 ms more after the last change. Inside that wait the name rides the same save as the Title; at
+ * 600 ms it came after it, so a page closed in between kept its Title and lost its name ("Untitled Page" in the
+ * tree over a page titled Notes, until the Title was typed in again).
+ */
+export const PAGE_NAME_SETTLE_MS = 50;
 
 export function usePageNameFromTitle({
   activeTab,
