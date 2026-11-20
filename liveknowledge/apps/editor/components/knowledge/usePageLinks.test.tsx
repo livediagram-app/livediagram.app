@@ -60,7 +60,7 @@ function Writing({ canInsert, blocks }: { canInsert: boolean; blocks: ArticleBlo
   const viewRef = useRef<EditorView | null>(null);
   const links = usePageLinks(viewRef, canInsert);
   useLayoutEffect(() => {
-    const made = new EditorView(host.current!, {
+    const made = new EditorView(host.current, {
       state: EditorState.create({ doc: blocksToDoc(blocks), plugins: [links.makePlugin()] }),
     });
     made.dispatch(made.state.tr.setSelection(TextSelection.atEnd(made.state.doc)));

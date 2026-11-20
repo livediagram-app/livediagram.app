@@ -207,6 +207,31 @@ Per keystroke the plugin reads the two characters before the caret (closed), or 
   "Deleted Page"); the editor sets none today.
 - Markdown export's relative paths and current titles in an agent's read are the knowledge blueprint's "Not built".
 
+## Backlinks (built)
+
+Derived from [Links and embeds](../links-and-embeds.md) "Backlinks". `lib/knowledge/backlinks-store.ts`
+(`backlinksStore`, `linkTargetsKey`) and `components/knowledge/LinkedFrom.tsx`, drawn in the writing's foot slot
+(`PageKnowledgeSlots`).
+
+- **Linked From** is a small uppercase label, "Linked From 5 Pages" ("1 Page"), over rounded chips, above a
+  hairline, after the writing's last block. Each chip is a link to its page (`#t=<page>`; a plain press opens the
+  page here) and says the page's title as it is now, from the tab list; a page deleted since the read has no chip.
+  The order is the route's (tree order). With none the section is absent: no heading, no empty state.
+- **Read** from `GET pages/<tab>/backlinks` every time the page opens; the last answer shows meanwhile, and readers
+  are told only when the answer differs, so the section does not blink. It fades in (`animate-fade-in`) below
+  everything else on the page, so nothing above it moves.
+- **Read again after a saved change of links.** `linkTargetsKey(blocks)` is the page's link targets as one string,
+  kept per committed block list; when a commit changes it the page's backlinks are read again `LINKS_SETTLE_MS`
+  (3,000) later, by when the autosave has written the link table. The editor's store says nothing when a save
+  completes, so the wait stands in for it.
+- Every role reads and follows. A knowledgebase kept Offline reads none (there is no link table in the browser).
+
+Measured (`LinkedFrom.test.tsx`, jsdom): a typing commit that changed no link sends no request and renders the
+section 0 times; a commit that changed a link sends one request, 3 seconds later.
+
+Not known: a peer's new link to the page being read shows the next time the page opens, not while it is open (no
+room message says the link table moved).
+
 ## Not built
 
 The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), over the client above.
