@@ -65,7 +65,7 @@ const cookieValue = (res: Response, name: string) =>
 async function signInCookie(returnTo = '/document/abc') {
   const res = await call(`/api/auth/sign-in?return_to=${encodeURIComponent(returnTo)}`);
   const location = new URL(res.headers.get('Location')!);
-  return { res, location, pkce: cookieValue(res, 'ldoc_pkce')! };
+  return { res, location, pkce: cookieValue(res, 'lkb_pkce')! };
 }
 
 describe('GET /api/auth/sign-in', () => {
@@ -90,7 +90,7 @@ describe('GET /api/auth/sign-in', () => {
 
   it('keeps the verifier in an HttpOnly cookie scoped to /api/auth', async () => {
     const { res } = await signInCookie();
-    const pkce = setCookies(res).find((c) => c.startsWith('ldoc_pkce='))!;
+    const pkce = setCookies(res).find((c) => c.startsWith('lkb_pkce='))!;
     expect(pkce).toContain('HttpOnly');
     expect(pkce).toContain('Secure');
     expect(pkce).toContain('Path=/api/auth');
@@ -113,7 +113,7 @@ describe('GET /api/auth/callback', () => {
     const { location, pkce } = await signInCookie();
     const state = opts.state ?? location.searchParams.get('state')!;
     return call(`/api/auth/callback?code=the-code&state=${state}`, {
-      headers: { Cookie: `other=1; ldoc_pkce=${opts.cookie ?? pkce}` },
+      headers: { Cookie: `other=1; lkb_pkce=${opts.cookie ?? pkce}` },
     });
   }
 
@@ -131,14 +131,14 @@ describe('GET /api/auth/callback', () => {
     expect(body.get('code')).toBe('the-code');
     expect(body.get('code_verifier')).toBeTruthy();
 
-    expect(cookieValue(res, 'ldoc_refresh')).toBe('refresh-2');
-    const refresh = setCookies(res).find((c) => c.startsWith('ldoc_refresh='))!;
+    expect(cookieValue(res, 'lkb_refresh')).toBe('refresh-2');
+    const refresh = setCookies(res).find((c) => c.startsWith('lkb_refresh='))!;
     expect(refresh).toContain('HttpOnly');
     expect(refresh).toContain('SameSite=Strict');
-    expect(cookieValue(res, 'ldoc_pkce')).toBe('');
+    expect(cookieValue(res, 'lkb_pkce')).toBe('');
     // The page-readable hint, site-wide and not HttpOnly, holding nothing secret.
-    const hint = setCookies(res).find((c) => c.startsWith('ldoc_signed_in='))!;
-    expect(hint).toContain('ldoc_signed_in=1;');
+    const hint = setCookies(res).find((c) => c.startsWith('lkb_signed_in='))!;
+    expect(hint).toContain('lkb_signed_in=1;');
     expect(hint).toContain('Path=/;');
     expect(hint).not.toContain('HttpOnly');
   });
@@ -154,7 +154,7 @@ describe('GET /api/auth/callback', () => {
     const res = await callback({ state: 'forged' });
     expect(res.headers.get('Location')).toBe('/sign-in?error=expired');
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(cookieValue(res, 'ldoc_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'lkb_refresh')).toBeUndefined();
   });
 
   it('refuses a callback with no sign-in cookie', async () => {
@@ -169,7 +169,7 @@ describe('GET /api/auth/callback', () => {
     expect(start.status).toBe(302);
     const res = await call(
       `/api/auth/callback?code=the-code&state=${location.searchParams.get('state')}`,
-      { headers: { Cookie: `ldoc_pkce=${pkce}` } },
+      { headers: { Cookie: `lkb_pkce=${pkce}` } },
     );
     expect(res.status).toBe(302);
     expect(res.headers.get('Location')).toBe(
@@ -184,7 +184,7 @@ describe('GET /api/auth/callback', () => {
       .replace(/\//g, '_')
       .replace(/=+$/, '');
     const res = await call('/api/auth/callback?code=the-code&state=st', {
-      headers: { Cookie: `ldoc_pkce=${old}` },
+      headers: { Cookie: `lkb_pkce=${old}` },
     });
     expect(res.headers.get('Location')).toBe('/x/%C3%89quipe');
     expect(sentForm(fetchMock.mock.calls[0]![1]).get('code_verifier')).toBe('v');
@@ -195,7 +195,7 @@ describe('GET /api/auth/callback', () => {
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
     const res = await callback();
     expect(res.headers.get('Location')).toBe('/sign-in?error=failed');
-    expect(cookieValue(res, 'ldoc_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'lkb_refresh')).toBeUndefined();
     warn.mockRestore();
   });
 });
@@ -212,7 +212,7 @@ describe('POST /api/auth/token', () => {
     fetchMock.mockResolvedValue(tokenResponse({ refresh_token: 'refresh-3' }));
     const res = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+      headers: { Cookie: 'lkb_refresh=refresh-2' },
     });
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('no-store');
@@ -223,7 +223,7 @@ describe('POST /api/auth/token', () => {
       user: { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' },
     });
     expect(typeof body.expiresAt).toBe('number');
-    expect(cookieValue(res, 'ldoc_refresh')).toBe('refresh-3');
+    expect(cookieValue(res, 'lkb_refresh')).toBe('refresh-3');
     const sent = sentForm(fetchMock.mock.calls[0]![1]);
     expect(sent.get('grant_type')).toBe('refresh_token');
     expect(sent.get('refresh_token')).toBe('refresh-2');
@@ -235,11 +235,11 @@ describe('POST /api/auth/token', () => {
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
     const res = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=stale' },
+      headers: { Cookie: 'lkb_refresh=stale' },
     });
     expect(res.status).toBe(401);
-    expect(cookieValue(res, 'ldoc_refresh')).toBe('');
-    expect(cookieValue(res, 'ldoc_signed_in')).toBe('0');
+    expect(cookieValue(res, 'lkb_refresh')).toBe('');
+    expect(cookieValue(res, 'lkb_signed_in')).toBe('0');
     warn.mockRestore();
   });
 });
@@ -248,8 +248,8 @@ describe('POST /api/auth/sign-out', () => {
   it('drops the refresh cookie and the hint', async () => {
     const res = await call('/api/auth/sign-out', { method: 'POST' });
     expect(res.status).toBe(200);
-    expect(cookieValue(res, 'ldoc_refresh')).toBe('');
-    expect(cookieValue(res, 'ldoc_signed_in')).toBe('0');
+    expect(cookieValue(res, 'lkb_refresh')).toBe('');
+    expect(cookieValue(res, 'lkb_signed_in')).toBe('0');
     // No refresh token to end a session with: this app alone, and no hop.
     expect(await res.json()).toEqual({ signedIn: false, next: null });
     expect(fetchMock).not.toHaveBeenCalled();
@@ -260,7 +260,7 @@ describe('POST /api/auth/sign-out', () => {
     fetchMock.mockResolvedValueOnce(Response.json({ ended: true, ticket: 'tk.1' }));
     const res = await call('/api/auth/sign-out?return=%2Fpricing%3Fx%3D1', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-1' },
+      headers: { Cookie: 'lkb_refresh=refresh-1' },
     });
     expect(sentUrl(fetchMock.mock.calls[0]![0])).toBe(
       'https://accounts.example/api/auth/end-session',
@@ -276,17 +276,17 @@ describe('POST /api/auth/sign-out', () => {
       post_logout_redirect_uri: `${APP}/pricing?x=1`,
       ticket: 'tk.1',
     });
-    expect(cookieValue(res, 'ldoc_refresh')).toBe('');
+    expect(cookieValue(res, 'lkb_refresh')).toBe('');
     // Signed out everywhere: no mark, and the page it lands on spends no bounce.
-    expect(cookieValue(res, 'ldoc_signed_out')).toBe('');
-    expect(cookieValue(res, 'ldoc_silent')).toBe('1');
+    expect(cookieValue(res, 'lkb_signed_out')).toBe('');
+    expect(cookieValue(res, 'lkb_silent')).toBe('1');
   });
 
   it('comes back only to this site', async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ ticket: 'tk.1' }));
     const res = await call('/api/auth/sign-out?return=%2F%2Fevil.example', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-1' },
+      headers: { Cookie: 'lkb_refresh=refresh-1' },
     });
     const { next } = await res.json<{ next: string }>();
     expect(new URL(new URL(next).searchParams.get('post_logout_redirect_uri')!).origin).toBe(APP);
@@ -296,19 +296,19 @@ describe('POST /api/auth/sign-out', () => {
     fetchMock.mockResolvedValueOnce(Response.json({ error: 'invalid_token' }, { status: 401 }));
     const refused = await call('/api/auth/sign-out', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=stale' },
+      headers: { Cookie: 'lkb_refresh=stale' },
     });
     expect(await refused.json()).toEqual({ signedIn: false, next: null });
-    expect(cookieValue(refused, 'ldoc_refresh')).toBe('');
+    expect(cookieValue(refused, 'lkb_refresh')).toBe('');
 
     fetchMock.mockRejectedValueOnce(new TypeError('network'));
     const down = await call('/api/auth/sign-out', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-1' },
+      headers: { Cookie: 'lkb_refresh=refresh-1' },
     });
     expect(await down.json()).toEqual({ signedIn: false, next: null });
     // Signed out of this app alone: remembered, so no silent sign-in undoes it.
-    expect(cookieValue(down, 'ldoc_signed_out')).toBe('2');
+    expect(cookieValue(down, 'lkb_signed_out')).toBe('2');
   });
 });
 
@@ -367,7 +367,7 @@ describe('the /api/auth surface', () => {
   });
 });
 
-describe('the account name cookie (ldoc_account)', () => {
+describe('the account name cookie (lkb_account)', () => {
   // liveworkspace/docs/specs/003-accounts/accounts.md "An app's signed-in cookies": who is signed in, for the marketing header.
   const named = (claims: Record<string, unknown>) =>
     tokenResponse({ id_token: jwt({ sub: 'user_abc', email: 'ada@example.com', ...claims }) });
@@ -377,10 +377,10 @@ describe('the account name cookie (ldoc_account)', () => {
     fetchMock.mockResolvedValue(named({ name: 'Ada Lovelace', given_name: 'Ada' }));
     const res = await call(
       `/api/auth/callback?code=c&state=${location.searchParams.get('state')}`,
-      { headers: { Cookie: `ldoc_pkce=${pkce}` } },
+      { headers: { Cookie: `lkb_pkce=${pkce}` } },
     );
-    expect(cookieValue(res, 'ldoc_account')).toBe('Ada');
-    const name = setCookies(res).find((c) => c.startsWith('ldoc_account='))!;
+    expect(cookieValue(res, 'lkb_account')).toBe('Ada');
+    const name = setCookies(res).find((c) => c.startsWith('lkb_account='))!;
     expect(name).toContain('Path=/;');
     expect(name).not.toContain('HttpOnly');
   });
@@ -389,39 +389,37 @@ describe('the account name cookie (ldoc_account)', () => {
     fetchMock.mockResolvedValueOnce(named({ name: 'Ada Lovelace' }));
     const full = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+      headers: { Cookie: 'lkb_refresh=refresh-2' },
     });
-    expect(cookieValue(full, 'ldoc_account')).toBe(encodeURIComponent('Ada Lovelace'));
+    expect(cookieValue(full, 'lkb_account')).toBe(encodeURIComponent('Ada Lovelace'));
 
     fetchMock.mockResolvedValueOnce(named({}));
     const email = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+      headers: { Cookie: 'lkb_refresh=refresh-2' },
     });
-    expect(cookieValue(email, 'ldoc_account')).toBe(encodeURIComponent('ada@example.com'));
+    expect(cookieValue(email, 'lkb_account')).toBe(encodeURIComponent('ada@example.com'));
   });
 
   it("keeps the profile's presence colour beside it, and clears it with none or at sign-out", async () => {
     fetchMock.mockResolvedValueOnce(named({ name: 'Ada', presence_color: '#0ea5e9' }));
     const coloured = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+      headers: { Cookie: 'lkb_refresh=refresh-2' },
     });
-    expect(cookieValue(coloured, 'ldoc_account_colour')).toBe(encodeURIComponent('#0ea5e9'));
+    expect(cookieValue(coloured, 'lkb_account_colour')).toBe(encodeURIComponent('#0ea5e9'));
     const body: { user: { color: unknown } } = await coloured.json();
     expect(body.user.color).toBe('#0ea5e9');
 
     fetchMock.mockResolvedValueOnce(named({ name: 'Ada' }));
     const automatic = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=refresh-2' },
+      headers: { Cookie: 'lkb_refresh=refresh-2' },
     });
-    expect(cookieValue(automatic, 'ldoc_account_colour')).toBe('');
+    expect(cookieValue(automatic, 'lkb_account_colour')).toBe('');
 
     const out = await call('/api/auth/sign-out', { method: 'POST' });
-    expect(setCookies(out).find((c) => c.startsWith('ldoc_account_colour='))).toContain(
-      'Max-Age=0',
-    );
+    expect(setCookies(out).find((c) => c.startsWith('lkb_account_colour='))).toContain('Max-Age=0');
   });
 
   it('clears it when the refresh is refused and at sign-out', async () => {
@@ -429,14 +427,14 @@ describe('the account name cookie (ldoc_account)', () => {
     fetchMock.mockResolvedValue(new Response('{"error":"invalid_grant"}', { status: 400 }));
     const refused = await call('/api/auth/token', {
       method: 'POST',
-      headers: { Cookie: 'ldoc_refresh=stale' },
+      headers: { Cookie: 'lkb_refresh=stale' },
     });
-    expect(cookieValue(refused, 'ldoc_account')).toBe('');
+    expect(cookieValue(refused, 'lkb_account')).toBe('');
     warn.mockRestore();
 
     const out = await call('/api/auth/sign-out', { method: 'POST' });
-    expect(cookieValue(out, 'ldoc_account')).toBe('');
-    expect(setCookies(out).find((c) => c.startsWith('ldoc_account='))).toContain('Max-Age=0');
+    expect(cookieValue(out, 'lkb_account')).toBe('');
+    expect(setCookies(out).find((c) => c.startsWith('lkb_account='))).toContain('Max-Age=0');
   });
 });
 
@@ -453,8 +451,8 @@ describe('safeReturnPath', () => {
 
 describe('readCookie', () => {
   it('finds one cookie among several', () => {
-    const req = new Request(APP, { headers: { Cookie: 'a=1; ldoc_refresh=xyz ; b=2' } });
-    expect(readCookie(req, 'ldoc_refresh')).toBe('xyz');
+    const req = new Request(APP, { headers: { Cookie: 'a=1; lkb_refresh=xyz ; b=2' } });
+    expect(readCookie(req, 'lkb_refresh')).toBe('xyz');
     expect(readCookie(req, 'missing')).toBeNull();
   });
 });
@@ -477,14 +475,14 @@ describe('GET /api/auth/silent', () => {
     );
     expect(location.searchParams.get('prompt')).toBe('none');
     expect(location.searchParams.get('redirect_uri')).toBe(`${APP}/api/auth/callback`);
-    expect(cookieValue(res, 'ldoc_silent')).toBe('1');
-    expect(cookieValue(res, 'ldoc_silent_pkce')).toBeTruthy();
+    expect(cookieValue(res, 'lkb_silent')).toBe('1');
+    expect(cookieValue(res, 'lkb_silent_pkce')).toBeTruthy();
     // A clicked sign-in in another tab keeps its own cookie.
-    expect(cookieValue(res, 'ldoc_pkce')).toBeUndefined();
+    expect(cookieValue(res, 'lkb_pkce')).toBeUndefined();
   });
 
   it('goes straight back after the person signed out of this app', async () => {
-    const res = await bounce('/new', { headers: { Cookie: 'ldoc_signed_out=2' } });
+    const res = await bounce('/new', { headers: { Cookie: 'lkb_signed_out=2' } });
     expect(res.headers.get('Location')).toBe('/new');
   });
 
@@ -506,7 +504,7 @@ describe('GET /api/auth/silent', () => {
     const out = await bounce();
     const state = new URL(out.headers.get('Location')!).searchParams.get('state')!;
     return call(`/api/auth/callback?${query(state)}`, {
-      headers: { Cookie: `ldoc_silent_pkce=${cookieValue(out, 'ldoc_silent_pkce')}` },
+      headers: { Cookie: `lkb_silent_pkce=${cookieValue(out, 'lkb_silent_pkce')}` },
     });
   }
 
@@ -514,10 +512,10 @@ describe('GET /api/auth/silent', () => {
     fetchMock.mockResolvedValueOnce(tokenResponse());
     const res = await comeBack((state) => `code=c1&state=${state}`);
     expect(res.headers.get('Location')).toBe('/explorer/home?x=1#card');
-    expect(cookieValue(res, 'ldoc_refresh')).toBe('refresh-2');
-    expect(cookieValue(res, 'ldoc_signed_in')).toBe('1');
-    expect(cookieValue(res, 'ldoc_signed_out')).toBe('');
-    expect(cookieValue(res, 'ldoc_silent_pkce')).toBe('');
+    expect(cookieValue(res, 'lkb_refresh')).toBe('refresh-2');
+    expect(cookieValue(res, 'lkb_signed_in')).toBe('1');
+    expect(cookieValue(res, 'lkb_signed_out')).toBe('');
+    expect(cookieValue(res, 'lkb_silent_pkce')).toBe('');
     expect(reportSignIn).toHaveBeenCalledWith(expect.anything(), 'user_abc');
   });
 
@@ -525,16 +523,16 @@ describe('GET /api/auth/silent', () => {
     const res = await comeBack((state) => `error=login_required&state=${state}`);
     expect(res.headers.get('Location')).toBe('/explorer/home?x=1#card');
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(cookieValue(res, 'ldoc_refresh')).toBeUndefined();
-    expect(cookieValue(res, 'ldoc_silent_pkce')).toBe('');
+    expect(cookieValue(res, 'lkb_refresh')).toBeUndefined();
+    expect(cookieValue(res, 'lkb_silent_pkce')).toBe('');
   });
 });
 
 describe('signing out, and signing in again', () => {
   it('remembers a sign-out of this app alone, so no silent sign-in undoes it', async () => {
     const res = await call('/api/auth/sign-out', { method: 'POST' });
-    expect(cookieValue(res, 'ldoc_signed_out')).toBe('2');
-    const out = setCookies(res).find((c) => c.startsWith('ldoc_signed_out='))!;
+    expect(cookieValue(res, 'lkb_signed_out')).toBe('2');
+    const out = setCookies(res).find((c) => c.startsWith('lkb_signed_out='))!;
     expect(out).toContain('Path=/');
     expect(out).not.toContain('HttpOnly');
   });
@@ -544,8 +542,8 @@ describe('signing out, and signing in again', () => {
     fetchMock.mockResolvedValueOnce(tokenResponse());
     const res = await call(
       `/api/auth/callback?code=c1&state=${location.searchParams.get('state')}`,
-      { headers: { Cookie: `ldoc_pkce=${pkce}; ldoc_signed_out=1` } },
+      { headers: { Cookie: `lkb_pkce=${pkce}; lkb_signed_out=1` } },
     );
-    expect(cookieValue(res, 'ldoc_signed_out')).toBe('');
+    expect(cookieValue(res, 'lkb_signed_out')).toBe('');
   });
 });

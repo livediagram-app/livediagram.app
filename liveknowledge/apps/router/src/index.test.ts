@@ -785,7 +785,7 @@ describe('Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-ex
   const home = (path: string, headers: Record<string, string>) =>
     new Request(`https://www.liveknowledge.app${path}`, { headers });
   const on = {
-    Cookie: 'ldoc_signed_in=1; lw_open_explorer=1',
+    Cookie: 'lkb_signed_in=1; lw_open_explorer=1',
     'Sec-Fetch-Site': 'none',
     'Sec-Fetch-Dest': 'document',
   };
@@ -802,9 +802,9 @@ describe('Automatically Open Explorer (liveworkspace/docs/specs/004-index/one-ex
 
   it('serves the homepage without the cookie, or signed out', async () => {
     for (const Cookie of [
-      'ldoc_signed_in=1',
+      'lkb_signed_in=1',
       'lw_open_explorer=1',
-      'ldoc_signed_in=0; lw_open_explorer=1',
+      'lkb_signed_in=0; lw_open_explorer=1',
     ]) {
       const { env, marketing } = makeEnv();
       const res = await router.fetch(home('/', { ...on, Cookie }), env);

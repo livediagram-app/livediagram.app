@@ -20,8 +20,8 @@ const TOKEN = `h.${btoa(JSON.stringify({ sub: `guest_${GUEST}`, kind: 'guest' })
 
 describe('signedInFromCookie', () => {
   it('reads the signed-in hint cookie', () => {
-    expect(signedInFromCookie('a=1; ldoc_signed_in=1')).toBe(true);
-    expect(signedInFromCookie('ldoc_signed_in=0')).toBe(false);
+    expect(signedInFromCookie('a=1; lkb_signed_in=1')).toBe(true);
+    expect(signedInFromCookie('lkb_signed_in=0')).toBe(false);
     expect(signedInFromCookie('theme=dark')).toBeNull();
     expect(signedInFromCookie('')).toBeNull();
   });
@@ -33,7 +33,7 @@ describe('readBrowserIdentity', () => {
       localStorage: storage({
         'liveknowledge:v2:guest-token': TOKEN,
       }),
-      document: { cookie: 'ldoc_signed_in=0' },
+      document: { cookie: 'lkb_signed_in=0' },
     });
     expect(id).toEqual({
       signedIn: false,

@@ -10,7 +10,7 @@ liveknowledge' half: how the picture reaches the editor, the room and the avatar
 
 - The api reads the ID token's `picture` and `picture_hidden` claims into `AuthUser` (`apps/api/src/routes/auth.ts`)
   and answers them with the session (`POST /api/auth/token` → `user.picture`, `user.pictureHidden`). The readable
-  `ldoc_account_picture` cookie carries the same picture for the header, beside the name and colour cookies.
+  `lkb_account_picture` cookie carries the same picture for the header, beside the name and colour cookies.
 - The editor keeps it in `lib/own-picture.ts`, set by `AccountsBridge` when the session arrives and moved by a
   Settings › Profile save (`onProfileSaved`'s `showPicture`), with no reload.
 - Your own chrome always shows your picture to you, whatever the switch says: the account button

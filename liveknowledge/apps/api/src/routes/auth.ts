@@ -41,8 +41,8 @@ export const safeReturnPath = (value: string | null): string =>
 
 const auth = createAppAuth<Env, AuthUser & AppAuthUser>({
   hintCookie: SIGNED_IN_HINT_COOKIE,
-  pkceCookie: 'ldoc_pkce',
-  refreshCookie: 'ldoc_refresh',
+  pkceCookie: 'lkb_pkce',
+  refreshCookie: 'lkb_refresh',
   safeReturnPath,
   encodePkce: encodePkceCookie,
   decodePkce: decodePkceCookie,

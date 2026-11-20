@@ -44,12 +44,12 @@ beforeEach(() => {
   fetchMock.mockReset();
   vi.stubGlobal('fetch', fetchMock);
   // The api's hint that this browser has a session (lib/signed-in-hint.ts).
-  document.cookie = 'ldoc_signed_in=1';
+  document.cookie = 'lkb_signed_in=1';
 });
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
-  document.cookie = 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+  document.cookie = 'lkb_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 });
 
 async function mount(): Promise<DeferredAuthState> {
@@ -61,7 +61,7 @@ async function mount(): Promise<DeferredAuthState> {
 
 describe('AccountsBridge', () => {
   it('settles a browser without the hint as a guest, asking the api nothing', async () => {
-    document.cookie = 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'lkb_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     expect(await mount()).toMatchObject({ authLoaded: true, isSignedIn: false, userId: null });
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -94,11 +94,11 @@ describe('AccountsBridge', () => {
   it('forgets nothing for a browser without the hint, or with its session still there', async () => {
     forgetAll.mockClear();
     forgetRecent.mockClear();
-    document.cookie = 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    document.cookie = 'lkb_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
     await mount();
     cleanup();
     resetAccountsSessionForTests();
-    document.cookie = 'ldoc_signed_in=1';
+    document.cookie = 'lkb_signed_in=1';
     fetchMock.mockResolvedValue(signedIn('access-1'));
     expect(await mount()).toMatchObject({ isSignedIn: true });
     expect(forgetAll).not.toHaveBeenCalled();

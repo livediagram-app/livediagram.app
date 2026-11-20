@@ -11,8 +11,8 @@ import { useNewDocumentLocation } from './useNewDocumentLocation';
 
 function setHint(signedIn: boolean) {
   document.cookie = signedIn
-    ? 'ldoc_signed_in=1'
-    : 'ldoc_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    ? 'lkb_signed_in=1'
+    : 'lkb_signed_in=; expires=Thu, 01 Jan 1970 00:00:00 GMT';
 }
 
 type Props = { authLoaded: boolean; sessionAnswered?: boolean; accountUserId: string | null };

@@ -7,7 +7,7 @@ import { createSignedInHint } from '@liveworkspace/ui/signed-in-hint';
 import { signedInFromCookie } from './browser-repair/identity';
 
 // The site header's Explorer link (docs/specs/019-marketing/marketing-site.md "Header"): @liveworkspace/ui's,
-// to this site's Explorer Home, the filled Open Explorer when the `ldoc_signed_in` hint cookie says
+// to this site's Explorer Home, the filled Open Explorer when the `lkb_signed_in` hint cookie says
 // someone is signed in.
 
 // The Explorer is liveworkspace's, served under liveknowledge' own address while its switch is on

@@ -548,7 +548,7 @@ background request one day, but neither works in every browser, so the bounce st
 
 Beside its HttpOnly refresh cookie (on `/api/auth`), each app's API keeps four readable cookies on its
 whole site, so its public pages can tell who is signed in without loading the session. Every app has a prefix of its own (`ld_` livediagram, `lp_` liveplanner, `ldoc_`
-livedocuments, `ldes_` livedesign, `lh_` livehuddle), on these and on its refresh, PKCE and silent sign-in cookies,
+livedocuments, `ldes_` livedesign, `lh_` livehuddle, `lkb_` liveknowledge), on these and on its refresh, PKCE and silent sign-in cookies,
 because cookies ignore the port: every app on `localhost` in development shares one cookie jar, and two apps with one
 name would read and overwrite each other's session:
 

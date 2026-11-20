@@ -150,7 +150,7 @@ describe('DELETE /api/account', () => {
 
   it('clears the refresh cookie, since the refresh token went with the account', async () => {
     const cookies = (await remove()).headers.getSetCookie();
-    expect(cookies.some((c) => c.startsWith('ldoc_refresh=;') && c.includes('Max-Age=0'))).toBe(
+    expect(cookies.some((c) => c.startsWith('lkb_refresh=;') && c.includes('Max-Age=0'))).toBe(
       true,
     );
   });

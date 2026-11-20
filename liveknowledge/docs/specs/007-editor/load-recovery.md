@@ -100,7 +100,7 @@ holding identifiers and states only, never document content:
 - the identity, the same lines on every surface:
   - **Signed in:** yes or no. The editor adds the account id it resolved. The
     help page, which has no session loaded, reads the api's readable
-    `ldoc_signed_in` hint cookie (`0` signed out, `1` signed in), which says
+    `lkb_signed_in` hint cookie (`0` signed out, `1` signed in), which says
     whether but not who; with no such cookie it reports "unknown".
   - **Guest id in this browser:** only the first 8 characters of the id the
     guest token names (the token itself is a credential), or "none".

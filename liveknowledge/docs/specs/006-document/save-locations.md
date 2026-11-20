@@ -33,7 +33,7 @@ browser's documents beside the index's ([liveworkspace/docs/specs/004-index/one-
   mount, its Retry, and the links that name a start (`/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   liveknowledge whoever is creating.
-- Before sign-in has answered, `signedIn` is the `ldoc_signed_in` hint cookie
+- Before sign-in has answered, `signedIn` is the `lkb_signed_in` hint cookie
   ([Who is a guest, before sign-in answers](../014-identity/auth-and-guest-access.md#who-is-a-guest-before-sign-in-answers)).
   A browser that looks signed in waits for its session's own answer before creating, up to 15 seconds, so a
   signed-in person is never handed a document kept Offline; a guest never waits. The page's 5-second give-up on

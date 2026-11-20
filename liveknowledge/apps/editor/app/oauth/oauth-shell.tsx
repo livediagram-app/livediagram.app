@@ -19,7 +19,7 @@ export function OauthShell({ children }: { children: React.ReactNode }) {
 }
 
 // Sign in is offered only once the session says there is no one: the 5 s give-up is not that answer while the
-// ldoc_signed_in hint says a session is coming (docs/specs/014-identity/auth-and-guest-access.md).
+// lkb_signed_in hint says a session is coming (docs/specs/014-identity/auth-and-guest-access.md).
 function useOauthSignIn() {
   const { authLoaded, sessionAnswered, isSignedIn, accountUserId } = useAccountBootstrap();
   const gate = useSignInGate({

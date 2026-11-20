@@ -39,7 +39,7 @@ vi.mock('@/lib/telemetry', () => ({ track: () => {} }));
 
 import OauthConsentPage from './page';
 
-const HINT = 'ldoc_signed_in';
+const HINT = 'lkb_signed_in';
 const setHint = (on: boolean) => {
   document.cookie = on
     ? `${HINT}=1; path=/`
