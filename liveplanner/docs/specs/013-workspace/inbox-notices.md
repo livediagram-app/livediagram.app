@@ -11,7 +11,8 @@ What liveplanner does:
 
 - **The door.** The editor's Explorer button (`apps/editor/components/chrome/ToolbarExplorerButton.tsx`) calls `useEditorInbox('liveplanner')`
   (`@liveworkspace/workbench`), which turns notices on for a signed-in account and off for a guest. It draws the
-  Inbox's count as a badge on the button ("Explorer, 3 in Inbox") and the notice layer beside it. Where the menu card
+  count of this app's Inbox rows, not every app's, as a badge on the button ("Explorer, 3 in Inbox"), the same number
+  as the panel rail's Inbox, and the notice layer beside it. Where the menu card
   is not drawn (Zen, an embed, the workbench frame) there are no notices.
 - **Every role alike.** A Viewer, a Participant and an Editor of this plan hear the same: only their own Inbox,
   whatever they can do here.

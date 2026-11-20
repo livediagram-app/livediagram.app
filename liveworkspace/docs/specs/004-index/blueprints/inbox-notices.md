@@ -93,7 +93,9 @@ notice is offered only by a visible tab; a hidden tab offers what is still fresh
 ### In the editor (`useEditorInbox.tsx`, `useInboxNotices.tsx`)
 
 `useEditorInbox(app)`: on when `appHasInbox(app)` and the deferred auth has a signed-in `userId`; the client is the
-workbench's `indexClient`. It answers `{ count, label, notices }`: `count` is `inboxCount(data, viewerId)`, `label`
+workbench's `indexClient`. It answers `{ count, label, notices }`: `count` is `inboxCount(data, viewerId, app)` (this app's rows only)
+over the watch's answer less the reader's done rows (`withoutSettled`, `settledStoreFor`, `data/inbox-settled.ts`),
+`label`
 names the button ("Explorer, 3 in Inbox"), `notices` is the layer (a `Portal`) to draw beside the button.
 
 The card is placed from `[data-corner-actions]`'s bottom (8 px below it, read when it shows and on resize), else

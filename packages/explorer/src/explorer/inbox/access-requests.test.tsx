@@ -80,6 +80,13 @@ describe('the model', () => {
     expect(inboxTotal(d, 'user_me')).toBe(2);
   });
 
+  it("counts a request in its item's app's editor only (Work Tracker 1315)", () => {
+    const d = data([request(), request({ id: 'req_2', app: 'livediagram' })]);
+    expect(inboxBadge(d, 'user_me', 'liveplanner')).toBe(1);
+    expect(inboxBadge(d, 'user_me', 'livediagram')).toBe(1);
+    expect(inboxBadge(d, 'user_me', 'livedocuments')).toBeUndefined();
+  });
+
   it('never lists the reader’s own request', () => {
     const d = data([request({ requesterId: 'user_me' })]);
     expect(inboxEntries(inboxSections(d, 'user_me'))).toEqual([]);

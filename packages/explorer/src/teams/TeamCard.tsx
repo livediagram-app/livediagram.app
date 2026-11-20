@@ -7,8 +7,7 @@
 // place, each removal asked once in words that say who goes. An admin's footer invites an address as a Member or an
 // Admin. The team's members are read when the card opens and again after each change, so it shows what accounts hold.
 
-import { useCallback, useEffect, useId, useRef, useState, type FormEvent } from 'react';
-import { isAbort } from '../data/errors';
+import { useId, useRef, useState, type FormEvent } from 'react';
 import { teamErrorMessage, type TeamDetails, type TeamMember, type TeamRole } from '../data/teams';
 import { Button, ConfirmDialog, PictureDisc } from '@liveworkspace/ui';
 import { initialsOf as personInitials } from '@liveworkspace/model-core/names';
@@ -30,64 +29,10 @@ import {
   removalOf,
 } from './rules';
 import { TEAM_FIELD, TeamFormDialog } from './TeamFormDialog';
+import { teamFacts } from './team-details';
 
-export type TeamLoad =
-  | { state: 'loading' }
-  | { state: 'found'; details: TeamDetails }
-  | { state: 'gone' }
-  // Accounts could not be asked (no host, or it failed): the team's library still shows, without its card.
-  | { state: 'unknown' };
-
-/** A team's members, read when it opens (and on `reload`). */
-export function useTeamDetails(teamId: string) {
-  const { host } = useTeams();
-  const [load, setLoad] = useState<{ teamId: string; load: TeamLoad }>({
-    teamId,
-    load: { state: host ? 'loading' : 'unknown' },
-  });
-  const [epoch, setEpoch] = useState(0);
-  useEffect(() => {
-    if (!host) {
-      setLoad({ teamId, load: { state: 'unknown' } });
-      return;
-    }
-    const controller = new AbortController();
-    host.team(teamId, controller.signal).then(
-      (details) =>
-        setLoad({ teamId, load: details ? { state: 'found', details } : { state: 'gone' } }),
-      (e: unknown) => {
-        if (!isAbort(e)) setLoad({ teamId, load: { state: 'unknown' } });
-      },
-    );
-    return () => controller.abort();
-  }, [host, teamId, epoch]);
-  const reload = useCallback(() => setEpoch((n) => n + 1), []);
-  const current: TeamLoad = load.teamId === teamId ? load.load : { state: 'loading' };
-  return [current, reload] as const;
-}
-
-/** "3 members · 1 invited · You’re an admin": the headline after the organisation. */
-function teamFacts(details: TeamDetails): string[] {
-  const joined = details.members.filter((m) => m.status === 'joined').length;
-  const invited = details.members.filter((m) => memberState(m) === 'invited').length;
-  return [
-    `${joined} ${joined === 1 ? 'member' : 'members'}`,
-    invited ? `${invited} invited` : null,
-    details.team.myRole === 'admin' ? 'You’re an admin' : null,
-  ].filter((part): part is string => part !== null);
-}
-
-/** "Northwind · 3 members · 1 invited · You’re an admin". */
-export function teamHeadline(details: TeamDetails): string {
-  return [details.team.organisation, ...teamFacts(details)].filter(Boolean).join(' · ');
-}
-
-export function initialsOf(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  // Code points, so a team named "🚀 Launch" shows its rocket, not half of it.
-  const first = (word: string | undefined) => (word ? Array.from(word)[0]! : '');
-  return (first(parts[0]) + (parts.length > 1 ? first(parts.at(-1)) : '')).toUpperCase() || '?';
-}
+// What the team view reads before its card loads, kept apart so the card's chunk stays out of the first load.
+export { initialsOf, teamHeadline, useTeamDetails, type TeamLoad } from './team-details';
 
 /** A member's disc, by the account control's own rule (@liveworkspace/account-menu avatarFill), so it is the colour
  *  of their account button in the header: their own presence colour, else (Automatic) the one picked from the name

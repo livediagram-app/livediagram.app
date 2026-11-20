@@ -1,6 +1,7 @@
 // The editor's notices end to end (useInboxNotices.tsx, InboxNotice.tsx, InboxCountBadge.tsx; inbox-notices.md): a new
 // row of each kind shows, rows arriving together group, the reader's own moves never show, a row shown or dismissed in
-// one tab never shows in another, the Inbox list reading a row closes its notice, and the count.
+// one tab never shows in another, the Inbox list reading a row closes its notice, and the count: this app's rows only,
+// less those done from the Inbox's pane that the index still lists.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveworkspace/vitest-config/cpu-time';
@@ -8,6 +9,8 @@ import type { InboxResponse, InboxThread } from '@liveworkspace/index-client';
 import { createNoticeCenter, NOTICE_SHOW_MS } from './center';
 import { InboxCountBadge, inboxButtonLabel } from './InboxCountBadge';
 import { createSeenStore, type SeenStore } from './seen';
+import { createSettledStore } from '../data/inbox-settled';
+import { settledOf } from '../explorer/inbox/sections';
 import { useInboxNotices, type InboxNoticesOptions } from './useInboxNotices';
 import type { InboxWatch } from './watch';
 
@@ -83,6 +86,7 @@ function setup(over: Partial<InboxNoticesOptions> = {}) {
   const w = fakeWatch();
   const storage = memoryStorage();
   const seen = createSeenStore(ME, { storage, now: () => NOW - 1000, win: null });
+  const settled = createSettledStore(ME, { storage, now: () => NOW, win: null });
   const center = createNoticeCenter();
   const onTelemetry = vi.fn();
   const props: InboxNoticesOptions = {
@@ -91,13 +95,14 @@ function setup(over: Partial<InboxNoticesOptions> = {}) {
     viewerId: ME,
     watch: w.watch,
     seen,
+    settled,
     center,
     onTelemetry,
     now: () => NOW,
     ...over,
   };
   const view = render(<Door {...props} />);
-  return { ...w, seen, center, onTelemetry, view, storage, props };
+  return { ...w, seen, settled, center, onTelemetry, view, storage, props };
 }
 
 const notice = () => document.querySelector<HTMLElement>('[data-inbox-notice]');
@@ -351,6 +356,49 @@ describe('the count', () => {
     expect(screen.getByRole('button', { name: 'Explorer, 9+ in Inbox' })).toBeTruthy();
     t.answer({ threads: [] });
     expect(document.querySelector('[data-inbox-count]')).toBeNull();
+  });
+
+  // The owner's report (Work Tracker 1315, 2026-11-19): "It should only show the inbox items I have in that app, not
+  // all apps". Every row names its app, an access request its item's, so each counts in its own app's editor.
+  it("counts this app's rows only, an Inbox holding two apps' rows", () => {
+    const t = setup();
+    const request = (id: string, app: InboxThread['app']) => ({
+      id,
+      app,
+      itemId: `i-${id}`,
+      itemTitle: 'Plan',
+      itemTeamId: null,
+      requesterId: 'user_p',
+      requesterName: 'Priya',
+      note: null,
+      askedAt: NOW - 5000,
+    });
+    t.answer({
+      threads: [
+        thread({ latestAt: NOW - 5000 }),
+        thread({ app: 'liveplanner', itemId: 'p1', latestAt: NOW - 5000 }),
+        thread({ app: 'liveplanner', itemId: 'p2', latestAt: NOW - 5000 }),
+      ],
+      accessRequests: [request('r1', 'livediagram'), request('r2', 'liveplanner')],
+    });
+    expect(screen.getByRole('button', { name: 'Explorer, 2 in Inbox' })).toBeTruthy();
+  });
+
+  // Work Tracker 1316: a thread resolved from the Inbox leaves the count at once and after a reload, while the index
+  // still lists it until the app's next push; a new reply brings it back.
+  it('leaves out a row done from the Inbox while the index still lists it', () => {
+    const t = setup();
+    const open = thread({ latestAt: NOW - 5000 });
+    t.answer({ threads: [open, thread({ elementId: 'e2', latestAt: NOW - 5000 })] });
+    expect(screen.getByRole('button', { name: 'Explorer, 2 in Inbox' })).toBeTruthy();
+    act(() =>
+      t.settled.add(
+        settledOf({ key: 'k', kind: 'Thread', forMe: false, row: open, at: open.latestAt }),
+      ),
+    );
+    expect(screen.getByRole('button', { name: 'Explorer, 1 in Inbox' })).toBeTruthy();
+    t.answer({ threads: [{ ...open, latestAt: NOW - 10 }] });
+    expect(screen.getByRole('button', { name: 'Explorer, 1 in Inbox' })).toBeTruthy();
   });
 
   it('one notice layer however many doors a page draws', () => {

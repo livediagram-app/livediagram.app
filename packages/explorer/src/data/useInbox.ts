@@ -7,12 +7,12 @@
 // (`subscribeLocal`). Coming back to the browser tab reads it again, keeping
 // what it had if that read fails: a slightly stale list beats an alarm. A row done from the pane (`settle`) leaves
 // `data` at once, so the sidebar's badge, the rail and Home drop with the list, and stays out while a read still
-// lists it as it was (the index lists it until the app's next push). It also hears the page's Inbox watch
+// lists it as it was (the index lists it until the app's next push), after a reload too (./inbox-settled). It also hears the page's Inbox watch
 // (../inbox-notices/watch, inbox-notices.md "The Explorer's Inbox listens too"): with the All filter a newer answer
 // that lists other rows becomes the list, with no read of its own; with this app's, one whose rows for this app differ
 // reads the list again. So the badge and the list move as the editor's count does, live.
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import type {
   App,
   InboxAction,
@@ -24,6 +24,7 @@ import type { InboxHost, InboxLocalRows, Located } from '../types';
 import type { AppFilter } from '../words';
 import { settledOf, withoutSettled, type InboxEntry } from '../explorer/inbox/sections';
 import { isAbort } from './errors';
+import { settledStoreFor } from './inbox-settled';
 import { useReturnToTab } from './useReturnToTab';
 import { inboxSignature, inboxWatchFor } from '../inbox-notices/watch';
 
@@ -43,6 +44,8 @@ export type InboxState = {
 };
 
 const NO_LOCAL: InboxLocalRows = { actions: [], threads: [] };
+const NO_SETTLED: ReadonlyMap<string, number> = new Map();
+const noSubscribe = () => () => {};
 
 // The host's rows, in the filter. Its store failing lists nothing local; it never fails the Inbox.
 function readLocal(
@@ -102,6 +105,9 @@ export function useInbox(
   // False for an app with no Inbox (appHasInbox, ../inbox-apps.ts): GET /inbox is never read, and the Inbox stays
   // empty and settled (no data, not loading).
   enabled = true,
+  // The signed-in reader: the rows they did from the pane are held for them across a reload and every tab. Signed
+  // out, this page alone holds them.
+  viewerId: string | null = null,
 ): InboxState {
   const [state, setState] = useState<Held>({
     key: '',
@@ -187,12 +193,25 @@ export function useInbox(
     if (stale) rereadLocal();
   }, [stale, localRows, rereadLocal]);
   const reload = useCallback(() => setAttempt((n) => n + 1), []);
-  // The rows done here, by key, with their time then. Bounded by what the person does in one visit.
-  const [settled, setSettled] = useState<ReadonlyMap<string, number>>(() => new Map());
-  const settle = useCallback((entry: InboxEntry) => {
-    const { key: k, at } = settledOf(entry);
-    setSettled((prev) => (prev.get(k) === at ? prev : new Map(prev).set(k, at)));
-  }, []);
+  // The rows done here, by key, with their time then: the reader's store (kept across a reload, bounded), or this
+  // page's alone when signed out, bounded by what the person does in one visit.
+  const store = viewerId ? settledStoreFor(viewerId) : null;
+  const stored = useSyncExternalStore(
+    store ? store.subscribe : noSubscribe,
+    () => (store ? store.current() : NO_SETTLED),
+    () => NO_SETTLED,
+  );
+  const [pageSettled, setPageSettled] = useState<ReadonlyMap<string, number>>(NO_SETTLED);
+  const settled = store ? stored : pageSettled;
+  const settle = useCallback(
+    (entry: InboxEntry) => {
+      const done = settledOf(entry);
+      if (store) return store.add(done);
+      const { key: k, at } = done;
+      setPageSettled((prev) => (prev.get(k) === at ? prev : new Map(prev).set(k, at)));
+    },
+    [store],
+  );
   const current = state.key === key ? state : null;
   const raw = current?.raw ?? null;
   const local = current?.local ?? NO_LOCAL;
