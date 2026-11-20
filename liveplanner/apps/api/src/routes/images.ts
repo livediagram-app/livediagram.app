@@ -242,7 +242,7 @@ async function read(ctx: RouteContext, media: MediaClient, imageId: string): Pro
   headers.set('Content-Type', object.contentType);
   // Private cache: each reader keeps their own copy, never a shared CDN's. An image's bytes never change under its
   // id, so the copy stays right.
-  headers.set('Cache-Control', 'private, max-age=86400');
+  headers.set('Cache-Control', 'private, max-age=31536000, immutable');
   // The stored type is the sniffed one; never let a browser re-guess it.
   headers.set('X-Content-Type-Options', 'nosniff');
   // Anything not a picture (a PDF an email brought) is a download, sandboxed should it be opened at its address: it

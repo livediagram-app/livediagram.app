@@ -186,7 +186,7 @@ describe('handleImages', () => {
       const res = await call('GET', `/api/images/${id}`);
       expect(res.status).toBe(200);
       expect(res.headers.get('Content-Type')).toBe('image/png');
-      expect(res.headers.get('Cache-Control')).toBe('private, max-age=86400');
+      expect(res.headers.get('Cache-Control')).toBe('private, max-age=31536000, immutable');
       expect(res.headers.get('X-Content-Type-Options')).toBe('nosniff');
       expect(new Uint8Array(await res.arrayBuffer())).toEqual(PNG);
     });

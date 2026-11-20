@@ -563,7 +563,7 @@ O6 to O9 exist; the cap, R2 and retention logs are the service's own ([media.md]
 | `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                      | `@liveworkspace/media`; ten times the gallery cap           |
 | Reference push                | at most once a minute per document        | The room's alarm (`document-room.ts`)                       |
 | `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                         | Spec; 1 to 8 MiB keeps snapshots streamable                 |
-| Read `Cache-Control`          | `private, max-age=86400`                  | Spec; `private` is load-bearing                             |
+| Read `Cache-Control`          | `private, max-age=31536000, immutable`    | Spec; `private` is load-bearing                             |
 | Sniff window                  | first 16 bytes, minimum 12                | Longest signature (WebP) needs 12                           |
 | Gallery placement size        | `240` px on the longer side               | D40; literal `max` in `addImageFromGallery`                 |
 | `createImage` size            | 200 × 150                                 | D49                                                         |
