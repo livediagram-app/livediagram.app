@@ -85,7 +85,9 @@ the editor holds.
   knowledgebase menu. **That menu is not built yet**, so today the way in is the command palette's **Describe to
   Add Pages** (`describe-to-add-pages`, offered while `usePublishedSetupOffered() === 'add'`: the host publishes
   what is offered, so the palette reads no editor store for it).
-- **Not built:** the button in a phone's Pages sheet (`PageTreeSheet.tsx`).
+- **On a phone** the same button is in the Pages sheet (`PageTreeSheet.tsx`), above New Page, at least 44 px
+  tall; `onOpen` closes the sheet as the dialog opens. Each button's line has its own id (`useId`), since the
+  sidebar's and the sheet's can both be on the page.
 
 ## The dialog
 
@@ -210,7 +212,6 @@ description, the titles and the key are never sent.
 ## Not built, or not known
 
 - The knowledgebase menu's **Describe to Add Pages** item (the menu does not exist; the hook for it does).
-- The button in a phone's Pages sheet.
 - Counts in telemetry.
 - The template start's removal ("No start screen").
 - A real model's reply has never been read: whether 4,000 tokens is enough, and how good a structure is, are

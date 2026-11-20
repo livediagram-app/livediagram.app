@@ -7,6 +7,7 @@ import { useMemo, useState } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
 import { BottomSheet } from '@liveworkspace/workbench/components/primitives/BottomSheet';
 import { SearchField } from '@/components/knowledge/SearchField';
+import { DescribeToSetUpButton } from '@/components/setup/DescribeToSetUpButton';
 import { PageTree, type PageTreeProps } from './PageTree';
 import { NewPageButton } from './PageTreeSidebar';
 import { PagesIcon } from './page-tree-icons';
@@ -66,6 +67,9 @@ export function PageTreeSheet({ name, ...tree }: PageTreeProps & { name: string 
           <PageTree {...tree} actions={sheetActions} touch className="px-2 pb-2" />
           {tree.canEdit ? (
             <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+              {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"): its
+                  dialog opens over the page, so the sheet closes. */}
+              <DescribeToSetUpButton onOpen={() => setOpen(false)} />
               <NewPageButton tabs={tree.tabs} onAdd={() => sheetActions.onAdd()} />
             </div>
           ) : null}

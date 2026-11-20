@@ -42,6 +42,7 @@ import {
   useSetupOpen,
 } from '@/lib/knowledge-setup/setup-open';
 import { track } from '@/lib/telemetry';
+import { PageTreeSheet } from '@/components/page-tree/PageTreeSheet';
 import { DescribeToSetUpButton } from './DescribeToSetUpButton';
 import { SetupDialog } from './SetupDialog';
 import { SetupWhenOpen, useDescribeToAddPages } from './SetupHost';
@@ -227,6 +228,48 @@ describe('the sidebar button', () => {
     expect(button.getAttribute('title')).toBeNull();
     expect(screen.getByText('Tell AI what this is for and get a page structure.')).toBeTruthy();
     fireEvent.click(button);
+    expect(renderHook(() => useSetupOpen()).result.current).toBe('set-up');
+    expect(track).toHaveBeenCalledWith('UI', 'Opened', 'DescribeToSetUp');
+  });
+
+  it('is in a phone’s Pages sheet too, which closes as the dialog opens, and describes itself by its own line', () => {
+    const tabs = [startPage()];
+    const tree = {
+      name: 'Handbook',
+      tabs,
+      activeId: 'start',
+      canEdit: true,
+      closed: new Set<string>(),
+      actions: new Proxy({}, { get: () => () => {} }),
+      knowledge: { marks: new Map(), inContext: new Set<string>() },
+    } as unknown as Parameters<typeof PageTreeSheet>[0];
+    renderInEditor(
+      <>
+        <DescribeToSetUpButton />
+        <PageTreeSheet {...tree} />
+      </>,
+      chromeValue('edit', emptyKb({ tabs })),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Pages' }));
+    const sheet = screen.getByRole('dialog', { name: 'Pages' });
+    const inSheet = within(sheet).getByRole('button', { name: 'Describe to Set Up' });
+    // Above New Page, full width, a thumb's height on a touch screen.
+    const foot = inSheet.closest('[data-describe-to-set-up]')!.parentElement!;
+    expect([...foot.querySelectorAll('button')].map((b) => b.textContent)).toEqual([
+      'Describe to Set Up',
+      expect.stringContaining('New Page'),
+    ]);
+    expect(inSheet.className).toContain('pointer-coarse:min-h-11');
+    // Two buttons on the page, each described by its own line.
+    const both = screen.getAllByRole('button', { name: 'Describe to Set Up' });
+    const lines = both.map((b) => b.getAttribute('aria-describedby'));
+    expect(new Set(lines).size).toBe(2);
+    for (const id of lines)
+      expect(document.getElementById(id!)!.textContent).toBe(
+        'Tell AI what this is for and get a page structure.',
+      );
+    fireEvent.click(inSheet);
+    expect(screen.queryByRole('dialog', { name: 'Pages' })).toBeNull();
     expect(renderHook(() => useSetupOpen()).result.current).toBe('set-up');
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'DescribeToSetUp');
   });

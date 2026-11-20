@@ -28,7 +28,8 @@ liveknowledge has no start screen: no template picker, no theme step, no "What I
   full-width button with the sparkle icon and one line under it, "Tell AI what this is for and get a page
   structure." Empty means: at most three pages, none with any writing beyond a title. The editor answers this from
   the pages it already holds: a page whose writing it has not loaded is not known to be empty, and no page is
-  loaded to find out.
+  loaded to find out. On a phone the same button sits in the Pages sheet, above New Page; the sheet closes as the
+  dialog opens over the page.
 - Once the knowledgebase is no longer empty the control leaves the sidebar. It stays in the knowledgebase menu as
   **Describe to Add Pages**, which adds to what is there instead of starting it. Until that menu is built it is a
   command of the command palette.
@@ -98,6 +99,5 @@ no number field, and adding one is a change to the platform's telemetry, which t
 ## Not built
 
 - **Describe to Add Pages** in the knowledgebase menu (the menu itself is not built); it is in the command palette.
-- The button in a phone's Pages sheet.
 - Counts in telemetry (how many pages were suggested or created): left out on purpose, see "Telemetry".
 - The removal of the fork's template start from the code.
