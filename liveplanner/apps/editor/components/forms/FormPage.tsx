@@ -9,6 +9,7 @@ import { useNow } from '@liveworkspace/workbench/hooks/ui/useNow';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import dynamic from 'next/dynamic';
 import { formLook, type Tab } from '@liveplanner/project';
 import { boardsOf } from '@liveplanner/templates';
 import { ITEMS_MAX } from '@liveplanner/items';
@@ -24,6 +25,7 @@ import {
   type PublishProblem,
 } from '@liveplanner/forms';
 import { apiImageUrl, releaseImageUrl } from '@/lib/api/images';
+import { track } from '@/lib/telemetry';
 import { FormImageContext, type FormImageReader } from './form-images';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
@@ -45,7 +47,13 @@ import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
 import { formDestinationOf } from './form-destination';
+import { summaryOffered } from './summary/form-responses';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
+
+// The Summary (docs/specs/030-forms/forms.md "The Summary"), fetched only when it is opened.
+const FormSummary = dynamic(() => import('./summary/FormSummary').then((m) => m.FormSummary), {
+  ssr: false,
+});
 
 // How often an open form with a Close On reads the clock, to turn Closed when it passes.
 const NOW_TICK_MS = 60_000;
@@ -106,6 +114,8 @@ export function FormPage({
     [theme, finish, font],
   );
   const [preview, setPreview] = useState(false);
+  // The Summary, in place of the form.
+  const [summary, setSummary] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focusId, setFocusId] = useState<string | null>(null);
   // The cog's panel: the section it opened on (null, both closed), or false while shut.
@@ -166,6 +176,7 @@ export function FormPage({
   // Responses Go To or Settings, from wherever a fix is offered (out of Preview first).
   const openSettings = useCallback((section: FormSettingsSection | null) => {
     setPreview(false);
+    setSummary(false);
     setSettings(section);
   }, []);
   const select = useCallback((id: string | null, focus = false) => {
@@ -181,20 +192,34 @@ export function FormPage({
     () => (images ? { src: (id) => apiImageUrl(images, id), release: releaseImageUrl } : null),
     [images],
   );
-  const togglePreview = useCallback(() => setPreview((p) => !p), []);
-  // Preview and back start at the form's top.
+  const togglePreview = useCallback(() => {
+    setSummary(false);
+    setPreview((p) => !p);
+  }, []);
+  const toggleSummary = useCallback(() => {
+    setPreview(false);
+    setSelectedId(null);
+    if (!summary) track('Form', 'Opened', 'Summary');
+    setSummary(!summary);
+  }, [summary]);
+  // Offered to whoever reaches the tab the responses are on (summaryOffered).
+  const canSummarise = summaryOffered(destTab, tabScope);
+  const summarising = summary && canSummarise;
+  // Preview, the Summary and back start at the form's top.
   useEffect(() => {
     scrollRef.current?.scrollTo?.({ top: 0 });
-  }, [preview]);
-  // Escape leaves Preview.
+  }, [preview, summarising]);
+  // Escape leaves Preview, and the Summary.
   useEffect(() => {
-    if (!preview) return;
+    if (!preview && !summarising) return;
     const key = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setPreview(false);
+      if (e.key !== 'Escape') return;
+      setPreview(false);
+      setSummary(false);
     };
     window.addEventListener('keydown', key);
     return () => window.removeEventListener('keydown', key);
-  }, [preview]);
+  }, [preview, summarising]);
 
   const value = useMemo<FormBuilderValue>(
     () => ({
@@ -241,6 +266,7 @@ export function FormPage({
   const showProblem = useCallback(
     (p: PublishProblem) => {
       setPreview(false);
+      setSummary(false);
       if ('questionId' in p && p.questionId) select(p.questionId, true);
       else if (p.kind === 'broken_rule')
         document
@@ -300,6 +326,7 @@ export function FormPage({
                           destinationName={destTab?.name ?? null}
                           // In the top row where a palette sits, on a desktop; heading the column on a phone.
                           top={phone ? null : canvas}
+                          summary={canSummarise ? { on: summarising, toggle: toggleSummary } : null}
                           onNotTaking={(fix) => {
                             if (fix === 'share') setShareOpen(true);
                             else if (fix === 'responses') {
@@ -338,8 +365,19 @@ export function FormPage({
                           </p>
                         ) : null}
                       </div>
+                      {summarising && destTab ? (
+                        <div className="mx-auto mt-3 w-full" style={{ maxWidth }}>
+                          <FormSummary
+                            form={form}
+                            tabId={tab.id}
+                            destinationName={destTab.name}
+                            onOpenResponses={() => openTab(destTab.id)}
+                            onShare={canEdit ? () => setShareOpen(true) : undefined}
+                          />
+                        </div>
+                      ) : null}
                       {/* The look dresses the form alone: the status bar and the panel are the editor's. */}
-                      <div className="mt-3" {...look}>
+                      <div className="mt-3" hidden={summarising} {...look}>
                         {/* An Editor's form is the builder, read-only while it is locked. */}
                         {canEdit && !preview ? (
                           <FormBuilderColumn

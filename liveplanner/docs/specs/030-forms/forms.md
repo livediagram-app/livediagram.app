@@ -197,6 +197,11 @@ clear of the page's own scrollbar down its right edge; a phone's scrollbars floa
   (220 ms; none under reduced motion). Escape lets go of it. Unselected questions show exactly
   what respondents see. Text is saved as typing pauses (half a second) and when a field is left, so typing is one
   undo step a pause, not one a key.
+- **Pasting a list of questions**: several lines pasted into a question's empty wording make a question a line: the
+  first words this question, each line after it a new question of the same type under it, in order, the last one
+  selected. Blank lines and a list's own marks ("1.", "2)", "-", "•") are dropped, a wording is cut at 200
+  characters, and the paste stops at the most questions a form holds (100). One undo step. A single line, or a paste
+  into wording already typed, pastes as text.
 - **Sections**: a form with more than one section draws each, the first too, as a block headed by a band: a grip
   (drag the section, its questions with it, to another place: a line marks where it lands, Escape cancels), **Move
   Section Up** and **Move Section Down**, and on every section but the first **Delete Section**; then its own title
@@ -845,8 +850,19 @@ no editor code loaded (its own small bundle).
   show. Past one section it reads both: "About 1 min in this section · About 4 min left in all". Gone once nothing is
   left. No progress bar of its own (the sections' bar shows progress); a polite live region, so a screen reader hears
   it settle.
-- **Answers are kept while filling in**: in the browser's session storage per form, so a reload or a wrong Back keeps
-  what was typed; cleared on submit. **Submit Another Response** starts afresh.
+- **Answers are kept while filling in**: in the browser's local storage per form, so a reload, a wrong Back or a
+  tab closed by mistake keeps what was typed; cleared on submit. They are kept for 24 hours from the last change
+  (`DRAFT_KEEP_MS`), then dropped as if never typed, so they do not sit on a shared computer for good; a form only
+  opened, or emptied again, keeps nothing. A form that opens with answers kept from an earlier visit says so under
+  its heading card, "Your answers from earlier are still here, kept in this browser.", with **Start Again**, which
+  empties the form and what was kept at once. **Submit Another Response** starts afresh.
+- **Clear Form**: once anything is answered, **Clear Form** sits at the start of the row holding Back, Next and
+  Submit. It asks first, in place ("Clear every answer?", **Clear** and **Keep**), then empties every answer here and
+  in the browser and returns to the first section. Preview has it too.
+- **Enter**: in a one-line answer (Short Answer, Number, Email, Link, Phone, a date, an Other box) Enter moves to the
+  next question's answer, and after the section's last to Next or Submit, which it only focuses: Enter never sends
+  the form on its own. A Paragraph keeps Enter for a new line; Enter with Shift, Alt, Ctrl or ⌘, or while an input
+  method is composing, is left alone.
 - **Pre-filled answers**: the form link may carry answers in its address, one parameter per question,
   `?q.<questionId>=<value>` (a Multiple Choice repeats it once per pick, a Date Range gives it twice, start then end;
   a tick box takes `true`; a Date `YYYY-MM-DD`, a Rating its number). The page reads them once, as the form opens,
@@ -1025,7 +1041,8 @@ board settings, for switching back.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
   **Paused**, **Closed**, **Suspended**, or **Draft** for an offline project; a form switched on but past its Close
   On or at its Response Limit reads **Closed**, as its link is, and is not locked), the count ("14 responses · 3 new",
-  new to this reader), which opens the destination's tab (its tooltip names it). For an Editor while the form has
+  new to this reader), which opens the destination's tab (its tooltip names it), then **Summary**
+  ([The Summary](#the-summary)). For an Editor while the form has
   any problem, the bottom-right cluster shows **Problems** (a warning triangle and its count) to the left of Style;
   it opens a popover over it listing them under "Problems with this Form", one row each with a chevron; a press
   anywhere on a row takes you to it (the question or section, or Responses Go To) and closes the popover. A form-level
@@ -1076,6 +1093,44 @@ board settings, for switching back.
   arrived since the last email." Turned off with **Someone Fills In My Form** in Settings' email notifications;
   never sent where email is not configured (a deployment without it).
 
+## The Summary
+
+The status bar's **Summary** (a chart glyph and the word, after the count, pressed while it shows) draws the form's
+responses summed up question by question, in place of the form; pressing it again, Escape, Preview or the cog
+returns to the form. It is the answer to "how are the answers going?" without opening the board or building a
+Dashboard.
+
+- **Read from where the responses are**: a response is only its card or its row, so the Summary reads those as they
+  stand now. A board form reads every card a response to this Form tab made (`fromForm`), each answer from where it
+  went: the Title, its card field, or its block of the Description (a card made by a card type rule, where the rule
+  mapped it). A sheet form reads every row holding a response number, each answer from the column the form remembers
+  for it. So a card retitled or a cell retyped changes the Summary, a deleted card or row leaves it, and a Preview
+  counted as a response is in it. Its head says so: "14 Responses", "Read from the cards on Bugs as they are now:
+  changing or deleting a card changes this.", and **Open Bugs**.
+- **Each question** is a card: its wording, "12 of 14 answered", then by type:
+  - **Single Choice, Multiple Choice**: a row an option, in the form's order: its name, how many picked it and their
+    share of those who answered, over a thin bar. An answer that is not an option (an Other answer, or an option
+    since renamed) counts under **Other**, once a response.
+  - **Checkbox**: Yes and No, the same way. **Colour**: the colours given, most given first (twelve at most), each
+    with its swatch.
+  - **Rating**: its average to one decimal ("4.2", "Average of 5") beside a bar for each step, highest first.
+  - **Number**: Average, Lowest and Highest.
+  - **Every other type** (text, dates, contact details, Duration): the newest five answers, and under them "The
+    newest 5 of 31. Every answer is on Bugs." when there are more.
+  - A question nobody answered says "Nobody has answered this one."
+- **Bars** are one hue (the brand colour) and show how many; the count and the share stand beside each in ink, so
+  nothing is read from colour alone. A share is of the people who answered that question, never "0%" for someone nor
+  "100%" short of everyone.
+- **No responses**: the empty state "No Responses Yet", "Each response becomes a card on Bugs, and its answers are
+  summed up here.", with **Share Form** for an Editor.
+- **A sheet still loading** shows placeholder cards; one that cannot be read says "We couldn’t read <sheet>" with
+  **Try Again**.
+- **Who sees it**: an Editor, a Participant and a Viewer alike, as each can already open the board or sheet it reads;
+  it changes nothing, so no role is refused. A session through a share link to this one Form tab has no Summary: it
+  does not reach the tab the responses are on.
+- Loaded only when first opened (its own chunk), and worked out in the browser from what the project already holds:
+  no request of its own for a board form.
+
 ## Who may do what
 
 | Action                                                   | Editor                                 | Participant | Viewer |
@@ -1086,6 +1141,7 @@ board settings, for switching back.
 | Start a form: New Form, a form template, the Forms tour  | ✓                                      |             |        |
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
+| Open the Summary (not through a link to one Form tab)    | ✓                                      | ✓           | ✓      |
 | See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
 | Sync a project kept Offline from Share Form              | ✓                                      |             |        |
 | More Ways to Share: QR code, embed code, pre-filled link | ✓                                      |             |        |
@@ -1249,6 +1305,7 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 | Form     | Shared   | `Prefilled`                                             | Copy Pre-filled Link                                  |
 | Form     | Toggled  | `Open` / `Closed`                                       | Accepting Responses flipped (before the change lands) |
 | Form     | Opened   | `NotTaking` + the reason (`NotTakingSwitchedOff`, ...)  | Not Taking Responses pressed                          |
+| Form     | Opened   | `Summary`                                               | The Summary opened from the status bar                |
 | Form     | Moved    | `SyncedToShare`                                         | Sync Project pressed in Share Form                    |
 | Form     | Sent     | `Response` / `Dropped` (hidden field)                   | The api accepts or drops a response (server-side)     |
 | Form     | Sent     | `Preview`                                               | An Editor's Preview makes its card                    |
@@ -1263,8 +1320,9 @@ Every chart is on the public dashboard's **Forms** stack.
 
 - Signing in to respond, one response per person, editing a response after submitting.
 - File uploads, logic that skips sections by an answer, quizzes and scores.
-- A responses summary of charts per question (a Dashboard over the board covers it for now).
-- Importing questions from another form.
+- Charts of answers over time, filtering the Summary, or exporting it (a Dashboard over the board, or the sheet,
+  covers them).
+- Importing questions from another form (a list of wordings can be pasted in).
 - Pictures on a form's questions (a choice with pictures): content blocks and the cover hold them for now.
 - Respondents uploading pictures or files (an abuse door; see the field kinds left out under
   [Mapping](#mapping-where-an-answer-goes)).

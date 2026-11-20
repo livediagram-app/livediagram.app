@@ -30,6 +30,7 @@ import {
   duplicateQuestion,
   moveQuestion,
   neighbourOf,
+  pastedQuestions,
   setOptions,
   setQuestionType,
   updateQuestion,
@@ -241,6 +242,23 @@ export function FormQuestionCard({
                 label="Question"
                 className="text-[16px] font-medium text-slate-900 dark:text-slate-50"
                 onSave={(text) => change((f) => updateQuestion(f, q.id, { prompt: text.trim() }))}
+                // A list pasted into an empty wording is a question a line (forms.md, pasting a list).
+                onPaste={(text, draft) => {
+                  if (draft.trim()) return false;
+                  const pasted = pastedQuestions(b.form, q.id, text, newId);
+                  if (!pasted) return false;
+                  // Planned on the form as drawn; made on the form as it stands, with the same ids each time the
+                  // change is run (it may be run more than once), so the question selected below is one it made.
+                  const ids = pasted.ids;
+                  change((f) => {
+                    let next = 0;
+                    return (
+                      pastedQuestions(f, q.id, text, (p) => ids[next++] ?? newId(p))?.form ?? f
+                    );
+                  });
+                  b.select(pasted.ids[pasted.ids.length - 1] ?? q.id, true);
+                  return true;
+                }}
               />
             </div>
             <QuestionTypeMenu

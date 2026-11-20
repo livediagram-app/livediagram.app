@@ -44,9 +44,12 @@ export function ExtraColumns() {
   const [picking, setPicking] = useState<Record<string, ColumnKind>>({});
   if (!sheet) return null;
   const columns = sheet.fixed ?? [];
-  const save = (next: SheetFixedColumn[]) => b.actions.changeForm((f) => withSheetFixed(f, next));
+  // Each change is made on the columns as they stand when it lands, never on the list this draw read: two changes
+  // before the next draw (a header saved as its field goes, then a column added) both hold.
+  const save = (next: (now: readonly SheetFixedColumn[]) => SheetFixedColumn[]) =>
+    b.actions.changeForm((f) => withSheetFixed(f, next(f.sheet?.fixed ?? [])));
   const change = (id: string, next: SheetFixedColumn) =>
-    save(columns.map((c) => (c.id === id ? next : c)));
+    save((now) => now.map((c) => (c.id === id ? next : c)));
   return (
     <Shell
       title="Extra Columns"
@@ -76,7 +79,7 @@ export function ExtraColumns() {
                     />
                   </div>
                 }
-                onRemove={() => save(columns.filter((x) => x.id !== c.id))}
+                onRemove={() => save((now) => now.filter((x) => x.id !== c.id))}
                 removeLabel={`Remove ${c.header}`}
                 disabled={!b.canEdit}
               >
@@ -140,13 +143,9 @@ export function ExtraColumns() {
         type="button"
         disabled={!b.canEdit || columns.length >= SHEET_FIXED_MAX}
         onClick={() =>
-          save([
-            ...columns,
-            {
-              id: newFormPartId('x'),
-              header: newHeader(columns),
-              ...submittedAfter(0),
-            },
+          save((now) => [
+            ...now,
+            { id: newFormPartId('x'), header: newHeader(now), ...submittedAfter(0) },
           ])
         }
         className={ADD}
