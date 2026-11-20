@@ -300,6 +300,8 @@ export function useEditorCreation({
     tabsRef: fromPersistence.tabsRef,
     loadedTabIdsRef: fromDocument.loadedTabIdsRef,
     loadAllTabs: fromRoom.loadAllTabs,
+    userPreferences,
+    setUserPreferences,
   });
 
   // Structural element operations (delete, marquee commit, lock, and the

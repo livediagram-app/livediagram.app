@@ -302,13 +302,14 @@ decision are `@liveworkspace/workbench`'s `useUnusedImagePrompt`, the same in ev
   like any toast with answers, paused while hovered or focused, and timing out, closing it or Keep keeps the
   pictures. With In-Editor Notifications off it does not pop up, and nothing is deleted.
 - **Remember My Choice.** Under the message, an iOS-style switch, "Remember My Choice", off each time the toast
-  appears. With it on, the answer pressed becomes the person's setting: Delete from Storage saves Always Delete from
-  Storage, Keep saves Always Keep. Closing the toast or letting it time out never saves anything, switch on or not.
+  appears. With it on, the answer pressed becomes the person's setting: Delete from Storage saves Always Delete, Keep
+  saves Always Keep. Closing the toast or letting it time out never saves anything, switch on or not.
 - **The setting**, Settings > Editor > "When I Delete an Unused Image" (`unusedImageChoice`): **Ask Every Time** (the
-  default), **Always Delete from Storage** or **Always Keep**. It is one setting in every app, a common setting kept
+  default), **Always Delete** (from storage, after the checks) or **Always Keep**, a segmented control
+  whose description says what each does. It is one setting in every app, a common setting kept
   in the account's `all` scope ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
   "Common settings"), so a choice remembered in one app holds in the others and is changed back in any app's
-  Settings. With Always Keep a delete asks nothing and sends no request. With Always Delete from Storage every check
+  Settings. With Always Keep a delete asks nothing and sends no request. With Always Delete every check
   above still runs (only the owner, used nowhere else, every tab loaded, an answer from the api), and only then are
   the pictures deleted, followed by a brief notice, "The image wasn't used anywhere else, so it was deleted from
   storage." (or "3 images weren't used anywhere else, so they were deleted from storage."), shown even with In-Editor

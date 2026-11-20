@@ -422,6 +422,7 @@ describe('settings sub-categories', () => {
       ['alignmentGuides', 'Canvas'],
       ['autoRebindArrows', 'Canvas'],
       ['elementIndicatorStyle', 'Canvas'],
+      ['unusedImageChoice', 'Canvas'],
       ['quickAddOnHover', 'Mouse'],
       ['middleMousePan', 'Mouse'],
       ['contentsPlacement', 'Pages'],

@@ -62,6 +62,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Rotate in 3D View',
       'Turn the camera in the 3D view.',
     ),
+    changed(
+      'UnusedImages',
+      'When I Delete an Unused Image',
+      'Ask Every Time, Always Delete or Always Keep.',
+    ),
   ],
 );
 

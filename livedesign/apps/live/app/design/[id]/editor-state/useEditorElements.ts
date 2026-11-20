@@ -346,6 +346,8 @@ export function useEditorElements({
     tabsRef: persistenceSlice.tabsRef,
     loadedTabIdsRef: sessionSlice.loadedTabIdsRef,
     loadAllTabs: collaborationSlice.loadAllTabs,
+    userPreferences,
+    setUserPreferences,
   });
 
   const {

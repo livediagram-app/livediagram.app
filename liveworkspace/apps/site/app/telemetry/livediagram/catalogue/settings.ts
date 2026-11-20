@@ -56,6 +56,11 @@ export const EDITOR_SETTINGS = settingsStack(
       'Hover handles that add a connected shape.',
     ),
     changed('ElementIndicators', 'Element Indicators', 'Top icons, a Footer row, or Off.'),
+    changed(
+      'UnusedImages',
+      'When I Delete an Unused Image',
+      'Ask Every Time, Always Delete or Always Keep.',
+    ),
     toggle(
       'UI',
       'AlignmentGuidesOn',

@@ -12,9 +12,14 @@ import {
   mayOfferUnusedImages,
   picturesOfTabs,
 } from '@liveworkspace/workbench/lib/unused-image-prompt';
+import {
+  readUnusedImageChoice,
+  withUnusedImageChoice,
+} from '@liveworkspace/workbench/lib/unused-image-choice';
 import { apiDeleteImage, apiUnusedImages } from '@/lib/api-client';
 import { tabImageIds } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
+import type { UserPreferences } from '@/lib/user-preferences';
 
 type Deps = {
   // The person the gallery speaks for (the editor's own participant id).
@@ -32,6 +37,9 @@ type Deps = {
   loadedTabIdsRef: RefObject<Set<string>>;
   // Fetches every tab not loaded yet; answers the ones that failed.
   loadAllTabs: () => Promise<string[]>;
+  // The person's preferences: When I Delete an Unused Image is read from them, and Remember My Choice saves to them.
+  userPreferences: UserPreferences;
+  setUserPreferences: (next: UserPreferences) => void;
 };
 
 export function useUnusedImageOffer(deps: Deps): (removed: Element[]) => void {
@@ -52,6 +60,9 @@ export function useUnusedImageOffer(deps: Deps): (removed: Element[]) => void {
     // The gate holds a design before anything is asked.
     check: (ids) => apiUnusedImages(ownerId, designId ?? '', ids),
     remove: (id) => apiDeleteImage(ownerId, id),
+    choice: () => readUnusedImageChoice(deps.userPreferences),
+    remember: (choice) =>
+      deps.setUserPreferences(withUnusedImageChoice(deps.userPreferences, choice)),
   });
   // The pictures of the image elements it took (a page's background goes only with its page).
   return (removed) =>
