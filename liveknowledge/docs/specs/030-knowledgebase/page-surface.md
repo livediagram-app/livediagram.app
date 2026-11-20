@@ -69,19 +69,40 @@ style; the stored fields are ignored and dropped on the next save.
 
 ## Knowledgebase Style
 
-**Not built yet** ([blueprint](blueprints/page-surface.md) "Not built"): every page is drawn in the Clean look
-at the Medium size until it is.
+Owner, 2026-11-20: "Tab Style functionality needs to exist at a knowledgebase level, but be suited to
+knowledgebases, not generic. Canvas probably makes no sense."
 
-The look is chosen once, for the whole knowledgebase.
+Knowledgebase Style is the platform's [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md), kept whole where
+it suits writing and cut where it only suits a canvas. It styles the **whole knowledgebase at once**: there is no
+per-page and no per-tab style.
 
-- **Knowledgebase Settings > Style** (the knowledgebase menu), Editor only: a **look** (Clean, Classic, Report,
-  Notebook, Bold: the article looks the fork brought, as a row of preview tiles), the **accent** (the brand lime by
-  default; a small set of swatches), and **text size** (Small, Medium, Large). Nothing else.
-- It is stored once on the knowledgebase (`knowledgeStyle` in the document's metadata) and every page's writing is
-  drawn with it. Changing it changes every page at once, for everyone, as one edit; pages are not rewritten.
-- Page links, the Verified pill and the chrome keep the brand colour whatever the accent: trust reads the same in
-  every knowledgebase.
+- **Opening it.** **Knowledgebase Style** in the knowledgebase's menu (the sidebar header), Editor only. The dialog
+  is titled **Knowledgebase Style**, and its line reads "Pick a look for every page of this knowledgebase."
+- **Looks.** The same carousel of looks, each card a small **page of writing** drawn in that look (a title, a
+  heading, two lines, a link, a quote and a small table), never a diagram: a look is a theme (its colours) and a
+  font. Seasonal looks and their toggle stay, as does **Mashup** (it rolls a theme and a font). A card reads as
+  selected while the knowledgebase's theme and font are the look's.
+- **Fine-tune**, under the shared back bar, holds two panels, both about writing:
+  - **Text**: the heading font and the body font, text size (Small, Medium, Large), line spacing (Compact,
+    Comfortable, Relaxed) and heading style (plain, or with a rule under the largest headings).
+  - **Colours**: the theme, and within it the accent the writing's headings, links, quotes, tables and code blocks
+    take.
+- **Not in liveknowledge:** the Canvas panel and everything it held (the surround, patterns, Around the Pages), New
+  Page Background, the Finish filter and panel (stroke finishes belong to drawn shapes), per-shape and formal theme
+  colours, margins, page numbers, and Apply to All Tabs (the style always applies to every page). A drawing or chart
+  inside a page takes the knowledgebase's theme with the plain finish.
+- **The chrome follows the theme**, as in every liveworkspace editor: the accent the sidebar, tabs, buttons and
+  links use is the knowledgebase's theme accent, in the light and dark halves the theme defines. **Review Due** stays
+  amber and errors stay red in every theme; the Verified tick takes the theme accent.
+- **Stored once**, on the knowledgebase (`knowledgeStyle` in the document's metadata: the theme, fonts, text size,
+  spacing and heading style), and every page's writing is drawn with it. Changing it changes every page at once, for
+  everyone, as one undoable edit; pages are not rewritten or re-saved, and pages not on screen are not laid out.
+- **A new knowledgebase** starts in the Everyday look with the product's lime theme.
 - Exports (PDF, Word, Markdown) use the knowledgebase's style.
+- **Agents** cannot set a page's look: the article write takes no `look` or `accent`. The style is read and set with
+  the knowledgebase's metadata, by an Editor's token with the `write` scope.
+- **Telemetry:** the Tab Style events, with `Knowledgebase` as the object (`Knowledgebase` `Changed` `Look`,
+  `SeasonalLook`, `Mashup`, `Text`, `Colours`).
 
 ## Share roles
 
