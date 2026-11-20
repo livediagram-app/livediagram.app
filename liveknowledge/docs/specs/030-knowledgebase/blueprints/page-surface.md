@@ -194,6 +194,58 @@ extent, the rail's inset, and everything a browser would show.
 
 ## Not built
 
+Two parts of the spec are not started. Each is written so it can be picked up cold.
+
+### Knowledgebase Style (spec "Knowledgebase Style")
+
+Nothing is built: no `knowledgeStyle`, no dialog. Today every page is drawn in the Clean look at the Medium size
+with the theme's accent, because a page's own style is dropped as it is read (`page-looks.ts`) and nothing takes
+its place.
+
+1. **Model** (`packages/document`): `KnowledgeStyle = { look: ArticleLookId; accent: string; textSize:
+ArticleTextSize }`, `parseKnowledgeStyle(v)` keeping what is valid (a look of `ARTICLE_LOOKS`, a hex accent, a
+   size of `ARTICLE_TEXT_SIZE_PX`), `DEFAULT_KNOWLEDGE_STYLE` (Clean, the brand lime, Medium), and
+   `knowledgeArticleStyle(style): ArticleStyle` (the look's fields, the accent, the size, Narrow margins).
+2. **Storage and sync:** a field of the document's metadata, beside the name. It rides the path the page tree's
+   `parent` rides ([page tree blueprint](page-tree.md) "Storage and sync"): the metadata save
+   (`useAutosave.ts`, `PUT /api/documents/:id`), the room's `document-meta` op (`packages/api-schema`
+   `room-messages.ts`, relayed from an Editor only by `gateClientOp`), a resync, copies, snapshots and versions,
+   export and the Drive file. No page is rewritten: the style is not in any tab.
+3. **Drawing:** `ArticleFlows` already takes a `styleOverride` per flow and `CanvasPages`' sheet read
+   `articleStyle`; hand every flow `knowledgeArticleStyle(knowledgeStyle)` there and in `Canvas`
+   (`pageMargin`, `articleTopMarginPx`), so only mounted pages re-lay out. `articleStyleVars` keeps
+   `--article-page-link` on the brand whatever the accent; the Verified pill and the chrome never read the accent.
+   The Notebook look's ruled lines were a page background and are not drawn.
+4. **The dialog:** Knowledgebase Settings > Style from the knowledgebase's menu in the sidebar's head (the shared
+   `Dialog`, centred, steady height): five look tiles each a small drawn sample, an accent row (the brand lime
+   first, five more checked at 4.5:1 on white and on slate-900 with the repo's contrast helpers, through the shared
+   colour picker's swatch skin), text size as a segmented control. Each pick is one undo-able edit, applied live.
+   Editor only: a Participant and a Viewer are not offered the menu row, and the room refuses the op.
+5. **Exports:** the PDF, Word and Markdown exporters read `flow.style`; hand them
+   `knowledgeArticleStyle(knowledgeStyle)`.
+6. **Agents:** `write_article`'s `look` and `accent` should be refused by name (`parsePagesRequest`).
+
+### The footer, Share and the account button (spec "The footer")
+
+Nothing is built. Today the views switch (Pages | Ask | AI Knowledge), Share and the account button are the
+floating corner card (`KNOWLEDGE_SWITCH_ROW` in `app/document/[id]/EditorView.tsx`), and the footer is
+`components/chrome/BottomBar.tsx` with Get Started, Tools, Settings, notifications and the appearance.
+
+1. Three fixed tabs at the footer's left, with the look of the other editors' tab pills
+   (`livedocuments/apps/editor/components/chrome/TabBar.tsx`, `TabPill`): links (`?view=`) with `aria-current`, an
+   icon each, a hover card of a title and one line, no add, close, drag or menu. The footer's other items stay at
+   its right; on a phone the tabs are the row (icons with short labels, 44 px) and the rest go behind one More
+   button.
+2. The footer is a bar of the content area's column, under the canvas's `main`, so the page's scroll container ends
+   above it; it must not be drawn over the writing.
+3. Share and the account button at the right end of the formatting bar's row (`PageFormattingBar`, which then spans
+   the content area: formatting at the left while writing, Share and account at the right always), and the corner
+   card removed. `blueprints/ask-ui.md` describes the switch and must follow.
+4. With the corner card gone, check nothing overlaps the column at any width: the Page Info button below 1,280 px
+   stands at the top right, where Share will stand.
+
+### Smaller gaps
+
 - **A column that re-wraps on a narrow window** (see the choice above).
 - **A column exactly 760 px wide:** it is 724 px.
 - **An empty page is still 1,120 px tall** (`CONTINUOUS_PAGE_MIN_HEIGHT`), so a page with one line scrolls a

@@ -64,6 +64,9 @@ style; the stored fields are ignored and dropped on the next save.
 
 ## Knowledgebase Style
 
+**Not built yet** ([blueprint](blueprints/page-surface.md) "Not built"): every page is drawn in the Clean look
+at the Medium size until it is.
+
 The look is chosen once, for the whole knowledgebase.
 
 - **Knowledgebase Settings > Style** (the knowledgebase menu), Editor only: a **look** (Clean, Classic, Report,
