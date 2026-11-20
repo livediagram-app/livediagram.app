@@ -3,7 +3,7 @@ import type {
   TelemetrySummary,
   TelemetryWindowKey,
 } from '@liveworkspace/telemetry';
-import type { SectionKey } from './view-keys';
+import type { DetailKey } from './view-keys';
 
 // The curated-metric model shared by every MetricGroups view (docs/specs/017-telemetry/telemetry.md), plus
 // the pure maths that turn one into a window count and a 30-day series.
@@ -48,9 +48,9 @@ export type MetricStack = {
   // Clean split; Exceptions' failed requests + client exceptions, not the
   // server crashes that double them), so the head never double counts.
   headline?: Metric | readonly Metric[];
-  // A section that goes deeper than the stack can (Page Views by App -> Pages),
+  // A Detail tab that goes deeper than the stack can (Page Views by App -> Pages),
   // linked from a full-width footer in the stack's modal.
-  seeAlso?: { section: SectionKey; label: string };
+  seeAlso?: { tab: DetailKey; label: string };
   // How the head's number going up reads. Unset means good; a stack that
   // mixes good and bad members (sign-ups beside deletions) says neutral.
   rising?: Rising;

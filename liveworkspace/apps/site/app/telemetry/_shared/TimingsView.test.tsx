@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { metricKey, type TelemetrySummary } from '@liveworkspace/telemetry';
 import { TelemetryAppProvider } from './app';
 import { LIVEDIAGRAM } from './test-apps';
-import { TimingsView } from './TimingsView';
+import { TimingsView, VitalsView } from './TimingsView';
 
 // The Timings tab (docs/specs/017-telemetry/timing-telemetry.md): editor timings as percentiles, Web
 // Vitals rated, and a window with too few timings says so rather than quoting a percentile.
@@ -60,6 +60,7 @@ function render(s: TelemetrySummary) {
     root!.render(
       <TelemetryAppProvider value={LIVEDIAGRAM}>
         <TimingsView summary={s} active="last7" />
+        <VitalsView summary={s} active="last7" />
       </TelemetryAppProvider>,
     ),
   );

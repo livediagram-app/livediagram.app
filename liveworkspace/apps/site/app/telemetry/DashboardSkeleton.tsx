@@ -1,4 +1,3 @@
-import { TELEMETRY_APPS } from '@liveworkspace/telemetry';
 import { WINDOW_META } from './_shared/windows';
 
 // What the dashboard shows while its numbers load (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard",
@@ -8,11 +7,6 @@ import { WINDOW_META } from './_shared/windows';
 
 const PULSE = 'animate-pulse bg-slate-200/70 motion-reduce:animate-none dark:bg-slate-800/70';
 const CARD = 'rounded-2xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900';
-// The window the page opens on (its first state, which every dashboard then shares).
-const FIRST = WINDOW_META.find((w) => w.key === 'last7');
-const FIRST_WINDOW = FIRST?.label.toLowerCase() ?? '';
-const FIRST_WINDOW_DAYS = FIRST?.days ?? 7;
-
 // A placeholder for one line of text: the block keeps the text's line height (its `text` classes), so
 // the skeleton stands exactly as tall as the words it stands in for.
 function Bone({
@@ -63,94 +57,6 @@ function WindowPanelSkeleton() {
   );
 }
 
-// "All Apps": the panel, Apps Compared (the events chart and its table, then the visitors card's tiles and two
-// charts), and the busiest events' rows.
-function AllAppsSkeleton() {
-  return (
-    <>
-      <div className="mt-10">
-        <WindowPanelSkeleton />
-      </div>
-      <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">
-        Apps Compared
-      </h2>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        Each app in the {FIRST_WINDOW}, against the {FIRST_WINDOW_DAYS} days before. The window
-        above sets the span.
-      </p>
-      <div className={`${CARD} mt-4 p-5`}>
-        <Bone text="text-sm" width="w-56" />
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {[...TELEMETRY_APPS, 'total'].map((key) => (
-            <span key={key} className={`h-8 w-28 rounded-full ${PULSE}`} />
-          ))}
-        </div>
-        <div className={`mt-4 h-44 rounded-xl ${PULSE}`} />
-        <div className="mt-5 space-y-3">
-          {[...TELEMETRY_APPS, 'total'].map((key) => (
-            <div key={key} className="flex justify-between gap-4">
-              <Bone text="text-sm" width="w-32" />
-              <Bone text="text-sm" width="w-48" />
-            </div>
-          ))}
-        </div>
-      </div>
-      <div className={`${CARD} mt-4 p-5`}>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Bone text="text-sm" width="w-40" />
-          <span className={`h-9 w-72 max-w-full rounded-lg ${PULSE}`} />
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="rounded-xl border border-slate-200 p-3 dark:border-slate-700">
-              <Bone text="text-[10px]" width="w-20" />
-              <Bone text="text-xl" width="w-14" className="mt-1" />
-            </div>
-          ))}
-        </div>
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {[0, 1].map((i) => (
-            <div key={i}>
-              <Bone text="text-xs" width="w-48" />
-              <div className={`mt-3 h-32 rounded-xl ${PULSE}`} />
-            </div>
-          ))}
-        </div>
-      </div>
-      <h2 className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100">
-        Busiest Events
-      </h2>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-        The same event from several apps counts once here, added up.
-      </p>
-      <ol className={`mt-4 divide-y divide-slate-200 dark:divide-slate-800 ${CARD}`}>
-        {ROW_WIDTHS.map((width, i) => (
-          <li key={i} className="flex items-baseline justify-between gap-4 px-5 py-3">
-            <Bone text="text-sm" width={width} className="min-w-0 flex-1" />
-            <Bone text="text-sm" width="w-10" />
-          </li>
-        ))}
-      </ol>
-    </>
-  );
-}
-
-// Twelve rows (AllApps' TOP_EVENTS), of varied lengths so they read as a list of names.
-const ROW_WIDTHS = [
-  'w-56',
-  'w-44',
-  'w-64',
-  'w-40',
-  'w-52',
-  'w-48',
-  'w-60',
-  'w-36',
-  'w-56',
-  'w-44',
-  'w-52',
-  'w-40',
-];
-
 // MetricCard's shape: icon, title and event, the count, a two-line blurb, the trend line.
 function MetricCardSkeleton() {
   return (
@@ -178,11 +84,21 @@ const TAB_BAR =
   'flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900';
 const TAB = 'h-8 shrink-0 rounded-lg pointer-coarse:h-10';
 
-// The card groups the Dashboard tab opens on: a first row of key numbers, then a chart group.
-const GROUP_SIZES = [6, 3];
+// What differs between the two dashboards while they load: how many tabs lead the row and sit in the Detail bar,
+// and the card groups the Dashboard tab opens on (a first row of key numbers, then a chart group; for All Apps,
+// At a Glance and a card an app).
+const SHAPES = {
+  all: { leads: ['w-8 sm:w-28'], detail: ['w-32', 'w-40', 'w-28', 'w-32', 'w-32'], groups: [6, 5] },
+  app: {
+    leads: ['w-8 sm:w-28', 'w-8 sm:w-20'],
+    detail: ['w-20', 'w-20', 'w-20', 'w-28', 'w-24', 'w-28', 'w-28', 'w-28', 'w-20', 'w-16'],
+    groups: [6, 3],
+  },
+};
 
-// One app: the panel, the tab row, and the Dashboard tab's groups of metric cards.
-function AppSkeleton() {
+// Either dashboard: the panel, the tab row, and the Dashboard tab's groups of metric cards.
+function Skeleton({ variant }: { variant: 'all' | 'app' }) {
+  const shape = SHAPES[variant];
   return (
     <>
       <div className="mt-10">
@@ -190,13 +106,14 @@ function AppSkeleton() {
       </div>
       {/* ViewTabs' two bars (Dashboard and Search, then the Detail tabs), their tabs as placeholders
           the height of a tab. */}
-      <div className="mt-8 flex items-center gap-3">
+      <div className="mt-8 flex items-start gap-3">
         <div className={`${TAB_BAR} shrink-0`}>
-          <span className={`${TAB} w-8 sm:w-28 ${PULSE}`} />
-          <span className={`${TAB} w-8 sm:w-20 ${PULSE}`} />
+          {shape.leads.map((width, i) => (
+            <span key={i} className={`${TAB} ${width} ${PULSE}`} />
+          ))}
         </div>
-        <div className={`${TAB_BAR} min-w-0 flex-1 overflow-hidden`}>
-          {['w-24', 'w-28', 'w-28', 'w-20'].map((width, i) => (
+        <div className={`${TAB_BAR} min-w-0 flex-1 overflow-hidden sm:flex-wrap`}>
+          {shape.detail.map((width, i) => (
             <span key={i} className={`${TAB} ${width} ${PULSE}`} />
           ))}
         </div>
@@ -204,7 +121,7 @@ function AppSkeleton() {
       <div className="mt-8">
         <Bone text="text-sm" width="w-full max-w-xl" />
         <div className="mt-6 flex flex-col gap-8">
-          {GROUP_SIZES.map((size, g) => (
+          {shape.groups.map((size, g) => (
             <section key={g}>
               <Bone text="text-xs" width="w-28" />
               <div className="mt-3 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -226,7 +143,9 @@ export function DashboardSkeleton({ variant }: { variant: 'all' | 'app' }) {
       <p role="status" className="sr-only">
         Loading the numbers…
       </p>
-      <div aria-hidden>{variant === 'all' ? <AllAppsSkeleton /> : <AppSkeleton />}</div>
+      <div aria-hidden>
+        <Skeleton variant={variant} />
+      </div>
     </div>
   );
 }

@@ -11,9 +11,19 @@
 // appending one function here and one branch in EventIcon.
 
 import {
+  lucideChartColumn,
+  lucideCircleHelp,
+  lucideCompass,
+  lucideListOrdered,
+  lucideMessagesSquare,
+  lucidePackage,
+  lucideShieldCheck,
   lucideSlidersHorizontal,
   lucideSquareDashed,
+  lucideTimer,
   lucideUndo2,
+  lucideUsers,
+  lucideZap,
 } from '@liveworkspace/icons/lucide';
 import { Glyph, lucideGlyph } from '@livediagram/ui';
 
@@ -538,3 +548,15 @@ export function AlertGlyph() {
     </Glyph>
   );
 }
+
+// The Detail tabs' own marks (detail-tabs.tsx), where no glyph above says the area.
+export const HelpGlyph = lucideGlyph(lucideCircleHelp, 14);
+export const ToursGlyph = lucideGlyph(lucideCompass, 14);
+export const TimerGlyph = lucideGlyph(lucideTimer, 14);
+export const VitalsGlyph = lucideGlyph(lucideZap, 14);
+export const PeopleGlyph = lucideGlyph(lucideUsers, 14);
+export const DiscussionGlyph = lucideGlyph(lucideMessagesSquare, 14);
+export const ChartGlyph = lucideGlyph(lucideChartColumn, 14);
+export const RankGlyph = lucideGlyph(lucideListOrdered, 14);
+export const ShieldGlyph = lucideGlyph(lucideShieldCheck, 14);
+export const KitGlyph = lucideGlyph(lucidePackage, 14);

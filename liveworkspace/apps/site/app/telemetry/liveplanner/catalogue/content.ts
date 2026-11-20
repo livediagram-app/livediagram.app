@@ -499,7 +499,7 @@ export const ELEMENTS_ADDED: MetricStack = {
     ICONS_ADDED,
     OTHER_ELEMENTS_ADDED,
   ],
-  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
+  seeAlso: { tab: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
 // ---- Every other event, so nothing lands only in Search (docs/specs/017-telemetry/telemetry.md) ----------
@@ -592,7 +592,7 @@ export const ELEMENT_EDITING: MetricStack = {
     LINKS_ADDED,
     LINKS_REMOVED,
   ],
-  seeAlso: { section: 'editing', label: 'See Each Formatting Control in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Formatting Control on the Editing Tab' },
 };
 
 // Tables: the row and column edits inside a table element. They are sent as
@@ -696,7 +696,7 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   blurb:
     'Diagrams leaving liveplanner as files and text, tabs coming back in from JSON exports, boards from other tools, and whole plans from their own files.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS, PLAN_BOARDS_IMPORTED, PLANS_IMPORTED],
-  seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };
 
 // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): items made, moved, opened, voted on and

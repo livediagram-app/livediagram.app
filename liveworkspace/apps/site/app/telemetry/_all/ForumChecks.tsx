@@ -40,7 +40,7 @@ export function ForumChecks() {
     <section aria-labelledby="forum-checks">
       <h2
         id="forum-checks"
-        className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100"
+        className="mt-8 text-lg font-semibold text-slate-900 dark:text-slate-100"
       >
         Forum Checks
       </h2>

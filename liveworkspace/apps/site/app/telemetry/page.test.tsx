@@ -44,6 +44,15 @@ let root: Root | null = null;
 let host: HTMLElement | null = null;
 
 beforeEach(() => {
+  // The tab row measures itself and the sticky timeframe bar watches the panel scroll away.
+  const Observer = class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+  vi.stubGlobal('ResizeObserver', Observer);
+  vi.stubGlobal('IntersectionObserver', Observer);
+  Element.prototype.scrollIntoView = vi.fn();
   pending = [];
   globalThis.window.history.replaceState(null, '', '/telemetry');
   vi.stubGlobal(
@@ -97,13 +106,13 @@ describe('the telemetry dashboard while it loads', () => {
     expectChrome();
     expect(skeleton()).not.toBeNull();
     expect(skeleton()!.getAttribute('aria-busy')).toBe('true');
-    // Shaped like All Apps: its section titles and a card per app.
-    expect(skeleton()!.textContent).toContain('Apps Compared');
-    expect(skeleton()!.textContent).toContain('Busiest Events');
+    // Shaped like All Apps' Dashboard: the panel, At a Glance's six cards and a card an app.
+    expect(skeleton()!.querySelectorAll('.rounded-2xl')).toHaveLength(1 + 6 + 5);
     expect(pending).toHaveLength(1);
 
     await answer(0, summary(7));
     expect(skeleton()).toBeNull();
+    expect(host!.textContent).toContain('At a Glance');
     expect(host!.textContent).toContain('Events by App');
   });
 

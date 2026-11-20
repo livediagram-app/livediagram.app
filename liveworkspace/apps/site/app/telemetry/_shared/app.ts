@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, type ComponentType } from 'react';
+import { createContext, useContext } from 'react';
 import type {
   TelemetryApp,
   TelemetryCount,
@@ -36,7 +36,7 @@ export const noun = (one: string): Noun => ({
 
 export type ViewProps = { summary: TelemetrySummary; active: TelemetryWindowKey };
 
-/** A Detail tab's section that only some apps have: the groups it shows and how it introduces them. */
+/** A Detail tab that is chart groups: the groups it shows and the line that introduces them. */
 export type GroupsSection = { intro: string; groups: MetricGroup[] };
 
 /** One ranking card on the Palette section: a palette category's kinds, most added first. */
@@ -64,14 +64,10 @@ export type TelemetryAppConfig = {
   isRetired: (category: string, action: string, type: string | null) => boolean;
   funnel: CtaFunnel;
   pageViews: { apps: readonly string[]; appOf: (path: string) => string | null };
-  /** A tab only this app has (livediagram's Community), loaded on its own like the others. */
-  community?: {
-    /** Fetches its code (the idle prefetch calls it). */
-    load: () => Promise<ComponentType<ViewProps>>;
-    /** The view itself, loading on its own (`dynamic(load)`, made once in the config). */
-    View: ComponentType<ViewProps>;
-    /** Its charts, for the coverage checks. */
+  /** The Community tab: its charts (community-groups.ts) and the app's categories, by the label the product shows. */
+  community: {
     groups: MetricGroup[];
+    categories: readonly { type: string; label: string }[];
   };
   dashboard: MetricGroup[];
   editing: {
@@ -92,7 +88,7 @@ export type TelemetryAppConfig = {
      *  shows the diagram palette's Shapes, Tools, Components, Devices and Icons. */
     cards?: readonly PaletteCard[];
   };
-  /** The canvas selection modes and their options; an app without any has no Modes section. */
+  /** The canvas selection modes and their options; an app without any has no Modes tab. */
   modes?: {
     /** The canvas selection modes the app has (`Canvas·Used·<mode>`). */
     selection: readonly string[];
@@ -104,8 +100,10 @@ export type TelemetryAppConfig = {
   settings: MetricGroup[];
   /** Theme·Changed types the Themes ranking leaves out (its palette-types' isNonThemePick). */
   isNonThemePick: NonThemePick;
-  /** The Features tab's people section: Facilitation, or Discussion & Teams. */
+  /** The people tab: Facilitation, or Discussion & Teams. */
   teamwork: GroupsSection & { key: 'facilitation' | 'teamwork'; title: string };
+  /** The Explorer tab, for an app that charts its Explorer apart from the Dashboard (liveplanner). */
+  explorer?: GroupsSection;
   connections: GroupsSection;
   pages: MetricGroup[];
   help: {
@@ -116,7 +114,7 @@ export type TelemetryAppConfig = {
       label: (type: string) => string;
     };
   };
-  tours: MetricGroup[];
+  tours: GroupsSection;
   exceptions: {
     groups: MetricGroup[];
     recovery: MetricGroup[];
@@ -136,10 +134,11 @@ export function allGroups(app: TelemetryAppConfig): MetricGroup[] {
     ...app.exceptions.recovery,
     ...app.pages,
     ...app.help.groups,
-    ...app.tours,
+    ...app.tours.groups,
     ...app.teamwork.groups,
+    ...(app.explorer?.groups ?? []),
     ...app.connections.groups,
-    ...(app.community?.groups ?? []),
+    ...app.community.groups,
     { title: 'Timings', metrics: [...app.timings.editor, ...app.timings.vitals] },
   ];
 }

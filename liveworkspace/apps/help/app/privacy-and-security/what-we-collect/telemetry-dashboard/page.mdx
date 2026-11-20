@@ -40,46 +40,54 @@ The windows are whole calendar days in UTC: **Today** is since midnight UTC, **L
 
 ## The Views
 
-The dashboard is one page for every app, so its views are one component: pick an app with the chips under the heading (**All apps**, or one app) and the same row of tabs appears over that app's own numbers. **Dashboard** and **Search** stand on their own at the left; the other views are a closer look at one area, grouped in a bar titled **Detail** that scrolls sideways when it does not fit. Picking another app keeps the window you chose.
+The dashboard is one page for every app, so its views are one component: pick an app with the chips under the heading (**All Apps**, or one app by its logo) and the same row of tabs appears over that app's own numbers. **Dashboard** and **Search** stand on their own at the left; every other view is a closer look at one area, in a bar titled **Detail**. There is a tab for each area, so the bar wraps onto further rows on a wide screen and scrolls sideways on a phone. Picking another app keeps the window you chose.
 
-- **Dashboard**: the overview, and where the page opens. It leads with **At a glance**, then groups a fixed list of charts by the question they answer: Visitors, Content, Features, Collaboration, Connections, and Health & support. Each card shows the window's count with a line for the last 30 days, and a stack opens into the cards it combines. A stack's **See also** link jumps to the Detail section that breaks it down further.
-- **Features**: what people build with, in sections: **Editing** (the tools that organise work, then formatting controls, export formats and dialogs), **Palette** (what people add, most to least used), **Modes** (the modes people switch into and the options they set inside them), **Look & Feel** (which templates and themes get picked), **Settings** (how often each setting is changed, and which Settings categories people open), the app's people tools (see below) and **Connections** (API tokens and the changes AI tools make).
-- **Pages & Help**: how people find their way. **Pages** (the most-viewed pages across every app, and each app's own top ten; ids never leave the browser, so every <Noun /> counts as one page), **Help** (help centre reads and article feedback, and the articles opened from inside the editor) and **Tours & Prompts** (how far people get through each guided tour, and how they answer the one-off prompts).
-- **Community**: only for an app that has a Community page, where it shows what people do with what they share there and why posts get reported.
-- **Health**: whether it all works and is fast. **Exceptions** (what failed and where, counted only as a short code such as a status and the request or area, never an error message or stack; an empty section here is the goal) and **Timings** (see below).
+- **Dashboard**: the overview, and where the page opens. It leads with **At a glance**, then groups a fixed list of charts by the question they answer: Visitors, Content, Features, Collaboration, Connections, and Health & support. Each card shows the window's count with a line for the last 30 days, and a stack opens into the cards it combines. A stack's **See also** link opens the Detail tab that breaks it down further.
+- **Editing**: the tools that organise work, then formatting controls, export formats and dialogs.
+- **Palette**: what people add, most to least used.
+- **Modes**: the modes people switch into and the options they set inside them.
+- **Look & Feel**: which templates and themes get picked.
+- **Settings**: how often each setting is changed, and which Settings categories people open.
+- The app's people tools (see below).
+- **Community**: what people do with what they share on the app's Community page, and why posts get reported.
+- **Connections**: API tokens and the changes AI tools make.
+- **Pages**: the most-viewed pages across every app, and each app's own top ten. Ids never leave the browser, so every <Noun /> counts as one page.
+- **Help**: help centre reads and article feedback, and the articles opened from inside the editor.
+- **Tours & Prompts**: how far people get through each guided tour, and how they answer the one-off prompts.
+- **Exceptions**: what failed and where, counted only as a short code such as a status and the request or area, never an error message or stack. An empty tab here is the goal.
+- **Timings** and **Web Vitals**: how fast it all is (see below).
 - **Search**: find any one metric, by typing or by clicking through a word cloud of categories, actions and types, and see just that metric charted over 30 days.
 
-**All apps** is different: the apps keep their own vocabularies, so it shows only what they share. **Apps Compared** sets each app against the others on events, visitors and sign-ups, then come the Project Kits liveworkspace.app starts and the **Busiest Events**, added up across apps.
+**All Apps** has the same shape, but the apps keep their own vocabularies, so it shows only what they share. Its **Dashboard** adds every app up in six cards, then gives each app a card under its logo that opens the app's own dashboard. Its Detail tabs are **Events by App** and **Visitors & Accounts** (each app set against the others), **Project Kits** (the kits liveworkspace.app starts), **Forum Checks** and the **Busiest Events**, added up across apps.
 
 <AppNote app="livediagram,livehuddle">
-  These apps have a **Community** tab, and their people section on Features is **Facilitation**. The
-  Pages section counts every <Noun /> as the one page `/document`.
-</AppNote>
-
-<AppNote app="livedocuments">
-  There is no Community tab. The people section on Features is **Discussion & Teams** (comments,
-  teams and Community posts), and the Pages section counts every <Noun /> as the one page
+  The people tab is **Facilitation**, and the Pages tab counts every <Noun /> as the one page
   `/document`.
 </AppNote>
 
+<AppNote app="livedocuments">
+  The people tab is **Discussion & Teams** (comments and teams), and the Pages tab counts every{' '}
+  <Noun /> as the one page `/document`.
+</AppNote>
+
 <AppNote app="livedesign">
-  There is no Community tab. The people section on Features is **Discussion & Teams** (comments,
-  teams and Community posts), and the Pages section counts every <Noun /> as the one page `/design`.
+  The people tab is **Discussion & Teams** (comments and teams), and the Pages tab counts every{' '}
+  <Noun /> as the one page `/design`.
 </AppNote>
 
 <AppNote app="liveplanner">
-  There is no Community tab, and no Modes section on Features. The people section is
-  **Facilitation** (comments, teams, timers, the Explorer and the Community), and the Pages section
-  counts every <Noun /> as the one page `/project`.
+  There is no Modes tab. The people tab is **Facilitation** (comments, teams and timers), there is
+  an **Explorer** tab (Home, filters, share links and the Inbox), and the Pages tab counts every{' '}
+  <Noun /> as the one page `/project`.
 </AppNote>
 
 ## Timings and Core Web Vitals
 
-Browsers never send an exact time, only the range a timing fell in (such as "under one second"). So every number on the **Timings** view is an estimate within its range.
+Browsers never send an exact time, only the range a timing fell in (such as "under one second"). So every number on the **Timings** and **Web Vitals** tabs is an estimate within its range.
 
-The view opens with **Editor Timings**, one card each for **Load** (opening a <Noun />), **Warm Paint** (reopening a <Noun /> this browser has opened before, until its last seen copy is on screen), **Tab Switch**, **Save**, **Live Connect** and **Live Reconnect**. Each card leads with the **p75** (three timings in four were at least this quick), shows the **Median** and **p95** beside it, draws how many timings fell in each range, and plots each day's p75 across the last 30 days. A card with fewer than 20 timings in the window says it has too few to read a percentile, rather than showing a misleading number.
+The **Timings** tab has one card each for **Load** (opening a <Noun />), **Warm Paint** (reopening a <Noun /> this browser has opened before, until its last seen copy is on screen), **Tab Switch**, **Save**, **Live Connect** and **Live Reconnect**. Each card leads with the **p75** (three timings in four were at least this quick), shows the **Median** and **p95** beside it, draws how many timings fell in each range, and plots each day's p75 across the last 30 days. A card with fewer than 20 timings in the window says it has too few to read a percentile, rather than showing a misleading number.
 
-The Timings section sits under the **Health** tab for every app, and the load card is named for what the app opens.
+Every app has both tabs, and the load card is named for what the app opens.
 
 <AppNote app="livediagram,livedocuments,livehuddle">The load card reads **Document Load**.</AppNote>
 
@@ -87,7 +95,7 @@ The Timings section sits under the **Health** tab for every app, and the load ca
 
 <AppNote app="liveplanner">The load card reads **Project Load**.</AppNote>
 
-Below that, **Core Web Vitals** gives one card per part of <AppName /> (Marketing, Live, Help, Dashboard and Community) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
+The **Web Vitals** tab gives one card per part of <AppName /> (Marketing, Live, Help, Dashboard and Community) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
 
 | Measure | What it tracks                                    |
 | ------- | ------------------------------------------------- |
