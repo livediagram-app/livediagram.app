@@ -85,7 +85,6 @@ livedocuments/apps/api/src/document-room/document-anonymise.ts	liveknowledge/app
 livedocuments/apps/api/src/document-room/document-room-doors.ts	liveknowledge/apps/api/src/document-room/document-room-doors.ts
 livedocuments/apps/api/src/document-room/document-room-wiring.ts	liveknowledge/apps/api/src/document-room/document-room-wiring.ts
 livedocuments/apps/api/src/document-room/document-route.ts	liveknowledge/apps/api/src/document-room/document-route.ts
-livedocuments/apps/api/src/document-room/document-schema.ts	liveknowledge/apps/api/src/document-room/document-schema.ts
 livedocuments/apps/api/src/room-scope.ts	liveknowledge/apps/api/src/room-scope.ts
 livedocuments/apps/api/src/routes/document-shared-tabs-route.ts	liveknowledge/apps/api/src/routes/document-shared-tabs-route.ts
 livedocuments/apps/api/src/routes/images.ts	liveknowledge/apps/api/src/routes/images.ts
