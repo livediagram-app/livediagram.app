@@ -1,6 +1,7 @@
 'use client';
 
-import { useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import dynamic from 'next/dynamic';
 import type { TelemetryApp, TelemetrySummary, TelemetryWindowKey } from '@liveworkspace/telemetry';
 import {
   ChartGlyph,
@@ -15,11 +16,33 @@ import { ViewTabs } from './_shared/ViewTabs';
 import { WindowPanel } from './_shared/WindowPanel';
 import { previousSpanLabel, windowLabel } from './_shared/windows';
 import { compareApps } from './_all/apps-compared';
-import { EventsByApp } from './_all/EventsByApp';
-import { ForumChecks } from './_all/ForumChecks';
 import { Overview } from './_all/Overview';
-import { ProjectKits } from './_all/ProjectKits';
-import { VisitorsAndAccounts } from './_all/VisitorsAndAccounts';
+
+// Only the Dashboard shows on arrival, so only it ships with the page: each Detail tab's code loads on its own,
+// fetched while the browser is idle, so switching to one is still instant (as an app's tabs do, ActiveView).
+const LOADERS = {
+  events: () => import('./_all/EventsByApp').then((m) => m.EventsByApp),
+  visitors: () => import('./_all/VisitorsAndAccounts').then((m) => m.VisitorsAndAccounts),
+  kits: () => import('./_all/ProjectKits').then((m) => m.ProjectKits),
+  forum: () => import('./_all/ForumChecks').then((m) => m.ForumChecks),
+};
+// Next needs each call's options written out in place.
+const EventsByApp = dynamic(LOADERS.events, { ssr: false });
+const VisitorsAndAccounts = dynamic(LOADERS.visitors, { ssr: false });
+const ProjectKits = dynamic(LOADERS.kits, { ssr: false });
+const ForumChecks = dynamic(LOADERS.forum, { ssr: false });
+
+function prefetchTabs(): () => void {
+  const run = () => {
+    for (const load of Object.values(LOADERS)) void load().catch(() => {});
+  };
+  if (typeof window.requestIdleCallback === 'function') {
+    const id = window.requestIdleCallback(run, { timeout: 4000 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const id = window.setTimeout(run, 1000);
+  return () => window.clearTimeout(id);
+}
 
 // How many of the busiest events its tab lists.
 const TOP_EVENTS = 25;
@@ -60,6 +83,7 @@ export function AllApps({
   const against = previousSpanLabel(summary, active);
   // Watched by the StickyWindowBar: once this panel scrolls under the header, the condensed selector fades in.
   const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => prefetchTabs(), []);
   const compared = (
     <p className={INTRO}>
       Each app in the {windowLabel(active).toLowerCase()}

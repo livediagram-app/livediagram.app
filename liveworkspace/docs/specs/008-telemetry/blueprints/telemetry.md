@@ -130,7 +130,8 @@ ON CONFLICT (app, day, category, action, type) DO UPDATE SET count = count + exc
   bar. `ViewTabs` wraps its Detail bar from `sm` up and scrolls it on a phone.
 - **All Apps** (`AllApps.tsx`) uses the same `ViewTabs` and `StickyWindowBar` over its own views: `_all/Overview.tsx`
   (the Dashboard: `StatCard`s, the frame `MetricCard` is built on), then `EventsByApp`, `VisitorsAndAccounts`,
-  `ProjectKits`, `ForumChecks` (mounted, and so fetched, only on its tab) and the busiest events. `AppBrand.tsx` is
+  `ProjectKits`, `ForumChecks` (mounted, and so fetched, only on its tab) and the busiest events. Those four are
+  `dynamic` imports fetched on idle, as an app's tabs are, so the page ships the Dashboard alone. `AppBrand.tsx` is
   the one way an app is named.
 - `_all/apps-compared.ts` (pure): `compareApps(summary, active)` gives one `ComparedRow` per `TELEMETRY_APPS` app,
   the platform's when it has events in the window or the span before, and the Total (the window's `total`; the

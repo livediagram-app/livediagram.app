@@ -9,6 +9,11 @@ import {
   type TelemetryWindowKey,
 } from '@liveworkspace/telemetry';
 import { AllApps } from './AllApps';
+// The Detail tabs' code loads on its own; read here first, each is already in hand when its tab opens.
+import './_all/EventsByApp';
+import './_all/ForumChecks';
+import './_all/ProjectKits';
+import './_all/VisitorsAndAccounts';
 
 // All Apps (liveworkspace/docs/specs/008-telemetry/telemetry.md "The dashboard", All Apps; "Apps Compared"): the
 // Dashboard tab's cards, then a Detail tab each for the events chart with a line per app and the Total, the visitors
@@ -75,14 +80,21 @@ const tab = (name: string) =>
   [...host!.querySelectorAll<HTMLButtonElement>('[role="tab"]')].find(
     (t) => t.textContent === name,
   )!;
+// Opens a tab and lets its code, which loads on its own (next/dynamic), settle.
+async function open(name: string) {
+  await act(async () => {
+    tab(name).click();
+    for (let n = 0; n < 5; n++) await new Promise((r) => setTimeout(r, 0));
+  });
+}
 // Renders All Apps, then opens a Detail tab when one is named (the Dashboard otherwise).
-function show(summary = busy, active: TelemetryWindowKey = 'today', open?: string) {
+async function show(summary = busy, active: TelemetryWindowKey = 'today', tabName?: string) {
   act(() =>
     root!.render(
       <AllApps summary={summary} onPickApp={picked} active={active} onSelect={selected} />,
     ),
   );
-  if (open) act(() => tab(open).click());
+  if (tabName) await open(tabName);
 }
 const EVENTS = 'Events by App';
 const VISITORS = 'Visitors & Accounts';
@@ -102,8 +114,8 @@ const rowOf = (t: HTMLTableElement | undefined, name: string) =>
   );
 
 describe('the tabs', () => {
-  it('lays All Apps out as an app is: the Dashboard, then a Detail tab an area', () => {
-    show();
+  it('lays All Apps out as an app is: the Dashboard, then a Detail tab an area', async () => {
+    await show();
     expect([...host!.querySelectorAll('[role="tab"]')].map((t) => t.textContent)).toEqual([
       'Dashboard',
       EVENTS,
@@ -115,12 +127,12 @@ describe('the tabs', () => {
     expect(tab('Dashboard').getAttribute('aria-selected')).toBe('true');
     // One area at a time: the comparison's tables are not under the Dashboard.
     expect(host!.querySelector('table caption')).toBeNull();
-    act(() => tab('Busiest Events').click());
+    await open('Busiest Events');
     expect(text()).toContain('Participant · Returned · Anonymous');
   });
 
-  it('opens on every app added up, then a card an app under its logo', () => {
-    show();
+  it('opens on every app added up, then a card an app under its logo', async () => {
+    await show();
     expect(text()).toContain('At a Glance');
     const card = (title: string) =>
       [...host!.querySelectorAll('div.rounded-2xl')].find((c) =>
@@ -135,39 +147,39 @@ describe('the tabs', () => {
     expect(text()).not.toContain('livediagram.app');
   });
 
-  it("opens an app's dashboard from its card", () => {
-    show();
+  it("opens an app's dashboard from its card", async () => {
+    await show();
     act(() => button("Open liveplanner's dashboard")!.click());
     expect(picked).toHaveBeenCalledWith('liveplanner.app');
   });
 
-  it('asks the Community service for Forum Checks only once its tab is opened', () => {
+  it('asks the Community service for Forum Checks only once its tab is opened', async () => {
     const fetched = vi.fn(() => Promise.reject(new Error('offline')));
     vi.stubGlobal('fetch', fetched);
-    show();
+    await show();
     expect(fetched).not.toHaveBeenCalled();
-    act(() => tab('Forum Checks').click());
+    await open('Forum Checks');
     expect(fetched).toHaveBeenCalledTimes(1);
   });
 });
 
 describe('Apps Compared', () => {
-  it("lists each app's events, the platform's own, and the total", () => {
-    show(busy, 'today', EVENTS);
+  it("lists each app's events, the platform's own, and the total", async () => {
+    await show(busy, 'today', EVENTS);
     const events = table('Events each app sent');
     expect(rowOf(events, 'livediagram')?.textContent).toContain('43');
     expect(rowOf(events, 'liveworkspace')?.textContent).toContain('2');
     expect(rowOf(events, 'Total')?.textContent).toContain('50');
   });
 
-  it("opens an app's dashboard from its row", () => {
-    show(busy, 'today', EVENTS);
+  it("opens an app's dashboard from its row", async () => {
+    await show(busy, 'today', EVENTS);
     act(() => button("Open liveplanner's dashboard")!.click());
     expect(picked).toHaveBeenCalledWith('liveplanner.app');
   });
 
-  it('hides and shows a line from its legend entry', () => {
-    show(busy, 'today', EVENTS);
+  it('hides and shows a line from its legend entry', async () => {
+    await show(busy, 'today', EVENTS);
     const total = [
       ...host!.querySelectorAll<HTMLButtonElement>('[aria-label="Lines"] button'),
     ].find((b) => b.textContent === 'Total')!;
@@ -180,8 +192,8 @@ describe('Apps Compared', () => {
     expect(daily().querySelector('thead')!.textContent).toContain('Total');
   });
 
-  it('shows every app added up, then one app, in the tiles', () => {
-    show(busy, 'today', VISITORS);
+  it('shows every app added up, then one app, in the tiles', async () => {
+    await show(busy, 'today', VISITORS);
     const tile = (label: string) =>
       [...host!.querySelectorAll('dt')].find((dt) => dt.textContent === label)!.parentElement!
         .textContent;
@@ -197,8 +209,8 @@ describe('Apps Compared', () => {
     expect(tile('Sign-Ups per 100 New')).toContain('25');
   });
 
-  it('compares the apps on visitors and accounts, with the total', () => {
-    show(busy, 'today', VISITORS);
+  it('compares the apps on visitors and accounts, with the total', async () => {
+    await show(busy, 'today', VISITORS);
     const audience = table('Visitors and accounts by app');
     const diagram = rowOf(audience, 'livediagram')!.textContent;
     // 10 new, 30 returning, 75% returning, 3 sign-ups, 30 per 100 new.
@@ -207,23 +219,23 @@ describe('Apps Compared', () => {
     expect(rowOf(audience, 'Total')!.textContent).toContain('44');
   });
 
-  it('gives every chart a table of its days for a screen reader', () => {
-    show(busy, 'today', EVENTS);
+  it('gives every chart a table of its days for a screen reader', async () => {
+    await show(busy, 'today', EVENTS);
     expect(table('Events per day by app')!.querySelectorAll('tbody tr')).toHaveLength(30);
-    act(() => tab(VISITORS).click());
+    await open(VISITORS);
     for (const caption of ['New and returning visitors per day', 'Sign-ups and sign-ins per day'])
       expect(table(caption)!.querySelectorAll('tbody tr')).toHaveLength(30);
   });
 
-  it('says so when nothing has arrived', () => {
-    show(quiet, 'today', EVENTS);
+  it('says so when nothing has arrived', async () => {
+    await show(quiet, 'today', EVENTS);
     expect(text()).toContain('No events yet');
-    act(() => tab(VISITORS).click());
+    await open(VISITORS);
     expect(text()).toContain('No visitors yet');
   });
 
-  it('follows the window it is given and hands a pick back to the page', () => {
-    show(busy, 'last7', EVENTS);
+  it('follows the window it is given and hands a pick back to the page', async () => {
+    await show(busy, 'last7', EVENTS);
     expect(text()).toContain('Each app in the last 7 days, against the 7 days before');
     act(() =>
       [...host!.querySelectorAll<HTMLButtonElement>('button[aria-pressed]')]
@@ -244,8 +256,8 @@ describe('Project Kits', () => {
   ]);
   const section = () => host!.querySelector('section[aria-labelledby="project-kits"]')!;
 
-  it("shows each step's total in the window, every kit together, and the share completed", () => {
-    show(kits, 'today', 'Project Kits');
+  it("shows each step's total in the window, every kit together, and the share completed", async () => {
+    await show(kits, 'today', 'Project Kits');
     const tiles = [...section().querySelectorAll('dl > div')].map((d) => d.textContent);
     expect(tiles[0]).toContain('Started4');
     expect(tiles[1]).toContain('Completed3');
@@ -257,9 +269,9 @@ describe('Project Kits', () => {
     expect(runs.querySelector('tbody tr:last-child')!.textContent).toContain('43');
   });
 
-  it('leaves the share out with nothing started in the window', () => {
-    show(kits, 'today', 'Project Kits');
-    show(
+  it('leaves the share out with nothing started in the window', async () => {
+    await show(kits, 'today', 'Project Kits');
+    await show(
       buildTelemetrySummary(NOW, 'all', TELEMETRY_SENDERS, [
         row(3, 'liveworkspace.app', 'Kit', 'Removed', 'WebsiteBuild', 1),
       ]),
@@ -270,8 +282,8 @@ describe('Project Kits', () => {
     expect(section().textContent).toContain('Removed0');
   });
 
-  it('says so when no kit has been used', () => {
-    show(quiet, 'today', 'Project Kits');
+  it('says so when no kit has been used', async () => {
+    await show(quiet, 'today', 'Project Kits');
     expect(section().textContent).toContain('No project kits yet');
   });
 });
