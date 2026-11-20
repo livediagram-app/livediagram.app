@@ -53,6 +53,10 @@ const ACTION_BASE =
   'touch-target relative inline-flex h-8 shrink-0 items-center rounded-lg px-2.5 text-sm font-semibold whitespace-nowrap transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-700 disabled:cursor-not-allowed disabled:opacity-50';
 const ACTION_PRIMARY =
   'text-brand-700 enabled:hover:bg-brand-50 dark:text-brand-300 dark:enabled:hover:bg-brand-500/15';
+// A destructive answer (toasts.md "A destructive answer"): rose-700 reads at over 6:1 on white, rose-300 at over 9:1 on
+// slate-900.
+const ACTION_DESTRUCTIVE =
+  'text-rose-700 enabled:hover:bg-rose-50 focus-visible:outline-rose-700 dark:text-rose-300 dark:enabled:hover:bg-rose-500/15 dark:focus-visible:outline-rose-300';
 const ACTION_HIGHLIGHT_PRIMARY =
   'bg-white px-3 text-emerald-800 shadow-sm enabled:hover:bg-emerald-50 focus-visible:outline-white';
 const ACTION_HIGHLIGHT_SECONDARY =
@@ -66,7 +70,14 @@ export type ToastCardAction = {
   onSelect: () => void;
   disabled?: boolean;
   primary?: boolean;
+  destructive?: boolean;
 };
+
+function actionLook(action: ToastCardAction, highlight: boolean): string {
+  if (highlight) return action.primary ? ACTION_HIGHLIGHT_PRIMARY : ACTION_HIGHLIGHT_SECONDARY;
+  if (action.destructive) return ACTION_DESTRUCTIVE;
+  return action.primary ? ACTION_PRIMARY : ACTION_SECONDARY;
+}
 
 export function ToastCard({
   tone,
@@ -118,7 +129,8 @@ export function ToastCard({
                 onClick={action.onSelect}
                 disabled={action.disabled}
                 aria-label={action.ariaLabel}
-                className={`${ACTION_BASE} ${highlight ? (action.primary ? ACTION_HIGHLIGHT_PRIMARY : ACTION_HIGHLIGHT_SECONDARY) : action.primary ? ACTION_PRIMARY : ACTION_SECONDARY}`}
+                data-toast-destructive={action.destructive ? '' : undefined}
+                className={`${ACTION_BASE} ${actionLook(action, highlight)}`}
               >
                 {action.label}
               </button>

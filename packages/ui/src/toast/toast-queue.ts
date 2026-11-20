@@ -21,6 +21,8 @@ export type ToastAction = {
   ariaLabel?: string;
   onSelect: () => void;
   disabled?: boolean;
+  // The answer removes something for good (toasts.md "A destructive answer"): rose, never the brand colour.
+  destructive?: boolean;
 };
 export type ToastActionSpec = {
   key: string;

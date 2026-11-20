@@ -81,6 +81,26 @@ describe('ToastCard', () => {
     expect(run).toHaveBeenCalledTimes(1);
   });
 
+  it('draws a destructive answer in rose, never the brand colour', () => {
+    render(
+      <ToastCard
+        tone="info"
+        message="This image isn't used anywhere else. Delete it from storage? It can't be undone."
+        actions={[
+          { label: 'Keep', onSelect: () => {} },
+          { label: 'Delete from Storage', onSelect: () => {}, primary: true, destructive: true },
+        ]}
+        onClose={() => {}}
+      />,
+    );
+    const remove = screen.getByRole('button', { name: 'Delete from Storage' });
+    expect(remove.hasAttribute('data-toast-destructive')).toBe(true);
+    expect(remove.className).toContain('text-rose-700');
+    expect(remove.className).not.toContain('text-brand-700');
+    const keep = screen.getByRole('button', { name: 'Keep' });
+    expect(keep.hasAttribute('data-toast-destructive')).toBe(false);
+  });
+
   it('is an alert for an error, and tints its border for a problem only', () => {
     const { rerender } = render(
       <ToastCard tone="error" message="Couldn't save." onClose={() => {}} />,
