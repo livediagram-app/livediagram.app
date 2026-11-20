@@ -994,6 +994,11 @@ as they can be without saying less.
   already refused with every tab's name beside its id: a call spent to learn what the name said. A name two tabs
   share, or none has, is refused as before, naming the tabs. Renaming and deleting a tab still take its id.
 
+- **A read-only token** that writes is told so: the api's `read_only_token` is answered "this connection is
+  read-only: its token can find and read, never create or change ...", on every tool
+  (`READ_ONLY_TOKEN_WORDS`, `../packages/api-client/src/client.ts`). It used to read "you may view this ... but not
+  change it", which names a share role the caller does not have (and no file at all on a create), or the bare code.
+
 ## 5. Visualise: inline image render
 
 `create_project`, `add_tab` and `update_project` return, and `read_project` with `image: true` returns, an **inline
@@ -1063,6 +1068,11 @@ Worker (no DOM, no React).
   and Technology marks draw their brand tile instead of the old
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
+
+**Colours the preview can read.** The picture is drawn by resvg, which reads `rgba(r, g, b, a)` and hex but not
+the slash-alpha form (`rgb(15 23 42 / 0.05)`), which it paints solid black. What the preview draws (a page's
+pattern, an article's code block and table header) is written as `rgba()`; a test holds the article's draw ops to
+it.
 
 ## 5a. Interactive view (MCP Apps)
 

@@ -1,7 +1,7 @@
 // The api's refusals as agents read them (docs/specs/026-plan/plan-agents.md "Errors that teach"): what was wrong
 // and the next call to make, the same words on the CLI and the MCP. A 5xx or anything not from the api is not a
 // refusal: the caller lets it throw.
-import { ApiError } from '@liveworkspace/api-client';
+import { ApiError, READ_ONLY_TOKEN_CODE, READ_ONLY_TOKEN_WORDS } from '@liveworkspace/api-client';
 import {
   ITEM_CHECKLIST_MAX,
   ITEM_CHECKLIST_TEXT_MAX,
@@ -80,6 +80,7 @@ const BY_CODE: Readonly<Record<string, string>> = {
   not_a_form_tab: 'that tab holds no form: add one with add_form.',
   // Archived (liveworkspace/docs/specs/004-index/one-explorer-contracts.md "Archived").
   ...archiveRefusalWords(AGENT_PRODUCT),
+  [READ_ONLY_TOKEN_CODE]: READ_ONLY_TOKEN_WORDS,
 };
 
 const BY_STATUS: Readonly<Record<number, string>> = {

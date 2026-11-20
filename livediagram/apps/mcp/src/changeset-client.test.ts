@@ -251,6 +251,12 @@ describe('replaceBodyFrom', () => {
 });
 
 describe('changesetErrorText', () => {
+  it('says a read-only token is read-only, never its bare code', () => {
+    expect(changesetErrorText(new ApiError(403, '{"error":"read_only_token"}'))).toMatch(
+      /^read_only_token: this connection is read-only: /,
+    );
+  });
+
   it("prefers the route's own text, then names held elements and conflicts", () => {
     expect(
       changesetErrorText(

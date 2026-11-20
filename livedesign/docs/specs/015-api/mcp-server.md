@@ -1056,6 +1056,11 @@ as they can be without saying less.
   already refused with every tab's name beside its id: a call spent to learn what the name said. A name two tabs
   share, or none has, is refused as before, naming the tabs. Renaming and deleting a tab still take its id.
 
+- **A read-only token** that writes is told so: the api's `read_only_token` is answered "this connection is
+  read-only: its token can find and read, never create or change ...", on every tool
+  (`READ_ONLY_TOKEN_WORDS`, `../packages/api-client/src/client.ts`). It used to read "you may view this ... but not
+  change it", which names a share role the caller does not have (and no file at all on a create), or the bare code.
+
 ## 5. Visualise: inline image render
 
 `create_design`, `add_tab` and `update_design` return, and `read_design` with `image: true` returns, an **inline
@@ -1144,6 +1149,11 @@ Worker (no DOM, no React).
 replace) answers no picture, and a line saying so ("No preview: the tab has nothing on it yet."): a blank page told
 the caller nothing, and a blank slide's background was a 120 KB picture on the first call of every deck. `read_design`
 with `image: true` still draws what it is asked.
+
+**Colours the preview can read.** The picture is drawn by resvg, which reads `rgba(r, g, b, a)` and hex but not
+the slash-alpha form (`rgb(15 23 42 / 0.05)`), which it paints solid black. What the preview draws (a page's
+pattern, an article's code block and table header) is written as `rgba()`; a test holds the article's draw ops to
+it.
 
 ## 5a. Interactive view (MCP Apps)
 

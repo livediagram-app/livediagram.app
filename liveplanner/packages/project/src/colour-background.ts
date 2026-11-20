@@ -109,5 +109,5 @@ export function pageIsDark({ background }: { background?: ColourBackground }): b
 /** The pattern's ink: faint white on a dark fill, faint slate on a light one (and on the plain
  *  paper). */
 export function pagePatternInk(background: ColourBackground | undefined): string {
-  return pageIsDark({ background }) ? 'rgb(255 255 255 / 0.14)' : 'rgb(15 23 42 / 0.1)';
+  return pageIsDark({ background }) ? 'rgba(255, 255, 255, 0.14)' : 'rgba(15, 23, 42, 0.1)';
 }

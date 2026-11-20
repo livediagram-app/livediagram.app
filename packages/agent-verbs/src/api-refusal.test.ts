@@ -28,6 +28,13 @@ describe('apiRefusalOf', () => {
     expect(refusal(429)?.message).toMatch(/^The api refused it: too many calls in the last minute/);
   });
 
+  it('says a read-only token is read-only, never that the file is view-only', () => {
+    expect(apiRefusalOf(new ApiError(403, '{"error":"read_only_token"}'))).toEqual({
+      code: 'read_only_token',
+      message: expect.stringMatching(/^The api refused it: this connection is read-only: /),
+    });
+  });
+
   it('says a refusal a verb words itself as it is', () => {
     const refusal = new VerbRefusal({
       status: 403,
@@ -82,7 +89,9 @@ describe('deleteRefusal', () => {
 
   it('says why, by status and what was deleted', () => {
     expect(deleteRefusal(410, false)).toBe('It is already in the Trash (see list_trash).');
-    expect(deleteRefusal(403, true)).toBe('You may view this sketch but not change it.');
+    expect(deleteRefusal(403, true)).toBe(
+      'You may view this sketch but not change it (a read-only connection changes nothing).',
+    );
     expect(deleteRefusal(404, true)).toBe(
       'No such tab in this sketch: read_sketch lists its tabs.',
     );
