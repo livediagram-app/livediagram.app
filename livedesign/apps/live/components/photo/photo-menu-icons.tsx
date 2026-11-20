@@ -2,23 +2,28 @@
 
 // The photo menus' glyphs (docs/specs/031-photo/photo-pages.md "The title bar", photo-layers.md "The Layers tab"):
 // every command's row carries its icon on the left, as the app's verb menus do (the canvas Layers menu, the Explorer
-// actions menu); the adjustments and the filter categories each have their own.
+// actions menu); the adjustments and the filter categories each have their own. No two rows of one menu share a glyph
+// (photo-menu-icons.test.ts), so a row is told apart at a glance.
 import {
+  lucideAperture,
   lucideArrowLeftRight,
   lucideArrowUpDown,
   lucideBlend,
   lucideChartColumn,
+  lucideChartNoAxesColumnIncreasing,
   lucideCircleDashed,
   lucideContrast,
   lucideProportions,
   lucideCrop,
   lucideDroplet,
   lucideDroplets,
+  lucideEclipse,
   lucideEyeOff,
   lucideFlipHorizontal2,
   lucideFlipVertical2,
   lucideGrid3x3,
   lucideImagePlus,
+  lucideImageUpscale,
   lucideLassoSelect,
   lucideLayers,
   lucideMaximize2,
@@ -30,6 +35,7 @@ import {
   lucideRotateCw,
   lucideRotateCwSquare,
   lucideScale,
+  lucideScanEye,
   lucideScaling,
   lucideSlidersHorizontal,
   lucideSparkle,
@@ -38,6 +44,7 @@ import {
   lucideSquare,
   lucideSquareDashed,
   lucideSun,
+  lucideSunMoon,
   lucideThermometer,
   lucideWand,
   lucideWandSparkles,
@@ -58,7 +65,7 @@ const ACTION_GLYPHS: Readonly<Record<string, Glyph>> = {
   'auto-tone': g(lucideWand),
   'auto-contrast': g(lucideContrast),
   'auto-colour': g(lucidePalette),
-  'image-size': g(lucideScaling),
+  'image-size': g(lucideImageUpscale),
   'canvas-size': g(lucideMaximize2),
   'rotate-cw': g(lucideRotateCw),
   'rotate-ccw': g(lucideRotateCcw),
@@ -75,7 +82,7 @@ const ACTION_GLYPHS: Readonly<Record<string, Glyph>> = {
   deselect: g(lucideEyeOff),
   reselect: g(lucideRefreshCw),
   inverse: g(lucideArrowLeftRight),
-  subject: g(lucideWandSparkles),
+  subject: g(lucideScanEye),
   'colour-range': g(lucidePipette),
   'select-and-mask': g(lucideLassoSelect),
   grow: g(lucideMaximize2),
@@ -98,7 +105,7 @@ const ADJUST_GLYPHS: Partial<Record<AdjustmentId, Glyph>> = {
   brightness: g(lucideSun),
   levels: g(lucideChartColumn),
   curves: g(lucideSpline),
-  exposure: g(lucideSun),
+  exposure: g(lucideAperture),
   vibrance: g(lucideDroplets),
   'hue-saturation': g(lucidePalette),
   'colour-balance': g(lucideScale),
@@ -110,10 +117,10 @@ const ADJUST_GLYPHS: Partial<Record<AdjustmentId, Glyph>> = {
   'gradient-map': g(lucideBlend),
   invert: g(lucideFlipHorizontal2),
   posterize: g(lucideLayers),
-  threshold: g(lucideContrast),
-  'shadows-highlights': g(lucideSun),
+  threshold: g(lucideEclipse),
+  'shadows-highlights': g(lucideSunMoon),
   desaturate: g(lucideCircleDashed),
-  equalize: g(lucideChartColumn),
+  equalize: g(lucideChartNoAxesColumnIncreasing),
 };
 const AdjustDefault = g(lucideSlidersHorizontal);
 

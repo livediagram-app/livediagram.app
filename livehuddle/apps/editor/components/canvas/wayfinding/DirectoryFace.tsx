@@ -107,7 +107,7 @@ export function DirectoryList({
       />
       {!anyPlace ? (
         <div className="flex flex-col items-center gap-1.5 px-4 py-6 text-center">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 dark:bg-sky-950 dark:text-sky-300">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-300">
             <svg
               viewBox="0 0 24 24"
               className="h-4 w-4"
@@ -135,7 +135,7 @@ export function DirectoryList({
                 <h3 className="flex items-center gap-2 px-1.5 pb-1 text-[10.5px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
                   <span className="truncate">{tab.name}</span>
                   {here ? (
-                    <span className="rounded-full bg-sky-100 px-1.5 py-[1px] text-[9.5px] normal-case tracking-normal text-sky-700 dark:bg-sky-950 dark:text-sky-300">
+                    <span className="rounded-full bg-brand-100 px-1.5 py-[1px] text-[9.5px] normal-case tracking-normal text-brand-700 dark:bg-brand-950 dark:text-brand-300">
                       This Floor
                     </span>
                   ) : null}

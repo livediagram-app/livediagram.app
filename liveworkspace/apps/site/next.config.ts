@@ -59,10 +59,14 @@ const nextConfig: NextConfig = {
     ? {}
     : {
         async rewrites() {
-          // The help centre goes before the site's own files, as its route does in production.
+          // The help centre goes before the site's own files, as its route does in production. Its pages end in a slash
+          // (it redirects /help/x to /help/x/) and the site drops one (/help/x/ to /help/x), so a page is forwarded
+          // with its slash and a file (a last segment with a dot: its _next chunks, sitemap.xml) as it is; forwarded
+          // bare, every help page redirected back and forth until the browser gave up.
           const beforeFiles = [
-            { source: '/help', destination: `${HELP_DEV}/help` },
-            { source: '/help/:path*', destination: `${HELP_DEV}/help/:path*` },
+            { source: '/help', destination: `${HELP_DEV}/help/` },
+            { source: '/help/:path(.*\\.[^/]+)', destination: `${HELP_DEV}/help/:path` },
+            { source: '/help/:path*', destination: `${HELP_DEV}/help/:path*/` },
           ];
           const afterFiles = [
             { source: '/api/auth/:path*', destination: `${ACCOUNTS_DEV}/api/auth/:path*` },

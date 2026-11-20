@@ -42,6 +42,41 @@ describe('CategoryChips', () => {
     expect(row.className).not.toContain('overflow-x-auto');
   });
 
+  it('takes a mouse wheel sideways while it has chips past the edge, and passes it on at the end', () => {
+    const { rerender } = render(
+      <CategoryChips chips={chips} value="all" onChoose={() => {}} ariaLabel="Categories" />,
+    );
+    const row = screen.getByRole('group', { name: 'Categories' });
+    expect(row.className).toContain('scroll-edge-fade');
+    Object.defineProperty(row, 'scrollWidth', { configurable: true, value: 900 });
+    Object.defineProperty(row, 'clientWidth', { configurable: true, value: 560 });
+    const wheel = (init: WheelEventInit) => {
+      const e = new WheelEvent('wheel', { bubbles: true, cancelable: true, ...init });
+      row.dispatchEvent(e);
+      return e.defaultPrevented;
+    };
+    expect(wheel({ deltaY: 120 })).toBe(true);
+    expect(row.scrollLeft).toBe(120);
+    expect(wheel({ deltaY: 3, deltaMode: 1 })).toBe(true);
+    expect(row.scrollLeft).toBe(168);
+    expect(wheel({ deltaY: 1000 })).toBe(true);
+    expect(row.scrollLeft).toBe(340);
+    // At the end, a pinch and a sideways swipe are not the row's to take.
+    expect(wheel({ deltaY: 50 })).toBe(false);
+    expect(wheel({ deltaY: -50, ctrlKey: true })).toBe(false);
+    expect(wheel({ deltaX: 80, deltaY: 10 })).toBe(false);
+    expect(wheel({ deltaY: -400 })).toBe(true);
+    expect(row.scrollLeft).toBe(0);
+    // Nothing past the edge, or a wrapped row: the wheel is left alone.
+    Object.defineProperty(row, 'scrollWidth', { configurable: true, value: 560 });
+    expect(wheel({ deltaY: 120 })).toBe(false);
+    Object.defineProperty(row, 'scrollWidth', { configurable: true, value: 900 });
+    rerender(
+      <CategoryChips chips={chips} value="all" onChoose={() => {}} ariaLabel="Categories" wrap />,
+    );
+    expect(wheel({ deltaY: 120 })).toBe(false);
+  });
+
   it('chooses a category on a press', () => {
     const onChoose = vi.fn();
     render(<CategoryChips chips={chips} value="all" onChoose={onChoose} ariaLabel="Categories" />);

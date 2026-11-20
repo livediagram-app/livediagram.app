@@ -154,7 +154,7 @@ function BoardButton({
         aria-label={`Walk to ${place.name}`}
         {...press}
         {...(index === 0 ? { 'data-piece-main': '' } : null)}
-        className="pointer-events-auto absolute cursor-pointer rounded-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-sky-500"
+        className="pointer-events-auto absolute cursor-pointer rounded-sm transition-colors hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-brand-600"
         style={{
           left: pct(left, art.width),
           top: pct(r.y, art.height),

@@ -102,7 +102,7 @@ function CalendarNotes({
   const dayNotes = byDay.get(selected) ?? [];
   const full = (element.noticeNotes?.length ?? 0) >= NOTES_MAX;
   const nav =
-    'flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-sky-500 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100';
+    'flex h-7 w-7 cursor-pointer items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 disabled:cursor-default disabled:opacity-40 disabled:hover:bg-transparent focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
   const pick = (day: string) => {
     setSelected(day);
@@ -131,7 +131,7 @@ function CalendarNotes({
             setCursor(cursorOf(today));
             setSelected(today);
           }}
-          className="cursor-pointer rounded-md border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-sky-500 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
+          className="cursor-pointer rounded-md border border-slate-200 px-2 py-1 text-[11px] font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600 dark:hover:bg-slate-800"
         >
           Today
         </button>
@@ -178,9 +178,9 @@ function CalendarNotes({
                         : ''
                     }`}
                     onClick={() => pick(cell.day)}
-                    className={`relative flex ${g.cell} cursor-pointer flex-col items-center justify-start rounded-md pt-1 tabular-nums transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-sky-500 ${
+                    className={`relative flex ${g.cell} cursor-pointer flex-col items-center justify-start rounded-md pt-1 tabular-nums transition focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-brand-600 ${
                       isSelected
-                        ? 'bg-sky-600 font-semibold text-white dark:bg-sky-500 dark:text-slate-950'
+                        ? 'bg-brand-700 font-semibold text-white dark:bg-brand-500 dark:text-slate-950'
                         : cell.inMonth
                           ? 'text-slate-800 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800'
                           : 'text-slate-400 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/60'

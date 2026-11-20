@@ -366,7 +366,7 @@ function Welcome({ element }: { element: ShapeElement }) {
           Welcome
           <button
             type="button"
-            className="pointer-events-auto flex cursor-pointer items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-[2px] text-[9px] font-semibold text-amber-900 transition-colors hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-sky-500 disabled:cursor-default disabled:opacity-70 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100 dark:hover:bg-amber-900"
+            className="pointer-events-auto flex cursor-pointer items-center gap-1 rounded-full border border-amber-300 bg-amber-50 px-2 py-[2px] text-[9px] font-semibold text-amber-900 transition-colors hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-default disabled:opacity-70 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-100 dark:hover:bg-amber-900"
             aria-label={rung ? 'Bell rung' : 'Ring the bell'}
             disabled={rung}
             {...pieceControlProps}

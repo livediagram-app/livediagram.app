@@ -53,7 +53,10 @@ describe('templateSlides', () => {
   it.each(PRESENTED)('%s opens on the whole board, and each section shows less', (kind) => {
     const { tab, slides } = slidesOf(kind);
     const [overview, ...sections] = slides;
-    const drawn = tab.elements.filter((e) => e.type !== 'arrow').map((e) => e.id);
+    // Everything but the connectors pinned at both ends, which a slide pulls in by itself.
+    const drawn = tab.elements
+      .filter((e) => e.type !== 'arrow' || e.from.kind === 'free' || e.to.kind === 'free')
+      .map((e) => e.id);
     expect(overview!.elementIds).toEqual(drawn);
     for (const section of sections) {
       expect(section.elementIds.length).toBeLessThan(overview!.elementIds.length);
@@ -78,6 +81,47 @@ describe('templateSlides', () => {
     const gantt = slidesOf('gantt');
     // A row slide spans the plan's width: its bars carry no label of their own.
     expect(gantt.slides[1]!.elementIds.length).toBeGreaterThan(2);
+  });
+
+  it('keeps the drawn lines: the Gantt overview shows its week rules and Today line', () => {
+    const { tab, slides } = slidesOf('gantt');
+    const lines = tab.elements.filter(
+      (e) => e.type === 'arrow' && e.from.kind === 'free' && e.to.kind === 'free',
+    );
+    const today = lines.find((e) => e.type === 'arrow' && e.strokeStyle === 'dashed');
+    expect(today).toBeDefined();
+    expect(slides[0]!.elementIds).toEqual(expect.arrayContaining(lines.map((e) => e.id)));
+    // A row slide leaves out lines that run past its rows, so it still frames to them.
+    const design = slides.find((s) => s.name === 'Design')!;
+    expect(design.elementIds).not.toContain(today!.id);
+  });
+
+  it('writes a line with a free end onto the overview only, never one that would dangle', () => {
+    const tab = buildTemplateTab('tab-1', 'Tab', 'pyramid', 'brand');
+    const card = tab.elements.find((e) => e.type === 'shape' && e.shape === 'card')!;
+    const free = { kind: 'free' as const, x: 0, y: 0 };
+    const base = tab.elements.find((e) => e.type === 'arrow')!;
+    const arrow = (id: string, from: unknown, to: unknown) =>
+      ({ ...base, id, from, to }) as unknown as Tab['elements'][number];
+    const withLines = {
+      ...tab,
+      elements: [
+        ...tab.elements,
+        arrow('pin', free, { kind: 'pinned', elementId: card.id, anchor: 'w' }),
+        arrow('lost', free, { kind: 'pinned', elementId: 'gone', anchor: 'w' }),
+      ],
+    };
+    const [overview, ...sections] = templateSlides('pyramid', withLines, counter());
+    expect(overview!.elementIds).toEqual(expect.arrayContaining([base.id, 'pin']));
+    expect(overview!.elementIds).not.toContain('lost');
+    // A tier's leader line would point at a pyramid the section leaves out.
+    for (const section of sections) {
+      expect(
+        section.elementIds.every(
+          (id) => withLines.elements.find((e) => e.id === id)?.type !== 'arrow',
+        ),
+      ).toBe(true);
+    }
   });
 
   it('seeds nothing for a template that is not presented, or a tab it no longer finds', () => {

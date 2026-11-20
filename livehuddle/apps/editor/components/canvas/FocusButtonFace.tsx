@@ -89,7 +89,7 @@ export function FocusButtonFace({
           data-piece-main=""
           // Hover treatment is desktop-only (`sm:`): a tap would leave it stuck
           // on a phone.
-          className="group/dome pointer-events-auto flex shrink-0 cursor-pointer items-center justify-center rounded-full transition duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400 sm:hover:brightness-110"
+          className="group/dome pointer-events-auto flex shrink-0 cursor-pointer items-center justify-center rounded-full transition duration-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 sm:hover:brightness-110"
           style={RING}
         >
           {dome}

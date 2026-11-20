@@ -53,6 +53,7 @@ function setup({ canEdit = true, addPhotoPage = true } = {}) {
         canInspect: canEdit,
         presence: { publish: vi.fn(), on: () => [] },
         toast: { warning: vi.fn(), action: vi.fn() } as never,
+        requestFit: vi.fn(),
       }),
     { initialProps: { tab: tabs[0]! } },
   );

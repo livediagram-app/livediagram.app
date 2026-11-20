@@ -81,7 +81,10 @@ hand with the template (`template-slides-data.ts` in `@livediagram/templates`), 
   presenter notes.
 - **Found by label, held as ordinary slides.** A slide names its part by the labels on it (a heading, a card's title);
   `templateSlides` finds them on the tab the template built, takes in the panel each sits in and whatever lies within,
-  and writes plain element ids with fresh slide ids. From then on they are the person's own slides: renamed,
+  and writes plain element ids with fresh slide ids. A connector pinned at both ends is left to come along by itself
+  (above). A drawn line with a free end (a Gantt's week rules and Today line, a timeline's axis) is written onto the
+  overview, which shows the whole board (when its other end, if pinned, is on an element the board shows), and onto no
+  section, where it would point at what the section leaves out (a pyramid tier's leader line). From then on they are the person's own slides: renamed,
   reordered, hidden or deleted like any other. A part whose label is no longer on the tab is left out, never seeded
   empty.
 - **Where it happens.** A document made from a presented template (`/new?template=`, the new-document wizard, the

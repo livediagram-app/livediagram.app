@@ -112,7 +112,7 @@ export function Overlay({ element, children }: { element: ShapeElement; children
 // the canvas (pieceControlProps).
 
 export const PILL =
-  'pointer-events-auto absolute left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-2 py-[2px] text-[9px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-sky-500 dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700';
+  'pointer-events-auto absolute left-1/2 flex -translate-x-1/2 cursor-pointer items-center gap-1 whitespace-nowrap rounded-full border border-slate-300 bg-white/95 px-2 py-[2px] text-[9px] font-semibold text-slate-700 shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-600 dark:bg-slate-800/95 dark:text-slate-100 dark:hover:bg-slate-700';
 
 // While walking, a press anywhere on a reading piece opens it large. Not a piece control: the click policy
 // (lib/avatar-click-intent) keeps it from walking, and outside Avatar mode it is not drawn, so the piece selects
@@ -129,7 +129,7 @@ export function ReaderHit({ label, onOpen }: { label: string; onOpen: () => void
         e.stopPropagation();
         onOpen();
       }}
-      className="pointer-events-auto absolute inset-0 cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-sky-500"
+      className="pointer-events-auto absolute inset-0 cursor-pointer rounded-sm focus-visible:outline-2 focus-visible:outline-brand-600"
     />
   );
 }

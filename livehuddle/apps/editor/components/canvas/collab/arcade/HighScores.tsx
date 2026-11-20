@@ -69,7 +69,7 @@ export function HighScores({
                   {s.name}
                 </span>
                 {myKey !== null && s.by === myKey ? (
-                  <span className="shrink-0 rounded-full bg-sky-100 px-1.5 text-[11px] font-semibold text-sky-800 dark:bg-sky-400/15 dark:text-sky-200">
+                  <span className="shrink-0 rounded-full bg-brand-100 px-1.5 text-[11px] font-semibold text-brand-700 dark:bg-brand-400/15 dark:text-brand-200">
                     You
                   </span>
                 ) : null}

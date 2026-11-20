@@ -74,7 +74,7 @@ export function TimerLengthPopover({
           >
             −
           </Button>
-          <label className="flex flex-1 items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 focus-within:border-sky-500 dark:border-slate-600">
+          <label className="flex flex-1 items-center gap-1.5 rounded-md border border-slate-200 px-2 py-1 focus-within:border-brand-600 dark:border-slate-600">
             <input
               type="number"
               inputMode="numeric"
