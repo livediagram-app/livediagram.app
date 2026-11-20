@@ -25,7 +25,6 @@ livedesign/packages/help-registry/src/telemetry.ts	livediagram/packages/help-reg
 livedesign/packages/licences/src/product.ts	livediagram/packages/licences/src/product.ts	livedocuments/packages/licences/src/product.ts	livehuddle/packages/licences/src/product.ts	liveplanner/packages/licences/src/product.ts
 livedesign/packages/template-previews/src/index.ts	livedocuments/packages/template-previews/src/index.ts
 livedesign/packages/ui/src/Brand.tsx	livediagram/packages/ui/src/Brand.tsx	livedocuments/packages/ui/src/Brand.tsx	livehuddle/packages/ui/src/Brand.tsx
-livedesign/packages/ui/src/ExplorerLink.tsx	livediagram/packages/ui/src/ExplorerLink.tsx	livedocuments/packages/ui/src/ExplorerLink.tsx	livehuddle/packages/ui/src/ExplorerLink.tsx	liveplanner/packages/ui/src/ExplorerLink.tsx
 livedesign/packages/ui/src/SiteSwitcher.tsx	livediagram/packages/ui/src/SiteSwitcher.tsx	livedocuments/packages/ui/src/SiteSwitcher.tsx	livehuddle/packages/ui/src/SiteSwitcher.tsx	liveplanner/packages/ui/src/SiteSwitcher.tsx
 livedesign/packages/ui/src/WebVitalsReporter.tsx	livediagram/packages/ui/src/WebVitalsReporter.tsx	livedocuments/packages/ui/src/WebVitalsReporter.tsx	livehuddle/packages/ui/src/WebVitalsReporter.tsx	liveplanner/packages/ui/src/WebVitalsReporter.tsx
 livedesign/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livediagram/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livedocuments/packages/ui/src/appearance/SiteAppearanceToggle.tsx	livehuddle/packages/ui/src/appearance/SiteAppearanceToggle.tsx	liveplanner/packages/ui/src/appearance/SiteAppearanceToggle.tsx
@@ -66,7 +65,6 @@ livediagram/apps/editor/lib/explorer-thumbnail.tsx	livehuddle/apps/editor/lib/ex
 livediagram/apps/editor/lib/tour-tracks.ts	livehuddle/apps/editor/lib/tour-tracks.ts
 livediagram/apps/editor/lib/workbench-bindings.ts	livehuddle/apps/editor/lib/workbench-bindings.ts
 livediagram/apps/editor/test/no-document-grants.ts	livedocuments/apps/editor/test/no-document-grants.ts	livehuddle/apps/editor/test/no-document-grants.ts
-livediagram/apps/marketing/app/page.tsx	livehuddle/apps/marketing/app/page.tsx
 livediagram/apps/marketing/components/art-tokens.ts	livehuddle/apps/marketing/components/art-tokens.ts
 livediagram/apps/mcp/eval/bench/score.mjs	livedocuments/apps/mcp/eval/bench/score.mjs
 livediagram/apps/mcp/src/mcp-test-client.ts	livedocuments/apps/mcp/src/mcp-test-client.ts
