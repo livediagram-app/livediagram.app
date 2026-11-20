@@ -55,11 +55,11 @@ describe('Markdown Folder', () => {
     expect(plan.pages[1]!.links).toEqual([{ target: 'p1', text: 'deploys' }]);
   });
 
-  it('makes the tree from the folders, a README its folder’s own page', async () => {
+  it('makes the tree from the folders: the zipped folder’s README is the top page, listed first', async () => {
     const plan = await planImport('markdown-folder', handbook());
     expect(tree(plan)).toEqual([
       ['p1', 'Handbook', null],
-      ['p2', 'guides', 'p1'],
+      ['p2', 'guides', null],
       ['p3', 'advanced', 'p2'],
       ['p4', 'Tips', 'p3'],
       ['p5', 'deploy', 'p2'],
@@ -135,6 +135,60 @@ describe('Markdown Folder', () => {
     ]);
     expect(plan.pages[2]!.markdown).toBe('Intro line\n\n# Late Title ##\nBody');
     expect(plan.pages[3]!.markdown).toBe('```\n# not a title\n```\n\n# Real Title\n\nText');
+  });
+
+  // knowledgebase-import.md "The top folder's own page": a folder that is picked (its files at the root) and a zip
+  // of that folder (its files under the folder's name) are the same knowledgebase. They read differently before:
+  // the zip's README became the parent of every other page, and took the folder's name.
+  describe('the same folder, picked and zipped', () => {
+    const files: Record<string, string> = {
+      'README.md': 'No heading: the top page keeps its file’s name.',
+      'alpha.md': '# Alpha\n\nSee [the start](README.md) and [Deep](one/two/deep.md).',
+      'guides/README.md': '# Guides',
+      'guides/setup.md': '# Setup\n\nBack to [the start](../README.md).',
+      'one/two/deep.md': '# Deep',
+      'zeta.md': '# Zeta',
+    };
+    const under = (folder: string) =>
+      Object.fromEntries(Object.entries(files).map(([path, text]) => [`${folder}${path}`, text]));
+    // The tree by titles, so the two can be compared whatever their paths.
+    const shape = (plan: Awaited<ReturnType<typeof planImport>>) => {
+      const titles = new Map(plan.pages.map((page) => [page.key, page.title]));
+      return plan.pages.map((page) => [
+        page.title,
+        page.parentKey ? titles.get(page.parentKey) : null,
+      ]);
+    };
+
+    it.each([
+      ['a zip of the folder', 'handbook/'],
+      ['a zip that wraps the folder twice', 'export/handbook/'],
+    ])('reads %s as it reads the folder picked', async (_name, folder) => {
+      const picked = await planImport('markdown-folder', archiveOf(files));
+      const zipped = await planImport('markdown-folder', archiveOf(under(folder)));
+      expect(shape(picked)).toEqual([
+        ['README', null],
+        ['Alpha', null],
+        ['Guides', null],
+        ['Setup', 'Guides'],
+        ['one', null],
+        ['two', 'one'],
+        ['Deep', 'two'],
+        ['Zeta', null],
+      ]);
+      expect(shape(zipped)).toEqual(shape(picked));
+      expect(zipped.summary.pages).toBe(picked.summary.pages);
+    });
+
+    it('still keeps a README below the top as its folder’s page, the parent of what is in it', async () => {
+      const plan = await planImport('markdown-folder', archiveOf(under('handbook/')));
+      expect(shape(plan)).toContainEqual(['Setup', 'Guides']);
+    });
+
+    it('keeps a lone README beside nothing as the one page', async () => {
+      const plan = await planImport('markdown-folder', archiveOf({ 'handbook/README.md': '# Hi' }));
+      expect(shape(plan)).toEqual([['Hi', null]]);
+    });
   });
 
   it('lists the top folder’s own page first, beside its siblings', async () => {

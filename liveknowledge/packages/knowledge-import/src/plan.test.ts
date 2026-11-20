@@ -61,8 +61,9 @@ describe('the bounds of an import', () => {
   });
 
   it('flattens levels deeper than 8 under level 8, and warns', async () => {
+    // Each level's page beside the folder of the next (`l1.md`, `l1/l2.md`), as an export writes a tree.
     const path = (depth: number) =>
-      `${Array.from({ length: depth }, (_, i) => `l${i + 1}`).join('/')}/README.md`;
+      `${Array.from({ length: depth }, (_, i) => `l${i + 1}`).join('/')}.md`;
     const files = Object.fromEntries(
       Array.from({ length: 10 }, (_, i) => [path(i + 1), `# Level ${i + 1}`]),
     );
@@ -88,7 +89,7 @@ describe('the bounds of an import', () => {
   it('leaves fewer levels when the import lands under a page', async () => {
     const plan = await planImport(
       'markdown-folder',
-      archiveOf({ 'a/README.md': '# A', 'a/b/README.md': '# B', 'a/b/c.md': '# C' }),
+      archiveOf({ 'a.md': '# A', 'a/b.md': '# B', 'a/b/c.md': '# C' }),
       { parentDepth: 6 },
     );
     expect(plan.pages.map((page) => [page.title, page.parentKey])).toEqual([
@@ -98,7 +99,7 @@ describe('the bounds of an import', () => {
     ]);
     const deepest = await planImport(
       'markdown-folder',
-      archiveOf({ 'a/README.md': '# A', 'a/b.md': '# B' }),
+      archiveOf({ 'a.md': '# A', 'a/b.md': '# B' }),
       { parentDepth: 8 },
     );
     expect(deepest.pages.map((page) => page.parentKey)).toEqual([null, null]);

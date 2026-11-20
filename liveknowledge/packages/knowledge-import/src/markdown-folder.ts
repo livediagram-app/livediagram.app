@@ -5,7 +5,7 @@
 // in (`pageFilePaths`, @liveknowledge/document), so an export imports as the tree it was.
 
 import type { ReadContext, SourceReader } from './draft';
-import { folderDrafts, type FolderPage } from './folder-tree';
+import { folderDrafts, wrapperFolder, type FolderPage } from './folder-tree';
 import { readPageSource, titleOfMarkdown } from './page-source';
 import { baseOf, dirOf, extOf, keyOf, stemOf } from './paths';
 
@@ -24,7 +24,12 @@ function foldersOf(paths: Iterable<string>): { folders: Set<string>; owned: Set<
 }
 
 async function read(context: ReadContext) {
-  const pages: FolderPage[] = [];
+  const found: {
+    file: { path: string };
+    heading: string | null;
+    markdown: string;
+    owns: string | null;
+  }[] = [];
   const { folders, owned } = foldersOf([...context.listing.files.values()].map((f) => f.path));
   for (const file of context.listing.files.values()) {
     if (!isPage(file.path)) continue;
@@ -38,21 +43,28 @@ async function read(context: ReadContext) {
       : folders.has(keyOf(beside)) && !owned.has(keyOf(beside))
         ? beside
         : null;
+    found.push({ file, heading: title, markdown, owns });
+  }
+  // The top folder: the archive's root, or the folder a zip wraps everything in. A folder picked and a zip of that
+  // folder read the same way (knowledgebase-import.md "The top folder's own page").
+  const top = keyOf(wrapperFolder(found.map(({ file, owns }) => ({ path: file.path, owns }))));
+  const pages: FolderPage[] = found.map(({ file, heading, markdown, owns }) => {
+    const isTop = owns !== null && keyOf(owns) === top;
     // A folder's page with no heading is named after its folder; the top one keeps its file's name.
-    const name = owns ? baseOf(owns) : stemOf(file.path);
-    pages.push({
+    const name = owns !== null && !isTop ? baseOf(owns) : stemOf(file.path);
+    return {
       id: keyOf(file.path),
-      title: title ?? name,
+      title: heading ?? name,
       path: file.path,
       paths: [file.path],
       markdown,
       attached: [],
       warnings: [],
       owns,
-      // The page of the top folder leads its siblings.
-      sortName: owns === '' ? '' : name,
-    });
-  }
+      // The page of the top folder leads its siblings (folderDrafts).
+      sortName: name,
+    };
+  });
   return folderDrafts(pages, (folder) => folder);
 }
 

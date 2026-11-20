@@ -107,8 +107,17 @@ A blocked plan has `pages: []`, the skips found so far and `blocked` set.
   that owns its home folder.
 - A home folder nobody owns gets an empty page (`id` `folder:<key>`, titled by the folder's name through
   `titleOfFolder`), made once and placed the same way, so chains of unowned folders each get one.
-- The wrapper: starting at the root, while every page lies under one same next folder and no page sits in or owns
-  the current one, that folder is skipped. Pages in the wrapper are top-level.
+- The wrapper (`wrapperFolder`): starting at the root, while every page lies under one same next folder and no page
+  sits in the current one or owns it from beside it, that folder is skipped. Pages in the wrapper are top-level. A
+  page whose own file lies inside the folder it owns (`handbook/README.md`) counts as in that folder, so the folder a
+  zip wraps everything in is the wrapper even when it has a `README.md`; a page beside the folder it owns (Notion's
+  `Home <id>.md` and `Home <id>/`, an export's `deploys.md` and `deploys/`) counts as in the folder above, so its
+  folder is never skipped and it stays the parent of what is in it.
+- **A folder picked and a zip of it read the same.** The top folder is the archive's root or its wrapper. Its own
+  page (`README.md` or `index.md`) is a top-level page, sorts first, and with no heading keeps its file's name
+  (`README`); every other folder's page with no heading is named after its folder. Before this the zip's `README.md`
+  owned the zipped folder, so it became the parent of every other page and took the folder's name, where the picked
+  folder's was a top-level page listed first (`markdown-folder.test.ts` "the same folder, picked and zipped").
 - Order: every page sorts by its name (`compareNames`: case-blind, numeric); the top folder's own page sorts first.
   `arrangeTree` keeps that order among siblings.
 
