@@ -11,15 +11,19 @@ last did.
 
 ## The fields
 
-On the page (`Tab.knowledge`): `owner` (a person with access to the knowledgebase), `verifiedAt`, `verifiedBy`, `reviewEvery`
-(30, 90, 180 or 365 days; 90 by default; "Never" for pages that do not age).
+On the page (`Tab.knowledge`): `owner` (a person with access to the knowledgebase), `verifiedAt` and `verifiedBy`.
+
+On the knowledgebase (`knowledgeSettings.reviewEvery` in the document's metadata): the **Review Period**, one for
+every page (owner, 2026-11-20: "Review Period should be a knowledgebase setting, not per page"): 30, 90, 180 or 365
+days, 90 by default, or **Never** for a knowledgebase whose pages do not age. A page has no review period of its
+own.
 
 ## States
 
 | State              | When                                              | Shows as                                |
 | ------------------ | ------------------------------------------------- | --------------------------------------- |
 | **Verified**       | `verifiedAt` is set and the review is not yet due | a green tick, "Verified by <name>"      |
-| **Review Due**     | `verifiedAt + reviewEvery` has passed             | an amber "Review Due" pill              |
+| **Review Due**     | `verifiedAt` plus the Review Period has passed    | an amber "Review Due" pill              |
 | **Never Verified** | no `verifiedAt`                                   | nothing on the page; grey in the counts |
 
 - States are worked out when read, from the fields and the clock; nothing is written when a review comes due.
@@ -32,8 +36,20 @@ On the page (`Tab.knowledge`): `owner` (a person with access to the knowledgebas
   one most likely to need a person's eye.
 - Writing on a verified page does not clear the tick. A large change (more than a fifth of the writing's characters
   since `verifiedAt`) adds "Changed since verified" beside it, until someone verifies again.
-- **Page Health** (right rail): owner (changeable), last verified, review interval (changeable), reads by people and
+- **Page Health** (right rail): owner (changeable), last verified, when the review is due, reads by people and
   by agents this week, and Verify Again.
+
+## The Review Period
+
+- **Knowledgebase Settings > Reviews** (the knowledgebase's menu), Editor only: **Review Period**, a row of five
+  choices (Every 30 Days, Every 90 Days, Every 180 Days, Every Year, Never) with one line under it saying what it
+  does: "A verified page comes due for review this long after it was last verified."
+- Changing it changes when every page comes due, at once: states are worked out when read, so nothing is rewritten.
+  The dialog says how many pages the new period makes due before it is applied when that number grows ("12 pages
+  will be due for review"), and applying is one undoable edit.
+- **Never** means no page is ever Review Due: pages are Verified or Never Verified, and no review email is sent.
+- Page Health shows the page's due date and, for an Editor, a link to the setting ("Every 90 Days, Change"); it has
+  no control of its own.
 
 ## Reminders
 
@@ -52,9 +68,9 @@ On the page (`Tab.knowledge`): `owner` (a person with access to the knowledgebas
 - The three emails together are at most 50 a knowledgebase a day; an owner the ceiling leaves out is emailed the
   next day. A deployment that sends no email sends none of them.
 - Nothing is sent when a page is written: the knowledgebase's room wakes by its own alarm when the next review
-  comes due, and after a page is verified or its interval changes.
+  comes due, and after a page is verified or the Review Period changes.
 - No email is sent for a knowledgebase kept Offline: it lives in one browser and has no room to send from.
 
 ## Share roles
 
-Verify, change owner and change the review interval: Editor only. Everyone sees the states.
+Verify, change owner and change the Review Period: Editor only. Everyone sees the states.
