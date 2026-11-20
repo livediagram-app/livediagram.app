@@ -93,7 +93,6 @@ livedocuments/apps/api/src/routes/preferences.ts	liveknowledge/apps/api/src/rout
 livedocuments/apps/api/src/routes/share.ts	liveknowledge/apps/api/src/routes/share.ts
 livedocuments/apps/api/src/routes/tab-link-route.ts	liveknowledge/apps/api/src/routes/tab-link-route.ts
 livedocuments/apps/api/src/routes/tab-name-route.ts	liveknowledge/apps/api/src/routes/tab-name-route.ts
-livedocuments/apps/api/src/routes/test-route-context.ts	liveknowledge/apps/api/src/routes/test-route-context.ts
 livedocuments/apps/api/src/test-profiles.ts	liveknowledge/apps/api/src/test-profiles.ts
 livedocuments/apps/api/src/versions/named-store-schema.ts	liveknowledge/apps/api/src/versions/named-store-schema.ts
 livedocuments/apps/api/src/versions/telemetry.ts	liveknowledge/apps/api/src/versions/telemetry.ts
@@ -269,11 +268,6 @@ livedocuments/apps/marketing/components/hero-page.tsx	liveknowledge/apps/marketi
 livedocuments/apps/marketing/components/hero-scene-data.ts	liveknowledge/apps/marketing/components/hero-scene-data.ts
 livedocuments/apps/marketing/components/hero-slides-board.tsx	liveknowledge/apps/marketing/components/hero-slides-board.tsx
 livedocuments/apps/marketing/components/hero-together-board.tsx	liveknowledge/apps/marketing/components/hero-together-board.tsx
-livedocuments/apps/mcp/eval/bench/checks.d.mts	liveknowledge/apps/mcp/eval/bench/checks.d.mts
-livedocuments/apps/mcp/eval/bench/checks.mjs	liveknowledge/apps/mcp/eval/bench/checks.mjs
-livedocuments/apps/mcp/eval/bench/snapshot.mjs	liveknowledge/apps/mcp/eval/bench/snapshot.mjs
-livedocuments/packages/agent-verbs/src/catalogue.ts	liveknowledge/packages/agent-verbs/src/catalogue.ts
-livedocuments/packages/agent-verbs/src/mcp/index.ts	liveknowledge/packages/agent-verbs/src/mcp/index.ts
 livedocuments/packages/agent-verbs/src/pages/index.ts	liveknowledge/packages/agent-verbs/src/pages/index.ts
 livedocuments/packages/api-schema/src/article-caret.ts	liveknowledge/packages/api-schema/src/article-caret.ts
 livedocuments/packages/api-schema/src/cta-sources.ts	liveknowledge/packages/api-schema/src/cta-sources.ts
@@ -367,7 +361,6 @@ livedocuments/packages/document/src/tab-window.ts	liveknowledge/packages/documen
 livedocuments/packages/document/src/table.ts	liveknowledge/packages/document/src/table.ts
 livedocuments/packages/document/src/validate-shape.ts	liveknowledge/packages/document/src/validate-shape.ts
 livedocuments/packages/document/src/version-changes.ts	liveknowledge/packages/document/src/version-changes.ts
-livedocuments/packages/edit-operations/src/pages/index.ts	liveknowledge/packages/edit-operations/src/pages/index.ts
 livedocuments/packages/edit-operations/src/parse-line.ts	liveknowledge/packages/edit-operations/src/parse-line.ts
 livedocuments/packages/licences/src/overrides.ts	livehuddle/packages/licences/src/overrides.ts	liveknowledge/packages/licences/src/overrides.ts	liveplanner/packages/licences/src/overrides.ts
 livedocuments/packages/template-previews/src/article-preview-parts.tsx	liveknowledge/packages/template-previews/src/article-preview-parts.tsx

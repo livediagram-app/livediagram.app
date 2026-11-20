@@ -8,5 +8,6 @@ Follow the references below only as needed; never upfront.
 - ./edit-operations.md - when implementing or changing edit operations: the grammar, selectors, placement, layout on edit, values, results and rejections, `applyEditOperations`
 - ./diagram-lint.md - when implementing or changing the diagram lint: the checks, summary and finding lines, `--compare`, and where changesets, the MCP and the CLI call it
 - ./pages-for-agents.md - when implementing or changing the Pages tools: the page-change engine, Markdown in and out, the pages route and relay, the pages view, growing an article for an absent writer
+- ./knowledgebase-for-agents.md - when implementing or changing the knowledgebase tools and commands: scopes and their grant, suggestions, the agent routes, the trust fields, the client's name, the CLI's export and import
 - ./DEFAULTS.md - when a blueprint here applies a default the spec leaves open
 - ./COMPLETENESS.md - when checking which completeness categories a blueprint here covers

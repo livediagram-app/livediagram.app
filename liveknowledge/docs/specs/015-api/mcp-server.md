@@ -184,6 +184,17 @@ browser. A token minted for the CLI is named "liveknowledge CLI".
 
 ## 4. Tools
 
+> **The tools are the knowledgebase's** since build-plan step 13: nine page tools (`get_context`, `list_pages`,
+> `search_pages`, `read_page`, `report_gap`, `create_page`, `suggest_edit`, `write_page`, `move_page`) and the
+> fifteen every app has, 24 in all, listed with their scopes in
+> [Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md) and its
+> [blueprint](../024-agents/blueprints/knowledgebase-for-agents.md#mcp-tools). The sections below that describe
+> `read_document`, `add_tab`, `update_document`, `search_icons`, the schema resource, element kinds, version
+> history, the Pages tools, the inline image render (§5) and the interactive view (§5a) are livedocuments' and no
+> longer this server's; they stay until this spec is rewritten around pages. `create_document` takes `pages` (each
+> a title and Markdown) or a `template`; `rename_document` and `delete_document` take `page` where they took
+> `tabId`.
+
 Seventeen tools: fifteen for documents and their gallery and two for pages and articles ([§4.9d](#49d-the-pages-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
 list_templates exposes the template catalogue ([§4.5](#45-list_templates)), search_icons the icon catalogue

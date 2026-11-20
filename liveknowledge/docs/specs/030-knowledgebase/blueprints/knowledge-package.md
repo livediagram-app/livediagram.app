@@ -396,10 +396,12 @@ payload)`: what the alarm owes.
   export to files writes `[Title](relative/path.md)` (`withPageLinksAsFiles`, `pageFilePaths`, `relativePagePath`).
 
 **Not built:** the three emails (`knowledge-emails.ts` says why: the shared notifier has no notice or account
-setting for them); `get_context` and the MCP tools; the editor; the Offline matcher; current titles in an agent's
-Markdown read (`withPageLinkTitles` is there, `document-views` does not call it yet); the Markdown export's call
-to `withPageLinksAsFiles` (the editor's dialog); a list of an agent's pending suggestions (the changeset store
-holds applied changesets only, so `GET knowledge` answers none).
+setting for them); the Offline matcher; current titles in the pages view of `document-views` (`read_page` and
+`GET pages/<page>` do print them, through `withPageLinkTitles`).
+
+**Built since, in step 13** ([Knowledgebase for agents](../../024-agents/blueprints/knowledgebase-for-agents.md)):
+`get_context` and the MCP's page tools, an agent's pending suggestions (`suggestions`, listed by `GET knowledge`),
+scopes, and the Markdown export's `withPageLinksAsFiles` (the CLI's `export`).
 
 **FTS5 in workerd: not confirmed by a test.** The api's tests run in Node on `node:sqlite` (the same FTS5 the
 package's tests use), not in the Workers pool: `porter`, `bm25()`, `snippet()` and `highlight()` are proven there,

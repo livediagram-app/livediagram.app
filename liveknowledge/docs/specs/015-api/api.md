@@ -190,22 +190,33 @@ Search, verification, Ask and the AI Knowledge tab ([Knowledgebase](../030-knowl
 The caller's grant is the gate: reading is every role's, a share link's visitor included; a write is an Editor's. A
 link confined to one page reaches that page's own routes and search over that page, nothing else.
 
-| Route                         | Who                           | What                                                                                                                                          |
-| ----------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GET search?q=`               | every role                    | titles first, then passages; 20 at most; `q` over 200 characters is `400 query_too_long`; `SEARCH_RATE_LIMITER`, 120 a minute a caller        |
-| `GET summary`                 | every role                    | page count, Verified / Review Due / Never Verified, the eight pages changed last; `Cache-Control: private, max-age=60`                        |
-| `GET pages/<tab>/backlinks`   | every role                    | the pages whose writing links here, in tree order                                                                                             |
-| `GET pages/<tab>/health`      | every role                    | the fields, the state now, Changed since verified, the size in tokens, the week's reads by people and by agents                               |
-| `POST pages/<tab>/verify`     | Editor with an account        | verified now by the caller, who owns a page with no owner                                                                                     |
-| `PUT pages/<tab>/knowledge`   | Editor                        | `owner` (or `null`), `reviewEvery`, `context`, each optional; `400 owner_no_access`, `409 context_budget`                                     |
-| `GET ai`                      | every role                    | `{ hasKey, keyHint, model, models }`; the hint to an Editor only; never the key                                                               |
-| `PUT ai/key`, `DELETE ai/key` | Editor                        | the team's Claude API key, sealed under `AI_KEY_SECRET`; `503 ask_unavailable` with no secret                                                 |
-| `PUT ai/model`                | Editor                        | one of the listed model ids                                                                                                                   |
-| `POST ask`                    | a signed-in account, any role | server-sent events: `delta`, then `done` (sources, found but not used, gaps), or `error`; `409` or `503 ask_unavailable`; `429` at the limits |
-| `GET knowledge`               | every role                    | agents, unanswered questions, conflicts, Always in Context pages, health                                                                      |
-| `POST questions`              | a signed-in account, any role | an agent's `report_gap`                                                                                                                       |
-| `DELETE questions/<key>`      | Editor                        | Dismiss                                                                                                                                       |
-| `POST conflicts/<id>/dismiss` | Editor                        | Not a Conflict                                                                                                                                |
+| Route                           | Who                                  | What                                                                                                                                          |
+| ------------------------------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET search?q=`                 | every role                           | titles first, then passages; 20 at most; `q` over 200 characters is `400 query_too_long`; `SEARCH_RATE_LIMITER`, 120 a minute a caller        |
+| `GET summary`                   | every role                           | page count, Verified / Review Due / Never Verified, the eight pages changed last; `Cache-Control: private, max-age=60`                        |
+| `GET pages/<tab>/backlinks`     | every role                           | the pages whose writing links here, in tree order                                                                                             |
+| `GET pages/<tab>/health`        | every role                           | the fields, the state now, Changed since verified, the size in tokens, the week's reads by people and by agents                               |
+| `POST pages/<tab>/verify`       | Editor with an account               | verified now by the caller, who owns a page with no owner                                                                                     |
+| `PUT pages/<tab>/knowledge`     | Editor                               | `owner` (or `null`), `reviewEvery`, `context`, each optional; `400 owner_no_access`, `409 context_budget`                                     |
+| `GET ai`                        | every role                           | `{ hasKey, keyHint, model, models }`; the hint to an Editor only; never the key                                                               |
+| `PUT ai/key`, `DELETE ai/key`   | Editor                               | the team's Claude API key, sealed under `AI_KEY_SECRET`; `503 ask_unavailable` with no secret                                                 |
+| `PUT ai/model`                  | Editor                               | one of the listed model ids                                                                                                                   |
+| `POST ask`                      | a signed-in account, any role        | server-sent events: `delta`, then `done` (sources, found but not used, gaps), or `error`; `409` or `503 ask_unavailable`; `429` at the limits |
+| `GET knowledge`                 | every role                           | agents, unanswered questions, conflicts, Always in Context pages, health                                                                      |
+| `POST questions`                | a signed-in account, any role        | an agent's `report_gap`                                                                                                                       |
+| `DELETE questions/<key>`        | Editor                               | Dismiss                                                                                                                                       |
+| `POST conflicts/<id>/dismiss`   | Editor                               | Not a Conflict                                                                                                                                |
+| `GET pages`                     | every role                           | the page tree in order, each page's trust; no page's writing ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md))          |
+| `GET pages/<page>`              | every role                           | one page as Markdown, links by their pages' current titles, backlinks, subpages, trust; `heading`, `maxChars`; counts a read                  |
+| `GET context`                   | every role                           | the Always in Context pages as Markdown within the budget, and the caller's `role` and `scopes`                                               |
+| `POST pages`                    | Editor                               | a new page from `{ title, markdown?, parent? }`; an agent needs `suggest`; `id` and `pageIds` for an import                                   |
+| `PUT pages/<page>`              | Editor                               | the page's writing replaced or appended; an agent needs `write`, `409 page_verified` on a verified page                                       |
+| `POST pages/<page>/move`        | Editor                               | `{ parent, before? }`; an agent needs `write`                                                                                                 |
+| `POST pages/<page>/suggestions` | Participant, Editor, with an account | `{ reason, after, before? }`: an edit waiting for an Editor; an agent needs `suggest`; 50 pending, 20,000 characters                          |
+| `GET suggestions`               | every role                           | the pending suggestions, newest first; gone after 90 days                                                                                     |
+| `POST suggestions/<id>/accept`  | Editor                               | applied as one article write in the acceptor's name; `409 suggestion_stale`                                                                   |
+| `POST suggestions/<id>/dismiss` | Editor                               | removes it                                                                                                                                    |
+| `PUT agents/<token>/scopes`     | Editor, in person                    | `{ scopes }` of `read`, `suggest`, `write` for one API token in this knowledgebase                                                            |
 
 - A page's fields are written into its tab's body (`Tab.knowledge`) with the tab's revision advanced, and told to
   open editors as a `tab-meta` patch. The whole-tab save keeps the stored fields whatever it is sent, so an editor
@@ -216,7 +227,15 @@ link confined to one page reaches that page's own routes and search over that pa
   is refused as before.
 - Opening a page (`GET tabs/<tab>`) counts a read: a person's once a page a day, an agent's (an API token, the MCP,
   the CLI) every time, under the name its client sends in `X-Liveknowledge-Agent`, else "MCP", "CLI" or "API Token".
-- The knowledge bookkeeping (reads, counters, questions, conflicts, the key) is written through a handle that
+- In a page route `<page>` is the page's id, or its title when one page alone has it; `parent` and `before` too.
+- **An API token's scopes.** A read-only token holds `read`; a full token `read` and `suggest`, and `write` once
+  an Editor grants it in that knowledgebase (`agent_grants`, in the knowledgebase's room). The scopes narrow the
+  role the token's person holds, for every route of the document: without `write` a token is a Participant at
+  most, with `read` alone a Viewer. A `403` the scopes caused answers `scope_needed` with what the token holds
+  ([blueprint](../024-agents/blueprints/knowledgebase-for-agents.md#scopes)).
+- An agent's search results carry the passage whole (`text`), its page's review date (`reviewAt`) and the pages an
+  open conflict sets it against (`conflictsWith`).
+- The knowledge bookkeeping (reads, counters, questions, conflicts, suggestions, the key) is written through a handle that
   notes no write, so none of it is recorded as an edit in History, Most Used or the outbox.
 
 ### Document dates

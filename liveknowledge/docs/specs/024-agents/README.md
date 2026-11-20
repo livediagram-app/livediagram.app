@@ -13,5 +13,6 @@ changes and discusses a document, alone or beside people editing it live. The fr
 - ./document-views.md - when an agent reads a tab as text: refs, the outline and the other views, budgets
 - ./edit-operations.md - when an agent edits elements: the operation vocabulary, selectors, placement, errors
 - ./pages-for-agents.md - when an agent reads or makes pages (infographic, slide) or writes an article in Markdown
+- ./knowledgebase-for-agents.md - when an agent reads, searches or changes a knowledgebase: the MCP's page tools, the CLI's commands, scopes, and the trust every answer carries
 - ./diagram-lint.md - when checking a diagram without looking at it: the findings, their codes and output
 - ./blueprints/README.md - when implementing an agents spec from its blueprint
