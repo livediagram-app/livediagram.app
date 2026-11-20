@@ -1,19 +1,79 @@
 import { lucideGlyph } from '@livediagram/ui';
+import type { BrandApp } from '@liveworkspace/brand';
 import { lucideCheck } from '@liveworkspace/icons/lucide';
+import { workAddress } from '@liveworkspace/marketing-site/components/BrowserWindow';
 import type { ReactNode } from 'react';
 import { type AppArt, listedApps } from '@/lib/apps';
 import { AppLogo } from './AppLogo';
-import { AppWindow, BoardScene, DesignScene, DiagramScene, DocumentScene } from './AppWindow';
+import { AppWindow, type Person } from './AppWindow';
+import { BoardScene } from './BoardScene';
+import { DesignScene } from './DesignScene';
+import { DiagramScene } from './DiagramScene';
+import { DocumentScene } from './DocumentScene';
 import { HuddleScene } from './HuddleScene';
 
 const CheckIcon = lucideGlyph(lucideCheck, 16);
 
-const SCENES: Record<AppArt, { address: string; scene: ReactNode }> = {
-  diagram: { address: 'livediagram.app/d/launch-plan', scene: <DiagramScene /> },
-  board: { address: 'liveplanner.app/p/launch', scene: <BoardScene /> },
-  document: { address: 'livedocuments.app/d/quarterly-review', scene: <DocumentScene /> },
-  design: { address: 'livedesign.app/d/northwind', scene: <DesignScene /> },
-  huddle: { address: 'livehuddle.app/d/team-pod', scene: <HuddleScene /> },
+// Each app's window: the address it opens at, the work's name and state in the app's bar, who else is there, and
+// the drawing of the work.
+const ADA: Person = { initials: 'AL', colour: '#0369a1' };
+const SAM: Person = { initials: 'SK', colour: '#7c3aed' };
+const LENA: Person = { initials: 'LP', colour: '#b45309' };
+const KAI: Person = { initials: 'KJ', colour: '#be123c' };
+const PRIYA: Person = { initials: 'PN', colour: '#db2777' };
+const JO: Person = { initials: 'JB', colour: '#c2410c' };
+
+const SCENES: Record<
+  AppArt,
+  {
+    brand: BrandApp;
+    title: string;
+    status: string;
+    people: Person[];
+    scene: ReactNode;
+    route: string;
+  }
+> = {
+  diagram: {
+    brand: 'livediagram',
+    route: 'document',
+    title: 'Beta launch',
+    status: 'Shared · 3 here',
+    people: [ADA, SAM, LENA],
+    scene: <DiagramScene />,
+  },
+  board: {
+    brand: 'liveplanner',
+    route: 'project',
+    title: 'Launch plan',
+    status: 'Shared · 4 here',
+    people: [SAM, ADA, LENA, KAI],
+    scene: <BoardScene />,
+  },
+  document: {
+    brand: 'livedocuments',
+    route: 'document',
+    title: 'Quarterly review',
+    status: 'Shared · 2 here',
+    people: [LENA, KAI],
+    scene: <DocumentScene />,
+  },
+  design: {
+    brand: 'livedesign',
+    route: 'design',
+    title: 'Northwind brand',
+    status: 'Shared · 2 here',
+    people: [KAI, ADA],
+    scene: <DesignScene />,
+  },
+  huddle: {
+    brand: 'livehuddle',
+    route: 'document',
+    title: 'Team Pod',
+    status: 'Live · 4 here',
+    people: [PRIYA, SAM, JO],
+    scene: <HuddleScene />,
+  },
 };
 
 // The apps (liveworkspace/docs/specs/010-site/site.md "The front door"): one section each, in the shared order,
@@ -90,7 +150,16 @@ export function Apps() {
                     </div>
                   </div>
                   <div className={`order-2 mt-8 lg:mt-0 ${i % 2 ? 'lg:order-1' : 'lg:order-none'}`}>
-                    <AppWindow address={scene.address}>{scene.scene}</AppWindow>
+                    <AppWindow
+                      address={workAddress(app.id, scene.route, scene.title)}
+                      app={scene.brand}
+                      title={scene.title}
+                      status={scene.status}
+                      people={scene.people}
+                      accent={app.deep}
+                    >
+                      {scene.scene}
+                    </AppWindow>
                   </div>
                 </div>
               </article>

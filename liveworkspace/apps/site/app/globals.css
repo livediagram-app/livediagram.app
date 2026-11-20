@@ -30,6 +30,7 @@
 @source '../../../../packages/ui/src';
 /* The shared /licences page body (liveworkspace/docs/specs/010-site/site.md "Licences"). */
 @source '../../../../packages/marketing-site/src/components/licences';
+@source '../../../../packages/marketing-site/src/components/BrowserWindow.tsx';
 
 /* The platform's own accent: slate, so no one app's colour stands for all of them. */
 :root {

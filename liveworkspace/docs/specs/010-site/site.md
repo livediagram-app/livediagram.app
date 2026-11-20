@@ -139,11 +139,25 @@ moves between them, and the one account that joins them.
    `hero-paint-guard.test.ts` holds both.
 2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, each with
    its own logo, a tagline, its summary, three things it does, a window onto its work with someone in
-   it (a flowchart; a board with a card on the move; an article with its slides; a logo, a wireframe
-   and a photo being cropped; a Space's Team Pod, characters round its meeting table, one of them talking inside her
-   hearing ring, the Timer on its wall, a teammate walking up from the plants and the Call dock below, with no
-   cursor), and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**,
-   **Start Designing**, **Start Huddling**. Below `lg` the window sits between the summary and the three things it does.
+   it, and a button in its deep accent naming the work: **Start Diagramming**, **Start Planning**, **Start Writing**,
+   **Start Designing**, **Start Huddling**. Below `lg` the window sits between the summary and the three things it does. The window reads as a
+   screenshot of the app at its best: the shared **browser window** every app illustration is shown in
+   (`BrowserWindow` in `@liveworkspace/marketing-site`: window controls, back and forward, the address with its
+   padlock, share and new tab, on a layered shadow), the address the work really opens at (the app's site, its route
+   and an id), the app's own bar (its prism, the work's name and state, who is in it, **Share** in its deep accent),
+   then the work, full of real words, never placeholder bars. The screen is drawn on a 640-wide grid in `em` (its font
+   size a 64th of the window's width), so it scales as one picture from a phone to a wide desktop instead of
+   reflowing. The work: livediagram, a **Beta launch** flowchart with an icon on every step, a decision looping back
+   on No, a sticky, a comment pin, Sam's selection and Ada drawing a new arrow, beside the tool rail and the zoom;
+   liveplanner, a **Launch plan** board (Board, Sheet, Dashboard and Form views, four status columns of typed cards
+   with due dates, checklists, comments and assignees, one card on its way to Review in Sam's hands over the gap it
+   will land in); livedocuments, a **Quarterly review** article (its pages rail with an article, a slide and an
+   infographic, the page with heading, byline, copy and a chart, Lena's selection under the format bar, Kai's
+   comment in the margin); livedesign, a **Northwind brand** (layers with the mark selected, the logo with its
+   selection and size, a home page in the brand, the palette, a photo Kai is cropping, and the inspector); livehuddle,
+   the Space's **Team Pod** (an oak floor, a back wall with windows and a screen, the team round a meeting table with
+   laptops and mugs, Maya talking inside her hearing ring, the Timer on the wall, Jo walking up from the plants and
+   the Call dock below, with no cursor).
    Every logo is the app's own UI package `Brand`, with its hover
    shimmer, "live" in the app's deep shade on light and its own 400 on dark, which reads at AA on a dark card where its 500
    accent does not (`components/landing/AppLogo.tsx`). The three things are each app's headline features as it stands (livediagram's workshops, liveplanner's

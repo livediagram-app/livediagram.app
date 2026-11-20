@@ -1,6 +1,7 @@
 // The editor-window mock every hero stage window is drawn in: the editor's chrome kept in step
 // with today's editor, around a caller-supplied SVG diagram (docs/specs/019-marketing/marketing-site.md).
 
+import { BrowserWindow, workAddress } from '@liveworkspace/marketing-site/components/BrowserWindow';
 import { type CSSProperties, type ReactNode } from 'react';
 import {
   Brand,
@@ -70,8 +71,8 @@ export function EditorWindow({
   canvasClassName?: string;
 }) {
   return (
-    <div className="@container/window rounded-xl border border-slate-200 bg-white p-2 shadow-xl shadow-brand-500/10 dark:border-slate-800 dark:bg-slate-900">
-      <div className="relative overflow-hidden rounded-lg border border-slate-100 dark:border-slate-800">
+    <BrowserWindow address={workAddress('livedocuments.app', 'document', title)}>
+      <div className="@container/window relative overflow-hidden">
         {/* The fade. While playing it lifts from light grey over the first
             beat and drops back to it over the last second, timed to the 22s cycle,
             so the window's ending is the same whatever its last beat was and
@@ -202,6 +203,6 @@ export function EditorWindow({
           <TabBarToolbelt />
         </div>
       </div>
-    </div>
+    </BrowserWindow>
   );
 }
