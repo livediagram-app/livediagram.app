@@ -51,6 +51,7 @@ import { mountArticleView } from './article-view-mount';
 import { PageLimitNotice, replaceContent } from './article-editor-parts';
 import { createPageSlots } from '@/lib/knowledge/page-slots-plugin';
 import { PageKnowledgeSlots } from '@/components/knowledge/PageKnowledgeSlots';
+import { usePageLinks } from '@/components/knowledge/usePageLinks';
 
 // How long typing pauses before it is written to the tab (docs/specs/007-editor/article-pages.md
 // "Writing", "Commits").
@@ -133,6 +134,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     // The writing points at the open menu and its highlighted option (aria-activedescendant).
     if (was.open !== open || was.index !== slashIndex) viewRef.current?.setProps({});
   });
+  // Page links: the `[[` picker, a press on a link, its hover card (components/knowledge/usePageLinks.tsx).
+  const pageLinks = usePageLinks(viewRef, props.editable && props.reshape !== false);
   const pickSlash = (item: SlashItem) => {
     const view = viewRef.current;
     if (!view) return;
@@ -154,7 +157,8 @@ export default function ArticleEditor(props: ArticleEditorProps) {
             ? [articleSchema.nodes.toc.create(), articleSchema.nodes.paragraph.create()]
             : [articleSchema.nodes.page_break.create(), articleSchema.nodes.paragraph.create()],
       )(view.state, view.dispatch, view);
-    else latest.current.onInsert(latest.current.flow, a.what);
+    else if (a.kind === 'page-link') pageLinks.openPicker(view);
+    else if (a.kind === 'insert') latest.current.onInsert(latest.current.flow, a.what);
     // A block put in from the menu counts as the toolbar's Insert does, once it went in; an
     // object insert is counted by its host (useArticles) once it lands.
     const event = done ? slashInsertEvent(a) : null;
@@ -310,6 +314,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
       scheduleMeasure,
       scheduleReveal,
       publish,
+      leadingPlugins: [pageLinks.makePlugin()],
       extraPlugins: [pageSlots.plugin],
     });
     // oxlint-disable-next-line react/exhaustive-deps -- created once per article: everything it reads is read through refs
@@ -385,6 +390,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     <>
       {linkCard}
       <PageKnowledgeSlots slots={pageSlots} />
+      {pageLinks.element}
       {cutOff ? <PageLimitNotice page={props.pages[props.pages.length - 1]!} /> : null}
       {slash && props.editable && props.reshape !== false ? (
         <SlashMenu

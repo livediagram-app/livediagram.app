@@ -611,3 +611,23 @@ html[data-presenting] .article-flow .article-note {
 .article-flow .article-page-slot-foot:not(:empty) {
   margin-top: 3rem;
 }
+
+/* A page link (docs/specs/030-knowledgebase/links-and-embeds.md "Page links"). Its stored words take no room: what
+   shows is the page's current title, written as a rule a page by lib/knowledge/page-link-titles.ts. A link no rule
+   names goes to a page that is gone: struck through, "Deleted Page", and inert. */
+.article-flow .article-page-link {
+  color: inherit;
+  opacity: 0.65;
+  text-decoration: line-through;
+  cursor: default;
+}
+.article-flow .article-page-link::before {
+  content: 'Deleted Page';
+}
+.article-flow .article-page-link-text {
+  display: inline-block;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+}

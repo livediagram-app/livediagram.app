@@ -89,6 +89,7 @@ export function useEditorTabs({
   // the page below.
   const {
     addTab,
+    addNamedSubpage,
     importIntoActiveTab,
     importTextIntoActiveTab,
     importFileIntoActiveTab,
@@ -286,6 +287,7 @@ export function useEditorTabs({
 
   return {
     addTab,
+    addNamedSubpage,
     importIntoActiveTab,
     importTextIntoActiveTab,
     importFileIntoActiveTab,

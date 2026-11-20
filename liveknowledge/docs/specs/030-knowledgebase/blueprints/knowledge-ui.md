@@ -136,6 +136,77 @@ same decoration set across a transaction that changed no document (`page-slots-p
 - The team's people are refused as owners when they reach the knowledgebase only through the team
   (`owner_no_access`, the api's known gap); the toast says the owner must be able to open the knowledgebase.
 
+## Page links (built)
+
+Derived from [Links and embeds](../links-and-embeds.md) "Page links".
+
+| Piece                                                  | File                                                     |
+| ------------------------------------------------------ | -------------------------------------------------------- |
+| the mark, and its round trip to `ArticlePageLinkRun`   | `lib/article/article-schema.ts`, `article-convert.ts`    |
+| the `[[` trigger, the caret, a press, a pasted address | `lib/knowledge/page-link-plugin.ts`                      |
+| what the picker lists, Create Page, the first lines    | `lib/knowledge/page-link-pick.ts`                        |
+| every link's current title                             | `lib/knowledge/page-link-titles.ts`                      |
+| the picker and the wiring to the editor's store        | `components/knowledge/usePageLinks.tsx`                  |
+| the hover card                                         | `components/knowledge/PageLinkHoverCard.tsx`             |
+| a subpage made from the writing                        | `addNamedSubpage` (`hooks/persistence/useTabActions.ts`) |
+
+- **The model.** A page link is the mark `pageLink` (`attrs.page`, the tab id) over the words stored with it.
+  `marksOf` makes it from `pageOfRun(run)` (the page wins over an `href`; the mark excludes `link`), and
+  `docToBlocks` writes `page` back onto the run, so `ArticleRun` is not widened and a block nobody typed in reads
+  back as the same object. **Before this the editor dropped `page` from every run it read, so the first commit on a
+  page stripped the page links an import or an agent had written.**
+- **A mark, not an atom,** because the engine counts a block's characters as editor positions (Find's ranges, the
+  carets, the holds): a link keeps its stored words in the writing, one position a character.
+- **The current title.** The link is drawn as `a.article-page-link[data-page][href="#t=<page>"]`, its stored words
+  inside a span that takes no room and is `aria-hidden`. `pageLinkCss(pages)` writes one rule a page of the
+  knowledgebase that puts its current title into the link (`::before`) and gives it a live link's look;
+  `installPageLinkTitles` keeps them in one `<style>` element, rewritten only when a page's id or name changed. A
+  link no rule names keeps the base look: "Deleted Page", struck through, with the default cursor. So a rename
+  shows in every link at once, no writing changes, and typing costs nothing. Titles are written as CSS strings
+  with `\`, `"` and line breaks escaped (`cssString`).
+- **The picker.** `[[` typed in the writing (never pasted, never a peer's) opens it; what is typed after filters it
+  (60 characters at most); `]`, a line break or the caret leaving closes it; Escape closes it and leaves the text as
+  typed. It is the slash menu's popover (`SlashMenu`, given its own name and empty state) over
+  `pagePickItems`: the pages but the one being written, titles starting with the words before titles containing
+  them, 8 at most (`PAGE_PICK_MAX`), each with its ancestors as the hint, then **Create Page** at the foot once
+  something is typed. Up, Down, Enter and Tab are the picker's while it is open (the plugin is first in the
+  writing's list, `leadingPlugins`). The slash menu's **Link to Page** types the `[[` for the person.
+- **Create Page** calls `addNamedSubpage(currentPage, title)`: a subpage named as typed, its Title saying so, not
+  opened; the link is put in to its id. Refused at a tree limit with the tree's own toast.
+- **A pasted address** that is this knowledgebase's own with `#t=<page>` for a page it holds (what Copy Link
+  copies) becomes a link (`pageOfPastedUrl`).
+- **One thing to the caret.** A caret that lands inside a link moves on to the edge it was heading for
+  (`appendTransaction`, a constant check a transaction), and Backspace after a link or Delete before one takes it
+  whole. Typing at a link's edge is plain text (`inclusive: false`).
+- **A press** opens the page with no reload (`selectPage`), from the DOM `click`, so a reader's view never follows
+  the anchor; with a modifier held the link's own address opens it in a new tab. A link to a page that is gone goes
+  nowhere.
+- **The hover card** shows after 350 ms on a link (`PAGE_LINK_CARD_DWELL_MS`): the page's current title, its tick or
+  pill, and its first lines (180 characters, `firstLines`); "Deleted Page" for a page that is gone.
+
+Share roles: `canInsert` is `editable && reshape !== false` (an Editor writing): only then does `[[` open the
+picker, a pasted address become a link, or the slash menu offer Link to Page. A Participant and a Viewer follow
+links and see the hover card. Tests, a role at a time: `lib/knowledge/page-links.test.ts`,
+`components/knowledge/usePageLinks.test.tsx`, `useTabActions.pages.test.tsx` "a subpage made from a page link".
+
+Per keystroke the plugin reads the two characters before the caret (closed), or the text since the `[[` (open,
+60 characters at most), and checks whether the caret is inside a link. Not measured in a browser.
+
+### Not built, or not known
+
+- **The hover card reads nothing from the network.** Its first lines come from the page's writing when this editor
+  already holds it (a page opened this session); for a page not yet opened it shows the title and the state alone.
+  The only route that returns a page's writing is `GET tabs/<tab>`, which counts a read: a hover would count as
+  that person's read of the page for the day.
+- **The shared `HoverCard` is not what draws it**: that component wraps a React child, and a link is the writing's
+  own DOM. The card is its own small surface in the same look, as the ordinary link's card is.
+- **Stored words are not refreshed** when a page is renamed: they stay as written at the time of linking (what an
+  agent's Markdown read resolves is the knowledge blueprint's `withPageLinkTitles`).
+- **A screen reader** hears the title from the rule's generated content; that has not been tried with one.
+- **A Content Security Policy that refuses inline `<style>`** would stop the titles (every link would read
+  "Deleted Page"); the editor sets none today.
+- Markdown export's relative paths and current titles in an agent's read are the knowledge blueprint's "Not built".
+
 ## Not built
 
 The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), over the client above.

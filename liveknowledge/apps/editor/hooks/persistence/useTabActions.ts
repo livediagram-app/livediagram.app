@@ -152,6 +152,25 @@ export function useTabActions(deps: TabActionsDeps) {
     setFormatSourceId(null);
   };
 
+  // A subpage made from the writing (the page link picker's Create Page, docs/specs/030-knowledgebase/
+  // links-and-embeds.md): named, its Title saying its name, under `parent`, and not opened, so the writer stays
+  // where they are. Answers its id, or null when it was not made.
+  const addNamedSubpage = (parent: string, name: string): string | null => {
+    if (!deps.canEditStructure) return null;
+    const refused = pageAddRefusal(tabs, parent);
+    if (refused) {
+      toast.error(pageTreeRefusalText(refused));
+      return null;
+    }
+    const title = truncateName(name) || NEW_PAGE_NAME;
+    const seed = newTabSeed(tabs.find((t) => t.id === activeId));
+    const tab: Tab = withPageTitle({ ...createTab(title), ...seed }, title);
+    commitTabs((ts) => withPageAddedTo(ts, tab, parent));
+    markTabLoaded(tab.id);
+    track('Tab', 'Created', 'FromPageLink');
+    return tab.id;
+  };
+
   // Import (id re-mint, content replace, JSON parsing) lives in useTabImport;
   // remintTabElements is shared with the Duplicate below.
   const { importIntoActiveTab, importTextIntoActiveTab, importFileIntoActiveTab } = useTabImport({
@@ -372,6 +391,7 @@ export function useTabActions(deps: TabActionsDeps) {
 
   return {
     addTab,
+    addNamedSubpage,
     importIntoActiveTab,
     importTextIntoActiveTab,
     importFileIntoActiveTab,

@@ -78,7 +78,9 @@ export type MountContext = {
   scheduleMeasure: () => void;
   scheduleReveal: () => void;
   publish: (view: EditorView) => void;
-  // Plugins the host adds after the writing's own (a knowledgebase page's slots).
+  // Plugins the host adds: before the writing's own, so their keys come first (the page picker's Enter and
+  // arrows), and after them (a knowledgebase page's slots).
+  leadingPlugins?: readonly Plugin[];
   extraPlugins?: readonly Plugin[];
 };
 
@@ -110,6 +112,7 @@ export function mountArticleView({
   scheduleMeasure,
   scheduleReveal,
   publish,
+  leadingPlugins = [],
   extraPlugins = [],
 }: MountContext): (() => void) | undefined {
   const mount = host.current;
@@ -150,6 +153,7 @@ export function mountArticleView({
   const state = EditorState.create({
     doc: blocksToDoc(committed.current.blocks),
     plugins: [
+      ...leadingPlugins,
       // First, so its keys come before Enter's and the arrows'.
       slashPlugin(bridge),
       // A cell's keys before the writing's (Tab, Enter and Backspace mean other things there).

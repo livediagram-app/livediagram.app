@@ -10,12 +10,17 @@ export type SlashAction =
   | {
       kind: 'insert';
       what: 'image' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky';
-    };
+    }
+  // Page links (docs/specs/030-knowledgebase/links-and-embeds.md): the slash menu's Link to Page opens the page
+  // picker, whose own entries are a page to link to and Create Page.
+  | { kind: 'page-link' }
+  | { kind: 'page'; page: string; title: string }
+  | { kind: 'create-page'; title: string };
 
 export type SlashItem = {
   id: string;
   label: string;
-  group: 'Text' | 'Lists' | 'Blocks' | 'Insert';
+  group: 'Text' | 'Lists' | 'Blocks' | 'Insert' | 'Pages' | 'New';
   keywords: string;
   hint: string;
   action: SlashAction;
@@ -143,6 +148,14 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     keywords: 'note reference citation source endnote',
     hint: 'A numbered note at the foot of the page',
     action: { kind: 'block', block: 'footnote' },
+  },
+  {
+    id: 'page-link',
+    label: 'Link to Page',
+    group: 'Insert',
+    keywords: 'page link mention reference',
+    hint: 'A page of this knowledgebase',
+    action: { kind: 'page-link' },
   },
   {
     id: 'image',

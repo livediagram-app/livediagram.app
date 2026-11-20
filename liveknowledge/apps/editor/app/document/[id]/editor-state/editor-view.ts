@@ -145,6 +145,7 @@ export function editorView({
     // The empty Plan tab's board picker places its board in the middle of the view.
     getViewportCenter: viewportSlice.getViewportCenter,
     addTab: tabsSlice.addTab,
+    addNamedSubpage: tabsSlice.addNamedSubpage,
     addText: elementsSlice.addText,
     anyWelcomeOpen: commentsSlice.anyWelcomeOpen,
     applyImageToElement: elementsSlice.applyImageToElement,

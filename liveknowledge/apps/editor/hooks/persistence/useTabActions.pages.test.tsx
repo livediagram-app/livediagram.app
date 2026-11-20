@@ -113,6 +113,34 @@ describe('adding a page', () => {
   });
 });
 
+describe('a subpage made from a page link', () => {
+  it('is named as typed, sits under the page being written, and is not opened', () => {
+    const s = setup();
+    let made: string | null = null;
+    act(() => {
+      made = s.actions().addNamedSubpage('b', '  Rollbacks  ');
+    });
+    expect(made).toBe('new');
+    expect(shape(s.tabs())).toBe('a b<a d<b new<b c<a e');
+    const page = s.tabs().find((t) => t.id === 'new')!;
+    expect(page.name).toBe('Rollbacks');
+    expect(pageTitleOf(page)).toBe('Rollbacks');
+    expect(s.deps.setActiveId).not.toHaveBeenCalled();
+  });
+
+  it('is not made past a limit, and says why', () => {
+    const many = Array.from({ length: MAX_KNOWLEDGEBASE_PAGES }, (_, i) => page(`p${i}`, `P${i}`));
+    const s = setup({ tabs: many, activeId: 'p0' });
+    let made: string | null = 'x';
+    act(() => {
+      made = s.actions().addNamedSubpage('p0', 'Over');
+    });
+    expect(made).toBeNull();
+    expect(s.tabs()).toHaveLength(MAX_KNOWLEDGEBASE_PAGES);
+    expect(s.deps.toast.error).toHaveBeenCalled();
+  });
+});
+
 describe('deleting a page', () => {
   it('asks once, naming the count, then removes the page and its subpages in one commit', async () => {
     const s = setup();
@@ -258,6 +286,7 @@ describe.each(['edit', 'participate', 'view'] as AccessLevel[])('share roles: %s
   const run: [string, (a: ReturnType<typeof useTabActions>) => unknown][] = [
     ['add', (a) => a.addTab()],
     ['add a subpage', (a) => a.addTab('a')],
+    ['add a named subpage from a page link', (a) => a.addNamedSubpage('a', 'Rollbacks')],
     ['rename', (a) => a.renameTab('e', 'Renamed')],
     ['rename by typing the title', (a) => a.renameTabFromTitle('e', 'Typed')],
     ['move', (a) => a.movePage('e', { parent: 'a' })],

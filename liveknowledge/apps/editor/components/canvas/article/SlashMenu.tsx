@@ -23,9 +23,14 @@ export function SlashMenu({
   onPick,
   onHover,
   query = '',
+  label = 'Insert a block',
+  things = 'blocks',
 }: {
   // What is typed after the `/`, for the empty state.
   query?: string;
+  // The list's name and what its empty state says none of match: the page picker's are its own.
+  label?: string;
+  things?: string;
   // The `/`'s place on screen.
   at: { left: number; top: number; bottom: number };
   items: readonly SlashItem[];
@@ -62,7 +67,7 @@ export function SlashMenu({
         ref={list}
         id={SLASH_MENU_ID}
         role="listbox"
-        aria-label="Insert a block"
+        aria-label={label}
         data-article-keep-active=""
         onMouseDown={(e) => e.preventDefault()}
         onPointerDown={(e) => e.stopPropagation()}
@@ -75,7 +80,7 @@ export function SlashMenu({
         }}
       >
         {items.length === 0 ? (
-          <NoMatches things="blocks" query={query} />
+          <NoMatches things={things} query={query} />
         ) : (
           groups.map((group) => (
             <div key={`${group.name}-${group.entries[0]!.i}`} role="group" aria-label={group.name}>

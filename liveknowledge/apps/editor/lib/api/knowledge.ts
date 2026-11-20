@@ -18,14 +18,7 @@ import type {
 // The error's own module, not `./core`: this class is made as the module loads, and `./core` may still be loading
 // then (it and the preferences import each other).
 import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
-import {
-  API_BASE,
-  apiDelete,
-  apiFetch,
-  apiHeaders,
-  expectOk,
-  expectOkVoid,
-} from './core';
+import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
 
 /** Who is asking: the editor's owner id and the share code it arrived by, if any. */
 export type KnowledgeCaller = { ownerId: string; shareCode: string | null };

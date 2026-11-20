@@ -9,13 +9,16 @@ import {
   MAX_ARTICLE_CELL_TEXT,
   isArticleCodeLang,
   isArticleHex,
+  isPageLinkId,
   isSafeArticleHref,
   normaliseRuns,
+  pageOfRun,
   parseArticleTable,
   sameArticleValue,
   type ArticleAlign,
   type ArticleBlock,
   type ArticleListKind,
+  type ArticlePageLinkRun,
   type ArticleParagraphStyle,
   type ArticleRun,
   type ArticleTableBlock,
@@ -41,7 +44,11 @@ const RUN_MARKS: [keyof ArticleRun, string][] = [
 
 function marksOf(run: ArticleRun): Mark[] {
   const marks: Mark[] = [];
-  if (run.href && isSafeArticleHref(run.href)) marks.push(S.marks.link.create({ href: run.href }));
+  // A run goes to a page or to an address, never both: the page wins (ArticlePageLinkRun).
+  const page = pageOfRun(run);
+  if (isPageLinkId(page)) marks.push(S.marks.pageLink.create({ page }));
+  else if (run.href && isSafeArticleHref(run.href))
+    marks.push(S.marks.link.create({ href: run.href }));
   for (const [flag, name] of RUN_MARKS) if (run[flag]) marks.push(S.marks[name]!.create());
   if (run.color && isArticleHex(run.color)) marks.push(S.marks.color.create({ color: run.color }));
   if (run.hl && isArticleHex(run.hl)) marks.push(S.marks.highlight.create({ color: run.hl }));
@@ -155,6 +162,7 @@ function runsOf(node: PMNode, limit?: number, maxRuns?: number): ArticleRun[] {
     for (const mark of child.marks) {
       const name = mark.type.name;
       if (name === 'link') run.href = mark.attrs.href as string;
+      else if (name === 'pageLink') (run as ArticlePageLinkRun).page = mark.attrs.page as string;
       else if (name === 'color') run.color = mark.attrs.color as string;
       else if (name === 'highlight') run.hl = mark.attrs.color as string;
       else if (name === 'note') {

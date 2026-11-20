@@ -10,6 +10,7 @@ import {
   ARTICLE_PARAGRAPH_STYLES,
   cleanFootnoteText,
   isArticleHex,
+  isPageLinkId,
   isSafeArticleHref,
   type ArticleAlign,
   type ArticleListKind,
@@ -381,6 +382,36 @@ export const articleSchema = new Schema({
   },
   marks: {
     // Order is precedence: a link wraps the others.
+    // A page link (docs/specs/030-knowledgebase/links-and-embeds.md "Page links"): a run that goes to a page of this
+    // knowledgebase, by its id (`ArticlePageLinkRun.page`). It goes to a page or to an address, never both. Its own
+    // words are kept in the writing but not shown: the link always reads as the page's current title, drawn from
+    // the page list (lib/knowledge/page-link-titles.ts), so the stored words sit in a span that takes no room and
+    // is hidden from a screen reader.
+    pageLink: {
+      attrs: { page: {} },
+      inclusive: false,
+      excludes: 'pageLink link',
+      parseDOM: [
+        {
+          tag: 'a[data-page]',
+          priority: 60,
+          getAttrs: (el) => {
+            const page = el.getAttribute('data-page');
+            return isPageLinkId(page) ? { page } : false;
+          },
+        },
+      ],
+      toDOM: (mark: Mark): DOMOutputSpec => [
+        'a',
+        {
+          class: 'article-page-link',
+          'data-page': textAttr(mark.attrs, 'page'),
+          href: `#t=${encodeURIComponent(textAttr(mark.attrs, 'page') ?? '')}`,
+          draggable: 'false',
+        },
+        ['span', { class: 'article-page-link-text', 'aria-hidden': 'true' }, 0],
+      ],
+    },
     link: {
       attrs: { href: {} },
       inclusive: false,
