@@ -60,6 +60,7 @@ export * from './plan-names';
 export * from './type-changes';
 export * from './type-change-face';
 export * from './board-place';
+export * from './card-target';
 export * from './plan-draft';
 export * from './plan-draft-preview';
 export * from './plan-draft-rules';

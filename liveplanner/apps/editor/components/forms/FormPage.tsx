@@ -11,7 +11,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 import { formLook, type Tab } from '@liveplanner/project';
-import { boardsOf } from '@liveplanner/templates';
 import { ITEMS_MAX } from '@liveplanner/items';
 import {
   FORM_WIDTH_PX,
@@ -46,7 +45,7 @@ import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
-import { formDestinationOf } from './form-destination';
+import { formDestinationOf, planBoardsOf, setupsOf } from './form-destination';
 import { summaryOffered } from './summary/form-responses';
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
@@ -123,7 +122,7 @@ export function FormPage({
   const [shareOpen, setShareOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // The board tabs' content, so Responses Go To can read their columns.
+  // The board tabs' content, so Responses Go To can read every board's columns and the types it takes.
   const boardTabIds = tabs
     .filter((t) => t.kind === 'board')
     .map((t) => t.id)
@@ -150,15 +149,18 @@ export function FormPage({
   const building = canEdit && !preview && !locked;
   // Where responses go: a Sheet (a row each) when the form names one, else its board.
   const { destTab, problem, warning } = formDestinationOf(form, tabs, types, tabScope);
-  const warnings = useMemo(() => (warning ? [warning] : []), [warning]);
+  // The warning as a string of its own: the boards read beside it are handed on below, and a memo may not rest on
+  // a value the compiler thinks is still being changed.
+  const warningText = warning === null ? '' : `${warning}`;
+  const warnings = useMemo(() => (warningText ? [warningText] : []), [warningText]);
   const type = destinationType(form.destination, types);
   // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
-  // The destination tab's boards, for the card type rules (forms.md "Choosing the card type by an answer").
+  // Every board of the plan, for the card type rules (forms.md "Choosing the card type by an answer").
   // A form without rules reads no board for them.
   const ruled = !form.sheet && !!form.destination?.typeRules;
   const place = useMemo(
-    () => ({ types, boards: destTab && ruled ? boardsOf(destTab).map((x) => x.setup) : [] }),
-    [types, destTab, ruled],
+    () => ({ types, boards: ruled ? setupsOf(planBoardsOf(tabs)) : [] }),
+    [types, tabs, ruled],
   );
   const notReady = useMemo(
     () => publishProblems(form, form.sheet ? undefined : type, place),

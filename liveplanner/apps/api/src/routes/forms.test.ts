@@ -308,6 +308,43 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     expect((await owner('PUT', 'form-link', { body: { open: true } })).status).toBe(409);
   });
 
+  // A response makes a card of a type in a column, and every board taking the type shows it (forms.md "Responses Go
+  // To"): the board it was last seen on deleted, another still shows the card, so nothing pauses and it lands.
+  it('keeps taking responses when the deleted board was not the only one showing its cards', async () => {
+    const second = {
+      id: 'b2',
+      type: 'shape',
+      shape: 'plan-board',
+      x: 0,
+      y: 0,
+      width: 800,
+      height: 500,
+      planBoard: presetSetup('bug-triage'),
+    };
+    sql.sql
+      .prepare(`INSERT INTO tabs (id, name, data, updated_at) VALUES ('board2', 'Triage', ?, 1)`)
+      .run(JSON.stringify({ kind: 'board', elements: [second] }));
+    sql.sql.exec(
+      `INSERT INTO plan_tabs (plan_id, tab_id, order_index, added_at) VALUES ('d1', 'board2', 2, 1)`,
+    );
+    const code = await publish();
+    const pending: Promise<unknown>[] = [];
+    const res = await handleProjects(
+      makeTestRouteContext('DELETE', '/api/projects/d1/tabs/board', {
+        env: sql.env,
+        owner: 'owner',
+        waitUntil: (p) => void pending.push(p),
+      }),
+    );
+    await Promise.all(pending);
+    expect(res.status).toBe(204);
+    expect((await owner('GET', 'form-link')).body).toMatchObject({ link: { open: true } });
+    expect((await pub<PublicFormResponse>('GET', code)).body.state).toBe('open');
+    const sent = await pub('POST', `${code}/responses`, { answers: { 'q-sum': 'Crash' } });
+    expect(sent.status).toBe(201);
+    expect((await items()).map((i) => [i.type, i.fields['status']])).toEqual([['bug', 'new']]);
+  });
+
   it('refuses to open a closed form again until it is ready, and always lets it close', async () => {
     await publish();
     expect((await owner('PUT', 'form-link', { body: { open: false } })).status).toBe(200);

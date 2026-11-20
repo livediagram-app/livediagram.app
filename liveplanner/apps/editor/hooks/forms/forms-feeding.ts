@@ -1,19 +1,44 @@
-// Which forms send their responses to a tab (docs/specs/030-forms/forms.md "Publishing and the form link"), so
-// deleting that board or sheet can say first that it pauses them. Pure, and cheap: the tab bar asks for every tab
-// on every render, so a form's destination is read where it is stored, never by parsing the form.
+// Which forms' responses show on a tab (docs/specs/030-forms/forms.md "Publishing and the form link"), so deleting a
+// board or sheet can say first when it leaves a form with nowhere to send them. A board form names a card type and a
+// column, never a board, so its cards show on every board that takes them: a tab feeds it when one of its boards does.
+// Pure, and cheap: the tab bar asks for every tab on every render, so a form's destination is read where it is
+// stored, never by parsing the form, and each tab's boards are read once per elements array (planBoardsOf).
 import type { Tab } from '@liveplanner/project';
+import { boardShowsType } from '@liveplanner/items';
+import { planBoardsOf } from '@/components/forms/form-destination';
 
-/** The Form tabs whose responses go to `tabId` (a board, or a sheet: a form sending to a sheet feeds no board, as its
- *  sheet wins over a board it kept), each with its heading. The board's Form strip and Delete's warning both read it. */
+type Target = { typeId: string; status: string; tabId?: string | undefined };
+
+// Whether a board on `tab` shows the target's cards. A tab whose content is not here yet (no elements) is read by
+// the tab the destination was last seen on, the one thing known of it.
+function showsOn(tab: Tab, target: Target): boolean {
+  if (tab.kind === 'form') return false;
+  if (tab.elements.length === 0) return target.tabId === tab.id;
+  return planBoardsOf([tab]).some(
+    (b) =>
+      b.setup.columns.some((c) => c.status === target.status) &&
+      boardShowsType(b.setup, target.typeId),
+  );
+}
+
+function feeding(tabs: readonly Tab[], tabId: string): Tab[] {
+  const target = tabs.find((t) => t.id === tabId);
+  if (!target || target.kind === 'form') return [];
+  return tabs.filter((t) => {
+    if (t.kind !== 'form' || !t.form) return false;
+    // A form sending to a sheet feeds no board, as its sheet wins over a board destination it kept.
+    if (t.form.sheet) return t.form.sheet.tabId === tabId;
+    return !!t.form.destination && showsOn(target, t.form.destination);
+  });
+}
+
+/** The Form tabs whose responses show on `tabId` (a board that shows their cards, or their sheet), each with its
+ *  heading. The board's Form strip reads it. */
 export function formsFeeding(
   tabs: readonly Tab[],
   tabId: string,
 ): { tabId: string; heading: string }[] {
-  return tabs.flatMap((t) => {
-    if (t.kind !== 'form' || t.id === tabId || !t.form) return [];
-    const to = t.form.sheet?.tabId ?? t.form.destination?.tabId;
-    return to === tabId ? [{ tabId: t.id, heading: t.form.heading }] : [];
-  });
+  return feeding(tabs, tabId).map((t) => ({ tabId: t.id, heading: t.form!.heading }));
 }
 
 // A Form tab's own: deleting it deletes its form link (docs/specs/030-forms/forms.md "Publishing and the form link"),
@@ -22,13 +47,20 @@ export const FORM_TAB_DELETE_WARNING =
   'If this form has a link, the link is deleted with it: undo brings the form back, not its link.';
 
 /** What deleting a tab does that an undo cannot take back, the one case Delete still asks first
- *  (docs/specs/007-editor/editor-app.md "Confirmations"): a Form tab's link goes, and the forms sending their responses here stop taking
- *  them. Undefined for any other tab, which is deleted at once. */
+ *  (docs/specs/007-editor/editor-app.md "Confirmations"): a Form tab's link goes, and the forms it leaves with nowhere to
+ *  send their responses stop taking them: a sheet form whose sheet is here, and a board form whose cards no other
+ *  board shows. Undefined for any other tab, which is deleted at once. */
 export function deleteTabWarning(tabs: readonly Tab[], tabId: string): string | undefined {
   if (tabs.some((t) => t.id === tabId && t.kind === 'form')) return FORM_TAB_DELETE_WARNING;
-  const forms = formsFeeding(tabs, tabId);
+  const fed = feeding(tabs, tabId);
+  if (fed.length === 0) return undefined;
+  const others = tabs.filter((t) => t.id !== tabId && t.kind === 'board');
+  const forms = fed.filter((t) => {
+    const dest = t.form!.sheet ? undefined : t.form!.destination;
+    return !dest || !others.some((o) => o.elements.length > 0 && showsOn(o, dest));
+  });
   if (forms.length === 0) return undefined;
   return forms.length === 1
-    ? `“${forms[0]!.heading}” sends its responses here: it stops taking them, keeping its link, until it has somewhere to send them.`
+    ? `“${forms[0]!.form!.heading}” sends its responses here: it stops taking them, keeping its link, until it has somewhere to send them.`
     : `${forms.length} forms send their responses here: they stop taking them, keeping their links, until they have somewhere to send them.`;
 }

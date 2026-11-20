@@ -40,6 +40,7 @@ import {
   type PlanRouteContext,
 } from './context';
 import { answerTabView, parseViewQuery } from './project-views-route';
+import { typesOf } from '@liveplanner/items';
 import { pauseFormsFeeding } from '../forms/form-tab';
 import { handleTabLink } from './tab-link-route';
 
@@ -179,11 +180,11 @@ export async function handleProjectSubresources(ctx: PlanRouteContext): Promise<
       const removed = await deleteTabRow(env, id, tabId, { keepLast: !!ctx.token });
       if (removed === 'last') return conflict('last_tab');
       // A link scoped to it (the index's) now opens nothing here: the tab reads as missing.
-      // A Form tab's link goes with it, and a form whose board or sheet it was stops taking responses (its link kept)
+      // A Form tab's link goes with it, and a form whose responses it leaves with nowhere to go stops taking them (its link kept)
       // (docs/specs/030-forms/forms.md "Publishing and the form link").
       // Its form, if it had one, comes off the Inbox and its code stops naming the plan.
       if ((await deleteFormLinksForTab(env, id, tabId)) > 0) await pushFormInbox(env, id, tabId);
-      await pauseFormsFeeding(env, id, tabId);
+      await pauseFormsFeeding(env, id, tabId, typesOf(existing.itemTypes));
       return noContent();
     }
   }

@@ -58,7 +58,6 @@ function Harness({ canEdit, start = START }: { canEdit: boolean; start?: FormDef
     newFormFor: vi.fn(),
     changeFormQuietly: vi.fn(),
     setDestinationType: vi.fn(),
-    setDestinationBoard: vi.fn(),
     addTypeQuestions: vi.fn(),
     addQuestionFields: vi.fn(),
     setResponsesTo: vi.fn(),

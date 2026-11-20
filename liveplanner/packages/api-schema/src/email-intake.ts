@@ -8,10 +8,23 @@ export type EmailIntakeSenders = (typeof EMAIL_INTAKE_SENDERS)[number];
 export const isEmailIntakeSenders = (v: unknown): v is EmailIntakeSenders =>
   typeof v === 'string' && (EMAIL_INTAKE_SENDERS as readonly string[]).includes(v);
 
+/** What an address makes of each message (docs/specs/026-plan/email-to-board.md "What a message makes"): a card of a
+ *  type in a column, by name, and the boards that show such a card. */
+export type EmailIntakeTarget = {
+  typeId: string;
+  status: string;
+  cardType: string;
+  column: string;
+  // The Board tabs whose boards show the card, in tab order.
+  showsOn: string[];
+};
+
 /** A board's address as an Editor sees it: the address, Who Can Send, when it was made and what it has done. */
 export type EmailIntake = {
   boardId: string;
   address: string;
+  // What its mail becomes; null while no board shows such a card (its type or column gone), when mail is refused.
+  target: EmailIntakeTarget | null;
   senders: EmailIntakeSenders;
   createdAt: number;
   made: number;
@@ -29,6 +42,15 @@ export type EmailIntakeBoard = {
   tabId: string;
   tabName: string;
   column: string | null;
+  // What an address turned on here makes unless told otherwise: the board's first card type in its first column.
+  target: EmailIntakeTarget | null;
+};
+
+/** A card type an address may make, with the columns its cards can be seen in across the plan's boards. */
+export type EmailIntakeType = {
+  id: string;
+  label: string;
+  columns: { status: string; name: string }[];
 };
 
 /** GET /api/projects/:id/email-intake. `available` false (and `domain` null) on a server that takes no mail. */
@@ -37,6 +59,8 @@ export type EmailIntakesResponse = {
   domain: string | null;
   intakes: EmailIntake[];
   boards: EmailIntakeBoard[];
+  // The card types some board shows, each with its columns: what an address's Card Type and Column offer.
+  types: EmailIntakeType[];
 };
 
 /** PUT /api/projects/:id/email-intake/:boardId and POST …/new-address. */

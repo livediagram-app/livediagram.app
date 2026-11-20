@@ -164,15 +164,19 @@ describe('offering the option', () => {
   });
 
   it('a new rule takes the first question and answer and the first type with no rule, its first column', () => {
-    expect(newTypeRule(form(), types, board, 'r-1')).toEqual({
+    expect(newTypeRule(form(), types, place, 'r-1')).toEqual({
       id: 'r-1',
       questionId: 'q-kind',
       anyOf: ['Bug'],
       typeId: 'bug',
       status: 'triage',
     });
-    expect(newTypeRule(form([bugRule, featureRule]), types, board, 'r-1')).toBeNull();
-    expect(newTypeRule(form(), types, undefined, 'r-1')).toBeNull();
+    expect(newTypeRule(form([bugRule, featureRule]), types, place, 'r-1')).toBeNull();
+    // No board to read a column from: the default's column stands in.
+    expect(newTypeRule(form(), types, { types, boards: [] }, 'r-1')).toMatchObject({
+      typeId: 'bug',
+      status: form().destination!.status,
+    });
   });
 });
 
@@ -368,10 +372,30 @@ describe('Problems with this Form', () => {
 });
 
 describe('edges', () => {
-  it('reads a rule without a destination as off its board, and files nothing without one', () => {
+  it('judges a rule by the plan’s boards alone, and files nothing without a destination', () => {
     const { destination: _d, ...bare } = form();
-    expect(typeRuleProblem(bugRule, bare, place)).toBe('type_not_on_board');
+    expect(typeRuleProblem(bugRule, bare, place)).toBeNull();
     expect(chooseCardType(bare, new Map(), place)).toBeNull();
+  });
+
+  // A rule's card type may be shown by another board than the default's: its cards show there.
+  it('holds a rule whose type another board of the plan takes, and files in that board’s column', () => {
+    const tasks = { columns: [{ status: 'new' }], addTypes: ['task'] };
+    const bugs = { columns: [{ status: 'triage' }, { status: 'done' }], addTypes: ['bug'] };
+    const wide: RulePlace = { types, boards: [tasks, bugs] };
+    expect(typeRuleProblem(bugRule, form([bugRule]), wide)).toBeNull();
+    expect(chooseCardType(form([bugRule]), { 'q-kind': 'Bug' }, wide)).toMatchObject({
+      type: bug,
+      status: 'triage',
+    });
+    // No board takes the type, or none taking it has the rule's column.
+    expect(typeRuleProblem(bugRule, form([bugRule]), { types, boards: [tasks] })).toBe(
+      'type_not_on_board',
+    );
+    const noColumn = { columns: [{ status: 'done' }], addTypes: ['bug'] };
+    expect(typeRuleProblem(bugRule, form([bugRule]), { types, boards: [tasks, noColumn] })).toBe(
+      'status_missing',
+    );
   });
 
   it('takes answers as a plain record too', () => {
@@ -387,13 +411,18 @@ describe('edges', () => {
   });
 
   it('a new rule on a board none of whose columns its type uses keeps the default column', () => {
-    expect(newTypeRule(form(), [task, bug], { columns: [{ status: 'new' }] }, 'r-1')).toMatchObject(
-      {
-        typeId: 'bug',
-        status: 'new',
-      },
-    );
-    expect(newTypeRule({ sections: [] }, types, board, 'r-1')).toBeNull();
+    expect(
+      newTypeRule(
+        form(),
+        [task, bug],
+        { types: [task, bug], boards: [{ columns: [{ status: 'new' }] }] },
+        'r-1',
+      ),
+    ).toMatchObject({
+      typeId: 'bug',
+      status: 'new',
+    });
+    expect(newTypeRule({ sections: [] }, types, place, 'r-1')).toBeNull();
   });
 
   it('updateTypeRule changes only its rule, and drops emptied fields', () => {

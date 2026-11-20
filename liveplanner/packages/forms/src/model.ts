@@ -179,9 +179,12 @@ export interface CardTypeRule {
   fields?: Readonly<Record<string, string>>;
 }
 
-// Where every response goes: a Board tab, a card type, a status.
+// What every response makes: a card of a type in a status (docs/specs/030-forms/forms.md "Responses Go To"), never a
+// board. The boards that show it are worked out from the plan (boardsShowing). `tabId` is only the Board tab the
+// builder last saw it on: where its buttons open and what a build from before card targets reads; nothing is judged
+// by it, and it may name a tab that is gone.
 export interface FormDestination {
-  tabId: string;
+  tabId?: string;
   typeId: string;
   status: string;
   // The card fields every response's card gets without a question, by field id (one source per field).

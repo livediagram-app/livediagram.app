@@ -347,10 +347,13 @@ function readTypeRules(v: unknown, defaultType: string): CardTypeRule[] | undefi
 function readDestination(v: unknown): FormDestination | undefined {
   if (!isObj(v)) return undefined;
   const { tabId, typeId, status } = v;
-  if (typeof tabId !== 'string' || !TAB_ID.test(tabId)) return undefined;
   if (typeof typeId !== 'string' || !ITEM_TYPE_PATTERN.test(typeId)) return undefined;
   if (typeof status !== 'string' || !STATUS_ID.test(status)) return undefined;
-  const out: FormDestination = { tabId, typeId, status };
+  // The tab it was last seen on is a hint alone: one that does not read is dropped, the destination kept.
+  const out: FormDestination =
+    typeof tabId === 'string' && TAB_ID.test(tabId)
+      ? { tabId, typeId, status }
+      : { typeId, status };
   const fixed = readFixed(v['fixed']);
   if (fixed) out.fixed = fixed;
   const typeRules = readTypeRules(v['typeRules'], typeId);

@@ -127,93 +127,86 @@ describe('setDestinationType', () => {
   });
 });
 
-describe('setDestinationBoard', () => {
-  const other: Tab = { ...board, id: 'b2', name: 'Other' };
-  const sheetTab: Tab = { id: 's', name: 'Sheet', kind: 'sheet', elements: [] };
+// A response makes a card of a type in a column, never a board (forms.md "Responses Go To"): the type is chosen
+// alone, its column read from every board that takes it.
+describe('setDestinationType with no board named', () => {
+  const taking = (id: string, addTypes: string[], columns = setup.columns): Tab => ({
+    id,
+    name: id,
+    kind: 'board',
+    elements: [{ ...createShape('plan-board', 0, 0), planBoard: { ...setup, columns, addTypes } }],
+  });
 
-  it('takes the board’s first type, its first column that type uses, then the questions as a step of its own', () => {
+  it('gives a form with nowhere to send responses its destination, then its questions', () => {
     const { actions, form, commits } = actionsOn([
       formTab({ destination: undefined }),
-      {
-        ...board,
-        elements: [
-          { ...createShape('plan-board', 0, 0), planBoard: { ...setup, addTypes: ['work'] } },
-        ],
-      },
+      taking('bugs', ['bug']),
+      taking('work', ['work']),
     ]);
-    actions.setDestinationBoard('b');
+    expect(actions.setDestinationType('work')).toBe(true);
     expect(commits).toHaveLength(2);
-    // The first step chooses the board alone, so Undo takes the questions back and leaves it chosen.
+    // The first step chooses the type alone, so Undo takes the questions back and leaves it chosen.
     const first = readForm(commits[0]!.find((t) => t.id === 'f')!.form)!;
-    expect(first.destination).toEqual({ tabId: 'b', typeId: 'work', status: 'review' });
+    // Its first column the type uses, read from the board that takes it, which is where it is seen.
+    expect(first.destination).toEqual({ tabId: 'work', typeId: 'work', status: 'review' });
     expect(questionsOf(first)).toEqual([]);
     expect(questionsOf(form()).map((q) => q.prompt)).toEqual(['Title', 'Description', 'Severity']);
   });
 
-  it('keeps the type and its set values while the board takes it', () => {
-    const { actions, form } = actionsOn([formTab({}), board, other]);
-    actions.setDestinationBoard('b2');
-    expect(form().destination).toMatchObject({
-      tabId: 'b2',
-      typeId: 'bug',
-      status: 'new',
-      fixed: { 'f-sev': { value: 'High' } },
-    });
-    // Severity is set automatically, so no question asks it.
-    expect(questionsOf(form()).map((q) => q.prompt)).toEqual(['Title', 'Description']);
-  });
-
-  it('drops set values when the type changes with the board', () => {
-    const onlyWork: Tab = {
-      ...other,
-      elements: [
-        { ...createShape('plan-board', 0, 0), planBoard: { ...setup, addTypes: ['work'] } },
-      ],
-    };
-    const { actions, form } = actionsOn([formTab({}), board, onlyWork]);
-    actions.setDestinationBoard('b2');
-    expect(form().destination).toEqual(
-      expect.objectContaining({ tabId: 'b2', typeId: 'work', status: 'review' }),
-    );
-    expect(form().destination).not.toHaveProperty('fixed');
-  });
-
-  it('never adds to a form that has questions', () => {
-    const q = { id: 'q-1', type: 'short' as const, prompt: 'Name' };
-    const { actions, form, commits } = actionsOn([
-      formTab({ sections: [{ id: 's-1', title: '', questions: [q] }] }),
-      board,
-      other,
-    ]);
-    actions.setDestinationBoard('b2');
-    expect(commits).toHaveLength(1);
-    expect(questionsOf(form())).toEqual([q]);
-  });
-
-  it('adds no questions when the board takes no type', () => {
-    const { actions, form, commits } = actionsOn([
-      formTab({ destination: undefined }),
-      {
-        ...board,
-        elements: [{ ...createShape('plan-board', 0, 0), planBoard: { ...setup, addTypes: [] } }],
-      },
-    ]);
-    actions.setDestinationBoard('b');
-    // One step (the board), and no questions: there is no type to ask about.
-    expect(commits).toHaveLength(1);
-    expect(questionsOf(form())).toEqual([]);
-  });
-
-  it('ignores a tab that is no board, or holds none', () => {
-    const { actions, commits } = actionsOn([
+  it('moves to the board that shows the new type, and reads the column from it', () => {
+    const { actions, form } = actionsOn([
       formTab({}),
-      sheetTab,
-      { ...other, id: 'empty', elements: [] },
+      taking('bugs', ['bug']),
+      taking('work', ['work'], [{ id: 'ready', status: 'ready', name: 'Ready' }]),
     ]);
-    actions.setDestinationBoard('s');
-    actions.setDestinationBoard('empty');
-    actions.setDestinationBoard('missing');
+    expect(actions.setDestinationType('work')).toBe(true);
+    expect(form().destination).toMatchObject({ tabId: 'work', typeId: 'work', status: 'ready' });
+  });
+
+  it('keeps the choice when no board shows the type, for the builder to offer a board', () => {
+    const { actions, form } = actionsOn([formTab({}), taking('bugs', ['bug'])]);
+    // The old column stands in: nothing shows it, which the builder says, with Add a Board for Work Item.
+    expect(actions.setDestinationType('work')).toBe(true);
+    expect(form().destination).toMatchObject({ typeId: 'work', status: 'new' });
+    expect(form().destination).not.toHaveProperty('tabId');
+  });
+
+  it('answers false, changing nothing, when there is no column to choose at all', () => {
+    const { actions, commits } = actionsOn([formTab({ destination: undefined })]);
+    expect(actions.setDestinationType('work')).toBe(false);
     expect(commits).toHaveLength(0);
+  });
+
+  it('ignores a type that is gone, or already chosen', () => {
+    const { actions, commits } = actionsOn([formTab({}), board]);
+    expect(actions.setDestinationType('nope')).toBe(true);
+    expect(actions.setDestinationType('bug')).toBe(true);
+    expect(commits).toHaveLength(0);
+  });
+
+  it('drops a card type rule that names the new default type, keeping the others', () => {
+    const rule = (id: string, typeId: string) => ({
+      id,
+      questionId: 'q-1',
+      anyOf: ['A'],
+      typeId,
+      status: 'review',
+    });
+    const { actions, form } = actionsOn([
+      formTab({
+        sections: [
+          {
+            id: 's-1',
+            title: '',
+            questions: [{ id: 'q-1', type: 'single', prompt: 'Kind', options: ['A', 'B'] }],
+          },
+        ],
+        destination: { tabId: 'b', typeId: 'bug', status: 'new', typeRules: [rule('r-1', 'work')] },
+      }),
+      board,
+    ]);
+    actions.setDestinationType('work');
+    expect(form().destination).not.toHaveProperty('typeRules');
   });
 });
 
@@ -348,6 +341,16 @@ describe('newResponsesBoard', () => {
       'In Progress',
       'Done',
     ]);
+    expect(form().destination).not.toHaveProperty('fixed');
+  });
+
+  // Add a Board for {Type}: a board for the card type asked for, its set values gone with the old type's fields.
+  it('makes the board for the card type asked for, which then shows its cards', () => {
+    const { actions, form, tabs } = actionsOn([formTab({}), board]);
+    actions.newResponsesBoard('work');
+    const made = tabs().find((t) => t.id === form().destination!.tabId)!;
+    expect(boardsOf(made)[0]!.setup.addTypes).toEqual(['work']);
+    expect(form().destination).toMatchObject({ typeId: 'work', status: 'review' });
     expect(form().destination).not.toHaveProperty('fixed');
   });
 });

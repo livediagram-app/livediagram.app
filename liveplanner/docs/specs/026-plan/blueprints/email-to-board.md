@@ -32,7 +32,12 @@ domain)`.
 - `apps/api/src/email-intake/intake-directory.ts`: `directoryRoom(env, code)`, `findIntake`, `fileIntake`,
   `unfileIntake`, and the room side `readDirectoryEntry` / `writeDirectoryEntry` (storage key `intake`).
 - `apps/api/src/email-intake/intake-boards.ts`: `intakeBoardsOf(env, planId, types)` (each board with its first
-  column and first add type), reusing `roadmap-boards.ts`'s walk.
+  column and first add type, its `place`, and its set-up), reusing `roadmap-boards.ts`'s walk; `intakeTargetOf(target,
+boards, types)` (a card target by name with the Board tabs that show it, null when `cardTargetProblem` names one:
+  `@liveplanner/items` `card-target.ts`, spec items.md "Card targets"); `intakeTypesOf(boards, types)` (each card type
+  some board shows with `typeColumns(targetColumns(...))`).
+- `apps/editor/components/email-intake/EmailIntakeMakes.tsx`: Each Email Becomes (two `Select`s and the Shows On
+  line), `targetForType`.
 - `apps/api/src/email-intake/intake-members.ts`: `planMemberAddresses`.
 - `apps/api/src/email-intake/intake-card.ts` (pure): `emailCardCreate`, `droppedLine`, `cardTitleOf`.
 - `apps/api/src/email-intake/intake-pictures.ts`: `attachPictures(env, planId, ownerId, attachments)` → `{ attached,
@@ -68,6 +73,9 @@ CREATE TABLE IF NOT EXISTS email_intakes (
   hour_count  INTEGER NOT NULL DEFAULT 0,
   PRIMARY KEY (plan_id, board_id)
 );
+-- A later step (`addIntakeTarget`, plan-schema V40): what the address makes, a card target of its own.
+-- ALTER TABLE email_intakes ADD COLUMN type_id TEXT NULL;
+-- ALTER TABLE email_intakes ADD COLUMN status  TEXT NULL;   -- both null: an address from before, its board's first
 CREATE UNIQUE INDEX IF NOT EXISTS email_intakes_code ON email_intakes (code);
 CREATE TABLE IF NOT EXISTS email_intake_senders (
   code        TEXT    NOT NULL,
@@ -90,9 +98,11 @@ CREATE TABLE IF NOT EXISTS email_intake_senders (
   `[email-intake] refused { reason }` (`not_in_person`, `not_editor`).
 - `GET`: `{ available, domain, intakes, boards }` (`available` false and `domain` null without
   `EMAIL_INTAKE_DOMAIN`); intakes of boards that still exist only.
-- `PUT /:boardId` `{ senders }`: the board must be in `intakeBoardsOf` with a first column and a type (else 400
-  `email_intake_invalid`). No row: a code, `fileIntake` (directory first), `turnOnIntake`, 201. A row:
-  `setIntakeSenders`, 200. Both answer `{ intake }`.
+- `PUT /:boardId` `{ senders, typeId?, status? }`: the board must be in `intakeBoardsOf` with a first column and a
+  type, and a card named (both ids, each at most 200 characters) must be one `intakeTargetOf` resolves (else 400
+  `email_intake_invalid`). No row: a code, `fileIntake` (directory first), `turnOnIntake` with the card named or the
+  board's `place`, 201. A row: `setIntakeSenders` (senders, and the card named or the one it had), 200. Both answer
+  `{ intake }`, its `target` resolved against the boards read for the request.
 - `POST /:boardId/new-address`: no row 404 `email_intake_not_found`; else a code, `fileIntake(new)`,
   `replaceIntakeCode` (counts kept, hour reset), `unfileIntake(old)`; 200 `{ intake }`.
 - `DELETE /:boardId`: `turnOffIntake` then `unfileIntake`; 204 either way.
@@ -109,7 +119,8 @@ CREATE TABLE IF NOT EXISTS email_intake_senders (
   6. `planRoom(env, planId).emailIntake(delivery)`: the outcome `made` (accepted), `gone` (`no_address`),
      `refused_sender`, `busy`, `unavailable` → each its reject text.
 - `deliverIntake`: `bindStoredPlan` false or `standing.putAway` → `gone`; `intakeByCode` null → `gone`; the board on
-  its tab with a first column and type (`intakeBoardsOf`) else `gone`; `senders === 'members'`: the plan row's owner
+  its tab (`intakeBoardsOf`) else `gone`; its target (`intakeTargetOf(row.target ?? board.place, boards, types)`)
+  null (no board shows that card) → `gone`; `senders === 'members'`: the plan row's owner
   and team → `planMemberAddresses`; `'unavailable'` → `unavailable`; the sender not in it → `countIntake(refused)`,
   `refused_sender`; `takeIntakeHour(code, senderHash, now)` false → `busy`; then `attachPictures`, `emailCardCreate`,
   `createMany` (by the email person), `relay`, `appendItemHistory(..., 'email', { role: 'system', email: { from:
@@ -135,9 +146,13 @@ EMAIL_PERSON_COLOR }`.
 ## Interfaces and contracts
 
 - `GET /api/projects/:id/email-intake` 200 `EmailIntakesResponse` `{ available, domain, intakes: EmailIntake[],
-boards: EmailIntakeBoard[] }`; `EmailIntakeBoard` `{ id, title, tabId, tabName, column: string | null }`
-  (`column` null: no column for new cards).
-- `PUT /api/projects/:id/email-intake/:boardId` body `{ senders }` → 201/200 `EmailIntakeResponse` `{ intake }`.
+boards: EmailIntakeBoard[], types: EmailIntakeType[] }`; `EmailIntakeBoard` `{ id, title, tabId, tabName, column:
+string | null, target: EmailIntakeTarget | null }` (`column` null: no column for new cards); `EmailIntakeTarget`
+  `{ typeId, status, cardType, column, showsOn: string[] }`; `EmailIntakeType` `{ id, label, columns: { status,
+name }[] }`; `EmailIntake` gains `target: EmailIntakeTarget | null`. The editor reads a missing `types` or
+  `target` (an api from before, deployed apart) as the dialog was: no card to choose, never an address refusing mail.
+- `PUT /api/projects/:id/email-intake/:boardId` body `{ senders, typeId?, status? }` → 201/200
+  `EmailIntakeResponse` `{ intake }`.
 - `POST /api/projects/:id/email-intake/:boardId/new-address` → 200 `EmailIntakeResponse`.
 - `DELETE /api/projects/:id/email-intake/:boardId` → 204.
 - Refusals `{ error }` from `EMAIL_INTAKE_ERRORS`: `email_intake_needs_editor`, `email_intake_invalid`,
@@ -216,7 +231,8 @@ verdict's reason, `made`, `gone`, `refused_sender`, `busy`, `unavailable`), each
 ## Presentation and UX
 
 - Dialog: `Dialog` size `md`, `phoneSheet`, `HeroDialogHeader` with an envelope dropping into a card; a board
-  `Select` when the tab holds several; Off: the explanation naming the first column, Who Can Send (two radio cards,
+  `Select` when the tab holds several; Off: the explanation naming the card ("a Bug card in New"), Each Email
+  Becomes (`EmailIntakeMakes`: Card Type and Column, then Shows On), Who Can Send (two radio cards,
   `role="radiogroup"`), the warning note, footer Turn On. On: the address field (mono, read-only, selects on focus)
   with Copy Address (Copied for 1.8 s and a polite status), the counts line, Who Can Send (saves at once, optimistic,
   rolled back with "Couldn't save. Try again."), the note, footer New Address and Turn Off (`ConfirmPopover` each)

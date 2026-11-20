@@ -1,11 +1,12 @@
 'use client';
 
-// Responses Go To (docs/specs/030-forms/forms.md "Responses Go To and Settings"): the Board tab, the card type and the
-// status every response is made in (New Board and New Card Type the last choice of each), and a sentence reading the
-// choice back; a pencil beside Card Type opens that type's editor. A choice that no longer holds (its board, column or
-// type gone) says so, and the form takes no responses until it is fixed. Column offers only the columns the card type
-// uses ("Columns follow the card type"); Add Questions for {Type}'s Fields, Add Fields for Questions, Card Type by
-// Answer and Set Automatically sit with it.
+// Responses Go To (docs/specs/030-forms/forms.md "Responses Go To and Settings"): what every response makes, a card
+// of a type in a column (New Card Type the type's last choice), never a board. A sentence reads the choice back with
+// the boards its cards show on, worked out from every board of the plan. The card type itself is edited from its
+// board, never here. A choice no board shows (or whose column or type is gone) says so and offers Add a Board for {Type}, and the
+// form takes no responses until it is fixed, so nobody's cards are made where nobody sees them. Column offers only
+// the columns the card type uses on the boards that take it ("Columns follow the card type"); Add Questions for
+// {Type}'s Fields, Add Fields for Questions, Card Type by Answer and Set Automatically sit with it.
 import type { Tab } from '@liveplanner/project';
 import {
   DESTINATION_PROBLEM_TEXT,
@@ -18,12 +19,17 @@ import {
   typeRuleProblem,
   type FormDestination,
 } from '@liveplanner/forms';
-import { boardAddTypes, ITEM_TYPE_CUSTOM_MAX, typeFieldLabel } from '@liveplanner/items';
-import { PencilIcon, PlusIcon, Select, Tooltip, lucideGlyph } from '@liveplanner/ui';
+import {
+  boardNamesText,
+  ITEM_TYPE_CUSTOM_MAX,
+  targetColumns,
+  typeFieldLabel,
+} from '@liveplanner/items';
+import { PlusIcon, Select, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideArrowRight, lucideSquareKanban, lucideTable } from '@liveworkspace/icons/lucide';
-import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { boardsOf, sheetsOf } from '@liveplanner/templates';
+import { sheetsOf } from '@liveplanner/templates';
+import { boardsShowingOf, planBoardsOf } from '../form-destination';
 import { patchForm } from '@liveplanner/forms';
 import { useFormBuilder } from './form-builder-context';
 import { ExtraColumns } from './ExtraColumns';
@@ -36,18 +42,12 @@ import { Callout } from '@liveworkspace/ui/callout';
 const BoardIcon = lucideGlyph(lucideSquareKanban, 18);
 const SheetIcon = lucideGlyph(lucideTable, 18);
 const ArrowIcon = lucideGlyph(lucideArrowRight, 14);
+const ShowsIcon = lucideGlyph(lucideSquareKanban, 13);
 
-// The value of each select's last choice, New Board or New Card Type.
+// The value of each select's last choice, New Sheet or New Card Type.
 const NEW = '__new';
 
-// `onLeave` closes the panel holding it: the card type's editor is a dialog of its own, never under the panel.
-export function DestinationPicker({
-  tabs,
-  onLeave,
-}: {
-  tabs: readonly Tab[];
-  onLeave?: () => void;
-}) {
+export function DestinationPicker({ tabs }: { tabs: readonly Tab[] }) {
   const b = useFormBuilder();
   const sheets = sheetsOf(tabs);
   const toSheet = !!b.form.sheet;
@@ -81,11 +81,7 @@ export function DestinationPicker({
           }}
         />
       </div>
-      {toSheet ? (
-        <SheetDestination tabs={tabs} />
-      ) : (
-        <BoardDestination tabs={tabs} onLeave={onLeave} />
-      )}
+      {toSheet ? <SheetDestination tabs={tabs} /> : <BoardDestination tabs={tabs} />}
     </div>
   );
 }
@@ -138,24 +134,22 @@ function SheetDestination({ tabs }: { tabs: readonly Tab[] }) {
   );
 }
 
-// Cards on a Board: the board, the card type (with its editor) and the column, and a sentence reading it back.
-function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: () => void }) {
+// Cards on a Board: the card type and the column, a sentence reading them back, and the boards the
+// cards show on.
+function BoardDestination({ tabs }: { tabs: readonly Tab[] }) {
   const b = useFormBuilder();
-  const plan = usePlan();
   const dest = b.form.destination;
-  const boardTabs = tabs.filter((t) => t.kind === 'board');
-  const destTab = boardTabs.find((t) => t.id === dest?.tabId);
-  const destBoard = destTab ? boardsOf(destTab)[0] : undefined;
-  const board = destBoard?.setup;
-  const takes = board ? boardAddTypes(board, b.types) : [];
-  const problem = destinationProblem(
-    dest,
-    destTab ? boardsOf(destTab).map((x) => x.setup) : [],
-    b.types,
-  );
+  const boards = planBoardsOf(tabs);
+  const setups = boards.map((x) => x.setup);
+  const problem = destinationProblem(dest, setups, b.types);
+  // The boards its cards show on, the one its buttons open and the preview draws first.
+  const shows = boardsShowingOf(dest, boards, b.types);
+  const home = shows[0];
+  const showsOn = [...new Set(shows.map((x) => x.tab.name))];
+  // The types some board shows: what a card type rule may make.
+  const takes = b.types.filter((t) => targetColumns(setups, b.types, t.id).length > 0);
   const set = (next: FormDestination) =>
     b.actions.changeForm((f) => patchForm(f, { destination: next }));
-  const setups = destTab ? boardsOf(destTab).map((x) => x.setup) : [];
   // The card type rules that hold, each with its type, for the sentence and the preview's chips.
   const ruled = (dest?.typeRules ?? []).flatMap((rule) => {
     const t = b.types.find((x) => x.id === rule.typeId);
@@ -163,14 +157,14 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
       ? [{ rule, type: t }]
       : [];
   });
-  const column = board?.columns.find((c) => c.status === dest?.status);
-  // Only the columns the card type uses (forms.md "Columns follow the card type").
-  const columns = board ? typeColumns(board.columns, b.type) : [];
-  const warning = problem
-    ? null
-    : destinationWarning(dest, destTab ? boardsOf(destTab).map((x) => x.setup) : [], b.type);
-  // The fields no question asks yet, offered as questions (forms.md "Questions from the card type's fields").
   const type = b.type;
+  // Every column a card of the type can be seen in, across the boards that take it; only those the type uses
+  // (forms.md "Columns follow the card type").
+  const reach = type ? targetColumns(setups, b.types, type.id) : [];
+  const columns = typeColumns(reach, type);
+  const column = reach.find((c) => c.status === dest?.status);
+  const warning = problem ? null : destinationWarning(dest, setups, type);
+  // The fields no question asks yet, offered as questions (forms.md "Questions from the card type's fields").
   const toAsk = type && !problem ? typeQuestionsToAdd(b.form, type) : [];
   const askNames = toAsk.map((f) =>
     f.kind === 'field' ? f.field.label : typeFieldLabel(type, f.kind),
@@ -182,71 +176,39 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
     type && !problem && !b.locked
       ? questionsWantingFields(b.form, type).slice(0, Math.max(0, room))
       : [];
+  // A type no board shows (or none in its column): the cards would be made and never seen, so a board is offered.
+  const unseen =
+    !!type &&
+    (problem === 'type_not_on_board' ||
+      problem === 'board_missing' ||
+      problem === 'status_missing');
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid grid-cols-2 gap-3 max-sm:grid-cols-1 [&>*]:min-w-0">
-        <SettingsField label="Board">
-          <Select
-            className="w-full"
-            selectClassName="text-[13px]"
-            value={destTab?.id ?? ''}
-            disabled={!b.canEdit}
-            onChange={(e) => {
-              if (e.target.value === NEW) return b.actions.newResponsesBoard();
-              // Its type, column and set values; an empty form then takes the type's questions, a step of its own.
-              b.actions.setDestinationBoard(e.target.value);
-            }}
-          >
-            <option value="" disabled>
-              {boardTabs.length ? 'Choose a board…' : 'No boards yet'}
+      <SettingsField label="Card Type">
+        <Select
+          className="w-full"
+          selectClassName="text-[13px]"
+          value={type ? type.id : ''}
+          disabled={!b.canEdit}
+          onChange={(e) => {
+            if (e.target.value === NEW) return b.actions.newCardType();
+            // Its column and set values; an empty form then takes the type's questions, a step of its own. A type
+            // no board has a column for gets its board at once, as there is no column to choose.
+            if (!b.actions.setDestinationType(e.target.value))
+              b.actions.newResponsesBoard(e.target.value);
+          }}
+        >
+          <option value="" disabled>
+            {b.types.length ? 'Choose a card type…' : 'No card types yet'}
+          </option>
+          {b.types.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.label}
             </option>
-            {boardTabs.map((t) => (
-              <option key={t.id} value={t.id} disabled={boardsOf(t).length === 0}>
-                {t.name}
-              </option>
-            ))}
-            {b.canEdit ? <option value={NEW}>+ New Board</option> : null}
-          </Select>
-        </SettingsField>
-        <SettingsField label="Card Type">
-          <div className="flex items-center gap-1">
-            <Select
-              className="min-w-0 flex-1"
-              selectClassName="text-[13px]"
-              value={dest && takes.some((t) => t.id === dest.typeId) ? dest.typeId : ''}
-              disabled={!b.canEdit || !board}
-              onChange={(e) => {
-                if (e.target.value === NEW) return b.actions.newCardType();
-                b.actions.setDestinationType(e.target.value);
-              }}
-            >
-              <option value="" disabled>
-                Choose a card type…
-              </option>
-              {takes.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.label}
-                </option>
-              ))}
-              {b.canEdit ? <option value={NEW}>+ New Card Type</option> : null}
-            </Select>
-            {/* The card type's own editor (its fields, display and tabs), to shape it before mapping answers. */}
-            {b.canEdit && plan && b.type ? (
-              <button
-                type="button"
-                aria-label={`Edit card type ${b.type.label}`}
-                onClick={() => {
-                  onLeave?.();
-                  plan.editType({ id: b.type!.id });
-                }}
-                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100"
-              >
-                <PencilIcon />
-              </button>
-            ) : null}
-          </div>
-        </SettingsField>
-      </div>
+          ))}
+          {b.canEdit && dest ? <option value={NEW}>+ New Card Type</option> : null}
+        </Select>
+      </SettingsField>
       {b.canEdit && type && toAsk.length ? (
         <DashedAdd
           label={`Add Questions for ${type.label}’s Fields`}
@@ -263,53 +225,69 @@ function BoardDestination({ tabs, onLeave }: { tabs: readonly Tab[]; onLeave?: (
           onClick={() => b.actions.addQuestionFields()}
         />
       ) : null}
-      <div>
-        <p className="mb-1.5 px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
-          Column
-        </p>
-        <div role="radiogroup" aria-label="Column" className="flex flex-wrap gap-1.5">
-          <ColumnChips
-            columns={columns}
-            status={dest?.status}
-            disabled={!b.canEdit}
-            onPick={(status) => dest && set({ ...dest, status })}
-          />
-          {!board ? (
-            <span className="text-[12px] text-slate-500 dark:text-slate-400">
-              Choose a board first.
-            </span>
-          ) : columns.length === 0 && type && warning !== 'no_type_column' ? (
-            // The warning under the chips says it when it shows, so it is said once.
-            <span className="text-[12px] text-slate-500 dark:text-slate-400">
-              None of these columns is a {type.label} state.
-            </span>
-          ) : null}
+      {/* No board takes the type: there is no column to offer, and the callout below says so. */}
+      {type && reach.length > 0 ? (
+        <div>
+          <p className="mb-1.5 px-0.5 text-xs font-medium text-slate-600 dark:text-slate-300">
+            Column
+          </p>
+          <div role="radiogroup" aria-label="Column" className="flex flex-wrap gap-1.5">
+            <ColumnChips
+              columns={columns}
+              status={dest?.status}
+              disabled={!b.canEdit}
+              onPick={(status) => dest && set({ ...dest, status })}
+            />
+            {columns.length === 0 && warning !== 'no_type_column' ? (
+              // The warning under the chips says it when it shows, so it is said once.
+              <span className="text-[12px] text-slate-500 dark:text-slate-400">
+                None of these columns is a {type.label} state.
+              </span>
+            ) : null}
+          </div>
         </div>
-      </div>
+      ) : null}
       {problem ? (
-        <Callout tone="warning" size="md" role="status">
-          {DESTINATION_PROBLEM_TEXT[problem]}
+        <Callout
+          tone="warning"
+          size="md"
+          role="status"
+          {...(unseen && b.canEdit
+            ? {
+                action: {
+                  label: `Add a Board for ${type.label}`,
+                  onSelect: () => b.actions.newResponsesBoard(type.id),
+                },
+              }
+            : {})}
+        >
+          {/* No board takes the type, or none taking it has the column: said as what it means. A column gone from
+              boards that still take the type keeps its own words. */}
+          {unseen && problem !== 'status_missing'
+            ? `No board shows ${type.label} cards${column ? ` in ${column.name}` : ''}, so nobody would see them.`
+            : DESTINATION_PROBLEM_TEXT[problem]}
         </Callout>
       ) : warning && type ? (
         <Callout tone="warning" size="md" role="status">
-          {destinationWarningText(warning, type.label, destTab?.name ?? 'the board')}
+          {destinationWarningText(warning, type.label, home?.tab.name ?? 'the board')}
         </Callout>
       ) : (
         <Flow
           lead={ruled.length ? 'Otherwise, each response' : 'Each response'}
-          steps={[`${b.type?.label ?? ''} card`, column?.name ?? '', destTab?.name ?? '']}
-          read={`${ruled.length ? 'Otherwise, each' : 'Each'} response becomes a ${b.type?.label} card in ${column?.name} on ${destTab?.name}.`}
+          steps={[`${type?.label ?? ''} card`, column?.name ?? '']}
+          read={`${ruled.length ? 'Otherwise, each' : 'Each'} response becomes a ${type?.label} card in ${column?.name}. It shows on ${boardNamesText(showsOn)}.`}
+          showsOn={showsOn}
         />
       )}
       {/* Other card types by an answer (forms.md "Choosing the card type by an answer"). */}
       {!problem && type ? <CardTypeRules boards={setups} takes={takes} /> : null}
-      {/* The card one response makes, as this board draws it (forms.md "What a Response Makes"). */}
-      {!problem && type && board && destBoard ? (
+      {/* The card one response makes, as its board draws it (forms.md "What a Response Makes"). */}
+      {!problem && type && home ? (
         <CardResponsePreview
           form={b.form}
           type={type}
-          board={board}
-          element={destBoard.element}
+          board={home.setup}
+          element={home.element}
           rules={ruled}
         />
       ) : null}
@@ -392,9 +370,20 @@ function KindTile({
   );
 }
 
-// Where a response goes, read as a path: "Each response → Bug card → New → Bugs". `read` is the sentence a screen
+// What a response makes, read as a path: "Each response → Bug card → New", and under it the boards the card shows on
+// ("Shows on Bugs and Triage"), which follow the plan's boards and are never chosen. `read` is the sentence a screen
 // reader hears in its place.
-function Flow({ lead, steps, read }: { lead: string; steps: readonly string[]; read: string }) {
+function Flow({
+  lead,
+  steps,
+  read,
+  showsOn,
+}: {
+  lead: string;
+  steps: readonly string[];
+  read: string;
+  showsOn?: readonly string[];
+}) {
   return (
     <div className="rounded-xl bg-slate-50 px-3 py-2.5 dark:bg-slate-800/60">
       <p className="sr-only">{read}</p>
@@ -414,6 +403,23 @@ function Flow({ lead, steps, read }: { lead: string; steps: readonly string[]; r
           </span>
         ))}
       </p>
+      {showsOn?.length ? (
+        <p
+          aria-hidden
+          data-shows-on=""
+          className="mt-2 flex flex-wrap items-center gap-1.5 border-t border-slate-200/80 pt-2 text-[12px] text-slate-500 dark:border-slate-700 dark:text-slate-400"
+        >
+          <span className="text-slate-400">
+            <ShowsIcon />
+          </span>
+          <span>
+            Shows on{' '}
+            <span className="font-semibold text-slate-700 dark:text-slate-200">
+              {boardNamesText(showsOn)}
+            </span>
+          </span>
+        </p>
+      ) : null}
     </div>
   );
 }

@@ -155,8 +155,11 @@ const respondsTo = z
       .string()
       .optional()
       .describe(
-        'An existing Board tab’s name (or its board’s title). Absent: a new Board tab "<Form> Responses" with New, ' +
-          'In Progress and Done, taking the form’s card type alone.',
+        'An existing Board tab’s name (or its board’s title), to read the card type and column from. A response ' +
+          'makes a card of a type in a column, and every board that takes that type shows it, so the board is only ' +
+          'where to look. Absent with a cardType: the first board that already shows that type. Absent without ' +
+          'one, or when no board shows the type: a new Board tab "<Form> Responses" with New, In Progress and ' +
+          'Done, taking the form’s card type alone, so its cards are never made where nobody sees them.',
       ),
     cardType: z
       .string()
@@ -357,7 +360,9 @@ export const readFormOutput = {
   respondsTo: z
     .record(z.string(), z.string())
     .describe(
-      'Where responses go: {to: "board", board, cardType, column}, {to: "sheet", sheet} or {to: "nowhere"}.',
+      'Where responses go: {to: "board", board, cardType, column, showsOn}, {to: "sheet", sheet} or {to: "nowhere"}. ' +
+        'A board form makes a cardType card in column; board is the first board that shows it and showsOn names ' +
+        'every board that does (absent when none does).',
     ),
   respondsToProblem: z.string().optional().describe('Why responses cannot land there now.'),
   cardTypeRules: z

@@ -11,7 +11,7 @@ import { relay } from '../routes/item-route-kit';
 import type { PlanRouteContext } from '../routes/context';
 import { reportServerEvent } from '../server-telemetry';
 import type { PlanEnv } from '../types';
-import { intakeBoardsOf } from './intake-boards';
+import { intakeBoardsOf, intakeTargetOf } from './intake-boards';
 import { emailCardCreate, emailPerson } from './intake-card';
 import { senderHash } from './intake-code';
 import { planMemberAddresses } from './intake-members';
@@ -86,8 +86,14 @@ export async function deliverIntake(
     .first<PlanRow>();
   if (!plan) return 'gone';
   const types = typesOf(parseTypes(plan.item_types));
-  const board = (await intakeBoardsOf(env, planId, types)).find((b) => b.id === intake.boardId);
-  if (!board?.place) return 'gone';
+  const boards = await intakeBoardsOf(env, planId, types);
+  const board = boards.find((b) => b.id === intake.boardId);
+  if (!board) return 'gone';
+  // What it makes: its own card type and column, or (an address from before) its board's first of each. Judged
+  // against every board, as the card shows on whichever takes its type: none showing it, and the mail is refused
+  // rather than made where nobody sees it.
+  const target = intakeTargetOf(intake.target ?? board.place, boards, types);
+  if (!target) return 'gone';
   const sender = delivery.sender.toLowerCase();
   if (intake.senders === 'members') {
     const members = await planMemberAddresses(env, plan.owner_id, plan.team_id);
@@ -111,8 +117,8 @@ export async function deliverIntake(
     sender,
     attached: pictures.attached,
     dropped: pictures.dropped,
-    typeId: board.place.typeId,
-    status: board.place.status,
+    typeId: target.typeId,
+    status: target.status,
   });
   if (typeof create === 'string') {
     console.error('[email-intake] card.unmade', { rejection: create });

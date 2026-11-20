@@ -305,7 +305,7 @@ describe('setRespondsTo and the card type’s statuses', () => {
 });
 
 describe('setRespondsTo and card type rules (docs/specs/030-forms/forms.md "Choosing the card type by an answer")', () => {
-  it('keeps the rules on the same board and clears them on another', () => {
+  it('keeps the rules whichever board is named, as each is judged against every board', () => {
     const rule = { id: 'r-1', questionId: 'q-sev', anyOf: ['High'], typeId: 'task', status: 'new' };
     const ruled = { ...bugForm(), destination: { ...bugForm().destination!, typeRules: [rule] } };
     const same = formDraft(ruled);
@@ -313,6 +313,26 @@ describe('setRespondsTo and card type rules (docs/specs/030-forms/forms.md "Choo
     expect(same.form.destination?.typeRules).toEqual([rule]);
     const fresh = formDraft(ruled);
     setRespondsTo(fresh, { to: 'board' });
-    expect(fresh.form.destination).not.toHaveProperty('typeRules');
+    expect(fresh.form.destination?.typeRules).toEqual([rule]);
+  });
+});
+
+// A response makes a card of a type, and every board taking the type shows it (docs/specs/030-forms/forms.md
+// "Responses Go To"): a card type named alone reuses a board that already shows it, and only a type no board shows
+// gets a board of its own, so its cards are never made where nobody sees them.
+describe('setRespondsTo by card type alone', () => {
+  it('uses the first board that already shows the type, adding none', () => {
+    const d = formDraft(bugForm());
+    expect(setRespondsTo(d, { to: 'board', cardType: 'Bug' })).toBeNull();
+    expect(d.newTabs).toEqual([]);
+    expect(d.form.destination).toMatchObject({ tabId: 'bugs', typeId: 'bug' });
+  });
+
+  it('adds a board for a type no board shows', () => {
+    const d = formDraft(bugForm());
+    d.boards = d.boards.map((b) => ({ ...b, types: ['task'] }));
+    expect(setRespondsTo(d, { to: 'board', cardType: 'Bug' })).toBeNull();
+    expect(d.newTabs).toHaveLength(1);
+    expect(d.form.destination).toMatchObject({ tabId: d.newTabs[0]!.id, typeId: 'bug' });
   });
 });

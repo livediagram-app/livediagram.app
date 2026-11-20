@@ -21,7 +21,7 @@ export const metadata = helpMetadata({
   categorySlug="plan"
 >
 
-**Email to Board** gives a board its own secret email address. Forward a message to it and it becomes a card in the board's first column: the subject as the card's title, the message as its description, and any pictures and PDFs attached. The card shows who sent it.
+**Email to Board** gives a board its own secret email address. Forward a message to it and it becomes a card: the subject as the card's title, the message as its description, and any pictures and PDFs attached. The card shows who sent it.
 
 ## Who Can Set It Up
 
@@ -32,7 +32,8 @@ An Editor of the whole plan, signed in: its owner, the members of its team, or s
 1. Open the tab holding the board.
 2. Press **Tools** in the bottom bar.
 3. Choose **Email to Board**, under Automate. On a tab with several boards, pick one at the top.
-4. Choose **Who Can Send** (below), then press **Turn On**.
+4. Under **Each Email Becomes**, keep the **Card Type** and **Column** offered (the board's first of each) or choose others. The line under them names the boards that will show the card.
+5. Choose **Who Can Send** (below), then press **Turn On**.
 
 <Figure caption="Email to Board sits in Tools, under Automate.">
   <ToolsMenuFigure highlight="Email to Board" />
@@ -53,6 +54,7 @@ Either way, anyone who can send from an allowed address can add cards to the boa
 
 ## What a Message Becomes
 
+- **Card**: the **Card Type** and **Column** chosen under **Each Email Becomes**. It shows on every board that takes that card type and has that column, so you choose the card, not a board. You can change it at any time; the address stays the same. If no board shows that card any more, the address refuses mail until you choose again.
 - **Title**: the subject. With no subject, "Email from" and the sender's address.
 - **Description**: the message's text. The earlier messages a reply quotes ("On … wrote:" and what follows) and a signature after a "--" line are left out.
 - **Pictures and PDFs**: PNG, JPEG, WebP and GIF pictures and PDFs up to 10 MB each join the card's Attachments, up to 20 a card. A PDF opens in your browser's own viewer from the card, and downloads under its name. Other files (a Word or Excel file, a zip), and bigger ones, are listed at the end of the description ("Not attached: …") and left out.

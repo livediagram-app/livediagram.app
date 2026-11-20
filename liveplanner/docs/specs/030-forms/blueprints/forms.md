@@ -85,7 +85,7 @@ export interface FormSection {
   questions: FormQuestion[];
 }
 export interface FormDestination {
-  tabId: string;
+  tabId?: string; // the Board tab it was last seen on: a hint, never judged (§8)
   typeId: string;
   status: string;
   fixed?: Record<string, FixedValue>;
@@ -279,7 +279,7 @@ and saves the new `columns` with `changeFormQuietly`; it keeps the headers it la
 a step), for a sheet on a tab not saved yet. Live: `sheetsOf(tabs)`, `setResponsesTo`, `newResponsesSheet`
 (a new Sheet tab, its sheet made through `makeSheet` so the form stays open; `placeNewSheet` and opened where nothing can make it), `DestinationPicker` (`SheetDestination` / `BoardDestination`),
 `sendPreview` (a sheet destination with a problem fails at once, `PREVIEW_NO_SHEET`; else the api first; a sheet with
-no link fails), `formsFeeding` (`hooks/forms/forms-feeding.ts`, the stored destination read without parsing) skips
+no link fails), `formsFeeding` (`hooks/forms/forms-feeding.ts`, the stored destination read without parsing; a tab feeds a board form when one of its boards shows the form's cards, and `deleteTabWarning` warns only when no other loaded board does) skips
 sheet forms for a board. A sheet starter's sheet is made with its tab, not on opening it: `makeFormSheet`
 (`lib/forms-make-sheet.ts`, the sheet store fetched lazily) through `useFormActions`' `makeSheet`.
 
@@ -295,7 +295,7 @@ destination, so respondents never see them.
   (`ruleQuestions(form, sections.length)`). `typeRulesOffered(form, takes)`: more than one type taken and such a
   question.
 - `typeRuleProblem(rule, form, ctx)` → `question_missing | answer_missing | type_missing | type_not_on_board |
-status_missing | null`, `ctx` `{ types, board }` (the destination's board, the live one holding its status).
+status_missing | null`, `place` `{ types, boards }` (every board of the plan: a rule's type must be taken by a live board, `boardsTaking`, and one of those must have its column).
   `TYPE_RULE_PROBLEM_TEXT` its words.
 - `ruleTarget(q, rule, type)`: Title when the question goes to Title, else `rule.fields[q.id]` resolved by
   `effectiveTarget` on the rule's type (broken: Description, marked), else Description.
@@ -309,7 +309,7 @@ status_missing | null`, `ctx` `{ types, board }` (the destination's board, the l
   (`broken_type_rule`, `ruleId`, `questionId` while the question is there), its broken `fields`
   (`broken_mapping` with `ruleId`) and its type's `required_unasked`.
 - Edits: `withTypeRules(form, rules)` (an empty list removes the key), `newTypeRule(form, takes, board, id)`.
-- Api: `forms/respond.ts` calls `chooseCardType` over the destination board after `destinationProblem`, and
+- Api: `forms/respond.ts` calls `chooseCardType` over `destinationBoards` (§8) after `destinationProblem`, and
   `responseCard` with its result; the body's other keys are never read. `notReadyToOpen` passes `place`.
 - Live: `components/forms/builder/CardTypeRules.tsx` (under Card Type in `DestinationPicker`), the rule editor
   reusing `SectionRule.tsx`'s `AnswerChips`; `ResponsePreview.tsx` takes a type switcher. Agents: `form-read.ts`
@@ -359,9 +359,28 @@ fields?: Record<string, string>; leaveOut?: readonly string[] }`. `to` is a tab 
 
 ## 8. Destination and the public form (`destination.ts`, `public.ts`)
 
+A destination is a **card target** (`@liveplanner/items` `card-target.ts`; spec 026-plan/items.md "Card targets"): a
+type and a status, judged against **every** board of the plan, never one tab's.
 `destinationProblem(destination, boards, types)`: `no_destination | board_missing | status_missing | type_missing |
-type_not_on_board`, Archive boards not counted; `DESTINATION_PROBLEM_TEXT` its sentence. `publicForm(form)` strips
-`goesTo`, the destination and the starter, and fills the default confirmation. `closedReason(form, { open,
+type_not_on_board` (`cardTargetProblem`: no live board, none with the column, the type gone, none with the column
+taking the type), Archive boards not counted; `DESTINATION_PROBLEM_TEXT` its sentence. `destinationHome(destination,
+boards, types)`: the board it is read back on, the first of `boardsShowing`, one on `destination.tabId` before any
+other. `tabId` is optional and only a hint (`readDestination` drops one that does not read and keeps the
+destination); an older build's `readForm` needs it, so the builder and the agent verbs keep writing the home tab.
+
+- **Where each caller gets its boards.** Editor: `planBoardsOf(tabs)` (`components/forms/form-destination.ts`, each
+  tab's boards cached by its elements array), `boardsShowingOf` for the Shows On line and the home board;
+  `formDestinationOf` judges nothing on a tab-scoped session (it sees other tabs as stubs). Api:
+  `destinationBoards(env, projectId, form, types)` (`forms/form-tab.ts`) reads the hint's tab first and answers with
+  it alone while the destination holds there and the form has no card type rules, so the usual response reads one
+  tab as before; otherwise `planBoards` (only tabs holding a board, 20 a query). `pauseFormsFeeding(env, projectId,
+tabId, types)` pauses a board form only when `destinationProblem` over `planBoards` (read once) names one. Agents:
+  `rulePlaceOf(world)`, every board of the plan outline.
+- **Tab-scoped Editors** (`tab-structure.ts` `targetLeaves`): any change to `destination` leaves the tab (a card
+  type and column are never one tab's); a `sheet` on the scoped tab is still fine.
+- **Add a Board for {Type}**: `newResponsesBoard(typeId?)`; `setDestinationType(typeId)` answers false when no board
+  has a column for the type, and the picker then calls it. `publicForm(form)` strips
+  `goesTo`, the destination and the starter, and fills the default confirmation. `closedReason(form, { open,
 responses, now })`: `switched_off | no_destination | closes_at | limit`.
 
 ## 8a. Columns, questions and set values from the card type
@@ -373,8 +392,8 @@ responses, now })`: `switched_off | no_destination | closes_at | limit`.
   `status_not_in_type` (the saved status is one the type leaves out) or `no_type_column` (no column of the board is
   one), with `destinationWarningText(warning, typeLabel, boardName)`. Never read by the api or `destinationProblem`:
   `FormPage` passes it to `FormProblems` (`warnings`) and the status bar's count, not to `problemCount` (the
-  Accepting Responses gate) or Publish Form. `DestinationPicker`'s chips are `typeColumns`; choosing a board is
-  `setDestinationBoard(tabId)` (`useFormActions`), which takes `columnForType`; `setDestinationType` moves the status
+  Accepting Responses gate) or Publish Form. `DestinationPicker`'s chips are `typeColumns` over
+  `targetColumns` (every column of the boards that take the type); no board is chosen (§8); `setDestinationType` moves the status
   with `columnForType` in the same step. With no chip to offer and the warning `no_type_column` shown under them,
   Column draws no line of its own beside the empty chips (the warning says it once); with a destination problem
   instead it keeps its short line "None of these columns is a {Type} state.".
@@ -390,10 +409,9 @@ responses, now })`: `switched_off | no_destination | closes_at | limit`.
   from the field, options through `readOptions`, a Rating's `ratingScaleOf` clamped to the question's range,
   `withTime` for a timed range, `goesTo`), and `withTypeQuestions(form, type, newId)` (appended to the last section,
   capped at `QUESTIONS_MAX`; the same form when none). `setDestinationType` commits the type, then, on a form with no
-  questions, the questions as a second commit (their own undo step); `setDestinationBoard(tabId)` likewise commits
-  the board (its type the kept one while the board takes it, else `boardAddTypes(setup, types)[0]`, its status
-  `columnForType`, `fixed` kept while the type stays), then on a form with no questions the questions for that type
-  as a second commit. Both share `typeQuestionsStep(type)` in `useFormActions`. `DestinationPicker`'s **Add Questions
+  questions, the questions as a second commit (their own undo step), through `typeQuestionsStep(type)` in
+  `useFormActions`; it gives a form with no destination one, and answers false when no board has a column for the
+  type (the picker then adds a board, `newResponsesBoard(typeId)`). `DestinationPicker`'s **Add Questions
   for {Type}'s Fields** is `addTypeQuestions()` (one commit).
 - **Fields from questions** (`question-fields.ts`, the other way): `questionsWantingFields(form, type)` (in form
   order, each question whose `effectiveTarget` is Description, broken or unmapped, but the first Paragraph so going

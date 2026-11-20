@@ -26,6 +26,7 @@ describe('formDestinationOf', () => {
       destTab: board,
       problem: null,
       warning: null,
+      showsOn: ['Applicants'],
     });
     expect(formDestinationOf(form, [formTab], ITEM_TYPES, null).problem).toBe('board_missing');
     // A column its card type leaves out: a warning in words, the destination still holding.
@@ -42,6 +43,7 @@ describe('formDestinationOf', () => {
       destTab: undefined,
       problem: null,
       warning: null,
+      showsOn: [],
     });
     const toSheet: FormDefinition = {
       ...form,
@@ -52,16 +54,46 @@ describe('formDestinationOf', () => {
       destTab: undefined,
       problem: null,
       warning: null,
+      showsOn: [],
     });
+    // A form with nowhere to send responses is still told so.
+    const nowhere: FormDefinition = { ...form, destination: undefined };
+    expect(formDestinationOf(nowhere, [formTab, stub], ITEM_TYPES, 'form').problem).toBe(
+      'no_destination',
+    );
   });
 
-  it('still judges a destination on the scoped tab itself', () => {
-    const own: FormDefinition = {
-      ...form,
-      destination: { tabId: 'form', typeId: 'task', status: 'todo' },
-    };
-    expect(formDestinationOf(own, [formTab, stub], ITEM_TYPES, 'form').problem).toBe(
-      'board_missing',
+  // A response makes a card of a type in a column, never a board: every board that takes it shows it.
+  it('holds while any board shows its cards, and names them all, the one last seen first', () => {
+    const second: Tab = { ...board, id: 'second', name: 'Hiring' };
+    const both = formDestinationOf(form, [formTab, second, board], ITEM_TYPES, null);
+    expect(both).toMatchObject({
+      destTab: board,
+      problem: null,
+      showsOn: ['Applicants', 'Hiring'],
+    });
+    // The board it was last seen on deleted: the other still shows the cards, so nothing is wrong.
+    expect(formDestinationOf(form, [formTab, second], ITEM_TYPES, null)).toMatchObject({
+      destTab: second,
+      problem: null,
+      showsOn: ['Hiring'],
+    });
+    // Never last seen anywhere (a form made by an agent): the first board that shows them.
+    const bare: FormDefinition = { ...form, destination: { typeId: 'task', status: 'todo' } };
+    expect(formDestinationOf(bare, [formTab, second, board], ITEM_TYPES, null).destTab).toBe(
+      second,
     );
+    // A board that takes other types only shows none of them.
+    const others: Tab = {
+      ...board,
+      elements: [
+        { ...board.elements[0]!, planBoard: { ...presetSetup('kanban'), addTypes: ['note'] } },
+      ],
+    } as Tab;
+    expect(formDestinationOf(form, [formTab, others], ITEM_TYPES, null)).toMatchObject({
+      destTab: undefined,
+      problem: 'type_not_on_board',
+      showsOn: [],
+    });
   });
 });

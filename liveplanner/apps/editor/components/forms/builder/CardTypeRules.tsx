@@ -3,11 +3,10 @@
 // Card Type by Answer (docs/specs/030-forms/forms.md "Choosing the card type by an answer"), under Responses Go To's
 // column: rules that make another card type when an answer is one of some answers, each "When <question> is
 // <answers>, make a <type> card in <column>", with its own answer-to-field mapping for that type. Closed until opened,
-// and offered only while the board takes more than one type and the form has a question a rule may read, so a
+// and offered only while the plan's boards show more than one type and the form has a question a rule may read, so a
 // one-type destination reads as it always did. A broken rule says why, in amber, and the default type takes its
 // responses until it is fixed.
 import {
-  destinationBoard,
   newFormPartId,
   newTypeRule,
   promptOf,
@@ -22,9 +21,8 @@ import {
   updateTypeRule,
   withTypeRules,
   type CardTypeRule,
-  type RuleBoard,
 } from '@liveplanner/forms';
-import type { ItemTypeDef, PlanBoardSetup } from '@liveplanner/items';
+import { targetColumns, type ItemTypeDef, type PlanBoardSetup } from '@liveplanner/items';
 import { PlusIcon, Select } from '@liveplanner/ui';
 import { CUSTOM_KIND_LABELS } from '@/components/plan/ItemTypeFieldForms';
 import { ColumnChips } from './ChoiceChip';
@@ -35,7 +33,7 @@ import { useFormBuilder } from './form-builder-context';
 const LABEL = 'mb-1.5 text-[12px] text-slate-500 dark:text-slate-400';
 const BROKEN = 'text-[12px] text-amber-800 dark:text-amber-200';
 
-// `boards`: the board set-ups on the destination's tab; `takes`: the card types its board takes.
+// `boards`: every board set-up of the plan; `takes`: the card types some board shows.
 export function CardTypeRules({
   boards,
   takes,
@@ -48,7 +46,6 @@ export function CardTypeRules({
   const rules = dest?.typeRules ?? [];
   if (!dest || !b.type || (!rules.length && !typeRulesOffered(b.form, takes))) return null;
   const place = { types: b.types, boards };
-  const board = destinationBoard(dest, boards) as (RuleBoard & PlanBoardSetup) | undefined;
   const broken = rules.some((r) => typeRuleProblem(r, b.form, place));
   // Made on the rules as they stand when the change lands, never on the list this draw read.
   const set = (next: (now: readonly CardTypeRule[]) => readonly CardTypeRule[]) =>
@@ -56,7 +53,7 @@ export function CardTypeRules({
   const patch = (id: string, p: Partial<Omit<CardTypeRule, 'id'>>) =>
     b.actions.changeForm((f) => updateTypeRule(f, id, p));
   const room =
-    b.canEdit && rules.length < TYPE_RULES_MAX && !!newTypeRule(b.form, takes, board, 'r-0');
+    b.canEdit && rules.length < TYPE_RULES_MAX && !!newTypeRule(b.form, takes, place, 'r-0');
   return (
     <Shell
       title="Card Type by Answer"
@@ -70,7 +67,7 @@ export function CardTypeRules({
             <RuleRow
               key={rule.id}
               rule={rule}
-              board={board}
+              boards={boards}
               takes={takes}
               onPatch={(p) => patch(rule.id, p)}
               onRemove={() => set((now) => now.filter((r) => r.id !== rule.id))}
@@ -84,7 +81,7 @@ export function CardTypeRules({
           type="button"
           className={ADD}
           onClick={() => {
-            const made = newTypeRule(b.form, takes, board, newFormPartId('r'));
+            const made = newTypeRule(b.form, takes, place, newFormPartId('r'));
             if (made) set((now) => [...now, made]);
           }}
         >
@@ -98,14 +95,14 @@ export function CardTypeRules({
 
 function RuleRow({
   rule,
-  board,
+  boards,
   takes,
   onPatch,
   onRemove,
   problem,
 }: {
   rule: CardTypeRule;
-  board: PlanBoardSetup | undefined;
+  boards: readonly PlanBoardSetup[];
   takes: readonly ItemTypeDef[];
   onPatch: (p: Partial<Omit<CardTypeRule, 'id'>>) => void;
   onRemove: () => void;
@@ -115,13 +112,14 @@ function RuleRow({
   const questions = typeRuleQuestions(b.form);
   const q = questions.find((x) => x.id === rule.questionId) ?? null;
   const type = b.types.find((t) => t.id === rule.typeId);
-  // The types this rule may make: the board's, but not the default's or another rule's.
+  // The types this rule may make: those a board shows, but not the default's or another rule's.
   const others = new Set([
     b.form.destination?.typeId,
     ...(b.form.destination?.typeRules ?? []).filter((r) => r.id !== rule.id).map((r) => r.typeId),
   ]);
   const offered = takes.filter((t) => !others.has(t.id));
-  const columns = board ? typeColumns(board.columns, type) : [];
+  // The columns of the boards that take the rule's type, as that type uses them.
+  const columns = type ? typeColumns(targetColumns(boards, b.types, type.id), type) : [];
   const disabled = !b.canEdit;
   return (
     <Row
@@ -155,11 +153,11 @@ function RuleRow({
               const next = offered.find((t) => t.id === e.target.value);
               if (!next) return;
               // Fields belong to their type: a new type starts with none mapped, and its first column it uses.
-              const status = board
-                ? (typeColumns(board.columns, next).find((c) => c.status === rule.status)?.status ??
-                  typeColumns(board.columns, next)[0]?.status ??
-                  rule.status)
-                : rule.status;
+              const usable = typeColumns(targetColumns(boards, b.types, next.id), next);
+              const status =
+                usable.find((c) => c.status === rule.status)?.status ??
+                usable[0]?.status ??
+                rule.status;
               onPatch({ typeId: next.id, status, fields: undefined });
             }}
           >
@@ -173,7 +171,7 @@ function RuleRow({
             ))}
           </Select>
         </div>
-        {board && type ? (
+        {type ? (
           <div>
             <p className={LABEL}>card in</p>
             <div role="radiogroup" aria-label="Rule column" className="flex flex-wrap gap-1.5">

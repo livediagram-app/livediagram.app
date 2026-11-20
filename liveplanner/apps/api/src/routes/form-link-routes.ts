@@ -21,7 +21,7 @@ import {
   getSuspendedFormLink,
   setFormLinkOpen,
 } from '../db';
-import { boardsOnTab, readFormTab, responsesProblem } from '../forms/form-tab';
+import { planBoards, readFormTab, responsesProblem } from '../forms/form-tab';
 import { previewToSheet, respond } from '../forms/respond';
 import { writer } from './item-route-kit';
 import { conflict, forbidden, json, methodNotAllowed, notFound } from '../responses';
@@ -80,12 +80,10 @@ async function notReadyToOpen(
   const { form } = formTab;
   if (await responsesProblem(ctx.env, projectId, form, types))
     return conflict('form_destination_missing');
-  // A board form's card type rules are judged against its destination tab's boards (forms.md "Choosing the card type
-  // by an answer"); a form without rules reads no board for them.
+  // A board form's card type rules are judged against every board of the plan (forms.md "Choosing the card type by
+  // an answer"); a form without rules reads no board for them.
   const boards =
-    !form.sheet && form.destination?.typeRules
-      ? await boardsOnTab(ctx.env, projectId, form.destination.tabId)
-      : [];
+    !form.sheet && form.destination?.typeRules ? await planBoards(ctx.env, projectId) : [];
   const problems = publishProblems(
     form,
     form.sheet ? undefined : destinationType(form.destination, types),

@@ -5,7 +5,13 @@
 // draws only with the door the host sets.
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { EmailIntake, EmailIntakeBoard, EmailIntakesResponse } from '@liveplanner/api-schema';
+import type {
+  EmailIntake,
+  EmailIntakeBoard,
+  EmailIntakeTarget,
+  EmailIntakeType,
+  EmailIntakesResponse,
+} from '@liveplanner/api-schema';
 import { EmailIntakeDialog, intakeCountsLine } from './EmailIntakeDialog';
 import { EmailIntakeHost } from './EmailIntakeHost';
 import { useEmailIntakeToolsItem } from './email-intake-tools-item';
@@ -21,18 +27,52 @@ const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 
 const SCOPE = { ownerId: 'user_1', projectId: 'p1', shareCode: null };
+// What the board's address makes unless told otherwise: its first card type in its first column.
+const TASK: EmailIntakeTarget = {
+  typeId: 'task',
+  status: 'inbox',
+  cardType: 'Task',
+  column: 'Inbox',
+  showsOn: ['Board'],
+};
+// The card types some board shows, each with the columns its cards can be seen in.
+const TYPES: EmailIntakeType[] = [
+  {
+    id: 'task',
+    label: 'Task',
+    columns: [
+      { status: 'inbox', name: 'Inbox' },
+      { status: 'doing', name: 'Doing' },
+    ],
+  },
+  { id: 'bug', label: 'Bug', columns: [{ status: 'triage', name: 'Triage' }] },
+];
 const BOARD: EmailIntakeBoard = {
   id: 'b1',
   title: 'Support',
   tabId: 't1',
   tabName: 'Board',
   column: 'Inbox',
+  target: TASK,
 };
-const OTHER: EmailIntakeBoard = { ...BOARD, id: 'b2', title: 'Bugs', column: 'Triage' };
+const OTHER: EmailIntakeBoard = {
+  ...BOARD,
+  id: 'b2',
+  title: 'Bugs',
+  column: 'Triage',
+  target: {
+    typeId: 'bug',
+    status: 'triage',
+    cardType: 'Bug',
+    column: 'Triage',
+    showsOn: ['Board'],
+  },
+};
 const ADDRESS = 'board+abcdefghijklmnopqrstuvwxyz@in.liveplanner.app';
 const on = (i: Partial<EmailIntake> = {}): EmailIntake => ({
   boardId: 'b1',
   address: ADDRESS,
+  target: TASK,
   senders: 'members',
   createdAt: 1,
   made: 0,
@@ -49,6 +89,7 @@ const open = async (r: Partial<EmailIntakesResponse>, boardIds: string[] = ['b1'
     domain: 'in.liveplanner.app',
     intakes: [],
     boards: [BOARD],
+    types: TYPES,
     ...r,
   });
   const onClose = vi.fn();
@@ -56,6 +97,7 @@ const open = async (r: Partial<EmailIntakesResponse>, boardIds: string[] = ['b1'
   await waitFor(() => expect(stateOf()).not.toBe('loading'));
   return onClose;
 };
+const select = (name: string) => screen.getByRole<HTMLSelectElement>('combobox', { name });
 const stateOf = () =>
   document.querySelector('[data-email-intake-state]')!.getAttribute('data-email-intake-state');
 const radio = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) });
@@ -72,13 +114,14 @@ describe('Email to Board', () => {
   it('turns an address on with Who Can Send chosen', async () => {
     await open({});
     expect(stateOf()).toBe('off');
-    expect(screen.getByText(/becomes a card in/).textContent).toContain('Inbox');
+    expect(screen.getByText(/becomes a Task card in/).textContent).toContain('Inbox');
     expect(radio('Plan Members')).toHaveProperty('checked', true);
     fireEvent.click(radio('Anyone with the Address'));
     client.saveEmailIntake.mockResolvedValue({ intake: on({ senders: 'anyone' }) });
     fireEvent.click(screen.getByRole('button', { name: 'Turn On' }));
     await waitFor(() => expect(stateOf()).toBe('on'));
-    expect(client.saveEmailIntake).toHaveBeenCalledWith(SCOPE, 'b1', 'anyone');
+    // No card chosen: the address keeps the board's own (its first card type and column).
+    expect(client.saveEmailIntake).toHaveBeenCalledWith(SCOPE, 'b1', 'anyone', null);
     expect(track).toHaveBeenCalledWith('Plan', 'Created', 'EmailIntake');
     expect(screen.getByRole('textbox', { name: 'Board address' })).toHaveProperty('value', ADDRESS);
     expect(screen.getByText('No mail yet.')).toBeTruthy();
@@ -156,7 +199,90 @@ describe('Email to Board', () => {
     expect(screen.getByRole('option', { name: 'Support (on)' })).toBeTruthy();
     fireEvent.change(picker, { target: { value: 'b2' } });
     expect(stateOf()).toBe('off');
-    expect(screen.getByText(/becomes a card in/).textContent).toContain('Triage');
+    expect(screen.getByText(/becomes a Bug card in/).textContent).toContain('Triage');
+  });
+
+  // An address makes a card of a type in a column, never a board's (email-to-board.md "What a message makes"): the
+  // boards that show it are read back, not chosen.
+  it('says what each email becomes and the boards that show it', async () => {
+    await open({ intakes: [on({ target: { ...TASK, showsOn: ['Board', 'All Work'] } })] });
+    expect(screen.getByText('Mail to this address becomes a Task card in Inbox.')).toBeTruthy();
+    expect(select('Card Type')).toHaveProperty('value', 'task');
+    expect(select('Column')).toHaveProperty('value', 'inbox');
+    expect(document.querySelector('[data-email-intake-shows-on]')!.textContent).toBe(
+      'Shows on Board and All Work',
+    );
+  });
+
+  it('chooses the card before turning on, and turns on with it', async () => {
+    await open({});
+    fireEvent.change(select('Card Type'), { target: { value: 'bug' } });
+    // The type's own first column, as Task's Inbox is not one of Bug's.
+    expect(select('Column')).toHaveProperty('value', 'triage');
+    expect(screen.getByText(/becomes a Bug card in Triage/)).toBeTruthy();
+    expect(client.saveEmailIntake).not.toHaveBeenCalled();
+    const made = on({ target: { ...OTHER.target!, showsOn: ['Board'] } });
+    client.saveEmailIntake.mockResolvedValue({ intake: made });
+    fireEvent.click(screen.getByRole('button', { name: 'Turn On' }));
+    await waitFor(() => expect(stateOf()).toBe('on'));
+    expect(client.saveEmailIntake).toHaveBeenCalledWith(SCOPE, 'b1', 'members', {
+      typeId: 'bug',
+      status: 'triage',
+    });
+  });
+
+  it('saves a new card at once, keeping the address, and goes back when the save fails', async () => {
+    await open({ intakes: [on()] });
+    const doing = { ...TASK, status: 'doing', column: 'Doing' };
+    client.saveEmailIntake.mockResolvedValue({ intake: on({ target: doing }) });
+    fireEvent.change(select('Column'), { target: { value: 'doing' } });
+    await waitFor(() =>
+      expect(screen.getByText('Mail to this address becomes a Task card in Doing.')).toBeTruthy(),
+    );
+    expect(client.saveEmailIntake).toHaveBeenCalledWith(SCOPE, 'b1', 'members', {
+      typeId: 'task',
+      status: 'doing',
+    });
+    expect(track).toHaveBeenCalledWith('Plan', 'Changed', 'EmailIntakeTarget');
+    client.saveEmailIntake.mockRejectedValue(new Error('down'));
+    fireEvent.change(select('Card Type'), { target: { value: 'bug' } });
+    await waitFor(() => expect(screen.getByRole('alert').textContent).toMatch(/Couldn’t save/));
+    expect(select('Card Type')).toHaveProperty('value', 'task');
+  });
+
+  it('says so when no board shows its card any more, and still offers a card to choose', async () => {
+    await open({ intakes: [on({ target: null })] });
+    expect(screen.getByText(/No board shows its cards now, so its mail is refused/)).toBeTruthy();
+    expect(select('Card Type')).toHaveProperty('value', '');
+    client.saveEmailIntake.mockResolvedValue({ intake: on() });
+    fireEvent.change(select('Card Type'), { target: { value: 'task' } });
+    await waitFor(() =>
+      expect(screen.getByText('Mail to this address becomes a Task card in Inbox.')).toBeTruthy(),
+    );
+  });
+
+  // The editor and the api deploy apart: an api from before sends no card types and no card for an address.
+  it('reads as it did against an api from before, never as an address refusing mail', async () => {
+    const { target: _t, ...oldBoard } = BOARD;
+    const { target: _i, ...oldIntake } = on();
+    client.readEmailIntakes.mockResolvedValue({
+      available: true,
+      domain: 'x',
+      intakes: [oldIntake],
+      boards: [oldBoard],
+    });
+    render(<EmailIntakeDialog scope={SCOPE} boardIds={['b1']} onClose={() => {}} />);
+    await waitFor(() => expect(stateOf()).toBe('on'));
+    expect(screen.getByText('Mail to this address becomes a card in Inbox.')).toBeTruthy();
+    expect(screen.queryByRole('combobox', { name: 'Card Type' })).toBeNull();
+  });
+
+  it('starts the other board on its own card when the board changes', async () => {
+    await open({ boards: [BOARD, OTHER] }, ['b1', 'b2']);
+    fireEvent.change(select('Column'), { target: { value: 'doing' } });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Board' }), { target: { value: 'b2' } });
+    expect(select('Card Type')).toHaveProperty('value', 'bug');
+    expect(select('Column')).toHaveProperty('value', 'triage');
   });
 
   it('says what stands in the way', async () => {
@@ -181,6 +307,7 @@ describe('Email to Board', () => {
       domain: 'x',
       intakes: [],
       boards: [BOARD],
+      types: TYPES,
     });
     fireEvent.click(screen.getByRole('button', { name: 'Try Again' }));
     await waitFor(() => expect(stateOf()).toBe('off'));

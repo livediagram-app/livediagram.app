@@ -9,6 +9,7 @@ import {
   publishProblemText,
   QUESTION_TYPE_NAMES,
   closedReason,
+  destinationHome,
   destinationProblem,
   destinationType,
   effectiveTarget,
@@ -24,7 +25,7 @@ import {
   type FormDefinition,
   type FormQuestion,
 } from '@liveplanner/forms';
-import type { ItemTypeDef } from '@liveplanner/items';
+import { boardNamesText, boardsShowing, type ItemTypeDef } from '@liveplanner/items';
 import { readFixedOf, type ReadExtraColumn, type ReadFixedField } from './form-fixed';
 import { rulePlaceOf, type BoardRef, type SheetRef } from './form-world';
 
@@ -130,18 +131,24 @@ export function readFormOf(input: {
     respondsTo = { to: 'sheet', sheet: named?.name ?? '(removed)' };
   } else if (form.destination) {
     const dest = form.destination;
-    const onTab = allBoards.filter((b) => b.tabId === dest.tabId);
-    problem = destinationProblem(
-      dest,
-      onTab.map((b) => ({ columns: b.columns, addTypes: b.types ?? undefined })),
-      types,
+    const place = rulePlaceOf({ boards: allBoards, types });
+    problem = destinationProblem(dest, place.boards, types);
+    // The boards its cards show on, the one on the tab it was last seen on first: `board` names that one.
+    const home = destinationHome(dest, place.boards, types);
+    const shows = allBoards.filter(
+      (b) =>
+        boardsShowing([{ columns: b.columns, addTypes: b.types ?? undefined }], types, dest).length,
     );
-    const column = onTab.flatMap((b) => b.columns).find((c) => c.status === dest.status);
+    const column = allBoards.flatMap((b) => b.columns).find((c) => c.status === dest.status);
+    const homeName = allBoards.find((b) => b.tabId === home?.tabId)?.tabName;
     respondsTo = {
       to: 'board',
-      board: onTab[0]?.tabName ?? input.tabNames?.get(dest.tabId) ?? '(removed)',
+      board: homeName ?? (dest.tabId ? input.tabNames?.get(dest.tabId) : undefined) ?? '(removed)',
       cardType: type?.label ?? '(removed)',
       column: column?.name ?? '(removed)',
+      ...(shows.length
+        ? { showsOn: boardNamesText([...new Set(shows.map((b) => b.tabName))]) }
+        : {}),
     };
   } else problem = 'no_destination';
   // A sheet form's column for each question, as a response finds it (its header).
@@ -163,7 +170,7 @@ export function readFormOf(input: {
     ...publishProblems(
       form,
       form.sheet ? undefined : type,
-      rulePlaceOf({ boards: allBoards, types }, form.destination?.tabId),
+      rulePlaceOf({ boards: allBoards, types }),
     ).map((p) => {
       const text = publishProblemText(p);
       if ('questionId' in p) {
@@ -230,8 +237,7 @@ function readTypeRules(
   boards: readonly BoardRef[],
   types: readonly ItemTypeDef[],
 ): NonNullable<FormReading['cardTypeRules']> {
-  const place = rulePlaceOf({ boards, types }, form.destination?.tabId);
-  const onTab = boards.filter((b) => b.tabId === form.destination?.tabId);
+  const place = rulePlaceOf({ boards, types });
   return form.destination!.typeRules!.map((r) => {
     const q = form.sections.flatMap((s) => s.questions).find((x) => x.id === r.questionId);
     const problem = typeRuleProblem(r, form, place);
@@ -242,7 +248,7 @@ function readTypeRules(
       anyOf: [...r.anyOf],
       cardType: types.find((t) => t.id === r.typeId)?.label ?? '(removed)',
       column:
-        onTab.flatMap((b) => b.columns).find((c) => c.status === r.status)?.name ?? '(removed)',
+        boards.flatMap((b) => b.columns).find((c) => c.status === r.status)?.name ?? '(removed)',
       ...(problem ? { broken: TYPE_RULE_PROBLEM_TEXT[problem] } : {}),
     };
   });
