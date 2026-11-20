@@ -133,6 +133,22 @@ export function markerStrokes(
   seed: number,
   opts: { pinEnds?: boolean } = {},
 ): MarkerLayers {
+  const { strokes, overlaps } = markerStrokeList(outline, seed, opts);
+  // Alternate layers, so every stroke crosses its neighbours in the other one; the overlaps of closed curves go in
+  // the layer their own stroke is not in.
+  const layers: [string[], string[]] = [[], []];
+  strokes.forEach((d, i) => layers[i % 2]!.push(d));
+  layers[strokes.length > 1 ? 0 : 1].push(...overlaps);
+  return [layers[0].join(' '), layers[1].join(' ')];
+}
+
+/** An outline's marker strokes in the order they are drawn (the first starts the outline, the last ends it), and the
+ *  overlaps of its closed curves. markerStrokes deals them into two layers. */
+export function markerStrokeList(
+  outline: SketchOutline,
+  seed: number,
+  opts: { pinEnds?: boolean } = {},
+): { strokes: string[]; overlaps: string[] } {
   const rng = sketchRandom(seed ^ 0x6a09e667);
   const strokes: string[] = [];
   const overlaps: string[] = [];
@@ -173,12 +189,7 @@ export function markerStrokes(
     strokes.push(`${line.d} ${splineCommands(moved, 0, moved.length - 1)}`);
     i++;
   }
-  // Alternate layers, so every stroke crosses its neighbours in the other one; the overlaps of closed curves go in
-  // the layer their own stroke is not in.
-  const layers: [string[], string[]] = [[], []];
-  strokes.forEach((d, i) => layers[i % 2]!.push(d));
-  layers[strokes.length > 1 ? 0 : 1].push(...overlaps);
-  return [layers[0].join(' '), layers[1].join(' ')];
+  return { strokes, overlaps };
 }
 
 /** An open outline with its ends cut back along itself, `startPx` and `endPx` (a hollow head's line stops at its
