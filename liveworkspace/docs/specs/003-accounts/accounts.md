@@ -1048,8 +1048,9 @@ Automatically Open Explorer (`autoOpenExplorer`, [one-explorer.md](../004-index/
 Home banner (`homeBanner`), the Collaborate, Quick Style, Layers and Map panels (`collaboratePanelEnabled`,
 `quickStylePanelEnabled`, `layersPanelEnabled`, `layersShowPreview`, `layersShowCount`, `layerHoverPreview`,
 `showMinimap`, `mapSize`, `mapDimOutside`), the canvas's `alignmentGuides`, `autoRebindArrows`,
-`elementIndicatorStyle` and `quickAddOnHover`, Pages' `contentsPlacement`, and Presenting (`presentation`, one
-object). Each has the same type, values and default in every app that has it. A key is shared only when it does
+`elementIndicatorStyle` and `quickAddOnHover`, Pages' `contentsPlacement`, Presenting (`presentation`, one
+object), and what a delete does with a picture nothing else uses (`unusedImageChoice`, each product's
+`docs/specs/009-elements/images.md` "Deleting an unused picture"; added November 2026, so no app copy predates it). Each has the same type, values and default in every app that has it. A key is shared only when it does
 mean the same everywhere: `notifyDocumentJoin` stays livediagram's and livedocuments' own, one of each app's
 "someone joins my …" emails beside liveplanner's `notifyProjectJoin` and livedesign's `notifyDesignJoin`, which
 someone may well want from one app and not another. The Layers panel's four keys are livediagram's alone since

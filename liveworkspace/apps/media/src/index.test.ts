@@ -10,6 +10,7 @@ import type {
 import { unavailableD1 } from '@liveworkspace/api-kit/testing/unavailable-d1';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import worker from './index';
+import { UNUSED_SQL } from './images';
 import type { Env } from './env';
 import { testDb, type TestDb } from './test-sqlite-d1';
 
@@ -528,5 +529,74 @@ describe('the data export', () => {
         })
       ).status,
     ).toBe(503);
+  });
+});
+
+describe('unused after a delete', () => {
+  const sync = (body: unknown, as = asApp) =>
+    as('/app/refs', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+  const unused = async (ids: string[], document = 'd1', owner = 'user_1', as = asApp) => {
+    const res = await as(
+      `/app/unused?owner=${owner}&document=${document}&ids=${encodeURIComponent(ids.join(','))}`,
+    );
+    return ((await res.json()) as { unused: string[] }).unused;
+  };
+
+  it('answers the owner’s pictures nothing but the asking document places', async () => {
+    const own = await uploaded(png(1));
+    const free = await uploaded(png(2));
+    const elsewhere = await uploaded(png(3));
+    const theirs = await uploaded(png(4), { owner: 'user_2' });
+    await sync({ documents: [{ document: 'd1', images: [own.image.id, elsewhere.image.id] }] });
+    // Another document in another app places one: used.
+    await sync({ documents: [{ document: 'p1', images: [elsewhere.image.id] }] }, asDesign);
+    const ids = [own.image.id, free.image.id, elsewhere.image.id, theirs.image.id, 'missing'];
+    expect(await unused(ids)).toEqual([own.image.id, free.image.id].sort());
+    // The same id in another app is another document: d1's own reference still counts for it.
+    expect(await unused([own.image.id], 'd1', 'user_1', asDesign)).toEqual([]);
+    expect(await unused([elsewhere.image.id], 'p1', 'user_1', asDesign)).toEqual([]);
+  });
+
+  it('keeps a picture a Library item holds, or an unconfirmed reference names, but the asker’s own', async () => {
+    const held = await uploaded(png(1));
+    const vouched = await uploaded(png(2));
+    const own = await uploaded(png(3));
+    db.sql
+      .prepare('INSERT INTO refs (app, document, image_id) VALUES (?, ?, ?)')
+      .run('library', 'item-1', held.image.id);
+    await sync({
+      documents: [],
+      pending: [
+        { document: 'copy-1', images: [vouched.image.id] },
+        { document: 'd1', images: [own.image.id] },
+      ],
+    });
+    expect(await unused([held.image.id, vouched.image.id, own.image.id])).toEqual([own.image.id]);
+  });
+
+  it('refuses a missing owner or document and a malformed list', async () => {
+    const status = async (query: string) => (await asApp(`/app/unused?${query}`)).status;
+    expect(await status('document=d1&ids=a')).toBe(400);
+    expect(await status('owner=user_1&ids=a')).toBe(400);
+    expect(await status('owner=user_1&document=d1')).toBe(400);
+    expect(await status('owner=user_1&document=d1&ids=a,,b')).toBe(400);
+  });
+
+  it('probes each asked id by its key, never the owner’s whole index', () => {
+    const plan = db.sql
+      .prepare(`EXPLAIN QUERY PLAN ${UNUSED_SQL}`)
+      .all('user_1', 'livediagram.app', 'd1', '["a"]')
+      .map((r) => String((r as { detail: string }).detail));
+    expect(plan[0]).toMatch(/SCAN j/);
+    expect(
+      plan.some((d) =>
+        /SEARCH i USING (INDEX sqlite_autoindex_images_1|INTEGER PRIMARY KEY) \(id=\?\)/.test(d),
+      ),
+    ).toBe(true);
+    expect(plan.some((d) => /images_owner/.test(d))).toBe(false);
   });
 });

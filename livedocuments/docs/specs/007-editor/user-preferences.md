@@ -296,6 +296,11 @@ type UserPreferences = {
   // docked as a sidebar beside the canvas, or minimised to its cluster button.
   // Unset, or anything but 'button', is the sidebar (lib/contents-placement).
   contentsPlacement?: 'sidebar' | 'button';
+  // What a delete does with a picture nothing else uses (../009-elements/images.md
+  // "Deleting an unused picture"): ask ('ask'), delete it from storage ('delete') or keep
+  // it ('keep'). A common setting, one value in every app. Unset, or anything else, is
+  // Ask (@liveworkspace/workbench lib/unused-image-choice).
+  unusedImageChoice?: 'ask' | 'delete' | 'keep';
 };
 ```
 
@@ -307,6 +312,11 @@ another version's flags.
 
 Missing key === undefined === default behaviour. Concretely:
 
+- `unusedImageChoice` undefined → Ask Every Time: deleting the last image element
+  that places a picture nothing else uses offers to delete it from storage. `'delete'`
+  deletes it after the same checks, with a notice; `'keep'` asks nothing. Set from
+  Settings > Editor ("When I Delete an Unused Image") or the offer's Remember My Choice
+  ([Images](../009-elements/images.md#deleting-an-unused-picture)).
 - `autoRebindArrows` undefined → the auto-rebind runs (the default,
   [Arrow anchors and auto-rebind](../008-canvas/arrow-anchors.md)).
   Setting it to `false` is the only state that turns it off, and then

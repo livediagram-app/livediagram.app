@@ -207,6 +207,9 @@ export type UserPreferences = {
   // livediagram's presenter settings (docs/specs/012-collaboration/presentation-mode.md), one shared setting.
   // livehuddle has no presenting since Work Tracker #423 part 2: it never reads or writes the key, only carries it.
   presentation?: Record<string, unknown>;
+  // What a delete does with a picture nothing else uses (docs/specs/009-elements/images.md "Deleting an unused
+  // picture"): a common setting, read through @liveworkspace/workbench/lib/unused-image-choice. Unset is Ask.
+  unusedImageChoice?: 'ask' | 'delete' | 'keep';
 };
 
 // Re-exported under this module's own name because everything here reads it

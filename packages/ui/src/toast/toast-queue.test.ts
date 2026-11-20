@@ -91,6 +91,16 @@ describe('upsertActionToast', () => {
     ]);
   });
 
+  it('carries its switch through', () => {
+    const toggle = { label: 'Remember My Choice', onChange: () => {} };
+    const [entry] = upsertActionToast(
+      [],
+      { key: 'a', message: 'Keep it?', actions: [undo], toggle },
+      1,
+    );
+    expect(entry!.toggle).toBe(toggle);
+  });
+
   it('carries a highlighted toast through', () => {
     const [entry] = upsertActionToast(
       [],

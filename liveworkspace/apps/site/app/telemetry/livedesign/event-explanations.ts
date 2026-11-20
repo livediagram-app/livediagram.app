@@ -901,6 +901,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned element indicators (link, note, action, comments) off, in Settings > Editor.',
   'UI|Changed|ElementIndicatorsFooter':
     'Someone set element indicators (link, note, action, comments) to a labelled row along the bottom of each element, in Settings > Editor.',
+  'UI|Changed|UnusedImagesAsk':
+    'Someone set When I Delete an Unused Image to Ask Every Time, in Settings > Editor.',
+  'UI|Changed|UnusedImagesDelete':
+    'Someone set When I Delete an Unused Image to Always Delete, so a picture nothing else uses goes from storage with its last element, in Settings > Editor.',
+  'UI|Changed|UnusedImagesKeep':
+    'Someone set When I Delete an Unused Image to Always Keep, so deleting an image never offers to delete its picture from storage, in Settings > Editor.',
   'UI|Changed|MapSize':
     'Someone resized the minimap, in Settings > Editor. An earlier version of this event, before it recorded which size was chosen. No longer recorded.',
   'UI|Changed|MapSizeMedium': 'Someone set the minimap to its medium size, in Settings > Editor.',

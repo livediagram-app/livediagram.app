@@ -30,6 +30,9 @@ export const COMMON_SETTING_KEYS = [
   'quickAddOnHover',
   'contentsPlacement',
   'presentation',
+  // What a delete does with a picture nothing else uses (each product's docs/specs/009-elements/images.md "Deleting an
+  // unused picture"), from November 2026.
+  'unusedImageChoice',
 ] as const;
 
 export type CommonSettingKey = (typeof COMMON_SETTING_KEYS)[number];

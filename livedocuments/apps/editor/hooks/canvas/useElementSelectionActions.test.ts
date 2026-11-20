@@ -28,7 +28,14 @@ const pinnedArrow = (id: string, fromId: string, toId: string): ArrowElement => 
 
 // Build the hook over fake deps. `commit` synchronously applies the
 // mapper to `elements` and stashes the result so a test can assert on it.
-function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: string[] } = {}) {
+function setup(
+  elements: Element[],
+  opts: {
+    tabLocked?: boolean;
+    selection?: string[];
+    onElementsRemoved?: (removed: Element[]) => void;
+  } = {},
+) {
   const activeTab: Tab = {
     id: 't1',
     name: 'Tab',
@@ -49,6 +56,7 @@ function setup(elements: Element[], opts: { tabLocked?: boolean; selection?: str
     setMultiSelectedIds: () => {},
     setFormatSourceId: () => {},
     lockedByOther: () => false,
+    ...(opts.onElementsRemoved ? { onElementsRemoved: opts.onElementsRemoved } : {}),
     layerLockedIds: new Set<string>(),
     layerInertIds: new Set<string>(),
   });
@@ -129,5 +137,23 @@ describe('deleteMultiSelected lock protection', () => {
     const { actions, getResult } = setup(els, { selection: ['a', 'b'] });
     actions.deleteMultiSelected();
     expect(getResult()).toBeNull();
+  });
+});
+
+// docs/specs/009-elements/images.md "Deleting an unused picture": a delete tells the editor what it took.
+describe('the elements a delete took', () => {
+  it('names them for a single and a multi-selection delete, and nothing when none went', () => {
+    const removed: string[][] = [];
+    const onElementsRemoved = (els: Element[]) => removed.push(els.map((e) => e.id));
+    setup([shape('a'), shape('b')], {
+      selection: ['a'],
+      onElementsRemoved,
+    }).actions.deleteSelected();
+    setup([shape('a'), shape('b'), shape('c')], {
+      selection: ['a', 'b'],
+      onElementsRemoved,
+    }).actions.deleteMultiSelected();
+    setup([shape('a')], { selection: ['gone'], onElementsRemoved }).actions.deleteSelected();
+    expect(removed).toEqual([['a'], ['a', 'b']]);
   });
 });
