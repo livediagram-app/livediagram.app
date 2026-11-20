@@ -33,7 +33,7 @@ function describeCard(
     case 'url':
       return { title: meta?.title ?? hostOf(link.url), destination: link.url };
     case 'document':
-      return { title: 'Document', destination: link.name };
+      return { title: 'Knowledgebase', destination: link.name };
     case 'tab':
     case 'element': {
       const name = tabs?.find((t) => t.id === link.tabId)?.name?.trim();

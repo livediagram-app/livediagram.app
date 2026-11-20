@@ -92,7 +92,7 @@ export const PALETTE_CATEGORIES: {
     id: 'library',
     label: 'Library',
     group: 2,
-    description: 'What you and your teams saved, to place in any document, in every app.',
+    description: 'What you and your teams saved, to place in any knowledgebase, in every app.',
     icon: <LibraryIcon />,
   },
   {

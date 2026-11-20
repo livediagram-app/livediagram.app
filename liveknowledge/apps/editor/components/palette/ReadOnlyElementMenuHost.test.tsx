@@ -49,7 +49,8 @@ afterEach(cleanup);
 describe('ReadOnlyElementMenuHost', () => {
   // Element links and notes are retired (docs/specs/009-elements/links-and-notes-retired.md): no Open Link or View
   // Note for a stored one.
-  it('gives a Participant comments and its words, and no row for a stored link or note', () => {
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant comments and writes nothing.
+  it('gives a Participant comments, no writing, and no row for a stored link or note', () => {
     open(
       'participate',
       square({
@@ -59,7 +60,7 @@ describe('ReadOnlyElementMenuHost', () => {
       }),
     );
     expect(screen.getByText('Square')).toBeTruthy();
-    expect(rows()).toEqual(['Add Comment', 'Edit Text', 'Copy Text']);
+    expect(rows()).toEqual(['Add Comment', 'Copy Text']);
   });
 
   it('gives a Viewer no comment to start, no writing, and comments only where there are some', () => {
@@ -106,9 +107,7 @@ describe('ReadOnlyElementMenuHost', () => {
     expect(ctx.openComments).toHaveBeenCalledWith('sq');
     expect(ctx.closeContextMenu).toHaveBeenCalled();
     cleanup();
-    open('participate', el);
-    fireEvent.click(screen.getByRole('button', { name: 'Edit Text' }));
-    expect(ctx.beginEdit).toHaveBeenCalledWith('sq');
+    expect(screen.queryByRole('button', { name: 'Edit Text' })).toBeNull();
     cleanup();
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', { value: { writeText }, configurable: true });
@@ -129,7 +128,7 @@ describe('ReadOnlyElementMenuHost', () => {
 
   it('attaches nothing to an arrow', () => {
     open('participate', { ...createArrow(0, 0, 10, 10), id: 'ar', label: 'yes' });
-    expect(rows()).toEqual(['Edit Text', 'Copy Text']);
+    expect(rows()).toEqual(['Copy Text']);
   });
 
   it('renders nothing without an element menu open, or for an element gone', () => {

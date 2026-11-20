@@ -59,7 +59,7 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
   {
     tone: 'emerald',
     icon: DEVICES,
-    title: 'Your documents sync on every device',
+    title: 'Your knowledgebases sync on every device',
     line: 'Start on a laptop, pick up on a phone.',
   },
   {

@@ -33,7 +33,7 @@ function offlineVerbs(item: Item, conversions: Conversions) {
     return [
       {
         id: 'sync-document',
-        label: 'Sync Document',
+        label: 'Sync Knowledgebase',
         icon: <SyncIcon />,
         onSelect: () => conversions.current.syncToCloud(doc),
       },

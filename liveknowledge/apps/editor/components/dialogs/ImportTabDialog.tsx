@@ -124,7 +124,7 @@ export function ImportTabDialog({
       <HeroDialogHeader
         art={importHeroArt}
         titleId={titleId}
-        title="Import to Tab"
+        title="Import to Page"
         subtitle={
           report
             ? "Here's how your import came across."

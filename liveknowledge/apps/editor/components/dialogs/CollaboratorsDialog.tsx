@@ -91,7 +91,7 @@ export function CollaboratorsDialog({
         {roster.groups.map((group) => (
           <section
             key={group.tab?.id ?? 'another-tab'}
-            aria-label={group.tab?.name ?? 'Another Tab'}
+            aria-label={group.tab?.name ?? 'Another Page'}
           >
             <div className="mb-1.5 flex items-center gap-2">
               {group.tab ? (
@@ -102,7 +102,7 @@ export function CollaboratorsDialog({
                 />
               ) : null}
               <h3 className="truncate text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                {group.tab?.name ?? 'Another Tab'}
+                {group.tab?.name ?? 'Another Page'}
               </h3>
               {group.isActive ? (
                 <span className="shrink-0 rounded-full bg-brand-50 px-1.5 py-0.5 text-[10px] font-semibold text-brand-700 dark:bg-brand-500/15 dark:text-brand-300">

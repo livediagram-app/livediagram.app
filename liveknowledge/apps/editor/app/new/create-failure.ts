@@ -25,7 +25,7 @@ const PLACEMENT_MESSAGES: Record<PlacementRejection, string> = {
 const CONNECTION_FAILURE: CreateFailure = {
   action: 'retry',
   eyebrow: 'Connection error',
-  title: 'Couldn’t create the document',
+  title: 'Couldn’t create the knowledgebase',
   message:
     'We couldn’t reach the server to create your document. Check your connection and try again.',
   actionLabel: 'Try again',
@@ -37,7 +37,7 @@ export function createFailureCopy(error: unknown): CreateFailure {
   return {
     action: 'choose',
     eyebrow: 'Placement refused',
-    title: 'Couldn’t file the document there',
+    title: 'Couldn’t file the knowledgebase there',
     message: PLACEMENT_MESSAGES[code],
     actionLabel: 'Choose another place',
   };

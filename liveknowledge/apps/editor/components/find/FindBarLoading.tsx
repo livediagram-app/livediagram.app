@@ -35,7 +35,7 @@ export function FindBarLoading({ find }: { find: FindView }) {
   return (
     <div
       role="search"
-      aria-label="Find in Tab"
+      aria-label="Find in Page"
       aria-busy="true"
       data-find-bar=""
       data-keeps-escape=""

@@ -112,7 +112,7 @@ export function PortalMenu({
   const { attach, element, tree, surfaceProps } = useControlMenu({
     onClose,
     trigger: anchor ?? null,
-    label: point ? 'Canvas menu' : 'Tab menu',
+    label: point ? 'Canvas menu' : 'Page menu',
   });
   const setRef = useCallback(
     (el: HTMLDivElement | null) => {
@@ -238,7 +238,7 @@ export function PortalMenu({
       <MenuActionRow
         plain
         icon={<TrashIcon />}
-        label="Remove Tab"
+        label="Remove Page"
         onClick={() => {
           onDelete();
           onClose();
@@ -260,13 +260,13 @@ export function PortalMenu({
             <MenuToolButton
               icon={<PencilIcon />}
               label="Rename"
-              description="Rename this tab."
+              description="Rename this page."
               onClick={onRename}
             />
             <MenuToolButton
               icon={<DuplicateIcon />}
               label="Duplicate"
-              description="Create a copy of this tab in this document."
+              description="Create a copy of this page in this knowledgebase."
               onClick={onDuplicate}
             />
             {/* Paste in the tab ⋯ menu: one tab verb among several, so an
@@ -278,7 +278,9 @@ export function PortalMenu({
                 icon={<PasteMenuIcon />}
                 label="Paste"
                 description={
-                  canvas.canPaste ? 'Paste what you copied onto this tab.' : 'Nothing to paste yet.'
+                  canvas.canPaste
+                    ? 'Paste what you copied onto this page.'
+                    : 'Nothing to paste yet.'
                 }
                 onClick={() => {
                   canvas.onPaste();
@@ -295,8 +297,8 @@ export function PortalMenu({
                 label={sideBySide.closing ? 'Close Side by Side' : 'Side by Side'}
                 description={
                   sideBySide.closing
-                    ? 'Go back to one tab: this one, across the whole window.'
-                    : 'Show this tab on the right, beside the tab you were on. Or drag its pill to the right edge.'
+                    ? 'Go back to one page: this one, across the whole window.'
+                    : 'Show this page on the right, beside the page you were on.'
                 }
                 onClick={() => {
                   sideBySide.run();
@@ -311,8 +313,10 @@ export function PortalMenu({
             <div className="ml-auto flex items-center gap-0.5">
               <MenuToolButton
                 icon={<TabLockIcon />}
-                label={locked ? 'Unlock Tab' : 'Lock Tab'}
-                description={locked ? 'Make this tab editable again.' : 'Make this tab read-only.'}
+                label={locked ? 'Unlock Page' : 'Lock Page'}
+                description={
+                  locked ? 'Make this page editable again.' : 'Make this page read-only.'
+                }
                 onClick={onToggleLock}
                 active={locked}
               />
@@ -320,7 +324,7 @@ export function PortalMenu({
                 icon={<TrashIcon />}
                 label="Delete"
                 description={
-                  locked ? 'This tab is locked. Unlock it before deleting.' : 'Delete this tab.'
+                  locked ? 'This page is locked. Unlock it before deleting.' : 'Delete this page.'
                 }
                 onClick={() => {
                   onDelete();
@@ -366,7 +370,7 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<MoveIcon />}
-            label="Add to Document"
+            label="Add to Knowledgebase"
             onClick={() => setView('copyTo')}
             disabled={otherDocuments.length === 0}
           />

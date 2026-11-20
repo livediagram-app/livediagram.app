@@ -152,7 +152,7 @@ export function FindBar({ find }: { find: FindView }) {
   return (
     <div
       role="search"
-      aria-label="Find in Tab"
+      aria-label="Find in Page"
       data-find-bar=""
       data-keeps-escape=""
       onKeyDown={onBarKey}

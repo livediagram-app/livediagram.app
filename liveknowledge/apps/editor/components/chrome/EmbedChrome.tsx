@@ -134,7 +134,7 @@ function TabMenu({
   onClose: () => void;
   children: ReactNode;
 }) {
-  const { attach, surfaceProps } = useMenu({ onClose, trigger, label: 'Tabs' });
+  const { attach, surfaceProps } = useMenu({ onClose, trigger, label: 'Pages' });
   return (
     <div
       ref={attach}

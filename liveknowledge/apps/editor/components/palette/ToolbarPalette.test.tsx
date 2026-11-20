@@ -285,7 +285,7 @@ describe('ToolbarPalette', () => {
         ] as unknown as Element[],
       });
       const popover = openSearch();
-      expect(popover.textContent).toContain('On This Tab');
+      expect(popover.textContent).toContain('On This Page');
       expect(
         within(popover)
           .getAllByRole('button')
@@ -294,7 +294,7 @@ describe('ToolbarPalette', () => {
       ).toEqual(['Add Diamond']);
       cleanup();
       show();
-      expect(openSearch().textContent).toContain('No elements on this tab yet');
+      expect(openSearch().textContent).toContain('No elements on this page yet');
     });
 
     it('opens on S where it is shown, and leaves S to Select where it is not', () => {

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createImage, type Element } from '@liveknowledge/document';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
@@ -60,13 +60,13 @@ describe('ReadOnlyElementMenuHost alt text', () => {
     expect(screen.getByText('Not described yet')).toBeTruthy();
   });
 
-  it('lets a Participant write it, under its rows', () => {
-    const setImageAlt = open('participate', picture({ alt: 'photo.jpg' }));
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles": a Participant comments and writes nothing.
+  it('shows a Participant the words under its rows, with no field to write them', () => {
+    const setImageAlt = open('participate', picture({ alt: 'A harbour at dusk' }));
     expect(screen.getByRole('button', { name: 'Add Comment' })).toBeTruthy();
-    const field = screen.getByRole('textbox', { name: 'Alt Text' });
-    fireEvent.change(field, { target: { value: 'A harbour at dusk' } });
-    fireEvent.keyDown(field, { key: 'Enter' });
-    expect(setImageAlt).toHaveBeenCalledExactlyOnceWith('pic', 'A harbour at dusk');
+    expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.getByText('A harbour at dusk')).toBeTruthy();
+    expect(setImageAlt).not.toHaveBeenCalled();
   });
 
   it('only shows a Participant the words on a locked image, or one someone else holds', () => {

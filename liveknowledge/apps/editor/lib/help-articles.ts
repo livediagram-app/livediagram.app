@@ -120,7 +120,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   sharePasswords: {
     title: 'Learn about share passwords',
-    description: 'One password that guards every link to a document, embeds included.',
+    description: 'One password that guards every link to a knowledgebase, embeds included.',
   },
   requestApproval: {
     title: 'Learn about requesting approval',
@@ -132,7 +132,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   community: {
     title: 'Learn about the Community',
-    description: 'Sharing a document publicly, and how people find and copy it.',
+    description: 'Sharing a knowledgebase publicly, and how people find and copy it.',
   },
 
   autoAttachArrows: {
@@ -157,7 +157,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   laser: {
     title: 'Learn about the Laser',
-    description: 'Tips for pointing things out to the room without touching the document.',
+    description: 'Tips for pointing things out to the room without touching the knowledgebase.',
   },
   spotlight: {
     title: 'Learn about the Spotlight',
@@ -169,7 +169,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your knowledgebases from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -181,11 +181,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted documents wait, and how to restore one.',
+    description: 'How long deleted knowledgebases wait, and how to restore one.',
   },
   importTabs: {
-    title: 'Learn about importing tabs',
-    description: 'What you can import and how it replaces the tab.',
+    title: 'Learn about importing pages',
+    description: 'What you can import and how it replaces the page.',
   },
   markdownImport: {
     title: 'Learn about Markdown import',
@@ -197,19 +197,19 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   changingTheme: {
     title: 'Learn about changing the theme',
-    description: "Tips for restyling a tab's colours in one go.",
+    description: "Tips for restyling a page's colours in one go.",
   },
   choosingAFinish: {
     title: 'Learn about finishes',
-    description: 'Drawing a tab crisp and print-ready, sketched by hand, or in bold marker.',
+    description: 'Drawing a page crisp and print-ready, sketched by hand, or in bold marker.',
   },
   choosingFonts: {
     title: 'Learn about fonts',
-    description: 'Tips for choosing a typeface and text size for a tab.',
+    description: 'Tips for choosing a typeface and text size for a page.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a document right on the canvas.',
+    description: 'Tips and tricks for discussing a knowledgebase right on the page.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -221,7 +221,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   layers: {
     title: 'Learn about layers',
-    description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
+    description: 'Tips and tricks for stacking, hiding and locking parts of a page.',
   },
   minimap: {
     title: 'Learn about the Map',
@@ -233,15 +233,15 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   myWork: {
     title: 'Learn about My Work',
-    description: 'Your own documents and folders, in one place.',
+    description: 'Your own knowledgebases and folders, in one place.',
   },
   recent: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened documents, personal and team, in one list.',
+    description: 'Your most recently opened knowledgebases, personal and team, in one list.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Documents other people have shared with you, collected here.',
+    description: 'Knowledgebases other people have shared with you, collected here.',
   },
   inbox: {
     title: 'Learn about the Inbox',
@@ -249,11 +249,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising documents into a nestable tree of folders.',
+    description: 'Tips for organising knowledgebases into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
-    description: 'Where new documents land when you pick no place.',
+    description: 'Where new knowledgebases land when you pick no place.',
   },
   explorerFilters: {
     title: 'Learn about search and filters',
@@ -261,7 +261,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   teamSpaces: {
     title: 'Learn about team spaces',
-    description: 'A team’s shared library of documents and folders.',
+    description: 'A team’s shared library of knowledgebases and folders.',
   },
   dataElements: {
     title: 'Learn about data elements',
@@ -294,7 +294,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Documents saved only in this browser, and how to sync them.',
+    description: 'Knowledgebases saved only in this browser, and how to sync them.',
   },
   templates: {
     title: 'Learn about templates',
@@ -314,7 +314,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the document, where they are, and following them.',
+    description: 'Who is in the knowledgebase, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
@@ -326,7 +326,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   documentNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a document will not open.',
+    description: 'Steps to try when a knowledgebase will not open.',
   },
 };
 

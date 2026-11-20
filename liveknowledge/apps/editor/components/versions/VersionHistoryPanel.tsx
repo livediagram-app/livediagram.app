@@ -166,7 +166,7 @@ export function VersionHistoryPanel(props: VersionHistoryPanelProps) {
           <Select
             variant="ghost"
             size="sm"
-            aria-label="Tab"
+            aria-label="Page"
             value={tabId}
             className="min-w-0"
             selectClassName="max-w-[14rem] truncate"

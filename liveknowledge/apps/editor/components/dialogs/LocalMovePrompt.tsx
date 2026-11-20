@@ -39,7 +39,7 @@ export function LocalMovePrompt({ enabled = true }: { enabled?: boolean }) {
   if (phase.kind === 'partial') {
     return (
       <Dialog open onClose={prompt.finish} ariaLabel={title} size="md">
-        <DialogHeader title="Some Documents Stayed Offline">
+        <DialogHeader title="Some Knowledgebases Stayed Offline">
           <DialogCloseButton onClick={prompt.finish} />
         </DialogHeader>
         <div className="px-6 py-5 text-sm text-slate-700 dark:text-slate-200">

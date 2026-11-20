@@ -152,11 +152,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       />
     );
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame} title="Document Archived">
+      <EmbedShell frame={workspaceFrame} title="Knowledgebase Archived">
         {card}
       </EmbedShell>
     ) : (
-      <StatusShell title="Document Archived">{card}</StatusShell>
+      <StatusShell title="Knowledgebase Archived">{card}</StatusShell>
     );
   }
 
@@ -172,11 +172,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
       />
     );
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame} title="Document Deleted">
+      <EmbedShell frame={workspaceFrame} title="Knowledgebase Deleted">
         {card}
       </EmbedShell>
     ) : (
-      <StatusShell title="Document Deleted">{card}</StatusShell>
+      <StatusShell title="Knowledgebase Deleted">{card}</StatusShell>
     );
   }
 
@@ -188,11 +188,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
     // Embed and workbench frames get the bare retry card: an app header + Explorer
     // panel inside someone else's page is noise (docs/specs/013-workspace/embeds.md).
     return !appChrome ? (
-      <EmbedShell frame={workspaceFrame} title="Couldn’t Load Document">
+      <EmbedShell frame={workspaceFrame} title="Couldn’t Load Knowledgebase">
         {card}
       </EmbedShell>
     ) : (
-      <StatusShell title="Couldn’t Load Document">{card}</StatusShell>
+      <StatusShell title="Couldn’t Load Knowledgebase">{card}</StatusShell>
     );
   }
 

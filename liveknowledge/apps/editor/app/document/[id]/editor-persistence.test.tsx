@@ -44,7 +44,7 @@ describe('useEditorPersistence save toast', () => {
   // per-tab-storage.md "A tab too big to save says so".
   it('names the tab size, not the connection, for a tab too big to save', () => {
     const [message] = toastAfter('tooLarge');
-    expect(message).toBe('This tab is too big to save. Move some of it to another tab.');
+    expect(message).toBe('This page is too big to save. Move some of it to another page.');
     expect(message).not.toMatch(/connection/i);
   });
 

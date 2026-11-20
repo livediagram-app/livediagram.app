@@ -80,7 +80,7 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
         onTakeOffline={view.onTakeOffline}
         visibilityActions={view.visibilityActions}
         copying={copying}
-        copyDescription="Duplicate this document into your own files."
+        copyDescription="Duplicate this knowledgebase into your own files."
         // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
         present={
           CUT_FROM_FORK && hydrated && !anyWelcomeOpen && !isMobileViewport && slideCount > 0

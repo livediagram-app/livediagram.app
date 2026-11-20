@@ -103,7 +103,7 @@ export function ToolbarSearchPanel({
         />
       </div>
       {browsing && here.length > 0 ? (
-        <div className="px-1 text-[10px] text-slate-500 dark:text-slate-400">On This Tab</div>
+        <div className="px-1 text-[10px] text-slate-500 dark:text-slate-400">On This Page</div>
       ) : null}
       {here.length > 0 ? (
         <PaletteTileGrid tiles={here} actions={actions} pendingDraw={pendingDraw} />
@@ -112,7 +112,7 @@ export function ToolbarSearchPanel({
         <CompactEmptyState
           size="small"
           icon={<SearchIcon />}
-          title="No elements on this tab yet"
+          title="No elements on this page yet"
           description="Type to find any element."
         />
       ) : (

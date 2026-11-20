@@ -240,10 +240,10 @@ export function useTabActions(deps: TabActionsDeps) {
     const source = tabs.find((t) => t.id === activeId);
     if (!source || !documentId) return;
     const target =
-      toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that document';
+      toastName(documentList.find((d) => d.id === targetDocumentId)?.name) ?? 'that knowledgebase';
     try {
       await apiLinkTab(ownerId, targetDocumentId, source.id, documentId);
-      toast.success(`${toastName(source.name) ?? 'Tab'} added to ${target}`);
+      toast.success(`${toastName(source.name) ?? 'Page'} added to ${target}`);
       track('Tab', 'Linked');
     } catch {
       // Previously swallowed silently: the user clicked a destination
@@ -251,7 +251,7 @@ export function useTabActions(deps: TabActionsDeps) {
       // without forcing a modal; refresh still runs so the source
       // document's local state remains consistent with what landed.
       // Two names fill the line, so the try-again is left to the reader.
-      toast.error(`Could not add ${toastName(source.name) ?? 'the tab'} to ${target}.`);
+      toast.error(`Could not add ${toastName(source.name) ?? 'the page'} to ${target}.`);
     }
     refreshDocumentList(ownerId);
   };

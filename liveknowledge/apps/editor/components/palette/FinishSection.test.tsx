@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The Finish category (docs/specs/008-canvas/finish.md "Where it is set"): Follow Tab plus the four finishes,
-// the element's own pressed, hover previews, click commits, Follow Tab clears.
+// The Finish category (docs/specs/008-canvas/finish.md "Where it is set"): Follow Page plus the four finishes,
+// the element's own pressed, hover previews, click commits, Follow Page clears.
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -21,7 +21,7 @@ const renderSection = (finish: Finish | undefined) => {
 const tile = (name: string) => screen.getByRole('radio', { name: new RegExp(`^${name}`) });
 
 describe('FinishSection', () => {
-  it('offers Follow Tab and the four finishes as one full-width list, in order', () => {
+  it('offers Follow Page and the four finishes as one full-width list, in order', () => {
     renderSection(undefined);
     const rows = screen
       .getByRole('radiogroup', { name: 'Drawn As' })
@@ -35,23 +35,23 @@ describe('FinishSection', () => {
     ]);
   });
 
-  it('presses Follow Tab for an element without its own finish', () => {
+  it('presses Follow Page for an element without its own finish', () => {
     renderSection(undefined);
-    expect(tile('Follow Tab').getAttribute('aria-checked')).toBe('true');
+    expect(tile('Follow Page').getAttribute('aria-checked')).toBe('true');
     expect(tile('Sketch').getAttribute('aria-checked')).toBe('false');
   });
 
   it("presses the element's own finish", () => {
     renderSection('professional');
     expect(tile('Professional').getAttribute('aria-checked')).toBe('true');
-    expect(tile('Follow Tab').getAttribute('aria-checked')).toBe('false');
+    expect(tile('Follow Page').getAttribute('aria-checked')).toBe('false');
   });
 
-  it('commits a finish on click, and Follow Tab as null', () => {
+  it('commits a finish on click, and Follow Page as null', () => {
     const h = renderSection('sketch');
     fireEvent.click(tile('Flexible'));
     expect(h.onCommit).toHaveBeenLastCalledWith('flexible');
-    fireEvent.click(tile('Follow Tab'));
+    fireEvent.click(tile('Follow Page'));
     expect(h.onCommit).toHaveBeenLastCalledWith(null);
   });
 

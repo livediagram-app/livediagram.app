@@ -73,7 +73,7 @@ export function VersionRail(props: RailProps) {
           onClick={() => onSelect(NOW)}
         >
           <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Now</span>
-          <span className="text-xs text-slate-500 dark:text-slate-400">The tab as it is</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400">The page as it is</span>
         </button>
         {list.state === 'loading' ? <RailSkeleton /> : null}
         {list.state === 'failed' ? (

@@ -202,7 +202,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     // and on a touch screen with no keyboard this is the way in.
     {
       id: 'find',
-      name: 'Find in Tab',
+      name: 'Find in Page',
       keywords: 'find search look for text words match next previous',
       run: () => h.openFind(false),
     },
@@ -265,13 +265,13 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // clearing what's selected.
   out.push({
     id: 'create-tab',
-    name: 'Create New Tab',
+    name: 'Create New Page',
     keywords: 'new tab create add page',
     run: h.createTab,
   });
   out.push({
     id: 'rename-tab',
-    name: 'Rename Tab',
+    name: 'Rename Page',
     keywords: 'rename tab title name relabel',
     run: h.renameTab,
   });

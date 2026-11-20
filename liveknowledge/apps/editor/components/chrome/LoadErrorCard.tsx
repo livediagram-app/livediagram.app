@@ -55,7 +55,7 @@ export function LoadErrorCard({
         : {
             eyebrow: 'Offline',
             title: 'You’re offline',
-            message: 'This document will open as soon as you reconnect.',
+            message: 'This knowledgebase will open as soon as you reconnect.',
           })}
     >
       {/* The recovery card is for the full app only (an embed's visitor is on someone else's page,

@@ -52,7 +52,7 @@ export function ExplorerHeaderMenu({
             key="new"
             plain
             icon={<PlusIcon />}
-            label="New Document"
+            label="New Knowledgebase"
             onClick={run(onNewDocument)}
           />
         ) : null,

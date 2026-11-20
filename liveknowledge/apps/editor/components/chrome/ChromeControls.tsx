@@ -56,7 +56,7 @@ export function ChromeControls({
         group: 'find',
         // The ellipsis: it opens outside Tools (footer-tools-menu.md "Opening a tool inside Tools").
         label: 'Search…',
-        description: 'Find documents, tabs and elements.',
+        description: 'Find knowledgebases, pages and elements.',
         icon: <SearchGlyph />,
         onSelect: () => onOpenSearch(),
       }

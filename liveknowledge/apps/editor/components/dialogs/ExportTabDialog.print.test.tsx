@@ -126,7 +126,7 @@ describe('ExportTabDialog, Print', () => {
   it('prints the whole document: every tab in order, the Start screen skipped', async () => {
     open(deckTab, { documentTabs: [articleTab, emptyTab, deckTab, cardsTab] });
     fireEvent.click(card(/^Print/)!);
-    fireEvent.click(screen.getByRole('radio', { name: 'Whole Document' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Whole Knowledgebase' }));
     expect(screen.queryByLabelText('Page to print')).toBeNull();
     expect(screen.getByText(/^6 pages from 3 tabs\./)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Print' }));

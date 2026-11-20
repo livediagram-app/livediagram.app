@@ -66,8 +66,8 @@ type Mode = 'tab' | 'document' | 'url';
 
 const MODES: { id: Mode; label: string }[] = [
   { id: 'url', label: 'External URL' },
-  { id: 'tab', label: 'Tab' },
-  { id: 'document', label: 'Document' },
+  { id: 'tab', label: 'Page' },
+  { id: 'document', label: 'Knowledgebase' },
 ];
 
 export function LinkPickerDialog({
@@ -182,8 +182,8 @@ export function LinkPickerDialog({
             <CompactEmptyState
               className="py-10"
               icon={<DocumentGlyph />}
-              title="No other documents yet"
-              description="Make another document to link to it."
+              title="No other knowledgebases yet"
+              description="Make another knowledgebase to link to it."
             />
           ) : (
             <ul className="flex flex-col gap-1">

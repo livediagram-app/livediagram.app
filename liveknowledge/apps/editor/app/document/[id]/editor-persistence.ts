@@ -91,7 +91,7 @@ function toastSaveFailure(status: SaveStatus, toast: ReturnType<typeof useToast>
   // Over the tab's row cap (docs/specs/006-document/per-tab-storage.md "A tab too big to save says so"): the
   // connection is fine, and only a smaller tab saves.
   if (status === 'tooLarge') {
-    toast.error('This tab is too big to save. Move some of it to another tab.');
+    toast.error('This page is too big to save. Move some of it to another page.');
   }
   if (status === 'forbidden') {
     toast.error(SAVE_FORBIDDEN_MESSAGE);

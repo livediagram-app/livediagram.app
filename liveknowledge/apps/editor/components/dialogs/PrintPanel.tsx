@@ -11,7 +11,7 @@ import { Callout } from '@liveworkspace/ui/callout';
 
 const SCOPES: readonly { id: PrintScope; label: string }[] = [
   { id: 'page', label: 'Current Page' },
-  { id: 'document', label: 'Whole Document' },
+  { id: 'document', label: 'Whole Knowledgebase' },
 ];
 
 /** What will print, in words: "1 page." or "12 pages from 3 tabs." */

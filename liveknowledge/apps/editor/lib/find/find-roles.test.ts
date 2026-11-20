@@ -7,8 +7,9 @@ import { findTargets } from './find-targets';
 import { DEFAULT_FIND_OPTIONS } from './find-text';
 import { fixtureTab, rowsOf } from '@/test/find-fixture';
 
-// docs/specs/007-editor/find-and-replace.md "Share roles": everyone finds; an Editor replaces anywhere, a Participant
-// only in the text it may write, a Viewer nowhere. Replace All as each role would run it.
+// docs/specs/007-editor/find-and-replace.md "Share roles", as a knowledgebase has them
+// (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "Share roles"): everyone finds; an Editor replaces
+// anywhere; a Participant, who writes nothing, and a Viewer replace nowhere. Replace All as each role would run it.
 function replaceAllAs(level: 'edit' | 'participate' | 'view', tab: Tab, query: string, by: string) {
   const scope = resolveEditorCapabilities(level).replace;
   const targets = findTargets(tab, rowsOf(tab), { scope });
@@ -33,12 +34,10 @@ describe('find and replace by share role', () => {
     expect(out.count).toBe(out.found);
   });
 
-  it("lets a Participant replace only its text, as a change the room's rule takes whole", () => {
+  it('lets a Participant replace nothing: it comments, and writes no word', () => {
     const out = replaceAllAs('participate', tab, 'plan', 'map');
-    expect(out.held).toBe(1);
-    expect(out.count).toBe(out.found - 1);
-    // The editor's side of the room's rule: the change lands as it is, nothing trimmed or refused.
-    expect(participantTabChange(tab, out.tab)).toBe(out.tab);
+    expect(out.count).toBe(0);
+    expect(out.tab).toBe(tab);
   });
 
   it('would have the room refuse what a Participant may not replace', () => {
@@ -55,7 +54,7 @@ describe('find and replace by share role', () => {
 
   it('holds locked text for every role', () => {
     const locked = fixtureTab({ locked: true });
-    for (const level of ['edit', 'participate'] as const) {
+    for (const level of ['edit'] as const) {
       const out = replaceAllAs(level, locked, 'plan', 'map');
       expect(out.count).toBe(0);
       expect(out.tab).toBe(locked);

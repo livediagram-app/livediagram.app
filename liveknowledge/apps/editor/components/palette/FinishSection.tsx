@@ -74,7 +74,7 @@ const FINISH_DETAILS: Record<Finish, string> = {
 const FINISH_ROWS: OptionRow[] = [
   {
     id: FOLLOW_TAB,
-    label: 'Follow Tab',
+    label: 'Follow Page',
     detail: 'As the tab is',
     icon: <LinkIcon />,
   },

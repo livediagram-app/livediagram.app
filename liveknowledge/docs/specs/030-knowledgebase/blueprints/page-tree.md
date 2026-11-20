@@ -197,9 +197,16 @@ there is no New Page or knowledgebase rename. Tested a role at a time in `PageTr
 
 ## Not built
 
-1. **The word "tab"** in the editor's copy becomes "page", and "Document" becomes "Knowledgebase" where a person
-   reads the item's noun (about 200 strings in `apps/editor`; the shared dialogs in `packages/` are the platform's).
-   The page tree, its menu, its toasts and the delete confirmation already say "page".
+1. **The rest of the copy sweep.** Done: the strings a person reads on a control or in a toast that said "tab" now
+   say "page" (the canvas menu, Find in Page, Import to Page, the export formats, the link picker, the commands
+   Create New Page and Rename Page, version history, the shortcuts list, the help keys in `lib/help-articles.ts`),
+   and the item's noun reads "Knowledgebase" on the loading, trashed, archived and load-error cards, the create
+   failures, the Add to Knowledgebase and link pickers, Whole Knowledgebase in Print, Sync Knowledgebase, the
+   sign-in pitches and the help keys. Left: `components/dialogs/settings/settings-catalogue.ts` (four "Document"
+   labels: liveworkspace.app keeps a copy of this catalogue, held equal by `settings-site-catalogue.test.ts`, so the
+   two change together); running prose inside dialogs and panels that the sweep's exact-string pass did not reach
+   (search `apps/editor/components` for "document" and "tab" in JSX text); the shared dialogs in `packages/`, which
+   are the platform's; the end-to-end specs; marketing and the help articles.
 2. **Nothing is verified in a browser.** Unit and component tests only: the sidebar's look, the menu box joined
    above it, the rail, the drag's insertion line, the phone button's place and the breadcrumb's place in the title
    row have not been seen on screen.

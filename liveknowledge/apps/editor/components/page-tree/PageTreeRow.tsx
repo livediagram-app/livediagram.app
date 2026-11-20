@@ -116,7 +116,7 @@ function PageTreeRowView({
       style={{ paddingLeft: indent, height: touch ? PAGE_TREE_TOUCH_ROW : PAGE_TREE_ROW }}
       className={`${ROW} ${current ? ROW_CURRENT : ROW_REST} ${zone === 'inside' ? ROW_NEST : ''} ${
         dragging ? 'opacity-50' : ''
-      } ${outOfScope ? 'cursor-default text-slate-400 dark:text-slate-500' : ''}`}
+      } ${outOfScope ? 'cursor-default text-slate-500 dark:text-slate-400' : ''}`}
     >
       {zone === 'before' ? (
         <span

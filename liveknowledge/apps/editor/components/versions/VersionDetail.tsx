@@ -88,7 +88,7 @@ export function VersionDetail({
             aria-label="Restore this version?"
             className="flex flex-wrap items-center gap-2 rounded-lg bg-amber-50 px-3 py-1.5 text-xs text-amber-900 ring-1 ring-amber-200 dark:bg-amber-500/10 dark:text-amber-100 dark:ring-amber-500/30"
           >
-            <span>Restore this version? The tab changes for everyone; you can undo it.</span>
+            <span>Restore this version? The page changes for everyone; you can undo it.</span>
             <Button variant="ghost" size="xs" onClick={() => setConfirming(false)}>
               Cancel
             </Button>

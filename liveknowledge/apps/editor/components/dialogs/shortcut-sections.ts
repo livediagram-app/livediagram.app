@@ -31,7 +31,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['⌘', 'D'], label: 'Duplicate Selection' },
       { keys: ['⌘', '⇧', 'L'], label: 'Lock  /  Unlock Selection' },
       { keys: ['⌘', 'A'], label: 'Select All' },
-      { keys: ['⌘', 'F'], label: 'Find in Tab' },
+      { keys: ['⌘', 'F'], label: 'Find in Page' },
       { keys: ['⌘', '⇧', 'H'], label: 'Find and Replace' },
       { keys: ['Del', '/  ⌫'], label: 'Delete Selection' },
       { keys: ['⌘', '⇧', ']'], label: 'Bring to Front' },
@@ -74,7 +74,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Tab'], label: 'Select Next Element  (Shift: previous)' },
       {
         keys: ['F6'],
-        label: 'Next Region: Header, Palette, Canvas, Controls, Tabs  (Shift: previous)',
+        label: 'Next Region: Header, Palette, Canvas, Controls, Bottom Bar  (Shift: previous)',
       },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },

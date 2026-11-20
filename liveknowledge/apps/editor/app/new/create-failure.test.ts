@@ -13,7 +13,7 @@ describe('createFailureCopy', () => {
     expect(createFailureCopy(new TypeError('Failed to fetch'))).toEqual({
       action: 'retry',
       eyebrow: 'Connection error',
-      title: 'Couldn’t create the document',
+      title: 'Couldn’t create the knowledgebase',
       message:
         'We couldn’t reach the server to create your document. Check your connection and try again.',
       actionLabel: 'Try again',
@@ -41,7 +41,7 @@ describe('createFailureCopy', () => {
     expect(createFailureCopy(refused(code, status))).toEqual({
       action: 'choose',
       eyebrow: 'Placement refused',
-      title: 'Couldn’t file the document there',
+      title: 'Couldn’t file the knowledgebase there',
       message,
       actionLabel: 'Choose another place',
     });

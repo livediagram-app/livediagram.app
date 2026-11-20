@@ -37,7 +37,7 @@ beforeEach(() => {
   state.takeOffline.mockClear();
 });
 
-describe("The panel's Take Offline and Sync Document", () => {
+describe("The panel's Take Offline and Sync Knowledgebase", () => {
   it('offers nothing before there is a person', () => {
     expect(renderHook(() => useOfflineItemMenu(null)).result.current).toBeUndefined();
   });
@@ -50,11 +50,11 @@ describe("The panel's Take Offline and Sync Document", () => {
     expect(state.takeOffline).toHaveBeenCalledWith({ id: 'doc-1', name: 'Plan' });
   });
 
-  it('offers Sync Document on a document this browser holds', () => {
+  it('offers Sync Knowledgebase on a document this browser holds', () => {
     state.offline.add('doc-1');
     const menu = renderHook(() => useOfflineItemMenu('user_ada')).result.current;
     const [verb] = menu!(item());
-    expect(verb!.label).toBe('Sync Document');
+    expect(verb!.label).toBe('Sync Knowledgebase');
     void verb!.onSelect();
     expect(state.sync).toHaveBeenCalledWith({ id: 'doc-1', name: 'Plan' });
   });

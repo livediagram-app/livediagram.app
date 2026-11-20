@@ -184,7 +184,7 @@ export function AddTabToDocumentDialog({
   );
   return (
     <OrganiseDialogFrame
-      title="Add to Document"
+      title="Add to Knowledgebase"
       sub="Link this tab into another document. It stays one live tab: edits show in both places."
       onClose={onClose}
     >
@@ -192,8 +192,8 @@ export function AddTabToDocumentDialog({
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter documents…"
-        aria-label="Filter documents"
+        placeholder="Filter knowledgebases…"
+        aria-label="Filter knowledgebases"
         className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
@@ -209,8 +209,8 @@ export function AddTabToDocumentDialog({
           <CompactEmptyState
             className="py-8"
             icon={<DocumentIcon />}
-            title="No other documents yet"
-            description="Make another document to add this tab to it."
+            title="No other knowledgebases yet"
+            description="Make another knowledgebase to add this page to it."
           />
         )
       ) : (

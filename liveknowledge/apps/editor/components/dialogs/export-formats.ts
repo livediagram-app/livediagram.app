@@ -51,12 +51,12 @@ export const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'markdown',
     title: 'Markdown',
-    description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
+    description: "A text outline of this page's elements and connections. Copy it or save a .md.",
   },
   {
     kind: 'png',
     title: 'PNG',
-    description: 'A high-resolution image of this tab, for slides or screenshots.',
+    description: 'A high-resolution image of this page, for slides or screenshots.',
   },
   {
     kind: 'svg',
@@ -66,7 +66,7 @@ export const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'pdf',
     title: 'PDF',
-    description: 'A single-page PDF of this tab, ready to print or share.',
+    description: 'A single-page PDF of this page, ready to print or share.',
   },
   {
     // Pages only (docs/specs/020-import-export/print.md "Where it is offered").

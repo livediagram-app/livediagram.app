@@ -49,7 +49,7 @@ function Crumbs({ store }: { store: EditorChromeStore }) {
             >
               {crumb.name}
             </a>
-            <ChevronIcon aria-hidden className="shrink-0 text-slate-400 dark:text-slate-500" />
+            <ChevronIcon aria-hidden className="shrink-0 text-slate-400" />
           </li>
         ))}
       </ol>

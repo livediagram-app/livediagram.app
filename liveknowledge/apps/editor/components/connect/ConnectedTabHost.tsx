@@ -32,7 +32,7 @@ export function ConnectedTabHost() {
       canEdit={!isStructureReadOnly}
       grant={connectedTabs.grant}
       onRename={(name) => renameTab(activeTab.id, name)}
-      onRemove={() => deleteTab(activeTab.id)}
+      onRemove={() => void deleteTab(activeTab.id)}
       onConnectAgain={() => void connectedTabs.connectAgainTab(activeTab.id)}
     />
   );
