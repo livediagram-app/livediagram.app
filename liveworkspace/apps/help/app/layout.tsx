@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { BackToTop } from '@liveworkspace/help-site/components/BackToTop';
-import { AppSwitch } from '@liveworkspace/help-site/components/AppSwitch';
+import { PhoneSearchBar } from '@liveworkspace/help-site/components/PhoneSearchBar';
 import { trustedTypesBootScript, htmlProps } from '@liveworkspace/trusted-types';
 import { JsonLd } from '@liveworkspace/ui';
 import { EDITION } from '@/editions';
@@ -46,11 +46,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <PageViewBoot />
           <WebVitalsBoot />
           <Header />
-          {/* The app switch on a phone and a small tablet, where the header's search (and the switch in it) does
-              not show: one row under the header (help-centre.md "Choosing an app"). */}
-          <div className="border-b border-slate-200/70 bg-slate-50/80 px-4 py-2 lg:hidden dark:border-slate-800/70 dark:bg-slate-950/80">
-            <AppSwitch size="chip" />
-          </div>
+          {/* The search (and the app switch in it) on a phone, under the header, which has no room for it
+              (help-centre.md "Choosing an app"). */}
+          <PhoneSearchBar />
           <main className="flex-1 pb-16">{children}</main>
           <Footer />
           <BackToTop />

@@ -78,12 +78,16 @@ brand-200, label brand-700, text brand-900, dark mode the 950/800/300/100 steps.
 
 ## The app switch
 
-`AppSwitch` in `@liveworkspace/help-site`: two segments and a menu (`role="menu"`, items `menuitemradio`), every
+`AppSwitch` in `@liveworkspace/help-site`, rendered by `SearchInput` inside its box: one trigger and a menu
+(`role="menu"`, items `menuitemradio`), every
 item an `<a href>` built by `articleHref`/`appliesTo`. Keyboard: Enter or Space opens, arrows move, Escape closes
 and returns focus to the caret (the shared `useMenu`/`useMenuButton`). The server renders same-path links; once
 hydrated the switch reads the page's apps from `[data-help-applies]` (the article layout and the landings write it)
-and links a page that does not apply to the target's home, and the Worker's `308` covers it without script. Phone and
-small tablet width: the switch in a row under the header, the menu as a bottom sheet.
+and links a page that does not apply to the target's home, and the Worker's `308` covers it without script.
+`SearchInput` has three placements: `large` (the home hero), the header's (shown from `sm`, by `SiteHeader`'s
+centre slot, and rendering nothing on the home, `/`), and `bar` (`PhoneSearchBar`, the row under the header below
+`sm`, also nothing on the home). The trigger names the scope in the row, from `sm` in the hero and from `lg` in the
+header, and shows the mark alone below those. On a phone the menu is a bottom sheet.
 
 The search query rides along: `SearchInput` publishes its trimmed text, and `AppSwitch` (and **Search All Apps
 instead**) append `?q=<encoded>` to every href while it is non-empty, updated on input (no navigation, no
