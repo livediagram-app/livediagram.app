@@ -283,7 +283,6 @@ livedocuments/packages/api-schema/src/error-telemetry.ts	liveknowledge/packages/
 livedocuments/packages/api-schema/src/home.ts	liveknowledge/packages/api-schema/src/home.ts
 livedocuments/packages/api-schema/src/lint.ts	liveknowledge/packages/api-schema/src/lint.ts
 livedocuments/packages/api-schema/src/page-views.ts	liveknowledge/packages/api-schema/src/page-views.ts
-livedocuments/packages/api-schema/src/signed-in-hint.ts	liveknowledge/packages/api-schema/src/signed-in-hint.ts
 livedocuments/packages/api-schema/src/trash.ts	liveknowledge/packages/api-schema/src/trash.ts
 livedocuments/packages/api-schema/src/workbench.ts	liveknowledge/packages/api-schema/src/workbench.ts
 livedocuments/packages/diagram-lint/src/checks/flow-backwards.ts	liveknowledge/packages/diagram-lint/src/checks/flow-backwards.ts
