@@ -74,6 +74,30 @@ export const PAGE_SIZES: Readonly<
 
 export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
 
+// The continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"): a
+// knowledgebase page's paper, `size: 'fit'` on an article page. CONTINUOUS_PAGE_WIDTH wide (a reading width: about
+// 75 characters a line at the default text size and margins), as tall as the writing, never under
+// CONTINUOUS_PAGE_MIN_HEIGHT (an empty page still reads as a page) and never over CONTINUOUS_PAGE_MAX_HEIGHT (far past
+// what an article's caps can fill: 5,000 blocks of 20,000 characters is the article's own limit, and a browser lays
+// out a box of a few million px without trouble).
+export const CONTINUOUS_PAGE_WIDTH = 820;
+export const CONTINUOUS_PAGE_MIN_HEIGHT = 1120;
+export const CONTINUOUS_PAGE_MAX_HEIGHT = 4_000_000;
+
+/** Whether a page is a continuous page: an article page in the fit size. */
+export function isContinuousPage(page: Pick<Page, 'kind' | 'size'>): boolean {
+  return page.kind === 'article' && page.size === 'fit';
+}
+
+/** A continuous page's height for writing that needs `needed` px: whole px, within the continuous limits. */
+export function continuousPageHeight(needed: number): number {
+  if (!Number.isFinite(needed)) return CONTINUOUS_PAGE_MIN_HEIGHT;
+  return Math.min(
+    CONTINUOUS_PAGE_MAX_HEIGHT,
+    Math.max(CONTINUOUS_PAGE_MIN_HEIGHT, Math.ceil(needed)),
+  );
+}
+
 // The sizes a slide page may take (docs/specs/007-editor/pages-mode.md "Sizes"), the first
 // its default.
 export const SLIDE_PAGE_SIZE_IDS: readonly PageSizeId[] = ['slide', 'slide-classic'];

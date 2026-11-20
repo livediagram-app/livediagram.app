@@ -228,14 +228,15 @@ describe('Fit to Content pages', () => {
     expect(page!.fit).toEqual({ width: FIT_PAGE_MAX_SIDE, height: FIT_PAGE_MIN_SIDE });
   });
 
-  it('reads as A4 without valid sides, or on an article page', () => {
+  it('reads as A4 without valid sides; on an article page it is the continuous page', () => {
     for (const sides of [undefined, { width: 0, height: 10 }, { width: 'x', height: 1 }, 5]) {
       const [page] = pagesOf({ pages: [fit({ fit: sides })] });
       expect(page!.size).toBeUndefined();
       expect(page!.fit).toBeUndefined();
     }
     const [doc] = pagesOf({ pages: [fit({ kind: 'article', flow: 'd' })] });
-    expect(doc!.size).toBeUndefined();
+    expect(doc!.size).toBe('fit');
+    expect(doc!.fit!.width).toBe(820);
   });
 
   it('keeps an explicit infographic kind', () => {

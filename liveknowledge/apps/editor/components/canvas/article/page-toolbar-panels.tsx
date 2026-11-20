@@ -455,12 +455,7 @@ const INSERT_BLOCKS: readonly { id: BlockInsert; label: string; blurb: string; i
       blurb: 'A line across',
       icon: <PanelIcons.divider />,
     },
-    {
-      id: 'pageBreak',
-      label: 'Page Break',
-      blurb: 'Start the next page',
-      icon: <PanelIcons.pageBreak />,
-    },
+    // No Page Break: a knowledgebase page is one continuous page.
     { id: 'quote', label: 'Quote', blurb: 'A quotation', icon: <PanelIcons.quote /> },
     {
       id: 'code',

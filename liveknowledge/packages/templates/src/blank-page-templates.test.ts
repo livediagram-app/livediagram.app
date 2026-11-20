@@ -29,8 +29,16 @@ describe('blanks of a page kind', () => {
       { id: 'page-1', orientation: 'portrait', kind: 'infographic' },
     ]);
     const article = blankPageTemplateOverrides('blank-article')!;
+    // An article's page is the continuous page.
     expect(article.pages).toEqual([
-      { id: 'page-1', orientation: 'portrait', kind: 'article', flow: 'art-1' },
+      {
+        id: 'page-1',
+        orientation: 'portrait',
+        size: 'fit',
+        fit: { width: 820, height: 1120 },
+        kind: 'article',
+        flow: 'art-1',
+      },
     ]);
     // Its writing: an empty Title and an empty paragraph.
     expect(article.articles?.['art-1']?.blocks).toEqual([

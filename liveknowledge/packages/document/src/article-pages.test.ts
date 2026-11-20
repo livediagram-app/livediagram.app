@@ -148,14 +148,18 @@ describe("the first page's own choice of kind", () => {
     expect(articlesOf(art).f!.blocks.length).toBeGreaterThan(0);
     expect(withPageKindChosen(art, 'p1', 'article', 'g')).toBeNull();
   });
-  it('gives an article chosen on a page in a slide size the A4 an article can have', () => {
-    const wide = [{ ...only[0]!, orientation: 'landscape', size: 'slide' }] as Page[];
-    const art = withPageKindChosen({ elements: [], pages: wide }, 'p1', 'article', 'f')!;
-    expect(art.pages[0]!.size).toBeUndefined();
-    const square = [{ ...only[0]!, size: 'square' }] as Page[];
-    expect(
-      withPageKindChosen({ elements: [], pages: square }, 'p1', 'article', 'f')!.pages[0]!.size,
-    ).toBe('square');
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page".
+  it('gives an article chosen on a page of any size the continuous page', () => {
+    for (const from of [
+      { orientation: 'landscape', size: 'slide' },
+      { size: 'square' },
+      {},
+    ] as Partial<Page>[]) {
+      const pages = [{ ...only[0]!, ...from }] as Page[];
+      const art = withPageKindChosen({ elements: [], pages }, 'p1', 'article', 'f')!;
+      expect(art.pages[0]).toMatchObject({ size: 'fit', orientation: 'portrait', kind: 'article' });
+      expect(art.pages[0]!.fit!.width).toBe(820);
+    }
   });
   it('turns the page into a 16:9 landscape slide, keeping its name and background', () => {
     const named = [

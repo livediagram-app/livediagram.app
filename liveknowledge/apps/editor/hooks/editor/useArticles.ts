@@ -29,6 +29,7 @@ import {
   type ArticleStyle,
   withArticleStyleChanged,
   withArticlePageCount,
+  withArticlePageHeight,
   absentWriterPageCount,
   withZonesSettled,
   type ArticleBlock,
@@ -151,6 +152,15 @@ export function articleEditRefused(canEdit: boolean, tab: Tab, flow: string): bo
   return !canEdit || tab.locked === true || articleLocked(tab, flow);
 }
 
+// The room a layout's writing needs, written by its writer (docs/specs/030-knowledgebase/knowledgebases-and-pages.md
+// "The continuous page"): a continuous page as tall as the writing, where paper pages would be added or removed.
+// The same tab back when the room is already right, so a layout that moves no line writes nothing.
+function withWritingRoom(tab: Tab, layout: FlowLayout): Tab {
+  return layout.heightNeeded !== undefined
+    ? withArticlePageHeight(tab, layout.flow, layout.heightNeeded)
+    : withArticlePageCount(tab, layout.flow, layout.pagesNeeded);
+}
+
 export function useArticles(deps: {
   activeTab: Tab;
   on: boolean;
@@ -236,6 +246,38 @@ export function useArticles(deps: {
         return clearArticleGrow(tabId, flow);
       const own = pagesOf(t).filter((p) => p.flow === flow);
       const locked = t.locked === true || own.some((p) => p.locked === true);
+      // A continuous page is one page: an absent writer's article takes the height its writing needs here, once the
+      // fonts are in, and the mark goes when the page is already that tall (a write only when the height changes).
+      if (layout.heightNeeded !== undefined) {
+        if (locked) return clearArticleGrow(tabId, flow);
+        const grown = withArticlePageHeight(t, flow, layout.heightNeeded);
+        if (grown === t) {
+          if (layout.zones.length > 0) {
+            d.tickTabs((ts) => {
+              const out = ts.map((x) =>
+                x.id === tabId && x.locked !== true ? withZonesSettled(x, flow, layout.zones) : x,
+              );
+              return out.every((x, i) => x === ts[i]) ? ts : out;
+            });
+          }
+          return clearArticleGrow(tabId, flow);
+        }
+        noteArticleGrown(tabId, flow, own.length);
+        debugLog('[article] continuous page grown for an absent writer', {
+          tabId,
+          flow,
+          height: layout.heightNeeded,
+        });
+        d.tickTabs((ts) => {
+          const out = ts.map((x) =>
+            x.id === tabId && x.locked !== true && articlesOf(x)[flow]
+              ? withArticlePageHeight(x, flow, layout.heightNeeded!)
+              : x,
+          );
+          return out.every((x, i) => x === ts[i]) ? ts : out;
+        });
+        return;
+      }
       const count = absentWriterPageCount({
         local: false,
         pending: true,
@@ -292,7 +334,7 @@ export function useArticles(deps: {
           if (t.id !== tabId || !articlesOf(t)[layout.flow]) return t;
           // A locked page holds the article as it is: no page added or dropped, no zone moved.
           if (articleEditRefused(true, t, layout.flow)) return t;
-          const paged = withArticlePageCount(t, layout.flow, layout.pagesNeeded);
+          const paged = withWritingRoom(t, layout);
           const settled = withNotesSettled(
             withZonesSettled(paged, layout.flow, layout.zones),
             layout.flow,

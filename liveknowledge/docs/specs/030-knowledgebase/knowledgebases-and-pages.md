@@ -2,8 +2,9 @@
 
 Status: **partly built** ([Build plan](../005-project-roadmap/build-plan.md) steps 4 and 5). Built: one page kind,
 every tab a page of writing, with slides and infographics unreachable
-([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md) "Unreachable, to delete"), and the item's default
-name. Not built yet: the continuous page and the page tree.
+([Not in liveknowledge](../002-project-scope/not-in-liveknowledge.md) "Unreachable, to delete"), the item's default
+name, and the continuous page ([blueprint](blueprints/continuous-page.md)). Not built yet: the page tree, and the
+word Knowledgebase in the rest of the editor's copy.
 
 ## Domain language
 
@@ -58,10 +59,17 @@ A page is one article that never breaks onto paper pages while it is being writt
 - Its paper is the **continuous** size: 820 canvas px wide, as tall as the writing (`Page.size: 'fit'` with `fit`
   sides the writer keeps in step with the layout). Where the article engine would add a paper page, a knowledgebase page grows
   taller instead; where it would remove one, the page shrinks. A knowledgebase page therefore always has exactly one page.
-- Page breaks, headers, footers and page numbers are not offered while writing. PDF and Word export paginate onto A4
-  as livedocuments does, and a page break block imported from elsewhere is kept and honoured only there.
-- The view frames the page at reading width and scrolls down the writing; zooming still works, panning sideways does
-  not move a page that already fits the window.
+- The page is never under 1,120 px tall, so an empty page still reads as a page, and it grows downwards from a top
+  that never moves, so nothing placed in the writing shifts. Its height is written only when the laid-out height
+  changes, by whoever made the change, in the same undo step.
+- Page breaks, headers, footers and page numbers are not offered while writing, and a template carries none. A page
+  break block imported from elsewhere is kept and draws nothing.
+- **Export:** Word export writes the blocks and Word paginates them onto its paper. PDF export draws the page as it
+  stands, one tall page: paginating the PDF onto A4 is not built (it needs the writing laid out a second time in A4
+  columns), which is a known gap against livedocuments.
+- The view frames the page at reading width and scrolls down the writing; zooming still works, and a wheel or
+  trackpad's sideways pan does not move a page that already fits the window. (Dragging with the Hand tool or a finger
+  still moves it sideways: not built.)
 - Everything else of the article engine stays: blocks, tables, contents, footnotes, margin notes, zones for pictures,
   charts and drawings, the slash menu, Markdown paste, find and replace, live carets.
 - **Page kinds:** liveknowledge has one, the knowledgebase page. Slides, infographics and flashcards are not in liveknowledge

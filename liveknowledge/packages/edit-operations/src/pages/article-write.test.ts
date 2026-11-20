@@ -6,7 +6,6 @@ import {
   layOutPages,
   MAX_ARTICLE_BLOCK_TEXT,
   MAX_ARTICLE_BLOCKS,
-  MAX_PAGES,
   type ArticleFlow,
   type Element,
   type Page,
@@ -65,38 +64,12 @@ describe('a new article', () => {
     expect(out.lines).toEqual(['Started the article "Brief" (art-1): 2 blocks.']);
   });
 
-  it('goes after the last page otherwise, on the paper asked for', () => {
-    const tab = withArticle('f', { blocks: [para('b', 'Old', 'title')] });
-    const out = write(tab, { markdown: 'Hi', new: true, size: 'letter', orientation: 'landscape' });
-    const pages = pagesOf(out.tab);
-    expect(pages.map((p) => p.id)).toEqual(['a1', 'pg-1']);
-    expect(pages[1]).toMatchObject({ kind: 'article', size: 'letter', orientation: 'landscape' });
-  });
-
-  it('starts a second article when asked for a new one', () => {
-    const tab = withArticle('f', { blocks: [para('b', 'Old', 'title')] });
-    const out = write(tab, { markdown: 'Second', new: true });
-    expect(Object.keys(articlesOf(out.tab)).sort()).toEqual(['art-1', 'f']);
-  });
-
-  it('refuses a size an article lacks, and past the page limit', () => {
-    expect(refusal(tabOf(), { markdown: 'x', size: 'slide' }).code).toBe('size_not_offered');
-    expect(refusal(tabOf(), { markdown: 'x', size: 'fit' }).code).toBe('size_not_offered');
-    const full = tabOf({
-      pages: Array.from({ length: MAX_PAGES }, (_, i) =>
-        page(`a${i}`, { kind: 'article', flow: 'f' }),
-      ),
-      articles: { f: { blocks: [para('b', 'Old', 'title')] } },
-    });
-    expect(refusal(full, { markdown: 'x', new: true }).code).toBe('page_limit');
-  });
-
   // docs/specs/007-editor/pages-mode.md "One kind a tab".
   it('one kind a tab: refuses a new article on a deck or an infographic', () => {
     const deck = tabOf({
       pages: [page('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })],
     });
-    const r = refusal(deck, { markdown: 'x', size: 'letter' });
+    const r = refusal(deck, { markdown: 'x' });
     expect(r.code).toBe('kind_not_offered');
     expect(r.message).toBe(
       'This tab holds slide pages: every page of a tab is one kind. Put article pages in a tab of their own (add_tab).',
@@ -106,24 +79,27 @@ describe('a new article', () => {
   });
 
   it('appends onto a new article without its placeholder title', () => {
-    const out = write(withArticle('f', { blocks: [para('b', 'Old', 'title')] }), {
-      markdown: 'Only',
-      new: true,
-      mode: 'append',
-    });
+    const out = write(tabOf(), { markdown: 'Only', mode: 'append' });
     expect(texts(articlesOf(out.tab)['art-1'])).toEqual(['Only']);
+  });
+
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page".
+  it('starts on the continuous page, as tall as the writing is estimated to need', () => {
+    const out = write(tabOf(), { markdown: Array(400).fill('A line of writing.').join('\n\n') });
+    const pages = pagesOf(out.tab);
+    expect(pages).toHaveLength(1);
+    expect(pages[0]).toMatchObject({ kind: 'article', size: 'fit' });
+    expect(pages[0]!.fit!.width).toBe(820);
+    expect(pages[0]!.fit!.height).toBeGreaterThan(1120);
   });
 });
 
 describe('fresh ids', () => {
-  it('mints its own page and article ids when none are given', () => {
-    const out = applyArticleWrite(withArticle('f', { blocks: [para('b', 'Old', 'title')] }), {
-      markdown: 'x',
-      new: true,
-    });
+  it('mints its own article id when none is given', () => {
+    const out = applyArticleWrite(tabOf(), { markdown: 'x' });
     if ('refusal' in out) throw new Error('refused');
     expect(out.flow).toMatch(/^art-/);
-    expect(pagesOf(out.tab)[1]!.id).toMatch(/^page-/);
+    expect(pagesOf(out.tab)).toHaveLength(1);
   });
 });
 
@@ -279,14 +255,13 @@ describe('the writing', () => {
     expect(write(tab, { markdown: 'More', mode: 'append' }).tab.elements).toHaveLength(1);
   });
 
-  it('sets the look, accent and page numbers, keeping the rest of the style', () => {
+  it('sets the look and accent, keeping the rest of the style', () => {
     const tab = withArticle('f', { blocks: [para('1', 'x')], style: { margins: 'wide' } });
-    const out = write(tab, { markdown: 'y', look: 'report', accent: '#ff0066', pageNumbers: true });
+    const out = write(tab, { markdown: 'y', look: 'report', accent: '#ff0066' });
     expect(articlesOf(out.tab).f!.style).toEqual({
       margins: 'wide',
       look: 'report',
       accent: '#ff0066',
-      pageNumbers: true,
     });
   });
 

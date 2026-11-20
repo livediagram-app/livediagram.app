@@ -19,6 +19,7 @@ import { useAssignRef, useLatest } from '@liveworkspace/workbench/hooks/ui/useLa
 import { boundsOfElements } from '@/lib/changeset-reveals';
 import type { EditorDocument } from './useEditorDocument';
 import type { EditorSelection } from './useEditorSelection';
+import { pageFitsSideways } from '@/lib/continuous-page-view';
 import type { EditorSession } from './useEditorSession';
 import type { EditorPersistence } from './useEditorPersistence';
 import type { EditorCollaboration } from './useEditorCollaboration';
@@ -337,10 +338,19 @@ export function useEditorViewport({
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   // Whether the tab's pages stand as a stack (set once pagesMode is known, below): a wheel then pans no sideways.
   const stackedRef = useRef(false);
+  // The tab's continuous page's width, 0 when it has none (set once pagesMode is known, below): a wheel pans no
+  // sideways while that page fits the window (lib/continuous-page-view.ts).
+  const continuousWidthRef = useRef(0);
   const { isPinchingRef } = useCanvasPinchZoom({
     canvasMainRef,
     viewport,
-    stacked: () => stackedRef.current,
+    stacked: () =>
+      stackedRef.current ||
+      pageFitsSideways(
+        continuousWidthRef.current,
+        viewport.get().zoom,
+        canvasMainRef.current?.offsetWidth ?? 0,
+      ),
   });
 
   // Capture an Inbox element deep link BEFORE the tab-entry
@@ -387,6 +397,7 @@ export function useEditorViewport({
     skipTabFitRef,
     emailEnabled,
     stackedRef,
+    continuousWidthRef,
     isPinchingRef,
     collabDeepLink,
     frameFirstPageRef,

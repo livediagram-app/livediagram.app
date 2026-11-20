@@ -9,6 +9,7 @@ import {
   articleHeaderBandPx,
   articleMarginPx,
   PAGE_GAP,
+  isContinuousPage,
   type ArticleStyle,
   type LaidOutPage,
 } from '@liveknowledge/document';
@@ -95,7 +96,11 @@ export function articleTextBox(
     articleMarginPx(style),
     ARTICLE_TOP_MIN_PX + articleHeaderBandPx(style),
   );
-  return { width: frame.columnWidth, height: frame.height };
+  // A continuous page grows with what is put in it: a zone there is held only to the tallest a zone may be.
+  return {
+    width: frame.columnWidth,
+    height: isContinuousPage(own[0]!) ? ARTICLE_ZONE_MAX : frame.height,
+  };
 }
 
 /** Where the article's writing starts on the canvas (its first page's text area, top-left), or null when no page holds

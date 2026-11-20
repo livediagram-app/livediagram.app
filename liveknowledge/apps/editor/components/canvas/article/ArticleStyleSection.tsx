@@ -17,6 +17,7 @@ import { ACTIVE_SEGMENT, CheckIcon, SEGMENT_TRACK, Select, Switch } from '@livek
 import { SegmentSlider } from '@liveworkspace/workbench/components/primitives/SegmentSlider';
 import { PanelSection } from '../page-panel-sections';
 import { ArticleBandsSection } from './ArticleBandsSection';
+import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { ColourPicker } from '@/components/colour/ColourPicker';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
@@ -105,17 +106,23 @@ export function ArticleStyleSection({
               onChange={(v) => onChange({ patch: { margins: v } })}
               onHover={(v) => preview({ margins: v })}
             />
-            <Toggle
-              label="Page Numbers"
-              on={r.pageNumbers}
-              onChange={(v) => onChange({ patch: { pageNumbers: v } })}
-            />
+            {/* No page numbers, header or footer while writing: a knowledgebase page is one continuous page
+                (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"). */}
+            {CUT_FROM_FORK ? (
+              <Toggle
+                label="Page Numbers"
+                on={r.pageNumbers}
+                onChange={(v) => onChange({ patch: { pageNumbers: v } })}
+              />
+            ) : null}
           </PanelSection>
-          <ArticleBandsSection
-            style={style}
-            onChange={(patch) => onChange({ patch })}
-            onPreview={onPreview}
-          />
+          {CUT_FROM_FORK ? (
+            <ArticleBandsSection
+              style={style}
+              onChange={(patch) => onChange({ patch })}
+              onPreview={onPreview}
+            />
+          ) : null}
         </>
       ) : (
         <>

@@ -289,23 +289,6 @@ describe('adding', () => {
     });
   });
 
-  it('adds an article on the last paper size, else A4 portrait, with its writing', () => {
-    const onA3 = ok(
-      pageAdded(articleTab(a4('p', { size: 'a3', orientation: 'landscape' })), 'article', 'n', 'f'),
-    );
-    expect(pagesOf(onA3)[1]).toMatchObject({
-      kind: 'article',
-      flow: 'f',
-      size: 'a3',
-      orientation: 'landscape',
-    });
-    expect(articlesOf(onA3).f).toBeDefined();
-    // A tab stored before one kind a tab, an article first and a slide last.
-    const afterSlide = ok(pageAdded(tabOf([article('a', 'e'), slide('s')]), 'article', 'n', 'f'));
-    expect(pagesOf(afterSlide).at(-1)).toMatchObject({ id: 'n', orientation: 'portrait' });
-    expect(pagesOf(afterSlide).at(-1)!.size).toBeUndefined();
-  });
-
   it('refuses past the page limit or on an id already there', () => {
     const full = tabOf(Array.from({ length: MAX_PAGES }, (_, i) => a4(`p${i}`)));
     expect(pageAdded(full, 'infographic', 'n', 'f')).toEqual({ refused: 'page_limit' });

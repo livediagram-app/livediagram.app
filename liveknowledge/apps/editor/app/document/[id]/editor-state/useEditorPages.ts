@@ -7,6 +7,7 @@ import { deriveTabLoadState, patchTab } from '../editor-page-helpers';
 import { useCollabDeepLink } from '../useCollabDeepLink';
 import { useAssignRef } from '@liveworkspace/workbench/hooks/ui/useLatest';
 import { announcePageLocked } from '@/lib/page-lock-guard';
+import { continuousPageWidth } from '@/lib/continuous-page-view';
 import { setArticleCapsToast } from '@/lib/article/article-caps-notice';
 import { setArticleHeldToast } from '@/lib/article/article-hold-notice';
 import { usePageLockedIds } from '@/hooks/editor/usePageLockedIds';
@@ -70,6 +71,7 @@ export function useEditorPages({
     scrollIntoView,
     presenting,
     stackedRef,
+    continuousWidthRef,
     collabDeepLink,
     frameFirstPageRef,
   } = viewportSlice;
@@ -101,6 +103,7 @@ export function useEditorPages({
     snapSuspended: () => presenting || followingRef.current !== null,
   });
   useAssignRef(stackedRef, !!pagesMode.cardStage);
+  useAssignRef(continuousWidthRef, continuousPageWidth(pagesMode.pages));
   // What a locked page holds is inert, as on a locked layer.
   const pageLockedIds = usePageLockedIds(activeTab.elements, pagesMode.pages);
   const canvasInertIds = pageLockedIds;

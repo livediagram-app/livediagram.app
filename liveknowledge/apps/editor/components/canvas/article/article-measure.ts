@@ -1,6 +1,7 @@
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import { EditorView } from 'prosemirror-view';
-import type { ArticleNotePlace } from '@liveknowledge/document';
+import { isContinuousPage, type ArticleNotePlace } from '@liveknowledge/document';
+import { continuousHeightNeeded } from '@/lib/article/continuous-page-height';
 import { noteArticleLaidOut } from '@/lib/article/article-editor-store';
 import { columnAt, pagePlaceOf } from '@/lib/article/article-flow-geometry';
 import type { ArticleDrawOp } from '@/lib/article/article-snapshot';
@@ -95,14 +96,22 @@ export function measureArticleLayout({
   }
   // The contents' page numbers, from where each heading landed.
   measureTocPages(view, (x) => Math.min(p.pages.length - 1, columnAt(frame, (x - root.left) / z)));
+  const continuous = isContinuousPage(p.pages[0]!);
   let right = 0;
+  let bottom = 0;
   for (const child of Array.from(view.dom.children)) {
     for (const r of Array.from(child.getClientRects())) {
       if (r.width === 0 && r.height === 0) continue;
       right = Math.max(right, (r.left - root.left) / z + 1);
+      bottom = Math.max(bottom, (r.bottom - root.top) / z);
     }
   }
-  const pagesNeeded = columnAt(frame, Math.max(0, right - 2)) + 1;
+  // A continuous page is always one page, as tall as its writing: its top margin, the writing to its last line,
+  // the notes at its foot, and its bottom margin (continuous-page-height.ts).
+  const pagesNeeded = continuous ? 1 : columnAt(frame, Math.max(0, right - 2)) + 1;
+  const heightNeeded = continuous
+    ? continuousHeightNeeded(frame, bottom, footLimits.current.get(0))
+    : undefined;
   // At the tab's page limit the writing past the last page waits unseen: say so on that page.
   const cut = p.atPageLimit === true && pagesNeeded > p.pages.length;
   setCutOff((was) => (was === cut ? was : cut));
@@ -134,7 +143,14 @@ export function measureArticleLayout({
   // edit) within the window. Focus alone is not writing: two people with the caret in the same
   // article would both add a page for one of them's overflow.
   const local = Date.now() - lastLocal.current < WRITER_WINDOW_MS;
-  p.onLayout({ flow: p.flow, pagesNeeded, zones, notes, local });
+  p.onLayout({
+    flow: p.flow,
+    pagesNeeded,
+    ...(heightNeeded === undefined ? {} : { heightNeeded }),
+    zones,
+    notes,
+    local,
+  });
   // The first layout (and the one after web fonts land) is news to the Map and the thumbnails.
   if (!announced.current) {
     announced.current = true;

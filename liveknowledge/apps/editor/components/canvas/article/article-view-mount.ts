@@ -2,7 +2,7 @@ import type { CSSProperties, Dispatch, MutableRefObject, SetStateAction } from '
 import { EditorState, TextSelection, type Transaction } from 'prosemirror-state';
 import { EditorView } from 'prosemirror-view';
 import { gapCursor } from 'prosemirror-gapcursor';
-import { cleanFootnoteText, type ArticleFlow } from '@liveknowledge/document';
+import { cleanFootnoteText, isContinuousPage, type ArticleFlow } from '@liveknowledge/document';
 import { blocksToDoc } from '@/lib/article/article-convert';
 import { articleKeymap, articleInputRules } from '@/lib/article/article-keys';
 import { blockIdsPlugin, decorationsPlugin, todoTogglePlugin } from '@/lib/article/article-plugins';
@@ -200,12 +200,15 @@ export function mountArticleView({
         p.themeAccent,
         p.ink,
       );
+      // A continuous page's writing is one box as tall as itself, never columns of a page's height: the page follows
+      // the writing (article-measure.ts), so nothing breaks to a next page.
+      const continuous = isContinuousPage(p.pages[0]!);
       const style = {
         ...vars,
         left: `${frame.x}px`,
         top: `${frame.y}px`,
         width: `${frame.width}px`,
-        height: `${frame.height}px`,
+        [continuous ? 'minHeight' : 'height']: `${frame.height}px`,
         // The page's side margin, for what the writing hangs in it (a held paragraph's name chip).
         '--article-margin': `${frame.margin}px`,
       } as CSSProperties;
@@ -217,7 +220,10 @@ export function mountArticleView({
         .join('; ');
       return {
         class: 'article-flow',
-        style: `${css}; column-count: ${frame.count}; column-gap: ${frame.gap}px`,
+        style: continuous
+          ? css
+          : `${css}; column-count: ${frame.count}; column-gap: ${frame.gap}px`,
+        ...(continuous ? { 'data-continuous': '' } : {}),
         'data-rules': rules,
         'data-article-flow': p.flow,
         role: 'textbox',

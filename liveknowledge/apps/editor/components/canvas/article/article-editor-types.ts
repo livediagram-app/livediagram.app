@@ -12,6 +12,10 @@ export type FlowLayout = {
   flow: string;
   // How many pages the writing reaches.
   pagesNeeded: number;
+  // On a continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"): how tall
+  // the page must be for the writing, from its top to the foot of its bottom margin, in canvas px. Absent on paper
+  // pages.
+  heightNeeded?: number;
   // Where each zone landed: its page (by index among the article's pages) and its top-left from
   // that page's corner, and its size, in canvas px.
   zones: { id: string; index: number; x: number; y: number; width: number; height: number }[];

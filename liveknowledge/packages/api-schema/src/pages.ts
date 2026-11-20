@@ -72,19 +72,15 @@ export const PAGE_CHANGE_OPS: readonly PageChangeOp[] = [
 
 export type ArticleWriteMode = 'replace' | 'append';
 
+// A page holds one article on the continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The
+// continuous page"): a write names no new article, paper size, turn or page numbers.
 export type ArticleWrite = {
-  // The article by flow id or title; absent is the tab's only one, else a new one.
+  // The article by flow id or title; absent is the page's own, or a new one when it has none.
   article?: string;
-  // Always a new article.
-  new?: boolean;
   markdown: string;
   mode?: ArticleWriteMode;
-  // A new article's paper.
-  size?: PageSizeId;
-  orientation?: PageOrientation;
   look?: ArticleLookId;
   accent?: string;
-  pageNumbers?: boolean;
 };
 
 export type PagesRequest = { pages: PageChange[] } | { article: ArticleWrite };

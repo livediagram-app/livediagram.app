@@ -62,8 +62,9 @@ describe('slide pages', () => {
 
   it('offer only the slide sizes; an infographic page none of them', () => {
     expect(pageSizesFor('slide')).toEqual(['slide', 'slide-classic']);
-    expect(pageSizesFor('article')).toEqual(['a4', 'letter', 'a3', 'square', 'social', 'wide']);
-    expect(pageSizesFor('infographic')).toEqual(pageSizesFor('article'));
+    expect(pageSizesFor('infographic')).toEqual(['a4', 'letter', 'a3', 'square', 'social', 'wide']);
+    // An article is on the continuous page: no paper size is its to choose.
+    expect(pageSizesFor('article')).toEqual([]);
   });
 
   it('are labelled as slides', () => {

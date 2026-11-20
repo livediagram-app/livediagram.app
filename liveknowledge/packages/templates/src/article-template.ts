@@ -3,7 +3,14 @@
 // with the document's name and page numbers, headings, the goals in a table, a numbered plan, open questions as a
 // to-do list, a quote and a footnote on the figure it cites. Pure data: the tab's pages and writing, merged in by
 // templateCanvasOverrides.
-import type { ArticleBlock, ArticleFlow, ArticleStyle, Page, Tab } from '@liveknowledge/document';
+import {
+  continuousPage,
+  type ArticleBlock,
+  type ArticleFlow,
+  type ArticleStyle,
+  type Page,
+  type Tab,
+} from '@liveknowledge/document';
 import { markdownArticleBlocks } from './article-markdown-blocks';
 
 const PAGE_ID = 'page-1';
@@ -54,9 +61,10 @@ Returns are the most common reason people write to us: one support email in four
 // A real brief is passed round: a header with its name, page numbers at the foot.
 const BRIEF_STYLE: ArticleStyle = { header: { left: '{name}', right: 'Draft' }, pageNumbers: true };
 
-/** An article tab's one page: A4 portrait, holding the flow (docs/specs/007-editor/article-pages.md "An article"). */
+/** A written template's one page: the continuous page, holding the flow
+ *  (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"). */
 export function articlePage(flow: string): Page {
-  return { id: PAGE_ID, orientation: 'portrait', kind: 'article', flow };
+  return continuousPage({ id: PAGE_ID, orientation: 'portrait', kind: 'article', flow });
 }
 
 // An article tab's overrides: one A4 portrait article page holding the flow, which the editor flows onto as many pages
@@ -67,7 +75,23 @@ export function articleTabOverrides(
   blocks: ArticleBlock[],
   style?: ArticleStyle,
 ): Partial<Tab> {
-  const doc: ArticleFlow = { blocks, ...(style ? { style } : {}) };
+  // The continuous page has no paper pages to head, foot or number: a template's header, footer and page numbers
+  // are left out, and a page break in its writing is dropped.
+  const {
+    header: _header,
+    footer: _footer,
+    pageNumbers: _numbers,
+    differentFirstPage: _first,
+    ...look
+  } = style ?? {};
+  void _header;
+  void _footer;
+  void _numbers;
+  void _first;
+  const doc: ArticleFlow = {
+    blocks: blocks.filter((b) => b.type !== 'pageBreak'),
+    ...(Object.keys(look).length > 0 ? { style: look } : {}),
+  };
   return { pages: [articlePage(flow)], articles: { [flow]: doc } };
 }
 

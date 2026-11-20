@@ -3,6 +3,12 @@
 // one (an empty tab from before, or from outside) is read as one.
 import { articlesOf, newArticleFlow, type ArticleFlow } from './article-flow';
 import { pagesOf, type Page } from './page';
+import {
+  CONTINUOUS_PAGE_MIN_HEIGHT,
+  CONTINUOUS_PAGE_WIDTH,
+  continuousPageHeight,
+  isContinuousPage,
+} from './page-sizes';
 import type { Tab } from './tab-type';
 
 /** The page a new knowledgebase opens with. */
@@ -16,7 +22,45 @@ const KNOWLEDGEBASE_PAGE_ID = 'page-1';
 
 /** A knowledgebase page's one page, holding `flow`. */
 export function knowledgebasePage(flow: string = KNOWLEDGEBASE_FLOW): Page {
-  return { id: KNOWLEDGEBASE_PAGE_ID, orientation: 'portrait', kind: 'article', flow };
+  return continuousPage({
+    id: KNOWLEDGEBASE_PAGE_ID,
+    orientation: 'portrait',
+    kind: 'article',
+    flow,
+  });
+}
+
+/** A page as a continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"):
+ *  portrait, in the fit size at the continuous width, its height the one it had as a continuous page, else the least. */
+export function continuousPage<P extends Page>(page: P): P {
+  const height = page.size === 'fit' && page.fit ? page.fit.height : CONTINUOUS_PAGE_MIN_HEIGHT;
+  return {
+    ...page,
+    orientation: 'portrait',
+    size: 'fit',
+    fit: { width: CONTINUOUS_PAGE_WIDTH, height: continuousPageHeight(height) },
+  };
+}
+
+/** The tab with its article's continuous page as tall as its writing needs (`needed` canvas px, from the page's top
+ *  to the foot of its bottom margin): where the article engine would add a paper page, this page grows, and where it
+ *  would remove one, it shrinks. The same tab back when the height is unchanged, the page is not continuous, or the
+ *  article is not there: a layout that moves no line writes nothing. */
+export function withArticlePageHeight<T extends Pick<Tab, 'pages'>>(
+  tab: T,
+  flow: string,
+  needed: number,
+): T {
+  const pages = pagesOf(tab);
+  const height = continuousPageHeight(needed);
+  const page = pages.find((p) => p.flow === flow);
+  if (!page || !isContinuousPage(page) || page.fit?.height === height) return tab;
+  return {
+    ...tab,
+    pages: pages.map((p) =>
+      p === page ? { ...p, fit: { width: CONTINUOUS_PAGE_WIDTH, height } } : p,
+    ),
+  };
 }
 
 /** The pages and writing of a new knowledgebase page: one page, an empty Title and a first paragraph. */

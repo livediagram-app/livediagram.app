@@ -118,14 +118,8 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     hint: 'A line across',
     action: { kind: 'block', block: 'divider' },
   },
-  {
-    id: 'pageBreak',
-    label: 'Page Break',
-    group: 'Blocks',
-    keywords: 'new page next',
-    hint: 'Start the next page',
-    action: { kind: 'block', block: 'pageBreak' },
-  },
+  // No Page Break: a knowledgebase page is one continuous page (docs/specs/030-knowledgebase/
+  // knowledgebases-and-pages.md "The continuous page").
   {
     id: 'table',
     label: 'Table',

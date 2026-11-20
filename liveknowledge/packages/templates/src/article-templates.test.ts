@@ -95,28 +95,28 @@ describe('the written templates', () => {
         kind,
       ).toBeGreaterThan(4);
     }
-    // The proposal's title page stands alone, with no header or footer.
+    // On the continuous page the proposal's title page is its opening, not a page of its own.
     const proposal = flowOf('business-proposal');
-    expect(proposal.blocks.filter((b) => b.type === 'pageBreak')).toHaveLength(1);
-    expect(proposal.style).toMatchObject({
-      look: 'report',
-      differentFirstPage: true,
-      footer: { right: 'Page {page} of {pages}' },
-    });
+    expect(proposal.blocks.filter((b) => b.type === 'pageBreak')).toHaveLength(0);
+    expect(proposal.style).toEqual({ look: 'report' });
     expect(flowOf('design-doc').blocks.some((b) => b.type === 'code')).toBe(true);
   });
 
-  it('carry the header, footer and look a document of their kind would', () => {
-    expect(flowOf('meeting-notes').style).toMatchObject({
-      header: { left: '{name}', right: '{date}' },
-      pageNumbers: true,
-    });
-    expect(flowOf('lesson-plan').style).toMatchObject({
-      look: 'notebook',
-      footer: { right: 'Page {page}' },
-    });
-    expect(flowOf('status-report').style?.footer?.right).toBe('Page {page} of {pages}');
+  // docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page": no paper pages to head, foot,
+  // number or break to.
+  it('carry the look a document of their kind would, and no header, footer, page numbers or page break', () => {
+    expect(flowOf('lesson-plan').style).toEqual({ look: 'notebook' });
     expect(flowOf('cover-letter').style).toEqual({ look: 'classic', margins: 'wide' });
+    for (const kind of KINDS) {
+      const { style, blocks } = flowOf(kind);
+      expect(style?.header, kind).toBeUndefined();
+      expect(style?.footer, kind).toBeUndefined();
+      expect(style?.pageNumbers, kind).toBeUndefined();
+      expect(
+        blocks.some((b) => b.type === 'pageBreak'),
+        kind,
+      ).toBe(false);
+    }
     // Actions as a to-do list.
     expect(
       flowOf('meeting-notes').blocks.filter((b) => b.type === 'list' && b.list === 'todo').length,
@@ -158,15 +158,12 @@ describe('the written templates', () => {
 
   it('write the Project Brief and Working Backwards as documents that are passed round', () => {
     const brief = articleTemplateOverrides().articles!['art-brief']!;
-    expect(brief.style).toEqual({ header: { left: '{name}', right: 'Draft' }, pageNumbers: true });
+    expect(brief.style).toBeUndefined();
     expect(tables(brief.blocks)).toHaveLength(1);
     expect(brief.blocks.filter((b) => b.type === 'list' && b.list === 'todo')).toHaveLength(2);
     expect(brief.blocks.some((b) => 'runs' in b && b.runs.some((r) => r.fn))).toBe(true);
     const prfaq = workingBackwardsOverrides().articles!['art-prfaq']!;
-    expect(prfaq.style?.footer).toEqual({
-      left: 'Confidential draft',
-      right: 'Page {page} of {pages}',
-    });
+    expect(prfaq.style?.footer).toBeUndefined();
   });
 
   it('names only the written templates', () => {

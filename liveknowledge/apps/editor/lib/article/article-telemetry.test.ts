@@ -10,7 +10,6 @@ const eventOf = (id: string) =>
 describe('slash menu telemetry', () => {
   it('counts the block inserts', () => {
     expect(eventOf('divider')).toBe('ArticleDivider');
-    expect(eventOf('pageBreak')).toBe('ArticlePageBreak');
     expect(eventOf('quote')).toBe('ArticleQuote');
     expect(eventOf('code')).toBe('ArticleCode');
     expect(eventOf('table')).toBe('ArticleTable');

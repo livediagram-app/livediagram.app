@@ -8,6 +8,7 @@ import {
   articleNoteIds,
   articlesOf,
   articleTitleOf,
+  withArticleHeightEstimated,
   elementIdsOnPage,
   pagesOf,
   layOutPages,
@@ -15,12 +16,7 @@ import {
   MAX_ARTICLE_BLOCKS,
   nextArticleBlockId,
   nextArticleFlowId,
-  nextPageId,
   offersPageKindChoice,
-  pageAdded,
-  pageResized,
-  pageSizesFor,
-  pageTurned,
   withArticleFlow,
   withNoteMarkersRemoved,
   withPageKindChosen,
@@ -29,8 +25,6 @@ import {
   type ArticleFlow,
   type ArticleStyle,
   type ArticleZoneBlock,
-  tabPageKind,
-  type PageEdit,
   type Tab,
 } from '@liveknowledge/document';
 import { enterPages, type PagesIds } from './enter';
@@ -44,10 +38,6 @@ const refuse = (code: PagesRefusal['code'], message: string) => ({
 });
 
 const nameKey = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
-
-// A fresh article page: its size was checked against the article's and an article turns, so neither
-// edit can be refused.
-const fresh = (out: PageEdit<Tab>): Tab => (out as { tab: Tab }).tab;
 
 export function applyArticleWrite(
   tab: Tab,
@@ -76,7 +66,7 @@ export function applyArticleWrite(
           ? `No article "${write.article}". Articles: ${titles()}.`
           : `No article "${write.article}": the tab has none. Leave "article" out to start one.`,
       );
-  } else if (!write.new) {
+  } else {
     if (flows.length > 1)
       return refuse(
         'article_ambiguous',
@@ -85,7 +75,9 @@ export function applyArticleWrite(
     flow = flows[0];
   }
 
-  // A new article: on the fresh tab's empty, unchosen first page, else after the last page.
+  // A page with no writing yet: its empty, unchosen page takes the article, on the continuous page
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"). A page holds one article, so
+  // none is added after it, and it has no paper size or turn to ask for.
   const created = flow === undefined;
   if (created) {
     const pages = pagesOf(current);
@@ -96,28 +88,9 @@ export function applyArticleWrite(
       first.id,
       elementIdsOnPage(current.elements, laid, first.id).size,
     );
-    // One kind a tab: a new article joins only an article tab, or the fresh tab's unchosen first page.
-    if (!takesFirst && tabPageKind(pages) !== 'article')
-      return refuse('kind_not_offered', kindNotOffered(current, 'article'));
-    if (write.size && (write.size === 'fit' || !pageSizesFor('article').includes(write.size)))
-      return refuse(
-        'size_not_offered',
-        `An article takes the sizes ${pageSizesFor('article').join(', ')}.`,
-      );
+    if (!takesFirst) return refuse('kind_not_offered', kindNotOffered(current, 'article'));
     const newFlow = ids.flow?.() ?? nextArticleFlowId(new Set(flows));
-    let pageId: string;
-    if (takesFirst) {
-      current = withPageKindChosen(current, first.id, 'article', newFlow)!;
-      pageId = first.id;
-    } else {
-      pageId = ids.page?.() ?? nextPageId(pages);
-      const added = pageAdded(current, 'article', pageId, newFlow);
-      if ('refused' in added)
-        return refuse('page_limit', 'A tab holds at most 100 pages: delete one first.');
-      current = added.tab;
-    }
-    if (write.size) current = fresh(pageResized(current, pageId, write.size));
-    if (write.orientation) current = fresh(pageTurned(current, pageId, write.orientation));
+    current = withPageKindChosen(current, first.id, 'article', newFlow)!;
     flow = newFlow;
   }
   const doc: ArticleFlow = articlesOf(current)[flow!]!;
@@ -180,7 +153,6 @@ export function applyArticleWrite(
   const style: ArticleStyle = { ...doc.style };
   if (write.look && ARTICLE_LOOK_IDS.includes(write.look)) style.look = write.look;
   if (write.accent) style.accent = write.accent;
-  if (write.pageNumbers !== undefined) style.pageNumbers = write.pageNumbers;
   const next: ArticleFlow = Object.keys(style).length ? { blocks, style } : { blocks };
 
   // Zones left out go with their elements; margin notes whose text is gone lose their markers.
@@ -192,6 +164,9 @@ export function applyArticleWrite(
   const before = current.elements.length;
   current = withNoteMarkersRemoved(current, lostNotes);
   const markersGone = before - current.elements.length;
+  // The continuous page as tall as the writing is estimated to need, so it reads whole before an editor lays it out
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page").
+  current = withArticleHeightEstimated(current, flow!);
 
   const title = articleTitleOf(next);
   lines.push(

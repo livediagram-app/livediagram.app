@@ -21,8 +21,10 @@ import {
 } from '@liveworkspace/page-background';
 import { parsePageImageFill, type PageImageFill } from './page-image';
 import {
+  CONTINUOUS_PAGE_WIDTH,
   MAX_PAGES,
   PAPER_AND_SCREEN_SIZE_IDS,
+  continuousPageHeight,
   type PageOrientation,
   type PageSizeId,
   SLIDE_PAGE_SIZE_IDS,
@@ -35,6 +37,11 @@ import { layOutPages, rowPageAt } from './page-layout';
 export {
   A4_LONG_SIDE,
   A4_SHORT_SIDE,
+  CONTINUOUS_PAGE_MAX_HEIGHT,
+  CONTINUOUS_PAGE_MIN_HEIGHT,
+  CONTINUOUS_PAGE_WIDTH,
+  continuousPageHeight,
+  isContinuousPage,
   MAX_PAGES,
   PAGE_GAP,
   PAGE_ORIENTATIONS,
@@ -58,6 +65,9 @@ export {
 
 export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
   if (kind === 'slide') return SLIDE_PAGE_SIZE_IDS;
+  // A knowledgebase page is on the continuous page: an article offers no paper size
+  // (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page").
+  if (kind === 'article') return [];
   return PAPER_AND_SCREEN_SIZE_IDS;
 }
 
@@ -164,6 +174,16 @@ function parsePage(v: unknown): Page | undefined {
   return page && rowAt ? { ...page, rowAt } : page;
 }
 
+/** A continuous page's sides as stored: the continuous width, and its height within the continuous limits (the
+ *  least height when none was stored). */
+function continuousSides(v: unknown): PageSides {
+  const height = (v as { height?: unknown } | null)?.height;
+  return {
+    width: CONTINUOUS_PAGE_WIDTH,
+    height: continuousPageHeight(typeof height === 'number' ? height : Number.NaN),
+  };
+}
+
 function parsePageFields(v: unknown): Page | undefined {
   const p = v as Record<string, unknown> | null;
   if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !isPageOrientation(p.orientation))
@@ -195,8 +215,14 @@ function parsePageFields(v: unknown): Page | undefined {
       ...lock,
     };
   }
-  // Fit to Content is an infographic page's, and only with its sides.
-  const fit = p.size === 'fit' && kindFields.kind !== 'article' ? parsePageSides(p.fit) : undefined;
+  // Fit to Content is an infographic page's, and only with its sides; on an article page it is the continuous
+  // page, the continuous width wide and as tall as its writing was last laid out (page-sizes.ts).
+  const fit =
+    p.size !== 'fit'
+      ? undefined
+      : kindFields.kind === 'article'
+        ? continuousSides(p.fit)
+        : parsePageSides(p.fit);
   const ownSize =
     isPageSizeId(p.size) && p.size !== 'a4' && (p.size !== 'fit' || fit !== undefined);
   return {

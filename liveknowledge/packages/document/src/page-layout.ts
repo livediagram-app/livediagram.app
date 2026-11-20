@@ -1,7 +1,13 @@
 // Where the pages sit (docs/specs/007-editor/pages-mode.md "The pages"): the row anchor, each page's margin and
 // content box, the row they are laid out in, and which page a point is on. Re-exported from ./page.
 import type { RowAt } from '@liveworkspace/model-core/page-fit';
-import { A4_LONG_SIDE, PAGE_GAP, pageDimensions } from './page-sizes';
+import {
+  A4_LONG_SIDE,
+  CONTINUOUS_PAGE_MIN_HEIGHT,
+  PAGE_GAP,
+  isContinuousPage,
+  pageDimensions,
+} from './page-sizes';
 import type { LaidOutPage, Page, PageRect } from './page';
 
 export function rowAnchorOf(pages: readonly Pick<Page, 'rowAt'>[]): RowAt {
@@ -37,7 +43,10 @@ export function layOutPages(pages: readonly Page[]): LaidOutPage[] {
   return pages.map((page, index) => {
     const { width, height } = pageDimensions(page);
     if (index === 0) x = at.x - width / 2;
-    const rect = { x, y: at.y - height / 2, width, height };
+    // A continuous page grows downwards from a top that never moves: where a page of the least height would have
+    // its top, so the writing, and everything placed in it, stays put as the page grows and shrinks.
+    const top = isContinuousPage(page) ? at.y - CONTINUOUS_PAGE_MIN_HEIGHT / 2 : at.y - height / 2;
+    const rect = { x, y: top, width, height };
     x += width + PAGE_GAP;
     return { ...page, index, rect };
   });

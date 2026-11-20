@@ -23,6 +23,7 @@ import { isLightColor } from './colors';
 import { resolveFontStack } from '@liveworkspace/model-core/fonts';
 import { legibleOn, pageFillTone } from './page-content';
 import type { LaidOutPage } from './page';
+import { isContinuousPage } from './page-sizes';
 import {
   CHAR_EM,
   MONO,
@@ -47,6 +48,10 @@ type EstimatedArticle = {
   added: LaidOutPage[];
   // Whether it runs past ARTICLE_ESTIMATE_PAGES_MAX pages even so.
   overflows: boolean;
+  // On a continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"): how tall
+  // the page must be for the writing, from its top to the foot of its bottom margin, in canvas px. It is always one
+  // page, never added to and never overflowing. Absent on paper pages.
+  height?: number;
 };
 
 // The most pages an estimate grows an article to (a preview, never the article itself).
@@ -93,6 +98,7 @@ function layoutOnce(
   if (!doc || own.length === 0)
     return { estimate: { ops, pagesUsed: 0, added: [], overflows: false }, headingPages };
   const added: LaidOutPage[] = [];
+  const continuous = isContinuousPage(own[0]!);
   const lastOwn = own[own.length - 1]!;
   // The next page: the article's own, else one added like its last.
   const nextPage = (): boolean => {
@@ -144,6 +150,8 @@ function layoutOnce(
   };
   // Room for `h` more px on this page, else the next page; false past the last.
   const room = (h: number): boolean => {
+    // A continuous page grows instead of breaking: there is always room.
+    if (continuous) return true;
     const p = page();
     if (y + h <= p.rect.y + p.rect.height - margin) return true;
     if (!nextPage()) {
@@ -158,6 +166,8 @@ function layoutOnce(
   for (const b of doc.blocks) {
     if (overflows) break;
     if (b.type === 'pageBreak') {
+      // Honoured only where the writing is paginated (PDF, Word): the continuous page has no page to break to.
+      if (continuous) continue;
       if (!nextPage()) {
         overflows = true;
         break;
@@ -341,7 +351,8 @@ function layoutOnce(
   }
   // Each page's header and footer (and page number), as the page draws them (the document's name unknown here).
   const date = bandDate();
-  own.slice(0, at + 1).forEach((p, index) => {
+  // A continuous page has no paper pages to head, foot or number.
+  (continuous ? [] : own.slice(0, at + 1)).forEach((p, index) => {
     const bands = articleBandsFor(doc.style, style.pageNumbers, index, at + 1, '', date);
     if (!bands) return;
     const ink = inkOf(p);
@@ -374,7 +385,16 @@ function layoutOnce(
     place(bands.header, p.rect.y + top - ARTICLE_HEADER_BAND_PX / 2 + 4);
     place(bands.footer, p.rect.y + p.rect.height - margin / 2 + 4);
   });
-  return { estimate: { ops, pagesUsed: at + 1, added, overflows }, headingPages };
+  return {
+    estimate: {
+      ops,
+      pagesUsed: at + 1,
+      added,
+      overflows,
+      ...(continuous ? { height: Math.ceil(y - own[0]!.rect.y + margin) } : {}),
+    },
+    headingPages,
+  };
 
   // A table set row by row, each row as tall as its tallest cell, moving whole to the next page; a header row
   // keeps with the row after it and is set again at the top of every page the table continues onto. False past

@@ -75,8 +75,8 @@ describe('buildArticleTab', () => {
 
   it('sizes a zone to its picture, at most the text width, and an image fills it', () => {
     const [wide, small, unsized] = zones;
-    // A4's 794 px less two 96 px margins (the article's Normal margins).
-    expect(wide).toMatchObject({ width: 602, height: 301 });
+    // The continuous page's 820 px less two 96 px margins (the article's Normal margins).
+    expect(wide).toMatchObject({ width: 628, height: 314 });
     expect(small).toMatchObject({ width: 200, height: 100 });
     // No extent: the stored image's own size.
     expect(unsized).toMatchObject({ width: 300, height: 150 });
@@ -111,13 +111,13 @@ describe('buildArticleTab', () => {
       { id: 'b5', index: 0, x: 72, y: 700 },
     ]);
     const images = settled.elements as ImageElement[];
-    expect(images[0]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 140, width: 602 });
+    expect(images[0]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 140, width: 628 });
     expect(images[1]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 520 });
     expect(images[2]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 700 });
     // Fitting finds every zone's object where it should be and changes nothing.
-    expect(withZonesFitted(settled, flow, 602)).toBe(settled);
+    expect(withZonesFitted(settled, flow, 628)).toBe(settled);
     // Fitting before the first layout keeps the parked images too.
-    expect(withZonesFitted(tab, flow, 602)).toBe(tab);
+    expect(withZonesFitted(tab, flow, 628)).toBe(tab);
   });
 
   it('gives an empty document one empty paragraph, and an untitled tab a name', () => {
@@ -165,11 +165,13 @@ describe('pictureZoneSize', () => {
     });
   });
 
-  it('builds a tall picture’s zone and image inside the page’s text area', () => {
+  // The continuous page grows with its writing: a tall picture is held to the tallest a zone may be (2,000 px), not
+  // to a paper page's text area.
+  it('builds a tall picture’s zone and image no taller than a zone may be', () => {
     const tall = buildArticleTab([pic('t', 'word/media/t.png', 500, 2500)], new Map(), 'Tall');
     const doc = articlesOf(tall)[Object.keys(articlesOf(tall))[0]!]!;
     const zone = doc.blocks.find((b): b is ArticleZoneBlock => b.type === 'zone')!;
-    expect(zone).toMatchObject({ width: 186, height: 931 });
-    expect(tall.elements[0]).toMatchObject({ width: 186, height: 931 });
+    expect(zone).toMatchObject({ width: 400, height: 2000 });
+    expect(tall.elements[0]).toMatchObject({ width: 400, height: 2000 });
   });
 });

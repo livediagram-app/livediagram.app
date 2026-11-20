@@ -230,21 +230,6 @@ describe('Page edits: documents', () => {
     expect(Object.keys(h.tab().articles!)).toHaveLength(1);
   });
 
-  it('turns, sizes and paints every page of a document together', () => {
-    const h = harness(withDocument());
-    h.edits().setOrientation('d2', 'landscape');
-    h.edits().setSize('d1', 'letter');
-    h.edits().setBackground('d1', { pattern: 'lines' });
-    const [, a, b] = pagesOf(h.tab());
-    for (const p of [a!, b!]) {
-      expect(p).toMatchObject({
-        orientation: 'landscape',
-        size: 'letter',
-        background: { pattern: 'lines' },
-      });
-    }
-  });
-
   it('moves, duplicates and deletes the whole document', () => {
     const h = harness(withDocument());
     expect(h.edits().canMove('d2', 1)).toBe(false);

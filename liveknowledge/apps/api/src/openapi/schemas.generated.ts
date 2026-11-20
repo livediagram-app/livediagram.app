@@ -1041,18 +1041,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "mode": {
         "$ref": "#/components/schemas/ArticleWriteMode"
-      },
-      "new": {
-        "type": "boolean"
-      },
-      "orientation": {
-        "$ref": "#/components/schemas/PageOrientation"
-      },
-      "pageNumbers": {
-        "type": "boolean"
-      },
-      "size": {
-        "$ref": "#/components/schemas/PageSizeId"
       }
     },
     "required": [

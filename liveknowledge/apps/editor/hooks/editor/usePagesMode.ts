@@ -17,6 +17,7 @@ import {
   articleMarginPx,
   articlesOf,
   pageFitBox,
+  isContinuousPage,
   pagesOf,
   layOutPages,
   pageKindOf,
@@ -196,8 +197,11 @@ export function usePagesMode(deps: {
     const { inset, sides } = m;
     const size = { width: m.width - sides.left - sides.right, height: m.height };
     const doc = page?.flow ? articlesOf(activeTab)[page.flow] : undefined;
+    // A continuous page is read, never fitted whole: fitting a page as tall as its writing would zoom it out of
+    // sight (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page").
+    const reads = read || (!!page && isContinuousPage(page));
     return besideSideInsets(
-      read && page && doc
+      reads && page && doc
         ? computeReadingFrame(size, page.rect, inset, articleMarginPx(doc.style))
         : computeFitBelow(size, pageFitBox(page), inset),
       sides,

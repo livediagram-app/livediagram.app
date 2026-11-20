@@ -7,6 +7,7 @@
 import {
   ARTICLE_ZONE_MAX,
   ARTICLE_ZONE_MIN,
+  isContinuousPage,
   articleMarginPx,
   layOutPages,
   nextArticleBlockId,
@@ -101,7 +102,10 @@ export function buildArticleTab(
   const chosen = withPageKindChosen(blank, pagesOf(blank)[0]!.id, 'article', flow)!;
   const page = layOutPages(pagesOf(chosen))[0]!;
   const textWidth = pageDimensions(page).width - 2 * articleMarginPx(undefined);
-  const textHeight = pageDimensions(page).height - 2 * articleMarginPx(undefined);
+  // A continuous page grows with what is put in it: a picture there is held only to the tallest a zone may be.
+  const textHeight = isContinuousPage(page)
+    ? ARTICLE_ZONE_MAX
+    : pageDimensions(page).height - 2 * articleMarginPx(undefined);
 
   const elements: Element[] = [];
   const out: ArticleBlock[] = [];

@@ -75,14 +75,13 @@ describe('templateCanvasOverrides', () => {
   });
 
   // docs/specs/008-canvas/canvas-and-palette.md "Templates": Working Backwards is a PR/FAQ article in the Report look.
-  it('makes Working Backwards a PR/FAQ article: press release, a page break, both FAQs and a review list', () => {
+  it('makes Working Backwards a PR/FAQ article: press release, both FAQs and a review list', () => {
     const o = templateCanvasOverrides('working-backwards');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
     const flow = o.articles!['art-prfaq']!;
-    expect(flow.style).toEqual({
-      look: 'report',
-      footer: { left: 'Confidential draft', right: 'Page {page} of {pages}' },
-    });
+    // On the continuous page: no footer, and no page break in the writing.
+    expect(flow.style).toEqual({ look: 'report' });
+    expect(flow.blocks.some((b) => b.type === 'pageBreak')).toBe(false);
     const text = (b: (typeof flow.blocks)[number]) =>
       'runs' in b ? b.runs.map((r) => r.text).join('') : '';
     const styled = (style: string) =>
@@ -98,7 +97,6 @@ describe('templateCanvasOverrides', () => {
       'Internal FAQ',
       'Before the review',
     ]);
-    expect(flow.blocks.filter((b) => b.type === 'pageBreak')).toHaveLength(1);
     expect(styled('quote')).toHaveLength(2);
     // Every block has its own id, the same on every build.
     const ids = flow.blocks.map((b) => b.id);

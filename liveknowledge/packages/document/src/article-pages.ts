@@ -19,12 +19,12 @@ import {
   nextPageId,
   PAGE_NAME_MAX,
   newSlidePage,
-  pageSizesFor,
   withPages,
   type Page,
   type PageKind,
 } from './page';
 import { elementIdsOnPage, withPageContentReplaced } from './page-content';
+import { continuousPage } from './knowledgebase-page';
 import type { Tab } from './index';
 
 type PagesTab = Pick<Tab, 'elements'> & {
@@ -278,13 +278,13 @@ export function withPageKindChosen<T extends PagesTab>(
       },
     ]);
   }
-  // An article takes only the paper and screen sizes: a page in any other (the 16:9 slide the
-  // unchosen page could be set to) becomes A4.
-  const { size, fit: _sides, ...rest } = page;
+  // An article is written on the continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The
+  // continuous page"), whatever size the unchosen page was set to.
+  const { size: _size, fit: _sides, ...rest } = page;
+  void _size;
   void _sides;
-  const keepSize = size && pageSizesFor('article').includes(size) ? { size } : {};
   return withArticleFlow(
-    withPages(tab, [{ ...rest, ...keepSize, kind: 'article', flow }]),
+    withPages(tab, [continuousPage({ ...rest, kind: 'article', flow })]),
     flow,
     newArticleFlow(),
   );
