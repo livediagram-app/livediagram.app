@@ -30,7 +30,7 @@ async function open(page: Page, screen: Screen): Promise<void> {
   }
   if (screen !== 'Pages') await openView(page, screen);
   if (screen === 'Ask')
-    await expect(page.getByRole('heading', { name: "Ask Needs Your Team's Claude Key" })).toBeVisible();
+    await expect(page.getByRole('heading', { name: "Ask Needs Your Team's AI Key" })).toBeVisible();
   if (screen === 'AI Knowledge')
     await expect(page.getByRole('region', { name: 'Knowledge Health' })).toBeVisible();
   if (screen === 'Pages') await expect(titleOf(page)).toHaveText('Runbook');

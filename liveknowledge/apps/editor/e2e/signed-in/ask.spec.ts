@@ -45,7 +45,7 @@ test('with no key, Ask says so and offers AI Settings', async ({ page, pageError
   await signedInKnowledgebase(page);
   await openView(page, 'Ask');
   await expect(
-    ask(page).getByRole('heading', { name: "Ask Needs Your Team's Claude Key" }),
+    ask(page).getByRole('heading', { name: "Ask Needs Your Team's AI Key" }),
   ).toBeVisible();
   await expect(ask(page).getByRole('textbox')).toHaveCount(0);
   await ask(page).getByRole('button', { name: 'Open AI Settings' }).click();

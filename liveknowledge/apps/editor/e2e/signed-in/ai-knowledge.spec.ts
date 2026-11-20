@@ -13,7 +13,7 @@ test('every section shows, each with its empty state', async ({ page, pageErrors
   await openView(page, 'AI Knowledge');
   const empty: [string, string][] = [
     ['Connected Agents', 'No Agents Yet'],
-    ['Pages That Disagree', 'This Needs a Claude Key'],
+    ['Pages That Disagree', "This Needs Your Team's AI Key"],
     ['Questions Nobody Could Answer', 'No Unanswered Questions Yet'],
     ['Edits Suggested by Agents', 'No Suggested Edits Yet'],
     ['Always in Context', 'No Pages in Context Yet'],

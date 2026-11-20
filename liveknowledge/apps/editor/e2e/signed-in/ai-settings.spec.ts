@@ -78,7 +78,7 @@ test('a saved key shows only its last four characters, is kept nowhere on the pa
   ).toHaveText('No Key Yet');
   await again.getByRole('button', { name: 'Done' }).click();
   await expect(
-    page.getByRole('heading', { name: "Ask Needs Your Team's Claude Key" }),
+    page.getByRole('heading', { name: "Ask Needs Your Team's AI Key" }),
   ).toBeVisible();
   expectNoPageErrors(pageErrors);
 });

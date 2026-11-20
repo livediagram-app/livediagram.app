@@ -64,18 +64,20 @@ test('Yours to Review lists a page of yours that is due, and Still Right clears 
   await nameOpenPage(page, 'Runbook');
   const tab = openPageId(page);
 
-  // Verified 100 days ago, on a 30 day review. Verify always says now; the e2e stack alone lets a spec name an
-  // earlier moment (apps/api/src/knowledge/claude-door.ts `verifyMoment`), so a page can be due without the wait.
+  // Verified 100 days ago, in a knowledgebase that reviews every 30 days. Verify always says now; the e2e stack
+  // alone lets a spec name an earlier moment (apps/api/src/knowledge/model-door.ts `verifyMoment`), so a page can
+  // be due without the wait.
   const headers = await asPerson(page, who, id);
   const verify = await page.request.post(`/api/documents/${id}/pages/${tab}/verify`, {
     headers: { ...headers, 'X-E2E-Verified-At': String(Date.now() - 100 * 24 * 60 * 60 * 1000) },
   });
   expect(verify.ok(), `verify: ${verify.status()}`).toBe(true);
-  const interval = await page.request.put(`/api/documents/${id}/pages/${tab}/knowledge`, {
+  // The Review Period is the knowledgebase's (verification.md "The Review Period"), not the page's.
+  const period = await page.request.put(`/api/documents/${id}/knowledge-settings`, {
     headers,
     data: { reviewEvery: 30 },
   });
-  expect(interval.ok(), `review interval: ${interval.status()}`).toBe(true);
+  expect(period.ok(), `review period: ${period.status()}`).toBe(true);
   // Due in the editor too: the row and the meta row say so.
   await page.reload();
   await expect(pageRow(page, 'Runbook, Review Due')).toBeVisible();
