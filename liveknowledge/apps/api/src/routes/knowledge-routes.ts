@@ -10,6 +10,10 @@
 //   POST   ask                                              knowledge-ask-route.ts
 //   GET    knowledge, POST questions, DELETE questions/<key>, POST conflicts/<id>/dismiss
 //                                                           knowledge-overview-routes.ts
+//   POST   pages/<tab>/suggestions, GET suggestions, POST suggestions/<id>/accept, POST suggestions/<id>/dismiss
+//                                                           knowledge-suggestion-routes.ts
+//   GET    pages, GET pages/<tab>, GET context, POST pages, POST pages/<tab>/move, PUT agents/<token>/scopes
+//                                                           knowledge-agent-routes.ts
 // The gate is the caller's grant (routes/context.ts): reading is every role's, a share link's visitor included; a
 // write is an Editor's. A link confined to one page reaches that page's own routes and search, nothing else.
 import { getDocument } from '../db';
@@ -22,6 +26,7 @@ import {
   type DocumentAccess,
   type DocumentRouteContext,
 } from './context';
+import { handleAgentPageRoute, handleAgentRoutes } from './knowledge-agent-routes';
 import { handleAiRoutes } from './knowledge-ai-routes';
 import { handleAsk } from './knowledge-ask-route';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
@@ -32,6 +37,7 @@ import {
   handleVerify,
 } from './knowledge-page-routes';
 import { handleKnowledgeSearch } from './knowledge-search-route';
+import { handleSuggest, handleSuggestionRoutes } from './knowledge-suggestion-routes';
 
 /** How long a client may keep the summary (knowledgebase-home.md: "cached for a minute"). */
 export const SUMMARY_MAX_AGE_SECONDS = 60;
@@ -62,11 +68,18 @@ async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   const { ctx, document, grant } = route;
   const { segments } = ctx;
   const tab = segments[4];
-  if (segments.length !== 6 || !tab) return notFound();
+  if (!tab) return notFound();
   // A link confined to another page reads this one as missing (tab-scoped-share-links.md).
   if (grant.tabScope !== null && grant.tabScope !== tab) return notFound();
-  if (!document.tabs.some((t) => t.id === tab)) return notFound();
+  const summary = document.tabs.find((t) => t.id === tab);
+  if (!summary) return notFound();
   const method = ctx.request.method;
+  // The page as Markdown, and its place in the tree (knowledge-agent-routes.ts).
+  const agent = await handleAgentPageRoute(route, summary);
+  if (agent) return agent;
+  if (segments.length !== 6) return notFound();
+  if (segments[5] === 'suggestions')
+    return method === 'POST' ? handleSuggest(route, tab) : methodNotAllowed();
   if (segments[5] === 'backlinks')
     return method === 'GET' ? handleBacklinks(ctx, document, tab) : methodNotAllowed();
   if (segments[5] === 'health')
@@ -91,12 +104,16 @@ function isKnowledgePath(segments: readonly string[]): boolean {
       segments[3] === 'ai' ||
       segments[3] === 'ask' ||
       segments[3] === 'knowledge' ||
-      segments[3] === 'questions'
+      segments[3] === 'questions' ||
+      segments[3] === 'pages' ||
+      segments[3] === 'context' ||
+      segments[3] === 'suggestions'
     );
   if (segments.length === 5)
     return (
       (segments[3] === 'ai' && (segments[4] === 'key' || segments[4] === 'model')) ||
-      segments[3] === 'questions'
+      segments[3] === 'questions' ||
+      segments[3] === 'pages'
     );
   if (segments.length === 6)
     return (
@@ -104,8 +121,12 @@ function isKnowledgePath(segments: readonly string[]): boolean {
         (segments[5] === 'backlinks' ||
           segments[5] === 'health' ||
           segments[5] === 'verify' ||
-          segments[5] === 'knowledge')) ||
-      (segments[3] === 'conflicts' && segments[5] === 'dismiss')
+          segments[5] === 'knowledge' ||
+          segments[5] === 'suggestions' ||
+          segments[5] === 'move')) ||
+      (segments[3] === 'conflicts' && segments[5] === 'dismiss') ||
+      (segments[3] === 'suggestions' && (segments[5] === 'accept' || segments[5] === 'dismiss')) ||
+      (segments[3] === 'agents' && segments[5] === 'scopes')
     );
   return false;
 }
@@ -120,14 +141,19 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   const grant = await gateGrant(ctx, id, document.ownerId, document.teamId);
   if (!grant) return forbidden();
   const route: KnowledgeRoute = { ctx, document, grant };
-  if (segments[3] === 'pages') return handlePageRoutes(route);
+  if (segments[3] === 'pages' && segments.length > 4) return handlePageRoutes(route);
   if (segments[3] === 'search')
-    return request.method === 'GET' ? handleKnowledgeSearch(ctx, grant) : methodNotAllowed();
+    return request.method === 'GET' ? handleKnowledgeSearch(route) : methodNotAllowed();
   if (!wholeKnowledgebase(grant)) return forbidden();
   if (segments[3] === 'summary')
     return request.method === 'GET' ? handleSummary(route) : methodNotAllowed();
   if (segments[3] === 'ai') return handleAiRoutes(route);
   if (segments[3] === 'ask')
     return request.method === 'POST' ? handleAsk(route) : methodNotAllowed();
-  return (await handleOverviewRoutes(route)) ?? notFound();
+  return (
+    (await handleAgentRoutes(route)) ??
+    (await handleSuggestionRoutes(route)) ??
+    (await handleOverviewRoutes(route)) ??
+    notFound()
+  );
 }

@@ -661,6 +661,8 @@ describe('agent presence after a read (docs/specs/024-agents/agent-presence.md "
         owner: OWNER,
         grant: null,
         token,
+        // No grant is read for it: the broken token below throws when anything asks whether it is read-only.
+        agent: null,
         ...(waitUntil ? { waitUntil } : {}),
       });
     const target = { id: 'X', ownerId: OWNER, teamId: null };

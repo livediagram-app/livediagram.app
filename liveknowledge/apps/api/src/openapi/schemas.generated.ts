@@ -13,6 +13,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "AcceptSuggestionResponse": {
+    "additionalProperties": false,
+    "description": "`POST .../suggestions/<id>/accept`: the page's new revision.",
+    "properties": {
+      "tab": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "id",
+          "rev"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "tab"
+    ],
+    "type": "object"
+  },
   "AccessLevel": {
     "enum": [
       "view",
@@ -48,6 +74,50 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "status",
       "focus",
       "expiresAt"
+    ],
+    "type": "object"
+  },
+  "AgentScope": {
+    "description": "What an agent may do in a knowledgebase (knowledgebase-for-agents.md \"Scopes\").",
+    "enum": [
+      "read",
+      "suggest",
+      "write"
+    ],
+    "type": "string"
+  },
+  "AgentScopesRequest": {
+    "additionalProperties": false,
+    "description": "`PUT .../agents/<tokenId>/scopes`: what one API token may do in this knowledgebase.",
+    "properties": {
+      "scopes": {
+        "items": {
+          "$ref": "#/components/schemas/AgentScope"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "scopes"
+    ],
+    "type": "object"
+  },
+  "AgentScopesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "scopes": {
+        "items": {
+          "$ref": "#/components/schemas/AgentScope"
+        },
+        "type": "array"
+      },
+      "tokenId": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tokenId",
+      "scopes"
     ],
     "type": "object"
   },
@@ -2494,6 +2564,57 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "CreatePageRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../pages`: a new page from Markdown, under `parent` (the top level when absent).",
+    "properties": {
+      "markdown": {
+        "type": "string"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "title"
+    ],
+    "type": "object"
+  },
+  "CreatePageResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "page": {
+        "additionalProperties": false,
+        "properties": {
+          "parent": {
+            "type": "string"
+          },
+          "rev": {
+            "type": "number"
+          },
+          "tab": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "rev",
+          "tab",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "page"
+    ],
+    "type": "object"
+  },
   "CurrentTokenResponse": {
     "additionalProperties": false,
     "properties": {
@@ -4185,6 +4306,103 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeAgentContextResponse": {
+    "additionalProperties": false,
+    "description": "`GET .../context`: the Always in Context pages as Markdown in tree order, within the budget, with what the caller may do here.",
+    "properties": {
+      "budget": {
+        "type": "number"
+      },
+      "leftOut": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "tab": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "tokens": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "tab",
+            "title",
+            "tokens"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "name": {
+        "type": "string"
+      },
+      "pageCount": {
+        "type": "number"
+      },
+      "pages": {
+        "items": {
+          "additionalProperties": false,
+          "properties": {
+            "markdown": {
+              "type": "string"
+            },
+            "tab": {
+              "type": "string"
+            },
+            "title": {
+              "type": "string"
+            },
+            "tokens": {
+              "type": "number"
+            },
+            "trust": {
+              "$ref": "#/components/schemas/KnowledgePageTrust"
+            }
+          },
+          "required": [
+            "markdown",
+            "tab",
+            "title",
+            "tokens",
+            "trust"
+          ],
+          "type": "object"
+        },
+        "type": "array"
+      },
+      "role": {
+        "enum": [
+          "edit",
+          "participate",
+          "view"
+        ],
+        "type": "string"
+      },
+      "scopes": {
+        "items": {
+          "$ref": "#/components/schemas/AgentScope"
+        },
+        "type": "array"
+      },
+      "tokens": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "name",
+      "role",
+      "scopes",
+      "budget",
+      "tokens",
+      "pages",
+      "leftOut",
+      "pageCount"
+    ],
+    "type": "object"
+  },
   "KnowledgeAiSettings": {
     "additionalProperties": false,
     "description": "`GET .../ai` (search-and-ask.md \"Ask\"): never the key, only whether one is set and its last characters.",
@@ -4430,6 +4648,185 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgePageRead": {
+    "additionalProperties": false,
+    "description": "`GET .../pages/<tab>`: one page as Markdown, its page links by their current titles. `heading` and `maxChars` narrow it; `leftOut` counts the characters not sent and `headings` lists the page's sections.",
+    "properties": {
+      "backlinks": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgePageRef"
+        },
+        "type": "array"
+      },
+      "chars": {
+        "type": "number"
+      },
+      "headings": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "leftOut": {
+        "type": "number"
+      },
+      "markdown": {
+        "type": "string"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "rev": {
+        "type": "number"
+      },
+      "subpages": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgePageRef"
+        },
+        "type": "array"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "trust": {
+        "$ref": "#/components/schemas/KnowledgePageTrust"
+      }
+    },
+    "required": [
+      "backlinks",
+      "chars",
+      "headings",
+      "leftOut",
+      "markdown",
+      "rev",
+      "subpages",
+      "tab",
+      "title",
+      "trust"
+    ],
+    "type": "object"
+  },
+  "KnowledgePageReadResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "page": {
+        "$ref": "#/components/schemas/KnowledgePageRead"
+      }
+    },
+    "required": [
+      "page"
+    ],
+    "type": "object"
+  },
+  "KnowledgePageRef": {
+    "additionalProperties": false,
+    "description": "A page by its id and current title.",
+    "properties": {
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "title"
+    ],
+    "type": "object"
+  },
+  "KnowledgePageRow": {
+    "additionalProperties": false,
+    "description": "One row of `GET .../pages`: the page tree in order. `depth` is 1 at the top level.",
+    "properties": {
+      "context": {
+        "const": true,
+        "type": "boolean"
+      },
+      "depth": {
+        "type": "number"
+      },
+      "owner": {
+        "description": "The owner's account id.",
+        "type": "string"
+      },
+      "parent": {
+        "type": "string"
+      },
+      "subpages": {
+        "type": "number"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "trust": {
+        "$ref": "#/components/schemas/KnowledgePageTrust"
+      }
+    },
+    "required": [
+      "depth",
+      "subpages",
+      "tab",
+      "title",
+      "trust"
+    ],
+    "type": "object"
+  },
+  "KnowledgePageTrust": {
+    "additionalProperties": false,
+    "description": "How far a page or passage can be trusted, as every agent answer carries it. `stale` is review due.",
+    "properties": {
+      "conflictsWith": {
+        "description": "The pages an open conflict sets this one against.",
+        "items": {
+          "$ref": "#/components/schemas/KnowledgePageRef"
+        },
+        "type": "array"
+      },
+      "reviewAt": {
+        "type": "number"
+      },
+      "stale": {
+        "type": "boolean"
+      },
+      "state": {
+        "$ref": "#/components/schemas/KnowledgeTrustState"
+      },
+      "verifiedAt": {
+        "type": "number"
+      },
+      "verifiedBy": {
+        "description": "The verifier's name, where the api has one.",
+        "type": "string"
+      }
+    },
+    "required": [
+      "state",
+      "stale"
+    ],
+    "type": "object"
+  },
+  "KnowledgePagesResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "pages": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgePageRow"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "pages"
+    ],
+    "type": "object"
+  },
   "KnowledgeQuestion": {
     "additionalProperties": false,
     "properties": {
@@ -4531,6 +4928,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "additionalProperties": false,
     "description": "One search result: a page's title row, or a passage of its writing. `titleMarked` and `snippet` wrap each matched word in U+0002 and U+0003, so a client marks them without parsing HTML.",
     "properties": {
+      "conflictsWith": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgePageRef"
+        },
+        "type": "array"
+      },
       "firstBlock": {
         "type": "string"
       },
@@ -4549,10 +4952,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "lastBlock": {
         "type": "string"
       },
+      "reviewAt": {
+        "type": "number"
+      },
       "snippet": {
         "type": "string"
       },
       "tab": {
+        "type": "string"
+      },
+      "text": {
+        "description": "For an agent (an API token, the MCP, the CLI): the passage whole, when its page's review is or was due, and the pages an open conflict sets this passage against.",
         "type": "string"
       },
       "title": {
@@ -4584,14 +4994,32 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeSuggestion": {
     "additionalProperties": false,
+    "description": "An agent's edit waiting for an Editor (ai-knowledge.md \"Edits suggested by agents\"): a passage of the page's Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty).",
     "properties": {
+      "after": {
+        "type": "string"
+      },
       "agent": {
+        "type": "string"
+      },
+      "before": {
         "type": "string"
       },
       "createdAt": {
         "type": "number"
       },
       "id": {
+        "type": "string"
+      },
+      "kind": {
+        "enum": [
+          "replace",
+          "append"
+        ],
+        "type": "string"
+      },
+      "reason": {
+        "description": "Why, in the agent's words; `summary` is its first line, for a card's heading.",
         "type": "string"
       },
       "summary": {
@@ -4609,8 +5037,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "tab",
       "title",
       "agent",
+      "reason",
       "summary",
+      "kind",
+      "before",
+      "after",
       "createdAt"
+    ],
+    "type": "object"
+  },
+  "KnowledgeSuggestionsResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "suggestions": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeSuggestion"
+        },
+        "type": "array"
+      }
+    },
+    "required": [
+      "suggestions"
     ],
     "type": "object"
   },
@@ -5229,6 +5676,54 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "sheen"
     ],
     "type": "string"
+  },
+  "MovePageRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../pages/<tab>/move`: under `parent` (null or absent: the top level), before its subpage `before` (last when absent).",
+    "properties": {
+      "before": {
+        "type": "string"
+      },
+      "parent": {
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    "type": "object"
+  },
+  "MovePageResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "page": {
+        "additionalProperties": false,
+        "properties": {
+          "depth": {
+            "type": "number"
+          },
+          "parent": {
+            "type": "string"
+          },
+          "tab": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "depth",
+          "tab",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    "required": [
+      "page"
+    ],
+    "type": "object"
   },
   "OutlineNode": {
     "additionalProperties": false,
@@ -8187,6 +8682,42 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "y",
       "width",
       "height"
+    ],
+    "type": "object"
+  },
+  "SuggestEditRequest": {
+    "additionalProperties": false,
+    "description": "`POST .../pages/<tab>/suggestions`: `before` absent or empty appends `after` to the page.",
+    "properties": {
+      "after": {
+        "type": "string"
+      },
+      "before": {
+        "type": "string"
+      },
+      "reason": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "reason",
+      "after"
+    ],
+    "type": "object"
+  },
+  "SuggestEditResponse": {
+    "additionalProperties": false,
+    "properties": {
+      "pending": {
+        "type": "number"
+      },
+      "suggestion": {
+        "$ref": "#/components/schemas/KnowledgeSuggestion"
+      }
+    },
+    "required": [
+      "suggestion",
+      "pending"
     ],
     "type": "object"
   },

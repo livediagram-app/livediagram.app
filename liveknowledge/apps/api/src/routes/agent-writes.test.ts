@@ -53,7 +53,16 @@ function call(
     body,
     headers,
   });
-  return handleDocuments(who === 'agent' ? { ...base, token: { id: 'tok_1' } } : base);
+  // The agent's token was granted `write` here (knowledge/agent-grants.ts): these are an agent's direct writes.
+  return handleDocuments(
+    who === 'agent'
+      ? {
+          ...base,
+          token: { id: 'tok_1' },
+          agent: { readOnly: false, granted: ['read', 'suggest', 'write'] },
+        }
+      : base,
+  );
 }
 
 function storedIds(db: SqliteD1, tabId: string): string[] {

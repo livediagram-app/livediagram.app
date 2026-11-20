@@ -87,6 +87,8 @@ describe('the grant gates', () => {
     expect(await gateRead(scoped, 'd1')).toBe(false);
     expect(await gateGrant(scoped, 'd1')).toEqual({
       role: 'edit',
+      personRole: 'edit',
+      scopes: null,
       tabScope: 't1',
       shareCode: null,
       community: false,

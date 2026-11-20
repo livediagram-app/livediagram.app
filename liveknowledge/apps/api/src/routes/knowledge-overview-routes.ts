@@ -36,6 +36,7 @@ import { rowsOf, runAll, sqlOf } from '../knowledge/knowledge-db';
 import { contextPages, knowledgeHealthCounts } from '../knowledge/knowledge-reads';
 import { forbidden, json, methodNotAllowed, noContent } from '../responses';
 import type { KnowledgeRoute } from './knowledge-routes';
+import { pendingSuggestions } from './knowledge-suggestion-routes';
 
 const DAY_MS = 86_400_000;
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
@@ -102,19 +103,22 @@ async function openConflicts(
   });
 }
 
-async function handleOverview({ ctx, document, grant }: KnowledgeRoute): Promise<Response> {
+async function handleOverview(route: KnowledgeRoute): Promise<Response> {
+  const { ctx, document, grant } = route;
   const { env } = ctx;
   const now = Date.now();
   const titles = new Map(document.tabs.map((t) => [t.id, t.name]));
-  const [reads, questions, questionAgents, conflicts, pages, health, ai] = await Promise.all([
-    rowsOf<AgentReadsRow>(env, countAgentReads(now)),
-    rowsOf<QuestionRow>(env, listQuestions()),
-    rowsOf<QuestionAgentRow>(env, listQuestionAgents()),
-    openConflicts(env, now),
-    contextPages(env, document.id),
-    knowledgeHealthCounts(env, document.id, now),
-    readAiSettings(env, grant.role === 'edit'),
-  ]);
+  const [reads, questions, questionAgents, conflicts, pages, health, ai, suggestions] =
+    await Promise.all([
+      rowsOf<AgentReadsRow>(env, countAgentReads(now)),
+      rowsOf<QuestionRow>(env, listQuestions()),
+      rowsOf<QuestionAgentRow>(env, listQuestionAgents()),
+      openConflicts(env, now),
+      contextPages(env, document.id),
+      knowledgeHealthCounts(env, document.id, now),
+      readAiSettings(env, grant.role === 'edit'),
+      pendingSuggestions(route, now),
+    ]);
   const lastAt = new Map(questions.map((q) => [q.key, q.lastAt]));
   const overview: KnowledgeOverviewResponse = {
     agents: agentReads(reads).map((a) => ({
@@ -131,9 +135,8 @@ async function handleOverview({ ctx, document, grant }: KnowledgeRoute): Promise
       lastAt: lastAt.get(q.key) ?? 0,
     })),
     conflicts,
-    // An agent's edit lands as a changeset that is already applied (agent-changesets.md): the store holds no
-    // suggestion waiting to be accepted, so there is none to list until the Suggests Edits scope is built.
-    suggestions: [],
+    // Agents' edits waiting for an Editor (knowledge-suggestion-routes.ts), newest first.
+    suggestions,
     context: {
       budget: CONTEXT_BUDGET_TOKENS,
       used: pages.reduce((sum, p) => sum + p.tokens, 0),

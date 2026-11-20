@@ -2,6 +2,7 @@
 // article write (docs/specs/024-agents/pages-for-agents.md "The route"), for the CLI, the MCP and
 // any script. Gated like a changeset: anyone who may edit the tab, a read-only token refused.
 import { parsePagesRequest } from '@liveknowledge/edit-operations';
+import { parseKnowledgeFields, trustState } from '@liveknowledge/knowledge';
 import { getDocument } from '../db';
 import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
@@ -30,6 +31,22 @@ export async function handleTabPages(
       change: rest.change ?? null,
     });
     return json({ error: code, ...rest }, { status: 400 });
+  }
+  // An agent never rewrites a verified page (docs/specs/024-agents/knowledgebase-for-agents.md `write_page`): what
+  // a person vouched for changes through a suggestion a person accepts.
+  if (ctx.token && 'article' in parsed) {
+    const fields = parseKnowledgeFields(document.tabs.find((t) => t.id === tabId)?.knowledge);
+    if (trustState(fields, Date.now()).state === 'verified') {
+      console.info('[pages-agent] refused', { documentId: id, tabId, code: 'page_verified' });
+      return json(
+        {
+          error: 'page_verified',
+          message:
+            'This page is verified, so an agent does not rewrite it. Suggest the change instead (suggest_edit; POST pages/<page>/suggestions) for a person to accept.',
+        },
+        { status: 409 },
+      );
+    }
   }
   const author = await authorOf(ctx, owner);
   const result = await submitPages({

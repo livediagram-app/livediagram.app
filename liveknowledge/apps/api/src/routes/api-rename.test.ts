@@ -81,12 +81,29 @@ async function rename(db: SqliteD1, name: string, opts: Opts = {}): Promise<Resp
 }
 
 describe('a rename through the API', () => {
+  // Renaming the knowledgebase is an Editor's: the token was granted `write` here (knowledge/agent-grants.ts).
+  const grantWrite = (db: SqliteD1) =>
+    db.sql
+      .prepare(
+        `INSERT INTO agent_grants (token_id, scopes, updated_at) VALUES (?, 'read suggest write', 1)`,
+      )
+      .run(token.id);
+
   it("sends an API token's rename to the index as the item's title", async () => {
     const db = await seeded();
+    grantWrite(db);
     const res = await rename(db, '  Roadmap 2027 ', { token, verifiedUserId: 'owner' });
     expect(res.status).toBe(200);
     expect(index.renames).toEqual([{ id: 'P', input: { title: 'Roadmap 2027' } }]);
     expect((await read(await call(db, 'GET', '/api/documents/P'))).name).toBe('Roadmap 2027');
+  });
+
+  it('refuses the rename of a token that holds read and suggest alone, in words', async () => {
+    const db = await seeded();
+    const res = await rename(db, 'Plans', { token, verifiedUserId: 'owner' });
+    expect(res.status).toBe(403);
+    expect(await res.json()).toMatchObject({ error: 'scope_needed', needs: 'write' });
+    expect(index.renames).toEqual([]);
   });
 
   it("leaves the editor's rename to the editor, and sends nothing for a refused one", async () => {
@@ -94,6 +111,7 @@ describe('a rename through the API', () => {
     expect((await rename(db, 'Plans')).status).toBe(200);
     expect((await read(await call(db, 'GET', '/api/documents/P'))).name).toBe('Plans');
     // An empty name is refused: the index hears nothing either.
+    grantWrite(db);
     expect((await rename(db, '', { token, verifiedUserId: 'owner' })).status).toBe(400);
     expect(index.renames).toEqual([]);
   });

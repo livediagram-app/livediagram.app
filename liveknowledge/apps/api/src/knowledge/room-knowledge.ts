@@ -3,6 +3,7 @@
 // prune. One per room; the room's alarm asks `at` when it is next due and calls `turn`.
 import type { ItemDbHooks, ItemSql } from '@liveworkspace/index-app';
 import { pruneCounters, pruneQuestions, pruneReads } from '@liveknowledge/knowledge';
+import { pruneSuggestions } from './suggestions';
 import {
   hasQueuedPages,
   settleQueued,
@@ -78,8 +79,14 @@ export class RoomKnowledge {
   }
 }
 
-/** The daily prune (the room's upkeep): reads past 90 days, counters past their window, questions past the cap. */
+/** The daily prune (the room's upkeep): reads past 90 days, counters past their window, questions past the cap,
+ *  suggestions nobody decided about in 90 days or whose page is gone. */
 export function pruneKnowledge(sql: ItemSql, now: number): void {
-  for (const statement of [pruneReads(now), pruneCounters(now), ...pruneQuestions()])
+  for (const statement of [
+    pruneReads(now),
+    pruneCounters(now),
+    ...pruneQuestions(),
+    ...pruneSuggestions(now),
+  ])
     sql.exec(statement.sql, ...statement.params);
 }

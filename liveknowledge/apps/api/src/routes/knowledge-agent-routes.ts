@@ -1,0 +1,385 @@
+// The knowledgebase as an agent reads and shapes it (docs/specs/024-agents/knowledgebase-for-agents.md), each one
+// request for one tool of the MCP server or one command of the CLI:
+//   GET  /api/documents/<id>/pages                 the page tree with each page's trust (list_pages)
+//   GET  /api/documents/<id>/pages/<tab>           one page as Markdown, its backlinks and subpages (read_page)
+//   GET  /api/documents/<id>/context               the Always in Context pages within the budget (get_context)
+//   POST /api/documents/<id>/pages                 a new page from Markdown (create_page): an Editor, or an
+//                                                  Editor's agent holding `suggest`
+//   POST /api/documents/<id>/pages/<tab>/move      a page moved in the tree (move_page): Editor
+//   PUT  /api/documents/<id>/agents/<token>/scopes what an API token may do here: an Editor in person
+// Reading is every role's. A page read here is counted as `GET tabs/<tab>` counts it.
+import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
+import {
+  agentScopesFor,
+  parseAgentScopes,
+  type CreatePageRequest,
+  type KnowledgeAgentContextResponse,
+  type KnowledgePageRead,
+  type KnowledgePageRef,
+  type KnowledgePageRow,
+  type MovePageRequest,
+} from '@liveknowledge/api-schema';
+import {
+  ARTICLE_MARKDOWN_MAX,
+  buildTab,
+  newKnowledgebasePageContent,
+  pageByTitleIn,
+  pageMoveRefusal,
+  pageTreeRows,
+  parseTabParent,
+  withPageMoved,
+  type Tab,
+} from '@liveknowledge/document';
+import { applyArticleWrite } from '@liveknowledge/edit-operations';
+import {
+  CONTEXT_BUDGET_TOKENS,
+  assembleContext,
+  backlinkRows,
+  backlinks,
+  cutMarkdown,
+  markdownHeadings,
+  markdownSection,
+  parseKnowledgeFields,
+} from '@liveknowledge/knowledge';
+import { readStoredTab } from '../changesets/stored-tab';
+import { getDocument, isTabRevStale, reorderTabs, upsertTabAtRev } from '../db';
+import {
+  readStoredPages,
+  tabParentRefusal,
+  writeTabParents,
+} from '../document-room/page-tree-store';
+import { isTokenId, writeScopes } from '../knowledge/agent-grants';
+import { readerOf } from '../knowledge/knowledge-caller';
+import { rowsOf } from '../knowledge/knowledge-db';
+import { countRead } from '../knowledge/knowledge-reads';
+import { openConflictPages, pageMarkdownOf, pageTrustOf } from '../knowledge/page-read';
+import { TabTooLargeError } from '../limits';
+import { capStoredName } from '../names';
+import { getParticipant } from '../person/profiles';
+import {
+  conflict,
+  forbidden,
+  json,
+  methodNotAllowed,
+  notFound,
+  payloadTooLarge,
+} from '../responses';
+import { relayPages } from '../room-client';
+import type { DocumentDTO } from '../types';
+import { refreshAfterRead } from './changesets';
+import { requireOwner } from './context';
+import type { KnowledgeRoute } from './knowledge-routes';
+
+const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
+
+/** The largest `maxChars` a read takes: a page's Markdown is never longer. */
+const READ_MAX_CHARS = ARTICLE_MARKDOWN_MAX;
+
+type Summary = DocumentDTO['tabs'][number];
+const treeOf = (document: DocumentDTO) =>
+  pageTreeRows(document.tabs.map((t) => ({ ...t, parent: t.parent })));
+const refOf = (t: Summary): KnowledgePageRef => ({ tab: t.id, title: t.name });
+
+async function handleList({ ctx, document }: KnowledgeRoute): Promise<Response> {
+  const now = Date.now();
+  const { byTab } = await openConflictPages(ctx.env, document.tabs);
+  const pages: KnowledgePageRow[] = treeOf(document).map(({ page, depth, subpages }) => {
+    const fields = parseKnowledgeFields(page.knowledge);
+    return {
+      ...refOf(page),
+      depth,
+      ...(page.parent ? { parent: page.parent } : {}),
+      subpages,
+      ...(fields.owner ? { owner: fields.owner } : {}),
+      ...(fields.context ? { context: true as const } : {}),
+      trust: pageTrustOf(page.knowledge, now, { conflictsWith: byTab.get(page.id) }),
+    };
+  });
+  return json({ pages });
+}
+
+async function handleRead(route: KnowledgeRoute, summary: Summary): Promise<Response> {
+  const { ctx, document } = route;
+  const params = ctx.url.searchParams;
+  const heading = params.get('heading')?.trim() ?? '';
+  const rawMax = params.get('maxChars');
+  const maxChars = rawMax === null ? READ_MAX_CHARS : Number(rawMax);
+  if (!Number.isInteger(maxChars) || maxChars < 1 || maxChars > READ_MAX_CHARS)
+    return invalid('invalid_max_chars', `maxChars is a whole number from 1 to ${READ_MAX_CHARS}.`);
+  const now = Date.now();
+  const fields = parseKnowledgeFields(summary.knowledge);
+  const [stored, linking, conflicts, verifier] = await Promise.all([
+    readStoredTab(ctx.env, document.id, summary.id),
+    rowsOf<{ fromTab: string }>(ctx.env, backlinkRows(summary.id)),
+    openConflictPages(ctx.env, document.tabs),
+    fields.verifiedBy ? getParticipant(ctx.env, fields.verifiedBy) : null,
+  ]);
+  if (!stored) return notFound();
+  const whole = pageMarkdownOf(stored.tab, document.tabs);
+  const headings = markdownHeadings(whole).map((h) => h.text);
+  const section = heading ? markdownSection(whole, heading) : whole;
+  if (section === undefined)
+    return invalid(
+      'heading_unknown',
+      headings.length
+        ? `No heading "${heading}" on this page. Headings: ${headings.map((h) => `"${h}"`).join(', ')}.`
+        : `This page has no headings: read it without "heading".`,
+    );
+  const cut = cutMarkdown(section, maxChars);
+  const byId = new Map(document.tabs.map((t) => [t.id, t]));
+  const order = treeOf(document).map((row) => row.page.id);
+  const caller = ctx.resolveOwner();
+  if (caller !== null) refreshAfterRead(ctx, document, summary.id, caller);
+  await countRead(ctx.env, summary.id, readerOf(ctx), caller);
+  const page: KnowledgePageRead = {
+    ...refOf(summary),
+    rev: stored.rev,
+    markdown: cut.markdown,
+    chars: whole.length,
+    leftOut: whole.length - cut.markdown.length,
+    headings,
+    trust: pageTrustOf(summary.knowledge, now, {
+      conflictsWith: conflicts.byTab.get(summary.id),
+      verifiedBy: verifier?.name || undefined,
+    }),
+    ...(summary.parent ? { parent: summary.parent } : {}),
+    backlinks: backlinks(
+      summary.id,
+      linking.map((r) => r.fromTab),
+      order,
+    ).flatMap((id) => (byId.has(id) ? [refOf(byId.get(id)!)] : [])),
+    subpages: document.tabs.filter((t) => t.parent === summary.id).map(refOf),
+  };
+  return json({ page }, { headers: { ETag: `"${stored.rev}"` } });
+}
+
+async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<Response> {
+  const now = Date.now();
+  const marked = treeOf(document)
+    .map((row) => row.page)
+    .filter((page) => parseKnowledgeFields(page.knowledge).context);
+  // Each page's body is one keyed read inside the room; a knowledgebase's context is a handful of pages (the
+  // budget is 8,000 tokens), and no page beyond the marked ones is read.
+  const bodies = await Promise.all(
+    marked.map(async (page) => {
+      const stored = await readStoredTab(ctx.env, document.id, page.id);
+      return {
+        id: page.id,
+        title: page.name,
+        markdown: stored ? pageMarkdownOf(stored.tab, document.tabs) : '',
+      };
+    }),
+  );
+  const context = assembleContext(bodies);
+  const reader = readerOf(ctx);
+  const caller = ctx.resolveOwner();
+  for (const page of context.pages) await countRead(ctx.env, page.id, reader, caller, now);
+  const knowledgeOf = new Map(marked.map((p) => [p.id, p.knowledge]));
+  const answer: KnowledgeAgentContextResponse = {
+    name: document.name,
+    role: grant.role,
+    scopes:
+      grant.scopes ??
+      agentScopesFor({ readOnly: false, role: grant.role, granted: ['write', 'suggest'] }),
+    budget: CONTEXT_BUDGET_TOKENS,
+    tokens: context.tokens,
+    pages: context.pages.map((p) => ({
+      tab: p.id,
+      title: p.title,
+      markdown: p.markdown,
+      tokens: p.tokens,
+      trust: pageTrustOf(knowledgeOf.get(p.id), now),
+    })),
+    leftOut: context.leftOut.map((p) => ({ tab: p.id, title: p.title, tokens: p.tokens })),
+    pageCount: document.tabs.length,
+  };
+  return json(answer);
+}
+
+// The title as the page's front matter, so the writing opens with it; Markdown that brings its own is kept.
+const withTitle = (title: string, markdown: string) => {
+  if (/^---\s*\n/.test(markdown)) return markdown;
+  const line = title.replace(/\s+/g, ' ').replace(/\[\^/g, '\\[^');
+  const quoted = /^(["']).*\1$/.test(line) ? (line[0] === '"' ? `'${line}'` : `"${line}"`) : line;
+  return `---\ntitle: ${quoted}\n---\n\n${markdown}`;
+};
+
+// The tab list as it stands, to every open editor: the op an editor's own reorder sends, each page with its parent.
+async function relayTree(route: KnowledgeRoute): Promise<DocumentDTO | null> {
+  const { ctx, document } = route;
+  const after = await getDocument(ctx.env, document.id);
+  if (!after) return null;
+  await relayPages(
+    ctx.env,
+    document.id,
+    [
+      {
+        kind: 'document-meta',
+        name: after.name,
+        tabs: after.tabs.map((t) => ({
+          id: t.id,
+          name: t.name,
+          orderIndex: t.orderIndex,
+          ...(t.folder ? { folder: t.folder } : {}),
+          parent: t.parent ?? null,
+        })),
+      },
+    ],
+    '[knowledge]',
+  );
+  return after;
+}
+
+async function handleCreate(route: KnowledgeRoute): Promise<Response> {
+  const { ctx, document, grant } = route;
+  // A page is an Editor's to add; an Editor's agent adds one with `suggest` (a page it makes is never Verified,
+  // and a person reads it before trusting it).
+  const may = grant.scopes
+    ? grant.personRole === 'edit' && grant.scopes.includes('suggest')
+    : grant.role === 'edit';
+  if (!may) return forbidden();
+  const owner = requireOwner(ctx);
+  if (owner instanceof Response) return owner;
+  const body = (await ctx.request.json().catch(() => null)) as Partial<CreatePageRequest> | null;
+  const title = capStoredName(typeof body?.title === 'string' ? body.title : '', null, 'tab');
+  if (!title) return invalid('no_title', 'Send "title": the new page\'s title.');
+  const markdown = typeof body?.markdown === 'string' ? body.markdown : '';
+  if (body?.markdown !== undefined && typeof body.markdown !== 'string')
+    return invalid('invalid_markdown', '"markdown" is the page\'s writing as Markdown text.');
+  if (body?.parent !== undefined && parseTabParent(body.parent) === undefined)
+    return invalid('invalid_parent', '"parent" is the id of the page to put this one under.');
+  const id = crypto.randomUUID();
+  const refusal = tabParentRefusal(await readStoredPages(ctx.env, document.id), id, body?.parent);
+  if (refusal) return conflict(refusal);
+  const blank: Tab = {
+    ...buildTab(id, title, [], undefined, undefined),
+    templateChosen: true,
+    ...newKnowledgebasePageContent(),
+    ...(body?.parent ? { parent: body.parent } : {}),
+  };
+  let tab = blank;
+  if (markdown.trim()) {
+    const written = applyArticleWrite(
+      blank,
+      { markdown: withTitle(title, markdown), mode: 'replace' },
+      {},
+      {
+        pageByTitle: pageByTitleIn(
+          document.tabs.map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
+        ),
+      },
+    );
+    if ('refusal' in written) {
+      const { code, ...rest } = written.refusal;
+      return json({ error: code, ...rest }, { status: 400 });
+    }
+    tab = written.tab;
+  }
+  let rev: number;
+  try {
+    rev = await upsertTabAtRev(ctx.env, document.id, tab, nextOrderIndex(document.tabs), 0);
+  } catch (err) {
+    if (err instanceof TabTooLargeError) return payloadTooLarge();
+    if (isTabRevStale(err)) return conflict('tab_busy');
+    throw err;
+  }
+  await relayTree(route);
+  console.info('[knowledge] page created', {
+    documentId: document.id,
+    tabId: id,
+    agent: ctx.token !== null && ctx.token !== undefined,
+    chars: markdown.length,
+  });
+  return json(
+    { page: { tab: id, title, ...(body?.parent ? { parent: body.parent } : {}), rev } },
+    { status: 201 },
+  );
+}
+
+async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response> {
+  const { ctx, document, grant } = route;
+  if (grant.role !== 'edit') return forbidden();
+  const body = (await ctx.request.json().catch(() => null)) as MovePageRequest | null;
+  if (!body || typeof body !== 'object' || Array.isArray(body))
+    return invalid(
+      'invalid_body',
+      'Send "parent" (a page id, or null for the top level) and optionally "before".',
+    );
+  const parent =
+    body.parent === null || body.parent === undefined ? undefined : parseTabParent(body.parent);
+  if (body.parent !== null && body.parent !== undefined && parent === undefined)
+    return invalid('invalid_parent', '"parent" is a page id, or null for the top level.');
+  const before = body.before === undefined ? undefined : parseTabParent(body.before);
+  if (body.before !== undefined && before === undefined)
+    return invalid('invalid_before', '"before" is the id of the page this one goes in front of.');
+  const stored = await readStoredPages(ctx.env, document.id);
+  const to = { parent, before };
+  const refusal = pageMoveRefusal(stored, tab, to);
+  if (refusal) return conflict(refusal);
+  if (before !== undefined && stored.find((p) => p.id === before)?.parent !== parent)
+    return invalid('invalid_before', '"before" must be a page under the same parent.');
+  const moved = withPageMoved(stored, tab, to);
+  if (moved) {
+    await reorderTabs(
+      ctx.env,
+      document.id,
+      moved.map((p) => {
+        const folder = document.tabs.find((t) => t.id === p.id)?.folder;
+        return folder ? { id: p.id, folder } : p.id;
+      }),
+    );
+    await writeTabParents(ctx.env, stored, [{ id: tab, parent: parent ?? null }]);
+  }
+  const after = moved ? await relayTree(route) : document;
+  const row = (after ? treeOf(after) : []).find((r) => r.page.id === tab);
+  console.info('[knowledge] page moved', { documentId: document.id, tabId: tab, moved: !!moved });
+  return json({
+    page: {
+      tab,
+      title: row?.page.name ?? '',
+      ...(parent ? { parent } : {}),
+      depth: row?.depth ?? 0,
+    },
+  });
+}
+
+async function handleScopes(route: KnowledgeRoute, tokenId: string): Promise<Response> {
+  const { ctx, document, grant } = route;
+  // An Editor decides, in person: a token never raises its own scopes, nor another token's.
+  if (grant.role !== 'edit' || ctx.token || ctx.workbench) return forbidden();
+  if (!isTokenId(tokenId)) return notFound();
+  const body = (await ctx.request.json().catch(() => null)) as { scopes?: unknown } | null;
+  const scopes = parseAgentScopes(body?.scopes);
+  if (!scopes)
+    return invalid('invalid_scopes', '"scopes" is a list of "read", "suggest" and "write".');
+  await writeScopes(ctx.env, tokenId, scopes);
+  console.info('[knowledge] scopes granted', { documentId: document.id, tokenId, scopes });
+  return json({ tokenId, scopes });
+}
+
+/** Null when the path is none of these routes. `pages/<tab>/...` arrives with its page checked. */
+export async function handleAgentRoutes(route: KnowledgeRoute): Promise<Response | null> {
+  const { segments, request } = route.ctx;
+  if (segments[3] === 'pages' && segments.length === 4) {
+    if (request.method === 'GET') return handleList(route);
+    return request.method === 'POST' ? handleCreate(route) : methodNotAllowed();
+  }
+  if (segments[3] === 'context' && segments.length === 4)
+    return request.method === 'GET' ? handleContext(route) : methodNotAllowed();
+  if (segments[3] === 'agents' && segments.length === 6 && segments[4] && segments[5] === 'scopes')
+    return request.method === 'PUT' ? handleScopes(route, segments[4]) : methodNotAllowed();
+  return null;
+}
+
+/** `GET pages/<tab>` and `POST pages/<tab>/move`, for a page the knowledgebase holds. */
+export function handleAgentPageRoute(
+  route: KnowledgeRoute,
+  summary: Summary,
+): Promise<Response> | Response | null {
+  const { segments, request } = route.ctx;
+  if (segments.length === 5)
+    return request.method === 'GET' ? handleRead(route, summary) : methodNotAllowed();
+  if (segments.length === 6 && segments[5] === 'move')
+    return request.method === 'POST' ? handleMove(route, summary.id) : methodNotAllowed();
+  return null;
+}

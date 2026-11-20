@@ -8,6 +8,7 @@ export * from './passages';
 export * from './trust';
 export * from './changed-since';
 export * from './page-links';
+export * from './page-markdown';
 export * from './context-budget';
 export * from './questions';
 export * from './days';

@@ -31,6 +31,10 @@ export function makeTestRouteContext(
     accountEmail?: string | null;
     // The API token the request presented (docs/specs/024-agents/agent-changesets.md).
     token?: RouteContext['token'];
+    // What the token was granted in the knowledgebase (knowledge/agent-grants.ts). Left out, a token holds every
+    // scope, as the tests of what an agent's write does expect; 'stored' has the room read its grant, as it does
+    // for a real request (the default scopes when no Editor decided).
+    agent?: RouteContext['agent'] | 'stored';
     // The workbench session the request presented (docs/specs/013-workspace/workbench-embeds.md).
     workbench?: WorkbenchContext | null;
     // JSON-encoded into the request body when present.
@@ -73,6 +77,18 @@ export function makeTestRouteContext(
     accountEmail: opts.accountEmail ?? null,
     resolveOwner: () => opts.owner ?? null,
     token: opts.token ?? null,
+    ...(opts.agent === 'stored'
+      ? {}
+      : opts.agent !== undefined
+        ? { agent: opts.agent }
+        : opts.token
+          ? {
+              agent: {
+                readOnly: opts.token.readOnly === true,
+                granted: ['read', 'suggest', 'write'] as const,
+              },
+            }
+          : {}),
     workbench: opts.workbench ?? null,
     teams: opts.teams ?? null,
     bearer: null,

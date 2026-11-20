@@ -7,7 +7,21 @@ import { handleDocuments } from './documents';
 
 export const OWNER = 'user_o';
 
-export type Who = 'editor' | 'participant' | 'viewer' | 'link' | 'page-link' | 'stranger' | 'agent';
+export type Who =
+  | 'editor'
+  | 'participant'
+  | 'viewer'
+  | 'link'
+  | 'page-link'
+  | 'stranger'
+  | 'agent'
+  | 'agent-stored'
+  | 'agent-read-only'
+  | 'participant-agent'
+  | 'viewer-agent';
+
+/** The API token every agent caller presents. */
+export const TOKEN_ID = 'tok_1';
 
 const para = (id: string, text: string, style?: string) => ({
   id,
@@ -63,7 +77,15 @@ export type Kit = {
 
 const CALLERS: Record<
   Who,
-  { owner: string | null; account: string | null; code?: string; token?: boolean }
+  {
+    owner: string | null;
+    account: string | null;
+    code?: string;
+    token?: boolean;
+    readOnly?: boolean;
+    // Read the token's grant from the room, as a real request does (the default scopes until an Editor decides).
+    stored?: boolean;
+  }
 > = {
   editor: { owner: OWNER, account: OWNER },
   participant: { owner: 'user_p', account: 'user_p', code: 'PART' },
@@ -73,7 +95,13 @@ const CALLERS: Record<
   'page-link': { owner: null, account: null, code: 'PAGE' },
   stranger: { owner: 'user_x', account: 'user_x' },
   // An API token acting for the owner, through the MCP server.
+  // It holds every scope (test-route-context.ts), as an Editor's agent granted `write`.
   agent: { owner: OWNER, account: null, token: true },
+  // The same token with what the room holds for it: `read` and `suggest` until an Editor grants more.
+  'agent-stored': { owner: OWNER, account: null, token: true, stored: true },
+  'agent-read-only': { owner: OWNER, account: null, token: true, readOnly: true, stored: true },
+  'participant-agent': { owner: 'user_p', account: null, code: 'PART', token: true, stored: true },
+  'viewer-agent': { owner: 'user_v', account: null, code: 'VIEW', token: true, stored: true },
 };
 
 export async function knowledgeKit(
@@ -89,7 +117,8 @@ export async function knowledgeKit(
         owner: caller.owner,
         accountUserId: caller.account,
         verifiedUserId: caller.token ? caller.owner : caller.account,
-        token: caller.token ? { id: 'tok_1' } : null,
+        token: caller.token ? { id: TOKEN_ID, readOnly: caller.readOnly === true } : null,
+        ...(caller.stored ? { agent: 'stored' as const } : {}),
         body,
         headers: {
           ...(caller.code ? { 'X-Share-Code': caller.code } : {}),

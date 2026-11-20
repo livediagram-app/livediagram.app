@@ -113,13 +113,10 @@ describe('PUT presence', () => {
     expect(pending.length).toBe(1);
   });
 
-  it('shows a read-only token as a viewer and counts no repeat set', async () => {
-    put.mockResolvedValue({ ok: true, expiresAt: 31_000, created: false });
-    await call({ body: {}, token: { id: 'tok_ro', readOnly: true } });
-    expect(put).toHaveBeenCalledWith(
-      sql.env,
-      expect.objectContaining({ role: 'view', status: null, focus: [] }),
-    );
+  it('refuses a read-only token’s set: it holds read alone, as a Viewer’s grant does', async () => {
+    const res = await call({ body: {}, token: { id: 'tok_ro', readOnly: true } });
+    expect(res.status).toBe(403);
+    expect(put).not.toHaveBeenCalled();
     expect(pending).toEqual([]);
   });
 

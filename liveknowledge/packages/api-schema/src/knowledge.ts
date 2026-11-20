@@ -20,8 +20,16 @@ export type KnowledgeSearchResult = {
   lastBlock: string;
   trust: KnowledgeTrustState;
   verifiedAt?: number;
+  /** For an agent (an API token, the MCP, the CLI): the passage whole, when its page's review is or was due, and
+   *  the pages an open conflict sets this passage against. */
+  text?: string;
+  reviewAt?: number;
+  conflictsWith?: KnowledgePageRef[];
 };
 export type KnowledgeSearchResponse = { results: KnowledgeSearchResult[] };
+
+/** A page by its id and current title. */
+export type KnowledgePageRef = { tab: string; title: string };
 
 /** A page that links here (links-and-embeds.md "Backlinks"), in tree order. */
 export type KnowledgeBacklink = { tab: string; title: string };
@@ -139,14 +147,89 @@ export type KnowledgeConflict = {
   b: KnowledgeConflictSide;
   foundAt: number;
 };
+/** An agent's edit waiting for an Editor (ai-knowledge.md "Edits suggested by agents"): a passage of the page's
+ *  Markdown (`before`) replaced by `after`, or `after` appended to the page (`before` is then empty). */
 export type KnowledgeSuggestion = {
   id: string;
   tab: string;
   title: string;
   agent: string;
+  /** Why, in the agent's words; `summary` is its first line, for a card's heading. */
+  reason: string;
   summary: string;
+  kind: 'replace' | 'append';
+  before: string;
+  after: string;
   createdAt: number;
 };
+export type KnowledgeSuggestionsResponse = { suggestions: KnowledgeSuggestion[] };
+/** `POST .../pages/<tab>/suggestions`: `before` absent or empty appends `after` to the page. */
+export type SuggestEditRequest = { reason: string; after: string; before?: string };
+export type SuggestEditResponse = { suggestion: KnowledgeSuggestion; pending: number };
+/** `POST .../suggestions/<id>/accept`: the page's new revision. */
+export type AcceptSuggestionResponse = { tab: { id: string; rev: number } };
+
+/** What an agent may do in a knowledgebase (knowledgebase-for-agents.md "Scopes"). */
+export type AgentScope = 'read' | 'suggest' | 'write';
+
+/** How far a page or passage can be trusted, as every agent answer carries it. `stale` is review due. */
+export type KnowledgePageTrust = {
+  state: KnowledgeTrustState;
+  verifiedAt?: number;
+  /** The verifier's name, where the api has one. */
+  verifiedBy?: string;
+  reviewAt?: number;
+  stale: boolean;
+  /** The pages an open conflict sets this one against. */
+  conflictsWith?: KnowledgePageRef[];
+};
+/** One row of `GET .../pages`: the page tree in order. `depth` is 1 at the top level. */
+export type KnowledgePageRow = KnowledgePageRef & {
+  depth: number;
+  parent?: string;
+  subpages: number;
+  /** The owner's account id. */
+  owner?: string;
+  context?: true;
+  trust: KnowledgePageTrust;
+};
+export type KnowledgePagesResponse = { pages: KnowledgePageRow[] };
+/** `GET .../pages/<tab>`: one page as Markdown, its page links by their current titles. `heading` and `maxChars`
+ *  narrow it; `leftOut` counts the characters not sent and `headings` lists the page's sections. */
+export type KnowledgePageRead = KnowledgePageRef & {
+  rev: number;
+  markdown: string;
+  chars: number;
+  leftOut: number;
+  headings: string[];
+  trust: KnowledgePageTrust;
+  parent?: string;
+  backlinks: KnowledgePageRef[];
+  subpages: KnowledgePageRef[];
+};
+export type KnowledgePageReadResponse = { page: KnowledgePageRead };
+/** `GET .../context`: the Always in Context pages as Markdown in tree order, within the budget, with what the
+ *  caller may do here. */
+export type KnowledgeAgentContextResponse = {
+  name: string;
+  role: 'edit' | 'participate' | 'view';
+  scopes: AgentScope[];
+  budget: number;
+  tokens: number;
+  pages: (KnowledgePageRef & { markdown: string; tokens: number; trust: KnowledgePageTrust })[];
+  leftOut: (KnowledgePageRef & { tokens: number })[];
+  pageCount: number;
+};
+/** `POST .../pages`: a new page from Markdown, under `parent` (the top level when absent). */
+export type CreatePageRequest = { title: string; markdown?: string; parent?: string };
+export type CreatePageResponse = { page: KnowledgePageRef & { parent?: string; rev: number } };
+/** `POST .../pages/<tab>/move`: under `parent` (null or absent: the top level), before its subpage `before`
+ *  (last when absent). */
+export type MovePageRequest = { parent?: string | null; before?: string };
+export type MovePageResponse = { page: KnowledgePageRef & { parent?: string; depth: number } };
+/** `PUT .../agents/<tokenId>/scopes`: what one API token may do in this knowledgebase. */
+export type AgentScopesRequest = { scopes: AgentScope[] };
+export type AgentScopesResponse = { tokenId: string; scopes: AgentScope[] };
 export type KnowledgeContextPage = { tab: string; title: string; tokens: number };
 /** `GET .../knowledge`: the AI Knowledge tab (ai-knowledge.md). */
 export type KnowledgeOverviewResponse = {

@@ -7,7 +7,14 @@ import { objectOrEmpty, type WorkbenchRole } from '@liveknowledge/api-schema';
 // its segment and returns `notFound()` for sub-paths / methods it
 // doesn't recognise (preserving the original fall-through-to-404).
 
-import { capWorkbenchRole, levelAtLeast, type AccessLevel } from '@liveknowledge/api-schema';
+import {
+  agentScopesFor,
+  capWorkbenchRole,
+  levelAtLeast,
+  lowerLevel,
+  type AccessLevel,
+  type AgentScope,
+} from '@liveknowledge/api-schema';
 import type { TeamClaim } from '@liveworkspace/auth-client';
 import type { WorkbenchReach } from '../auth/workbench-session';
 import type { GrantCaller, DocumentGrant } from '../index-service';
@@ -76,6 +83,10 @@ export type RouteContext = {
   // the X-Index-Grant the request carried, checked, or one the worker fetched for it (routes/documents.ts). It is
   // the whole of who may do what to a document; null or for another document, nothing.
   grant?: DocumentGrant | null;
+  // What an API token was granted in this knowledgebase (knowledge/agent-grants.ts), settled inside the document's
+  // room before its routes run: its scopes cap the role the token's person holds (grantOn). Unset for a person and
+  // outside a document's own routes.
+  agent?: { readOnly: boolean; granted: readonly AgentScope[] | null } | null;
   // The document's Community post's link as the document's room holds it (document-room/community-post.ts): a grant
   // through `code` is a content-only pass while the post is `open`, and no pass at all otherwise (grantOn). Unset
   // outside a document's own routes, and null for a document with no post.
@@ -112,12 +123,25 @@ export function grantCallerOf(ctx: RouteContext): GrantCaller {
 // `community` marks a grant through the document's Community post's link (docs/specs/025-community/community.md
 // "Viewing a post's document"): read-only like any view link, and a content-only pass: no realtime room and no
 // comments.
+//
+// An API token holds its person's level narrowed by its scopes (docs/specs/024-agents/knowledgebase-for-agents.md
+// "Share roles"): `role` is the narrowed one every gate reads, `personRole` the person's own, and `scopes` what the
+// token holds here (null for a person).
 export type DocumentAccess = {
   role: ShareRole;
+  personRole: ShareRole;
+  scopes: AgentScope[] | null;
   tabScope: string | null;
   shareCode: string | null;
   community: boolean;
 };
+
+/** The level a token acts at: its person's with `write`, a Participant's at most with `suggest`, a Viewer's with
+ *  `read` alone. */
+export function roleUnderScopes(role: ShareRole, scopes: readonly AgentScope[]): ShareRole {
+  if (scopes.includes('write')) return role;
+  return scopes.includes('suggest') ? lowerLevel(role, 'participate') : 'view';
+}
 
 // A Community post's link is refused unless the door passes `COMMUNITY_CONTENT` (docs/specs/025-community/
 // community.md "Viewing a post's document"): the link is a content-only pass, so the document and its tabs serve it,
@@ -136,10 +160,16 @@ export function grantOn(
   const community = grant.shareCode !== null && post !== null && grant.shareCode === post.code;
   // A post hidden after reports, off the Community, or no longer its author's own opens nothing through its link.
   if (community && (!post.open || !opts.community)) return null;
-  const role = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
+  const held = ctx.workbench ? capWorkbenchRole(grant.level, ctx.workbench.level) : grant.level;
   // A Community post's link opens to view, whatever the index's link says.
+  const personRole = community ? 'view' : held;
+  const scopes = ctx.agent
+    ? agentScopesFor({ readOnly: ctx.agent.readOnly, role: personRole, granted: ctx.agent.granted })
+    : null;
   return {
-    role: community ? 'view' : role,
+    role: scopes ? roleUnderScopes(personRole, scopes) : personRole,
+    personRole,
+    scopes,
     tabScope: grant.tab,
     shareCode: grant.shareCode,
     community,

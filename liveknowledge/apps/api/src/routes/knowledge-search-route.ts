@@ -16,8 +16,10 @@ import type { KnowledgeSearchResult } from '@liveknowledge/api-schema';
 import { clientRateKey } from '@liveworkspace/api-kit/client-ip';
 import { readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
+import { openConflictPages, pageTrustOf } from '../knowledge/page-read';
 import { json, rateLimited } from '../responses';
-import type { DocumentAccess, DocumentRouteContext } from './context';
+import type { DocumentRouteContext } from './context';
+import type { KnowledgeRoute } from './knowledge-routes';
 
 const invalid = (error: string, message: string) => json({ error, message }, { status: 400 });
 
@@ -46,10 +48,8 @@ async function searchLimited(ctx: DocumentRouteContext): Promise<boolean> {
   return !(await limiter.limit({ key: `search:${who}` })).success;
 }
 
-export async function handleKnowledgeSearch(
-  ctx: DocumentRouteContext,
-  grant: DocumentAccess,
-): Promise<Response> {
+export async function handleKnowledgeSearch(route: KnowledgeRoute): Promise<Response> {
+  const { ctx, grant } = route;
   const query = ctx.url.searchParams.get('q') ?? '';
   if (query.length > SEARCH_MAX_QUERY_CHARS)
     return invalid('query_too_long', `A search is at most ${SEARCH_MAX_QUERY_CHARS} characters.`);
@@ -61,6 +61,21 @@ export async function handleKnowledgeSearch(
   const results = grant.tabScope === null ? found : found.filter((r) => r.tab === grant.tabScope);
   const reader = readerOf(ctx);
   if (reader.kind === 'agent') {
+    // An agent's results carry what it needs to judge them without a second request (knowledgebase-for-agents.md):
+    // the passage whole, when its page's review is due, and the pages an open conflict sets it against.
+    const { document } = route;
+    const knowledge = new Map(document.tabs.map((t) => [t.id, t.knowledge]));
+    const conflicts = results.length > 0 ? await openConflictPages(ctx.env, document.tabs) : null;
+    const answered = results.map((found) => {
+      const trust = pageTrustOf(knowledge.get(found.tab), now);
+      const against = conflicts?.byPassage.get(found.id);
+      return {
+        ...searchResultOf(found),
+        ...(found.isTitle ? {} : { text: found.text }),
+        ...(trust.reviewAt === undefined ? {} : { reviewAt: trust.reviewAt }),
+        ...(against?.length ? { conflictsWith: against } : {}),
+      };
+    });
     // Each result served to an agent is a read of its page; a search that found nothing is a question nobody
     // could answer (ai-knowledge.md "Reads", "Questions nobody could answer").
     const notes: SqlStatement[] = [...new Set(results.map((r) => r.tab))].map((tab) =>
@@ -69,6 +84,7 @@ export async function handleKnowledgeSearch(
     const key = questionKey(query);
     if (results.length === 0 && key) notes.push(...upsertQuestion(key, query.trim(), reader, now));
     await runAll(ctx.env, notes);
+    return json({ results: answered });
   }
   return json({ results: results.map(searchResultOf) });
 }

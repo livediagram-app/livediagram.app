@@ -1,6 +1,6 @@
 // The knowledge tables of a knowledgebase's Durable Object (docs/specs/030-knowledgebase/blueprints/
 // knowledge-package.md "The schema" and "Wiring"): the package's own (`KNOWLEDGE_SCHEMA`: passages and their search
-// index, trust, links, reads, questions, conflicts, counters, settings) and the three the room adds to run them.
+// index, trust, links, reads, questions, conflicts, counters, settings) and the tables the room adds to run them.
 //
 //   - `knowledge_dirty`: the pages whose index is behind their tab. Three triggers on `tabs` fill it, so every write
 //     of a tab (a save, a seed, an import, a rename, a swap that won, a delete) marks its page in the write's own
@@ -10,6 +10,9 @@
 //     not change rewrites nothing, and the writing's print at Verify (`verified_print`, changed-since.ts) for
 //     "Changed since verified".
 //   - `knowledge_work`: what the alarm owes (a conflict check, an email), keyed so asking twice is one row.
+//   - `suggestions`: agents' edits waiting for an Editor (docs/specs/030-knowledgebase/ai-knowledge.md "Edits
+//     suggested by agents"), at most 50, each gone after 90 days.
+//   - `agent_grants`: the scopes an Editor granted an API token in this knowledgebase.
 import { KNOWLEDGE_SCHEMA } from '@liveknowledge/knowledge';
 
 type Exec = (query: string) => unknown;
@@ -33,6 +36,16 @@ const ROOM_TABLES = [
     PRIMARY KEY (kind, key)
   )`,
   'CREATE INDEX IF NOT EXISTS knowledge_work_due ON knowledge_work (due_at)',
+  // An agent's edit waiting for an Editor (knowledge/suggestions.ts): a passage replaced, or Markdown appended.
+  `CREATE TABLE IF NOT EXISTS suggestions (
+    id TEXT PRIMARY KEY, tab TEXT NOT NULL, agent TEXT NOT NULL, reason TEXT NOT NULL,
+    kind TEXT NOT NULL, before TEXT NOT NULL DEFAULT '', after TEXT NOT NULL, created_at INTEGER NOT NULL
+  )`,
+  'CREATE INDEX IF NOT EXISTS suggestions_tab ON suggestions (tab)',
+  // What an Editor granted an API token here (knowledge/agent-grants.ts); no row is the default scopes.
+  `CREATE TABLE IF NOT EXISTS agent_grants (
+    token_id TEXT PRIMARY KEY, scopes TEXT NOT NULL, updated_at INTEGER NOT NULL
+  )`,
   `CREATE TRIGGER IF NOT EXISTS knowledge_tab_added AFTER INSERT ON tabs
     BEGIN ${mark('NEW')}; END`,
   `CREATE TRIGGER IF NOT EXISTS knowledge_tab_changed AFTER UPDATE OF data, name ON tabs

@@ -31,6 +31,7 @@ import {
   type CreationIntent,
 } from '@liveknowledge/api-schema';
 import { getDocument, readReorderEntries, reorderTabs, seedTabs } from '../db';
+import { scopeRefusalOf, withAgentGrant } from '../knowledge/agent-grants';
 import {
   badRequest,
   conflict,
@@ -263,8 +264,14 @@ async function documentTabs(ctx: DocumentRouteContext, id: string): Promise<Resp
   return itemTabsResponse(itemTabsOf(rows, grant.tabScope), CORS_HEADERS);
 }
 
-// Everything about one document, inside its Durable Object (document-room/document-route.ts).
-export async function handleDocumentRequest(ctx: DocumentRouteContext): Promise<Response> {
+// Everything about one document, inside its Durable Object (document-room/document-route.ts). An API token's grant in
+// this knowledgebase is settled first and narrows its role for every route below (knowledge/agent-grants.ts).
+export async function handleDocumentRequest(given: DocumentRouteContext): Promise<Response> {
+  const ctx = await withAgentGrant(given);
+  return scopeRefusalOf(ctx, await documentRequest(ctx));
+}
+
+async function documentRequest(ctx: DocumentRouteContext): Promise<Response> {
   const { request, env, segments } = ctx;
   if (segments[1] !== 'documents') return notFound();
   if (segments.length === 2) {
