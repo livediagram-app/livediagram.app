@@ -25,7 +25,9 @@ export function computeDockAnchor(
 ): DockAnchor {
   const centerX = btnRect.left + btnRect.width / 2 - canvasRect.left;
   const bottomY = btnRect.bottom - canvasRect.top;
-  const rightTucked = canvasRect.width - popoverWidth - 8;
+  // Tucked in by the chrome's 16 px gutter at the right, so a popover lines up with the bottom-right cluster it opens
+  // above (docs/specs/007-editor/editor-app.md).
+  const rightTucked = canvasRect.width - popoverWidth - 16;
   const left = Math.max(8, Math.min(btnRect.left - canvasRect.left, rightTucked));
   const arrowOffset = Math.max(14, Math.min(popoverWidth - 14, centerX - left));
   if (from === 'above') {

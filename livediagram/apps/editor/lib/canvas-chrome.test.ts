@@ -16,7 +16,7 @@ describe('elementsInertTool', () => {
 describe('computeDockAnchor', () => {
   const canvas = { left: 0, top: 0, width: 1000 };
   const popover = 256;
-  const rightAligned = 1000 - 256 - 8; // 736
+  const rightAligned = 1000 - 256 - 16; // 728
 
   it("hangs a button's popover from the button itself", () => {
     // The Toolbar layout's menu button, top-left (docs/specs/007-editor/toolbar-layout.md): the Explorer
