@@ -1749,6 +1749,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Folder|Deleted': 'A folder was deleted (contained documents move to the top level).',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed': 'A folder was renamed.',
+  'Help|Changed':
+    "Someone switched the help centre between one app's articles and All Apps, from the app switch or a search hint. The type says which scope they moved to.",
   'Help|Helpful':
     'Someone said a help-centre article was helpful, using the "Was this helpful?" control at the end of the article. The type is the article. Counted once per article per visit, using whichever answer the reader leaves the page on.',
   'Help|Searched':

@@ -6,7 +6,12 @@ import {
 } from '@livehuddle/api-schema';
 import { REPO, SCAN_ROOTS, SKIP } from './scan-roots';
 import { COMPUTED, scanEmitters } from '../emitter-scan';
-import { platformEmitters, sharedClientEmitters, sharedSiteEmitters } from '../platform-emitters';
+import {
+  platformEmitters,
+  sharedClientEmitters,
+  sharedSiteEmitters,
+  helpEditionEmitters,
+} from '../platform-emitters';
 import { articleTitle } from '../_shared/event-vocab';
 import { BY_ACTION, EXACT } from './event-explanations';
 import * as CATALOGUE from './metric-catalogue';
@@ -26,6 +31,8 @@ const EMITS = [
   ...sharedClientEmitters({ root: REPO, roots: SCAN_ROOTS, skip: SKIP }),
   // Every app's help-centre views, votes and searches, sent by the shared help site.
   ...sharedSiteEmitters(),
+  // This app's edition of the one help centre (Repair this Browser).
+  ...helpEditionEmitters('livehuddle'),
 ];
 const LAST_RESORT = /^Someone did /;
 

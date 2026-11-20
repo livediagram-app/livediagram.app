@@ -1027,7 +1027,11 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
     yet), on another app's row where the token can't write, or on a Plan card (done is its board's column).
     A row whose work is done here leaves the list at once, and the sidebar's badge and the rail's count drop with
     it (`useInbox`'s `settle`, held while a re-read still lists the row unchanged), though the index may list it
-    until the app's next push. A reply sent here joins the thread at once and its heading's count with it
+    until the app's next push (an item's outbox drains at most once a minute, longer while a push is retried). The
+    hold is the reader's, kept in this browser (`localStorage`, every tab of the address, at most 200 rows, each for
+    an hour), so a reload in that gap does not list the row again, nor count it on an editor's Explorer button; a
+    row that changes after (a new reply, reopened) comes back, and nobody else's Inbox is touched. The owner,
+    2026-11-19: "I click "Resolve" to each and they disapear, but when I reload the page they are still there". A reply sent here joins the thread at once and its heading's count with it
     ("Thread · 2 comments"), before the thread is read again.
     The pane moves on to the next row (the one below it, or the one above when it was the last), never back to the
     first, so a run of resolves works down the list; with nothing left the list shows its empty state. On a phone
@@ -1047,7 +1051,9 @@ livehuddle-inbox-cleanup.sql`, Work Tracker 736): it deletes the `collab_threads
 
 The sidebar's badge counts what waits on me: My Actions, and the threads that ask something of me (a mention, or a
 thread on my item I have not written in myself, an agent's question with my token included). At 0 it shows no badge,
-on the sidebar and the rail alike, in every app.
+on the sidebar and the rail alike, in every app. The editor's panel rail counts its own app's rows, as the editor's
+Explorer button does ([inbox-notices.md "The count"](inbox-notices.md#the-count)); the Explorer page's sidebar
+counts the list it shows.
 Work I handed out, threads I replied in and form responses are listed but not counted. Coming back to the browser tab reads it again (at most
 every 30 seconds), keeping the list if that read fails. An app may add rows the index never sees (an app's items in
 Offline) through the Explorer's `inbox` prop; they carry the Offline pill.

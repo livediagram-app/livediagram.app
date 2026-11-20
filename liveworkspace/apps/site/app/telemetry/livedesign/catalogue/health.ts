@@ -160,11 +160,25 @@ export const DRY_HELP_SEARCHES = chart(
   { types: ['NoResults'], rising: 'bad' },
 );
 
+export const HELP_SCOPE_SWITCHES = chart(
+  'Help',
+  'Changed',
+  'Help Scope Switches',
+  'Readers who switched the help centre between one app and All Apps, from its app switch or a search hint.',
+);
+
 export const HELP_CENTRE: MetricStack = {
   stack: true,
   title: 'Help Centre',
   blurb: 'Articles read, votes cast on them, and what people searched for.',
-  members: [ARTICLE_VIEWS, MARKED_HELPFUL, MARKED_NOT_HELPFUL, HELP_SEARCHES, DRY_HELP_SEARCHES],
+  members: [
+    ARTICLE_VIEWS,
+    MARKED_HELPFUL,
+    MARKED_NOT_HELPFUL,
+    HELP_SEARCHES,
+    DRY_HELP_SEARCHES,
+    HELP_SCOPE_SWITCHES,
+  ],
   headline: ARTICLE_VIEWS,
   seeAlso: { section: 'help', label: 'See Each Article in Pages & Help' },
 };

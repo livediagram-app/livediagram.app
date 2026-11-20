@@ -1,4 +1,4 @@
-// Account-and-data category illustrations (docs/specs/018-help/help-app.md): the per-browser guest
+// Account-and-data category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the per-browser guest
 // identity, and signing in and migrating guest work. Composed only from the shared primitives so the house style
 // holds.
 

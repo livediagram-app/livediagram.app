@@ -150,6 +150,19 @@ export function platformEmailKinds(): string[] {
 // scan adds them as its own, with paths from the monorepo root.
 export const SHARED_SITE_ROOTS = ['packages/help-site/src'];
 
+// What an app's edition of the one help centre sends in its name (liveworkspace/apps/help/editions/<app>: the
+// Repair this Browser tool's copied diagnostics and repairs), with paths from the monorepo root.
+const helpEditionCache = new Map<string, Emit[]>();
+
+export function helpEditionEmitters(app: string): Emit[] {
+  let emits = helpEditionCache.get(app);
+  if (!emits) {
+    emits = scanEmitters(MONOREPO, [`liveworkspace/apps/help/editions/${app}`], '');
+    helpEditionCache.set(app, emits);
+  }
+  return emits;
+}
+
 let siteCached: Emit[] | undefined;
 
 export function sharedSiteEmitters(): Emit[] {

@@ -1,0 +1,62 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Sharing Your Plan',
+  description:
+    'Hand a colleague a share link and plan together on the same liveplanner plan in real time, even if they never sign in.',
+  path: '/help/getting-started/sharing-your-project/',
+});
+
+<ArticleLayout path="getting-started/sharing-your-project" title="Sharing Your Plan" description="Hand over a link and build the same plan together, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
+
+liveplanner is shared and live from the first card. Sharing is just creating a link and handing it over: whoever opens it joins the same plan and sees every change as it happens, alongside you. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
+
+## Create a share link
+
+<Step n={1}>
+  Open the plan you want to share and click **Share** at the top right of the editor, or choose
+  **Share** from the plan's **⋯** menu in the Explorer. The plan's owner and its team's members
+  manage its links, so someone who joined through a link can't: in place of Share, they see
+  **Copy**, which makes them their own copy of the plan.
+</Step>
+
+<Step n={2}>
+  Choose a level: **Viewer** (watches along; can't comment or change a thing), **Participant**
+  (comments, votes and works on items, but can't reshape the plan) or **Editor** (works with you in
+  real time). **Valid** sets how long the link works: Forever, 1 week, 1 month or 6 months. In a
+  plan with several tabs, **Opens** can limit the link to one tab.
+</Step>
+
+<Step n={3}>
+  Press **Create Pass**. The link is copied for you straight away, ready to send to whoever you want
+  in the plan; each pass in the list also has its own **Copy link** button.
+</Step>
+
+A plan saved to **Offline** has to be synced to liveplanner before it can be shared.
+
+## What happens when they open it
+
+Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands in the plan:
+
+- **Live presence.** Everyone sees who else is in the plan and which tab they are on. A card someone is dragging or has open shows their colour and name. See [Live Presence](/help/collaboration/live-presence/).
+- **Simultaneous editing.** On an Editor link, you both change the plan at once: cards move, cells fill in and new cards arrive for everyone as it happens.
+- **No sign-in required.** A guest can join straight away; liveplanner never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
+
+## Managing and ending access
+
+Back in the Share dialog you can manage links over time:
+
+- **Several links.** Make several, at different levels, for example a Viewer link for stakeholders and an Editor link for collaborators. They are listed under **Passes**.
+- **Revoke a link** with its bin to cut off access through it. Links with a lifetime show how long they have left; one that runs out moves to **Expired**, where **Extend** opens it again. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
+- **Password Protection.** Protect every link with one password; everyone opening a link must enter it first, embeds included. See [Share Passwords](/help/collaboration/sharing/share-passwords/).
+- **Community.** The dialog's **Community** tab, beside **Passes**, publishes the plan to the public gallery, where anyone can view it and make their own copy. It needs you to be signed in. See [Sharing to the Community](/help/collaboration/sharing/community/).
+
+<Tip>
+  Want to put the plan on a web page or in a doc? Each pass's **Embed** menu copies an embed, and,
+  while no password is set, its **Live image** menu copies a picture that stays up to date. A Viewer
+  or Participant link embeds look-only; an Editor link embeds an editable plan. See
+  [Embeds](/help/collaboration/sharing/embeds/).
+</Tip>
+
+</ArticleLayout>

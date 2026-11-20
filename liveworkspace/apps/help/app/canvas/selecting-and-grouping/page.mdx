@@ -1,0 +1,79 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
+
+export const metadata = helpMetadata({
+  title: 'Selecting Many Elements',
+  description:
+    "Select many elements at once to move, copy or restyle them together, and copy one element's look onto others with the format painter.",
+  path: '/help/canvas/selecting-and-grouping/',
+});
+
+<ArticleLayout
+  path="canvas/selecting-and-grouping"
+  title="Selecting Many Elements"
+  description="Work with many elements at once: marquee and multi-select, and the format painter for copying a look."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("selecting-and-grouping")}
+>
+
+Elements rarely come together one at a time. Once a few elements are on the canvas you will want to move several at once and make a row of them share the same look. <AppName /> gives you the tools for exactly that: selecting many elements and the format painter. None of them need a sign-in, so you can [open a <Noun />](/new) and try them straight away.
+
+<AppNote app="livediagram">
+  You will also want to keep related pieces together, so livediagram adds frames.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  You will also want to keep related pieces together, so it adds components.
+</AppNote>
+
+## Selecting More Than One
+
+The quickest way to grab several elements is the marquee: drag across an empty patch of canvas and a selection rectangle picks up every element that sits entirely inside it. You can also build a selection click by click with Shift, or press `Cmd` / `Ctrl` + `A` to select everything on the tab. Either way, the selection becomes a single thing you can move, copy or restyle in one go. See [Marquee and Multi-Select](/help/canvas/selecting-and-grouping/multi-select/) for every way to gather a selection.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  The selection can be locked in one go too.
+</AppNote>
+
+<Figure
+  app="livediagram,livedesign,livedocuments,livehuddle"
+  caption="Drag a marquee across empty canvas to gather every fully enclosed element into one selection."
+>
+  <DiagramCanvas.MultiSelect />
+</Figure>
+
+<AppNote app="livediagram">
+  **Keeping elements together.** A selection scatters as soon as you click away. When some elements
+  should keep travelling together, draw a [frame](/help/palette/build/frames/) around them: moving
+  the frame carries everything inside it. And when the thing you are building is really one object,
+  such as a banner, a KPI row or a website header, reach for a
+  [component](/help/palette/components/), which is a single element rather than pieces you have to
+  hold together.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  **Keeping elements together.** A selection scatters as soon as you click away. When the thing you
+  are building is really one object, such as a banner, a KPI row or a website header, reach for a
+  [component](/help/palette/components/), which is a single element rather than pieces you have to
+  hold together.
+</AppNote>
+
+## Copying a Look
+
+Once you have styled one element just right, the [format painter](/help/selection-modes/format-painter/) copies that look onto others in a couple of clicks, so a whole <Noun /> can share one consistent style without re-setting each colour and border by hand.
+
+<Figure
+  app="livediagram,livedesign,livedocuments,livehuddle"
+  caption="The format painter picks up one element's look and brushes it onto another."
+>
+  <DiagramCanvas.FormatPainter />
+</Figure>
+
+<Tip>
+  The format painter paints one element per click: pick up a styled element's look, then click each
+  shape in the row in turn to brush it on.
+</Tip>
+
+</ArticleLayout>

@@ -3,13 +3,16 @@
 // The editor's Inbox notices for one reader (inbox-notices.md): the page's watch over their Inbox, the rows seen in
 // this browser, and the notice on screen. Each answer, in a visible tab, offers the rows that are news; they join the
 // notice and are seen at once, so no other tab shows them too. Dismissing or following a link marks them gone, and a
-// notice in another tab showing them closes. Answers the Inbox's count for the Explorer button, and the layer to draw.
+// notice in another tab showing them closes. Answers this app's Inbox count for the Explorer button (inbox-notices.md
+// "The count"), less the rows done from the Inbox's pane that the index still lists (../data/inbox-settled), and the
+// layer to draw.
 
 import { useCallback, useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
 import type { App, IndexClient } from '@liveworkspace/index-client';
 import { appHasInbox } from '../inbox-apps';
-import { inboxCount } from '../explorer/inbox/sections';
+import { inboxCount, withoutSettled } from '../explorer/inbox/sections';
 import type { InboxData } from '../data/useInbox';
+import { settledStoreFor, type SettledStore } from '../data/inbox-settled';
 import { createNoticeCenter, type NoticeCenter } from './center';
 import { dialogOpenNow, subscribeDialogs } from './dialog-open';
 import { InboxNotice } from './InboxNotice';
@@ -32,12 +35,13 @@ export type InboxNoticesOptions = {
   // Stand-ins for tests.
   watch?: InboxWatch;
   seen?: SeenStore;
+  settled?: SettledStore;
   center?: NoticeCenter;
   now?: () => number;
 };
 
 export type InboxNotices = {
-  /** The Inbox's count (the sidebar's), undefined until read or when off. */
+  /** This app's Inbox count (the sidebar's, of this app's rows), undefined until read or when off. */
   count: number | undefined;
   /** The notice layer, drawn once a page whoever else asks. */
   notices: ReactNode;
@@ -88,6 +92,7 @@ export function useInboxNotices({
   onTelemetry,
   watch: givenWatch,
   seen: givenSeen,
+  settled: givenSettled,
   center: givenCenter,
   now = Date.now,
 }: InboxNoticesOptions): InboxNotices {
@@ -99,10 +104,21 @@ export function useInboxNotices({
     (listener: () => void) => watch.subscribe(listener, { readNow: true }),
     [watch],
   );
-  const data = useSyncExternalStore(
+  const answer = useSyncExternalStore(
     on ? subscribe : noSubscribe,
     () => (on ? watch.current().data : null),
     () => null,
+  );
+  // The rows done from the Inbox's pane (here or in another tab) stay out while the index still lists them.
+  const settledStore = on ? (givenSettled ?? settledStoreFor(viewerId!)) : null;
+  const settled = useSyncExternalStore(
+    settledStore ? settledStore.subscribe : noSubscribe,
+    () => settledStore?.current() ?? null,
+    () => null,
+  );
+  const data = useMemo(
+    () => (answer && settled ? withoutSettled(answer as InboxData, settled) : answer),
+    [answer, settled],
   );
   const visible = useSyncExternalStore(subscribeVisibility, visibleNow, () => true);
   const notice = useSyncExternalStore(center.subscribe, center.current, () => null);
@@ -149,7 +165,7 @@ export function useInboxNotices({
   const onDismiss = useCallback(() => settle('Removed'), [settle]);
   const onFollow = useCallback(() => settle('Opened'), [settle]);
   const owner = useLayerOwner(on);
-  const count = on ? inboxCount(data as InboxData | null, viewerId) : undefined;
+  const count = on ? inboxCount(data as InboxData | null, viewerId, app) : undefined;
   return {
     count,
     notices:

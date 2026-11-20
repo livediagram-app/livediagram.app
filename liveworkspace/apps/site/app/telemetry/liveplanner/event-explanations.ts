@@ -2636,6 +2636,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Facilitator|Started': 'Someone became the facilitator of a live session.',
   'Folder|Created': 'A tab folder was created inside a project.',
   'Folder|Renamed': 'A tab folder was renamed.',
+  'Help|Changed':
+    "Someone switched the help centre between one app's articles and All Apps, from the app switch or a search hint. The type says which scope they moved to.",
   'Help|Helpful':
     'Someone said a help-centre article was helpful, using the "Was this helpful?" control at the end of the article. The type is the article. Counted once per article per visit, using whichever answer the reader leaves the page on.',
   'Help|Searched':

@@ -1,6 +1,7 @@
 'use client';
 
 import { lazyPanel } from '@liveworkspace/ui/lazy-panel';
+import { preloadTeamCard } from './TeamPane';
 
 // The sections most visits never open, each from its own chunk (liveworkspace/docs/specs/004-index/one-explorer.md
 // "Cost and performance"): Inbox, Invites, Gallery and Shape Libraries, kept out of the
@@ -25,9 +26,9 @@ export const WalkthroughsView = lazyPanel('walkthroughs', () =>
 
 const PANES = [InboxPane, InvitesPane, GalleryView, ShapeLibrariesView, WalkthroughsView];
 
-/** Fetches every section's code. Never rejects. */
+/** Fetches every section's code, and the team view's card. Never rejects. */
 export function preloadExplorerPanes(): Promise<void> {
-  return Promise.all(PANES.map((pane) => pane.preload())).then(() => {});
+  return Promise.all([...PANES.map((pane) => pane.preload()), preloadTeamCard()]).then(() => {});
 }
 
 /** Fetches every section's code once the page is idle; returns a cancel for an unmount before then. */

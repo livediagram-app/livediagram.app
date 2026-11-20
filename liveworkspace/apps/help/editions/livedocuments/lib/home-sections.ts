@@ -1,0 +1,69 @@
+import type { HelpHomeLayout, HomeSection } from '@liveworkspace/help-site/lib/home';
+
+// The help home page's layout (liveworkspace/docs/specs/017-help/help-centre.md "Home page"): which categories each section
+// shows, in order, and the popular topics under the search. The shared suite (help-site.test.ts) holds it to the
+// registry: every category in exactly one section, every popular topic a real article.
+
+/** The category sections between the hero and the closing band, top to bottom. */
+const sections: HomeSection[] = [
+  {
+    id: 'editor-guides',
+    eyebrow: 'Editor Guides',
+    heading: 'Everything in the editor',
+    lede: 'In-depth guides for every part of the editor, grouped by where you find it.',
+    categories: [
+      'pages',
+      'canvas',
+      'palette',
+      'selection-modes',
+      'tabs',
+      'collaboration',
+      'explorer',
+      'user-interface',
+      'tools',
+      'search-panel',
+    ],
+  },
+  {
+    id: 'account',
+    eyebrow: 'Your Account',
+    heading: 'Your account and your data',
+    lede: 'Who you are to livedocuments, where your work lives, and the promises that cover it.',
+    categories: ['account-and-data', 'privacy-and-security', 'supported-devices', 'policies'],
+  },
+  {
+    id: 'build',
+    eyebrow: 'Build and Run',
+    heading: 'Developers',
+    lede: 'Drive livedocuments from your own code, scripts and AI tools.',
+    categories: ['developers'],
+  },
+];
+
+/** The Start here section: the walkthrough's category and the cards beside it. */
+const startHere = {
+  walkthrough: 'getting-started',
+  /** The numbered steps: livedocuments' own first reads, in the order a new person takes them. */
+  steps: [
+    'getting-started/your-first-document',
+    'pages/working-with-pages',
+    'pages/articles',
+    'getting-started/sharing-your-document',
+  ],
+  beside: ['about', 'tips-and-tricks'],
+} as const;
+
+/** The closing band: the category beside the Contact route. */
+const stillStuck = { category: 'troubleshooting', contact: 'contact' } as const;
+
+/** The chips under the hero's search: the articles most readers come for, by `categorySlug/slug`. */
+const popular: HelpHomeLayout['popular'] = [
+  { label: 'Your first document', path: 'getting-started/your-first-document' },
+  { label: 'Sharing', path: 'getting-started/sharing-your-document' },
+  { label: 'Keyboard shortcuts', path: 'tips-and-tricks/keyboard-shortcuts' },
+  { label: 'Templates', path: 'canvas/templates' },
+  { label: 'Exporting', path: 'account-and-data/exporting-documents' },
+  { label: 'Slide pages', path: 'pages/slide-pages' },
+];
+
+export const HOME: HelpHomeLayout = { sections, startHere, stillStuck, popular };

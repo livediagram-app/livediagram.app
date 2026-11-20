@@ -1,0 +1,303 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The API',
+  description:
+    'Call the REST API from your own scripts and integrations: the base URL, how to authenticate with an API token, and where the full reference is.',
+  path: '/help/developers/api-overview/',
+});
+
+<ArticleLayout
+  path="developers/api-overview"
+  title="The API"
+  description="The same REST API the editor uses, callable from your own scripts with an API token."
+  categoryTitle="Developers"
+  categorySlug="developers"
+>
+
+<AppNote app="livediagram,livehuddle">
+
+Everything the <AppName /> editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update <Noun plural />, tabs, folders, images, shape libraries and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+Everything the liveplanner editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update plans, tabs, folders, themes and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
+
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+
+Everything the <AppName /> editor does, it does by calling a REST API. That API is open to you too: with an [API token](/help/account-and-data/api-tokens/) your own scripts and integrations can read, create, and update <Noun plural />, tabs, folders, images and more, exactly as the app does. Account administration (teams, tokens, deleting the account) stays with the signed-in app.
+
+</AppNote>
+
+<AppNote app="livediagram,liveplanner,livedocuments,livedesign">
+
+If you want to connect an AI assistant rather than write code, you usually want the [MCP server](/help/account-and-data/connect-ai-mcp/) instead. It wraps this API in tools Claude and other MCP clients can call directly. To work from a terminal or a coding agent without writing requests yourself, use [the <AppName /> CLI](/help/developers/cli/).
+
+</AppNote>
+
+<AppNote app="livehuddle">
+  livehuddle has no MCP server and no CLI: the REST API is how scripts and integrations work with
+  it.
+</AppNote>
+
+## The base URL
+
+The API lives under `/api` on your <AppName /> host. On the hosted service that is:
+
+<AppNote app="livediagram">
+
+```
+https://www.livediagram.app/api
+```
+
+Every path in these docs is relative to that base, so `GET /documents` means `GET https://www.livediagram.app/api/documents`.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```
+https://www.liveplanner.app/api
+```
+
+Every path in these docs is relative to that base, so `GET /projects` means `GET https://www.liveplanner.app/api/projects`.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```
+https://www.livedocuments.app/api
+```
+
+Every path in these docs is relative to that base, so `GET /documents` means `GET https://www.livedocuments.app/api/documents`.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```
+https://www.livedesign.app/api
+```
+
+Every path in these docs is relative to that base, so `GET /designs` means `GET https://www.livedesign.app/api/designs`.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```
+https://www.livehuddle.app/api
+```
+
+Every path in these docs is relative to that base, so `GET /documents` means `GET https://www.livehuddle.app/api/documents`.
+
+</AppNote>
+
+## Authenticating in one line
+
+Send an API token as a bearer header on each request:
+
+<AppNote app="livediagram">
+
+```bash
+curl https://www.livediagram.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+curl https://www.liveplanner.app/api/projects \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+curl https://www.livedocuments.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+curl https://www.livedesign.app/api/designs \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```bash
+curl https://www.livehuddle.app/api/documents \
+  -H "Authorization: Bearer lwt_your_token_here"
+```
+
+</AppNote>
+
+API tokens are a [signed-in-only](/help/account-and-data/signing-in/) feature. [Authentication](/help/developers/authentication/) covers how to create one and how token access compares to the guest path.
+
+## What you can do
+
+The token-callable surface mirrors the app:
+
+<AppNote app="liveplanner">
+
+- **Plans and tabs**: list, read, create, rename, copy, and delete plans; start a tab from a template; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
+- **Cards and card types**: read, add, change, move and delete the cards (items) a plan's boards show, and change its card types.
+- **Folders**: organise plans into folders, personal or in a team you belong to.
+- **Sheets**: read and change the cells of a plan's Sheets, their rows and columns, and their titles.
+- **Comments**: read, add, reply to, resolve and reopen comment threads, on a tab or on a card.
+- **Forms**: build a Form tab's [form](/help/plan/forms/), publish or close its link, and send a test response, the same calls the CLI's `form` commands make.
+- **Automations**: list, add, change, switch on and off, test and run a plan's [Automations](/help/plan/automations/) rules, and read their Audit Trail. These need an Editor of the whole plan; a read-only token only lists rules and reads the Audit Trail.
+- **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
+- **Trash**: list what you can restore, restore it, or delete it for good.
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+- **Canvases and tabs**: list, read, create, rename, copy, and delete canvases; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
+- **Comments and presence**: read, add, reply to, resolve and reopen comments, edit or delete the ones an agent wrote, and show what an agent is doing on a tab.
+- **Folders**: organise canvases into folders, personal or in a team you belong to.
+- **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
+- **Trash and Archived**: list what you can restore, restore it, or delete it for good; archive a canvas you own and bring it back.
+- **Images and shape libraries**: upload and reference images, and manage your shape libraries.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+- **Documents and tabs**: list, read, create, rename, copy, archive and delete documents; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
+- **Comments and presence**: read, add, reply to, resolve and reopen comment threads, and show people what your agent is working on.
+- **Folders**: organise documents into folders, personal or in a team you belong to.
+- **Pages**: add, change, lay out and move a tab's slides, infographics and flashcards, and write articles from Markdown.
+- **Sharing**: create a share link for a document or one tab. Listing, extending and revoking links, and share passwords, are in the Share dialog.
+- **Trash**: list what you can restore, restore it, or delete it for good.
+- **Images**: upload and reference images.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+- **Designs and tabs**: list, read, create, rename, copy, archive and delete designs; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
+- **Components**: list a design's components, make one, and change a main so every instance redraws.
+- **Comments**: read, add, reply to, resolve and reopen comments, and show what an agent is doing on a tab.
+- **Folders**: list your folders, and create a design straight into one, personal or in a team you belong to.
+- **Pages**: add, change, lay out and move a tab's logo, wireframe and photo pages.
+- **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
+- **Trash**: list what you can restore, restore it, or delete it for good.
+- **Images**: upload and reference images.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+- **Spaces and tabs**: list, read, create, rename, copy, and delete spaces; read a tab as JSON, as a text view or as an SVG picture; change a tab with changesets, and revert one.
+- **Comments**: read the comment threads a space already holds. livehuddle has no comments, so adding, replying and resolving answer `410 comments_gone`.
+- **Folders**: organise spaces into folders, personal or in a team you belong to.
+- **Sharing**: create, list, extend and revoke share links, and set or remove a share password.
+- **Trash**: list what you can restore, restore it, or delete it for good.
+- **Images and shape libraries**: upload and reference images, and read the shape libraries you already have (they are read-only now).
+
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+
+[Working with <Noun plural capital />](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists the changeset vocabulary, [Images, Copies and Libraries](/help/developers/working-with-documents/images-and-copies/) covers uploads, pictures and copies, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+[Working with Plans](/help/developers/working-with-projects/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-projects/edit-operations/) lists the changeset vocabulary, [Plan Items, Sheets and More](/help/developers/working-with-projects/plan-sheets-images/) covers cards, cells, forms and pictures, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+[Working with Documents](/help/developers/working-with-documents/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists the changeset vocabulary, [Images, Pages and More](/help/developers/working-with-documents/images-and-pages/) covers uploads, pages and articles, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+[Working with Designs](/help/developers/working-with-designs/) walks through the common calls with copy-pasteable examples. [Edit Operations Reference](/help/developers/working-with-designs/edit-operations/) lists the changeset vocabulary, [Images, Pages and More](/help/developers/working-with-designs/images-and-pages/) covers uploads and pages, and [Comments and Presence for Agents](/help/developers/agent-comments-presence/) shows how an agent talks to people and shows what it is doing.
+
+</AppNote>
+
+## The full reference
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+
+The complete, machine-readable description of every endpoint, request shape, and response shape is published in **OpenAPI 3.1** format, with no authentication required:
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+The complete, machine-readable description of every endpoint, request shape, and response shape is published as **OpenAPI 3.1**, with no authentication required:
+
+</AppNote>
+
+<AppNote app="livediagram">
+
+```bash
+curl https://www.livediagram.app/api/openapi.json
+```
+
+</AppNote>
+
+<AppNote app="liveplanner">
+
+```bash
+curl https://www.liveplanner.app/api/openapi.json
+```
+
+</AppNote>
+
+<AppNote app="livedocuments">
+
+```bash
+curl https://www.livedocuments.app/api/openapi.json
+```
+
+</AppNote>
+
+<AppNote app="livedesign">
+
+```bash
+curl https://www.livedesign.app/api/openapi.json
+```
+
+</AppNote>
+
+<AppNote app="livehuddle">
+
+```bash
+curl https://www.livehuddle.app/api/openapi.json
+```
+
+</AppNote>
+
+Point Postman, an OpenAPI viewer, or a client generator at that URL to explore the whole surface or scaffold a client. Endpoints an external token can use are tagged `x-token-usable`.
+
+<Tip>
+  The realtime collaboration WebSocket is not part of the REST reference. The OpenAPI reference
+  lists the upgrade endpoint, but the live message protocol is intentionally separate.
+</Tip>
+
+</ArticleLayout>

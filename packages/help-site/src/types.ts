@@ -1,4 +1,4 @@
-import type { Article, Category } from '@liveworkspace/help-registry';
+import type { Article, Category, HelpScope } from '@liveworkspace/help-registry';
 import type { Metadata } from 'next';
 import type { ComponentType, ReactNode } from 'react';
 
@@ -32,6 +32,11 @@ export interface HelpFacts {
   helpUrl: string;
   /** The product's public contact form, the way on from an article that did not help. */
   contactFormUrl: string;
+  /** The one help centre's scope (liveworkspace/docs/specs/017-help/help-centre.md): the app whose help this
+   *  build is, or `all`. Absent for a help centre of one product alone, which shows no app switch or notes. */
+  scope?: HelpScope;
+  /** How many guides each scope shows, for the app switch's menu. */
+  guideCounts?: Partial<Record<HelpScope, number>>;
 }
 
 /** The product's card art: what each feature, support article and category is drawn with. */
@@ -69,4 +74,7 @@ export interface HelpSiteConfig {
   pageMetadata: PageMetadata;
   /** The product's social-card subtitle rule (cardSubtitle in its ui package). */
   cardSubtitle: (text: string) => string;
+  /** The one help centre's scope, and each scope's guide count (HelpFacts). */
+  scope?: HelpScope;
+  guideCounts?: Partial<Record<HelpScope, number>>;
 }

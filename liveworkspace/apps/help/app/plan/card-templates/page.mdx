@@ -1,0 +1,52 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Card Templates',
+  description:
+    'Save the cards your team files again and again as card templates, then start a new card already filled in from Add card, a chip or New.',
+  path: '/help/plan/card-templates/',
+});
+
+<ArticleLayout
+  path="plan/card-templates"
+  title="Card Templates"
+  description="Start a card already filled in: its title, description, checklist, labels and your own fields."
+  categoryTitle="Plan"
+  categorySlug="plan"
+>
+
+Teams file the same kinds of card over and over: a bug report with its steps to reproduce, a release with its checklist, a new starter's onboarding. A **card template** saves those starting values on the [card type](/help/plan/card-types/), so a new card begins filled in rather than blank, and nobody copies an old card and cleans it up.
+
+## Make a Template
+
+Templates belong to a card type. Open the type in the **Types** panel (or **Edit Card Type** from a card's right-click menu) and pick its **Templates** tab. Press **New Template**, name it (**Bug Report**, say), then fill in what a card should start with:
+
+- its **Title** (left empty, the card takes the type's usual title, such as "New task"),
+- the **Description**, **Checklist** and **Labels**,
+- and the type's own fields, such as a **Severity** choice or a **Steps** text.
+
+A type holds up to 10 templates. A template never holds a state, an assignee or dates: a card takes those from where it's made. Press **Save** to keep them with the type.
+
+## Start a Card From One
+
+Wherever you add a card, the type's templates are right there:
+
+- **Add card** at the foot of a column (or **N** on a focused card) opens **Add a Card**. Each type with templates lists them just under it, indented, each with what it fills ("Title, Description, Checklist"). Pick the type itself for a blank card, or a template for a filled-in one.
+- A **card type chip** in the board's header, for a type with templates, opens the same menu with just that type: a blank card first, then its templates. Dragging a chip onto the board still adds a blank card.
+- **New** on a card's **Linked Cards** tab does the same, and the new card is linked as ever.
+- A Gantt chart's **Add Card** lists templates under each type too.
+
+Use the arrow keys to move through the types and templates, **Enter** to pick and **Escape** to close. The new card lands where you added it (its column, its row, its link or its Gantt dates), opens at once with its title selected, and is an ordinary card from then on: changing it never changes the template, and changing the template never changes cards already made.
+
+If the type has a required field the template fills in, you won't be asked for it again.
+
+## Who Can Use Them
+
+- An **Editor** makes, edits and removes templates, and starts cards from them.
+- A **Participant** starts cards from them but can't change them (the Templates tab is read-only).
+- A **Viewer** can't add cards, so isn't offered templates.
+
+Templates travel with the plan: a copy, a Drive file, a tab's export and import all keep them. AI tools can start cards from them too, through the [MCP server](/help/account-and-data/connect-ai-mcp/).
+
+</ArticleLayout>

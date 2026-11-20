@@ -9,7 +9,9 @@ import { brandLogoSvg, brandMarkSvg } from '@liveplanner/ui';
 // `pnpm icons:brand` from the Living Prism module in @liveplanner/ui. Nothing
 // at runtime notices one of them drifting; this does.
 
-const APPS = ['marketing', 'editor', 'help'] as const;
+const APPS = ['marketing', 'editor'] as const;
+// The one help centre's edition of this app (liveworkspace/apps/help), whose build serves its icon under /help.
+const HELP_ICON = '../liveworkspace/apps/help/editions/liveplanner/icon';
 const REPO = new URL('../../../', import.meta.url);
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, REPO)), 'utf8').trim();
 const REGENERATE = 'stale: run `pnpm icons:brand`';
@@ -19,6 +21,7 @@ describe('brand icon', () => {
     const favicon = brandMarkSvg({ variant: 'compact', scheme: 'auto' });
     for (const app of APPS)
       expect(read(`apps/${app}/app/icon.svg`), `${app} ${REGENERATE}`).toBe(favicon);
+    expect(read(`${HELP_ICON}.svg`), `help ${REGENERATE}`).toBe(favicon);
   });
 
   it('ships the full mark and the lockup, light and dark, in marketing/media/logo/', () => {
@@ -40,7 +43,7 @@ describe('brand icon', () => {
       fileURLToPath(new URL('apps/marketing/public/liveplanner-icon-256.png', REPO)),
     );
     expect(
-      readFileSync(fileURLToPath(new URL('apps/help/app/icon.png', REPO))).equals(tile),
+      readFileSync(fileURLToPath(new URL(`${HELP_ICON}.png`, REPO))).equals(tile),
       `help ${REGENERATE}`,
     ).toBe(true);
   });

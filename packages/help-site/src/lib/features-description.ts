@@ -1,4 +1,4 @@
-// The features index's meta description, made from the catalogue (docs/specs/018-help/help-app.md "SEO"), so it
+// The features index's meta description, made from the catalogue (liveworkspace/docs/specs/017-help/help-centre.md "SEO"), so it
 // names every feature category in the registry's order and never drifts from the page, which lists the same ones:
 // "Browse <product> feature guides by area: A, B, and C." A search result shows about 160 characters; a catalogue
 // whose list would run past that names as many as fit and ends "and more.".

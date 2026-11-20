@@ -50,4 +50,4 @@ There is no per-tab Activity panel or change log behind it.
   element colour or opacity picker) takes one undo step per burst: the first tick checkpoints and ticks within 500 ms
   of the last stay in that step (`useBurstCheckpoint`).
 - Document-level history (renames, sharing, theme changes, a daily "worked on") is each item's [History](../013-workspace/history.md); the Explorer's [Inbox](../013-workspace/inbox.md) is unrelated.
-- Help: Undo and Redo are under Canvas, and the Activity Panel's old addresses redirect ([Help app](../018-help/help-app.md#renamed-articles)).
+- Help: Undo and Redo are under Canvas, and the Activity Panel's old addresses redirect ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md#addresses-canonicals-and-the-old-paths)).

@@ -21,7 +21,7 @@ retired them entirely. livediagram, liveplanner and livedesign keep theirs.
   views except a link card's or a video's `link=`, no `note` field in `find`, and the outline budget ladder has no
   notes step (`packages/document-views/src/outline.ts`). Diagram lint's long-label fix suggests a shorter label.
 - **Help.** The Links, Notes and Linking Across Tabs articles are deleted; their URLs redirect to their sections
-  (`apps/help/public/_redirects`).
+  (`packages/help-registry/src/catalogue/redirects.ts`).
 - **Telemetry.** `Note·Added`, `Note·Changed`, `Note·Deleted`, `Note·Opened` and `Note·Used` are no longer sent, and
   the dashboard treats them as retired (`liveworkspace/apps/site/app/telemetry/livedocuments/retired-events.ts`).
 

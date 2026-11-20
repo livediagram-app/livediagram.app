@@ -1,4 +1,4 @@
-// The global search overlay as the Search Panel help figures draw it (docs/specs/018-help/help-app.md): the
+// The global search overlay as the Search Panel help figures draw it (liveworkspace/docs/specs/017-help/help-centre.md): the
 // query field and results grouped by type, the result icons, and the two scenes every help app draws the same
 // (Create a tab, Settings). Drawn once for every help app; each app's search-panel.tsx fills the overlay with its
 // own rows (its own item noun and examples) for the rest.

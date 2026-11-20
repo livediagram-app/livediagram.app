@@ -122,7 +122,7 @@ setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
 
 - **Not a permission.** Everything beneath is in the document, the API response and the export.
   The cover hides from the eye only; the help article
-  (`apps/help/app/palette/behaviour/reveal-zones/page.mdx`) says so, the spec is the record, and
+  (`liveworkspace/apps/help/app/palette/behaviour/reveal-zones/page.mdx`) says so, the spec is the record, and
   the UI does not claim otherwise.
 - `revealed` is writable by any editor; the room drops mutations from view-role senders.
 - A local lift crosses no trust boundary.

@@ -1,0 +1,188 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { EmbeddedWork } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { ShareEmbedMenu as DiagramShareEmbedMenu } from '@/editions/livediagram/components/illustrations/sharing';
+import { ShareEmbedMenu as DesignShareEmbedMenu } from '@/editions/livedesign/components/illustrations/sharing';
+import { ShareEmbedMenu as DocumentsShareEmbedMenu } from '@/editions/livedocuments/components/illustrations/sharing';
+import { ShareEmbedMenu as HuddleShareEmbedMenu } from '@/editions/livehuddle/components/illustrations/sharing';
+
+export const metadata = helpMetadata({
+  title: 'Embeds',
+  description:
+    'Embed a live view in a wiki, doc, or any page with an iframe made from a share link, read-only or editable depending on the link.',
+  path: '/help/collaboration/sharing/embeds/',
+});
+
+<ArticleLayout path="collaboration/sharing/embeds" title="Embeds" description="Put it live inside another page with a ready-made embed snippet." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "embeds")}>
+
+An embed places a live copy of a <Noun /> inside another page, like a wiki, a doc, Notion, or your own site. It hides the editor chrome and stays up to date as the <Noun /> is edited. It is the simplest way to keep a <Noun /> visible where your readers already are.
+
+<AppNote app="liveplanner">The embed shows the tab's board, Sheet, Dashboard or Form.</AppNote>
+
+<AppNote app="livediagram">
+  <Figure caption="A canvas sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+    <EmbeddedWork product="livediagram" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="A design sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+    <EmbeddedWork product="livedesign" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="A document sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+    <EmbeddedWork product="livedocuments" />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="A space sits inside a host page, with the copy-paste iframe snippet that embeds it.">
+    <EmbeddedWork product="livehuddle" />
+  </Figure>
+</AppNote>
+
+## What an Embed Shows
+
+The embed is built from a share link, and it **honours that link's role**: it embeds a read-only <Noun /> or an editable one, so readers of the host page can change the <Noun /> right there only if the link is an Editor's. Pick the pass to match: a read-only pass when the page is for an audience, an Editor pass when it is for collaborators.
+
+<AppNote app="livediagram">
+  A **Viewer** or **Participant** pass embeds a read-only canvas, while an **Editor** pass embeds an
+  editable one.
+</AppNote>
+
+<AppNote app="livedesign">
+  A **Viewer** or **Participant** pass embeds a read-only design, while an **Editor** pass embeds an
+  editable one.
+</AppNote>
+
+<AppNote app="livedocuments">
+  A **Viewer** or **Participant** pass embeds a read-only document, while an **Editor** pass embeds
+  an editable one.
+</AppNote>
+
+<AppNote app="livehuddle">
+  A **Participant** pass (or a legacy **Viewer** pass made before livehuddle stopped offering them)
+  embeds a read-only space, while an **Editor** pass embeds an editable one. Pick a Participant pass
+  when the page is for an audience.
+</AppNote>
+
+<AppNote app="liveplanner">
+  A **Viewer** or **Participant** link embeds a read-only plan, while an **Editor** link embeds an
+  editable one, so readers of the host page can move cards and edit cells right there.
+</AppNote>
+
+Inside the frame, the embed:
+
+- hides the header and the tab bar, leaving a clean view,
+- keeps a small **Open in <AppName />** badge that opens the full share view in a new tab,
+- stays in the same realtime room as any viewer, so it **live-updates**: when the <Noun /> changes, the embedded view follows along.
+
+<AppNote app="livedocuments,livedesign">
+One editing feature stays off inside the frame: image uploads are unavailable in an embed, so adding pictures still happens in the full editor. An embed also draws no [element indicators](/help/canvas/element-indicators/) (the small link, note, action and comment icons on elements): they are editor chrome, so the picture stays clean.
+</AppNote>
+
+<AppNote app="livediagram">
+  The embed shows the canvas with pan, zoom, and pinch, and hides the palette and every floating panel, leaving just the zoom controls in the bottom-right corner. It defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click, and right-click menus work. The badge sits in the bottom-left corner. When the canvas has more than one tab, a compact tab switcher beside the badge shows the current tab's name and opens a list of the tabs. It skips the "what's your name" prompt: readers join under a random guest name.
+
+One editing feature stays off inside the frame: image uploads are unavailable in an embed, so adding pictures still happens in the full editor. An embed never shows the Session strip (Timer, Vote and Poll) either, even on an editable embed of a Workshop tab: a session is run from the full editor. An embed also draws no [element indicators](/help/canvas/element-indicators/) (the small link, note, action and comment icons on elements): they are editor chrome, so the picture stays clean.
+</AppNote>
+
+<AppNote app="livedesign">
+  The embed shows the design with pan, zoom, and pinch, and hides the palette and every floating panel, leaving just the zoom controls in the bottom-right corner. It defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click, and right-click menus work. The badge sits in the bottom-left corner. When the design has more than one tab, a compact tab switcher beside the badge shows the current tab's name and opens a list of the tabs. It skips the "what's your name" prompt: readers join under a random guest name.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The embed shows the document with pan, zoom, and pinch, and hides the palette and every floating panel, leaving just the zoom controls in the bottom-right corner. It defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click, and right-click menus work. The badge sits in the bottom-left corner. When the document has more than one tab, a compact tab switcher beside the badge shows the current tab's name and opens a list of the tabs. It skips the "what's your name" prompt: readers join under a random guest name.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The embed shows the space with pan, zoom, and pinch, and hides the palette and every floating panel, leaving just the zoom controls in the bottom-right corner. It defaults to the hand (pan) tool, so a drag pans the view; an editable embed still selects and edits on click, and right-click menus work. The badge sits in the bottom-left corner. When the space has more than one tab, a compact tab switcher beside the badge shows the current tab's name and opens a list of the tabs. It skips the "what's your name" prompt: readers join under a guest name, the same one each time in that browser.
+
+One editing feature stays off inside the frame: image uploads are unavailable in an embed, so adding pictures still happens in the full editor. A [Timer or Stopwatch](/help/collaboration/session-tools/timer/) in an embed shows its time but no buttons: it is run from the full editor.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The embed shows the tab as it is in the editor: a board's columns and cards, a Sheet's cells, a
+  Dashboard's charts and metrics, or a Form. It hides the corner buttons, and opens a card's panel
+  when you click the card, to read it, or to edit it through an Editor link. When a card moves or a
+  cell changes, the embedded view follows along.
+</AppNote>
+
+## Adding an Embed to a Page
+
+<Step n={1}>Open the **Share** dialog and create or pick a pass for the <Noun />.</Step>
+<Step n={2}>Open the pass's **Embed** menu, under its link, and choose **Copy iframe** for a ready-made `<iframe>` snippet, or **Copy embed URL** for the bare URL.</Step>
+<Step n={3}>Paste it into your page, wiki, or doc: the iframe snippet drops in directly, while the embed URL suits tools that turn a pasted link into an embed themselves.</Step>
+
+<AppNote app="liveplanner">
+  The embed address looks like `https://www.liveplanner.app/embed?s=CODE`. To create a pass for the
+  embed, choose a level and press **Create Pass**.
+</AppNote>
+
+<AppNote app="livediagram">
+  <Figure caption="Each pass's Embed menu copies either the bare embed URL or a ready-made iframe snippet.">
+    <DiagramShareEmbedMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="Each pass's Embed menu copies either the bare embed URL or a ready-made iframe snippet.">
+    <DesignShareEmbedMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="Each pass's Embed menu copies either the bare embed URL or a ready-made iframe snippet.">
+    <DocumentsShareEmbedMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="Each pass's Embed menu copies either the bare embed URL or a ready-made iframe snippet.">
+    <HuddleShareEmbedMenu />
+  </Figure>
+</AppNote>
+
+If the <Noun /> has a [share password](/help/collaboration/sharing/share-passwords/), readers are prompted for it inside the embed frame. A link scoped to [one tab](/help/collaboration/sharing/one-tab/) embeds that tab only.
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  The snippet is 800 by 500 pixels with a hairline border and rounded corners, which you can adjust
+  in the markup. The **Password Protection** switch notes that embeds are included.
+</AppNote>
+
+## Pasting a Share Link
+
+You don't have to copy a snippet at all. Paste the share link itself into a tool that reads oEmbed, such as Notion, Medium or Ghost, and it unfolds into a live, read-only view of the <Noun />. Slack may show only the link's preview card (the name and a picture) until it lists <AppName /> as an oEmbed provider, so don't count on a live view there.
+
+- **Always read-only.** Even a link from an Editor pass unfolds as a viewer, so a public page never hands its readers edit rights. To embed something people can edit, use the iframe snippet from an Editor pass, as above.
+- **Only what the link shows.** A link that is revoked, [expired](/help/collaboration/sharing/share-link-expiry/) or in the trash, or that has a [share password](/help/collaboration/sharing/share-passwords/), doesn't unfold: the tool keeps the plain link. A host may keep an unfolded copy for up to five minutes after you revoke a link, but the frame itself shows the not-found message as soon as it loads.
+
+## When an Embed Stops Working
+
+An embed lives exactly as long as its share link. If you revoke the link, or it [expires](/help/collaboration/sharing/share-link-expiry/), the frame shows a small not-found message instead of the <Noun />. Create a new pass and paste its snippet to bring it back.
+
+## Privacy
+
+An embed only exposes what the share link exposes: a read-only link's embed is a read-only view, and only an Editor link's embed can change the <Noun />. Anyone who can read the host page's source can also see the embed URL, so treat an editable embed like handing out the edit link itself.
+
+<AppNote app="livediagram,livedesign">An embed has no way to put a name on what someone adds.</AppNote>
+
+<AppNote app="livehuddle">
+  An embed has no way to put a name on what someone adds. Only a Participant (or legacy Viewer)
+  pass's embed is read-only.
+</AppNote>
+
+<Tip>
+  Embedding several <Noun plural /> across a wiki is a tidy way to keep them beside the docs that
+  reference them, always showing the latest version.
+</Tip>
+
+<AppNote app="livehuddle">
+  Embed your office's floor plan on the team wiki with a Participant pass, so people can see the
+  rooms and find their way before they walk in.
+</AppNote>
+
+</ArticleLayout>

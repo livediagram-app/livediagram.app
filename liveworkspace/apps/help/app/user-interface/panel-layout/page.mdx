@@ -1,0 +1,322 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PanelLayout } from '@/editions/livediagram/components/illustrations/user-interface';
+import { PanelLayout as LivedocumentsPanelLayout } from '@/editions/livedocuments/components/illustrations/user-interface';
+import { PanelLayout as LivedesignPanelLayout } from '@/editions/livedesign/components/illustrations/user-interface';
+import { PanelLayout as LivehuddlePanelLayout } from '@/editions/livehuddle/components/illustrations/user-interface';
+
+export const metadata = helpMetadata({
+  title: 'Panel Layout',
+  description:
+    'Where each panel and control sits around the canvas, how to drag a corner panel to another corner where the app allows it, and what changes on a phone.',
+  path: '/help/user-interface/panel-layout/',
+});
+
+<ArticleLayout
+  path="user-interface/panel-layout"
+  title="Panel Layout"
+  description="The toolbar, panels and fixed controls that frame the canvas, and how to arrange them."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+>
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  Everything around the canvas is a toolbar, a **panel** or a fixed control. The canvas itself fills
+  the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid
+  layout, so what is on the canvas always has room to breathe. The layout is much the same on a
+  computer, a tablet and a phone.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Everything around the canvas is a card, a **panel** or a fixed control. The canvas itself fills
+  the screen, and the rest sits on top of it at the edges rather than taking fixed slots in a rigid
+  layout, so what is on the canvas always has room to breathe. There is no title bar across the top.
+  The layout is much the same on a computer, a tablet and a phone.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The editor gives most of the screen to the tab you are working on: a Board, a Sheet, a Dashboard
+  or a Form. There is no bar across the top, so the tab keeps the window's full height. Around it
+  sit a few fixed pieces of chrome, the same on a computer, a tablet and a phone: a card in each top
+  corner, the tab's own header, a cluster of buttons in the bottom-right corner, and the tab bar
+  along the bottom.
+</AppNote>
+
+<Figure
+  app="livedesign"
+  caption="The canvas fills the screen: the menu button top-left, the palette strip across the top, a tool panel docked top-right, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls."
+>
+  <LivedesignPanelLayout />
+</Figure>
+<Figure
+  app="livediagram"
+  caption="The canvas fills the screen: the menu card top-left, the palette strip across the top, a tool panel top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls."
+>
+  <PanelLayout />
+</Figure>
+<Figure
+  app="livedocuments"
+  caption="The canvas fills the screen: the menu button top-left, the palette strip across the top, the Share card top-right with a tool panel docked under it, Contents on the left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls."
+>
+  <LivedocumentsPanelLayout />
+</Figure>
+<Figure
+  app="livehuddle"
+  caption="The canvas fills the screen: the logo and menu button top-left, the palette strip across the top, Share and your account top-right, the Map bottom-left, the corner buttons bottom-right, and the bottom bar with the tabs and quick controls."
+>
+  <LivehuddlePanelLayout />
+</Figure>
+
+## What sits where
+
+<AppNote app="livedesign">
+  - **Top-left**: the **menu button**, which opens the [Explorer](/help/explorer/explorer-panel/)
+  (your designs and folders) under it, with the tab's name beside it on a computer. - **Top
+  centre**: the [palette strip](/help/palette/toolbar-layout/), for picking a selection mode and
+  adding things to the canvas. - **Top-right**: a card with **Share** (or **Copy** on someone else's
+  design) and your account, with **Prototype** first on a wireframe tab (see [The Top
+  Corners](/help/user-interface/title-bar/)). The tool panels, when they are in use, sit below it. -
+  **Down the left**: **Contents**, the list of pages, when it is docked as a sidebar (Settings ›
+  Editor › **Contents**). - **Bottom-right**: a fixed cluster of buttons: Undo and Redo, the page
+  navigator (on a computer, while the tab has two pages or more and Contents is not docked),
+  **Contents** (unless it is docked as a sidebar), **Photo** while a photo page is in focus,
+  **Inspect** and **Flow View** on a wireframe tab, **Collaborate** (while the tab has a comment or
+  an action), the **Theme & canvas** button, and the [zoom
+  controls](/help/user-interface/zoom-controls/). Their panels open as popovers over their buttons,
+  and close when you press the button again. On a phone the whole cluster shares one row. - **Along
+  the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick
+  controls](/help/user-interface/quick-controls/) (Tools, Settings and the appearance switch) at its
+  right-hand end. - **Next to a selection**: the [toolbar](/help/user-interface/toolbar/). -
+  **Beside a page's title bar**: the [Quick Style bar](/help/canvas/quick-style-panel/), for a
+  selected shape or arrow.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Top-left**: the logo, then the **menu button**, which opens the
+  [Explorer](/help/explorer/explorer-panel/) (your canvases and folders) under it, with the [editor
+  mode](/help/canvas/editor-modes/) switch beside it for an Editor. See [The Top
+  Corners](/help/user-interface/title-bar/). - **Top centre**: the [palette
+  strip](/help/palette/toolbar-layout/), for picking a selection mode and adding things to the
+  canvas. In [Draw mode](/help/canvas/draw-mode/) its dock takes the strip's place. - **Top-right**:
+  a card with **Share** (or **Copy**), **Present** and your account (see [The Top
+  Corners](/help/user-interface/title-bar/)), and below it the tool panels, when they are in use. -
+  **Bottom-left**: the [Map](/help/user-interface/minimap/), on a computer or tablet, once a tab has
+  a few elements. - **Bottom-right**: a fixed cluster of buttons, left to right: Undo and Redo, the
+  [session tools](/help/collaboration/session-tools/) (**Timer**, **Vote** and **Poll**, in Workshop
+  mode), **Collaborate** (while the tab has a comment or an action), then one strip of **Tidy** (in
+  Diagram mode, for Editors; see [Layout Cleanup](/help/tools/layout-cleanup/)), **Layers** and the
+  **Theme & canvas** button (named **Style** on a wide screen; none in Draw mode), and last the
+  [zoom controls](/help/user-interface/zoom-controls/). Their panels open as popovers over their
+  buttons, and close when you press the button again. On a phone the whole cluster shares one row. -
+  **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick
+  controls](/help/user-interface/quick-controls/) (Get Started when a tour is on offer, Tools with
+  Search, Settings and appearance) at its right-hand end. - **Next to a selection**: the
+  [toolbar](/help/user-interface/toolbar/), and the [Quick Style
+  panel](/help/canvas/quick-style-panel/) for a shape or arrow.
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Top-left**: the <AppName /> logo and the **menu button**, which opens the
+  [Explorer](/help/explorer/explorer-panel/) (your documents and folders) under it, with the tab's
+  name beside it on a computer. - **Top centre**: the [palette
+  strip](/help/palette/toolbar-layout/), for picking a selection mode and adding things to the
+  canvas. - **Top-right**: a card with **Copy**, **Present** and **Share** when they apply, and your
+  account (see [The Top Corners](/help/user-interface/title-bar/): there is no bar across the top).
+  The tool panels, when they are in use, sit below it. - **Down the left**:
+  [Contents](/help/pages/working-with-pages/#contents), the list of the tab's pages, as a sidebar on
+  a computer once a tab has more than one page. - **Bottom-right**: a fixed cluster of buttons: Undo
+  and Redo, the page navigator (on a computer, while the tab has two pages or more), **Contents**
+  (unless it is docked as a sidebar down the left), **Collaborate** (while the tab has a comment or
+  an action), and the [zoom controls](/help/user-interface/zoom-controls/). Their panels open as
+  popovers over their buttons, and close when you press the button again. On a phone the whole
+  cluster shares one row. - **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with
+  the [quick controls](/help/user-interface/quick-controls/) (Tools, Settings, appearance) at its
+  right-hand end. - **Over a multi-selection**: the [toolbar](/help/user-interface/toolbar/). A
+  single selected element has none; right-click it for its menu. - **Above a page**: the page's own
+  buttons, and the [Quick Style bar](/help/canvas/quick-style-panel/) beside them for a selected
+  shape or arrow.
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Top-left**: the <AppName /> logo in a card of its own, which opens the Explorer on the folder
+  that holds this space, then the **menu button**, which opens the
+  [Explorer](/help/explorer/explorer-panel/) (your spaces and folders) under it. - **Top centre**:
+  the [palette strip](/help/palette/toolbar-layout/), for switching between Edit and Walk and adding
+  things to the canvas. - **Top-right**: a card with **Share** (or **Copy** on someone else's space)
+  and your account. See [The Top Corners](/help/user-interface/title-bar/). - **Bottom-left**: the
+  [Map](/help/user-interface/minimap/), on a computer or tablet, once a tab has a few elements. -
+  **Bottom-right**: a fixed cluster of buttons: Undo and Redo, the **Theme & canvas** button, and
+  the [zoom controls](/help/user-interface/zoom-controls/). Their panels open as popovers over their
+  buttons, and close when you press the button again. While you walk, Undo, Redo and Theme & canvas
+  step aside and the **3D View** switch takes their place. On a phone the whole cluster shares one
+  row. - **Bottom centre**: while you walk, the **Call** card, with your microphone, camera and
+  Share Screen. See [Cameras and Screen Sharing](/help/collaboration/cameras-and-screen-sharing/). -
+  **Along the bottom**: the [tab bar](/help/user-interface/tab-bar/), with the [quick
+  controls](/help/user-interface/quick-controls/) (Tools, Settings, appearance) at its right-hand
+  end. - **Next to a selection**: the [toolbar](/help/user-interface/toolbar/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Top left**: the <AppName /> logo, then the **menu button**, which opens the
+  [Explorer](/help/explorer/explorer-panel/) (your plans and folders) under it. When a board or a
+  Sheet fills its tab, or the tab is a Dashboard, its name rides in the same card. See [The Top
+  Corners](/help/user-interface/title-bar/). - **Top right**: **Share** if the plan is yours
+  (**Share Form** on a Form tab), **Copy** if it is someone else's, and your account. - **The board
+  header**: on a [board](/help/plan/boards/), its title, how much is done (a percentage and a
+  count), the board's WIP state, **Filter cards** and a **+** for adding widgets. A board on a tab
+  of its own is set up from the **Board** button in the bottom-right corner; a board in a Dashboard
+  slot keeps a settings cog at the end of its header. A Sheet, a Dashboard and a Form carry their
+  own toolbars in the same place. - **Bottom-right**: a fixed cluster of buttons. Reading from the
+  left: **Undo** and **Redo**; the [session tools](/help/collaboration/session-tools/) (**Timer**
+  and **Vote**) on a board made for voting or while a session is running; a strip with **Trash** and
+  **Types** (card types), while the tab shows cards; a comments button, while the tab has a comment;
+  on a Board tab, **Board**, which opens the board's settings; **Style**, which opens the [Tab Style
+  dialog](/help/user-interface/themes/changing-theme/); and, on a Sheet tab only, the [zoom
+  controls](/help/user-interface/zoom-controls/). The buttons open their panels as popovers above
+  them, and close them when you press the button again. See [Undo](/help/user-interface/undo/) and
+  [Redo](/help/user-interface/redo/). - **Along the bottom**: the [tab
+  bar](/help/user-interface/tab-bar/), with the plan's tabs and a **+** to add one, and the [quick
+  controls](/help/user-interface/quick-controls/) (**Tools**, **Settings** and the appearance
+  switch) at its right-hand end. Search is the first row in Tools, or press ⌘K (Ctrl+K).
+</AppNote>
+
+<AppNote app="livedesign">
+  The tool panels (Laser, Spotlight, Eraser and Format, and Inspect on a wireframe tab) appear while
+  their [selection mode](/help/selection-modes/) is in use.
+</AppNote>
+
+<AppNote app="livediagram">
+  The tool panels (Laser, Spotlight, Eraser and Format) appear while their [selection
+  mode](/help/selection-modes/) is in use. The Slide Deck is not a panel: it opens inside **Tools**
+  in the bottom bar.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The tool panels (Laser, Spotlight and Format) appear while their [selection
+  mode](/help/selection-modes/) is in use.
+</AppNote>
+
+<AppNote app="livehuddle">
+  One tool panel appears while it is in use: **Format**, while the [Format
+  Painter](/help/selection-modes/format-painter/) is on. It docks in the bottom-right corner, above
+  the buttons.
+</AppNote>
+
+<AppNote app="liveplanner">
+  When a board or a Sheet fills its tab, the bottom-right cluster moves a little in and up so it sits inside the board's frame, clear of its edge and its scrollbar.
+
+Participants and Viewers on a shared link see fewer of these buttons: no **Trash**, **Types**, **Board** or **Style**, since they cannot change how the tab is set up. Participants keep **Undo** and **Redo** for their own changes; Viewers have neither. Both get a **Zen mode** button at the end of the cluster.
+
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  **Put panels in the corner you want.** With a mouse or trackpad, the tool panels can be dragged by
+  their header to any corner of the screen. On a touch screen, tapping a panel's header collapses or
+  expands it instead. Snap guides appear in the four corners while you drag, and the nearest one
+  highlights to show where the panel will land; drop it away from every corner and it stays right
+  where you left it. Panels sharing a corner stack neatly and reflow when one of them is hidden.
+</AppNote>
+
+<AppNote app="livediagram">
+  **Put panels in the corner you want.** With a mouse or trackpad, the corner panels can be dragged
+  by their header to any corner of the screen: the Map and the tool panels. On a touch screen,
+  tapping a panel's header collapses or expands it instead. Snap guides appear in the four corners
+  while you drag, and the nearest one highlights to show where the panel will land; drop it away
+  from every corner and it stays right where you left it. Panels sharing a corner stack neatly and
+  reflow when one of them is hidden.
+</AppNote>
+
+<AppNote app="livehuddle">
+  **Put panels in the corner you want.** With a mouse or trackpad, the corner panels (the Map and
+  Format) can be dragged by their header to any corner of the screen. On a touch screen, tapping a
+  panel's header collapses or expands it instead. Snap guides appear in the four corners while you
+  drag, and the nearest one highlights to show where the panel will land; drop it away from every
+  corner and it stays right where you left it. Panels sharing a corner stack neatly and reflow when
+  one of them is hidden.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  Your arrangement is remembered on this device, so a reload restores it. Once a panel has moved
+  from its default spot, a **Reset position** button in its header sends it back. Each panel can
+  also be collapsed from its header to a slim banner.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  The palette strip, the menu button, the top-right card, the bottom-right buttons and the bottom
+  bar stay where they are.
+</AppNote>
+
+<AppNote app="livediagram">
+  The palette strip, the top corner cards, the bottom-right buttons and the bottom bar stay where
+  they are.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The palette strip, the cards at the top corners, the bottom-right buttons and the bottom bar stay
+  where they are.
+</AppNote>
+
+## On a phone
+
+<AppNote app="livedesign,livedocuments">
+  On a phone the menu button sits in a card of its own at the left of the strip, and the strip's
+  tiles swipe sideways. Tap a panel's header to collapse or expand it. See [Toolbar
+  Layout](/help/palette/toolbar-layout/#on-a-phone).
+</AppNote>
+
+<AppNote app="livediagram">
+  On a phone the menu button (and the mode switch, as an icon) sits in a card of its own at the left
+  of the strip, the top-right card shows icons alone, and the strip's tiles swipe sideways. Tap a
+  panel's header to collapse or expand it. See [Toolbar
+  Layout](/help/palette/toolbar-layout/#on-a-phone).
+</AppNote>
+
+<AppNote app="livehuddle">
+  On a phone the menu button sits in a card of its own at the left of the strip, the strip's tiles
+  swipe sideways, and the Share card meets the right edge of the screen with its buttons as icons.
+  Tap a panel's header to collapse or expand it. See [Toolbar
+  Layout](/help/palette/toolbar-layout/#on-a-phone).
+</AppNote>
+
+<AppNote app="liveplanner">
+  On a phone the bottom-right cluster stays on one row, its buttons sharing the width there is, and
+  shows icons without their names. The Trash button is left off a phone, except while the session
+  tools are showing: then the card strip folds into one **More card tools** button, whose menu
+  includes **Trash**. The top-left card drops the logo and the top-right card shows its buttons as
+  icons, and a phone held sideways folds the tab bar away on its own, with a handle at the top right
+  to bring it back.
+</AppNote>
+
+<AppNote app="livedesign,livediagram,livedocuments,livehuddle">
+  [Panel Opacity](/help/palette/panel-opacity/) fades every panel so the canvas shows through, and
+  **UI Scale** under **Appearance** makes them bigger or smaller (on a computer).
+</AppNote>
+
+<AppNote app="liveplanner">
+  **UI Scale** under **Appearance** in [Settings](/help/user-interface/settings/) makes the panels
+  and corner buttons bigger or smaller on a computer, and **Panel Opacity** under **Panels** lets
+  what is behind a panel show through.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  <Tip>
+    Want even less on screen? [Zen mode](/help/tools/zen-mode/) (`Z`) hides every panel and leaves
+    just the canvas and the zoom controls.
+  </Tip>
+</AppNote>
+
+<AppNote app="livediagram">
+  <Tip>
+    Want even less on screen? [Zen mode](/help/tools/zen-mode/) (`Z`) hides every panel and leaves
+    just the canvas, the zoom controls and, in Workshop mode, the session tools.
+  </Tip>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Tip>
+    Want even less on screen? [Zen mode](/help/tools/zen-mode/) (`Z`) hides the corner cards, the
+    tab bar and the bottom-right buttons, and leaves just your work.
+  </Tip>
+</AppNote>
+
+</ArticleLayout>

@@ -31,7 +31,7 @@ What every help centre draws alike lives once in `src/art/`:
 
 A scene or figure that shows one product's own work stays in that app; the miniatures of the work itself are shared (`art/work`).
 
-Specs: `docs/specs/018-help/help-app.md` and `help-pages.md` in each product.
+Specs: `liveworkspace/docs/specs/017-help/help-centre.md` and `liveworkspace/docs/specs/017-help/help-centre.md` in each product.
 
 ## Binding a help app
 

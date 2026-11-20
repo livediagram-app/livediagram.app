@@ -1,0 +1,78 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Your Account',
+  description:
+    'Your account in Settings: the identity card, the email-notification switches, and the Danger Zone for deleting your account.',
+  path: '/help/explorer/profile/',
+});
+
+<ArticleLayout path="explorer/profile" title="Your Account" description="Your account home in Settings: who you are signed in as, your email-notification switches, and account deletion." categoryTitle="Explorer" categorySlug="explorer">
+
+Your account lives in [Settings](/help/user-interface/settings/), under **Profile**. When you are signed in, the account button at the top right of the Explorer and the editor (your initial, with your first name) opens a menu with your name, then **Explorer**, **Settings** and **Sign Out**. Pick **Settings**, then **Profile**. You can also open Settings from its sliders icon in the bottom bar and choose **Profile** in the list. Your profile lives in Settings alongside the rest of your preferences, so there is one place to look.
+
+<AppNote app="livehuddle">
+  The identity card also shows your Google picture when you sign in with Google.
+</AppNote>
+
+## What it shows
+
+**Profile** opens on your identity card: the same initial as the account button, your name, your email address, and the date you joined. As a guest, the card says you are working as a guest and offers to sign in.
+
+**Name and Colour**, under the card, sets your display name and presence colour, as collaborators see them on your cursor, comments and avatar in every liveworkspace app. Your email address comes from how you sign in.
+
+<AppNote app="livehuddle">
+  **Name and Colour** sets your **Display name** (leave it empty to show the name you signed up
+  with) and the colour people see on your cursor and avatar in every app. When you sign in with
+  Google, a switch chooses whether your Google picture shows. Each change saves as you make it.
+</AppNote>
+
+**Time Zone**, under your name and colour, is the time zone your account keeps for the emails that can wait (tips, check-ins, reminders and expiry warnings): they arrive on weekdays between 09:00 and 21:00 in that zone. It starts on **Automatic**, which follows the time zone of the browser you use. To set it yourself, press the zone and search for your city, region or offset (such as GMT+1), then pick it; it is saved at once and stays until you choose **Automatic** again.
+
+Below it:
+
+- **Sign-in Methods** shows how you sign in: an emailed code, and Google.
+- **Where You’re Signed In** lists each browser signed in to your account, so you can sign out of the others.
+- **Google Drive**, under **Cloud Sync** when the deployment offers it, connects a Drive folder that mirrors your <Noun plural />; see [Google Drive](/help/account-and-data/google-drive/).
+- **Sign Out** signs you out of every liveworkspace app in this browser. Your work stays in your account.
+
+**API Tokens** is a category of its own in the list; see [API Tokens](/help/account-and-data/api-tokens/). Your deleted <Noun plural /> are in the Explorer's [Trash](/help/account-and-data/trash/).
+
+<AppNote app="livedesign">**API Tokens** sits in its own list entry under Account.</AppNote>
+
+<AppNote app="livehuddle,liveplanner">
+  **API Tokens** sits under **Developers**. In livehuddle **Notifications** sits beside Profile in
+  the list; in liveplanner **Sign Out**, near the end, signs you out of every liveworkspace app in
+  this browser.
+</AppNote>
+
+## Email notifications
+
+**Notifications**, listed after Profile, has an **Email** section with a switch for every optional email: **Someone Joins My <Noun capital />**, **Someone Comments on My Work**, **Someone Mentions Me in a Comment**, **Someone Assigns Me an Action**, **Someone Responds to a Team Invite**, **Tips and Check-Ins**, and **Milestones**. The whole row is the switch, so click anywhere on it to flip it. The switches are saved to your account and apply wherever you sign in. See [Email Notifications](/help/account-and-data/email-notifications/) for what each kind of email contains and when it sends.
+
+The email switches only appear when the deployment can send mail and you are signed in. A guest sees a note asking them to sign in to choose their emails, since without an address the switches could never apply. The same page also holds **In-Editor Notifications**, under **In the Editor**, which works for everyone, and, where it is offered, a **Phone** section to turn on phone notifications, with a switch for each kind.
+
+<AppNote app="livehuddle">
+  The comment, mention and action switches are your account's, for the liveworkspace apps that have
+  them: livehuddle never sends those emails.
+</AppNote>
+
+<AppNote app="liveplanner">liveplanner's list also has **Someone Fills In My Form**.</AppNote>
+
+## Danger zone
+
+**Profile** ends with the **Delete Account** button (under **Danger Zone** in the editor's Settings). It opens a confirmation dialog that asks you to type your email address, a deliberate speed bump before anything irreversible happens, and then the 6-digit code it emails you, so only someone who can read your inbox can delete the account. Confirming permanently removes your <Noun plural /> (the Trash included), folders and the rest of your data from the server, then deletes the account itself and signs you out. This cannot be undone. For deleting a single <Noun />, or how guest data is scoped, see [Deleting Your Data](/help/account-and-data/deleting-your-data/).
+
+The **Danger Zone** also holds **Reset All Settings**, which puts every setting back to its default in every liveworkspace app (your profile, API tokens, webhooks and sign-ins stay as they are), above the **Delete Account** button.
+
+## Signed-in feature
+
+Deleting removes the data held against a verified account, so it needs one: the row is still shown to guests, saying it is only available once you are signed in, with a link to sign in, rather than hiding. A guest's <Noun plural /> belong to their browser, and [Deleting Your Data](/help/account-and-data/deleting-your-data/) covers clearing those.
+
+<Tip>
+  You do not have to go looking for the notification switches: every optional email carries a
+  "Manage your notifications" link in its footer that opens Settings on this same section.
+</Tip>
+
+</ArticleLayout>

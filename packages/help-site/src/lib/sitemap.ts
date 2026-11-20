@@ -2,7 +2,7 @@ import { articleHref, categoryHref } from '@liveworkspace/help-registry';
 import type { MetadataRoute } from 'next';
 import type { HelpCatalogue } from '../types';
 
-// The help centre's static sitemap (docs/specs/018-help/help-app.md "SEO"): the home, the features index, every
+// The help centre's static sitemap (liveworkspace/docs/specs/017-help/help-centre.md "SEO"): the home, the features index, every
 // category landing and every article, from the registry, so new content is picked up automatically.
 // `lastModified` is each page's last commit (article-dates.ts), and left out when that is unknown.
 

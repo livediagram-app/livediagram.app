@@ -6,7 +6,7 @@
 
 import { lazy, Suspense, useEffect, type ReactNode } from 'react';
 import { LIST_CARD } from '../ui/classes';
-import { TeamCard, useTeamDetails } from '../teams/TeamCard';
+import { useTeamDetails } from '../teams/team-details';
 import { useTeams } from '../teams/context';
 import { SIDEBAR_LABELS } from '../views';
 import { useExplorer } from './context';
@@ -18,7 +18,19 @@ import { SECTIONS_BAR_ATTR } from './PhoneSections';
 // "Performance and limits").
 const AuditLog = lazy(() => import('./audit/AuditLog').then((m) => ({ default: m.AuditLog })));
 
-export { initialsOf, teamHeadline } from '../teams/TeamCard';
+// The team card loads with the team view (its members' rows, menus and the invite and edit dialogs), so the Explorer's
+// first load never carries it; the idle preload (./lazy-panes.ts) fetches it after the page draws. Its skeleton
+// stands in meanwhile, as it does while the members are read.
+const loadTeamCard = () => import('../teams/TeamCard');
+const TeamCard = lazy(() => loadTeamCard().then((m) => ({ default: m.TeamCard })));
+/** Fetches the team card's code. Never rejects. */
+export const preloadTeamCard = (): Promise<void> =>
+  loadTeamCard().then(
+    () => {},
+    () => {},
+  );
+
+export { initialsOf, teamHeadline } from '../teams/team-details';
 export { memberName } from '../teams/rules';
 
 export function TeamPage({ teamId, children }: { teamId: string; children: ReactNode }) {
@@ -36,16 +48,18 @@ export function TeamPage({ teamId, children }: { teamId: string; children: React
   return (
     <div className="flex flex-col gap-4">
       {load.state === 'found' ? (
-        <TeamCard
-          details={load.details}
-          reload={reload}
-          viewerId={viewerId}
-          helpHref={helpHref?.({ kind: 'team', id: teamId })}
-          onGone={() => {
-            navigate({ kind: 'all' });
-            landOnMyWork();
-          }}
-        />
+        <Suspense fallback={<TeamMembersSkeleton />}>
+          <TeamCard
+            details={load.details}
+            reload={reload}
+            viewerId={viewerId}
+            helpHref={helpHref?.({ kind: 'team', id: teamId })}
+            onGone={() => {
+              navigate({ kind: 'all' });
+              landOnMyWork();
+            }}
+          />
+        </Suspense>
       ) : load.state === 'loading' ? (
         <TeamMembersSkeleton />
       ) : null}

@@ -79,7 +79,7 @@ export const HELP_ARTICLES = {
   home: 'explorer/home',
   folders: 'explorer/folders',
   // The shared Explorer's other views, each its page header's Help (lib/explorer-host.ts explorerHelpHref).
-  myWork: 'explorer/my-work',
+  myWork: 'explorer/personal-space',
   recent: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   inbox: 'explorer/activity',

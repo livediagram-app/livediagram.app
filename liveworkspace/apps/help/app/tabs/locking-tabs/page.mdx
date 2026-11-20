@@ -1,0 +1,98 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LockedTab } from '@liveworkspace/help-site/art/illustrations/tabs-scenes';
+
+export const metadata = helpMetadata({
+  title: 'Locking a Tab',
+  description:
+    'Lock a tab so it cannot be changed or deleted by accident. Unlock it to edit again.',
+  path: '/help/tabs/locking-tabs/',
+});
+
+<ArticleLayout path="tabs/locking-tabs" title="Locking a Tab" description="Protect a finished tab in one step, so it stays exactly as you left it." categoryTitle="Tabs" categorySlug="tabs" subArticles={getSubArticles("locking-tabs")}>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  When a whole tab is finished, locking it protects everything on it at once, rather than locking
+  elements one by one. A locked tab becomes read-only: you can still look at it and switch to it,
+  but nothing on it changes until you unlock it.
+</AppNote>
+
+<AppNote app="liveplanner">
+  When a tab is set up the way you want it, locking it guards the tab itself: nobody can delete it,
+  clear it or import something over it by accident, and a Dashboard's layout stays exactly as you
+  left it.
+</AppNote>
+
+<Figure caption="A locked tab shows a padlock before its name in the tab bar.">
+  <LockedTab />
+</Figure>
+
+## Locking and unlocking a tab
+
+Open the tab's menu (the **⋯** button on the active tab, or right-click the tab) and press the padlock button, **Lock Tab**, in the row of quick actions along the top. The same button reads **Unlock Tab** afterwards (and shows as pressed), so it toggles the tab back. A locked tab shows a small **padlock** before its name in the bar, so you can tell at a glance which tabs are frozen.
+
+The lock is saved with the tab, so it applies to everyone who opens it, not just you. Anyone with edit access can unlock it again.
+
+<AppNote app="livediagram,liveplanner,livedocuments,livedesign">
+  **When to use it**
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  **What a locked tab protects**
+
+While a tab is locked, everything on it is read-only:
+
+- Elements **can't be moved, resized, restyled, or edited**, and nothing new can be added or pasted onto the tab.
+- The padlock before the tab's name says the whole tab is locked, so its elements don't each show one. An element that also carries its own lock keeps its padlock.
+- An image still takes a picture: **Select Image** fills an empty one and **Change Image** swaps it. Only the picture changes; the image stays where it is.
+- The **Undo** and **Redo** buttons are greyed out on the tab.
+- In the tab menu, **Import** and **Clear** are greyed out (an import started from the command palette is refused), the [layout tidiers](/help/tabs/tab-cleanup/) are off (the Tidy panel greys them out and says the tab is locked, and the command palette leaves them out), and the tab itself **can't be deleted** until you unlock it.
+
+Locking clears your current selection. You can still look around, pan and zoom, follow links, and **rename**, **duplicate**, or **export** the tab from the same menu. Duplicating gives you an editable copy if you want to keep building from a locked original.
+</AppNote>
+
+<AppNote app="livediagram,livedesign">
+  The [eraser](/help/selection-modes/eraser/) skips everything on a locked tab, and links on it
+  still take you to their [linked tabs](/help/tabs/linking-tabs/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  **What a locked tab protects.**
+
+- The tab **can't be deleted** until you unlock it.
+- **Clear** is greyed out in the tab menu, and in the [Import dialog](/help/tabs/import-tabs/) the tab's own row (its CSV or JSON) is greyed out with the reason. A board from another tool can still come in, as a new tab.
+- A **Dashboard** can't be changed: its rows, slots and what they show stay put, and you see it as a Viewer does, without its settings or editing.
+- The **Undo** and **Redo** buttons are greyed out on the tab.
+
+You can still **rename**, **duplicate** or **export** the tab from the same menu, and move it into a folder. Duplicating gives you an unlocked copy if you want to keep building from a locked original.
+
+**What a lock leaves alone.** The cards on a board and the cells of a sheet belong to the plan, not to one tab, so a lock doesn't freeze them: people can still add, edit and move cards on a locked Board tab, and type into a locked Sheet. A lock protects the tab, not the work flowing through it.
+
+To stop someone changing anything at all, share a [view-only link](/help/collaboration/sharing/) instead.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+- Freeze a signed-off or presented tab so a later edit can't disturb it.
+- Protect a reference or template tab you copy from but never change.
+- Hand a <Noun /> to collaborators with the finished tabs locked, leaving only the working tabs open.
+</AppNote>
+
+<AppNote app="liveplanner">
+- Freeze a Dashboard you've set up for a team or a review, so its layout can't be knocked out of place.
+- Protect a tab you rely on from being deleted or cleared by accident.
+- Hand a plan to collaborators with its set-up tabs locked, leaving the work on them free to move.
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign">
+  To protect just a few elements rather than a whole tab, lock them individually instead. See
+  [locking elements](/help/canvas/locking/). To stop someone editing anything at all, share a
+  [view-only link](/help/collaboration/sharing/) instead.
+</AppNote>
+
+<AppNote app="liveplanner">
+  Need a fresh start from a locked tab? **Duplicate** it from the tab menu: the copy is unlocked and
+  ready to change.
+</AppNote>
+
+</ArticleLayout>

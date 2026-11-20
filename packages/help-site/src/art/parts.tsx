@@ -1,4 +1,4 @@
-// The building blocks the category scenes share (docs/specs/018-help/help-pages.md "Category art"). The scenes
+// The building blocks the category scenes share (liveworkspace/docs/specs/017-help/help-centre.md "Category art"). The scenes
 // draw with the in-article illustration kit (./primitives.tsx) for anything the editor
 // shows: shapes, arrows, cursors, avatars, panels. This file adds only what a category scene needs on top: the
 // stage it stands on, the floating window most scenes frame their moment in, and a handful of small motifs

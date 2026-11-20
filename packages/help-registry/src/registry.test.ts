@@ -11,6 +11,7 @@ const article = (slug: string, categorySlug: string, rest: Partial<Article> = {}
   keywords: '',
   category: categorySlug,
   categorySlug,
+  apps: ['livediagram'],
   ...rest,
 });
 

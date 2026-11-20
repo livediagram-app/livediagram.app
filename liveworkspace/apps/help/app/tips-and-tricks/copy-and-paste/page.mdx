@@ -1,0 +1,139 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Copy and Paste',
+  description:
+    'Copy, cut and paste elements through the system clipboard between tabs, files and windows, and paste a screenshot straight onto the canvas.',
+  path: '/help/tips-and-tricks/copy-and-paste/',
+});
+
+<ArticleLayout
+  path="tips-and-tricks/copy-and-paste"
+  title="Copy and Paste"
+  description="Move elements between tabs, files and windows through the ordinary system clipboard."
+  categoryTitle="Tips and Tricks"
+  categorySlug="tips-and-tricks"
+>
+
+Select something and `⌘C` copies it, `⌘X` cuts it, `⌘V` pastes it. (On Windows and Linux, Ctrl.) It is the clipboard you already know, and it behaves the way you would expect it to.
+
+## It is the real clipboard
+
+The elements go on your **operating system's clipboard**, not a private one inside the page. That is what makes the useful cases work:
+
+- paste into **another tab** of the same <Noun />,
+- paste into a **different <Noun />** entirely,
+- paste into a **second browser window** you have the editor open in,
+- copy, reload the page, and paste what you copied before the reload.
+
+<AppNote app="livedesign,livedocuments,livehuddle">
+  A very large copy (over 2,000 elements) is too big for the system clipboard: it pastes only in the
+  window you copied it in, and a message says so.
+</AppNote>
+
+<AppNote app="livediagram">
+  A very large copy (over 2,000 elements, or about 4 MB of data) is too big for the system
+  clipboard: it pastes only in the window you copied it in, and a message says so.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  A copy carries the elements' styling, their labels, their links and notes, and any arrows you
+  selected along with them (a marquee picks up the arrows inside it; Shift-click them to include
+  them by hand). Pasted on the same tab, the arrows between the copied elements come along even if
+  you didn't select them. It deliberately leaves behind what belongs to the original's conversation:
+  [comments](/help/collaboration/comments/), and [assigned
+  actions](/help/collaboration/assigned-actions/). Ids are re-minted on arrival and pinned arrows
+  are re-wired to the copies, so pasting into a <Noun /> that already holds the originals gives you
+  a genuinely separate set rather than two names for one thing.
+</AppNote>
+
+<AppNote app="livediagram">
+  A copy carries the elements' styling, their labels, their links and notes, and any arrows you
+  selected along with them (a marquee picks up the arrows inside it; Shift-click them to include
+  them by hand). Pasted on the same tab, the arrows between the copied elements come along even if
+  you didn't select them. It deliberately leaves behind what belongs to the original's conversation:
+  [comments](/help/collaboration/comments/), [assigned
+  actions](/help/collaboration/assigned-actions/), and votes or poll answers. Ids are re-minted on
+  arrival and pinned arrows are re-wired to the copies, so pasting into a <Noun /> that already
+  holds the originals gives you a genuinely separate set rather than two names for one thing.
+</AppNote>
+
+<AppNote app="livehuddle">
+  A copy carries the elements' styling and their text, so a room of sticky notes arrives with every
+  word on it. Ids are re-minted on arrival, so pasting onto a tab that already holds the originals
+  gives you a genuinely separate set rather than two names for one thing.
+</AppNote>
+
+## What paste does
+
+The pasted elements land **offset from the original's position** (a little down and to the right), not exactly on top of it, so you can see what arrived and drag it where it belongs. That holds in another tab or <Noun /> too, so if the copy isn't in view, it is where the original sat. They come in selected, ready to be moved as one.
+
+Without a keyboard, **Paste** is also the first row under the icon toolbar when you right-click (or long-press) empty canvas, and an icon in a tab's menu. See [Context Menus](/help/user-interface/context-menus/). The menu's Paste uses what you copied in this window; something copied in another window or before a reload pastes with `⌘V`.
+
+**Cut is copy plus delete**: the originals go as soon as you cut, and an undo puts them back where they were.
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  Locked elements are copied but stay where they are.
+</AppNote>
+
+Copy, cut and paste are for editors. On a view-only or Participant [share link](/help/collaboration/sharing/) they do nothing, and a paste onto a tab you cannot edit does nothing either.
+
+## Pasting a screenshot
+
+<AppNote app="livedesign,livedocuments">
+  If what you have on the clipboard is an **image** (a screenshot, or an image copied from a web
+  page) rather than elements, `⌘V` drops it on the page as an [image
+  element](/help/palette/tools/images/) and uploads it to your gallery. In a [<Noun /> kept
+  Offline](/help/privacy-and-security/offline-mode/) it is embedded locally instead, so no copy
+  leaves your machine.
+</AppNote>
+
+<AppNote app="livediagram">
+  If what you have on the clipboard is an **image** (a screenshot, or an image copied from a web
+  page) rather than elements, `⌘V` drops it on the canvas as an [image
+  element](/help/palette/tools/images/) and uploads it to your gallery. In a [canvas kept
+  Offline](/help/privacy-and-security/offline-mode/) it is embedded locally instead, so no copy
+  leaves your machine.
+</AppNote>
+
+<AppNote app="livehuddle">
+  If what you have on the clipboard is a **picture** (a screenshot, or an image copied from a web
+  page) rather than elements, `⌘V` uploads it to your image gallery and adds it as an image in the
+  middle of the screen. Dropping an image file on the canvas does the same where you let go. Any
+  other file is turned away with "The canvas takes pictures, not other files.", except a <AppName />{' '}
+  export dropped on the canvas, which points you at **Import** in the tab menu. See [Write
+  Elements](/help/palette/write/).
+</AppNote>
+
+Anything else on the clipboard is left alone. Pasting ordinary text into a label being edited types the text, as it should; ordinary text pasted onto the canvas itself does nothing.
+
+<AppNote app="livediagram">
+  Copied from [Excalidraw](/help/tabs/import-tabs/)? An Excalidraw copy (or a `.excalidraw` file)
+  pastes as a scene of <AppName /> elements, in one undo step.
+</AppNote>
+
+## When you just want another one
+
+For a copy of what you already have, on the same tab, two things are quicker than the clipboard:
+
+- **`⌘D`** duplicates the selection, offset from the original.
+- **Shift and drag** a selection drops a copy where you release it and leaves the originals put. See [Duplicating Elements](/help/tips-and-tricks/duplicating-elements/).
+
+<AppNote app="livedesign,livediagram,livedocuments">
+  <Tip>
+    Building the same cluster on several tabs? Build it once, copy it, and paste it into each. It is
+    the fastest route to a set of tabs that genuinely match, and every copy is independent
+    afterwards.
+  </Tip>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Tip>
+    Setting up the same corner on several tabs, such as an agenda heading and its notes? Build it
+    once, copy it, and paste it into each. It is the fastest route to a set of tabs that genuinely
+    match, and every copy is independent afterwards.
+  </Tip>
+</AppNote>
+
+</ArticleLayout>

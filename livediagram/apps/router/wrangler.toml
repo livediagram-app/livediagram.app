@@ -35,7 +35,7 @@ service = "livediagram-api"
 
 [[services]]
 binding = "HELP"
-service = "livediagram-help"
+service = "liveworkspace-help"
 
 # liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
 # Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").
@@ -96,7 +96,7 @@ COMMUNITY_URL = "http://localhost:3000/api/community"
 MARKETING_ORIGIN = "http://127.0.0.1:3101"
 EDITOR_ORIGIN = "http://127.0.0.1:3102"
 API_ORIGIN = "http://127.0.0.1:8687"
-HELP_ORIGIN = "http://127.0.0.1:3104"
+HELP_ORIGIN = "http://127.0.0.1:3020"
 # liveworkspace's index (`pnpm dev` in liveworkspace/apps/index): `/api/index/*` goes there.
 INDEX_ORIGIN = "http://127.0.0.1:8793"
 # liveworkspace's Google Drive mirror (`pnpm dev` in liveworkspace/apps/drive): `/api/drive/*` goes there.
@@ -141,7 +141,7 @@ service = "livediagram-api-staging"
 
 [[env.staging.services]]
 binding = "HELP"
-service = "livediagram-help-staging"
+service = "liveworkspace-help-staging"
 
 # liveworkspace's Workers, reached over bindings rather than their public routes, which can stall Worker to
 # Worker (liveworkspace/docs/specs/002-architecture/blueprints/architecture.md "Which Worker a forward reaches").

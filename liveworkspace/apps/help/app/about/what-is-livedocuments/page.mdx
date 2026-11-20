@@ -1,0 +1,58 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { PagesScene } from '@/editions/livedocuments/components/illustrations/pages';
+import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'What is livedocuments?',
+  description:
+    'livedocuments is a free, open-source, real-time multiplayer editor for pages: articles, slide decks, infographics and flashcards, right in your browser.',
+  path: '/help/about/what-is-livedocuments/',
+});
+
+<ArticleLayout path="about/what-is-livedocuments" title="What is livedocuments?" description="A free, open-source editor where teams make articles, slide decks, infographics and flashcards together, in real time, right in the browser." categoryTitle="About livedocuments" categorySlug="about">
+
+livedocuments is a web app where people make **pages together in real time**: articles, slide decks, infographics, posters and flashcards. Anyone with access to a document can join, see other collaborators' cursors and edits live, and contribute at the same time. The result is something finished to share, a write-up, a deck or a one-pager, that a team builds together rather than one person authoring and the rest reviewing.
+
+## A document of pages
+
+A document holds [tabs](/help/tabs/using-tabs/), and every tab is a row of **pages**. A tab holds one kind of page, chosen with its first page: a tab is a deck, an infographic, a set of articles or a stack of flashcards, never a mix. For another kind, start another tab. See [Working with Pages](/help/pages/working-with-pages/).
+
+<Figure caption="Pages in a row on a tab, each labelled above its corner, with the + to add another after the last.">
+  <PagesScene />
+</Figure>
+
+- **Articles** to write on like a document: headings, lists, pictures and charts, with the writing flowing onto new pages as it grows. See [Writing Articles](/help/pages/articles/).
+- **Slides** for a deck, each one started from a slide layout and in the slide deck as soon as you make it. See [Slide Pages](/help/pages/slide-pages/).
+- **Infographics** to lay out freely in print and social sizes, starting from a layout if you like. See [Infographic Layouts](/help/pages/infographic-layouts/).
+- **Flashcards** to speak from: a stack of small text cards, flipped one at a time, each showing how long it takes to say. See [Flashcards](/help/pages/flashcards/).
+
+You build a page from the [palette](/help/palette/): text, shapes, icons, pictures, charts, ready-made components and more. [Templates](/help/canvas/templates/) start a tab from ready-made pages, so you rarely begin from a blank one.
+
+## Presenting, exporting and AI
+
+- **Present** a deck full screen, with the [laser](/help/selection-modes/laser/) and the [spotlight](/help/selection-modes/spotlight/) to point things out. See [Presenting](/help/selection-modes/slide-deck/presenting/).
+- **Export** pages as a PDF, images or an animated GIF, a deck as an editable PowerPoint file, or an article as a Word document or Markdown. See [Exporting and Presenting Pages](/help/pages/exporting-pages/).
+- **Markdown** works in an article: type Markdown shortcuts as you write, or paste Markdown and it turns into formatted headings, lists and quotes. See [Writing Articles](/help/pages/articles/#writing).
+- **AI tools** such as Claude can work on your documents over MCP. See [Connect an AI Tool](/help/account-and-data/connect-ai-mcp/).
+
+## Built for working together
+
+When more than one person is in the same document, everyone sees live cursors, who has what selected, and every change as it happens. Everything someone else has selected, one element or many, is locked for everyone else, and stays locked for a moment after they let go, until their change is saved, so collaborators rarely overwrite each other. [Comments](/help/collaboration/comments/), [teams](/help/collaboration/teams/) and [sharing](/help/collaboration/sharing/) are built in.
+
+To make that frictionless, the editor **always works without signing in**. You can open a new document, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your document](/help/getting-started/sharing-your-document/).
+
+<Figure caption="Everyone in a document sees each other's live cursors and presence at once.">
+  <LiveCursors />
+</Figure>
+
+## Free and open source
+
+livedocuments is **MIT-licensed** and **free for everyone**. There is no paid tier and no plan to introduce one. It runs at livedocuments.app, and the whole codebase is open for anyone to read. Every feature is available to every user. See [Why use livedocuments?](/help/about/why-livedocuments/).
+
+<Tip>
+  The fastest way to understand livedocuments is to use it. Open a [new document](/new) and make
+  your first page, no sign-up needed.
+</Tip>
+
+</ArticleLayout>
