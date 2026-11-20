@@ -183,9 +183,10 @@ Every page wears the marketing sites' language, so moving between an app's `/` a
 - **Header.** A fixed 72px (`h-18`) at every breakpoint, on the page's `max-w-7xl` / `md:px-8` column so the logo lines
   up with the breadcrumb and article below; the sticky breadcrumb bar (`top-18`) and the article sidebar's sticky
   offset rely on it. It holds the brand (hover for liveworkspace's other sites), the search in its centre slot from
-  `sm` up and, in an app's help, that app's **Start Blank** and **Choose Template** pair (`ctaSurface="Help"`, so its
-  links carry `Help.HeaderBlank` and `Help.Header` for the landing funnel), Start Blank hidden below `md` so the search
-  keeps room. It leaves the page-edge ShareRail off: the rail would cover the article sidebar on an `xl` screen.
+  `sm` up and, in an app's help, that app's Explorer link (the filled Open Explorer for someone signed in) and
+  **Start Blank**, at every width (`ctaSurface="Help"`, so it carries `Help.HeaderBlank` for the landing funnel). No
+  header shows Choose Template (Work Tracker 1317, each app's marketing-site.md "Header"); under All Apps, Open
+  liveworkspace takes Start Blank's place. It leaves the page-edge ShareRail off: the rail would cover the article sidebar on an `xl` screen.
 
 **Category scenes.** Every category has one **category scene**: a large SVG illustration of that area of the app at
 work, in the shared help illustration kit so it matches the in-article figures' house style and dark appearance. A

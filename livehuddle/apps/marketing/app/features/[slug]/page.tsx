@@ -61,7 +61,7 @@ export default async function FeatureCategoryPage({
   return (
     <>
       <BreadcrumbJsonLd name={section.label} path={`/features/${slug}`} />
-      <Header surface="Feature" />
+      <Header />
       <main>
         <Breadcrumb items={[{ label: section.label }]} />
         <FeatureCategoryHero section={section} />

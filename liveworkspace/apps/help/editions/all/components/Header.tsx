@@ -1,14 +1,7 @@
 import { SiteSwitcher } from '@livediagram/ui';
 import { SearchInput } from '@liveworkspace/help-site/components/SearchInput';
 import { createSiteHeader } from '@liveworkspace/ui/site-header';
-import {
-  Brand,
-  ExplorerLink,
-  HeaderPrimaryCta,
-  ShareRail,
-  SiteAccount,
-  StartBlankLink,
-} from './HeaderParts';
+import { Brand, ExplorerLink, ShareRail, SiteAccount, StartBlankLink } from './HeaderParts';
 
 // The All Apps help's header (liveworkspace/docs/specs/017-help/help-centre.md "Where it is shown"): the same bar as
 // every app's help, @liveworkspace/ui's SiteHeader built from liveworkspace's own pieces (HeaderParts.tsx):
@@ -20,7 +13,6 @@ const AllAppsSiteHeader = /* @__PURE__ */ createSiteHeader<string, 'liveworkspac
   SiteSwitcher,
   Brand,
   ExplorerLink,
-  HeaderPrimaryCta,
   StartBlankLink,
   ShareRail,
   SiteAccount,

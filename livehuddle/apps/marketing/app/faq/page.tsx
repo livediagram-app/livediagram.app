@@ -41,7 +41,7 @@ export default function FaqPage() {
     <>
       <JsonLd data={FAQ_JSON_LD} />
       <BreadcrumbJsonLd name="FAQ" path="/faq" />
-      <Header surface="Faq" />
+      <Header />
       <main className="pb-20 sm:pb-24">
         <FaqBrowser
           eyebrow="FAQ"

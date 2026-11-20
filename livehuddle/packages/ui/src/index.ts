@@ -19,7 +19,7 @@ export { ProductNavLinks, type ProductNavKey } from './ProductNav';
 export { SiteSwitcher } from './SiteSwitcher';
 export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
-export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
+export { EXPLORER_HOME_HREF } from './ExplorerLink';
 export { SiteFooter } from './SiteFooter';
 // The loaders' shared loop phase, so a remounted loading picture carries on where it was.
 export { useLoopPhase } from '@liveworkspace/ui/build-animation-kit';

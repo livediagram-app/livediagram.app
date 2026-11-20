@@ -794,8 +794,8 @@ livediagram's specs ([MCP server](../../../../livediagram/docs/specs/015-api/mcp
   (the editor's `/oauth/consent` and device pages, the api's `/api/oauth/exchange`, the capabilities' `oauthIssuer`),
   the CLI (`apps/cli`, `@livehuddle/cli` on npm, the capabilities' `cli` minimum version), the verbs package they shared
   (`packages/agent-verbs`), the MCP Registry listing (`server.json`), and the marketing site's **Build with AI** page
-  (`/ai`) with its header link, FAQ answers, landing card and sitemap entry. The marketing header is Choose Template
-  and Explorer.
+  (`/ai`) with its header link, FAQ answers, landing card and sitemap entry. The marketing header is Explorer alone
+  (no header shows Choose Template, Work Tracker 1317).
 - **Workbenches go with them.** A workbench opened a document inside a developer tool through the CLI
   (liveworkspace's [Workbench](../../../../liveworkspace/docs/specs/011-workbench/workbench.md)), so livehuddle no longer
   pairs one: the `/embed/workbench` frame, Settings' list of workbench pairings, the editor's workbench chrome and
