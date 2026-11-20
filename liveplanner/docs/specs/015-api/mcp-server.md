@@ -1138,6 +1138,10 @@ mcp-server.md "Interactive view (MCP Apps)"); liveplanner's view shows a **board
     why and when.
   - **Cost.** A plan with no open view gets no ticket and no socket. An open view is one idle socket on the room, one
     mint every 10 minutes, and at most one `view_tab` per `LIVE_REDRAW_MS` while people edit.
+- **Every board view keeps following.** The canvas views of the other products stop following once an agent's later
+  change lands on their tab (livediagram's mcp-server.md "One live view"). The board does not: cards change through
+  `items` ops, which do not say whether a person or an agent wrote them, and a board's result carries no picture of
+  its own to keep. An agent's changeset on the board's tab draws it again, as any change does.
 - **`view_live`**: `{ projectId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
   address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms). Its text block is one line without the
   ticket. Edits in the view stay livediagram's: this view is read-only for every token.

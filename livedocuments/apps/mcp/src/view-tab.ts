@@ -23,6 +23,12 @@ import {
   viewBoxOf,
   viewPagesOf,
 } from '@liveworkspace/mcp-kit/app-view-tab';
+import {
+  earlierStepResult,
+  laterStepPath,
+  laterStepSince,
+  type StepChangeset,
+} from '@liveworkspace/mcp-kit/app-view-step';
 import { VIEW_PICTURE_LIMITS } from '@liveworkspace/mcp-kit/preview-budget';
 import {
   computeRefs,
@@ -66,11 +72,32 @@ export function pageView(tab: Tab, pageId?: string) {
 export async function viewTab(
   env: Env,
   token: string,
-  args: { documentId: string; tabId?: string; pageId?: string },
+  args: { documentId: string; tabId?: string; pageId?: string; rev?: number; held?: boolean },
 ): Promise<ToolResult> {
   const loaded = await loadTab(env, token, args.documentId, args.tabId);
   if (!loaded) return errorResult('That document has no tabs.');
   const { document, tab } = loaded;
+  // One live view: a view that names its own step hears whether an agent changed the tab after it, and one holding
+  // that step's picture gets no drawing.
+  const superseded = await laterStepSince(
+    () =>
+      apiJson<{ changesets?: StepChangeset[] }>(
+        env,
+        token,
+        laterStepPath('documents', args.documentId, tab.id),
+      ),
+    args.rev,
+  );
+  if (superseded && args.held)
+    return earlierStepResult({
+      documentId: args.documentId,
+      tabId: tab.id,
+      name: tab.name,
+      url: deepLink(env, args.documentId),
+      rev: tab.rev,
+      pageId: null,
+      pages: [],
+    });
   const { page, pages, elements, pictures, writingSvg } = pageView(tab, args.pageId);
   const { svg } = await tabSvg(tab, { env, token }, page, {
     limits: VIEW_PICTURE_LIMITS,
@@ -88,6 +115,8 @@ export async function viewTab(
     viewBox: viewBoxOf(svg),
     elements,
     url: deepLink(env, args.documentId),
+    rev: tab.rev,
+    ...(superseded ? { superseded } : {}),
   });
 }
 

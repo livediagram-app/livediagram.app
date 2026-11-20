@@ -995,7 +995,7 @@ says why by its status (no such tab, view only, the last tab).
 | `find_designs`      | `count`, `designs[]` of `{ id, name, updatedAt, library, url, archived? }`                                                                                |
 | `read_design`       | `id`, `name`, `tab { id, name, rev, ... }` (for `view: "components"`, `components` text instead), `tabs[]` of `{ id, name }` (every tab, in order), `url` |
 | `list_templates`    | `categories[]` of `{ id, label, description }`, `templates[]` of `{ kind, title, description, category }`                                                 |
-| `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `folder`, `url`                                                                           |
+| `create_design`     | `id` and `designId` (the same), `name`, `tabCount`, `tabIds[]`, `rev` (the first tab's), `folder`, `url`                                                  |
 | `add_tab`           | `designId`, `tabId`, `name`, `url`, `note` when a template has more tabs than it added                                                                    |
 | `update_design`     | `id` and `designId` (the same), `tabId`, `url`                                                                                                            |
 | `share_design`      | `url`, `role`, `expiresAt` (ms epoch, or null for never), `designUrl`                                                                                     |
@@ -1184,7 +1184,7 @@ one page at a time.
   pages, and a strip of the design's tabs switches tab, each another `view_tab`. Clicking an element opens the editor
   at it (`ui/open-link` to `/design/<id>#t=<tab>&el=<element>`, the Inbox's element deep link), and **Open in editor**
   opens the tab. A tab that cannot be read says so in the frame; nothing is cached between results.
-- **`view_tab`**: `{ designId, tabId?, pageId? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a
+- **`view_tab`**: `{ designId, tabId?, pageId?, rev?, held? }`. Read. The view's own tool (`_meta.ui.visibility: ["app"]`, so a
   host with MCP Apps keeps it from the model): one page's SVG (the first page when `pageId` is absent or names no
   page), its view box, the box of every element drawn on that page with its ref and label (for the click), the tab's
   pages (`{ id, name }`, a page with no name named by its place, "Page 2") and the shown one's id, the design's tabs
@@ -1222,6 +1222,21 @@ one page at a time.
     why and when.
   - **Cost.** A design with no open view gets no ticket and no socket. An open view is one idle socket on the room, one
     mint every 10 minutes, and at most one `view_tab` per `LIVE_REDRAW_MS` while people edit.
+- **One live view.** A chat holds one view for every tool call that draws or reads a tab, and each used to follow
+  the design, so a build of ten steps ended as ten identical pictures redrawing together. A view now follows only
+  until **an agent's later change lands on its tab**, then keeps its own step, as livediagram's does (its
+  mcp-server.md "One live view", the same shared viewer and `@liveworkspace/mcp-kit/app-view-step`):
+  - The step is the tab revision the view's result left: `rev` on `create_design` (its first tab's), `add_tab`,
+    `update_design` and `change_pages`, `tab.rev` on `read_design`.
+  - While it listens, an agent's `changeset` op on the shown tab (one with an `agentKey`) stops it: it keeps its
+    picture and its mark reads **Earlier step**. A person's edits draw the page again as before.
+  - Opening again or catching up, it sends `rev` on `view_tab`, which reads the tab's newest 5 changesets
+    (`GET /api/designs/:id/changesets?tab=&limit=5`) and answers `superseded` when an agent's is past it. The view
+    then shows the picture its own result came with (it says `held`, and gets no drawing back), or with none, the
+    page as it is now as a **Snapshot**. A redraw for a change it heard sends no `rev`.
+  - Cost: one more api read on a view's first draw and each catch-up, none on a live redraw (13 to 15 ms either
+    way, measured locally); a superseded view builds no SVG and holds no socket. The page grew by 1.3 KB (21.1 to
+    22.4 KB). `create_design` reads its first tab once more for `rev` when it has not already.
 - **`view_live`**: `{ designId }`. Read. The view's own tool, kept from the model like `view_tab`: the socket's
   address (`url`), the ticket and when it lapses (`expiresAt`, epoch ms). Its text block is one line without the
   ticket. Edits in the view stay livediagram's: this view is read-only for every token.
