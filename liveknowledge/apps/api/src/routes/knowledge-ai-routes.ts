@@ -1,8 +1,8 @@
-// The knowledgebase's Ask settings over REST (docs/specs/030-knowledgebase/search-and-ask.md "Ask"):
-//   GET    /api/documents/<id>/ai         { hasKey, keyHint, model, models }, never the key
-//   PUT    /api/documents/<id>/ai/key     { key }: seal and store it
+// The knowledgebase's AI settings over REST (docs/specs/030-knowledgebase/search-and-ask.md "Ask", "Providers"):
+//   GET    /api/documents/<id>/ai         { provider, hasKey, keyHint, model, models, providers }, never the key
+//   PUT    /api/documents/<id>/ai/key     { provider, key }: seal and store it; another provider replaces the key
 //   DELETE /api/documents/<id>/ai/key     remove it
-//   PUT    /api/documents/<id>/ai/model   { model }
+//   PUT    /api/documents/<id>/ai/model   { model }: one of the stored provider's
 // Reading is every role's (the Ask tab says whether a key is set; the hint is an Editor's). Changing is an Editor's.
 import {
   ASK_UNAVAILABLE_WORDS,
@@ -35,11 +35,13 @@ export async function handleAiRoutes({ ctx, document, grant }: KnowledgeRoute): 
   const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
   if (segments[4] === 'model') {
     if (!(await storeAiModel(env, body?.model)))
-      return invalid('invalid_model', 'Choose one of the listed Claude models.');
+      return invalid('invalid_model', 'Choose one of the listed models.');
     console.info('[knowledge] ai model set', { documentId: document.id });
     return json(await readAiSettings(env, true));
   }
-  const outcome = await storeAiKey(env, document.id, body?.key);
+  const outcome = await storeAiKey(env, document.id, body?.provider, body?.key);
+  if (outcome === 'invalid-provider')
+    return invalid('invalid_provider', 'Choose Anthropic or OpenAI.');
   if (outcome === 'unavailable')
     return json(
       { error: 'ask_unavailable', message: ASK_UNAVAILABLE_WORDS['no-secret'] },

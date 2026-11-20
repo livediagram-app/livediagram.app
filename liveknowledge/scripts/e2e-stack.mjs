@@ -66,7 +66,7 @@ runE2EStack({
   editorOnly: process.env.E2E_EDITOR_ONLY === '1',
   workbench: true,
   // The guest handoff comes back to this stack's editor, never the router a developer's .dev.vars names.
-  // AI_KEY_SECRET seals a knowledgebase's Claude key (docs/specs/030-knowledgebase/search-and-ask.md): a test-only
+  // AI_KEY_SECRET seals a knowledgebase's own AI key (docs/specs/030-knowledgebase/search-and-ask.md): a test-only
   // value, so the AI settings and Ask routes answer here as they do deployed.
   apiVars: [
     `AUTH_ORIGIN:http://localhost:${EDITOR_PORT}`,

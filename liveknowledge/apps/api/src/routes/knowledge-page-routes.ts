@@ -5,7 +5,7 @@
 //   POST  /api/documents/<id>/pages/<tab>/verify      Verify: now, by the caller, who owns a page with no owner
 //   PUT   /api/documents/<id>/pages/<tab>/knowledge   owner, review interval, Always in Context (each optional)
 // Reading is every role's; Verify and the fields are an Editor's (verification.md "Share roles").
-import { verifyMoment } from '../knowledge/claude-door';
+import { verifyMoment } from '../knowledge/model-door';
 import { pageTreeRows } from '@liveknowledge/document';
 import {
   CONTEXT_BUDGET_TOKENS,

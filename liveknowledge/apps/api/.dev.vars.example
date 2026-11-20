@@ -18,6 +18,6 @@ INDEX_KEY=dev-liveknowledge-index-key
 # Images, through the local media Worker (liveworkspace/apps/media): its MEDIA_KEY_LIVEKNOWLEDGE.
 MEDIA_URL=http://localhost:8792/api/media
 MEDIA_KEY=dev-liveknowledge-media-key
-# What the knowledgebases' Claude API keys are sealed under (Settings > AI). Unset, no key can be stored and Ask
+# What the knowledgebases' own AI keys (Claude's or OpenAI's) are sealed under (AI Settings). Unset, no key can be stored and Ask
 # answers ask_unavailable; search and everything else work.
 AI_KEY_SECRET=dev-liveknowledge-ai-key-secret

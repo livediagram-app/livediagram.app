@@ -37,6 +37,8 @@ export const ROOT_TYPES = [
   'KnowledgeAiSettings',
   'AskRequest',
   'AskEvent',
+  'KnowledgeSetupRequest',
+  'KnowledgeSetupSuggestion',
   'KnowledgeOverviewResponse',
   'KnowledgeEmailResult',
   'ReportGapRequest',

@@ -8,6 +8,7 @@
 //   PUT    pages/<tab>/knowledge
 //   GET    ai, PUT ai/key, DELETE ai/key, PUT ai/model      knowledge-ai-routes.ts
 //   POST   ask                                              knowledge-ask-route.ts
+//   POST   setup/suggest                                    knowledge-setup-route.ts
 //   GET    knowledge, POST questions, DELETE questions/<key>, POST conflicts/<id>/dismiss
 //                                                           knowledge-overview-routes.ts
 //   POST   conflicts/<id>/ask-owners, POST knowledge/remind-owners
@@ -44,6 +45,7 @@ import {
   handleVerify,
 } from './knowledge-page-routes';
 import { handleKnowledgeSearch } from './knowledge-search-route';
+import { handleSetupSuggest } from './knowledge-setup-route';
 import { handleSuggest, handleSuggestionRoutes } from './knowledge-suggestion-routes';
 
 /** How long a client may keep the summary (knowledgebase-home.md: "cached for a minute"). */
@@ -142,6 +144,7 @@ function isKnowledgePath(segments: readonly string[]): boolean {
     return (
       (segments[3] === 'ai' && (segments[4] === 'key' || segments[4] === 'model')) ||
       (segments[3] === 'knowledge' && segments[4] === 'remind-owners') ||
+      (segments[3] === 'setup' && segments[4] === 'suggest') ||
       segments[3] === 'questions' ||
       segments[3] === 'pages'
     );
@@ -195,6 +198,8 @@ export async function handleKnowledgeRoutes(ctx: DocumentRouteContext): Promise<
   if (segments[3] === 'ai') return handleAiRoutes(route);
   if (segments[3] === 'ask')
     return request.method === 'POST' ? handleAsk(route) : methodNotAllowed();
+  if (segments[3] === 'setup')
+    return request.method === 'POST' ? handleSetupSuggest(route) : methodNotAllowed();
   return (
     (await handleAgentRoutes(route)) ??
     (await handleSuggestionRoutes(route)) ??

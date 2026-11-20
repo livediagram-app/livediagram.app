@@ -8,9 +8,9 @@ import type { ItemSql } from '@liveworkspace/index-app';
 import {
   CONFLICT_CHECK_SCOPE,
   CONFLICT_PAGE_INTERVAL_MS,
-  ClaudeCallError,
+  ModelCallError,
   bumpCounter,
-  callClaude,
+  callModel,
   chooseConflictCandidates,
   closeChangedConflicts,
   conflictCheckRefusal,
@@ -30,7 +30,7 @@ import {
 } from '@liveknowledge/knowledge';
 import type { DocumentEnv } from '../types';
 import { openAi } from './ai-settings';
-import { claudeDoorFor } from './claude-door';
+import { modelDoorFor } from './model-door';
 import type { IndexedPage } from './knowledge-index';
 import { rowsOf, runAll, sqlOf } from './knowledge-db';
 import { oweWork, type Work } from './knowledge-work';
@@ -128,10 +128,12 @@ export async function runConflictCheck(
   const candidates = chooseConflictCandidates(lookups, known);
   if (candidates.length === 0) return null;
   try {
-    const reply = await callClaude({
-      fetch: claudeDoorFor(env),
+    const reply = await callModel({
+      provider: ai.provider,
+      fetch: modelDoorFor(env, ai.provider),
       apiKey: ai.apiKey,
-      request: conflictRequest({ model: ai.model, candidates }),
+      model: ai.model,
+      request: conflictRequest({ candidates }),
     });
     const conflicts = parseConflictVerdicts(reply.text, candidates);
     // A passage that changed while the model read it is no longer the one judged: the pair closes at once.
@@ -147,7 +149,7 @@ export async function runConflictCheck(
     });
   } catch (error) {
     // The kind only: never the upstream's message, the request or the key. Not retried: the next save owes another.
-    const kind = error instanceof ClaudeCallError ? error.kind : 'other';
+    const kind = error instanceof ModelCallError ? error.kind : 'other';
     console.warn('[knowledge] conflict check failed', { documentId, tab, kind });
   }
   return null;

@@ -167,3 +167,28 @@ export function fakeClaude(reply: string | (() => Response)) {
   };
   return { fetch, sent };
 }
+
+/** A fake OpenAI Responses API: answers each call with the typed events of a streamed response of `text`, and
+ *  records what was sent. */
+export function fakeOpenAi(reply: string | (() => Response)) {
+  const sent: { url: string; headers: Record<string, string>; body: string }[] = [];
+  const fetch = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+    sent.push({
+      url: typeof input === 'string' ? input : input instanceof URL ? input.href : input.url,
+      headers: Object.fromEntries(new Headers(init?.headers).entries()),
+      body: typeof init?.body === 'string' ? init.body : '',
+    });
+    if (typeof reply !== 'string') return reply();
+    const event = (type: string, data: object) =>
+      `event: ${type}\ndata: ${JSON.stringify({ type, ...data })}\n\n`;
+    const response = { model: 'gpt-6.2-astra', error: null, incomplete_details: null };
+    const half = Math.ceil(reply.length / 2);
+    const text =
+      event('response.created', { response: { ...response, status: 'in_progress' } }) +
+      event('response.output_text.delta', { delta: reply.slice(0, half) }) +
+      event('response.output_text.delta', { delta: reply.slice(half) }) +
+      event('response.completed', { response: { ...response, status: 'completed' } });
+    return new Response(text, { headers: { 'content-type': 'text/event-stream' } });
+  };
+  return { fetch, sent };
+}

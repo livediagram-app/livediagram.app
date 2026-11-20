@@ -1,5 +1,5 @@
 // POST /api/documents/<id>/ask (docs/specs/030-knowledgebase/search-and-ask.md "Ask"): a question answered from the
-// knowledgebase's own pages on the team's own Claude key, streamed as server-sent events (`AskEvent`): `delta`
+// knowledgebase's own pages on the team's own key (Claude's or OpenAI's), streamed as server-sent events (`AskEvent`): `delta`
 // pieces of the answer, then one `done` with the sources, what was found but not used and the gaps; or one `error`.
 // A signed-in Editor, Participant or Viewer may ask (an API token asks for its account); a guest or a visitor
 // through a share link may not, since it would spend the team's key for strangers.
@@ -8,16 +8,16 @@ import {
   ASK_MAX_TURNS,
   ASK_PER_KNOWLEDGEBASE_PER_DAY,
   ASK_PER_PERSON_PER_HOUR,
-  CLAUDE_FAILURE_WORDS,
-  ClaudeCallError,
+  ModelCallError,
   askAnswerStream,
   askCounters,
   askRefusal,
   askRequest,
   askSearch,
-  callClaude,
+  callModel,
   chooseAskPassages,
   foundPassage,
+  modelFailureWords,
   questionKey,
   upsertQuestion,
   type AskPassage,
@@ -27,7 +27,7 @@ import {
 } from '@liveknowledge/knowledge';
 import type { AskEvent, AskSource, AskTurn } from '@liveknowledge/api-schema';
 import { ASK_UNAVAILABLE_WORDS, openAi } from '../knowledge/ai-settings';
-import { claudeDoorFor } from '../knowledge/claude-door';
+import { modelDoorFor } from '../knowledge/model-door';
 import { accountOf, readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf, runAll } from '../knowledge/knowledge-db';
 import { CORS_HEADERS, json } from '../responses';
@@ -109,7 +109,7 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
   const passages = chooseAskPassages(
     search ? (await rowsOf<SearchRow>(env, search)).map(foundPassage) : [],
   );
-  const request = askRequest({ model: ai.model, question, passages, turns: turnsOf(body?.turns) });
+  const request = askRequest({ question, passages, turns: turnsOf(body?.turns) });
   const asker = readerOf(ctx);
   const encoder = new TextEncoder();
   const stream = new ReadableStream<Uint8Array>({
@@ -120,9 +120,11 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
         );
       const answer = askAnswerStream(passages);
       try {
-        const reply = await callClaude({
-          fetch: claudeDoorFor(env),
+        const reply = await callModel({
+          provider: ai.provider,
+          fetch: modelDoorFor(env, ai.provider),
           apiKey: ai.apiKey,
+          model: ai.model,
           request,
           signal: ctx.request.signal,
           onText: (piece) => {
@@ -163,9 +165,18 @@ export async function handleAsk({ ctx, document }: KnowledgeRoute): Promise<Resp
         });
       } catch (error) {
         // The kind and its fixed words; never the upstream's own message, the request or the key.
-        const kind = error instanceof ClaudeCallError ? error.kind : 'other';
-        console.warn('[knowledge] ask failed', { documentId: document.id, kind });
-        send({ type: 'error', kind, message: CLAUDE_FAILURE_WORDS[kind] });
+        const kind = error instanceof ModelCallError ? error.kind : 'other';
+        console.warn('[knowledge] ask failed', {
+          documentId: document.id,
+          provider: ai.provider,
+          kind,
+        });
+        send({
+          type: 'error',
+          kind,
+          provider: ai.provider,
+          message: modelFailureWords(ai.provider, kind),
+        });
       }
       controller.close();
     },

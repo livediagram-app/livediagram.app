@@ -1,14 +1,17 @@
-// The e2e stack's stand-in for the Anthropic API (docs/specs/003-system-architecture/e2e-smoke.md "The Claude
-// stand-in"): a tiny server on the loopback that answers `POST /v1/messages` the way the Messages API streams, so
-// Ask and the conflict check run end to end with no model, no network and no real key. The api reaches it only
-// because the stack sets `E2E_CLAUDE_STAND_IN` (apps/api/src/knowledge/claude-door.ts `claudeDoorFor`).
+// The e2e stack's stand-in for the two providers' APIs (docs/specs/003-system-architecture/e2e-smoke.md "The model
+// stand-in"): a tiny server on the loopback that answers `POST /v1/messages` the way Anthropic's Messages API
+// streams and `POST /v1/responses` the way OpenAI's Responses API does, so Ask, the conflict check and Describe to
+// Set Up run end to end with no model, no network and no real key. The api reaches it only because the stack sets
+// `E2E_CLAUDE_STAND_IN` (apps/api/src/knowledge/model-door.ts `modelDoorFor`).
 //
 // What it answers is worked out from the request alone, so a spec knows what to expect:
-//   - a key containing "refused" is not accepted (401 `authentication_error`);
+//   - a key containing "refused" is not accepted (401, in the provider's own error shape);
 //   - a question whose request carries passages is answered in two sentences, the first citing passage 1 and the
 //     second the last passage sent, when there are two or more;
 //   - a question with no passages is not answered, and comes back as one gap: the question itself;
-//   - a request with no question (the conflict check) gets a reply that names no conflict.
+//   - a description (Describe to Set Up) gets `SETUP_STRUCTURE` as JSON, or text that is no JSON when the
+//     description holds "not json";
+//   - a request with none of these (the conflict check) gets a reply that names no conflict.
 // The answer arrives in several pieces, a few milliseconds apart, so a page can be seen streaming it.
 import http from 'node:http';
 
@@ -18,10 +21,62 @@ const questionOf = (content) => /<question>\n([\s\S]*?)\n<\/question>/.exec(cont
 const passageNumbersOf = (content) =>
   [...content.matchAll(/<passage number="(\d{1,3})"/g)].map((m) => Number(m[1]));
 
-/** The reply's text for a request body, in the form Ask reads (packages/knowledge/src/ask-answer.ts). */
+/** The structure every description is answered with (packages/knowledge/src/setup-suggestion.ts reads it). */
+export const SETUP_STRUCTURE = {
+  name: 'Engineering Handbook',
+  pages: [
+    {
+      id: 1,
+      title: 'Getting Started',
+      summary: 'What a new engineer needs in their first week.',
+      headings: ['Accounts', 'Your First Change'],
+      parent: null,
+    },
+    {
+      id: 2,
+      title: 'Local Setup',
+      summary: 'How to run the stack on your own machine.',
+      headings: ['Requirements'],
+      parent: 1,
+    },
+    {
+      id: 3,
+      title: 'How We Ship',
+      summary: 'From a branch to production.',
+      headings: ['Reviews', 'Releases'],
+      parent: null,
+    },
+    {
+      id: 4,
+      title: 'On-Call',
+      summary: 'Who is paged, and what to do first.',
+      headings: [],
+      parent: 3,
+    },
+    {
+      id: 5,
+      title: 'Decisions',
+      summary: 'The choices we made and why.',
+      headings: ['How to Propose One'],
+      parent: null,
+    },
+  ],
+};
+
+const descriptionOf = (content) =>
+  /<description>\n([\s\S]*?)\n<\/description>/.exec(content)?.[1]?.trim();
+
+/** The reply's text for a request body of either provider, in the form its reader expects
+ *  (packages/knowledge/src/ask-answer.ts, setup-suggestion.ts). */
 export function standInReply(body) {
-  const last = body?.messages?.[body.messages.length - 1];
+  const turns = Array.isArray(body?.messages) ? body.messages : body?.input;
+  const last = Array.isArray(turns) ? turns[turns.length - 1] : undefined;
   const content = typeof last?.content === 'string' ? last.content : '';
+  const description = descriptionOf(content);
+  if (description !== undefined)
+    return description.includes('not json')
+      ? 'Here is a structure you could use.'
+      : JSON.stringify(SETUP_STRUCTURE);
   const question = questionOf(content);
   if (question === undefined) return '';
   const numbers = passageNumbersOf(content);
@@ -48,29 +103,59 @@ async function readJson(req) {
   }
 }
 
-async function answer(req, res) {
-  if (req.method !== 'POST' || new URL(req.url, 'http://stand-in').pathname !== '/v1/messages') {
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ type: 'error', error: { type: 'not_found_error', message: 'none' } }));
-    return;
-  }
-  const body = await readJson(req);
-  if (String(req.headers['x-api-key'] ?? '').includes('refused')) {
-    res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(
-      JSON.stringify({ type: 'error', error: { type: 'authentication_error', message: 'no' } }),
-    );
-    return;
-  }
+const json = (res, status, body) => {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(body));
+};
+const pause = () => new Promise((resolve) => setTimeout(resolve, PIECE_GAP_MS));
+const STREAM_HEADERS = { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store' };
+
+// Anthropic's Messages API: the key in `x-api-key`, `message_start` to `message_stop`.
+async function answerClaude(req, res, body) {
+  if (String(req.headers['x-api-key'] ?? '').includes('refused'))
+    return json(res, 401, {
+      type: 'error',
+      error: { type: 'authentication_error', message: 'no' },
+    });
   const model = typeof body?.model === 'string' ? body.model : 'stand-in';
-  res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store' });
+  res.writeHead(200, STREAM_HEADERS);
   res.write(event('message_start', { message: { model } }));
   for (const piece of piecesOf(standInReply(body))) {
-    res.write(event('content_block_delta', { index: 0, delta: { type: 'text_delta', text: piece } }));
-    await new Promise((resolve) => setTimeout(resolve, PIECE_GAP_MS));
+    res.write(
+      event('content_block_delta', { index: 0, delta: { type: 'text_delta', text: piece } }),
+    );
+    await pause();
   }
   res.write(event('message_delta', { delta: { stop_reason: 'end_turn' } }));
   res.end(event('message_stop', {}));
+}
+
+// OpenAI's Responses API: the key as a bearer token, `response.created` to `response.completed`.
+async function answerOpenAi(req, res, body) {
+  if (String(req.headers.authorization ?? '').includes('refused'))
+    return json(res, 401, {
+      error: { message: 'no', type: 'invalid_request_error', param: null, code: 'invalid_api_key' },
+    });
+  const model = typeof body?.model === 'string' ? body.model : 'stand-in';
+  const response = { model, error: null, incomplete_details: null };
+  res.writeHead(200, STREAM_HEADERS);
+  res.write(event('response.created', { response: { ...response, status: 'in_progress' } }));
+  for (const piece of piecesOf(standInReply(body))) {
+    res.write(
+      event('response.output_text.delta', { output_index: 0, content_index: 0, delta: piece }),
+    );
+    await pause();
+  }
+  res.end(event('response.completed', { response: { ...response, status: 'completed' } }));
+}
+
+const ROUTES = { '/v1/messages': answerClaude, '/v1/responses': answerOpenAi };
+
+async function answer(req, res) {
+  const route = ROUTES[new URL(req.url, 'http://stand-in').pathname];
+  if (req.method !== 'POST' || !route)
+    return json(res, 404, { type: 'error', error: { type: 'not_found_error', message: 'none' } });
+  await route(req, res, await readJson(req));
 }
 
 /** Starts the stand-in on a free loopback port and answers its origin. It never keeps the process alive. */

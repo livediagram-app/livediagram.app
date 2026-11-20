@@ -4,7 +4,15 @@ import { ASK_PER_KNOWLEDGEBASE_PER_DAY, ASK_PER_PERSON_PER_HOUR } from '@livekno
 import { runConflictCheck, oweConflictChecks } from '../knowledge/conflict-check';
 import { dueWork } from '../knowledge/knowledge-work';
 import { runKnowledgeWork } from '../knowledge/knowledge-turn';
-import { fakeClaude, knowledgeKit, page, PAGES, type Kit, type Who } from './knowledge-test-kit';
+import {
+  fakeClaude,
+  fakeOpenAi,
+  knowledgeKit,
+  page,
+  PAGES,
+  type Kit,
+  type Who,
+} from './knowledge-test-kit';
 
 // docs/specs/030-knowledgebase/search-and-ask.md "Ask" and ai-knowledge.md.
 vi.mock('../index-service', async (original) => {
@@ -60,6 +68,11 @@ describe('the Claude API key', () => {
     const settings = await res.text();
     expect(res.status).toBe(200);
     expect(JSON.parse(settings)).toEqual({
+      provider: 'anthropic',
+      providers: [
+        { id: 'anthropic', label: 'Anthropic (Claude)', keyPrefix: 'sk-ant-' },
+        { id: 'openai', label: 'OpenAI', keyPrefix: 'sk-' },
+      ],
       hasKey: true,
       keyHint: '4f2a',
       model: 'claude-fable-5-2',
@@ -159,6 +172,154 @@ describe('the Claude API key', () => {
       503,
       'ask_unavailable',
     ]);
+  });
+});
+
+describe('the provider (search-and-ask.md "Providers")', () => {
+  const OPENAI_KEY = 'sk-proj-test-0123456789abcdefghij-9c1d';
+  const put = (kit: Kit, body: unknown, who: Who = 'editor') =>
+    kit.call(who, 'PUT', '/api/documents/kb/ai/key', body);
+  const read = async (kit: Kit, who: Who = 'editor') =>
+    (await kit.call(who, 'GET', '/api/documents/kb/ai')).json<Record<string, unknown>>();
+
+  it('reads a key stored before there was a choice as Anthropic', async () => {
+    const kit = await knowledgeKit(withSecret);
+    expect(await read(kit)).toMatchObject({ provider: 'anthropic', hasKey: false });
+    await setKey(kit);
+    kit.db.sql.prepare("DELETE FROM knowledge_settings WHERE name = 'ai_provider'").run();
+    expect(await read(kit)).toMatchObject({
+      provider: 'anthropic',
+      hasKey: true,
+      model: 'claude-fable-5-2',
+    });
+  });
+
+  it('takes an OpenAI key, lists its models, and keeps the model to the provider', async () => {
+    const logged = consoleSpy();
+    const kit = await knowledgeKit(withSecret);
+    const res = await put(kit, { provider: 'openai', key: OPENAI_KEY });
+    const text = await res.text();
+    expect(JSON.parse(text)).toMatchObject({
+      provider: 'openai',
+      hasKey: true,
+      keyHint: '9c1d',
+      model: 'gpt-6.2-astra',
+      models: [
+        { id: 'gpt-6.2-astra', label: 'GPT-6.2 Astra' },
+        { id: 'gpt-6.2-sol', label: 'GPT-6.2 Sol' },
+        { id: 'gpt-6.1-terra', label: 'GPT-6.1 Terra' },
+        { id: 'gpt-6-luna', label: 'GPT-6 Luna' },
+      ],
+    });
+    const model = (id: string) =>
+      kit.call('editor', 'PUT', '/api/documents/kb/ai/model', { model: id });
+    expect((await model('claude-haiku-5-5')).status).toBe(400);
+    expect(await (await model('gpt-6.2-sol')).json()).toMatchObject({ model: 'gpt-6.2-sol' });
+    expect(await read(kit, 'viewer')).toMatchObject({ provider: 'openai', keyHint: '' });
+    for (const held of [text, everything(kit), logged()]) expect(held).not.toContain(OPENAI_KEY);
+  });
+
+  it('replaces the key and forgets the model when the provider changes; one key at a time', async () => {
+    const kit = await knowledgeKit(withSecret);
+    await setKey(kit);
+    await kit.call('editor', 'PUT', '/api/documents/kb/ai/model', { model: 'claude-haiku-5-5' });
+    expect(await (await put(kit, { provider: 'openai', key: OPENAI_KEY })).json()).toMatchObject({
+      provider: 'openai',
+      keyHint: '9c1d',
+      model: 'gpt-6.2-astra',
+    });
+    expect(
+      kit.db.sql
+        .prepare("SELECT COUNT(*) AS n FROM knowledge_settings WHERE name = 'ai_key'")
+        .get(),
+    ).toEqual({ n: 1 });
+    // A key sent with no provider is for the provider already chosen, and the model stays.
+    await kit.call('editor', 'PUT', '/api/documents/kb/ai/model', { model: 'gpt-6-luna' });
+    expect(await (await put(kit, { key: `${OPENAI_KEY}-2` })).json()).toMatchObject({
+      provider: 'openai',
+      model: 'gpt-6-luna',
+    });
+    // Removing the key keeps the choice of provider.
+    await kit.call('editor', 'DELETE', '/api/documents/kb/ai/key');
+    expect(await read(kit)).toMatchObject({ provider: 'openai', hasKey: false });
+  });
+
+  it('refuses a provider that is neither, and stores nothing', async () => {
+    const kit = await knowledgeKit(withSecret);
+    for (const provider of ['gemini', '', 7, null]) {
+      const res = await put(kit, { provider, key: OPENAI_KEY });
+      expect([res.status, (await res.json<{ error: string }>()).error]).toEqual([
+        400,
+        'invalid_provider',
+      ]);
+    }
+    expect(await read(kit)).toMatchObject({ hasKey: false, provider: 'anthropic' });
+    for (const who of ['participant', 'viewer', 'link'] as const)
+      expect((await put(kit, { provider: 'openai', key: OPENAI_KEY }, who)).status).toBe(403);
+  });
+
+  it("answers on OpenAI's host with the key as a bearer token, and never on Anthropic's", async () => {
+    const logged = consoleSpy();
+    const openai = fakeOpenAi(
+      '<answer>Deploys go out on Tuesdays [1].</answer><gap>Who approves a deploy?</gap>',
+    );
+    vi.stubGlobal('fetch', openai.fetch);
+    const kit = await knowledgeKit(withSecret);
+    await put(kit, { provider: 'openai', key: OPENAI_KEY });
+    const res = await kit.call('viewer', 'POST', '/api/documents/kb/ask', {
+      question: 'When do we deploy?',
+    });
+    const text = await res.clone().text();
+    const all = await events(res);
+    expect(all.at(-1)).toMatchObject({
+      type: 'done',
+      text: 'Deploys go out on Tuesdays [1].',
+      gaps: ['Who approves a deploy?'],
+      model: 'gpt-6.2-astra',
+    });
+    expect(openai.sent).toHaveLength(1);
+    expect(openai.sent[0]!.url).toBe('https://api.openai.com/v1/responses');
+    expect(openai.sent[0]!.headers.authorization).toBe(`Bearer ${OPENAI_KEY}`);
+    expect(openai.sent[0]!.headers).not.toHaveProperty('x-api-key');
+    const body = JSON.parse(openai.sent[0]!.body) as Record<string, unknown>;
+    expect(body).toMatchObject({ model: 'gpt-6.2-astra', stream: true, store: false });
+    expect(String(body.instructions)).toContain('only from the passages');
+    expect(openai.sent[0]!.body).toContain('Deploys go out on Tuesdays');
+    expect(openai.sent[0]!.body).not.toContain(OPENAI_KEY);
+    for (const held of [text, logged(), everything(kit)]) expect(held).not.toContain(OPENAI_KEY);
+  });
+
+  it('names OpenAI in a failure, in words, with nothing of what it said', async () => {
+    const logged = consoleSpy();
+    const upstream = `Incorrect API key provided: ${OPENAI_KEY}`;
+    vi.stubGlobal(
+      'fetch',
+      fakeOpenAi(
+        () =>
+          new Response(
+            JSON.stringify({ error: { message: upstream, type: 'x', code: 'invalid_api_key' } }),
+            { status: 401, headers: { 'content-type': 'application/json' } },
+          ),
+      ).fetch,
+    );
+    const kit = await knowledgeKit(withSecret);
+    await put(kit, { provider: 'openai', key: OPENAI_KEY });
+    const res = await kit.call('viewer', 'POST', '/api/documents/kb/ask', {
+      question: 'When do we deploy?',
+    });
+    const text = await res.clone().text();
+    expect(await events(res)).toEqual([
+      {
+        type: 'error',
+        kind: 'bad-key',
+        provider: 'openai',
+        message: 'OpenAI did not accept the API key. Replace it in Settings.',
+      },
+    ]);
+    for (const held of [text, logged()]) {
+      expect(held).not.toContain(OPENAI_KEY);
+      expect(held).not.toContain('Incorrect API key');
+    }
   });
 });
 
@@ -298,6 +459,7 @@ describe('POST ask', () => {
       {
         type: 'error',
         kind: 'bad-key',
+        provider: 'anthropic',
         message: 'Claude did not accept the API key. Replace it in Settings.',
       },
     ]);

@@ -82,12 +82,12 @@ export type Env = {
   // liveknowledge' secret on that service, sent as a bearer token. A secret (wrangler secret put MEDIA_KEY);
   // unset, this deploy has no images, and the image endpoints answer 503 so the editor hides them.
   MEDIA_KEY?: string;
-  // The secret the knowledgebases' Claude API keys are sealed under (docs/specs/030-knowledgebase/search-and-ask.md
+  // The secret the knowledgebases' own AI keys (Claude's or OpenAI's) are sealed under (docs/specs/030-knowledgebase/search-and-ask.md
   // "Ask"; @liveknowledge/knowledge key-seal.ts). A secret (wrangler secret put AI_KEY_SECRET). Unset: no key can be
   // stored, Ask answers `ask_unavailable`, and search and everything else work.
   AI_KEY_SECRET?: string;
   // Set by the e2e stack alone (scripts/e2e-stack.mjs), never by a deployment: the loopback origin of its stand-in
-  // for the Anthropic API (knowledge/claude-door.ts `claudeDoorFor`, which ignores any value that is not one).
+  // for the providers' APIs (knowledge/model-door.ts `modelDoorFor`, which ignores any value that is not one).
   E2E_CLAUDE_STAND_IN?: string;
   // Per-caller limiter for a knowledgebase's search (GET /api/documents/<id>/search). Absent binding: allowed.
   SEARCH_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };

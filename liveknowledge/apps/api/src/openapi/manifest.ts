@@ -654,7 +654,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "The knowledgebase's Ask settings: whether a Claude API key is set, the chosen model and the models on offer. Never the key; its last four characters are shown to an Editor only.",
+      "The knowledgebase's AI settings: the provider (`anthropic` or `openai`), whether the team's own key is set, the chosen model, that provider's models and the providers on offer. Never the key; its last four characters are shown to an Editor only.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeAiSettings',
@@ -666,7 +666,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Set the team's own Claude API key, as `{ key }`. Editor only. It is sealed under the server's secret, bound to this knowledgebase, and never returned or logged. 503 `ask_unavailable` on a server with no secret to seal under.",
+      "Set the team's own key, as `{ provider, key }` (`anthropic` or `openai`; no provider is the one already chosen). Editor only. A knowledgebase holds one provider and one key: another provider replaces the key and resets the model to that provider's default. It is sealed under the server's secret, bound to this knowledgebase, and never returned or logged. 503 `ask_unavailable` on a server with no secret to seal under.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeAiSettings',
@@ -678,7 +678,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Remove the knowledgebase's Claude API key. Editor only. Ask stops; search and everything else work as before.",
+      "Remove the knowledgebase's AI key. Editor only. Ask stops; search and everything else work as before.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeAiSettings',
@@ -690,7 +690,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      'Choose the Claude model Ask uses, as `{ model }`: one of the ids `GET .../ai` lists. Editor only.',
+      "Choose the model, as `{ model }`: one of the stored provider's ids, as `GET .../ai` lists them. Editor only.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeAiSettings',
@@ -702,11 +702,24 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      "Ask a question answered only from the knowledgebase's own pages, on the team's own Claude key. The answer streams as server-sent events (`AskEvent`): `delta` pieces, then one `done` with the cited sources, what was found but not used and the gaps; or one `error` naming the failure in words. A signed-in Editor, Participant or Viewer may ask (a read-only token too); a visitor through a share link may not. 20 questions a person an hour, 200 a knowledgebase a day, a question at most 1,000 characters.",
+      "Ask a question answered only from the knowledgebase's own pages, on the team's own key (Claude's or OpenAI's). The answer streams as server-sent events (`AskEvent`): `delta` pieces, then one `done` with the cited sources, what was found but not used and the gaps; or one `error` naming the failure in words. A signed-in Editor, Participant or Viewer may ask (a read-only token too); a visitor through a share link may not. 20 questions a person an hour, 200 a knowledgebase a day, a question at most 1,000 characters.",
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'AskRequest',
     statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429, 503],
+  },
+  {
+    method: 'POST',
+    path: '/documents/{id}/setup/suggest',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Describe to Set Up: propose a page structure from a description of what the knowledgebase is for (20 to 1,000 characters), on the team's own key. Answers a name and up to 30 pages, 3 levels deep, each with a title, a one-line summary and up to 6 headings, as plain text; nothing is written. A signed-in Editor in person only (no API token). 5 a person an hour, 20 a knowledgebase a day. 502 with the failure's kind in words when the model call fails or its reply holds no structure (`no-structure`).",
+    auth: 'clerk',
+    tokenUsable: false,
+    requestSchema: 'KnowledgeSetupRequest',
+    responseSchema: 'KnowledgeSetupSuggestion',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 429, 502, 503],
   },
   {
     method: 'GET',

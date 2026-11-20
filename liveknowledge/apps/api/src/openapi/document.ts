@@ -180,7 +180,7 @@ const TAGS = [
   {
     name: 'Knowledge',
     description:
-      "Search, verification, links between pages, Ask on the team's own Claude key, and what agents read and could not find.",
+      "Search, verification, links between pages, Ask and Describe to Set Up on the team's own Claude or OpenAI key, and what agents read and could not find.",
   },
   {
     name: 'Versions',
