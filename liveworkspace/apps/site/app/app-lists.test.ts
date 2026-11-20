@@ -9,7 +9,7 @@ import { metadata as terms } from './terms/page';
 
 // Every place the site names all the apps names every listed app (liveworkspace/docs/specs/010-site/site.md "Privacy
 // and terms" and "Help"), so launching one can't leave the privacy policy, the terms, the site's description, its
-// install manifest or the Drive help a name short, as happened when livehuddle launched.
+// install manifest a name short, as happened when livehuddle launched.
 
 const NAMES = APP_SITES.map((site) => site.name);
 
@@ -61,10 +61,5 @@ describe('lists of the apps', () => {
   it('the privacy policy has a part for every app under App by app', () => {
     const source = readFileSync(resolve(__dirname, 'privacy/page.tsx'), 'utf8');
     for (const site of APP_SITES) expect(source, site.id).toContain(`app: '${site.id}'`);
-  });
-
-  it('the Drive help names every app’s file extension', () => {
-    const text = words('help/google-drive/page.tsx');
-    namesEvery(/its app's extension \((.*?)\) and a/.exec(text)?.[1], (n) => `.${n}`);
   });
 });

@@ -44,10 +44,10 @@ describe('articleDates', () => {
   });
 
   it('dates real articles in this checkout', () => {
-    // A guard against the parser going blind on git's real output, on livediagram's help centre. Skipped where
+    // A guard against the parser going blind on git's real output, on the one help centre. Skipped where
     // history is unavailable.
     const dates = articleDates(
-      gitIn(fileURLToPath(new URL('../../../../livediagram/apps/help/app', import.meta.url))),
+      gitIn(fileURLToPath(new URL('../../../../liveworkspace/apps/help/app', import.meta.url))),
     );
     if (dates.size === 0) return;
     expect(dates.get('canvas/themes')).toBeInstanceOf(Date);

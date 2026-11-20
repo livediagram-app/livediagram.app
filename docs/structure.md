@@ -15,8 +15,8 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ brand                    every app's logo drawn once: the Living Prism and wordmark, as React and as SVG strings
 │  ├─ capture                  a browser's microphone and camera: the constraints, the device list and picker, the level meter, for livehuddle's calls and the walkthroughs
 │  ├─ cli-kit                  a product CLI's shared modules: the io shape, exit codes and errors, config.toml, XDG paths, debug lines, credentials and the keychain, OAuth sign-in, the api transport, PNG pictures, the npm update check; each product binds its names
-│  ├─ help-registry            a help centre's article shapes, links, grouping, search and telemetry ids; each product binds its catalogue
-│  ├─ help-site                every help centre's pages, components, styles, SEO and catalogue checks; each product binds its own
+│  ├─ help-registry            the one help centre's catalogue (every app's articles, with the apps each applies to), its scopes, links, search and telemetry ids; each product's @<product>/help-registry is its app's slice
+│  ├─ help-site                the one help centre's pages, components, styles, SEO and catalogue checks (liveworkspace/apps/help binds it per scope)
 │  ├─ explorer                 the One Explorer UI over the index, rendered at every app's /explorer
 │  ├─ icons                    the line-art, Technology and sticker catalogues, the vendored Lucide glyphs, and their SVG markup
 │  ├─ index-client             the One Explorer index contract: types, a client, the grant check
@@ -65,6 +65,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 ├─ scripts/                    the root's own scripts: git-hooks, ts-source-hooks.mjs (Node type stripping for every product's repo scripts), and e2e-stack (the e2e stack every product boots, stack.mjs, and its parts: the accounts stand-in, processes, proxies, static serving)
 ├─ liveworkspace/              the platform's own apps, and the packages only they use
 │  ├─ apps/site                www.liveworkspace.app, one static site: the front door, /explorer, /community, /telemetry, /status, /sign-in
+│  ├─ apps/help                www.liveworkspace.app/help and every app's /help: the one help centre, six static builds behind one Worker
 │  ├─ apps/accounts            liveworkspace.app/api/auth and /api/account: sign-in, teams and tokens for every product
 │  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  ├─ apps/media               liveworkspace.app/api/media and /api/previews: every app's images and previews, own D1 and R2
@@ -78,7 +79,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ docs/specs               the platform's specs and blueprints, one category per service
 │  └─ packages/status          @liveworkspace/status, which only the site and the status Worker use: the one list of services, how an answer is judged, the history's wire shapes
 ├─ livediagram/                imported with full history; Diagram, Draw, Workshop
-│  ├─ apps/                    editor, api, mcp, cli, marketing, help, router
+│  ├─ apps/                    editor, api, mcp, cli, marketing, router (its help is liveworkspace/apps/help's livediagram scope)
 │  └─ packages/                @livediagram/*
 ├─ liveplanner/                imported with full history; Plan
 │  ├─ apps/                    the same set
@@ -87,10 +88,10 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  ├─ apps/                    the same set as livediagram's
 │  └─ packages/                @livedocuments/*
 ├─ livedesign/                 forked from livedocuments in-tree (logo, wireframe and photo pages)
-│  ├─ apps/                    live (its editor), api, mcp, cli, marketing, help, router
+│  ├─ apps/                    live (its editor), api, mcp, cli, marketing, router
 │  └─ packages/                @livedesign/*, with photo-engine of its own
 └─ livehuddle/                 forked from livediagram in-tree (meetings, workshops, Avatar mode)
-   ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, help, router
+   ├─ apps/                    livediagram's set without mcp and cli: editor, api, marketing, router
    ├─ packages/                @livehuddle/*, with avatar of its own (Avatar mode, the walk, the furniture and its turning, the wire shapes)
    └─ docs/specs               its specs, folded back to the code (build plan step 9)
 ```
@@ -162,16 +163,17 @@ liveworkspace/
 │  ├─ index                        the One Explorer's index: every product's items, folders and sharing in one place
 │  ├─ drive                        the Google Drive mirror, for every product
 │  ├─ export                       Download Your Data: every product's items, comments and images as one zip
-│  └─ site                         liveworkspace.app: the front door, the Explorer, the Community, Settings, the telemetry dashboard
+│  ├─ site                         liveworkspace.app: the front door, the Explorer, the Community, Settings, the telemetry dashboard
+│  └─ help                         the one help centre: every app's /help and All Apps' on liveworkspace.app
 ├─ livediagram/
 │  ├─ apps/editor                  thin: workbench + mode-draw (Diagram, Draw and Workshop)
 │  ├─ apps/api                     api-core + the diagram-only routes
-│  ├─ apps/…                       marketing, help, mcp, cli: product-specific
+│  ├─ apps/…                       marketing, mcp, cli: product-specific
 │  └─ packages/                    mode-draw (canvas tabs), diagram, diagram-lint, sticky-*
 └─ liveplanner/
    ├─ apps/editor                  thin: workbench + mode-plan
    ├─ apps/api                     api-core + the planner-only routes
-   ├─ apps/…                       marketing, help, mcp, cli
+   ├─ apps/…                       marketing, mcp, cli
    └─ packages/                    mode-plan (Board, Sheet, Dashboard and Form tab kinds), items,
                                    sheets, forms, plan-art
 ```

@@ -129,7 +129,7 @@ A toast is easy to miss. Every one is also written to a list the person can open
   account.
 - **The last 50 toasts** per list; older ones drop off. At most 20 lists are kept; opening a 21st forgets the one used
   least recently.
-- **Clear** empties the current list.
+- **Clear** empties the current list and closes the popover, focus back on the bell.
 
 ## Placement
 

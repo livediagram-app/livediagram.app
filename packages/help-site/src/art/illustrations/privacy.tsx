@@ -1,4 +1,4 @@
-// Privacy and Security category illustrations (docs/specs/018-help/help-app.md): where a product's work lives on
+// Privacy and Security category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): where a product's work lives on
 // Cloudflare, who can read them, the anonymous-telemetry opt-out, and the
 // open-source / public-code motif. (Share-link security reuses the Share
 // dialog scenes in sharing.tsx.)

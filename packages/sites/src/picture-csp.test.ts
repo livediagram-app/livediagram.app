@@ -6,6 +6,7 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { SECURITY_HEADERS } from '../../../liveworkspace/apps/help/src/help-scope';
 import { PROFILE_PICTURE_HOST, PROFILE_PICTURE_ORIGIN } from './picture';
 
 const ROOT = fileURLToPath(new URL('../../../', import.meta.url));
@@ -76,14 +77,20 @@ describe("the pages' Content-Security-Policy", () => {
 
   it("lets every static site's pages load Google's profile pictures", () => {
     const headers = files.filter((f) => f.endsWith('/public/_headers'));
-    // liveworkspace.app and every product's marketing and help sites, at least.
-    expect(headers.length).toBeGreaterThanOrEqual(9);
+    // liveworkspace.app and every product's marketing site, at least (help is one Worker: the next test).
+    expect(headers.length).toBeGreaterThanOrEqual(5);
     const blocked = headers.flatMap((f) =>
       [...readFileSync(f, 'utf8').matchAll(/^\s*Content-Security-Policy:\s*(.+)$/gim)]
         .filter((m) => !cspAllowsImages(m[1]!, PROFILE_PICTURE_ORIGIN))
         .map(() => relative(f)),
     );
     expect(blocked).toEqual([]);
+  });
+
+  it("lets the help centre's Worker headers load them too", () => {
+    const csp = SECURITY_HEADERS['Content-Security-Policy']!;
+    expect(csp).toBeTruthy();
+    expect(cspAllowsImages(csp, PROFILE_PICTURE_ORIGIN)).toBe(true);
   });
 
   it('lets every Worker that serves pages load them too', () => {

@@ -1,0 +1,119 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  SaveToLibraryScene,
+  LibraryPanelScene,
+} from '@/editions/livedesign/components/illustrations/library';
+
+export const metadata = helpMetadata({
+  title: 'The Library',
+  description:
+    'Save an element or a group to your Personal or a team Library with Save to Library, then place copies in any liveworkspace app that can draw them.',
+  path: '/help/palette/library/',
+});
+
+<ArticleLayout
+  path="palette/library"
+  title="The Library"
+  description="Keep the pieces you reuse, for yourself or your team, and place a copy of one whenever you need it."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("library")}
+>
+
+The **Library** keeps the pieces you reach for again and again: a logo, a styled callout, a group of shapes that makes up a standard component. Save them once, and they are ready to place on any <Noun />, by you or by everyone in a team. You have a **Personal** library, and every team you are in has one too, so a team shares one set of pieces. It is the same Library in every liveworkspace app, so something saved in one is there in the others that can draw it.
+
+<AppNote app="livedesign">
+  A logo lock-up, a hero header, a button style or a set of icons are typical pieces. Saved once,
+  one is in your palette in every design.
+</AppNote>
+
+<AppNote app="livedocuments">
+  A logo lockup, a styled callout or a set of cards you built once are typical pieces. They wait in
+  the palette to be placed in any document.
+</AppNote>
+
+## Saving to the Library
+
+<Step n={1}>Select what you want to keep: one element, a group, or several elements together.</Step>
+<Step n={2}>Press **Save to Library**.</Step>
+<Step n={3}>
+  Give it a **Name**, and under **Save to** choose **Personal** (only you) or one of your teams
+  (everyone in the team can place it). A **Folder** is optional, such as "Logos" or "Icons": the
+  folders already in that library are suggested. Press **Save**.
+</Step>
+
+<AppNote app="livediagram">
+  **Save to Library** is on the selection toolbar, at its right end, apart from the other buttons. It is also in the quick bar at the top of the element's menu.
+
+The Library needs a canvas saved to your account, and you need to be able to edit the canvas: a Participant or a Viewer doesn't get **Save to Library**.
+
+</AppNote>
+
+<AppNote app="livedesign">
+  **Save to Library** is on the selection toolbar, beside **Duplicate**.
+
+<Figure caption="Save to Library: name the item, pick Personal or a team, and file it in a folder if you like.">
+  <SaveToLibraryScene />
+</Figure>
+
+The item keeps its elements exactly as they were, pictures included. A design kept only [Offline](/help/privacy-and-security/offline-mode/) has no Library to save to until it is saved to your account.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  For one element, right-click it (or long-press on a touch screen); for several, select them all. **Save to Library** is at the left of the element menu's top row, or on the toolbar over a multi-selection, after **Duplicate**.
+
+What you save is a copy. Changing the elements on the page later leaves the saved one as it was, and changing or deleting the saved one never touches anything already placed. **Save to Library** is there for Editors. It isn't offered on a locked element, to Participants or Viewers, or on a document kept only in this browser.
+
+</AppNote>
+
+## Placing from the Library
+
+Press the **Library** button on the palette strip, just before Search. It lists **Personal** first, then each of your teams, with their folders and what is in them. **Search the library** finds an item by its name.
+
+- **Click** an item to place a copy in the middle of the view.
+- **Drag** an item to where you want it.
+
+What you place is a copy, with no live link back to the Library. Changing it never changes the Library, and changing or deleting the Library item never changes what you already placed.
+
+<AppNote app="livediagram">
+  The Library also holds your [shape libraries](/help/explorer/shape-libraries/), under
+  **Personal**, each a folder named after the library.
+</AppNote>
+
+<AppNote app="livedesign">
+
+<Figure caption="The Library on the palette strip: a search, a heading per library and folder, and a tile dragged onto the page.">
+  <LibraryPanelScene />
+</Figure>
+
+For a piece that should update everywhere it appears in one design, make it a [component](/help/palette/components/) instead. An item saved in another app shows here only if livedesign can draw it. When some can't, a line under the list says how many.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  Each placed copy is ordinary elements with nothing linking them back, so restyle and edit them
+  freely. Something saved in another app that livedocuments can't draw isn't offered here, and a
+  line under the list says how many were left out.
+</AppNote>
+
+## Tidying the Library
+
+You tidy your Personal library. A team's library is tidied by the team's admins, marked **Admin** beside the team's name. Tidying means renaming an item or a folder in place, or deleting an item. Deleting asks first, and anything already placed keeps its copy. Everyone else in the team can still place its items and save new ones to it.
+
+<AppNote app="livedesign">
+  Hover a tile and press its **⋯** for **Rename** and **Delete**, and use **Rename Folder** on a
+  folder's heading to rename it for everything in it. Members of a team see no **⋯** on its tiles.
+  The Library is part of editing, so it is there for Editors: someone on a Participant link has the
+  Participate tiles only, and a Viewer has no palette. A team's library is there only for the people
+  in that team.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Hover a tile and press its **More** button to **Rename** it or **Delete** it, or rename a folder
+  with the pencil beside its name.
+</AppNote>
+
+</ArticleLayout>

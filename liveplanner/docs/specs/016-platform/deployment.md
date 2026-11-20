@@ -8,21 +8,21 @@ what staging changes and why.
 
 ## Apps and their Cloudflare Workers
 
-| App              | Cloudflare Worker       | Type                                                                          |
-| ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
-| `apps/marketing` | `liveplanner-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/editor`    | `liveplanner-editor`    | Static assets plus a small path-rewrite worker.                               |
-| `apps/help`      | `liveplanner-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
-| `apps/api`       | `liveplanner-api`       | Worker with one Durable Object class (`PlanRoom`); no D1 and no R2.           |
-| `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
-| `apps/router`    | `liveplanner-router`    | Worker with service bindings to marketing, editor, api and help.              |
+| App                       | Cloudflare Worker                      | Type                                                                                                                                                               |
+| ------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/marketing`          | `liveplanner-marketing`                | Static assets only (Next.js `output: 'export'`).                                                                                                                   |
+| `apps/editor`             | `liveplanner-editor`                   | Static assets plus a small path-rewrite worker.                                                                                                                    |
+| `liveworkspace/apps/help` | `liveworkspace-help` (liveworkspace's) | The one help centre, this app's `liveplanner` scope; deploys with liveworkspace ([One help centre](../../../../liveworkspace/docs/specs/017-help/help-centre.md)). |
+| `apps/api`                | `liveplanner-api`                      | Worker with one Durable Object class (`PlanRoom`); no D1 and no R2.                                                                                                |
+| `apps/mcp`                | `liveplanner-mcp`                      | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)).                                                                                      |
+| `apps/router`             | `liveplanner-router`                   | Worker with service bindings to marketing, editor, api and help.                                                                                                   |
 
 `apps/cli` is the npm CLI ([CLI](../015-api/cli.md)) and deploys nowhere. Its npm publishing and the MCP Registry
 listing ([MCP server](../015-api/mcp-server.md) "Registry listing", by hand or the root `mcp-registry.yml` workflow
 started by hand) are manual steps; no push publishes either. CI builds and packs
 the CLI on every run that reaches it (`npm pack --dry-run`, [docs/ci.md](../../../../docs/ci.md)).
 
-The marketing and help workers serve their `out/` folders. The editor worker serves `apps/editor/out/` through
+The marketing worker serves its `out/` folder. The editor worker serves `apps/editor/out/` through
 `apps/editor/src/worker.ts`, which rewrites every `/project/<id>` request to the one statically built
 `/project/placeholder/` page ([New project route](../007-editor/new-project-route.md)) and serves the share page. The
 api worker holds the REST and WebSocket layer ([API](../015-api/api.md)). The mcp worker serves the AI tools on its
@@ -106,14 +106,13 @@ everything depending on them (`ci-plan.mjs`, `PLAN_MODE=deploy`), and builds and
 
 1. **Services and apis**: `liveplanner-api`. There is no migration step: the api has no D1, and each plan's
    object brings its own SQLite schema up to date on first use (`plan-schema.ts`).
-2. **Sites and MCP**: `liveplanner-marketing`, `liveplanner-editor`, `liveplanner-help` and `liveplanner-mcp`, so
+2. **Sites and MCP**: `liveplanner-marketing`, `liveplanner-editor` and `liveplanner-mcp`, so
    a new editor never calls an api that lacks its routes and the mcp worker's binding to the api exists.
 3. **Routers**: `liveplanner-router`, whose service bindings target the workers above.
 
 `deploy-group.mjs` deploys each Worker, run by `deploy-group.yml` for each group of Workers (the api with the other
 services and apis, liveplanner's sites and MCP in a job of their own, the router with the other routers, each Worker
-after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): its build when it serves static assets (the help site from full history,
-since its sitemap dates each article by its last commit), then `pnpm exec wrangler deploy`, with `--env staging` on
+after the one before; [docs/ci.md](../../../../docs/ci.md) "Deploys"): its build when it serves static assets, then `pnpm exec wrangler deploy`, with `--env staging` on
 staging. A save that fails while old and new versions briefly serve side by side is retried on its own
 ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)). A plan's schema only moves forward (a
 later change adds a step to `plan-schema.ts`, never edits one), so a problem is fixed forward.

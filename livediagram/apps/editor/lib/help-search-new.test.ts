@@ -11,9 +11,9 @@ describe('new element articles are searchable from the editor', () => {
       ['mind map', 'Mind Maps'],
       ['swimlane', 'Lanes'],
       ['uml', 'Entities'],
-      ['figma', 'Embeds on the canvas'],
+      ['figma', 'Embeds on the Canvas'],
       ['erd', 'Entities'],
-      ['vimeo', 'Embeds on the canvas'],
+      ['vimeo', 'Embeds on the Canvas'],
     ] as const) {
       expect(find(q), q).toContain(want);
     }

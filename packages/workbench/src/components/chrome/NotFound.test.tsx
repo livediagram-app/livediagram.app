@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { takeRequestIntent } from '../request-access/request-intent';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NotFound } from './NotFound';
@@ -40,7 +41,7 @@ describe('NotFound', () => {
       'This plan doesn’t exist or isn’t yours. Open one from the Explorer or start fresh.',
     );
     unmount();
-    render(<NotFound noun="plan" reason="sign-in" signInHref="/auth/sign-in" />);
+    render(<NotFound noun="plan" reason="sign-in" />);
     expect(screen.getByText(hint)).toBeTruthy();
   });
 
@@ -117,16 +118,25 @@ describe('NotFound', () => {
     expect(
       screen.getByText('This canvas doesn’t exist, or you don’t have access to it.'),
     ).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'Sign In' }).getAttribute('href')).toBe(
-      '/sign-in/?redirect_url=%2Fdocument%2Fd1',
-    );
+    const link = screen.getByRole('link', { name: 'Sign In to Request Access' });
+    expect(link.getAttribute('href')).toBe('/sign-in/?redirect_url=%2Fdocument%2Fd1');
+    expect(
+      screen.getByText(
+        'Joining a colleague on this canvas? Sign in to request access, and whoever runs it is asked to share it with you.',
+      ),
+    ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'New Canvas' })).toBeNull();
     expect(screen.getByRole('button', { name: 'Open Explorer' })).toBeTruthy();
+    // Pressed, it marks this tab to open the request's note on the way back (request-intent.ts).
+    link.addEventListener('click', (e) => e.preventDefault());
+    fireEvent.click(link);
+    expect(takeRequestIntent()).toBe(true);
+    expect(takeRequestIntent()).toBe(false);
   });
 
   it('keeps New when the sign-in case has nowhere to sign in', () => {
     render(<NotFound noun="canvas" reason="sign-in" onCreateNew={() => {}} />);
-    expect(screen.queryByRole('link', { name: 'Sign In' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Sign In to Request Access' })).toBeNull();
     expect(screen.getByRole('button', { name: 'New Canvas' })).toBeTruthy();
   });
 

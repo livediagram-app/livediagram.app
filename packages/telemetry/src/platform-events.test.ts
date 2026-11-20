@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isPlatformHelpTelemetryEvent,
   isPlatformOwnTelemetryEvent,
   KIT_TELEMETRY_ACTIONS,
   KIT_TELEMETRY_TYPES,
@@ -29,5 +30,29 @@ describe("liveworkspace.app's own events", () => {
       KIT_TELEMETRY_ACTIONS.map((a) => `Kit·${a}`),
     );
     for (const type of KIT_TELEMETRY_TYPES) expect(type).toMatch(TELEMETRY_TYPE_PATTERN);
+  });
+});
+
+describe("the All Apps help's events", () => {
+  it('takes article views and votes by id, search outcomes and scope moves', () => {
+    for (const event of [
+      { category: 'Help', action: 'View', type: 'using-tabs' },
+      { category: 'Help', action: 'Helpful', type: 'tips-format-painter' },
+      { category: 'Help', action: 'Unhelpful', type: 'sharing' },
+      { category: 'Help', action: 'Searched', type: 'NoResults' },
+      { category: 'Help', action: 'Changed', type: 'Scope.livediagram' },
+    ])
+      expect(isPlatformOwnTelemetryEvent(event), JSON.stringify(event)).toBe(true);
+  });
+
+  it('refuses anything else, never a query or a free word', () => {
+    for (const event of [
+      { category: 'Help', action: 'View' },
+      { category: 'Help', action: 'Searched', type: 'share link' },
+      { category: 'Help', action: 'Changed', type: 'Scope.liveworkspace' },
+      { category: 'Help', action: 'Opened', type: 'using-tabs' },
+      { category: 'Help', action: 'View', type: 'Using Tabs' },
+    ])
+      expect(isPlatformHelpTelemetryEvent(event), JSON.stringify(event)).toBe(false);
   });
 });

@@ -5,7 +5,7 @@ A collaborative diagram editor that works without signing in. Open a link, draw,
 **Live at [livehuddle.app](https://livehuddle.app).** MIT-licensed.
 
 ```
-apps/        marketing site + editor + help centre + community + api + router
+apps/        marketing site + editor + community + api + router
 packages/    this product's document model, wire-format types, UI, template catalogue + template previews, help-article registry, agent verbs, the edit-operations engine, document views, the diagram lint, sticky-note photo detection and its model, telemetry client and licence tables (the api client, icons, configs and the rest are the monorepo's shared @liveworkspace/* packages)
 scripts/     repo-wide dev tooling (shared Next.js dev launcher)
 docs/        guides, product specs (docs/specs, read these before adding features) and instructions
@@ -28,9 +28,9 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Editor** is the canvas, served at clean routes (`/new`, `/document/<id>`, `/explorer/...`; no `/live` prefix). Guests get a per-browser identity and full persistence; signed-in users get the same plus cross-device sync. `/explorer` opens on **Home** ([Explorer Home](docs/specs/013-workspace/explorer-home.md)); the **Inbox** beneath it lists what is still outstanding for you (open actions assigned to or by you, comment threads you are in) across every document ([Inbox](docs/specs/013-workspace/inbox.md)). Signed-in users can keep a copy of their work in their own Google Drive, with liveworkspace's [Google Drive sync](../liveworkspace/docs/specs/005-drive/drive.md).
 - **API** at `/api/*` is a Cloudflare Worker (REST + WebSocket realtime room per document, each document's content in its own Durable Object; liveworkspace's index files documents and decides who may open them).
 - **Telemetry** is anonymous usage events sent to liveworkspace's telemetry service, published on its public dashboard (`/telemetry` redirects there; off in OSS forks by default).
-- **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
+- **Help** at `/help` is livehuddle's scope of liveworkspace's one help centre (`liveworkspace/apps/help`), which the router forwards to.
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
-- **Router** stitches the five web apps (marketing, editor, help, community, api) under one hostname.
+- **Router** stitches the web apps (marketing, editor, community, api) and liveworkspace's help centre under one hostname.
 - livehuddle has no MCP server, CLI or workbenches; scripts use the REST API with an API token ([Not in livehuddle](docs/specs/002-project-scope/not-in-livehuddle.md#the-mcp-server-the-cli-and-workbenches)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.

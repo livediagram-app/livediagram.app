@@ -1,4 +1,4 @@
-// The Font and theme scenes of every product's canvas basics (docs/specs/018-help/help-app.md): the element
+// The Font and theme scenes of every product's canvas basics (liveworkspace/docs/specs/017-help/help-centre.md): the element
 // menu's Font tiles, and the Text and Colours panels of the Tab Style dialog (TypographySections.tsx,
 // ThemeBrowser.tsx, the shared TextPanel.tsx). Composed from the shared primitives.
 

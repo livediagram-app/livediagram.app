@@ -23,7 +23,7 @@ export function legacyEditorRedirect(url: URL): Response | null {
 // Plan Items, Sheets and Images article became Images, Copies and Libraries. Custom themes, tags and the in-editor AI
 // assistant were removed: their articles land on the nearest live one (Themes, Folders, Connect AI Tools). The
 // Self-Hosting category was retired; its pages land on the help centre home (an empty target). The old addresses are
-// links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
+// links people have already shared (liveworkspace/docs/specs/017-help/help-centre.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'tabs/add-to-diagram': 'tabs/add-to-document',
   'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',

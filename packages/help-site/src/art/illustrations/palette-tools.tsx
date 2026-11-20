@@ -1,4 +1,4 @@
-// Palette illustrations (docs/specs/018-help/help-app.md): the category picker, freehand drawing with
+// Palette illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the category picker, freehand drawing with
 // the Pencil, shape recognition, images and the image picker, sticky notes,
 // and tables. Composed only from the shared primitives so the house style
 // holds. (Data / chart tiles are handled in a sibling file.)

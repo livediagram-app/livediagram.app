@@ -174,7 +174,7 @@ control's only name (the page lock), descriptions, aria-labels written only
 for a screen reader, and the Explorer's folder actions are not item labels and keep sentence
 case. An element's own name in prose ("a Code block") stays sentence case too. A help article
 that names an item in bold spells it exactly as the editor does
-(`apps/help/lib/ui-labels-in-articles.test.ts`).
+(`liveworkspace/apps/help/editions/livedesign/tests/ui-labels-in-articles.test.ts`).
 
 ## The menus
 

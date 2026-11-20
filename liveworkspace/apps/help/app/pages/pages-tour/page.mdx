@@ -1,0 +1,100 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Pages Tour',
+  description:
+    'Take the Pages tour: a walkthrough for each kind of page that opens the real controls on your own page.',
+  path: '/help/pages/pages-tour/',
+});
+
+<ArticleLayout
+  path="pages/pages-tour"
+  title="The Pages Tour"
+  description="A short, optional walkthrough for each kind of page, started from Get Started at the bottom of the editor, or from Show Me on any page."
+  categoryTitle="Pages"
+  categorySlug="pages"
+  subArticles={getSubArticles('pages-tour')}
+>
+
+The Pages tour shows you how each kind of page is made, on your own page. There is one tour for each kind of page. It works on the real editor rather than screenshots, and it opens the real controls for you: the Layout and Background popovers and the page's settings. Anything you pick while a step is open is kept. It takes under a minute, and you can leave at any point.
+
+<AppNote app="livedesign">The kinds are **wireframes**, **logos** and **photos**.</AppNote>
+
+<AppNote app="livedocuments">
+  The kinds are **slides**, **infographics**, **articles** and **flashcards**, and the tour also
+  opens the Slide Deck.
+</AppNote>
+
+## Starting the Tour
+
+<Step n={1}>Open a tab you can edit, with at least one page whose kind you've chosen.</Step>
+
+<Step n={2}>
+  Press **Get Started** in the bar at the bottom of the editor, just left of **Tools**, and pick
+  **Pages Tour**. On a phone the button shows as a play button on its own.
+</Step>
+
+The tour starts straight away, on the page you can see most of. If several kinds of page are on screen, a kind you haven't taken the tour of yet goes first.
+
+The Pages Tour waits while **Start Making Pages** is open and while a new tab's first page asks **What Is This Page For?**. It isn't offered on a locked tab, in an embed, or to someone who can only view or take part. Get Started lists every tour on offer, so while you have an element selected that has its own tour (a chart, a Sankey, a stack), that tour comes first and the Pages Tour sits under it.
+
+The tour never pops up on its own. Once you've taken the tour of every kind of page on the tab, it leaves Get Started (and the button goes when no other tour is on offer); switch a kind back on in **Settings** to take it again (see below).
+
+## What Each Tour Covers
+
+<AppNote app="livedesign">
+  **Wireframes**: the page's name, **Start From a Layout**, **Change the Background**, **Device** (the page's settings) and **Add a Page**. See [Wireframe Pages](/help/pages/wireframe-pages/).
+
+**Logos**: the logo layouts, guides, mirror drawing and combining shapes, as the logo page's Show Me runs them. See [Logo Pages](/help/pages/logo-pages/).
+
+**Photos**: the photo tools along the palette, the page's menus and the **Photo** panel with its layers. See [Photo Pages](/help/pages/photo-pages/).
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  **Slides**
+
+1. **Choose a Layout**: opens the slide's **Layout** popover. Hover a layout to preview it, press one to place it.
+2. **Change the Background**: opens the **Background** popover: colours, gradients, animated backgrounds and pictures.
+3. **Add Slide**: the **+** after the last page.
+4. **Your Slides**: the slide's row in **Contents**, where every slide already is, in the order the show runs.
+5. **Each Slide’s Menu** and **Present**: the row's **⋯** menu, with **Present From Here** and **Hide in Slides**, then **Present** in the top bar.
+
+**Infographics**: the page's name, **Start From a Layout**, **Change the Background**, **Page Size** (the page's settings), **Add a Page** and **Present It** (any page can be a slide). See [Infographic Layouts](/help/pages/infographic-layouts/).
+
+**Articles**: writing on the page, the page toolbar (held up for you while its step is showing), and the article's style and its fonts and spacing (the page's **Style** and **Text** settings). See [Articles](/help/pages/articles/).
+
+**Flashcards**: writing on the card, its page toolbar, **+** for another card, and the card's **Style**. See [Flashcards](/help/pages/flashcards/).
+
+</AppNote>
+
+A step whose control isn't on screen when the tour starts is left out, so the count stays honest. Each step has **Next**, **Back** and **Skip tour**; leaving a step closes whatever it opened. If you switch tab, or delete or lock the page mid-tour, it ends as skipped.
+
+## Show Me on Any Page
+
+The settings (the cog) of each page carry **Show Me** at the top, which runs that page's tour there and then, whenever you like, even after you've taken it.
+
+<AppNote app="livedesign">
+  Every logo, wireframe and photo page has it. A locked page, or a first page that hasn't chosen its
+  kind yet, has no Show Me.
+</AppNote>
+
+## Taken Tours in Settings
+
+**Settings**, under **Getting Started**, has a switch for each kind of page under **Pages Tours**, which switches them all. Each switch turns itself off once you start or finish that kind's tour, and if you're signed in that follows you to every device. A kind you've taken is no longer offered until you switch it back on, and the Pages Tour leaves Get Started once every kind of page on the tab has been taken.
+
+<AppNote app="livedesign">
+  The switches are **Wireframe Tour**, **Logo Tour** and **Photo Tour**. Each turns itself off as
+  soon as you start that kind's tour.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The switches are **Slides Tour**, **Infographic Tour**, **Article Tour** and **Flashcards Tour**.
+  Each turns itself off once you finish or skip that kind's tour.
+</AppNote>
+
+Switch one back on and close Settings while a <Noun /> is open in Pages, and the tour starts straight away.
+
+</ArticleLayout>

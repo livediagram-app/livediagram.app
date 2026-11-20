@@ -1,4 +1,4 @@
-// A figure cannot forget the `connector` mark (livehuddle's docs/specs/018-help/help-app.md "A figure cannot forget the
+// A figure cannot forget the `connector` mark (livehuddle's liveworkspace/docs/specs/017-help/help-centre.md "A figure cannot forget the
 // mark", Work Tracker 790). livehuddle's help app draws no connector between elements (`stickyOnly`), and an `Arrow`
 // is left out only when its scene marks it `connector`, by hand. This guard draws scenes with `Shape` and `Arrow`
 // recorded (a test swaps them for `withRecording`'s), and finds every `Arrow` whose two ends each land on a different

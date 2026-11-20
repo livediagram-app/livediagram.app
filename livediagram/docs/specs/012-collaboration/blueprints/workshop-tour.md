@@ -101,7 +101,7 @@ None.
 ## Assets and external resources
 
 - No art of its own. Help card glyph
-  `workshop-tour` in `apps/help/lib/featureIcons.tsx`, hue `#ea580c` in `featureColours.ts`.
+  `workshop-tour` in `liveworkspace/apps/help/editions/livediagram/lib/featureIcons.tsx`, hue `#ea580c` in `featureColours.ts`.
 
 ## Defaults ledger
 

@@ -1,0 +1,106 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { StackFigure } from '@liveworkspace/help-site/art/illustrations/palette-diagram-elements-2';
+
+export const metadata = helpMetadata({
+  title: 'Stacks',
+  description:
+    'A stack lines up whatever you drop into it in a row, a column or a grid, with even gaps, and reflows as things are added, removed or resized.',
+  path: '/help/palette/stacks/',
+});
+
+<ArticleLayout
+  path="palette/stacks"
+  title="Stacks"
+  description="A container that lines up what you drop in, with even gaps."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('stacks')}
+>
+
+A **Stack** is a container that arranges what you put in it. Drop four cards into a stack and they line up with even gaps; drop in a fifth, take one out or give one a longer label, and the rest make room. A row of services never needs nudging into line again.
+
+A new stack is an empty dashed outline: drag things into it.
+
+<AppNote app="livediagram">
+  It sits in the palette's **Layout** category ([Build Elements](/help/palette/build/)) in Diagram
+  and Workshop mode, after Frame.
+</AppNote>
+
+<AppNote app="livedesign">
+  It sits in the palette's [Components](/help/palette/components/) category, in its Layout group
+  after the Hero, Header and Banner, just before the Devices row.
+</AppNote>
+
+<AppNote app="livedocuments">
+  It sits in the palette's [Components](/help/palette/components/) category, in its Layout group,
+  after the Hero, Header and Banner and before the Devices row.
+</AppNote>
+
+<Figure caption="A row stack of three services, titled, and a two-column grid stack. Every gap is the same.">
+  <StackFigure />
+</Figure>
+
+## Take the tour
+
+Select a stack and start its tour for a short walkthrough on your own stack: how it lays out what it holds, dragging a child to a new slot (or dropping one into an empty stack), what it carries, and the Stack menu. To take it again after you've taken it, switch it back on in **Settings**, under **Getting Started** (**Show Me**). Element tours aren't offered on a phone.
+
+<AppNote app="livediagram,livedesign">
+  Press Start Stack Tour in the bar at the bottom of the editor, just left of **Search**. Once
+  you've taken it, the button makes room for other tours.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Press **Get Started** in the bar at the bottom of the editor, just left of **Tools**, then **Stack
+  Tour**. Once you've taken it, the button makes room for other tours.
+</AppNote>
+
+## What it holds
+
+A stack holds the elements whose **centre** is inside it, the same rule as a frame. Dragging the stack carries them, and it paints behind them.
+
+<AppNote app="livediagram">
+  The same rule holds for a [frame](/help/palette/build/frames/) and a
+  [boundary](/help/palette/boundaries/).
+</AppNote>
+
+<AppNote app="livedesign">See [Frames](/help/palette/frames/) for the frame rule.</AppNote>
+
+The order is position: left to right in a row, top to bottom in a column, and reading order in a grid. To reorder, drag a child past its neighbour and let go; it takes that slot.
+
+The stack hugs its contents: it resizes to fit them plus its padding. An empty stack keeps its size, so it stays a target to drop into.
+
+## Arranging it
+
+Right-click and open the **Stack** section:
+
+- **Arrange**: a row, a column or a grid. A grid takes a number of **Columns**, from 2 to 6.
+- **Gap**: the space between children, 0 to 64 px.
+- **Padding**: the space inside the edge, 0 to 64 px.
+- **Align**: where children sit across the flow, at the start, centre or end.
+
+<AppNote app="livediagram">
+  The menu items read **Row Stack**, **Column Stack** and **Grid Stack**, and **Align Start**,
+  **Align Centre** and **Align End**.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  The menu items read **Row**, **Column** and **Grid**, and **Start**, **Centre** and **End**.
+</AppNote>
+
+Type a title (double-click) and the stack keeps a band for it above its children.
+
+<AppNote app="livedocuments">
+  A stack that holds pictures, such as a [logo strip](/help/palette/tools/images/), also offers
+  **Greyscale Pictures**, which draws every picture in it in shades of grey.
+</AppNote>
+
+Children glide to their new places when the stack reflows. Stacks nest: put a column stack inside a row stack for a grid of lists.
+
+<AppNote app="livedocuments">
+  Only Editors arrange a stack. Participants can still write the text of what is in it, as on any
+  element, but never add to it or rearrange it; Viewers only look.
+</AppNote>
+
+</ArticleLayout>

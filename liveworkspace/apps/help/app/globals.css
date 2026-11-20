@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+/* The scope's theme, its ui package's sources, its hero band and its print colours (scripts/build-scopes.mjs). */
+@import './scope.generated.css';
+
+/* The design system every app shares (@liveworkspace/ui), the brand marks, and the help centre's shared pages and
+ * components (@liveworkspace/help-site). The editions under ../editions are inside this app, so Tailwind scans them
+ * already. */
+@source '../../../../packages/ui/src';
+@source '../../../../packages/brand/src';
+@source '../../../../packages/help-site/src';
+
+@import '@liveworkspace/help-site/help.css';

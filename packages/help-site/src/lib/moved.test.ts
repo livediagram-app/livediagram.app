@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { addToPlanMoved, powerUserModeMoved, privacyPolicyMoved, termsMoved } from './moved';
 
-// The help centre's moved policy stubs (docs/specs/018-help/help-pages.md) say what the marketing site's stubs say
+// The help centre's moved policy stubs (liveworkspace/docs/specs/017-help/help-centre.md) say what the marketing site's stubs say
 // (@liveworkspace/marketing-site's legal-moved.ts), in a sentence that reads: "the terms ... are", never "is".
 describe('moved policy stubs', () => {
   it('words the terms stub as the marketing site does', () => {

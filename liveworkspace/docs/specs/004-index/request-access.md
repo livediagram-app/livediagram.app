@@ -84,8 +84,13 @@ never follows someone else's address sees it.
 
 - **The Not Found card**, on the app's own address (each product's new-file route spec, "Which not-found card"),
   in its **Missing** case only: signed in, no share code, an address that names an item. Never in an embed or a
-  workbench frame (the person is in someone else's page), never to someone signed out (the card offers **Sign In**,
-  and after signing in they come back to it), and never for a dead link, ended access or an Archived item.
+  workbench frame (the person is in someone else's page), and never for a dead link, ended access or an Archived item.
+- **Signed out, the same card offers Sign In to Request Access** (the owner, 2026-11-19: a signed-out visitor sees the
+  offer too). Its one primary button, **Sign In to Request Access** (the sign-in glyph), goes through sign-in and back
+  to the same address; signed in there, the Missing card opens with its note already open (Writing, below), so
+  the ask is one press away. The intent is held for the browser tab (`sessionStorage`, keyed by the address) and
+  read once; a visitor who turns out to have access just opens the item, and the intent is dropped. Its hint reads
+  "Joining a colleague on this <noun>? Sign in to request access, and whoever runs it is asked to share it with you."
 - **The live embed's no-access card** ([live-embeds.md](live-embeds.md#what-a-reader-sees)), to a signed-in reader;
   a signed-out reader is told to ask its owner, as before.
 

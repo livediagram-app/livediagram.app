@@ -1,4 +1,4 @@
-// Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
+// Getting-started-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): beginner walkthroughs for
 // the new-document welcome flow, quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.

@@ -52,7 +52,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`                    | Pen versus touch; the eraser frame                                        |
 | `apps/editor/components/canvas/useCanvasDrawGesture.ts`                   | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
 | `apps/editor/components/start/StartModeSwitch.tsx`                        | The Draw mode card (Blank Whiteboard); no theme step                      |
-| `apps/help/app/canvas/draw-mode/page.mdx`                                 | Help article, registered in `packages/help-registry`                      |
+| `liveworkspace/apps/help/app/canvas/draw-mode/page.mdx`                   | Help article, registered in `packages/help-registry`                      |
 
 ## Domain and naming
 

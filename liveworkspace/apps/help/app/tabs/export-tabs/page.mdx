@@ -1,0 +1,186 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ExportMenu as LivediagramExportMenu } from '@/editions/livediagram/components/illustrations/tabs';
+import { ExportMenu as LiveplannerExportMenu } from '@/editions/liveplanner/components/illustrations/tabs';
+import { ExportMenu as LivedocumentsExportMenu } from '@/editions/livedocuments/components/illustrations/tabs';
+import { ExportMenu as LivedesignExportMenu } from '@/editions/livedesign/components/illustrations/tabs';
+import { ExportMenu as LivehuddleExportMenu } from '@/editions/livehuddle/components/illustrations/tabs';
+
+export const metadata = helpMetadata({
+  title: 'Exporting a Tab',
+  description:
+    'Export a tab, or a selection, as an image, a PDF, a JSON file you can import back, and the other formats its app offers.',
+  path: '/help/tabs/export-tabs/',
+});
+
+<ArticleLayout path="tabs/export-tabs" title="Exporting a Tab" description="Take a tab out of the app: download it as an image, a PDF, a JSON file you can import back, or the other formats its app offers." categoryTitle="Tabs" categorySlug="tabs">
+
+**Export** downloads the active tab in the format you need, whether that is an image for a doc, a PDF to print, or a file to move the tab into another <Noun />.
+
+<AppNote app="liveplanner">
+  Export downloads the tab you are on in the format you need, whether that is a CSV for a
+  spreadsheet, an image for a slide, a PDF to print, or a file to move a dashboard into another
+  plan.
+</AppNote>
+
+## Opening Export
+
+There are a few ways in, and they all open the same **Export Tab** dialog:
+
+- The tab's menu (the **⋯** button on the active tab, or right-click the tab): choose **Export**.
+- **Export…** in the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`). This works on a view-only share link too, so viewers can download a copy.
+- **Export** in the ⋯ menu at the top of the [Explorer panel](/help/explorer/explorer-panel/).
+
+<AppNote app="liveplanner">
+  liveplanner's copy lists no selection export: its formats depend on the kind of tab (see below).
+</AppNote>
+
+To export only part of a tab, select several elements and press the **Export** button on the toolbar that appears above the selection. The dialog is then headed **Export Selection** and covers just those elements.
+
+## Export formats
+
+The dialog shows a card per format. The **JSON** card is a portable `.<AppName />-tab.json` snapshot that [imports](/help/tabs/import-tabs/) back with full fidelity. The rest depend on the app.
+
+<AppNote app="livediagram">
+  - **Mermaid**: the tab as [Mermaid](https://mermaid.js.org/) flowchart text (`.mmd`), which keeps every connection and its style, so it rebuilds the diagram; frames export as `subgraph` blocks.
+  - **Markdown**: the tab's labelled elements and every connection between them as a Markdown outline (`.md`), a readable summary rather than a full copy: a flowchart reads as its flow, step to step.
+  - **Excalidraw**: a `.excalidraw` scene you can open at [excalidraw.com](https://excalidraw.com/). Boxes, text, arrows (with their connections), and drawings carry over; element kinds Excalidraw doesn't have (charts, tables, device frames and so on) simplify to labelled boxes.
+  - **PNG**: a high-resolution image, good for slides, docs and chat.
+  - **SVG**: a crisp vector image that scales to any size and opens in design tools.
+  - **PDF**: a single-page PDF of the tab, ready to print or share.
+
+The four **text** formats (JSON, Mermaid, Markdown, Excalidraw) each open an editor pre-filled with the tab in that format: tweak the text and press **Copy**, or download the file (**Download .json**, **Download .mmd** and so on). Your edits in that box never change the tab. The three **image** formats (PNG, SVG, PDF) open an options screen with a preview and a download button (see below). **All Formats** at the top of either screen takes you back to the cards.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+  - **Markdown**: the tab's labelled elements as a Markdown outline (`.md`), a readable summary rather than a full copy.
+  - **PNG**: a high-resolution image, good for slides, docs and chat.
+  - **SVG**: a crisp vector image that scales to any size and opens in design tools.
+  - **PDF**: a single-page PDF of the tab, ready to print or share. It's drawn in vectors, so it stays sharp however far you zoom in or however large you print it, and its words are real text: you can select, search and copy them, and a screen reader can read them aloud.
+
+The two **text** formats (JSON, Markdown) each open an editor pre-filled with the tab in that format: tweak the text and press **Copy**, or download the file (**Download .json** or **Download .md**). Your edits in that box never change the tab. The three **image** formats (PNG, SVG, PDF) open an options screen with a preview and a download button (see below). **All Formats** at the top of either screen takes you back to the cards.
+
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+  A tab exports as its **pages**:
+
+- **PDF**: every page in one PDF, or a single page, ready to print or share. Each page comes out at its own size and orientation.
+- **PNG**: a high-resolution image of a page, or a **.zip** with one image per page.
+- **SVG**: a crisp vector image of a page that scales to any size, or a **.zip** with one per page.
+
+For the image formats, choose **All pages** or **One page**. Each page comes out as exactly its sheet, background included. See [Exporting Pages](/help/pages/exporting-pages/) for the details.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  - **Print**: sends the **Current Page** or the **Whole Document** (every tab's pages, in tab order) straight to your printer, each page its own sheet. See [Print](/help/pages/exporting-pages/#exporting).
+  - **GIF**: one animated image of the pages, moving as they move on the canvas. Offered once the tab has a page.
+  - **Markdown** (an article): its writing as text to copy or save as a `.md`. See [Markdown](/help/pages/exporting-pages/#exporting).
+  - **PowerPoint** (a tab of slides) or **Word** (an article): an editable deck or document to keep working on in PowerPoint, Keynote, Google Slides, Word or Google Docs. See [PowerPoint and Word](/help/pages/exporting-pages/#exporting).
+
+The PDF is drawn in vectors, so lines stay sharp at any zoom.
+
+</AppNote>
+
+<AppNote app="livedesign">
+  The PDF is drawn in vectors, so lines stay sharp at any zoom, and its text is real text you can
+  select, search and copy. A logo page's plain paper is left see-through in a PNG or SVG, so the
+  mark drops onto any background. **Logo Kit**, when the tab has a logo page, is an SVG, PNGs from
+  16 to 1024 px and a favicon in one .zip. **Photo**, when the tab has a photo page, is the photo as
+  a PNG, JPEG, WebP or PSD, or each layer as a file: see [Photo Pages](/help/pages/photo-pages/).
+</AppNote>
+
+<AppNote app="liveplanner">
+  The dialog shows a card for each format that suits the tab:
+
+| Tab           | Formats                      |
+| ------------- | ---------------------------- |
+| Board tab     | Markdown, CSV, PNG, SVG, PDF |
+| Sheet tab     | CSV, PNG, SVG, PDF           |
+| Dashboard tab | JSON, PNG, SVG, PDF          |
+| Form tab      | JSON                         |
+
+- **CSV**: a Board's cards or a Sheet's cells as comma-separated text, for a spreadsheet. A board's CSV reads back in through the [Import dialog](/help/tabs/import-tabs/)'s CSV row. A value a spreadsheet would run as a formula is made safe with a leading `'`.
+- **Markdown**: a Board's columns and every card in them, as a readable outline (`.md`).
+- **JSON**: A Dashboard's JSON carries its rows, slots and what they hold; a Form's carries the whole form.
+- **PNG**, **SVG** and **PDF**: a high-resolution image, a crisp vector image, and a single-page PDF of the tab, ready to print or share.
+- **Whole Plan**: not the tab but the whole plan, in one `.liveplanner` file: every tab with its folder, every card with its fields, the card types, the Sheets, every comment thread and the Automations rules (without anyone's account id).
+
+The **text** formats (CSV, Markdown, JSON) each open an editor filled with the tab in that format: tweak the text and press **Copy**, or download the file (**Download .csv**, **Download .md** and so on). Your edits in that box never change the tab. The **image** formats (PNG, SVG, PDF) open a preview with a download button. **All Formats** at the top of either screen takes you back to the cards.
+
+Each image shows the tab as it is laid out: a **Board tab**'s image is its board (the header, each column with its count, and the cards in it); a **Sheet tab**'s image is the sheet's cells as they show now, with its charts where they sit in the grid; a **Dashboard tab**'s image is the whole page, 1440 px wide, each slot drawn as a card holding a picture of what it shows; a Gantt chart, a calendar or another [visualisation](/help/plan/visualisations/) is drawn as its chart. A **Form tab** exports only its JSON: a picture of a form wouldn't tell you much, and the JSON carries the whole thing.
+
+</AppNote>
+
+<AppNote app="livediagram">
+  <Figure caption="The Export Tab dialog has a card for every format: JSON, Mermaid, Markdown, Excalidraw, PNG, SVG and PDF.">
+    <LivediagramExportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="The Export Tab dialog has a card for every format: JSON, Markdown, PNG, SVG and PDF.">
+    <LivehuddleExportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="The Export Tab dialog has a card for every format.">
+    <LivedocumentsExportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="The Export Tab dialog has a card for every format.">
+    <LivedesignExportMenu />
+  </Figure>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Figure caption="The Export Tab dialog shows a card for each format the tab offers, and Whole Plan, the plan's own file, last.">
+    <LiveplannerExportMenu />
+  </Figure>
+</AppNote>
+
+## Image options
+
+The PNG, SVG, and PDF exports show the tab as it looks. After you pick one, the options screen offers:
+
+- **Background Pattern** (on by default) paints the tab's grid, dots or texture behind the content. Switch it off for a plain background.
+
+<AppNote app="livediagram,livehuddle">
+  The text formats capture the underlying content rather than the picture. Set them and press the
+  download button (**Download PNG**, **Download SVG** or **Download PDF**), and what you get matches
+  what you see.
+</AppNote>
+
+<AppNote app="livediagram">
+  - **Isometric View** (off by default) tilts the export into the [isometric
+  projection](/help/selection-modes/isometric-mode/). - **Hidden layers** appears only when the tab
+  has layers hidden and the [Layers panel](/help/canvas/layers/) is switched on in Settings, and
+  chooses whether those layers are included. It is off by default, so what you hid stays out.
+</AppNote>
+
+<AppNote app="livedocuments,livedesign">
+  **Export Selection** offers **JSON**, **PNG**, **SVG** and **PDF** (and **Markdown** in
+  livedocuments). The text formats open an editor pre-filled with the selection: tweak it and press
+  **Copy**, or download it. Your edits in that box never change the tab. The image formats open an
+  options screen with a preview and a download button; **All Formats** at the top of any screen
+  takes you back to the cards.
+</AppNote>
+
+<Tip>
+  Reach for **SVG** when the image might be resized or printed large: it stays sharp at any scale,
+  unlike a fixed-resolution PNG. For sharing a live, always-current view instead of a static file,
+  see [Sharing and Embeds](/help/collaboration/sharing/).
+</Tip>
+
+<AppNote app="liveplanner">
+  Want something that stays up to date instead of a file? Share a link, or a [Live
+  Image](/help/collaboration/sharing/live-image/), an always-current picture of the plan. See
+  [Sharing](/help/collaboration/sharing/).
+</AppNote>
+
+</ArticleLayout>

@@ -37,7 +37,7 @@ export const REPO_URL = PUBLIC_REPO_URL;
 // The public contact form (a liveplanner Form, docs/specs/030-forms/forms.md), the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status
 // page and the Terms and Privacy Policy.
-export const CONTACT_FORM_URL = 'https://www.liveplanner.app/form/90Bgj5sY9eTpVrjhx9tTZj';
+export { CONTACT_FORM_URL } from '@liveworkspace/sites';
 
 // Favicon set for the apps that serve their pages from the origin root (or
 // reference the root's assets): the SVG mark, a raster PNG fallback for

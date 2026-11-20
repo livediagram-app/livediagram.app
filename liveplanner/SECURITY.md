@@ -10,7 +10,7 @@ Do not open a public issue, discussion or pull request for a security problem. T
 every liveworkspace app; the repository's root [`SECURITY.md`](../SECURITY.md) lists them all.
 
 The full policy, covering scope, rules for testing, safe harbour and what to expect, is the help centre's
-Report a Vulnerability page (`apps/help/app/policies/report-a-vulnerability/page.mdx`), published at
+Report a Vulnerability page (`liveworkspace/apps/help/app/policies/report-a-vulnerability/page.mdx`), published at
 [liveplanner.app/help/policies/report-a-vulnerability](https://www.liveplanner.app/help/policies/report-a-vulnerability/).
 
 In short:

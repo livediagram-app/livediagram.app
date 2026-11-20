@@ -1,0 +1,116 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AvatarMode } from '@/editions/livehuddle/components/illustrations/palette-modes';
+import { AddingElements } from '@/editions/livehuddle/components/illustrations/canvas';
+import { StartASpace } from '@/editions/livehuddle/components/illustrations/getting-started';
+
+export const metadata = helpMetadata({
+  title: 'Your First Space',
+  description:
+    'Open your first livehuddle Space in a couple of minutes: create it, walk in as your character, say hello, and share the link. No sign-in needed.',
+  path: '/help/getting-started/your-first-space/',
+});
+
+<ArticleLayout path="getting-started/your-first-space" title="Your First Space" description="From a new Space to a team gathered round the meeting table in a couple of minutes, with no account required." categoryTitle="Getting Started" categorySlug="getting-started">
+
+The quickest way to learn livehuddle is to open a Space and walk round it. This walkthrough takes you from a new Space to a room your team can meet in. You do not need to sign in, the [Space always works as a guest](/help/getting-started/guest-vs-account/).
+
+## Open a Space
+
+<Step n={1}>
+  Open [a new Space](/new). It is made there and then, called "Untitled Space", and [Default
+  Folders](/help/explorer/folders/default-folders/) decide which folder it lands in. There is
+  nothing to fill in first.
+</Step>
+
+<Step n={2}>
+  The empty board opens on **Start a Space**, on its **Recommended** templates: a **Blank Space**
+  first, then the Spaces most teams start from. The Campus, Events, Games Rooms, Homes, Office,
+  Outdoor, Recreation and Venues [templates](/help/canvas/templates/) are beside them, with a
+  search. Pick **Team Pod** to follow along, or close it with the × to start from an empty board.
+</Step>
+
+<Figure caption="Start a Space on a new Space: Recommended first, the other categories beside it, and where the Space is saved.">
+  <StartASpace />
+</Figure>
+
+<Step n={3}>
+  At the bottom, **Sync Space to Server** says where the new Space is saved. It is on once you have
+  signed in (saved to your account, on every device) and off while you try things out as a guest
+  (saved in this browser only). Flip it while the Space is still empty if you want the other place;
+  you can also [move a Space](/help/privacy-and-security/offline-mode/) later. When you start from a
+  folder or a team, the Space goes there.
+</Step>
+
+You can rename the Space later from the [Explorer](/help/explorer/explorer-page/): open the Space's
+**⋯** menu and pick **Rename**. Space names are kept to **60 characters**, plenty for a title and short
+enough to stay readable in a list row; a longer name is shortened.
+
+## Walk in
+
+A Space from the templates opens with you **walking**: you are in [Avatar mode](/help/selection-modes/avatar-mode/), as a little character arriving in a beam of light on the Space's [Avatar Pad](/help/palette/avatar-pads/), in the middle of the Space where everyone gathers.
+
+<Step n={1}>
+  **Click anywhere on the floor** and your character walks there, or hold the **arrow keys** to
+  steer it. Walk onto a chair or a desk and it sits down; press an arrow key to stand.
+</Step>
+
+<Step n={2}>
+  Press **`Enter`** to say something: a speech bubble opens over your head, and everyone in the
+  Space sees it float up. Press **`Space`** to hop and wave a flag, or **`W`** to wave.
+</Step>
+
+<Step n={3}>
+  Your character is yours to dress: while you walk, the strip across the top is your character's own
+  palette. **Gender**, **Clothes** and **Hair** set its look, **Status** lets everyone see whether
+  you are free to talk, **Actions** and **React** play a move or a burst, and **Say Something**
+  floats a message over your head. Its shirt is always your participant colour, so everyone can tell
+  which one is you.
+</Step>
+
+<Figure caption="Walking in Avatar mode: the character has walked over to the part of the Space being talked about, which is ringed.">
+  <AvatarMode />
+</Figure>
+
+To stop walking and change the Space, press **Edit** on the Edit | Walk toggle at the start of the palette strip, or press `E`. **Walk** (or `W`) again, or a click on the Avatar Pad, puts you back on your feet, standing on the pad. While you walk, the buttons to talk, show your camera and share your screen sit in the **Call** dock at the bottom of the screen, beside the zoom controls.
+
+## Put a note on the wall
+
+<Step n={1}>
+  Find the **Palette**, the strip across the top of the canvas, while you are in Edit. Its
+  categories each open a flyout of tiles: **Write** holds text, the sticky note and images, then
+  **Rooms**, **Seats**, **Perks**, **Play**, **Garden**, **Meet** and **Travel** hold the pieces a
+  Space is built from. Its **Search** (or `S`) finds any tile by name.
+</Step>
+
+<Step n={2}>
+  Open **Write** and **click the Add Sticky Note tile**, then **click the canvas** where you want
+  it: it drops there, ready to type into. Or drag the tile straight onto the canvas. Drop one by the
+  meeting table for the day's notes.
+</Step>
+
+<Step n={3}>
+  To keep the meeting short, place a **Timer** from the palette's **Meet** category and press
+  **Start**: the countdown runs for the whole room. See [Timer and
+  Stopwatch](/help/collaboration/session-tools/timer/).
+</Step>
+
+<Figure caption="Drag a tile from the Palette onto the canvas to drop it, and it lands selected.">
+  <AddingElements />
+</Figure>
+
+## Invite the team
+
+You now have a Space with a room to meet in. From here:
+
+- **Share the link.** Hand a colleague a link and their character walks into the same Space. See [Sharing Your Space](/help/getting-started/sharing-your-document/).
+- **Host the meeting.** Take the [facilitator](/help/collaboration/facilitator/) role so the timer answers to you, and press a [Bring Focus](/help/palette/behaviour/bring-focus/) button to bring everyone to one spot.
+- **Move and multi-select.** Drag to reposition; drag on an empty part of the canvas to marquee-select several elements at once, or Shift-click to add one at a time.
+
+<Tip>
+  Made a mistake? [Undo](/help/canvas/undo/) and [Redo](/help/canvas/redo/) sit in the controls in
+  the bottom-right corner (or press `Cmd/Ctrl+Z`), and the common keyboard shortcuts are in
+  [Keyboard Essentials](/help/getting-started/keyboard-essentials/).
+</Tip>
+
+</ArticleLayout>

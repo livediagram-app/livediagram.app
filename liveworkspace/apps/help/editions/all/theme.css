@@ -1,0 +1,61 @@
+/* All Apps' colours (liveworkspace/docs/specs/017-help/help-centre.md "Where it is shown"): liveworkspace's slate as
+ * the brand ramp, so no one app's colour stands for all of them (as liveworkspace.app's own pages set it), and the
+ * hero band in the same slate. Imported by app/scope.generated.css in the `all` build only. */
+@theme {
+  --color-brand-50: #f8fafc;
+  --color-brand-100: #f1f5f9;
+  --color-brand-200: #e2e8f0;
+  --color-brand-300: #cbd5e1;
+  --color-brand-400: #94a3b8;
+  --color-brand-500: #64748b;
+  --color-brand-600: #475569;
+  --color-brand-700: #334155;
+  --color-brand-800: #1e293b;
+  --color-brand-900: #0f172a;
+  --color-brand-950: #020617;
+}
+
+.hero-band {
+  --hero-bg: #f8fafc;
+  --hero-dots: #cbd5e1;
+  --hero-ink: #0f172a;
+  --hero-muted: #475569;
+  --hero-ring: rgb(100 116 139 / 0.45);
+  --hero-ring-focus: rgb(71 85 105 / 0.55);
+  --hero-cta: var(--color-brand-700);
+  --hero-cta-hover: var(--color-brand-800);
+  --hero-chip-bg: #ffffff;
+  --hero-chip-border: #cbd5e1;
+  --hero-chip-border-hover: #64748b;
+  --hero-chip-text: #0f172a;
+  --hero-icon: #475569;
+  --hero-link: #334155;
+  --hero-thumb: #f1f5f9;
+  --hero-card-shadow: rgb(15 23 42 / 0.22);
+}
+
+:where(.dark, .dark *):not(:where(.light, .light *)) .hero-band,
+.hero-band:where(.dark, .dark *):not(:where(.light, .light *)) {
+  --hero-bg: var(--color-slate-950);
+  --hero-dots: #1e293b;
+  --hero-ink: #ffffff;
+  --hero-muted: #cbd5e1;
+  --hero-ring: rgb(148 163 184 / 0.35);
+  --hero-ring-focus: rgb(148 163 184 / 0.6);
+  --hero-cta: #475569;
+  --hero-cta-hover: #334155;
+  --hero-chip-bg: #0f172a;
+  --hero-chip-border: #334155;
+  --hero-chip-border-hover: #64748b;
+  --hero-chip-text: #f1f5f9;
+  --hero-icon: #94a3b8;
+  --hero-link: #cbd5e1;
+  --hero-thumb: #1e293b;
+  --hero-card-shadow: rgb(0 0 0 / 0.7);
+}
+
+.hero-band-dots {
+  background-image: radial-gradient(var(--hero-dots) 1px, transparent 1px);
+  background-size: 22px 22px;
+  mask-image: linear-gradient(to bottom, black, transparent 75%);
+}

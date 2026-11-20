@@ -24,6 +24,11 @@ import {
   LEVEL_TELEMETRY_TYPE,
   isValidTelemetryEvent,
 } from '@livehuddle/api-schema';
+import {
+  articles as livehuddleArticles,
+  articlePath,
+  helpPathTelemetryId,
+} from '@liveworkspace/help-registry/slice/livehuddle';
 import { CANVAS_CONTROLS } from '../_shared/event-vocab';
 import { EXPLORER_TELEMETRY_EVENTS } from '@liveworkspace/telemetry';
 
@@ -34,6 +39,8 @@ type ComputedValues = {
 };
 
 const APPS = resolve(__dirname, '../../../../../../livehuddle/apps');
+// The one help centre's app folder, which every product's help is served from.
+const HELP_APP = '../../liveworkspace/apps/help/app';
 const read = (path: string) => readFileSync(resolve(APPS, path), 'utf8');
 
 // Every quoted token in the first block that follows `marker`.
@@ -116,30 +123,23 @@ const RECEPTIONIST_TOPIC_SOURCE: string[] = [
   );
 
 // Help ids, settings categories and page paths are read from the sources that make them, so each family below
-// (UI·Opened, Help·View, Page·View) is the exact set livehuddle can send, never samples of an open one.
-const helpRead = (path: string) =>
-  readFileSync(resolve(APPS, '../packages/help-registry/src', path), 'utf8');
+// (UI·Opened, Help·View, Page·View) is the exact set livehuddle can send, never samples of an open one. The help
+// articles are livehuddle's slice of the one help catalogue (@liveworkspace/help-registry).
 
 // `categorySlug/slug` of every registered help article.
-const ARTICLE_PATHS: string[] = [
-  ...helpRead('index.ts').matchAll(
-    / {4}slug: '([a-z0-9-]+)',[\s\S]*?categorySlug: '([a-z0-9-]+)',/g,
-  ),
-].map((m) => `${m[2]}/${m[1]}`);
+const ARTICLE_PATHS: string[] = livehuddleArticles.map((a) => articlePath(a));
 
-// help-registry/telemetry.ts TELEMETRY_ID_OVERRIDES: the path of an article whose slug another uses, and its id.
-const ID_OVERRIDES = new Map(
-  [...helpRead('telemetry.ts').matchAll(/'([a-z0-9/-]+)': '([a-z0-9-]+)',/g)].map((m) => [
-    m[1]!,
-    m[2]!,
-  ]),
-);
 // helpPathTelemetryId: the override for a path, else its last segment.
-const helpId = (path: string) => ID_OVERRIDES.get(path) ?? path.slice(path.lastIndexOf('/') + 1);
+const helpId = (path: string) => helpPathTelemetryId(path);
 
 // Every page file under an app's `app` folder, as the path it serves (route groups dropped; a dynamic segment is
 // replaced by each of `dynamic`'s values for its parent route).
-function routesUnder(root: string, dynamic: Record<string, string[]> = {}, prefix = ''): string[] {
+function routesUnder(
+  root: string,
+  dynamic: Record<string, string[]> = {},
+  prefix = '',
+  keepMdx: (route: string) => boolean = () => true,
+): string[] {
   const out: string[] = [];
   const walk = (dir: string, route: string) => {
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
@@ -148,8 +148,10 @@ function routesUnder(root: string, dynamic: Record<string, string[]> = {}, prefi
         if (entry.name.startsWith('[')) {
           for (const value of dynamic[route] ?? []) walk(full, `${route}/${value}`);
         } else walk(full, entry.name.startsWith('(') ? route : `${route}/${entry.name}`);
-      } else if (/^page\.(tsx|mdx)$/.test(entry.name))
+      } else if (/^page\.(tsx|mdx)$/.test(entry.name)) {
+        if (entry.name.endsWith('.mdx') && !keepMdx(route)) continue;
         out.push(route === '' ? prefix || '/' : prefix + route);
+      }
     }
   };
   walk(resolve(APPS, root), '');
@@ -175,7 +177,9 @@ const PAGE_VIEW_PATHS = [
       '/features': FEATURE_IDS,
       '/alternatives': ALTERNATIVE_SLUGS,
     }),
-    ...routesUnder('help/app', {}, '/help'),
+    // The one help centre (liveworkspace/apps/help) holds every app's pages: livehuddle's are the framework's own
+    // pages and the articles its registry lists.
+    ...routesUnder(HELP_APP, {}, '/help', (route) => ARTICLE_PATHS.includes(route.slice(1))),
     '/telemetry',
     '/community',
   ]),
@@ -268,6 +272,16 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
 
   // The help centre.
   'packages/help-site/src/components/ArticleShell.tsx Help·View': { values: HELP_ARTICLE_IDS },
+  'packages/help-site/src/components/AppSwitch.tsx Help·Changed': {
+    values: [
+      'Scope.livediagram',
+      'Scope.liveplanner',
+      'Scope.livedocuments',
+      'Scope.livedesign',
+      'Scope.livehuddle',
+      'Scope.all',
+    ],
+  },
   'packages/help-site/src/lib/use-article-vote.ts Help·Helpful': { values: SLUGS, open: SLUG_WHY },
   'packages/help-site/src/lib/use-article-vote.ts Help·Unhelpful': {
     values: SLUGS,

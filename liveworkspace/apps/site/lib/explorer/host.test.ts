@@ -85,12 +85,14 @@ describe("every app's addresses", () => {
 
 describe('platformHelpHref', () => {
   it("sends each view to liveworkspace.app's own Explorer article, a folder's and a team's to theirs", () => {
-    expect(platformHelpHref({ kind: 'home' })).toBe('/help/explorer#home');
-    expect(platformHelpHref({ kind: 'all' })).toBe('/help/explorer#my-work');
-    expect(platformHelpHref({ kind: 'trash' })).toBe('/help/explorer#trash');
-    expect(platformHelpHref({ kind: 'search', q: '' })).toBe('/help/explorer#search');
-    expect(platformHelpHref({ kind: 'folder', id: 'f1' } as never)).toBe('/help/explorer/folders');
-    expect(platformHelpHref({ kind: 'team', id: 't1' } as never)).toBe('/help/explorer/teams');
+    expect(platformHelpHref({ kind: 'home' })).toBe('/help/explorer/home/');
+    expect(platformHelpHref({ kind: 'all' })).toBe('/help/explorer/personal-space/');
+    expect(platformHelpHref({ kind: 'trash' })).toBe('/help/account-and-data/trash/');
+    expect(platformHelpHref({ kind: 'search', q: '' })).toBe('/help/explorer/filters/');
+    expect(platformHelpHref({ kind: 'folder', id: 'f1' } as never)).toBe('/help/explorer/folders/');
+    expect(platformHelpHref({ kind: 'team', id: 't1' } as never)).toBe(
+      '/help/explorer/team-spaces/',
+    );
   });
 
   it('has no article for a view without one', () => {

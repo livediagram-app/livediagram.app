@@ -416,7 +416,7 @@ inspect it." With one, under the element's name (its kind, and its words when it
 Status: built (Work Tracker 136): the stored links, their checks, how agents read and write them, setting them in
 the editor (the Screen mode, the link handle and the link marker), Prototype mode and its share link, and the Flow
 view. The help centre's **Clickable Prototypes** article (under Wireframe Pages,
-`apps/help/app/pages/wireframe-pages/prototypes/page.mdx`) walks through them.
+`liveworkspace/apps/help/app/pages/wireframe-pages/prototypes/page.mdx`) walks through them.
 
 A wireframe tab's screens can be clicked through: any element on a wireframe page can link to another screen of
 the same tab, and **Prototype mode** plays the screens one at a time, a press on a linked element going to its

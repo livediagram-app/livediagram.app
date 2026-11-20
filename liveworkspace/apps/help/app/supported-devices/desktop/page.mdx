@@ -1,0 +1,166 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import {
+  DesktopEditor,
+  DesktopShortcuts,
+} from '@liveworkspace/help-site/art/illustrations/devices';
+import {
+  DesktopEditor as DocumentsDesktopEditor,
+  DesktopShortcuts as DocumentsDesktopShortcuts,
+} from '@/editions/livedocuments/components/illustrations/devices';
+
+export const metadata = helpMetadata({
+  title: 'Desktop',
+  description:
+    'On a computer you get the full experience: every tool, every keyboard shortcut, right-click menus, and every panel.',
+  path: '/help/supported-devices/desktop/',
+});
+
+<ArticleLayout path="supported-devices/desktop" title="Desktop" description="On a computer you get the complete editor, with nothing held back." categoryTitle="Supported Devices" categorySlug="supported-devices">
+
+A computer (Windows, Mac, or Linux) with a mouse or trackpad and a keyboard gives you the complete <AppName /> experience. Everything in the help centre works here, so this is the best place to do detailed work.
+
+<AppNote app="liveplanner">
+  liveplanner runs in your browser, with nothing to install, and a computer is the best place for
+  detailed planning and for setting up boards, sheets and dashboards.
+</AppNote>
+
+## Everything Is Available
+
+<AppNote app="livediagram,livedesign,livedocuments,livehuddle">
+  All of the tools in the palette work on desktop.
+</AppNote>
+
+<AppNote app="livediagram">
+  That includes the presenting tools that need room and a pointer:
+  [Spotlight](/help/selection-modes/spotlight/) in the palette, which dims the canvas and follows
+  your cursor to highlight one thing at a time, and the [Slide
+  Deck](/help/selection-modes/slide-deck/) in the bottom bar's Tools. Neither appears on a
+  phone-sized screen. You also get the [Map](/help/user-interface/minimap/) (once a tab has a few
+  elements) and the other corner panels, which you can drag to any corner and collapse when you want
+  more room (see [Panel Layout](/help/user-interface/panel-layout/)), the tab's name beside the menu
+  button, and **UI Scale** in Settings to make the panels and buttons bigger or smaller.
+</AppNote>
+
+<AppNote app="livedesign">
+  That includes [Spotlight](/help/selection-modes/spotlight/), which needs room and a pointer: it
+  dims the canvas and follows your cursor to highlight one thing at a time. It doesn't appear on a
+  phone-sized screen. You also get [Contents](/help/pages/working-with-pages/#contents) as a sidebar
+  listing the pages (once a tab has more than one), and the corner panels, which you can drag to any
+  corner and collapse when you want more room (see [Panel
+  Layout](/help/user-interface/panel-layout/)), the tab's name beside the menu button, and **UI
+  Scale** in Settings to make the panels and buttons bigger or smaller.
+</AppNote>
+
+<AppNote app="livedocuments">
+  That includes the presenting tools that need room and a pointer:
+  [Spotlight](/help/selection-modes/spotlight/), which dims the canvas and follows your cursor to
+  highlight one thing at a time, and presenting a [Slide Deck](/help/selection-modes/slide-deck/).
+  Neither is offered on a phone-sized screen. You also get
+  [Contents](/help/pages/working-with-pages/#contents) as a sidebar down the left, the tool panels,
+  which you can drag to any corner and collapse when you want more room (see [Panel
+  Layout](/help/user-interface/panel-layout/)), the tab's name beside the menu button, and **UI
+  Scale** in Settings to make the panels and buttons bigger or smaller.
+</AppNote>
+
+<AppNote app="livehuddle">
+  You also get the [Map](/help/user-interface/minimap/) (once a tab has a few elements) and the
+  other corner panels, which you can drag to any corner and collapse when you want more room (see
+  [Panel Layout](/help/user-interface/panel-layout/)), the tab's name beside the menu button, and
+  **UI Scale** in Settings to make the panels and buttons bigger or smaller.
+</AppNote>
+
+<AppNote app="liveplanner">
+  **The full layout.** On a computer the whole editor is on screen at once: the plan's name and **Share** along the top, the board, sheet, form or dashboard in the middle, the bottom-right controls (**Undo** and **Redo**, then **Trash**, **Find** and **Types**, and **Style**), and the tab bar along the bottom with **Search** and **Settings** at its right end.
+
+Columns show side by side, cards show at the size the board is set to, and a dashboard lays its slots out in rows. **UI Scale** in [Settings](/help/user-interface/settings/) makes the panels and buttons bigger or smaller, and on a Sheet tab the zoom controls make the cells bigger or smaller.
+
+</AppNote>
+
+<Figure
+  app="livediagram,livedesign,livehuddle"
+  caption="On a computer the full editor is on screen at once: the menu button and palette strip, your canvas, the corner buttons with the zoom, and the tab bar along the bottom."
+>
+  <DesktopEditor />
+</Figure>
+
+<Figure
+  app="livedocuments"
+  caption="On a computer the full editor is on screen at once: the menu button and palette strip, your canvas, the corner buttons with the zoom, and the tab bar along the bottom."
+>
+  <DocumentsDesktopEditor />
+</Figure>
+
+## Mouse and Keyboard
+
+A mouse and keyboard unlock the fastest ways to work:
+
+- **Keyboard shortcuts** for picking tools and running common actions, like undo, copy, duplicate, and zoom. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/) for the full list.
+
+<AppNote app="livediagram,livedesign,livedocuments,livehuddle">
+  - **Hold Shift** while resizing to keep an element's proportions, and **Shift-click** to add or
+  remove elements from a selection. - **Drag a box** across empty canvas to select several elements
+  at once. - **Hold Space and drag**, drag with the middle mouse button, or scroll (two fingers on a
+  trackpad) to move around; hold Ctrl (or Cmd) and scroll, or pinch on a trackpad, to zoom.
+</AppNote>
+
+<AppNote app="liveplanner">
+  - **Drag** cards between columns, drag the edges of a sheet's columns and rows to resize them, and
+  drag across cells to select a range. - **Keyboard shortcuts** for undo and redo, search, Zen mode,
+  moving cards and working in a sheet. See [Keyboard
+  Essentials](/help/getting-started/keyboard-essentials/). - **Scroll** with the mouse wheel or two
+  fingers on a trackpad to move through a long column, a big sheet or a dashboard.
+</AppNote>
+
+<Figure
+  app="livediagram,livedesign,livehuddle"
+  caption="A keyboard gives you the quickest controls, with shortcuts for common actions and held keys for resizing and selecting."
+>
+  <DesktopShortcuts />
+</Figure>
+
+<Figure
+  app="livedocuments"
+  caption="A keyboard gives you the quickest controls, with shortcuts for common actions and held keys for resizing and selecting."
+>
+  <DocumentsDesktopShortcuts />
+</Figure>
+
+## Right-Click and Hover
+
+Right-click any element, tab, or empty space to open its menu of formatting and actions. Resting the pointer on a button for half a second shows a tooltip naming it; some controls explain themselves at once with a hover card. Keyboard focus shows either straight away, and Escape hides it.
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  See [Context Menus](/help/user-interface/context-menus/).
+</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+  In those menus, resting the pointer on a colour, border or preset previews it on the selection
+  before you commit, which touch screens can't do.
+</AppNote>
+
+<AppNote app="livedesign,livehuddle">
+  The tooltip shows on an icon-only button (a button that shows its name, a close X or a colour
+  swatch has none).
+</AppNote>
+
+<AppNote app="liveplanner">
+  Right-click a card, a cell, a sheet's row or column header, or a board's empty space to open its
+  menu, and use a tab's **⋯** for the tab's own. A button with its name on it needs no tooltip.
+</AppNote>
+
+<Tip>
+  Working on something detailed or presenting to a room? A computer is the most comfortable place to
+  do it, with the most screen space and the quickest controls.
+</Tip>
+
+<AppNote app="liveplanner">
+  Setting up a plan, building a dashboard or running a session for a room? A computer is the most
+  comfortable place to do it.
+</AppNote>
+
+<AppNote app="livedesign">
+  Sharing your screen with a room is also most comfortable on a computer.
+</AppNote>
+
+</ArticleLayout>

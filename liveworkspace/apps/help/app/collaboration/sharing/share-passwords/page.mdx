@@ -1,0 +1,167 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import {
+  SharePasswordSwitch as DiagramSharePasswordSwitch,
+  SharePasswordGate as DiagramSharePasswordGate,
+} from '@/editions/livediagram/components/illustrations/sharing';
+import {
+  SharePasswordSwitch as DesignSharePasswordSwitch,
+  SharePasswordGate as DesignSharePasswordGate,
+} from '@/editions/livedesign/components/illustrations/sharing';
+import {
+  SharePasswordSwitch as DocumentsSharePasswordSwitch,
+  SharePasswordGate as DocumentsSharePasswordGate,
+} from '@/editions/livedocuments/components/illustrations/sharing';
+import {
+  SharePasswordSwitch as HuddleSharePasswordSwitch,
+  SharePasswordGate as HuddleSharePasswordGate,
+} from '@/editions/livehuddle/components/illustrations/sharing';
+import { SharePasswordGate as PlannerSharePasswordGate } from '@/editions/liveplanner/components/illustrations/sharing';
+
+export const metadata = helpMetadata({
+  title: 'Share Passwords',
+  description:
+    'Add an optional password so anyone opening one of its share links must enter it first.',
+  path: '/help/collaboration/sharing/share-passwords/',
+});
+
+<ArticleLayout path="collaboration/sharing/share-passwords" title="Share Passwords" description="Guard every share link with a single password." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "share-passwords")}>
+
+A share password is an optional password on a <Noun />. When it is set, anyone opening any share link for that <Noun /> must enter the password before they can see it. It is there to stop people guessing or stumbling onto a share URL, not to provide strong encryption.
+
+## How It Works
+
+The password belongs to the **<Noun />**, not to a single link. One password covers every share link to it, [embeds](/help/collaboration/sharing/embeds/) included. Once a visitor enters it correctly, it stays in effect for their whole visit.
+
+As the owner you always bypass the password. So do members of the [team](/help/collaboration/teams/) whose library holds the <Noun />, since they don't come in through a link. The prompt only ever appears for people coming in through a share link.
+
+## Setting a Password
+
+<Step n={1}>
+  Open the **Share** dialog on your <Noun />.
+</Step>
+<Step n={2}>
+  Switch on **Password Protection** at the foot of the dialog, beneath the list of passes.
+</Step>
+<Step n={3}>
+  Type a password of 6 to 256 characters in the field that appears (spaces at either end don't
+  count) and choose **Save**.
+</Step>
+
+Once saved, the row shows **Password Set** with **Replace** and **Remove**. Only a scrambled form of the password is kept, so nobody can read it back afterwards, you included: note it down before you save, and use **Replace** to choose a new one if you lose it.
+
+## Changing or Removing It
+
+- **Replace** brings back the field. Type the new password and choose **Save**.
+- **Remove**, or turning the switch off, takes the password away. Every link then opens without one again.
+
+People already in the <Noun /> through a link are asked for the new password after a change.
+
+<AppNote app="liveplanner">They are asked within a few minutes of the change.</AppNote>
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+Once saved, every pass gains a small **Password** tag.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  **Save** stays off until the password is long enough, and **Enter** also saves. The field shows what you type, so you can check it.
+</AppNote>
+
+<AppNote app="livediagram">
+<Figure caption="With a password saved, the switch shows Password Set with Replace and Remove, and every pass carries a Password tag.">
+  <DiagramSharePasswordSwitch />
+</Figure>
+
+**Replace** brings back an empty field; **Cancel** (or **Esc**) keeps the old password. Switching **Password Protection** off also removes the password at once. Setting or replacing a password sends everyone currently in the canvas through a share link back to the prompt straight away, so they need the new password to carry on. Removing it disconnects nobody.
+</AppNote>
+
+<AppNote app="livedesign">
+  The field shows what you type, so you can check it, and **Enter** also saves.
+
+<Figure caption="With a password saved, the switch shows Password Set with Replace and Remove, and every pass carries a Password tag.">
+  <DesignSharePasswordSwitch />
+</Figure>
+
+**Replace** brings back an empty field; **Cancel** (or **Esc**) keeps the old password. Switching **Password Protection** off also removes the password at once. Setting or replacing a password sends everyone currently in the design through a share link back to the prompt straight away, so they need the new password to carry on. Removing it disconnects nobody.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Until the password is long enough **Save** stays off and the field says it is too short. **Enter** also saves, and the field shows what you type, so you can check it.
+
+<Figure caption="With a password saved, the switch shows Password Set with Replace and Remove, and every pass carries a Password tag.">
+  <DocumentsSharePasswordSwitch />
+</Figure>
+
+**Replace** brings back an empty field; **Cancel** (or **Esc**) keeps the old password. Switching **Password Protection** off also removes the password at once. Setting or replacing a password sends everyone currently in the document through a share link back to the prompt straight away, so they need the new password to carry on. Removing it disconnects nobody.
+</AppNote>
+
+<AppNote app="livehuddle">
+<Figure caption="With a password saved, the switch shows Password Set with Replace and Remove, and every pass carries a Password tag.">
+  <HuddleSharePasswordSwitch />
+</Figure>
+
+**Replace** brings back an empty field; **Cancel** (or **Esc**) keeps the old password. Switching **Password Protection** off also removes the password at once. Setting or replacing a password sends everyone currently in the space through a share link back to the prompt straight away, so they need the new password to carry on. Removing it disconnects nobody.
+</AppNote>
+
+## What Visitors See
+
+When someone opens a protected share link, they get a card headed **This <Noun /> is password-protected**, with a single password box and an **Open <Noun capital />** button, instead of the <Noun />. A wrong password shows "That password didn't match. Try again." and lets them try again.
+
+The browser remembers a password that worked, for that link, so a visitor isn't asked again next time unless you change the password or they clear their browser's site data.
+
+Embedded <Noun plural /> behave the same way: the password prompt appears inside the embed frame.
+
+<AppNote app="liveplanner">
+  <Figure caption="A visitor on a protected link sees the password card instead of the plan.">
+    <PlannerSharePasswordGate />
+  </Figure>
+</AppNote>
+
+## What a Password Turns Off
+
+- **Live images.** An image tag can't supply a password, so a [live image](/help/collaboration/sharing/live-image/) of a <Noun /> with a password shows nothing.
+- **The Community.** A public <Noun /> can't ask its visitors for a password, so a <Noun /> can't be in the [Community](/help/collaboration/sharing/community/) and have a password at the same time. While it is listed, **Password Protection** is switched off and locked, with a note saying why; a <Noun /> with a password can't be shared there until you remove it.
+
+<AppNote app="livediagram,livedocuments,livedesign,livehuddle">
+The **Live image** menu disappears from every pass while a password is set.
+</AppNote>
+
+<AppNote app="livediagram">
+  The card is full-screen, with an **Open Canvas** button. Guesses are rate-limited per network, so a password can't be found by trying thousands of them. The browser asks again only if you replace the password (or remove it and later set a new one), or a visitor clears their browser's site data. In an embed, because browsers keep each site's storage separate, a visitor enters the password once per site where the canvas is embedded.
+
+<Figure caption="A visitor on a protected link sees the password card instead of the canvas.">
+  <DiagramSharePasswordGate />
+</Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  The card is full-screen, with an **Open Design** button. Guesses are rate-limited per network, so a password can't be found by trying thousands of them. The browser asks again only if you replace the password (or remove it and later set a new one), or a visitor clears their browser's site data. In an embed, because browsers keep each site's storage separate, a visitor enters the password once per site where the design is embedded.
+
+<Figure caption="A visitor on a protected link sees the password card instead of the design.">
+  <DesignSharePasswordGate />
+</Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  The card is full-screen, with an **Open Document** button. Guesses are rate-limited per network, so a password can't be found by trying thousands of them. The browser asks again only if you replace the password (or remove it and later set a new one), or a visitor clears their browser's site data. In an embed, because browsers keep each site's storage separate, a visitor enters the password once per site where the document is embedded.
+
+<Figure caption="A visitor on a protected link sees the password card instead of the document.">
+  <DocumentsSharePasswordGate />
+</Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  The card is full-screen, with an **Open Space** button. Guesses are rate-limited per network, so a password can't be found by trying thousands of them. The browser asks again only if you replace the password (or remove it and later set a new one), or a visitor clears their browser's site data. In an embed, because browsers keep each site's storage separate, a visitor enters the password once per site where the space is embedded.
+
+<Figure caption="A visitor on a protected link sees the password card instead of the space.">
+  <HuddleSharePasswordGate />
+</Figure>
+</AppNote>
+
+<Tip>
+  Pair a password with a [share link expiry](/help/collaboration/sharing/share-link-expiry/) for a
+  link that both needs a secret and stops working after a set time.
+</Tip>
+
+</ArticleLayout>

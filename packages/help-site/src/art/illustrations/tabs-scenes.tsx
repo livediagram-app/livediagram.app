@@ -1,4 +1,4 @@
-// Tabs-category scenes every product's help app draws the same (docs/specs/018-help/help-app.md): the tab
+// Tabs-category scenes every product's help app draws the same (liveworkspace/docs/specs/017-help/help-centre.md): the tab
 // bar, renaming a tab, tab folders opening in place, the Organise in Tab Folder dialog, cross-tab links, a
 // before/after cleanup and a locked tab. Each product's illustrations/tabs.tsx re-exports the ones it uses.
 // Composed only from the shared primitives so the house style holds.

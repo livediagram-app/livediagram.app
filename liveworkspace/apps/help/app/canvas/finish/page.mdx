@@ -1,0 +1,121 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Choosing a Finish',
+  description:
+    'Draw a tab or one element Flexible, Professional, Sketch or Marker: crisp print-ready lines, a pencil-sketched look, or bold felt-tip marker.',
+  path: '/help/canvas/finish/',
+});
+
+<ArticleLayout
+  path="canvas/finish"
+  title="Choosing a Finish"
+  description="Change how lines, corners and lettering are drawn, from crisp and print-ready to sketched or drawn in marker by hand."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+A **finish** is how a tab's elements are drawn, apart from their colours. Every tab has one, and any shape, text or sticky note can carry its own. Switching a finish never changes an element's size, colour or text, so switching back puts everything exactly as it was.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  An arrow or a table can carry its own finish too.
+</AppNote>
+
+<AppNote app="livediagram,livedesign">
+  Polygons and paths you draw yourself follow their tab's finish too.
+</AppNote>
+
+<AppNote app="livedocuments">
+  Freehand strokes and polygons, which an AI assistant or the API can add, follow their tab's finish
+  too.
+</AppNote>
+
+## The Four Finishes
+
+- **Flexible** is the everyday look: soft rounded corners, medium lines, a gentle shadow under boxes and a paper peel under sticky notes. New tabs start here.
+- **Professional** is crisp and print-ready: square corners, thin lines (line icons included, unless you gave one a weight of its own), clean Inter lettering and no default shadows. Everything inside an element goes square and flat too: a panel's buttons and chips, a sticker's plate. Circles and true pills, such as avatars and status dots, keep their shape.
+- **Sketch** looks drawn by hand: wobbly double-stroked outlines, coloured fills shaded over with pencil lines, a handwriting font (unless the tab or the element has a font of its own), and icons, stickers and every other element's drawing given a hand-drawn wobble.
+- **Marker** looks drawn quickly with felt-tip markers on a flip chart: one bold stroke per edge that runs a little past its corners, ink that pools darker wherever two strokes cross, fills coloured in with broad marker strokes, bold line icons and Shantell Sans lettering (unless the tab or the element has a font of its own). Inside an element, cards and panels are outlined in marker, and bands, bars and rings are coloured in; small chips, inputs and buttons keep their plain look so their words stay easy to read. Sticky notes stay paper, coloured in and written on in marker, and a sticker keeps its emoji with its plate outlined in marker.
+
+Whatever you set on an element yourself wins in every finish. A corner, border width, shadow or font you picked is drawn as you picked it; a finish only changes what you left unset.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  **Professional** also turns the arrows you draw into right-angled connectors and squares a concept
+  graphic's bands. **Sketch** draws arrowheads as two loose strokes and gives charts the hand-drawn
+  wobble. **Marker** gives arrows chunky arrowheads and colours in chart slices. An arrow's
+  thickness you picked wins in every finish.
+</AppNote>
+
+<AppNote app="livediagram,livehuddle">
+  **Professional** also squares a board's cards and columns, and **Sketch** looks drawn on a
+  whiteboard.
+</AppNote>
+
+<AppNote app="livediagram">
+  A mind map's curved connectors are drawn as neat right-angled brackets under **Professional** too
+  (a Bubble map's spokes are straight in every finish), and switching back brings the curves back.
+</AppNote>
+
+## Setting a Tab's Finish
+
+Open **Tab Style** and press **Finish** under **Fine-tune**. Click **Flexible**, **Professional**, **Sketch** or **Marker**, and the whole tab redraws in it straight away: any element that carried a finish of its own follows the tab again. The **Preview** under the options shows a small sample in the chosen finish, on your tab's background.
+
+<AppNote app="livediagram,livedesign,livehuddle">
+  **Tab Style** is the **Theme & Canvas** button in the bottom-right corner.
+</AppNote>
+
+<AppNote app="livehuddle">On a wide screen that button is named **Style**.</AppNote>
+
+<AppNote app="livedocuments">**Tab Style** is the **Style** button on a page's title bar.</AppNote>
+
+## Setting One Element's Finish
+
+Right-click an element (a long press on a touch screen), open **Appearance**, then **Finish**. The five options are **Follow Tab**, **Flexible**, **Professional**, **Sketch** and **Marker**. With a mouse, hovering a tile previews it; clicking commits it as one undo step. **Follow Tab** removes the element's own finish so it follows the tab again. Select several elements and the multi-selection menu's **Appearance** has the same category, which sets every selected element that can take a finish.
+
+<AppNote app="livediagram">Each option has a short line on what it does.</AppNote>
+
+## Good to Know
+
+- **The hand-drawn look is the same everywhere.** In Sketch and Marker, each element's wobble is worked out from the element itself, so it looks identical on every screen, after a reload and in exports, and only changes when you resize it.
+- **Selecting ignores the wobble.** Guides snap and clicks land on an element's true outline.
+- **Everything is drawn by hand in Sketch, and the words stay sharp.** Panels, buttons and every other element draw their lines and fills by hand, while their words and numbers sit crisply on top in the handwriting font, so small figures stay easy to read. Photos stay as they are, though a photo gets a hand-drawn edge round it.
+- **Every box is shaded the same way.** In Sketch and Marker every filled box, gets pencil shading or marker colouring over its own colour, so labels stay readable on a light or a dark canvas. A pale border too faint to read once drawn by hand is drawn in a stronger shade of the same colour.
+- **The palette follows the tab.** Shape, text and sticky note tiles show the tab's finish, so you can see how a new element will look before you add it.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  Connecting ignores the wobble too: arrows attach to an element's true outline. In Sketch, charts,
+  concept graphics, checklists, progress bars and a table's grid are drawn by hand too, and circle
+  and diamond arrowheads keep their shapes because they carry meaning.
+</AppNote>
+
+<AppNote app="livediagram,livedesign">
+  Pen, pencil and highlighter strokes (already hand-drawn) stay as they are.
+</AppNote>
+
+<AppNote app="livedocuments">Freehand strokes (already hand-drawn) stay as they are.</AppNote>
+
+<AppNote app="livehuddle">
+  Furniture is drawn by hand too, and under Sketch a box that other elements sit on, like a board
+  key, keeps a plain fill.
+</AppNote>
+
+<AppNote app="livediagram">
+  Boxes shaded this way run from a plain shape to a card, a lane or a panel, and under Sketch a box
+  that other elements sit on, like a flowchart's key, keeps a plain fill.
+</AppNote>
+
+<AppNote app="livediagram,livedesign">Arrow and table tiles follow the tab too.</AppNote>
+
+<AppNote app="livedocuments">Table tiles follow the tab too.</AppNote>
+
+- **Exports match the canvas.** PNG, SVG and PDF exports draw the same finish you see.
+- **Only Editors change finishes.** Participants and Viewers see every element in its finish but can't change it.
+
+<Tip>
+  Sketch and Marker are great for early ideas, workshops and meetings: they tell people the picture
+  is still open to change. Marker reads well from the back of a room, on a projector or a shared
+  screen. When it's settled, switch the tab to Professional for the version you share.
+</Tip>
+
+</ArticleLayout>

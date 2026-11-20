@@ -1,0 +1,69 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Receptionist',
+  description:
+    "Meet the Space's Receptionist: his welcome on the Avatar Pad, the topics you can ask him about, the reception bell, and asking him to leave.",
+  path: '/help/selection-modes/avatar-mode/avatar-tour/',
+});
+
+<ArticleLayout
+  path="selection-modes/avatar-mode/avatar-tour"
+  title="The Receptionist"
+  description="The Receptionist walks the Space, greets everyone who arrives on the Avatar Pad, and shows you how the Space works when you ask."
+  categoryTitle="Edit or Walk"
+  categorySlug="selection-modes/avatar-mode"
+>
+
+The Receptionist is a character in an amber shirt who lives on any tab with an Avatar Pad. He takes the place of the old Avatar tour. Rather than a row of cards, he walks over and talks you through the Space, pointing at the real controls as he goes.
+
+## His Day
+
+When nobody needs him, the Receptionist gets on with his day near the pad: he fetches a coffee or a drink from the fridge, admires the plants, browses the bookshelf, pats the dog in its bed, stands behind the reception desk, and now and then breaks into a dance or a spin on the open floor. Everyone on the tab sees the same Receptionist in the same place, and he sends nothing over the network to do it.
+
+## Being Welcomed
+
+**He welcomes you once.** The first time you arrive on a pad with the Receptionist, he walks over, waves, and his speech bubble opens over his head with every topic he can help with, grouped into Talk, Meet, Move, You and Space. Seven show at a time, and the list scrolls for the rest. Pick one and he types out his answer, with the control he means ringed in amber. Press **I'll Explore** when you're done.
+
+That welcome is remembered with your account, so it happens once on every device, not once per Space. After that he never comes over on his own when you arrive. He comes to you only when you [ask him](#asking-the-receptionist), ring a [Reception Desk bell](#the-reception-bell), or switch his welcome back on in [Settings](#hearing-the-welcome-again).
+
+He still greets other people: when someone else appears on the Avatar Pad, he walks over beside it and waves at them for a few seconds before going back to his day.
+
+Your conversation with the Receptionist is yours alone. Other people see him wave, but never his bubble or what you pick.
+
+## Asking the Receptionist
+
+Ask Receptionist whenever you like:
+
+- **Press the Receptionist** on the canvas, or
+- Press **Ask Receptionist** in the bar along the bottom of the editor, just left of **Tools**.
+
+He walks over to you and offers every topic in one list. Topics you've already asked about stay in the list with a tick beside them. Asking about **Rooms and Meetings** has him stroll into the nearest room. Walking away from him, or pressing **Escape**, closes his bubble, and he goes back to his day.
+
+The Receptionist only offers what you can do: on a view-only link he leaves out speaking in a bubble, and building the Space is an Editor's topic.
+
+If your device is set to reduce motion, the Receptionist stands by the pad rather than walking about, and his bubble opens where he stands.
+
+## The Reception Bell
+
+When anyone rings the bell on a **Reception Desk**, the Receptionist walks over to the desk to help. If you rang it, his bubble opens there once he arrives: "You rang?" and the full list of topics.
+
+## Asking the Receptionist to Leave
+
+An Editor can send him away for good: press **Ask to Leave** at the foot of his card. He says goodbye and is gone for everyone in the Space, and **Ask Receptionist** leaves the bar along the bottom.
+
+To bring him back, switch to **Edit**, open the Avatar Pad's menu, and switch **Receptionist** back on.
+
+## Hearing the Welcome Again
+
+<Step n={1}>Open **Settings** from the editor and go to **Getting Started**.</Step>
+
+<Step n={2}>Switch **Receptionist's Welcome** back on.</Step>
+
+<Step n={3}>
+  Close Settings. If you're walking on a tab with the Receptionist, he comes straight over with his
+  welcome.
+</Step>
+
+</ArticleLayout>

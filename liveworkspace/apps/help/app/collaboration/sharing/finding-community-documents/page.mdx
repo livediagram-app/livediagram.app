@@ -1,0 +1,193 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { CommunitySearchBox as DiagramCommunitySearchBox } from '@/editions/livediagram/components/illustrations/sharing';
+import { CommunitySearchBox as DesignCommunitySearchBox } from '@/editions/livedesign/components/illustrations/sharing';
+import { CommunitySearchBox as DocumentsCommunitySearchBox } from '@/editions/livedocuments/components/illustrations/sharing';
+import { CommunitySearchBox as HuddleCommunitySearchBox } from '@/editions/livehuddle/components/illustrations/sharing';
+import { CommunitySearchBox as PlannerCommunitySearchBox } from '@liveworkspace/help-site/art/illustrations/community';
+
+export const metadata = helpMetadata({
+  title: 'Finding Work in the Community',
+  description:
+    'Search the Community by words, tags, category and sort, open a post read-only, like it, make your own copy, or report it.',
+  path: '/help/collaboration/sharing/finding-community-documents/',
+});
+
+<ArticleLayout path="collaboration/sharing/finding-community-documents" title="Finding Work in the Community" description="Search by words and tags, sort what you find, then make it your own." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "finding-community-documents")}>
+
+The [Community](/community/) is a gallery of <Noun plural /> people have shared. You don't need an account to browse it, like a <Noun /> or make your own copy.
+
+<AppNote app="livediagram">
+  The gallery holds architecture diagrams, retrospectives, roadmaps, wireframes, sketches and more.
+</AppNote>
+
+<AppNote app="livedesign">
+  The gallery holds logos, websites, app screens, photo edits and more, filed under the same
+  categories as the templates.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The gallery holds reports, slide decks, infographics, guides, proposals, newsletters and more.
+</AppNote>
+
+<AppNote app="livehuddle">
+  The gallery holds virtual offices, team pods, meeting rooms, campuses and more.
+</AppNote>
+
+<AppNote app="liveplanner">
+  The gallery holds sprint boards, budgets, event plans, sign-up forms, hiring pipelines, retros and
+  more.
+</AppNote>
+
+## Searching
+
+One search box holds everything you are looking for, written as words:
+
+- **Plain words** search the title, description and tags.
+- **`#tag`** finds <Noun plural /> with that tag. Add several and a <Noun /> has to have all of them.
+- **`category:name`** keeps to one kind of <Noun />.
+- **`sort:loved`** puts the most liked <Noun plural /> first, and **`sort:copied`** the most copied. Without one, the newest come first.
+- **`is:mine`** shows only the <Noun plural /> you have shared (see [Your own shares](#your-own-shares)).
+
+<AppNote app="livediagram">
+  For example `checkout flow`, `#aws #event-driven`, and `category:planning` for a subject such as
+  Planning, Meetings or Software.
+</AppNote>
+
+<AppNote app="livedesign">
+  For example `cafe logo`, `#logo #minimal`, and `category:websites` for a kind of design such as
+  Branding, Websites or Photos.
+</AppNote>
+
+<AppNote app="livedocuments">
+  For example `quarterly report`, `#pitch #startup`, and `category:pitches` for a kind of document
+  such as Pitches or Reports.
+</AppNote>
+
+<AppNote app="livehuddle">
+  For example `team pod`, `#standup #remote`, and `category:office` for a kind of space such as
+  Office, Campus or Recreation.
+</AppNote>
+
+<AppNote app="liveplanner">
+  For example `sprint board`, `#scrum #retro`, and `category:finance`. The categories are the
+  template categories under **Start With**, such as Projects and Teams, Finance, Events or Hiring
+  and People, plus Something Else.
+</AppNote>
+
+You can type these yourself, or use the buttons inside the right of the search box, which write the same words for you:
+
+<Step n={1}>
+  Choose **Category** to keep to one kind of <Noun />, or **All Categories** to see everything
+  again.
+</Step>
+<Step n={2}>
+  Choose **Tags** to see the most used tags. Pick one to add its `#tag` to your search; pick it
+  again to take it out.
+</Step>
+<Step n={3}>
+  Choose the sort button (it reads **Newest** to start) to order by **Most Loved** or **Most
+  Copied**.
+</Step>
+
+<AppNote app="livediagram">
+  <Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+    <DiagramCommunitySearchBox />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  <Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+    <DesignCommunitySearchBox />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedocuments">
+  <Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+    <DocumentsCommunitySearchBox />
+  </Figure>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+    <HuddleCommunitySearchBox />
+  </Figure>
+</AppNote>
+
+<AppNote app="liveplanner">
+  <Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+    <PlannerCommunitySearchBox query="#sprint sort:loved" />
+  </Figure>
+</AppNote>
+
+On smaller screens the buttons show just their icons. The cross just after your text clears the words, tags and category you searched for; the sort and **My Shares** stay as they are. Your search stays in the page address, so you can bookmark it or send it to someone.
+
+<Tip>On a post's own page, choose any of its tags to search the gallery for that tag.</Tip>
+
+## Your Own Shares
+
+Signed in, choose **My Shares** in the search box to see only the <Noun plural /> you have shared. Above them, **Your Shares** adds up how many you have shared, and how many likes and copies they have had altogether, so you can see how they are doing. Each card shows its own likes and copies, and you can still search, filter and sort within them.
+
+A <Noun /> taken out of the Community after reports shows here marked **Hidden**; only you can see it. Choose it to open the <Noun /> in the editor.
+
+## Looking at a Post
+
+Open a card to see the post's page: a live preview, the author's description and its tags. **Open <Noun capital />** shows it full screen. <Noun plural capital /> in the Community are always read-only.
+
+<AppNote app="livediagram">
+  The preview can be panned, zoomed and paged through. Comments are private.
+</AppNote>
+
+<AppNote app="livedesign">
+  The preview can be panned and paged through. Comments are private.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The preview can be scrolled and paged through. Comments are private.
+</AppNote>
+
+<AppNote app="livehuddle">The preview can be panned, zoomed and paged through.</AppNote>
+
+<AppNote app="liveplanner">
+  The preview can be looked through tab by tab. Comments, votes and assignees are private.
+</AppNote>
+
+## Liking a Post
+
+Choose the heart on a card or on a post's page to show the author you liked it. Choose it again to take your like back. Likes are kept per browser, and **Most Loved** sorts by them.
+
+## Making Your Own Copy
+
+Choose **Make a Copy** on a post's page, or in the bar across the top of an open <Noun />. A copy of the whole <Noun /> opens in the editor as your own <Noun />, named after the post you chose. Change anything you like; the original never changes. Each person who copies a <Noun /> counts once towards its copy count. You don't need an account: as a guest the copy belongs to this browser's guest identity, and it moves into your account if you [sign up](/help/getting-started/guest-vs-account/) later.
+
+<AppNote app="livediagram,livehuddle">The copy has every tab.</AppNote>
+
+<AppNote app="livedocuments,livedesign">The copy has every tab and page.</AppNote>
+
+A post's page also lists **More Like This**: other <Noun plural /> in the same category to look at next.
+
+<AppNote app="liveplanner">
+  You can also start from the Community without leaving the editor. On an empty tab, choose
+  **Inspiration** in **Start Planning**: after the templates come the plans people liked most this
+  month, up to three from each category, each marked **Community**. Searching Start Planning finds
+  them by their titles too. Choosing one makes your own copy, just as **Make a Copy** does.
+</AppNote>
+
+## Reporting a Post
+
+If a <Noun /> is spam, offensive, shows someone's personal information or isn't the author's to share, choose **Report** on its page. Pick a reason (**Spam**, **Offensive**, **Personal Information**, **Copyright** or **Something Else**), add a note of up to 300 characters if it helps, and send it with **Send Report**. A <Noun /> reported by three different people, on different networks, is hidden automatically, for good. Nobody reviews posts by hand: the reports decide.
+
+<AppNote app="livediagram">The report dialog is titled **Report This Canvas**.</AppNote>
+
+## Posting in the Forum
+
+Beside the gallery, the **Forum** tab is where people using the apps share tips, show what they've made, suggest ideas, report bugs, ask questions and talk with each other. There is one Forum for every liveworkspace app. Each post has a category (Question, Tips & Tricks, Feature Request, Bug Report, Show & Tell or General) and the app it is about, shown by its logo, or **Any App**. Anyone can read it without an account; filter by category or app, or sort by **Latest Activity**, **Newest** or **Unanswered**. On a phone, the filters and sort sit behind one **Filters** button.
+
+To post, reply or react you need to be signed in to your account (a guest can read but not post). Choose **New Post**, give it a title, pick a category and the app it is about, write your post and choose **Post**. Your name shows on everything you post. Under each post and reply, **Helpful**, **Thanks** and **Celebrate** let you say what you thought of it. On a Question, its author can choose **Mark as Answer** on the reply that solved it, so it shows first with an **Answered** mark in the list; **Unanswered** lists the Questions still waiting for one.
+
+Every post, reply and edit is checked automatically before anyone else sees it. If the check is busy, your post shows to you alone as **Pending: being checked** until it is checked again a few minutes later; one that doesn't pass stays visible to you alone, to edit or delete. You can **Edit** or **Delete** your own posts at any time, and closing your account removes them all. Each account can write up to 20 posts and replies an hour.
+
+If a post is spam, offensive or shows someone's personal information, choose **Report** on it. As in the gallery, a post reported by three different people, on different networks, is hidden automatically.
+
+</ArticleLayout>

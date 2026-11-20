@@ -1,7 +1,8 @@
 import { execFileSync } from 'node:child_process';
 import { join } from 'node:path';
+import { withoutGitRepoEnv } from '@liveworkspace/cli-kit/git-env';
 
-// When each help page last changed, for the sitemap's <lastmod> (docs/specs/018-help/help-app.md "SEO"). Read from
+// When each help page last changed, for the sitemap's <lastmod> (liveworkspace/docs/specs/017-help/help-centre.md "SEO"). Read from
 // git at build time: one `git log` pass over the app folder, newest commit first, so the first date seen for a page
 // is its latest. Keyed by route (`canvas/themes`, '' for the home), the page.mdx / page.tsx folder under app/.
 //
@@ -20,7 +21,13 @@ type Git = (args: string[]) => string;
 export const gitIn =
   (dir: string): Git =>
   (args) =>
-    execFileSync('git', args, { cwd: dir, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    execFileSync('git', args, {
+      cwd: dir,
+      encoding: 'utf8',
+      maxBuffer: 64 * 1024 * 1024,
+      // A build or test run inside a git hook must ask about `dir`, not the repository the hook was handed.
+      env: withoutGitRepoEnv(process.env),
+    });
 const runGit = gitIn(APP_DIR);
 
 // Parses `git log --format=@%cI --name-only --relative` output: a `@<date>` line per commit, then the paths it

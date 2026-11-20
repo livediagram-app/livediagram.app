@@ -50,5 +50,7 @@ test("the repository's readers catch the changes that broke main", () => {
       '@livedesign/design',
     ),
   );
-  assert.ok(readersReached(readers, ['livediagram/docs/specs/x.md']).includes('@livediagram/help'));
+  assert.ok(
+    readersReached(readers, ['livediagram/docs/specs/x.md']).includes('@liveworkspace/help'),
+  );
 });

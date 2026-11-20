@@ -118,8 +118,8 @@ moves between them, and the one account that joins them.
    the first names each app in its accent and what it is for (sketch, plan, write it up, make it look right, talk
    it through), the second says one account opens them all and every link opens straight into the work. Under the
    calls to action, three ticked promises: Open source, No sign-up needed (Free in every app, signed in), No
-   trackers or ads. Two calls to action: **Create Your Free Account** (`/sign-up`, back here after) and **Explore
-   the Apps**. Signed in, they are hidden. Beside it, the platform's prism
+   trackers or ads. Two calls to action: **Create your free account** (`/sign-up`, back here after) and **Explore
+   the apps**. Signed in, they are hidden. Beside it, the platform's prism
    with the apps' logos round it at the points of a pentagon, each joined to it by a line in its accent, read
    clockwise in the
    order work moves through them, and someone at work in each, drawn as that app shows them: a cursor in
@@ -164,9 +164,9 @@ moves between them, and the one account that joins them.
    terminal, checked against every app's API by a script, since there is no liveworkspace CLI); a copy in your Google Drive (the liveworkspace folder in Drive, a file from each app, each synced); on your phone, too (an installed app's notification on a home screen of the apps); open about data (a public chart, linking `/telemetry`); yours to keep (a sign-in code
    and one close for every app); completely free.
 4. **Closing call to action**: "One account. Every app. Always live." Signed out, it says "Or start your work as a
-   guest without signing in at all." over **Create Your Free Account** (`/sign-up`, back here after) and **Pick an
-   App** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
-   app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an App**. Until the page knows
+   guest without signing in at all." over **Create your free account** (`/sign-up`, back here after) and **Pick an
+   app** (`#apps`). Signed in, nothing on the page asks the person to sign up: it says "You're signed in to every
+   app. Pick up where you left off." over **Open Explorer** (`/explorer`) and **Pick an app**. Until the page knows
    (`useSession`), it shows the signed-out words, right for most visitors; the two states have the same lines and
    buttons, so the swap moves nothing (`components/landing/AccountActions.tsx`). The banner is a card with a surface
    of its own in both modes (slate-950 on the light page; slate-900 with a white hairline on the dark one, whose page
@@ -223,27 +223,25 @@ same builder every app's marketing site uses. Its `Policy` is the repository's s
 (`SECURITY_POLICY_URL`), since every app's policy agrees and this site has no help centre of its own. The fields and
 why are in [Vulnerability disclosure](../001-platform-scope/vulnerability-disclosure.md#securitytxt-on-every-site).
 
-### Help (`/help/google-drive`, `/help/explorer`)
+### Help (`/help`)
 
-Each app keeps its own help centre; a feature that is the platform's, the same in every app, is explained once here
-instead, in pages in the site's own chrome (`components/help/HelpArticle.tsx`) listed in the sitemap. One is Google
-Drive sync (drive.md): `/help/google-drive`. The other is the Explorer on liveworkspace.app in no app, where it mixes
-every app's work: `/help/explorer` (the overview, a section each for Home, My Work, Recent, Shared With Me, the Inbox,
-the Trash and Search), `/help/explorer/folders`, `/help/explorer/teams`, `/help/explorer/moving`,
-`/help/explorer/sharing` (sharing across apps) and `/help/explorer/signing-in` (guest or account). In no app the
-Explorer's view Help button opens the article for its view (a folder's and a team's their own, every other view a
-section of the overview), the sign-in banner's Learn More opens `/help/explorer/signing-in`, and Search lists the six
-under **liveworkspace Help**. On an app's address all three keep that app's own help centre. The articles speak of
-files and apps, never of one app's kind; their names and addresses are in `lib/help/platform-help.ts`, checked by
-`components/help/explorer-articles.test.tsx`. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**
-article under Account and Data (`/help/account-and-data/google-drive/`) that points here, so the apps' search,
-links and old addresses still find it. It names every app's file extension (drive.md "The file"), which
-`app/app-lists.test.ts` checks against the listed apps. Change it when drive.md changes what a person sees.
+`www.liveworkspace.app/help*` is the one help centre's ([Help centre](../017-help/help-centre.md)): All Apps' help,
+built from `liveworkspace/apps/help` and served by its Worker, which takes the route before the site's own files (a
+dev server forwards `/help*` to it on 3020, `next.config.ts`). The site has no help pages of its own: the platform's
+features that are the same in every app (Google Drive sync, the Explorer in no app, teams, sharing across apps,
+guest or account) are articles that apply to every app, read in each app's help and under All Apps. The old
+addresses (`/help/google-drive`, `/help/explorer/teams`, `/help/explorer/moving`, `/help/explorer/sharing`,
+`/help/explorer/signing-in`) redirect to them (`packages/help-registry/src/catalogue/redirects.ts`). In no app the
+Explorer's view Help button opens the article for its view, the sign-in banner's Learn More opens
+`/help/account-and-data/signing-in/`, and Search lists the Explorer articles under **liveworkspace Help**; their
+names and addresses are in `lib/help/platform-help.ts`. On an app's address all three keep that app's own help.
+Settings › Profile › Cloud Sync links to the Google Drive article.
 
 ### Licences (`/licences`)
 
-The third-party licences of this website and the platform's services (accounts, Community, index,
-media, status, telemetry), linked from the footer and listed in the sitemap. It is each product's page
+The third-party licences of this website, the one help centre (`apps/help`, analysed as its checked-in
+livediagram scope's build) and the platform's services (accounts, Community, index, media, status,
+telemetry), linked from the footer and listed in the sitemap. It is each product's page
 ([Third-party licences](../../../../livediagram/docs/specs/002-project-scope/third-party-licences.md)) on
 liveworkspace's own tables: the same generator (`@liveworkspace/licences`) and page body
 (`@liveworkspace/marketing-site`), with the site's apps, overrides and embedded works in
@@ -1072,7 +1070,7 @@ pressable again, and so does coming Back to a page the browser kept.
 - Under a Windows contrast theme (`forced-colors: active`), a button whose only shape is its fill keeps a 1 px
   `ButtonBorder` edge (the shared `forced-edge` utility, [forced colours](../../../livediagram/docs/specs/004-interface-design/forced-colors.md)):
   the account pages' primary button (Continue with email, Verify, Continue), the front door's and closing banner's
-  Create Your Free Account, the account panels' primary button and Decline invitation. Before, Continue with email
+  Create your free account, the account panels' primary button and Decline invitation. Before, Continue with email
   on `/sign-in` was bare centred text with nothing marking it as a button. Normal themes are unchanged.
 - A page that fails to render never shows the framework's bare error screen. It shows the site's own: the
   title "Something went wrong · liveworkspace", a main landmark holding the logo (a link home) over one card (the

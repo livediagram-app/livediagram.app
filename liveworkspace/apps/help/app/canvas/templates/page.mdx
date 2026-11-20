@@ -1,0 +1,288 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Templates',
+  description:
+    'Start from a ready-made template instead of a blank file, find the one you need, and restyle it with any theme.',
+  path: '/help/canvas/templates/',
+});
+
+<ArticleLayout
+  path="canvas/templates"
+  title="Templates"
+  description="Begin from a ready-made starting point instead of an empty start, find the template you need, and adapt it to your needs."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("templates")}
+>
+
+A blank start is freeing, but sometimes you would rather start with structure already in place. Templates give you a ready-made <Noun /> as a starting point, so you can begin from something shaped roughly like what you need and adapt it, instead of building everything from nothing.
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  Templates are filled with believable example content.
+</AppNote>
+
+<AppNote app="livehuddle">
+  A meeting needs a place: rooms to walk into, a table to sit round, somewhere for everyone to
+  arrive. A template gives you somewhere shaped roughly like your team, instead of building every
+  room from nothing.
+</AppNote>
+
+## Starting from a Template
+
+<AppNote app="livediagram">
+  When you [create a new canvas](/new), it is made there and then, saved where new canvases go (see [Default Folders](/help/explorer/folders/default-folders/)), and asks nothing first. The empty tab opens on a start, where you choose what you are making (Diagram, Draw or Workshop): **Start Diagramming**, **Start Drawing** or **Start a Workshop**: its **Recommended** templates first, then every template of that mode in groups beside them, with a search. Click a template and the tab fills with it; from there it is an ordinary canvas, to move, edit, add to and delete from as on any canvas.
+
+Every new tab, and every tab you empty, offers the same start. Close it with its **×** to begin from a blank canvas; while the tab is still empty, **Show Templates** in the strip under the palette brings it back. Picked the wrong mode? The mode switch at the top of the start's list changes it while the tab is empty. In Draw the start is **Start Drawing**, with the pen already in hand, and since Draw has a dock rather than the palette, **Show Templates** sits in a pill at the top of the canvas.
+
+The search at the top of a start looks in every mode, not just the tab's own. Type "sailboat" on Start Drawing and the Sailboat retrospective turns up under **In Other Modes**, in a Workshop block, its card saying **Opens in Workshop**: click it and the tab switches to Workshop with the template on it. Each mode shows up to six matches, with **Show All** for the rest, and pressing the down arrow in the search box takes you to the first card it found.
+
+  <Figure caption="A start's search: nothing of Draw's matched, so it says so in one line and shows what the other modes found.">
+    <DiagramCanvasBasics.StartSearchOtherModes />
+  </Figure>
+</AppNote>
+
+<AppNote app="livedesign">
+  When you [create a new design](/new), it is made there and then, saved where new designs go (see [Default Folders](/help/explorer/folders/default-folders/)), and its empty tab opens on **Start Making Pages**: its **Recommended** templates first, then **Blank Pages**, then every template grouped by what it is for (**Branding**, **Shopping**, **Websites**, **Work and Productivity** and the rest), with a search. Click a template and the tab fills with its pages; from there it is an ordinary design, to move, edit, add to and delete from as on any tab.
+
+Every new tab, and every tab you empty, offers the same start. Close it with its **×** to begin from a blank page; while the tab is still empty, **Show Templates** in the strip under the palette brings it back.
+
+To see one kind of page only, use **All Pages** at the top of the categories and choose **Logo**, **Wireframe** or **Photo**. Choose **Wireframe** and only the templates for app and website screens are left, in every category and in the search; a category with none of that kind steps out of the list. Community designs show only under **All Pages**. The start opens on **All Pages** every time.
+
+The search at the top of the start, **Find a template**, finds a template by its name, its description, its category, or the everyday words people use for it: try "logo", "brand", "dashboard", "travel" or "checkout". Every word you type has to match, and pressing the down arrow in the search box takes you to the first card it found.
+
+**From the Community.**
+
+After a category's templates, **Start Making Pages** can show up to three designs people shared to the [Community](/help/collaboration/sharing/community/) under that category, marked **Community**: the most liked of the past month, each with at least five likes in that time, with who made it beneath. Click one and you get your own copy of that design to start from, and it opens; the shared design never changes. **Recommended** and **Blank Pages** show templates only, the counts beside each category count only its templates, and the search finds a Community design by the words of its title.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  When you [create a new document](/new), it is made there and then, saved where new documents go (see [Default Folders](/help/explorer/folders/default-folders/)), and its empty tab opens on **Start Making Pages**: **Blank Pages** first, one empty page of each kind, then every template in the same categories as below, grouped by what the document is for, with a search. Click a template and the tab fills with its pages; from there it is an ordinary document, to move, edit, add to and delete from as on any tab.
+
+Every new tab, and every tab you empty, offers the same start. It stays until you choose something: it has no **×**, and Escape or a click outside it does not close it. To begin from nothing, choose a blank from **Blank Pages**, the first group, and the tab gets one empty page of that kind. A document opened as a blank (**Start Blank**, or a blank's link) skips the start; while its tab is still empty, **Show Templates** in the strip under the palette brings it back.
+
+To see one kind of page only, use **All Pages** at the top of the categories and choose **Slide Deck**, **Article**, **Infographic** or **Flashcards**. Choose **Slide Deck** and only the decks are left, in every category and in the search; a category with none of that kind steps out of the list. Community documents show only under **All Pages**. The start opens on **All Pages** every time.
+
+The search at the top of the start, **Find a template**, finds a template by its name, its description, its category, or the everyday words people use for it: try "powerpoint", "cv", "minutes", "flyer", "school" or "rfc". Every word you type has to match, and pressing the down arrow in the search box takes you to the first card it found.
+
+After each category's templates come up to three documents from the [Community](/help/collaboration/sharing/finding-community-documents/), marked **Community**: the ones people liked most in the past month (each with at least five likes in that time), with who made them. Choose one to make your own copy of it, which opens as a new document of yours. A search finds them by their title, after the templates. With no Community documents that popular yet, or with the Community turned off, the start shows its templates alone.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+  When you [create a new space](/new), the space is made there and then, saved where new spaces go (see [Default Folders](/help/explorer/folders/default-folders/)). The empty tab then opens on **Start a Space**, on its **Recommended** templates, with the catalogue beside them and a search. Click a template and the tab fills with it; from there it is an ordinary canvas, to move, edit, add to and delete from as on any canvas.
+
+After each category's templates, Start a Space shows up to three Spaces people shared to the [Community](/help/collaboration/sharing/community/) under that category, the month's most liked (each with at least five likes in the past 30 days), marked **Community** with who made them. Choose one to make your own copy of it and open it; the tab you started from is left as it was. They show in a search too, by their titles. **Recommended** and the counts beside each category are templates only.
+
+Every new tab, and every tab you empty, offers the same start. Close it with its **×** to begin from a blank space: the tab gets an [Avatar Pad](/help/palette/avatar-pads/), a little below the middle, where people arrive, just as **Blank Space** gives it. If you take the pad away again and the tab is empty, **Show Templates** in the strip under the palette brings the start back.
+
+</AppNote>
+
+## What's in the Catalogue
+
+<AppNote app="livediagram">
+  The templates are grouped by what they are for, in thirteen categories listed in alphabetical order, and a start skips a category that has nothing in it. A template lives in one category, and a few also appear in another where you would naturally look for them (a RACI Matrix is under both **Teams** and **Planning**), so they are listed under each:
+
+| Category           | Templates                                                                                                                                                                                                                                                                                    | Also shown here                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Brainstorming**  | Mind Map, Tree Mind Map, Bubble Map, Affinity Map, Brainstorm Board, Crazy 8s, Idea Garden                                                                                                                                                                                                   | Concept Map                                                             |
+| **Decisions**      | Decision Tree, Fishbone, Comparison Table, Prioritization Matrix, Risk Matrix, Pre-Mortem, Eisenhower Matrix                                                                                                                                                                                 | Venn Diagram, Architecture Decision Record                              |
+| **Games**          | Pub Quiz, Icebreaker Questions, Two Truths and a Lie, Would You Rather, Find Someone Who Bingo, Doodle Warm-Up                                                                                                                                                                               |                                                                         |
+| **Goals**          | Flywheel, Funnel, Sankey Diagram, OKR Tree, Metric Tree, Objectives Planner                                                                                                                                                                                                                  | Opportunity Solution Tree                                               |
+| **Learning**       | Sketchnote, KWL Chart, Concept Map                                                                                                                                                                                                                                                           | Mind Map, Bubble Map, Timeline, Venn Diagram, Pub Quiz, Family Tree     |
+| **Meetings**       | Meeting Agenda, Workshop Board, [Lean Coffee and Town Hall Q&A](/help/palette/collaborate/qa-boards/)                                                                                                                                                                                        | Brainstorm Board, Event Storming, Crazy 8s, Sketchnote, Sprint Planning |
+| **Planning**       | Timeline, Horizontal Milestone Timeline, Vertical Milestone Timeline, Gantt Chart, Roadmap, Sprint Planning                                                                                                                                                                                  | RACI Matrix, User Story Map, Eisenhower Matrix, 30-60-90 Day Plan       |
+| **Processes**      | Flowchart, Swimlane Flowchart, Approval Workflow, BPMN Process, Value Stream Map                                                                                                                                                                                                             | Decision Tree, Data Flow Diagram, Event Storming, Service Blueprint     |
+| **Product**        | Venn Diagram, User Journey, User Story Map, Empathy Map, Sitemap, Opportunity Solution Tree, Service Blueprint, User Persona, Comic Strip, Paper Prototype, Journey Doodle, Interview Synthesis                                                                                              | Affinity Map, Crazy 8s, Value Proposition Canvas                        |
+| **Retrospectives** | Retrospective, Start, Stop, Continue, Mad, Sad, Glad, 4Ls Retrospective, Sailboat Retrospective                                                                                                                                                                                              | Incident Postmortem, Pre-Mortem                                         |
+| **Software**       | Data Flow Diagram, System Architecture, Database Schema, Sequence Diagram, Cloud Architecture, Class Diagram, State Machine, Event Storming, Incident Postmortem, Threat Model, Network Diagram, C4 System Context, C4 Container Diagram, C4 Component Diagram, Architecture Decision Record |                                                                         |
+| **Strategy**       | SWOT, Pyramid, Business Model Canvas, Stakeholder Map, Wardley Map, Value Proposition Canvas, Rich Picture, PESTLE Analysis                                                                                                                                                                  | Flywheel, Roadmap, OKR Tree, Pre-Mortem                                 |
+| **Teams**          | Org Chart, RACI Matrix, Family Tree, 30-60-90 Day Plan                                                                                                                                                                                                                                       | Stakeholder Map                                                         |
+
+**Find a template** finds a template by its name, its description, its category, or the everyday words people use for it: try "1:1", "retro", "erd", "vsm", "pestel" or "onboarding". Every word you type has to match.
+
+Three blanks lead the **Popular** shelf, one for each way of working, and sit apart from the categories since starting from nothing is not a kind of diagram: **Blank Diagram** (an empty canvas), **Blank Whiteboard** (a board in [Draw mode](/help/canvas/draw-mode/) for free drawing without distractions) and **Blank Workshop** (an empty tab in [Workshop mode](/help/canvas/workshop-mode/), to run a retro, town hall or workshop with timers, votes and polls to hand). After the blanks, Popular shows a few of the templates most people start from; choose a mode and Popular changes to that mode's favourites, its blank first.
+
+**Finding templates for a mode.**
+
+Every template opens in one mode: **Diagram**, **Draw** or **Workshop**, and each mode's start lists its own. To browse another mode's, switch the tab's mode with the switch at the top of the start's list while the tab is empty, or just search: a template from another mode shows which mode it opens in.
+
+- **Draw** templates are drawn by hand, ready to draw over: **Sketchnote**, **Rich Picture**, **Comic Strip**, **Doodle Warm-Up**, **Paper Prototype**, **Journey Doodle**, **Pre-Mortem** and **Idea Garden**.
+- **Workshop** templates are sessions to run with your team: **Blank Workshop**, **Retrospective**, **Start, Stop, Continue**, **Mad, Sad, Glad**, **4Ls Retrospective**, **Sailboat Retrospective**, **Town Hall Q&A**, **Lean Coffee**, **Crazy 8s**, the quizzes and games (**Pub Quiz**, **Icebreaker Questions**, **Two Truths and a Lie**, **Would You Rather** and **Find Someone Who Bingo**), **Meeting Agenda**, **Workshop Board**, **Brainstorm Board**, the boards that come with a dot vote, **Affinity Map**, **Prioritization Matrix** and **Risk Matrix**, the boards a team fills in together in a session (**Incident Postmortem**, **Objectives Planner**, **Roadmap**, **Sprint Planning**, **RACI Matrix**, **User Story Map**, **Business Model Canvas**, **Stakeholder Map**, **Value Proposition Canvas**, **Opportunity Solution Tree**, **User Persona** and **Interview Synthesis**), and the sticky-note boards a group fills in together, such as **SWOT**, **PESTLE Analysis**, **KWL Chart**, **Empathy Map** and **User Journey**. See [Workshop Mode](/help/canvas/workshop-mode/).
+- Every other template is a **Diagram** template.
+
+Each one arrives as real elements rather than a picture: a Gantt chart's bars are shapes you drag, a mind map's branches are nodes you can rearrange. Nothing in a template is locked or special.
+
+**What a template tells you.**
+
+Every template but the blanks carries a [note](/help/canvas/notes/) on its title saying how to use it: a Workshop template's note is a run sheet for the facilitator, step by step with timings; a template you present (a roadmap, a pyramid, an objectives tree) has a talk track in the order to tell it; and a diagram's says how to read it and how to grow it. Open the note from the indicator on the title.
+
+Workshop templates come ready to run. Their timer and vote are on the board, each beside a line saying when to press it, under **Run the session** to the right of the board when the board itself has no room for them; press one and it starts for everyone (see [Session Tools](/help/collaboration/session-tools/)). Diagrams that show something moving, such as a request through an architecture or data through a data-flow diagram, animate their lines in the direction it travels.
+
+</AppNote>
+
+<AppNote app="livedesign">
+  The templates are grouped by what you are making, in ten categories. A template that fits two jobs shows in both (an online store is under **Websites** and **Shopping**).
+
+| Category                   | Templates                                                                                                                                |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Branding**               | [Logo Design, Brand Board, Lockup Explorations, Wordmark Explorations, Emblems and Badges, Marks and App Icons](/help/pages/logo-pages/) |
+| **Health and Fitness**     | [Watch App Wireframe, Fitness Watch Wireframe, Class Booking Wireframe](/help/pages/wireframe-pages/)                                    |
+| **Music and Video**        | [Music App Wireframe, Video App Wireframe, Watch Music Wireframe](/help/pages/wireframe-pages/)                                          |
+| **Photos**                 | [Photo Edit](/help/pages/photo-pages/)                                                                                                   |
+| **Shopping**               | [Mobile App Wireframe, Delivery App Wireframe, Online Store Wireframe](/help/pages/wireframe-pages/)                                     |
+| **Sign Up and Onboarding** | [App Sign Up Wireframe, Mobile App Wireframe, Launch Site Wireframe](/help/pages/wireframe-pages/)                                       |
+| **Social and Messaging**   | [Social App Wireframe, Tablet App Wireframe, Account Settings Wireframe, Team Inbox Wireframe](/help/pages/wireframe-pages/)             |
+| **Travel and Transport**   | [Travel App Wireframe, Ride App Wireframe](/help/pages/wireframe-pages/)                                                                 |
+| **Websites**               | [Website Wireframe, Launch Site Wireframe, Online Store Wireframe, Blog Wireframe, Company Site Wireframe](/help/pages/wireframe-pages/) |
+| **Work and Productivity**  | [Web App Wireframe, Project Tool Wireframe, Team Inbox Wireframe](/help/pages/wireframe-pages/)                                          |
+
+The blanks sit apart from the categories, since starting from nothing is not a kind of page. Each starts on one empty page of a kind you already know: **Blank Logo**, and the five blank [wireframes](/help/pages/wireframe-pages/), **Blank Phone Wireframe**, **Blank Tablet Wireframe**, **Blank Website Wireframe**, **Blank Laptop Wireframe** and **Blank Watch Wireframe**. Find them in **Blank Pages** on **Start Making Pages**, search for them, or pick them from **Blank Slate** on the livedesign home page. To start on an empty page that asks what it is for, close the start with its **×**. **Blank Tab**, the same empty tab, is made by name, from an AI agent or a link, rather than offered on the start.
+
+Each one arrives as real elements rather than a picture: a logo's wordmark is text you retype, a wireframe's screens sit in [device frames](/help/palette/devices/) you can rearrange. A wireframe flow arrives already linked, so **Prototype** clicks through it at once ([Clickable Prototypes](/help/pages/wireframe-pages/prototypes/)). Nothing in a template is locked or special.
+
+</AppNote>
+
+<AppNote app="livedocuments">
+  The templates are grouped by what the document is for, in ten categories. A few are in two, where you might look for them in either:
+
+| Category      | Templates                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **Careers**   | Résumé, Cover Letter                                                                                                    |
+| **Events**    | Event Poster, Group Card, Wedding Toast                                                                                 |
+| **Home**      | Recipe Card, Floor Plan                                                                                                 |
+| **Learning**  | Lesson Plan, Class Lesson, School Presentation, How It Works                                                            |
+| **Marketing** | Social Carousel, Versus, How It Works, Storyboard, Newsletter, Case Study, Event Poster                                 |
+| **Pitches**   | Slide Deck, Launch Keynote, Product Pitch, Product One-Pager, Board Update                                              |
+| **Plans**     | [Project Brief](/help/pages/articles/), Working Backwards, Business Proposal, Design Doc, Product One-Pager, Case Study |
+| **Reports**   | Year in Review, Quarterly Review, Data Story, Status Report, Research Report, Board Update                              |
+| **Talks**     | [Conference Talk, Wedding Toast](/help/pages/flashcards/), Product Pitch, School Presentation                           |
+| **Teams**     | Meeting Notes, Workshop Kickoff, Team Welcome, Onboarding Handbook, Newsletter                                          |
+
+**Launch Keynote**, **Quarterly Review**, **Team Welcome**, **Workshop Kickoff**, **Class Lesson** and **Board Update** are decks built from the [slide layouts](/help/pages/slide-pages/), each opening and closing on an animated background. When you [present](/help/selection-modes/slide-deck/presenting/) one, the slides that make points one at a time (three reasons, the steps of a process, the goals) bring each point in on its own click, and the charts in Quarterly Review and Board Update carry the deck's own figures. **Working Backwards** is Amazon's PR/FAQ, written as an article.
+
+**Meeting Notes**, **Lesson Plan**, **Business Proposal**, **Design Doc**, **Status Report**, **Cover Letter**, **Product One-Pager**, **Research Report**, **Newsletter**, **Case Study** and **Onboarding Handbook** are [articles](/help/pages/articles/) written out as the real thing, so you can see what an article holds: tables for the attendees, the timings or the prices, a table of contents in the longer ones, a code block in the design doc, footnotes for every source in the research report and the case study, checklists in the handbook, and headers and footers with the date, the document's name and "Page 2 of 4". Retype the words and keep the shape, or export the finished document to Word.
+
+**Social Carousel** and **Group Card** open as a stack: you see one page at a time and flip to the next, as you would swipe a carousel or open a card. Switch them to stand side by side with **Stack Pages** in Contents Options. The flashcard talks stack too, and each card shows how long it takes to say.
+
+The blanks sit apart from the categories, since starting from nothing is not a kind of page. **Blank Illustration** is one empty page that asks what it is for; it is what **Start Blank** gives you, and it is not offered on the start, where **Blank Infographic** is the same page. The others start on one empty page of a kind you already know: **Blank Slide Deck**, **Blank Article**, **Blank Infographic** and **Blank Flashcards**. Find them in **Blank Pages** on **Start Making Pages**, search for them, or pick them from **Blank Slate** on the livedocuments home page. **Blank Tab**, an empty tab with one page that asks what it is for, is made by name, from an AI agent or a link, rather than offered on the start.
+
+Each one arrives as real elements rather than a picture: a slide's headings are text you retype, a storyboard's shots are frames you can rearrange. Nothing in a template is locked or special.
+
+</AppNote>
+
+<AppNote app="livehuddle">
+  The catalogue is thirty-three templates: **Blank Space** and thirty-two ready-made Spaces in eight categories, **Campus**, **Events**, **Games Rooms**, **Homes**, **Office**, **Outdoor**, **Recreation** and **Venues**. Start a Space opens on Recommended.
+
+| Template             | Category    | What it is                                                                                      |
+| -------------------- | ----------- | ----------------------------------------------------------------------------------------------- |
+| **Blank Space**      |             | An empty space with an Avatar Pad to arrive on: build a room, leave a note, place a timer       |
+| **Virtual Office**   | Office      | A front desk, desks, a meeting room with a Screen, a kitchen, a lounge and a focus room         |
+| **Coworking Space**  | Office      | An open floor: hot desks, two phone booths, a glass meeting room, a coffee bar and a lounge     |
+| **Team Pod**         | Office      | A small team's corner: four desks, a stand-up table and Timer, a phone booth and a team board   |
+| **Focus Library**    | Office      | A quiet room of bookshelves and study desks, two Office Pods for calls and a reading nook       |
+| **All-Hands Hall**   | Events      | A hall for town halls and demos: a stage, rows of seats facing it and Bring Focus               |
+| **Training Room**    | Events      | A small stage up front and four tables for group work, with Bring Focus for the trainer         |
+| **Rooftop Bar**      | Recreation  | A long bar with stools, a drinks cabinet and fridge, and two lounges under the trees            |
+| **Cafe**             | Recreation  | A counter with stools and coffee, tables to share and a sofa nook                               |
+| **Garden Retreat**   | Outdoor     | A fenced lawn with paths, trees, a pond, a summer house to meet in and a campfire               |
+| **City Park**        | Outdoor     | A park crossed by paths: benches, a picnic table, a fountain and a bandstand                    |
+| **Company Campus**   | Campus      | Offices, an auditorium with a stage, a bar and a games room, joined by a garden                 |
+| **Conference Venue** | Venues      | A main hall with a stage, breakout rooms, a foyer bar and a speakers' room round a courtyard    |
+| **Startup HQ**       | Campus      | A studio of desks, a town hall, a kitchen bar and a games room, with Office Pods in the garden  |
+| **School Quad**      | Campus      | A lecture hall, two classrooms, a library and a canteen round a grassy quad                     |
+| **Hotel and Suites** | Venues      | Three floors: a lobby with a bar and a ballroom, six suites, and a rooftop terrace, by lift     |
+| **Co-working Tower** | Campus      | Three floors: hot desks and a cafe, phone booths, and an event floor, by lift                   |
+| **Expo Hall**        | Events      | Rows of sponsor booths round a keynote stage, a food court, a speaker lounge (also in Venues)   |
+| **Beach Offsite**    | Outdoor     | A beach hut to meet in, a tiki bar, a campfire circle, hammocks and a lagoon (also in Campus)   |
+| **Arcade Lounge**    | Games Rooms | Twenty Arcade Machines to play Moon Mail on, a snack bar, a glass party room and a chill lounge |
+| **Games Night Den**  | Games Rooms | A den round the fire with the dog, games tables, and a games room of pool, foosball and darts   |
+| **Sports Bar**       | Games Rooms | A long bar, a glass screen lounge, two ping-pong tables, pool and foosball (also in Recreation) |
+| **Family House**     | Homes       | Two floors by the Stairs: a living room by the fire, a kitchen and a playroom, a study upstairs |
+| **City Townhouse**   | Homes       | Three floors: a kitchen-diner, a glass home office and a music room, and a roof terrace         |
+| **Country Cottage**  | Homes       | Two floors: a farmhouse kitchen, a snug, a garden with a pond, and an attic studio upstairs     |
+| **Music Hall**       | Venues      | A main hall with a curtained stage and a standing floor, a foyer bar, a green room, a cloakroom |
+| **Festival Field**   | Venues      | An open-air main stage, three food stalls, a bar tent and a campfire area (also in Outdoor)     |
+| **Interview Suite**  | Office      | A waiting area with a front desk, two closed interview rooms and a debrief room                 |
+| **Client Lounge**    | Office      | A front desk, a lounge with a coffee bar, a glass pitch room, a boardroom and a quiet room      |
+| **Classroom**        | Events      | Rows of desks facing a Screen and Bring Focus, and three breakout rooms with a Timer each       |
+| **Hackathon Hall**   | Events      | Team tables, a demo stage, a mentor room, a nap room and a snack bar                            |
+| **Art Gallery**      | Events      | Photo Walls to walk round, a sculpture hall, an artist talk and a foyer café                    |
+| **Wellness Studio**  | Recreation  | A yoga class, a meditation room, a gym, a nap room and a juice bar                              |
+
+Every one of the thirty-two Spaces is made to walk round in [Avatar mode](/help/selection-modes/avatar-mode/). The Hotel and Suites and the Co-working Tower are buildings with a tab for each floor: ride a named [Elevator](/help/palette/elevator/) between them, or in the Co-working Tower take the [Stairs](/help/palette/stairs/) a floor up or down. The **Homes** have a tab for each floor too, **Downstairs** and **Upstairs** (and the City Townhouse's **Roof Terrace**), joined only by the Stairs in the hall, standing in the same place on every floor.
+
+The **Campus** Spaces and the **Venues** are whole sites: every room has a door onto a garden path or the open floor and a Room Sign beside it, and a **Directory** just inside the gate or the front doors lists every room with **Walk There**, so you can find your way from the gate to the bar without a map. The **Games Rooms** are built round the pieces you can play: walk up to an [Arcade Machine](/help/palette/virtual-office/) and press it for Moon Mail, or sit at a Ping-Pong Table to play whoever sits opposite.
+
+**Find a template** finds a template by its name, its description, its category, or the everyday words people use for it: try "office", "garden", "drinks", "arcade", "house" or "all hands". Every word you type has to match.
+
+**Blank Space** leads **Recommended**, apart from the categories since starting from nothing is not a kind of Space: a tab to furnish yourself, holding only an [Avatar Pad](/help/palette/avatar-pads/) a little below the middle where people arrive, with a Timer or Stopwatch to place and Bring Focus to hand (see [Session Tools](/help/collaboration/session-tools/)). Closing **Start a Space** with its **×** starts from the same blank tab and pad. After it, Recommended offers four Spaces picked for most teams: the **Virtual Office**, the **Team Pod**, the **Coworking Space** and the **All-Hands Hall**.
+
+Each template arrives as real elements rather than a picture: a room's walls, a table's chairs and the sticky notes on the wall are elements you drag, and an [Avatar Pad](/help/palette/avatar-pads/) in the middle of the Space (its busiest room, its lobby or its lawn) is where everyone arrives as an avatar. A Space with floors has one on every floor, by the lifts. Nothing in a template is locked or special.
+
+</AppNote>
+
+## Changing the Theme
+
+A new <Noun /> starts on the Default theme, and a template picked on a start takes the tab's current theme. Once you are on the canvas, open the **Tab Style** dialog and try a different [theme](/help/canvas/themes/): it recolours the whole template at once.
+
+<AppNote app="livediagram,livedesign,livehuddle">
+  Click the **Theme & Canvas** button in the bottom-right corner (named **Style** on a wide screen)
+  to open it.
+</AppNote>
+
+<AppNote app="livedocuments">Click the **Style** button on a page's title bar to open it.</AppNote>
+
+<AppNote app="livediagram,livedesign,livedocuments">
+  **Clearing the example content.** Some templates arrive filled in with examples that show how they are used. While the tab still holds them, a bar under the palette says **Example content shows how this works.** with two buttons:
+
+- **Clear Example Content** empties the example notes, checklist rows and ticks, table cells and chart figures, and keeps the rest: every element stays where it is and looks as it did, with its headings and titles.
+- **Keep It** keeps the examples as your own.
+
+Either one is a single step, so **Undo** brings the examples back. Only an Editor sees the bar.
+
+</AppNote>
+
+<AppNote app="livediagram">
+  The examples are things like the Eisenhower Matrix's notes in each quadrant, a retro's notes and
+  its action checklist. Clearing also empties the sample lines a few templates write as free text
+  (the Fishbone's causes, the Timeline's milestone lines, the Roadmap's outcomes, the Venn's tested
+  ideas), and keeps each element's prompts and keys.
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  Clearing also empties the body copy written in text boxes: plain sentences, not bold titles,
+  headings, single words or figures. Anything you have already typed, ticked or changed stays as you
+  left it.
+</AppNote>
+
+<AppNote app="livedesign">
+  The examples are things like the figures in the Web App Wireframe's chart and a wireframe's sample
+  sentences. A logo's words stay too.
+</AppNote>
+
+<AppNote app="livedocuments">
+  The examples are things like a Live Card's notes, the figures in a Quarterly Review's chart and a
+  slide's or a poster's sample sentences.
+</AppNote>
+
+## Making It Your Own
+
+A template is just a head start, not a constraint. Everything in it is fully editable: rename and recolour the elements, restyle the whole thing with a different theme, or strip out the parts you do not need. Because the <Noun /> works the same as any other, you can also add [tabs](/help/tabs/using-tabs/), invite others, and share it once you have shaped it into what you want.
+
+<AppNote app="livehuddle">
+  You can also add rooms and furniture from the palette's **Rooms**, **Seats** and **Perks**
+  categories, and move the walls.
+</AppNote>
+
+<Tip>
+  Templates pair naturally with themes: pick a template that fits your content, then try a few
+  themes from the Tab Style dialog to find the look you want. Double-click a theme to apply it and
+  close the dialog in one go.
+</Tip>
+
+</ArticleLayout>

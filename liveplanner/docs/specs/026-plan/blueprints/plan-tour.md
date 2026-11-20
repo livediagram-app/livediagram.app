@@ -54,7 +54,7 @@ Also touched: `usePlanItems` (`practiceIds`, `practise`, `endPractice`), `usePla
 `Moved` for a practice card), `PlanBoardCells` / `PlanBoardView` (`data-practice`, the deal index, the stamp),
 `PlanCardFace` (no key tag at key 0), `ItemPanel` (a Practice Card: no menu, no comments), `ItemPanelLayout`
 (`data-item-field`), `usePlanTabActions.addTabAfter`, `DashboardSettings`, `globals.css` and `canvas-motion.css`,
-the help article `apps/help/app/plan/plan-tour/page.mdx`, and the telemetry dashboard
+the help article `liveworkspace/apps/help/app/plan/plan-tour/page.mdx`, and the telemetry dashboard
 (`../liveworkspace/apps/site/app/telemetry/liveplanner/computed-emitters.ts`, `event-explanations.ts`, the retired
 events list).
 

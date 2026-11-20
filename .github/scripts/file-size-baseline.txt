@@ -2,18 +2,14 @@
 # and real code still waiting for its split. Written by .github/scripts/file-size-guard.mjs --update;
 # it may only shrink (docs/ci.md "File size").
 livedesign/apps/api/src/openapi/manifest.ts
-livedesign/apps/help/lib/featureIcons.tsx
 livedesign/apps/live/components/dialogs/settings/settings-catalogue.ts
 livedesign/packages/design/src/element-types.ts
-livedesign/packages/help-registry/src/index.ts
 livedesign/packages/template-previews/src/template-preview-flows.tsx
 livediagram/apps/api/src/openapi/manifest.ts
 livediagram/apps/editor/components/dialogs/settings/settings-catalogue.ts
-livediagram/apps/help/lib/featureIcons.tsx
 livediagram/apps/marketing/lib/landing-content.tsx
 livediagram/packages/agent-verbs/src/mcp/schema.ts
 livediagram/packages/document/src/element-types.ts
-livediagram/packages/help-registry/src/index.ts
 livediagram/packages/template-previews/src/template-preview-25.tsx
 livediagram/packages/template-previews/src/template-preview-3.tsx
 livediagram/packages/template-previews/src/template-preview-4.tsx
@@ -21,22 +17,21 @@ livediagram/packages/template-previews/src/template-preview-6.tsx
 livediagram/packages/templates/src/templates.ts
 livedocuments/apps/api/src/openapi/manifest.ts
 livedocuments/apps/editor/components/dialogs/settings/settings-catalogue.ts
-livedocuments/apps/help/lib/featureIcons.tsx
 livedocuments/packages/document/src/element-types.ts
-livedocuments/packages/help-registry/src/index.ts
 livehuddle/apps/api/src/openapi/manifest.ts
 livehuddle/apps/editor/components/dialogs/settings/settings-catalogue.ts
-livehuddle/apps/help/lib/featureIcons.tsx
 livehuddle/packages/avatar/src/furniture-art.ts
 livehuddle/packages/document/src/office-social.ts
-livehuddle/packages/help-registry/src/index.ts
 liveplanner/apps/api/src/openapi/manifest.ts
 liveplanner/apps/editor/components/dialogs/settings/settings-catalogue.ts
 liveplanner/packages/agent-verbs/src/mcp/plan-schema.ts
-liveplanner/packages/help-registry/src/index.ts
 liveplanner/packages/project/src/element-types.ts
 liveplanner/packages/templates/src/plan-template-catalogue.ts
 liveplanner/packages/templates/src/plan-template-seed-data.ts
+liveworkspace/apps/help/editions/livedesign/lib/featureIcons.tsx
+liveworkspace/apps/help/editions/livediagram/lib/featureIcons.tsx
+liveworkspace/apps/help/editions/livedocuments/lib/featureIcons.tsx
+liveworkspace/apps/help/editions/livehuddle/lib/featureIcons.tsx
 liveworkspace/apps/site/app/telemetry/livedesign/catalogue/features.ts
 liveworkspace/apps/site/app/telemetry/livedesign/event-explanations.ts
 liveworkspace/apps/site/app/telemetry/livediagram/catalogue/content.ts

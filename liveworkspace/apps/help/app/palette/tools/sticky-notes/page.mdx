@@ -1,0 +1,103 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { StickyNotes } from '@liveworkspace/help-site/art/illustrations/palette-tools';
+import { PaletteRows } from '@liveworkspace/help-site/art/illustrations/palette-rows';
+
+export const metadata = helpMetadata({
+  title: 'Sticky Notes',
+  description:
+    'Drop a coloured note card on the canvas for short notes, ideas, and brainstorm items.',
+  path: '/help/palette/tools/sticky-notes/',
+});
+
+<ArticleLayout
+  path="palette/tools/sticky-notes"
+  title="Sticky Notes"
+  description="A coloured note card for short notes and brainstorm items."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Tools', slug: 'tools' }}
+  subArticles={getSubArticles('tools').filter((a) => a.slug !== 'sticky-notes')}
+>
+
+A sticky note is a small coloured card for a short piece of text: an idea, a question, a label, a brainstorm item. It is the digital version of the paper sticky, and it behaves like any other canvas element once placed.
+
+<Figure caption="A scatter of coloured sticky notes, the way a brainstorm wall looks on the canvas.">
+  <StickyNotes />
+</Figure>
+
+## Adding one
+
+<Step n={1}>
+  Open the **Write** category on the palette strip, or press `N` to skip the palette.
+</Step>
+<Step n={2}>
+  Pick **Note**, then tap the canvas to drop a note (200 &times; 200 by default, or the size of the
+  element you had selected), or drag to draw it at the size you want.
+</Step>
+<Step n={3}>Double-click the note to type.</Step>
+
+<AppNote app="livediagram,livehuddle">
+
+<Figure caption="The Write category with Note armed: the sticky note's row, with its N key on the right.">
+  <PaletteRows category="Write" active="Note" />
+</Figure>
+
+</AppNote>
+
+## Writing on a note
+
+A note holds several lines of text and wraps it as you type. While you are editing, **Enter** starts a new line, and **Escape** or clicking away keeps what you typed. Text that outgrows the note is clipped rather than spilling out, so resize the note to show the rest, or set the text size to **Scale** so the text shrinks to fit.
+
+## Colours
+
+A sticky note keeps its own colour whatever the [theme](/help/canvas/themes/): it lands in a pale amber, like a paper note, and changing the tab's theme never recolours it, because a note's colour is usually your own shorthand (ideas in yellow, risks in pink) rather than part of the <Noun />'s palette.
+
+To recolour one, right-click it and open **Appearance**.
+
+Its **Presets** are a pad of twelve note colours, each with a readable ink for its paper: **Classic**, **Lemon**, **Peach**, **Rose**, **Lilac**, **Sky**, **Mint**, **Teal**, **Slate**, **Paper**, **Charcoal** and **Ink**. **Colours** sets the paper and text by hand if none of them fits.
+
+## Working with them
+
+Stickies move, resize and lock like everything else. Scatter a wall of them for a brainstorm, select several at once to restyle or move them together, or group them so the cluster travels as one.
+
+<AppNote app="livediagram">
+  Stickies also layer like everything else, and a [frame](/help/palette/build/frames/) makes the
+  cluster travel as one.
+</AppNote>
+
+<AppNote app="livedesign">
+  A [frame](/help/palette/frames/) makes the cluster travel as one.
+</AppNote>
+
+<AppNote app="livedocuments">
+  A [stack](/help/palette/stacks/) makes the cluster travel as one.
+</AppNote>
+
+<AppNote app="livehuddle">
+  Drop them in a [room](/help/palette/virtual-office/) so each topic has its own corner.
+</AppNote>
+
+<AppNote app="livediagram">
+  <Tip>
+    Sticky notes pair naturally with [dot voting](/help/collaboration/session-tools/voting/) in a
+    live session: capture ideas on stickies, then vote on them together.
+  </Tip>
+</AppNote>
+
+<AppNote app="livedesign,livedocuments">
+  <Tip>
+    Sticky notes pair naturally with [comments](/help/collaboration/comments/): a sticky is a remark
+    everyone sees on the page, a comment is a conversation about one element.
+  </Tip>
+</AppNote>
+
+<AppNote app="livehuddle">
+  <Tip>
+    Sticky notes pair naturally with the [timer](/help/collaboration/session-tools/timer/) in a live
+    session: give the room five minutes to capture ideas on stickies, then talk them through.
+  </Tip>
+</AppNote>
+
+</ArticleLayout>

@@ -1,4 +1,4 @@
-# The workflow the help article "Repositories" shows (apps/help/app/developers/repositories/page.mdx); a test keeps
+# The workflow the help article "Repositories" shows (liveworkspace/apps/help/app/developers/repositories/page.mdx); a test keeps
 # the two the same, and CI lints this file with actionlint.
 name: Diagram changes
 on:

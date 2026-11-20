@@ -29,15 +29,15 @@ pnpm dev
 
 Turbo spins up all seven dev servers in parallel (the CLI has no dev server):
 
-| App              | Dev URL                                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------------------- |
-| `apps/router`    | `http://localhost:3400`: **everything on one port**, stitched like production                      |
-| `apps/marketing` | `http://localhost:3401`                                                                            |
-| `apps/live`      | `http://localhost:3402` (clean routes: /new, /explorer, ...)                                       |
-| `apps/help`      | `http://localhost:3404/help`                                                                       |
-| `apps/community` | `http://localhost:3405/community`                                                                  |
-| `apps/api`       | `http://localhost:8989/api`                                                                        |
-| `apps/mcp`       | `http://localhost:8990` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+| App                       | Dev URL                                                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `apps/router`             | `http://localhost:3400`: **everything on one port**, stitched like production                                              |
+| `apps/marketing`          | `http://localhost:3401`                                                                                                    |
+| `apps/live`               | `http://localhost:3402` (clean routes: /new, /explorer, ...)                                                               |
+| `liveworkspace/apps/help` | `http://127.0.0.1:3020/help`, the one help centre (`HELP_SCOPE=livedesign corepack pnpm --filter @liveworkspace/help dev`) |
+| `apps/community`          | `http://localhost:3405/community`                                                                                          |
+| `apps/api`                | `http://localhost:8989/api`                                                                                                |
+| `apps/mcp`                | `http://localhost:8990` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only)                         |
 
 The `router` dev server (`wrangler dev --env local`, port 3400) gives you the production URL shape locally: `/` is marketing, `/new` and `/design/*` are the editor, plus `/help` and `/api` (`/telemetry` redirects to liveworkspace's dashboard), with no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
@@ -52,7 +52,7 @@ A remote api works too, and there are two of them: `https://staging.livedesign.a
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own data and is
 the one to reach for; the production api reads and writes real people's designs.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the design”**, which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/specs/008-telemetry/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8790) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api and mcp workers with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`. Its dashboard is liveworkspace.app's site (`corepack pnpm dev:site` from the monorepo root, on port 3000); the router's `/telemetry` redirects there with `?app=livedesign.app`.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the design”**, which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `liveworkspace/apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/specs/008-telemetry/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8790) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api and mcp workers with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`. Its dashboard is liveworkspace.app's site (`corepack pnpm dev:site` from the monorepo root, on port 3000); the router's `/telemetry` redirects there with `?app=livedesign.app`.
 
 The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3400/new`. Designs persist in the api worker's Durable Objects, which Wrangler keeps in local storage from the first start. (On `http://localhost:3402/new` instead, set `NEXT_PUBLIC_API_BASE` first; see the note above.)
 
@@ -152,7 +152,7 @@ the api verifies access tokens the stack mints on `/e2e/token?sub=user_…` ([En
 
 - **All three Next.js dev servers (`marketing`, `live`, `help`) run through `../packages/next-config/scripts/next-dev.mjs`.** It refuses a port another process already listens on: it prints the holder's PID, command and folder and exits, leaving that process running, since it may be another session's (`--force` kills it and takes the port, for example `pnpm --filter <app> dev -- --force`). It also points dev at an isolated `.next-dev/` cache, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures). The cache is kept between starts: Turbopack's file-system cache reuses the last session's compilation (a warm start serves its first page in about a second) and reconciles a route restructure by itself, and `turbopackGc` keeps it from growing stale ([Next.js](../specs/016-platform/nextjs.md) "The Turbopack cache"). A cache that goes wrong is a bug to fix, not something to wipe away. All three run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. Every app's settings come from `@liveworkspace/next-config` (`liveworkspaceNextConfig`), so a change to them lands in all three at once.
 
-  Turbopack's Rust MDX pipeline ignores remark/rehype plugins handed over as imported JS functions, so `apps/help/next.config.ts` names `remark-gfm` as a string (`remarkPlugins: [['remark-gfm', {}]]`), which Turbopack resolves itself, and the help centre's pipe tables render. Keep that string form: importing the plugin fails the build under Turbopack with "does not have serializable options".
+  Turbopack's Rust MDX pipeline ignores remark/rehype plugins handed over as imported JS functions, so `liveworkspace/apps/help/next.config.ts` names `remark-gfm` as a string (`remarkPlugins: [['remark-gfm', {}]]`), which Turbopack resolves itself, and the help centre's pipe tables render. Keep that string form: importing the plugin fails the build under Turbopack with "does not have serializable options".
 
   Next 16 also writes `next-env.d.ts` into whichever app you run it from, gitignored on purpose: it names the active distDir inside itself, so dev and build would otherwise rewrite it over each other, and each app's tsconfig already picks up the Next types without it being tracked. Next can also generate an `AGENTS.md` + `CLAUDE.md` pair of agent instructions; the shared config turns that off (`agentRules: false`), because the repo's agent instructions are written by hand in the root `AGENTS.md`.
 

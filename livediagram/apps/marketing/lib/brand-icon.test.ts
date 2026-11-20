@@ -9,7 +9,9 @@ import { brandLogoSvg, brandMarkSvg } from '@livediagram/ui';
 // `pnpm icons:brand` from the Living Prism module in @livediagram/ui. Nothing
 // at runtime notices one of them drifting; this does.
 
-const APPS = ['marketing', 'editor', 'help'] as const;
+const APPS = ['marketing', 'editor'] as const;
+// The one help centre's edition of this app (liveworkspace/apps/help), whose build serves its icon under /help.
+const HELP_ICON = '../liveworkspace/apps/help/editions/livediagram/icon';
 const REPO = new URL('../../../', import.meta.url);
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, REPO)), 'utf8').trim();
 const REGENERATE = 'stale: run `pnpm icons:brand`';
@@ -19,6 +21,7 @@ describe('brand icon', () => {
     const favicon = brandMarkSvg({ variant: 'compact', scheme: 'auto' });
     for (const app of APPS)
       expect(read(`apps/${app}/app/icon.svg`), `${app} ${REGENERATE}`).toBe(favicon);
+    expect(read(`${HELP_ICON}.svg`), `help ${REGENERATE}`).toBe(favicon);
   });
 
   it('ships the full mark and the lockup, light and dark, in marketing/media/logo/', () => {
@@ -39,11 +42,10 @@ describe('brand icon', () => {
     const tile = readFileSync(
       fileURLToPath(new URL('apps/marketing/public/livediagram-icon-256.png', REPO)),
     );
-    for (const app of ['help'])
-      expect(
-        readFileSync(fileURLToPath(new URL(`apps/${app}/app/icon.png`, REPO))).equals(tile),
-        `${app} ${REGENERATE}`,
-      ).toBe(true);
+    expect(
+      readFileSync(fileURLToPath(new URL(`${HELP_ICON}.png`, REPO))).equals(tile),
+      `help ${REGENERATE}`,
+    ).toBe(true);
   });
 
   // The api's emails load the mark from the site (docs/specs/014-identity/transactional-email.md "Branding"), so the

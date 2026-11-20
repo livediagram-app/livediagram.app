@@ -1,0 +1,62 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { Space3DScene } from '@/editions/livehuddle/components/illustrations/space-3d';
+
+export const metadata = helpMetadata({
+  title: 'The 3D View',
+  description:
+    'Walk a Space in 3D: walls stand up, rooms open as you near them, the camera turns a quarter at a time with [ and ], and usable pieces glow.',
+  path: '/help/selection-modes/avatar-mode/3d-view/',
+});
+
+<ArticleLayout
+  path="selection-modes/avatar-mode/3d-view"
+  title="The 3D View"
+  description="While you walk, the Space tilts back like a map: walls stand up, rooms open as you reach them, and you can turn the camera to see round the room."
+  categoryTitle="Edit or Walk"
+  categorySlug="selection-modes/avatar-mode"
+>
+
+The 3D View tilts the Space back while you walk, so it reads as a place rather than a plan. The floor lies back with the tab's background on it, the walls of rooms, corridors, pods and fences stand up with their doorways and windows, furniture stands on the floor, and every character stands upright. It changes nothing on the board and nothing anyone else sees.
+
+<Figure caption="A room in the 3D View: its name over the doorway, the near wall faded, a Notice Board glowing, and Turn Left, Turn Right and 3D at the bottom right.">
+  <Space3DScene />
+</Figure>
+
+## On by Default
+
+**Every walk opens in 3D** until you turn it off. Press **3D** at the bottom right, before the zoom controls, or press **`Shift`+`3`**, to lay the Space flat. Your choice is remembered in this browser, so if you prefer the flat plan, every walk on every Space opens flat until you press **3D** again. The button only shows while you walk.
+
+Turning 3D on brings the camera a little closer, and turning it off steps back out, so you see more of the room in 3D without losing your place. With **Reduce Motion** on in [Settings](/help/user-interface/settings/) or on your device, it switches at once instead of tilting.
+
+## Arriving
+
+When you open a Space walking, or travel to another tab, the whole tab shows flat for a moment, framed so you can see where you are. Then the camera glides in to your character as the view tilts up. You can walk and click straight away; the tilt waits for the overview. Switching from Edit to Walk on the tab you're on glides straight in, since you were just looking at the whole tab.
+
+## Turning the Camera
+
+While 3D is on, **Turn Left** and **Turn Right** sit beside the **3D** button. Each turns the camera a quarter turn round your character, so you can see the back and sides of the room and the pieces in it: a bookcase shows its back from behind, a sofa its end from the side. On a keyboard, press **`[`** to turn left and **`]`** to turn right while you walk.
+
+- The arrow keys still steer by the screen: up always walks away from the camera.
+- Clicking the floor walks there, and dragging pans the way your hand moves, whichever way the camera faces.
+- Room names and text on the floor turn to stay readable.
+- The turn is yours alone and is not remembered: lay the view flat and it turns back to face up the screen.
+
+## Walls and Rooms
+
+- **Rooms open up as you come near.** Walk up to a room, or stand inside one, and its walls on your side fade, so you can see what is going on before you choose to walk in.
+- **A wall between you and the camera fades** too, so your character is never hidden.
+- **Each room's name hangs over its doorway**, on a small sign above the door, where no picture or screen on the wall can cover it. A room with no door keeps its name on its back wall.
+- **Pieces hung on a wall stay on it**: a Notice Board, World Clock, Screen or Room Sign placed against a room's back wall hangs upright on that wall.
+
+## Pieces You Can Use
+
+In 3D, a piece with a control of its own **glows softly under the pointer**, so you can tell what does something: an Arcade's **Insert Coin**, a **Notice Board**, the office dog and a **Reception Desk**'s bell. The bubbles that open as you walk up to a piece stand upright over it, as name chips do.
+
+## Building in 3D
+
+The 3D View is a view of walking. Everything you can do while walking still works in it: sitting, opening doors, using pieces, speaking, reactions and calls. To build, press **Edit**: the Space lays flat for the building palette, handles and menus. Walk again and it tilts back.
+
+Everyone who walks has the 3D View, Editors while they walk and Participants and view-only visitors always, because it only changes your own screen. On a phone the **3D** button sits in the same row as the zoom controls; a tap walks and a drag pans, as in the flat view.
+
+</ArticleLayout>

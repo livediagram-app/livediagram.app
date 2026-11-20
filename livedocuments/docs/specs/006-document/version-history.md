@@ -240,5 +240,5 @@ gate), `400 invalid_name` (a name of nothing), `409 too_many_names`, `409 tab_bu
 
 ## Help
 
-The help article **Version History** (`apps/help/app/tabs/version-history/page.mdx`, in the Tabs category) explains
+The help article **Version History** (`liveworkspace/apps/help/app/tabs/version-history/page.mdx`, in the Tabs category) explains
 when versions are kept, looking, restoring with Undo, Make a Copy, who may do what, and the two MCP tools.

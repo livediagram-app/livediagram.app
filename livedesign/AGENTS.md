@@ -180,7 +180,7 @@ Treat them as part of the change, not an afterthought:
 
 ## Help centre articles must stay registered
 
-Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug.
+Whenever you add, remove or rename a help article, follow [`docs/instructions/register-a-help-article.md`](docs/instructions/register-a-help-article.md) in the same change; an unregistered article is a bug. livedesign's help is the one help centre's livedesign scope (`liveworkspace/apps/help`, [Help centre](../liveworkspace/docs/specs/017-help/help-centre.md)).
 
 ## Domain language
 
@@ -202,7 +202,6 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the Pages editor app (Next.js, clean routes)
-  help/         # help centre (Next.js export + MDX, /help): its articles, catalogue and art, on @liveworkspace/help-site
   api/          # Cloudflare Worker REST + WebSocket API (Durable Objects + R2, no database of its own, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.livedesign.app)
   router/       # Cloudflare Worker stitching the apps under one hostname
@@ -212,7 +211,7 @@ packages/
   design/       # design data model (Tab, Element types + element helpers) over @liveworkspace/model-core
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
-  help-registry/  # this product's help-centre articles + categories, bound to @liveworkspace/help-registry's lookups (help app + editor search)
+  help-registry/  # livedesign's slice of the one help catalogue (@liveworkspace/help-registry), for the editor's search, CLI and MCP
   photo-engine/   # photo pages: the layer model + the pixel engine (composite, adjustments, filters, selections, paint, PSD) (pure)
   design-views/ # read-only text views of a tab (outline, pages, layout, ...) for agents and scripts
   api-schema/     # this product's wire-format DTOs the api worker emits + the live editor consumes, over @liveworkspace/api-schema
