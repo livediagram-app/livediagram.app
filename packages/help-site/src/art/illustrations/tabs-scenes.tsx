@@ -153,7 +153,7 @@ export function CrossTabLink() {
         height={34}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={80} y={19} size={10} weight={700} tone="strong">
         Follow link

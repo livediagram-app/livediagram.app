@@ -106,7 +106,7 @@ function MetricCard({
         height={52}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={x + 10} y={224} size={9} weight={600} tone="strong">
         {title}
@@ -153,7 +153,7 @@ export function TelemetryDashboardOverview() {
         points={points.slice(0, highlightFrom + 1).join(' ')}
         fill="none"
         className="stroke-slate-300"
-        strokeWidth={2}
+        strokeWidth={0.75}
         strokeLinejoin="round"
         strokeLinecap="round"
       />
@@ -174,7 +174,7 @@ export function TelemetryDashboardOverview() {
         height={32}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <ViewTab x={13} w={62} label="Dashboard" active />
       <ViewTab x={78} w={44} label="Search" />
@@ -185,7 +185,7 @@ export function TelemetryDashboardOverview() {
         height={32}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={142} y={173} size={7} weight={700} tone="muted">
         DETAIL

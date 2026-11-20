@@ -16,7 +16,7 @@ function Pane({ x = 16, y = 12, w = 388, h }: { x?: number; y?: number; w?: numb
       height={h}
       rx={10}
       className="fill-white stroke-slate-200"
-      strokeWidth={1.5}
+      strokeWidth={0.75}
     />
   );
 }
@@ -33,7 +33,14 @@ function SectionHeading({ y, title, link }: { y: number; title: string; link?: s
           {link}
         </Label>
       ) : null}
-      <line x1={32} y1={y + 10} x2={388} y2={y + 10} className="stroke-slate-200" strokeWidth={1} />
+      <line
+        x1={32}
+        y1={y + 10}
+        x2={388}
+        y2={y + 10}
+        className="stroke-slate-200"
+        strokeWidth={0.75}
+      />
     </g>
   );
 }
@@ -64,7 +71,7 @@ function Snapshot({
           height={h}
           rx={4}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
         <rect
           x={x + w / 2 - 7}
@@ -86,7 +93,7 @@ function Snapshot({
         height={h}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {motif % 3 === 0 && (
         <g>

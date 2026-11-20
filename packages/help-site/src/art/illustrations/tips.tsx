@@ -18,7 +18,7 @@ export function ShortcutsToggle() {
         {/* Toggle switch, set off */}
         <rect x={284} y={62} width={36} height={20} rx={10} className="fill-slate-200" />
         <circle cx={294} cy={72} r={7} className="fill-white help-art-as-drawn" />
-        <line x1={102} y1={112} x2={318} y2={112} className="stroke-slate-200" strokeWidth={1.5} />
+        <line x1={102} y1={112} x2={318} y2={112} className="stroke-slate-200" strokeWidth={0.75} />
         <Label x={102} y={132} size={10} weight={600} tone="strong">
           All Shortcuts
         </Label>
@@ -52,7 +52,7 @@ export function ZenMode() {
         <Label x={354} y={210} size={13} weight={700} tone="muted">
           +
         </Label>
-        <line x1={370} y1={200} x2={370} y2={218} className="stroke-slate-200" strokeWidth={1} />
+        <line x1={370} y1={200} x2={370} y2={218} className="stroke-slate-200" strokeWidth={0.75} />
         <path
           d="M378 203 l4 4 M378 207 h4 v-4 M394 215 l-4 -4 M394 211 h-4 v4"
           className="stroke-brand-500"

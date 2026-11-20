@@ -37,7 +37,7 @@ function SessionStripArt({
       x2={dx}
       y2={y + h - 6}
       className="stroke-slate-100"
-      strokeWidth={1.5}
+      strokeWidth={0.75}
     />
   );
   const tx = time ? x + 18 : x + seg / 2;
@@ -52,7 +52,7 @@ function SessionStripArt({
         height={h}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* The countdown's drain behind the Timer segment. */}
       {time ? (
@@ -113,7 +113,7 @@ function SessionStripArt({
         height={h}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <path
         d={`M${lx + 20} ${y + 12} l9 5 l-9 5 l-9 -5 Z M${lx + 11} ${y + 22} l9 5 l9 -5`}
@@ -218,7 +218,7 @@ export function TimerControl() {
           cy={cy}
           r={r + 10}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <path
           d={`M ${cx} ${cy} L ${cx} ${cy - r} A ${r} ${r} 0 0 1 ${ex.toFixed(2)} ${ey.toFixed(2)} Z`}

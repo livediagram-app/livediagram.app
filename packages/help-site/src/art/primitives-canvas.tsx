@@ -222,10 +222,42 @@ export function SelectionBox({ x, y, w, h }: { x: number; y: number; w: number; 
         className="fill-none stroke-brand-500"
         strokeWidth={1.5}
       />
-      <rect x={x + w / 2 - 6} y={y - 2.5} width={12} height={5} rx={2.5} className={pill} strokeWidth={1} />
-      <rect x={x + w / 2 - 6} y={y + h - 2.5} width={12} height={5} rx={2.5} className={pill} strokeWidth={1} />
-      <rect x={x - 2.5} y={y + h / 2 - 6} width={5} height={12} rx={2.5} className={pill} strokeWidth={1} />
-      <rect x={x + w - 2.5} y={y + h / 2 - 6} width={5} height={12} rx={2.5} className={pill} strokeWidth={1} />
+      <rect
+        x={x + w / 2 - 6}
+        y={y - 2.5}
+        width={12}
+        height={5}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
+      <rect
+        x={x + w / 2 - 6}
+        y={y + h - 2.5}
+        width={12}
+        height={5}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
+      <rect
+        x={x - 2.5}
+        y={y + h / 2 - 6}
+        width={5}
+        height={12}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
+      <rect
+        x={x + w - 2.5}
+        y={y + h / 2 - 6}
+        width={5}
+        height={12}
+        rx={2.5}
+        className={pill}
+        strokeWidth={1}
+      />
       {corners.map(([px, py], i) => (
         <circle key={i} cx={px} cy={py} r={3.2} className={pill} strokeWidth={1.2} />
       ))}

@@ -35,7 +35,7 @@ function ProgressBar({
         height={h}
         rx={h / 2}
         className="fill-slate-100 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <rect x={x} y={y} width={fillW} height={h} rx={h / 2} className="fill-brand-500" />
       <Label x={x + w / 2} y={y + h / 2 + 1} anchor="middle" size={12} weight={700} tone="strong">
@@ -319,7 +319,7 @@ export function BarAndLineCharts() {
           x2={184}
           y2={baseY}
           className="stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         {bars.map(([v, cls], i) => (
           <rect
@@ -341,7 +341,7 @@ export function BarAndLineCharts() {
           x2={384}
           y2={baseY}
           className="stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         {series.map(([vals, stroke, fill], si) => (
           <g key={si}>

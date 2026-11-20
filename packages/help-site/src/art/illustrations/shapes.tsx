@@ -84,7 +84,7 @@ export function ShapeMorphGrid() {
         height={160}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <SectionHeading x={200} y={38} w={190} title="Shape" />
       {kinds.map((k, i) => {
@@ -156,7 +156,7 @@ export function MarkersMenu() {
         height={204}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <SectionHeading x={206} y={22} w={190} title="Markers" />
       {tiles.map((t, i) => {
@@ -303,7 +303,7 @@ export function StylePresetsGrid() {
         height={232}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <SectionHeading x={150} y={16} w={196} title="Presets" />
       <g className="help-art-as-drawn">
@@ -335,7 +335,7 @@ export function StylePresetsGrid() {
         height={24}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={248} y={221} size={10} weight={600} anchor="middle" tone="body">
         Reset to Default

@@ -86,7 +86,7 @@ export function ShadowCategory() {
                   height={16}
                   rx={3}
                   className="fill-white stroke-slate-300"
-                  strokeWidth={1.2}
+                  strokeWidth={0.75}
                 />
               </OptionBox>
             </g>

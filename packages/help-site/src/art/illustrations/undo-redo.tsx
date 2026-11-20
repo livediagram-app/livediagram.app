@@ -70,7 +70,7 @@ function UndoRedoControls({ active }: { active: 'undo' | 'redo' }) {
         height={32}
         rx={7}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <ArrowButton x={336} y={200} dir="undo" pressed={active === 'undo'} />
       <ArrowButton x={364} y={200} dir="redo" pressed={active === 'redo'} />
@@ -88,7 +88,7 @@ function KeyChip({ x, y, keys, caption }: { x: number; y: number; keys: string; 
         height={26}
         rx={6}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={w / 2} y={14} anchor="middle" size={10} weight={700} tone="body">
         {keys}

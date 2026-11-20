@@ -127,7 +127,7 @@ export function AccessControl({ noun }: { noun: string }) {
         height={30}
         rx={7}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={352} y={136} anchor="middle" size={11} weight={600} tone="muted">
         404 Not found
@@ -174,7 +174,7 @@ export function TelemetryToggle() {
             </g>
           );
         })}
-        <line x1={154} y1={54} x2={154} y2={192} className="stroke-slate-200" strokeWidth={1.5} />
+        <line x1={154} y1={54} x2={154} y2={192} className="stroke-slate-200" strokeWidth={0.75} />
 
         {/* The one Privacy row */}
         <Label x={170} y={72} size={10} weight={600} tone="strong">
@@ -188,7 +188,13 @@ export function TelemetryToggle() {
             className="fill-slate-200 stroke-slate-300"
             strokeWidth={1.5}
           />
-          <circle cx={11} cy={11} r={8} className="fill-white stroke-slate-300" strokeWidth={1.5} />
+          <circle
+            cx={11}
+            cy={11}
+            r={8}
+            className="fill-white stroke-slate-300"
+            strokeWidth={0.75}
+          />
         </g>
         <TextBar x={170} y={98} w={196} tone="faint" />
         <TextBar x={170} y={110} w={176} tone="faint" />

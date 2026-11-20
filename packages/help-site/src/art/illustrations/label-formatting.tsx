@@ -43,7 +43,7 @@ function Chevron({ x, y }: { x: number; y: number }) {
 
 /** The thin divider between the toolbar's groups. */
 function Divider({ x, y }: { x: number; y: number }) {
-  return <line x1={x} y1={y} x2={x} y2={y + 20} className="stroke-slate-200" strokeWidth={1} />;
+  return <line x1={x} y1={y} x2={x} y2={y + 20} className="stroke-slate-200" strokeWidth={0.75} />;
 }
 
 const BLOCK_TYPES = [
@@ -70,7 +70,7 @@ export function LabelEditingToolbar() {
         height={40}
         rx={9}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <ToolButton x={tx + 6} y={by} on>
         <Label x={0} y={1} anchor="middle" size={14} weight={800} tone="accent">
@@ -149,7 +149,7 @@ export function LabelEditingToolbar() {
         height={BLOCK_TYPES.length * 24 + 8}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {BLOCK_TYPES.map((t, i) => {
         const ry = ty + 50 + i * 24;

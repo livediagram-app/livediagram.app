@@ -61,7 +61,7 @@ export function ImagePicker() {
                 height={50}
                 rx={6}
                 className="fill-slate-100 stroke-slate-200"
-                strokeWidth={1.5}
+                strokeWidth={0.75}
               />
               <rect x={sx} y={sy} width={72} height={32} rx={6} className={hues[i]} />
               <circle cx={sx + 18} cy={sy + 16} r={6} className="fill-white/70" />

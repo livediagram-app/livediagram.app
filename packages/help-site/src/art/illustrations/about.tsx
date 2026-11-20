@@ -23,7 +23,7 @@ export function OpenCanvas() {
           height={92}
           rx={10}
           className="fill-white stroke-slate-200"
-          strokeWidth={2}
+          strokeWidth={0.75}
         />
         <Label x={52} y={22} anchor="middle" size={10} weight={700} tone="muted">
           Sign in

@@ -42,7 +42,7 @@ export function AnnotationScene() {
           height={70}
           rx={9}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
         <Label x={188} y={48} size={11} weight={700} tone="strong">
           Rate limit

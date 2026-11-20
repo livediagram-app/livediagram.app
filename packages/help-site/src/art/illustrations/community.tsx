@@ -27,7 +27,7 @@ export function CommunityShareSection({
         height={154}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* The dialog's two tabs, Community chosen. */}
       <Label x={x + 20} y={28} size={11} weight={500} tone="muted">
@@ -43,7 +43,7 @@ export function CommunityShareSection({
         x2={x + w - 1}
         y2={38}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <rect
         x={x + 16}
@@ -52,7 +52,7 @@ export function CommunityShareSection({
         height={106}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={x + 30} y={64} size={12} weight={600} tone="strong">
         {title}
@@ -112,7 +112,7 @@ export function CommunitySearchBox({ query }: { query: string }) {
         height={40}
         rx={12}
         className="fill-white stroke-slate-300"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <circle cx={28} cy={45} r={5} className="fill-none stroke-slate-400" strokeWidth={1.5} />
       <path d="M32 49 l4 4" className="stroke-slate-400" strokeWidth={1.5} />
@@ -140,7 +140,7 @@ export function CommunitySearchBox({ query }: { query: string }) {
             height={84}
             rx={10}
             className="fill-white stroke-slate-200"
-            strokeWidth={1.5}
+            strokeWidth={0.75}
           />
           <rect x={cx + 8} y={90} width={116} height={40} rx={6} className="fill-slate-50" />
           <Shape x={cx + 20} y={98} w={36} h={24} accent={i === 0} />

@@ -29,7 +29,7 @@ function MenuTile({
         height={40}
         rx={6}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <g transform={`translate(${x + w / 2} ${y + 13})`}>{children}</g>
       <Label
@@ -74,7 +74,7 @@ function MenuRow({
 /** A group separator inside a menu. */
 function MenuRule({ x, y, w }: { x: number; y: number; w: number }) {
   return (
-    <line x1={x + 8} y1={y} x2={x + w - 8} y2={y} className="stroke-slate-200" strokeWidth={1} />
+    <line x1={x + 8} y1={y} x2={x + w - 8} y2={y} className="stroke-slate-200" strokeWidth={0.75} />
   );
 }
 
@@ -143,7 +143,7 @@ export function LayerRowMenuScene() {
         height={h}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* Header: the layer's preview, name and count */}
       <rect
@@ -153,7 +153,7 @@ export function LayerRowMenuScene() {
         height={20}
         rx={3}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {thumbFlow(mx + 7, my + 20)}
       <Label x={mx + 50} y={my + 16} size={11} weight={700} tone="strong">
@@ -168,7 +168,7 @@ export function LayerRowMenuScene() {
         x2={mx + mw}
         y2={my + 40}
         className="stroke-slate-100"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <OpacitySlider x={mx + 12} y={my + 60} w={mw - 24} value={60} />
       <MenuRule x={mx} y={g1 - 14} w={mw} />
@@ -236,7 +236,7 @@ export function LayerRowMenuScene() {
                 height={26}
                 rx={4}
                 className="fill-white stroke-slate-200"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
               {thumb(px + 12, cy)}
               <Label
@@ -256,7 +256,7 @@ export function LayerRowMenuScene() {
       <path
         d={`M${mx + mw} ${my + 70 + 28 + ROW_H * 1.5} H${px}`}
         className="stroke-slate-300"
-        strokeWidth={1}
+        strokeWidth={0.75}
         strokeDasharray="3 3"
       />
     </Scene>
@@ -282,7 +282,7 @@ export function ElementLayerMenuScene() {
         height={268}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={mx + 14} y={my + 17} size={11} weight={700} tone="strong">
         Layer
@@ -300,7 +300,7 @@ export function ElementLayerMenuScene() {
         x2={mx + mw}
         y2={my + 30}
         className="stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <MenuTile x={mx + 10} y={my + 40} w={105} label="Bring to Front">
         <path d="M0 6 v-12 m-5 5 l5 -5 l5 5" {...GLYPH} />
@@ -333,7 +333,7 @@ export function ElementLayerMenuScene() {
               height={18}
               rx={2}
               className="fill-white stroke-slate-200"
-              strokeWidth={1}
+              strokeWidth={0.75}
             />
             {i === 0 && (
               <rect
@@ -374,7 +374,7 @@ export function ElementLayerMenuScene() {
                 height={14}
                 rx={1}
                 className="fill-slate-100 stroke-slate-300"
-                strokeWidth={1}
+                strokeWidth={0.75}
               />
             )}
             <Label
@@ -396,7 +396,7 @@ export function ElementLayerMenuScene() {
         x2={mx + mw - 10}
         y2={my + 216}
         className="stroke-slate-100"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <OpacitySlider x={mx + 12} y={my + 240} w={mw - 24} value={100} />
     </Scene>

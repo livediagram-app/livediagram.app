@@ -45,7 +45,7 @@ export function Panel({
         height={h}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {title && (
         <>
@@ -61,7 +61,7 @@ export function Panel({
               x2={x + w - 1}
               y2={y + barH}
               className="stroke-slate-100"
-              strokeWidth={1}
+              strokeWidth={0.75}
             />
           )}
           {/* The editor titles a panel's sections in small spaced capitals (STROKE, BACKGROUND). */}
@@ -119,7 +119,7 @@ export function Dialog({
         height={h}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {title && (
         <>
@@ -132,7 +132,7 @@ export function Dialog({
             x2={x + w}
             y2={y + 36}
             className="stroke-slate-100"
-            strokeWidth={1}
+            strokeWidth={0.75}
           />
         </>
       )}
@@ -166,7 +166,7 @@ export function Button({
   }[variant];
   return (
     <g>
-      <rect x={x} y={y} width={w} height={h} rx={8} className={cls} strokeWidth={1} />
+      <rect x={x} y={y} width={w} height={h} rx={8} className={cls} strokeWidth={0.75} />
       {label && (
         <Label
           x={x + w / 2 + (icon ? 6 : 0)}
@@ -216,7 +216,9 @@ export function BarTab({
   const card = `M${x} ${bottom} V${y + r} a${r} ${r} 0 0 1 ${r} ${-r} H${x + w - r} a${r} ${r} 0 0 1 ${r} ${r} V${bottom}`;
   return (
     <g>
-      {active && <path d={`${card} Z`} className="fill-white stroke-slate-300" strokeWidth={1} />}
+      {active && (
+        <path d={`${card} Z`} className="fill-white stroke-slate-300" strokeWidth={0.75} />
+      )}
       {beside && !active && (
         <path
           d={card}
@@ -266,7 +268,7 @@ export function Tabs({
         height={h}
         rx={8}
         className="fill-slate-100 stroke-slate-100"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {items.map((it, i) => {
         const tx = x + i * tabW;
@@ -328,7 +330,7 @@ export function Menu({
         height={h}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {items.map((it, i) => {
         const ry = y + 4 + i * rowH;
@@ -379,7 +381,7 @@ export function Tile({
         height={size}
         rx={7}
         className={active ? 'fill-brand-500 stroke-brand-600' : 'fill-white stroke-slate-200'}
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {children && <g transform={`translate(${x + size / 2} ${y + size / 2})`}>{children}</g>}
       {label && (

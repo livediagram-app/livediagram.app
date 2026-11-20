@@ -25,7 +25,7 @@ export function ElementFontMenu() {
         height={150}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={272} y={58} size={11} weight={600} tone="strong">
         Font
@@ -48,7 +48,7 @@ export function ElementFontMenu() {
           </OptionBox>
         );
       })}
-      <line x1={260} y1={172} x2={406} y2={172} className="stroke-slate-100" strokeWidth={1.5} />
+      <line x1={260} y1={172} x2={406} y2={172} className="stroke-slate-100" strokeWidth={0.75} />
       <Label x={272} y={182} size={10} tone="body">
         Size
       </Label>
@@ -87,7 +87,7 @@ export function LookAndFeelFont() {
           height={36}
           rx={6}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <rect
           x={130}

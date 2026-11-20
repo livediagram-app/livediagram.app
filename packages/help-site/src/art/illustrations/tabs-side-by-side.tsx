@@ -197,7 +197,7 @@ export function SideBySideOpen({ firstTab = 'Plan' }: FirstTab = {}) {
         x2={seam}
         y2={H - FOOTER}
         className="stroke-slate-300"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <rect
         x={seam - 8}

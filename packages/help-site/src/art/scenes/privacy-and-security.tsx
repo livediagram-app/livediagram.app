@@ -41,7 +41,7 @@ export function PrivacyAndSecurityArt({ shareHost }: { shareHost: string }) {
           height={26}
           rx={7}
           className="fill-slate-50 stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <path
           d="M44 77 a3.5 3.5 0 0 1 3.5 -3.5 h3 M57 77 a3.5 3.5 0 0 1 -3.5 3.5 h-3 M47 77 h7"
