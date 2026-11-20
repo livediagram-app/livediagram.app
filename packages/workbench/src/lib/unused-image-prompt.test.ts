@@ -37,7 +37,10 @@ function harness(over: Partial<UnusedImagePromptDeps> = {}) {
   };
   const offer = createUnusedImagePrompt(deps);
   const last = () => shown.at(-1)!;
-  const press = (label: string) => last().actions.find((a) => a.label === label)!.onSelect();
+  const press = (label: string) =>
+    last()
+      .actions.find((a) => a.label === label)!
+      .onSelect();
   return { offer, placed, shown, errors, dismissed, check, remove, loadAllTabs, last, press };
 }
 
@@ -153,8 +156,7 @@ describe('the offer after a delete', () => {
 
   it('gives way to a newer delete made while it settles or loads tabs', async () => {
     let first = true;
-    let settling: ReturnType<typeof harness>;
-    settling = harness({
+    const settling: ReturnType<typeof harness> = harness({
       settle: async () => {
         if (!first) return;
         first = false;
@@ -166,8 +168,7 @@ describe('the offer after a delete', () => {
     expect(settling.check.mock.calls).toEqual([[['b']]]);
 
     let once = true;
-    let loading: ReturnType<typeof harness>;
-    loading = harness({
+    const loading: ReturnType<typeof harness> = harness({
       allTabsLoaded: () => false,
       loadAllTabs: async () => {
         if (once) {
@@ -281,9 +282,15 @@ describe('reading the item', () => {
 
   it('counts a tab whole when loaded or holding elements', () => {
     const loaded = new Set(['t1']);
-    expect(everyTabLoaded([{ id: 't1', elements: [] }, { id: 't2', elements: [1] }], loaded)).toBe(
-      true,
-    );
+    expect(
+      everyTabLoaded(
+        [
+          { id: 't1', elements: [] },
+          { id: 't2', elements: [1] },
+        ],
+        loaded,
+      ),
+    ).toBe(true);
     expect(everyTabLoaded([{ id: 't3', elements: [] }], loaded)).toBe(false);
   });
 });

@@ -45,7 +45,12 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-type Opts = { owner?: string | null; accountUserId?: string | null; token?: { id: string }; env?: Env };
+type Opts = {
+  owner?: string | null;
+  accountUserId?: string | null;
+  token?: { id: string };
+  env?: Env;
+};
 
 const call = (method: string, path: string, opts: Opts = {}, request?: RequestInit) => {
   const ctx = makeTestRouteContext(method, path, {

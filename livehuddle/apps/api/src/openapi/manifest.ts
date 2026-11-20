@@ -1004,7 +1004,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     tokenUsable: false,
     query: [
-      { name: 'd', required: true, description: 'The document asking (its own reference is left out).' },
+      {
+        name: 'd',
+        required: true,
+        description: 'The document asking (its own reference is left out).',
+      },
       { name: 'ids', required: true, description: 'Up to 50 image ids, comma-separated.' },
     ],
     responseSchema: {

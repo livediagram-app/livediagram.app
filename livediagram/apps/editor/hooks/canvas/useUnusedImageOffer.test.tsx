@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { useEffect } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ToastProvider } from '@liveworkspace/ui/toast';
 import type { Element, Tab } from '@livediagram/document';
@@ -16,8 +17,15 @@ vi.mock('@/lib/offline/offline-store', () => ({ isOfflineIdSync }));
 
 import { useUnusedImageOffer } from './useUnusedImageOffer';
 
-const image = (id: string, imageId: string | null): Element =>
-  ({ id, type: 'image', x: 0, y: 0, width: 10, height: 10, imageId }) as Element;
+const image = (id: string, imageId: string | null): Element => ({
+  id,
+  type: 'image',
+  x: 0,
+  y: 0,
+  width: 10,
+  height: 10,
+  imageId,
+});
 const tab = (id: string, elements: Element[]): Tab => ({ id, name: id, elements });
 
 type Role = {
@@ -30,8 +38,18 @@ type Role = {
 };
 
 let offer: (removed: Element[]) => void = () => {};
-function Editor({ tabs, loaded, failed = [], role }: { tabs: Tab[]; loaded: string[]; failed?: string[]; role: Role }) {
-  offer = useUnusedImageOffer({
+function Editor({
+  tabs,
+  loaded,
+  failed = [],
+  role,
+}: {
+  tabs: Tab[];
+  loaded: string[];
+  failed?: string[];
+  role: Role;
+}) {
+  const made = useUnusedImageOffer({
     ownerId: 'user_ada',
     documentId: role.documentId === undefined ? 'd1' : role.documentId,
     accountUserId: 'accountUserId' in role ? role.accountUserId : 'user_ada',
@@ -42,6 +60,9 @@ function Editor({ tabs, loaded, failed = [], role }: { tabs: Tab[]; loaded: stri
     tabsRef: { current: tabs },
     loadedTabIdsRef: { current: new Set(loaded) },
     loadAllTabs: async () => failed,
+  });
+  useEffect(() => {
+    offer = made;
   });
   return null;
 }

@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { useEffect } from 'react';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ToastProvider } from '@liveworkspace/ui/toast';
 import { useUnusedImagePrompt, type UseUnusedImagePromptDeps } from './useUnusedImagePrompt';
@@ -9,7 +10,10 @@ afterEach(cleanup);
 // Each product's docs/specs/009-elements/images.md "Deleting an unused picture": the hook every canvas editor wires.
 let offer: (ids: Iterable<string>) => void = () => {};
 function Editor(deps: UseUnusedImagePromptDeps) {
-  offer = useUnusedImagePrompt(deps);
+  const made = useUnusedImagePrompt(deps);
+  useEffect(() => {
+    offer = made;
+  });
   return null;
 }
 

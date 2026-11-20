@@ -112,7 +112,10 @@ describe('the elements a delete took', () => {
   it('names them for a single and a multi-selection delete, and nothing when none went', () => {
     const removed: string[][] = [];
     const onElementsRemoved = (els: Element[]) => removed.push(els.map((e) => e.id));
-    setup([shape('a'), shape('b')], { selection: ['a'], onElementsRemoved }).actions.deleteSelected();
+    setup([shape('a'), shape('b')], {
+      selection: ['a'],
+      onElementsRemoved,
+    }).actions.deleteSelected();
     setup([shape('a'), shape('b'), shape('c')], {
       selection: ['a', 'b'],
       onElementsRemoved,

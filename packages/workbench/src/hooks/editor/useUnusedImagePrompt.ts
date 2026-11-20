@@ -5,7 +5,7 @@
 // image elements it removed. `enabled` is the editor's gate (the picture's possible owner, signed in, with the whole
 // cloud item open as its owner or an Editor); off, an offer does nothing and asks nothing. The decision and the toast
 // are ../../lib/unused-image-prompt.ts. Stable: the deps are read when an offer runs.
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef, type RefObject } from 'react';
 import { useToast } from '@liveworkspace/ui/toast';
 import {
   createUnusedImagePrompt,
@@ -15,33 +15,38 @@ import {
 
 export type UseUnusedImagePromptDeps = Omit<UnusedImagePromptDeps, 'toast'> & { enabled: boolean };
 
+type Latest = UseUnusedImagePromptDeps & { toast: UnusedImagePromptDeps['toast'] };
+
+// The prompt's deps, each read through `latest` when the prompt calls it, so one prompt serves every render.
+function throughLatest(latest: RefObject<Latest>): UnusedImagePromptDeps {
+  return {
+    placed: () => latest.current.placed(),
+    allTabsLoaded: () => latest.current.allTabsLoaded(),
+    loadAllTabs: () => latest.current.loadAllTabs(),
+    check: (ids) => latest.current.check(ids),
+    remove: (id) => latest.current.remove(id),
+    toast: {
+      action: (spec) => latest.current.toast.action(spec),
+      dismissAction: (key) => latest.current.toast.dismissAction(key),
+      error: (message, options) => latest.current.toast.error(message, options),
+    },
+    settle: () => (latest.current.settle ?? nextTask)(),
+  };
+}
+
 export function useUnusedImagePrompt(
   deps: UseUnusedImagePromptDeps,
 ): (removedImageIds: Iterable<string>) => void {
   const toast = useToast();
-  const latest = useRef({ ...deps, toast });
+  const latest = useRef<Latest>({ ...deps, toast });
   useLayoutEffect(() => {
     latest.current = { ...deps, toast };
   });
-  // Made once: everything it reads is read through `latest` when an offer runs.
-  const [offerOnce] = useState(() => {
-    const offer = createUnusedImagePrompt({
-      placed: () => latest.current.placed(),
-      allTabsLoaded: () => latest.current.allTabsLoaded(),
-      loadAllTabs: () => latest.current.loadAllTabs(),
-      check: (ids) => latest.current.check(ids),
-      remove: (id) => latest.current.remove(id),
-      toast: {
-        action: (spec) => latest.current.toast.action(spec),
-        dismissAction: (key) => latest.current.toast.dismissAction(key),
-        error: (message, options) => latest.current.toast.error(message, options),
-      },
-      settle: () => (latest.current.settle ?? nextTask)(),
-    });
-    return (removedImageIds: Iterable<string>) => {
-      if (!latest.current.enabled) return;
-      void offer(removedImageIds);
-    };
-  });
-  return offerOnce;
+  // Made at the first offer and kept: its generation count is what lets only the newest delete offer.
+  const prompt = useRef<ReturnType<typeof createUnusedImagePrompt> | null>(null);
+  return useCallback((removedImageIds: Iterable<string>) => {
+    if (!latest.current.enabled) return;
+    prompt.current ??= createUnusedImagePrompt(throughLatest(latest));
+    void prompt.current(removedImageIds);
+  }, []);
 }

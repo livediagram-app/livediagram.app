@@ -1122,7 +1122,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'account',
     tokenUsable: false,
     query: [
-      { name: 'd', required: true, description: 'The design asking (its own reference is left out).' },
+      {
+        name: 'd',
+        required: true,
+        description: 'The design asking (its own reference is left out).',
+      },
       { name: 'ids', required: true, description: 'Up to 50 image ids, comma-separated.' },
     ],
     responseSchema: {

@@ -24,7 +24,14 @@ import {
   mediaOwner,
   rememberMediaOwner,
 } from '../media';
-import { badRequest, CORS_HEADERS, forbidden, imagesUnavailable, json, notFound } from '../responses';
+import {
+  badRequest,
+  CORS_HEADERS,
+  forbidden,
+  imagesUnavailable,
+  json,
+  notFound,
+} from '../responses';
 import { grantCallerOf, requireOwner, type RouteContext } from './context';
 import { resolveDocumentGrant } from './document-grant';
 
