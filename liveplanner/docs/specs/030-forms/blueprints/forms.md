@@ -392,8 +392,8 @@ responses, now })`: `switched_off | no_destination | closes_at | limit`.
   `status_not_in_type` (the saved status is one the type leaves out) or `no_type_column` (no column of the board is
   one), with `destinationWarningText(warning, typeLabel, boardName)`. Never read by the api or `destinationProblem`:
   `FormPage` passes it to `FormProblems` (`warnings`) and the status bar's count, not to `problemCount` (the
-  Accepting Responses gate) or Publish Form. `DestinationPicker`'s chips are `typeColumns`; choosing a board is
-  `setDestinationBoard(tabId)` (`useFormActions`), which takes `columnForType`; `setDestinationType` moves the status
+  Accepting Responses gate) or Publish Form. `DestinationPicker`'s chips are `typeColumns` over
+  `targetColumns` (every column of the boards that take the type); no board is chosen (§8); `setDestinationType` moves the status
   with `columnForType` in the same step. With no chip to offer and the warning `no_type_column` shown under them,
   Column draws no line of its own beside the empty chips (the warning says it once); with a destination problem
   instead it keeps its short line "None of these columns is a {Type} state.".
@@ -409,10 +409,9 @@ responses, now })`: `switched_off | no_destination | closes_at | limit`.
   from the field, options through `readOptions`, a Rating's `ratingScaleOf` clamped to the question's range,
   `withTime` for a timed range, `goesTo`), and `withTypeQuestions(form, type, newId)` (appended to the last section,
   capped at `QUESTIONS_MAX`; the same form when none). `setDestinationType` commits the type, then, on a form with no
-  questions, the questions as a second commit (their own undo step); `setDestinationBoard(tabId)` likewise commits
-  the board (its type the kept one while the board takes it, else `boardAddTypes(setup, types)[0]`, its status
-  `columnForType`, `fixed` kept while the type stays), then on a form with no questions the questions for that type
-  as a second commit. Both share `typeQuestionsStep(type)` in `useFormActions`. `DestinationPicker`'s **Add Questions
+  questions, the questions as a second commit (their own undo step), through `typeQuestionsStep(type)` in
+  `useFormActions`; it gives a form with no destination one, and answers false when no board has a column for the
+  type (the picker then adds a board, `newResponsesBoard(typeId)`). `DestinationPicker`'s **Add Questions
   for {Type}'s Fields** is `addTypeQuestions()` (one commit).
 - **Fields from questions** (`question-fields.ts`, the other way): `questionsWantingFields(form, type)` (in form
   order, each question whose `effectiveTarget` is Description, broken or unmapped, but the first Paragraph so going

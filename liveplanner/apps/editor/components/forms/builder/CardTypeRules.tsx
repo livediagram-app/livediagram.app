@@ -81,13 +81,8 @@ export function CardTypeRules({
           type="button"
           className={ADD}
           onClick={() => {
-<<<<<<< HEAD
             const made = newTypeRule(b.form, takes, place, newFormPartId('r'));
-            if (made) set([...rules, made]);
-=======
-            const made = newTypeRule(b.form, takes, board, newFormPartId('r'));
             if (made) set((now) => [...now, made]);
->>>>>>> origin/main
           }}
         >
           <PlusIcon size={13} />

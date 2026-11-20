@@ -36,6 +36,10 @@ export function planBoardsOf(tabs: readonly Tab[]): PlacedBoard[] {
   });
 }
 
+/** The set-ups of some boards, as a destination and its card type rules are judged against them. */
+export const setupsOf = (boards: readonly PlacedBoard[]): PlanBoardSetup[] =>
+  boards.map((b) => b.setup);
+
 /** The boards that show a destination's cards, the one on the tab it was last seen on first. */
 export function boardsShowingOf(
   destination: Pick<FormDestination, 'typeId' | 'status' | 'tabId'> | undefined,
@@ -75,15 +79,20 @@ export function formDestinationOf(
     };
   }
   const boards = planBoardsOf(tabs);
-  const setups = boards.map((b) => b.setup);
-  const problem = destinationProblem(form.destination, setups, types);
+  const all = setupsOf(boards);
+  const problem = destinationProblem(form.destination, all, types);
   const shows = boardsShowingOf(form.destination, boards, types);
   const destTab = shows[0]?.tab;
   const type = destinationType(form.destination, types);
-  const warned = problem || !type ? null : destinationWarning(form.destination, setups, type);
+  const warned = problem || !type ? null : destinationWarning(form.destination, all, type);
   const warning =
     warned && type
       ? destinationWarningText(warned, type.label, destTab?.name ?? 'its board')
       : null;
-  return { destTab, problem, warning, showsOn: [...new Set(shows.map((b) => b.tab.name))] };
+  return {
+    destTab,
+    problem,
+    warning,
+    showsOn: [...new Set(shows.map((b) => b.tab.name))],
+  };
 }

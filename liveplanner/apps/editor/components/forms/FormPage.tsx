@@ -45,12 +45,8 @@ import { FormStatusBar } from './FormStatusBar';
 import { ShareFormDialog } from './ShareFormDialog';
 import { FormFill } from './respond/FormFill';
 import { formLookProps } from './form-look';
-<<<<<<< HEAD
-import { formDestinationOf, planBoardsOf } from './form-destination';
-=======
-import { formDestinationOf } from './form-destination';
+import { formDestinationOf, planBoardsOf, setupsOf } from './form-destination';
 import { summaryOffered } from './summary/form-responses';
->>>>>>> origin/main
 import { CANVAS_ROOT_SELECTOR } from '@liveworkspace/workbench/lib/canvas-selectors';
 
 // The Summary (docs/specs/030-forms/forms.md "The Summary"), fetched only when it is opened.
@@ -153,14 +149,17 @@ export function FormPage({
   const building = canEdit && !preview && !locked;
   // Where responses go: a Sheet (a row each) when the form names one, else its board.
   const { destTab, problem, warning } = formDestinationOf(form, tabs, types, tabScope);
-  const warnings = useMemo(() => (warning ? [warning] : []), [warning]);
+  // The warning as a string of its own: the boards read beside it are handed on below, and a memo may not rest on
+  // a value the compiler thinks is still being changed.
+  const warningText = warning === null ? '' : `${warning}`;
+  const warnings = useMemo(() => (warningText ? [warningText] : []), [warningText]);
   const type = destinationType(form.destination, types);
   // What else stops publishing (docs/specs/030-forms/forms.md "Publishing and the form link").
   // Every board of the plan, for the card type rules (forms.md "Choosing the card type by an answer").
   // A form without rules reads no board for them.
   const ruled = !form.sheet && !!form.destination?.typeRules;
   const place = useMemo(
-    () => ({ types, boards: ruled ? planBoardsOf(tabs).map((x) => x.setup) : [] }),
+    () => ({ types, boards: ruled ? setupsOf(planBoardsOf(tabs)) : [] }),
     [types, tabs, ruled],
   );
   const notReady = useMemo(
