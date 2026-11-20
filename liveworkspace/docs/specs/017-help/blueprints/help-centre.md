@@ -147,6 +147,13 @@ Written once for the one centre (`@liveworkspace/help-site` owns the code, `apps
   enough private building blocks to interleave with its scenes, and `<surface>.tsx` for an editor surface several
   areas show (the Settings dialog with the shared `Switch`). Files are named after their subject, never after a batch
   of work. `src/components/Figure.tsx` frames a scene as `<Figure caption="...">` (registered in the MDX components).
+  `src/art/editor-kit.tsx` holds the chrome every editor shares (the hairline `Card`, the lucide `Icon` renderer,
+  `CornerCard`, `BottomBar`) and `src/art/flyout-parts.tsx` a palette flyout's body parts; each edition's
+  `editor-chrome.tsx` adds its own logo, menu, strip and corner cluster. The help app's `next.config.ts` sets
+  `HELP_ART_APP` from the build's scope (empty under All Apps), and `artApp()` (`src/art/art-app.ts`) reads it: `Scene`
+  draws that app's canvas, `stickyOnly()` is true in livehuddle, and `appSamples()` (`src/art/app-samples.ts`) gives
+  the shared scenes the app's own sample names. Scenes are about 420 units wide and render near 2x, so chrome
+  hairlines are 0.75 units and element outlines 1.5.
   Branch hues beyond the brand come from the on-brand accent set (emerald, violet, amber, rose, teal, indigo) that
   `featureColours` uses.
 - **Card icons.** `lib/featureIcons.tsx` (glyph) and `lib/featureColours.ts` (hue) are key-for-key identical, tested;
