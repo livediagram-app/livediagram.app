@@ -29,7 +29,7 @@ describe('movedToLivehuddle', () => {
   });
 
   it('finds every stub (guard against this test going blind)', () => {
-    expect(stubPaths.length).toBe(8);
+    expect(stubPaths.length).toBe(9);
   });
 
   it('names its own path in each stub, and livehuddle has an article there', () => {

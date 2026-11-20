@@ -21,7 +21,7 @@ Scope, by file:
 | `apps/editor/hooks/canvas/useBehaviourElements.ts`                          | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
 | `apps/editor/components/canvas/editor-canvas-host/useSessionCanvasProps.ts` | `onToggleReveal: runBlocked ? undefined : toggleRevealForMe`    |
 | `apps/editor/components/palette/BehaviourMenuSections.tsx`                  | `RevealMenuSection`                                             |
-| `apps/editor/hooks/canvas/usePortalSetters.ts`                              | `setRevealedSelected` (`Element·Changed·Reveal`)                |
+| `apps/editor/hooks/canvas/useBehaviourSetters.ts`                           | `setRevealedSelected` (`Element·Changed·Reveal`)                |
 | `apps/editor/components/palette/tile-defs/behaviour-tiles.tsx`              | `tools:reveal` in Behaviours                                    |
 
 ## Domain and naming
@@ -85,7 +85,7 @@ export function usePressWithoutDrag(onPress?: () => void,
 export function RevealFace(props: { label: string; textColor: string; strokeColor: string;
   revealedForAll: boolean; revealedForMe: boolean; onToggleForMe?: () => void }): JSX.Element | null;
 toggleRevealForMe: (elementId: string) => void;          // useBehaviourElements
-setRevealedSelected: (revealed: boolean) => void;        // usePortalSetters
+setRevealedSelected: (revealed: boolean) => void;        // useBehaviourSetters
 ```
 
 | Input                     | Handling                         |

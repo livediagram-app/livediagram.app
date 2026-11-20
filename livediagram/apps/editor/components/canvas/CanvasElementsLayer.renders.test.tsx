@@ -163,7 +163,6 @@ function layerProps(
     onSetTimerDuration: fresh(),
     onSetSessionConfig: fresh(),
     onOpenElementSettings: fresh(),
-    onEnterPortal: fresh(),
     onFireReaction: fresh(),
     onReactionBurstDone: fresh(),
     handleArrowSelect: fresh(),

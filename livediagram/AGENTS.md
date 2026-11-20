@@ -278,8 +278,9 @@ livehuddle was forked from livediagram (`livehuddle/.forked-from`) and carried a
 Tracker #423 livehuddle is for meeting in Spaces and keeps only the meeting kit, so these features exist twice, once in
 each product folder (livehuddle's [Build plan](../livehuddle/docs/specs/005-project-roadmap/build-plan.md#keeping-the-two-products-from-drifting)):
 
-- **The Navigate elements kept here**: Portal (click to travel), Bring Focus and the Link card, and the Selection Mode
-  buttons without the Avatar mode (`docs/specs/009-elements/portal-element.md`, `mode-button.md`).
+- **The Navigate elements kept here**: Bring Focus and the Link card, and the Selection Mode buttons without the
+  Avatar mode (`docs/specs/009-elements/mode-button.md`). The Portal moved to livehuddle too (Work Tracker 1318); a
+  stored one is a retired placeholder (`docs/specs/009-elements/retired-elements.md`).
 - **The light meeting tools**: the Session strip's Timer and Vote (the dot vote), Bring Focus, the Reaction Pads, the
   facilitator baton and follow-me (`docs/specs/012-collaboration/session-tools.md`, `bring-focus.md`, `facilitator.md`,
   `docs/specs/009-elements/reaction-pad.md`).

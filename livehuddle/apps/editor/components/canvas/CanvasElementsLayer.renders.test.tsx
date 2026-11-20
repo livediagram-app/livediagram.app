@@ -113,6 +113,8 @@ const STABLE = {
   },
 };
 
+const ENTER_PORTAL = vi.fn(() => ({ targetName: null }));
+
 // What one editor render hands the layer: the same data and every handler a fresh closure, as the
 // editor mints them per render.
 function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
@@ -128,7 +130,9 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     canvasTool: 'select',
     drawDrag: null,
     onOpenElementSettings: fresh(),
-    onEnterPortal: fresh(),
+    // Stable by construction rather than by the layer's wrapper bag: usePortalTravel re-mints it only when a portal
+    // changes (usePortalBoard), and a face calls it while rendering, where a wrapper would read the last render's.
+    portalResolver: ENTER_PORTAL,
     handleArrowSelect: fresh(),
     handleElementClick: fresh(),
     handleElementContextSelect: fresh(),

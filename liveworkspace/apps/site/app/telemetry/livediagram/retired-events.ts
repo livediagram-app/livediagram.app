@@ -208,9 +208,10 @@ const DRIVE_MIRROR_CATEGORY = 'Drive';
 // switched on, a character's drinks, pad arrivals, speech bubbles, moves, bursts and seats; its customisations and
 // status; the Avatar panel; the Avatar tour and its Settings row; the Portal element tour (Show Me > Portal) and its
 // Settings row; a piece of furniture added, turned (Rotate Left or Right) or a Room's doorway moved; a Spaces template
-// picked (Virtual Office, Coworking Space, Team Pod, All-Hands Hall); and their help articles. Portal travel
-// (Element·Changed·Portal), the Reaction Pad, Selection Mode buttons, Bring Focus, follow-me and the facilitator
-// carry on, as does the Avatar web component (Element·Added·Avatar), a person's picture and not Avatar mode.
+// picked (Virtual Office, Coworking Space, Team Pod, All-Hands Hall); and their help articles. The Portal followed
+// on 2026-11-19 (Work Tracker 1318): a portal added or linked (Element·Added/Changed·Portal) and its Portals help
+// article. The Reaction Pad, Selection Mode buttons, Bring Focus, follow-me and the facilitator carry on, as does the
+// Avatar web component (Element·Added·Avatar), a person's picture and not Avatar mode.
 const AVATAR_MODE_CANVAS_TYPES = new Set([
   'AvatarMode',
   'WaterCooler',
@@ -226,7 +227,8 @@ const AVATAR_MODE_CANVAS_TYPES = new Set([
 const AVATAR_MODE_UI_TYPE = /^(AvatarTour|PortalTour|AvatarPanel$)/;
 // A character's customisations and status, from the Avatar panel (UI·Changed·Avatar<Clothing|Hair|Status|...>).
 const AVATAR_CUSTOMISED_TYPE = /^Avatar[A-Z]/;
-// The furniture's Element tokens (shapeTelemetryToken of each retired shape kind), on Added and Changed.
+// The furniture's and the Portal's Element tokens (shapeTelemetryToken of each retired shape kind), on Added and
+// Changed.
 const FURNITURE_ELEMENT_TYPES = new Set([
   'Chair',
   'Desk',
@@ -240,6 +242,7 @@ const FURNITURE_ELEMENT_TYPES = new Set([
   'Water-cooler',
   'Coffee-machine',
   'Rug',
+  'Portal',
 ]);
 // The Spaces templates, as Template·Used sends them (titleCaseType of the template kind).
 const SPACES_TEMPLATE_TYPES = new Set([
@@ -257,6 +260,7 @@ const AVATAR_MODE_HELP_IDS = new Set([
   'avatar-pads',
   'virtual-office',
   'turning-furniture',
+  'portals',
 ]);
 
 function isAvatarModeEvent(category: string, action: string, type: string | null): boolean {

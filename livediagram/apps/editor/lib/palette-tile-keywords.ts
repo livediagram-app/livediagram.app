@@ -53,7 +53,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   onion: 'onion rings concentric layers clean hexagonal architecture core maturity trust',
   chevrons: 'chevron arrows stages pipeline value chain phases process lifecycle',
   'mode-button': 'mode switch button press',
-  portal: 'teleport jump link warp travel',
   'session-button': 'timer vote poll session start',
   reveal: 'hide cover spoiler blur uncover',
   picker: 'random pick spinner wheel choose',

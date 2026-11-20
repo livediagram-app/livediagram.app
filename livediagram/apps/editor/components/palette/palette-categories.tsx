@@ -240,7 +240,7 @@ export const PALETTE_CATEGORIES: {
     id: 'collab-navigate',
     label: 'Navigate',
     group: 6,
-    description: 'Take people somewhere: a portal, a bring-focus button and a link card.',
+    description: 'Take people somewhere: a bring-focus button and a link card.',
     icon: <MoveGroupIcon />,
   },
 ];

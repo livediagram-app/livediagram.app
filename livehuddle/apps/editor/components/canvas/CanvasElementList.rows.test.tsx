@@ -87,6 +87,8 @@ type Shared = {
   tabFinish: 'flexible' | 'sketch';
 };
 
+const PORTAL_RESOLVER = vi.fn(() => ({ targetName: null }));
+
 function layerProps(elements: Element[], s: Shared) {
   const fresh = () => vi.fn();
   return {
@@ -106,7 +108,8 @@ function layerProps(elements: Element[], s: Shared) {
     canvasTool: 'select',
     drawDrag: null,
     onOpenElementSettings: fresh(),
-    onEnterPortal: fresh(),
+    // Stable across renders, as usePortalTravel keeps it (usePortalBoard): it is not wrapped by the layer.
+    portalResolver: PORTAL_RESOLVER,
     handleArrowSelect: fresh(),
     handleElementClick: fresh(),
     handleElementContextSelect: fresh(),

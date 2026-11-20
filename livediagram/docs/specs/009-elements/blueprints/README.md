@@ -18,7 +18,6 @@ Follow the references below only as needed; never upfront.
 - ./mind-node.md - when implementing or changing mind nodes, Tab / Enter growth, flows or collision placement
 - ./mode-button.md - when implementing or changing the Selection Mode button, its press, Leave or its palette tiles
 - ./page-element.md - when implementing or changing the Page element, its masthead, body or corner fold
-- ./portal-element.md - when implementing or changing portals, their links, names or travel
 - ./progress.md - when implementing or changing the progress bar / ring, its fill animation or its menu
 - ./rating.md - when implementing or changing the star rating, its animations or its picker
 - ./reaction-pad.md - when implementing or changing the reaction pad, its face, bursts or their broadcast

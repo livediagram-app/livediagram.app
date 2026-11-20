@@ -58,7 +58,7 @@ navigation before you saw a tile: open Tools, then open the category. That is
 the right cost for "which of the twenty tools is the polygon one" and the wrong
 cost for a set you go to deliberately.
 
-It hurt Behaviour most. Selection Mode buttons, Portals, Session buttons,
+It hurt Behaviour most. Selection Mode buttons, Session buttons,
 Reveal zones and Pickers ([Selection Mode button](../009-elements/mode-button.md) to [Picker](../012-collaboration/picker.md)) are the palette's newest
 elements and the ones a user is least likely to know exist. Burying them two
 levels down is where a new feature goes to hide.
@@ -166,14 +166,14 @@ author?** Pressing something that acts on your session and the canvas collecting
 both what you reach for while running a session, so they are one category ([The Done check](../012-collaboration/done-check.md)
 is filed with the estimate card, not apart from it).
 
-| Group              | Holds                                                                                                                                           |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                                          |
-| **Tools**          | Reveal, Done, Picker, Timer                                                                                                                     |
-| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                               |
-| **Reactions**      | the five pads                                                                                                                                   |
-| **Selection Mode** | one button per mode (7)                                                                                                                         |
-| **Navigate**       | Portal, Bring Focus (the furniture, Fence and Avatar Pad moved to livehuddle, [Not in livediagram](../002-project-scope/not-in-livediagram.md)) |
+| Group              | Holds                                                                                                                                                          |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                                                         |
+| **Tools**          | Reveal, Done, Picker, Timer                                                                                                                                    |
+| **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                                              |
+| **Reactions**      | the five pads                                                                                                                                                  |
+| **Selection Mode** | one button per mode (7)                                                                                                                                        |
+| **Navigate**       | Bring Focus, Link card (the Portal, the furniture, Fence and Avatar Pad moved to livehuddle, [Not in livediagram](../002-project-scope/not-in-livediagram.md)) |
 
 **There is no Session group**: a group named after the machinery rather than the job. A poll and a dot vote ARE
 asking the room, so they sit with the estimate card and the temperature check, where somebody wanting to put a
@@ -193,8 +193,8 @@ the tab body need no special case.
 
 The grouping is by **what the element does with the room**, not by what it
 looks like. That is the same rule that produced the Build category ([The Build palette category](build-category.md)),
-and it is why Portal sits with Chair and the Link card (all three take you
-somewhere: another tab, a seat, the page itself) rather than with Reveal
+and it is why Bring Focus sits with the Link card (both take you somewhere:
+one spot on the canvas, the page itself) rather than with Reveal
 (which the facilitator drives). The Link card came here from Components, which
 groups by what a thing looks like: a ready-made composite you recolour and
 retitle. A link card is neither composite nor decoration, so it read as filler

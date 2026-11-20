@@ -93,7 +93,6 @@ export function EditorCanvasHost() {
     selfParticipant,
     sessionShareCode,
     sessionTabScope,
-    tabs,
     setCanvasTool,
     setContextMenu,
     setViewportOffset,
@@ -239,8 +238,6 @@ export function EditorCanvasHost() {
             {...editProps}
             tabName={activeTab.name}
             tabSummaries={tabSummaries}
-            // Portals (docs/specs/009-elements/portal-element.md) can lead to another tab; see Canvas.enterPortal.
-            portalTabs={tabs}
             activeTabId={activeTab.id}
             activeTabLoaded={loadedTabIds.has(activeTab.id)}
             tabLocked={activeTabLocked}

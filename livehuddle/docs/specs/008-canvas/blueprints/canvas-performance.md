@@ -99,9 +99,18 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 
 - Every prop of `BoxedElementView` is a primitive, the element itself, or identity-stable across
   `Canvas` renders that do not change it. Measured breakers and their fix:
-  - `onOpenElementSettings`, `onEnterPortal`, `onFireReaction`, `onReactionBurstDone`: into the
+  - `onOpenElementSettings`, `onFireReaction`, `onReactionBurstDone`: into the
     layer's `useStableHandlers` bag. (The timer, panel-action, session and collab props went with the
     Collaborate faces in Work Tracker #423 part 4.)
+  - The portal resolver is NOT in that bag, nor named `on…`: a face calls it while rendering (a portal's hover-card
+    name and lit state, the wayfinding store), and a stable forwarder (`useStableHandlers`, or `withStableEventProps`,
+    which wraps every `on…` function prop of `Canvas` and the element layer) reads the PREVIOUS render's value there
+    (`useLatest` assigns in an insertion effect, after the children rendered). A portal linked by Create Portal stayed
+    "not linked" until something else redrew it (Work Tracker 1318). So `Canvas` hands the layer `portalResolver`, which
+    the layer gives the views as `onEnterPortal` unwrapped, and its identity is kept steady another way:
+    `usePortalTravel` resolves against `usePortalBoard`, the portals alone, re-minted only when a portal's id, link or
+    label (or a tab's) changes, so a drag, a zoom or any other element's edit leaves it alone and every view keeps its
+    memo.
   - `chairSitters`: one `SittersSource` for the canvas's life (`components/canvas/chair-sitters-source.ts`,
     `createSittersSource` in `useCanvasAvatar`, written in a layout effect from the by-value sitters map). `PieceArt`
     reads its own row with `useChairSitters(source, element.id)`; `set` keeps each chair's array while

@@ -376,9 +376,9 @@ describe('Session’s browse', () => {
     const rail = () => within(flyout()!).getByRole('navigation');
     fireEvent.click(within(rail()).getByRole('button', { name: /^React/ }));
     expect(within(flyout()!).getAllByRole('button', { name: /Confetti/ })[0]).toBeTruthy();
-    fireEvent.change(within(flyout()!).getByRole('textbox'), { target: { value: 'portal' } });
+    fireEvent.change(within(flyout()!).getByRole('textbox'), { target: { value: 'focus' } });
     expect(within(flyout()!).getByText(/Results for/)).toBeTruthy();
-    expect(within(flyout()!).getAllByRole('button', { name: /Portal/ })[0]).toBeTruthy();
+    expect(within(flyout()!).getAllByRole('button', { name: /Bring Focus/ })[0]).toBeTruthy();
     // Back to the canvas and in again: React, not Tools.
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));

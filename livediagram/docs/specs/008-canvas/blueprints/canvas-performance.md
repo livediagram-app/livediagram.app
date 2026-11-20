@@ -109,7 +109,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   - `commentActions`, `actionActions`: the panel actions' methods join the stable bag, and
     `idBound(make)` hands each element one object built from them, cached per id for as long as
     the bag's presence pattern holds. Absent actions give `undefined`, as before.
-  - `onSetSessionConfig`, `onOpenElementSettings`, `onEnterPortal`, `onFireReaction`,
+  - `onSetSessionConfig`, `onOpenElementSettings`, `onFireReaction`,
     `onReactionBurstDone`: into the layer's `useStableHandlers` bag.
   - `collab`: `useStableCollab(collab)` in `useHostCollab` (EditorCanvasHost): handlers through
     `useStableHandlers` (presence kept; `COLLAB_HANDLERS` is checked against `CollabApi` at compile

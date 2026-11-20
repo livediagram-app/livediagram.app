@@ -43,8 +43,6 @@ type CanvasWorldLayerProps = Pick<
   handlePolygonDoubleClick: DrawTools['handlePolygonDoubleClick'];
   pathTool: DrawTools['pathTool'];
   penStroke: DrawTools['penStroke'];
-  // Portal travel, resolved by Canvas (it owns the viewport).
-  resolvePortal: CanvasProps['onEnterPortal'];
   cursorClass: string;
   penCursorValue: string | null;
   viewportZoom: number;
@@ -64,7 +62,6 @@ export function CanvasWorldLayer({
   handlePolygonDoubleClick,
   pathTool,
   penStroke,
-  resolvePortal,
   cursorClass,
   penCursorValue,
   viewportZoom,
@@ -184,9 +181,6 @@ export function CanvasWorldLayer({
                   <CanvasElementsLayer
                     {...props}
                     elements={pathTool.elements}
-                    // Portal travel is resolved HERE (Canvas owns the viewport), so the prop
-                    // from the host is overridden with the local resolver.
-                    onEnterPortal={resolvePortal}
                     onFireReaction={props.onFireReaction}
                     reactionBursts={props.reactionBursts}
                     onReactionBurstDone={props.onReactionBurstDone}

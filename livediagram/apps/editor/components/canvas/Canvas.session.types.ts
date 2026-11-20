@@ -74,12 +74,6 @@ export type CanvasSessionProps = {
   // and the way out of it. Null / absent = not following anybody.
   followingName?: string | null;
   onStopFollowing?: () => void;
-  // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing, the paired portal's name and, when
-  // it has one, the action that travels there.
-  onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {
-    targetName: string | null;
-    travel?: () => void;
-  };
   // Reaction pad (docs/specs/009-elements/reaction-pad.md): set one off. Absent on a read-only surface, which
   // renders the pad inert rather than hiding it.
   onFireReaction?: (element: import('@livediagram/document').ShapeElement) => void;

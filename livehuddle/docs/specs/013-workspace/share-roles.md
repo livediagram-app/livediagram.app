@@ -47,7 +47,7 @@ Viewer; the index refuses a change to Viewer, never a change away from it.
 | Walk, hop, Behaviours, Reactions, Status                  | Yes    | Yes         | Yes    | [Avatar mode](../008-canvas/avatar-mode.md): presence, any role                                           |
 | Speak in a speech bubble                                  | Yes    | Yes         | No     | [Who may speak](../008-canvas/avatar-mode.md#who-may-speak)                                               |
 | Push another character, sit, take a drink                 | Yes    | Yes         | Yes    | [Office](../009-elements/office.md#share-roles)                                                           |
-| Go through a portal, follow and be followed               | Yes    | Yes         | Yes    | [Portal element](../../../../livediagram/docs/specs/009-elements/portal-element.md)                       |
+| Go through a portal, follow and be followed               | Yes    | Yes         | Yes    | [Portal element](../009-elements/portal-element.md)                                                       |
 | Place, move, rename or delete Space elements              | Yes    | No          | No     | [Office](../009-elements/office.md#share-roles)                                                           |
 | Make a space or a board from a template                   | Yes    | No          | No     | [Virtual Office](../012-collaboration/virtual-office-template.md#share-roles)                             |
 | Press Bring Focus                                         | Yes    | No          | No     | [Bring Focus](../../../../livediagram/docs/specs/012-collaboration/bring-focus.md)                        |

@@ -1,7 +1,7 @@
 # Not in livediagram
 
 Status: **approved, built** (Work Tracker #650, owner, 2026-11-07 and 2026-11-09; folds in the cancelled #619 and
-#351).
+#351). The Portal followed on 2026-11-19 (Work Tracker 1318).
 
 livehuddle is the meeting product: people meet in Spaces, walk as characters and sit together
 ([livehuddle's purpose](../../../../livehuddle/docs/specs/001-project-vision/purpose.md)). livediagram is for diagrams,
@@ -29,14 +29,14 @@ need to be in shared packages either". One home for each tool means one copy to 
 | The Spaces templates: Virtual Office, Coworking Space, Team Pod and All-Hands Hall                                                                                                     | [Virtual Office template](../../../../livehuddle/docs/specs/012-collaboration/virtual-office-template.md)                                                          |
 | The Selection Mode button's Avatar option, and walking into a Portal or onto a Reaction Pad                                                                                            | [Selection Mode button](../../../../livehuddle/docs/specs/009-elements/mode-button.md), [Portal](../../../../livehuddle/docs/specs/009-elements/portal-element.md) |
 | The Portal tour and its Settings row (Show Me > Portal, `portal`)                                                                                                                      | [Element tours](../../../../livehuddle/docs/specs/007-editor/element-tours.md)                                                                                     |
+| The Portal itself: linking a pair, naming one, clicking through to its partner on any tab (owner, 2026-11-19: "Remove Portal from livediagram and add it to livehuddle instead")       | [Portal](../../../../livehuddle/docs/specs/009-elements/portal-element.md)                                                                                         |
 | The room's `avatar`, `avatar-push` and `avatar-say` presence ops                                                                                                                       | [Avatar mode](../../../../livehuddle/docs/specs/008-canvas/avatar-mode.md) "Presence"                                                                              |
 
 ## What stays in livediagram
 
-Each of these is fully useful by click in a diagram or a workshop, with no character on the board. Their walk-in or
-walk-onto hooks are gone; everything else about them is unchanged.
+Each of these is fully useful by click in a diagram or a workshop, with no character on the board. Their walk-onto
+hooks are gone; everything else about them is unchanged.
 
-- **[Portal](../009-elements/portal-element.md)**: click it to jump to its linked portal, on this tab or another.
 - **[Reaction Pad](../009-elements/reaction-pad.md)**: press it to throw a burst; a workshop's applause button.
 - **[Bring Focus](../012-collaboration/bring-focus.md)**: press it and everyone is offered a jump to it.
 - **[Selection Mode button](../009-elements/mode-button.md)**: still hands out Select, Hand, Laser, Spotlight, Eraser,

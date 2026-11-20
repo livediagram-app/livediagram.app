@@ -130,10 +130,7 @@ type CanvasCoreProps = {
   // hover card can name the tab/element a link points at (docs/specs/008-canvas/canvas-and-palette.md). Kept
   // minimal + memoised by the caller so element edits don't churn it.
   tabSummaries: { id: string; name: string }[];
-  // Portals (docs/specs/009-elements/portal-element.md) link ACROSS tabs, so the canvas needs every tab's
-  // elements to resolve where one leads, plus which tab is showing. Optional so
-  // read-only / embed mounts that never travel can omit them.
-  portalTabs?: import('@livediagram/document').Tab[];
+  // Which tab is showing. Optional so read-only / embed mounts can omit it.
   activeTabId?: string;
   // False while the active tab's content is still on its way (a tab never opened before): its elements arrive with
   // the board once it lands, not as additions. Omitted, the tab is loaded.

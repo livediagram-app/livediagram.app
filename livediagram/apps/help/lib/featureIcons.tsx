@@ -734,7 +734,7 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   // So none of them draws a button being pressed: each draws what pressing it
   // DOES, which is the only thing that tells them apart.
   // A reticle: the mark you put over the thing you want looked at. Distinct
-  // from the reveal's eye (about seeing) and the portal's arrow (about going).
+  // from the reveal's eye (about seeing).
   'bring-focus': (
     <Glyph>
       <circle cx="12" cy="12" r="7" />
@@ -831,19 +831,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M6 8.5l1.4 1.4 2.6-2.8" />
       <path d="M6 14.5l1.4 1.4 2.6-2.8" />
       <path d="M13 9h5M13 15h5" />
-    </Glyph>
-  ),
-  // One ring, with the jump going through it. Two rings is the truer picture of
-  // the feature (they come in pairs) but neither two-ring version read: joined by
-  // a straight line it was the chain that `links` already means, and joined by an
-  // arc over the top it was a pair of headphones. An arrow entering a ring is the
-  // idiom people know, and the pairing is what the label is for.
-  portals: (
-    <Glyph>
-      <ellipse cx="14" cy="12" rx="5" ry="8.5" />
-      <ellipse cx="14" cy="12" rx="2" ry="4" />
-      <path d="M2 12h7.5" />
-      <path d="M7.5 9.8l2.2 2.2-2.2 2.2" />
     </Glyph>
   ),
   // Palette → Arrow guides. Four articles about arrows, and the `arrows` family

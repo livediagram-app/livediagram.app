@@ -48,10 +48,9 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
   // A page (docs/specs/009-elements/page-element.md) is a plain rectangle with a fill and a border, so it
   // belongs on the CSS box path with square — the SVG overlay has no case for
   // it and would draw an invisible element.
-  // A mode button (docs/specs/009-elements/mode-button.md) and a portal (docs/specs/009-elements/portal-element.md) are likewise plain filled
-  // rounded boxes with their own content drawn on top, so they belong on the CSS
-  // box path too. Left on the SVG path they rendered as a TRANSPARENT box — the
-  // overlay has no case for either kind, so nothing drew the fill at all.
+  // A mode button (docs/specs/009-elements/mode-button.md) is likewise a plain filled rounded box with its own
+  // content drawn on top, so it belongs on the CSS box path too. Left on the SVG path it rendered as a TRANSPARENT
+  // box: the overlay has no case for it, so nothing drew the fill at all.
   return (
     kind !== 'square' &&
     kind !== 'circle' &&
@@ -64,7 +63,6 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
     // DEFAULT, so a new CSS-drawn kind left off it renders as a transparent
     // nothing.
     kind !== 'focus-button' &&
-    kind !== 'portal' &&
     kind !== 'session-button' &&
     kind !== 'reveal' &&
     kind !== 'picker' &&

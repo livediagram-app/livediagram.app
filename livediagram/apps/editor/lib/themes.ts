@@ -146,11 +146,6 @@ export function deriveNewBoxedColours(
   // reveal cover and a comment panel each sat in their own palette while
   // everything around them followed the tab, which reads as an oversight
   // rather than as emphasis — the theme is the whole point of picking one.
-  //
-  // A portal is the exception that stays, because its ring IS the element and
-  // is drawn from its own stroke colour; tinting it from the backdrop would
-  // recolour the energy rather than a box around it.
-  if (base.type === 'shape' && base.shape === 'portal') return colours;
   if (base.type === 'shape' || base.type === 'annotation') {
     // Annotation markers derive fill + stroke from the backdrop like a shape
     // does (text isn't used — the note is plain). See docs/specs/009-elements/annotations.md.

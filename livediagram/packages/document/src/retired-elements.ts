@@ -1,5 +1,5 @@
 // Retired elements (docs/specs/009-elements/retired-elements.md): the element kinds that moved to livehuddle with
-// Spaces and Avatar mode (docs/specs/002-project-scope/not-in-livediagram.md). A document saved before the move keeps
+// Spaces and Avatar mode, and the Portal after them (docs/specs/002-project-scope/not-in-livediagram.md). A document saved before the move keeps
 // them exactly as stored; livediagram draws each as a placeholder and never makes a new one.
 //
 // A LEAF module (no runtime imports) so the validator, the factories and the editor can all ask it without a cycle.
@@ -18,6 +18,8 @@ export const RETIRED_SHAPE_KINDS = [
   'water-cooler',
   'coffee-machine',
   'rug',
+  // The Portal followed on 2026-11-19 (Work Tracker 1318): a stored one keeps its `portalTarget`.
+  'portal',
 ] as const;
 
 export type RetiredShapeKind = (typeof RETIRED_SHAPE_KINDS)[number];
@@ -37,6 +39,7 @@ const RETIRED_NAMES: Record<RetiredShapeKind | 'mode-button', string> = {
   'water-cooler': 'Water Cooler',
   'coffee-machine': 'Coffee Machine',
   rug: 'Rug',
+  portal: 'Portal',
   'mode-button': 'Avatar Button',
 };
 

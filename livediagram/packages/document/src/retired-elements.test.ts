@@ -48,6 +48,15 @@ describe('retired elements', () => {
     expect(retiredElementName(shape('square'))).toBeNull();
   });
 
+  it('retires the Portal too, linked or not, and refuses a new one (Work Tracker 1318)', () => {
+    expect(isRetiredElement(shape('portal'))).toBe(true);
+    expect(isRetiredElement(shape('portal', { portalTarget: 'b' }))).toBe(true);
+    expect(retiredElementName(shape('portal'))).toBe('Portal');
+    expect(retiredCreateRefusal(shape('portal'))).toBe(
+      'Portal moved to livehuddle and can no longer be added in livediagram.',
+    );
+  });
+
   it('keeps the stored turn and floor reading per kind', () => {
     expect(isUprightRetiredKind('sofa')).toBe(true);
     expect(isUprightRetiredKind('fence')).toBe(false);

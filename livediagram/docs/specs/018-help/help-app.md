@@ -152,7 +152,7 @@ lines read as a bulleted list until the circles became heads and shoulders.
 The pattern in every redraw so far is worth stating, since it is not what you
 would guess: none was wrong on its own terms. Each had either landed on a glyph
 already in the set, or landed on a completely different idiom's meaning. Portals
-took three attempts for exactly that reason: two rings joined by a line is the
+(an article since moved to livehuddle's help, Work Tracker 1318) took three attempts for exactly that reason: two rings joined by a line is the
 chain that `links` means, and joined by an arc it is a pair of headphones, and
 settled on the single ring with an arrow entering it, accepting that the pairing
 lives in the label rather than the picture.

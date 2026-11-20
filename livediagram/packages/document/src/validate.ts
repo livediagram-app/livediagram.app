@@ -141,7 +141,7 @@ export const SHAPE_KINDS = new Set<string>([
   // Mode button (docs/specs/009-elements/mode-button.md): a pressable pill that switches whoever clicks it
   // into a selection mode.
   'mode-button',
-  // Portal (docs/specs/009-elements/portal-element.md): a portal to the portal it is paired with.
+  // A retired Portal (docs/specs/009-elements/retired-elements.md): stored ones still read, with `portalTarget`.
   'portal',
   // Session button (docs/specs/012-collaboration/session-button.md): starts a timer / vote / poll for the room.
   'session-button',

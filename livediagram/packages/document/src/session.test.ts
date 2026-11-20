@@ -75,7 +75,7 @@ describe('isVotable', () => {
     ).toBe(true);
   });
 
-  // Behaviour elements (docs/specs/009-elements/mode-button.md, docs/specs/009-elements/portal-element.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md) DO something when pressed. A votable
+  // Behaviour elements (docs/specs/009-elements/mode-button.md, docs/specs/009-elements/retired-elements.md, docs/specs/012-collaboration/session-button.md, docs/specs/009-elements/reveal-zone.md, docs/specs/012-collaboration/picker.md) DO something when pressed. A votable
   // one would give the same tap two meanings, decided by whether a vote
   // happened to be running.
   it('rejects the interactive Behaviour shapes', () => {

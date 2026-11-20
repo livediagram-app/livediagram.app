@@ -194,7 +194,7 @@ export function duplicateElements(
   }
   const rewired = newBoxed.map((el) => {
     let next = { ...el };
-    // mindParentId (docs/specs/009-elements/mind-node.md) and portalTarget (docs/specs/009-elements/portal-element.md) live on the shape
+    // mindParentId (docs/specs/009-elements/mind-node.md) and portalTarget (docs/specs/009-elements/retired-elements.md) live on the shape
     // element only, so narrow before reaching for them.
     if (next.type === 'shape') {
       const shape = { ...next };
@@ -240,7 +240,7 @@ export function duplicateElements(
 }
 
 // The element-id fields this product's elements hold besides an arrow's ends: a mind node's parent
-// (docs/specs/009-elements/mind-node.md), a portal's partner (docs/specs/009-elements/portal-element.md), a flowchart's
+// (docs/specs/009-elements/mind-node.md), a portal's partner (docs/specs/009-elements/retired-elements.md), a flowchart's
 // first step and a step's lane (both rename with it), and an attached badge's, step's or pointer note's host
 // (docs/specs/009-elements/badge.md).
 const ELEMENT_REF_FIELDS = [

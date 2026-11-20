@@ -21,7 +21,6 @@ import { RetiredElementFace } from '@/components/canvas/RetiredElementFace';
 import { PARTICIPANT_CANVAS_TOOLS } from '@/components/palette/palette-layouts';
 import { FocusButtonFace } from '@/components/canvas/FocusButtonFace';
 import { PickerFace } from '@/components/canvas/PickerFace';
-import { PortalFace } from '@/components/canvas/PortalFace';
 import { ReactionPadFace } from '@/components/canvas/ReactionPadFace';
 import { RevealFace } from '@/components/canvas/RevealFace';
 import { SessionButtonFace } from '@/components/canvas/SessionButtonFace';
@@ -35,7 +34,7 @@ const CollabFaceRouter = dynamic(loadCollabFaceRouter, { ssr: false });
 
 // The pressable faces at the head of ElementFaceRouter's chain: a retired piece's card, then every element
 // that draws its own interactive face (a mode button, a session timer or button, Bring Focus, a reveal cover,
-// a picker, a collaboration panel, a comment or action panel, a reaction pad, a portal). Each one falls
+// a picker, a collaboration panel, a comment or action panel, a reaction pad). Each one falls
 // through, mid-edit, to the router's ordinary label editor. Called as a function, not rendered as a component,
 // so the router's tree is what it always was; undefined when none of these is the element's face.
 export type BehaviourFaceProps = Omit<ElementFaceRouterProps, 'writable'> & {
@@ -62,7 +61,6 @@ export function behaviourFace({
   sessionStartBlocked,
   sessionRunBy,
   revealedForMe,
-  onEnterPortal,
   onFireReaction,
   onPressModeButton,
   onPressFocusButton,
@@ -245,16 +243,6 @@ export function behaviourFace({
         reaction={reactionOf(element.reaction)}
         textColor={textColor}
         onFire={onFireReaction ? () => onFireReaction(element) : undefined}
-      />
-    ) : element.type === 'shape' && element.shape === 'portal' && !isEditing ? (
-      /* Portal (docs/specs/009-elements/portal-element.md): the drawn portal + its label, pressable when paired. */
-      <PortalFace
-        label={label || 'Portal'}
-        strokeColor={
-          remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-        }
-        targetName={onEnterPortal?.(element).targetName ?? null}
-        onEnter={onEnterPortal?.(element).travel}
       />
     ) : undefined
   );

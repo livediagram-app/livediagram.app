@@ -1,7 +1,7 @@
 'use client';
 
 // The Tools flyout's behaviour sections (docs/specs/008-canvas/canvas-and-palette.md): a mode button's mode, a
-// portal's far end, a session button's tool, a reveal zone, a picker's source and a reaction pad's burst. Split
+// session button's tool, a reveal zone, a picker's source and a reaction pad's burst. Split
 // out of ElementDataSections, which renders it in the same place in the flyout.
 
 import type { ButtonMode, ShapeElement } from '@livediagram/document';
@@ -19,7 +19,6 @@ import { MODE_LABEL } from '@/components/canvas/ModeButtonFace';
 import { ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@liveworkspace/workbench/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@liveworkspace/workbench/components/primitives/MenuTiles';
-import { PortalMenuSection } from '@/components/palette/PortalMenuSection';
 import {
   PickerMenuSection,
   ReactionMenuSection,
@@ -47,7 +46,6 @@ export function ElementBehaviourToolSections({
   props,
   shapeTarget,
   isModeButton,
-  isPortal,
   isSessionButton,
   isReveal,
   isPicker,
@@ -57,7 +55,6 @@ export function ElementBehaviourToolSections({
   props: EditorContextMenuProps;
   shapeTarget: ShapeElement | null;
   isModeButton: boolean;
-  isPortal: boolean;
   isSessionButton: boolean;
   isReveal: boolean;
   isPicker: boolean;
@@ -90,19 +87,6 @@ export function ElementBehaviourToolSections({
             ))}
           </MenuTileGrid>
         </MenuAccordionSection>
-      ) : null}
-      {/* Portal (docs/specs/009-elements/portal-element.md): its name, where it leads (any tab), and a
-        shortcut to create the far end. See PortalMenuSection. */}
-      {isPortal && shapeTarget ? (
-        <PortalMenuSection
-          portal={shapeTarget}
-          tabs={props.tabs}
-          activeTabId={props.activeTabId}
-          onSetPortalTarget={props.onSetPortalTarget}
-          onSetPortalName={props.onSetPortalName}
-          onCreateLinkedPortal={props.onCreateLinkedPortal}
-          sectionProps={sectionProps('portal-target')}
-        />
       ) : null}
       {/* Session button (docs/specs/012-collaboration/session-button.md): which tool a press starts, and its
         one setting. See BehaviourMenuSections. */}

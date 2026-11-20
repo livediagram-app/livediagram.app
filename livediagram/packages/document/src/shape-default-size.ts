@@ -125,7 +125,7 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the mode button's shape, a touch wider because its
   // label is a sentence fragment ("The problem") rather than a mode's one word.
   'focus-button': { width: 120, height: 96 },
-  // Portal (docs/specs/009-elements/portal-element.md): portal-shaped — taller than it is wide, like a portal.
+  // A retired Portal (docs/specs/009-elements/retired-elements.md): taller than it is wide, as it was made.
   portal: { width: 72, height: 112 },
   // Session button (docs/specs/012-collaboration/session-button.md): the Selection Mode button's tile, so a row of
   // Behaviour controls lines up.

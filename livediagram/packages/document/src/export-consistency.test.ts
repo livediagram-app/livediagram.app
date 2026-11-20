@@ -82,8 +82,8 @@ describe('every kind with a body draws one', () => {
   ];
 
   // A plain export is the box and its label. Anything with a body of its own
-  // emits at least two DRAWN marks (a portal is two ellipses and nothing
-  // else), so that is the floor.
+  // emits at least two DRAWN marks (a retired placeholder is its card and
+  // its title), so that is the floor.
   const markCount = (kind: ShapeKind) => {
     const el = { ...createShape(kind, 0, 0), label: 'Label', width: 220, height: 160 };
     return (svgBoxed(el).match(/<(rect|circle|path|polygon|text|ellipse|polyline|svg)\b/g) ?? [])

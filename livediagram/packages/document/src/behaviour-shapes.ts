@@ -16,7 +16,6 @@ import type { ShapeKind } from './index';
 // Every kind the palette's Behaviours category can place.
 export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'mode-button',
-  'portal',
   'session-button',
   'reveal',
   'picker',
@@ -35,6 +34,7 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'water-cooler',
   'coffee-machine',
   'rug',
+  'portal',
   'done-check',
   'estimate',
   // Quiz (docs/specs/012-collaboration/quiz.md).

@@ -144,7 +144,7 @@ export function elementAriaLabel(el: Element): string {
 
 // The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, a Q&A board's
 // note field, an agenda's items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
-// record's settings, a mode button, a Bring Focus button, a portal's settings, a roll call's Take Roll, an estimate
+// record's settings, a mode button, a Bring Focus button, a roll call's Take Roll, an estimate
 // card's scales, an idea box's field, a done check's button, a comment pin's reply field, an action card's Add Action
 // and a page's title and subtitle lines.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
@@ -160,7 +160,6 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'decision',
   'mode-button',
   'focus-button',
-  'portal',
   'roll-call',
   'estimate',
   'idea-box',

@@ -62,9 +62,12 @@ describe('Behaviour face export', () => {
     expect(svg).toContain('>Laser<');
   });
 
-  it('draws a portal as its lit ring when paired, and dim when not', () => {
-    expect(svgOf(shape('portal', { portalTarget: 'x' }))).toContain('stop-opacity="0.95"');
-    expect(svgOf(shape('portal'))).toContain('stop-opacity="0.35"');
+  it('draws a stored portal as the retired placeholder, linked or not (Work Tracker 1318)', () => {
+    for (const el of [shape('portal', { portalTarget: 'x' }), shape('portal')]) {
+      const svg = svgOf(el);
+      expect(svg).toContain('>Portal<');
+      expect(svg).not.toContain('portal-rim');
+    }
   });
 
   it("draws a Reaction pad's emoji from its art when the caller has it, else as text", () => {

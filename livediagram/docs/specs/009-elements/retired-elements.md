@@ -1,6 +1,6 @@
 # Retired elements
 
-Status: **implemented** (Work Tracker #650, 2026-11-09).
+Status: **implemented** (Work Tracker #650, 2026-11-09; the Portal joined on 2026-11-19, Work Tracker 1318).
 
 An element kind that moved to livehuddle ([Not in livediagram](../002-project-scope/not-in-livediagram.md)) still turns
 up in documents saved before the move. livediagram keeps it exactly as stored and draws it as a **retired
@@ -11,12 +11,12 @@ placeholder**, so nothing is lost and nobody is confused by a blank space or a p
 `isRetiredElement` (`@livediagram/document`, `retired-elements.ts`) answers it, and nothing else decides:
 
 - a shape whose kind is one of `RETIRED_SHAPE_KINDS`: `chair`, `desk`, `sofa`, `fence`, `avatar-pad`, `room`,
-  `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine`, `rug`;
+  `meeting-table`, `plant`, `bookshelf`, `water-cooler`, `coffee-machine`, `rug`, `portal`;
 - a Selection Mode button (`mode-button`) whose mode is Avatar, stored as `mode: 'avatar'` or with no mode at all
   (absent always meant Avatar, the old default).
 
 Each retired element has a **name** for its card, from `retiredElementName`: Chair, Desk, Sofa, Fence, Avatar Pad,
-Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug, Avatar Button.
+Room, Meeting Table, Plant, Bookshelf, Water Cooler, Coffee Machine, Rug, Portal, Avatar Button.
 
 ## What it looks like
 
@@ -64,7 +64,18 @@ It follows the ordinary element rules for its share role ([Share roles](../013-w
 ## Stored data
 
 The stored schema is unchanged: `validate.ts` still accepts every retired kind and its fields (`chairFacing`,
-`roomDoor`, `mode: 'avatar'`), so a save writes them back as they were and livehuddle reads them the same.
+`roomDoor`, `mode: 'avatar'`, a portal's `portalTarget`), so a save writes them back as they were and livehuddle reads
+them the same. Copying, duplicating or importing a linked pair of portals still points each copy at the other copy
+(`duplicate.ts`), so a pair carried to livehuddle still works there.
+
+## The Portal
+
+The Portal is the one retired kind that was never a Spaces piece: it was a click-to-travel element that worked without
+a character. The owner moved it on 2026-11-19 ("Remove Portal from livediagram and add it to livehuddle instead"),
+so it follows the same rules as the furniture: a stored portal, linked or not, shows as a placeholder titled with its
+name (or **Portal**), never travels, and is never offered to create. Its menu section (Name, Leads to, Create Portal)
+and its travel left with it. livehuddle's [Portal](../../../../livehuddle/docs/specs/009-elements/portal-element.md)
+is the one to read and change.
 
 ## Performance
 

@@ -180,13 +180,6 @@ export type BoxedElementViewProps = {
   // The viewer's current mode, so a Selection Mode button offering it renders
   // disabled (docs/specs/009-elements/mode-button.md).
   activeMode?: import('@livediagram/document').SelectionMode;
-  // Portal (docs/specs/009-elements/portal-element.md): resolves a portal's pairing for the face — the paired portal's
-  // name for the hover card, and the travel action (undefined when unpaired, so the
-  // face renders inert and says why).
-  onEnterPortal?: (element: import('@livediagram/document').ShapeElement) => {
-    targetName: string | null;
-    travel?: () => void;
-  };
   onOpenComments: (id: string) => void;
   // Open the element's assigned-action popover (docs/specs/012-collaboration/assigned-actions.md). The badge only
   // renders while the element carries an OPEN action; everyone (including

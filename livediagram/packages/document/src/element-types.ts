@@ -259,9 +259,8 @@ export type ShapeElement = {
   // means DEFAULT_BUTTON_MODE ('avatar', the old default): such a button, like one
   // stored with 'avatar', is a retired element (docs/specs/009-elements/retired-elements.md).
   mode?: SelectionMode;
-  // Portal (docs/specs/009-elements/portal-element.md): the id of the portal this one leads to, on the same tab.
-  // Only meaningful on the 'portal' kind. Absent = an unpaired portal, which is
-  // inert and says so — a portal to nowhere shouldn't silently swallow clicks.
+  // A retired Portal's partner (docs/specs/009-elements/retired-elements.md): the id of the portal it led to. Only
+  // on the 'portal' kind, which moved to livehuddle; kept so a save writes it back and livehuddle reads the pair.
   portalTarget?: ElementId;
   // Session button (docs/specs/012-collaboration/session-button.md): which session tool pressing this element starts
   // for the room, and its one setting. Only meaningful on 'session-button';

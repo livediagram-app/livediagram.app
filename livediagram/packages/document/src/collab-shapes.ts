@@ -302,7 +302,7 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
 
 // Kinds whose resting face draws its own layout and shows the label as a
 // plain title (the collab panels, the session tools, a retired element's placeholder,
-// the comment and action panels, the portal): the editor's ElementFaceRouter hands them
+// the comment and action panels): the editor's ElementFaceRouter hands them
 // the label string, never the aligned label node, so text alignment has
 // nothing to move on them. Kept here, beside the kind predicates, so the
 // router's list and the text-align gate below can't drift apart.
@@ -318,7 +318,6 @@ export function hasOwnFace(kind: ShapeKind): boolean {
     kind === 'comment-pin' ||
     kind === 'action-card' ||
     kind === 'reaction-pad' ||
-    kind === 'portal' ||
     isQuizShape(kind)
   );
 }
