@@ -388,6 +388,56 @@ describe('the Trash', () => {
     ).toEqual({ item_id: item.id, attempts: 1, last_error: 'status_503' });
   });
 
+  // The app keeps content by item id and serves it to whoever the index says may read the item. Until the app has
+  // dropped a purged item's content, a new item under that id would hand it over (one-explorer-contracts.md "Purged").
+  it('makes no item under a purged id while its app still holds the content', async () => {
+    const ada = await person('user_a');
+    const eve = await person('user_e');
+    const item = await makeItem(ada.auth);
+    h.appAnswer = () => new Response('down', { status: 503 });
+    await call(`/items/${item.id}?permanent=true`, { method: 'DELETE', auth: ada.auth });
+    await settle();
+    const post = (auth: string) =>
+      call('/items', { method: 'POST', auth, body: { app: 'liveplanner', id: item.id } });
+    const count = (sql: string) => (h.db.sql.prepare(sql).get(item.id) as { n: number }).n;
+    const events = count('SELECT COUNT(*) AS n FROM events WHERE item_id = ?');
+    // Anyone who knew the id, and its old owner alike: nothing is made, and no event says it was.
+    for (const auth of [eve.auth, ada.auth]) {
+      const res = await post(auth);
+      expect(res.status).toBe(409);
+      expect(await body(res)).toEqual({ error: 'item_purging' });
+    }
+    expect(count('SELECT COUNT(*) AS n FROM items WHERE id = ?')).toBe(0);
+    expect(count('SELECT COUNT(*) AS n FROM events WHERE item_id = ?')).toBe(events);
+    expect(count('SELECT COUNT(*) AS n FROM purge_tombstones WHERE item_id = ?')).toBe(1);
+    // An id nobody purged is untouched by the rule.
+    expect((await makeItem(eve.auth)).id).not.toBe(item.id);
+  });
+
+  it('asks the app to drop a purged id at once when it is named again, then makes the item', async () => {
+    const ada = await person('user_a');
+    const item = await makeItem(ada.auth);
+    h.appAnswer = () => new Response('down', { status: 503 });
+    await call(`/items/${item.id}?permanent=true`, { method: 'DELETE', auth: ada.auth });
+    await settle();
+    // The app is back: the create has it drop the old content first, so the new item starts empty.
+    const asked: string[] = [];
+    h.appAnswer = (sent) => {
+      asked.push(`${sent.method} ${new URL(sent.url).pathname}`);
+      return new Response(null, { status: 204 });
+    };
+    const res = await call('/items', {
+      method: 'POST',
+      auth: ada.auth,
+      body: { app: 'liveplanner', id: item.id, synced: true },
+    });
+    expect(res.status).toBe(201);
+    expect(
+      asked.filter((a) => a.startsWith('DELETE') && a.endsWith(`/items/${item.id}`)),
+    ).toHaveLength(1);
+    expect(h.db.sql.prepare('SELECT COUNT(*) AS n FROM purge_tombstones').get()).toEqual({ n: 0 });
+  });
+
   it('empties the Trash, personal or a team’s', async () => {
     const ada = await person('user_a', { teams: [{ id: 'team1' }] });
     const a = await makeItem(ada.auth);

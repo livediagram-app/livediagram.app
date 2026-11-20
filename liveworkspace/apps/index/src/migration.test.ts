@@ -260,6 +260,20 @@ describe('the migration handoff', () => {
       (await handoff({ app: 'livedocuments', title: 'x', payload: payload({ id: taken.id }) }))
         .status,
     ).toBe(409);
+    // Nor under a purged id whose content its app has not dropped yet (one-explorer-contracts.md "Purging").
+    const purging = '7a0e2e6f-3b8c-4d2f-8e4b-1c9f6a8b2d3e';
+    h.db.sql
+      .prepare(
+        `INSERT INTO purge_tombstones (item_id, app, created_at) VALUES (?, 'livedocuments', 1)`,
+      )
+      .run(purging);
+    const waiting = await handoff({
+      app: 'livedocuments',
+      title: 'x',
+      payload: payload({ id: purging }),
+    });
+    expect(waiting.status).toBe(409);
+    expect(await waiting.json()).toEqual({ error: 'item_purging' });
     const huge = await handoff({
       app: 'livedocuments',
       title: 'x',

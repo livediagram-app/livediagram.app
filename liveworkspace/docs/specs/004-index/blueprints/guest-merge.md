@@ -66,7 +66,7 @@ this deployment does not run counts as confirmed; a failure gets `attempts + 1`,
 5. `app` one of `liveplanner`, `livedocuments`, `livedesign` (`400 invalid_app`); `title` text with something in it, shortened to the name cap
    ([items.md](items.md) "The name cap"; `400 invalid_title` otherwise); `payload` `{ v: 1, app: <same>, id: <id>, tabs: [] }` (`400`).
 6. The item made as `POST /items` would: the person's, `source 'import'`, root of their own space, no team, with its
-   `created { source: 'import' }` event; a taken id is `409 item_exists`.
+   `created { source: 'import' }` event; a taken id is `409 item_exists`, a tombstoned one `409 item_purging`.
 7. The app's `PUT /items/:id/migration` with the payload, `ownerId` the person and `teamId` null whatever it said, 30 s.
 8. The app failing: the row deleted (its event cascades), `502 migration_failed`, logged `[index] migration handoff
 not taken`.
