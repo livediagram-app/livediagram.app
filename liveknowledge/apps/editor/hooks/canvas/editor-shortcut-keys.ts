@@ -153,13 +153,10 @@ export type EditorKeyboardShortcutsDeps = {
 // workspace's node-env vitest doesn't run; see docs/specs/003-system-architecture/testing.md).
 export type ShortcutAction = (live: EditorKeyboardShortcutsDeps) => void;
 
+// No tool keys (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"): the Selection mode and its tools
+// (V, S and 1 for Select, K for the Laser, H for the Hand) are not in liveknowledge, where the pointer always
+// selects.
 export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
-  v: (l) => l.setCanvasTool('select'),
-  // The legacy Select alias (pre-`V` standard). The fork's S for Search Elements is not in liveknowledge: a key typed
-  // outside the writing opens nothing.
-  s: (l) => l.setCanvasTool('select'),
-  '1': (l) => l.setCanvasTool('select'),
-  k: (l) => l.setCanvasTool('laser'),
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
 

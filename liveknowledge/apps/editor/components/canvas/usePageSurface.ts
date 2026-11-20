@@ -8,7 +8,12 @@ import { useCallback, useEffect, useLayoutEffect, useSyncExternalStore, type Ref
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import type { View } from '@liveworkspace/workbench/lib/viewport-store';
-import { computePageLock } from '@/lib/page-surface/page-lock';
+import {
+  PAGE_FREE_HEIGHT_VAR,
+  computePageLock,
+  worldHeight,
+  pageFreeHeight,
+} from '@/lib/page-surface/page-lock';
 import { pageScrollOf } from '@/lib/page-surface/page-keys';
 import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { sideChromeInsets } from '@/lib/side-chrome-insets';
@@ -58,16 +63,20 @@ export function usePageSurface({
       if (width === 0 || height === 0) return;
       const sides = sideChromeInsets(main);
       const railRoom = main.offsetWidth - box.offsetWidth;
-      pageStore.lockTo(
-        computePageLock({
-          width,
-          height,
-          sides: { left: sides.left, right: Math.max(0, sides.right - railRoom) },
-          page: { x, y, width: pageWidth },
-          margin,
-          phone,
-        }).view,
-      );
+      const lock = computePageLock({
+        width,
+        // The world's own box (worldHeight), which its transform is about.
+        height: worldHeight(height),
+        sides: { left: sides.left, right: Math.max(0, sides.right - railRoom) },
+        page: { x, y, width: pageWidth },
+        margin,
+        phone,
+      });
+      pageStore.lockTo(lock.view);
+      // How tall the window lets a page be: the writing fills it, however short the stored page is.
+      const free = `${pageFreeHeight(height, lock.view.zoom)}px`;
+      if (scroller && scroller.style.getPropertyValue(PAGE_FREE_HEIGHT_VAR) !== free)
+        scroller.style.setProperty(PAGE_FREE_HEIGHT_VAR, free);
     };
     relock();
     if (typeof ResizeObserver === 'undefined') return;

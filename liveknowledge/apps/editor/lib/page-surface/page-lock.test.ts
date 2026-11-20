@@ -4,12 +4,15 @@ import {
   PAGE_MIN_SCALE,
   PAGE_SIDE_ROOM,
   PAGE_SIDE_ROOM_PHONE,
+  PAGE_FOOT_ROOM,
   PAGE_TOP_ROOM,
+  pageFreeHeight,
+  worldHeight,
 } from './page-lock';
 
 // docs/specs/030-knowledgebase/page-surface.md "A reading column": one centred column, 760 px at most, 48 px of
 // room either side on a desktop and 20 px on a phone, at every window width down to 320 px.
-const PAGE = { x: -410, y: -560, width: 820 };
+const PAGE = { x: -428, y: -560, width: 856 };
 const MARGIN = 48;
 const COLUMN = PAGE.width - 2 * MARGIN;
 const NO_SIDES = { left: 0, right: 0 };
@@ -110,5 +113,39 @@ describe('computePageLock', () => {
       phone: false,
     };
     expect(computePageLock(input).view).toEqual(computePageLock(input).view);
+  });
+});
+
+// A short page must not scroll: the canvas world's own box, moved by its transform, is something the scroll container
+// scrolls to, so it is PAGE_TOP_ROOM shorter than the container and a continuous page's top stands on the canvas's
+// axis (page.y 0).
+describe("the world's box inside the scroll container", () => {
+  it.each([
+    [1440, 852],
+    [1280, 672],
+    [1024, 640],
+    [390, 740],
+    [320, 500],
+  ])('never reaches past the container’s foot at %i x %i', (width, height) => {
+    const size = { width, height: worldHeight(height) };
+    const lock = computePageLock({
+      ...size,
+      sides: NO_SIDES,
+      page: { x: -428, y: 0, width: 856 },
+      margin: MARGIN,
+      phone: width < 640,
+    });
+    const { zoom, offset } = lock.view;
+    // The box's foot under `scale(z) translate(o)` about its centre.
+    const foot = zoom * (size.height + offset.y) + (size.height / 2) * (1 - zoom);
+    expect(foot).toBeLessThanOrEqual(height + 1e-6);
+    // And the page's top is where the lock says: PAGE_TOP_ROOM under the top of what scrolls.
+    expect(zoom * (0 + offset.y) + (size.height / 2) * (1 - zoom)).toBeCloseTo(PAGE_TOP_ROOM, 6);
+  });
+
+  it('leaves a page the window’s height less its top and foot room, in canvas px', () => {
+    expect(pageFreeHeight(624, 1)).toBe(624 - PAGE_TOP_ROOM - PAGE_FOOT_ROOM);
+    expect(pageFreeHeight(624, 0.5)).toBe((624 - PAGE_TOP_ROOM - PAGE_FOOT_ROOM) * 2);
+    expect(pageFreeHeight(40, 1)).toBe(0);
   });
 });

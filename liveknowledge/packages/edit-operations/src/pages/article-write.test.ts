@@ -89,8 +89,8 @@ describe('a new article', () => {
     const pages = pagesOf(out.tab);
     expect(pages).toHaveLength(1);
     expect(pages[0]).toMatchObject({ kind: 'article', size: 'fit' });
-    expect(pages[0]!.fit!.width).toBe(820);
-    expect(pages[0]!.fit!.height).toBeGreaterThan(1120);
+    expect(pages[0]!.fit!.width).toBe(856);
+    expect(pages[0]!.fit!.height).toBeGreaterThan(240);
   });
 });
 

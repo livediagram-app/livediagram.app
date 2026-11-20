@@ -39,15 +39,12 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
     ],
   },
   {
-    heading: 'Tools',
-    rows: [
-      { keys: ['V'], label: 'Select Tool  (or 1, or S)' },
-      { keys: ['K'], label: 'Laser Pointer' },
-      { keys: ['Z'], label: 'Zen Mode (focus)' },
-    ],
+    heading: 'View',
+    rows: [{ keys: ['Z'], label: 'Zen Mode (focus)' }],
   },
   {
-    heading: 'Add elements',
+    // The element keys work while a drawing zone is being edited, and nowhere else on a page.
+    heading: 'In a Drawing',
     rows: [
       { keys: ['R'], label: 'Square' },
       { keys: ['O'], label: 'Circle' },
@@ -58,7 +55,11 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['N'], label: 'Note (sticky)' },
       { keys: ['A'], label: 'Arrow' },
       { keys: ['9'], label: 'Image' },
-      { keys: ['1', '–', '0'], label: 'Number row also picks tools / shapes' },
+      { keys: ['2'], label: 'Square' },
+      { keys: ['3'], label: 'Diamond' },
+      { keys: ['4'], label: 'Circle' },
+      { keys: ['5'], label: 'Arrow' },
+      { keys: ['8'], label: 'Text' },
     ],
   },
   {
@@ -70,35 +71,14 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['Tab'], label: 'Select Next Element  (Shift: previous)' },
       {
         keys: ['F6'],
-        label: 'Next Region: Header, Palette, Canvas, Controls, Bottom Bar  (Shift: previous)',
+        label: 'Next Region: Top Row, Page, Controls, Bottom Bar  (Shift: previous)',
       },
       { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
       { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
       { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },
-      { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
       { keys: ['Space'], label: 'Edit label of selected element' },
       { keys: ['Type'], label: 'Replace label of selected element' },
       { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
-      { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
-    ],
-  },
-  {
-    // Only live while a deck is running (docs/specs/012-collaboration/presentation-mode.md), which is why they are their
-    // own section rather than mixed into Navigate & select: none of them do
-    // anything in the editor.
-    heading: 'While presenting',
-    rows: [
-      { keys: ['→'], label: 'Next slide  (or Space / Page Down / click)' },
-      { keys: ['←'], label: 'Previous slide  (or Page Up)' },
-      { keys: ['Home'], label: 'First slide' },
-      { keys: ['End'], label: 'Last slide' },
-      { keys: ['G'], label: 'Jump to any slide' },
-      { keys: ['N'], label: 'Presenter notes for this slide' },
-      { keys: ['↓'], label: 'Next note card, while the notes are open  (↑ for the previous)' },
-      { keys: ['L'], label: 'Laser pointer over the slide' },
-      { keys: ['S'], label: 'Spotlight over the slide' },
-      { keys: ['Click'], label: 'On an element: its note, comments and actions' },
-      { keys: ['Escape'], label: 'Exit the presentation' },
     ],
   },
 ];

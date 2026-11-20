@@ -3,15 +3,13 @@ import { libraryLast } from '@liveworkspace/workbench/components/palette/library
 import { useLibrary } from '@liveworkspace/workbench/components/library/LibraryProvider';
 import type { LibraryInsertItem } from '@liveworkspace/workbench/hooks/canvas/useLibraryItemInsert';
 import type { EmbedProvider } from '@liveknowledge/document';
-import { useEffect, useState } from 'react';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
 import { searchStickers } from '@liveworkspace/workbench/lib/stickers';
 import { searchTechIcons } from '@liveworkspace/workbench/lib/tech-icons';
 import { useIconCatalogs } from '@liveworkspace/workbench/hooks/ui/useIconCatalogs';
-import type { CanvasTool, PaletteProps } from './palette.types';
-import { buildCanvasToolOptions } from './canvas-tool-options';
+import type { PaletteProps } from './palette.types';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import { paletteCategoriesFor } from './palette-layouts';
@@ -19,24 +17,16 @@ import type { AddShapeOptions } from '@/lib/draw-mode';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
-// three searchable catalogues' state, and the canvas-tool picker's options.
+// and the three searchable catalogues' state.
 // The strip (docs/specs/007-editor/toolbar-layout.md), its category flyouts and its Search all read
 // from this one catalogue, so they never drift apart.
 //
 // `onTileUsed` is the host's hook into "a tile was used": the strip closes
 // its open flyout or Search. Every add-handler calls it, so a tile behaves the same
 // from any category and any surface.
-type Deps = Pick<
-  PaletteProps,
-  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'onTileUsed'
-> &
-  PaletteAddHandlers;
+type Deps = Pick<PaletteProps, 'pendingDraw' | 'onTileUsed'> & PaletteAddHandlers;
 
 export function usePaletteCatalogue({
-  canvasTool,
-  onSetCanvasTool,
-  onToggleZen,
-  canvasEmpty,
   onAddShape,
   onAddIcon,
   onAddSticker,
@@ -63,20 +53,6 @@ export function usePaletteCatalogue({
   onTileUsed,
   paletteKind,
 }: Deps & { paletteKind: PaletteKind }) {
-  // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
-  // cursor and on left/right-click to resize the light, none of which map to
-  // touch — so drop it from the tool picker on mobile viewports. Reactive
-  // (the shared useIsMobileViewport, as MovablePanel uses) so the option
-  // appears / disappears as the viewport crosses the breakpoint; a client
-  // mount reads it synchronously, so there's no flicker.
-  const isMobile = useIsMobileViewport();
-  // If the viewport shrinks into mobile while Spotlight is active (desktop ->
-  // resize / rotate), revert to Select: the option has just left the picker,
-  // so leaving the tool on spotlight would strand it (the trigger would
-  // mislabel as Select while the canvas stayed shrouded).
-  useEffect(() => {
-    if (isMobile && canvasTool === 'spotlight') onSetCanvasTool('select');
-  }, [isMobile, canvasTool, onSetCanvasTool]);
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
@@ -201,24 +177,9 @@ export function usePaletteCatalogue({
     techResults,
   });
 
-  // The canvas-tool picker's options, and its change handler: 'zen' is an
-  // action entry, not a tool, so it fires the toggle and keeps the current
-  // tool selected (see canvas-tool-options).
-  const canvasToolOptions = buildCanvasToolOptions({
-    canvasEmpty,
-    isMobile,
-    includeZen: !!onToggleZen,
-  });
-  const onCanvasToolChange = (id: string) => {
-    if (id === 'zen') onToggleZen?.();
-    else onSetCanvasTool(id as CanvasTool);
-  };
-
   return {
     tileActions,
     tabs,
-    canvasToolOptions,
-    onCanvasToolChange,
     iconCatalogsLoaded,
   };
 }

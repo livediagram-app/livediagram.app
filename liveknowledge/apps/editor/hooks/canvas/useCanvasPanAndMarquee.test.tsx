@@ -42,6 +42,29 @@ describe('useCanvasPanAndMarquee space-held modifier', () => {
     expect(result.current.spaceHeldRef.current).toBe(false);
   });
 
+  // docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning": outside a drawing zone being edited Space
+  // is the page's own (it scrolls), so it is neither held nor taken from the browser.
+  it('leaves Space alone where it is not a pan', () => {
+    const { result } = renderHook(() =>
+      useCanvasPanAndMarquee({
+        viewportZoom: 1,
+        setViewportOffset: vi.fn(),
+        elements: [],
+        wrapperRef: { current: null },
+        onDeselect: vi.fn(),
+        onSelectMarquee: vi.fn(),
+        spacePan: false,
+      }),
+    );
+    const event = new KeyboardEvent('keydown', { code: 'Space', bubbles: true, cancelable: true });
+    act(() => {
+      document.body.dispatchEvent(event);
+    });
+    expect(event.defaultPrevented).toBe(false);
+    expect(result.current.spaceHeld).toBe(false);
+    expect(result.current.spaceHeldRef.current).toBe(false);
+  });
+
   it('ignores Space typed into a text field', () => {
     const { result } = setup();
     const input = document.createElement('input');

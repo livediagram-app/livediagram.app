@@ -70,5 +70,26 @@ export function computePageLock(input: PageLockInput): PageLock {
   };
 }
 
+/** The custom property the scroll container carries: the canvas px of height the window leaves a page, top room and
+ *  foot room taken off. A page's paper is at least this tall on screen (ArticleFlows), so a press under
+ *  a short page's last line still lands in the writing. A view concern: the stored page is as short as its writing. */
+/**
+ * The canvas world's box inside the scroll container: the container's, less PAGE_TOP_ROOM at its foot. The world is
+ * drawn `scale(z) translate(o)` about its own centre, and a transformed box is something the container scrolls to;
+ * a continuous page's top stands on the canvas's axis (page-layout.ts), so the box moves down by PAGE_TOP_ROOM at
+ * most, and that much shorter it never reaches past the container's foot. The lock is solved for this height.
+ */
+export const worldHeight = (scrollerHeight: number): number =>
+  Math.max(1, scrollerHeight - PAGE_TOP_ROOM);
+/** The same as the world element's CSS height. */
+export const WORLD_HEIGHT_CSS = `calc(100% - ${PAGE_TOP_ROOM}px)`;
+
+export const PAGE_FREE_HEIGHT_VAR = '--page-free-height';
+
+/** That height for a scroll container `height` screen px tall, shown at `zoom`. */
+export function pageFreeHeight(height: number, zoom: number): number {
+  return Math.max(0, Math.floor((height - PAGE_TOP_ROOM - PAGE_FOOT_ROOM) / zoom));
+}
+
 export const sameView = (a: View, b: View): boolean =>
   a.zoom === b.zoom && a.offset.x === b.offset.x && a.offset.y === b.offset.y;

@@ -39,7 +39,9 @@ export const PageSurfaceSheet = memo(function PageSurfaceSheet({
       data-page-id={page.id}
       data-page-kind="article"
       data-page-surface=""
-      className="pointer-events-none absolute"
+      // Over the writing's paper (ArticleFlows, which takes a press anywhere on the page), so the breadcrumb in the
+      // top margin is pressable; the box itself takes no press.
+      className="pointer-events-none absolute z-[1]"
       style={{
         left: page.rect.x,
         top: page.rect.y,

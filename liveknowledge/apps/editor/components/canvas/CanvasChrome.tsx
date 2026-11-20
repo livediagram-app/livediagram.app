@@ -85,7 +85,6 @@ function CanvasChromeView(props: CanvasChromeProps) {
     activeDockPanel,
     canRedo,
     canUndo,
-    canvasTool,
     documentName,
     drawDrag,
     drawHover,
@@ -159,9 +158,8 @@ function CanvasChromeView(props: CanvasChromeProps) {
   // (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"). It shows only while a drawing zone is being
   // edited, as that drawing's tools, in the formatting bar's place.
   const drawingZone = useDrawingZoneEditing();
-  const paletteShown = !readOnly && drawingZone;
-  // The formatting bar: an Editor's, on a desktop (a phone's writing bar is the page toolbar's own).
-  const formattingBarShown = !readOnly && !drawingZone;
+  // A shape picked from them and still to be drawn keeps them up: the press that draws it is outside the strip.
+  const paletteShown = !readOnly && (drawingZone || !!pendingDraw);
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The top row of the content area (docs/specs/030-knowledgebase/page-surface.md "The footer"): there for every
@@ -364,33 +362,33 @@ function CanvasChromeView(props: CanvasChromeProps) {
           }
           trailing={pageRail.rowButton}
         >
-          {formattingBarShown && !isMobile ? (
+          {!readOnly && !isMobile ? (
             <PageFormattingBar
               canUndo={canUndo === true}
               canRedo={canRedo === true}
               onUndo={onUndo}
               onRedo={onRedo}
+              drawing={
+                paletteShown ? (
+                  // A drawing zone being edited: its tools, in the formatting controls' place.
+                  <ToolbarPalette
+                    {...pickPaletteAddHandlers(props)}
+                    pendingDraw={pendingDraw}
+                    themeTint={paletteTint}
+                  />
+                ) : undefined
+              }
+            />
+          ) : paletteShown ? (
+            // A phone has no formatting controls in the row: the drawing's tools alone.
+            <ToolbarPalette
+              {...pickPaletteAddHandlers(props)}
+              pendingDraw={pendingDraw}
+              themeTint={paletteTint}
             />
           ) : null}
         </KnowledgeTopRow>
       ) : null}
-      {paletteShown ? (
-        <ToolbarPalette
-          // Hidden, not unmounted, while the chrome is away (zen, welcome),
-          // so the chosen category lasts the page load.
-          hidden={chromeHidden}
-          canvasTool={canvasTool}
-          onSetCanvasTool={props.onSetCanvasTool}
-          onToggleZen={onToggleZen}
-          canvasEmpty={elements.length === 0}
-          {...pickPaletteAddHandlers(props)}
-          pendingDraw={pendingDraw}
-          themeTint={paletteTint}
-          {...(menuJoin.joinedWidth === undefined ? {} : { besideWidth: menuJoin.joinedWidth })}
-          tabPages={props.pagesMode?.pages}
-        />
-      ) : null}
-
       {/* Corner panels (docs/specs/007-editor/panel-docking.md). Distributed into per-corner stack
           containers (with a free layer + snap guides) by `dockedLayer`; in zen they render inline.
           Each element carries its own visibility gate, so the welcome-flow / read-only / zen
@@ -444,9 +442,7 @@ function CanvasChromeView(props: CanvasChromeProps) {
             {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
                 (docs/specs/013-workspace/share-roles.md); a Viewer has nothing to undo. */}
             {/* An Editor's Undo and Redo are in the formatting bar; here on a phone, and for a Participant. */}
-            {!zenMode &&
-            (!readOnly || !!props.takePart) &&
-            (isMobile || readOnly || drawingZone) ? (
+            {!zenMode && (!readOnly || !!props.takePart) && (isMobile || readOnly) ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}

@@ -236,7 +236,7 @@ describe('Fit to Content pages', () => {
     }
     const [doc] = pagesOf({ pages: [fit({ kind: 'article', flow: 'd' })] });
     expect(doc!.size).toBe('fit');
-    expect(doc!.fit!.width).toBe(820);
+    expect(doc!.fit!.width).toBe(856);
   });
 
   it('keeps an explicit infographic kind', () => {

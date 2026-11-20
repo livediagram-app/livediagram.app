@@ -43,7 +43,11 @@ export function PageFormattingBar({
   canRedo,
   onUndo,
   onRedo,
+  drawing,
 }: {
+  // A drawing zone being edited: its tools, in the formatting controls' place. The page toolbar's slot stays
+  // mounted and hidden, so the toolbar keeps its home and never floats over the writing meanwhile.
+  drawing?: ReactNode;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: (() => void) | undefined;
@@ -61,8 +65,10 @@ export function PageFormattingBar({
       <div
         ref={slot}
         data-article-dock=""
-        className="flex min-w-0 flex-initial items-center overflow-x-auto [scrollbar-width:none]"
+        hidden={drawing != null}
+        className="flex min-w-0 flex-initial items-center overflow-x-auto [scrollbar-width:none] [&[hidden]]:hidden"
       />
+      {drawing ?? null}
       <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
       <HistoryButton
         label="Undo"

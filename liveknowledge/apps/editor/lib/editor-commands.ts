@@ -121,10 +121,8 @@ export type CommandHandlers = {
   setTool: (tool: string) => void;
 };
 
-// The canvas tools reachable from search, in the tool dropdown's own order.
-// `ids` here MUST stay in step with buildCanvasToolOptions (a test pins it):
-// the whole point is that a tool the palette offers is also typeable, and a
-// stale id would hand the setter a tool that does not exist.
+// The canvas tools reachable from search. liveknowledge has no Selection mode (the pointer always selects) and no
+// presenter tools, so the Format Painter is the one tool there is to switch to.
 //
 // Only the id + the words are restated. The gating (empty canvas, mobile,
 // read-only) is expressed once, below.
@@ -140,7 +138,6 @@ export const CANVAS_TOOLS: {
   editsElements?: boolean;
   desktopOnly?: boolean;
 }[] = [
-  { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
   {
     id: 'format',
     name: 'Format Painter',
@@ -148,19 +145,6 @@ export const CANVAS_TOOLS: {
     needsContent: true,
     mutates: true,
     editsElements: true,
-  },
-  {
-    id: 'laser',
-    name: 'Laser Pointer',
-    keywords: 'laser pointer present point highlight temporary trail k',
-    needsContent: true,
-  },
-  {
-    id: 'spotlight',
-    name: 'Spotlight',
-    keywords: 'spotlight focus dim darken present attention',
-    needsContent: true,
-    desktopOnly: true,
   },
 ];
 

@@ -37,20 +37,15 @@ function fired(table: Record<string, ShortcutAction>, key: string): string {
 }
 
 describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
-  it('binds Select to V, the legacy S alias, and number 1', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'v')).toBe('tool:select');
-    expect(fired(VIEW_TOOL_KEYS, 's')).toBe('tool:select');
-    expect(fired(VIEW_TOOL_KEYS, '1')).toBe('tool:select');
+  // page-surface.md "The formatting bar": no Selection mode, so none of its tools has a key.
+  it('binds no Selection mode tool: not Select (V, S, 1) and not the Laser (K)', () => {
+    for (const key of ['v', 's', '1', 'k', 'l']) expect(VIEW_TOOL_KEYS[key]).toBeUndefined();
+    expect(Object.keys(VIEW_TOOL_KEYS)).toEqual(['z']);
   });
 
   it('binds no Hand tool: a knowledgebase page has none (page-surface.md "No zoom and no panning")', () => {
     expect(VIEW_TOOL_KEYS.h).toBeUndefined();
     expect(VIEW_TOOL_KEYS.p).toBeUndefined();
-  });
-
-  it('binds Laser to K (not L)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'k')).toBe('tool:laser');
-    expect(VIEW_TOOL_KEYS.l).toBeUndefined();
   });
 
   it('keeps Zen on Z and leaves I unbound (the isometric view is livediagram only)', () => {

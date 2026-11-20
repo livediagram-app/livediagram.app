@@ -12,6 +12,7 @@ import {
   type Tab,
 } from '@liveknowledge/document';
 import { chartMarkerOf, withTemplateCharts } from './article-template-charts';
+import { articlePage } from './article-template';
 import { articleTemplateElements, articleTemplateOverridesFor } from './article-templates';
 import { buildTemplate } from './build-template';
 
@@ -60,9 +61,8 @@ describe('withTemplateCharts', () => {
     ]);
     expect(elements.map((e) => e.shape)).toEqual(['bar-chart', 'line-chart']);
     expect(elements.every((e) => e.chartValues === true)).toBe(true);
-    const pages = layOutPages([
-      { id: 'page-1', orientation: 'portrait', kind: 'article', flow: 'art-x' },
-    ]);
+    // The page the template stands on: a knowledgebase's continuous page (its top on the canvas's axis).
+    const pages = layOutPages([articlePage('art-x')]);
     const rects = zones.map((z) => zoneCanvasRect(pages, z)!);
     // Each chart is its own zone's, never the other's.
     expect(zoneMemberIds(elements, rects[0]!)).toEqual(new Set([elements[0]!.id]));

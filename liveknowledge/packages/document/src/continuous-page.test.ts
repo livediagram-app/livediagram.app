@@ -39,14 +39,14 @@ const pageTab = (blocks: ArticleBlock[]): Tab => ({
 });
 
 describe('the continuous size', () => {
-  it('is an article page in the fit size: 820 wide, as tall as its writing', () => {
+  it('is an article page in the fit size: 856 wide, as tall as its writing', () => {
     const page = knowledgebasePage();
     expect(isContinuousPage(page)).toBe(true);
     expect(pageDimensions(page)).toEqual({
       width: CONTINUOUS_PAGE_WIDTH,
       height: CONTINUOUS_PAGE_MIN_HEIGHT,
     });
-    expect(CONTINUOUS_PAGE_WIDTH).toBe(820);
+    expect(CONTINUOUS_PAGE_WIDTH).toBe(856);
     expect(isContinuousPage({ kind: 'article' })).toBe(false);
     expect(isContinuousPage({ kind: 'infographic', size: 'fit' })).toBe(false);
   });
@@ -70,10 +70,10 @@ describe('the continuous size', () => {
     expect(made).toMatchObject({
       orientation: 'portrait',
       size: 'fit',
-      fit: { width: 820, height: CONTINUOUS_PAGE_MIN_HEIGHT },
+      fit: { width: 856, height: CONTINUOUS_PAGE_MIN_HEIGHT },
     });
-    const tall = continuousPage({ ...made, fit: { width: 820, height: 5000 } });
-    expect(tall.fit).toEqual({ width: 820, height: 5000 });
+    const tall = continuousPage({ ...made, fit: { width: 856, height: 5000 } });
+    expect(tall.fit).toEqual({ width: 856, height: 5000 });
   });
 });
 
@@ -84,17 +84,17 @@ describe('a stored continuous page', () => {
     })[0]!;
 
   it('reads its height, taller than Fit to Content allows an infographic', () => {
-    expect(stored({ width: 820, height: 64000 }).fit).toEqual({ width: 820, height: 64000 });
+    expect(stored({ width: 856, height: 64000 }).fit).toEqual({ width: 856, height: 64000 });
   });
 
   it('is always the continuous width, and the least height when none is readable', () => {
-    expect(stored({ width: 300, height: 3000.4 }).fit).toEqual({ width: 820, height: 3001 });
-    expect(stored(undefined).fit).toEqual({ width: 820, height: CONTINUOUS_PAGE_MIN_HEIGHT });
-    expect(stored({ width: 820, height: 'tall' }).fit).toEqual({
-      width: 820,
+    expect(stored({ width: 300, height: 3000.4 }).fit).toEqual({ width: 856, height: 3001 });
+    expect(stored(undefined).fit).toEqual({ width: 856, height: CONTINUOUS_PAGE_MIN_HEIGHT });
+    expect(stored({ width: 856, height: 'tall' }).fit).toEqual({
+      width: 856,
       height: CONTINUOUS_PAGE_MIN_HEIGHT,
     });
-    expect(stored({ width: 820, height: 1e12 }).fit!.height).toBe(CONTINUOUS_PAGE_MAX_HEIGHT);
+    expect(stored({ width: 856, height: 1e12 }).fit!.height).toBe(CONTINUOUS_PAGE_MAX_HEIGHT);
   });
 
   it('keeps Fit to Content on an infographic page as it was', () => {
@@ -113,7 +113,8 @@ describe('where a continuous page sits', () => {
     expect(tall.height).toBe(9000);
     expect(tall.y).toBe(short.y);
     expect(tall.x).toBe(short.x);
-    expect(short.y).toBe(-CONTINUOUS_PAGE_MIN_HEIGHT / 2);
+    // On the row's axis, whatever its height.
+    expect(short.y).toBe(0);
   });
 });
 
@@ -122,7 +123,7 @@ describe('withArticlePageHeight', () => {
     const tab = pageTab([]);
     const grown = withArticlePageHeight(tab, KNOWLEDGEBASE_FLOW, 4321.5);
     expect(pagesOf(grown)).toHaveLength(1);
-    expect(pagesOf(grown)[0]!.fit).toEqual({ width: 820, height: 4322 });
+    expect(pagesOf(grown)[0]!.fit).toEqual({ width: 856, height: 4322 });
     const shrunk = withArticlePageHeight(grown, KNOWLEDGEBASE_FLOW, 2000);
     expect(pagesOf(shrunk)[0]!.fit!.height).toBe(2000);
     // Never under the least height.
@@ -208,8 +209,8 @@ describe('a continuous page laid out without a browser', () => {
     expect(withArticleHeightEstimated(short, KNOWLEDGEBASE_FLOW)).toBe(short);
   });
 
-  // The budget: a 100,000 character article is one page (35,592 px tall at the default look), laid out in about
-  // 30 ms of CPU cold and 10 ms warm on a laptop (measured 2026-11-20); the budget is generous so a loaded CI machine
+  // The budget: a 100,000 character article is one page (30,720 px tall in the 760 px column), laid out in about
+  // 33 ms of CPU cold on a laptop (measured 2026-11-20, three runs); the budget is generous so a loaded CI machine
   // never flakes.
   it('lays a 100,000 character article out as one page within its CPU budget', () => {
     const sentence =

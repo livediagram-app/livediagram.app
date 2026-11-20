@@ -1,7 +1,7 @@
 import { canvasIsBusy } from '@liveworkspace/workbench/lib/tab-style-ease';
 import { CanvasFinishProvider } from '@liveworkspace/workbench/components/canvas/CanvasFinishContext';
 import { LongPressRing } from '@liveworkspace/workbench/components/primitives/LongPressRing';
-import { useRef, ViewTransition } from 'react';
+import { useCallback, useRef, ViewTransition } from 'react';
 import { useFocusCanvasOnMount } from '@liveworkspace/workbench/hooks/canvas/useFocusCanvasOnMount';
 import {
   articleMarginPx,
@@ -11,6 +11,8 @@ import {
 } from '@liveknowledge/document';
 import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
 import { PageSurfaceSheet } from '@/components/page-surface/PageSurfaceSheet';
+import { useDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
+import { WORLD_HEIGHT_CSS } from '@/lib/page-surface/page-lock';
 import { usePageSurface } from './usePageSurface';
 import { canvasMainStyle, canvasWorldStyle } from './canvas-main-style';
 import { imageBackingInsetAttribute } from '@liveknowledge/document';
@@ -154,6 +156,7 @@ function CanvasView(props: CanvasProps) {
     handleDockButtonClick,
   } = useDockPopovers(mainRef);
 
+  const drawingZone = useDrawingZoneEditing();
   // Pan + marquee + held-Space machinery lives in
   // useCanvasPanAndMarquee. The hook owns the pointerdown / move
   // / up listeners and the rect-vs-element marquee intersection,
@@ -170,7 +173,25 @@ function CanvasView(props: CanvasProps) {
       onDeselect,
       onSelectMarquee,
       isPinchingRef,
+      spacePan: drawingZone,
     });
+  // Outside a drawing zone being edited the page has none of the engine's bare-ground gestures
+  // (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"): no held-Space or middle-button drag,
+  // and no marquee. A press on the ground only lets go of what was selected; selecting text is the browser's own.
+  const pressGround = useCallback(
+    (next: Parameters<typeof setMarquee>[0]) => {
+      if (drawingZone) setMarquee(next);
+      else if (next) onDeselect();
+      else setMarquee(null);
+    },
+    [drawingZone, setMarquee, onDeselect],
+  );
+  const dragView = useCallback(
+    (next: Parameters<typeof setPan>[0]) => {
+      if (drawingZone || !next) setPan(next);
+    },
+    [drawingZone, setPan],
+  );
 
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
@@ -257,15 +278,16 @@ function CanvasView(props: CanvasProps) {
   const stickyPeel = useStickyPeelVars();
   const surface = useCanvasSurfaceGestures({
     canvasTool,
-    middleMousePan: props.settings?.middleMousePan !== false,
+    // The middle button is the browser's own on a page (its autoscroll); a drawing being edited drags its view.
+    middleMousePan: drawingZone,
     pendingDraw,
     viewportOffset,
     viewportZoom,
     mainRef,
     wrapperRef,
     spaceHeldRef,
-    setPan,
-    setMarquee,
+    setPan: dragView,
+    setMarquee: pressGround,
     spotlight,
     beginPendingDrawGesture: beginPendingDrawOrPolygon,
     interceptPress: formatPagePress,
@@ -383,23 +405,20 @@ function CanvasView(props: CanvasProps) {
                   if (offPage(e) && !surface.pressedByFinger()) return;
                   surface.onWrapperDoubleClick(e);
                 }}
-                // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is a non-editing presenter mode: make the whole
-                // canvas layer ignore pointer events so NO element kind can be
-                // selected, dragged, or edited (a per-element capture guard can't
-                // catch every select path — boxed elements, arrow hit-bands, labels,
-                // click vs pointerdown). Clicks then fall through to <main>, where the
-                // capture handler turns them into grow / shrink, and middle-mouse or
-                // held-Space still pans.
-                className={`absolute inset-0 origin-center ${
-                  canvasTool === 'spotlight' ? 'pointer-events-none' : ''
-                } ${pendingDraw ? '' : cursorClass}`}
-                // The same mode, said to the element plane's children, which take presses of their own (globals.css).
-                data-elements-inert={canvasTool === 'spotlight' ? '' : undefined}
+                // Its box ends PAGE_TOP_ROOM short of the scroll container's foot (worldHeight, page-lock.ts), so the
+                // box itself is never something to scroll to. The ground's cursor is the plain one outside a drawing
+                // being edited: the page has no marquee to promise.
+                className={`absolute inset-x-0 top-0 origin-center ${
+                  pendingDraw ? '' : drawingZone ? cursorClass : 'cursor-default'
+                }`}
                 // The inset the white under each picture needs at this zoom (docs/specs/009-elements/images.md "The
                 // white under a picture"): an attribute the stylesheet reads for the pictures alone, so no picture
                 // re-renders on zoom and nothing else restyles; it changes only below 50%.
                 {...imageBackingInsetAttribute(viewportZoom)}
-                style={canvasWorldStyle(viewportZoom, viewportOffset, pendingDraw)}
+                style={{
+                  ...canvasWorldStyle(viewportZoom, viewportOffset, pendingDraw),
+                  height: WORLD_HEIGHT_CSS,
+                }}
               >
                 {/* Pages mode's A4 pages, under every element (CanvasPages). */}
                 {staged && leadPage && isContinuousPage(leadPage) ? (

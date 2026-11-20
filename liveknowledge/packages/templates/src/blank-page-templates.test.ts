@@ -35,7 +35,7 @@ describe('blanks of a page kind', () => {
         id: 'page-1',
         orientation: 'portrait',
         size: 'fit',
-        fit: { width: 820, height: 1120 },
+        fit: { width: 856, height: 240 },
         kind: 'article',
         flow: 'art-1',
       },

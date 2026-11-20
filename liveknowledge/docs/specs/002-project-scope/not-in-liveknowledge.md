@@ -59,6 +59,19 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   longer draws `packages/workbench`'s `EditorCornerActions` (the platform's, for the other editors; only its
   `CORNER_BTN`, `CORNER_TONE` and `HeaderShareIcon` are read). Deleted with this change:
   `components/ask/KnowledgeViewSwitch.tsx`, the phone's switch row and the floating Page Info and Pages buttons.
+- **Editor, the Selection mode and the presenter's tools** ([The page surface](../030-knowledgebase/page-surface.md)
+  "No Selection mode"; `useCanvasTool` reads every tool but Format as Select): `lib/laser-config.ts`,
+  `hooks/canvas/useLaserConfig.ts`, the laser and spotlight panels in `components/canvas/useCanvasToolPanels.tsx`,
+  `useSpotlight` and the laser broadcast in `hooks/collab/useEditorBroadcast.ts` with its `laser` room op, the
+  `laser`, `spotlight` and `pan` members of `CanvasTool` and their branches in `canvasCursorClass` and
+  `useCanvasSurfaceGestures`, the Laser and Spotlight glyphs in `components/palette/palette-icons.tsx`, and the
+  strip's old furniture, unreferenced now: `components/palette/ArticleDockSlot.tsx`, `usePaletteKindMotion.ts`,
+  `lib/palette-kind.ts`'s `usePaletteKind`, the Library tab of `usePaletteCatalogue`, `useStripCrowdsCorners` and
+  the `stripSpansTop` clearance in `CanvasChrome`, and the Components, Media and Data categories of
+  `palette-layouts.ts` with the tiles only they show. Deleted with this change:
+  `components/palette/canvas-tool-options.tsx` and its two tests.
+- **Editor, the bare-ground gestures** (the same section; they exist only while a drawing zone is being edited):
+  the `middleMousePan` preference and its Settings row, and `useCanvasPanAndMarquee`'s pan half outside a drawing.
 - **Editor, the paper:** `components/canvas/CanvasPages.tsx` and `CanvasPageSheet.tsx` draw only an article kept in
   a paper size (an imported livedocuments tab); a knowledgebase page draws `PageSurfaceSheet`. With them, the sheet's
   shadow and letterbox, `PageMotionLayer.tsx`, `page-title-bar-room.ts` and the canvas pattern code behind

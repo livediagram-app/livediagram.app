@@ -84,7 +84,7 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   under the date. It was one truncated line ("Nov 20 by Priya N…"). The other rows keep one line.
 - **The right rail** is 280 px (`PAGE_RAIL_WIDTH`), docked down the canvas's right from the toolbar's row on a
   window at least `pageRailDockWidth(treeWidth)` wide: 1,280 px (`PAGE_RAIL_MIN_WINDOW`), and never so narrow that
-  the page beside it would be scaled down (1,364 px with the page tree open). The right corner stacks and the
+  the page beside it would be scaled down (1,400 px with the page tree open). The right corner stacks and the
   bottom-right cluster stand clear of it (`CanvasChrome`), the page's scroll container ends where it begins, and the
   page's column is centred in the room left ([page surface blueprint](page-surface.md)). The heading being read is
   found as the page scrolls, at most once every 120 ms, outside React. Below that a **Page Info** button under the toolbar's

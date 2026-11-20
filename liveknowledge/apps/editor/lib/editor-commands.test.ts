@@ -245,10 +245,9 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
   });
 
   it('read-only sessions get exactly the view-safe subset', () => {
-    // The three view verbs plus the tools that only change how you LOOK at
-    // the canvas. Nothing here writes to the document, which is the property
-    // this test exists to hold: the format painter is
-    // withheld, and so is every command below the read-only return.
+    // The view verbs. Nothing here writes to the document, which is the property this test exists to hold: the
+    // format painter is withheld, and so is every command below the read-only return. The presenter's tools went
+    // with the Selection mode (page-surface.md "The formatting bar").
     expect(ids({ ...base, isReadOnly: true })).toEqual([
       'zen',
       // Finding reads the tab (docs/specs/007-editor/find-and-replace.md); replacing is withheld here.
@@ -256,8 +255,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
       'export',
       // Reads the room, writes nothing — a viewer may ask who else is here.
       'collaborators',
-      'tool:laser',
-      'tool:spotlight',
     ]);
     // No Fit to Screen and no Hand tool (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning").
     expect(ids({ ...base, isReadOnly: true })).not.toContain('fit-to-screen');
@@ -351,45 +348,26 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 // was the only way to reach Hand / Laser / Spotlight / Avatar;
 // the search panel offered none of them.
 describe('canvas tool commands', () => {
-  it('offers every tool but the one already in force', () => {
-    const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual(['tool:format', 'tool:laser', 'tool:spotlight']);
-    // Select is the current tool, so it is not offered.
-    expect(got).not.toContain('tool:select');
-    // ...and it comes back once you are somewhere else.
-    expect(ids({ ...base, canvasTool: 'laser' })).toContain('tool:select');
+  // page-surface.md "The formatting bar": no Selection mode in liveknowledge, so the Format Painter is the one tool
+  // the search switches to.
+  it('offers the Format Painter alone: no Select, Laser or Spotlight', () => {
+    expect(ids(base).filter((id) => id.startsWith('tool:'))).toEqual(['tool:format']);
+    expect(ids({ ...base, canvasTool: 'format' }).filter((id) => id.startsWith('tool:'))).toEqual(
+      [],
+    );
   });
 
   it('runs the tool setter with the tool id', () => {
     const h = handlers();
     buildEditorCommands(base, h)
-      .find((c) => c.id === 'tool:laser')!
+      .find((c) => c.id === 'tool:format')!
       .run();
-    expect(h.setTool).toHaveBeenCalledWith('laser');
+    expect(h.setTool).toHaveBeenCalledWith('format');
   });
 
-  it('drops the content-dependent tools on an empty canvas', () => {
-    const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
-    // None survives: Select is current, and everything else acts on existing content, the same gating the tool
-    // dropdown applies. There is no Hand tool to fall back to.
-    expect(got).toEqual([]);
-  });
-
-  it('withholds Spotlight on mobile', () => {
-    expect(ids({ ...base, isMobile: true })).not.toContain('tool:spotlight');
-    expect(ids({ ...base, isMobile: true })).toContain('tool:laser');
-  });
-
-  it('offers no Slide Deck tool: the deck is built in Contents (pages-mode.md "Retired: the Slide Deck panel")', () => {
-    expect(ids(base)).not.toContain('tool:slide-deck');
-  });
-
-  it('gives a read-only visitor the presenting tools but not the editing ones', () => {
-    const got = ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'));
-    expect(got).toContain('tool:laser');
-    // The isometric view is livediagram's alone (docs/specs/008-canvas/canvas-and-palette.md "Retired features").
-    expect(got).not.toContain('tool:isometric');
-    expect(got).not.toContain('tool:format');
+  it('drops it on an empty page, and for a read-only visitor', () => {
+    expect(ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'))).toEqual([]);
+    expect(ids({ ...base, isReadOnly: true }).filter((id) => id.startsWith('tool:'))).toEqual([]);
   });
 });
 

@@ -3,7 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Profiler } from 'react';
 import {
-  setDrawingZoneEditing,
+  resetDrawingZoneEditing,
   useDrawingZoneEditing,
 } from '@/lib/page-surface/drawing-zone-store';
 import { PageFormattingBar } from './PageFormattingBar';
@@ -12,7 +12,7 @@ import { PageFormattingBar } from './PageFormattingBar';
 // written, formatting only, then Undo and Redo.
 afterEach(() => {
   cleanup();
-  setDrawingZoneEditing(false);
+  resetDrawingZoneEditing();
 });
 
 const bar = (over: Partial<Parameters<typeof PageFormattingBar>[0]> = {}) => (
@@ -81,7 +81,7 @@ describe('the drawing zone store', () => {
     );
     expect(screen.getByTestId('probe').textContent).toBe('writing');
     const before = onRender.mock.calls.length;
-    setDrawingZoneEditing(false);
+    resetDrawingZoneEditing();
     expect(onRender.mock.calls.length).toBe(before);
   });
 });

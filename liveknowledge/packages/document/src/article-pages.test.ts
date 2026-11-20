@@ -158,7 +158,7 @@ describe("the first page's own choice of kind", () => {
       const pages = [{ ...only[0]!, ...from }] as Page[];
       const art = withPageKindChosen({ elements: [], pages }, 'p1', 'article', 'f')!;
       expect(art.pages[0]).toMatchObject({ size: 'fit', orientation: 'portrait', kind: 'article' });
-      expect(art.pages[0]!.fit!.width).toBe(820);
+      expect(art.pages[0]!.fit!.width).toBe(856);
     }
   });
   it('turns the page into a 16:9 landscape slide, keeping its name and background', () => {

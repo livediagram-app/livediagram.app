@@ -97,11 +97,11 @@ Public) already own the word.
 
 A page is one article that never breaks onto paper pages while it is being written.
 
-- Its paper is the **continuous** size: 820 canvas px wide, as tall as the writing (`Page.size: 'fit'` with `fit`
+- Its paper is the **continuous** size: 856 canvas px wide (a 760 px column and its margins), as tall as the writing (`Page.size: 'fit'` with `fit`
   sides the writer keeps in step with the layout). Where the article engine would add a paper page, a knowledgebase page grows
   taller instead; where it would remove one, the page shrinks. A knowledgebase page therefore always has exactly one page.
-- The page's stored height is never under 1,120 px, and it grows downwards from a top
-  that never moves, so nothing placed in the writing shifts. Its height is written only when the laid-out height
+- The page's stored height is the writing's (never under 240 px, the margins and a Title's line), and it grows
+  downwards from a top that never moves, so nothing placed in the writing shifts. Its height is written only when the laid-out height
   changes, by whoever made the change, in the same undo step.
 - Page breaks, headers, footers and page numbers are not offered while writing, and a template carries none. A page
   break block imported from elsewhere is kept and draws nothing.

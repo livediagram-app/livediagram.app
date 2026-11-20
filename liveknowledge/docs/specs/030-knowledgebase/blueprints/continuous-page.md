@@ -15,7 +15,7 @@ It reuses the article engine ([Article pages](../../007-editor/article-pages.md)
 | default page names       | `START_PAGE_NAME` ("Start Here"), `NEW_PAGE_NAME` ("Untitled Page"), read by `isDefaultPageName`                                             |
 | default item name        | `UNTITLED_DOCUMENT_NAME` ("Untitled Knowledgebase", `packages/templates/src/untitled.ts`), `isUntitledName`                                  |
 | continuous page          | `isContinuousPage(page)`: `page.kind === 'article' && page.size === 'fit'` (`packages/document/src/page-sizes.ts`)                           |
-| making one               | `continuousPage(page)`: portrait, `size: 'fit'`, `fit: { width: 820, height }`                                                               |
+| making one               | `continuousPage(page)`: portrait, `size: 'fit'`, `fit: { width: 856, height }`                                                               |
 | its height               | `Page.fit.height`, set only through `withArticlePageHeight(tab, flow, needed)` and held by `continuousPageHeight(needed)`                    |
 | height the writing needs | `FlowLayout.heightNeeded` from the layout pass, worked out by `continuousHeightNeeded` (`apps/editor/lib/article/continuous-page-height.ts`) |
 | height with no browser   | `EstimatedArticle.height` from `estimateArticle`, written by `withArticleHeightEstimated(tab, flow)`                                         |
@@ -71,8 +71,9 @@ height is already right, and after `ARTICLE_GROW_SETTLE_TRIES` writes at most.
 
 ### Where the page sits
 
-`layOutPages` gives a continuous page a top that never moves: `rowAnchor.y - CONTINUOUS_PAGE_MIN_HEIGHT / 2`, where
-a page of the least height centred on the anchor has its top. The page grows downwards, so the writing and every
+`layOutPages` gives a continuous page a top that never moves: `rowAnchor.y`, the row's axis (not above it: the page
+surface draws the canvas world inside a scroll container, and a world pushed down to bring the page's top into view
+would itself be scrolled to, [page surface blueprint](page-surface.md) "The lock"). The page grows downwards, so the writing and every
 element placed in it keep their canvas positions and no element is moved by a height change.
 
 ### The view
@@ -143,8 +144,8 @@ The height is content, written under the same gate as the writing: an Editor's s
   page boundary. That is at most one write per laid-out line, never per keystroke, and it rides the typing commit's
   own sync.
 - **Estimator:** linear in the writing. A 100,000 character article (100 paragraphs of 1,000 characters) lays out as
-  one page 35,592 px tall in about 30 ms of CPU cold and 10 ms warm (measured 2026-11-20 at the Normal margins of
-  the time; the default is now Narrow, a wider column and a shorter page, not measured again), held under
+  one page 30,720 px tall in the 760 px column, in about 33 ms of CPU cold (measured 2026-11-20, three runs), held
+  under
   `cpuBudgetMs(250)` by `continuous-page.test.ts`.
 - **Not measured:** the browser's own layout and paint of one very tall writing box. Paper pages bounded each
   column's height; a continuous page is one box. The canvas already culls nothing inside an article, so the cost of
@@ -152,7 +153,7 @@ The height is content, written under the same gate as the writing: an Editor's s
 
 ## Presentation and UX
 
-The page's box is 820 canvas px wide and never under 1,120 px tall; nothing is painted for it
+The page's box is 856 canvas px wide and as tall as its writing (240 px at least); nothing is painted for it
 ([page surface blueprint](page-surface.md) "What is painted"). The start screen is titled "Start a Page".
 
 ## Testing
@@ -176,7 +177,7 @@ jsdom does not lay out). None of this is verified in a browser yet.
 
 | Constant                     | Value     | Where                     | Why                                                                                               |
 | ---------------------------- | --------- | ------------------------- | ------------------------------------------------------------------------------------------------- |
-| `CONTINUOUS_PAGE_WIDTH`      | 820       | `page-sizes.ts`           | The spec's reading width: about 75 characters a line at the default size and margins              |
-| `CONTINUOUS_PAGE_MIN_HEIGHT` | 1120      | `page-sizes.ts`           | About an A4 sheet at that width, so an empty page reads as a page; even, so the top is a whole px |
+| `CONTINUOUS_PAGE_WIDTH`      | 856       | `page-sizes.ts`           | The spec's 760 px reading column and its 48 px margins either side                                |
+| `CONTINUOUS_PAGE_MIN_HEIGHT` | 240       | `page-sizes.ts`           | The margins and a Title's line; 192 px at least, or `flowFrame` would shrink the 72 px top margin |
 | `CONTINUOUS_PAGE_MAX_HEIGHT` | 4,000,000 | `page-sizes.ts`           | Over 100 times the 100,000 character page; under the px a browser lays a box out to               |
 | `CUT_FROM_FORK`              | `false`   | `not-in-liveknowledge.ts` | One constant every closed door reads, so the deletion finds them all                              |

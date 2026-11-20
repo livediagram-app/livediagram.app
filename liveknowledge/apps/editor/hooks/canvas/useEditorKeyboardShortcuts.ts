@@ -19,6 +19,7 @@
 import { useEffect } from 'react';
 import { isInMenuSurface, isPressableControl } from '@liveknowledge/ui';
 import { anyModalOpen } from '@liveworkspace/workbench/lib/modal-guard';
+import { drawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
 import {
   EDIT_KEYS,
   runModShortcut,
@@ -270,6 +271,9 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       // A Viewer or a Participant adds nothing (docs/specs/013-workspace/share-roles.md).
       if (live.isReadOnly) return;
+      // The element keys are a drawing's: on the page itself a letter adds nothing
+      // (docs/specs/030-knowledgebase/page-surface.md "The formatting bar").
+      if (!drawingZoneEditing()) return;
       // Image (`9`): separate from EDIT_KEYS because its callback is
       // nullable on guest deploys without an api worker.
       if (lower === '9' && live.onAddImage) {

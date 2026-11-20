@@ -14,7 +14,11 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // read-only embed) is kept in the signature and read as Select.
   void defaultPan;
   const [canvasTool, setCanvasToolState] = useState<CanvasTool>('select');
-  const setCanvasTool = (tool: CanvasTool) => setCanvasToolState(tool === 'pan' ? 'select' : tool);
+  // Nor the presenter's tools (Laser, Spotlight): the Selection mode that offered them is not in liveknowledge, so
+  // the pointer selects, and the Format Painter (an element's own menu and the command search) is the one other
+  // tool there is.
+  const setCanvasTool = (tool: CanvasTool) =>
+    setCanvasToolState(tool === 'format' ? 'format' : 'select');
   // User-facing tool picker (palette buttons + keyboard). Wraps the raw
   // setter to emit telemetry when the user enters laser (presenter)
   // mode, a distinct feature. Pan / select switches stay untracked
@@ -22,8 +26,6 @@ export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } =
   // when a draw starts) keep the raw setter so they don't count as
   // "used laser".
   const selectCanvasTool = (tool: CanvasTool) => {
-    if (tool === 'laser' && canvasTool !== 'laser') track('Canvas', 'Used', 'Laser');
-    if (tool === 'spotlight' && canvasTool !== 'spotlight') track('Canvas', 'Used', 'Spotlight');
     if (tool === 'format' && canvasTool !== 'format') track('Canvas', 'Used', 'FormatPainter');
     setCanvasTool(tool);
   };

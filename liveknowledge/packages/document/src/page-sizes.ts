@@ -75,13 +75,15 @@ export const PAGE_SIZES: Readonly<
 export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
 
 // The continuous page (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The continuous page"): a
-// knowledgebase page's paper, `size: 'fit'` on an article page. CONTINUOUS_PAGE_WIDTH wide (a reading width: about
-// 75 characters a line at the default text size and margins), as tall as the writing, never under
-// CONTINUOUS_PAGE_MIN_HEIGHT (an empty page still reads as a page) and never over CONTINUOUS_PAGE_MAX_HEIGHT (far past
-// what an article's caps can fill: 5,000 blocks of 20,000 characters is the article's own limit, and a browser lays
-// out a box of a few million px without trouble).
-export const CONTINUOUS_PAGE_WIDTH = 820;
-export const CONTINUOUS_PAGE_MIN_HEIGHT = 1120;
+// knowledgebase page's paper, `size: 'fit'` on an article page. CONTINUOUS_PAGE_WIDTH wide: the 760 px reading
+// column of the page surface (docs/specs/030-knowledgebase/page-surface.md "A reading column") and its 48 px
+// margins either side. As tall as the writing: never under CONTINUOUS_PAGE_MIN_HEIGHT (the two margins and a Title's
+// line, so a page of one line is as short as its writing; how much of the window an empty page fills is the view's
+// business, never stored) and never over CONTINUOUS_PAGE_MAX_HEIGHT (far past what an article's caps can fill:
+// 5,000 blocks of 20,000 characters is the article's own limit, and a browser lays out a box of a few million px
+// without trouble).
+export const CONTINUOUS_PAGE_WIDTH = 856;
+export const CONTINUOUS_PAGE_MIN_HEIGHT = 240;
 export const CONTINUOUS_PAGE_MAX_HEIGHT = 4_000_000;
 
 /** Whether a page is a continuous page: an article page in the fit size. */

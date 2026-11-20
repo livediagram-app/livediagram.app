@@ -75,8 +75,8 @@ describe('buildArticleTab', () => {
 
   it('sizes a zone to its picture, at most the text width, and an image fills it', () => {
     const [wide, small, unsized] = zones;
-    // The continuous page's 820 px less two 48 px margins (a knowledgebase page's Narrow margins).
-    expect(wide).toMatchObject({ width: 724, height: 362 });
+    // The continuous page's 856 px less two 48 px margins (a knowledgebase page's Narrow margins).
+    expect(wide).toMatchObject({ width: 760, height: 380 });
     expect(small).toMatchObject({ width: 200, height: 100 });
     // No extent: the stored image's own size.
     expect(unsized).toMatchObject({ width: 300, height: 150 });
@@ -111,13 +111,13 @@ describe('buildArticleTab', () => {
       { id: 'b5', index: 0, x: 72, y: 700 },
     ]);
     const images = settled.elements as ImageElement[];
-    expect(images[0]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 140, width: 724 });
+    expect(images[0]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 140, width: 760 });
     expect(images[1]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 520 });
     expect(images[2]).toMatchObject({ x: page.rect.x + 72, y: page.rect.y + 700 });
     // Fitting finds every zone's object where it should be and changes nothing.
-    expect(withZonesFitted(settled, flow, 724)).toBe(settled);
+    expect(withZonesFitted(settled, flow, 760)).toBe(settled);
     // Fitting before the first layout keeps the parked images too.
-    expect(withZonesFitted(tab, flow, 724)).toBe(tab);
+    expect(withZonesFitted(tab, flow, 760)).toBe(tab);
   });
 
   it('gives an empty document one empty paragraph, and an untitled tab a name', () => {

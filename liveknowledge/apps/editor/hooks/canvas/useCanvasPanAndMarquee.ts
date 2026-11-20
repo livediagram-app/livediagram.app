@@ -80,6 +80,10 @@ type Deps = {
   // Suppresses pointer-driven pan updates while a 2-finger pinch is
   // active so the pan and pinch hooks don't fight over viewportOffset.
   isPinchingRef?: RefObject<boolean>;
+  // Whether held Space is a pan here at all. A knowledgebase page has no view to pan
+  // (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"): Space is left to the page, which
+  // scrolls on it, except while a drawing zone is being edited. Absent, it is on.
+  spacePan?: boolean;
 };
 
 type Api = {
@@ -136,6 +140,9 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.code !== 'Space') return;
+      // Read when the key comes (the ref holds the latest), so the listener is bound once.
+      const { spacePan } = depsRef.current;
+      if (spacePan === false) return;
       if (isTypingTarget(e.target, { select: false })) return;
       // Space presses a focused button or ticks a box (and belongs to an open dialog): never taken for
       // the pan, which would also stop the control from working.
@@ -166,7 +173,7 @@ export function useCanvasPanAndMarquee(deps: Deps): Api {
       document.removeEventListener('keyup', up);
       window.removeEventListener('blur', release);
     };
-  }, []);
+  }, [depsRef]);
 
   useEffect(() => {
     if (!pan) return;

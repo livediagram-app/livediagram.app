@@ -29,9 +29,9 @@ tool, the zoom chords, Fit).
 
 **What (a) gave up, against (b):**
 
-- **The column does not reflow on a narrow window; it scales.** The page is 820 canvas px wide and what is placed in
+- **The column does not reflow on a narrow window; it scales.** The page is 856 canvas px wide and what is placed in
   it is stored against that width, so a window too narrow for the column shows the whole page smaller (a 390 px
-  phone shows the 724 px column at 48%), as the fork's phones already did. Nothing scrolls sideways, and at 856 px
+  phone shows the 760 px column at 46%), as the fork's phones already did. Nothing scrolls sideways, and at 856 px
   of room and wider the writing is at 100%. A column that re-wraps at any width needs (b): per-browser layout with
   zone and note positions derived on screen instead of stored.
 - **The canvas engine still loads with every page**, not only with pages that have a zone. First-load JS is
@@ -44,7 +44,7 @@ tool, the zoom chords, Fit).
 `apps/editor/lib/page-surface/page-lock.ts`, `components/canvas/usePageSurface.ts`.
 
 - `computePageLock({ width, height, sides, page, margin, phone })` answers the one view a page is shown at. The
-  column is the page less its side margins (`820 - 2 * 48 = 724` px: an article's margins now default to Narrow,
+  column is the page less its side margins (`856 - 2 * 48 = 760` px: an article's margins default to Narrow,
   `resolveArticleStyle`), centred in the room the side chrome leaves. Zoom is `min(1, (room - 2 * side room) /
 column)`, never above 1 and never under `PAGE_MIN_SCALE`; the side room is 48 px, 20 px on a phone. The page's top
   stands `PAGE_TOP_ROOM` (24 px) under the top of what scrolls, which itself starts under the top row.
@@ -54,9 +54,16 @@ column)`, never above 1 and never under `PAGE_MIN_SCALE`; the side room is 48 px
   canvas, on the scroll container and on the side chrome (`[data-contents-sidebar]`, `[data-page-rail="docked"]`),
   and from a `MutationObserver` on the canvas's own children (the side chrome arriving or leaving). It measures the
   scroll container's client box, which is what the world is laid in. **It never runs on a scroll or a keystroke.**
-- The spec's 760 px is the most the column may be; the built column is 724 px, because the stored page is 820 px
-  wide and its own 48 px margins are the side room. Making it 760 px means a stored width of 856 px
-  (`CONTINUOUS_PAGE_WIDTH`), which is a model change and is not made here.
+- The stored page is 856 px wide (`CONTINUOUS_PAGE_WIDTH`), so the column is the spec's 760 px.
+- **The world's box.** The canvas world is drawn `scale(z) translate(o)` about its own centre, and a transformed
+  box is something a scroll container scrolls to. So the world is `WORLD_HEIGHT_CSS` tall (the container less
+  `PAGE_TOP_ROOM`), the lock is solved for that height (`worldHeight`), and a continuous page's top stands on the
+  canvas's axis (`layOutPages`: `y = rowAnchor.y`, not half a least-height above it). The box's foot is then at
+  `z * h + PAGE_TOP_ROOM` at most, never past the container's foot, and a short page does not scroll.
+- **The free height.** `relock` also writes `--page-free-height` on the scroll container (`pageFreeHeight`: the
+  container's height less `PAGE_TOP_ROOM` and `PAGE_FOOT_ROOM`, over the zoom). `ArticleFlows`' paper, the layer
+  that takes a press on the page's blank ground, is `max(stored height, that)` tall on a continuous page.
+  Nothing reads it back: the layout pass measures the foot of the last block.
 
 ## The store (built)
 
@@ -93,7 +100,7 @@ browser's.
 - **Beside the docked rail:** `[data-canvas-root]:has(> [data-page-rail='docked']) > [data-page-scroller]` ends
   280 px short of the right edge (`globals.css`), so the scrollbar is never under the rail and the rail never over
   the writing. The rail docks only where the page keeps its full width beside it: `pageRailDockWidth(treeWidth)` is
-  `max(1280, tree + 280 + 820)`, which is 1,364 px with the page tree open and 1,280 px with its rail.
+  `max(1280, tree + 280 + 856)`, which is 1,400 px with the page tree open and 1,280 px with its rail.
 - **Keys:** inside the writing the browser moves the caret and scrolls it into view. With the focus on the page
   itself (the canvas or the body) `pageScrollOf` (`page-keys.ts`) scrolls on Page Up, Page Down, Space, Home, End and
   the up and down arrows; never while an element is selected, whose keys are the engine's.
@@ -102,7 +109,9 @@ browser's.
 
 - `PageSurfaceSheet` (`components/page-surface/`) stands where the fork's `CanvasPages` stood for a continuous
   page: the page's box with `data-page`, `data-page-id` and `data-page-kind` (the engine finds the page it is on by
-  them), no background, border or shadow. It draws the breadcrumb in the page's top margin, lined up with the column
+  them), no background, border or shadow. It is `z-[1]` and `pointer-events-none`, over the writing's paper, which
+  takes a press anywhere on the page: without that the breadcrumb in the top margin could not be pressed at any
+  width (found in a browser, 2026-11-20). It draws the breadcrumb in the page's top margin, lined up with the column
   and ending 10 px above the Title, and the room under the foot. A phone and zen draw no breadcrumb.
 - The ground is `resolveViewBackdrop` (`lib/view-backdrop.ts`): white in the light theme, slate-900 in the dark
   one, no pattern, whatever the tab stores.
@@ -122,6 +131,12 @@ browser's.
 | A finger panning the page          | `ArticleFlows` hands `useTouchPagePan` no pan; the phone's frame-on-focus is removed    |
 | The minimap                        | already unreachable: it draws only on a tab without pages                               |
 | The off-screen content hint        | `Canvas` always answers false                                                           |
+| Held Space as a pan                | `useCanvasPanAndMarquee({ spacePan })`: false outside a drawing zone being edited       |
+| The middle button's drag           | `middleMousePan` is the drawing zone's alone; `Canvas` drops any other pan              |
+| The marquee on bare ground         | `Canvas` `pressGround`: a press deselects and starts no marquee                         |
+| The ground's crosshair cursor      | `cursor-default` on the world outside a drawing zone being edited                       |
+| Letters that add shapes            | `useEditorKeyboardShortcuts`: the element keys return unless `drawingZoneEditing()`     |
+| Select, Laser, Spotlight           | `useCanvasTool` reads every tool but Format as Select; no key, command or dropdown      |
 
 ## The footer and the top row (built)
 
@@ -186,12 +201,19 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   Link, Lists, Alignment, More Formatting, Insert, Table (while the caret is in one), Comment, Assign Action. Then
   the bar's own Undo and Redo. Each has a hover card with its name and one line (`Button`'s `description`,
   `page-toolbar-menus.tsx`), a pointer cursor and a focus ring.
-- **No canvas tool.** The fork's strip (`ToolbarPalette`: Selection mode, the palette, the Library) is not drawn
-  for a page. It shows only while a drawing zone is being edited (`lib/page-surface/drawing-zone-store.ts`, set by
-  `ArticleFlows` from the zone its zone bar is for), in the formatting bar's place, as that drawing's tools. It is
-  still the whole strip then, Library included: a strip of the drawing tools alone is not built.
-- **Undo and Redo** left the bottom-right cluster for an Editor on a desktop; a phone and a Participant keep them
-  there.
+- **A drawing's tools** (`components/palette/ToolbarPalette.tsx`, `lib/page-surface/drawing-zone-store.ts`).
+  `PageFormattingBar` takes them as `drawing`: the page toolbar's slot stays mounted and `hidden` (so the toolbar
+  never falls back to its floating card), the strip stands in its place, Undo and Redo stay. The strip is the
+  category bar alone over the palette's Design kind, filtered to `DRAWING_CATEGORIES` (Shapes, Write, Concepts,
+  Icons): no Selection mode dropdown, no Library, no card of its own, in the row's flow.
+- **When they show:** `drawingZoneEditing` or a shape still to be drawn (`pendingDraw`). `ArticleFlows` says a
+  drawing is edited while its zone bar is for a drawing zone, which follows the pointer and the selection and so
+  lets go the moment the pointer leaves for the tools. The store therefore holds: after the writing says the edit
+  ended, it stays edited until the next `pointerdown` outside `[data-toolbar-palette]`, or `keydown` where a key
+  types (the writing, a field), and ends at once when the writing's "ended" comes within `ELSEWHERE_ANSWER_MS`
+  (400 ms) of such a press or key. The page closing resets it.
+- **Undo and Redo** left the bottom-right cluster for an Editor on a desktop, while a drawing is edited too; a
+  phone and a Participant keep them there.
 - **A phone** has no bar here. Its writing bar is the page toolbar's own, fixed along the top of the screen while
   the caret is in the writing (`usePageToolbarPlacement`); the top row's own buttons step aside for it ("The footer
   and the top row").
@@ -213,9 +235,9 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
   bottom-right cluster, the Open Theme and Open Canvas Options commands, Article Style in the bar's More menu, and
   Lock Page in the page's menu.
 - **Not removed, and unreachable or inert:** the Map, Middle-Mouse Pan and the Pages tours' rows in Settings (their
-  catalogue is mirrored by liveworkspace.app's settings page and pinned by twenty tests; taking the rows out is its
-  own change), the help centre's articles on them, and `write_article`'s `look` and `accent`, which are still
-  accepted, stored and then dropped on the next read.
+  catalogue is mirrored by liveworkspace.app's settings page and pinned by nineteen tests; see "Not built"), the
+  help centre's articles on them, and `write_article`'s `look` and `accent`, which are still accepted, stored and
+  then dropped on the next read.
 
 ## Performance and limits
 
@@ -229,60 +251,131 @@ the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx`
 
 ## Testing
 
-| Rule                                                                  | Test                                                             |
-| --------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| The column: centred, 100% on a desktop, side room, 320 px to 3,840 px | `page-lock.test.ts`                                              |
-| The view is locked; a move is a scroll; a scroll tells nobody         | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`      |
-| The page's scroll keys                                                | `page-keys.test.ts`                                              |
-| The ground follows the appearance alone                               | `view-backdrop.test.ts`                                          |
-| No zoom chords, no Hand, no Fit                                       | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts` |
-| The bar: the slot, Undo and Redo, no canvas tool                      | `PageFormattingBar.test.tsx`                                     |
-| A stored background, style or lock is dropped as a tab is read        | `page-looks.test.ts`, `tab-row.test.ts`                          |
-| Templates carry no style; no Open Theme command                       | `article-templates.test.ts`, `editor-commands.test.ts`           |
+| Rule                                                                  | Test                                                                                                                            |
+| --------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| The column: centred, 100% on a desktop, side room, 320 px to 3,840 px | `page-lock.test.ts`                                                                                                             |
+| The view is locked; a move is a scroll; a scroll tells nobody         | `page-viewport-store.test.ts`, `useEditorViewport.test.tsx`                                                                     |
+| The page's scroll keys                                                | `page-keys.test.ts`                                                                                                             |
+| The ground follows the appearance alone                               | `view-backdrop.test.ts`                                                                                                         |
+| No zoom chords, no Hand, no Fit                                       | `useEditorKeyboardShortcuts.test.ts`, `editor-commands*.test.ts`                                                                |
+| The bar: the slot, Undo and Redo, no canvas tool                      | `PageFormattingBar.test.tsx`                                                                                                    |
+| A short page does not scroll; the free height                         | `page-lock.test.ts` "the world's box inside the scroll container"                                                               |
+| The breadcrumb is over the paper and pressable                        | `PageSurfaceSheet.test.tsx`                                                                                                     |
+| A drawing's tools: four categories, no Selection mode, no Library     | `ToolbarPalette.test.tsx`, `CategoryBar.test.tsx`                                                                               |
+| The tools stay while reached for and used                             | `drawing-zone-store.test.ts`                                                                                                    |
+| Space is the page's; no tool keys or commands                         | `useCanvasPanAndMarquee.test.tsx`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts`, `shortcut-sections.test.ts` |
+| A stored background, style or lock is dropped as a tab is read        | `page-looks.test.ts`, `tab-row.test.ts`                                                                                         |
+| Templates carry no style; no Open Theme command                       | `article-templates.test.ts`, `editor-commands.test.ts`                                                                          |
 
 Not covered by a test: `usePageSurface` (it reads layout boxes jsdom does not lay out), the scroll container's
 extent, the rail's inset, and everything a browser would show.
 
 ## Not built
 
-One part of the spec is not started. It is written so it can be picked up cold.
+Written so each can be picked up cold.
 
 ### Knowledgebase Style (spec "Knowledgebase Style")
 
 Nothing is built: no `knowledgeStyle`, no dialog. Today every page is drawn in the Clean look at the Medium size
 with the theme's accent, because a page's own style is dropped as it is read (`page-looks.ts`) and nothing takes
-its place.
+its place. The spec was rewritten on 2026-11-20 (it is the platform's Tab Style dialog, cut down), and this list
+follows it:
 
-1. **Model** (`packages/document`): `KnowledgeStyle = { look: ArticleLookId; accent: string; textSize:
-ArticleTextSize }`, `parseKnowledgeStyle(v)` keeping what is valid (a look of `ARTICLE_LOOKS`, a hex accent, a
-   size of `ARTICLE_TEXT_SIZE_PX`), `DEFAULT_KNOWLEDGE_STYLE` (Clean, the brand lime, Medium), and
-   `knowledgeArticleStyle(style): ArticleStyle` (the look's fields, the accent, the size, Narrow margins).
-2. **Storage and sync:** a field of the document's metadata, beside the name. It rides the path the page tree's
-   `parent` rides ([page tree blueprint](page-tree.md) "Storage and sync"): the metadata save
+1. **Model** (`packages/document`): `KnowledgeStyle` (the theme id, heading and body font, text size, line
+   spacing, heading style), a forgiving `parseKnowledgeStyle`, the default (the Everyday look, the lime theme), and
+   `knowledgeArticleStyle(style): ArticleStyle` with Narrow margins.
+2. **Storage and sync:** a field of the document's metadata, beside the name and `knowledgeSettings` (the Review
+   Period, which another change is adding by the same path: build on it, not beside it). The metadata save
    (`useAutosave.ts`, `PUT /api/documents/:id`), the room's `document-meta` op (`packages/api-schema`
    `room-messages.ts`, relayed from an Editor only by `gateClientOp`), a resync, copies, snapshots and versions,
-   export and the Drive file. No page is rewritten: the style is not in any tab.
-3. **Drawing:** `ArticleFlows` already takes a `styleOverride` per flow and `CanvasPages`' sheet read
-   `articleStyle`; hand every flow `knowledgeArticleStyle(knowledgeStyle)` there and in `Canvas`
-   (`pageMargin`, `articleTopMarginPx`), so only mounted pages re-lay out. `articleStyleVars` keeps
-   `--article-page-link` on the brand whatever the accent; the Verified pill and the chrome never read the accent.
-   The Notebook look's ruled lines were a page background and are not drawn.
-4. **The dialog:** Knowledgebase Settings > Style from the knowledgebase's menu in the sidebar's head (the shared
-   `Dialog`, centred, steady height): five look tiles each a small drawn sample, an accent row (the brand lime
-   first, five more checked at 4.5:1 on white and on slate-900 with the repo's contrast helpers, through the shared
-   colour picker's swatch skin), text size as a segmented control. Each pick is one undo-able edit, applied live.
-   Editor only: a Participant and a Viewer are not offered the menu row, and the room refuses the op.
-5. **Exports:** the PDF, Word and Markdown exporters read `flow.style`; hand them
-   `knowledgeArticleStyle(knowledgeStyle)`.
-6. **Agents:** `write_article`'s `look` and `accent` should be refused by name (`parsePagesRequest`).
+   export, the Drive file and Offline. No page is rewritten: the style is in no tab.
+3. **Retire the per-tab style:** a tab's stored theme, fonts, finish and surround (`TAB_STYLE_KEYS`) are dropped
+   as a tab is read, as the page looks are (`withoutPageLooks`), so the knowledgebase's style is the only source.
+4. **Drawing:** hand every flow `knowledgeArticleStyle(knowledgeStyle)` (`ArticleFlows`' `styleOverride`,
+   `Canvas`' `pageMargin` and `articleTopMarginPx`) and the theme to the element layer, so only mounted pages
+   re-lay out; a test must hold that changing the style re-saves no page.
+5. **The chrome follows the theme:** feed the fork's hook that emits the accent ramp for a tab's theme the
+   knowledgebase's theme instead; Review Due stays amber and errors red.
+6. **The dialog:** `CanvasThemeDialog` (spec `011-theme/canvas-and-theme-dialog.md`) reused as Knowledgebase Style:
+   the Looks carousel with Seasonal and Mashup, each card a small page of writing; Fine-tune with Text and
+   Colours only. Cut: the Canvas panel, New Page Background, the Finish filter and panel, per-shape and formal
+   colours, margins, page numbers, Apply to All Tabs, with their tests, help keys and settings rows. Opened from
+   Knowledgebase Style in the knowledgebase's menu (the sidebar's head, which has no menu yet), Editor only.
+7. **Exports:** the PDF, Word and Markdown exporters read `flow.style`; hand them the knowledgebase's.
+8. **Agents:** the article write refuses `look` and `accent` by name (`parsePagesRequest`), in the api, MCP and
+   CLI schemas; the style is read and set with the knowledgebase's metadata.
+
+### A column that re-wraps on a narrow window
+
+See "Narrow windows" below: investigated, not built.
 
 ### Smaller gaps
 
-- **A column that re-wraps on a narrow window** (see the choice above).
-- **A column exactly 760 px wide:** it is 724 px.
-- **An empty page is still 1,120 px tall** (`CONTINUOUS_PAGE_MIN_HEIGHT`), so a page with one line scrolls a
-  little on a short window. Lowering it moves where a page sits (`layOutPages`) and is a model change.
+- **Inert Settings rows:** Middle-Mouse Pan (Editor > Mouse), the Map's three rows (Panels > Map) and the four
+  Pages tours rows (Getting Started) do nothing in liveknowledge. Removing them from
+  `components/dialogs/settings/settings-catalogue.ts` fails nineteen tests that pin them
+  (`settings-catalogue.test.ts`, `SettingsCategoryPane.test.tsx`, `SettingsCategoryPane.collapsed.test.tsx`,
+  `SettingsDialog.test.tsx`, `settings-site-catalogue.test.ts`); they need updating, then the liveworkspace.app
+  mirror regenerating (`UPDATE_SITE_CATALOGUE=1 corepack pnpm exec vitest run
+components/dialogs/settings/settings-site-catalogue.test.ts` in `apps/editor`, which rewrites
+  `packages/settings/src/catalogues/liveknowledge.ts`). It was tried and put back, not half done.
 - **An article kept in a paper size** (a tab exported from livedocuments and imported as JSON) still draws the
-  fork's sheets, locked to its first page.
-- **Held Space and the middle mouse button** still drag the page up and down (the engine's pan, now a scroll), and
-  a drag on the bare ground still draws the engine's marquee.
+  fork's sheets, locked to its first page. To do: where a stored tab is settled (`migrateStoredTab`, beside
+  `withoutPageLooks`), read a tab whose pages are all one article's as one continuous page (`continuousPage` of the
+  first) and size it with `withArticleHeightEstimated`.
+- **Help:** the Keyboard list in Settings follows what is bound now (`shortcut-sections.ts`); the help centre's
+  articles on zoom, the hand tool, the Selection mode, the Library, the page panel and the page lock are not yet
+  retired from liveknowledge's scope (`lib/help-articles.ts`, `packages/help-registry`).
+- **The formatting controls on a narrow row** scroll sideways with no mark that more follow.
+- **Optical alignment:** the meta row's "Verified by" pill was measured 0.63 px off centre by the e2e audit and is
+  not corrected; the footer's view tabs have not been through the audit (`e2e/signed-in/knowledge-audit.spec.ts`,
+  which still expects the old switch and marks Pages and AI Knowledge as known failures).
+- **A drawing's tools on a phone** show in the row (`CanvasChrome`), unchecked in a browser.
+- **The e2e specs** have not been updated for this surface or run against it: `menu-keyboard`, `motion-budget`,
+  `smoke`'s phone cluster test, `page-tree`'s breadcrumb test, `chrome-drift`, `knowledge-audit`, the perf probe,
+  and `knowledge-session.ts` `openView` (it presses the old switch; the tabs are links in the footer's
+  `nav` "Knowledgebase Views").
+
+## Narrow windows
+
+Asked: what does it take for the column to re-wrap to the window's width instead of scaling down (a 390 px phone
+shows the writing at 46%)?
+
+**What is shared today, and so cannot differ per browser:**
+
+- The page's width is the model's (`CONTINUOUS_PAGE_WIDTH`), and the writing's column is that less its margins.
+- The page's height is stored (`Page.fit.height`), written by the writer of a change from this browser's layout
+  (`withArticlePageHeight`), synced as a `tab-meta` patch and undone with the edit.
+- Every zone's elements (a picture, a chart, a drawing's shapes, an embed) and every margin note are canvas
+  elements stored at canvas coordinates. The layout pass reads the zone's box off the screen and the writer moves
+  the elements to it as a stored write (`withZonesFitted`, the zone engine in `packages/document`), so their
+  stored x, y and width are consequences of the writer's column width.
+
+**So a client with a narrower column would** measure a taller page and narrower zones. If it wrote them, a desktop
+reader would get a page too tall and pictures at a phone's width; if it did not, its own elements would sit at
+positions laid out for 760 px, over or beside the wrong lines.
+
+**What a proper re-wrap needs** (this is option (b) of "The choice", the zone engine's rewrite):
+
+1. Zones drawn in the writing's flow at their block (inline, or wrapped left or right of the column), each with a
+   local coordinate space, their elements positioned relative to the zone's box and scaled with it; no absolute
+   canvas coordinates for anything in the writing.
+2. The page's height never stored: measured where it is shown. `Page.fit.height` goes, with the writer's height
+   write, the absent-writer mark and the estimator's use for sizing.
+3. Margin notes anchored to their block and laid out per browser.
+4. The element engine's conversions (grips, drop caret, live carets, drag, resize, snapping, hit tests) re-derived
+   for a zone-local space.
+
+**The smallest honest step that was considered and not shipped:** on a client under 640 px, show the column at
+100% with the column's width set to the window, heights and zone positions kept local. Heights can be made local
+cheaply (a narrow client simply never writes `fit.height`: the writing is as tall as itself in every browser and
+nothing is clipped). Zone positions cannot: a narrow client's zone boxes differ from the stored element positions,
+and the only code that reconciles them is the writer's stored move. Making that move local means drawing a zone's
+elements through a per-client transform from the stored zone box to the measured one, which is item 1 in small,
+and it touches every conversion in item 4 for those clients. That is the zone engine's rewrite begun on one
+breakpoint, so it was not started, and the scale-down stays: a phone reads a page small but true, and writes
+nothing a desktop cannot use.
+
+**What the owner decides:** whether pages with no zone and no margin note (most knowledgebase pages) may re-wrap
+on a phone on their own, which needs only item 2 and a client-local column width, with pages that hold a zone
+staying scaled until the rewrite. It gives two behaviours on a phone, which is why it was not chosen here.
