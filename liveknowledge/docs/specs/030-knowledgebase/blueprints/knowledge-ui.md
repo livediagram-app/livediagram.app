@@ -247,46 +247,62 @@ room message says the link table moved).
 
 Derived from [Search and Ask](../search-and-ask.md) "Search".
 
-| Piece                                                    | File                                           |
-| -------------------------------------------------------- | ---------------------------------------------- |
-| marks, one request at a time, the Offline search         | `lib/knowledge/knowledge-search.ts`            |
-| whether the dialog is open, the chord                    | `lib/knowledge/search-open.ts`                 |
-| a page opened at a block                                 | `lib/knowledge/go-to-block.ts`                 |
-| the dialog                                               | `components/knowledge/SearchDialog.tsx`        |
-| its host: the chord, the search itself, opening a result | `components/knowledge/KnowledgeSearchHost.tsx` |
-| the Search field                                         | `components/knowledge/SearchField.tsx`         |
+| Piece                                                         | File                                                  |
+| ------------------------------------------------------------- | ----------------------------------------------------- |
+| marks, one request at a time, the Offline search              | `lib/knowledge/knowledge-search.ts`                   |
+| a door's ask, the chord                                       | `lib/knowledge/search-open.ts`                        |
+| a page opened at a block                                      | `lib/knowledge/go-to-block.ts`                        |
+| the pages opened most recently, per browser                   | `lib/knowledge/recent-pages.ts`                       |
+| This Knowledgebase: the group's items for what is typed       | `components/knowledge/useThisKnowledgebaseSearch.tsx` |
+| one result's row                                              | `components/knowledge/KnowledgeResultRow.tsx`         |
+| the doors: the chord, the field's ask, noting the page opened | `components/knowledge/KnowledgeSearchHost.tsx`        |
+| the Search field                                              | `components/knowledge/SearchField.tsx`                |
+| the group a host puts first in the panel                      | `components/panels/search-lead-group.ts`              |
 
-- **The doors.** The editor has no header bar, so the **Search** field stands at the head of the page tree (under
-  the knowledgebase's name; an icon on the collapsed rail; first in a phone's Pages sheet). **Cmd or Ctrl K** opens
-  the same dialog from anywhere (a capture listener ahead of the editor's own keys), except in the writing while
-  words are selected, where it stays the link field's. The editor's command search, which Cmd or Ctrl K used to
-  open, keeps Cmd or Ctrl `.` and its doors in Tools.
-- **The dialog** is the shared `Dialog`, centred, at one size whatever it lists (`h-[min(70dvh,560px)]`), the field
-  at its head (`role="combobox"`) over a `listbox`. Each result: the page's title with the matched words marked,
-  its tick or pill, where it is (the page's ancestors, then the passage's headings) and, for a passage, the matching
-  lines. Page titles come first, then passages, as the route orders them. Up and Down move (wrapping), Enter or a
-  press opens. Nothing typed: one line saying what is searched. Nothing found: the shared `NoMatches`. The last
-  results stay listed while the next search is on its way.
+- **No dialog of its own** (owner, 2026-11-20). `SearchDialog.tsx` is deleted; its tests' intent is held against
+  the panel's first group (`knowledge-search.test.tsx`, `KnowledgeSearchHost.test.tsx`).
+- **The doors.** The **Search** field stands at the head of the page tree (under the knowledgebase's name; an icon
+  on the collapsed rail; first in a phone's Pages sheet). It and **Cmd or Ctrl K** (a capture listener ahead of the
+  editor's own keys) ask through `knowledgeSearch.open()`; `KnowledgeSearchHost` spends the ask by opening the
+  editor's universal search panel (`setSearchOpen(true)`, the panel Tools > Search… and Cmd or Ctrl `.` open). In
+  the writing, while words are selected, Cmd or Ctrl K stays the link field's.
+- **This Knowledgebase is the panel's first group, always.** `SearchPanel` takes a `lead` group
+  (`SearchLeadGroup`: a label, items that each draw their own row and say what a press does, and one line for when
+  there are none) and tells its host what is typed (`onQueryChange`). It draws that group above its own, and the
+  arrow keys walk the lead's rows first, then the rest; Enter or a press closes the panel and runs the row.
+  `EditorSearchPanel` holds the typed text and hands `useThisKnowledgebaseSearch(query, { enabled })` 's answer in.
+- **It answers on its own.** The hook runs `createSearchRunner` (the room's search route, or `searchLoadedPages`
+  for a knowledgebase kept Offline) and sets its own state when the answer lands; the panel's other groups are
+  worked out from what is typed, as before, and neither waits for the other. The last results stay listed while
+  the next search is on its way.
+- **Each row** (`KnowledgeResultRow`): the page's title with the matched words marked, its tick or pill, where it is
+  (the page's ancestors, then the passage's headings: `resultPlace`) and, for a passage, the matching lines.
+- **The field empty:** the pages opened most recently (`recent-pages.ts`: `liveknowledge:v2:recent-pages` in
+  `localStorage`, per knowledgebase, the newest first, 8 a knowledgebase, the 50 most recent knowledgebases; a page
+  is noted once as it opens, and the page already first writes nothing). A page that is gone is left out. None yet:
+  "Pages you open are listed here."
+- **Nothing found:** the group shows "No Pages Match" in one line (`NO_PAGES_MATCH`), and the other groups follow.
+  A failure is said in the same line, as an alert.
 - **Snippets are text.** `markedParts` splits the server's snippet on U+0002 and U+0003 into text and marked text,
   drawn as `<span>` and `<mark>`; nothing is ever set as HTML.
 - **One request at a time.** `createSearchRunner`: each keystroke cancels the pending timer and aborts the request
   in flight, then waits `SEARCH_DEBOUNCE_MS` (150) and sends; an answer for a query that was replaced is dropped.
-  Closing the dialog stops it.
-- **Refusals in words.** Past 200 characters nothing is sent and the dialog says "A search is at most 200
+  Closing the panel stops it.
+- **Refusals in words.** Past 200 characters nothing is sent and the group says "A search is at most 200
   characters." (the route's own `query_too_long` reads the same); a 429 says "Too many searches at once. Wait a
   moment and try again."; anything else that the search is not answering.
 - **Opening a result** (`goToBlock`): the page opens with no reload; for a passage, its first block is looked for
   every 50 ms (4 s at most, a page not yet opened loads first), brought into view (`rangeRect`, `scrollIntoView`)
   and tinted for 1.6 s (`article-search-hit`, a steady tint with no animation: the motion budget allows none that long).
-- **Offline** (`searchLoadedPages`): the same dialog over the pages this editor holds, with the room's own
+- **Offline** (`searchLoadedPages`): the same group over the pages this editor holds, with the room's own
   passages (`pagePassages`) and words (`searchTerms`): every word must be in the title or in one passage, titles
   first, 20 at most, the matched words marked the same way. No ranking beyond that order, and a page whose writing
   this browser has not loaded is found by its title alone.
-- Every role searches; the dialog and its doors are given no role.
+- Every role searches; the group and its doors are given no role.
 
-Measured (`knowledge-search.test.tsx`, fake timers): three keystrokes inside 150 ms send one request; a newer
-search aborts the one in flight before it is sent, so never two are in flight; a search past 200 characters sends
-none.
+Measured (`knowledge-search.test.tsx`, `KnowledgeSearchHost.test.tsx`, fake timers): three keystrokes inside
+150 ms send one request; a newer search aborts the one in flight, so never two are in flight; a search past 200
+characters sends none.
 
 Not known: how the dialog sits over the canvas chrome, and the result rows' look, in a browser.
 
@@ -348,7 +364,7 @@ held another change's uncommitted edits while this was made (only the Status lin
 - **Nothing here has been seen in a browser.** Unit and component tests only. In particular: the meta row's and
   Linked From's place and spacing inside the writing, the right rail beside the canvas chrome's own corners and
   cluster, the page framing between the tree and the rail, a page link's title drawn by its CSS rule and the caret
-  beside it, the picker's place under the `[[`, and the search dialog over the chrome.
+  beside it, the picker's place under the `[[`, and the search panel over the chrome.
 - **First-load size was not measured.** The editor now imports `@liveknowledge/knowledge` (trust, passages, the
   search words) on its main path; the package is side-effect free, so only what is imported should be kept, but no
   build was run to confirm it.

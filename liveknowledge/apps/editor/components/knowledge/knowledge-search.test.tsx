@@ -2,23 +2,33 @@
 
 // Search (docs/specs/030-knowledgebase/search-and-ask.md "Search"): the marks, one request at a time, the Offline
 // search, and the dialog: results as you type, the keys, the empty state, the refusals in words, every role.
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { KnowledgeSearchResult } from '@liveknowledge/api-schema';
 import type { ArticleBlock } from '@liveknowledge/document';
-import { ApiError } from '@liveworkspace/workbench/lib/api/api-error';
 import {
   SEARCH_DEBOUNCE_MS,
   createSearchRunner,
   markedParts,
+  searchFailureText,
   searchLoadedPages,
+  SearchTooLongError,
   type SearchOutcome,
 } from '@/lib/knowledge/knowledge-search';
 import { isSearchChord, knowledgeSearch } from '@/lib/knowledge/search-open';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-import { SearchDialog } from './SearchDialog';
+import { SearchPanel } from '@/components/panels/SearchPanel';
+import type { SearchLeadGroup } from '@/components/panels/search-lead-group';
+import { noteRecentPage, readRecentPages, RECENT_PAGES_MAX } from '@/lib/knowledge/recent-pages';
+import { KnowledgeResultRow } from './KnowledgeResultRow';
+import {
+  NO_PAGES_MATCH,
+  recentResults,
+  resultPlace,
+  THIS_KNOWLEDGEBASE,
+} from './useThisKnowledgebaseSearch';
 import { SearchField } from './SearchField';
 
 const M = (word: string) => `\u0002${word}\u0003`;
@@ -174,97 +184,141 @@ describe('searching a knowledgebase kept Offline', () => {
   });
 });
 
-function open(search = vi.fn(async () => [] as KnowledgeSearchResult[])) {
-  const onOpen = vi.fn();
-  const onClose = vi.fn();
-  render(<SearchDialog onClose={onClose} search={search} pages={PAGES} onOpen={onOpen} />);
-  const input = screen.getByRole('combobox', { name: 'Search This Knowledgebase' });
-  const type = async (text: string) => {
-    fireEvent.change(input, { target: { value: text } });
-    await act(async () => {
-      await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
-    });
-  };
-  return { input, type, onOpen, onClose, search };
+// The dialog is gone (docs/specs/030-knowledgebase/search-and-ask.md "Search"): its results are the first group of the
+// universal search panel. What the dialog's tests held is held here, of that group.
+const leadOf = (
+  results: KnowledgeSearchResult[],
+  onOpen: (r: KnowledgeSearchResult) => void,
+  over: Partial<SearchLeadGroup> = {},
+): SearchLeadGroup => ({
+  label: THIS_KNOWLEDGEBASE,
+  items: results.map((r) => ({
+    id: r.id,
+    content: <KnowledgeResultRow result={r} place={resultPlace(PAGES, r)} />,
+    onSelect: () => onOpen(r),
+  })),
+  ...over,
+});
+
+function panel(lead: SearchLeadGroup, onClose = vi.fn()) {
+  render(
+    <SearchPanel
+      documents={[{ id: 'd1', name: 'Release notes elsewhere' }]}
+      folders={[]}
+      onSelectDocument={vi.fn()}
+      onClose={onClose}
+      lead={lead}
+    />,
+  );
+  return { input: screen.getByRole('combobox'), onClose };
 }
 
-describe('the dialog', () => {
-  it('lists results as you type: the page, where it is, its state and the matching lines', async () => {
-    const d = open(
-      vi.fn(async () => [
-        result({ id: 't', isTitle: true, titleMarked: `${M('Release')} Process`, snippet: '' }),
-        result({}),
-      ]),
-    );
-    await d.type('release');
-    expect(d.search).toHaveBeenCalledTimes(1);
-    expect(d.search).toHaveBeenCalledWith('release', expect.any(AbortSignal));
-    const options = screen.getAllByRole('option');
-    expect(options).toHaveLength(2);
-    expect(options[0]!.textContent).toContain('Release Process');
-    // The page's ancestors, then the passage's headings.
-    expect(options[1]!.textContent).toContain('Handbook / Rolling Back');
-    expect(options[1]!.querySelectorAll('mark')).toHaveLength(2);
-    expect(options[1]!.querySelector('mark')!.textContent).toBe('roll');
-    expect(screen.getAllByRole('img', { name: 'Verified' })).toHaveLength(2);
+describe('This Knowledgebase in the search panel', () => {
+  it('is the first group: the page, where it is, its state and the matching lines', () => {
+    panel(leadOf([result({})], vi.fn()));
+    const groups = screen.getAllByRole('group');
+    expect(groups[0]!.getAttribute('aria-label')).toBe('This Knowledgebase');
+    const option = screen.getAllByRole('option')[0]!;
+    expect(option.textContent).toContain('Release Process');
+    expect(option.textContent).toContain('Handbook / Rolling Back');
+    expect(option.textContent).toContain('How to roll a release back.');
+    expect([...option.querySelectorAll('mark')].map((m) => m.textContent)).toEqual([
+      'roll',
+      'release',
+    ]);
   });
 
-  it('draws a snippet as text: markup in the writing is never markup here', async () => {
-    const d = open(
-      vi.fn(async () => [result({ snippet: `<img src=x onerror=alert(1)> ${M('roll')}` })]),
-    );
-    await d.type('roll');
-    const option = screen.getByRole('option');
+  it('stays first when the panel’s other groups have results too', () => {
+    const { input } = panel(leadOf([result({})], vi.fn()));
+    fireEvent.change(input, { target: { value: 'release' } });
+    const labels = screen.getAllByRole('group').map((g) => g.getAttribute('aria-label'));
+    expect(labels[0]).toBe('This Knowledgebase');
+    expect(labels.length).toBeGreaterThan(1);
+    expect(screen.getAllByRole('option')[0]!.textContent).toContain('Rolling Back');
+  });
+
+  it('draws a snippet as text: markup in the writing is never markup here', () => {
+    panel(leadOf([result({ snippet: `<img src=x onerror=alert(1)> ${M('roll')}` })], vi.fn()));
+    const option = screen.getAllByRole('option')[0]!;
     expect(option.querySelector('img')).toBeNull();
     expect(option.textContent).toContain('<img src=x onerror=alert(1)>');
   });
 
-  it('moves with the arrows, and Enter opens the page at the passage', async () => {
-    const hits = [result({ id: 'one' }), result({ id: 'two', firstBlock: 'blk-9' })];
-    const d = open(vi.fn(async () => hits));
-    await d.type('roll');
-    fireEvent.keyDown(d.input, { key: 'ArrowDown' });
+  it('moves with the arrows across the groups, and Enter opens the page at the passage', () => {
+    const onOpen = vi.fn();
+    const second = result({ id: 'r2', tab: 'a', title: 'Handbook', titleMarked: 'Handbook' });
+    const { input, onClose } = panel(leadOf([result({}), second], onOpen));
+    fireEvent.keyDown(input, { key: 'ArrowDown' });
     expect(screen.getAllByRole('option')[1]!.getAttribute('aria-selected')).toBe('true');
-    expect(d.input.getAttribute('aria-activedescendant')).toBe(
-      screen.getAllByRole('option')[1]!.id,
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(onOpen).toHaveBeenCalledWith(second);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('says No Pages Match in one line, and the other groups follow', () => {
+    const { input } = panel(leadOf([], vi.fn(), { note: NO_PAGES_MATCH }));
+    fireEvent.change(input, { target: { value: 'release' } });
+    const first = screen.getAllByRole('group')[0]!;
+    expect(first.getAttribute('aria-label')).toBe('This Knowledgebase');
+    expect(first.querySelector('[data-search-lead-note]')!.textContent).toBe('No Pages Match');
+    expect(screen.getByRole('option', { name: /Release notes elsewhere/ })).toBeTruthy();
+  });
+
+  it('says a failure in words, as an alert, and still lists the other groups', () => {
+    const words = searchFailureText(new SearchTooLongError(), () => '');
+    panel(leadOf([], vi.fn(), { note: words, alert: true }));
+    expect(screen.getByRole('alert').textContent).toContain('200');
+  });
+
+  it('tells its host what is typed, so the host searches by itself', () => {
+    const onQueryChange = vi.fn();
+    render(
+      <SearchPanel
+        documents={[]}
+        folders={[]}
+        onSelectDocument={vi.fn()}
+        onClose={vi.fn()}
+        lead={leadOf([], vi.fn())}
+        onQueryChange={onQueryChange}
+      />,
     );
-    fireEvent.keyDown(d.input, { key: 'ArrowDown' });
-    fireEvent.keyDown(d.input, { key: 'ArrowUp' });
-    fireEvent.keyDown(d.input, { key: 'Enter' });
-    expect(d.onOpen).toHaveBeenCalledWith(hits[1]);
-    expect(d.onClose).toHaveBeenCalled();
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'roll' } });
+    expect(onQueryChange).toHaveBeenCalledWith('roll');
+  });
+});
+
+describe('the pages opened most recently', () => {
+  const pages = [
+    { id: 'a', name: 'Handbook' },
+    { id: 'b', name: 'Release Process', parent: 'a' },
+    { id: 'c', name: '' },
+  ];
+
+  it('lists them newest first while the field is empty, a page that is gone left out', () => {
+    const got = recentResults(pages, ['b', 'gone', 'a'], Date.now());
+    expect(got.map((r) => r.tab)).toEqual(['b', 'a']);
+    expect(got.every((r) => r.isTitle && r.firstBlock === '')).toBe(true);
+    expect(resultPlace(pages, got[0]!)).toBe('Handbook');
   });
 
-  it('says so when nothing matches, with the shared empty state', async () => {
-    const d = open();
-    await d.type('zzz');
-    expect(screen.getByRole('status').textContent).toMatch(/No pages match/);
-    expect(screen.queryByRole('option')).toBeNull();
-  });
-
-  it('says the 200 character limit and a rate limit in words', async () => {
-    const d = open(
-      vi.fn().mockRejectedValue(new ApiError('search knowledge', 429, 'rate_limited')),
-    );
-    await d.type('roll');
-    expect(screen.getByRole('alert').textContent).toMatch(/Too many searches/);
-    await d.type('x'.repeat(201));
-    expect(screen.getByRole('alert').textContent).toBe('A search is at most 200 characters.');
-    expect(d.search).toHaveBeenCalledTimes(1);
-  });
-
-  it('keeps its size whatever it lists', async () => {
-    const d = open(vi.fn(async () => [result({})]));
-    const frame = document.querySelector('[data-knowledge-search]')!;
-    const before = frame.className;
-    await d.type('roll');
-    expect(frame.className).toBe(before);
-    expect(before).toContain('h-[min(70dvh,560px)]');
+  it('keeps eight a knowledgebase, per browser, and writes nothing for the page already first', () => {
+    window.localStorage.clear();
+    for (let i = 1; i <= 12; i++) noteRecentPage('kb1', `p${i}`);
+    expect(readRecentPages('kb1')).toHaveLength(RECENT_PAGES_MAX);
+    expect(readRecentPages('kb1')[0]).toBe('p12');
+    const set = vi.spyOn(Storage.prototype, 'setItem');
+    noteRecentPage('kb1', 'p12');
+    expect(set).not.toHaveBeenCalled();
+    set.mockRestore();
+    noteRecentPage('kb1', 'p3');
+    expect(readRecentPages('kb1').slice(0, 2)).toEqual(['p3', 'p12']);
+    expect(readRecentPages('kb2')).toEqual([]);
+    expect(readRecentPages(null)).toEqual([]);
   });
 });
 
 describe('the doors', () => {
-  it('the Search field opens the dialog for every role: it is given no role at all', () => {
+  it('the Search field asks for the search for every role: it is given no role at all', () => {
     render(<SearchField />);
     expect(knowledgeSearch.isOpen()).toBe(false);
     fireEvent.click(screen.getByRole('button', { name: 'Search' }));

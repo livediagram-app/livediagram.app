@@ -1,8 +1,8 @@
 # Search and Ask
 
 Status: **Search is built, not yet verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 8;
-[blueprint](blueprints/knowledge-ui.md)): the editor has no header bar, so its field stands at the head of the page
-tree. Ask (step 9) is its own change.
+[blueprint](blueprints/knowledge-ui.md)): the universal search panel with This Knowledgebase as its first group; its
+field stands at the head of the page tree. Ask (step 9) is its own change.
 
 ## Search
 
@@ -13,7 +13,8 @@ Owner, 2026-11-20: the sidebar's search is the **universal search**, with this k
   source to it and puts that source first; it has no search dialog of its own.
 - **This Knowledgebase** is always the first group: page titles first, then passages, each result showing the page,
   its breadcrumb, its verified state and the matching lines with the words marked. Enter on a result opens the page
-  at the passage. While the field is empty the group lists the pages opened most recently.
+  at the passage. While the field is empty the group lists the pages opened most recently (kept in this browser,
+  eight a knowledgebase).
 - Below it, in the panel's usual order: the person's other knowledgebases and items across the apps (the index),
   commands, settings and help. A result from this knowledgebase is never ranked below one from anywhere else, and
   the other groups never delay it: each source answers on its own and its group fills in when it does.

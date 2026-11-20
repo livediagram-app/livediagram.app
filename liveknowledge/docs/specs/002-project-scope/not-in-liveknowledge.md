@@ -74,6 +74,10 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   `components/tour/TabStyleTour.tsx`), the Pages tours (`components/tour/PageTour.tsx`, `article-tour-steps.ts`,
   `lib/pages-tour.ts`), and in Settings the Map rows (`showMinimap`, `mapDimOutside`, `mapSize`), Middle-Mouse Pan
   and the Pages tours' rows, with their copy on liveworkspace.app's settings page and their help articles.
+- **Editor, the knowledgebase's own search dialog:** deleted (`components/knowledge/SearchDialog.tsx`); the
+  universal search panel's first group is This Knowledgebase ([Search and Ask](../030-knowledgebase/search-and-ask.md)
+  "Search"). Still offered by the panel and not a knowledgebase's: its Pages and Elements groups over the open
+  pages and its Add to Canvas group (`lib/search.ts`, `lib/palette-search.ts`), to settle with the palette.
 - **`packages/document`:** `slide-deck*.ts`, `slide-builds.ts`, the paper and slide sizes and orientations
   (`page-sizes.ts`), the page kinds other than `article`, and the page row's edits (`pages-edits.ts`, the page-count
   half of `article-pages.ts`).

@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 
-// The search dialog's host (docs/specs/030-knowledgebase/search-and-ask.md "Search"): Cmd or Ctrl K opens it for
-// every role, a knowledgebase kept Offline is searched in the browser, and a result opens its page at the passage.
+// The knowledgebase's doors into the universal search, and its first group (docs/specs/030-knowledgebase/
+// search-and-ask.md "Search"): Cmd or Ctrl K opens the panel for every role, a knowledgebase kept Offline is searched
+// in the browser, one request at a time, and a result opens its page at the passage.
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ArticleBlock, Tab } from '@liveknowledge/document';
@@ -24,7 +25,11 @@ const handle = vi.hoisted(() => ({ rangeRect: vi.fn(() => ({ x: 1, y: 2, w: 3, h
 vi.mock('@/lib/article/article-editor-store', () => ({ articleHandleOf: () => handle }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
+import { useState } from 'react';
+import { SearchPanel } from '@/components/panels/SearchPanel';
+import { noteRecentPage, readRecentPages } from '@/lib/knowledge/recent-pages';
 import { KnowledgeSearchHost } from './KnowledgeSearchHost';
+import { useThisKnowledgebaseSearch } from './useThisKnowledgebaseSearch';
 
 const para = (id: string, text: string) =>
   ({ id, type: 'paragraph', runs: [{ text }] }) as ArticleBlock;
@@ -38,9 +43,26 @@ const TABS: Tab[] = [
   },
 ];
 
-function mount(level: 'edit' | 'participate' | 'view' = 'view') {
+// The panel's first group, as EditorSearchPanel wires it: the host's hook searches for what the field holds.
+function Source() {
+  const [query, setQuery] = useState('');
+  const lead = useThisKnowledgebaseSearch(query, { enabled: true });
+  return (
+    <SearchPanel
+      documents={[]}
+      folders={[]}
+      onSelectDocument={vi.fn()}
+      onClose={vi.fn()}
+      lead={lead}
+      onQueryChange={setQuery}
+    />
+  );
+}
+
+function mount(level: 'edit' | 'participate' | 'view' = 'view', withSource = false) {
   const setActiveId = vi.fn();
   const scrollIntoView = vi.fn();
+  const setSearchOpen = vi.fn();
   const fields: Record<string, unknown> = {
     documentId: 'd1',
     tabs: TABS,
@@ -49,6 +71,8 @@ function mount(level: 'edit' | 'participate' | 'view' = 'view') {
     can: resolveEditorCapabilities(level),
     selfParticipant: { id: 'u1', name: 'Priya' },
     sessionShareCode: 'code',
+    searchOpen: false,
+    setSearchOpen,
     setActiveId,
     scrollIntoView,
   };
@@ -58,9 +82,10 @@ function mount(level: 'edit' | 'participate' | 'view' = 'view') {
   render(
     <EditorChromeContext.Provider value={createEditorChromeStore(value)}>
       <KnowledgeSearchHost />
+      {withSource ? <Source /> : null}
     </EditorChromeContext.Provider>,
   );
-  return { setActiveId, scrollIntoView, fields };
+  return { setActiveId, scrollIntoView, setSearchOpen, fields };
 }
 
 const chord = (target: Element | Window = window, over: KeyboardEventInit = {}) =>
@@ -81,6 +106,18 @@ const type = async (text: string) => {
     await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
   });
 };
+const passage = {
+  id: 'r1',
+  tab: 'b',
+  isTitle: false,
+  title: 'Release Process',
+  titleMarked: 'Release Process',
+  headings: [],
+  snippet: 'Run the \u0002rollback\u0003 script.',
+  firstBlock: 'blk-1',
+  lastBlock: 'blk-1',
+  trust: 'never-verified',
+};
 
 afterEach(() => {
   cleanup();
@@ -88,25 +125,26 @@ afterEach(() => {
   vi.useRealTimers();
   offline.value = false;
   document.body.innerHTML = '';
+  window.localStorage.clear();
 });
 
 describe('the search host', () => {
   it.each(['edit', 'participate', 'view'] as const)(
-    'Cmd or Ctrl K opens search for a %s session',
+    'Cmd or Ctrl K opens the universal search for a %s session, and no dialog of its own',
     (level) => {
-      mount(level);
-      expect(screen.queryByRole('dialog')).toBeNull();
+      const first = mount(level);
       chord();
-      expect(screen.getByRole('dialog', { name: 'Search This Knowledgebase' })).toBeTruthy();
+      expect(first.setSearchOpen).toHaveBeenCalledWith(true);
+      expect(screen.queryByRole('dialog')).toBeNull();
       cleanup();
-      mount(level);
+      const second = mount(level);
       chord(window, { metaKey: false, ctrlKey: true });
-      expect(screen.getByRole('dialog')).toBeTruthy();
+      expect(second.setSearchOpen).toHaveBeenCalledWith(true);
     },
   );
 
   it('leaves Cmd or Ctrl K to the link field while words are selected in the writing', () => {
-    mount('edit');
+    const { setSearchOpen } = mount('edit');
     const writing = document.createElement('div');
     writing.className = 'article-flow';
     writing.textContent = 'Some words';
@@ -116,31 +154,24 @@ describe('the search host', () => {
     window.getSelection()!.removeAllRanges();
     window.getSelection()!.addRange(range);
     chord(writing);
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(setSearchOpen).not.toHaveBeenCalled();
     // A caret alone in the writing: search.
     window.getSelection()!.collapseToEnd();
     chord(writing);
-    expect(screen.getByRole('dialog')).toBeTruthy();
+    expect(setSearchOpen).toHaveBeenCalledWith(true);
   });
 
+  it('notes the page someone is on, for the list of recent pages', () => {
+    mount('view');
+    expect(readRecentPages('d1')).toEqual(['a']);
+  });
+});
+
+describe('This Knowledgebase, searched', () => {
   it('asks the room’s index with the caller’s share code, and opens the chosen page at its passage', async () => {
     vi.useFakeTimers();
-    api.apiSearchKnowledge.mockResolvedValue([
-      {
-        id: 'r1',
-        tab: 'b',
-        isTitle: false,
-        title: 'Release Process',
-        titleMarked: 'Release Process',
-        headings: [],
-        snippet: 'Run the \u0002rollback\u0003 script.',
-        firstBlock: 'blk-1',
-        lastBlock: 'blk-1',
-        trust: 'never-verified',
-      },
-    ]);
-    const { setActiveId } = mount('view');
-    chord();
+    api.apiSearchKnowledge.mockResolvedValue([passage]);
+    const { setActiveId } = mount('view', true);
     await type('rollback');
     expect(api.apiSearchKnowledge).toHaveBeenCalledWith(
       { ownerId: 'u1', shareCode: 'code' },
@@ -148,20 +179,58 @@ describe('the search host', () => {
       'rollback',
       expect.any(AbortSignal),
     );
-    fireEvent.click(screen.getByRole('option'));
+    fireEvent.click(screen.getAllByRole('option')[0]!);
     expect(setActiveId).toHaveBeenCalledWith('b');
-    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('aborts the request in flight when the field changes, and sends one request for a burst of typing', async () => {
+    vi.useFakeTimers();
+    const signals: AbortSignal[] = [];
+    api.apiSearchKnowledge.mockImplementation(
+      (_who: unknown, _id: unknown, _q: unknown, signal: AbortSignal) => {
+        signals.push(signal);
+        return new Promise(() => {});
+      },
+    );
+    mount('view', true);
+    const input = screen.getByRole('combobox');
+    for (const text of ['r', 'ro', 'rol']) fireEvent.change(input, { target: { value: text } });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SEARCH_DEBOUNCE_MS);
+    });
+    expect(signals).toHaveLength(1);
+    await type('roll');
+    expect(signals).toHaveLength(2);
+    expect(signals[0]!.aborted).toBe(true);
+    expect(signals[1]!.aborted).toBe(false);
+  });
+
+  it('says No Pages Match in one line when the index finds nothing', async () => {
+    vi.useFakeTimers();
+    api.apiSearchKnowledge.mockResolvedValue([]);
+    mount('view', true);
+    await type('holidays');
+    expect(document.querySelector('[data-search-lead-note]')!.textContent).toBe('No Pages Match');
   });
 
   it('searches the pages it holds for a knowledgebase kept Offline, and asks no server', async () => {
     vi.useFakeTimers();
     offline.value = true;
-    mount('edit');
-    chord();
+    mount('edit', true);
     await type('rollb');
     expect(api.apiSearchKnowledge).not.toHaveBeenCalled();
-    expect(screen.getByRole('option').textContent).toContain('Release Process');
-    expect(screen.getByRole('option').querySelector('mark')!.textContent).toBe('rollback');
+    const option = screen.getAllByRole('option')[0]!;
+    expect(option.textContent).toContain('Release Process');
+    expect(option.querySelector('mark')!.textContent).toBe('rollback');
+  });
+
+  it('lists the pages opened most recently while the field is empty', () => {
+    noteRecentPage('d1', 'b');
+    mount('view', true);
+    const first = screen.getAllByRole('group')[0]!;
+    expect(first.getAttribute('aria-label')).toBe('This Knowledgebase');
+    expect(screen.getAllByRole('option')[0]!.textContent).toContain('Release Process');
+    expect(api.apiSearchKnowledge).not.toHaveBeenCalled();
   });
 });
 

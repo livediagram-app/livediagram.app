@@ -19,6 +19,7 @@ import {
 import { titleCaseType, track } from '@/lib/telemetry';
 import { SearchResultIcon } from './search-panel-icons';
 import { useModalGuard } from '@liveworkspace/workbench/hooks/ui/useModalGuard';
+import type { SearchLeadGroup, SearchLeadItem } from './search-lead-group';
 import type {
   SearchPanelDocument,
   SearchPanelFolder,
@@ -102,12 +103,17 @@ type SearchPanelProps = {
   // own app). Without it the panel finds only what its host lists.
   workspace?: { client: IndexClient };
   onSelectWorkspaceItem?: (item: { id: string; app: App; sharedVia: string | null }) => void;
+  // The host's own group, always first (This Knowledgebase), and the field's text as it changes, which the host
+  // searches by itself (search-lead-group.ts).
+  lead?: SearchLeadGroup | undefined;
+  onQueryChange?: (query: string) => void;
   onClose: () => void;
 };
 
 // How many the index is asked for: more than the group shows, since this app's own documents (listed above) come back
 // too and are left out.
 const EVERY_APP_ASK = 24;
+const NO_LEAD_ITEMS: readonly SearchLeadItem[] = [];
 
 // Result-grouping logic (matching, capping, fallbacks) lives in
 // `lib/search.ts`; the panel just renders.
@@ -136,6 +142,8 @@ export function SearchPanel({
   commandItems,
   onRunCommand,
   workspace,
+  lead,
+  onQueryChange,
   onSelectWorkspaceItem,
   onClose,
 }: SearchPanelProps) {
@@ -230,7 +238,13 @@ export function SearchPanel({
   );
 
   const flatItems = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+  // The lead group's rows come first in the order the arrow keys walk.
+  const leadItems = lead?.items ?? NO_LEAD_ITEMS;
+  const leadCount = leadItems.length;
+  const total = leadCount + flatItems.length;
   const [activeIndex, setActiveIndex] = useState(0);
+  // The lead group answering later (its results arriving, or going) never leaves the highlight past the end.
+  if (activeIndex > 0 && activeIndex >= total) setActiveIndex(Math.max(0, total - 1));
 
   // Reset highlight when the query changes, during render.
   const [highlightedFor, setHighlightedFor] = useState(query);
@@ -271,15 +285,27 @@ export function SearchPanel({
     onClose();
   };
 
+  const selectLead = (item: SearchLeadItem) => {
+    track('Search', 'Selected', 'KnowledgePage');
+    onClose();
+    item.onSelect();
+  };
+
   const handleInputKey = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setActiveIndex((i) => Math.min(flatItems.length - 1, i + 1));
+      setActiveIndex((i) => Math.min(total - 1, i + 1));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       setActiveIndex((i) => Math.max(0, i - 1));
     } else if (e.key === 'Enter') {
-      const item = flatItems[activeIndex];
+      const leadItem = leadItems[activeIndex];
+      if (leadItem) {
+        e.preventDefault();
+        selectLead(leadItem);
+        return;
+      }
+      const item = flatItems[activeIndex - leadCount];
       if (item) {
         e.preventDefault();
         handleSelect(item);
@@ -314,6 +340,7 @@ export function SearchPanel({
             onChange={(e) => {
               const next = e.target.value;
               setQuery(next);
+              onQueryChange?.(next);
               if (!searchedRef.current && next.trim()) {
                 searchedRef.current = true;
                 track('Search', 'Searched');
@@ -323,12 +350,12 @@ export function SearchPanel({
             role="combobox"
             aria-label="Search"
             aria-autocomplete="list"
-            aria-expanded={flatItems.length > 0}
+            aria-expanded={total > 0}
             aria-controls={listId}
-            aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
+            aria-activedescendant={total > 0 ? optionId(activeIndex) : undefined}
             placeholder={
               tabs
-                ? 'Search knowledgebases, folders, teams, pages, elements, help...'
+                ? 'Search this knowledgebase, then everything else...'
                 : 'Search knowledgebases, folders, teams, help...'
             }
             className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
@@ -346,9 +373,7 @@ export function SearchPanel({
         </div>
         {/* How many it found, said once the reader pauses on a query. */}
         <p aria-live="polite" className="sr-only">
-          {query.trim()
-            ? `${flatItems.length} ${flatItems.length === 1 ? 'result' : 'results'}`
-            : ''}
+          {query.trim() ? `${total} ${total === 1 ? 'result' : 'results'}` : ''}
         </p>
         <div
           id={listId}
@@ -356,7 +381,53 @@ export function SearchPanel({
           aria-label="Results"
           className="max-h-[60vh] overflow-y-auto py-1"
         >
-          {groups.length === 0 ? (
+          {lead ? (
+            <div
+              role="group"
+              aria-label={lead.label}
+              aria-busy={lead.busy === true}
+              data-search-lead=""
+            >
+              <p
+                aria-hidden
+                className="px-3 pb-1 pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400"
+              >
+                {lead.label}
+              </p>
+              {lead.items.map((item, idx) => {
+                const active = idx === activeIndex;
+                return (
+                  <button
+                    key={item.id}
+                    id={optionId(idx)}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    tabIndex={-1}
+                    onClick={() => selectLead(item)}
+                    onMouseEnter={() => setActiveIndex(idx)}
+                    className={`flex w-full cursor-pointer items-start gap-2 px-3 py-1.5 text-left phone:min-h-11 ${
+                      active
+                        ? 'bg-brand-100 dark:bg-brand-500/15'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {item.content}
+                  </button>
+                );
+              })}
+              {lead.note ? (
+                <p
+                  role={lead.alert ? 'alert' : undefined}
+                  data-search-lead-note=""
+                  className="px-3 py-1.5 text-xs text-slate-600 dark:text-slate-300"
+                >
+                  {lead.note}
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+          {groups.length === 0 && lead ? null : groups.length === 0 ? (
             query.trim() ? (
               // The shared empty state (docs/specs/004-interface-design/empty-states.md), naming what is searched.
               <NoMatches
@@ -368,7 +439,10 @@ export function SearchPanel({
                     : 'knowledgebases, folders or help articles'
                 }
                 query={query}
-                onClear={() => setQuery('')}
+                onClear={() => {
+                  setQuery('');
+                  onQueryChange?.('');
+                }}
               />
             ) : (
               <p className="px-3 py-6 text-center text-xs text-slate-500 dark:text-slate-400">
@@ -392,7 +466,7 @@ export function SearchPanel({
                     {group.label}
                   </p>
                   {group.items.map((item, i) => {
-                    const idx = baseIndex + i;
+                    const idx = leadCount + baseIndex + i;
                     const active = idx === activeIndex;
                     return (
                       <button

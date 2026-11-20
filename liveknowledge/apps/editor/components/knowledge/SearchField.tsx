@@ -1,24 +1,20 @@
 'use client';
 
 // The Search field at the head of the page tree (docs/specs/030-knowledgebase/search-and-ask.md "Search"): a press
-// opens the search dialog, as Cmd or Ctrl K does. `compact` is the collapsed rail's, an icon alone.
+// opens the universal search, this knowledgebase's results first, as Cmd or Ctrl K does. `compact` is the collapsed rail's, an icon alone.
 import { HoverCard } from '@liveknowledge/ui';
 import { knowledgeSearch } from '@/lib/knowledge/search-open';
-import { track } from '@/lib/telemetry';
 import { SearchIcon } from './knowledge-icons';
 
 const isMac = () =>
   typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform ?? '');
 
-const open = () => {
-  if (!knowledgeSearch.isOpen()) track('UI', 'Opened', 'KnowledgeSearch');
-  knowledgeSearch.open();
-};
+const open = () => knowledgeSearch.open();
 
 export function SearchField({ compact = false }: { compact?: boolean }) {
   if (compact)
     return (
-      <HoverCard title="Search" description="Search this knowledgebase's pages.">
+      <HoverCard title="Search" description="This knowledgebase first, then everything else.">
         <button
           type="button"
           aria-label="Search"

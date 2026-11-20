@@ -64,7 +64,7 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
     heading: 'Navigate & select',
     rows: [
-      { keys: ['⌘', 'K'], label: 'Search Pages' },
+      { keys: ['⌘', 'K'], label: 'Search: This Knowledgebase First' },
       { keys: ['⌘', '.'], label: 'Search & Commands' },
       { keys: ['Page Up', 'Page Down'], label: 'Scroll the Page a Screen  (Home, End: top, foot)' },
       { keys: ['Tab'], label: 'Select Next Element  (Shift: previous)' },

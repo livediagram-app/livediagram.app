@@ -30,6 +30,10 @@ vi.mock('@/app/document/[id]/EditorContext', () => ({
     openSettingsAt: vi.fn(),
   }),
 }));
+// This Knowledgebase searches by itself (useThisKnowledgebaseSearch.test covers it); here it has nothing to say.
+vi.mock('@/components/knowledge/useThisKnowledgebaseSearch', () => ({
+  useThisKnowledgebaseSearch: () => undefined,
+}));
 vi.mock('@/hooks/canvas/useEditorCommands', () => ({
   useEditorCommands: () => ({ commandItems: [], runCommand: vi.fn() }),
 }));

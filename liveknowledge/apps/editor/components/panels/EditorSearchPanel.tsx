@@ -1,6 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
+import { useState } from 'react';
+import { useThisKnowledgebaseSearch } from '@/components/knowledge/useThisKnowledgebaseSearch';
 import { searchPanelSources } from '@/components/panels/search-panel-sources';
 
 import { buildPaletteSearchItems } from '@/lib/palette-search';
@@ -62,6 +64,16 @@ export function EditorSearchPanel() {
 
   // Less the Hide Participant Cursors row on a tab that draws no cursors (collaborator-enhancements.md).
   const settingItems = useOfferedSettingItems(SETTINGS_SEARCH_ITEMS);
+
+  // This Knowledgebase, always the first group (docs/specs/030-knowledgebase/search-and-ask.md "Search"): searched
+  // by itself for what the field holds, so the panel's other groups never wait for it.
+  const [query, setQuery] = useState('');
+  const [wasOpen, setWasOpen] = useState(searchOpen);
+  if (wasOpen !== searchOpen) {
+    setWasOpen(searchOpen);
+    if (!searchOpen) setQuery('');
+  }
+  const lead = useThisKnowledgebaseSearch(query, { enabled: searchOpen });
 
   if (!searchOpen) return null;
 
@@ -132,6 +144,8 @@ export function EditorSearchPanel() {
       helpItems={HELP_SEARCH_ITEMS}
       settingItems={settingItems}
       onSelectSetting={openSettingsAt}
+      lead={lead}
+      onQueryChange={setQuery}
       onClose={() => setSearchOpen(false)}
     />
   );
