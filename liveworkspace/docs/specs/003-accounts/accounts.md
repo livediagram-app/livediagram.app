@@ -359,7 +359,8 @@ index items, and the cookie is cleared. Without a guest cookie it costs nothing.
 ### Returning guests of the old livediagram.app
 
 The migration ([docs/migration.md](../../../../docs/migration.md) step 6) copies each old guest's work under
-`guest_<old uuid>`, an id no browser is ever handed. The migrate tool also writes one `legacy_guest` row per
+`guest_<old uuid>`. That id is not a secret: the index hands an item's owner id to everyone who can read the item,
+a share link's visitor included, so knowing it proves nothing. The migrate tool also writes one `legacy_guest` row per
 migrated guest (migration `0011_legacy_guest.sql`): `id` (`guest_<old uuid>`, the key), `firstSeenAt` (when the
 old site first saw it, epoch ms), and `claimedAt` and `claimedBy`, null until it is claimed. This Worker only reads
 and stamps the rows; it never makes one.
@@ -377,9 +378,13 @@ When the new editor finds the old id in a browser, livediagram's api forwards it
   `invalid_signature`, `invalid_into`).
 - **Possession.** With a signature: HMAC-SHA-256 of the UTF-8 bare `legacyId` under the secret (its UTF-8
   bytes), written as base64url without padding (43 characters), checked with `crypto.subtle.verify` (constant
-  time) before anything is read. A wrong one is 403 `bad_signature`. Without one, the row's `firstSeenAt` must be
-  before `LEGACY_GUEST_SIGNING_LIVE_AT` (`@liveworkspace/migration`, 2026-09-25 12:00 UTC), the old site's own
-  rule for ids from before signing; a later one is 403 `signature_required`.
+  time) before anything is read. A wrong one is 403 `bad_signature`. Without one nothing is ever merged: the bare id is all
+  an unsigned claim holds, and it is not a secret (above). An unsigned id first seen at or after
+  `LEGACY_GUEST_SIGNING_LIVE_AT` (`@liveworkspace/migration`, 2026-09-25 12:00 UTC) is 403 `signature_required`,
+  as the old site had it. An earlier one, from before signing, is **paused**: 503 `unsigned_claims_paused` while
+  its row is unclaimed, so livediagram's editor keeps the old keys (a 403 would make it forget them) until those
+  guests' ids are re-keyed to something only their browser can derive. An unsigned claim on a row already claimed
+  answers as below.
 - **The answers** (`LegacyGuestClaimAnswer`). No row: `{ merged: false, reason: 'unknown' }`. A row already
   claimed by someone else: `{ merged: false, reason: 'claimed' }`; claimed by `into` itself: `{ merged: true }`,
   so a retry is harmless. Otherwise the guest is merged into `into` exactly as a guest signing in is (above):

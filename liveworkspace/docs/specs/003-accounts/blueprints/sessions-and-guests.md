@@ -233,6 +233,7 @@ invalid_into`).
 2. A signature (43 base64url characters) is checked first: HMAC-SHA-256 of the bare id (`403 bad_signature`).
 3. No row: `200 { merged: false, reason: 'unknown' }`. Unsigned and first seen after `LEGACY_GUEST_SIGNING_LIVE_AT`:
    `403 signature_required`. Claimed: `{ merged: true }` for the same `into`, else `{ merged: false, reason: 'claimed' }`.
+   Unsigned, unclaimed and first seen before it: `503 unsigned_claims_paused`, nothing held or merged.
 4. Held in one conditional update (`claimingBy`, `claimingUntil = now + 60 s`), taking over a lapsed or own hold;
    none: claimed answers as above, else `503 claim_in_progress`.
 5. `mergeGuestInto(…, { legacy: true })`; failing releases the hold, `502 merge_failed`.

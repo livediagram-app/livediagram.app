@@ -444,7 +444,8 @@ export type LegacyGuestClaimOutcome =
   | { merged: false; reason: 'unavailable'; status: number };
 
 // The accounts Worker's answers to a claim that will never clear: a malformed claim, a signature that does not check
-// out (403), an id never migrated (404), an unsigned id after the cut-over.
+// out (403), an id never migrated (404), an unsigned id after the cut-over. Not the 503 an unsigned id from before
+// it gets while unsigned claims are paused: that reads `unavailable`, so the browser keeps the old keys.
 const LEGACY_CLAIM_NEVER = new Set([400, 403, 404, 410, 422]);
 
 // Asks accounts to check an old guest id (its old signature, or the old site's rule for an unsigned one) and merge

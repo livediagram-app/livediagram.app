@@ -109,6 +109,11 @@ export async function claimLegacyGuest(
       ? { status: 200, body: { merged: true } }
       : { status: 200, body: { merged: false, reason: 'claimed' } };
   }
+  // Unsigned claims are paused (accounts.md "Returning guests of the old livediagram.app", "Possession"): the bare
+  // id is all an unsigned claim proves, and the index hands `guest_<old uuid>` to every reader of that guest's
+  // shared items, so knowing it is not possession. A 503, never a 403: livediagram's editor keeps the old keys on
+  // any answer but a settled one, so the guest can still claim once the ids are re-keyed.
+  if (!signed) return refuse(503, 'unsigned_claims_paused');
 
   // Hold the row before anything moves, in one conditional update: of two claims at once only one merges, and the
   // other is told to come back (503, which livediagram's editor takes as "try on a later load"). A hold that lapsed

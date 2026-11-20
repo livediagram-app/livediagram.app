@@ -54,11 +54,13 @@ describe('claiming an old guest', () => {
     expect(tracked).toEqual(['Participant·Moved·LegacyGuest']);
   });
 
-  it('sends a null signature for a guest from before signing', async () => {
+  // Unsigned claims are paused: the bare id proves nothing, so it is not sent, and stays for when it can be claimed.
+  it('sends nothing for a guest from before signing, and keeps the old id', async () => {
     localStorage.removeItem(LEGACY_GUEST_SIG_KEY);
-    claim.mockResolvedValue({ merged: true });
-    await claimLegacyGuest('user_1');
-    expect(claim).toHaveBeenCalledWith('user_1', { legacyId: OLD_ID, signature: null });
+    expect(await claimLegacyGuest('user_1')).toBe('kept');
+    expect(claim).not.toHaveBeenCalled();
+    expect(localStorage.getItem(LEGACY_GUEST_ID_KEY)).toBe(OLD_ID);
+    expect(tracked).toEqual([]);
   });
 
   it('forgets the old keys when there was nothing to merge', async () => {
