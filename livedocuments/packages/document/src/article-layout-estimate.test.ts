@@ -136,6 +136,19 @@ describe('an article estimated', () => {
     expect(texts[1]).not.toHaveProperty('runs');
   });
 
+  // The preview is rasterised by resvg, which reads no slash alpha ("rgb(15 23 42 / 0.05)") and painted it solid
+  // black: a code block and a table's header row (the same ink) came out as black bars over their own text.
+  it('paints only colours the PNG renderer reads, on a light page and a dark one', () => {
+    const blocks: ArticleBlock[] = [{ id: 'c', type: 'code', text: 'npm test' }];
+    for (const fill of [undefined, { kind: 'solid', color: '#0f172a' }]) {
+      const tab = article(blocks, fill ? { fill } : {});
+      const ops = [...estimateArticle(tab, 'f', laid(tab), '#0369a1').ops.values()].flat();
+      const colours = ops.flatMap((op) => Object.values(op).filter((v) => typeof v === 'string'));
+      expect(ops.some((op) => op.k === 'rect')).toBe(true);
+      for (const colour of colours) expect(colour).not.toMatch(/rgb\([^)]*\//);
+    }
+  });
+
   it('keeps a heading with what follows it, starting the next page rather than ending one', () => {
     const fill = Array.from({ length: 20 }, (_, i) => p(`Line ${i + 1}`));
     const tab = article([...fill, p('Next quarter', 'h1'), p('After it')], { pages: 2 });

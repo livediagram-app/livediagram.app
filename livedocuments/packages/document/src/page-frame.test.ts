@@ -84,8 +84,11 @@ describe('a page’s frame', () => {
     expect(ruled.surface).toBe('dark');
     expect(pageExportFrame(s!).backgroundSvg).toContain('<pattern');
     expect(pageExportFrame(a4!).backgroundSvg).toContain('fill="#ffffff"');
-    expect(pagePatternInk({ fill: { kind: 'solid', color: '#0f172a' } })).toContain('255 255 255');
-    expect(pagePatternInk(undefined)).toContain('15 23 42');
+    expect(pagePatternInk({ fill: { kind: 'solid', color: '#0f172a' } })).toBe(
+      'rgba(255, 255, 255, 0.14)',
+    );
+    // rgba(): the PNG renderer reads no slash alpha (it painted "rgb(15 23 42 / 0.1)" solid black).
+    expect(pagePatternInk(undefined)).toBe('rgba(15, 23, 42, 0.1)');
   });
 
   it('holds what reaches onto the page, an arrow by its ends', () => {

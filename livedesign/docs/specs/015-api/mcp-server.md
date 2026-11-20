@@ -978,7 +978,8 @@ helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each find
 Every tool declares an MCP **`outputSchema`**: the JSON Schema of the object it
 returns on success. A successful result carries that object twice: as
 **`structuredContent`**, which a client can parse and validate without reading
-prose, and serialised as the first text block, for clients that only read
+prose, and serialised as the first text block (JSON on one line: indentation was a third or more of a nested
+answer's characters and a model reads it the same), for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_design`, `create_design`, `add_tab`,
 `update_design`) add the inline PNG after it (`read_design` only when asked with `image: true`) ([§5](#5-visualise-inline-image-render)).
@@ -1037,6 +1038,28 @@ descriptions.
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
   that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveworkspace/icons/resolve`).
+
+### 4.18 What the tool list and an answer cost
+
+Every client pays for the whole tool list in each session, and for every answer's text, so both are kept as small
+as they can be without saying less.
+
+- **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
+  `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  listing changes; a call is validated against the tool's own schema
+  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+- **An answer's text** is its structured result as one-line JSON (§4.17).
+- **A tab by its name.** Where a tool reads a tab (`read_design`, `update_design` and the tools that load a tab the same
+  way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
+  (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was
+  already refused with every tab's name beside its id: a call spent to learn what the name said. A name two tabs
+  share, or none has, is refused as before, naming the tabs. Renaming and deleting a tab still take its id.
+
+- **A read-only token** that writes is told so: the api's `read_only_token` is answered "this connection is
+  read-only: its token can find and read, never create or change ...", on every tool
+  (`READ_ONLY_TOKEN_WORDS`, `../packages/api-client/src/client.ts`). It used to read "you may view this ... but not
+  change it", which names a share role the caller does not have (and no file at all on a create), or the bare code.
 
 ## 5. Visualise: inline image render
 
@@ -1122,6 +1145,16 @@ Worker (no DOM, no React).
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
 
+**An empty tab.** A write whose tab has nothing on it yet (a new design from a blank template, a tab emptied by a
+replace) answers no picture, and a line saying so ("No preview: the tab has nothing on it yet."): a blank page told
+the caller nothing, and a blank slide's background was a 120 KB picture on the first call of every deck. `read_design`
+with `image: true` still draws what it is asked.
+
+**Colours the preview can read.** The picture is drawn by resvg, which reads `rgba(r, g, b, a)` and hex but not
+the slash-alpha form (`rgb(15 23 42 / 0.05)`), which it paints solid black. What the preview draws (a page's
+pattern, an article's code block and table header) is written as `rgba()`; a test holds the article's draw ops to
+it.
+
 ## 5a. Interactive view (MCP Apps)
 
 The PNG is flat: nobody can zoom into a logo's detail, flip to the next screen of a wireframe or click through to the
@@ -1189,6 +1222,12 @@ one page at a time.
   ticket. Edits in the view stay livediagram's: this view is read-only for every token.
 - **Cost.** `view_tab` renders SVG only, no resvg. A test holds one page's SVG build, on a 40-page wireframe, to a CPU
   budget and its size to under 1 MB.
+
+**The reason, said.** When the view's own call fails, its note says why in brackets after the sentence: the host's
+refusal with its code ("host -32601: ..."), the tool's own error text, or "the answer held no drawing". A view that
+only said it could not be shown left nobody able to tell a host that refuses the view's calls from a tool that
+failed: production counted no successful `view_tab` in the five days after the view shipped, and nothing said which
+(`drawn`, `why`, `../packages/mcp-kit/src/app-viewer-script.ts`).
 
 ## 6. Rollout
 

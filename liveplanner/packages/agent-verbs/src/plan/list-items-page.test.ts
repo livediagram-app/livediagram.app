@@ -149,7 +149,7 @@ function workTracker(cards = 833, closed = 760): PlanState {
   return planOf(items);
 }
 
-const textOf = (answer: unknown) => JSON.stringify(answer, null, 2);
+const textOf = (answer: unknown) => JSON.stringify(answer);
 
 function page(
   state: PlanState,
@@ -246,8 +246,9 @@ describe('list_items on a 5,000-card plan (Work Tracker 981)', () => {
       state.items.map((i) => cardRefOrKey(i, state.plan.types)),
     );
     // Measured 2026-11-17 (the PR's Performance section): 70 pages with the refs on every page, 27 with them on the
-    // first page only.
-    expect(pages.length).toBeLessThanOrEqual(30);
+    // first page only. Measured 2026-11-20: 32 pages of 140,000 one-line characters, each one the MCP can send (the
+    // 27 were 200,000 indented characters, over the 150,000 a tool answer carries, so refused whole).
+    expect(pages.length).toBeLessThanOrEqual(34);
     console.info(`[list_items] 5,000 cards: ${pages.length} pages`);
   });
 });

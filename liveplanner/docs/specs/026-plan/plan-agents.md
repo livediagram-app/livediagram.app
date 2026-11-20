@@ -104,14 +104,14 @@ due"]`, worst first; [Dependency clashes](plan-views.md#gantt-chart)), and a `se
   the text (case aside, at most 200 characters); `updatedSince` keeps a card changed at or after an ISO date or
   time (`2026-11-01`, `2026-11-01T09:00:00Z`), refused (`updated_since_invalid`) when it reads as neither.
   Filters narrow the items only: each board still lists the numbers of its open cards.
-- **Paging**: cards come by number. `limit` (1 to 1,000) caps a page, and an answer never passes about 200,000
+- **Paging**: cards come by number. `limit` (1 to 1,000) caps a page, and an answer never passes about 140,000
   characters as its text is sent (`LIST_ITEMS_BUDGET`): when cards remain, the answer stops before the card that
   would pass it and gives `nextCursor`; the same call with `cursor` set to it answers the next page, and paging to
   the end lists every matching card exactly once, none lost or repeated, even while cards are added. `total` is how
   many cards match on every page together, `count` how many this page lists. Every page lists the boards, their
   columns and the card types by name, so any page names everything a write takes; each column's card refs (`cards`)
   and `notOnBoard` come on the first page only (the page read without `cursor`), so later pages leave their room to
-  cards (Work Tracker 981: at 5,000 cards the refs were about 110,000 of a page's 200,000 characters). An agent that
+  cards (Work Tracker 981: at 5,000 cards the refs were about 110,000 of a page's characters). The budget sits under the 150,000 characters the MCP lets one tool answer carry (`TOOL_RESULT_MAX_CHARS`), counted as the one-line JSON it sends: at 200,000 indented characters a full page was refused whole ("This answer would be ... over the 150,000 a tool answer can carry") instead of paged, so a large plan could not be listed at all. An agent that
   needs a column's cards reads them from the first page, or from the items' `column`. A page lists at least one card when any remains, so paging
   always ends (one card is bounded by the item store's limits). A cursor `list_items` did not give is refused
   (`cursor_invalid`).
@@ -170,6 +170,15 @@ Every write takes what a person would say, and stores the ids:
 - A refused change stops the batch; the answer says what was applied before it, and why the rest was not.
 - The api's own refusals (`status_excluded`, `fields_invalid`, ...) carry their meaning and a hint, the same on the
   CLI and the MCP.
+
+### A new card's type
+
+An `add` that names no `type` is not refused for lacking one where the plan says which it is: Task where the plan
+has it; else the first card type the board holding its column takes (a card added to Bug triage's New is a Bug);
+else the plan's only type. A plan with several types and nothing to tell them apart is asked which, with the types
+there are ("Say which card type the new card is ..."). The default used to be "task" whatever the plan held, so
+every add on a plan made from a template without a Task type (a Kanban's Work Item and Request) failed until the
+caller named one.
 
 ## Adding a board
 
@@ -518,6 +527,12 @@ Editor of the whole plan: the whole contract is in [Automations](automations.md#
 - A refusal says what was wrong, what is there, and the next call to make. It never answers with a raw api
   status.
 - A tool error is a tool result marked as an error, never a thrown protocol error, for anything the caller can fix.
+- A refusal after some of a call's changes went through lists them and says they are done ("Applied before it
+  (done: leave these out of the next call): ..."), so a refusal that ends "make the same call again" (the rate
+  limit) is not read as "send them all again".
+- A sheet refusal names what is at fault: a format a cell does not take by its name ("Not a value a cell takes:
+  background"), a formula by its cell and its text ("The formula in E1 (=SUM() cannot be read: ..."). A currency is
+  taken as its symbol or its code (GBP, USD, EUR).
 - A value refused for its length or count names the field as the card shows it (its label, "Solution", never
   `f-solution`), how long or how many it was and the most it takes: "Solution is 12,412 characters; the most is
   10,000", "Acceptance Criteria row 3 is 230 characters; the most is 200 a row", "Acceptance Criteria has 51 rows; the

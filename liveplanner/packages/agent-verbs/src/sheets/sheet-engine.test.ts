@@ -6,7 +6,7 @@ import { DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { seeded, sheetJson, sheetServer, type SheetServer } from '../testing/sheets';
 import { addSheet } from './add-sheet';
 import { changeSheet } from './change-sheet';
-import { formatPatchOf } from './sheet-change-build';
+import { badFormatsOf, formatPatchOf } from './sheet-change-build';
 import { listSheets } from './sheet-listing';
 import { readSheet, SHEET_READ_CHARS_MAX, type SheetRead } from './read-sheet';
 import { resolveSheet, type SheetRefusal } from './sheet-state';
@@ -423,7 +423,19 @@ describe('changing a sheet', () => {
       'mcp',
     );
     expect(result.refusal?.code).toBe('formula_invalid');
-    expect(result.refusal?.message).toMatch(/^The formula in D1 cannot be read/);
+    expect(result.refusal?.message).toMatch(
+      /^The formula in D1 \(=SUM\(\) cannot be read: .*\. Nothing of this set was written\.$/,
+    );
+    // A long formula is quoted to its first 80 characters.
+    const long = await changeSheet(
+      api,
+      DOC_A,
+      { sheet: 'Costs', changes: [{ op: 'set', at: 'A1', rows: [[`=SUM(${'1+'.repeat(60)}`]] }] },
+      'mcp',
+    );
+    expect(long.refusal?.message).toMatch(
+      /^The formula in A1 \(=SUM\((1\+){37}1…\) cannot be read/,
+    );
     expect(server.writes).toEqual([]);
   });
 
@@ -608,6 +620,27 @@ describe('changing a sheet', () => {
     });
     expect(formatPatchOf({ fontSize: 15 })).toEqual({ fs: 15 });
     expect(formatPatchOf({ fontSize: 97 })).toBeNull();
+  });
+
+  it('reads a currency by its code, in any case, as the symbol a cell shows', () => {
+    expect(formatPatchOf({ numberFormat: 'currency', currency: 'GBP' })).toEqual({
+      nf: 'currency',
+      cur: '£',
+    });
+    expect(formatPatchOf({ currency: 'eur' })).toEqual({ cur: '€' });
+    expect(formatPatchOf({ currency: '$' })).toEqual({ cur: '$' });
+    expect(formatPatchOf({ currency: null })).toEqual({ cur: null });
+    expect(formatPatchOf({ currency: 'XYZ' })).toBeNull();
+  });
+
+  it('names the formats a cell does not take, as change_sheet names them', () => {
+    expect(badFormatsOf({ bold: true, background: 'blue', currency: 'XYZ', fontSize: 97 })).toEqual(
+      ['background', 'fontSize', 'currency'],
+    );
+    expect(
+      badFormatsOf({ color: 'red', decimals: 99, numberFormat: 'nope', align: 'left' }),
+    ).toEqual(['color', 'numberFormat', 'decimals']);
+    expect(badFormatsOf({})).toEqual([]);
   });
 });
 

@@ -20,7 +20,8 @@ export const mcpUploadImage = mcpTool('upload_image', {
   title: 'Upload an image',
   description:
     `Add a picture to the user’s image gallery (the one list_images lists, shared by every app they use), so an ` +
-    'image element can show it: its bytes as base64 in data (a data: URL works too), or a public https URL in url ' +
+    'image element can show it. Use it to give what you build its subject’s own pictures (a product shot, a logo, ' +
+    'a screenshot, a photo of the place) that the person gave you or that you found and they may use: its bytes as base64 in data (a data: URL works too), or a public https URL in url ' +
     `for the server to fetch. PNG, JPEG, WebP or GIF, up to ${MAX_IMAGE_MB} MB; SVG is refused (render it to PNG ` +
     'first). Answers the new image’s id, which an image element’s imageId takes, with its name, width, height and ' +
     'size; the same bytes again answer the image the gallery already holds (deduped). The gallery shows a picture ' +

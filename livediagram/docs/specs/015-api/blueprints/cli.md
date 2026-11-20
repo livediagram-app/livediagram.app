@@ -616,7 +616,7 @@ max-age=300` (CLI72).
 
 - `searchIcons(query, limit)` (`@liveworkspace/icons`) ranks the line-art and Technology catalogues by `paletteRank`
   over each icon's label and keywords, its id's words and a Technology icon's provider ("aws lambda" finds
-  `aws-lambda`), ties in catalogue order (CLI74). A query that is an icon's id ranks it first; an emoji ranks
+  `aws-lambda`), ties in catalogue order (CLI74). Among icons holding the same share of a several-word query's words, one a word names (its label or id) comes before one holding the word as a keyword, then one whose keyword only starts with it: "kubernetes pod autoscaler" is Kubernetes before Headphones ("podcast"). A query that is an icon's id ranks it first; an emoji ranks
   `EMOJI_AFTER` (0.05) behind an icon answering as well, so a node's icon is a drawn glyph first.
 - `elementKindsText()` and `elementFormatText(kind)` (`@livediagram/edit-operations`) are read off the engine itself:
   the kinds `add` makes (`buildKind`'s factories), each kind's first size, the aliases `set` takes for it (`aliasesOf`)

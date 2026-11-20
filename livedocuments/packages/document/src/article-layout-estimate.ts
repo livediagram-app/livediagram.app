@@ -130,8 +130,10 @@ function layoutOnce(
     return {
       text: dark ? '#e2e8f0' : '#1e293b',
       muted: dark ? '#94a3b8' : '#64748b',
-      rule: dark ? 'rgb(255 255 255 / 0.22)' : 'rgb(15 23 42 / 0.16)',
-      code: dark ? 'rgb(255 255 255 / 0.08)' : 'rgb(15 23 42 / 0.05)',
+      // rgba(): the PNG renderer (resvg) reads no slash alpha, and painted "rgb(15 23 42 / 0.05)" solid black, so a
+      // table's header row and a code block came out as black bars over their own text.
+      rule: dark ? 'rgba(255, 255, 255, 0.22)' : 'rgba(15, 23, 42, 0.16)',
+      code: dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.05)',
       accent: a,
     };
   };

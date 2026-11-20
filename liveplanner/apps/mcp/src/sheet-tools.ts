@@ -12,6 +12,7 @@ import {
 import { clientFor } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
+import { leanCell } from './lean-cells';
 import { deepLink, errorResult, requireToken, stopped, textResult } from './tool-helpers';
 
 export function registerSheetTools(server: McpServer, env: Env): void {
@@ -28,8 +29,12 @@ export function registerSheetTools(server: McpServer, env: Env): void {
       ...(args.range ? { range: args.range } : {}),
     });
     if (!read.ok) return errorResult(read.message);
-    const { ok: _ok, ...result } = read;
-    return textResult({ ...result, url: deepLink(env, args.projectId) });
+    const { ok: _ok, cells, ...result } = read;
+    return textResult({
+      ...result,
+      cells: cells.map(leanCell),
+      url: deepLink(env, args.projectId),
+    });
   });
 
   registerTool(server, env, mcpChangeSheet, async (args, extra) => {

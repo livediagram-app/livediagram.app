@@ -324,6 +324,28 @@ describe('readRuleBody', () => {
     expect(pathOf(raw)).toBe(path);
   });
 
+  // docs/specs/026-plan/automations.md "Refusals": a kind that is not one names the ones there are.
+  it('names the triggers, comparisons, conditions and actions there are when given another', () => {
+    const messageOf = (raw: unknown) => (readRuleBody(raw) as { message?: string }).message;
+    expect(messageOf(withRule({ trigger: { kind: 'card_updated' } }))).toMatch(
+      /^trigger\.kind is not a trigger \(the triggers: card_created, .*\)$/,
+    );
+    expect(
+      messageOf(withCondition({ kind: 'field', field: 'priority', op: 'equals', value: 'x' })),
+    ).toBe(
+      'conditions.0.op is not a comparison (the comparisons: is, is_not, empty, not_empty, contains, ' +
+        'not_contains, before, after, on_or_before, on_or_after, less_than, more_than)',
+    );
+    expect(messageOf(withCondition({ kind: 'colour' }))).toBe(
+      'conditions.0.kind is not a condition (the conditions: type, column, field, who, saved_filter)',
+    );
+    const actions = messageOf(withStep({ kind: 'teleport' }))!;
+    expect(actions).toMatch(/^steps\.0\.kind is not an action \(the actions: move, set_field, /);
+    // Every action it names is one it reads: none is answered "is not an action".
+    for (const kind of actions.slice(actions.indexOf(': ') + 2, -1).split(', '))
+      expect(String(messageOf(withStep({ kind })))).not.toMatch(/is not an action/);
+  });
+
   it('says which value is unknown, as its own error', () => {
     expect(readRuleBody(withStep({ kind: 'comment', text: 'Hi {{owner}}' }))).toEqual({
       error: 'automation_value_unknown',

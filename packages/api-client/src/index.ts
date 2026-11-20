@@ -5,6 +5,8 @@ export {
   ApiError,
   createApiClient,
   postEvents,
+  READ_ONLY_TOKEN_CODE,
+  READ_ONLY_TOKEN_WORDS,
   type ApiClient,
 } from './client';
 export { createCapabilitiesClient, type CapabilitiesClient } from './capabilities';

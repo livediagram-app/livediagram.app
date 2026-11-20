@@ -75,4 +75,13 @@ describe('searchIcons, several words and spacing', () => {
     const ids = searchIcons('rocket', 5).icons.map((i) => i.id);
     expect(ids.indexOf('rocket')).toBeLessThan(ids.indexOf('emoji-rocket'));
   });
+
+  // A partial match named by a word of the query comes before one that only starts a keyword with it.
+  it('puts the icon a word names before one whose keyword merely starts with a word', () => {
+    const ids = searchIcons('kubernetes pod autoscaler', 6).icons.map((i) => i.id);
+    expect(ids[0]).toBe('k8s');
+    expect(ids.indexOf('k8s')).toBeLessThan(ids.indexOf('headphones'));
+    // A whole keyword outranks the start of one, and a full match still outranks every partial one.
+    expect(searchIcons('mobile phone', 3).icons.map((i) => i.id)).toContain('smartphone');
+  });
 });

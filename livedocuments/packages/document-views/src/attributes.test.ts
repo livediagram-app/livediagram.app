@@ -87,6 +87,16 @@ describe('attributesOf (VW14)', () => {
     expect(printed({ ...image, alt: undefined } as unknown as Element)).toBe('');
   });
 
+  // pages-for-agents.md "Empty pictures": a frame with no picture says so; one holding a picture does not.
+  it('marks a picture frame with no picture in it', () => {
+    const frame = { id: 'i', type: 'image', x: 0, y: 0, width: 1, height: 1 } as unknown as Element;
+    expect(printed(frame)).toBe('no-picture');
+    expect(printed({ ...frame, alt: 'Team photo' } as unknown as Element)).toBe(
+      'no-picture alt="Team photo"',
+    );
+    expect(printed({ ...frame, imageId: 'img_1' } as unknown as Element)).toBe('');
+  });
+
   it('prints an action without an assignee, quoting a spaced name (VW29)', () => {
     const el = (a: object) => printed({ ...shapeAt('square', 'x', 0, 0), action: a } as Element);
     expect(el(action('open', 'Ship', 'Sam Lee'))).toBe('action="Ship" @"Sam Lee"');

@@ -16,7 +16,6 @@ import {
   contentOrigin,
   isValidTab,
   normaliseElements,
-  resolveGraphInput,
   withNewButtonModes,
   type Element,
   type Slide,
@@ -57,7 +56,8 @@ import {
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
 import { withoutFindings } from '@livediagram/diagram-lint';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
-import { elementsIssue, graphIconIssue, tabElementsIssue } from './element-values';
+import { elementsIssue, tabElementsIssue } from './element-values';
+import { graphInputOf } from './graph-input-of';
 import { packFreehandPoints } from './freehand-points';
 import { searchIcons } from '@liveworkspace/icons/search';
 import { imageResult } from './image-result';
@@ -204,11 +204,9 @@ export function registerTools(server: McpServer, env: Env): void {
         }
         // Graph-first (docs/specs/015-api/mcp-server.md §4.7): the server builds + lays out the boxes
         // and arrows from a node/edge graph, or the same graph as Mermaid.
-        const input = resolveGraphInput(t);
+        const input = graphInputOf(t);
         if (input.error) return errorResult(`Tab "${t.name}": ${input.error}`);
         for (const note of input.notes ?? []) graphNotes.push(`Tab "${t.name}": ${note}`);
-        const iconIssue = input.graph ? graphIconIssue(input.graph.nodes) : null;
-        if (iconIssue) return errorResult(`Tab "${t.name}": ${iconIssue}`);
         if (input.graph) {
           tabs.push(buildGraphTab(tabId, t.name, input.graph, t.theme ?? args.theme));
           continue;
@@ -320,7 +318,7 @@ export function registerTools(server: McpServer, env: Env): void {
           `Unknown template "${args.template}". ${closestTemplatesHint(args.template)}Valid kinds: ${validTemplateKinds()}.`,
         );
       }
-      const input = resolveGraphInput(args);
+      const input = graphInputOf(args);
       if (input.error) return errorResult(input.error);
       if (args.template && input.graph) return errorResult(TEMPLATE_OR_GRAPH);
       if (!args.template && !input.graph && !args.elements) {
@@ -447,7 +445,7 @@ export function registerTools(server: McpServer, env: Env): void {
       let body: ChangesetRequest;
       let graphNotes: string[] | undefined;
       if (args.mode === 'replace') {
-        const input = resolveGraphInput(args);
+        const input = graphInputOf(args);
         if (input.error) return errorResult(input.error);
         graphNotes = input.notes;
         if (!input.graph && !args.elements) {

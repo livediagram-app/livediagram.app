@@ -231,7 +231,7 @@ export const mcpListItems = mcpTool('list_items', {
     'change_items, add_board and change_card_types name comes from here. Open cards only by default: closed ' +
     'cards (done columns such as Done or Cancelled, Trash, archived) and formatting runs are left out unless ' +
     'includeClosed or includeRich is true, and omitted says what was. Narrow by type and status (one name or ' +
-    'several), query (title and description text) and updatedSince. An answer stays under about 200,000 ' +
+    'several), query (title and description text) and updatedSince. An answer stays under about 140,000 ' +
     'characters: when more cards match, pass its nextCursor as cursor for the next page. Each column’s cards and ' +
     'notOnBoard come on the first page only; later pages keep the boards, columns and card types by name. ' +
     'A card handed to an AI assistant lists its assignee with assistant: true; handedToMe lists only the cards ' +

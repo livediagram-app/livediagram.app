@@ -523,7 +523,7 @@ unknown name with the ones there are.
   with their fields; narrowed by card types or columns, by name, by text in a title or description and by when a
   card last changed. By default it leaves out closed cards (done columns, Trash, archived) and formatting runs, and
   says so (`omitted`; `includeClosed`, `includeRich` bring them back), and pages with `limit` and `cursor` so an
-  answer never passes about 200,000 characters ([Plan for agents](../026-plan/plan-agents.md) "What `list_items`
+  answer never passes about 140,000 characters ([Plan for agents](../026-plan/plan-agents.md) "What `list_items`
   leaves out unless asked"). Each column's card refs and `notOnBoard` come on the first page only; later pages keep
   the boards, columns and card types by name, and the tool's description says so. A project with no board answers a hint saying how to get one.
   `handedToMe: true` lists only the cards handed to the calling assistant, and a card handed to any assistant lists its
@@ -577,7 +577,9 @@ project's Plan cards when a formula reads them.
 
 - **`list_sheets`** (read): the project's sheets (or one tab's), each with its title, tab, the rows and columns in
   use and that range in A1, and the id of the Sheet element framing it (null when none does).
-- **`read_sheet`** (read): a range's non-empty cells (the range in use by default) as `{ at, input, value, display }`,
+- **`read_sheet`** (read): a range's non-empty cells (the range in use by default) as `{ at, input, value?, display? }`
+  (`value` left out when it is what was typed, `display` when it reads as the value does: most cells are typed text
+  and numbers, said once instead of three times),
   plus the frozen rows and columns, merges and filter, the validation rules (`validation`) and format rules
   (`conditionalFormats`) in words, and `invalid` on a cell whose value its rule does not allow. A read covers at most `AGENT_READ_CELLS_MAX` (5,000) cells
   of the range and answers at most `SHEET_READ_CHARS_MAX` (100,000) characters of cells; past either it stops,
@@ -904,7 +906,8 @@ helpers are `@liveworkspace/mcp-kit`'s, the same for every product, so each find
 Every tool declares an MCP **`outputSchema`**: the JSON Schema of the object it
 returns on success. A successful result carries that object twice: as
 **`structuredContent`**, which a client can parse and validate without reading
-prose, and serialised as the first text block, for clients that only read
+prose, and serialised as the first text block (JSON on one line: indentation was a third or more of a nested
+answer's characters and a model reads it the same), for clients that only read
 `content` (the backwards-compatible form MCP recommends). The four tools that
 render a preview (`read_project`, `create_project`, `add_tab`,
 `update_project`) add the inline PNG after it (`read_project` only when asked with `image: true`) ([§5](#5-visualise-inline-image-render)).
@@ -941,7 +944,7 @@ says why by its status (no such tab, view only, the last tab).
 | `import_board`      | `projectId`, `tabId`, `title`, `source`, `columns[]` of `{ name, cards }`, `cards`, `leftOut[]` of `{ reason, count }`, `preview?`, `url`                                                                                                                                                                                                                                              |
 | `change_card_types` | `applied[]` (with the ids made), `trashed[]`, `types[]`, `url`                                                                                                                                                                                                                                                                                                                         |
 | `list_sheets`       | `sheets[]` of `{ id, title, tabId, tabName, rows, cols, filled, elementId }`, `url`                                                                                                                                                                                                                                                                                                    |
-| `read_sheet`        | `sheetId`, `title`, `tabId`, `range`, `rows`, `cols`, `cells[]` of `{ at, input, value, display }`, `truncated`, `note?`, `frozen { rows, cols }`, `merges[]`, `filter`, `url`                                                                                                                                                                                                         |
+| `read_sheet`        | `sheetId`, `title`, `tabId`, `range`, `rows`, `cols`, `cells[]` of `{ at, input, value?, display? }`, `truncated`, `note?`, `frozen { rows, cols }`, `merges[]`, `filter`, `url`                                                                                                                                                                                                       |
 | `change_sheet`      | `sheetId`, `title`, `applied[]` (one line per change), `rev`, `url`                                                                                                                                                                                                                                                                                                                    |
 | `add_sheet`         | `tabId`, `sheetId`, `elementId`, `title`, `filled`, `truncated`, `changesetId`, `rev`, `url`                                                                                                                                                                                                                                                                                           |
 
@@ -973,6 +976,28 @@ descriptions.
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within
   `PREVIEW_EMOJI_TIMEOUT_MS` (2.5 s), each file at most 64 kB and kept in the Cache API, alongside the fonts). One
   that cannot be fetched in time draws as a disc labelled emoji (`previewResolvers` in `@liveworkspace/icons/resolve`).
+
+### 4.18 What the tool list and an answer cost
+
+Every client pays for the whole tool list in each session, and for every answer's text, so both are kept as small
+as they can be without saying less.
+
+- **Tool list size.** A schema built from shared parts repeats their descriptions wherever the part is used. In the
+  `tools/list` answer each description of 200 characters or more is said once per tool: a repeat reads
+  `Same as "<path>" above.`, the path of the first place it stands (`changes[](op=add).rule.trigger`). Only the
+  listing changes; a call is validated against the tool's own schema
+  (`../packages/mcp-kit/src/tool-list-compact.ts`).
+- **An answer's text** is its structured result as one-line JSON (§4.17).
+- **A tab by its name.** Where a tool reads a tab (`read_project`, `update_project` and the tools that load a tab the same
+  way), `tabId` takes the tab's id or its name, in any case, when exactly one tab has that name
+  (`../packages/mcp-kit/src/tab-named.ts`). A caller that made the tabs knows them by name, and an unknown id was
+  already refused with every tab's name beside its id: a call spent to learn what the name said. A name two tabs
+  share, or none has, is refused as before, naming the tabs. Renaming and deleting a tab still take its id.
+
+- **A read-only token** that writes is told so: the api's `read_only_token` is answered "this connection is
+  read-only: its token can find and read, never create or change ...", on every tool
+  (`READ_ONLY_TOKEN_WORDS`, `../packages/api-client/src/client.ts`). It used to read "you may view this ... but not
+  change it", which names a share role the caller does not have (and no file at all on a create), or the bare code.
 
 ## 5. Visualise: inline image render
 
@@ -1044,6 +1069,11 @@ Worker (no DOM, no React).
   box-with-caption fallback. Without a resolver (or for an unknown id) the
   renderer still emits that fallback, so resolver-less callers are unchanged.
 
+**Colours the preview can read.** The picture is drawn by resvg, which reads `rgba(r, g, b, a)` and hex but not
+the slash-alpha form (`rgb(15 23 42 / 0.05)`), which it paints solid black. What the preview draws (a page's
+pattern, an article's code block and table header) is written as `rgba()`; a test holds the article's draw ops to
+it.
+
 ## 5a. Interactive view (MCP Apps)
 
 `list_items` and `read_project` answer in text, so an assistant cannot show the board itself in the chat. A host that
@@ -1109,6 +1139,12 @@ mcp-server.md "Interactive view (MCP Apps)"); liveplanner's view shows a **board
 - **Cost.** One `view_tab` reads the items and the plan once (the reads `list_items` makes) and groups the cards by
   column in one pass. A test holds building the view of a 2,000-card board to a CPU budget and its size to under
   64 KB.
+
+**The reason, said.** When the view's own call fails, its note says why in brackets after the sentence: the host's
+refusal with its code ("host -32601: ..."), the tool's own error text, or "the answer held no drawing". A view that
+only said it could not be shown left nobody able to tell a host that refuses the view's calls from a tool that
+failed: production counted no successful `view_tab` in the five days after the view shipped, and nothing said which
+(`drawn`, `why`, `../packages/mcp-kit/src/app-viewer-script.ts`).
 
 ## 6. Rollout
 

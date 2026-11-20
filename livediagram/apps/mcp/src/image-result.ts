@@ -124,6 +124,15 @@ export async function imageResult(
   // The structured result (and its text form) first, then the notes, then the preview.
   const result = textResult(value);
   const texts = notes.map((text) => ({ type: 'text' as const, text }));
+  // A tab with nothing on it yet answers no picture: a blank page told the caller nothing, and a blank slide's
+  // gradient was a 120 KB picture on the first call of every deck (mcp-server.md §5 "An empty tab").
+  if (tab.elements.length === 0)
+    return {
+      ...result,
+      content: [...result.content, ...texts, { type: 'text', text: EMPTY_TAB_NOTE }],
+    };
   const preview = await tabPreview(tab, auth);
   return { ...result, content: [...result.content, ...texts, ...preview] };
 }
+
+export const EMPTY_TAB_NOTE = 'No preview: the tab has nothing on it yet.';

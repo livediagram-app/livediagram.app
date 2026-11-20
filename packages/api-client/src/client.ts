@@ -25,6 +25,14 @@ export type ApiClient = {
 // The most of an error body its message quotes; `body` keeps it whole, so its code and text still parse.
 export const API_ERROR_BODY_MAX = 500;
 
+// The api's code for a write made with a read-only token (each product's docs/specs/015-api/public-api-and-tokens.md),
+// and what an agent is told of it: the same words on every product's MCP and CLI. The code used to reach the caller
+// as "you may view this document but not change it", which sent it looking for a share role it did not have, or bare.
+export const READ_ONLY_TOKEN_CODE = 'read_only_token';
+export const READ_ONLY_TOKEN_WORDS =
+  'this connection is read-only: its token can find and read, never create or change. To make changes the person ' +
+  'connects again with full access (or uses a token that is not read-only).';
+
 export class ApiError extends Error {
   readonly status: number;
   readonly body: string;

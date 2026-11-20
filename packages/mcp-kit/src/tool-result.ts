@@ -10,7 +10,8 @@ import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 export type Extra = RequestHandlerExtra<never, never>;
 // A success carries its result object as `structuredContent` (validated by the
 // SDK against the tool's outputSchema, docs/specs/015-api/mcp-server.md §4.17) and the same object
-// as the first text block for clients that only read `content`.
+// as the first text block for clients that only read `content`: JSON on one line, since indentation is a third of
+// the characters of a nested answer and a model reads it the same.
 export type StructuredValue = Record<string, unknown>;
 export type ToolResult = {
   content: Array<
@@ -28,7 +29,7 @@ export function requireToken(extra: Extra): string {
 
 export function textResult(value: StructuredValue): ToolResult {
   return {
-    content: [{ type: 'text', text: JSON.stringify(value, null, 2) }],
+    content: [{ type: 'text', text: JSON.stringify(value) }],
     structuredContent: value,
   };
 }

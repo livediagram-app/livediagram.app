@@ -309,13 +309,13 @@ Bug Report, Release` when it has any), `type apply <project> -f <file|->` (a JSO
 
 ## Constants and configuration
 
-| Constant               | Value   | Where                                                | Why                                                                                                   |
-| ---------------------- | ------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `PLAN_TAB_BATCH`       | 20      | `apps/api/src/routes/plan-route.ts`                  | the overview's batch                                                                                  |
-| `LIST_ITEMS_BUDGET`    | 200,000 | `packages/agent-verbs/src/plan/list-items-limits.ts` | Work Tracker 900: well under what chat assistants take in one tool answer; safe range 50,000..400,000 |
-| `LIST_ITEMS_LIMIT_MAX` | 1,000   | `packages/agent-verbs/src/plan/list-items-limits.ts` | a page's card cap                                                                                     |
-| `LIST_ITEMS_QUERY_MAX` | 200     | `packages/agent-verbs/src/plan/list-items-limits.ts` | a search phrase, not a whole text                                                                     |
-| `LIST_ITEMS_NAMES_MAX` | 32      | `packages/agent-verbs/src/plan/list-items-limits.ts` | card types or columns one filter names (`ITEM_TYPES_MAX`)                                             |
+| Constant               | Value   | Where                                                | Why                                                                                                                                                                                                                    |
+| ---------------------- | ------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `PLAN_TAB_BATCH`       | 20      | `apps/api/src/routes/plan-route.ts`                  | the overview's batch                                                                                                                                                                                                   |
+| `LIST_ITEMS_BUDGET`    | 140,000 | `packages/agent-verbs/src/plan/list-items-limits.ts` | Under the 150,000 characters the MCP lets one tool answer carry (`TOOL_RESULT_MAX_CHARS`): a page past that was refused whole instead of paged; counted as the one-line JSON the MCP sends; safe range 50,000..145,000 |
+| `LIST_ITEMS_LIMIT_MAX` | 1,000   | `packages/agent-verbs/src/plan/list-items-limits.ts` | a page's card cap                                                                                                                                                                                                      |
+| `LIST_ITEMS_QUERY_MAX` | 200     | `packages/agent-verbs/src/plan/list-items-limits.ts` | a search phrase, not a whole text                                                                                                                                                                                      |
+| `LIST_ITEMS_NAMES_MAX` | 32      | `packages/agent-verbs/src/plan/list-items-limits.ts` | card types or columns one filter names (`ITEM_TYPES_MAX`)                                                                                                                                                              |
 
 ## Defaults ledger
 

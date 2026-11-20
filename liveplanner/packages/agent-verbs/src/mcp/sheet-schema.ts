@@ -93,10 +93,16 @@ const readCell = z.object({
     .describe('What was typed: a formula with its =; empty for a value spilled from a formula.'),
   value: z
     .union([z.string(), z.number(), z.boolean(), z.null()])
+    .optional()
     .describe(
-      'The worked-out value: a number (dates and times as serial numbers), text, a boolean, or an error as text (#REF!).',
+      'The worked-out value: a number (dates and times as serial numbers), text, a boolean, or an error as text (#REF!). Left out when it is what was typed (input).',
     ),
-  display: z.string().describe('What the cell shows, in its number format.'),
+  display: z
+    .string()
+    .optional()
+    .describe(
+      'What the cell shows, in its number format. Left out when it reads as the value does (or as input, when value is left out).',
+    ),
   invalid: z
     .string()
     .optional()
