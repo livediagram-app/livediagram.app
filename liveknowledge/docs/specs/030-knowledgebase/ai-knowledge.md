@@ -24,7 +24,8 @@ to an agent. No reader's identity is kept beyond the agent's name.
 
 - A question is logged (`questions`) when Ask says the wiki does not cover it, when a search by an agent returns
   nothing, or when an agent calls `report_gap`. Like questions are grouped (same words after stemming); the row shows
-  the question, how many times and by whom ("3 people and the Coding Agent").
+  the question and how many times it was asked, by people and by each named agent ("Asked 4 times by people and
+  the Coding Agent"). The count is of asks, not of distinct people: no asker's identity is kept.
 - **Draft a Page** starts a page titled from the question. With a key it is drafted from the nearest passages, marked
   "Draft, Not Verified" in its first line; without one it opens empty with the question as its first heading.
   **Dismiss** removes the row.
