@@ -42,6 +42,12 @@ export async function claimLegacyGuest(ownerId: string): Promise<LegacyGuestClai
   attempted = true;
   const legacyId = readLocalStorageSafe(LEGACY_GUEST_ID_KEY)!.toLowerCase();
   const signature = readLocalStorageSafe(LEGACY_GUEST_SIG_KEY);
+  // A guest from before signing: unsigned claims are paused (the bare id is no proof of who holds it), so nothing
+  // is sent and both keys stay for when they can be claimed.
+  if (!signature) {
+    debugLog('[legacy-guest] unsigned, kept for a later load');
+    return 'kept';
+  }
   try {
     const answer = await apiClaimLegacyGuest(ownerId, { legacyId, signature });
     removeLocalStorageSafe(LEGACY_GUEST_ID_KEY);

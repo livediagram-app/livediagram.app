@@ -232,14 +232,14 @@ export type HandoffRequest = {
 //
 // `POST /api/legacy-guest/claim` on livediagram's api, as the browser's guest or account, forwarded with the api's
 // client credentials to the accounts Worker's `POST /api/account/internal/legacy-guests/claim`, which checks the old
-// signature (HMAC-SHA-256 of the bare id under LEGACY_GUEST_ID_HMAC_SECRET, base64url, no padding) or, for an
-// unsigned id, that the old `participants.created_at` predates LEGACY_GUEST_SIGNING_LIVE_AT (1790337600000), then
+// signature (HMAC-SHA-256 of the bare id under LEGACY_GUEST_ID_HMAC_SECRET, base64url, no padding), then
 // merges `legacyGuestOwner(id)` into the caller through the index's `POST /internal/merge` with `legacy: true`.
 
 export type LegacyGuestClaim = {
   /** The old bare UUID from `localStorage['livediagram:v2:self-id']`. */
   legacyId: string;
-  /** `localStorage['livediagram:v2:self-sig']`, or null for an id from before signing. */
+  /** `localStorage['livediagram:v2:self-sig']`, or null for an id from before signing, which is never merged
+   *  (unsigned claims are paused: the bare id is not a secret). */
   signature: string | null;
 };
 

@@ -139,11 +139,34 @@ describe('claiming a returning guest of the old livediagram.app', () => {
     });
   });
 
-  it('takes an unsigned id the old site saw before signing went live', async () => {
-    addLegacy(BEFORE);
+  // The bare id is not a secret (the index hands `guest_<old uuid>` to every reader of that guest's shared items), so
+  // an unsigned claim merges nothing. A 503, so the browser keeps its old keys for when the ids are re-keyed.
+  it.each([null, undefined, ''])(
+    'pauses an unsigned claim (%s) on an id from before signing',
+    async (signature) => {
+      addLegacy(BEFORE);
+      expect(await claim({ legacyId: OLD, signature, into: NEW_GUEST })).toEqual({
+        status: 503,
+        body: { error: 'unsigned_claims_paused' },
+      });
+      expect(merges).toEqual([]);
+      expect(row()).toMatchObject({ claimedAt: null, claimedBy: null });
+      // Nothing is held either: the guest's own signed claim, or a later one, is not kept waiting.
+      const held = env.AUTH_DB.prepare('SELECT claimingBy FROM legacy_guest WHERE id = ?');
+      expect(await held.bind(LEGACY).first()).toEqual({ claimingBy: null });
+    },
+  );
+
+  it('still settles an unsigned claim on an id that is already claimed', async () => {
+    addLegacy(BEFORE, { at: 5, by: NEW_GUEST });
     expect((await claim({ legacyId: OLD, signature: null, into: NEW_GUEST })).body).toEqual({
       merged: true,
     });
+    expect((await claim({ legacyId: OLD, signature: null, into: 'user_ada' })).body).toEqual({
+      merged: false,
+      reason: 'claimed',
+    });
+    expect(merges).toEqual([]);
   });
 
   it('refuses an unsigned id from after signing went live, moving nothing', async () => {

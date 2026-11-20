@@ -185,9 +185,10 @@ copied under `guest_<old uuid>`, which nobody holds until it is claimed (repo `d
 - **When.** On a page load of `/new` or the editor (never an embed or a workbench), once auth has settled and the
   page has an identity of its own: the signed-in account, else this browser's guest token. With neither (the guest
   handoff failed) it waits for a later load.
-- **What.** When `self-id` holds a UUID, the editor posts `{ legacyId, signature }` (`LegacyGuestClaim`,
-  `signature` null when `self-sig` is absent) to `POST /api/legacy-guest/claim` with the same Bearer every other
-  call sends. At most one attempt per page load, in the background: nothing waits for it. A `self-id` that is not
+- **What.** When `self-id` holds a UUID and `self-sig` a signature, the editor posts `{ legacyId, signature }`
+  (`LegacyGuestClaim`) to `POST /api/legacy-guest/claim` with the same Bearer every other call sends. Without
+  `self-sig` (a guest from before signing) nothing is sent and both keys are kept: unsigned claims are paused
+  (liveworkspace `003-accounts/accounts.md` "Possession"), since the bare id proves nothing. At most one attempt per page load, in the background: nothing waits for it. A `self-id` that is not
   a UUID was not written by the old site, and is left alone and never sent.
 - **The answer.** `{ merged: true }` or `{ merged: false }` (`LegacyGuestClaimAnswer`): the editor removes
   `self-id` and `self-sig`, and nothing else. Any other outcome (a network failure, any non-2xx) keeps both keys,

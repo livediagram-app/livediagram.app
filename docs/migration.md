@@ -412,8 +412,9 @@ fails. The bundle lists the people in `people/people.jsonl`, one `people/<app>/<
 - **Accounts**: the `legacy_guest` table (`migrations/0011_legacy_guest.sql`) and
   `POST /api/account/internal/legacy-guests/claim` `{ legacyId, signature | null, into }`, livediagram's client
   only, a plain 404 without `LEGACY_GUEST_ID_HMAC_SECRET` (the old site's `GUEST_ID_HMAC_SECRET`). The signature is
-  checked before any row is read (403 `bad_signature`); an unsigned id is accepted only if first seen before
-  `LEGACY_GUEST_SIGNING_LIVE_AT` (403 `signature_required`). It answers `{merged:false, reason:'unknown'}` with no
+  checked before any row is read (403 `bad_signature`); an unsigned id is never merged: first seen at or after
+  `LEGACY_GUEST_SIGNING_LIVE_AT` it is 403 `signature_required`, and before it 503 `unsigned_claims_paused` (the
+  bare id is not a secret, so those guests wait, keys kept, for their ids to be re-keyed). It answers `{merged:false, reason:'unknown'}` with no
   row, `{merged:false, reason:'claimed'}` for one claimed by someone else, `{merged:true}` (also on a retry by the
   same person), 502 `merge_failed` when the index merge fails (nothing stamped), and 429 past 10 a minute per caller
   (`LEGACY_GUEST_LIMITER`).
