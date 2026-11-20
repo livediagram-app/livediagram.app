@@ -36,8 +36,8 @@ describe('the toasts that name a document', () => {
   const longest = 'W'.repeat(200);
 
   it('fall back to a generic word when the name is unknown', () => {
-    expect(DOCUMENT_FAILURE.move()).toBe('Could not move the document. Try again.');
-    expect(DOCUMENT_FAILURE.delete(null)).toBe('Could not delete the document. Try again.');
+    expect(DOCUMENT_FAILURE.move()).toBe('Could not move the knowledgebase. Try again.');
+    expect(DOCUMENT_FAILURE.delete(null)).toBe('Could not delete the knowledgebase. Try again.');
   });
 
   it('stay within the 90-character ceiling however long the names are', () => {
