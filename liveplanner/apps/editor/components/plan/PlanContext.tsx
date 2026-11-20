@@ -153,7 +153,7 @@ export type PlanContextValue = {
   trashItem: (itemId: string) => void;
   // Many cards to the Trash as one write and one undo step; answers how many went.
   trashItems: (itemIds: readonly string[]) => number;
-  // Many cards changed as one write and one undo step (Keep Them on a template's example cards). Absent outside the
+  // Many cards changed as one write and one undo step (a batch of card changes). Absent outside the
   // editor's own slice.
   patchItems?: (patches: readonly ItemPatchOf[]) => void;
   // A field's values rewritten for its new type (docs/specs/026-plan/item-types.md "Edit Field"): one write, past the

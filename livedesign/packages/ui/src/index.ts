@@ -18,7 +18,7 @@ export {
 export { SiteSwitcher } from './SiteSwitcher';
 export { START_BLANK_HREF, StartBlankLink } from './StartBlankLink';
 export { SiteHeader } from './SiteHeader';
-export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
+export { EXPLORER_HOME_HREF } from './ExplorerLink';
 export { SiteFooter } from './SiteFooter';
 // The Explorer footer's product links, with the Community while it is on; overrides @liveworkspace/ui's below.
 export { ProductNavLinks, type ProductNavKey } from './ProductNav';

@@ -224,6 +224,14 @@ dialog. What the view needs before the card (`useTeamDetails`, `teamHeadline`, `
 by the Explorer's idle preload with the lazy sections. Measured the same way: 380.5 to 377.5 KiB (386,555 bytes), the
 same 19 scripts. `panes-lazy-load.test.ts` keeps the card out of a static import. The budget stays at 380 KiB.
 
+**Closing a toast stays inside the budget (2026-11-20, #2058).** Closing a toast now dismisses it (it fades in place
+and leaves the notification list) and a popover risen from the bottom chrome is a toast floor. The toast provider,
+stack and floor hook are in `/explorer`'s first load, and the first cut added 135 bytes gzipped (389,052 to 389,187,
+over 380 KiB by 67). The close now runs through the same `answer` and `retire` path as an offer, with how a toast
+left kept in `leaving` (`'closed'`) and the record removed by `settleToast(id, 'closed')` rather than a new export, and
+the floor hook marks the rect it already measures (`rises`) instead of copying it: 389,119 bytes, the same 19 scripts.
+On top of the lazy team card above it measures 386,312 bytes. The budget stays at 380 KiB.
+
 ## Presentation and UX
 
 The pages, their layout and their states are in [site.md](../site.md); the shared components come from

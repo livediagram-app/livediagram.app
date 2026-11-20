@@ -159,4 +159,13 @@ describe('the notification list', () => {
     recordToast(toast('2'), 'live');
     expect(JSON.parse(localStorage.getItem('liveworkspace:toasts:index')!)).toEqual(['s']);
   });
+
+  it('forgets a closed toast, and leaves the list alone for an unknown id', () => {
+    recordToast({ id: 'a', tone: 'info', message: 'Kept' }, 'live');
+    recordToast({ id: 'b', tone: 'info', message: 'Closed' }, 'live');
+    settleToast('b', 'closed');
+    expect(readToastHistory().map((r) => r.message)).toEqual(['Kept']);
+    settleToast('nope', 'closed');
+    expect(readToastHistory().map((r) => r.message)).toEqual(['Kept']);
+  });
 });

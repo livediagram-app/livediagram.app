@@ -5,7 +5,7 @@ import { useObservedSize } from '@liveworkspace/workbench/hooks/canvas/useObserv
 
 // True while every element on the tab, and every page (an empty page, or an article's
 // writing, is content too), is panned / zoomed entirely out of view, and there is something to see. Drives the "bring it back"
-// nudge above the Fit button (OffscreenContentHint).
+// "Nothing in view" toast (OffscreenContentHint).
 //
 // The canvas size comes from a ResizeObserver (useObservedSize), NOT a
 // measurement on each pan: reading getBoundingClientRect on every

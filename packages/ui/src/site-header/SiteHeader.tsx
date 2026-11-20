@@ -3,15 +3,14 @@ import { BuildWithAiLink } from '../BuildWithAiLink';
 
 // The public site header shared by a product's marketing landing page, its help centre and the
 // dashboard, so they read as one product. The logo on the left (hover it for liveworkspace's other
-// sites, SiteSwitcher), the CTA pair on the right (a secondary "Start Blank", a plain link to the wizard
-// whose chosen mode opens with no start screen (StartBlankLink), beside the primary "Choose Template",
-// /new), with the ShareRail pinned to the page edge below. The Appearance toggle is never here
+// sites, SiteSwitcher), the Explorer link and "Start Blank" on the right (a plain link to the wizard whose
+// chosen mode opens with no start screen, StartBlankLink), with the ShareRail pinned to the page edge below. The Appearance toggle is never here
 // (docs/specs/004-interface-design/appearance.md): it sits on the page-edge rail (xl+), and where there is
 // no gutter for the rail it is left out (the device's own setting applies through System).
 //
 // `center` is an optional slot between the two clusters, shown from `sm` up
-// (the help centre's search box). `actions` replaces the default CTA pair
-// (no surface uses it today). `shareRail` (default true) puts the
+// (the help centre's search box). `actions` replaces the default
+// Start Blank (no surface uses it today). `shareRail` (default true) puts the
 // share links on the page-edge rail; help (and a Community) turn them off, keeping the rail's Appearance card.
 // `wide` matches a surface whose pages run max-w-7xl with md:px-8 (help), so the logo lines up with the
 // breadcrumb and content below instead of sitting inside a narrower column.
@@ -21,20 +20,21 @@ import { BuildWithAiLink } from '../BuildWithAiLink';
 // bar, `top-18`) can rely on the number at every breakpoint.
 //
 // `ctaSurface` names the page for the landing funnel (docs/specs/019-marketing/landing-funnel.md): the default
-// pair's hrefs carry `via=<surface>.Header` / `.HeaderBlank` so the editor can
-// count which page's header brought somebody in. A surface passing its own
+// Start Blank carries `via=<surface>.HeaderBlank` so the editor can count
+// which page's header brought somebody in. A surface passing its own
 // `actions` tags those links itself.
 //
 // `buildWithAi` makes it a marketing page's bar (docs/specs/019-marketing/marketing-site.md "Header"): the same
-// for everyone, signed in or not, Build with AI, Choose Template and Explorer in that order (MarketingActions),
-// with no Start Blank and no Open Explorer swap. 'link' on a marketing page, 'current' on /ai itself
+// for everyone, signed in or not, Build with AI and Explorer in that order (MarketingActions), with no Start
+// Blank and no Open Explorer swap. 'link' on a marketing page, 'current' on /ai itself
 // (docs/specs/019-marketing/build-with-ai.md "Entry points").
 //
 // `marketing` makes it that bar without Build with AI, for a product with nothing to connect an AI tool to
-// (livehuddle, livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md): Choose Template and Explorer.
+// (livehuddle, livehuddle/docs/specs/002-project-scope/not-in-livehuddle.md): Explorer alone.
 //
-// Without it (help, the dashboard, a Community) the bar carries the Explorer link (ExplorerLink) left of the CTA
-// pair, so a new visitor can reach Explorer too; signed in, the primary Open Explorer covers it.
+// Without it (help, the dashboard, a Community) the bar carries the Explorer link (ExplorerLink) left of Start
+// Blank: a quiet link for a visitor, the filled Open Explorer for someone signed in. The header has no
+// Choose Template (Work Tracker 1317): the wizard, the hero and the template pages lead to templates.
 //
 // `account` ends the bar with the signed-in person's account menu (SiteAccount; marketing pages only,
 // docs/specs/019-marketing/marketing-site.md "Header"). A visitor sees nothing there.
@@ -65,12 +65,7 @@ export type SiteHeaderParts<Surface extends string, Site extends string> = {
     wordmarkClassName?: string;
   }>;
   ExplorerLink: ComponentType<{ always?: boolean; solid?: boolean }>;
-  HeaderPrimaryCta: ComponentType<{
-    ctaSurface?: Surface;
-    explorerWhenSignedIn?: boolean;
-    quiet?: boolean;
-  }>;
-  StartBlankLink: ComponentType<{ ctaSurface?: Surface; className?: string }>;
+  StartBlankLink: ComponentType<{ ctaSurface?: Surface }>;
   ShareRail: ComponentType<{ share?: boolean; wide?: boolean }>;
   SiteAccount: ComponentType;
 };
@@ -78,51 +73,21 @@ export type SiteHeaderParts<Surface extends string, Site extends string> = {
 export function createSiteHeader<Surface extends string, Site extends string>(
   parts: SiteHeaderParts<Surface, Site>,
 ) {
-  const {
-    siteId,
-    SiteSwitcher,
-    Brand,
-    ExplorerLink,
-    HeaderPrimaryCta,
-    StartBlankLink,
-    ShareRail,
-    SiteAccount,
-  } = parts;
+  const { siteId, SiteSwitcher, Brand, ExplorerLink, StartBlankLink, ShareRail, SiteAccount } =
+    parts;
 
-  // The default CTA pair. Start Blank is hidden on mobile: the logo + the primary already fill a
-  // narrow bar, and the wizard's own Skip covers the escape. `max-sm:hidden` (a variant, so it wins over the base
-  // inline-flex). Beside a centre slot (help's search) it waits for `md`, so the search box keeps room to read on a
-  // small tablet. Signed in, the primary is Open Explorer instead (HeaderPrimaryCta).
-  function DefaultActions({ ctaSurface, roomy }: { ctaSurface?: Surface; roomy: boolean }) {
+  // A marketing page's links, the same signed in or out (docs/specs/019-marketing/marketing-site.md "Header"):
+  // Build with AI a quiet link, Explorer the one filled button, last (into the app), so the bar ends on its
+  // strongest control. Below `lg` Build with AI is its glyph alone, and below `sm` (a phone) it leaves the bar,
+  // which keeps the logo, Explorer and the account menu; the page's hero and footer still lead to it.
+  function MarketingActions({ buildWithAi }: { buildWithAi?: 'link' | 'current' }) {
     return (
       <>
-        <StartBlankLink
-          ctaSurface={ctaSurface}
-          className={roomy ? 'max-sm:hidden' : 'max-md:hidden'}
-        />
-        <HeaderPrimaryCta ctaSurface={ctaSurface} />
-      </>
-    );
-  }
-
-  // A marketing page's three links, the same signed in or out (docs/specs/019-marketing/marketing-site.md "Header").
-  // Build with AI and Choose Template are quiet links, Explorer the one filled button, last (into the app), so the
-  // bar ends on its strongest control rather than breaking in the middle. Below `lg` the two quiet links are their
-  // glyphs alone, and below `sm` (a phone) they leave the bar, which keeps the logo, Explorer and the account menu;
-  // the page's hero and footer still lead to both. `contents` keeps them flex items of the bar where they show.
-  function MarketingActions({
-    ctaSurface,
-    buildWithAi,
-  }: {
-    ctaSurface?: Surface;
-    buildWithAi?: 'link' | 'current';
-  }) {
-    return (
-      <>
-        <span className="contents max-sm:hidden">
-          {buildWithAi ? <BuildWithAiLink current={buildWithAi === 'current'} /> : null}
-          <HeaderPrimaryCta ctaSurface={ctaSurface} explorerWhenSignedIn={false} quiet />
-        </span>
+        {buildWithAi ? (
+          <span className="contents max-sm:hidden">
+            <BuildWithAiLink current={buildWithAi === 'current'} />
+          </span>
+        ) : null}
         <ExplorerLink always solid />
       </>
     );
@@ -145,9 +110,8 @@ export function createSiteHeader<Surface extends string, Site extends string>(
               even when justify-between collapses to zero on a narrow phone (where
               the logo and CTA otherwise sit flush). Mobile also trims the side
               padding to reclaim width, and the CTA is shrink-0 so it never squishes. What makes the
-              bar fit a phone beside the longest wordmark: the primary drops its verb
-              below 430px, the Explorer link is a 40px folder below `sm`, and below 360px the logo is
-              the mark alone (a marketing bar has its own steps, MarketingActions). */}
+              bar fit a phone beside the longest wordmark: the Explorer link is a 40px folder below `sm`
+              (Open Explorer too, signed in), and below 375px the logo is the mark alone (a marketing bar has its own steps, MarketingActions). */}
           <div
             className={`mx-auto flex h-full items-center justify-between gap-2 px-4 sm:gap-4 ${
               wide ? 'max-w-7xl md:px-8' : 'max-w-6xl sm:px-6'
@@ -157,13 +121,14 @@ export function createSiteHeader<Surface extends string, Site extends string>(
                 vertically (touch-target-y, touch-targets.md), never sideways into a neighbour's. */}
             <div className="flex shrink-0 items-center gap-2.5">
               <SiteSwitcher current={siteId}>
-                {/* The mark alone below 360px (a 320px phone), or below 480px on a marketing page, whose bar holds
-                    three links and the account menu; its name is kept in the link's aria-label. */}
+                {/* The mark alone below 375px (at 360px the longest wordmark, livedocuments', pushed Start Blank
+                    11px into the gutter), or below 480px on a marketing page, whose bar holds Explorer and the
+                    account menu; its name is kept in the link's aria-label. */}
                 <Brand
                   href="/"
                   size="md"
                   className="relative touch-target-y"
-                  wordmarkClassName={marketing ? 'max-[479px]:hidden' : 'max-[359px]:hidden'}
+                  wordmarkClassName={marketing ? 'max-[479px]:hidden' : 'max-[374px]:hidden'}
                 />
               </SiteSwitcher>
             </div>
@@ -177,11 +142,11 @@ export function createSiteHeader<Surface extends string, Site extends string>(
               className={`flex shrink-0 items-center gap-2 ${marketing ? 'max-[359px]:gap-1' : ''}`}
             >
               {marketing ? (
-                <MarketingActions ctaSurface={ctaSurface} buildWithAi={buildWithAi} />
+                <MarketingActions buildWithAi={buildWithAi} />
               ) : (
                 <>
                   <ExplorerLink />
-                  {actions ?? <DefaultActions ctaSurface={ctaSurface} roomy={!center} />}
+                  {actions ?? <StartBlankLink ctaSurface={ctaSurface} />}
                 </>
               )}
               {account ? <SiteAccount /> : null}

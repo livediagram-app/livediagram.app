@@ -60,7 +60,7 @@ export default async function AlternativePage({ params }: { params: Promise<{ sl
           { name: `${alt.name} alternative`, path: comparisonPath(alt.slug) },
         ]}
       />
-      <Header surface="Compare" />
+      <Header />
       <Breadcrumb
         items={[{ label: 'Comparison', href: HUB_PATH }, { label: `${alt.name} alternative` }]}
       />

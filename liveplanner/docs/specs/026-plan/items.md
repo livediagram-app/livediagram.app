@@ -448,7 +448,8 @@ recurrence, in `@liveplanner/items` (`repeat.ts`): no other product repeats anyt
 
 - An **example card** is one a Plan template made to show how its boards run
   ([Plan templates](plan-templates.md#example-cards)). It carries `example: true` (a flag: set, or the key removed),
-  set only when the template's cards are made and taken off by the board notice's **Keep Them**.
+  set only when the template's cards are made. Nothing takes it off: **Clear** on the example cards toast trashes the
+  cards instead.
 - The flag changes nothing on the card: an example card shows, counts, sorts, moves, archives and restores like any
   other, keeps its flag in a copy, an export or the Trash, and wears no mark of its own. It is what lets **Clear
   Example Cards** find exactly the template's cards.

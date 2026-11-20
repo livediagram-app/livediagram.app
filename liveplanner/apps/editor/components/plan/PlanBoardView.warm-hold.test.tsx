@@ -91,34 +91,27 @@ const draw = (value = plan(), lanes = false) =>
     </SelectionStoreProvider>,
   );
 
-const notice = () => document.querySelector('[data-example-cards-notice]');
 const chips = () => document.querySelector('[data-card-type-chips]');
 
-describe('a warm paint keeps room for the strips the catch-up brings', () => {
-  it("draws an Editor's notice and chips inert while it paints as a Viewer", () => {
+describe('a warm paint keeps room for the chips the catch-up brings', () => {
+  it("draws an Editor's chips inert while it paints as a Viewer", () => {
     draw(plan({ ...VIEWER, warmRights: warmRightsOf('edit') }));
-    expect(notice()?.hasAttribute('inert')).toBe(true);
-    expect(notice()?.getAttribute('role')).toBeNull();
     expect(chips()?.closest('[data-held-chips]')?.hasAttribute('inert')).toBe(true);
   });
 
   it('draws them working once the catch-up gives the role back, in the same place', () => {
     draw(plan());
-    expect(notice()?.hasAttribute('inert')).toBe(false);
-    expect(notice()?.getAttribute('role')).toBe('status');
     expect(chips()).not.toBeNull();
     expect(document.querySelector('[data-held-chips]')).toBeNull();
   });
 
-  it("keeps a Participant's chips and no notice, which is an Editor's alone", () => {
+  it("keeps a Participant's chips", () => {
     draw(plan({ ...VIEWER, warmRights: warmRightsOf('participate') }));
-    expect(notice()).toBeNull();
     expect(chips()?.closest('[data-held-chips]')).not.toBeNull();
   });
 
   it("leaves no gap for a Viewer's copy", () => {
     draw(plan({ ...VIEWER, warmRights: warmRightsOf('view') }));
-    expect(notice()).toBeNull();
     expect(chips()).toBeNull();
   });
 });

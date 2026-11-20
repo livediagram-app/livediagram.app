@@ -2,7 +2,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { useToastFloor } from './useToastFloor';
-import { TOAST_EDGE_PX, TOAST_FLOOR_GAP_PX, announceToastFloorChange } from './toast-floor';
+import {
+  TOAST_EDGE_PX,
+  TOAST_FLOOR_GAP_PX,
+  TOAST_FLOOR_POPOVER,
+  announceToastFloorChange,
+} from './toast-floor';
 
 // liveworkspace/docs/specs/016-notifications/toasts.md "Placement": the stack stands on the bottom chrome under it,
 // measured while it shows and again when that chrome comes, goes or moves.
@@ -37,6 +42,19 @@ describe('useToastFloor', () => {
     act(() => {
       window.dispatchEvent(new Event('resize'));
     });
+    expect(result.current.bottom).toBe(48 + TOAST_FLOOR_GAP_PX);
+  });
+
+  it('stands above a popover risen from the bottom chrome while it is open', () => {
+    chrome('data-editor-tabbar', window.innerHeight - 48);
+    const { result } = renderHook(() => useToastFloor(true, 1));
+    const top = Math.round(window.innerHeight / 4);
+    const popover = chrome('data-toast-floor', top, window.innerHeight - 60 - top);
+    popover.setAttribute('data-toast-floor', TOAST_FLOOR_POPOVER);
+    act(() => announceToastFloorChange());
+    expect(result.current.bottom).toBe(window.innerHeight - top + TOAST_FLOOR_GAP_PX);
+    popover.remove();
+    act(() => announceToastFloorChange());
     expect(result.current.bottom).toBe(48 + TOAST_FLOOR_GAP_PX);
   });
 

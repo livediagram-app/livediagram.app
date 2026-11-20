@@ -196,7 +196,7 @@ describe('usePlanSlice', () => {
     expect(write).not.toHaveBeenCalled();
   });
 
-  // docs/specs/026-plan/plan-templates.md "Example cards": Keep Them changes many cards as one write.
+  // docs/specs/026-plan/plan-templates.md "Example cards": many cards change as one write.
   it('changes many cards as one write, one card as its own patch, and none as no write', () => {
     const write = vi.fn(async () => true);
     const { result } = renderHook(() =>

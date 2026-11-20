@@ -16,7 +16,7 @@ beforeEach(() =>
 );
 afterEach(() => vi.unstubAllGlobals());
 
-// The "bring it back" nudge (OffscreenContentHint) shows while every element is out of view.
+// The "Nothing in view" toast (OffscreenContentHint) shows while every element is out of view.
 function main(width = 800, height = 600) {
   const el = document.createElement('main');
   el.getBoundingClientRect = () => ({ width, height, left: 0, top: 0 }) as DOMRect;
