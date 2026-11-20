@@ -12,8 +12,20 @@ import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { KnowledgeSearchHost } from './KnowledgeSearchHost';
 import { PAGE_RAIL_WIDTH, PageRailButton, PageRailDocked } from './PageRail';
 
-/** The window width the rail docks at. */
+/** The least window width the rail docks at. */
 export const PAGE_RAIL_MIN_WINDOW = 1280;
+/** The room the page keeps beside the docked rail: its 724 px column and 48 px either side
+ *  (docs/specs/030-knowledgebase/page-surface.md "A reading column"). */
+export const PAGE_RAIL_PAGE_ROOM = 820;
+
+/** The window width the rail docks at beside a page tree `treeWidth` px wide: never under 1,280 px, and never so
+ *  narrow that the page beside it would be scaled down to fit (1,364 px with the tree open, 1,280 with its rail). */
+export function pageRailDockWidth(treeWidth: number): number {
+  return Math.max(
+    PAGE_RAIL_MIN_WINDOW,
+    Math.ceil(treeWidth) + PAGE_RAIL_WIDTH + PAGE_RAIL_PAGE_ROOM,
+  );
+}
 
 const noSubscribe = () => () => {};
 
@@ -27,13 +39,17 @@ export function usePageRailChrome({
   chromeHidden,
   zenMode,
   isMobile,
+  treeWidth = 0,
 }: {
   chromeHidden: boolean;
   zenMode: boolean;
   isMobile: boolean;
+  // The screen px the page tree covers down the left (0 when it is not docked): the rail docks only where the page
+  // keeps its full width between the two.
+  treeWidth?: number;
 }): PageRailChrome {
   const toolbarScale = useUiScale('toolbar');
-  const wide = useMediaQuery(`(min-width: ${PAGE_RAIL_MIN_WINDOW}px)`);
+  const wide = useMediaQuery(`(min-width: ${pageRailDockWidth(treeWidth)}px)`);
   // Rendered on its own (a test, a workbench preview) the chrome has no editor store, and so no rail.
   const store = useContext(EditorChromeContext);
   const embed = useSyncExternalStore(

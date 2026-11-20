@@ -15,6 +15,7 @@ import { usePaletteChrome } from './usePaletteChrome';
 import { useCanvasToolPanels } from './useCanvasToolPanels';
 import { usePageTreeChrome, type PageTreeChrome } from '@/components/page-tree/usePageTreeChrome';
 import { usePageRailChrome, type PageRailChrome } from '@/components/knowledge/usePageRailChrome';
+import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { useWithheldExplorerCloses } from '@liveworkspace/workbench/components/canvas/useWithheldExplorerCloses';
 
 // Lazy-load CommentsPanel: only mounts when the active tab has at
@@ -152,7 +153,13 @@ export function useCanvasChromePanels({
   // one).
   const pageTree = usePageTreeChrome({ chromeHidden, zenMode: props.zenMode === true, isMobile });
   // The page rail down the right (On This Page, Page Health), or its Page Info button below 1,280 px.
-  const pageRail = usePageRailChrome({ chromeHidden, zenMode: props.zenMode === true, isMobile });
+  const panelScale = useUiScale('panels');
+  const pageRail = usePageRailChrome({
+    chromeHidden,
+    zenMode: props.zenMode === true,
+    isMobile,
+    treeWidth: pageTree.docked ? pageTree.width * panelScale : 0,
+  });
   const { laserEl, spotlightEl, formatEl } = useCanvasToolPanels({
     props,
     chromeHidden,

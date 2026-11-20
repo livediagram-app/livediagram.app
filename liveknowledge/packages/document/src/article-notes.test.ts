@@ -10,6 +10,7 @@ import {
   withNotesSettled,
 } from './article-notes';
 import { layOutPages, type Page } from './page';
+import { articleMarginPx } from './article-style';
 import { looseOnArticles } from './article-intake';
 import type { Element } from './index';
 import type { ArticleBlock } from './article-flow';
@@ -45,7 +46,9 @@ describe('margin notes', () => {
     const tab = { elements: [marker], pages, articles: { f: { blocks } } };
     const moved = withNotesSettled(tab, 'f', [{ id: 'n1', index: 1, y: 300, height: 20 }]);
     const m = moved.elements[0] as typeof marker;
-    expect(m.x).toBe(articleNoteCorner(laid[1]!, 96, { y: 300, height: 20 }).x);
+    expect(m.x).toBe(
+      articleNoteCorner(laid[1]!, articleMarginPx(undefined), { y: 300, height: 20 }).x,
+    );
     expect(withNotesSettled(moved, 'f', [{ id: 'n1', index: 1, y: 300, height: 20 }])).toBe(moved);
   });
 

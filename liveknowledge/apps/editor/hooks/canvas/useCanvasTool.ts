@@ -6,21 +6,15 @@
 
 import { useState } from 'react';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { isMobileViewportSync } from '@liveworkspace/workbench/lib/responsive';
 import { track } from '@/lib/telemetry';
 
 export function useCanvasTool({ defaultPan = false }: { defaultPan?: boolean } = {}) {
-  // Default to Hand (pan) on a touch / mobile viewport, Select on
-  // desktop: on a small touchscreen a drag-on-empty far more often
-  // means "scroll the canvas" than "marquee-select", and pinch-zoom
-  // pairs naturally with panning. Lazy initial read is safe during the
-  // static-export render (see isMobileViewportSync). `defaultPan` forces
-  // Hand on every viewport, used by the read-only embed view (docs/specs/013-workspace/embeds.md):
-  // there's nothing to select / edit, so panning is the only useful
-  // drag-on-empty gesture.
-  const [canvasTool, setCanvasTool] = useState<CanvasTool>(() =>
-    defaultPan || isMobileViewportSync() ? 'pan' : 'select',
-  );
+  // Always Select (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"): a knowledgebase page has
+  // no hand tool, a drag on it scrolls nothing and a finger scrolls the page natively. `defaultPan` (the fork's
+  // read-only embed) is kept in the signature and read as Select.
+  void defaultPan;
+  const [canvasTool, setCanvasToolState] = useState<CanvasTool>('select');
+  const setCanvasTool = (tool: CanvasTool) => setCanvasToolState(tool === 'pan' ? 'select' : tool);
   // User-facing tool picker (palette buttons + keyboard). Wraps the raw
   // setter to emit telemetry when the user enters laser (presenter)
   // mode, a distinct feature. Pan / select switches stay untracked

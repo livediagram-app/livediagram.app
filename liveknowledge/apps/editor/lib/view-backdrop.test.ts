@@ -1,36 +1,40 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { DEFAULT_BACKGROUND_COLOR, type Tab } from '@liveknowledge/document';
+import type { Tab } from '@liveknowledge/document';
 import { resetAppearanceForTests, setAppearance } from '@liveknowledge/ui';
-import { resolveTabBackdrop } from './themes';
-import { resolveViewBackdrop } from './view-backdrop';
+import { PAGE_GROUND, resolveViewBackdrop } from './view-backdrop';
 
-// docs/specs/011-theme/light-and-dark.md: the tab's own colours and pattern, the theme's own included.
+// docs/specs/030-knowledgebase/page-surface.md "No paper, no canvas": the ground follows the app's appearance and
+// nothing else.
 const tab = (over: Partial<Tab> = {}): Tab => ({ id: 't1', name: 'Tab 1', elements: [], ...over });
 
 afterEach(() => resetAppearanceForTests());
 
 describe('resolveViewBackdrop', () => {
-  it('shows the theme’s own pattern around the pages, as every look’s card draws it', () => {
-    const t = tab({ theme: 'slate', backgroundPattern: 'grid' });
-    expect(resolveViewBackdrop(t).backgroundPattern).toBe('grid');
-    expect(resolveViewBackdrop(t)).toEqual(resolveTabBackdrop(t));
-    expect(resolveViewBackdrop(tab())).toEqual(resolveTabBackdrop(tab()));
+  it('is white with no pattern in the light theme, whatever the tab stores', () => {
+    const stored = tab({
+      theme: 'slate',
+      backgroundPattern: 'grid',
+      backgroundColor: '#fde68a',
+      patternColor: '#000000',
+      backgroundOpacity: 0.4,
+    });
+    for (const t of [tab(), stored]) {
+      const backdrop = resolveViewBackdrop(t);
+      expect(backdrop.backgroundColor).toBe('#ffffff');
+      expect(backdrop.backgroundPattern).toBe('blank');
+      expect(backdrop.backgroundOpacity).toBe(1);
+    }
   });
 
-  it('shows a pattern someone picked', () => {
-    const t = tab({ theme: 'slate', backgroundPattern: 'hexagonal' });
-    expect(resolveViewBackdrop(t)).toEqual(resolveTabBackdrop(t));
-  });
-
-  it('keeps a custom canvas colour', () => {
-    const t = tab({ backgroundColor: '#fde68a', patternColor: '#f59e0b' });
-    expect(resolveViewBackdrop(t).backgroundColor).toBe('#fde68a');
-  });
-
-  it('paints the Default theme’s canvas for the viewer’s appearance', () => {
-    setAppearance('light');
-    expect(resolveViewBackdrop(tab()).backgroundColor).toBe(DEFAULT_BACKGROUND_COLOR);
+  it('is the dark chrome’s ground in the dark theme, whatever the tab stores', () => {
     setAppearance('dark');
-    expect(resolveViewBackdrop(tab()).backgroundColor).toBe('#0d121a');
+    expect(resolveViewBackdrop(tab({ backgroundColor: '#fde68a' })).backgroundColor).toBe(
+      PAGE_GROUND.dark,
+    );
+    expect(resolveViewBackdrop(tab(), 'light').backgroundColor).toBe(PAGE_GROUND.light);
+  });
+
+  it('answers the same object while the appearance holds, so nothing drawn from it re-renders', () => {
+    expect(resolveViewBackdrop(tab())).toBe(resolveViewBackdrop(tab({ theme: 'slate' })));
   });
 });

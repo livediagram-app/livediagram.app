@@ -3,6 +3,7 @@
 Follow the references below only as needed; never upfront.
 
 - ./continuous-page.md - when implementing or changing the knowledgebase page: one page kind and how a page is made, the continuous size and its height, where the page sits, how the view frames and scrolls it, what is not offered while writing, and the doors closed on slides and infographics
+- ./page-surface.md - when implementing or changing how a page stands on screen: the choice to keep the canvas engine and lock it, the lock (the column, its side room, the scale on a narrow window), the locked viewport store and the native scroll container, what is painted for a page, the doors closed on zoom and panning, and what is not built
 - ./page-tree.md - when implementing or changing the page tree: `Tab.parent` and how it is read, the limits, the tree functions (rows, ancestors, add, move, indent, outdent, delete), and the list of what is not built yet (summaries, the room's check, the sidebar, the breadcrumb, share roles)
 - ./knowledge-ui.md - when implementing or changing what the editor shows of a page's knowledge: the typed client for the knowledge routes, page links in the writing, Linked From, embeds from other apps, the verification meta row, the right rail and Page Health, and search
 - ./ask-ui.md - when implementing or changing the switch between Pages, Ask and AI Knowledge, the view in the address, the surface a view is drawn on, AI Settings (the team's Claude key and model) or the Ask view (the conversation, citations, Sources, Knowledge Gaps, recent questions, its states and failures)

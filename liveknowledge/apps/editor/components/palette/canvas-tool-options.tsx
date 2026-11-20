@@ -1,7 +1,6 @@
 import {
   FormatPainterIcon,
   LaserIcon,
-  PanIcon,
   SelectIcon,
   SpotlightIcon,
   ZenIcon,
@@ -36,7 +35,6 @@ function buildAll(
 ): PaletteDropdownOption[] {
   return [
     { id: 'select', label: 'Select', shortcut: 'V', icon: <SelectIcon />, group: 0 },
-    { id: 'pan', label: 'Hand', shortcut: 'H', icon: <PanIcon />, group: 0 },
     // Format / Laser / Spotlight all act on
     // existing content, so they're disabled on an empty canvas —
     // only Select + Hand stay available until something's drawn.

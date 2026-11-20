@@ -43,8 +43,8 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
     expect(fired(VIEW_TOOL_KEYS, '1')).toBe('tool:select');
   });
 
-  it('binds Hand to H (not P)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'h')).toBe('tool:pan');
+  it('binds no Hand tool: a knowledgebase page has none (page-surface.md "No zoom and no panning")', () => {
+    expect(VIEW_TOOL_KEYS.h).toBeUndefined();
     expect(VIEW_TOOL_KEYS.p).toBeUndefined();
   });
 
@@ -149,11 +149,15 @@ function chord(
 }
 
 describe('runModShortcut (Cmd / Ctrl chords)', () => {
-  it('zooms on + / = / - / 0', () => {
-    expect(chord({ key: '=' }).hit).toBe('zoom-in');
-    expect(chord({ key: '+' }).hit).toBe('zoom-in');
-    expect(chord({ key: '-' }).hit).toBe('zoom-out');
-    expect(chord({ key: '0' }).hit).toBe('zoom-reset');
+  it('leaves + / = / - / 0 to the browser, whose zoom is the page’s', () => {
+    // docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning".
+    for (const key of ['=', '+', '-', '0']) {
+      for (const readOnly of [false, true]) {
+        const got = chord({ key }, readOnly);
+        expect(got.hit).toBeNull();
+        expect(got.prevented).toBe(false);
+      }
+    }
   });
 
   it('opens search on . and K', () => {
@@ -211,8 +215,7 @@ describe('runModShortcut (Cmd / Ctrl chords)', () => {
     expect(chord({ key: ']' }).hit).toBeNull();
   });
 
-  it('gives a view-role visitor the zoom and search chords and nothing else', () => {
-    expect(chord({ key: '=' }, true).hit).toBe('zoom-in');
+  it('gives a view-role visitor the search chords and nothing else', () => {
     expect(chord({ key: 'k' }, true).hit).toBe('search');
     expect(chord({ key: 'z' }, true).hit).toBeNull();
     expect(chord({ key: 'x' }, true).hit).toBeNull();

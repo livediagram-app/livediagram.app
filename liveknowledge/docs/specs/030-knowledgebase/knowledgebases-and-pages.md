@@ -87,11 +87,9 @@ Public) already own the word.
   and 3 Subpages?"). There is no page trash: Undo brings them back, and the confirmation says so. The last page is
   never deleted, and a locked page is unlocked first. Links to a deleted page show struck through with "Deleted
   Page" ([Links and embeds](links-and-embeds.md)).
-- **Breadcrumb:** the page's ancestors sit above its title, in the page's title row; each is a link. It shows as soon
-  as a page with a parent opens, whether or not the page has a title yet. A top-level page has none. Nothing else
-  stands in that row's left side: no label naming the page, its paper size or its kind. The row's buttons (Style,
-  Text, Background, Lock, the cog) drop to their icons before the breadcrumb is squeezed. Not shown on a phone,
-  whose title row has no room for it.
+- **Breadcrumb:** the page's ancestors sit above its Title, at the head of the writing's column; each is a link. It
+  shows as soon as a page with a parent opens, whether or not the page has a title yet. A top-level page has none.
+  Nothing else stands in that row. Not shown on a phone, whose column has no room for it.
 - On a phone the tree is a sheet opened from a Pages button in the top bar, its rows 44 px tall.
 - Whoever is on a page shows in its row, as they showed on its tab.
 
@@ -102,7 +100,7 @@ A page is one article that never breaks onto paper pages while it is being writt
 - Its paper is the **continuous** size: 820 canvas px wide, as tall as the writing (`Page.size: 'fit'` with `fit`
   sides the writer keeps in step with the layout). Where the article engine would add a paper page, a knowledgebase page grows
   taller instead; where it would remove one, the page shrinks. A knowledgebase page therefore always has exactly one page.
-- The page is never under 1,120 px tall, so an empty page still reads as a page, and it grows downwards from a top
+- The page's stored height is never under 1,120 px, and it grows downwards from a top
   that never moves, so nothing placed in the writing shifts. Its height is written only when the laid-out height
   changes, by whoever made the change, in the same undo step.
 - Page breaks, headers, footers and page numbers are not offered while writing, and a template carries none. A page
@@ -110,9 +108,8 @@ A page is one article that never breaks onto paper pages while it is being writt
 - **Export:** Word export writes the blocks and Word paginates them onto its paper. PDF export draws the page as it
   stands, one tall page: paginating the PDF onto A4 is not built (it needs the writing laid out a second time in A4
   columns), which is a known gap against livedocuments.
-- The view frames the page at reading width and scrolls down the writing; zooming still works, and a wheel or
-  trackpad's sideways pan does not move a page that already fits the window. (Dragging with the Hand tool or a finger
-  still moves it sideways: not built.)
+- The page stands as a web page does ([The page surface](page-surface.md)): its column centred, scrolled by the
+  window, with no zoom and no panning of its own.
 - Everything else of the article engine stays: blocks, tables, contents, footnotes, margin notes, zones for pictures,
   charts and drawings, the slash menu, Markdown paste, find and replace, live carets.
 - **Page kinds:** liveknowledge has one, the knowledgebase page. Slides, infographics and flashcards are not in liveknowledge

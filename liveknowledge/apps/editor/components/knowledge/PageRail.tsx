@@ -14,6 +14,7 @@ import {
   sameHeadings,
   type PageHeading,
 } from '@/lib/knowledge/page-headings';
+import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { track } from '@/lib/telemetry';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
@@ -44,21 +45,40 @@ const sameWriting = (a: Writing, b: Writing) =>
 const blockEl = (id: string) =>
   document.querySelector<HTMLElement>(`[data-block-id="${CSS.escape(id)}"]`);
 
-// The heading being read, found when the view moves or the headings change: one pass over the headings' boxes a
-// frame at most, and none while nothing moved.
+// How often, at most, the heading being read is looked for while the page scrolls (ms).
+const READING_CHECK_MS = 120;
+
+// The heading being read, found when the headings change and as the page scrolls: one pass over the headings' boxes
+// every READING_CHECK_MS at most, outside React. The rail renders only when the heading being read changes, never
+// for a scroll that stays under the same heading.
 function useCurrentHeading(headings: readonly PageHeading[]): string | undefined {
   const viewport = useEditorChrome((s) => s.viewport);
   const [current, setCurrent] = useState<string | undefined>(undefined);
   useEffect(() => {
     if (headings.length === 0) return;
-    const frame = requestAnimationFrame(() => {
+    const read = () => {
       const tops = headings.flatMap((heading) => {
         const el = blockEl(heading.id);
         return el ? [{ id: heading.id, top: el.getBoundingClientRect().top }] : [];
       });
       setCurrent(currentHeading(tops, READING_LINE_PX));
-    });
-    return () => cancelAnimationFrame(frame);
+    };
+    let frame = requestAnimationFrame(read);
+    let wait = 0;
+    const onScroll = () => {
+      if (wait) return;
+      wait = window.setTimeout(() => {
+        wait = 0;
+        frame = requestAnimationFrame(read);
+      }, READING_CHECK_MS);
+    };
+    const scroller = pageViewportOf(viewport)?.scroller() ?? null;
+    scroller?.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(wait);
+      scroller?.removeEventListener('scroll', onScroll);
+    };
   }, [headings, viewport]);
   return headings.some((h) => h.id === current) ? current : headings[0]?.id;
 }

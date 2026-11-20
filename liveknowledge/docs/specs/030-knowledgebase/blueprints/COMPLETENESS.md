@@ -17,6 +17,20 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
+## page-surface
+
+- [x] Domain and naming
+- [x] Behaviour and state
+- [x] Interfaces and contracts
+- [x] Errors and edge cases
+- [x] Performance and limits
+- [ ] Presentation and UX
+- [ ] Accessibility
+- [ ] Web Experience
+- [x] Testing
+- [x] Constants and configuration
+- [ ] Defaults ledger
+
 ## page-tree
 
 - [x] Domain and naming

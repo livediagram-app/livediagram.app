@@ -221,7 +221,6 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     expect(ids(base)).toEqual(
       expect.arrayContaining([
         'zen',
-        'fit-to-screen',
         'export',
         'auto-layout',
         'auto-align',
@@ -246,16 +245,18 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
     // withheld, and so is every command below the read-only return.
     expect(ids({ ...base, isReadOnly: true })).toEqual([
       'zen',
-      'fit-to-screen',
       // Finding reads the tab (docs/specs/007-editor/find-and-replace.md); replacing is withheld here.
       'find',
       'export',
       // Reads the room, writes nothing — a viewer may ask who else is here.
       'collaborators',
-      'tool:pan',
       'tool:laser',
       'tool:spotlight',
     ]);
+    // No Fit to Screen and no Hand tool (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning").
+    expect(ids({ ...base, isReadOnly: true })).not.toContain('fit-to-screen');
+    expect(ids(base)).not.toContain('fit-to-screen');
+    expect(ids(base)).not.toContain('tool:pan');
   });
 
   it('offers Find in Tab to everyone, and Find and Replace to whoever may replace', () => {
@@ -335,11 +336,11 @@ describe('buildEditorCommands — app-level commands (docs/specs/007-editor/comm
 describe('canvas tool commands', () => {
   it('offers every tool but the one already in force', () => {
     const got = ids(base).filter((id) => id.startsWith('tool:'));
-    expect(got).toEqual(['tool:pan', 'tool:format', 'tool:laser', 'tool:spotlight']);
+    expect(got).toEqual(['tool:format', 'tool:laser', 'tool:spotlight']);
     // Select is the current tool, so it is not offered.
     expect(got).not.toContain('tool:select');
     // ...and it comes back once you are somewhere else.
-    expect(ids({ ...base, canvasTool: 'pan' })).toContain('tool:select');
+    expect(ids({ ...base, canvasTool: 'laser' })).toContain('tool:select');
   });
 
   it('runs the tool setter with the tool id', () => {
@@ -352,9 +353,9 @@ describe('canvas tool commands', () => {
 
   it('drops the content-dependent tools on an empty canvas', () => {
     const got = ids({ ...base, canvasEmpty: true }).filter((id) => id.startsWith('tool:'));
-    // Only Hand survives: Select is current, and everything else acts on
-    // existing content, the same gating the tool dropdown applies.
-    expect(got).toEqual(['tool:pan']);
+    // None survives: Select is current, and everything else acts on existing content, the same gating the tool
+    // dropdown applies. There is no Hand tool to fall back to.
+    expect(got).toEqual([]);
   });
 
   it('withholds Spotlight on mobile', () => {
@@ -396,7 +397,7 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     expect(got).not.toContain('auto-align');
     expect(got).not.toContain('tool:format');
     // The document and the view stay workable.
-    expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
+    expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document']));
   });
 
   it('keeps them on an unlocked tab', () => {

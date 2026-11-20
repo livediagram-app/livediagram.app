@@ -44,6 +44,20 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   `ToolbarSearch.tsx` is deleted). A knowledgebase is searched by its pages. Left unreferenced, to delete:
   `components/palette/palette-tile-search.ts` and `palette-catalogue-search.ts` with their tests, and
   `packages/workbench`'s `toolbar-search-request` stays the platform's.
+- **Editor, zoom and panning** ([The page surface](../030-knowledgebase/page-surface.md) "No zoom and no panning";
+  the view is locked and scrolled natively): `hooks/canvas/useCanvasPinchZoom.ts`, `useDoubleTapZoom.ts`,
+  `useOffscreenContent.ts`, `components/chrome/ZoomControls.tsx`, `ZoomMenu.tsx`, `ViewZoomControls` and
+  `ViewMinimap` in `components/canvas/view-readers.tsx`, `components/canvas/Minimap.tsx` and its tests, the Map's
+  settings (`showMinimap`, `mapDimOutside`, `mapSize`) and panel wiring (`useCanvasChromePanels`, `panel-layout`),
+  `lib/tab-fit-view.ts`, `fitToScreen`, `fitToBounds` and the glides in `hooks/canvas/useEditorViewport.ts`, the
+  zoom handlers of `useEditorInput.ts` (`onZoomIn`, `onZoomOut`, `onZoomReset`, `onFitToScreen`), the `pan` canvas
+  tool (`CanvasTool`, `canvasCursorClass`, the hand's part of `useCanvasPanAndMarquee`), `usePageSnap.ts`, the phone
+  framing in `usePagesMode` (`readPage`, `panFrom`, `computeReadingFrame` beyond the page's top) and
+  `useTouchPagePan`'s pan half. Deleted with this change: `lib/continuous-page-view.ts`.
+- **Editor, the paper:** `components/canvas/CanvasPages.tsx` and `CanvasPageSheet.tsx` draw only an article kept in
+  a paper size (an imported livedocuments tab); a knowledgebase page draws `PageSurfaceSheet`. With them, the sheet's
+  shadow and letterbox, `PageMotionLayer.tsx`, `page-title-bar-room.ts` and the canvas pattern code behind
+  `resolveTabBackdrop` in the editor's view (`lib/canvas-backgrounds.ts`, `AnimatedCanvasBackground.tsx`).
 - **`packages/document`:** `slide-deck*.ts`, `slide-builds.ts`, the paper and slide sizes and orientations
   (`page-sizes.ts`), the page kinds other than `article`, and the page row's edits (`pages-edits.ts`, the page-count
   half of `article-pages.ts`).

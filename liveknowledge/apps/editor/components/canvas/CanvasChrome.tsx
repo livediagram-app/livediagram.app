@@ -1,7 +1,7 @@
 import { useViewportStore } from '@liveworkspace/workbench/hooks/canvas/useViewportStore';
 import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
-import { ViewZoomControls } from '@/components/canvas/view-readers';
+import { ZenControl } from '@/components/chrome/ZenControl';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
 import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
@@ -15,7 +15,6 @@ const IdentityPrompt = dynamic(
   { ssr: false },
 );
 
-import { OffscreenContentHint } from '@liveworkspace/workbench/components/canvas/OffscreenContentHint';
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -88,16 +87,11 @@ function CanvasChromeView(props: CanvasChromeProps) {
     drawHover,
     elements,
     handleDockButtonClick,
-    handleSetZoom,
-    handleZoomIn,
-    handleZoomOut,
     marquee,
     commentRows,
     actionRows,
     onOpenCanvasTheme,
     onConfirmIdentity,
-    offscreenContent,
-    onFitToScreen,
     onRedo,
     onCancelIdentity,
     onUndo,
@@ -420,7 +414,6 @@ function CanvasChromeView(props: CanvasChromeProps) {
       >
         {welcomeOpen ? null : (
           <>
-            {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
             {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
                 (docs/specs/013-workspace/share-roles.md); a Viewer has nothing to undo. */}
             {!zenMode && (!readOnly || !!props.takePart) ? (
@@ -477,18 +470,11 @@ function CanvasChromeView(props: CanvasChromeProps) {
             {/* The Theme & Canvas brush (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point;
                 read-only sessions pass no handler): see ThemeStrip. */}
             {!zenMode ? <ThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
-            <ViewZoomControls
-              onZoomIn={handleZoomIn}
-              onZoomOut={handleZoomOut}
-              onSetZoom={handleSetZoom}
-              onFitToScreen={onFitToScreen}
-              onToggleZen={onToggleZen}
-              zenActive={zenMode}
-              // View-only visitors have no palette (so no canvas-tool
-              // dropdown); the zoom controls keep the enter button for them.
-              zenEnterHere={readOnly}
-              pinchOnly={isMobile}
-            />
+            {/* No zoom cluster (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"). Zen keeps
+                its way out here, and a session with no formatting bar its way in. */}
+            {onToggleZen && (zenMode || readOnly) ? (
+              <ZenControl active={zenMode === true} onToggle={onToggleZen} />
+            ) : null}
           </>
         )}
       </div>

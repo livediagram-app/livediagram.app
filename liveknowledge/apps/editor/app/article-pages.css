@@ -66,11 +66,12 @@
   break-inside: avoid;
 }
 .article-flow .article-title {
-  font-size: calc(var(--article-size) * 36 / 16);
+  /* 40 px at the Medium text size, bold, tight tracking (docs/specs/030-knowledgebase/page-surface.md). */
+  font-size: calc(var(--article-size) * 40 / 16);
   font-weight: 700;
   margin-bottom: calc(0.5 * var(--article-line));
   line-height: 1.15;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 .article-flow .article-subtitle {
   font-size: calc(var(--article-size) * 20 / 16);

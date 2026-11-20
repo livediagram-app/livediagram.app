@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import {
   chartPageGrounds,
   elementPageSurfaces,
+  isContinuousPage,
   type Element,
   type LaidOutPage,
   type Layer,
@@ -26,6 +27,9 @@ import { usePageBackgroundPreview, withPreviewedBackgrounds } from '@/lib/page-b
 export function pagesClipPath(pages: readonly LaidOutPage[]): string {
   // No page to show through: a clip that hides everything (an empty path would clip nothing).
   if (pages.length === 0) return 'polygon(0 0, 0 0, 0 0)';
+  // A knowledgebase page has no paper to be cut off at (docs/specs/030-knowledgebase/page-surface.md): its writing
+  // is as tall as itself in every browser, whatever height the page last stored.
+  if (pages.every(isContinuousPage)) return 'none';
   const rects = pages.map(
     (page) =>
       `M${page.rect.x} ${page.rect.y}H${page.rect.x + page.rect.width}V${page.rect.y + page.rect.height}H${page.rect.x}Z`,

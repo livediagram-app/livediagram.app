@@ -1,4 +1,3 @@
-import { useModeDefaultTool } from '@liveworkspace/workbench/hooks/editor/useModeDefaultTool';
 import { leaveArchivedElsewhere } from '@liveworkspace/workbench/lib/archived';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useCommentMentions } from '@/hooks/collab/useCommentMentions';
@@ -66,7 +65,6 @@ export function useEditorCollaboration({
   // Unmemoised by the React Compiler, as the one hook it was cut from was (see ../useEditorState.ts).
   'use no memo';
   const {
-    embedMode,
     workbenchMode,
     workbench,
     accountUserId,
@@ -85,7 +83,7 @@ export function useEditorCollaboration({
     setEditingId,
     setMultiSelectedIds,
   } = selectionSlice;
-  const { canvasTool, setCanvasTool } = toolsSlice;
+  const { canvasTool } = toolsSlice;
   const {
     selfParticipant,
     setSelfParticipant,
@@ -350,8 +348,8 @@ export function useEditorCollaboration({
   const addCustomColour = useAddCustomColour({ activeId: activeTab.id, canEdit, tickTabs });
   // A card tag's colour for the tab (docs/specs/009-elements/tag-colours.md).
   const setTagColour = useTagColourSetter({ activeTab, canEdit, commitTabs });
-  // The tool the editor starts with: Select, or Hand on a phone.
-  useModeDefaultTool(canvasTool, setCanvasTool, embedMode);
+  // The tool the editor starts with is Select, on a phone too: a knowledgebase page has no hand tool
+  // (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning").
 
   // Outbound realtime broadcasters (cursor + laser) and the local
   // laser-trail buffer live in useEditorBroadcast. Same throttle,

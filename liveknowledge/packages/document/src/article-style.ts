@@ -131,7 +131,9 @@ export function resolveArticleStyle(style: ArticleStyle | undefined): ResolvedAr
     lineSpacing: style?.lineSpacing ?? base.lineSpacing,
     paragraphSpacing: style?.paragraphSpacing ?? base.paragraphSpacing,
     rules: style?.rules ?? base.rules,
-    margins: style?.margins ?? 'normal',
+    // A knowledgebase page's column: the 820 px page less 48 px either side, 724 px of writing with the side room
+    // the page surface asks for (docs/specs/030-knowledgebase/page-surface.md "A reading column").
+    margins: style?.margins ?? 'narrow',
     pageNumbers: style?.pageNumbers ?? false,
   };
 }

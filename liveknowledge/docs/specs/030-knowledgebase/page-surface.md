@@ -1,6 +1,7 @@
 # The page surface
 
-Status: **spec**, not built. Asked for by the owner on 2026-11-20: "the page feels very similar to livedocuments;
+Status: **being built, not yet verified in a browser** ([blueprint](blueprints/page-surface.md), which says what is
+built and what is left). Asked for by the owner on 2026-11-20: "the page feels very similar to livedocuments;
 it is supposed to be closer to the designs, no changing background, text etc. Style should become a knowledgebase
 level setting."
 
@@ -12,14 +13,21 @@ replaces what the fork still shows around the writing.
 - **No paper, no canvas.** The writing sits straight on the app's ground: no sheet with a border or shadow, no dotted
   canvas behind it, no page edge. The ground is white in the light theme and the chrome's dark ground in the dark
   theme, following the app's appearance and nothing else.
-- **A reading column.** The writing is one centred column, 760 px wide at most, with 48 px of room either side on
-  a desktop and 20 px on a phone. It scrolls with the window as any web page does: the wheel, the scrollbar, Page
-  Up and Down, Home and End, and the browser's find all behave as on a web page.
+- **A reading column.** The writing is one centred column, 760 px wide at most (724 px as built: the stored page
+  is 820 px wide and keeps 48 px either side), with 48 px of room either side on a desktop and 20 px on a phone. It
+  scrolls with the window as any web page does: the wheel, the scrollbar, Page Up and Down, Home and End, and the
+  browser's find all behave as on a web page.
+- **A narrow window.** Where the window has no room for the column and its side room, the whole page is shown
+  smaller to fit, and nothing scrolls sideways. The column does not re-wrap: what is placed in the writing (a
+  picture, a chart, a drawing) is stored against the page's width
+  ([blueprint](blueprints/page-surface.md) "The choice").
 - **No zoom and no panning.** The zoom cluster, Fit to Screen, the minimap and the hand tool are not in
   liveknowledge. The browser's own zoom is the zoom. A wide table or a wide drawing scrolls sideways inside its own
   box.
 - **Above the writing:** the breadcrumb, then the Title (40 px, bold, tight tracking), then the meta row
-  ([Verification](verification.md)). **Beside it** on a wide window, the right rail (On This Page, Page Health).
+  ([Verification](verification.md)). **Beside it** on a wide window, the right rail (On This Page, Page Health): docked from 1,280 px,
+  and only where the page keeps its full width beside it (1,364 px with the page tree open), a Page Info button
+  below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
 - **The formatting bar** is a slim bar pinned to the top of the writing column while writing: block style, bold,
   italic, underline, colour, link, lists, alignment, more formatting, insert, comment. It holds formatting only.

@@ -159,7 +159,6 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   // outside the writing opens nothing.
   s: (l) => l.setCanvasTool('select'),
   '1': (l) => l.setCanvasTool('select'),
-  h: (l) => l.setCanvasTool('pan'),
   k: (l) => l.setCanvasTool('laser'),
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
 };
@@ -208,23 +207,8 @@ function hasPageTextSelection(): boolean {
 export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDeps): boolean {
   const key = e.key;
   const lower = key.toLowerCase();
-  // Zoom: allowed for view-role visitors — doesn't change the document.
-  // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets.
-  if (key === '=' || key === '+') {
-    e.preventDefault();
-    live.onZoomIn();
-    return true;
-  }
-  if (key === '-') {
-    e.preventDefault();
-    live.onZoomOut();
-    return true;
-  }
-  if (key === '0') {
-    e.preventDefault();
-    live.onZoomReset();
-    return true;
-  }
+  // No zoom chords (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning"): Ctrl/Cmd with +, - and
+  // 0 are left to the browser, whose zoom is the page's.
   // Cmd/Ctrl+. and Cmd/Ctrl+K: open the global search panel.
   // Before the read-only gate — search only navigates. ('.'
   // instead of 'T' because browsers reserve Cmd/Ctrl+T for "new

@@ -9,10 +9,8 @@
 // without re-creating themselves on every parent render.
 
 import { prefersReducedMotion } from '@liveworkspace/workbench/lib/motion-preference';
-import {
-  createViewportStore,
-  type ViewportStore,
-} from '@liveworkspace/workbench/lib/viewport-store';
+import type { ViewportStore } from '@liveworkspace/workbench/lib/viewport-store';
+import { createPageViewportStore } from '@/lib/page-surface/page-viewport-store';
 import type { Selection } from '@liveworkspace/workbench/lib/selection-store';
 import { use, useCallback, useEffect, useEffectEvent, useRef, useState } from 'react';
 import { browser } from 'react-dom';
@@ -29,8 +27,6 @@ import { onMapShown } from '@liveworkspace/workbench/lib/fit-clear-of-panel';
 import { tabFitView } from '@/lib/tab-fit-view';
 import {
   OVERVIEW_ZOOM_BREAKPOINT_PX,
-  MOBILE_DEFAULT_ZOOM,
-  DESKTOP_DEFAULT_ZOOM,
   VIEW_MARGIN_TOP,
   VIEW_MARGIN_BOTTOM,
   VIEW_MARGIN_SIDE,
@@ -103,10 +99,17 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // In the browser only (docs/specs/003-system-architecture/react-state-and-effects.md "Rendering in the browser
   // only"): the editor never renders at build time, and this says so where the address is read.
   use(browser());
+  // The page's locked view (docs/specs/030-knowledgebase/blueprints/page-surface.md "The store"): its zoom and
+  // sideways place are the lock's, a move down the page is the window's scroll. A scroll tells the view's readers
+  // only while something in screen space follows an element (one is selected).
+  const depsForStore = useLatest(deps);
   const [viewport] = useState(() =>
-    createViewportStore(
-      window.innerWidth <= OVERVIEW_ZOOM_BREAKPOINT_PX ? MOBILE_DEFAULT_ZOOM : DESKTOP_DEFAULT_ZOOM,
-    ),
+    createPageViewportStore({
+      followsScroll: () => {
+        const selection = depsForStore.current.readSelection();
+        return selection.selectedId !== null || selection.multiSelectedIds.size > 0;
+      },
+    }),
   );
   const { setZoom: setViewportZoom, setOffset: setViewportOffset } = viewport;
   // The view now, as read-only refs, for the readers that hold one (the drag hook, the glides).

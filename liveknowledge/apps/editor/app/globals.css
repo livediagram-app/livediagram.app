@@ -101,6 +101,12 @@
    canvas world without taking presses itself, so a press on the empty canvas still reaches the
    canvas; the element views inside take them as anywhere else. Zero specificity, in the base layer,
    so an element's own pointer-events utility still wins. */
+/* The page's scroll container (components/canvas/Canvas.tsx, docs/specs/030-knowledgebase/page-surface.md): it ends
+   where the docked page rail begins, so its scrollbar is never under the rail and the rail never over the writing. */
+[data-canvas-root]:has(> [data-page-rail='docked']) > [data-page-scroller] {
+  right: 280px;
+}
+
 @layer base {
   [data-page-clip] {
     pointer-events: none;

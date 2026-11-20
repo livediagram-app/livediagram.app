@@ -151,7 +151,11 @@ describe('an article estimated', () => {
 
   it('keeps a heading with what follows it, starting the next page rather than ending one', () => {
     const fill = Array.from({ length: 20 }, (_, i) => p(`Line ${i + 1}`));
-    const tab = article([...fill, p('Next quarter', 'h1'), p('After it')], { pages: 2 });
+    // Normal margins, the room this fill was counted for (a knowledgebase page's own default is Narrow).
+    const tab = article([...fill, p('Next quarter', 'h1'), p('After it')], {
+      pages: 2,
+      style: { margins: 'normal' },
+    });
     const est = estimateArticle(tab, 'f', laid(tab), '#000000');
     expect(texts(est.ops, 'a1')).not.toContain('Next quarter');
     expect(texts(est.ops, 'a2').slice(0, 2)).toEqual(['Next quarter', 'After it']);

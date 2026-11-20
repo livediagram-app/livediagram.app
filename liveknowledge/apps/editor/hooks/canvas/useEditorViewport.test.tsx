@@ -3,6 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createShape, type Element, type Tab } from '@liveknowledge/document';
 import { createSelectionStore } from '@liveworkspace/workbench/lib/selection-store';
+import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { useEditorViewport } from './useEditorViewport';
 
 // On a phone, an element just added (and selected by the add) scrolls into view. The selection is read
@@ -20,6 +21,21 @@ afterEach(() => {
   window.innerWidth = width;
 });
 
+// The page's scroll container, as the canvas attaches it (docs/specs/030-knowledgebase/blueprints/page-surface.md
+// "The store"): a move down the page is its scroll.
+function attachScroller(viewport: Parameters<typeof pageViewportOf>[0], max = 100_000) {
+  const scroller = document.createElement('div');
+  let top = 0;
+  Object.defineProperty(scroller, 'scrollTop', {
+    get: () => top,
+    set: (v: number) => {
+      top = Math.max(0, Math.min(max, v));
+    },
+  });
+  pageViewportOf(viewport)!.attach(scroller);
+  return scroller;
+}
+
 function setup() {
   window.innerWidth = 400;
   const selection = createSelectionStore();
@@ -32,12 +48,13 @@ function setup() {
   main.getBoundingClientRect = () =>
     ({ left: 0, top: 0, right: 400, bottom: 800, width: 400, height: 800 }) as DOMRect;
   (view.result.current.canvasMainRef as { current: HTMLElement | null }).current = main;
-  return { selection, near, view };
+  const scroller = attachScroller(view.result.current.viewport);
+  return { selection, near, view, scroller };
 }
 
 describe('useEditorViewport scrolling a new element into view', () => {
   it('scrolls to an added element that the add selected', () => {
-    const { selection, near, view } = setup();
+    const { selection, near, view, scroller } = setup();
     const before = view.result.current.viewport.get().offset;
     const far = createShape('square', 3000, 3000);
 
@@ -50,6 +67,10 @@ describe('useEditorViewport scrolling a new element into view', () => {
       vi.advanceTimersByTime(800);
     });
     expect(view.result.current.viewport.get().offset).not.toEqual(before);
+    // It got there by scrolling the page, never by moving sideways or zooming.
+    expect(scroller.scrollTop).toBeGreaterThan(0);
+    expect(view.result.current.viewport.get().offset.x).toBe(before.x);
+    expect(view.result.current.viewport.get().zoom).toBe(1);
   });
 
   it('leaves the view alone for an added element that is not selected', () => {
@@ -65,28 +86,51 @@ describe('useEditorViewport scrolling a new element into view', () => {
   });
 });
 
-// docs/specs/008-canvas/canvas-performance.md "A pan or zoom renders the canvas, not the editor".
+// docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning": the view is locked; a move down the page is
+// the page's scroll, and none of it renders the editor.
 describe('useEditorViewport view', () => {
-  it('never renders its host for a zoom or a pan, and reads the newest view', () => {
+  it('never renders its host for a move, takes no zoom and no sideways move, and reads the newest view', () => {
     const selection = createSelectionStore();
     let renders = 0;
     const { result } = renderHook(() => {
       renders += 1;
       return useEditorViewport({ activeTab: tabOf([]), readSelection: selection.get });
     });
+    const scroller = attachScroller(result.current.viewport);
     const before = renders;
 
     act(() => result.current.setViewportZoom(2));
     act(() => result.current.setViewportOffset({ x: 30, y: -10 }));
 
     expect(renders).toBe(before);
-    expect(result.current.viewport.get()).toEqual({ zoom: 2, offset: { x: 30, y: -10 } });
-    expect(result.current.zoomRef.current).toBe(2);
-    expect(result.current.viewportOffsetRef.current).toEqual({ x: 30, y: -10 });
+    expect(scroller.scrollTop).toBe(10);
+    expect(result.current.viewport.get()).toEqual({ zoom: 1, offset: { x: 0, y: -10 } });
+    expect(result.current.zoomRef.current).toBe(1);
+    expect(result.current.viewportOffsetRef.current).toEqual({ x: 0, y: -10 });
+  });
+
+  it('tells the view’s readers of a scroll only while an element is selected', () => {
+    const selection = createSelectionStore();
+    const { result } = renderHook(() =>
+      useEditorViewport({ activeTab: tabOf([]), readSelection: selection.get }),
+    );
+    const scroller = attachScroller(result.current.viewport);
+    const seen = vi.fn();
+    result.current.viewport.subscribe(seen);
+    scroller.scrollTop = 300;
+    scroller.dispatchEvent(new Event('scroll'));
+    vi.advanceTimersByTime(100);
+    expect(seen).not.toHaveBeenCalled();
+    act(() => selection.setSelectedId('el-1'));
+    scroller.scrollTop = 600;
+    scroller.dispatchEvent(new Event('scroll'));
+    vi.advanceTimersByTime(100);
+    expect(seen).toHaveBeenCalledTimes(1);
   });
 });
 
-// Focus: glide to fit an element; pressed again, out to the whole tab.
+// Focus (the engine's own, for an element): on a page it never zooms; it brings the element's place into sight by
+// scrolling.
 describe('useEditorViewport focus', () => {
   function sized() {
     const s = setup();
@@ -96,46 +140,25 @@ describe('useEditorViewport focus', () => {
     return s;
   }
 
-  it('glides to fit an element, then out to the whole tab', () => {
-    const { view } = sized();
+  it('scrolls toward an element and never zooms', () => {
+    const { view, scroller } = sized();
     const far = createShape('square', 3000, 3000);
     act(() => view.rerender({ tab: tabOf([createShape('square', 10, 10), far]) }));
     const box = { x: far.x, y: far.y, w: far.width, h: far.height };
     act(() => view.result.current.focusOn(box, 1.5));
-    // Part way there, still moving.
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-    const mid = view.result.current.viewport.get();
     act(() => {
       vi.advanceTimersByTime(800);
     });
-    const fitted = view.result.current.viewport.get();
-    expect(fitted.zoom).toBeCloseTo(1.5);
-    expect(fitted.offset).not.toEqual(mid.offset);
-    // Already fitted: out to everything.
-    act(() => view.result.current.focusOn(box, 1.5));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(view.result.current.viewport.get().zoom).toBeLessThan(fitted.zoom);
+    expect(view.result.current.viewport.get().zoom).toBe(1);
+    expect(view.result.current.viewport.get().offset.x).toBe(0);
+    expect(scroller.scrollTop).toBeGreaterThan(0);
   });
 
-  it('stops gliding when anything else moves the view, and when it unmounts', () => {
+  it('writes nothing to the view after it unmounts', () => {
     const { view } = sized();
     const far = createShape('square', 3000, 3000);
     act(() => view.rerender({ tab: tabOf([createShape('square', 10, 10), far]) }));
     const box = { x: far.x, y: far.y, w: far.width, h: far.height };
-    act(() => view.result.current.focusOn(box, 1.5));
-    act(() => {
-      vi.advanceTimersByTime(100);
-    });
-    // A wheel or pinch of the person's own.
-    act(() => view.result.current.viewport.setOffset({ x: 7, y: 9 }));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(view.result.current.viewport.get().offset).toEqual({ x: 7, y: 9 });
     act(() => view.result.current.focusOn(box, 1.5));
     act(() => {
       vi.advanceTimersByTime(100);

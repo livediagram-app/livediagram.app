@@ -136,7 +136,6 @@ export const CANVAS_TOOLS: {
   desktopOnly?: boolean;
 }[] = [
   { id: 'select', name: 'Select Tool', keywords: 'select pointer arrow cursor pick v' },
-  { id: 'pan', name: 'Hand Tool', keywords: 'hand pan grab drag move canvas scroll h' },
   {
     id: 'format',
     name: 'Format Painter',
@@ -191,12 +190,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
       name: ctx.zenMode ? 'Exit zen mode' : 'Enter zen mode',
       keywords: 'zen focus distraction free full screen hide chrome presentation',
       run: h.toggleZen,
-    },
-    {
-      id: 'fit-to-screen',
-      name: 'Fit to Screen',
-      keywords: 'fit zoom overview centre center view all reset viewport',
-      run: h.fitToScreen,
     },
     // Find (docs/specs/007-editor/find-and-replace.md "Opening and closing"): every role finds, so it is view-safe,
     // and on a touch screen with no keyboard this is the way in.

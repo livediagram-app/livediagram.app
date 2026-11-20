@@ -238,17 +238,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      // --- Zoom to fit (Shift+1) ---
-      // Matched on `code` (not `key`) because Shift turns "1" into "!"
-      // on US layouts; `Digit1` is layout-stable. Non-mutating, so it
-      // runs before the read-only gate and before type-to-edit (which
-      // would otherwise seed a label with "!").
-      if (e.shiftKey && e.code === 'Digit1') {
-        e.preventDefault();
-        live.onFitToScreen();
-        return;
-      }
-
       // --- Type-to-edit (docs/specs/008-canvas/canvas-and-palette.md Labels) ---
       // A printable key on a single selected, label-bearing element
       // opens its label editor seeded with that character, INSTEAD of

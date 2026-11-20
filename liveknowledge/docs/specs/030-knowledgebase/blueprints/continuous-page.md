@@ -77,12 +77,10 @@ element placed in it keep their canvas positions and no element is moved by a he
 
 ### The view
 
-- `usePagesMode.frameFor` frames a continuous page with `computeReadingFrame` always (its width filling the canvas,
-  never past 100%, its top under the toolbar), never `computeFitBelow`: fitting a page as tall as its writing would
-  zoom it out of sight. Zoom to Fit lands on the same reading frame.
-- A wheel or trackpad pans the canvas as before, so scrolling down the writing is the canvas's vertical pan. Its
-  sideways part is dropped while `pageFitsSideways(width, zoom, canvasWidth)` holds (the stacked-pages rule's hook in
-  `useCanvasPinchZoom`, fed by `continuousWidthRef`).
+The view is the page surface's ([page surface blueprint](page-surface.md)): locked to the page's column and scrolled
+by a native scroll container. `usePagesMode.frameFor` still asks for `computeReadingFrame` as a page opens; the
+locked store takes only its vertical part, which lands on the page's top. The sideways hold
+(`lib/continuous-page-view.ts`, `pageFitsSideways`) is deleted: nothing pans sideways any more.
 
 ### Not offered while writing
 
@@ -100,7 +98,6 @@ draws nothing on the continuous page, and is skipped by the estimator.
 | `withArticlePageHeight(tab, flow, needed)`      | a tab, a flow id, px                                          | the tab with that page's `fit.height`; the same tab when nothing changes, the page is not continuous or the flow is not there |
 | `withArticleHeightEstimated(tab, flow)`         | a tab, a flow id                                              | the tab sized by the estimator; the same tab off a continuous page                                                            |
 | `continuousHeightNeeded(frame, bottom, limit?)` | the flow frame, the writing's foot, the page's footnote limit | px, never under the two margins                                                                                               |
-| `pageFitsSideways(width, zoom, canvasWidth)`    | canvas px, zoom, screen px                                    | false for no page or an unmeasured canvas                                                                                     |
 | `parsePagesRequest({ pages })`                  | any page changes                                              | refusal `kind_not_offered`                                                                                                    |
 | `parsePagesRequest({ article })`                | `article`, `markdown`, `mode`, `look`, `accent`, `as`         | the write; any other key refused by name (`invalid_value`)                                                                    |
 
@@ -146,7 +143,8 @@ The height is content, written under the same gate as the writing: an Editor's s
   page boundary. That is at most one write per laid-out line, never per keystroke, and it rides the typing commit's
   own sync.
 - **Estimator:** linear in the writing. A 100,000 character article (100 paragraphs of 1,000 characters) lays out as
-  one page 35,592 px tall in about 30 ms of CPU cold and 10 ms warm (measured 2026-11-20), held under
+  one page 35,592 px tall in about 30 ms of CPU cold and 10 ms warm (measured 2026-11-20 at the Normal margins of
+  the time; the default is now Narrow, a wider column and a shorter page, not measured again), held under
   `cpuBudgetMs(250)` by `continuous-page.test.ts`.
 - **Not measured:** the browser's own layout and paint of one very tall writing box. Paper pages bounded each
   column's height; a continuous page is one box. The canvas already culls nothing inside an article, so the cost of
@@ -154,8 +152,8 @@ The height is content, written under the same gate as the writing: an Editor's s
 
 ## Presentation and UX
 
-The sheet is 820 canvas px wide and never under 1,120 px tall, so an empty page still reads as a page. The page's
-title bar keeps Style, Text, Background and Lock; it has no cog. The start screen is titled "Start a Page".
+The page's box is 820 canvas px wide and never under 1,120 px tall; nothing is painted for it
+([page surface blueprint](page-surface.md) "What is painted"). The start screen is titled "Start a Page".
 
 ## Testing
 
@@ -167,14 +165,12 @@ title bar keeps Style, Text, Background and Lock; it has no cog. The start scree
 | Grows, shrinks, writes nothing when unchanged            | `continuous-page.test.ts` "withArticlePageHeight"                                                 |
 | One page however long, within budget                     | `continuous-page.test.ts` "a continuous page laid out without a browser"                          |
 | The height the layout pass asks for                      | `continuous-page-height.test.ts`                                                                  |
-| The sideways hold                                        | `continuous-page-view.test.ts`                                                                    |
 | Templates carry no header, footer, page numbers or break | `article-templates.test.ts`                                                                       |
 | Nothing makes a slide or an infographic                  | `not-in-liveknowledge.test.ts`, `parse.test.ts`, `tab-pages-route.test.ts`, `pages-tools.test.ts` |
 | `write_article` starts on the continuous page            | `article-write.test.ts`                                                                           |
 
 Not covered by a test: the layout pass itself on a continuous page (`article-measure.ts` reads live DOM rects, which
-jsdom does not lay out), the reading frame on a continuous page, and the wheel's sideways hold end to end. None of
-this is verified in a browser yet.
+jsdom does not lay out). None of this is verified in a browser yet.
 
 ## Constants and configuration
 

@@ -5,8 +5,7 @@
 // writing leaves for them. Each article's editor is its own (ArticleEditor), loaded only
 // once the tab has an article: the editor's code (ProseMirror) is not part of the canvas until an
 // article asks for it.
-import { lazy, Suspense, useEffect, useLayoutEffect, useMemo } from 'react';
-import { useIsMobileViewport } from '@liveworkspace/workbench/hooks/ui/useIsMobileViewport';
+import { lazy, Suspense, useLayoutEffect, useMemo } from 'react';
 import {
   ARTICLE_TOP_MIN_PX,
   articleHeaderBandPx,
@@ -49,6 +48,9 @@ const selectionAsSet = (s: Selection): ReadonlySet<string> =>
   new Set([...s.multiSelectedIds, ...(s.selectedId ? [s.selectedId] : [])]);
 const sameIds = (a: ReadonlySet<string>, b: ReadonlySet<string>) =>
   a.size === b.size && [...a].every((id) => b.has(id));
+
+// A touch that travels moves nothing of the engine's: the page's scroll container scrolls it.
+const NO_PAN = () => () => {};
 
 const ArticleEditor = lazy(() => import('./ArticleEditor'));
 // The toolbar drives the writing's commands (ProseMirror), so it loads with the editor, not with
@@ -135,17 +137,10 @@ export function ArticleFlows({
   }, [row, flows, elements, moving, selectedIds]);
   useLayoutEffect(() => publishZoneClips(clips), [clips]);
   useLayoutEffect(() => () => publishZoneClips(new Map()), []);
-  // On a phone, the writing taking the caret frames its page for writing: its text column across
-  // the screen (once per time it takes focus).
-  const mobile = useIsMobileViewport();
-  const focusedPage = active?.focused ? active.pageId : null;
-  const readPage = view.readPage;
-  useEffect(() => {
-    if (mobile && focusedPage) readPage(focusedPage);
-    // oxlint-disable-next-line react/exhaustive-deps -- framed when the focus arrives, not as the caret moves between pages
-  }, [mobile, !!focusedPage]);
-  // A finger on the writing or its paper pans the view when it travels; a tap is the writing's.
-  const touchPress = useTouchPagePan(view.panFrom);
+  // A finger that travels on the writing or its ground scrolls the page, natively (the browser then cancels the
+  // press); a tap is the writing's. Nothing pans the view here: a knowledgebase page has no view to pan
+  // (docs/specs/030-knowledgebase/page-surface.md "No zoom and no panning").
+  const touchPress = useTouchPagePan(NO_PAN);
   const objectCaret = useObjectDropCaret({
     target,
     selectedIds,
