@@ -22,7 +22,7 @@ export function ThemeStrip({
   return (
     <ClusterStrip>
       <HoverCard
-        title="Theme & canvas"
+        title="Theme & Canvas"
         description="Change this tab's theme and canvas background."
       >
         <button

@@ -93,7 +93,7 @@ export function ImageExportPanel({
           >
             <span className="flex flex-col">
               <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-                Background pattern
+                Background Pattern
               </span>
               <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
                 Paint the tab's grid / dots / texture behind what's on the canvas.

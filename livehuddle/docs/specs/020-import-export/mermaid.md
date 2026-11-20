@@ -236,7 +236,7 @@ text format** in both dialogs, not just Mermaid:
   copying, not a round-trip editor. Shared component: `TextExportPanel`.
 
 The **image formats** (PNG / SVG / PDF) get their own second screen too
-(`ImageExportPanel`): the **Background pattern** toggle
+(`ImageExportPanel`): the **Background Pattern** toggle
 lives behind the format card, not on the export grid, since it only affects image output, so the main grid is just the six
 format cards, nothing format-specific bleeding onto it.
 

@@ -1261,7 +1261,7 @@ The Export dialog exports **pages**, not the tab's content bounds.
   which also adds the Logo Kit format); elements are inked for the page's own surface. An element (an arrow by its
   resolved ends) that reaches onto the page is drawn; the rest are left out of the file.
 - A PDF page is the page's size in print points (CSS px x 0.75: A4 is 595.5 x 842.25 pt).
-- The Background pattern option is not offered: a page is its own background.
+- The Background Pattern option is not offered: a page is its own background.
 - There is no Hidden layers option (retired with the Layers panel, [Layers](../006-design/layers.md) "Retired: the
   Layers panel"): a hidden layer's elements stay out of the export as they stay off its canvas.
 - The preview is the download: a logo page's PNG and SVG preview show its see-through paper over a

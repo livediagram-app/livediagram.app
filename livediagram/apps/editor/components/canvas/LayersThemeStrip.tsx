@@ -66,7 +66,7 @@ export function LayersThemeStrip({
       ) : null}
       {onOpenTheme ? (
         <HoverCard
-          title="Theme & canvas"
+          title="Theme & Canvas"
           description="Change this tab's theme and canvas background."
         >
           <button

@@ -232,7 +232,7 @@ every app's work: `/help/explorer` (the overview, a section each for Home, My Wo
 the Trash and Search), `/help/explorer/folders`, `/help/explorer/teams`, `/help/explorer/moving`,
 `/help/explorer/sharing` (sharing across apps) and `/help/explorer/signing-in` (guest or account). In no app the
 Explorer's view Help button opens the article for its view (a folder's and a team's their own, every other view a
-section of the overview), the sign-in banner's Learn more opens `/help/explorer/signing-in`, and Search lists the six
+section of the overview), the sign-in banner's Learn More opens `/help/explorer/signing-in`, and Search lists the six
 under **liveworkspace Help**. On an app's address all three keep that app's own help centre. The articles speak of
 files and apps, never of one app's kind; their names and addresses are in `lib/help/platform-help.ts`, checked by
 `components/help/explorer-articles.test.tsx`. Settings › Profile › Cloud Sync links to it, and each app's help has a short **Google Drive**

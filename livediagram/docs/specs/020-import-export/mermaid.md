@@ -346,7 +346,7 @@ text format** in both dialogs (JSON, Mermaid, Markdown), not just Mermaid:
   copying, not a round-trip editor. Shared component: `TextExportPanel`.
 
 The **image formats** (PNG / SVG / PDF) get their own second screen too
-(`ImageExportPanel`): the **Isometric view** and **Background pattern** toggles
+(`ImageExportPanel`): the **Isometric View** and **Background Pattern** toggles
 live behind the format card, not on the export grid, since they only affect image output, so the main grid is just the six
 format cards, nothing format-specific bleeding onto it.
 

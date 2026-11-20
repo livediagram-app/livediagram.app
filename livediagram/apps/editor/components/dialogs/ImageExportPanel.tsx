@@ -102,12 +102,12 @@ export function ImageExportPanel({
           aria-pressed={isometric}
           // The label lives outside this button (so the `?` can sit in it),
           // so the button names itself.
-          aria-label="Isometric view"
+          aria-label="Isometric View"
           className="absolute inset-0 cursor-pointer rounded-lg"
         />
         <span className="pointer-events-none relative flex flex-col">
           <span className="flex items-center gap-0.5 text-xs font-semibold text-slate-900 dark:text-slate-100">
-            Isometric view
+            Isometric View
             <HelpArticleLink article="isometricMode" className="pointer-events-auto" />
           </span>
           <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
@@ -130,7 +130,7 @@ export function ImageExportPanel({
       >
         <span className="flex flex-col">
           <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
-            Background pattern
+            Background Pattern
           </span>
           <span className="mt-0.5 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
             Paint the tab's grid / dots / texture behind what's on the canvas.
