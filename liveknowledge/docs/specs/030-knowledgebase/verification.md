@@ -1,8 +1,10 @@
 # Verification
 
-Status: **the states, Verify, the meta row, the tree's tick and Page Health are built, not yet verified in a browser**
-([Build plan](../005-project-roadmap/build-plan.md) step 7; [blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>"
-(no route says when a page's writing was last edited, or by whom). The Review Due email is built and tested over
+Status: **the states, Verify, the meta row, the tree's tick, Page Health and the Review Period are built, not yet
+verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 7;
+[blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>" (no route says when a page's writing
+was last edited, or by whom), and the knowledgebase menu's row for Knowledgebase Settings (see "The Review Period,
+as built"). The Review Due email is built and tested over
 a fake sender, not yet sent from a deployed Worker. Verify needs an account, and a knowledgebase kept Offline has
 none.
 
@@ -50,6 +52,31 @@ own.
 - **Never** means no page is ever Review Due: pages are Verified or Never Verified, and no review email is sent.
 - Page Health shows the page's due date and, for an Editor, a link to the setting ("Every 90 Days, Change"); it has
   no control of its own.
+
+### The Review Period, as built
+
+- **Ways in.** The knowledgebase menu is not built, so the dialog opens from Page Health's link ("Every 90 Days,
+  Change") and from the command palette's **Knowledgebase Settings**. The menu's row is one line when the menu
+  exists (`useKnowledgebaseSettings()`).
+- **The dialog** is titled **Knowledgebase Settings**, centred, of one height, with one section, **Reviews**. The
+  five choices are bordered single-choice rows, the chosen one ticked. A shorter period is counted first; when it
+  would make more pages due than are due now, a strip under the rows says "12 pages will be due for review with
+  Every 30 Days." with **Apply** and Cancel. A shorter period that makes no more pages due, a longer one and Never
+  apply at once.
+- **Undo** is the **Undo** in the toast that says the period was applied ("Pages are now reviewed every 30
+  days."): it applies the period that was replaced. The editor's own undo (Cmd or Ctrl Z) holds a page's writing,
+  not the knowledgebase's settings, and does not reach it.
+- **A refusal** puts the period back and says why in a toast, in words.
+- **Page Health** has two rows for it: **Review Due** (the date; "Once Verified" for a page never verified; "No
+  Review Period" under Never) and **Review Period** ("Every 90 Days", with ", Change" for an Editor).
+- **The api:** `PUT knowledge-settings` (Editor, in person or a token granted `write`), `GET knowledge-settings`,
+  and `GET knowledge-settings/preview?reviewEvery=` for the count. `PUT pages/<tab>/knowledge` refuses a
+  `reviewEvery` and says where the setting lives.
+- **Agents** are told the period once (`review_period` on `get_context` and `list_pages`); no tool sets it.
+- **Emails.** The Review Due and reminder emails say "This knowledgebase reviews pages every 90 days." A page is
+  told of once for each verification's review: changing the period never tells an owner twice of the same one.
+- **Kept Offline,** a knowledgebase keeps its period in this browser and takes it along when it is synced.
+- **It travels** with a copy of the whole knowledgebase, its export and Drive file, and a snapshot.
 
 ## Reminders
 
