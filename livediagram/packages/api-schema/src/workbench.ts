@@ -311,7 +311,7 @@ const WORKSPACE_CLOSED: readonly RouteShape[] = [
 
 // Words a `:p` never matches: sibling routes that share a prefix with an allowed shape but are confined
 // (`GET images/usage` beside `GET images/:id`, `GET teams/invites` beside `GET teams/:id`).
-const WORKBENCH_RESERVED_SEGMENTS = new Set(['usage', 'invites', 'invite-link', 'invite-decline']);
+const WORKBENCH_RESERVED_SEGMENTS = new Set(['usage', 'unused', 'invites', 'invite-link', 'invite-decline']);
 
 function matches(
   route: RouteShape,
