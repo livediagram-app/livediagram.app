@@ -513,6 +513,9 @@ and its items' Durable Objects fetch them through an `INDEX` service binding (`l
 never waiting on the public route unless the binding is missing or throws (a local run without the index), and
 check access and guest tokens against accounts' keys through an `ACCOUNTS` binding the same way
 ([integrating-an-app.md](../002-architecture/integrating-an-app.md#checking-the-token-in-the-api-worker)).
+Every other call they make to the index goes through the same `INDEX` binding, with the public route behind it
+in the same way: a grant fetched for a caller, an open recorded, what an item pushes, and the routes an API client
+calls.
 
 ```json
 {

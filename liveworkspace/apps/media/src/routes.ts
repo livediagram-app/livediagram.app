@@ -99,10 +99,13 @@ async function readJson(request: Request): Promise<unknown> {
 
 // An image's bytes, with whose it is: for an app to serve to someone it has let in, or for the data export.
 async function imageBytes(env: Env, bucket: R2Bucket, id: string): Promise<Response> {
-  const row = await getImage(env, id);
-  if (!row) return notFound();
-  const object = await bucket.get(id);
-  if (!object) return notFound();
+  // The row and the bytes are asked for together: one wait, not two, on every image an app serves.
+  const [row, object] = await Promise.all([getImage(env, id), bucket.get(id)]);
+  if (!row || !object) {
+    // Bytes without a row (or the reverse) are never served, and an unread body is let go.
+    await object?.body.cancel().catch(() => {});
+    return notFound();
+  }
   return new Response(object.body, {
     headers: {
       'Content-Type': row.content_type,

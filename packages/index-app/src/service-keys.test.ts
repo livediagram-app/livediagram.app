@@ -124,4 +124,37 @@ describe('verifyGrant with an INDEX binding', () => {
     expect(bound.fetch).toHaveBeenCalledTimes(1);
     expect(routed).not.toHaveBeenCalled();
   });
+
+  it("makes a caller's and the app's own calls through the binding, never over the public route", async () => {
+    const routed = noRoute();
+    vi.stubGlobal('fetch', routed);
+    const service = createIndexService('livediagram');
+    const bound = binding(async () => Response.json({ items: [] }));
+    const env: IndexEnv = { INDEX_ORIGIN: ORIGIN, INDEX_KEY: 'k', INDEX: bound };
+    await service.clientFor(env, { kind: 'bearer', token: 't' })!.lookupItems(['a']);
+    await service
+      .clientFor(env, { kind: 'delegate', personId: 'user_1', teams: [] })!
+      .lookupItems(['a']);
+    await service.appClient(env)!.pushSummary('item-1', {} as never, 1);
+    expect(bound.fetch.mock.calls.map((c) => c[0])).toEqual([
+      `${ORIGIN}/api/index/items/lookup`,
+      `${ORIGIN}/api/index/items/lookup`,
+      `${ORIGIN}/api/index/app/items/item-1/summary`,
+    ]);
+    expect(routed).not.toHaveBeenCalled();
+  });
+
+  it('makes a call over the public route when the binding throws, and with no binding', async () => {
+    const routed = vi.fn(async () => Response.json({ items: [] }));
+    vi.stubGlobal('fetch', routed);
+    const service = createIndexService('livediagram');
+    const bound = binding(async () => {
+      throw new Error('no local dev session for liveworkspace-index');
+    });
+    const caller = { kind: 'bearer', token: 't' } as const;
+    await service.clientFor({ INDEX_ORIGIN: ORIGIN, INDEX: bound }, caller)!.lookupItems(['a']);
+    await service.clientFor({ INDEX_ORIGIN: ORIGIN }, caller)!.lookupItems(['a']);
+    expect(bound.fetch).toHaveBeenCalledTimes(1);
+    expect(routed).toHaveBeenCalledTimes(2);
+  });
 });

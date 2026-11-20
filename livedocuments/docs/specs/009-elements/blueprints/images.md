@@ -586,7 +586,7 @@ O6 to O9 exist; the cap, R2 and sweep failures are the service's own logs ([medi
 | `MEDIA_APP`                   | `'livedocuments.app'`                     | The service's app name for this api                                                                                           |
 | `MEDIA_REFS_PER_DOCUMENT_MAX` | 1000                                      | `@liveworkspace/media`; ten times the gallery cap                                                                             |
 | `IMAGE_EMBED_BUDGET_BYTES`    | `3 * 1024 * 1024`                         | Spec; 1 to 8 MiB keeps snapshots streamable                                                                                   |
-| Read `Cache-Control`          | `private, max-age=86400`                  | Spec; `private` is load-bearing                                                                                               |
+| Read `Cache-Control`          | `private, max-age=31536000, immutable`    | Spec; `private` is load-bearing                                                                                               |
 | `IMAGE_ALT_MAX`               | `250`                                     | One or two sentences; screen-reader guidance keeps alt short (about 150), longer descriptions belong in the page; 125 to 1000 |
 | `IMAGE_ALT_WARN_LEFT`         | `20`                                      | When the count turns amber and is announced; 10 to 50                                                                         |
 | Sniff window                  | first 16 bytes, minimum 12                | Longest signature (WebP) needs 12                                                                                             |

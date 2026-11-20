@@ -162,7 +162,7 @@ export async function handleImages(ctx: RouteContext): Promise<Response> {
     // Private cache: each authorised viewer caches their own
     // copy on disk. No shared-CDN leak. An image's bytes never
     // change under its id, so cached bytes stay valid.
-    headers.set('Cache-Control', 'private, max-age=86400');
+    headers.set('Cache-Control', 'private, max-age=31536000, immutable');
     // The stored type is the sniffed one; never let a browser re-guess it.
     headers.set('X-Content-Type-Options', 'nosniff');
     return new Response(object.body, { headers });

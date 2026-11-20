@@ -28,12 +28,12 @@ import {
   type Level,
   type ShareAccess,
 } from '@liveworkspace/index-client';
-import type { KeysFetcher } from '@liveworkspace/auth-client';
+import { accountsFetch, type KeysFetcher } from '@liveworkspace/auth-client';
 import { withoutTrailingSlashes } from '@liveworkspace/api-schema/url-slashes';
 
 // The settings every app on the index has: the index's origin and the app's key there (a secret), and the INDEX
-// service binding its grant keys are fetched through (the public route only when it is missing or throws: a
-// Worker's fetch to another Worker's public route can stall). A Durable Object gets its Worker's env, binding and all.
+// service binding its grant keys and every call to it go through (the public route only when it is missing or
+// throws: a Worker's fetch to another Worker's public route can stall, and costs a trip out to the edge and back). A Durable Object gets its Worker's env, binding and all.
 export type IndexEnv = { INDEX_ORIGIN?: string; INDEX_KEY?: string; INDEX?: KeysFetcher };
 
 type GrantEnv = Pick<IndexEnv, 'INDEX_ORIGIN' | 'INDEX'>;
@@ -104,6 +104,13 @@ export function itemGrantOf(
   };
 }
 
+// `fetch` for a call to the index: over the INDEX binding when the env has one, with the public route behind it
+// (`accountsFetch`, which is any bound Worker's: a missing binding, a throw, or local dev without the index
+// running). Undefined without a binding, so a client keeps its own default.
+export function indexFetch(env: Pick<IndexEnv, 'INDEX'>): typeof fetch | undefined {
+  return env.INDEX ? accountsFetch(env.INDEX) : undefined;
+}
+
 // The index's API root, or null when this deployment has no index (every item door then answers as missing).
 export function indexApiUrl(env: Pick<IndexEnv, 'INDEX_ORIGIN'>): string | null {
   const origin = withoutTrailingSlashes(env.INDEX_ORIGIN?.trim() ?? '');
@@ -141,6 +148,7 @@ export function createIndexService<A extends App>(app: A) {
   function clientFor(env: IndexEnv, caller: GrantCaller): IndexClient | null {
     const baseUrl = indexApiUrl(env);
     if (!baseUrl) return null;
+    const via = indexFetch(env);
     if (caller.kind === 'delegate') {
       if (!env.INDEX_KEY) return null;
       return createIndexDelegateClient({
@@ -149,16 +157,22 @@ export function createIndexService<A extends App>(app: A) {
         personId: caller.personId,
         teams: caller.teams,
         baseUrl,
+        ...(via ? { fetch: via } : {}),
       });
     }
-    return createIndexClient({ baseUrl, getToken: () => caller.token });
+    return createIndexClient({
+      baseUrl,
+      getToken: () => caller.token,
+      ...(via ? { fetch: via } : {}),
+    });
   }
 
   // The app's own options at the index (its name, key and base), or null without an index or key.
   function appOptions(env: IndexEnv): IndexAppClientOptions | null {
     const baseUrl = indexApiUrl(env);
     if (!baseUrl || !env.INDEX_KEY) return null;
-    return { app, key: env.INDEX_KEY, baseUrl };
+    const via = indexFetch(env);
+    return { app, key: env.INDEX_KEY, baseUrl, ...(via ? { fetch: via } : {}) };
   }
 
   function cacheKey(caller: GrantCaller, itemId: string, share: ShareAccess | null): string {
