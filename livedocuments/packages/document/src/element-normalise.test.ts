@@ -315,4 +315,12 @@ describe("an agent's text", () => {
     const chip = { ...createShape('badge', 0, 0), textSize: 60 };
     expect(normaliseElement(chip)).not.toHaveProperty('textScale');
   });
+
+  // mcp-server.md §4.7a "A picture's place": an image with no imageId is a placeholder, never a refusal.
+  it('stores an image that names no picture as a placeholder', () => {
+    const frame = { id: 'hero', type: 'image', x: 0, y: 0, width: 400, height: 300 };
+    expect(normaliseElement(frame)).toMatchObject({ imageId: null });
+    expect(normaliseElement({ ...frame, imageId: 'img_1' })).toMatchObject({ imageId: 'img_1' });
+    expect(normaliseElement({ ...frame, type: 'text', label: 'x' })).not.toHaveProperty('imageId');
+  });
 });

@@ -102,7 +102,7 @@ const CONTENT_KINDS =
   `shape "badge": a small label pill (up to ${BADGE_LABEL_MAX} chars); shape "step": a numbered disc ` +
   `("label" the number, up to ${STEP_LABEL_MAX} chars). Both take "chipLook"; with "attachedTo" (a node id) ` +
   'and "attachAt" they sit on that point of the node and move, copy and delete with it; no x / y needed. ' +
-  'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }]: a stack 2 to 8 ' +
+  'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }] (a label up to 60 characters, a note up to 40: longer is refused): a stack 2 to 8 ' +
   '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
   'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
   'centre); "hub" 3 to 8 satellites round its "label" ("hubSpokes" false hides the lines), "onion" 2 to 6 ' +

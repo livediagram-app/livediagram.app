@@ -128,7 +128,7 @@ const CONTENT_KINDS =
   'shape "boundary": a titled container ("label" the title, "pageSubtitle" a meta line such as a CIDR, ' +
   '"iconId" in its tab); elements whose centre is inside it belong to it; nest them for edge, region, ' +
   'VPC and subnet, "boundaryStyle" inset for a nested one, c4 for a C4 diagram. ' +
-  'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }]: a stack 2 to 8 ' +
+  'shape "layer-stack" / "pyramid" / "cycle": "conceptRows" is [{ "label", "note"? }] (a label up to 60 characters, a note up to 40: longer is refused): a stack 2 to 8 ' +
   '(note = a side note), a pyramid 2 to 6 (first row the apex; "pyramidVariant" funnel makes it a ' +
   'funnel and its note the row\'s value), a cycle 3 to 8 clockwise from the top (its "label" is the ' +
   'centre); "hub" 3 to 8 satellites round its "label" ("hubSpokes" false hides the lines), "onion" 2 to 6 ' +

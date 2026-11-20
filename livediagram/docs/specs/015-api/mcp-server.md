@@ -1401,6 +1401,11 @@ as they can be without saying less.
   (`READ_ONLY_TOKEN_WORDS`, `../packages/api-client/src/client.ts`). It used to read "you may view this ... but not
   change it", which names a share role the caller does not have (and no file at all on a create), or the bare code.
 
+- **A picture's place.** An image element that names no picture (`imageId` left out) is a placeholder the person
+  fills in the editor, stored with `imageId: null` (`withPicturePlace`, the model's `element-normalise`). The element
+  format always said so, but a call that left the field out had its whole tab refused ("imageId: a string or
+  null"): found by the benchmark, where a model built a poster round an empty picture frame.
+
 ## 5. Visualise: inline image render
 
 `create_document`, `add_tab` and `update_document` return, and `read_document` with `image: true` returns, an **inline
