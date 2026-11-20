@@ -12,11 +12,21 @@
 export const TAB_BAR_CLASS =
   'flex shrink-0 items-center gap-2 border-t border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-950';
 
+// The strip's frame: the bar's room for tabs, holding the scroller and the scroll buttons over its edges.
+export const TAB_STRIP_FRAME_CLASS = 'relative flex min-w-0 flex-1 self-stretch';
+
 // The scroller the tabs stand in: the bar's full height, tabs at its foot, sideways only (the tab menu's and Add
-// tab's 44px tap areas reach past the row, and a free y axis drew a vertical scrollbar for them). The edge with more
-// tabs beyond it fades (scroll-edge-fade). Its foot clips the open tab's ring, so the card stays open at its foot.
+// tab's 44px tap areas reach past the row, and a free y axis drew a vertical scrollbar for them), and no scrollbar:
+// the scroll buttons and the edge fade under them show there is more (edgeMask). Its foot clips the open tab's ring,
+// so the card stays open at its foot.
 export const TAB_STRIP_CLASS =
-  'scroll-edge-fade scrollbar-slim flex flex-1 items-end self-stretch overflow-x-auto overflow-y-hidden px-1';
+  'flex min-w-0 flex-1 items-end self-stretch overflow-x-auto overflow-y-hidden px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden';
+
+// A scroll button over the strip's edge (docs/specs/007-editor/editor-app.md "Tab bar"): a chevron in a small round
+// card, level with Add tab, shown only while there are tabs beyond that edge. Hidden, it fades and shrinks a touch
+// and takes no pointer, so the row behind it stays reachable.
+export const TAB_SCROLL_BUTTON_CLASS =
+  'absolute bottom-1.5 z-10 flex size-7 cursor-pointer touch-target items-center justify-center rounded-full bg-white text-slate-600 shadow-[0_0_0_1px_rgb(15_23_42/0.1),0_2px_6px_-1px_rgb(15_23_42/0.18)] transition-[opacity,scale,color,background-color] duration-150 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 active:scale-95 data-[shown=false]:pointer-events-none data-[shown=false]:scale-90 data-[shown=false]:opacity-0 dark:bg-slate-800 dark:text-slate-300 dark:shadow-[inset_0_1px_0_rgb(255_255_255/0.08),0_0_0_1px_rgb(255_255_255/0.14),0_2px_8px_-1px_rgb(0_0_0/0.6)] dark:hover:bg-slate-700 dark:hover:text-white motion-reduce:transition-none';
 
 // The toolbar inside the scroller: every tab and folder, a hair apart. Its own stacking layer, so the sliding card
 // stands above the folders' shelves and under every tab; `data-tab-slide` is set once that card shows.
