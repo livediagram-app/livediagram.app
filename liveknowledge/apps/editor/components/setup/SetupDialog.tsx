@@ -49,7 +49,7 @@ function Steps({ at }: { at: number }) {
             aria-hidden
             className={`flex h-5 w-5 items-center justify-center rounded-full text-[11px] tabular-nums ${
               index === at
-                ? 'bg-brand-600 text-white dark:bg-brand-400 dark:text-slate-950'
+                ? 'bg-brand-700 text-white dark:bg-brand-600'
                 : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300'
             }`}
           >

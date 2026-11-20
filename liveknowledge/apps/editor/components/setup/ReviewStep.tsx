@@ -14,7 +14,7 @@ import { SetupPageIcon } from './setup-icons';
 
 const INDENT_PX = 18;
 const TITLE_FIELD =
-  'min-w-0 flex-1 cursor-text rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-sm font-medium text-slate-900 motion-safe:transition-colors motion-safe:duration-micro hover:border-slate-300 focus-visible:border-brand-500 focus-visible:bg-white focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:text-slate-400 disabled:line-through dark:text-slate-100 dark:hover:border-slate-600 dark:focus-visible:bg-slate-950 dark:disabled:text-slate-500';
+  'min-w-0 flex-1 cursor-text rounded-md border border-transparent bg-transparent px-1.5 py-0.5 text-sm font-medium text-slate-900 motion-safe:transition-colors motion-safe:duration-micro hover:border-slate-300 focus-visible:border-brand-500 focus-visible:bg-white focus-visible:outline-2 focus-visible:outline-brand-600 disabled:cursor-not-allowed disabled:text-slate-400 disabled:line-through dark:text-slate-100 dark:hover:border-slate-600 dark:focus-visible:bg-slate-950 dark:disabled:text-slate-400';
 
 export function ReviewStep({
   pages,
@@ -94,9 +94,7 @@ export function ReviewStep({
               {page.summary ? (
                 <span
                   className={`px-1.5 text-xs leading-snug [overflow-wrap:anywhere] ${
-                    page.ticked
-                      ? 'text-slate-600 dark:text-slate-400'
-                      : 'text-slate-400 dark:text-slate-500'
+                    page.ticked ? 'text-slate-600 dark:text-slate-400' : 'text-slate-400'
                   }`}
                 >
                   {page.summary}
