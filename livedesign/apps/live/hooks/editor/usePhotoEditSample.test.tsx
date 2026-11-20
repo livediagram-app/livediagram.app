@@ -19,9 +19,12 @@ vi.mock('@/lib/photo-editor/upload-queue', () => ({ photoUploads: { enqueue, whe
 
 const { usePhotoEditSample } = await import('./usePhotoEditSample');
 
+const land = vi.fn();
+
 afterEach(() => {
   cleanup();
   apply.mockClear();
+  land.mockClear();
   asked.clear();
 });
 
@@ -34,7 +37,9 @@ describe('usePhotoEditSample', () => {
     const tickTabs = vi.fn((map: (ts: Tab[]) => Tab[]) => {
       tabs = map(tabs);
     });
-    renderHook(() => usePhotoEditSample({ activeTab: tab, tickTabs, ready: true, canEdit: true }));
+    renderHook(() =>
+      usePhotoEditSample({ activeTab: tab, tickTabs, ready: true, canEdit: true, land }),
+    );
     await waitFor(() => expect(apply).toHaveBeenCalledTimes(1));
     const [given, deps] = apply.mock.calls[0] as [Tab, Record<string, (...a: never[]) => unknown>];
     expect(given).toBe(tab);
@@ -46,15 +51,35 @@ describe('usePhotoEditSample', () => {
     expect(whenSettled).toHaveBeenCalledWith('tab-1');
     deps.commit!('tab-1' as never, ((t: Tab) => ({ ...t, name: 'Set' })) as never);
     expect(tabs.map((t) => t.name)).toEqual(['Set', 'Photo Edit']);
+    // The sample's pages are another size than the page the template framed, so the tab is framed again.
+    await waitFor(() => expect(land).toHaveBeenCalledTimes(1));
+  });
+
+  it('frames nothing when the sample was not set', async () => {
+    asked.add('tab-1');
+    apply.mockImplementationOnce(async () => false);
+    renderHook(() =>
+      usePhotoEditSample({ activeTab: tab, tickTabs: vi.fn(), ready: true, canEdit: true, land }),
+    );
+    await waitFor(() => expect(apply).toHaveBeenCalledTimes(1));
+    await Promise.resolve();
+    expect(land).not.toHaveBeenCalled();
   });
 
   it('does nothing before the store is reachable, for someone who may not edit, or for a tab not asked for', () => {
     asked.add('tab-1');
     const tickTabs = vi.fn();
-    renderHook(() => usePhotoEditSample({ activeTab: tab, tickTabs, ready: false, canEdit: true }));
-    renderHook(() => usePhotoEditSample({ activeTab: tab, tickTabs, ready: true, canEdit: false }));
+    renderHook(() =>
+      usePhotoEditSample({ activeTab: tab, tickTabs, ready: false, canEdit: true, land }),
+    );
+    renderHook(() =>
+      usePhotoEditSample({ activeTab: tab, tickTabs, ready: true, canEdit: false, land }),
+    );
     asked.clear();
-    renderHook(() => usePhotoEditSample({ activeTab: tab, tickTabs, ready: true, canEdit: true }));
+    renderHook(() =>
+      usePhotoEditSample({ activeTab: tab, tickTabs, ready: true, canEdit: true, land }),
+    );
     expect(apply).not.toHaveBeenCalled();
+    expect(land).not.toHaveBeenCalled();
   });
 });

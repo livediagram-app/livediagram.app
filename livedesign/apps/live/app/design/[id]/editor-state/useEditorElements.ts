@@ -227,6 +227,7 @@ export function useEditorElements({
     canInspect: participant.can.photoInspect,
     presence: photoPresence.presence,
     toast,
+    requestFit: viewportSlice.requestFit,
   });
   const {
     pendingDraw,

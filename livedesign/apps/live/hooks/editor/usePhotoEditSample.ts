@@ -17,6 +17,7 @@ export function usePhotoEditSample({
   tickTabs,
   ready,
   canEdit,
+  land,
 }: {
   activeTab: Tab;
   // A tab edit outside the undo history: the sample is part of making the tab, as the template's landing is, so an
@@ -25,8 +26,12 @@ export function usePhotoEditSample({
   // The photo store's transport is set.
   ready: boolean;
   canEdit: boolean;
+  // Frames the tab again once the sample is set: the template framed the unstarted page it made, and the sample's
+  // pages are another size (a 1080 x 1920 Story), so the view would open cut off at the last frame's zoom.
+  land: () => void;
 }): void {
   const tickRef = useLatest(tickTabs);
+  const landRef = useLatest(land);
   useEffect(() => {
     // A Set lookup and a session read on each change of the open tab; the rest only for the tab asked for.
     if (!ready || !canEdit || !photoEditSampleAsked(activeTab.id)) return;
@@ -36,6 +41,8 @@ export function usePhotoEditSample({
       enqueue: (tabId, entries) => photoUploads.enqueue(tabId, entries),
       settled: (tabId) => photoUploads.whenSettled(tabId),
       commit: (tabId, map) => tickRef.current((ts) => ts.map((t) => (t.id === tabId ? map(t) : t))),
+    }).then((set) => {
+      if (set) landRef.current();
     });
-  }, [ready, canEdit, activeTab, tickRef]);
+  }, [ready, canEdit, activeTab, tickRef, landRef]);
 }

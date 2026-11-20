@@ -98,6 +98,8 @@ sample photo that shows what a photo page does, ready to change or replace:
   **cropped** about the centre with the picture past its top and bottom kept (the Move tool slides it to choose
   another crop), its Vignette's mask drawn for its own shape.
 - **Each page has its preview**, so both show their pictures at once.
+- **It opens framed on its pages.** The tab is framed again once the sample is set, since the unstarted page the
+  template framed first is another size, and the Story would otherwise open cut off with its title bar out of view.
 - **The files** (the picture, the two masks, the two previews; about 130 KB in all) ship with the editor as static
   files and are fetched only when the template is picked, never on a page's first load. Each is checked against its
   blob id as it arrives.
