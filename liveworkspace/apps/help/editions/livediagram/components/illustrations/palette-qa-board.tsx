@@ -123,7 +123,7 @@ export function QaBoardCard() {
           height={26}
           rx={13}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <Label x={x + 24} y={y + 257.5} size={10} tone="muted">
           Add a note…

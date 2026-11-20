@@ -222,7 +222,7 @@ export function RevealZone() {
         height={110}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={248} y={70} size={12} weight={700} tone="strong">
         Estimates

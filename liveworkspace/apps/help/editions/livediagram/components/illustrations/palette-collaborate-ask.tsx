@@ -279,7 +279,7 @@ export function IdeaBoxCard() {
           height={38}
           rx={11}
           className="fill-white stroke-slate-200"
-          strokeWidth={1.2}
+          strokeWidth={0.75}
         />
         <Label x={x + 22} y={y + 163} size={10} tone="muted">
           Add an idea…

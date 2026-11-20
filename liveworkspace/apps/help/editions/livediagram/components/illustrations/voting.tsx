@@ -63,7 +63,7 @@ export function VoteSetup() {
         height={38}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.2}
+        strokeWidth={0.75}
       />
       <Label x={x + 26} y={cy + 15} size={10} weight={600} tone="strong">
         {title}

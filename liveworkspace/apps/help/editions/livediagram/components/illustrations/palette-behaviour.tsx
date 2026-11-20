@@ -62,7 +62,7 @@ export function CollaborateCategories({ lit = [] }: { lit?: readonly string[] })
         height={32}
         rx={9}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <rect
         x={202}

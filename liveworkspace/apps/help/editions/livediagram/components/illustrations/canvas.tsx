@@ -8,100 +8,83 @@ import {
   Arrow,
   SelectionBox,
   Cursor,
-  Panel,
   Tabs,
   Label,
-  Tile,
 } from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip, stripCategory } from './toolbar-layout';
+import { CornerCluster, EditorFrame, stripSlot, TopRow, topRowStripX } from './editor-chrome';
+import { ElementToolbar, PlusHandles } from './editor-canvas';
+import { Flyout, FlyoutGroup, FlyoutTile } from './palette-flyout';
+import { ShapeOutline } from './toolbar-layout';
 
-/** The canvas with the menu button and the palette strip across the top and a small flow on
- *  it: the editor at a glance. */
+/** The editor at a glance: the whole frame around a small flow, someone's cursor beside it. */
 export function CanvasOverview() {
   return (
-    <Scene w={420} h={240}>
-      <MenuCard x={8} y={16} />
-      <Strip x={78} y={16} />
-      <Shape x={40} y={92} w={84} h={48} kind="rect" label="Start" />
-      <Shape x={172} y={92} w={84} h={48} kind="diamond" />
-      <Shape x={172} y={172} w={84} h={44} kind="rect" accent label="Done" />
-      <Arrow from={[124, 116]} to={[172, 116]} />
-      <Arrow from={[214, 140]} to={[214, 172]} />
+    <Scene w={540} h={280}>
+      <Shape x={120} y={88} w={84} h={46} kind="rect" label="Start" />
+      <Shape x={252} y={80} w={66} h={62} kind="diamond" />
+      <Shape x={243} y={172} w={84} h={42} kind="rect" accent label="Done" />
+      <Arrow from={[204, 111]} to={[252, 111]} />
+      <Arrow from={[285, 142]} to={[285, 172]} />
       {/* Left of Done, so the name tag sits clear of its edge. */}
-      <Cursor x={112} y={168} name="You" />
+      <Cursor x={200} y={176} name="You" />
+      <EditorFrame w={540} h={280} />
     </Scene>
   );
 }
 
-/** Dropping a shape from a category's flyout onto the canvas (a curved drag trail from the Square tile in Shapes'
- *  flyout to a freshly placed, still-selected shape). */
+/** Dropping a shape from a category's flyout onto the canvas: a drag trail from the Square tile in Shapes' flyout to a
+ *  freshly placed shape, still selected, with its + buttons and its toolbar. */
 export function AddingElements() {
-  const shapes = stripCategory(58, 'Shapes');
-  const px = Math.round(shapes.left + shapes.w / 2 - 60);
+  const W = 540;
+  const cx = stripSlot(topRowStripX(W), 'shapes');
+  const fw = 250;
+  const fx = Math.round(cx - fw / 2);
+  const kinds = ['square', 'circle', 'diamond', 'triangle', 'hexagon'] as const;
+  const names = ['Square', 'Circle', 'Diamond', 'Triangle', 'Hexagon'];
+  const [sx, sy, sw, sh] = [410, 214, 62, 56];
   return (
-    <Scene w={420} h={200}>
-      <Strip x={58} y={16} open="Shapes" />
-      <Panel x={px} y={56} w={120} h={58}>
-        <Tile x={px + 8} y={64} size={30}>
-          <rect
-            x={-6}
-            y={-6}
-            width={12}
-            height={12}
-            rx={1.5}
-            className="stroke-brand-500"
-            strokeWidth={1.8}
-            fill="none"
-          />
-        </Tile>
-        <Tile x={px + 45} y={64} size={30}>
-          <circle r={6.5} className="stroke-slate-500" strokeWidth={1.6} fill="none" />
-        </Tile>
-        <Tile x={px + 82} y={64} size={30}>
-          <path
-            d="M0 -7 L7 0 L0 7 L-7 0 Z"
-            className="stroke-slate-500"
-            strokeWidth={1.6}
-            fill="none"
-          />
-        </Tile>
-      </Panel>
-      <Arrow from={[px + 23, 98]} to={[250, 120]} kind="curved" tone="muted" dashed />
-      <Shape x={250} y={120} w={96} h={56} kind="rect" />
-      <SelectionBox x={250} y={120} w={96} h={56} />
-      <Cursor x={300} y={148} colour="brand" />
+    <Scene w={W} h={290}>
+      <TopRow w={W} open="shapes" />
+      <Flyout
+        x={fx}
+        y={40}
+        w={fw}
+        h={124}
+        item="shapes"
+        blurb="The basics, the flowchart vocabulary, BPMN and more."
+      >
+        <FlyoutGroup x={fx + 10} y={86} w={fw - 20} name="Basics" />
+        {kinds.map((k, i) => (
+          <FlyoutTile key={k} x={fx + 11 + i * 46} y={94} w={38} name={names[i]!} hover={i === 0}>
+            <ShapeOutline kind={k} />
+          </FlyoutTile>
+        ))}
+      </Flyout>
+      <Arrow from={[fx + 30, 132]} to={[sx + 4, sy + 6]} kind="curved" tone="muted" dashed />
+      <ElementToolbar x={sx + sw / 2 - 80} y={sy - 13 - 6 - 6 - 21} title="Selected Square" />
+      <Shape x={sx} y={sy} w={sw} h={sh} kind="rect" />
+      <SelectionBox x={sx} y={sy} w={sw} h={sh} />
+      <PlusHandles x={sx} y={sy} w={sw} h={sh} />
+      <Cursor x={sx + 34} y={sy + 30} colour="brand" />
     </Scene>
   );
 }
 
-/** Panning and zooming: shapes on the canvas with the zoom controls and a
- *  grabbing hand cursor. */
+/** Panning and zooming: shapes on the canvas, a grabbing hand dragging it, and the zoom card in the corner cluster at
+ *  the bottom right. */
 export function PanAndZoom() {
   return (
     <Scene w={420} h={220}>
-      <Shape x={70} y={54} w={76} h={44} label="A" />
-      <Shape x={232} y={108} w={76} h={44} accent label="B" />
-      <Arrow from={[146, 76]} to={[232, 130]} kind="elbow" />
-      {/* Zoom controls, bottom-right */}
-      <Panel x={300} y={168} w={104} h={34}>
-        <g transform="translate(0 0)">
-          <Label x={316} y={185} size={14} weight={700} tone="muted">
-            −
-          </Label>
-          <Label x={352} y={185} size={11} weight={600} tone="body" anchor="middle">
-            100%
-          </Label>
-          <Label x={388} y={185} size={14} weight={700} tone="muted">
-            +
-          </Label>
-        </g>
-      </Panel>
+      <Shape x={70} y={44} w={76} h={44} label="A" />
+      <Shape x={232} y={98} w={76} h={44} accent label="B" />
+      <Arrow from={[146, 66]} to={[232, 120]} kind="elbow" />
+      <CornerCluster x={420 - 8 - 211} y={220 - 8 - 24} level="80%" highlight="zoom" />
       {/* Grabbing-hand cursor */}
-      <g transform="translate(150 120)">
+      <g transform="translate(150 112)">
         <path
           d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
+          className="fill-white stroke-slate-600"
+          strokeWidth={1.4}
           strokeLinecap="round"
           strokeLinejoin="round"
         />
@@ -278,7 +261,7 @@ export function LinkCard() {
         height={132}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       {/* The preview image: a simple picture in brand tints. */}
       <g className="help-art-as-drawn">

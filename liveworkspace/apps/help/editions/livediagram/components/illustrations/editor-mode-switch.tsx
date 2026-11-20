@@ -39,7 +39,7 @@ export function ModeSwitchScene() {
         height={40}
         rx={10}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* The header band (docs/specs/007-editor/start-diagramming.md "The header band"): blueprint paper, a fine
           grid with a heavier line every five squares, behind the title. */}
@@ -112,7 +112,7 @@ export function ModeSwitchScene() {
         height={menuH}
         rx={9}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <line
         x1={px}
@@ -300,7 +300,7 @@ export function DrawDockScene() {
         height={44}
         rx={11}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {/* Drawing tools */}
       <DockTool x={22} y={y} keyName="V">

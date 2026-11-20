@@ -28,7 +28,7 @@ export function SharePasswordSwitch() {
         height={218}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <SectionLabel x={x + 16} y={26}>
         PASSES
@@ -76,7 +76,7 @@ export function SharePasswordGate() {
         height={206}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <circle cx={210} cy={42} r={18} className="fill-brand-100" />
       <Lock x={203} y={33} className="stroke-brand-600" />
@@ -119,7 +119,7 @@ export function ShareLifetimes() {
         height={276}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <rect x={x + 16} y={20} width={w - 32} height={36} rx={9} className="fill-slate-50" />
       <Label x={x + 26} y={39} size={10} weight={600} tone="body">
@@ -180,7 +180,7 @@ export function ShareOpensRow() {
         height={180}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <SectionLabel x={x + 16} y={26}>
         ISSUE A PASS
@@ -220,7 +220,7 @@ export function ShareOpensRow() {
         height={92}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {['All tabs', 'Roadmap', 'Pricing', 'Risks'].map((t, i) => (
         <g key={t}>
@@ -275,7 +275,7 @@ function ShareCopyMenu({ variant }: { variant: 'embed' | 'image' }) {
         height={image ? 216 : 176}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <ActivePass x={x + 16} y={20} w={w - 32} role="view" open={variant} />
       <rect
@@ -285,7 +285,7 @@ function ShareCopyMenu({ variant }: { variant: 'embed' | 'image' }) {
         height={menuH}
         rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {image ? (
         <g>
@@ -299,7 +299,7 @@ function ShareCopyMenu({ variant }: { variant: 'embed' | 'image' }) {
             height={22}
             rx={6}
             className="fill-white stroke-slate-200"
-            strokeWidth={1.2}
+            strokeWidth={0.75}
           />
           <Label x={menuX + 44} y={menuY + 18} size={10} tone="strong">
             Overview

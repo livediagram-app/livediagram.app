@@ -308,7 +308,7 @@ export function ExplorerArt() {
                 height={62}
                 rx={8}
                 className="fill-white stroke-slate-200"
-                strokeWidth={1.2}
+                strokeWidth={0.75}
               />
               <path
                 d={`M${x} ${y + 8} a8 8 0 0 1 8 -8 H${x + 66} a8 8 0 0 1 8 8 V${y + 40} H${x} Z`}
