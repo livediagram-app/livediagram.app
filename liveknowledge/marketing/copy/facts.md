@@ -36,12 +36,12 @@ livedocuments, livedesign and livehuddle.
 - **Page links and backlinks**: type `[[` to link to a page; every page lists
   Linked From. Items from the other liveworkspace apps embed live in a page.
 - **Verification**: an owner for every page, a Verified tick with who and when,
-  a review interval (30, 90, 180 or 365 days, or never) and Review Due when it
-  passes. Yours to Review lists what is due.
+  one Review Period for the knowledgebase (30, 90, 180 or 365 days, or never)
+  and Review Due when it passes. Yours to Review lists what is due.
 - **Search** across a knowledgebase, by keyword, with no key.
 - **Ask**: answers from the knowledgebase's own pages with a citation on every
   claim, a Sources rail and a trust line. It says what the pages do not cover
-  instead of guessing. Runs on the team's own Claude API key.
+  instead of guessing. Runs on the team's own Claude or OpenAI key.
 - **AI Knowledge**: which agents read what, questions nobody could answer,
   pages that disagree, edits agents suggest for a person to accept, and Always
   in Context pages.

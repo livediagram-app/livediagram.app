@@ -42,13 +42,13 @@ Hero subheads, Twitter/X header copy, longer headline fields.
 
 - A team knowledgebase where every page has an owner and every answer a source. [77]
 - Pages with owners and verified dates, read the same way by people and agents. [77]
-- An open-source knowledgebase with cited answers on your own Claude key. [71]
+- An open-source knowledgebase, cited answers on your Claude or OpenAI key. [73]
 
 ## Extra-long, <= 120 characters
 
 Meta descriptions' first clause, longer directory blurbs.
 
-- An open-source team knowledgebase: verified pages, cited answers on your own Claude key, and an MCP server. [107]
+- An open-source team knowledgebase: verified pages, cited answers on your own Claude or OpenAI key, and an MCP server. [117]
 - Write your team's knowledge as pages with owners and reviews, then let people and agents ask it, with sources. [110]
 
 ## The pitch line

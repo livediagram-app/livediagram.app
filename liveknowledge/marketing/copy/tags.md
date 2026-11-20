@@ -32,7 +32,7 @@ doesn't have (see "Out of scope" there): that means no `slides`,
 - **`knowledge-base`** (two words, hyphenated) is allowed as a tag where a
   directory's own vocabulary has it. In prose it is always one word.
 - **`ai`** means two real things here: Ask (cited answers on the team's own
-  Claude key) and the MCP server for agents. Don't use `ai-assistant` or
+  Claude or OpenAI key) and the MCP server for agents. Don't use `ai-assistant` or
   `chatbot`: there is no built-in model.
 
 ## By platform

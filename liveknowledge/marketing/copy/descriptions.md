@@ -23,10 +23,11 @@ liveknowledge is a team knowledgebase, for people and for AI.
 
 Your team writes its how-tos, decisions and handbooks as pages in a page tree,
 linked to each other with `[[`. Every page has an owner, shows who verified it
-and when, and reads Review Due once its review interval has passed.
+and when, and reads Review Due once the knowledgebase's Review Period has
+passed.
 
 Ask a question in plain words and the answer comes only from your pages, each
-claim cited, on your team's own Claude API key. When the pages do not cover
+claim cited, on your team's own Claude or OpenAI key. When the pages do not cover
 something, it says so.
 
 Agents read the same pages through an MCP server and a command line, with each
@@ -47,7 +48,7 @@ reads Review Due until its owner checks it again.
 
 **Ask, with sources.** Answers come only from your pages, each claim numbered
 to its passage. What the pages do not cover is said, not guessed. Ask runs on
-your team's own Claude API key; search needs no key.
+your team's own Claude or OpenAI key; search needs no key.
 
 **Read by your agents.** An MCP server and a command line hand agents the same
 pages, each passage with how far to trust it. An agent's edit arrives as a
