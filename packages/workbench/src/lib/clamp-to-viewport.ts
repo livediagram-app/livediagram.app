@@ -27,25 +27,25 @@ export const VIEWPORT_EDGE_MARGIN = POPOVER_VIEWPORT_MARGIN;
 
 type ViewportAdjust = { x: number; y: number };
 
+/** A box's edges on screen: a DOMRect, or a box measured with its title pill (useEdgeAwarePlacement's measuredBox). */
+type ScreenBox = { left: number; right: number; top: number; bottom: number };
+
+// The shift along one axis that keeps [start, end] inside [margin, size - margin]. A box longer than that room keeps
+// its start edge in (the left, or the top), where it is read from, rather than sliding past it to fit its end.
+function axisShift(start: number, end: number, size: number, margin: number): number {
+  if (start < margin || end - start > size - 2 * margin) return margin - start;
+  if (end > size - margin) return size - margin - end;
+  return 0;
+}
+
 export function clampToViewport(
-  rect: DOMRect,
+  rect: ScreenBox,
   prevAdjust: ViewportAdjust,
   margin = VIEWPORT_EDGE_MARGIN,
 ): ViewportAdjust {
   // "Natural" rect edges: where the box would sit with no clamp.
-  const naturalLeft = rect.left - prevAdjust.x;
-  const naturalRight = rect.right - prevAdjust.x;
-  const naturalTop = rect.top - prevAdjust.y;
-  const naturalBottom = rect.bottom - prevAdjust.y;
-  let dx = 0;
-  let dy = 0;
-  if (naturalLeft < margin) dx = margin - naturalLeft;
-  else if (naturalRight > window.innerWidth - margin) {
-    dx = window.innerWidth - margin - naturalRight;
-  }
-  if (naturalTop < margin) dy = margin - naturalTop;
-  else if (naturalBottom > window.innerHeight - margin) {
-    dy = window.innerHeight - margin - naturalBottom;
-  }
-  return { x: dx, y: dy };
+  return {
+    x: axisShift(rect.left - prevAdjust.x, rect.right - prevAdjust.x, window.innerWidth, margin),
+    y: axisShift(rect.top - prevAdjust.y, rect.bottom - prevAdjust.y, window.innerHeight, margin),
+  };
 }

@@ -775,6 +775,7 @@
     "./components/label-editor/text-hug-font": "./src/components/label-editor/text-hug-font.ts",
     "./components/label-editor/plain-text-hug-measure": "./src/components/label-editor/plain-text-hug-measure.ts",
     "./components/label-editor/text-hug-measure": "./src/components/label-editor/text-hug-measure.ts",
+    "./components/label-editor/useLabelToolbarPlacement": "./src/components/label-editor/useLabelToolbarPlacement.ts",
     "./components/label-editor/useRichTextFormatActions": "./src/components/label-editor/useRichTextFormatActions.ts",
     "./components/label-editor/useRichTextRuns": "./src/components/label-editor/useRichTextRuns.ts",
     "./components/label-editor/useRichTextSession": "./src/components/label-editor/useRichTextSession.ts",
