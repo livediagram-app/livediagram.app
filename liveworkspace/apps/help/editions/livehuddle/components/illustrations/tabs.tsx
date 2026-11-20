@@ -179,7 +179,7 @@ export function AddToDocumentMenu() {
   const H = 210;
   const dx = 30;
   const dy = 14;
-  const docs = ['Roadmap 2026', 'Onboarding', 'Architecture'];
+  const docs = ['Head Office', 'Onboarding', 'Studio'];
   return (
     <Scene w={W} h={H}>
       <Dialog x={dx} y={dy} w={360} h={182} title="Add to Another Space" sceneW={W} sceneH={H}>

@@ -209,7 +209,7 @@ export function Mark({ x, y, s = 13 }: { x: number; y: number; s?: number }) {
 
 export const LOGO_W = 80;
 
-/** The logo's card at the top left: the mark, then "live" in the brand green and "huddle" in ink. */
+/** The logo's card at the top left: the mark, then "live" in the brand green and "huddle" in ink (slate-800, which dark mode turns light). */
 export function LogoCard({ x, y }: { x: number; y: number }) {
   return (
     <Card x={x} y={y} w={LOGO_W}>
@@ -224,7 +224,7 @@ export function LogoCard({ x, y }: { x: number; y: number }) {
         style={{ fontFamily: 'system-ui, sans-serif' }}
       >
         <tspan className="fill-brand-700">live</tspan>
-        <tspan className="fill-slate-900">huddle</tspan>
+        <tspan className="fill-slate-800">huddle</tspan>
       </text>
     </Card>
   );
@@ -610,14 +610,15 @@ export function BottomBar({
   /** Room left before the + for what a scene draws there (a tab folder). */
   plusGap?: number;
 }) {
-  let at = x + 8;
-  const placed = tabs.map((label, i) => {
-    const tw =
-      i === 0 && firstTabW ? firstTabW : Math.round(label.length * 5 + (i === active ? 30 : 16));
-    const el = <BarTab key={label} x={at} y={y} w={tw} label={label} active={i === active} />;
-    at += tw + 2;
-    return el;
-  });
+  const widths = tabs.map((label, i) =>
+    i === 0 && firstTabW ? firstTabW : Math.round(label.length * 5 + (i === active ? 30 : 16)),
+  );
+  // Each tab's left edge, the tabs laid end to end 2 apart; the last entry is where the + goes.
+  const lefts = widths.reduce<number[]>((acc, tw) => [...acc, acc.at(-1)! + tw + 2], [x + 8]);
+  const at = lefts.at(-1)!;
+  const placed = tabs.map((label, i) => (
+    <BarTab key={label} x={lefts[i]!} y={y} w={widths[i]!} label={label} active={i === active} />
+  ));
   const cy = y + 15;
   const right = x + w;
   return (
