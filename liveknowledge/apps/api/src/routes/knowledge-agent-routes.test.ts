@@ -144,7 +144,28 @@ describe('GET pages/<tab>', () => {
       404,
     );
     expect((await kit.call('editor', 'GET', '/api/documents/kb/pages/nope')).status).toBe(404);
-    expect((await kit.call('editor', 'PUT', '/api/documents/kb/pages/deploys')).status).toBe(405);
+    expect((await kit.call('editor', 'DELETE', '/api/documents/kb/pages/deploys')).status).toBe(
+      405,
+    );
+  });
+
+  it('takes a page by its title when one page alone has it, and says which pages there are', async () => {
+    expect((await read('rollbacks')).tab).toBe('rollbacks');
+    expect((await read('%20ROLLBACKS%20')).tab).toBe('rollbacks');
+    const missing = await kit.call('editor', 'GET', '/api/documents/kb/pages/Hotfixes');
+    expect(missing.status).toBe(404);
+    const answer = await missing.json<{ error: string; message: string }>();
+    expect(answer.error).toBe('page_unknown');
+    expect(answer.message).toContain('"Rollbacks" (rollbacks)');
+    await kit.call('editor', 'PUT', '/api/documents/kb/tabs/holidays/name', { name: 'Deploys' });
+    const twice = await kit.call('editor', 'GET', '/api/documents/kb/pages/Deploys');
+    expect(twice.status).toBe(404);
+    expect((await twice.json<{ error: string }>()).error).toBe('page_ambiguous');
+    expect((await kit.call('editor', 'GET', '/api/documents/kb/pages/%E0%A4%A')).status).toBe(404);
+    // A link confined to one page learns nothing of the others.
+    const scoped = await kit.call('page-link', 'GET', '/api/documents/kb/pages/Rollbacks');
+    expect(scoped.status).toBe(404);
+    expect(await scoped.text()).not.toContain('rollbacks');
   });
 });
 
@@ -273,7 +294,56 @@ describe('POST pages', () => {
     expect((await create('editor', { title: 'A', parent: 7 })).status).toBe(400);
     const res = await create('editor', { title: 'A', parent: 'nope' });
     expect(res.status).toBe(409);
-    expect((await res.json<{ error: string }>()).error).toBe('unknown_page');
+    const answer = await res.json<{ error: string; message: string }>();
+    expect(answer.error).toBe('page_unknown');
+    expect(answer.message).toContain('"Deploys" (deploys)');
+  });
+});
+
+describe('PUT pages/<tab>', () => {
+  const put = (who: Who, body: unknown, page = 'Holidays') =>
+    kit.call(who, 'PUT', `/api/documents/kb/pages/${page}`, body);
+
+  it('replaces the page’s writing, or adds to it', async () => {
+    const res = await put('agent', { markdown: 'Offices close on 24 December.' });
+    expect(res.status).toBe(200);
+    expect((await res.json<{ tab: { id: string } }>()).tab.id).toBe('holidays');
+    expect((await read('holidays')).markdown.trim()).toBe('Offices close on 24 December.');
+    expect(
+      (await put('editor', { markdown: 'And reopen in January.', mode: 'append' })).status,
+    ).toBe(200);
+    const text = (await read('holidays')).markdown;
+    expect(text).toContain('24 December');
+    expect(text).toContain('reopen in January');
+  });
+
+  it('refuses no Markdown and an unknown mode in words', async () => {
+    expect((await (await put('editor', {})).json<{ error: string }>()).error).toBe('no_markdown');
+    expect(
+      (await (await put('editor', { markdown: 'x', mode: 'merge' })).json<{ error: string }>())
+        .error,
+    ).toBe('invalid_mode');
+  });
+
+  it.each<[Who, number]>([
+    ['editor', 200],
+    ['agent', 200],
+    ['agent-stored', 403],
+    ['participant', 403],
+    ['participant-agent', 403],
+    ['viewer-agent', 403],
+    ['agent-read-only', 403],
+  ])('as %s answers %i', async (who, status) => {
+    expect((await put(who, { markdown: 'Changed.' })).status).toBe(status);
+  });
+
+  it('refuses an agent on a verified page', async () => {
+    await verify('holidays');
+    const res = await put('agent', { markdown: 'Changed.' });
+    expect(res.status).toBe(409);
+    expect((await res.json<{ error: string }>()).error).toBe('page_verified');
+    // A person may: verification is theirs to keep or renew.
+    expect((await put('editor', { markdown: 'Changed.' })).status).toBe(200);
   });
 });
 
@@ -282,7 +352,8 @@ describe('POST pages/<tab>/move', () => {
     kit.call(who, 'POST', `/api/documents/kb/pages/${tab}/move`, body);
 
   it('moves a page under another, and to the top in front of a page', async () => {
-    const res = await move('editor', 'holidays', { parent: 'rollbacks' });
+    // A page and its new parent by their titles.
+    const res = await move('editor', 'Holidays', { parent: 'Rollbacks' });
     expect(res.status).toBe(200);
     expect((await res.json<MovePageResponse>()).page).toEqual({
       tab: 'holidays',
@@ -303,6 +374,16 @@ describe('POST pages/<tab>/move', () => {
       ['deploys', 1],
       ['rollbacks', 2],
     ]);
+    // In front of a page, with no parent named: under that page's own parent.
+    expect((await move('editor', 'holidays', { before: 'rollbacks' })).status).toBe(200);
+    expect((await pagesOf()).map((p) => [p.tab, p.depth])).toEqual([
+      ['deploys', 1],
+      ['holidays', 2],
+      ['rollbacks', 2],
+    ]);
+    expect((await move('editor', 'holidays', { parent: null, before: 'deploys' })).status).toBe(
+      200,
+    );
     // Already there: answered, nothing written.
     expect((await move('editor', 'holidays', { parent: null, before: 'deploys' })).status).toBe(
       200,

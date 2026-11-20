@@ -19,7 +19,7 @@ const transcript = [
         {
           type: 'tool_use',
           id: 't1',
-          name: 'mcp__liveknowledge__change_pages',
+          name: 'mcp__liveknowledge__create_page',
           input: { documentId: 'd1' },
         },
       ],
@@ -45,7 +45,7 @@ const transcript = [
         {
           type: 'tool_use',
           id: 't2',
-          name: 'mcp__liveknowledge__change_pages',
+          name: 'mcp__liveknowledge__create_page',
           input: { documentId: 'd1' },
         },
       ],
@@ -69,7 +69,9 @@ const transcript = [
   line({
     type: 'assistant',
     message: {
-      content: [{ type: 'tool_use', id: 't3', name: 'mcp__liveknowledge__find_diagrams', input: {} }],
+      content: [
+        { type: 'tool_use', id: 't3', name: 'mcp__liveknowledge__find_diagrams', input: {} },
+      ],
     },
   }),
   line({
@@ -99,8 +101,8 @@ describe('parseTranscript', () => {
 
   it('reads each MCP call without its prefix, with its outcome', () => {
     expect(run.calls.map((c) => [c.tool, c.isError])).toEqual([
-      ['change_pages', true],
-      ['change_pages', false],
+      ['create_page', true],
+      ['create_page', false],
       ['find_diagrams', false],
     ]);
     expect(run.calls[0].error).toBe('Give a layout or elements, not both.');
@@ -154,7 +156,7 @@ describe('metricsOf', () => {
       errors: 1,
       retries: 1,
       deprecatedCalls: 1,
-      firstTool: 'change_pages',
+      firstTool: 'create_page',
       finished: true,
     });
   });
@@ -163,9 +165,9 @@ describe('metricsOf', () => {
 describe('documentIdsIn', () => {
   it('reads ids from documentId fields and document links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
-    expect(documentIdsIn(`"documentId": "${DOC}" https://liveknowledge.app/document/${other}`)).toEqual(
-      [DOC, other],
-    );
+    expect(
+      documentIdsIn(`"documentId": "${DOC}" https://liveknowledge.app/document/${other}`),
+    ).toEqual([DOC, other]);
     expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });
 });

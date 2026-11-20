@@ -27,13 +27,13 @@ describe('liveknowledge’s agent product', () => {
     expect(notALink).toBeInstanceOf(AddressError);
     expect((notALink as AddressError).failure).toMatchObject({
       what: 'document',
-      message: `${HOST}/help is not a document link`,
+      message: `${HOST}/help is not a knowledgebase link`,
       hint: 'liveknowledge document ls',
     });
     const none = await thrown(() => resolveDocument(fakeApi(library), 'Nope', HOST));
-    expect((none as AddressError).failure.message).toBe('no document matches "Nope"');
+    expect((none as AddressError).failure.message).toBe('no knowledgebase matches "Nope"');
     const several = await thrown(() => resolveDocument(fakeApi(library), 'aaaa', HOST));
-    expect((several as AddressError).failure.message).toBe('"aaaa" matches 2 documents');
+    expect((several as AddressError).failure.message).toBe('"aaaa" matches 2 knowledgebases');
     const noTabs = await thrown(() => resolveTab([], undefined, 'Shop'));
     expect((noTabs as AddressError).failure.hint).toBe('liveknowledge tab add Shop <name>');
   });
@@ -57,12 +57,37 @@ describe('liveknowledge’s agent product', () => {
     });
   });
 
-  it('words the api refusals with its documents and tools', () => {
+  it('answers a refusal the api worded itself with the api’s words', () => {
+    const verified = new ApiError(
+      409,
+      JSON.stringify({
+        error: 'page_verified',
+        message: 'This page is verified. Use suggest_edit.',
+      }),
+    );
+    expect(apiRefusalOf(verified)).toEqual({
+      code: 'page_verified',
+      message: 'This page is verified. Use suggest_edit.',
+    });
+    // A code with no message, a message with no code and a body that is no JSON take the shared words.
+    expect(apiRefusalOf(new ApiError(403, '{"error":"forbidden"}'))?.message).toBe(
+      'The api refused it: you may view this knowledgebase but not change it (or not this part of it).',
+    );
+    expect(apiRefusalOf(new ApiError(413, '{"message":"too big"}'))?.message).toBe(
+      'The api refused it: that is more than the knowledgebase can hold.',
+    );
+    expect(apiRefusalOf(new ApiError(404, 'not json'))?.code).toBe('http_404');
+    // A failure of ours is no refusal: it throws on.
+    expect(apiRefusalOf(new ApiError(503, '{"error":"down","message":"x"}'))).toBeNull();
+    expect(apiRefusalOf(new Error('boom'))).toBeNull();
+  });
+
+  it('words the api refusals with its knowledgebases and tools', () => {
     expect(apiRefusalOf(new ApiError(404, '{}'))?.message).toBe(
-      'The api refused it: no such document, or it is not shared with you. find_documents lists them.',
+      'The api refused it: no such knowledgebase, or it is not shared with you. find_documents lists them.',
     );
     expect(apiRefusalOf(new ApiError(410, '{}'))?.message).toBe(
-      'The api refused it: that document is in the Trash: restore it with restore_document first.',
+      'The api refused it: that knowledgebase is in the Trash: restore it with restore_document first.',
     );
   });
 });

@@ -220,11 +220,14 @@ export type KnowledgeAgentContextResponse = {
   leftOut: (KnowledgePageRef & { tokens: number })[];
   pageCount: number;
 };
-/** `POST .../pages`: a new page from Markdown, under `parent` (the top level when absent). */
+/** `POST .../pages`: a new page from Markdown, under `parent` (a page's id or title; the top level when absent). */
 export type CreatePageRequest = { title: string; markdown?: string; parent?: string };
 export type CreatePageResponse = { page: KnowledgePageRef & { parent?: string; rev: number } };
-/** `POST .../pages/<tab>/move`: under `parent` (null or absent: the top level), before its subpage `before`
- *  (last when absent). */
+/** `PUT .../pages/<tab>`: the page's writing replaced by the Markdown, or the Markdown added after it. Answers as
+ *  the article write does (`PagesAnswer`). */
+export type WritePageRequest = { markdown: string; mode?: 'replace' | 'append' };
+/** `POST .../pages/<tab>/move`: under `parent` (a page's id or title; null for the top level), before its subpage
+ *  `before` (last when absent). With `before` and no `parent`, under that page's own parent. */
 export type MovePageRequest = { parent?: string | null; before?: string };
 export type MovePageResponse = { page: KnowledgePageRef & { parent?: string; depth: number } };
 /** `PUT .../agents/<tokenId>/scopes`: what one API token may do in this knowledgebase. */

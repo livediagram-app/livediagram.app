@@ -1,9 +1,6 @@
-// What a task's checks are written with: plain readers over a run's snapshot (what was made, read back through the
-// tools) and its transcript (what was said). A check states one requirement of the prompt and answers yes or no, so
-// a round's score is a count, never an opinion. Pure: no server, no clock.
-
-// Shapes that hold a node's words; stacks and the like are containers or decoration.
-const DECOR_SHAPES = new Set(['stack']);
+// What a task's checks are written with: plain readers over a run's snapshot (the knowledgebases it touched, read
+// back through the tools) and its transcript (what was called and said). A check states one requirement of the
+// prompt and answers yes or no, so a round's score is a count, never an opinion. Pure: no server, no clock.
 
 export const lc = (s) => (s ?? '').toString().toLowerCase();
 
@@ -15,86 +12,38 @@ function asRegex(word) {
 
 // ---- what was made ------------------------------------------------------------------------------------------
 
-export function tabsOf(snap) {
-  return (snap.documents ?? []).flatMap((d) =>
-    (d.tabs ?? []).map((t) => ({ ...t, documentId: d.id })),
-  );
-}
-
-export function elementsOf(snap) {
-  return tabsOf(snap).flatMap((t) => t.elements.map((e) => ({ ...e, tabId: t.id })));
-}
-
-// Every piece of words an element carries: a label, a sticky's or a text's text, a table's cells, a code block.
-export function wordsOf(el) {
-  const parts = [el.label, el.text, el.title, el.note, el.name, el.subtitle];
-  if (Array.isArray(el.rows)) parts.push(...el.rows.flat(2));
-  if (Array.isArray(el.columns))
-    parts.push(...el.columns.map((c) => (typeof c === 'string' ? c : c?.name)));
-  if (Array.isArray(el.attributes))
-    parts.push(...el.attributes.map((a) => (typeof a === 'string' ? a : a?.name)));
-  if (Array.isArray(el.data)) parts.push(...el.data.map((d) => d?.label ?? d?.name));
-  if (Array.isArray(el.pieSlices)) parts.push(...el.pieSlices.map((d) => d?.label));
-  if (Array.isArray(el.lineCategories)) parts.push(...el.lineCategories);
-  if (Array.isArray(el.lineSeries)) parts.push(...el.lineSeries.map((d) => d?.name));
-  return parts.filter((p) => typeof p === 'string' && p.trim()).join(' ');
-}
-
-// The labelled boxes on the tabs: shapes that are not containers, with words.
-export function boxes(snap) {
-  return elementsOf(snap).filter(
-    (e) => e.type === 'shape' && !DECOR_SHAPES.has(e.shape) && wordsOf(e),
-  );
-}
-
-// The boxes whose words match.
-export function find(snap, word) {
-  const re = asRegex(word);
-  return elementsOf(snap).filter((e) => re.test(wordsOf(e)));
-}
-
-// A Pages tab's pages, from its pages view: `page 2 "Tip 2" page-99 · infographic Square · at … · 16 elements`
-// (a painted page adds `· background #fff` before its count; an article page ends `· article art-1 · its writing below`).
-// A page line's rectangle on the canvas: `at -960,-540 1920x1080`.
-function rectOf(line) {
-  const r = / · at (-?[\d.]+),(-?[\d.]+) ([\d.]+)x([\d.]+)/.exec(line);
-  return r ? { x: Number(r[1]), y: Number(r[2]), width: Number(r[3]), height: Number(r[4]) } : {};
-}
-
+// Every page of every knowledgebase the run touched, with the knowledgebase it is in.
 export function pagesOf(snap) {
-  const out = [];
-  for (const t of tabsOf(snap)) {
-    for (const line of (t.pages ?? '').split('\n')) {
-      const m =
-        /^page (\d+)(?: "([^"]*)")? \S+ · ([\w-]+) ([^·]+?) · at .*?(?:· (\d+) elements?|· article .*)$/.exec(
-          line,
-        );
-      if (m)
-        out.push({
-          tabId: t.id,
-          n: Number(m[1]),
-          name: m[2] ?? null,
-          kind: m[3],
-          format: m[4].trim(),
-          ...rectOf(line),
-          elements: m[5] === undefined ? null : Number(m[5]),
-        });
-    }
-  }
-  return out;
+  return (snap.documents ?? []).flatMap((d) =>
+    (d.pages ?? []).map((p) => ({ ...p, documentId: d.id })),
+  );
+}
+
+// The pages whose title matches.
+export function pagesTitled(snap, word) {
+  const re = asRegex(word);
+  return pagesOf(snap).filter((p) => re.test(p.title ?? ''));
+}
+
+// The pages directly under the first page whose title matches.
+export function pagesUnder(snap, word) {
+  const [parent] = pagesTitled(snap, word);
+  return parent ? pagesOf(snap).filter((p) => p.parent === parent.page) : [];
+}
+
+// The titles a page's writing links to: `[[Title]]`.
+export function linksOf(page) {
+  return [...(page.markdown ?? '').matchAll(/\[\[([^\]]+)\]\]/g)].map((m) => m[1]);
 }
 
 // ---- everything as text ---------------------------------------------------------------------------------------
 
-// One lowercase string of every word the run made, wherever it sits (elements, pages).
+// One lowercase string of every word the run made: each knowledgebase's name, each page's title and writing.
 function allText(snap) {
   const out = [];
   for (const d of snap.documents ?? []) {
     out.push(d.name);
-    for (const t of d.tabs ?? []) {
-      out.push(t.name, ...t.elements.map(wordsOf));
-      if (t.pages) out.push(t.pages);
-    }
+    for (const p of d.pages ?? []) out.push(p.title, p.markdown);
   }
   return lc(out.filter(Boolean).join('\n'));
 }
@@ -123,7 +72,29 @@ export function atLeast(n, have, what) {
   return { pass: have >= n, detail: have >= n ? null : `${have} ${what}, wanted ${n}+` };
 }
 
-// ---- the reply ---------------------------------------------------------------------------------------------------
+// ---- what was called and said ------------------------------------------------------------------------------------
+
+// A call's tool as the transcript reader names it (transcript.mjs): the server's own name, no client prefix.
+const toolOf = (call) => call.tool ?? '';
+
+// The tools the run called, in order, successes and refusals alike.
+export function toolsCalled(run) {
+  return (run.calls ?? []).map(toolOf);
+}
+
+// Whether the run called a tool and it answered (a refused call does not count).
+export function called(run, tool) {
+  return (run.calls ?? []).some((c) => toolOf(c) === tool && !c.isError);
+}
+
+// The run's first knowledgebase tool was get_context: finding the knowledgebase may come before it.
+export function contextFirst(run) {
+  const [first] = toolsCalled(run).filter((t) => t !== 'find_documents');
+  return {
+    pass: first === 'get_context',
+    detail: first ? `first tool: ${first}` : 'no tool called',
+  };
+}
 
 export function replied(run, word) {
   return asRegex(word).test(run.finalText ?? '');
@@ -131,9 +102,9 @@ export function replied(run, word) {
 
 // ---- running a task's checks ---------------------------------------------------------------------------------------
 
-// Every task's first check: the run made or changed something, and ended with a reply.
+// Every task's first checks: the run reached a knowledgebase, and ended with a reply.
 const BASE_CHECKS = [
-  ['made something', ({ snap }) => (snap.documents ?? []).some((d) => !d.missing)],
+  ['reached a knowledgebase', ({ snap }) => (snap.documents ?? []).some((d) => !d.missing)],
   ['replied', ({ run }) => (run.finalText ?? '').trim().length > 0],
 ];
 

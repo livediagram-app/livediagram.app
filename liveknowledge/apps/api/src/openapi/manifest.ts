@@ -803,6 +803,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
+    method: 'PUT',
+    path: '/documents/{id}/pages/{tabId}',
+    segment: 'documents',
+    tag: 'Knowledge',
+    summary:
+      "Replace a page's writing with Markdown, or add Markdown after it (an agent's `write_page`), as `{ markdown, mode? }`. Editor only; an agent needs the `write` scope, and is refused 409 `page_verified` on a verified page, where it suggests the edit instead. Answers as the article write does. In every page route `{tabId}` takes the page's id, or its title when one page alone has it.",
+    auth: 'clerk',
+    tokenUsable: true,
+    requestSchema: 'WritePageRequest',
+    responseSchema: 'PagesAnswer',
+    statuses: [200, 400, 401, 403, 404, 405, 409, 410, 413],
+  },
+  {
     method: 'POST',
     path: '/documents/{id}/pages/{tabId}/move',
     segment: 'documents',

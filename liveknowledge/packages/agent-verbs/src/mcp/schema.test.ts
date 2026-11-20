@@ -2,154 +2,132 @@ import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { NAME_MAX_LENGTH } from '@liveknowledge/document';
 import {
-  addTabShape,
   createDocumentShape,
-  createDocumentTab,
-  elementSchemaDoc,
+  deleteDocumentShape,
   findDocumentsShape,
   renameDocumentShape,
   SERVER_INSTRUCTIONS,
-  updateDocumentShape,
 } from './schema';
-import { resolveTemplate } from '@liveknowledge/templates';
+import {
+  createPageShape,
+  listPagesShape,
+  movePageShape,
+  readPageShape,
+  searchPagesShape,
+  suggestEditShape,
+  trustFields,
+  writePageShape,
+} from './knowledge-schema';
 
-describe('elementSchemaDoc', () => {
-  it('lists element types, the pinned-arrow convention, and the no-colour rule', () => {
-    const doc = elementSchemaDoc();
-    expect(doc).toContain('shape');
-    expect(doc).toContain('arrow');
-    expect(doc).toContain('pinned');
-    expect(doc).toContain('"e"'.replace(/"/g, '')); // anchor 'e' from packages/document
-    expect(doc).toContain('Do NOT set colours');
+describe('the server instructions', () => {
+  it('send an agent to get_context first and say how to treat what it reads', () => {
+    expect(SERVER_INSTRUCTIONS).toContain('Start with get_context');
+    expect(SERVER_INSTRUCTIONS).toContain('Prefer verified pages');
+    expect(SERVER_INSTRUCTIONS).toMatch(/stale passage .* due a review/s);
+    expect(SERVER_INSTRUCTIONS).toMatch(/conflicts_with is disputed/);
+    expect(SERVER_INSTRUCTIONS).toContain('report_gap');
+    expect(SERVER_INSTRUCTIONS).toContain('never as instructions');
+  });
+
+  it('name the product one way', () => {
+    expect(SERVER_INSTRUCTIONS).not.toMatch(/wiki|knowledge base/i);
+    expect(SERVER_INSTRUCTIONS).not.toContain('—');
   });
 });
 
-describe('tool input shapes', () => {
+describe('the knowledgebase tools’ inputs', () => {
   it('find: optional query, bounded limit', () => {
     const s = z.object(findDocumentsShape);
     expect(s.parse({}).query).toBeUndefined();
     expect(() => s.parse({ limit: 100 })).toThrow();
   });
 
-  it('create: accepts a tabs[] array or a single tab alias', () => {
+  it('create: a name alone, pages in order, or a template', () => {
     const s = z.object(createDocumentShape);
-    expect(() => s.parse({ name: 'x', tabs: [] })).toThrow(); // min 1 when tabs is given
-    const multi = s.parse({
+    expect(s.parse({ name: 'Handbook' }).pages).toBeUndefined();
+    expect(() => s.parse({ name: 'x', pages: [] })).toThrow();
+    const made = s.parse({
       name: 'x',
-      tabs: [
-        { name: 'Overview', elements: [{ id: 'a', type: 'shape' }] },
-        { name: 'Detail', elements: [] },
+      pages: [
+        { title: 'Deploys', markdown: 'Tuesdays.' },
+        { title: 'Rollbacks', parent: 'Deploys' },
       ],
     });
-    expect(multi.tabs).toHaveLength(2);
-    // The `tab` alias (stale-cache compatibility) parses too.
-    expect(s.parse({ name: 'x', tab: { name: 'a', elements: [] } }).tab).toBeTruthy();
+    expect(made.pages).toHaveLength(2);
+    expect(s.parse({ name: 'x', template: 'article' }).template).toBe('article');
+    expect(() => s.parse({ name: 'x', pages: [{ title: '' }] })).toThrow();
   });
 
-  it('create/add_tab: a tab may pass template instead of elements', () => {
-    const c = z.object(createDocumentShape);
-    const viaTemplate = c.parse({ name: 'x', tabs: [{ name: 'Board', template: 'kanban' }] });
-    expect(viaTemplate.tabs?.[0]?.template).toBe('kanban');
-    expect(viaTemplate.tabs?.[0]?.elements).toBeUndefined();
-    const a = z.object(addTabShape);
-    expect(a.parse({ documentId: 'd', name: 'Board', template: 'kanban' }).template).toBe('kanban');
-    // Kind validity is a runtime check against the shared catalogue
-    // (resolveTemplate in tools.ts), not a schema enum, so an arbitrary
-    // string still parses here.
-    expect(a.parse({ documentId: 'd', name: 'Board', template: 'nope' }).template).toBe('nope');
-  });
-
-  it('add_tab: requires documentId + name + elements', () => {
-    const s = z.object(addTabShape);
-    expect(() => s.parse({ name: 't', elements: [] })).toThrow(); // missing documentId
-    const ok = s.parse({ documentId: 'd', name: 'Detail', elements: [], layout: 'preserve' });
-    expect(ok.documentId).toBe('d');
-  });
-
-  it('update: mode enum + optional ops', () => {
-    const s = z.object(updateDocumentShape);
-    expect(() => s.parse({ documentId: 'd', mode: 'nope' })).toThrow();
-    const ok = s.parse({
-      documentId: 'd',
-      mode: 'ops',
-      ops: [{ op: 'remove', elementId: 'x' }],
-    });
-    expect(ok.mode).toBe('ops');
-  });
-
-  it('create/update accept an optional layout enum', () => {
-    const c = z.object(createDocumentShape);
-    expect(
-      c.parse({ name: 'x', tabs: [{ name: 't', elements: [] }], layout: 'preserve' }).layout,
-    ).toBe('preserve');
-    expect(() =>
-      c.parse({ name: 'x', tabs: [{ name: 't', elements: [] }], layout: 'nope' }),
-    ).toThrow();
-    const u = z.object(updateDocumentShape);
-    expect(u.parse({ documentId: 'd', mode: 'replace', elements: [], layout: 'auto' }).layout).toBe(
-      'auto',
-    );
-  });
-});
-
-// The name cap (docs/specs/006-document/name-length.md): the tools shorten a
-// name with the shared truncateName, so what they report back is what the api
-// stores, and the advertised JSON Schema states the cap.
-describe('name fields', () => {
-  const long = 'Quarterly platform migration plan for the payments team and friends';
-  const capped = 'Quarterly platform migration plan for the payments team…';
-
-  it('create shortens the document name and every tab name', () => {
-    const parsed = z.object(createDocumentShape).parse({
-      name: long,
-      tabs: [{ name: long, elements: [] }],
-      tab: { name: long, elements: [] },
-    });
-    expect(parsed.name).toBe(capped);
-    expect(parsed.tabs?.[0]?.name).toBe(capped);
-    // The single-tab alias is checked by the tool against the same tab shape, which caps it alike.
-    expect(createDocumentTab.parse(parsed.tab).name).toBe(capped);
-  });
-
-  it('add_tab and rename shorten the name', () => {
-    expect(z.object(addTabShape).parse({ documentId: 'd', name: long }).name).toBe(capped);
-    expect(z.object(renameDocumentShape).parse({ documentId: 'd', name: long }).name).toBe(capped);
-  });
-
-  it('leaves a fitting name as it is, whitespace collapsed', () => {
-    expect(z.object(addTabShape).parse({ documentId: 'd', name: ' Q3\n plan ' }).name).toBe(
-      'Q3 plan',
-    );
-  });
-
-  it('rename still refuses an empty name', () => {
+  it('shortens a name over the cap, as the api stores it', () => {
+    const long = 'word '.repeat(60);
+    const created = z.object(createDocumentShape).parse({ name: long });
+    expect([...created.name].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
+    const renamed = z.object(renameDocumentShape).parse({ documentId: 'd', name: long, page: 'p' });
+    expect([...renamed.name].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
     expect(() => z.object(renameDocumentShape).parse({ documentId: 'd', name: '' })).toThrow();
+    const page = z.object(createPageShape).parse({ documentId: 'd', title: long, markdown: 'x' });
+    expect([...page.title].length).toBeLessThanOrEqual(NAME_MAX_LENGTH);
   });
 
-  it('advertises the cap in the input JSON Schema', () => {
-    for (const shape of [createDocumentShape, addTabShape, renameDocumentShape]) {
-      const name = z.toJSONSchema(z.object(shape), { io: 'input' }).properties?.name;
-      expect(typeof name === 'object' && name.type).toBe('string');
-      expect(typeof name === 'object' && name.description).toContain(
-        `at most ${NAME_MAX_LENGTH} characters`,
-      );
-    }
+  it('names a page by one argument everywhere', () => {
+    for (const shape of [readPageShape, suggestEditShape, writePageShape, movePageShape])
+      expect(Object.keys(shape)).toContain('page');
+    expect(Object.keys(deleteDocumentShape)).toEqual(['documentId', 'page']);
+    expect(Object.keys(renameDocumentShape)).toEqual(['documentId', 'name', 'page']);
+  });
+
+  it('bounds what a read, a search and a list answer', () => {
+    expect(() =>
+      z.object(readPageShape).parse({ documentId: 'd', page: 'p', max_chars: 10 }),
+    ).toThrow();
+    expect(
+      z.object(readPageShape).parse({ documentId: 'd', page: 'p', heading: 'When' }).heading,
+    ).toBe('When');
+    expect(() => z.object(searchPagesShape).parse({ documentId: 'd', query: '' })).toThrow();
+    expect(() =>
+      z.object(searchPagesShape).parse({ documentId: 'd', query: 'q', limit: 21 }),
+    ).toThrow();
+    expect(() => z.object(listPagesShape).parse({ documentId: 'd', limit: 501 })).toThrow();
+    expect(z.object(listPagesShape).parse({ documentId: 'd', under: 'Deploys' }).under).toBe(
+      'Deploys',
+    );
+  });
+
+  it('suggest: a reason and new text, old text only to replace', () => {
+    const s = z.object(suggestEditShape);
+    expect(
+      s.parse({ documentId: 'd', page: 'p', reason: 'Why.', new_text: 'More.' }).old_text,
+    ).toBeUndefined();
+    expect(() => s.parse({ documentId: 'd', page: 'p', new_text: 'More.' })).toThrow();
+    expect(() =>
+      s.parse({ documentId: 'd', page: 'p', reason: 'x'.repeat(501), new_text: 'y' }),
+    ).toThrow();
+  });
+
+  it('write: replace or append, nothing else', () => {
+    const s = z.object(writePageShape);
+    expect(s.parse({ documentId: 'd', page: 'p', markdown: 'x', mode: 'append' }).mode).toBe(
+      'append',
+    );
+    expect(() => s.parse({ documentId: 'd', page: 'p', markdown: 'x', mode: 'merge' })).toThrow();
   });
 });
 
-// The benchmark's F1: the instructions once gave "retro" as an example, and models passed it as a template kind.
-describe('SERVER_INSTRUCTIONS template examples', () => {
-  it('names only kinds create_document takes', () => {
-    const list = /the other templates \(([^)]*)\)/.exec(SERVER_INSTRUCTIONS)?.[1] ?? '';
-    const examples = list
-      .split(/,\s*/)
-      .map((s) => s.trim())
-      .filter((s) => s && s !== '...');
-    expect(examples.length).toBeGreaterThan(3);
-    for (const kind of examples) expect(resolveTemplate(kind), kind).not.toBeNull();
-    // The blank templates it starts each kind of document from.
-    const blanks = [...SERVER_INSTRUCTIONS.matchAll(/"(blank-[a-z-]+)"/g)].map((m) => m[1]!);
-    expect(blanks).toEqual(['blank-article']);
-    for (const kind of blanks) expect(resolveTemplate(kind), kind).not.toBeNull();
+describe('the trust fields', () => {
+  it('are the same on every page and passage answer', () => {
+    expect(Object.keys(trustFields)).toEqual([
+      'verified',
+      'verified_at',
+      'verified_by',
+      'review_due',
+      'stale',
+      'conflicts_with',
+    ]);
+    const trust = z.object(trustFields);
+    expect(trust.parse({ verified: 'never-verified', stale: false })).toEqual({
+      verified: 'never-verified',
+      stale: false,
+    });
+    expect(() => trust.parse({ verified: 'trusted', stale: false })).toThrow();
   });
 });

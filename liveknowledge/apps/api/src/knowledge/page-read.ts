@@ -21,6 +21,48 @@ import { rowsOf } from './knowledge-db';
 
 type TabSummaries = DocumentDTO['tabs'];
 
+const titleKey = (title: string) => title.toLowerCase().replace(/\s+/g, ' ').trim();
+
+/** A page by its id, or by its title when exactly one page has it (case and spacing aside): an agent that listed
+ *  or made the pages knows them by name. Undefined for a page the knowledgebase lacks; 'ambiguous' for a title
+ *  several pages share. */
+export function pageNamed<T extends { id: string; name: string }>(
+  tabs: readonly T[],
+  ref: string,
+): T | 'ambiguous' | undefined {
+  const byId = tabs.find((t) => t.id === ref);
+  if (byId) return byId;
+  const key = titleKey(ref);
+  const titled = key ? tabs.filter((t) => titleKey(t.name) === key) : [];
+  return titled.length > 1 ? 'ambiguous' : titled[0];
+}
+
+/** How many page titles a refusal names before it points at the list. */
+const PAGES_NAMED = 12;
+
+/** Why a page reference names no page, in words an agent can act on. */
+export function pageUnknownBody(
+  tabs: readonly { id: string; name: string }[],
+  ref: string,
+  found: 'ambiguous' | undefined,
+): { error: string; message: string } {
+  const titled = tabs.filter((t) => titleKey(t.name) === titleKey(ref));
+  if (found === 'ambiguous')
+    return {
+      error: 'page_ambiguous',
+      message: `${titled.length} pages are titled "${ref}": name one by its id (${titled.map((t) => t.id).join(', ')}).`,
+    };
+  const some = tabs.slice(0, PAGES_NAMED).map((t) => `"${t.name}" (${t.id})`);
+  const more =
+    tabs.length > PAGES_NAMED
+      ? `, and ${tabs.length - PAGES_NAMED} more (list_pages, the CLI's pages, or GET pages lists them all)`
+      : '';
+  return {
+    error: 'page_unknown',
+    message: `No page "${ref}" in this knowledgebase. Pages: ${some.join(', ')}${more}.`,
+  };
+}
+
 /** The page's one article: the flow its first article page shows, else its first flow. Undefined for a page with
  *  no writing. */
 export function pageFlowOf(tab: Tab): string | undefined {

@@ -1,39 +1,30 @@
-// Reads back every document a run touched, through the same MCP tools an assistant has, so a task's checks judge
-// what was made rather than what the agent said it made. Read-only: it never writes.
-import { resultJson, resultText } from '@liveworkspace/mcp-kit/eval/mcp-client';
+// Reads back every knowledgebase a run touched, through the same MCP tools an assistant has, so a task's checks
+// judge what was made rather than what the agent said it made. Read-only: it never writes. Each page is read
+// whole (its reads are counted as any agent's are, under this client's name).
+import { resultJson } from '@liveworkspace/mcp-kit/eval/mcp-client';
 
-// The outline's first line names the tab's pages: `tab 3be5 "Deck" · 53 elements: 53 boxes · 6 pages: 6 slide
-// (view pages) · rev 5`.
-export function parseTabHeader(line) {
-  const pages = /· (\d+) pages?: ([^(]+)\(/.exec(line);
-  const pageKinds = {};
-  for (const m of (pages?.[2] ?? '').matchAll(/(\d+) ([\w-]+)/g)) pageKinds[m[2]] = Number(m[1]);
-  return pages ? { pageCount: Number(pages[1]), pageKinds } : {};
-}
-
-async function readTab(client, documentId, tab) {
-  const json = resultJson(
-    await client.call('read_document', { documentId, tabId: tab.id, format: 'json' }),
-  );
-  const outline = resultText(await client.call('read_document', { documentId, tabId: tab.id }));
-  return {
-    id: tab.id,
-    name: tab.name,
-    ...parseTabHeader(outline?.split('\n')[0] ?? ''),
-    elements: json?.tab?.elements ?? [],
-    outline,
-    pages: resultText(
-      await client.call('read_document', { documentId, tabId: tab.id, view: 'pages' }),
-    ),
-  };
-}
+// The longest a page is read: a page's Markdown is never longer (ARTICLE_MARKDOWN_MAX).
+const WHOLE_PAGE = 400_000;
 
 async function snapshotDocument(client, documentId) {
-  const first = resultJson(await client.call('read_document', { documentId, format: 'json' }));
-  if (!first) return { id: documentId, missing: true };
-  const tabs = [];
-  for (const tab of first.tabs ?? []) tabs.push(await readTab(client, documentId, tab));
-  return { id: documentId, name: first.name, tabs };
+  const listed = resultJson(await client.call('list_pages', { documentId, limit: 500 }));
+  if (!listed?.pages) return { id: documentId, missing: true };
+  const context = resultJson(await client.call('get_context', { documentId }));
+  const pages = [];
+  for (const row of listed.pages) {
+    const read = resultJson(
+      await client.call('read_page', { documentId, page: row.page, max_chars: WHOLE_PAGE }),
+    );
+    pages.push({
+      page: row.page,
+      title: row.title,
+      depth: row.depth,
+      ...(row.parent ? { parent: row.parent } : {}),
+      verified: row.verified,
+      markdown: read?.markdown ?? '',
+    });
+  }
+  return { id: documentId, name: context?.knowledgebase, pages };
 }
 
 export async function snapshot(client, documentIds) {

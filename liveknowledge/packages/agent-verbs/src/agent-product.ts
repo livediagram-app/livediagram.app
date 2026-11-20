@@ -6,4 +6,8 @@ export const AGENT_PRODUCT = {
   cli: 'liveknowledge',
   noun: 'document',
   collection: 'documents',
+  // What a person calls one (docs/specs/003-system-architecture/domain-language.md): the api's `document` is a
+  // knowledgebase in every message.
+  word: 'knowledgebase',
+  words: 'knowledgebases',
 } as const satisfies AgentProduct;

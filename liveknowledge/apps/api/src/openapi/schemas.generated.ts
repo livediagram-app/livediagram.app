@@ -2566,7 +2566,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "CreatePageRequest": {
     "additionalProperties": false,
-    "description": "`POST .../pages`: a new page from Markdown, under `parent` (the top level when absent).",
+    "description": "`POST .../pages`: a new page from Markdown, under `parent` (a page's id or title; the top level when absent).",
     "properties": {
       "markdown": {
         "type": "string"
@@ -5679,7 +5679,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "MovePageRequest": {
     "additionalProperties": false,
-    "description": "`POST .../pages/<tab>/move`: under `parent` (null or absent: the top level), before its subpage `before` (last when absent).",
+    "description": "`POST .../pages/<tab>/move`: under `parent` (a page's id or title; null for the top level), before its subpage `before` (last when absent). With `before` and no `parent`, under that page's own parent.",
     "properties": {
       "before": {
         "type": "string"
@@ -10924,6 +10924,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "scope",
       "folderId",
       "expiresAt"
+    ],
+    "type": "object"
+  },
+  "WritePageRequest": {
+    "additionalProperties": false,
+    "description": "`PUT .../pages/<tab>`: the page's writing replaced by the Markdown, or the Markdown added after it. Answers as the article write does (`PagesAnswer`).",
+    "properties": {
+      "markdown": {
+        "type": "string"
+      },
+      "mode": {
+        "enum": [
+          "replace",
+          "append"
+        ],
+        "type": "string"
+      }
+    },
+    "required": [
+      "markdown"
     ],
     "type": "object"
   }

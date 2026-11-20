@@ -18,6 +18,7 @@
 // write is an Editor's. A link confined to one page reaches that page's own routes and search, nothing else.
 import { getDocument } from '../db';
 import { knowledgeHealthCounts, recentPages } from '../knowledge/knowledge-reads';
+import { pageNamed, pageUnknownBody } from '../knowledge/page-read';
 import { forbidden, json, methodNotAllowed, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
 import {
@@ -49,6 +50,13 @@ export type KnowledgeRoute = {
 };
 
 const isEditor = (grant: DocumentAccess) => grant.role === 'edit';
+const safeDecode = (segment: string) => {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return '';
+  }
+};
 /** Whole-knowledgebase routes are closed to a link confined to one page. */
 const wholeKnowledgebase = (grant: DocumentAccess) => grant.tabScope === null;
 
@@ -67,12 +75,24 @@ async function handleSummary({ ctx, document }: KnowledgeRoute): Promise<Respons
 async function handlePageRoutes(route: KnowledgeRoute): Promise<Response> {
   const { ctx, document, grant } = route;
   const { segments } = ctx;
-  const tab = segments[4];
-  if (!tab) return notFound();
-  // A link confined to another page reads this one as missing (tab-scoped-share-links.md).
-  if (grant.tabScope !== null && grant.tabScope !== tab) return notFound();
-  const summary = document.tabs.find((t) => t.id === tab);
-  if (!summary) return notFound();
+  const ref = safeDecode(segments[4] ?? '');
+  if (!ref) return notFound();
+  // A page by its id, or by its title when one page alone has it. A link confined to one page names it by id, and
+  // reads every other page as missing (tab-scoped-share-links.md): no title is looked up for it.
+  const found = grant.tabScope === null ? pageNamed(document.tabs, ref) : undefined;
+  const summary =
+    grant.tabScope === null
+      ? found
+      : grant.tabScope === ref
+        ? document.tabs.find((t) => t.id === ref)
+        : undefined;
+  if (!summary || summary === 'ambiguous') {
+    if (grant.tabScope !== null) return notFound();
+    return json(pageUnknownBody(document.tabs, ref, found === 'ambiguous' ? found : undefined), {
+      status: 404,
+    });
+  }
+  const tab = summary.id;
   const method = ctx.request.method;
   // The page as Markdown, and its place in the tree (knowledge-agent-routes.ts).
   const agent = await handleAgentPageRoute(route, summary);

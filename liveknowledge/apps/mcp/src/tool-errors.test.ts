@@ -4,7 +4,7 @@ import { mcpListTrash } from '@liveknowledge/agent-verbs/mcp';
 import { ApiError } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
 import { registerTool } from './tool-annotations';
-import { loadTab, ToolInputError } from './tool-helpers';
+import { ToolInputError } from './tool-helpers';
 import { deleteRefusal } from '@liveknowledge/agent-verbs';
 
 // Errors that teach (docs/specs/015-api/mcp-server.md): a mistake the caller
@@ -50,30 +50,30 @@ describe('registerTool answers fixable errors', () => {
   });
 });
 
-describe('deleteRefusal', () => {
-  it('says why, by status and what was deleted', () => {
-    expect(deleteRefusal(410, false)).toContain('already in the Trash');
-    expect(deleteRefusal(403, true)).toContain('view this document but not change it');
-    expect(deleteRefusal(404, true)).toContain('read_document lists its tabs');
-    expect(deleteRefusal(404, false)).toContain('find_documents');
-    expect(deleteRefusal(409, true)).toContain('last one');
-    // Any other status is named, never blamed on the last tab.
-    expect(deleteRefusal(401, true)).not.toContain('last one');
-    expect(deleteRefusal(503, true)).toContain('503');
-    expect(deleteRefusal(400, false)).toContain('Check the document id');
+describe('a refusal the api worded', () => {
+  it('is answered in the api’s own words', async () => {
+    const verified = await handlerFor(() => {
+      throw new ApiError(
+        409,
+        JSON.stringify({
+          error: 'page_verified',
+          message: 'This page is verified. Use suggest_edit.',
+        }),
+      );
+    })({}, {});
+    expect(verified).toEqual({
+      isError: true,
+      content: [{ type: 'text', text: 'This page is verified. Use suggest_edit.' }],
+    });
   });
 });
 
-describe('loadTab', () => {
-  it('names the tabs there are when asked for one the document lacks', async () => {
-    const env = {
-      API: {
-        fetch: async () =>
-          Response.json({
-            document: { id: 'd', tabs: [{ id: 't1', name: 'Board', orderIndex: 0 }] },
-          }),
-      },
-    } as unknown as Env;
-    await expect(loadTab(env, 'tok', 'd', 'nope')).rejects.toThrow('Tabs: Board (t1).');
+describe('deleteRefusal', () => {
+  it('says why, by status and what was deleted', () => {
+    expect(deleteRefusal(410, false)).toContain('already in the Trash');
+    expect(deleteRefusal(404, false)).toContain('find_documents');
+    expect(deleteRefusal(404, false)).toContain('No such knowledgebase');
+    expect(deleteRefusal(503, true)).toContain('503');
+    expect(deleteRefusal(400, false)).toContain('Check the knowledgebase id');
   });
 });

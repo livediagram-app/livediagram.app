@@ -12,3 +12,4 @@ export {
   resolvePage,
   sizeLabel,
 } from './summary';
+export { newPageFromMarkdown, withTitleFrontMatter, type NewPage } from './new-page';

@@ -1,15 +1,9 @@
 // Shared result / auth plumbing for the MCP tools (docs/specs/015-api/mcp-server.md): the text and
-// error result shapes, the deep links, the bearer-token guard every tool
-// uses, and the load-a-tab sequence the read and edit tools share.
+// error result shapes, the deep links and the bearer-token guard every tool uses.
 // Deliberately render-free, so it can be unit-tested: the inline-PNG
-// result lives in image-result.ts and the pure tab builders in @liveknowledge/document
-// and @liveknowledge/templates. tools.ts keeps the registrations.
+// result lives in image-result.ts. tools.ts keeps the registrations.
 
-import { tabIdNamed } from '@liveworkspace/mcp-kit/tab-named';
-import type { LiveDoc, DocumentResponse, TabRecord, TabResponse } from '@liveknowledge/api-schema';
-import { apiJson } from './api';
 import type { Env } from '@liveworkspace/mcp-kit/env';
-import { ToolInputError } from '@liveworkspace/mcp-kit/tool-result';
 
 // The result shapes, the token guard and ToolInputError every product's tools share.
 export {
@@ -35,33 +29,3 @@ export const deepLink = (env: Pick<Env, 'CONSENT_BASE_URL'>, id: string) =>
 // and the app resolves the code to the document + granted role.
 export const shareUrl = (env: Pick<Env, 'CONSENT_BASE_URL'>, code: string) =>
   `${appBase(env)}/document/shared?s=${encodeURIComponent(code)}`;
-
-// Load a document and one of its tabs: the named tab, or the first one when the
-// caller didn't name one (the default every tab-scoped tool applies). Null when
-// the document has no tabs to default to; a tab id the document lacks is a ToolInputError naming its tabs.
-
-export async function loadTab(
-  env: Env,
-  token: string,
-  documentId: string,
-  tabId?: string,
-): Promise<{ document: LiveDoc; tab: TabRecord } | null> {
-  const { document: liveDoc } = await apiJson<DocumentResponse>(
-    env,
-    token,
-    `/documents/${encodeURIComponent(documentId)}`,
-  );
-  // A tab by its id, or by its name when one tab alone has it (@liveworkspace/mcp-kit/tab-named).
-  const id = tabId === undefined ? liveDoc.tabs[0]?.id : (tabIdNamed(liveDoc.tabs, tabId) ?? tabId);
-  if (!id) return null;
-  if (!liveDoc.tabs.some((t) => t.id === id))
-    throw new ToolInputError(
-      `No tab "${id}" in this document. Tabs: ${liveDoc.tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
-    );
-  const { tab } = await apiJson<TabResponse>(
-    env,
-    token,
-    `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(id)}`,
-  );
-  return { document: liveDoc, tab };
-}

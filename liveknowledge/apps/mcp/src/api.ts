@@ -21,11 +21,16 @@ export { ApiError };
 const API_BASE = 'https://liveknowledge-api/api';
 
 // The client for one caller: their token, and failures reported as the running tool's (docs/specs/015-api/mcp-server.md §4.12).
-export function clientFor(env: Env, token: string): ApiClient {
+// `headers` rides every call: the knowledgebase tools name their door and their client with it (knowledge-client.ts).
+export function clientFor(
+  env: Env,
+  token: string,
+  headers: Readonly<Record<string, string>> = {},
+): ApiClient {
   return createApiClient({
     baseUrl: API_BASE,
     fetch: (request) => env.API.fetch(request),
-    headers: () => ({ Authorization: `Bearer ${token}` }),
+    headers: () => ({ Authorization: `Bearer ${token}`, ...headers }),
     onFailure: (kind) => reportApiFailure(env, kind),
   });
 }

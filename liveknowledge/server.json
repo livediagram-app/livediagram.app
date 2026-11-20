@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.livediagram-app/liveknowledge",
   "title": "liveknowledge",
-  "description": "Create, edit, share and render articles, slide decks and infographics on liveknowledge.app.",
+  "description": "Search, read and suggest edits to a team's knowledgebase, with how far each page can be trusted.",
   "version": "0.1.0",
   "websiteUrl": "https://www.liveknowledge.app",
   "repository": {

@@ -1,23 +1,23 @@
-// The tools' zod output shapes (docs/specs/015-api/mcp-server.md §4.17): what each tool returns on
-// success, advertised as its `outputSchema` and carried as `structuredContent`.
-// The SDK validates every successful result against these on the way out, so a
-// shape here that stops matching tools.ts fails the call rather than shipping a
-// wrong contract. Error results are exempt and carry text only.
+// The output shapes of the tools every liveworkspace app's MCP server has, in this product's words
+// (docs/specs/015-api/mcp-server.md §4.17): what each returns on success, advertised as its `outputSchema` and
+// carried as `structuredContent`. The SDK validates every successful result against these on the way out, so a
+// shape here that stops matching tools.ts fails the call rather than shipping a wrong contract. Error results are
+// exempt and carry text only. The page tools' outputs are knowledge-schema.ts.
 import { EMPTY_DOCUMENT_STALE_DAYS, TRASH_REASONS } from '@liveknowledge/api-schema';
 import { z } from 'zod';
 import { foundArchived } from './archive-tools';
 
-const url = z.string().describe('Link that opens the document in the liveknowledge editor.');
-const documentId = z.string().describe('The document id.');
-const tabId = z.string().describe('The tab id.');
+const url = z.string().describe('Link that opens the knowledgebase in the liveknowledge editor.');
+const documentId = z.string().describe('The knowledgebase id.');
+const pageId = z.string().describe('The page id.');
 
 export const findDocumentsOutput = {
-  count: z.number().int().describe('How many documents matched.'),
+  count: z.number().int().describe('How many knowledgebases matched.'),
   documents: z
     .array(
       z.object({
         id: documentId,
-        name: z.string().describe('The document name.'),
+        name: z.string().describe('The knowledgebase name.'),
         updatedAt: z.number().describe('When it was last saved, as a ms epoch.'),
         library: z
           .string()
@@ -27,43 +27,7 @@ export const findDocumentsOutput = {
       }),
     )
     .describe('The matches, most relevant first.'),
-};
-
-export const readDocumentOutput = {
-  id: documentId,
-  name: z.string().describe('The document name.'),
-  tab: z
-    .object({
-      id: tabId,
-      name: z.string().describe('The tab name.'),
-      rev: z.number().describe('The tab revision: pass it as rev to update_document.'),
-      view: z.string().optional().describe('The view read (format "view").'),
-      text: z.string().optional().describe('The view text (format "view").'),
-      elements: z
-        .array(z.record(z.string(), z.unknown()))
-        .optional()
-        .describe(
-          'The tab elements (format "json"), in the format of the liveknowledge://schema/elements resource.',
-        ),
-    })
-    .describe('The tab that was read.'),
-  tabs: z
-    .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
-    .describe('Every tab of the document, in order: pass one as tabId to read it.'),
-  url,
-};
-
-export const searchIconsOutput = {
-  icons: z
-    .array(
-      z.object({
-        id: z.string().describe('The id, as "iconId" takes it.'),
-        label: z.string().describe('What the icon shows.'),
-        set: z.string().describe('Its catalogue: line-art, or Technology (brand and cloud marks).'),
-      }),
-    )
-    .describe('The best matches first.'),
-  more: z.number().describe('How many more matched beyond the limit.'),
+  next: z.string().describe('The tool to call next, and with what.'),
 };
 
 export const listTemplatesOutput = {
@@ -79,7 +43,7 @@ export const listTemplatesOutput = {
   templates: z
     .array(
       z.object({
-        kind: z.string().describe('Pass as "template" on create_document / add_tab.'),
+        kind: z.string().describe('Pass as "template" on create_document.'),
         title: z.string().describe('The template display name.'),
         description: z.string().describe('What the template scaffolds.'),
         category: z.string().describe('The id of the category it belongs to.'),
@@ -91,11 +55,18 @@ export const listTemplatesOutput = {
 export const createDocumentOutput = {
   id: documentId,
   documentId: documentId.describe(
-    'The document id again, under the name the other tools take it by.',
+    'The knowledgebase id again, under the name the other tools take it by.',
   ),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
-  tabCount: z.number().int().describe('How many tabs were created.'),
-  tabIds: z.array(z.string()).describe('The new tab ids, in order.'),
+  pages: z
+    .array(
+      z.object({
+        page: pageId,
+        title: z.string().describe('The page title.'),
+        parent: z.string().optional().describe('The id of the page it sits under.'),
+      }),
+    )
+    .describe('The pages it starts with, in tree order. None is verified.'),
   folder: z
     .string()
     .describe(
@@ -103,37 +74,7 @@ export const createDocumentOutput = {
         'default folder it was filed in.',
     ),
   url,
-  lint: z
-    .array(z.string())
-    .describe('The lint summary line of each tab as written, in tabIds order.'),
-};
-
-// What a changeset answered (docs/specs/024-agents/agent-changesets.md): its id (null when it
-// changed nothing), the revision it left the tab at, its result lines, and the lint's summary line
-// (docs/specs/024-agents/diagram-lint.md).
-const changesetAnswer = {
-  changesetId: z.string().nullable().describe('The changeset written; null when nothing changed.'),
-  rev: z.number().describe('The tab revision now, to pass as rev on the next update_document.'),
-  text: z.string().describe('What the changeset did, one line per element, and how to revert it.'),
-  lint: z.string().describe('The lint summary line of the tab as written.'),
-};
-
-export const addTabOutput = {
-  documentId,
-  tabId: tabId.describe('The new tab id.'),
-  name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
-  url,
-  ...changesetAnswer,
-};
-
-export const updateDocumentOutput = {
-  id: documentId,
-  documentId: documentId.describe(
-    'The document id again, under the name the other tools take it by.',
-  ),
-  tabId: tabId.describe('The tab that was edited.'),
-  url,
-  ...changesetAnswer,
+  next: z.string().describe('The tool to call next, and with what.'),
 };
 
 export const shareDocumentOutput = {
@@ -148,26 +89,26 @@ export const shareDocumentOutput = {
 
 export const renameDocumentOutput = {
   renamed: z
-    .enum(['document', 'tab'])
-    .describe('Whether the document or one of its tabs was renamed.'),
+    .enum(['document', 'page'])
+    .describe('Whether the knowledgebase ("document") or one of its pages was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
-  id: documentId.optional().describe('The renamed document id (document renames).'),
-  tabId: tabId.optional().describe('The renamed tab id (tab renames).'),
-  url: url.optional().describe('Link that opens the document (document renames).'),
+  id: documentId.optional().describe('The renamed knowledgebase id (knowledgebase renames).'),
+  page: pageId.optional().describe('The renamed page id (page renames).'),
+  url: url.optional().describe('Link that opens the knowledgebase (knowledgebase renames).'),
 };
 
 export const deleteDocumentOutput = {
   deleted: z
-    .enum(['document', 'tab'])
-    .describe('Whether the document or one of its tabs was deleted.'),
+    .enum(['document', 'page'])
+    .describe('Whether the knowledgebase ("document") or one of its pages was deleted.'),
   documentId,
-  tabId: tabId.optional().describe('The deleted tab id (tab deletes).'),
-  trashed: z.boolean().optional().describe('True when the document went to the Trash.'),
+  page: pageId.optional().describe('The deleted page id (page deletes).'),
+  trashed: z.boolean().optional().describe('True when the knowledgebase went to the Trash.'),
   restorableForDays: z
     .number()
     .int()
     .optional()
-    .describe('Days the document can be restored with restore_document before it is purged.'),
+    .describe('Days the knowledgebase can be restored with restore_document before it is purged.'),
 };
 
 export const listTrashOutput = {
@@ -175,7 +116,7 @@ export const listTrashOutput = {
     .array(
       z.object({
         id: documentId,
-        name: z.string().describe('The document name.'),
+        name: z.string().describe('The knowledgebase name.'),
         library: z
           .string()
           .describe('Whose Trash: "personal", or the name of the team (or "team").'),
@@ -188,12 +129,14 @@ export const listTrashOutput = {
         purgeAt: z.string().describe('When it is purged for good, as an ISO timestamp.'),
       }),
     )
-    .describe('The documents that can still be restored.'),
+    .describe('The knowledgebases that can still be restored.'),
 };
 
 export const restoreDocumentOutput = {
-  restored: z.literal('document').describe('Always "document": tabs have no Trash.'),
+  restored: z
+    .literal('document')
+    .describe('Always "document" (the knowledgebase): pages have no Trash.'),
   id: documentId,
-  name: z.string().nullable().describe('The restored document name, or null if unknown.'),
+  name: z.string().nullable().describe('The restored knowledgebase name, or null if unknown.'),
   url,
 };

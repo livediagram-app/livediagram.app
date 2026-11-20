@@ -5,9 +5,12 @@
 //   GET  /api/documents/<id>/context               the Always in Context pages within the budget (get_context)
 //   POST /api/documents/<id>/pages                 a new page from Markdown (create_page): an Editor, or an
 //                                                  Editor's agent holding `suggest`
+//   PUT  /api/documents/<id>/pages/<tab>           the page's writing replaced, or added to (write_page): Editor;
+//                                                  an agent needs `write`, and never on a verified page
 //   POST /api/documents/<id>/pages/<tab>/move      a page moved in the tree (move_page): Editor
 //   PUT  /api/documents/<id>/agents/<token>/scopes what an API token may do here: an Editor in person
-// Reading is every role's. A page read here is counted as `GET tabs/<tab>` counts it.
+// Reading is every role's. A page read here is counted as `GET tabs/<tab>` counts it. `<tab>`, `parent` and `before`
+// take a page's id, or its title when one page alone has it.
 import { nextOrderIndex } from '@liveworkspace/api-kit/tab-order';
 import {
   agentScopesFor,
@@ -21,16 +24,12 @@ import {
 } from '@liveknowledge/api-schema';
 import {
   ARTICLE_MARKDOWN_MAX,
-  buildTab,
-  newKnowledgebasePageContent,
   pageByTitleIn,
   pageMoveRefusal,
   pageTreeRows,
-  parseTabParent,
   withPageMoved,
-  type Tab,
 } from '@liveknowledge/document';
-import { applyArticleWrite } from '@liveknowledge/edit-operations';
+import { newPageFromMarkdown } from '@liveknowledge/edit-operations';
 import {
   CONTEXT_BUDGET_TOKENS,
   assembleContext,
@@ -52,7 +51,13 @@ import { isTokenId, writeScopes } from '../knowledge/agent-grants';
 import { readerOf } from '../knowledge/knowledge-caller';
 import { rowsOf } from '../knowledge/knowledge-db';
 import { countRead } from '../knowledge/knowledge-reads';
-import { openConflictPages, pageMarkdownOf, pageTrustOf } from '../knowledge/page-read';
+import {
+  openConflictPages,
+  pageMarkdownOf,
+  pageNamed,
+  pageTrustOf,
+  pageUnknownBody,
+} from '../knowledge/page-read';
 import { TabTooLargeError } from '../limits';
 import { capStoredName } from '../names';
 import { getParticipant } from '../person/profiles';
@@ -67,6 +72,7 @@ import {
 import { relayPages } from '../room-client';
 import type { DocumentDTO } from '../types';
 import { refreshAfterRead } from './changesets';
+import { handleTabPages } from './tab-pages-route';
 import { requireOwner } from './context';
 import type { KnowledgeRoute } from './knowledge-routes';
 
@@ -196,13 +202,36 @@ async function handleContext({ ctx, document, grant }: KnowledgeRoute): Promise<
   return json(answer);
 }
 
-// The title as the page's front matter, so the writing opens with it; Markdown that brings its own is kept.
-const withTitle = (title: string, markdown: string) => {
-  if (/^---\s*\n/.test(markdown)) return markdown;
-  const line = title.replace(/\s+/g, ' ').replace(/\[\^/g, '\\[^');
-  const quoted = /^(["']).*\1$/.test(line) ? (line[0] === '"' ? `'${line}'` : `"${line}"`) : line;
-  return `---\ntitle: ${quoted}\n---\n\n${markdown}`;
-};
+// A page a request places another by (`parent`, `before`): its id, or its title when one page alone has it.
+function placeOf(document: DocumentDTO, ref: unknown, key = 'parent'): string | Response {
+  const found = typeof ref === 'string' && ref ? pageNamed(document.tabs, ref) : undefined;
+  if (found && found !== 'ambiguous') return found.id;
+  if (typeof ref !== 'string' || !ref)
+    return invalid(`invalid_${key}`, `"${key}" is a page's id or title.`);
+  return json(pageUnknownBody(document.tabs, ref, found), { status: 409 });
+}
+
+async function handleWrite(route: KnowledgeRoute, tab: string): Promise<Response> {
+  const { ctx, document } = route;
+  const body = (await ctx.request.json().catch(() => null)) as {
+    markdown?: unknown;
+    mode?: unknown;
+  } | null;
+  if (typeof body?.markdown !== 'string' || !body.markdown.trim())
+    return invalid('no_markdown', 'Send "markdown": the page\'s writing as Markdown.');
+  if (body.mode !== undefined && body.mode !== 'replace' && body.mode !== 'append')
+    return invalid('invalid_mode', '"mode" is "replace" (the default) or "append".');
+  // The article write every agent's write takes (tab-pages-route.ts): its gate, its verified-page refusal, its
+  // held paragraphs and its relay to open editors.
+  const request = new Request(ctx.request.url, {
+    method: 'POST',
+    headers: ctx.request.headers,
+    body: JSON.stringify({
+      article: { markdown: body.markdown, ...(body.mode ? { mode: body.mode } : {}) },
+    }),
+  });
+  return handleTabPages({ ...ctx, request }, document.id, tab);
+}
 
 // The tab list as it stands, to every open editor: the op an editor's own reorder sends, each page with its parent.
 async function relayTree(route: KnowledgeRoute): Promise<DocumentDTO | null> {
@@ -246,35 +275,24 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
   const markdown = typeof body?.markdown === 'string' ? body.markdown : '';
   if (body?.markdown !== undefined && typeof body.markdown !== 'string')
     return invalid('invalid_markdown', '"markdown" is the page\'s writing as Markdown text.');
-  if (body?.parent !== undefined && parseTabParent(body.parent) === undefined)
-    return invalid('invalid_parent', '"parent" is the id of the page to put this one under.');
+  const under = body?.parent === undefined ? undefined : placeOf(document, body.parent);
+  if (under instanceof Response) return under;
   const id = crypto.randomUUID();
-  const refusal = tabParentRefusal(await readStoredPages(ctx.env, document.id), id, body?.parent);
+  const refusal = tabParentRefusal(await readStoredPages(ctx.env, document.id), id, under);
   if (refusal) return conflict(refusal);
-  const blank: Tab = {
-    ...buildTab(id, title, [], undefined, undefined),
-    templateChosen: true,
-    ...newKnowledgebasePageContent(),
-    ...(body?.parent ? { parent: body.parent } : {}),
-  };
-  let tab = blank;
-  if (markdown.trim()) {
-    const written = applyArticleWrite(
-      blank,
-      { markdown: withTitle(title, markdown), mode: 'replace' },
-      {},
-      {
-        pageByTitle: pageByTitleIn(
-          document.tabs.map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
-        ),
-      },
-    );
-    if ('refusal' in written) {
-      const { code, ...rest } = written.refusal;
-      return json({ error: code, ...rest }, { status: 400 });
-    }
-    tab = written.tab;
+  const made = newPageFromMarkdown(
+    { id, title, markdown, ...(under ? { parent: under } : {}) },
+    {
+      pageByTitle: pageByTitleIn(
+        document.tabs.map((t) => ({ id: t.id, name: t.name, parent: t.parent })),
+      ),
+    },
+  );
+  if ('refusal' in made) {
+    const { code, ...rest } = made.refusal;
+    return json({ error: code, ...rest }, { status: 400 });
   }
+  const { tab } = made;
   let rev: number;
   try {
     rev = await upsertTabAtRev(ctx.env, document.id, tab, nextOrderIndex(document.tabs), 0);
@@ -291,7 +309,7 @@ async function handleCreate(route: KnowledgeRoute): Promise<Response> {
     chars: markdown.length,
   });
   return json(
-    { page: { tab: id, title, ...(body?.parent ? { parent: body.parent } : {}), rev } },
+    { page: { tab: id, title, ...(under ? { parent: under } : {}), rev } },
     { status: 201 },
   );
 }
@@ -305,13 +323,16 @@ async function handleMove(route: KnowledgeRoute, tab: string): Promise<Response>
       'invalid_body',
       'Send "parent" (a page id, or null for the top level) and optionally "before".',
     );
+  const before = body.before === undefined ? undefined : placeOf(document, body.before, 'before');
+  if (before instanceof Response) return before;
+  // No parent named beside a `before`: the page goes where that page is.
   const parent =
-    body.parent === null || body.parent === undefined ? undefined : parseTabParent(body.parent);
-  if (body.parent !== null && body.parent !== undefined && parent === undefined)
-    return invalid('invalid_parent', '"parent" is a page id, or null for the top level.');
-  const before = body.before === undefined ? undefined : parseTabParent(body.before);
-  if (body.before !== undefined && before === undefined)
-    return invalid('invalid_before', '"before" is the id of the page this one goes in front of.');
+    body.parent === null
+      ? undefined
+      : body.parent === undefined
+        ? document.tabs.find((t) => t.id === before)?.parent
+        : placeOf(document, body.parent);
+  if (parent instanceof Response) return parent;
   const stored = await readStoredPages(ctx.env, document.id);
   const to = { parent, before };
   const refusal = pageMoveRefusal(stored, tab, to);
@@ -371,14 +392,16 @@ export async function handleAgentRoutes(route: KnowledgeRoute): Promise<Response
   return null;
 }
 
-/** `GET pages/<tab>` and `POST pages/<tab>/move`, for a page the knowledgebase holds. */
+/** `GET pages/<tab>`, `PUT pages/<tab>` and `POST pages/<tab>/move`, for a page the knowledgebase holds. */
 export function handleAgentPageRoute(
   route: KnowledgeRoute,
   summary: Summary,
 ): Promise<Response> | Response | null {
   const { segments, request } = route.ctx;
-  if (segments.length === 5)
-    return request.method === 'GET' ? handleRead(route, summary) : methodNotAllowed();
+  if (segments.length === 5) {
+    if (request.method === 'GET') return handleRead(route, summary);
+    return request.method === 'PUT' ? handleWrite(route, summary.id) : methodNotAllowed();
+  }
   if (segments.length === 6 && segments[5] === 'move')
     return request.method === 'POST' ? handleMove(route, summary.id) : methodNotAllowed();
   return null;

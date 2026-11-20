@@ -45,6 +45,7 @@ export const ROOT_TYPES = [
   'CreatePageRequest',
   'CreatePageResponse',
   'MovePageRequest',
+  'WritePageRequest',
   'MovePageResponse',
   'SuggestEditRequest',
   'SuggestEditResponse',

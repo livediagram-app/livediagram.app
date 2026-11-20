@@ -42,7 +42,7 @@ export async function handleTabPages(
         {
           error: 'page_verified',
           message:
-            'This page is verified, so an agent does not rewrite it. Suggest the change instead (suggest_edit; POST pages/<page>/suggestions) for a person to accept.',
+            "This page is verified, so an agent does not rewrite it. Suggest the change instead, for a person to accept (the MCP's suggest_edit, the CLI's suggest, POST pages/<page>/suggestions).",
         },
         { status: 409 },
       );

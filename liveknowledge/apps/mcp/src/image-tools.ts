@@ -1,7 +1,6 @@
 // The user's image gallery for agents (docs/specs/015-api/mcp-server.md §4.5b, docs/specs/009-elements/images.md
 // "Agents"): list_images, upload_image and delete_image (§4.5c, §4.5d, over the shared @liveworkspace/agent-verbs
-// images/upload.ts and images/remove.ts), and the check every element-writing tool runs so an imageId names a picture
-// the caller may place.
+// images/upload.ts and images/remove.ts).
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { ImageSummary } from '@liveknowledge/api-schema';
 import {
@@ -9,8 +8,6 @@ import {
   CONTACT_SHEET_MAX,
   galleryListing,
   removeFromGallery,
-  imagesPlacedIn,
-  unknownImageIssue,
   type GalleryImage,
 } from '@liveknowledge/agent-verbs';
 import { mcpDeleteImage, mcpListImages, mcpUploadImage } from '@liveknowledge/agent-verbs/mcp';
@@ -45,20 +42,6 @@ async function readGallery(env: Env, token: string): Promise<ImageSummary[] | nu
     if (err instanceof ApiError && err.status === 503) return null;
     throw err;
   }
-}
-
-// Why a tool's input cannot be written for the pictures it places, or null. Reads the gallery only when the input
-// places a picture, once for the whole call.
-export async function imageIdIssue(
-  env: Env,
-  token: string,
-  input: unknown,
-): Promise<string | null> {
-  const placed = imagesPlacedIn(input);
-  if (placed.length === 0) return null;
-  const gallery = await readGallery(env, token);
-  if (!gallery) return IMAGES_UNAVAILABLE;
-  return unknownImageIssue(placed, new Set(gallery.map((i) => i.id)));
 }
 
 const caption = (n: number, name: string, drawn: boolean) => {

@@ -121,65 +121,6 @@ describe('list_images', () => {
   });
 });
 
-describe('the imageId check on writes', () => {
-  const page = (imageId: string | null) => ({
-    name: 'Doc',
-    tabs: [
-      {
-        name: 'Page',
-        elements: [{ id: 'hero', type: 'image', x: 0, y: 0, width: 640, height: 400, imageId }],
-      },
-    ],
-  });
-
-  it('refuses a picture the gallery does not hold, before writing anything', async () => {
-    const { calls, call } = harness();
-    const result = await call('create_document', page('someone-elses'));
-    expect(result.isError).toBe(true);
-    expect(result.content[0]!.text).toContain(
-      'imageId "someone-elses" on element "hero" is not in your image gallery',
-    );
-    expect(calls).toEqual(['GET /api/images']);
-  });
-
-  it('lets a gallery picture through to the write', async () => {
-    const { calls, call } = harness();
-    // The write itself fails in this harness: what matters is that it was reached.
-    await call('create_document', page('shot-1')).catch(() => undefined);
-    expect(calls[0]).toBe('GET /api/images');
-    expect(calls.length).toBeGreaterThan(1);
-  });
-
-  it('reads no gallery when nothing places a picture', async () => {
-    const { calls, call } = harness();
-    await call('create_document', page(null)).catch(() => undefined);
-    expect(calls).not.toContain('GET /api/images');
-  });
-
-  it('checks add_tab and update_document’s ops too', async () => {
-    const { call } = harness();
-    const added = await call('add_tab', {
-      documentId: 'd1',
-      name: 'Page',
-      elements: page('nope').tabs[0]!.elements,
-    });
-    expect(added.content[0]!.text).toContain('imageId "nope"');
-    const updated = await call('update_document', {
-      documentId: 'd1',
-      mode: 'ops',
-      ops: [{ op: 'update', elementId: 'hero', element: { imageId: 'nope' } }],
-    });
-    expect(updated.isError).toBe(true);
-    expect(updated.content[0]!.text).toContain('imageId "nope" on element "hero"');
-  });
-
-  it('says so when the server keeps no images', async () => {
-    const { call } = harness('none');
-    const result = await call('create_document', page('shot-1'));
-    expect(result.content[0]!.text).toContain(IMAGES_UNAVAILABLE);
-  });
-});
-
 describe('contactSheetTab', () => {
   it('lays pictures four a row, each above its place and name, at most twelve', () => {
     const many = Array.from({ length: 14 }, (_, i) => ({
