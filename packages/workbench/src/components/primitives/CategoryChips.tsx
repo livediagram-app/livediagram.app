@@ -2,7 +2,11 @@
 
 // A row of category chips, each with its count, one pressed at a time (All first, by the caller's list): the layout
 // gallery's categories and a logo page's display library. The row scrolls sideways rather than wrapping, unless
-// `wrap` is set for a narrow home (a menu flyout), where a hidden chip could not be reached with a mouse wheel.
+// `wrap` is set for a narrow home (a menu flyout). A sideways row takes a mouse wheel's up and down as left and right
+// (it has nothing to scroll the other way), and the edge with chips past it fades out (the editors' `scroll-edge-fade`),
+// so a chip past the edge is neither out of a mouse's reach nor out of sight.
+
+import { useEffect, useRef } from 'react';
 
 export type CategoryChip = { id: string; label: string; count: number };
 
@@ -19,14 +23,33 @@ export function CategoryChips({
   ariaLabel: string;
   wrap?: boolean;
 }) {
+  const row = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = row.current;
+    if (wrap || !el) return;
+    // Not passive: a wheel the row takes must not also scroll what is behind it. At either end the wheel passes on.
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey || Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+      const room = el.scrollWidth - el.clientWidth;
+      if (room <= 0) return;
+      const step = e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY;
+      const to = Math.min(room, Math.max(0, el.scrollLeft + step));
+      if (to === el.scrollLeft) return;
+      e.preventDefault();
+      el.scrollLeft = to;
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [wrap]);
   return (
     <div
+      ref={row}
       role="group"
       aria-label={ariaLabel}
       className={
         wrap
           ? 'flex shrink-0 flex-wrap gap-1.5'
-          : '-mx-1 flex shrink-0 gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          : 'scroll-edge-fade -mx-1 flex shrink-0 gap-1.5 overflow-x-auto overscroll-x-contain px-1 pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
       }
     >
       {chips.map((c) => {

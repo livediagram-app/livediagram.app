@@ -874,7 +874,7 @@ in livedocuments.
   - Along the top, a **search** ("Search n layouts") and **Surprise Me**. The search narrows every
     category at once: each word typed must appear in a layout's name, its description or its
     category's name. Nothing matches: "No layouts match" with Clear Search.
-  - Under them, **category chips** in one row that scrolls sideways: **All** first, then each
+  - Under them, **category chips** in one row that scrolls sideways (a mouse wheel scrolls it too, and an edge with more chips past it fades out, so none is hidden without a sign): **All** first, then each
     category, each with its count. All (the default) shows every layout in sections, one per
     category, its heading (the category's name and count) held at the top while its layouts scroll
     past; a chip shows that category's layouts alone. A chip and the search combine.
