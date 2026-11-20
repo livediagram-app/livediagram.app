@@ -71,11 +71,15 @@ export type KnowledgeHealthCounts = {
   total: number;
 };
 export type KnowledgeRecentPage = { tab: string; title: string; updatedAt: number };
-/** `GET .../summary` (knowledgebase-home.md): what Home shows of one knowledgebase. */
+/** A page of the caller's own that is due for review: `reviewAt` is when it came due (ms). */
+export type KnowledgeDuePage = { tab: string; title: string; reviewAt: number };
+/** `GET .../summary` (knowledgebase-home.md): what Home shows of one knowledgebase. `yoursToReview` is the caller's
+ *  own pages whose review is due, oldest first, ten at most; empty for a caller with no account. */
 export type KnowledgeSummaryResponse = {
   pages: number;
   health: KnowledgeHealthCounts;
   recent: KnowledgeRecentPage[];
+  yoursToReview: KnowledgeDuePage[];
 };
 
 /** `GET .../ai` (search-and-ask.md "Ask"): never the key, only whether one is set and its last characters. */

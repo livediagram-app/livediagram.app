@@ -76,10 +76,13 @@ async function read<T>(
   url: string,
   action: string,
   signal?: AbortSignal,
+  // `reload`: past the browser's own copy of a cacheable answer, which this read then replaces.
+  cache?: RequestCache,
 ): Promise<T> {
   const res = await apiFetch(url, {
     headers: await knowledgeHeaders(who),
     signal: knowledgeSignal(signal),
+    ...(cache ? { cache } : {}),
   });
   return expectOk<T>(res, action, expected);
 }
@@ -110,13 +113,22 @@ export async function apiSearchKnowledge(
   return (await read<KnowledgeSearchResponse>(who, url, 'search knowledge', signal)).results;
 }
 
-/** The knowledgebase's numbers for Home: page count, health, the pages changed last. */
+/** The knowledgebase's numbers for Home: page count, health, the pages changed last, the caller's own due pages.
+ *  The route's answer may be kept a minute by the browser; `fresh` reads past that copy and replaces it (after a
+ *  page was verified from Home, so a reload inside the minute does not list it again). */
 export function apiKnowledgeSummary(
   who: KnowledgeCaller,
   documentId: string,
   signal?: AbortSignal,
+  fresh = false,
 ): Promise<KnowledgeSummaryResponse> {
-  return read(who, knowledgeUrl(documentId, 'summary'), 'read knowledge summary', signal);
+  return read(
+    who,
+    knowledgeUrl(documentId, 'summary'),
+    'read knowledge summary',
+    signal,
+    fresh ? 'reload' : undefined,
+  );
 }
 
 /** The pages whose writing links to this one, in tree order. */

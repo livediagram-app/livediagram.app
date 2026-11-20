@@ -24,6 +24,8 @@ export type HomeData = {
   /** Knowledgebases whose summary could not be read. */
   summaryFailed: ReadonlySet<string>;
   retry: () => void;
+  /** Read one knowledgebase's summary again, past every copy kept (after a page of it was verified here). */
+  refresh: (documentId: string) => Promise<void>;
 };
 
 // One cache per account, kept while the tab lives.
@@ -95,5 +97,24 @@ export function useHomeData(ownerId: string | null): HomeData {
     setAttempt((n) => n + 1);
   }, []);
 
-  return { ...list, summaries, summaryFailed, retry };
+  const refresh = useCallback(
+    async (documentId: string) => {
+      if (!ownerId) return;
+      cacheFor(ownerId).drop(documentId);
+      try {
+        const summary = await apiKnowledgeSummary(
+          { ownerId, shareCode: null },
+          documentId,
+          undefined,
+          true,
+        );
+        setSummaries((held) => new Map(held).set(documentId, summary));
+      } catch {
+        // The numbers shown stay; the next visit reads them again.
+      }
+    },
+    [ownerId],
+  );
+
+  return { ...list, summaries, summaryFailed, retry, refresh };
 }

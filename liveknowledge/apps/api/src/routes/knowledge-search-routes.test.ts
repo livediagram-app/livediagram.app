@@ -320,6 +320,120 @@ describe('GET summary', () => {
     },
   );
 
+  // verification.md "Reminders", knowledgebase-home.md "Yours to Review": the caller's own pages that are due.
+  describe('yoursToReview', () => {
+    const DAY = 86_400_000;
+    const T0 = Date.parse('2026-01-01T00:00:00Z');
+    afterEach(() => vi.useRealTimers());
+    const due = async (kit: Kit, who: Who) =>
+      (
+        await body<{ yoursToReview: { tab: string; title: string; reviewAt: number }[] }>(
+          await kit.call(who, 'GET', '/api/documents/kb/summary'),
+        )
+      ).yoursToReview;
+
+    // Holidays verified first, Deploys a day later, both the Editor's; Rollbacks is the Participant's. Then the
+    // 90 days pass for all three.
+    async function agedKit(): Promise<Kit> {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(T0);
+      const kit = await knowledgeKit();
+      await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/verify');
+      vi.setSystemTime(T0 + DAY);
+      await kit.call('editor', 'POST', '/api/documents/kb/pages/deploys/verify');
+      await kit.call('editor', 'POST', '/api/documents/kb/pages/rollbacks/verify');
+      // The Participant owns Rollbacks. Written where the route would write it: this kit's index knows no one but
+      // the caller, so the owner route (which asks it whether a person can open the knowledgebase) is not the way.
+      kit.db.sql
+        .prepare(
+          "UPDATE tabs SET rev = rev + 1, data = json_set(data, '$.knowledge.owner', 'user_p') WHERE id = 'rollbacks'",
+        )
+        .run();
+      vi.setSystemTime(T0 + 120 * DAY);
+      return kit;
+    }
+
+    it('lists an Editor their own due pages, the longest overdue first, each with when it came due', async () => {
+      const kit = await agedKit();
+      expect(await due(kit, 'editor')).toEqual([
+        { tab: 'holidays', title: 'Holidays', reviewAt: T0 + 90 * DAY },
+        { tab: 'deploys', title: 'Deploys', reviewAt: T0 + 91 * DAY },
+      ]);
+    });
+
+    it('lists a Participant theirs alone, and a Viewer who owns nothing none', async () => {
+      const kit = await agedKit();
+      expect((await due(kit, 'participant')).map((p) => p.tab)).toEqual(['rollbacks']);
+      expect(await due(kit, 'viewer')).toEqual([]);
+    });
+
+    it('lists none for a visitor with no account, and an agent the pages of the account it acts for', async () => {
+      const kit = await agedKit();
+      expect(await due(kit, 'link')).toEqual([]);
+      expect((await due(kit, 'agent')).map((p) => p.tab)).toEqual(['holidays', 'deploys']);
+    });
+
+    it('lists nothing before a page is due, nothing never verified, and a page again only once it is due again', async () => {
+      const kit = await agedKit();
+      vi.setSystemTime(T0 + 30 * DAY);
+      expect(await due(kit, 'editor')).toEqual([]);
+      vi.setSystemTime(T0 + 120 * DAY);
+      // Still Right: verified again, so it leaves the list.
+      await kit.call('editor', 'POST', '/api/documents/kb/pages/holidays/verify');
+      expect((await due(kit, 'editor')).map((p) => p.tab)).toEqual(['deploys']);
+    });
+
+    it('caps the list at ten, the oldest kept', async () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      const many = Array.from({ length: 12 }, (_, i) => page(`p${i}`, `Page ${i}`, []));
+      const kit = await knowledgeKit({}, many);
+      // Verified newest first, so the cap is seen to keep the oldest and not the first in the tree.
+      for (let i = 0; i < 12; i++) {
+        vi.setSystemTime(T0 + (12 - i) * DAY);
+        await kit.call('editor', 'POST', `/api/documents/kb/pages/p${i}/verify`);
+      }
+      vi.setSystemTime(T0 + 200 * DAY);
+      const listed = await due(kit, 'editor');
+      expect(listed.map((p) => p.tab)).toEqual([
+        'p11',
+        'p10',
+        'p9',
+        'p8',
+        'p7',
+        'p6',
+        'p5',
+        'p4',
+        'p3',
+        'p2',
+      ]);
+    });
+  });
+
+  // The worst the route can be asked: a full knowledgebase (500 pages of 4,000 characters), every page the
+  // caller's own and due, so every body is looked at for its owner before the ten oldest are kept.
+  it('answers a full knowledgebase whose every page is the caller’s and due within its budget', async () => {
+    const words = 'The release train leaves when every check has passed. '.repeat(75);
+    const many = Array.from({ length: 500 }, (_, i) =>
+      page(`p${i}`, `Page ${i}`, [{ id: 'b1', type: 'paragraph', runs: [{ text: words }] }]),
+    );
+    const kit = await knowledgeKit({}, many);
+    kit.db.sql.exec(
+      `UPDATE tabs SET rev = rev + 1, data = json_set(data, '$.knowledge.owner', 'user_o');
+       INSERT OR REPLACE INTO page_trust (tab, title, verified_at, review_days)
+         SELECT id, name, 1000 + rowid, 30 FROM tabs`,
+    );
+    // Once to warm the statement, then measured.
+    await kit.call('editor', 'GET', '/api/documents/kb/summary');
+    const t0 = cpuNowMs();
+    const res = await kit.call('editor', 'GET', '/api/documents/kb/summary');
+    const cpu = cpuNowMs() - t0;
+    const summary = await body<{ pages: number; yoursToReview: { tab: string }[] }>(res);
+    console.info('[measured] summary of 500 owned, due pages', { cpuMs: Math.round(cpu) });
+    expect(summary.pages).toBe(500);
+    expect(summary.yoursToReview).toHaveLength(10);
+    expect(cpu).toBeLessThan(cpuBudgetMs(150));
+  });
+
   it('is closed to no access and to a link confined to one page', async () => {
     const kit = await knowledgeKit();
     expect((await kit.call('stranger', 'GET', '/api/documents/kb/summary')).status).toBe(403);

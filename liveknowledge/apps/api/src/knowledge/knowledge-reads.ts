@@ -10,6 +10,7 @@ import {
 } from '@liveknowledge/knowledge';
 import type {
   KnowledgeContextPage,
+  KnowledgeDuePage,
   KnowledgeHealthCounts,
   KnowledgeRecentPage,
 } from '@liveknowledge/api-schema';
@@ -19,6 +20,8 @@ import { knowledgeDb, runAll } from './knowledge-db';
 const DAY_MS = 86_400_000;
 /** The pages Home lists as recently updated. */
 export const RECENT_PAGES = 8;
+/** The pages of the caller's own Home lists as due for review. */
+export const OWN_DUE_PAGES = 10;
 
 /** The pages marked Always in Context, in the tab list's order, each with its size. */
 export async function contextPages(
@@ -76,6 +79,34 @@ export async function recentPages(
   )
     .bind(documentId)
     .all<KnowledgeRecentPage>();
+  return results ?? [];
+}
+
+/**
+ * The pages `owner` answers for whose review is due (verification.md "Reminders"), the longest overdue first,
+ * `OWN_DUE_PAGES` at most. Due is what the health counts call due: verified, with a review interval, and that
+ * interval past. The trust rows are read first (one small row a page), and a page's body is only looked at, for its
+ * owner, once its row says it is due.
+ */
+export async function ownDuePages(
+  env: DocumentEnv,
+  documentId: string,
+  owner: string,
+  now: number,
+): Promise<KnowledgeDuePage[]> {
+  const { results } = await env.DOCUMENT_DB.prepare(
+    `SELECT t.id AS tab, t.name AS title, due.review_at AS reviewAt
+       FROM (SELECT p.tab, p.verified_at + p.review_days * ${DAY_MS} AS review_at
+               FROM page_trust p
+              WHERE p.verified_at IS NOT NULL AND p.review_days IS NOT NULL
+                AND p.verified_at + p.review_days * ${DAY_MS} <= ?) due
+       JOIN document_tabs dt ON dt.tab_id = due.tab
+       JOIN tabs t ON t.id = due.tab
+      WHERE dt.document_id = ? AND json_valid(t.data) AND json_extract(t.data, '$.knowledge.owner') = ?
+      ORDER BY due.review_at ASC, dt.order_index ASC LIMIT ${OWN_DUE_PAGES}`,
+  )
+    .bind(now, documentId, owner)
+    .all<KnowledgeDuePage>();
   return results ?? [];
 }
 

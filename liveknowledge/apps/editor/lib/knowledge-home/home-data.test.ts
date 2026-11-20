@@ -11,6 +11,8 @@ import {
   mergeSearchResults,
   pagesText,
   recentPagesAcross,
+  reviewKey,
+  reviewPagesAcross,
   verifiedPercent,
 } from './home-data';
 
@@ -26,6 +28,7 @@ const summary = (over: Partial<KnowledgeSummaryResponse> = {}): KnowledgeSummary
   pages: 64,
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   recent: [],
+  yoursToReview: [],
   ...over,
 });
 const result = (id: string, isTitle = false): KnowledgeSearchResult => ({
@@ -141,6 +144,52 @@ describe('the summary cache', () => {
     await expect(cache.get('bad')).rejects.toThrow('down');
     await expect(cache.get('bad')).rejects.toThrow('down');
     expect(read).toHaveBeenCalledTimes(4);
+  });
+});
+
+describe('Yours to Review across knowledgebases', () => {
+  const kbs = [
+    { id: 'a', name: 'Handbook', at: 2 },
+    { id: 'b', name: 'Runbooks', at: 1 },
+  ];
+  const summaries = new Map([
+    [
+      'a',
+      summary({
+        yoursToReview: [
+          { tab: 't2', title: 'On Call', reviewAt: 300 },
+          { tab: 't1', title: 'Releases', reviewAt: 100 },
+        ],
+      }),
+    ],
+    ['b', summary({ yoursToReview: [{ tab: 't9', title: 'Rotas', reviewAt: 200 }] })],
+  ]);
+
+  it('lists every knowledgebase’s due pages together, the longest overdue first', () => {
+    expect(reviewPagesAcross(kbs, summaries).map((p) => [p.knowledgebase, p.title])).toEqual([
+      ['Handbook', 'Releases'],
+      ['Runbooks', 'Rotas'],
+      ['Handbook', 'On Call'],
+    ]);
+  });
+
+  it('leaves out a page verified here, and reads a summary with no list as none', () => {
+    const done = new Set([reviewKey({ documentId: 'a', tab: 't1' })]);
+    expect(reviewPagesAcross(kbs, summaries, done).map((p) => p.title)).toEqual([
+      'Rotas',
+      'On Call',
+    ]);
+    const older = new Map([['a', { ...summary(), yoursToReview: undefined } as never]]);
+    expect(reviewPagesAcross(kbs, older)).toEqual([]);
+  });
+
+  it('reads a knowledgebase’s summary again once it is dropped', async () => {
+    const read = vi.fn(async () => summary());
+    const cache = createSummaryCache(read, () => 0);
+    await cache.get('a');
+    cache.drop('a');
+    await cache.get('a');
+    expect(read).toHaveBeenCalledTimes(2);
   });
 });
 

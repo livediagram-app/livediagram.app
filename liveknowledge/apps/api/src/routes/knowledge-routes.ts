@@ -17,7 +17,7 @@
 // The gate is the caller's grant (routes/context.ts): reading is every role's, a share link's visitor included; a
 // write is an Editor's. A link confined to one page reaches that page's own routes and search, nothing else.
 import { getDocument } from '../db';
-import { knowledgeHealthCounts, recentPages } from '../knowledge/knowledge-reads';
+import { knowledgeHealthCounts, ownDuePages, recentPages } from '../knowledge/knowledge-reads';
 import { pageNamed, pageUnknownBody } from '../knowledge/page-read';
 import { forbidden, json, methodNotAllowed, notFound } from '../responses';
 import type { DocumentDTO } from '../types';
@@ -28,6 +28,7 @@ import {
   type DocumentRouteContext,
 } from './context';
 import { handleAgentPageRoute, handleAgentRoutes } from './knowledge-agent-routes';
+import { accountOf } from '../knowledge/knowledge-caller';
 import { handleAiRoutes } from './knowledge-ai-routes';
 import { handleAsk } from './knowledge-ask-route';
 import { handleOverviewRoutes } from './knowledge-overview-routes';
@@ -62,12 +63,15 @@ const wholeKnowledgebase = (grant: DocumentAccess) => grant.tabScope === null;
 
 async function handleSummary({ ctx, document }: KnowledgeRoute): Promise<Response> {
   const now = Date.now();
-  const [health, recent] = await Promise.all([
+  // Yours to Review is the caller's own: a guest, or a visitor through a link, owns no page.
+  const account = accountOf(ctx);
+  const [health, recent, yoursToReview] = await Promise.all([
     knowledgeHealthCounts(ctx.env, document.id, now),
     recentPages(ctx.env, document.id),
+    account ? ownDuePages(ctx.env, document.id, account, now) : [],
   ]);
   return json(
-    { pages: health.total, health, recent },
+    { pages: health.total, health, recent, yoursToReview },
     { headers: { 'Cache-Control': `private, max-age=${SUMMARY_MAX_AGE_SECONDS}` } },
   );
 }

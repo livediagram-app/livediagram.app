@@ -39,6 +39,16 @@ illustration alone was looked at: drawn to a PNG from the same coordinates, ligh
 - **Requests on open:** 1 list, then for each of at most 12 knowledgebases 1 grant (the api funnel's, kept ten
   minutes) and 1 summary: 25 at most, none repeated inside a minute. Not measured against a server.
 - **`recentPagesAcross`** merges the summaries' `recent` and keeps the newest `HOME_RECENT_PAGES` (8).
+- **Yours to Review** (`reviewPagesAcross`, `useStillRight`): each summary carries `yoursToReview`, the caller's own
+  pages whose review is due (`ownDuePages` in the api's `knowledge-reads.ts`: the page's `knowledge.owner` is the
+  caller's account, it is verified, has a review interval and that interval is past; the longest overdue first,
+  `OWN_DUE_PAGES` (10) a knowledgebase; none for a caller with no account). Home merges them, the longest overdue
+  first, so the section costs no request beyond the summaries. **Still Right** hides the row at once and calls
+  `apiVerifyPage`; a refusal or a failure brings the row back with the toast "Could not verify “<title>”. Try
+  again."; once it lands, that one knowledgebase's summary is read again with `cache: 'reload'` (the route's answer
+  is `private, max-age=60`, so a plain read, or a reload of Home inside the minute, would list the page again) and
+  its card's numbers follow. Measured (`knowledge-search-routes.test.ts`): the summary of a full knowledgebase, 500
+  pages of 4,000 characters, every one the caller's and due, takes 3 ms of CPU, held under `cpuBudgetMs(150)`.
 - **Search** (`useHomeSearch`): from `HOME_SEARCH_MIN_CHARS` (2), after `SEARCH_DEBOUNCE_MS` (150), one
   `apiSearchKnowledge` per knowledgebase shown, all at once, each with the effect's `AbortSignal`; the next words
   abort them. `mergeSearchResults` takes rank 1 of every knowledgebase, then rank 2, and so on, title rows ahead at
@@ -87,7 +97,9 @@ which is the one `/new` is about to make) and under `ARRIVAL_TTL_MS` (120,000) o
 
 Home lists what the index lets the person open and links into it; every action it starts is checked where it lands.
 Ask from Home is the Ask view's (every signed-in role). Import opens for an Editor of the whole knowledgebase and
-does nothing for anyone else. **Still Right** is Verify (Editor with an account); it has no rows to act on yet.
+does nothing for anyone else. **Still Right** is Verify (Editor with an account). The list is the caller's own whatever their role (a page's owner is a person with access): an Editor's Still
+Right verifies; a Participant's or a Viewer's is refused by the route (403), the row comes back and the toast says
+so. Tested a role at a time in `knowledge-search-routes.test.ts` "yoursToReview".
 
 ## Tests
 

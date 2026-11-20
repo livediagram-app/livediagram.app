@@ -20,7 +20,13 @@ vi.mock('@/hooks/persistence/useAccountBootstrap', () => ({
 }));
 const index = vi.hoisted(() => ({ listItems: vi.fn() }));
 vi.mock('@liveworkspace/workbench/lib/index-client', () => ({ indexClient: index }));
-const api = vi.hoisted(() => ({ apiKnowledgeSummary: vi.fn(), apiSearchKnowledge: vi.fn() }));
+const api = vi.hoisted(() => ({
+  apiKnowledgeSummary: vi.fn(),
+  apiSearchKnowledge: vi.fn(),
+  apiVerifyPage: vi.fn(),
+}));
+const toast = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn(), info: vi.fn() }));
+vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 vi.mock('@/lib/api/knowledge', async (actual) => ({
   ...(await actual<typeof import('@/lib/api/knowledge')>()),
   ...api,
@@ -47,6 +53,7 @@ const summary = (over: Partial<KnowledgeSummaryResponse> = {}): KnowledgeSummary
   pages: 64,
   health: { verified: 59, reviewDue: 3, neverVerified: 2, total: 64 },
   recent: [{ tab: 't1', title: 'Release Process', updatedAt: Date.now() - 3_600_000 }],
+  yoursToReview: [],
   ...over,
 });
 const found = (id: string, over: Partial<KnowledgeSearchResult> = {}): KnowledgeSearchResult => ({
@@ -398,6 +405,106 @@ describe('Yours to Review', () => {
     expect(onStillRight).toHaveBeenCalledWith(rows[1]);
     expect(buttons[1]!.getAttribute('aria-busy')).toBe('true');
   });
+  // The section on Home itself: the rows come with the summaries Home already reads, and Still Right is Verify.
+  describe('on Home', () => {
+    const DAY = 86_400_000;
+    const due = (id: string) =>
+      id === 'a'
+        ? summary({
+            yoursToReview: [
+              { tab: 't2', title: 'On Call', reviewAt: Date.now() - DAY },
+              { tab: 't1', title: 'Releases', reviewAt: Date.now() - 9 * DAY },
+            ],
+          })
+        : summary({
+            yoursToReview: [{ tab: 't9', title: 'Rotas', reviewAt: Date.now() - 4 * DAY }],
+          });
+    const listed = () =>
+      within(screen.getByRole('region', { name: 'Yours to Review' }))
+        .getAllByRole('link')
+        .map((a) => [a.textContent, a.getAttribute('href')]);
+    const still = (title: string) => {
+      const row = screen.getByRole('link', { name: title }).closest('li')!;
+      fireEvent.click(within(row).getByRole('button', { name: 'Still Right' }));
+    };
+    beforeEach(() => {
+      api.apiKnowledgeSummary.mockImplementation(async (_who: unknown, id: string) => due(id));
+    });
+
+    it('lists the person’s own due pages of every knowledgebase, the longest overdue first, with no request of its own', async () => {
+      await home();
+      await waitFor(() =>
+        expect(listed()).toEqual([
+          ['Releases', '/document/a#t=t1'],
+          ['Rotas', '/document/b#t=t9'],
+          ['On Call', '/document/a#t=t2'],
+        ]),
+      );
+      // One summary a knowledgebase, as before Yours to Review had rows.
+      expect(api.apiKnowledgeSummary).toHaveBeenCalledTimes(2);
+      expect(api.apiVerifyPage).not.toHaveBeenCalled();
+    });
+
+    it('verifies on Still Right: the row goes at once, then the knowledgebase’s numbers are read again, fresh', async () => {
+      let land: () => void = () => {};
+      api.apiVerifyPage.mockReturnValue(new Promise<void>((resolve) => (land = resolve)));
+      await home();
+      await waitFor(() => expect(listed()).toHaveLength(3));
+      still('Releases');
+      // Gone before the request has answered.
+      expect(listed().map(([title]) => title)).toEqual(['Rotas', 'On Call']);
+      expect(api.apiVerifyPage).toHaveBeenCalledExactlyOnceWith(
+        { ownerId: auth.value.accountUserId, shareCode: null },
+        'a',
+        't1',
+      );
+      api.apiKnowledgeSummary.mockImplementation(async (_who: unknown, id: string) =>
+        id === 'a'
+          ? summary({
+              yoursToReview: [{ tab: 't2', title: 'On Call', reviewAt: Date.now() - DAY }],
+            })
+          : due(id),
+      );
+      await act(async () => land());
+      // The one knowledgebase, past every kept copy (`fresh`), and nothing else.
+      await waitFor(() => expect(api.apiKnowledgeSummary).toHaveBeenCalledTimes(3));
+      expect(api.apiKnowledgeSummary.mock.calls[2]).toEqual([
+        { ownerId: auth.value.accountUserId, shareCode: null },
+        'a',
+        undefined,
+        true,
+      ]);
+      expect(listed().map(([title]) => title)).toEqual(['Rotas', 'On Call']);
+      expect(toast.error).not.toHaveBeenCalled();
+    });
+
+    it('puts the row back and says so when the verify fails', async () => {
+      api.apiVerifyPage.mockRejectedValue(new Error('forbidden'));
+      await home();
+      await waitFor(() => expect(listed()).toHaveLength(3));
+      still('Rotas');
+      expect(listed().map(([title]) => title)).toEqual(['Releases', 'On Call']);
+      await waitFor(() =>
+        expect(listed().map(([title]) => title)).toEqual(['Releases', 'Rotas', 'On Call']),
+      );
+      expect(toast.error).toHaveBeenCalledExactlyOnceWith('Could not verify “Rotas”. Try again.');
+      // Nothing is read again for a verify that did not land.
+      expect(api.apiKnowledgeSummary).toHaveBeenCalledTimes(2);
+    });
+
+    it('takes the last row away with its section', async () => {
+      api.apiKnowledgeSummary.mockImplementation(async (_who: unknown, id: string) =>
+        id === 'b' ? due('b') : summary(),
+      );
+      api.apiVerifyPage.mockResolvedValue({});
+      await home();
+      await waitFor(() => expect(listed()).toHaveLength(1));
+      api.apiKnowledgeSummary.mockResolvedValue(summary());
+      still('Rotas');
+      expect(screen.queryByRole('region', { name: 'Yours to Review' })).toBeNull();
+    });
+  });
+
   it('is nothing at all with no rows', () => {
     const { container } = render(
       <HomeReview rows={[]} now={NOW} verifying={new Set()} onStillRight={() => {}} />,

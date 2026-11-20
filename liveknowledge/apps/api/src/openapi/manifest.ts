@@ -593,7 +593,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Knowledge',
     summary:
-      'What Home shows of a knowledgebase: its page count, how many pages are Verified, Review Due and Never Verified, and the eight pages changed most recently. Cacheable for a minute.',
+      'What Home shows of a knowledgebase: its page count, how many pages are Verified, Review Due and Never Verified, the eight pages changed most recently, and the pages the caller owns whose review is due (oldest first, ten at most; none for a caller with no account). Cacheable for a minute.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: 'KnowledgeSummaryResponse',

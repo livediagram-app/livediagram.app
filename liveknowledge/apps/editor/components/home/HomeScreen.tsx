@@ -26,16 +26,14 @@ import {
   HomeRecent,
   HomeReview,
   HomeStartTiles,
-  type HomeReviewRow,
 } from './HomeSections';
+import { useStillRight } from './useStillRight';
 import { useHomeData } from './useHomeData';
 import { useHomeSearch } from './useHomeSearch';
 
 /** Example questions shown under the field. */
 const HOME_EXAMPLES = 3;
-// The summary route says nothing yet of the pages a person owns that are due (knowledgebase-home.md "Not built"), so
-// Yours to Review has no rows and draws nothing.
-const NO_REVIEW_ROWS: readonly HomeReviewRow[] = [];
+// Still Right hides its row at once (useStillRight), so no row is ever seen busy.
 const NOT_VERIFYING: ReadonlySet<string> = new Set();
 
 const go = (href: string) => window.location.assign(href);
@@ -92,6 +90,9 @@ function SignedInHome({ ownerId, name }: { ownerId: string; name: string | null 
     go(scope ? knowledgebaseHref(scope) : BLANK_KNOWLEDGEBASE_HREF);
   };
 
+  // Yours to Review: the person's own due pages, from the summaries Home already reads (useStillRight).
+  const review = useStillRight({ ownerId, knowledgebases, summaries, refresh: data.refresh });
+
   const loading = data.status === 'loading';
   const none = data.status === 'ready' && knowledgebases.length === 0;
   const summariesPending = knowledgebases.some(
@@ -136,10 +137,10 @@ function SignedInHome({ ownerId, name }: { ownerId: string; name: string | null 
               summaryFailed={data.summaryFailed}
             />
             <HomeReview
-              rows={NO_REVIEW_ROWS}
+              rows={review.rows}
               now={now}
               verifying={NOT_VERIFYING}
-              onStillRight={() => {}}
+              onStillRight={review.stillRight}
             />
             <HomeRecent
               loading={loading || (recent.length === 0 && summariesPending)}

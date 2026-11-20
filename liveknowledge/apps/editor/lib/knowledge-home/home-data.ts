@@ -77,6 +77,41 @@ export function recentPagesAcross(
   return pages.sort((a, b) => b.updatedAt - a.updatedAt).slice(0, HOME_RECENT_PAGES);
 }
 
+export type HomeReviewPage = {
+  documentId: string;
+  knowledgebase: string;
+  tab: string;
+  title: string;
+  reviewAt: number;
+};
+
+/** A review row's key: its knowledgebase and its page. */
+export const reviewKey = (row: Pick<HomeReviewPage, 'documentId' | 'tab'>): string =>
+  `${row.documentId}:${row.tab}`;
+
+/** Yours to Review (verification.md "Reminders"): the person's own due pages across the knowledgebases whose
+ *  summary has been read, the longest overdue first, less the ones `done` here (Still Right, not yet read back). */
+export function reviewPagesAcross(
+  knowledgebases: readonly HomeKnowledgebase[],
+  summaries: ReadonlyMap<string, KnowledgeSummaryResponse>,
+  done: ReadonlySet<string> = new Set(),
+): HomeReviewPage[] {
+  const pages: HomeReviewPage[] = [];
+  for (const knowledgebase of knowledgebases)
+    // A summary from an api older than this field carries none.
+    for (const page of summaries.get(knowledgebase.id)?.yoursToReview ?? []) {
+      const row = {
+        documentId: knowledgebase.id,
+        knowledgebase: knowledgebase.name,
+        tab: page.tab,
+        title: page.title,
+        reviewAt: page.reviewAt,
+      };
+      if (!done.has(reviewKey(row))) pages.push(row);
+    }
+  return pages.sort((a, b) => a.reviewAt - b.reviewAt);
+}
+
 export type HomeSearchResult = KnowledgeSearchResult & {
   documentId: string;
   knowledgebase: string;
@@ -122,6 +157,8 @@ export function createSummaryCache(
       });
       return summary;
     },
+    /** Forget one knowledgebase's summary, so the next ask reads it again (after Still Right changed it). */
+    drop: (documentId: string) => void held.delete(documentId),
     clear: () => held.clear(),
   };
 }

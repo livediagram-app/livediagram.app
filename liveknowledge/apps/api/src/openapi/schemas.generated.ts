@@ -4566,6 +4566,27 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
+  "KnowledgeDuePage": {
+    "additionalProperties": false,
+    "description": "A page of the caller's own that is due for review: `reviewAt` is when it came due (ms).",
+    "properties": {
+      "reviewAt": {
+        "type": "number"
+      },
+      "tab": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "tab",
+      "title",
+      "reviewAt"
+    ],
+    "type": "object"
+  },
   "KnowledgeHealthCounts": {
     "additionalProperties": false,
     "properties": {
@@ -5074,7 +5095,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "KnowledgeSummaryResponse": {
     "additionalProperties": false,
-    "description": "`GET .../summary` (knowledgebase-home.md): what Home shows of one knowledgebase.",
+    "description": "`GET .../summary` (knowledgebase-home.md): what Home shows of one knowledgebase. `yoursToReview` is the caller's own pages whose review is due, oldest first, ten at most; empty for a caller with no account.",
     "properties": {
       "health": {
         "$ref": "#/components/schemas/KnowledgeHealthCounts"
@@ -5087,12 +5108,19 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "$ref": "#/components/schemas/KnowledgeRecentPage"
         },
         "type": "array"
+      },
+      "yoursToReview": {
+        "items": {
+          "$ref": "#/components/schemas/KnowledgeDuePage"
+        },
+        "type": "array"
       }
     },
     "required": [
       "pages",
       "health",
-      "recent"
+      "recent",
+      "yoursToReview"
     ],
     "type": "object"
   },
