@@ -35,11 +35,16 @@ vi.mock('@/hooks/persistence/useIsOfflineDocument', () => ({
 import { chromeValue, renderInEditor, type Role } from '@/components/ask/test-chrome';
 import { aiSettingsStore } from '@/lib/knowledge-ask/ai-settings-store';
 import { closeAiSettings, useAiSettingsOpen } from '@/lib/knowledge-ask/ai-settings-open';
-import { closeSetup, useSetupOpen } from '@/lib/knowledge-setup/setup-open';
+import {
+  closeSetup,
+  openSetup,
+  usePublishedSetupOffered,
+  useSetupOpen,
+} from '@/lib/knowledge-setup/setup-open';
 import { track } from '@/lib/telemetry';
 import { DescribeToSetUpButton } from './DescribeToSetUpButton';
 import { SetupDialog } from './SetupDialog';
-import { useDescribeToAddPages } from './SetupHost';
+import { SetupWhenOpen, useDescribeToAddPages } from './SetupHost';
 import { useSetupOffered } from './useSetupOffered';
 
 const startPage = (): Tab =>
@@ -192,6 +197,25 @@ describe('who is offered Describe to Set Up', () => {
     act(() => menu!.onSelect());
     expect(renderHook(() => useSetupOpen()).result.current).toBe('add');
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'DescribeToAddPages');
+  });
+});
+
+describe('the host', () => {
+  it('draws nothing until opened, then fetches and draws the dialog, and tells the palette what is offered', async () => {
+    const { container } = renderInEditor(<SetupWhenOpen />, chromeValue('edit', emptyKb()));
+    expect(container.innerHTML).toBe('');
+    expect(renderHook(() => usePublishedSetupOffered()).result.current).toBe('set-up');
+    act(() => openSetup('set-up'));
+    expect(await screen.findByRole('dialog', {}, { timeout: 10_000 })).toBeTruthy();
+    expect(screen.getByText('Describe to Set Up')).toBeTruthy();
+  });
+
+  it.each(['participate', 'view'] as const)('closes at once for a %s session', (role) => {
+    renderInEditor(<SetupWhenOpen />, chromeValue(role, emptyKb()));
+    act(() => openSetup('set-up'));
+    expect(renderHook(() => useSetupOpen()).result.current).toBeNull();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(renderHook(() => usePublishedSetupOffered()).result.current).toBeNull();
   });
 });
 

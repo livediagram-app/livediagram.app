@@ -1,0 +1,144 @@
+import type { Locator, Page } from '@playwright/test';
+import { expect, expectNoPageErrors, test } from '../fixtures';
+import { expectCaretInTitle, newKnowledgebase, pageTree, treeShape } from '../knowledgebase';
+import { person, saveKey, signedInKnowledgebase } from './knowledge-session';
+import { installSession } from './session';
+
+// Describe to Set Up (docs/specs/030-knowledgebase/describe-to-set-up.md; blueprints/describe-to-set-up.md): a new
+// knowledgebase opens straight on Start Here with no start screen, its sidebar offers Describe to Set Up while it
+// is empty, and the dialog's three steps turn a description into pages. No model is called: the stack's stand-in
+// answers for both providers (scripts/e2e-claude-stand-in.mjs `SETUP_STRUCTURE`), and the keys here are made up.
+
+const KEY = 'sk-ant-e2e-not-a-real-key-7Qx2Lm9f3c';
+const OPENAI_KEY = 'sk-proj-e2e-not-a-real-key-4Hd8Rt2v9c';
+const DESCRIPTION =
+  'The engineering handbook for a 12 person logistics startup: how we ship, on-call and decisions.';
+
+const setupButton = (page: Page): Locator =>
+  page.getByRole('button', { name: 'Describe to Set Up', exact: true });
+const setupDialog = (page: Page): Locator =>
+  page.getByRole('dialog', { name: 'Describe to Set Up' });
+const suggestedPages = (dialog: Locator): Locator =>
+  dialog.getByRole('list', { name: 'Suggested Pages' }).getByRole('listitem');
+const titlesOf = (dialog: Locator): Promise<string[]> =>
+  suggestedPages(dialog)
+    .getByRole('textbox', { name: 'Page Title' })
+    .evaluateAll((fields) => fields.map((field) => (field as HTMLInputElement).value));
+
+async function describeAndSuggest(dialog: Locator): Promise<void> {
+  await dialog.getByRole('textbox', { name: 'What Is This Knowledgebase For?' }).fill(DESCRIPTION);
+  await dialog.getByRole('button', { name: 'Suggest a Structure' }).click();
+  await expect(suggestedPages(dialog)).toHaveCount(5);
+}
+
+test('a new knowledgebase has no start screen, and a description becomes its pages', async ({
+  page,
+  pageErrors,
+}) => {
+  // `/new` with nothing asked: straight into the editor on Start Here, the caret in its Title.
+  const who = person('Ada', 'Lovelace');
+  await installSession(page, who);
+  const id = await newKnowledgebase(page, '/new');
+  await expect(page).toHaveURL(/\/document\/[^/]+/);
+  await expectCaretInTitle(page);
+  await expect(page.getByRole('button', { name: 'Share, Private' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /What Is This (Page )?For\?/ })).toHaveCount(0);
+  await expect(page.locator('[data-start-panel]')).toHaveCount(0);
+  expect(await treeShape(page)).toHaveLength(1);
+
+  // Empty: the sidebar offers Describe to Set Up, directly above New Page.
+  await saveKey(page, who, id, KEY);
+  const button = setupButton(page);
+  await expect(button).toBeVisible();
+  await expect(page.getByText('Tell AI what this is for and get a page structure.')).toBeVisible();
+  const newPage = page.getByRole('button', { name: 'New Page', exact: true });
+  expect((await button.boundingBox())!.y).toBeLessThan((await newPage.boundingBox())!.y);
+
+  await button.click();
+  const dialog = setupDialog(page);
+  await expect(dialog.getByRole('listitem').filter({ hasText: 'Describe' })).toHaveAttribute(
+    'aria-current',
+    'step',
+  );
+  const suggested = page.waitForResponse(
+    (r) => r.request().method() === 'POST' && /\/setup\/suggest$/.test(new URL(r.url()).pathname),
+  );
+  await describeAndSuggest(dialog);
+  expect((await suggested).ok()).toBe(true);
+  expect(await titlesOf(dialog)).toEqual([
+    'Getting Started',
+    'Local Setup',
+    'How We Ship',
+    'On-Call',
+    'Decisions',
+  ]);
+  await expect(dialog.getByRole('textbox', { name: 'Knowledgebase Name' })).toHaveValue(
+    'Engineering Handbook',
+  );
+  await expect(dialog.getByRole('button', { name: 'Create 5 Pages' })).toBeVisible();
+  // Nothing has been written yet.
+  expect(await treeShape(page)).toHaveLength(1);
+
+  // Untick one page, rename another.
+  await dialog.getByRole('checkbox', { name: 'Create Decisions' }).uncheck();
+  await suggestedPages(dialog).nth(2).getByRole('textbox', { name: 'Page Title' }).fill('Shipping');
+  await dialog.getByRole('button', { name: 'Create 4 Pages' }).click();
+
+  // The dialog closes on the first new page, and the tree is the structure: Start Here became its first page.
+  await expect(dialog).toHaveCount(0);
+  const tree = pageTree(page);
+  for (const name of ['Getting Started', 'Local Setup', 'Shipping', 'On-Call'])
+    await expect(tree.getByRole('treeitem', { name: new RegExp(`^${name}`) })).toBeVisible();
+  await expect(tree.getByRole('treeitem')).toHaveCount(4);
+  await expect(
+    tree.getByRole('treeitem', { name: /Start Here|Decisions|How We Ship/ }),
+  ).toHaveCount(0);
+  await expect(page.locator('[data-knowledgebase-name]')).toHaveText('Engineering Handbook');
+  // The page it opened on holds its title, its line and its headings.
+  await expect(page.locator('.article-flow')).toContainText('What a new engineer needs');
+  await expect(page.locator('.article-flow')).toContainText('Your First Change');
+  // No longer empty: the control has left the sidebar.
+  await expect(setupButton(page)).toHaveCount(0);
+
+  // The pages are stored: a reload finds them.
+  await page.reload();
+  await expect(pageTree(page).getByRole('treeitem')).toHaveCount(4);
+  expectNoPageErrors(pageErrors);
+});
+
+test('with no key the dialog says why, and an OpenAI key added in AI Settings returns to step 1', async ({
+  page,
+  pageErrors,
+}) => {
+  await signedInKnowledgebase(page);
+  await setupButton(page).click();
+  const dialog = setupDialog(page);
+  await expect(
+    dialog.getByRole('heading', { name: "Describe to Set Up Needs Your Team's AI Key" }),
+  ).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Suggest a Structure' })).toHaveCount(0);
+
+  await dialog.getByRole('button', { name: 'Open AI Settings' }).click();
+  const settings = page.getByRole('dialog', { name: 'AI Settings' });
+  // Provider first, then the key.
+  // The radio itself is visually hidden: the row is what is pressed.
+  await settings.locator('[data-ai-provider="openai"]').click();
+  await expect(settings.getByRole('radio', { name: /^OpenAI/ })).toBeChecked();
+  const field = settings.getByRole('textbox', { name: 'Add an OpenAI Key' });
+  await expect(field).toHaveAttribute('placeholder', 'sk-...');
+  await field.fill(OPENAI_KEY);
+  await settings.getByRole('button', { name: 'Save Key' }).click();
+  await expect(settings.getByRole('status')).toHaveText(`Key Ending ${OPENAI_KEY.slice(-4)}`);
+  await settings.getByRole('button', { name: 'Done' }).click();
+
+  // Back at step 1, and the suggestion is made on OpenAI (the stand-in's Responses route).
+  await expect(
+    dialog.getByRole('textbox', { name: 'What Is This Knowledgebase For?' }),
+  ).toBeVisible();
+  await describeAndSuggest(dialog);
+  await dialog.getByRole('button', { name: 'Cancel' }).click();
+  await expect(dialog).toHaveCount(0);
+  expect(await treeShape(page)).toHaveLength(1);
+  expect(await page.content()).not.toContain(OPENAI_KEY);
+  expectNoPageErrors(pageErrors);
+});

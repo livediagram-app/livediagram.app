@@ -49,7 +49,14 @@ const ShareOfflineGate = dynamic(
 // limits"): a typing commit renders nothing here.
 export function EditorTabDialogs() {
   const open = useEditorChrome((s) => s.exportOpen || s.importOpen || s.shareDialogOpen);
-  return open ? <OpenEditorTabDialogs /> : null;
+  return (
+    <>
+      {open ? <OpenEditorTabDialogs /> : null}
+      {/* Describe to Set Up (describe-to-set-up.md): it reads its own open state, and its code is fetched when it
+          is first opened. */}
+      <SetupWhenOpen />
+    </>
+  );
 }
 
 function OpenEditorTabDialogs() {
@@ -193,8 +200,6 @@ function OpenEditorTabDialogs() {
           onClose={() => setShareDialogOpen(false)}
         />
       ) : null}
-      {/* Describe to Set Up (describe-to-set-up.md): its code is fetched when it is first opened. */}
-      <SetupWhenOpen />
     </>
   );
 }
