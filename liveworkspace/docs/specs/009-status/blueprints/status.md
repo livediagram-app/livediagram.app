@@ -40,24 +40,24 @@ Scope, by file:
 
 ### The services (production)
 
-35 services, 27 probed per run (`services.test.ts` pins 27):
+37 services, 27 probed per run (`services.test.ts` pins 27):
 
-| Group         | Service           | Check                                                                           |
-| ------------- | ----------------- | ------------------------------------------------------------------------------- |
-| liveworkspace | `site`            | read `HEAD /robots.txt`, 200                                                    |
-| liveworkspace | `accounts`        | read `GET /.well-known/openid-configuration`, 200, JSON                         |
-| liveworkspace | `index`           | read `GET /api/index/jwks`, 200, JSON                                           |
-| liveworkspace | `community`       | read `GET /api/community/facets?app=livediagram.app`, 200, JSON                 |
-| liveworkspace | `telemetry`       | read `OPTIONS /api/telemetry/events`, 204 ("Answers; database not checked")     |
-| liveworkspace | `media`           | read `GET /api/previews`, 404, JSON ("Answers; storage not checked")            |
-| each app      | `api`             | read `GET <app>/api/capabilities`, 200, JSON                                    |
-| each app      | `realtime`        | derived `same` from `api`                                                       |
-| each app      | `editor`          | reach `HEAD <app>/icon.svg`                                                     |
-| each app      | `marketing`       | reach `HEAD <app>/robots.txt`                                                   |
-| each app      | `help`            | reach `HEAD <app>/help/robots.txt`                                              |
-| livediagram   | `community-pages` | reach `HEAD <app>/community/`                                                   |
-| app with MCP  | `mcp`             | read `GET <mcp>/health`, 200, JSON; `skipped` on staging (no public MCP host)   |
-| each app      | `router`          | derived `any` from `api`, `editor`, `marketing`, `help` (and `community-pages`) |
+| Group         | Service           | Check                                                                         |
+| ------------- | ----------------- | ----------------------------------------------------------------------------- |
+| liveworkspace | `site`            | read `HEAD /robots.txt`, 200                                                  |
+| liveworkspace | `accounts`        | read `GET /.well-known/openid-configuration`, 200, JSON                       |
+| liveworkspace | `index`           | read `GET /api/index/jwks`, 200, JSON                                         |
+| liveworkspace | `community`       | read `GET /api/community/facets?app=livediagram.app`, 200, JSON               |
+| liveworkspace | `telemetry`       | read `OPTIONS /api/telemetry/events`, 204 ("Answers; database not checked")   |
+| liveworkspace | `media`           | read `GET /api/previews`, 404, JSON ("Answers; storage not checked")          |
+| liveworkspace | `help`            | read `HEAD /help/robots.txt`, 200 (one Worker serves every app's `/help`)     |
+| each app      | `api`             | read `GET <app>/api/capabilities`, 200, JSON                                  |
+| each app      | `realtime`        | derived `same` from `api`                                                     |
+| each app      | `editor`          | reach `HEAD <app>/icon.svg`                                                   |
+| each app      | `marketing`       | reach `HEAD <app>/robots.txt`                                                 |
+| livediagram   | `community-pages` | reach `HEAD <app>/community/`                                                 |
+| app with MCP  | `mcp`             | read `GET <mcp>/health`, 200, JSON; `skipped` on staging (no public MCP host) |
+| each app      | `router`          | derived `any` from `api`, `editor`, `marketing` (and `community-pages`)       |
 
 `appOrigin(site, env)`: development `http://localhost:<LOCAL_PORTS[site]>`; staging `https://staging.<site>`;
 production `https://www.<site>`. `mcpOrigin`: development `http://localhost:<MCP_DEV_PORTS>` (8788, 8888, 8988,

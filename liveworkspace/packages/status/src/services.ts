@@ -198,6 +198,15 @@ function platformGroup(): ServiceGroup {
         // JSON "not found" for a bare request, which the site's HTML 404 page never is.
         check: read('/api/previews', 'GET', [404], true, 'Answers; storage not checked'),
       },
+      {
+        id: `${g}:help`,
+        name: 'Help centre',
+        description: 'Guides, how-tos and the developer docs, for every app.',
+        icon: 'book',
+        label: 'HEAD /help/robots.txt',
+        // One Worker serves every app's /help through its router's binding, so it is checked once, here.
+        check: read('/help/robots.txt', 'HEAD', [200]),
+      },
     ],
   };
 }
@@ -211,7 +220,7 @@ export function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
   const origin = appOrigin(site, env);
   const mcp = mcpOrigin(site, env);
   const api = `${g}:api`;
-  const throughRouter = [api, `${g}:editor`, `${g}:marketing`, `${g}:help`];
+  const throughRouter = [api, `${g}:editor`, `${g}:marketing`];
   const services: Service[] = [
     {
       id: api,
@@ -249,14 +258,6 @@ export function appGroup(site: Site, env: StatusEnvironment): ServiceGroup {
       icon: 'megaphone',
       label: 'HEAD /robots.txt',
       check: reach(`${origin}/robots.txt`),
-    },
-    {
-      id: `${g}:help`,
-      name: 'Help centre',
-      description: 'Guides, how-tos and the developer docs.',
-      icon: 'book',
-      label: 'HEAD /help/robots.txt',
-      check: reach(`${origin}/help/robots.txt`),
     },
   ];
   if (site.id === 'livediagram.app') {

@@ -27,6 +27,7 @@ describe('the status page’s services', () => {
       'Community',
       'Telemetry',
       'Media & previews',
+      'Help centre',
     ]);
   });
 
@@ -42,18 +43,13 @@ describe('the status page’s services', () => {
     );
   });
 
-  it('gives every app its API, realtime rooms, editor, marketing site, help centre and router, and an MCP server where it ships one', () => {
+  it('gives every app its API, realtime rooms, editor, marketing site and router, and an MCP server where it ships one', () => {
     for (const group of groups.slice(1)) {
       const names = group.services.map((s) => s.name);
-      for (const name of [
-        'API',
-        'Realtime rooms',
-        'Editor',
-        'Marketing site',
-        'Help centre',
-        'Router',
-      ])
+      for (const name of ['API', 'Realtime rooms', 'Editor', 'Marketing site', 'Router'])
         expect(names, group.id).toContain(name);
+      // One help centre serves every app, so it is the platform's row, not each app's.
+      expect(names, group.id).not.toContain('Help centre');
       // livehuddle removed its MCP server (Work Tracker #562); every other app keeps one.
       if (group.id === 'livehuddle') expect(names, group.id).not.toContain('MCP server');
       else expect(names, group.id).toContain('MCP server');
@@ -98,7 +94,7 @@ describe('the status page’s services', () => {
   });
 
   it('resolves liveworkspace’s own paths on its origin, and leaves every app’s address as written', () => {
-    const [site, , , , , , api] = probedServices(groups);
+    const [site, , , , , , , api] = probedServices(groups);
     expect(site!.id).toBe('liveworkspace:site');
     expect(resolveProbeUrl(site!.check.probe, 'https://lw.example/')).toBe(
       'https://lw.example/robots.txt',
@@ -110,8 +106,8 @@ describe('the status page’s services', () => {
   });
 
   it('keeps one round small: 31 requests, under a Worker’s 50 subrequests with room to spare', () => {
-    expect(probedServices(groups)).toHaveLength(31);
+    expect(probedServices(groups)).toHaveLength(27);
     expect(probedServices(groups).length).toBeLessThan(40);
-    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(41);
+    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(37);
   });
 });

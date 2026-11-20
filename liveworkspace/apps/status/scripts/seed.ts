@@ -41,7 +41,7 @@ const SPELLS: ReadonlyArray<[string, number, number, number, 'slow' | 'down']> =
   ['liveplanner:mcp', 12, 3, 5, 'down'],
   ['liveworkspace:community', 4, 18, 3, 'slow'],
   ['livedesign:editor', 61, 9, 1, 'down'],
-  ['livedocuments:help', 22, 11, 2, 'slow'],
+  ['liveworkspace:help', 22, 11, 2, 'slow'],
   ['liveworkspace:accounts', 1, 6, 1, 'down'],
 ];
 
