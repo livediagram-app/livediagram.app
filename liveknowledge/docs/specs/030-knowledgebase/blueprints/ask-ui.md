@@ -67,6 +67,8 @@ footer, the modal guard, the way back).
 | who may do what            | `lib/knowledge-ask/ask-rights.ts`        |
 | the settings, read once    | `lib/knowledge-ask/ai-settings-store.ts` |
 | the words                  | `lib/knowledge-ask/ai-settings-words.ts` |
+| how a provider is named    | `lib/knowledge-ask/provider-words.ts`    |
+| the provider's two rows    | `components/ask/AiProviderPicker.tsx`    |
 | whether the dialog is open | `lib/knowledge-ask/ai-settings-open.ts`  |
 | the session's slices       | `components/ask/useAskSession.ts`        |
 | the dialog and its host    | `components/ask/AiSettingsDialog.tsx`    |
@@ -95,7 +97,29 @@ settings)` takes a write's answer. It has no field a key could be put in.
   "Replace the Key", **Replace**. Remove asks in a `ConfirmDialog` ("Remove the Key?").
 - **Roles.** Without `manageAi` the field, Remove and the model's select are not drawn; the model shows as text and
   one line says only an Editor can change these (or, Offline, that there is no Ask).
-- **Telemetry:** `UI·Opened·AiSettings`, `UI·Added·AiKey`, `UI·Removed·AiKey`, `UI·Changed·AiModel`. No value.
+- **The provider** ([Search and Ask](../search-and-ask.md) "Providers"). The first section, **Provider**: a
+  `radiogroup` of two bordered rows (`AiProviderPicker`), each a native radio (visually hidden; the row wears the
+  focus ring), a generic mark (`ProviderSparkIcon`, `ProviderRingIcon`: Lucide's sparkle and circle-dot, never a
+  company's logo) and the provider's name with one line under it. `picked` is the provider chosen here and not yet
+  saved; the stored provider changes only when a key for the new one is saved (`apiSetKnowledgeAiKey(who, id,
+  provider, key)`).
+  - No key saved: choosing the other row is at once.
+  - A key saved: a `ConfirmDialog`, `replaceProviderTitle` ("Replace the Claude Key With an OpenAI Key?"), confirm
+    **Choose Provider**. Then the state line reads "Claude Key Ending 4f2a, in Use Until This One Is Saved", the
+    field is labelled "Add an OpenAI Key" with the placeholder `sk-...`, and Model says the new provider's most
+    capable model is used until another is chosen. Choosing the stored provider again needs no question.
+  - The key field is keyed on the provider (`key={provider}`), so a switch mounts an empty field: nothing typed for
+    one provider is ever sent as the other's.
+  - The key's heading names the provider ("Claude API Key", "OpenAI API Key"), as do where to make a key and who
+    the team pays (`providerWords`, `teamPaysNote`); a refusal is worded for the provider the key was typed for.
+  - Without `manageAi` the provider is its name as text.
+- **Words.** "Your team's AI key" wherever it does not matter which provider it is (the no-key states of Ask, AI
+  Knowledge and Describe to Set Up, sign-in); the provider's name where a failure is the provider's own
+  (`askFailureWords(kind, { manageAi, provider })`: "OpenAI Did Not Accept the Key"). The provider comes from the
+  settings the view already read. No AI copy says liveknowledge is free or has no paid tier: only that it pays for
+  no model and the team pays its provider for what it uses.
+- **Telemetry:** `UI·Opened·AiSettings`, `UI·Added·AiKey`, `UI·Removed·AiKey`, `UI·Changed·AiModel`,
+  `UI·Changed·AiProvider`. No value.
 
 ### Tests
 
@@ -186,7 +210,7 @@ draft. Telemetry: `Tab·Created·FromAnswer` and `FromGap`.
 | could not be read | `GET ai` failed                            | an error callout, **Try Again**                                                                                                    |
 | Offline           | `askOff === 'offline'`; no request is made | "No Ask in an Offline Knowledgebase", **Search the Pages**                                                                         |
 | signed out        | `askOff === 'signed-out'`                  | "Sign In to Ask", **Sign In**, **Search the Pages**                                                                                |
-| no key            | `hasKey` false                             | "Ask Needs Your Team's Claude Key"; **Open AI Settings** for an Editor, "Ask an Editor to add one" otherwise; **Search the Pages** |
+| no key            | `hasKey` false                             | "Ask Needs Your Team's AI Key"; **Open AI Settings** for an Editor, "Ask an Editor to add one" otherwise; **Search the Pages** |
 | ready, no turns   |                                            | "No Questions Yet"                                                                                                                 |
 
 `askFailureWords(kind, { manageAi })` maps `bad-key`, `no-credit`, `rate-limited`, `overloaded`,

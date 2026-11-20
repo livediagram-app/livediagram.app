@@ -277,11 +277,14 @@ controls (`menu-keyboard`, `motion-budget`, `smoke`'s phone cluster), the page's
 breadcrumb at 1,600 px, `chrome-drift`) and the seeded free elements change with
 [Page surface](../030-knowledgebase/page-surface.md).
 
-### The Claude stand-in
+### The model stand-in
 
-No test reaches Anthropic. The stack starts a stand-in on a free loopback port (`scripts/e2e-claude-stand-in.mjs`)
-and hands the api its origin as `E2E_CLAUDE_STAND_IN`; the api's one door to a model
-(`apps/api/src/knowledge/claude-door.ts`, `claudeDoorFor`) then sends a request for the Anthropic API there instead.
+No test reaches Anthropic or OpenAI. The stack starts a stand-in on a free loopback port
+(`scripts/e2e-claude-stand-in.mjs`) and hands the api its origin as `E2E_CLAUDE_STAND_IN`; the api's one door to a
+model (`apps/api/src/knowledge/model-door.ts`, `modelDoorFor`) then sends a request for the stored provider's API
+there instead: `/v1/messages` is answered as Anthropic's Messages API streams, `/v1/responses` as OpenAI's Responses
+API does, so one var serves both. A description (Describe to Set Up) is answered with a fixed structure of five
+pages (`SETUP_STRUCTURE`), or with text that is no JSON when it holds "not json".
 The door ignores the var unless it names plain HTTP on a loopback port, the var is in no `wrangler.toml` or hosted
 var, and a unit test holds both. The stand-in answers from the request alone: a question sent with passages is
 answered citing the first, one sent with none comes back as a gap, a key containing "refused" is not accepted, and
@@ -323,7 +326,7 @@ tests where it's cheap.
 - `apps/editor/e2e/signed-in/`: the session helper (`session.ts`), the knowledgebase's (`knowledge-session.ts`: a
   fresh account with a new knowledgebase, a second person on a share link, the views, AI Settings) and the
   signed-in specs.
-- `scripts/e2e-claude-stand-in.mjs`: the stand-in for the Anthropic API ("The Claude stand-in").
+- `scripts/e2e-claude-stand-in.mjs`: the stand-in for the Anthropic and OpenAI APIs ("The model stand-in").
 
 Playwright is an `apps/editor` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so

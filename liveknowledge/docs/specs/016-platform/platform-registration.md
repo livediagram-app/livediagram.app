@@ -176,7 +176,7 @@ None of these can be done by an agent.
   liveknowledge's api under the name it reads (`INDEX_KEY`, `MEDIA_KEY`, `TELEMETRY_KEY`, `DRIVE_KEY`,
   `COMMUNITY_KEY`, `DATA_EXPORT_KEY`), production and staging.
 - **`AI_KEY_SECRET`** on liveknowledge's api, production and staging (`wrangler secret put AI_KEY_SECRET`, a fresh
-  `openssl rand -hex 32` each): what the knowledgebases' Claude API keys are sealed under
+  `openssl rand -hex 32` each): what the knowledgebases' own AI keys (Claude's or OpenAI's) are sealed under
   ([Search and Ask](../030-knowledgebase/search-and-ask.md) "Ask"). Until it is set, no key can be stored and Ask
   answers `ask_unavailable`; nothing else waits on it. It is never rotated casually: a new value makes every stored
   key unreadable, and each team sets its key again.

@@ -32,8 +32,9 @@ Owner, 2026-11-20: the sidebar's search is the **universal search**, with this k
 
 Ask answers a question in plain words from the knowledgebase's own pages, and says where each part came from.
 
-- **Bring your own key.** liveknowledge is free and pays for no model. Ask is offered once an Editor adds the knowledgebase's
-  **Claude API key** in **AI Settings**. Without a key the Ask tab explains this with one button to AI Settings, and
+- **Bring your own key.** liveknowledge pays for no model: the team pays its provider for what it uses. Ask is
+  offered once an Editor adds the knowledgebase's own key, Claude's or OpenAI's ([Providers](#providers)), in
+  **AI Settings**. Without a key the Ask tab explains this with one button to AI Settings, and
   search still works.
 - **The key** is sent once over TLS to the api, encrypted with AES-GCM under the Worker's `AI_KEY_SECRET`, and kept in
   the knowledgebase's Durable Object. It is never sent back to any client: AI Settings shows only "Key Ending 4f2a", **Replace**
@@ -57,7 +58,9 @@ Ask answers a question in plain words from the knowledgebase's own pages, and sa
 
 ## Providers
 
-Owner, 2026-11-20: a team may bring an **OpenAI** key instead of a Claude one.
+Owner, 2026-11-20: a team may bring an **OpenAI** key instead of a Claude one. **Built** (the package, the api
+and AI Settings; [blueprint](blueprints/knowledge-package.md) "Providers", "The OpenAI API"); no real model was
+called for either provider, so the request and stream shapes are unverified against the live APIs.
 
 - AI Settings asks for the **provider** first, **Anthropic (Claude)** or **OpenAI**, then the key and the model. A
   knowledgebase holds one provider and one key at a time; choosing the other provider replaces the key after a
@@ -72,6 +75,14 @@ Owner, 2026-11-20: a team may bring an **OpenAI** key instead of a Claude one.
   checked against the provider's documentation when it is built; the default is each provider's most capable.
 - The prompts, the fenced passages, the citation markers and the answer's tagged shape are the same for both; only
   the request and stream formats differ, behind one interface in the knowledge package.
+- **In AI Settings:** two bordered rows, each a generic mark and the provider's name as text (no company's logo).
+  With no key saved, choosing the other provider is at once. With a key saved it asks first ("Replace the Claude
+  Key With an OpenAI Key?"); the saved key then stays in use until a key for the new provider is saved, and that
+  save replaces it and returns the model to the new provider's most capable. Removing a key keeps the provider.
+- **The api:** `GET ai` answers `{ provider, hasKey, keyHint, model, models, providers }`; `PUT ai/key` takes
+  `{ provider, key }` (no provider: the one already chosen); a model must be one of the stored provider's. A key
+  stored before there was a choice reads as Anthropic's: the provider is one more row of the room's settings, and
+  its absence is that answer, so no stored knowledgebase is changed.
 
 ## Share roles
 
@@ -132,7 +143,8 @@ Ask through an anonymous share link is off: it would spend the team's key for st
   are the same for everyone in it.
 - It shows the key's state ("No Key Yet", "Key Ending 4f2a"; "Key Added" to someone the ending is not told), a
   password field to add or **Replace** it, **Remove** (asked first), the **Model** and two sentences: the key is
-  encrypted and never shown again, and the team pays Anthropic for what Ask uses.
+  encrypted and never shown again, and liveknowledge pays for no model: the team pays its provider (named:
+  Anthropic or OpenAI) for what it uses. It opens with the **Provider** ([Providers](#providers)).
 - The typed key is held only in the field. It is read once when sent and the field is cleared in the same turn,
   whatever the answer. It is never kept in the page's state, a browser store, a log, telemetry or an error message.
 - An Editor has the controls; a Participant and a Viewer see the state and the model with none.

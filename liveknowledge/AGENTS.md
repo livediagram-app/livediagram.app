@@ -212,7 +212,7 @@ packages/
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is laid out (overlaps, crossings, arrows behind boxes), with a fix each
   knowledge-import/ # the Knowledgebase import engine: a Markdown folder, Notion or Confluence archive into an import plan (pure)
-  knowledge/      # what makes pages searchable, trusted and answerable: passages, the search index's SQL, trust, links, Ask and conflicts over the team's own Claude key (pure)
+  knowledge/      # what makes pages searchable, trusted and answerable: passages, the search index's SQL, trust, links, Ask, conflicts and Describe to Set Up over the team's own Claude or OpenAI key (pure)
   telemetry-client/ # this product's telemetry facts (app, preferences key, tokens) bound to @liveworkspace/telemetry-client
   licences/     # this product's licence tables (apps, overrides, embedded works) for @liveworkspace/licences' generator
   tailwind-config/ # this product's brand ramps (lime) over @liveworkspace/tailwind-config's theme

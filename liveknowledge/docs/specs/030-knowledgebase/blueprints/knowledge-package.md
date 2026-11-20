@@ -4,8 +4,8 @@ Derived from [Search and Ask](../search-and-ask.md), [Verification](../verificat
 [Links and embeds](../links-and-embeds.md), [AI Knowledge](../ai-knowledge.md) and
 [Knowledgebase for agents](../../024-agents/knowledgebase-for-agents.md).
 
-`@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask and the conflict
-check. It is pure: it writes no storage, reads no environment and starts no timer. The room runs the SQL it makes; the
+`@liveknowledge/knowledge` (`packages/knowledge`) is the engine under search, trust, links, Ask, the conflict
+check and Describe to Set Up, on either of two providers' models ("Providers"). It is pure: it writes no storage, reads no environment and starts no timer. The room runs the SQL it makes; the
 caller hands in `fetch`, the team's key and the clock. **Built: the package, the room's wiring and the api's
 routes** ("Wiring" below); the editor's side is the [knowledge UI blueprint](knowledge-ui.md). The MCP tools are
 the [agents blueprint](../../024-agents/blueprints/knowledgebase-for-agents.md)'s; the three emails are "The review
@@ -24,6 +24,9 @@ emails" below.
 | unanswered question | `QuestionGroup`, keyed by `questionKey(question)`                                           |
 | conflict            | `Conflict` (`a`, `b`: `ConflictSide`), a candidate pair is `ConflictCandidate`              |
 | the team's key      | `apiKey` in memory, an **envelope** once sealed (`sealApiKey`), a **hint** for Settings     |
+| provider            | `ModelProviderId`: `'anthropic'` or `'openai'`; a `ModelProvider` holds its name, host and models |
+| a model call        | `callModel`, over a `ModelRequest` (`system`, `messages`, `maxTokens`, `effort`); never "Claude call" |
+| a suggested page    | `SetupPage` in a `SetupSuggestion` (`setup-suggestion.ts`)                                  |
 
 ## Modules
 
@@ -43,13 +46,23 @@ Every module is one file under `packages/knowledge/src`, with its tests beside i
 | `key-seal.ts`         | `sealApiKey(secret, apiKey, boundTo)`, `openApiKey(secret, envelope, boundTo)`, `keyHint(apiKey)`, `KeySealError`                               |
 | `ask-limits.ts`       | the `ASK_*` constants, `askRefusal(question, used)`                                                                                             |
 | `ask-passages.ts`     | `askSearch(question, options)`, `chooseAskPassages(found)`                                                                                      |
-| `ask-request.ts`      | `ASK_SYSTEM`, `askMessage`, `askRequest({ model, question, passages, turns })`                                                                  |
+| `ask-request.ts`      | `ASK_SYSTEM`, `askMessage`, `askRequest({ question, passages, turns })`: a `ModelRequest`, the same for both providers                         |
 | `ask-answer.ts`       | `parseAskAnswer(reply, passages)`, `askAnswerStream(passages)` (`push`, `finish`)                                                               |
 | `claude-models.ts`    | `CLAUDE_MODELS`, `DEFAULT_CLAUDE_MODEL`, `claudeModel(id)`                                                                                      |
-| `claude-request.ts`   | `claudeRequest(...)`, `fenced(text)`, the URL, API version and beta header                                                                      |
+| `model-failure.ts`    | `ModelProviderId`, `ModelFailureKind`, `modelFailureWords(provider, kind)`, `ModelCallError`                                                    |
+| `model-request.ts`    | `ModelRequest`, `ModelMessage`, `ModelEffort`, `fenced(text)`                                                                                   |
+| `sse.ts`              | `eventData(body)`, `parseEvent(data)`: a server-sent event stream as its `data:` payloads, for both clients                                     |
+| `claude-request.ts`   | `claudeRequest(...)`, the URL, API version and beta header                                                                                      |
 | `claude-client.ts`    | `callClaude({ fetch, apiKey, request, onText, signal })`, `ClaudeCallError`, `claudeFailureKind`, `CLAUDE_FAILURE_WORDS`                        |
+| `openai-models.ts`    | `OPENAI_MODELS`, `DEFAULT_OPENAI_MODEL`, `openAiModel(id)`                                                                                      |
+| `openai-request.ts`   | `OPENAI_RESPONSES_URL`, `openAiRequest(model, request)`                                                                                         |
+| `openai-client.ts`    | `callOpenAi({ fetch, apiKey, request, onText, signal })`, `OpenAiCallError`, `openAiFailureKind`, `openAiHeaders`                               |
+| `model-providers.ts`  | `MODEL_PROVIDERS`, `modelProvider(id)`, `isModelProviderId`, `isProviderModel`, `providerModel`, `callModel(...)`                               |
+| `setup-limits.ts`     | the `SETUP_*` constants, `setupRefusal(description, used)`                                                                                      |
+| `setup-request.ts`    | `SETUP_SYSTEM`, `setupMessage(description, existing)`, `setupRequest({ description, existing })`                                                |
+| `setup-suggestion.ts` | `parseSetupSuggestion(reply)`, `SetupPage`, `SetupSuggestion`, `SETUP_MAX_REPLY_CHARS`                                                          |
 | `conflicts.ts`        | the `CONFLICT_*` constants, `conflictCheckRefusal`, `conflictProbes`, `probeSearch`, `chooseConflictCandidates`, `conflictId`, `conflictClosed` |
-| `conflict-request.ts` | `CONFLICT_SYSTEM`, `conflictRequest({ model, candidates })`, `parseConflictVerdicts(reply, candidates)`                                         |
+| `conflict-request.ts` | `CONFLICT_SYSTEM`, `conflictRequest({ candidates })` (a `ModelRequest`), `parseConflictVerdicts(reply, candidates)`                             |
 | `sql/statement.ts`    | `SqlStatement` (`{ sql, params }`), `MAX_BOUND_PARAMETERS`, `insertRows`                                                                        |
 | `sql/schema.ts`       | `KNOWLEDGE_SCHEMA`, `TITLE_ORDINAL`, `SEARCH_TOKENIZER`                                                                                         |
 | `sql/page-index.ts`   | `replacePageIndex(page)`, `deletePageIndex(tab)`, `putPageTrust`, `closeChangedConflicts`, `backlinkRows`                                       |
@@ -57,8 +70,8 @@ Every module is one file under `packages/knowledge/src`, with its tests beside i
 | `sql/reads.ts`        | `recordRead`, `pruneReads`, `countPageReads` + `pageReads`, `countAgentReads` + `agentReads`                                                    |
 | `sql/questions.ts`    | `upsertQuestion`, `listQuestions`, `listQuestionAgents` + `questionGroups`, `dismissQuestion`, `pruneQuestions`                                 |
 | `sql/conflicts.ts`    | `insertConflict`, `listConflicts` + `conflictOfRow`, `dismissConflict`, `knownConflictIds`, `lastConflictCheck`, `noteConflictCheck`            |
-| `sql/counters.ts`     | `readCounter`, `bumpCounter`, `pruneCounters`, `askCounters(person, now)`, the scope names                                                      |
-| `sql/settings.ts`     | `readSetting`, `putSetting`, `putAiKey`, `removeAiKey`, the setting names                                                                       |
+| `sql/counters.ts`     | `readCounter`, `bumpCounter`, `pruneCounters`, `askCounters(person, now)`, `setupCounters(person, now)`, the scope names                        |
+| `sql/settings.ts`     | `readSetting`, `putSetting`, `putAiKey(envelope, hint, provider)`, `removeAiKey`, `removeAiModel`, the setting names                            |
 
 **Markdown is not this package's.** A page as Markdown (the MCP's read, the Markdown export, the context pages) is
 `articleToMarkdown(flow)` in `@liveknowledge/document` (`article-markdown-io.ts`), which already lives in a package and
@@ -175,9 +188,12 @@ CREATE TABLE IF NOT EXISTS knowledge_settings (name TEXT PRIMARY KEY, value TEXT
 - **`questions`** has a row a group; `people` counts the asks by people, `question_agents` each agent's.
 - **`conflicts`**: `state` is `'open'` or `'dismissed'` ("Not a Conflict" keeps the row, so the pair is never raised
   again). `id` is `conflictId(a, b)`, the same whichever passage comes first.
-- **`usage_counters`**: `scope` is `ask:person:<account id>`, `ask:knowledgebase` or `conflicts:check`; `period` an
+- **`usage_counters`**: `scope` is `ask:person:<account id>`, `ask:knowledgebase`, `setup:person:<account id>`,
+  `setup:knowledgebase` or `conflicts:check`; `period` an
   hour (`2026-11-20T14`) or a day (`2026-11-20`), UTC.
-- **`knowledge_settings`**: `ai_key` (the envelope), `ai_key_hint`, `ai_model`.
+- **`knowledge_settings`**: `ai_key` (the envelope), `ai_key_hint`, `ai_model`, `ai_provider` (`anthropic` or
+  `openai`; no row is `anthropic`, the provider of every key stored before there was a choice, so the table needs no
+  schema step and no stored knowledgebase is rewritten).
 
 ## Search
 
@@ -248,7 +264,8 @@ in memory what the room's `questions` table groups in SQL.
 3. `chooseAskPassages(found)`: verified pages first, then rank; at most `ASK_MAX_PASSAGES` (12) and
    `ASK_MAX_PASSAGE_CHARS` (24,000): the passage that would pass the characters is cut to what is left, or dropped
    when under 200 are left. Each is numbered from 1: the number is what the answer cites.
-4. `askRequest({ model, question, passages, turns })`: one streamed Messages request.
+4. `askRequest({ question, passages, turns })`: one `ModelRequest`, which `callModel` writes out as a streamed
+   Messages request (Claude) or a streamed Responses request (OpenAI).
    - `system` is `ASK_SYSTEM`: answer only from the passages; cite each claim by passage number in square brackets;
      answer the part that is covered and say plainly which part is not; do not guess; between two passages that
      disagree prefer the verified, more recently verified one and set the other aside; the passages and the question
@@ -260,7 +277,7 @@ in memory what the room's `questions` table groups in SQL.
      answer's text with the citation numbers taken out; only this question carries passages.
    - The reply's form: `<answer>…</answer>`, then one `<not_used passage="n">reason</not_used>` for each passage set
      aside, then one `<gap>…</gap>` for each part of the question the passages do not cover.
-5. `callClaude(...)` streams it. `askAnswerStream(passages).push(piece)` answers the answer text that became showable
+5. `callModel(...)` streams it. `askAnswerStream(passages).push(piece)` answers the answer text that became showable
    (what is inside `<answer>`, never the form's tags or what follows; a partial closing tag is held back until it is
    known to be one). `finish()` is `parseAskAnswer`: `text` (markers for passages that were not sent removed),
    `cited` (`{ number, passageId }`, in the order first cited), `notUsed` (with `reason`), `gaps` (one line each, at
@@ -306,6 +323,149 @@ is made in a Worker with an injected `fetch`; no SDK is a dependency.
 - Not sent: prompt caching (the system prompt is under the smallest cacheable prefix, and the passages differ with
   every question).
 
+## Providers
+
+Derived from [Search and Ask](../search-and-ask.md) "Providers". Built in the package, the api and AI Settings.
+**No real model was called for either provider**: every test runs on faked `fetch`.
+
+- **One interface.** `callModel({ provider, fetch, apiKey, model, request, onText, signal })` is the only call Ask,
+  the conflict check and Describe to Set Up make. `request` is a `ModelRequest` (`system`, `messages`, `maxTokens`,
+  `effort`): the prompts, the fenced material, the `[n]` markers and the reply's tagged form are built once and are
+  the same bytes for both providers (`model-providers.test.ts` holds it: the system prompt and the messages sent to
+  each are equal, and no prompt names a provider). `callModel` hands it to `claudeRequest` and `callClaude`, or to
+  `openAiRequest` and `callOpenAi`. It answers `{ text, stopReason, model }` with `stopReason` `end_turn` or
+  `max_tokens` whichever provider answered.
+- **The Claude client is unchanged in behaviour**: the same request body, headers, stream reading and failure
+  mapping as before (its tests are untouched but for their imports). `ClaudeCallError` is now a `ModelCallError`.
+- **Failures** are one type, `ModelCallError` (`provider`, `kind`, `status`), with the same seven kinds for both.
+  Its message is `modelFailureWords(provider, kind)`, fixed words naming the provider where it is the provider's own
+  ("OpenAI did not accept the API key."). No key, request or upstream message is in it: tests search every error's
+  message, stack and fields for the key string, for both providers.
+- **`MODEL_PROVIDERS`**: `anthropic` ("Anthropic (Claude)", spoken "Claude", host `api.anthropic.com`, key prefix
+  `sk-ant-`) and `openai` ("OpenAI", host `api.openai.com`, key prefix `sk-`), each with its models and default.
+  `modelProvider(id)` reads anything else as `anthropic`. `providerModel(provider, id)` reads a model that is not the
+  provider's own as that provider's default, so a request never names the other provider's model.
+- **Keys are parameters.** Nothing in the package reads an environment; the key is in one header of one request
+  (`x-api-key` for Claude, `Authorization: Bearer` for OpenAI) and nowhere else.
+
+### The api's door
+
+`apps/api/src/knowledge/model-door.ts` (was `claude-door.ts`). `modelDoor(provider)` is `fetch` that refuses any
+address but `https://<the provider's host>` on its default port; `modelDoorFor(env, provider)` adds the e2e
+stand-in rule. The provider is the one `openAi()` read from the room's settings beside the key, never a value a
+client sent, so a key reaches only its own provider's host: a Claude key cannot be sent to `api.openai.com` or the
+reverse (`model-door.test.ts`: each provider's door refuses the other's API, a lookalike host, plain HTTP, another
+port). Under the e2e stack's one var (`E2E_CLAUDE_STAND_IN`, kept by name; ignored unless it names plain HTTP on a
+loopback port, in no `wrangler.toml` or hosted var) both hosts go to the stand-in, which tells them apart by path.
+
+### The api's settings
+
+`ai-settings.ts`: `readAiSettings` answers `{ provider, hasKey, keyHint, model, models, providers }` (`models` are
+the stored provider's, `providers` each `{ id, label, keyPrefix }`). `storeAiKey(env, documentId, provider, key)`:
+no provider is the stored one; a provider that is neither is `invalid-provider` (`400 invalid_provider`); another
+provider than the stored one replaces the key and forgets the model in the same transaction. `storeAiModel`
+refuses a model that is not the stored provider's. `openAi` answers `{ provider, apiKey, model }`. The provider is
+logged with a failure's kind (`[knowledge] ask failed`), never the key.
+
+## The OpenAI API
+
+Read from OpenAI's documentation on **2026-11-20**; written by hand over `fetch`, as the Claude client is.
+
+- **Which API:** the Responses API. "While Chat Completions remains supported, Responses is recommended for all new
+  projects" ([Migrate to the Responses API](https://developers.openai.com/api/docs/guides/migrate-to-responses));
+  "If you're building any text generation app, we recommend using the Responses API"
+  ([Text generation](https://developers.openai.com/api/docs/guides/text)).
+- **Request:** `POST https://api.openai.com/v1/responses`, headers `Authorization: Bearer <key>` and
+  `content-type: application/json`. Body: `model`, `instructions` (the system prompt), `input` (the messages, each
+  `{ role: 'user' | 'assistant', content }`), `max_output_tokens`, `stream: true`, `store: false` (responses are
+  stored by default; a team's passages are not left there), `reasoning: { effort }` (`low`, `medium`: every listed
+  model accepts them; some reject `none`,
+  [Reasoning](https://developers.openai.com/api/docs/guides/reasoning)).
+- **`max_output_tokens` counts reasoning tokens too** (the same page), as `max_tokens` does for Claude: 16,000 for
+  Ask and the conflict check, 4,000 for a setup suggestion.
+- **Models** (`OPENAI_MODELS`, from [Models](https://developers.openai.com/api/docs/models), "Flagship models"):
+  `gpt-6.2-astra` (the default: "our most capable model"), `gpt-6.2-sol`, `gpt-6.1-terra`, `gpt-6-luna`.
+- **The stream** is typed server-sent events
+  ([Streaming](https://developers.openai.com/api/docs/guides/streaming-responses); the event shapes are from
+  OpenAI's own SDK types, `openai-node` `src/resources/responses/responses.ts`, read the same day): the model is read
+  from any event's `response.model`; `response.output_text.delta` carries the text in `delta`;
+  `response.completed` ends an answer; `response.incomplete` with `incomplete_details.reason: "max_output_tokens"`
+  is an answer cut off (`stopReason: 'max_tokens'`), with any other reason (`content_filter`) a refusal;
+  `response.refusal.delta` is a refusal; `response.failed` carries `response.error.code`; `error` carries `code`.
+  A stream that ends with none of the endings is a failure.
+- **Failures** ([Error codes](https://developers.openai.com/api/docs/guides/error-codes); the body is
+  `{ error: { message, type, param, code } }`):
+
+  | Kind                | From                                                                                                                                                                                  |
+  | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+  | `bad-key`           | 401; `code: invalid_api_key`                                                                                                                                                          |
+  | `no-credit`         | a 429 whose `code` (or `type`) is `insufficient_quota`, `credit_balance_exhausted`, `organization_spend_limit_exceeded`, `project_spend_limit_exceeded`, `organization_usage_limit_exceeded` |
+  | `rate-limited`      | any other 429; `rate_limit_exceeded`, `slow_down`, also from a failed response                                                                                                         |
+  | `overloaded`        | 503; `server_is_overloaded`, `service_unavailable_error`, also as an `error` event mid-stream                                                                                          |
+  | `model-unavailable` | 404; `model_not_found`                                                                                                                                                                |
+  | `refused`           | `response.refusal.delta`; `response.incomplete` not for the token ceiling; a failed response with `invalid_prompt`, `bio_policy` or `misalignment_policy_violation`                      |
+  | `other`             | anything else: no network, 400, 403, 500, a body that is not JSON, a stream cut short                                                                                                  |
+
+- **Not confirmed from the documentation read:** that a wrong key's body carries `code: invalid_api_key` and a
+  missing model's `model_not_found` (the error page lists the 401 and names neither code; the status alone maps
+  them, so the codes are a second way in, not the only one); and 403, which the page gives only for an unsupported
+  country, is `other`.
+- The client does not retry.
+
+## Describe to Set Up
+
+Derived from [Describe to set up](../describe-to-set-up.md) "The model". The editor's side is its own
+[blueprint](describe-to-set-up.md).
+
+1. `setupRefusal(description, { personThisHour, knowledgebaseToday })`: `no-description` (under
+   `SETUP_MIN_DESCRIPTION_CHARS`, 20, after trimming), `description-too-long` (over 1,000), `person-limit` (5 an
+   hour), `knowledgebase-limit` (20 a day), or `undefined`. `setupCounters(person, now)` are the reads and the
+   writes, in scopes of their own (`setup:person:<id>`, `setup:knowledgebase`), so a suggestion never spends one of
+   Ask's questions.
+2. `setupRequest({ description, existing })`: one `ModelRequest`, `maxTokens` 4,000, effort `low`. `SETUP_SYSTEM`
+   asks for a structure a team will review (6 to 20 pages for most, never more than 30, 3 levels, titles of 80,
+   one-sentence summaries of 200, up to 6 headings of 80, no two siblings of one title, a name for the
+   knowledgebase), as one JSON object `{ name, pages: [{ id, title, summary, headings, parent }] }` and nothing
+   else, `parent` the `id` of the page above or `null`. The user message is `<existing_pages>` (when adding: each
+   `<page depth="n">title</page>`, at most 500, titles cut at 80) then `<description>`, every piece through
+   `fenced`: a description that writes `</description>` or instructions is data inside its fence.
+3. `parseSetupSuggestion(reply)` answers `{ name, pages }` or `undefined`. The reply is read up to
+   `SETUP_MAX_REPLY_CHARS` (60,000), from its first `{` to its last `}` (a code fence or a sentence around it is
+   ignored). Each page: a title that is a non-empty string after cleaning, else the page is dropped; text is made
+   one line (control characters and line breaks to spaces) and **cut** at its bound, never split inside a
+   surrogate pair; headings that are not strings or are empty are dropped, the first 6 kept. Pages are placed
+   depth first from the top in the reply's order, so a page whose parent is unknown or leads back to itself is
+   never reached; a level past 3, a sibling's title (compared without case) and anything past 30 pages are left
+   out with their subpages. The ids that come out are the suggestion's own (`p1`, `p2`, ... in tree order), each
+   with `parent` and `depth`. No valid page: `undefined`, which the route answers as `no-structure`.
+4. **A reply cut off** at the token ceiling does not parse as a whole. Each page is an object with no object inside
+   it, so every complete `{...}` without a brace in it is then tried alone, and the name is read by its own
+   pattern: the whole pages are saved and the cut one is lost.
+5. **Trust.** The reply is untrusted text. Nothing in it is read as markup: a title of `<script>` is those
+   characters, kept as they are, and the editor places them as text (`setup.test.ts`, the route's test and the
+   editor's tests each hold it).
+
+**The route** (`routes/knowledge-setup-route.ts`): `POST setup/suggest`, a signed-in Editor in person
+(`grant.role === 'edit'`, no token, an account), else `403`; `existing` read defensively (500 entries, titles of
+80); the refusal before the key is opened; counted before the model is called; `callModel` through the door with
+the request's signal; `200` the suggestion; `502` `{ error: <kind>, provider, message }` for a failed call and
+`{ error: 'no-structure' }` for a reply with no page. Logs `[knowledge] setup suggested` (provider, page count,
+model), `setup no structure`, `setup failed` (kind): never the description, a title or the key.
+
+| Rule                                                      | Test                                         |
+| --------------------------------------------------------- | -------------------------------------------- |
+| 20 to 1,000 characters; 5 an hour, 20 a day, apart from Ask | `setup.test.ts`; `knowledge-setup-route.test.ts` |
+| The description and existing titles are fenced data       | `setup.test.ts`; the route's test            |
+| 30 pages, 3 levels, 80, 200, 6 headings of 80             | `setup.test.ts` "reading a reply"            |
+| No duplicate sibling titles; parents resolved; the rest dropped | the same                                |
+| No valid page is a failure, never a raw error             | the same; the route's test                   |
+| Markup in a reply stays text                              | the same; the route's test                   |
+| Per role, per limit, per provider                         | `knowledge-setup-route.test.ts`              |
+
+**Risk not ruled out:** thinking counts against the 4,000 token ceiling on both providers, so a long structure
+from a model that thinks at length can be cut off. The prompt asks for a compact reply and effort is `low`; a cut
+reply still yields its whole pages (step 4). Raise `SETUP_MAX_TOKENS` (and the spec's bound) if real replies are cut.
+
 ## Conflicts
 
 1. `conflictCheckRefusal({ hasKey, checksToday, lastCheckedAt, now })`: `no-key`, `checked-recently` (under
@@ -318,7 +478,7 @@ is made in a Worker with an injected `fetch`; no SDK is a dependency.
 4. `chooseConflictCandidates(lookups, known)`: every probe with what its lookup found, best rank first, each pair
    once, pairs already stored (`knownConflictIds(tab)`: open or dismissed) left out, at most
    `CONFLICT_MAX_CANDIDATES` (5).
-5. `conflictRequest({ model, candidates })`: one request for all the pairs, each `<pair number>` with `<first>` and
+5. `conflictRequest({ candidates })`: one request for all the pairs, each `<pair number>` with `<first>` and
    `<second>` fenced as in Ask. `CONFLICT_SYSTEM` asks whether the two passages state opposite facts (both cannot be
    right at once), and has the model answer `<pair number="n" verdict="conflict">the question</pair>` or
    `verdict="consistent"`.
@@ -381,8 +541,9 @@ payload)`: what the alarm owes.
 - **Search**: `searchPassages`, then `foundPassage`; a link confined to one page is shown that page's rows. The
   limiter is the Worker's binding `SEARCH_RATE_LIMITER`.
 - **Ask** (`routes/knowledge-ask-route.ts`): the steps this blueprint gave, streamed as server-sent events. The
-  counters are bumped before the model is called. The only way out is `claudeDoor`: HTTPS to `api.anthropic.com`.
-- **The key** (`ai-settings.ts`): `sealApiKey(env.AI_KEY_SECRET, key, documentId)`; no secret, no key or an envelope
+  counters are bumped before the model is called. The only way out is the model door ("Providers").
+- **The key** (`ai-settings.ts`): `sealApiKey(env.AI_KEY_SECRET, key, documentId)`, stored with its hint and its
+  provider in one transaction (`putAiKey`); another provider than the stored one also drops `ai_model`; no secret, no key or an envelope
   that does not open is `ask_unavailable` in words.
 - **Conflict checks** (`conflict-check.ts`): a settle that indexed a page anew reads the page's passage hashes as
   they stood (only when a key is set) and the room owes a check in `knowledge_work`, due a minute on; saves inside
@@ -553,8 +714,8 @@ Measured on an M-series Mac, Node 22, CPU time (not wall-clock), 2026-11-20:
 - **The SQL is run, not only read:** `src/__fixtures__/db.ts` is a real SQLite with FTS5 (`node:sqlite`, in Node 22;
   no dependency added). The schema, every statement, the search ranking, the conflict closing and the pruning run
   against it. What it cannot show is workerd's own behaviour (above).
-- **The Claude API is never called.** `src/__fixtures__/claude.ts` builds server-sent event streams and error bodies
-  in the documented shapes; a fake `fetch` records what was sent. The request shapes and the fallback beta are
+- **No model API is ever called.** `src/__fixtures__/claude.ts` and `src/__fixtures__/openai.ts` build each
+  provider's server-sent event streams and error bodies in the documented shapes; a fake `fetch` records what was sent. The request shapes and the fallback beta are
   therefore unverified against the live API.
 - Speed is held in CPU time (`@liveworkspace/vitest-config/cpu-time`), never wall-clock.
 
