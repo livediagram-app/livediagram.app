@@ -299,6 +299,19 @@ decision are `@liveworkspace/workbench`'s `useUnusedImagePrompt`, the same in ev
   undone."); a second delete while one is up replaces it with the newer delete's pictures. It stays up for 10 seconds
   like any toast with answers, paused while hovered or focused, and timing out, closing it or Keep keeps the
   pictures. With In-Editor Notifications off it does not pop up, and nothing is deleted.
+- **Remember My Choice.** Under the message, an iOS-style switch, "Remember My Choice", off each time the toast
+  appears. With it on, the answer pressed becomes the person's setting: Delete from Storage saves Always Delete from
+  Storage, Keep saves Always Keep. Closing the toast or letting it time out never saves anything, switch on or not.
+- **The setting**, Settings > Editor > "When I Delete an Unused Image" (`unusedImageChoice`): **Ask Every Time** (the
+  default), **Always Delete from Storage** or **Always Keep**. It is one setting in every app, a common setting kept
+  in the account's `all` scope ([accounts.md](../../../../liveworkspace/docs/specs/003-accounts/accounts.md)
+  "Common settings"), so a choice remembered in one app holds in the others and is changed back in any app's
+  Settings. With Always Keep a delete asks nothing and sends no request. With Always Delete from Storage every check
+  above still runs (only the owner, used nowhere else, every tab loaded, an answer from the api), and only then are
+  the pictures deleted, followed by a brief notice, "The image wasn't used anywhere else, so it was deleted from
+  storage." (or "3 images weren't used anywhere else, so they were deleted from storage."), shown even with In-Editor
+  Notifications off, so it never happens silently. Anything unsure still keeps the picture. Changing the setting
+  sends `UI`/`Changed`/`UnusedImagesAsk`, `UnusedImagesDelete` or `UnusedImagesKeep`.
 - **Delete from Storage** sends `DELETE /api/images/:id` for each picture, first leaving out any this document places
   again by then (an undo in the meantime). The toast then reads "Deleted from storage" (or "3 images deleted from
   storage"). A failure says "Couldn't delete the image from storage. Try again." and the pictures that didn't go

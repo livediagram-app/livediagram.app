@@ -71,6 +71,13 @@ The last button is the primary one (the brand-coloured answer: Undo, Reload); an
 Storage** (each product's `docs/specs/009-elements/images.md` "Deleting an unused picture"). Its message says it
 can't be undone, and timing out or closing it is the safe answer.
 
+**A switch on a toast** (an action toast's `toggle`): one iOS-style switch, the house `Switch`, on a row of its own
+under the message, its words beside it as its label, for an answer the person may want to stop being asked: "Remember
+My Choice" on the unused-picture offer. It starts off each time the toast appears, is read only when an answer is
+pressed, and flipping it answers nothing: it neither closes the toast nor counts as seeing it, and the toast's timer
+pauses while it has focus or the pointer, as for the buttons. Closing the toast or letting it time out with the switch
+on saves nothing.
+
 ## Timing
 
 - A plain toast times out after its tone's time (above). One with buttons stays up for 10 seconds
