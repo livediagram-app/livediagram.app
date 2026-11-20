@@ -206,7 +206,7 @@ Participant sends no beacon, so nothing else shares it.
   each item once per image, as `{ id, name, app, trashed? }` ordered by name. With no references it answers
   `{ usage: {}, unchecked: [] }` without asking the index.
 - `GET /api/images/unused?d=<design>&ids=a,b`: signed-in owner only (`ctx.accountUserId`; a guest, an API token and a
-  design-scope workbench session get 401 or 403); the ids parsed by `@liveworkspace/media`'s `parseUnusedImageIds`
+  design-scope workbench session get 400 or 403); the ids parsed by `@liveworkspace/media`'s `parseUnusedImageIds`
   (1 to 50 gallery ids, else 400 `invalid_ids`), `d` an id (else 400 `invalid_design`); then one
   `media.unused(mediaOwner(owner), d, ids)`, its `{ unused }` passed on, a service failure answered as its status.
   The editor's `apiUnusedImages` answers `[]` for anything but 200, and `useUnusedImagePrompt`

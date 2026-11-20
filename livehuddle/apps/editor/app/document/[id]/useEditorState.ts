@@ -125,6 +125,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     fromPresence,
     fromEditing,
     fromTabs,
+    fromRoom,
   });
   const fromStyle = useEditorStyle({
     fromDocument,

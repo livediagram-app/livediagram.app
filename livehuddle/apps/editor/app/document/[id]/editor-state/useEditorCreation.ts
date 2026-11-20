@@ -1,5 +1,6 @@
 'use client';
 
+import { useUnusedImageOffer } from '@/hooks/canvas/useUnusedImageOffer';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { useEffect } from 'react';
 import { useSwatchOverrides } from '@/hooks/canvas/useSwatchOverrides';
@@ -20,6 +21,7 @@ import type { EditorActiveTabSlice } from './useEditorActiveTab';
 import type { EditorPresenceSlice } from './useEditorPresence';
 import type { EditorEditingSlice } from './useEditorEditing';
 import type { EditorTabsSlice } from './useEditorTabs';
+import type { EditorRoomSlice } from './useEditorRoom';
 
 // Making things: images, drawing (room walls included), palette creation, inline icons and selection
 // actions. A slice of useEditorState (../useEditorState.ts): it takes the slices composed before it and returns
@@ -35,6 +37,7 @@ export function useEditorCreation({
   fromPresence,
   fromEditing,
   fromTabs,
+  fromRoom,
 }: {
   fromDocument: EditorDocumentSlice;
   fromHistory: EditorHistorySlice;
@@ -46,6 +49,7 @@ export function useEditorCreation({
   fromPresence: EditorPresenceSlice;
   fromEditing: EditorEditingSlice;
   fromTabs: EditorTabsSlice;
+  fromRoom: EditorRoomSlice;
 }) {
   const { documentId, embedMode, selfParticipant } = fromDocument;
   const { commitTabs } = fromHistory;
@@ -161,6 +165,21 @@ export function useEditorCreation({
   // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
   // useElementSelectionActions.
+  // The offer to delete from storage the pictures a delete left unused (docs/specs/009-elements/images.md "Deleting an
+  // unused picture"); nothing runs until a delete removes an image element.
+  const offerUnusedImages = useUnusedImageOffer({
+    ownerId: selfParticipant.id,
+    documentId,
+    accountUserId: fromDocument.accountUserId,
+    embedMode,
+    workbenchMode: false,
+    isStructureReadOnly: fromCollaboration.isStructureReadOnly,
+    participating: participant.participating,
+    tabsRef: fromPersistence.tabsRef,
+    loadedTabIdsRef: fromDocument.loadedTabIdsRef,
+    loadAllTabs: fromRoom.loadAllTabs,
+  });
+
   const {
     deleteSelected,
     deleteElementById,
@@ -176,6 +195,7 @@ export function useEditorCreation({
     readSelection,
     activeTab,
     commit,
+    onElementsRemoved: offerUnusedImages,
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,

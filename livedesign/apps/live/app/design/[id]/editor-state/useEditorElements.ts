@@ -1,3 +1,4 @@
+import { useUnusedImageOffer } from '@/hooks/canvas/useUnusedImageOffer';
 import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { useEffect } from 'react';
 import { useMarkerPens } from '@/hooks/canvas/useMarkerPens';
@@ -24,6 +25,7 @@ import type { EditorComments } from './useEditorComments';
 import type { EditorPages } from './useEditorPages';
 import type { EditorLayers } from './useEditorLayers';
 import type { EditorHistory } from './useEditorUndoState';
+import type { EditorPersistence } from './useEditorPersistence';
 import type { EditorTabs } from './useEditorTabs';
 
 // Making and changing elements: the selection and placement helpers, the checklist tick, images, notes, logo and
@@ -44,6 +46,7 @@ export function useEditorElements({
   layersSlice,
   historySlice,
   tabsSlice,
+  persistenceSlice,
 }: {
   designSlice: EditorDesignSlice;
   selectionSlice: EditorSelection;
@@ -56,6 +59,7 @@ export function useEditorElements({
   layersSlice: EditorLayers;
   historySlice: EditorHistory;
   tabsSlice: EditorTabs;
+  persistenceSlice: EditorPersistence;
 }) {
   const {
     embedMode,
@@ -329,6 +333,21 @@ export function useEditorElements({
   // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
   // useElementSelectionActions.
+  // The offer to delete from storage the pictures a delete left unused (docs/specs/009-elements/images.md "Deleting an
+  // unused picture"); nothing runs until a delete removes an image element.
+  const offerUnusedImages = useUnusedImageOffer({
+    ownerId: selfParticipant.id,
+    designId,
+    accountUserId: designSlice.accountUserId,
+    embedMode,
+    workbenchMode,
+    isStructureReadOnly: sessionSlice.isStructureReadOnly,
+    participating: sessionSlice.participant.participating,
+    tabsRef: persistenceSlice.tabsRef,
+    loadedTabIdsRef: sessionSlice.loadedTabIdsRef,
+    loadAllTabs: collaborationSlice.loadAllTabs,
+  });
+
   const {
     deleteSelected,
     selectMarquee,
@@ -345,6 +364,7 @@ export function useEditorElements({
     readSelection,
     activeTab,
     commit,
+    onElementsRemoved: offerUnusedImages,
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,

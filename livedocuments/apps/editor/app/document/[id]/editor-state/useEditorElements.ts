@@ -1,3 +1,4 @@
+import { useUnusedImageOffer } from '@/hooks/canvas/useUnusedImageOffer';
 import { useEffect, useMemo } from 'react';
 import { checklistDeltaFor, pageSnapBoxes } from '@livedocuments/document';
 import { useCellLinkPicker } from '@/hooks/canvas/useCellLinkPicker';
@@ -19,6 +20,7 @@ import type { EditorPages } from './useEditorPages';
 import type { EditorLayers } from './useEditorLayers';
 import type { EditorHistory } from './useEditorUndoState';
 import type { EditorArticles } from './useEditorArticles';
+import type { EditorPersistence } from './useEditorPersistence';
 import type { EditorTabs } from './useEditorTabs';
 
 // Making and changing elements: the selection and placement helpers, the checklist tick, images, drawing, palette
@@ -39,6 +41,7 @@ export function useEditorElements({
   historySlice,
   articlesSlice,
   tabsSlice,
+  persistenceSlice,
 }: {
   documentSlice: EditorDocument;
   selectionSlice: EditorSelection;
@@ -52,6 +55,7 @@ export function useEditorElements({
   historySlice: EditorHistory;
   articlesSlice: EditorArticles;
   tabsSlice: EditorTabs;
+  persistenceSlice: EditorPersistence;
 }) {
   // Unmemoised by the React Compiler, as the one hook it was cut from was (see ../useEditorState.ts).
   'use no memo';
@@ -229,6 +233,21 @@ export function useEditorElements({
   // duplicate family). They change the element set
   // and/or the selection rather than element fields; see
   // useElementSelectionActions.
+  // The offer to delete from storage the pictures a delete left unused (docs/specs/009-elements/images.md "Deleting an
+  // unused picture"); nothing runs until a delete removes an image element.
+  const offerUnusedImages = useUnusedImageOffer({
+    ownerId: selfParticipant.id,
+    documentId,
+    accountUserId: documentSlice.accountUserId,
+    embedMode,
+    workbenchMode,
+    isStructureReadOnly: sessionSlice.isStructureReadOnly,
+    participating: sessionSlice.participant.participating,
+    tabsRef: persistenceSlice.tabsRef,
+    loadedTabIdsRef: sessionSlice.loadedTabIdsRef,
+    loadAllTabs: collaborationSlice.loadAllTabs,
+  });
+
   const {
     deleteSelected,
     selectMarquee,
@@ -243,6 +262,7 @@ export function useEditorElements({
     readSelection,
     activeTab,
     commit,
+    onElementsRemoved: offerUnusedImages,
     setSelectedId,
     setEditingId,
     setMultiSelectedIds,

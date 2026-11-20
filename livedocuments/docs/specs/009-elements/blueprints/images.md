@@ -176,7 +176,7 @@ max-age=86400`.
   (liveworkspace/docs/specs/006-media/media.md "Usage"). It keeps those whose `app` matches and the owner's, named as the index has them. No tab body
   read, each item once per image, as `{ id, name, app, trashed? }` ordered by name.
 - `GET /api/images/unused?d=<document>&ids=a,b`: signed-in owner only (`ctx.accountUserId`; a guest, an API token and a
-  document-scope workbench session get 401 or 403); the ids parsed by `@liveworkspace/media`'s `parseUnusedImageIds`
+  document-scope workbench session get 400 or 403); the ids parsed by `@liveworkspace/media`'s `parseUnusedImageIds`
   (1 to 50 gallery ids, else 400 `invalid_ids`), `d` an id (else 400 `invalid_document`); then one
   `media.unused(mediaOwner(owner), d, ids)`, its `{ unused }` passed on, a service failure answered as its status.
   The editor's `apiUnusedImages` answers `[]` for anything but 200, and `useUnusedImagePrompt`

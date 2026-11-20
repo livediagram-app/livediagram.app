@@ -1,5 +1,6 @@
 // Image gallery calls (docs/specs/009-elements/images.md): list, upload, delete, usage index, and
 // the authenticated blob-URL fetch for rendering.
+import { unusedImageIdsParam, type MediaUnusedResponse } from '@liveworkspace/media';
 import type { ImageSummary } from '@livedocuments/api-schema';
 import { dedupeInFlight } from '@liveworkspace/workbench/lib/dedupe';
 import {
@@ -77,6 +78,27 @@ export async function apiUploadImage(
   // `unsupported_type`, `file_too_large`, …) so the caller can map it to
   // a friendly message rather than show a raw status.
   return expectOk<{ image: ImageSummary; deduped: boolean }>(res, 'upload image');
+}
+
+// Which of the caller's own pictures of `ids` nothing but this document uses, in any app
+// (docs/specs/009-elements/images.md "Deleting an unused picture"): one request for a whole delete. Anything but an
+// answer (offline, a refusal, the service down) is `[]`, so nothing is offered that could be in use.
+export async function apiUnusedImages(
+  ownerId: string,
+  documentId: string,
+  ids: readonly string[],
+): Promise<string[]> {
+  try {
+    const query = new URLSearchParams({ d: documentId, ids: unusedImageIdsParam(ids) });
+    const res = await apiFetch(`${API_BASE}/images/unused?${query}`, {
+      headers: await apiHeaders(ownerId),
+    });
+    if (!res.ok) return [];
+    const body = (await res.json()) as Partial<MediaUnusedResponse>;
+    return Array.isArray(body.unused) ? body.unused.filter((id) => typeof id === 'string') : [];
+  } catch {
+    return [];
+  }
 }
 
 export async function apiDeleteImage(ownerId: string, imageId: string): Promise<void> {
