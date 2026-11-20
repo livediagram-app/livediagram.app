@@ -78,7 +78,7 @@ export function svgCommentPanel(el: Face, title: string, color: string, a: Colla
         out +
         `<circle cx="${r2(w / 2)}" cy="${r2(cy - 12)}" r="14" fill="${xmlEscape(a.accent)}" fill-opacity="0.14"/>` +
         glyph(w / 2, cy - 12, 14, a.ink, GLYPH.bubble) +
-        text(w / 2, cy + 18, 'No Comments Yet', {
+        text(w / 2, cy + 18, 'No comments yet', {
           size: 12.5,
           weight: 600,
           color,
@@ -166,7 +166,7 @@ export function svgActionPanel(el: Face, title: string, color: string, a: Collab
           out +
           `<circle cx="${r2(w / 2)}" cy="${r2(cy - 28)}" r="14" fill="${xmlEscape(a.accent)}" fill-opacity="0.14"/>` +
           glyph(w / 2, cy - 28, 14, a.ink, GLYPH.clipboard) +
-          text(w / 2, cy + 2, 'No Actions Yet', {
+          text(w / 2, cy + 2, 'No actions yet', {
             size: 12.5,
             weight: 600,
             color,

@@ -65,7 +65,7 @@ export function CardActivityTab({ item }: { item: Item }) {
   const scope = useCardThreadsContext()?.threads.scope;
   if (!scope)
     return (
-      <ActivityState title="No Activity Here" description="Activity shows on cards in a plan." />
+      <ActivityState title="No activity here" description="Activity shows on cards in a plan." />
     );
   return <ActivityTimelineOf key={item.id} item={item} scope={scope} />;
 }
@@ -332,7 +332,7 @@ export function ActivityNote({ history }: { history: CardHistory }): ReactNode {
   if (history.status === 'offline')
     return (
       <ActivityState
-        title="No Activity Offline"
+        title="No activity Offline"
         description="Offline plans keep no card history."
         action={<HelpArticleLink article="planCardActivity" variant="text" />}
       />
@@ -356,7 +356,7 @@ export function ActivityNote({ history }: { history: CardHistory }): ReactNode {
   if (history.status === 'ready')
     return (
       <ActivityState
-        title="No Activity Yet"
+        title="No activity yet"
         description="Changes to this card show here: who moved it, what they set, and when."
         action={<HelpArticleLink article="planCardActivity" variant="text" />}
       />

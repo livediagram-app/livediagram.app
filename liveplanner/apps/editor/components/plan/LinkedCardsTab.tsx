@@ -48,7 +48,7 @@ export function LinkedCardsTab({
         <CompactEmptyState
           size="small"
           icon={<LinkIcon aria-hidden />}
-          title="No Linked Cards Yet"
+          title="No linked cards yet"
           description={
             canAdd
               ? 'Cards that link to this one show here. Make one already linked, or link one you already have.'

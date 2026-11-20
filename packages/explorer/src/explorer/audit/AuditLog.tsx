@@ -319,7 +319,7 @@ function AuditBody({
           <EmptyState
             compact
             icon={<HistoryIcon size={28} />}
-            title="No Events Match"
+            title="No events match"
             description="Nothing in the last year matches these filters."
           >
             <Button variant="secondary" size="xs" onClick={() => setFilters(NO_FILTERS)}>
@@ -330,7 +330,7 @@ function AuditBody({
           <EmptyState
             compact
             icon={<ShieldIcon size={28} />}
-            title="No Audit Events Yet"
+            title="No audit events yet"
             description="Who joins or leaves, shares, moves or deletes the team’s documents, and the team’s webhooks show here for a year."
           />
         )

@@ -218,7 +218,7 @@ export function ChoiceField({
               <CompactEmptyState
                 size="small"
                 icon={<ListIcon aria-hidden />}
-                title="No Options Yet"
+                title="No options yet"
                 description="Add options to this field in its card type."
               />
             ) : rows.length === 0 ? (

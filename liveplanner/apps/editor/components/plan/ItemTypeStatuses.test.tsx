@@ -89,7 +89,7 @@ describe('the type editor’s States', () => {
 
   it('says so when the boards name no states', () => {
     render(<ItemTypeStatuses statuses={[]} used={[]} onChange={vi.fn()} />);
-    expect(screen.getByText('No States Yet')).toBeTruthy();
+    expect(screen.getByText('No states yet')).toBeTruthy();
   });
 
   it('Deselect All leaves only what nothing lists', () => {

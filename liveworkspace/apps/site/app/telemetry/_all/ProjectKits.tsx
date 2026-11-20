@@ -45,7 +45,7 @@ export function ProjectKits({
         {!figures.counted || !daily ? (
           <CompactEmptyState
             icon={<ActivityGlyph />}
-            title="No Project Kits Yet"
+            title="No project kits yet"
             description="No project kit has been started, retried or removed in the last 30 days."
           />
         ) : (

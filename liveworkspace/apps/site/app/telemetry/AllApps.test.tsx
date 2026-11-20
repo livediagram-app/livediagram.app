@@ -160,8 +160,8 @@ describe('Apps Compared', () => {
 
   it('says so when nothing has arrived', () => {
     show(quiet);
-    expect(text()).toContain('No Events Yet');
-    expect(text()).toContain('No Visitors Yet');
+    expect(text()).toContain('No events yet');
+    expect(text()).toContain('No visitors yet');
   });
 
   it('follows the window it is given and hands a pick back to the page', () => {
@@ -213,6 +213,6 @@ describe('Project Kits', () => {
 
   it('says so when no kit has been used', () => {
     show(quiet);
-    expect(section().textContent).toContain('No Project Kits Yet');
+    expect(section().textContent).toContain('No project kits yet');
   });
 });

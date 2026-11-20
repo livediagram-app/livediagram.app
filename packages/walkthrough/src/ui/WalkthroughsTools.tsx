@@ -234,7 +234,7 @@ export function WalkthroughsPanel({
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-5 pt-4">
           <ToolExplainer
             art={walkthroughsArt}
-            title="No Walkthroughs Yet"
+            title="No walkthroughs yet"
             description="Record a video of this canvas while you talk it through. Anyone who can open it can watch, or share it by a link."
             steps={[
               'Press Record Walkthrough, then share this tab when your browser asks.',

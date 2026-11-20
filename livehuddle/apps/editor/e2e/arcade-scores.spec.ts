@@ -178,7 +178,7 @@ test("a Participant's score lands on the owner's machine and a Viewer's table, a
 
   // Empty everywhere: the Participant's bubble and the Viewer's open panel.
   await expect(best(guestPage)).toHaveCount(0, { timeout: 10_000 });
-  await expect(panel(viewerPage).getByText('No Scores Yet')).toBeVisible({ timeout: 10_000 });
+  await expect(panel(viewerPage).getByText('No scores yet')).toBeVisible({ timeout: 10_000 });
 
   await ownerPage.context().close();
   await guestPage.context().close();

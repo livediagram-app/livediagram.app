@@ -2,7 +2,11 @@
 
 import { useId, useMemo, useState } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
-import { lucideChevronLeft, lucideChevronRight } from '@liveworkspace/icons/lucide';
+import {
+  lucideChevronLeft,
+  lucideChevronRight,
+  lucideStickyNote,
+} from '@liveworkspace/icons/lucide';
 import {
   DEFAULT_NOTE_COLOR,
   isNoteDay,
@@ -11,7 +15,7 @@ import {
   NOTES_MAX,
   type ShapeElement,
 } from '@livehuddle/document';
-import { lucideGlyph } from '@livehuddle/ui';
+import { CompactEmptyState, lucideGlyph } from '@livehuddle/ui';
 import {
   calendarMonth,
   canStepMonth,
@@ -209,9 +213,13 @@ function CalendarNotes({
       </h3>
       <ul className={z.list} aria-labelledby={listId}>
         {dayNotes.length === 0 ? (
-          <li className={`col-span-full py-2 ${z.body} text-slate-500 dark:text-slate-400`}>
-            No Notes Yet
-            {mayPin ? <span className="block text-[11px]">Pin one to this day below.</span> : null}
+          <li className="col-span-full">
+            <CompactEmptyState
+              size="small"
+              icon={<NotesIcon />}
+              title="No notes yet"
+              description={mayPin ? 'Pin one to this day below.' : undefined}
+            />
           </li>
         ) : (
           dayNotes.map((note) => (
@@ -253,3 +261,6 @@ function CalendarNotes({
     </div>
   );
 }
+
+// A day with no notes is an empty state (docs/specs/004-interface-design/empty-states.md).
+const NotesIcon = lucideGlyph(lucideStickyNote, 20);

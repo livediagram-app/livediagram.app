@@ -278,7 +278,7 @@ describe('a field with no options', () => {
   it('says so in its list', () => {
     field({ ...DIET, options: [] }, undefined);
     fireEvent.click(screen.getByRole('button', { name: 'Add to Dietary Needs' }));
-    expect(screen.getByText('No Options Yet')).toBeTruthy();
+    expect(screen.getByText('No options yet')).toBeTruthy();
   });
 });
 

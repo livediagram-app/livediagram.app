@@ -385,7 +385,7 @@ ItemPanelLayout.tsx      the panel's shell pieces: ItemTypeBand (h-1, ACCENT_BG 
 ItemFieldEditor.tsx      one field's editor by kind (FIELD_LABELS, fieldLabel, labelsItsControl)
 LinkedCards.tsx          LinkedCardGroup (a Linked as {Field} section; `emptyNote` false drops its empty line) and
                          FilteredCards rows (glyph, #key, title, status, Archived chip)
-LinkedCardsTab.tsx       the Linked Cards tab: linkedCardCount, the "No Linked Cards Yet" empty state, the groups
+LinkedCardsTab.tsx       the Linked Cards tab: linkedCardCount, the "No linked cards yet" empty state, the groups
 ItemPanelTabs.tsx        ACTIVITY_TAB, DETAILS_TAB, LINKED_TAB, panelTabs, namedLinkedTab, ItemPanelTabBar (count pill)
 ItemTrailCrumbs.tsx      the breadcrumb: the shared BackBar to the card before (its "#key title"), this card's "#key"
                          as the chip, in a row above the header
@@ -778,7 +778,7 @@ PLAN_HANDWRITING_EX`). A heading opts in with `PLAN_HEADING_STYLE` (`font-family
   "Move Left", "Move Right", "+ Add Column After", "Remove Column", "Remove", "Column actions", "Columns",
   "The board’s columns, left to right. Press one to open its settings.", "On This Board", "WIP {n}", "Done",
   "Open {Name} settings", "Add", "A board holds up to 12 columns.", "Move and Remove", "Keep It",
-  "Linked as {Field}", "No cards link here as {Field} yet.", "Linked Cards", "No Linked Cards Yet", "Cards that link
+  "Linked as {Field}", "No cards link here as {Field} yet.", "Linked Cards", "No linked cards yet", "Cards that link
   to this one show here.", "Make one already linked, or link one you already have.", "Archived", "Card trail".
 - Item panel undo (canvas spec "Keyboard shortcuts"): the panel renders a hidden marker carrying `TAKES_HISTORY_ATTR`
   (`apps/editor/hooks/canvas/panel-history.ts`). `useEditorKeyboardShortcuts`, with a modal open, runs only what

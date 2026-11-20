@@ -115,7 +115,7 @@ export function ActionPanelFace({
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <EmptyRows
               textColor={textColor}
-              title="No Actions Yet"
+              title="No actions yet"
               rows={0}
               glyph={<ActionGlyph size={14} />}
             >

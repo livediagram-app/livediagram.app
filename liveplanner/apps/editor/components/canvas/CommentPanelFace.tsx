@@ -64,7 +64,7 @@ export function CommentPanelFace({
           {comments.length === 0 ? (
             <EmptyRows
               textColor={textColor}
-              title="No Comments Yet"
+              title="No comments yet"
               rows={0}
               glyph={<DiscussGlyph size={14} />}
             />

@@ -15,9 +15,9 @@ type SectionProps = (id: string) => { open: boolean; onToggle: () => void };
 const CLEAR =
   'h-7 w-full cursor-pointer rounded-md bg-rose-50 px-2 text-[11px] font-semibold text-rose-700 transition hover:bg-rose-100 disabled:cursor-default disabled:opacity-50 disabled:hover:bg-rose-50 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20 dark:disabled:hover:bg-rose-500/10';
 
-/** "3 Scores on the table", "1 Score on the table", or No Scores Yet. */
+/** "3 Scores on the table", "1 Score on the table", or No scores yet. */
 export function arcadeCountLine(count: number): string {
-  if (count === 0) return 'No Scores Yet';
+  if (count === 0) return 'No scores yet';
   return `${count} ${count === 1 ? 'Score' : 'Scores'} on the table`;
 }
 

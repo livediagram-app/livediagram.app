@@ -276,7 +276,7 @@ describe('A document’s webhooks', () => {
   it('shows an empty state with Add Webhook when there are none, and the form takes the keyboard', async () => {
     webhooks = [];
     await render();
-    expect(container.querySelector('[data-empty-state]')?.textContent).toContain('No Webhooks Yet');
+    expect(container.querySelector('[data-empty-state]')?.textContent).toContain('No webhooks yet');
     expect(container.querySelector('[data-empty-state]')?.textContent).toContain('this canvas');
     await press('Add Webhook');
     expect(document.activeElement).toBe(choice('Slack'));
@@ -500,7 +500,7 @@ describe('A document’s webhooks', () => {
     await press('Recent Deliveries', row());
     deliveries = () => [];
     await press('Recent Deliveries', row());
-    expect(row().textContent).toContain('No Deliveries Yet');
+    expect(row().textContent).toContain('No deliveries yet');
   });
 
   it('says why recent deliveries could not be read, and reads them again on Try Again', async () => {

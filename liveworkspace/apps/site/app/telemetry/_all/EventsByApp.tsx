@@ -86,7 +86,7 @@ export function EventsByApp({
       {empty || !daily ? (
         <CompactEmptyState
           icon={<ActivityGlyph />}
-          title="No Events Yet"
+          title="No events yet"
           description="Nothing has arrived from any app in the last 30 days."
           className="mt-4"
         />

@@ -41,7 +41,7 @@ afterEach(cleanup);
 
 describe('ArcadeMenuSection', () => {
   it('reads the count, and its questions match the table', () => {
-    expect(arcadeCountLine(0)).toBe('No Scores Yet');
+    expect(arcadeCountLine(0)).toBe('No scores yet');
     expect(arcadeCountLine(1)).toBe('1 Score on the table');
     expect(arcadeCountLine(10)).toBe('10 Scores on the table');
     expect(arcadeClearQuestion(1)).toBe('Clear 1 score?');
@@ -50,7 +50,7 @@ describe('ArcadeMenuSection', () => {
 
   it('is off while the table is empty', () => {
     renderSection(0);
-    expect(screen.getByText('No Scores Yet')).toBeTruthy();
+    expect(screen.getByText('No scores yet')).toBeTruthy();
     expect((clearButton() as HTMLButtonElement).disabled).toBe(true);
   });
 

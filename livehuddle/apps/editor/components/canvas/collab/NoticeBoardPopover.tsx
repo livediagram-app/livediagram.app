@@ -2,7 +2,9 @@
 
 import { useId } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
+import { lucideStickyNote } from '@liveworkspace/icons/lucide';
 import { NOTES_MAX, notesNewestFirst, type ShapeElement } from '@livehuddle/document';
+import { CompactEmptyState, lucideGlyph } from '@livehuddle/ui';
 import { ReaderShell } from './ReaderShell';
 import { NOTE_SIZES, NoteAddForm, NoteCard } from './NoteParts';
 import { useNoteSigner } from './useNoteSigner';
@@ -96,11 +98,12 @@ function NoticeBoardNotes({
       ) : null}
       <ul className={z.list} aria-labelledby={titleId}>
         {notes.length === 0 ? (
-          <li
-            className={`col-span-full py-4 text-center ${z.body} text-slate-500 dark:text-slate-400`}
-          >
-            No Notes Yet
-            {mayPin ? <span className="block text-[11px]">Pin the first one above.</span> : null}
+          <li className="col-span-full">
+            <CompactEmptyState
+              icon={<NotesIcon />}
+              title="No notes yet"
+              description={mayPin ? 'Pin the first one above.' : undefined}
+            />
           </li>
         ) : (
           notes.map((note) => (
@@ -120,3 +123,6 @@ function NoticeBoardNotes({
     </div>
   );
 }
+
+// An empty board is an empty state (docs/specs/004-interface-design/empty-states.md).
+const NotesIcon = lucideGlyph(lucideStickyNote, 20);

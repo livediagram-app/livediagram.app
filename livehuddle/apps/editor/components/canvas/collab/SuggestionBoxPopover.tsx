@@ -2,10 +2,10 @@
 
 import { useEffect, useEffectEvent, useState } from 'react';
 import { AnchoredPopover } from '@liveworkspace/workbench/components/primitives/AnchoredPopover';
-import { lucideRefreshCw } from '@liveworkspace/icons/lucide';
+import { lucideLightbulb, lucideRefreshCw } from '@liveworkspace/icons/lucide';
 import type { Suggestion } from '@livehuddle/api-schema';
 import { SUGGESTION_TEXT_MAX, type ShapeElement } from '@livehuddle/document';
-import { lucideGlyph, Tooltip } from '@livehuddle/ui';
+import { CompactEmptyState, lucideGlyph, Tooltip } from '@livehuddle/ui';
 import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
 import { apiDropSuggestion, apiListSuggestions, apiRemoveSuggestion } from '@/lib/api-client';
 import { shortDay } from '@/lib/calendar-month';
@@ -306,9 +306,7 @@ function EditorNotes({
           </button>
         </div>
       ) : status.notes.length === 0 ? (
-        <p className={`py-3 text-center ${z.body} text-slate-500 dark:text-slate-400`}>
-          No Notes Yet
-        </p>
+        <CompactEmptyState icon={<SuggestionsIcon />} title="No notes yet" />
       ) : (
         <ul className="flex min-h-0 flex-col gap-1.5 overflow-y-auto">
           {status.notes.map((note) => (
@@ -336,3 +334,6 @@ function EditorNotes({
     </section>
   );
 }
+
+// An empty box is an empty state (docs/specs/004-interface-design/empty-states.md).
+const SuggestionsIcon = lucideGlyph(lucideLightbulb, 20);

@@ -77,7 +77,7 @@ A cork board in a wooden frame, hung on a wall, that holds pinned notes.
   date it was pinned and an optional colour from five: **Yellow** (the default), **Pink**, **Blue**, **Green** and
   **Purple**. A board holds up to 50 notes; once full, pinning says so and asks for a note to be unpinned first.
 - **The face** shows up to the four newest notes as small cards pinned to the cork, each with its colour, title (or
-  the start of its body) and a pin. More than four shows a "+N More" tag. An empty board reads **No Notes Yet**.
+  the start of its body) and a pin. More than four shows a "+N More" tag. An empty board reads **No notes yet**.
 - **Opening it**: the face's **Notes** button opens a popover listing every note, newest first: its title, body, author and date ("5 Nov"). At the top an **add box** (title,
   body with a live 280 counter, the five colour dots, **Pin Note**) for those who may pin. Escape or a click outside
   closes it.
@@ -401,7 +401,7 @@ ship steadily instead of blinking, and nothing flashes or shakes.
 ### High Scores
 
 - **One table per machine**, shared by everyone in the Space: its ten best scores, best first, each its rank, the
-  player's name, the score and the day it was set ("5 Nov"). An empty table reads **No Scores Yet**. Your own rows
+  player's name, the score and the day it was set ("5 Nov"). An empty table reads **No scores yet**. Your own rows
   are marked (**You** beside the name).
 - **The name** is the person's display name in the Space (the name their character carries), cut to 24 characters;
   with none it is **Guest**. There is nothing to type.
@@ -410,7 +410,7 @@ ship steadily instead of blinking, and nothing flashes or shakes.
   The panel then says where it landed: **New High Score!** at the top, else **You Placed #4**.
 - **It syncs**: a posted score reaches everyone's table at once, through the room, and stays on the machine.
 - **Clearing**: an Editor's element menu has a **High Scores** section (under Tools, before the machine's facing) saying how many scores the
-  table holds ("3 Scores on the table", or **No Scores Yet**) with **Clear High Scores**, off while the table is empty. It asks
+  table holds ("3 Scores on the table", or **No scores yet**) with **Clear High Scores**, off while the table is empty. It asks
   first ("Clear all 10 scores? This can't be undone.", "Clear 1 score?" for one) and empties the table for everyone,
   the machine's bubble and every open panel alike.
 - **Copies**: a copied machine (Duplicate, or copy and paste, in this Space or another) starts with no scores: its

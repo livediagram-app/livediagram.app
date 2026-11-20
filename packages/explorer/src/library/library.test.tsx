@@ -323,6 +323,6 @@ describe('Shape Libraries', () => {
 
   it('says so where the host keeps none', async () => {
     page({ kind: 'shape-libraries' });
-    expect(await screen.findByText('No Shape Libraries here')).toBeTruthy();
+    expect(await screen.findByText('No shape libraries here')).toBeTruthy();
   });
 });

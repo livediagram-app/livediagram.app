@@ -93,7 +93,7 @@ export function ItemTypeTemplates({
     return (
       <CompactEmptyState
         icon={<EmptyGlyph />}
-        title="No Templates Yet"
+        title="No templates yet"
         description={`A template fills in a new ${name} card: its title, description, checklist, labels and fields.`}
         className="py-10"
         action={

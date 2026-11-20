@@ -219,7 +219,7 @@ export function RunLog({
             <CompactEmptyState
               role="status"
               icon={<BoltIcon size={18} />}
-              title="No Runs Yet"
+              title="No runs yet"
               description="Each time a rule answers a change, its run shows here: what it found and what it did."
             />
           )

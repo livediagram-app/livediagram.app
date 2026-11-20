@@ -24,7 +24,7 @@ export function RulesEmpty({
 }) {
   return (
     <div data-rules-empty="" className="min-h-0 flex-1 overflow-y-auto px-5 pb-6 pt-6">
-      <EmptyState icon={<BoltIcon size={24} />} title="No Rules Yet" description={RULES_EMPTY_COPY}>
+      <EmptyState icon={<BoltIcon size={24} />} title="No rules yet" description={RULES_EMPTY_COPY}>
         <div className="flex flex-wrap items-center justify-center gap-2">
           <Button variant="primary" size="sm" onClick={onNew}>
             <PlusIcon size={14} />

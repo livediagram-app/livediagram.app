@@ -68,7 +68,7 @@ right-click opens the ordinary element menu.
 
 - **Empty** (dropped fresh, no actions yet): the title reads **Actions**, and
   the body is an invitation: a clipboard-check glyph in a soft accent disc,
-  **No Actions Yet**, the line "Give someone a clear next step, with their name
+  **No actions yet**, the line "Give someone a clear next step, with their name
   on it.", and one loud accent button, **Add Action**, which opens the Assign
   Action dialog to create the card's first action. The card ships with **no
   label**, since the dialog would prefill every new action's name from it.

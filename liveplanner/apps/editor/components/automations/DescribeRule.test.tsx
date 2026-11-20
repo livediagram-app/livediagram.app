@@ -113,7 +113,7 @@ describe('where it starts', () => {
   it('is a button of the empty Rules list', async () => {
     client.listAutomations.mockResolvedValue({ rules: [], runsToday: 0, runsPerDay: 1000 });
     render(<Harness />);
-    await screen.findByText('No Rules Yet');
+    await screen.findByText('No rules yet');
     fireEvent.click(screen.getByRole('button', { name: 'Describe a Rule' }));
     expect(screen.getByRole('dialog', { name: 'Describe a Rule' })).toBeTruthy();
   });

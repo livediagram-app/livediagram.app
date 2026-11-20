@@ -51,7 +51,7 @@ Derived from [Social pieces](../social-pieces.md).
 | `apps/editor/components/canvas/collab/arcade/ArcadePanel.tsx`    | The panel (loaded by `lazy()`): who may play, the screen, posting, the High Scores, a Viewer's scores-only view  |
 | `apps/editor/components/canvas/collab/arcade/useMoonMail.ts`     | One run on this screen: its phase, the strip, the keys, pausing, and one rAF loop that paints through a ref      |
 | `apps/editor/components/canvas/collab/arcade/MoonMailScreen.tsx` | The square canvas, its Start / Paused / Game Over cards, the strip with the Pause button                         |
-| `apps/editor/components/canvas/collab/arcade/HighScores.tsx`     | The table: rank, name (and **You**), score, day; the new row lit; **No Scores Yet**                              |
+| `apps/editor/components/canvas/collab/arcade/HighScores.tsx`     | The table: rank, name (and **You**), score, day; the new row lit; **No scores yet**                              |
 | `apps/editor/components/palette/ArcadeMenuSection.tsx`           | The Editor's menu section: the table's count and **Clear High Scores**, asked first                              |
 
 ## Domain and naming
@@ -287,7 +287,7 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
   Editor's element menu, under Tools, a **High Scores** section (the star glyph; the facing section after it already
   carries the piece's name) for an `arcade-machine` when `onClearArcadeScores` is given (the host passes
   it only at `can.level === 'edit'`; a Participant's and a Viewer's menus are their own). It reads **3 Scores on the table**
-  (**1 Score on the table**) or **No Scores Yet**, and **Clear High Scores** (disabled while empty) first closes the menu (`onClose`: the menu's
+  (**1 Score on the table**) or **No scores yet**, and **Clear High Scores** (disabled while empty) first closes the menu (`onClose`: the menu's
   popover layer sits above the confirm's modal layer, so it would cover the confirm's buttons), then asks `useConfirm` with the title
   "Clear all 3 scores?" ("Clear 1 score?"), the message "This can't be undone. The table empties for everyone in
   the Space." and the confirm label **Clear High Scores**; confirmed, one
@@ -295,7 +295,7 @@ Editor's Clear High Scores, copies starting empty, the answers flush's no-op and
 - **The two-browser test** (`apps/editor/e2e/arcade-scores.spec.ts`): an owner seeds a machine in a Team Pod and
   shares it; a Participant joins, walks to the machine, plays until it scores, closes the panel (posting); the
   owner's bubble shows the Participant's best and a Viewer's panel lists it with **Viewers See the Scores** and no
-  Start; the owner clears it from the menu and the Participant's reopened panel reads **No Scores Yet**.
+  Start; the owner clears it from the menu and the Participant's reopened panel reads **No scores yet**.
 
 ### Moon Mail's model (`apps/editor/lib/arcade/moon-mail.ts`)
 

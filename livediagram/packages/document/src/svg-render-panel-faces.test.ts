@@ -64,7 +64,7 @@ describe('Comment panel export', () => {
 describe('Action panel export', () => {
   it('offers Add Action with no actions', () => {
     const svg = svgOf(createShape('action-card', 0, 0));
-    expect(svg).toContain('No Actions Yet');
+    expect(svg).toContain('No actions yet');
     expect(svg).toContain('Add Action');
   });
 

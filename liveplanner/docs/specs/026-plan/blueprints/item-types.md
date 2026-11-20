@@ -698,7 +698,7 @@ withTime, { local? })` (a list of two, or text split at `/` or " to ", each end 
   `linkedGroups.length > 0 ? linkedCardCount(linkedGroups) : null`, so the tab follows `linkedCardsOf` (a group for
   every Card field whose types include the card's, cards or none). `LinkedCardsTab.tsx` draws the groups:
   `linkedCardCount` (distinct card ids across groups); at none a `CompactEmptyState` (small, the Lucide link glyph,
-  dashed border, "No Linked Cards Yet", the line with or without the adding half), then for `canAdd` the groups with
+  dashed border, "No linked cards yet", the line with or without the adding half), then for `canAdd` the groups with
   `emptyNote={false}`; a Viewer gets the empty state alone. The tab is never in the type: the type editor, its
   6-tab limit and `readTabs` never see it. A card picked onto it keeps it while `shownTabs` holds it, and the panel
   falls back to the first tab when it goes (`current` is `shownTabs[0]` when `picked` is not found). Tab pill: 11px

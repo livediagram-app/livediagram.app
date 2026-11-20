@@ -121,7 +121,7 @@ documentId, tabId })` logs neither the caller nor the text; the drop is not rela
 ## Presentation and UX
 
 - Copy is the spec's. Buttons Title Case: **Calendar**, **Pin to 5 Nov**, **Today**, **Suggest**, **Drop It In**,
-  **Refresh**, **Remove**, **Try Again**. Empty states: **No Notes Yet** (calendar day and box), the signpost's tooltip,
+  **Refresh**, **Remove**, **Try Again**. Empty states: **No notes yet** (calendar day and box), the signpost's tooltip,
   the photo wall's silhouettes.
 - Faces lay over the drawn rectangle (`Overlay`), in the art's grid, so they scale with the piece.
 

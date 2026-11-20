@@ -238,7 +238,7 @@ card, each line a run joined by `<a:br/>`.
 
 ## Presentation and UX
 
-As the spec's "Writing note cards" and "Presenting". Copy: "Speaker Notes", "No Notes Yet", "Write what you'll say as
+As the spec's "Writing note cards" and "Presenting". Copy: "Speaker Notes", "No notes yet", "Write what you'll say as
 cards, one point each. You flip through them while you present.", "Add First Card", "Add Card", "Card removed",
 "Undo", "Done", "Move Up", "Move Down", "Remove Card", "Drag to Reorder", "A slide holds up to 20 cards",
 "What you'll say for this point…", "⌘↵ New Card · Esc Done", "Previous Card", "Next Card", "Go to Card n",

@@ -578,7 +578,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
     (one section per such field, as above), and on no other card. It is generated, never saved into the type: the
     type editor neither lists nor counts it, and a type keeps its 6 tabs. Its label carries the number of cards
     linked here, each card once however many fields link it (a quiet pill beside the name, left out at none).
-    With no cards linked at all, the tab opens on an empty state, **No Linked Cards Yet**, "Cards that link to
+    With no cards linked at all, the tab opens on an empty state, **No linked cards yet**, "Cards that link to
     this one show here." ("... Make one already linked, or link one you already have." for someone who may add
     cards), then, for someone who may add cards, each section's heading and its New {Type} and Link Existing
     buttons, without the per-section "No cards link here" note. A type that has a tab of its own named Linked Cards
@@ -1299,7 +1299,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
   The type editor's footer offers **Duplicate** too, for a type that exists. Telemetry: `Plan` ·
   `Duplicated` · `CardType` when a duplicate is saved. **Add Type** is a dashed tile at the end; the panel offers no way to add the five default types in one press. The panel does not reorder types: the catalogue keeps
   its order (the order boards brought them in, then added types in the order they were added).
-- **With no types**, the list's place holds an empty state (the Cards glyph): **No Card Types Yet**, and "Add a card
+- **With no types**, the list's place holds an empty state (the Cards glyph): **No card types yet**, and "Add a card
   type of your own, or add a board that brings its types." for someone who may edit, "This
   project has no card types yet." for anyone else. Add Type sits under it as always.
 - **With no types**, Plan's bottom-right strip shows only **Card Types**: Find a Card would surface
@@ -1452,7 +1452,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
       **Checklist**, then **Labels** and every other custom field a template holds as Details rows (the label beside
       the control on desktop, above it on a phone). Under them a quiet line: "A card started from it takes its state
       and place from where it is made." Fields a template never holds are not shown.
-    - **Empty**: a type with no templates shows the compact empty state (the template glyph, "No Templates Yet",
+    - **Empty**: a type with no templates shows the compact empty state (the template glyph, "No templates yet",
       "A template fills in a new {Name} card: its title, description, checklist, labels and fields.") with
       **New Template** as its one way forward, and the same help link beside it (the text link for everyone else).
     - **What stops Save**: a template with no name ("Give every template a name."), two with one name ("Two
@@ -1832,7 +1832,7 @@ place: a Bug and a Story built on one Work type, each adding fields of its own.
     leaves it out; ticking one adds it at the end of Order; Select All adds every listed status not yet on, in board
     order, at the end; Deselect All turns every listed status off (one nothing lists any more stays). All may be off, and then a note
     says a card of this type stays in the state it is made in and can never be moved to another. With no columns
-    on the tab's boards it shows an empty state, **No States Yet**: "When you add states to a board that takes this type, they’re added here automatically." At most 128 may be on: then every status still
+    on the tab's boards it shows an empty state, **No states yet**: "When you add states to a board that takes this type, they’re added here automatically." At most 128 may be on: then every status still
     off is disabled, and a note says "A type can use at most 128 states. Turn one off to turn on another."
     Under them, **Default State**: a menu of every state still on, each once and by its own name, in the type's order,
     after **None** (left out for a ready-made type whose named state the project has: that state shows picked until

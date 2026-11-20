@@ -1,6 +1,6 @@
 // The notes a template pins to a Notice Board (docs/specs/012-collaboration/virtual-office-template.md "Notes the
 // template pins"): a walk-up board that already answers, so the first press on it reads how the Space works rather
-// than No Notes Yet. Each is a real Notice Board note (docs/specs/009-elements/social-pieces.md "Notice Board"), pinned
+// than No notes yet. Each is a real Notice Board note (docs/specs/009-elements/social-pieces.md "Notice Board"), pinned
 // by livehuddle when the Space is made, signed by no person, so only an Editor unpins it.
 //
 // Pure apart from the clock: pinnedNotes stamps the notes with the moment the Space is made.

@@ -135,9 +135,9 @@ the reader is an admin, and the read would refuse them anyway.
   the click, before any read, and the file is written a CSV file (10,000 rows) at a time, so the largest export never
   holds its 200,000 rows (about 40 MB of text) in memory; closing the picker cancels quietly, and a failure drops
   the half-written file. Elsewhere the files are joined and saved as one download, as before.
-- **States**: three placeholder rows while the first page loads; empty, "No Audit Events Yet" ("Who joins or leaves,
+- **States**: three placeholder rows while the first page loads; empty, "No audit events yet" ("Who joins or leaves,
   shares, moves or deletes the team's documents, and the team's webhooks show here for a year."); nothing matching,
-  "No Events Match" with Clear Filters; refused (`403 not_team_admin`, an admin who has just stepped down), "Only the
+  "No events match" with Clear Filters; refused (`403 not_team_admin`, an admin who has just stepped down), "Only the
   team's admins can see its audit log."; anything else (`503 team_audit_unavailable` included), "Couldn't load the
   audit log" with Try again.
 - **The help article** is each app's Teams › Audit Log (`collaboration/teams/audit-log`).

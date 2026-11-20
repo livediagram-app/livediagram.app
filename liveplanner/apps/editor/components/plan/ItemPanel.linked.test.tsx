@@ -145,7 +145,7 @@ describe('the Linked Cards tab', () => {
     ]);
     // Some card links here, so an empty section keeps its own note, and no tab-wide empty state shows.
     expect(screen.getByText('No cards link here as Owner yet.')).toBeTruthy();
-    expect(screen.queryByText('No Linked Cards Yet')).toBeNull();
+    expect(screen.queryByText('No linked cards yet')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: /^Open T-2 Card 2/ }));
     expect(onOpenItem).toHaveBeenCalledWith('c', 'ChildCard');
     fireEvent.click(screen.getAllByRole('button', { name: /New Task/ })[0]!);
@@ -162,7 +162,7 @@ describe('the Linked Cards tab', () => {
     // No count pill at none.
     expect(tab.textContent).toBe('Linked Cards');
     fireEvent.click(tab);
-    expect(screen.getByText('No Linked Cards Yet')).toBeTruthy();
+    expect(screen.getByText('No linked cards yet')).toBeTruthy();
     expect(
       screen.getByText(
         'Cards that link to this one show here. Make one already linked, or link one you already have.',

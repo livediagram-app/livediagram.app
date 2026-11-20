@@ -45,7 +45,7 @@ const noInvites = (svg: string) => {
 describe('Comment panel export', () => {
   it('says it has no comments, and invites none, when the thread is empty', () => {
     const svg = svgOf(createShape('comment-pin', 0, 0));
-    expect(svg).toContain('No Comments Yet');
+    expect(svg).toContain('No comments yet');
     noInvites(svg);
   });
 
@@ -92,7 +92,7 @@ describe('Comment panel export', () => {
 describe('Action panel export', () => {
   it('offers Add Action with no actions', () => {
     const svg = svgOf(createShape('action-card', 0, 0));
-    expect(svg).toContain('No Actions Yet');
+    expect(svg).toContain('No actions yet');
     expect(svg).toContain('Add Action');
   });
 

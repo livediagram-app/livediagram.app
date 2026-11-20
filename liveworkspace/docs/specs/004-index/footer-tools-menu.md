@@ -195,9 +195,9 @@ component (`ToolExplainer` and `tool-explainer-art` in `@liveworkspace/ui`), so 
 | Tool                  | Title                                                   | When          |
 | --------------------- | ------------------------------------------------------- | ------------- |
 | Email to Board        | Mail In, Cards Out                                      | Not turned on |
-| Webhooks              | No Webhooks Yet                                         | None added    |
+| Webhooks              | No webhooks yet                                         | None added    |
 | Subscribe to Calendar | This Plan in Your Calendar / Your Work in Your Calendar | No link made  |
-| Walkthroughs          | No Walkthroughs Yet                                     | None recorded |
+| Walkthroughs          | No walkthroughs yet                                     | None recorded |
 | Slide Deck            | Build Your Deck                                         | No slides     |
 
 A tool screen that loads in steps never shrinks and grows back: after a tool opens, Tools only grows, and any shrink
