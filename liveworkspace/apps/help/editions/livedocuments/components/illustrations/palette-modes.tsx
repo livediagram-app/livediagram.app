@@ -1,157 +1,164 @@
-// Palette-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight) and the palette
-// settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
-// holds.
+// Selection-mode scenes (liveworkspace/docs/specs/017-help/help-centre.md): the palette strip's selection mode set to
+// Select, Hand, Format or Laser over a slide on livedocuments' canvas, and the palette settings shown on the canvas
+// (Panel Opacity, Auto-Attach Arrows). The strip is ./editor-chrome's, the pages ./doc-page's.
 
-import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
+import { lucideHand, lucidePaintbrush } from '@liveworkspace/icons/lucide';
+import {
+  Arrow,
+  Label,
+  Panel,
+  Scene,
+  SelectionBox,
+  Shape,
+} from '@liveworkspace/help-site/art/primitives';
+import { Icon } from './editor-chrome';
+import { BarChart, Heading, Lines, Page, Pointer, Rule, SlideContent } from './doc-page';
 import { PickerTrigger } from './selection-modes';
 
-// --- Mode scenes ------------------------------------------------------------
+/** The slide most mode scenes work on, under the strip: a title, its text, and a chart. */
+function ModeSlide({ x = 72, y = 62 }: { x?: number; y?: number }) {
+  return (
+    <Page x={x} y={y} w={276} h={155} name="Results">
+      <Heading x={x + 20} y={y + 24} size={13}>
+        Q3 Results
+      </Heading>
+      <Rule x={x + 20} y={y + 34} />
+      <Lines x={x + 20} y={y + 48} w={96} n={4} gap={7} />
+      <BarChart x={x + 150} y={y + 22} w={106} h={110} />
+    </Page>
+  );
+}
 
-/** Select mode: the picker set to Select and a shape selected with handles. */
+/** Select mode: the strip's selection mode on Select, and the chart selected with its handles. */
 export function SelectMode() {
   return (
     <Scene w={420} h={230}>
       <PickerTrigger tool="select" />
-      <Shape x={140} y={132} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
-      <SelectionBox x={140} y={132} w={120} h={56} />
+      <ModeSlide />
+      <SelectionBox x={218} y={80} w={114} h={120} />
+      <Pointer x={286} y={150} />
     </Scene>
   );
 }
 
-/** Hand mode: the picker set to Hand and a grabbing-hand cursor panning the
- *  canvas (a faint drag trail behind it). */
+/** Hand mode: the strip's selection mode on Hand, and the grabbing hand panning the canvas, a faint trail behind it. */
 export function HandMode() {
   return (
     <Scene w={420} h={230}>
       <PickerTrigger tool="hand" />
-      <Shape x={84} y={108} w={72} h={42} label="A" />
-      <Shape x={252} y={150} w={72} h={42} accent label="B" />
-      <Arrow from={[156, 129]} to={[252, 171]} kind="elbow" tone="muted" />
-      {/* Drag trail */}
+      <ModeSlide />
       <path
-        d="M120 188 q40 -16 88 -8"
-        className="stroke-slate-300"
-        strokeWidth={2}
+        d="M150 196 q40 -14 80 -10"
+        className="stroke-slate-400"
+        strokeWidth={1.25}
         fill="none"
-        strokeDasharray="5 5"
+        strokeDasharray="3 3"
         strokeLinecap="round"
       />
-      {/* Grabbing-hand cursor */}
-      <g transform="translate(196 150)">
-        <path
-          d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
+      <Icon prims={lucideHand} x={242} y={186} size={16} className="stroke-slate-800" />
     </Scene>
   );
 }
 
-/** Format Painter mode: the picker set to Format, copying one shape's style
- *  onto another via a brush cursor. */
+/** Format mode: the strip's selection mode on Format, the brush carrying the styled card's look onto the plain one. */
 export function FormatPainterMode() {
   return (
     <Scene w={420} h={220}>
       <PickerTrigger tool="format" />
-      <Shape x={48} y={120} w={88} h={52} accent label="Source" />
-      <Arrow from={[140, 146]} to={[252, 146]} kind="curved" tone="muted" dashed />
-      <Shape x={262} y={120} w={88} h={52} accent label="Painted" />
-      {/* Brush cursor */}
-      <g transform="translate(196 166)">
-        <rect x={-9} y={-9} width={18} height={11} rx={2} className="fill-brand-500" />
-        <path d="M0 2 v8" className="stroke-slate-500" strokeWidth={2} />
-        <path
-          d="M-4 10 h8 v6 h-8 Z"
-          className="fill-brand-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
+      <Page x={56} y={62} w={308} h={140} name="Pricing">
+        <Heading x={74} y={82} size={11}>
+          Choose a Plan
+        </Heading>
+        <Shape x={74} y={100} w={108} h={74} accent />
+        <Label x={88} y={118} size={10} weight={700} tone="onAccent">
+          Team
+        </Label>
+        <Shape x={238} y={100} w={108} h={74} />
+        <Label x={252} y={118} size={10} weight={700} tone="strong">
+          Personal
+        </Label>
+      </Page>
+      <path
+        d="M186 112 C 200 90, 220 90, 234 110"
+        className="fill-none stroke-brand-400"
+        strokeWidth={1.25}
+        strokeDasharray="3 3"
+      />
+      <Icon prims={lucidePaintbrush} x={262} y={152} size={15} className="stroke-slate-800" />
     </Scene>
   );
 }
 
-/** Laser mode: the picker set to Laser and a fading laser trail across the
- *  canvas, brightening towards the cursor. */
+/** Laser mode: the strip's selection mode on Laser, and the trail fading behind the pointer as it circles the
+ *  tallest bar. */
 export function LaserMode() {
   return (
     <Scene w={420} h={230}>
       <PickerTrigger tool="laser" />
-      <Shape x={84} y={120} w={76} h={44} label="A" />
-      <Shape x={264} y={150} w={76} h={44} accent label="B" />
-      {/* Fading laser trail, from under A to just short of B: faint tail to bright head,
-          clear of both labels. */}
+      <ModeSlide />
       <path
-        d="M100 186 q50 24 104 4"
+        d="M120 196 q60 20 120 -10 q40 -20 70 -76"
         className="stroke-rose-200"
-        strokeWidth={5}
+        strokeWidth={4}
         fill="none"
         strokeLinecap="round"
       />
       <path
-        d="M196 192 q26 -8 52 -20"
+        d="M262 168 q32 -22 48 -58"
         className="stroke-rose-400"
-        strokeWidth={3.5}
+        strokeWidth={3}
         fill="none"
         strokeLinecap="round"
       />
-      {/* Bright head dot, pointing at B */}
-      <circle cx={250} cy={171} r={5} className="fill-rose-500" />
-      <circle cx={250} cy={171} r={9} className="fill-rose-400/30" />
+      <circle cx={310} cy={110} r={8} className="fill-rose-400/30" />
+      <circle cx={310} cy={110} r={4.5} className="fill-rose-500" />
     </Scene>
   );
 }
 
-/** Panel opacity: a corner panel rendered translucent so the canvas content
- *  behind it stays visible. Pairs with the settings popover illustration to
- *  show what the slider does. */
+/** Panel Opacity: the Format panel, set translucent, lets the slide behind it show through. */
 export function PanelOpacity() {
   return (
-    <Scene w={400} h={240}>
-      {/* Canvas content the panel floats over. */}
-      <Shape x={54} y={104} w={86} h={52} accent label="A" />
-      <Shape x={54} y={170} w={86} h={52} kind="circle" label="B" />
-      {/* C sits wholly under the panel, in the space below its tiles. */}
-      <Shape x={226} y={140} w={96} h={46} label="C" />
-      {/* The panel at ~60% opacity: the shape behind it stays
-          visible through it. */}
-      <g opacity={0.6}>
-        <Panel x={196} y={42} w={156} h={150} title="FORMAT">
-          <rect x={210} y={78} width={128} height={10} rx={5} className="fill-slate-200" />
-          <rect x={210} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-          <rect x={252} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-          <rect x={294} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
+    <Scene w={400} h={220}>
+      <Page x={24} y={40} w={250} h={141} name="Cover">
+        <SlideContent x={24} y={40} w={250} h={141} title="Field Guide" layout="picture" />
+      </Page>
+      <g opacity={0.62}>
+        <Panel x={206} y={58} w={170} h={138} title="Format">
+          <rect x={218} y={90} width={146} height={8} rx={4} className="fill-slate-200" />
+          <rect x={218} y={108} width={44} height={34} rx={5} className="fill-slate-100" />
+          <rect x={268} y={108} width={44} height={34} rx={5} className="fill-slate-100" />
+          <rect x={318} y={108} width={44} height={34} rx={5} className="fill-slate-100" />
+          <rect x={218} y={152} width={110} height={8} rx={4} className="fill-slate-200" />
         </Panel>
       </g>
     </Scene>
   );
 }
 
-/** Auto-attach arrows: the target is dragged from the right of the source to
- *  its left. Kept where they were, the ends would run the line through the
- *  source, so both move to the sides that now face each other. */
+/** Auto-Attach Arrows on an infographic: the second step is dragged from the right of the first to its left, and both
+ *  ends of the arrow move to the sides that now face each other. */
 export function AutoAttachArrows() {
   return (
-    <Scene w={420} h={220}>
-      <Shape x={166} y={86} w={88} h={48} label="Source" />
-      {/* Old position (ghost) and the arrow as it was */}
-      <Shape x={320} y={86} w={88} h={48} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Arrow from={[254, 110]} to={[320, 110]} tone="muted" dashed />
-      {/* Moved shape; both ends now on the facing sides */}
-      <Shape x={12} y={86} w={88} h={48} accent label="Target" />
-      <Arrow from={[166, 110]} to={[100, 110]} tone="accent" />
-      {/* Move trail, over the top */}
-      <path
-        d="M364 80 Q210 -10 56 80"
-        className="stroke-slate-300"
-        strokeWidth={2}
-        fill="none"
-        strokeDasharray="5 5"
-        strokeLinecap="round"
-      />
+    <Scene w={420} h={190}>
+      <Page x={14} y={36} w={392} h={140} name="How It Works" rest="A4">
+        <Heading x={30} y={56} size={11}>
+          How It Works
+        </Heading>
+        <Shape x={166} y={96} w={88} h={44} label="Plan" />
+        <Shape x={302} y={96} w={88} h={44} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
+        <Arrow from={[254, 118]} to={[302, 118]} tone="muted" dashed />
+        <Shape x={30} y={96} w={88} h={44} accent label="Write" labelTone="onAccent" />
+        <Arrow from={[166, 118]} to={[118, 118]} tone="accent" />
+        <path
+          d="M346 92 Q210 46 74 92"
+          className="stroke-slate-300"
+          strokeWidth={1.25}
+          fill="none"
+          strokeDasharray="3 3"
+          strokeLinecap="round"
+        />
+      </Page>
     </Scene>
   );
 }

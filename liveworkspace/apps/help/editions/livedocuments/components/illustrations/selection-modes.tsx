@@ -10,7 +10,7 @@
 // TopCenterChrome.tsx (the Format banner).
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Shape, Arrow, Panel, Label, Lift } from '@liveworkspace/help-site/art/primitives';
 import {
   EraserGlyph,
   HandGlyph,
@@ -20,7 +20,8 @@ import {
   SpotlightGlyph,
   ZenGlyph,
 } from '@liveworkspace/help-site/art/illustrations/palette-modes-parts';
-import { BAR, BarGlyph } from './toolbar-layout';
+import { STRIP_W, Strip } from './editor-chrome';
+import { BarChart, Heading, Page, Sheet } from './doc-page';
 
 // --- The picker -------------------------------------------------------------
 
@@ -37,7 +38,7 @@ const TOOLS = [
 
 type ToolKey = (typeof TOOLS)[number]['key'];
 
-const BANDS = ['EDIT', 'PRESENT', 'PREVIEW'] as const;
+const BANDS = ['Edit', 'Present', 'Preview'] as const;
 
 function Chevron({ x, y }: { x: number; y: number }) {
   return (
@@ -52,94 +53,21 @@ function Chevron({ x, y }: { x: number; y: number }) {
   );
 }
 
-/** The palette strip across the top of the canvas: the canvas-tool picker on the left (showing the chosen tool),
- *  then the category bar (its categories as glyphs, toolbar-layout's BAR) and Search. Sits at the top of every mode
- *  scene. */
-export function PickerTrigger({ x = 24, y = 14, tool }: { x?: number; y?: number; tool: ToolKey }) {
+/** The palette strip across the top of the canvas, its selection mode showing the chosen tool: sits at the top of
+ *  every mode scene. */
+export function PickerTrigger({
+  x = (420 - STRIP_W) / 2,
+  y = 10,
+  tool,
+  open = false,
+}: {
+  x?: number;
+  y?: number;
+  tool: ToolKey;
+  open?: boolean;
+}) {
   const t = TOOLS.find((o) => o.key === tool) ?? TOOLS[0];
-  // Each category a 20-wide button, a 9-wide divider between the bands.
-  const slots = BAR.reduce<{ name: string; left: number; w: number }[]>((out, name) => {
-    const prev = out.at(-1);
-    return [...out, { name, left: prev ? prev.left + prev.w : x + 146, w: name === '|' ? 9 : 20 }];
-  }, []);
-  const end = slots.at(-1)!.left + slots.at(-1)!.w;
-  const w = end - x + 34;
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y + 22}
-        width={w}
-        height={36}
-        rx={9}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <rect
-        x={x + 8}
-        y={y + 28}
-        width={122}
-        height={24}
-        rx={6}
-        className="fill-brand-50 stroke-brand-200"
-        strokeWidth={1.2}
-      />
-      <g transform={`translate(${x + 21} ${y + 40})`}>
-        <t.Glyph />
-      </g>
-      <Label x={x + 34} y={y + 41} size={11} weight={600} tone="strong">
-        {t.label}
-      </Label>
-      <Chevron x={x + 120} y={y + 40} />
-      <line
-        x1={x + 140}
-        y1={y + 30}
-        x2={x + 140}
-        y2={y + 50}
-        className="stroke-slate-200"
-        strokeWidth={1.2}
-      />
-      {slots.map((slot, i) =>
-        slot.name === '|' ? (
-          <line
-            key={i}
-            x1={slot.left + 4}
-            y1={y + 32}
-            x2={slot.left + 4}
-            y2={y + 48}
-            className="stroke-slate-200"
-            strokeWidth={1}
-          />
-        ) : (
-          <g key={slot.name} transform={`translate(${slot.left + slot.w / 2} ${y + 40})`}>
-            <BarGlyph name={slot.name} />
-          </g>
-        ),
-      )}
-      {/* Search, last on the strip behind its own divider. */}
-      <line
-        x1={end + 5}
-        y1={y + 30}
-        x2={end + 5}
-        y2={y + 50}
-        className="stroke-slate-200"
-        strokeWidth={1.2}
-      />
-      <circle
-        cx={end + 18}
-        cy={y + 39}
-        r={5}
-        className="fill-none stroke-slate-500"
-        strokeWidth={1.6}
-      />
-      <path
-        d={`M${end + 22} ${y + 43} l4 4`}
-        className="stroke-slate-500"
-        strokeWidth={1.6}
-        strokeLinecap="round"
-      />
-    </g>
-  );
+  return <Strip x={x} y={y} modeGlyph={<t.Glyph />} modeOpen={open} />;
 }
 
 /** The canvas-tool picker opened: the trigger, and the tile grid hanging below
@@ -157,7 +85,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
     for (let i = 0; i < inBand.length; i += 3)
       rows.push({ band: b, tools: inBand.slice(i, i + 3) });
   }
-  let cy = 84;
+  let cy = 50;
   const body: ReactNode[] = [];
   let lastBand = -1;
   rows.forEach((row, r) => {
@@ -177,7 +105,7 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
         cy += 6;
       }
       body.push(
-        <Label key={`band-${r}`} x={mx + 12} y={cy + 8} size={10} weight={700} tone="muted">
+        <Label key={`band-${r}`} x={mx + 12} y={cy + 8} size={9} weight={600} tone="muted">
           {BANDS[row.band]}
         </Label>,
       );
@@ -220,18 +148,19 @@ export function ToolPicker({ active = 'select' }: { active?: ToolKey }) {
     });
     cy += tileH + gap;
   });
-  const menuH = cy - 80 + 6;
+  const menuH = cy - 46 + 6;
   return (
-    <Scene w={420} h={menuH + 92}>
-      <PickerTrigger x={mx} y={10} tool={active} />
+    <Scene w={420} h={menuH + 58}>
+      <PickerTrigger x={mx} y={10} tool={active} open />
+      <Lift x={mx} y={42} w={menuW} h={menuH} r={8} />
       <rect
         x={mx}
-        y={76}
+        y={42}
         width={menuW}
         height={menuH}
-        rx={10}
+        rx={8}
         className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       {body}
     </Scene>
@@ -322,23 +251,28 @@ export function FormatPanelScene() {
       <Label x={287} y={27} size={10} weight={700} anchor="middle" tone="onAccent">
         Done
       </Label>
-      {/* Source and target */}
+      {/* Source and target, two plan cards on a slide */}
+      <Page x={14} y={66} w={182} h={160} name="Pricing" bar={{ look: false }}>
+        <Heading x={28} y={84} size={10}>
+          Choose a Plan
+        </Heading>
+      </Page>
       <Shape
-        x={26}
-        y={88}
+        x={28}
+        y={98}
         w={92}
         h={48}
-        label="Step one"
+        label="Team"
         fill="fill-brand-50"
         stroke="stroke-brand-500"
       />
-      <Arrow from={[122, 112]} to={[150, 160]} kind="curved" tone="muted" dashed />
+      <Arrow from={[110, 148]} to={[130, 172]} kind="curved" tone="muted" dashed />
       <Shape
-        x={110}
-        y={160}
+        x={92}
+        y={168}
         w={92}
         h={48}
-        label="Step two"
+        label="Personal"
         fill="fill-amber-100"
         stroke="stroke-brand-500"
       />
@@ -362,7 +296,7 @@ export function FormatPanelScene() {
               Aa
             </Label>
             <Label x={260} y={101} size={10.5} weight={700} tone="strong">
-              Step one
+              Team
             </Label>
             <Label x={260} y={115} size={10} tone="muted">
               Copies: Border, Text
@@ -382,8 +316,12 @@ export function FormatPanelScene() {
 export function LaserPanelScene() {
   return (
     <Scene w={420} h={240}>
-      <Shape x={30} y={60} w={96} h={46} label="Gateway" />
-      <Shape x={60} y={160} w={96} h={46} accent label="Service" />
+      <Page x={14} y={44} w={204} h={172} name="Results" bar={{ look: false }}>
+        <Heading x={28} y={64} size={11}>
+          Q3 Results
+        </Heading>
+        <BarChart x={70} y={150} w={134} h={56} values={[0.4, 0.62, 0.5, 0.95]} />
+      </Page>
       <path
         d="M40 130 q50 -30 110 -6 q30 14 50 0"
         className="stroke-rose-300/50"
@@ -443,13 +381,23 @@ export function SpotlightPanelScene() {
           <ellipse cx={108} cy={124} rx={92} ry={30} fill="black" />
         </mask>
       </defs>
-      {[60, 106, 152].map((ry, i) => (
-        <g key={ry}>
-          <Shape x={20} y={ry} w={56} h={34} label={['To do', 'Doing', 'Done'][i]} />
-          <Shape x={84} y={ry} w={56} h={34} accent={i === 1} />
-          <Shape x={148} y={ry} w={56} h={34} />
-        </g>
-      ))}
+      <Sheet x={10} y={40} w={196} h={168}>
+        {[62, 108, 154].map((ry, i) => (
+          <g key={ry}>
+            <Label x={22} y={ry + 17} size={10} weight={600} tone="strong">
+              {['2024', '2025', '2026'][i]}
+            </Label>
+            <rect
+              x={60}
+              y={ry + 6}
+              width={[70, 126, 98][i]}
+              height={22}
+              rx={3}
+              className={i === 1 ? 'fill-brand-500' : 'fill-brand-200'}
+            />
+          </g>
+        ))}
+      </Sheet>
       <rect
         x={0}
         y={0}
@@ -492,25 +440,50 @@ export function SpotlightTool() {
         </radialGradient>
         <mask id="mtt-spot-hole">
           <rect x={0} y={0} width={420} height={230} fill="white" />
-          <circle cx={234} cy={158} r={62} fill="url(#mtt-spot-soft)" />
+          <circle cx={252} cy={150} r={62} fill="url(#mtt-spot-soft)" />
         </mask>
       </defs>
       <PickerTrigger tool="spotlight" />
-      <Shape x={80} y={120} w={72} h={42} label="A" />
-      <Shape x={196} y={128} w={72} h={42} accent label="B" />
-      <Shape x={312} y={160} w={72} h={42} kind="circle" label="C" />
+      <Sheet x={60} y={58} w={300} h={164}>
+        <Heading x={80} y={80} size={12}>
+          Three Wins
+        </Heading>
+        {[0, 1, 2].map((i) => (
+          <g key={i}>
+            <rect
+              x={80 + i * 92}
+              y={100}
+              width={80}
+              height={96}
+              rx={4}
+              className={i === 1 ? 'fill-brand-500' : 'fill-brand-50 stroke-brand-500'}
+              strokeWidth={1.25}
+            />
+            <Label
+              x={120 + i * 92}
+              y={150}
+              size={16}
+              weight={700}
+              anchor="middle"
+              tone={i === 1 ? 'onAccent' : 'accent'}
+            >
+              {['3x', '41%', '12'][i]}
+            </Label>
+          </g>
+        ))}
+      </Sheet>
       <rect
         x={0}
-        y={86}
+        y={42}
         width={420}
-        height={144}
+        height={188}
         className="fill-slate-900/55"
         mask="url(#mtt-spot-hole)"
       />
       {/* The cursor's stand-in, as the app draws it: a sky dot with a white rim and a glow,
           below B's label so the lit shape still reads. No ring: the light's edge is the shroud. */}
-      <circle cx={234} cy={166} r={8} className="fill-sky-400/30" />
-      <circle cx={234} cy={166} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
+      <circle cx={262} cy={172} r={8} className="fill-sky-400/30" />
+      <circle cx={262} cy={172} r={4.5} className="fill-sky-400 stroke-white" strokeWidth={1.5} />
     </Scene>
   );
 }
