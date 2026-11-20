@@ -1,4 +1,4 @@
-# Wiki Home
+# Knowledgebase Home
 
 Status: **built, not yet verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 11). What is
 not built is under "Not built" at the foot; the [Home blueprint](blueprints/home.md) has the detail.
@@ -9,17 +9,17 @@ marketing site sends a signed-in person on). Someone not signed in is sent to `/
 
 - **Hero:** "What do you need to know, <first name>?" with the search and Ask field, up to three of the person's
   own recent questions under **Ask Again** (hidden until there are any), and the illustration: the five apps' cubes feeding
-  one lime cube, read by a person and an agent. The field searches every wiki the person can open; Ask goes to the
-  wiki chosen in its scope chip.
-- **Wikis:** a card per wiki the person can open (most recent first, up to 12, then "See All" to the Explorer): name,
+  one lime cube, read by a person and an agent. The field searches every knowledgebase the person can open; Ask goes to the
+  knowledgebase chosen in its scope chip.
+- **Knowledgebases:** a card per knowledgebase the person can open (most recent first, up to 12, then "See All" to the Explorer): name,
   description, page count and the share of pages verified as a bar.
 - **Yours to Review:** [Verification](verification.md) "Reminders"; also pages with an agent's suggestion waiting.
-- **Recently Updated:** the eight pages changed most recently across those wikis, each with who and when.
+- **Recently Updated:** the eight pages changed most recently across those knowledgebases, each with who and when.
 - **Start a Page From:** How-To Guide, Decision Record, Meeting Notes, and **Import**
-  ([Wiki import](../020-import-export/wiki-import.md)). Each asks which wiki, or makes one.
-- A signed-out visitor sees the marketing site. A person with no wikis sees the hero and one card: **Make Your First
-  Wiki**, with Import beside it.
-- The numbers come from the index (the list of wikis) and one summary read per wiki (`GET .../summary`: page count,
+  ([Knowledgebase import](../020-import-export/knowledgebase-import.md)). Each asks which knowledgebase, or makes one.
+- A signed-out visitor sees the marketing site. A person with no knowledgebases sees the hero and one card: **Make Your First
+  Knowledgebase**, with Import beside it.
+- The numbers come from the index (the list of knowledgebases) and one summary read per knowledgebase (`GET .../summary`: page count,
   verified counts, recent pages), fetched in parallel, at most 12, cached for a minute.
 
 ## As built

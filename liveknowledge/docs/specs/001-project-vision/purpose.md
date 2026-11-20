@@ -1,6 +1,6 @@
 # Purpose
 
-liveknowledge is a team wiki that is also a knowledge base for AI.
+liveknowledge is a team knowledgebase, for people and for AI.
 
 A team using liveworkspace can diagram, plan, write documents, design and meet. What it still lacks is the place where
 things are written down and found again, and a place its AI agents can read from and trust. liveknowledge is both:
@@ -17,12 +17,12 @@ one set of pages, kept right by the people who own them, read the same way by a 
 ## What makes it different
 
 1. **Trust is part of the page.** Every page has an owner, a verified date and a review that comes due
-   ([Verification](../030-wiki/verification.md)). People see it; agents receive it with every passage.
+   ([Verification](../030-knowledgebase/verification.md)). People see it; agents receive it with every passage.
 2. **Agents are first-class readers.** The MCP server and CLI speak in pages and passages, count what agents read,
    record what they could not find, and let them suggest edits a person accepts
-   ([Wiki for agents](../024-agents/wiki-for-agents.md), [AI Knowledge](../030-wiki/ai-knowledge.md)).
-3. **It does not guess.** Ask answers only from the wiki, cites every claim and turns what is missing into a page to
-   write ([Search and Ask](../030-wiki/search-and-ask.md)).
+   ([Knowledgebase for agents](../024-agents/knowledgebase-for-agents.md), [AI Knowledge](../030-knowledgebase/ai-knowledge.md)).
+3. **It does not guess.** Ask answers only from the knowledgebase, cites every claim and turns what is missing into a page to
+   write ([Search and Ask](../030-knowledgebase/search-and-ask.md)).
 4. **It belongs to the workspace.** One account, the One Explorer, the same sharing, Offline, Drive mirror and
    Community as every app, and other apps' items embedded in a page.
 

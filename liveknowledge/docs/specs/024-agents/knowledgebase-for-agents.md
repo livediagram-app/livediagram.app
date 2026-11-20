@@ -1,14 +1,14 @@
-# Wiki for agents
+# Knowledgebase for agents
 
 Status: **built** ([Build plan](../005-project-roadmap/build-plan.md) step 13), but for what
 [What is built, and where it differs](#what-is-built-and-where-it-differs) lists.
 
-The wiki as a knowledge base for AI: the MCP server and the CLI speak in pages, and every answer carries how far it
+The knowledgebase as agents use it: the MCP server and the CLI speak in pages, and every answer carries how far it
 can be trusted.
 
 ## MCP tools
 
-The platform tools every app has stay (find, create, rename, share, archive, delete and restore, with "wiki" in their
+The platform tools every app has stay (find, create, rename, share, archive, delete and restore, with "knowledgebase" in their
 words). The page tools replace livedocuments' element and page-layout tools:
 
 | Tool           | Does                                                                                                                                                    |
@@ -25,13 +25,13 @@ words). The page tools replace livedocuments' element and page-layout tools:
 
 - Scopes: `read` (get, list, search, read, report), `suggest` (plus create and suggest), `write` (plus write and
   move). A token or OAuth grant names its scopes; the default for a new connection is `read` and `suggest`.
-- Every read is counted for [AI Knowledge](../030-wiki/ai-knowledge.md) under the client's name.
+- Every read is counted for [AI Knowledge](../030-knowledgebase/ai-knowledge.md) under the client's name.
 - Tool results are small by default (a passage, not a page) and name the next tool to call for more.
 
 ## CLI
 
 `liveknowledge` mirrors the tools: `pages`, `search`, `read`, `new`, `suggest`, `write`, `move`, `context`, `gap`,
-and `import <folder|zip>` and `export <dir>` (a wiki as a folder of Markdown, links relative), so a wiki can be kept
+and `import <folder|zip>` and `export <dir>` (a knowledgebase as a folder of Markdown, links relative), so a knowledgebase can be kept
 beside a repository.
 
 ## Share roles

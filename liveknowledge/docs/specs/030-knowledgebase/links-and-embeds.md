@@ -7,21 +7,21 @@ embed, placed from the slash menu, which is not the card described below: the bl
 
 ## Page links
 
-- Typing `[[` in the writing opens a picker of the wiki's pages, filtered as you type; Enter inserts a **page link**.
+- Typing `[[` in the writing opens a picker of the knowledgebase's pages, filtered as you type; Enter inserts a **page link**.
   The slash menu's "Link to Page" and pasting a page's URL do the same. Choosing "Create Page" at the foot of the
   picker makes a subpage of the current page with the typed title and links to it.
 - A page link is a run with `page: <tab id>`, so it follows the page through renames and moves. It always shows the
   page's current title. Pressing it opens the page; hovering shows a card with the title, its verified state and its
   first lines.
 - A link to a deleted page stays in the writing, struck through, labelled "Deleted Page", and goes nowhere.
-- Markdown in and out: `[[Title]]` on import resolves to a page of that title in the wiki (first match in tree order;
+- Markdown in and out: `[[Title]]` on import resolves to a page of that title in the knowledgebase (first match in tree order;
   no match stays plain text), and export writes `[Title](relative/path.md)`.
 
 ## Backlinks
 
 - The foot of every page lists **Linked From**: the pages whose writing links here, as chips, in tree order. No
   backlinks shows nothing (not an empty state: the section is absent).
-- The room keeps the link table (`page_links(from_tab, to_tab)`) in the wiki's Durable Object, rewritten for a page
+- The room keeps the link table (`page_links(from_tab, to_tab)`) in the knowledgebase's Durable Object, rewritten for a page
   whenever its writing is saved. Backlinks are read from it, never by scanning every page.
 
 ## Embeds from other apps

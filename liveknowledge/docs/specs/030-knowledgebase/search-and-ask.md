@@ -6,26 +6,37 @@ tree. Ask (step 9) is its own change.
 
 ## Search
 
-- The top bar's field, and Cmd or Ctrl K, search the current wiki: page titles first, then passages, each result
-  showing the page, its breadcrumb, its verified state and the matching lines with the words marked.
-- The index lives in the wiki's Durable Object: an FTS5 table over each page's title and its writing split into
+Owner, 2026-11-20: the sidebar's search is the **universal search**, with this knowledgebase's results first.
+
+- The search field at the head of the page tree, and Cmd or Ctrl K, open the universal search panel every
+  liveworkspace editor has (Tools > Search…): one field over everything the person can reach. liveknowledge adds a
+  source to it and puts that source first; it has no search dialog of its own.
+- **This Knowledgebase** is always the first group: page titles first, then passages, each result showing the page,
+  its breadcrumb, its verified state and the matching lines with the words marked. Enter on a result opens the page
+  at the passage. While the field is empty the group lists the pages opened most recently.
+- Below it, in the panel's usual order: the person's other knowledgebases and items across the apps (the index),
+  commands, settings and help. A result from this knowledgebase is never ranked below one from anywhere else, and
+  the other groups never delay it: each source answers on its own and its group fills in when it does.
+- Nothing matching in this knowledgebase shows the group with "No Pages Match" in one line, so it is clear the
+  knowledgebase was searched, and the other groups follow.
+- The index lives in the knowledgebase's Durable Object: an FTS5 table over each page's title and its writing split into
   **passages** (a heading and the blocks under it, at most 1,200 characters). The room rewrites a page's rows when
   its writing is saved, in the same transaction as the link table.
-- Search needs no model and no key. It works for every role, signed in or through a share link, and Offline wikis
+- Search needs no model and no key. It works for every role, signed in or through a share link, and Offline knowledgebases
   search in the browser over the same passages.
 - **Bounds:** a query is at most 200 characters, returns at most 20 passages, and is rate-limited per caller. Indexing
   a save is linear in the page's length; a 100,000 character page must index within 50 ms of CPU (a test holds it).
 
 ## Ask
 
-Ask answers a question in plain words from the wiki's own pages, and says where each part came from.
+Ask answers a question in plain words from the knowledgebase's own pages, and says where each part came from.
 
-- **Bring your own key.** liveknowledge is free and pays for no model. Ask is offered once an Editor adds the wiki's
+- **Bring your own key.** liveknowledge is free and pays for no model. Ask is offered once an Editor adds the knowledgebase's
   **Claude API key** in **AI Settings**. Without a key the Ask tab explains this with one button to AI Settings, and
   search still works.
 - **The key** is sent once over TLS to the api, encrypted with AES-GCM under the Worker's `AI_KEY_SECRET`, and kept in
-  the wiki's Durable Object. It is never sent back to any client: AI Settings shows only "Key Ending 4f2a", **Replace**
-  and **Remove**. Logs and telemetry never hold it. A wiki kept Offline has no Ask.
+  the knowledgebase's Durable Object. It is never sent back to any client: AI Settings shows only "Key Ending 4f2a", **Replace**
+  and **Remove**. Logs and telemetry never hold it. A knowledgebase kept Offline has no Ask.
 - **Model:** Claude, `claude-fable-5-2` by default; AI Settings offers the current Claude models, since the team
   pays for what it uses.
 - **Answering:** the api takes the question, finds the best passages with the search index (up to 12, verified pages
@@ -37,19 +48,19 @@ Ask answers a question in plain words from the wiki's own pages, and says where 
   part is recorded as an unanswered question ([AI Knowledge](ai-knowledge.md)) and shown as a **Knowledge Gap** card
   with **Draft a Page From What We Know** and, once the knowledgebase's emails are built, **Ask <owner> to Write It**.
 - **Scope:** an answer reads only pages the asker can open. A follow-up keeps the conversation (up to 10 turns).
-  Recent questions are kept per person, per wiki, in the browser.
-- **Bounds:** 20 questions a person an hour and 200 a wiki a day (`ASK_*` limits, checked in the room); a question is at
+  Recent questions are kept per person, per knowledgebase, in the browser.
+- **Bounds:** 20 questions a person an hour and 200 a knowledgebase a day (`ASK_*` limits, checked in the room); a question is at
   most 1,000 characters; the passages sent are capped at 24,000 characters. A failed or refused model call says
   which (bad key, no credit, rate limit) in words, never a raw error.
 
 ## Share roles
 
-| Action                                  | Editor | Participant | Viewer |
-| --------------------------------------- | ------ | ----------- | ------ |
-| Search                                  | yes    | yes         | yes    |
-| Ask                                     | yes    | yes         | yes    |
-| Add, replace or remove the key, model   | yes    | no          | no     |
-| Draft a page from a gap                 | yes    | no          | no     |
+| Action                                | Editor | Participant | Viewer |
+| ------------------------------------- | ------ | ----------- | ------ |
+| Search                                | yes    | yes         | yes    |
+| Ask                                   | yes    | yes         | yes    |
+| Add, replace or remove the key, model | yes    | no          | no     |
+| Draft a page from a gap               | yes    | no          | no     |
 
 Ask through an anonymous share link is off: it would spend the team's key for strangers.
 
@@ -88,10 +99,10 @@ Ask through an anonymous share link is off: it would spend the team's key for st
   Again), a refusal, 20 questions in the hour, 200 in the day. Never a status, a code or the upstream's words.
 - Helpful and not helpful are kept on the answer for the conversation and counted in telemetry, with no words.
 
-| Action                                   | Editor | Participant | Viewer |
-| ---------------------------------------- | ------ | ----------- | ------ |
-| Copy an answer, mark it helpful or not   | yes    | yes         | yes    |
-| Save an answer as a page                 | yes    | no          | no     |
+| Action                                 | Editor | Participant | Viewer |
+| -------------------------------------- | ------ | ----------- | ------ |
+| Copy an answer, mark it helpful or not | yes    | yes         | yes    |
+| Save an answer as a page               | yes    | no          | no     |
 
 ## AI Settings
 

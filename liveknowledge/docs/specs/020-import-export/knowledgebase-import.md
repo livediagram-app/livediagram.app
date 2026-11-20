@@ -1,17 +1,17 @@
-# Wiki import
+# Knowledgebase import
 
 Status: **built, not yet verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 12): the
 engine (`@liveknowledge/knowledge-import`), the Import dialog's three sources and writing the pages
 ([blueprint](blueprints/knowledgebase-import.md)).
 
-Bring a whole wiki in from elsewhere. All three sources live in the one Import dialog as choices, beside the
+Bring a whole knowledgebase in from elsewhere. All three sources live in the one Import dialog as choices, beside the
 single-file imports the fork already has ([Markdown import](markdown-import.md), [Office import](office-import.md)).
 
-| Source                 | Takes                                              | Page tree from                                              |
-| ---------------------- | -------------------------------------------------- | ----------------------------------------------------------- |
-| **Markdown Folder**    | a folder, or a `.zip` of `.md` files and pictures  | the folders; `README.md` or `index.md` is the folder's page |
-| **Notion**             | Notion's "Markdown & CSV" export `.zip`            | Notion's nested folders, with the 32-character ids removed  |
-| **Confluence**         | a space's HTML export `.zip`                       | `index.html`'s nested list, else each page's breadcrumb     |
+| Source              | Takes                                             | Page tree from                                              |
+| ------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| **Markdown Folder** | a folder, or a `.zip` of `.md` files and pictures | the folders; `README.md` or `index.md` is the folder's page |
+| **Notion**          | Notion's "Markdown & CSV" export `.zip`           | Notion's nested folders, with the 32-character ids removed  |
+| **Confluence**      | a space's HTML export `.zip`                      | `index.html`'s nested list, else each page's breadcrumb     |
 
 - **Titles:** the first `#` heading, else the file name (Notion's id suffix and Confluence's numeric suffix removed).
 - **Links between pages** (relative `.md` links, Notion's encoded paths, Confluence's `href`s to sibling files, and
@@ -23,9 +23,9 @@ single-file imports the fork already has ([Markdown import](markdown-import.md),
   code blocks; user mentions become plain names; everything else falls back to its text.
 - HTML is parsed with the trusted-types `parseInert`, never `DOMParser`, and nothing from the archive is ever
   rendered as HTML.
-- **Where it lands:** into a new wiki, or under a chosen page of the current one. The dialog first shows what it
+- **Where it lands:** into a new knowledgebase, or under a chosen page of the current one. The dialog first shows what it
   found (pages, pictures, anything it will skip and why) and imports only on **Import <n> Pages**.
-- **Bounds:** 200 MB an archive, 500 pages (the wiki's limit, counted with the pages already there), 10 MB a picture.
+- **Bounds:** 200 MB an archive, 500 pages (the knowledgebase's limit, counted with the pages already there), 10 MB a picture.
   The archive is read in the browser as a stream, page by page; pages are written in batches of 20 so a large import
   never holds every page in memory or sends one huge message. A failed page is reported by name at the end; the rest
   are kept.
