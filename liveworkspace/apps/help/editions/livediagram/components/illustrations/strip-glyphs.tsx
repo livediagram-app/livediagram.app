@@ -1,7 +1,7 @@
 // livediagram's palette strip glyphs (packages/ui palette-tab-icons.tsx, and lucide's for Library and Search) and the
 // strip's item names, for ./editor-chrome and the flyouts: each glyph in its own box, drawn centred at any size.
 
-import { Icon } from '@/editions/livehuddle/components/illustrations/editor-chrome';
+import { Icon } from '@liveworkspace/help-site/art/editor-kit';
 import { lucideLibrary, lucideSearch } from '@liveworkspace/icons/lucide';
 
 /** A glyph's drawing parts, as lucide's (and the livehuddle kit's Icon) take them. */

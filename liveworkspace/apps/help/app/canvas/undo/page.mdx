@@ -2,6 +2,10 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { UndoStep } from '@liveworkspace/help-site/art/illustrations/undo-redo';
+import { UndoStep as DiagramUndoStep } from '@/editions/livediagram/components/illustrations/undo-redo';
+import { UndoStep as DesignUndoStep } from '@/editions/livedesign/components/illustrations/undo-redo';
+import { UndoStep as DocumentsUndoStep } from '@/editions/livedocuments/components/illustrations/history';
+import { UndoStep as HuddleUndoStep } from '@/editions/livehuddle/components/illustrations/floor-edits';
 
 export const metadata = helpMetadata({
   title: 'Undo',
@@ -29,8 +33,24 @@ Undo takes back your most recent change. You can:
 
 A whole drag counts as a single step, so one undo takes you all the way back to before you started dragging. A slider drag, such as opacity or a shadow's blur, is one step too. Selecting something is not a change, so it never uses up a step.
 
-<Figure caption="Pressing Cmd or Ctrl plus Z steps back your most recent change.">
+<Figure app="liveplanner,all" caption="Pressing Cmd or Ctrl plus Z steps back your most recent change.">
   <UndoStep />
+</Figure>
+
+<Figure app="livediagram" caption="Cmd or Ctrl plus Z steps back your most recent change: the Worker you just added fades out, and Undo at the head of the corner cluster lights Redo.">
+  <DiagramUndoStep />
+</Figure>
+
+<Figure app="livedesign" caption="Undo (Cmd or Ctrl plus Z) steps back your most recent change; the Undo button sits in the bottom-right corner.">
+  <DesignUndoStep />
+</Figure>
+
+<Figure app="livedocuments" caption="Pressing Cmd or Ctrl plus Z steps back your most recent change.">
+  <DocumentsUndoStep />
+</Figure>
+
+<Figure app="livehuddle" caption="Undo steps back your last change, here the desk just added. Press Cmd or Ctrl and Z, or Undo in the bottom-right corner.">
+  <HuddleUndoStep />
 </Figure>
 
 While you are typing in a label or a text box, the shortcut undoes your typing instead. Click away to finish editing, then undo whole changes as usual.

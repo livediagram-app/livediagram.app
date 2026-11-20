@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvasBasics from '@/editions/livediagram/components/illustrations/canvas-basics';
+import { LookAndFeelTheme as HuddleLookAndFeelTheme } from '@/editions/livehuddle/components/illustrations/look-and-feel';
 
 export const metadata = helpMetadata({
   title: 'Themes',
@@ -78,11 +79,14 @@ You change a tab's theme from the **Tab Style** dialog, which opens on its home.
   marble, grass and the rest) rather than a canvas pattern.
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livedocuments,livehuddle"
+<Figure app="livediagram,livedesign,livedocuments"
   caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first."
 >
   <DiagramCanvasBasics.LookAndFeelTheme />
+</Figure>
+
+<Figure app="livehuddle" caption="The Colours panel of Tab Style: every theme, each shown on a room's floor and notes.">
+  <HuddleLookAndFeelTheme />
 </Figure>
 
 ## Beyond a Single Colour

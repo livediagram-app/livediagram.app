@@ -4,6 +4,7 @@ import { ZoomControls } from '@/editions/livediagram/components/illustrations/us
 import { ZoomControls as LiveplannerZoomControls } from '@/editions/liveplanner/components/illustrations/user-interface';
 import { ZoomControls as LivedocumentsZoomControls } from '@/editions/livedocuments/components/illustrations/user-interface';
 import { ZoomControls as LivehuddleZoomControls } from '@/editions/livehuddle/components/illustrations/user-interface';
+import { ZoomControls as DesignZoomControls } from '@/editions/livedesign/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'Zoom Controls',
@@ -55,11 +56,14 @@ export const metadata = helpMetadata({
   or smaller. Boards, Dashboards and Forms fit their tab, so those tabs have no zoom controls.
 </AppNote>
 
-<Figure
-  app="livedesign,livediagram"
+<Figure app="livediagram"
   caption="The zoom cluster: step out, the current level, step in, with the preset popover open above."
 >
   <ZoomControls />
+</Figure>
+
+<Figure app="livedesign" caption="The zoom card: step out, the current level, step in, with the preset popover open above.">
+  <DesignZoomControls />
 </Figure>
 <Figure
   app="liveplanner"

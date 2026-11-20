@@ -1,6 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { LightDarkToggle } from '@/editions/livediagram/components/illustrations/tools';
+import { LightDarkToggle as DesignLightDarkToggle } from '@/editions/livedesign/components/illustrations/tools';
+import { LightDarkToggle as DocumentsLightDarkToggle } from '@/editions/livedocuments/components/illustrations/tools';
+import { LightDarkToggle as PlannerLightDarkToggle } from '@/editions/liveplanner/components/illustrations/tab-bar-scenes';
+import { LightDarkToggle as HuddleLightDarkToggle } from '@/editions/livehuddle/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Appearance: Light, Dark, System',
@@ -51,8 +55,24 @@ export const metadata = helpMetadata({
   button is not shown, because the workbench sets the look.
 </AppNote>
 
-<Figure caption="The Appearance button on the tab bar steps through Light, Dark and System, one setting per click.">
+<Figure app="livediagram,all" caption="The Appearance button on the tab bar steps through Light, Dark and System, one setting per click.">
   <LightDarkToggle />
+</Figure>
+
+<Figure app="livedesign" caption="The appearance button at the end of the bottom bar steps through Light, Dark and System, one setting per click.">
+  <DesignLightDarkToggle />
+</Figure>
+
+<Figure app="livedocuments" caption="Each click of the appearance switch moves through Light, Dark and System.">
+  <DocumentsLightDarkToggle />
+</Figure>
+
+<Figure app="liveplanner" caption="The appearance button at the right-hand end of the tab bar steps through Light, Dark and System, one setting per click.">
+  <PlannerLightDarkToggle />
+</Figure>
+
+<Figure app="livehuddle" caption="The monitor button in the bottom bar cycles Light, Dark and System.">
+  <HuddleLightDarkToggle />
 </Figure>
 
 ## The Three Settings

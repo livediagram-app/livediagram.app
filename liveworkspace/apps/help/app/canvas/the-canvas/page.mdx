@@ -7,6 +7,8 @@ import * as DocumentsCanvasBasics from '@/editions/livedocuments/components/illu
 import * as HuddleCanvasBasics from '@/editions/livehuddle/components/illustrations/canvas-basics';
 import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
 import * as HuddleCanvas from '@/editions/livehuddle/components/illustrations/canvas';
+import { AddingElements as DesignAddingElements } from '@/editions/livedesign/components/illustrations/canvas';
+import { AddingElements as DocumentsAddingElements } from '@/editions/livedocuments/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'The Canvas',
@@ -121,11 +123,18 @@ Most elements are added straight from the palette, whose categories sit along th
   [Where each tool lives](/help/palette/tools/).
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livedocuments"
+<Figure app="livediagram"
   caption="Click a shape tile in the palette, then drop it on the canvas; it lands selected, ready to move or resize."
 >
   <DiagramCanvas.AddingElements />
+</Figure>
+
+<Figure app="livedesign" caption="Open a category on the palette strip, then drop a tile on the page; it lands selected, ready to move or resize.">
+  <DesignAddingElements />
+</Figure>
+
+<Figure app="livedocuments" caption="Pick an element from the palette and drag it onto a page.">
+  <DocumentsAddingElements />
 </Figure>
 
 <Figure

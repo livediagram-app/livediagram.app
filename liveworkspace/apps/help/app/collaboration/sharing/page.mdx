@@ -6,6 +6,9 @@ import { SharePassesDialog as DiagramSharePassesDialog } from '@/editions/livedi
 import { SharePassesDialog as DesignSharePassesDialog } from '@/editions/livedesign/components/illustrations/sharing';
 import { SharePassesDialog as DocumentsSharePassesDialog } from '@/editions/livedocuments/components/illustrations/sharing';
 import { SharePassesDialog as HuddleSharePassesDialog } from '@/editions/livehuddle/components/illustrations/sharing';
+import { EmbeddedWork as DesignEmbeddedWork } from '@/editions/livedesign/components/illustrations/collaboration';
+import { EmbeddedDocument } from '@/editions/livedocuments/components/illustrations/presence';
+import { EmbeddedSpace } from '@/editions/livehuddle/components/illustrations/shared-views';
 
 export const metadata = helpMetadata({
   title: 'Sharing and Embeds',
@@ -246,24 +249,36 @@ An [embed](/help/collaboration/sharing/embeds/) puts a live copy of a <Noun /> i
 <AppNote app="livedesign">
   The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the design is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
-  <Figure caption="A design embedded in another page, alongside the iframe snippet that places it.">
+  <Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="A design embedded in another page, alongside the iframe snippet that places it.">
     <EmbeddedWork product="livedesign" />
+  </Figure>
+
+  <Figure app="livedesign" caption="A design embedded in another page, alongside the iframe snippet that places it.">
+    <DesignEmbeddedWork />
   </Figure>
 </AppNote>
 
 <AppNote app="livedocuments">
   The embed honours the link's role: an Editor pass embeds an editable canvas, while a Participant or Viewer pass embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the document is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
-  <Figure caption="A document embedded in another page, alongside the iframe snippet that places it.">
+  <Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="A document embedded in another page, alongside the iframe snippet that places it.">
     <EmbeddedWork product="livedocuments" />
+  </Figure>
+
+  <Figure app="livedocuments" caption="Paste the embed snippet into another page to show the document there.">
+    <EmbeddedDocument />
   </Figure>
 </AppNote>
 
 <AppNote app="livehuddle">
   The embed honours the link's role: an Editor pass embeds an editable space, while a Participant pass (or a legacy Viewer pass) embeds a read-only one with pan and zoom. Either way it hides the editor chrome and updates as the space is edited. Each pass's **Embed** menu offers **Copy embed URL** for the bare URL and **Copy iframe** for a ready-made snippet to paste.
 
-  <Figure caption="A space embedded in another page, alongside the iframe snippet that places it.">
+  <Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="A space embedded in another page, alongside the iframe snippet that places it.">
     <EmbeddedWork product="livehuddle" />
+  </Figure>
+
+  <Figure app="livehuddle" caption="A Space embedded in another page, beside the iframe snippet that places it.">
+    <EmbeddedSpace />
   </Figure>
 </AppNote>
 

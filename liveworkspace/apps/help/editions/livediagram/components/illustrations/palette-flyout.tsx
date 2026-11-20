@@ -8,11 +8,7 @@ import type { ReactNode } from 'react';
 import { Label, Lift } from '@liveworkspace/help-site/art/primitives';
 import { STRIP_NAMES, StripGlyph, type StripItem } from './strip-glyphs';
 
-export {
-  FlyoutCard,
-  FlyoutGroup,
-  FlyoutTile,
-} from '@/editions/livedocuments/components/illustrations/palette-flyout';
+export { FlyoutCard, FlyoutGroup, FlyoutTile } from '@liveworkspace/help-site/art/flyout-parts';
 
 export const FLYOUT_HEAD = 34;
 export const FLYOUT_FOOT = 18;

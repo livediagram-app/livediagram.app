@@ -3,6 +3,9 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { AutoLayoutTidy } from '@/editions/livediagram/components/illustrations/tools';
 import { SearchCommandPalette } from '@/editions/livediagram/components/illustrations/search-panel';
+import { AutoLayoutTidy as DesignAutoLayoutTidy } from '@/editions/livedesign/components/illustrations/tools';
+import { AutoLayoutTidy as DocumentsAutoLayoutTidy } from '@/editions/livedocuments/components/illustrations/tools';
+import { SearchCommandPalette as DocumentsSearchCommandPalette } from '@/editions/livedocuments/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'Auto Layout',
@@ -15,8 +18,16 @@ export const metadata = helpMetadata({
 
 Auto Layout is the structural tidier (the command palette calls it "Auto Layout (tidy up)"). Rather than nudging the positions you already have, it reads the arrow graph, works out how shapes connect, and computes brand-new positions, arranging connected shapes into clean layers. Unlike Auto-Align, it can legitimately move an element a long way to give your shapes a proper layout.
 
-<Figure caption="Auto Layout reads the arrow graph and re-lays tangled shapes into clean, ordered layers.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="Auto Layout reads the arrow graph and re-lays tangled shapes into clean, ordered layers.">
   <AutoLayoutTidy />
+</Figure>
+
+<Figure app="livedesign" caption="Auto Layout reads the arrows between screens and lays them out into a clean, ordered row.">
+  <DesignAutoLayoutTidy />
+</Figure>
+
+<Figure app="livedocuments" caption="Auto Layout re-lays tangled steps into clean, ordered layers.">
+  <DocumentsAutoLayoutTidy />
 </Figure>
 
 ## What It Does
@@ -107,8 +118,12 @@ Run a style that isn't offered from the command palette and nothing moves; a sho
   want.
 </AppNote>
 
-<Figure caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
+<Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
   <SearchCommandPalette />
+</Figure>
+
+<Figure app="livedocuments" caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
+  <DocumentsSearchCommandPalette />
 </Figure>
 
 Because it's one undoable operation, you can try a style and undo it in a single step (⌘Z / Ctrl+Z) if you preferred the previous arrangement, so it costs nothing to try two or three and keep the one that reads best.

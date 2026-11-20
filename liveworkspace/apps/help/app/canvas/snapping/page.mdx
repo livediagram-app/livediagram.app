@@ -2,6 +2,9 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import * as DiagramCanvas from '@/editions/livediagram/components/illustrations/canvas';
+import { SnappingGuides as DesignSnappingGuides } from '@/editions/livedesign/components/illustrations/canvas';
+import { SnappingGuides as DocumentsSnappingGuides } from '@/editions/livedocuments/components/illustrations/canvas';
+import { SnappingGuides as HuddleSnappingGuides } from '@/editions/livehuddle/components/illustrations/canvas';
 
 export const metadata = helpMetadata({
   title: 'Alignment & Snapping',
@@ -14,11 +17,22 @@ export const metadata = helpMetadata({
 
 When you drag an element around the canvas, <AppName /> quietly helps you line it up. As an edge or centre comes within a few pixels of a neighbour's, the element **snaps** into alignment and a faint **guide line** appears to show the match, so a tidy layout falls into place without nudging pixels by hand.
 
-<Figure
-  app="livediagram,livedesign,livedocuments,livehuddle"
+<Figure app="livediagram"
   caption="Dragging B next to A snaps their top edges together; the dashed guide shows the alignment."
 >
   <DiagramCanvas.SnappingGuides />
+</Figure>
+
+<Figure app="livedesign" caption="Dragging the card beside the picture snaps their top edges together; the dashed guide shows the alignment.">
+  <DesignSnappingGuides />
+</Figure>
+
+<Figure app="livedocuments" caption="Dragging a card near another snaps their edges together, a guide marking the shared edge.">
+  <DocumentsSnappingGuides />
+</Figure>
+
+<Figure app="livehuddle" caption="Guides appear as a desk lines up with the others, and it snaps into place.">
+  <HuddleSnappingGuides />
 </Figure>
 
 ## What Snapping Lines Up

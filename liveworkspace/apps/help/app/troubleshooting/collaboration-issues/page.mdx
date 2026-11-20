@@ -1,6 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { LiveCursors as DesignLiveCursors } from '@/editions/livedesign/components/illustrations/collaboration';
+import { DocumentPresence } from '@/editions/livedocuments/components/illustrations/presence';
+import { LiveCursors as PlannerLiveCursors } from '@/editions/liveplanner/components/illustrations/presence';
+import { SpacePresence } from '@/editions/livehuddle/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Real-Time Collaboration Problems',
@@ -13,8 +17,24 @@ export const metadata = helpMetadata({
 
 Real-time collaboration in <AppName /> works through a per-<Noun /> room: everyone editing the same <Noun /> connects to it over a live connection, and that room relays cursors, who is selecting what, which tab people are on, and edits as they happen. When something is not coming through, it is almost always the connection to that room rather than your data. Work through the checks below.
 
-<Figure caption="When the room is connected, everyone in the work sees each other's cursors and selections live.">
+<Figure app="livediagram,all" caption="When the room is connected, everyone in the work sees each other's cursors and selections live.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livedesign" caption="When the room is connected, everyone in the design sees each other's cursors on its pages live.">
+  <DesignLiveCursors />
+</Figure>
+
+<Figure app="livedocuments" caption="When collaboration works, you see each other's cursors and selections live.">
+  <DocumentPresence />
+</Figure>
+
+<Figure app="liveplanner" caption="When the room is connected, everyone on the plan sees each other's cursors and selections live.">
+  <PlannerLiveCursors />
+</Figure>
+
+<Figure app="livehuddle" caption="Everyone in a Space at once: Aria and Jae's cursors as they build, Mara walking in, and their faces on the Virtual Office tab.">
+  <SpacePresence />
 </Figure>
 
 ## When You See No One Else

@@ -4,6 +4,8 @@ import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collabor
 import { SharePassesDialog as DiagramSharePassesDialog } from '@/editions/livediagram/components/illustrations/sharing';
 import { SharePassesDialog as DocumentsSharePassesDialog } from '@/editions/livedocuments/components/illustrations/sharing';
 import { SharePassesDialog as HuddleSharePassesDialog } from '@/editions/livehuddle/components/illustrations/sharing';
+import { DocumentPresence } from '@/editions/livedocuments/components/illustrations/presence';
+import { SpacePresence } from '@/editions/livehuddle/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Sharing Your Work',
@@ -105,8 +107,16 @@ If you are a guest, check the name under **Sharing as** at the foot of the dialo
 
 Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands in the <Noun />:
 
-<Figure caption="Everyone in a shared work sees the others' live cursors and a presence stack of who is here.">
+<Figure app="livediagram,livedesign,liveplanner,all" caption="Everyone in a shared work sees the others' live cursors and a presence stack of who is here.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livedocuments" caption="Once shared, you see each other's cursors and selections live.">
+  <DocumentPresence />
+</Figure>
+
+<Figure app="livehuddle" caption="Everyone in a Space at once: Aria and Jae's cursors as they build, Mara walking in, and their faces on the Virtual Office tab.">
+  <SpacePresence />
 </Figure>
 
 - **Live cursors and selections.** Everyone sees where everyone else is and what they have selected.

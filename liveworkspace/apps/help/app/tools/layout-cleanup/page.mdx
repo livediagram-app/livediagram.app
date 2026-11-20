@@ -3,6 +3,9 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { CleanupBeforeAfter } from '@/editions/livediagram/components/illustrations/tools';
 import { SearchCommandPalette } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchCommandPalette as DocumentsSearchCommandPalette } from '@/editions/livedocuments/components/illustrations/search-panel';
+import { SearchCommandPalette as HuddleSearchCommandPalette } from '@/editions/livehuddle/components/illustrations/search-panel';
+import { CleanupBeforeAfter as HuddleCleanupBeforeAfter } from '@/editions/livehuddle/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Layout Cleanup',
@@ -48,11 +51,14 @@ export const metadata = helpMetadata({
   [Working with Pages](/help/pages/working-with-pages/).
 </AppNote>
 
-<Figure
-  app="livediagram,livehuddle"
+<Figure app="livediagram"
   caption="The Cleanup tools take a scattered, mis-sized jumble and turn it into a neat, aligned layout."
 >
   <CleanupBeforeAfter />
+</Figure>
+
+<Figure app="livehuddle" caption="Before and after a cleanup: scattered notes lined up neatly.">
+  <HuddleCleanupBeforeAfter />
 </Figure>
 
 ## The Tools
@@ -107,8 +113,16 @@ You can also open the [command palette](/help/search-panel/the-search-panel/comm
   **Actions**.
 </AppNote>
 
-<Figure caption="Typing layout in the command palette lists the tidiers under Actions.">
+<Figure app="livediagram,livedesign,liveplanner,all" caption="Typing layout in the command palette lists the tidiers under Actions.">
   <SearchCommandPalette />
+</Figure>
+
+<Figure app="livedocuments" caption="Every layout command is in the command palette under Actions.">
+  <DocumentsSearchCommandPalette />
+</Figure>
+
+<Figure app="livehuddle" caption="Type &quot;layout&quot; in Search to run Auto-align to Grid without opening a menu.">
+  <HuddleSearchCommandPalette />
 </Figure>
 
 Tidying is for editors: it isn't offered to a participant or in a view-only session.

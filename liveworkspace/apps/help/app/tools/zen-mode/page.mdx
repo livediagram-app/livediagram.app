@@ -2,6 +2,8 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { ZenBefore, ZenAfter } from '@/editions/livediagram/components/illustrations/tools';
+import { ZenBefore as DesignZenBefore, ZenAfter as DesignZenAfter } from '@/editions/livedesign/components/illustrations/tools';
+import { ZenBefore as DocumentsZenBefore, ZenAfter as DocumentsZenAfter } from '@/editions/livedocuments/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Zen Mode',
@@ -54,18 +56,32 @@ Zen mode is a distraction-free focus mode for the editor. It hides the chrome ar
   corner: **Undo** and **Redo**, **Trash**, **Types**, the comments button, **Board** and **Style**.
 </AppNote>
 
-<Figure
-  app="livediagram,livedesign,livedocuments"
+<Figure app="livediagram"
   caption="Outside zen mode the canvas is framed by the header, tab bar, palette, and zoom dock."
 >
   <ZenBefore />
 </Figure>
 
-<Figure
-  app="livediagram,livedesign,livedocuments"
+<Figure app="livedesign" caption="Outside zen mode the canvas is framed by the Pages rail, the palette strip, the corner controls and the bottom bar.">
+  <DesignZenBefore />
+</Figure>
+
+<Figure app="livedocuments" caption="Before zen mode: the logo and menu cards, the palette strip, the corner controls and the bottom bar.">
+  <DocumentsZenBefore />
+</Figure>
+
+<Figure app="livediagram"
   caption="Zen hides every panel and leaves just the canvas and a lone zoom dock that now exits zen."
 >
   <ZenAfter />
+</Figure>
+
+<Figure app="livedesign" caption="Zen hides every panel and leaves just your pages and a lone zoom card whose Exit leaves zen.">
+  <DesignZenAfter />
+</Figure>
+
+<Figure app="livedocuments" caption="After: just the page and the zoom card, with the button that leaves zen in its corner.">
+  <DocumentsZenAfter />
 </Figure>
 
 What stays is the part you came for:

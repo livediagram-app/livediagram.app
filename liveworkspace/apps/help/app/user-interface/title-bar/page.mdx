@@ -1,6 +1,10 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { TitleBarParts } from '@liveworkspace/help-site/art/illustrations/title-bar';
+import { TitleBarParts as DesignTitleBarParts } from '@/editions/livedesign/components/illustrations/user-interface';
+import { TopRowParts } from '@/editions/livediagram/components/illustrations/toolbar-layout';
+import { TitleBarParts as DocumentsTitleBarParts } from '@/editions/livedocuments/components/illustrations/user-interface';
+import { TopCorners } from '@/editions/livehuddle/components/illustrations/user-interface';
+import { TitleBarParts as PlannerTitleBarParts } from '@/editions/liveplanner/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'The Top Corners',
@@ -58,35 +62,20 @@ Both take the tab's style, so they read as part of the tab rather than a frame a
 
 </AppNote>
 
-<Figure
-  app="livedesign"
-  caption="The top of a shared design, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account."
->
-  <TitleBarParts product="livedesign" />
+<Figure app="livedesign" caption="The top of the editor: the logo and menu at the head of the Pages rail, the palette strip, and the share and sign-in card.">
+  <DesignTitleBarParts />
 </Figure>
-<Figure
-  app="livediagram"
-  caption="The top of a shared canvas, as its owner sees it: the menu card with the logo, the menu button and the mode switch, the palette, and the actions card with a solid Share button and the account."
->
-  <TitleBarParts product="livediagram" mode="Diagram" />
+<Figure app="livediagram" caption="The top of a canvas as its owner sees it: the logo, the menu card with the menu button and the mode switch, the palette strip, and Share beside the account.">
+  <TopRowParts initial="A" />
 </Figure>
-<Figure
-  app="livedocuments"
-  caption="The top of a shared document, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account."
->
-  <TitleBarParts product="livedocuments" />
+<Figure app="livedocuments" caption="Across the top: the logo, the menu, the palette strip, Share and your account.">
+  <DocumentsTitleBarParts />
 </Figure>
-<Figure
-  app="livehuddle"
-  caption="The top of a shared space, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account."
->
-  <TitleBarParts product="livehuddle" />
+<Figure app="livehuddle" caption="The editor's top row: the logo and menu cards, the strip, and Share and your account in the corner.">
+  <TopCorners />
 </Figure>
-<Figure
-  app="liveplanner"
-  caption="The top of a shared plan, as its owner sees it: the menu card with the logo and the menu button, the palette, and the actions card with a solid Share button and the account."
->
-  <TitleBarParts />
+<Figure app="liveplanner" caption="The top of a shared plan, as its owner sees it: on a board, the logo, the menu and the board's name lead its header row, with a solid Share and the account at the end; a Sheet, Dashboard or Form keeps them in two floating cards.">
+  <PlannerTitleBarParts />
 </Figure>
 
 <AppNote app="livedesign">

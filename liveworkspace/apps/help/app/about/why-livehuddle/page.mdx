@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { OpenCanvas } from '@/editions/livehuddle/components/illustrations/about';
 import { LiveCursors } from '@liveworkspace/help-site/art/illustrations/collaboration';
+import { SpacePresence } from '@/editions/livehuddle/components/illustrations/presence';
 
 export const metadata = helpMetadata({
   title: 'Why Use livehuddle?',
@@ -37,8 +38,12 @@ The [Space always works without signing in](/help/getting-started/guest-vs-accou
 
 Being together is the point, not a bolt-on. Hand someone a [share link](/help/collaboration/sharing/) and they walk into the same Space, where everyone sees each other's characters, cursors and speech bubbles as they happen. While someone has something selected, one element or many, it is gently locked for everyone else, and it stays locked for a moment after they let go, until their change is saved, so two people rarely edit the same thing at once.
 
-<Figure caption="Multiplayer from the start: live cursors and presence the moment someone joins.">
+<Figure app="livediagram,livedesign,livedocuments,liveplanner,all" caption="Multiplayer from the start: live cursors and presence the moment someone joins.">
   <LiveCursors />
+</Figure>
+
+<Figure app="livehuddle" caption="Everyone in a Space at once: Aria and Jae's cursors as they build, Mara walking in, and their faces on the Virtual Office tab.">
+  <SpacePresence />
 </Figure>
 
 <FeatureGrid>

@@ -26,7 +26,7 @@ import {
   CornerCard,
   CORNER_W,
   Icon,
-} from '@/editions/livehuddle/components/illustrations/editor-chrome';
+} from '@liveworkspace/help-site/art/editor-kit';
 import { ModeMark, type Mode } from './mode-mark';
 import { STRIP_GLYPHS, STRIP_NAMES, StripGlyph, type Prim, type StripItem } from './strip-glyphs';
 
@@ -39,7 +39,7 @@ export {
   CornerCard,
   CORNER_W,
   Icon,
-} from '@/editions/livehuddle/components/illustrations/editor-chrome';
+} from '@liveworkspace/help-site/art/editor-kit';
 
 const HAIR = 0.75;
 const PLUS: readonly Prim[] = [{ t: 'path', d: 'M5 12h14M12 5v14' }];

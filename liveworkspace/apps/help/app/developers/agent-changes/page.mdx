@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { AgentChangeToast } from '@liveworkspace/help-site/art/illustrations/agent-changes';
+import { AgentChangeToast as DesignAgentChangeToast } from '@/editions/livedesign/components/illustrations/collaboration';
+import { AgentChangeToast as DocumentsAgentChangeToast } from '@/editions/livedocuments/components/illustrations/presence';
+import { AgentChangeToast as HuddleAgentChangeToast } from '@/editions/livehuddle/components/illustrations/floor-edits';
 
 export const metadata = helpMetadata({
   title: "Reviewing and Undoing an Agent's Changes",
@@ -50,11 +53,22 @@ If you have the <Noun /> open when a changeset lands, you see it happen.
   colour for two seconds, and a note appears at the bottom of the screen.
 </AppNote>
 
-<Figure
-  app="livediagram,livedocuments,livedesign,livehuddle"
+<Figure app="livediagram"
   caption="The change toast: who changed how many elements and why, with Show and Undo."
 >
   <AgentChangeToast />
+</Figure>
+
+<Figure app="livedesign" caption="The change toast: who changed how many elements and why, with Show and Undo.">
+  <DesignAgentChangeToast />
+</Figure>
+
+<Figure app="livedocuments" caption="When an agent changes a tab, a toast names what changed, with Show and Undo.">
+  <DocumentsAgentChangeToast />
+</Figure>
+
+<Figure app="livehuddle" caption="An agent's change, outlined on the floor, with a toast naming who changed what, and Show and Undo.">
+  <HuddleAgentChangeToast />
 </Figure>
 
 <AppNote app="livediagram,livedocuments,livedesign,livehuddle">

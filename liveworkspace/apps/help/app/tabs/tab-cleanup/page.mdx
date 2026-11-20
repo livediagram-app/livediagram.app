@@ -6,6 +6,7 @@ import { SearchCommandPalette as LivedesignPalette } from '@/editions/livedesign
 import { SearchCommandPalette as LivehuddlePalette } from '@/editions/livehuddle/components/illustrations/search-panel';
 import { CleanupBeforeAfter } from '@liveworkspace/help-site/art/illustrations/tabs-scenes';
 import { CleanupBeforeAfter as LivehuddleCleanup } from '@/editions/livehuddle/components/illustrations/tools';
+import { CleanupBeforeAfter as DesignCleanupBeforeAfter } from '@/editions/livedesign/components/illustrations/tools';
 
 export const metadata = helpMetadata({
   title: 'Cleaning Up a Tab',
@@ -81,8 +82,12 @@ Open the [command palette](/help/search-panel/the-search-panel/command-palette/)
 Every tidier acts on the whole tab at once, and each is a single step you can undo (`Cmd` / `Ctrl` + `Z`) if the result is not what you wanted.
 
 <AppNote app="livediagram,livedocuments,livedesign">
-  <Figure caption="Cleanup takes a scattered, misaligned piece of work and snaps it into tidy rows and columns in one click.">
+  <Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="Cleanup takes a scattered, misaligned piece of work and snaps it into tidy rows and columns in one click.">
     <CleanupBeforeAfter />
+  </Figure>
+
+  <Figure app="livedesign" caption="Cleanup takes a page of scattered, misaligned blocks and snaps them into tidy rows and columns in one click.">
+    <DesignCleanupBeforeAfter />
   </Figure>
 </AppNote>
 

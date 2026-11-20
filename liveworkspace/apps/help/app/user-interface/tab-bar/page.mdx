@@ -2,6 +2,8 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { TabBar } from '@/editions/livediagram/components/illustrations/user-interface';
 import { TabBar as LivehuddleTabBar } from '@/editions/livehuddle/components/illustrations/user-interface';
+import { TabBar as DesignTabBar } from '@/editions/livedesign/components/illustrations/user-interface';
+import { TabBar as DocumentsTabBar } from '@/editions/livedocuments/components/illustrations/user-interface';
 
 export const metadata = helpMetadata({
   title: 'The Tab Bar',
@@ -49,11 +51,18 @@ The [quick controls](/help/user-interface/quick-controls/) sit at its right-hand
   They are Tools, Settings and the appearance switch.
 </AppNote>
 
-<Figure
-  app="livedesign,livediagram,livedocuments"
+<Figure app="livediagram"
   caption="The bottom bar: the active tab, a tab folder, the + button, and the quick controls at the far end."
 >
   <TabBar />
+</Figure>
+
+<Figure app="livedesign" caption="The bottom bar: the open tab, the other tabs and +, then Tools, Settings, notifications and the appearance switch.">
+  <DesignTabBar />
+</Figure>
+
+<Figure app="livedocuments" caption="The bottom bar: your tabs and +, then Tools, Settings, notifications and the appearance switch.">
+  <DocumentsTabBar />
 </Figure>
 <Figure
   app="livehuddle"

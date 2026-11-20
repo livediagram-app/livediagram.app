@@ -2,6 +2,7 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { SearchCreateTab } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchCreateTab as DocumentsSearchCreateTab } from '@/editions/livedocuments/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'Creating a Tab from Search',
@@ -32,8 +33,12 @@ The action surfaces when your query matches its name or keywords, for example ty
 
 **Create New Tab** is an ordinary editor command, listed in the **Actions** group of the results. That group sits below the navigation matches, so an actual match still wins the default `Enter`, and you arrow down to the command to choose it deliberately. When nothing else matches, the action is the first result and `Enter` runs it straight away.
 
-<Figure caption="A real match keeps the first slot, with Create New Tab offered below as a deliberate action.">
+<Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="A real match keeps the first slot, with Create New Tab offered below as a deliberate action.">
   <SearchCreateTab />
+</Figure>
+
+<Figure app="livedocuments" caption="A real match keeps the first slot, with Create New Tab offered below as a deliberate action.">
+  <DocumentsSearchCreateTab />
 </Figure>
 
 ## What it does

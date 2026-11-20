@@ -3,6 +3,8 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { EraserMode } from '@/editions/livediagram/components/illustrations/palette-modes';
 import { EraserPanelScene } from '@/editions/livediagram/components/illustrations/selection-modes';
+import { EraserMode as DesignEraserMode } from '@/editions/livedesign/components/illustrations/palette-modes';
+import { EraserPanelScene as DesignEraserPanelScene } from '@/editions/livedesign/components/illustrations/selection-modes';
 
 export const metadata = helpMetadata({
   title: 'Eraser',
@@ -29,8 +31,12 @@ The Eraser mode is the fastest way to remove elements from the <Noun />. Choose 
 
 This is quicker than selecting elements and then deleting them, especially when you want to clear out a cluster of shapes or arrows at once. Erasing a shape also removes the arrows attached to it, just as deleting it would.
 
-<Figure caption="The palette's tool picker set to Eraser, and a drag sweeping across shapes, removing the ones it has crossed.">
+<Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="The palette's tool picker set to Eraser, and a drag sweeping across shapes, removing the ones it has crossed.">
   <EraserMode />
+</Figure>
+
+<Figure app="livedesign" caption="The select-mode pill on the palette strip set to Eraser, and a sweep across a page removing the pencil strokes it crosses.">
+  <DesignEraserMode />
 </Figure>
 
 ## Setting up the brush
@@ -41,8 +47,12 @@ While the mode is active an **Eraser** panel sits at the bottom right, above the
 - **Size**: **Point** for the exact pixel, or **Small**, **Medium** and **Large** brushes. Above Point, a ring follows the cursor at the brush's real size, so you can see what a sweep will take before you press. The brush stays the same size on screen however far you zoom.
 - **Erases**: **Anything**, **Drawings** (freehand strokes only: pencil, marker and highlighter), or **Arrows** (connectors only). Drawings is what makes sketching over the <Noun /> safe: sweep the whole thing at Large and everything underneath is untouched. Arrows lets you rewire without disturbing the boxes.
 
-<Figure caption="The Eraser panel set to a Large brush that erases Drawings only: the ring turns amber, and the shape under the scribble is safe.">
+<Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="The Eraser panel set to a Large brush that erases Drawings only: the ring turns amber, and the shape under the scribble is safe.">
   <EraserPanelScene />
+</Figure>
+
+<Figure app="livedesign" caption="The Eraser panel set to a Large brush that erases Drawings only: the ring turns amber, and the block under the scribble is safe.">
+  <DesignEraserPanelScene />
 </Figure>
 
 The ring turns amber whenever a filter is on, so a restricted eraser never looks like a broken one. Your settings are remembered on this device, so check the **Erases** row if the eraser seems to be ignoring something.

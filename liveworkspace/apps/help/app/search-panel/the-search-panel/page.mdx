@@ -6,6 +6,7 @@ import { SearchOverview as LivedocumentsSearchOverview } from '@/editions/livedo
 import { SearchOverview as LivedesignSearchOverview } from '@/editions/livedesign/components/illustrations/search-panel';
 import { SearchOverview as LivehuddleSearchOverview } from '@/editions/livehuddle/components/illustrations/search-panel';
 import { SearchSettings } from '@/editions/livediagram/components/illustrations/search-panel';
+import { SearchSettings as DocumentsSearchSettings } from '@/editions/livedocuments/components/illustrations/search-panel';
 
 export const metadata = helpMetadata({
   title: 'The Search Panel',
@@ -250,8 +251,12 @@ Two more groups help you find your way:
   Settings there. "kanban" finds Boards.
 </AppNote>
 
-<Figure caption="A Settings result names the category it opens on, with matching help articles listed last.">
+<Figure app="livediagram,livedesign,liveplanner,livehuddle,all" caption="A Settings result names the category it opens on, with matching help articles listed last.">
   <SearchSettings />
+</Figure>
+
+<Figure app="livedocuments" caption="A Settings result names the category it opens on, with matching help articles listed last.">
+  <DocumentsSearchSettings />
 </Figure>
 
 <AppNote app="livedesign,livediagram">

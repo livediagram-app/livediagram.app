@@ -15,13 +15,7 @@ import {
   lucideUndo2,
 } from '@liveworkspace/icons/lucide';
 import { Label } from '@liveworkspace/help-site/art/primitives';
-import {
-  CARD_H,
-  Card,
-  CornerCard,
-  CORNER_W,
-  Icon,
-} from '@/editions/livehuddle/components/illustrations/editor-chrome';
+import { CARD_H, Card, CornerCard, CORNER_W, Icon } from '@liveworkspace/help-site/art/editor-kit';
 import { STRIP_GLYPHS, STRIP_NAMES, StripGlyph, type Prim, type StripItem } from './strip-glyphs';
 
 export { STRIP_GLYPHS, STRIP_NAMES, StripGlyph, type Prim, type StripItem };
@@ -35,8 +29,8 @@ export {
   CornerCard,
   CORNER_W,
   Icon,
-  ICONS,
-} from '@/editions/livehuddle/components/illustrations/editor-chrome';
+  CHROME_ICONS as ICONS,
+} from '@liveworkspace/help-site/art/editor-kit';
 
 // --- The logo and menu cards -------------------------------------------------
 

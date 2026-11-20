@@ -1,6 +1,7 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { CrossTabLink } from '@liveworkspace/help-site/art/illustrations/tabs-scenes';
 import { helpMetadata } from '@/lib/seo';
+import { CrossTabLink as DesignCrossTabLink } from '@/editions/livedesign/components/illustrations/tabs-scenes';
 
 export const metadata = helpMetadata({
   title: 'Linking Across Tabs',
@@ -23,8 +24,12 @@ A single link on an element can target any one of these:
 
 A linked element carries a small link badge (unless your [element indicators](/help/canvas/element-indicators/) are set to Off). Hover it and its card reads **Follow link** and names the target (for example `Goes to tab "DB internals"`), so you can tell where a link leads before you click it. Click the badge to follow the link.
 
-<Figure caption="A linked element shows a link indicator along its top; hovering it brings up a card naming the target tab, and a click jumps there.">
+<Figure app="livediagram,livedocuments,liveplanner,livehuddle,all" caption="A linked element shows a link indicator along its top; hovering it brings up a card naming the target tab, and a click jumps there.">
   <CrossTabLink />
+</Figure>
+
+<Figure app="livedesign" caption="A linked element wears a link badge; hovering it brings up a card naming the target tab, and a click jumps there.">
+  <DesignCrossTabLink />
 </Figure>
 
 ## Linking an element to a tab

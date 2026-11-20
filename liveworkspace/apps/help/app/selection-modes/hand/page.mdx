@@ -2,6 +2,8 @@ import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 import { HandMode } from '@/editions/livediagram/components/illustrations/palette-modes';
+import { HandMode as DesignHandMode } from '@/editions/livedesign/components/illustrations/palette-modes';
+import { HandMode as DocumentsHandMode } from '@/editions/livedocuments/components/illustrations/palette-modes';
 
 export const metadata = helpMetadata({
   title: 'Hand',
@@ -24,8 +26,16 @@ The Hand mode turns a drag on empty canvas into a pan, so you move your view ins
 
 Grab the surface and drag to move your view in any direction. This is the quickest way to navigate a large canvas when the part you want is off-screen. Zooming works as usual, with a pinch or the [zoom controls](/help/user-interface/zoom-controls/).
 
-<Figure caption="The palette's tool picker set to Hand, and a grabbing-hand cursor panning the canvas.">
+<Figure app="livediagram,liveplanner,livehuddle,all" caption="The palette's tool picker set to Hand, and a grabbing-hand cursor panning the canvas.">
   <HandMode />
+</Figure>
+
+<Figure app="livedesign" caption="The select-mode pill on the palette strip set to Hand, and the grabbing hand panning the canvas.">
+  <DesignHandMode />
+</Figure>
+
+<Figure app="livedocuments" caption="Hand mode: drag anywhere to pan, without selecting anything.">
+  <DocumentsHandMode />
 </Figure>
 
 ## Why a dedicated mode

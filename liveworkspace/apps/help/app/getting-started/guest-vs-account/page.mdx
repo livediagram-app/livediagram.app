@@ -1,6 +1,9 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
 import { GuestVsAccount } from '@liveworkspace/help-site/art/illustrations/getting-started';
+import { GuestVsAccount as DocumentsGuestVsAccount } from '@/editions/livedocuments/components/illustrations/about';
+import { GuestVsAccount as PlannerGuestVsAccount } from '@/editions/liveplanner/components/illustrations/account-scenes';
+import { GuestVsAccount as HuddleGuestVsAccount } from '@/editions/livehuddle/components/illustrations/getting-started';
 
 export const metadata = helpMetadata({
   title: 'Guest vs Account',
@@ -18,8 +21,20 @@ A core principle of <AppName /> is that **it always works without signing in**. 
   guest.
 </AppNote>
 
-<Figure caption="As a guest your library lives in one browser; an account syncs the same work across every device.">
+<Figure app="livediagram,livedesign,all" caption="As a guest your library lives in one browser; an account syncs the same work across every device.">
   <GuestVsAccount />
+</Figure>
+
+<Figure app="livedocuments" caption="As a guest your documents live in one browser; an account syncs them across every device.">
+  <DocumentsGuestVsAccount />
+</Figure>
+
+<Figure app="liveplanner" caption="As a guest your plans live in one browser; an account syncs the same plans across every device.">
+  <PlannerGuestVsAccount />
+</Figure>
+
+<Figure app="livehuddle" caption="As a guest your Spaces live in this browser; with an account they follow you to every device.">
+  <HuddleGuestVsAccount />
 </Figure>
 
 ## What You Get as a Guest

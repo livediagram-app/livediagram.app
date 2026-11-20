@@ -6,6 +6,7 @@ import { CommunitySearchBox as DesignCommunitySearchBox } from '@/editions/lived
 import { CommunitySearchBox as DocumentsCommunitySearchBox } from '@/editions/livedocuments/components/illustrations/sharing';
 import { CommunitySearchBox as HuddleCommunitySearchBox } from '@/editions/livehuddle/components/illustrations/sharing';
 import { CommunitySearchBox as PlannerCommunitySearchBox } from '@liveworkspace/help-site/art/illustrations/community';
+import { CommunitySearchBox as PlannerCommunitySearchBox2 } from '@/editions/liveplanner/components/illustrations/community-search';
 
 export const metadata = helpMetadata({
   title: 'Finding Work in the Community',
@@ -116,8 +117,12 @@ You can type these yourself, or use the buttons inside the right of the search b
 </AppNote>
 
 <AppNote app="liveplanner">
-  <Figure caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
+  <Figure app="livediagram,livedesign,livedocuments,livehuddle,all" caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge.">
     <PlannerCommunitySearchBox query="#sprint sort:loved" />
+  </Figure>
+
+  <Figure app="liveplanner" caption="One search box: words and #tags on the left, with My Shares, Category, Tags and the sort inside its right edge, over plans' boards.">
+    <PlannerCommunitySearchBox2 query="#sprint sort:loved" />
   </Figure>
 </AppNote>
 
