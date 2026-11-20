@@ -9,7 +9,7 @@ import type {
 import { describe, expect, it, vi } from 'vitest';
 import worker from './index';
 import { sweep, sweepEmpty } from './purge';
-import { NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './person-notices';
+import { NOTICE_GIVE_UP_MS, NOTICE_RETRY_AFTER_MS } from './notice-queue';
 import { drainPersonMerges } from './person-merges';
 import { PERSON_ALIASES_MAX } from './person-aliases';
 import { body, call, h, makeItem, person, settle, useHarness } from './test-support';
