@@ -11,7 +11,7 @@ const CI_WORKERS = 4;
 // (`pnpm test:e2e:signed-in`) on their own ports, so a guest stack already up on :3602 is never
 // mistaken for it.
 const signedIn = process.env.E2E_SIGNED_IN === '1';
-const SIGNED_IN_PORTS = { live: '3315', api: '8315', marketing: '3316', index: '8317' };
+const SIGNED_IN_PORTS = { live: '3615', api: '9315', marketing: '3616', index: '9317' };
 // The workbench embed e2e (docs/specs/013-workspace/blueprints/workbench-embeds.md "Testing") needs the
 // NEXT_PUBLIC_E2E_AUTH export and the stack acting as the accounts Worker, so it runs as its own invocation
 // (`pnpm test:e2e:workbench`) on its own ports. Pairing, tickets and sessions are liveworkspace's now
