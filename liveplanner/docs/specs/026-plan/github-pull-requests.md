@@ -113,13 +113,19 @@ route answers 404, and nothing logs an error. Pull Request fields still read and
 - **How**: the GitHub view asks the api to start a connection, and the api answers the App's install page
   with a one-time **state** naming the plan (kept by the plan, as a hash, for 10 minutes, `CONNECT_STATE_TTL_MS`).
   On GitHub the person installs the App (or opens an installation they already have) and chooses its repositories;
-  GitHub sends them back to the api's callback with the installation and a code. The state is spent first, once,
-  whatever follows. The api then asks GitHub, as that person, once, which of the installation's repositories they
-  can reach (GitHub's user authorisation of the App), and connects the plan only when the installation is one they
-  can reach. It asks GitHub, as the App, that the installation is the App's own and not suspended. The person's
-  GitHub token is used for those calls and revoked at GitHub straight after: **no personal GitHub token is
-  stored**, ever. The callback sends the person back to the plan (`#github=connected`, `#github=failed`, or
-  `#github=requested` when an organisation's owner must approve the install first).
+  GitHub sends them back to the api's callback with the installation and a code. **Only the browser that started
+  the connection can finish it**: the link to GitHub can be passed to anyone, and whoever completes it brings their
+  own installation, so the api also gives the starting browser a second secret (an HttpOnly cookie sent only to the
+  callback, for the state's 10 minutes) and the callback connects nothing without it (`#github=failed`, the state
+  left for the starter). The state is spent first, once, whatever follows.
+  - [x] GH-B1: a callback with a live state but without the starting browser's cookie (none, another connect's, a
+        wrong value) connects nothing, asks GitHub nothing and leaves the state, which the starter then finishes.
+  - [x] GH-B2: two connections started at once in one browser each finish. The api then asks GitHub, as that person, once, which of the installation's repositories they
+        can reach (GitHub's user authorisation of the App), and connects the plan only when the installation is one they
+        can reach. It asks GitHub, as the App, that the installation is the App's own and not suspended. The person's
+        GitHub token is used for those calls and revoked at GitHub straight after: **no personal GitHub token is
+        stored**, ever. The callback sends the person back to the plan (`#github=connected`, `#github=failed`, or
+        `#github=requested` when an organisation's owner must approve the install first).
 - **Which repositories**: the plan keeps the repositories the person could reach in the installation, every one of
   them, read from GitHub 100 a page (`INSTALLATION_REPOSITORIES_LISTED`) up to 10 pages
   (`REPOSITORY_PAGES_MAX`, 1,000 repositories). When there are at most 20 (`REPOSITORIES_MAX`), every one of them

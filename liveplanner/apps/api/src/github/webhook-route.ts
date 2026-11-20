@@ -15,10 +15,12 @@
 import { readCappedBody } from '@liveworkspace/api-kit/request-body';
 import { appBaseUrl } from '../email/client';
 import { planRoom } from '../plan-client';
+import { connectCookieName } from '../plan-room/github/github-connect';
 import type { GithubRoomAnswer } from '../plan-room/github/github-room';
 import { json, methodNotAllowed, notFound } from '../responses';
 import type { Env } from '../types';
 import {
+  GITHUB_CALLBACK_PATH,
   githubConfig,
   INSTALLATION_PLANS_MAX,
   PLANS_PER_REPOSITORY_MAX,
@@ -181,13 +183,32 @@ async function callback(request: Request, env: Env, url: URL): Promise<Response>
     console.info('[github] connect', { outcome: 'failed', why: 'query' });
     return redirect(env, state.planId, 'failed');
   }
+  // The other half of the state, from the browser that started the connect (github-connect.ts): without it this is
+  // someone else finishing a link they were sent, and nothing is connected.
+  const cookie = await connectCookieName(state.secret);
+  const binder = cookieOf(request, cookie);
+  if (!binder || binder.length !== SECRET_LENGTH || !isUrlSafe(binder, SECRET_LENGTH)) {
+    console.info('[github] connect', { outcome: 'failed', why: 'browser' });
+    return redirect(env, state.planId, 'failed');
+  }
   const outcome = await planRoom(env, state.planId).github({
     kind: 'callback',
     secret: state.secret,
+    binder,
     code,
     installationId,
   });
-  return redirect(env, state.planId, outcome === 'connected' ? 'connected' : 'failed');
+  const res = redirect(env, state.planId, outcome === 'connected' ? 'connected' : 'failed');
+  res.headers.set('Set-Cookie', `${cookie}=; HttpOnly; Path=${GITHUB_CALLBACK_PATH}; Max-Age=0`);
+  return res;
+}
+
+function cookieOf(request: Request, name: string): string | null {
+  for (const part of (request.headers.get('Cookie') ?? '').split(';')) {
+    const eq = part.indexOf('=');
+    if (eq > 0 && part.slice(0, eq).trim() === name) return part.slice(eq + 1).trim();
+  }
+  return null;
 }
 
 /** `/api/github/*`: a delivery, the connect's callback, or 404 (always, while the App's settings are missing). */
@@ -196,6 +217,6 @@ export async function handleGithub(request: Request, env: Env): Promise<Response
   if (!config) return notFound();
   const url = new URL(request.url);
   if (url.pathname === '/api/github/webhook') return webhook(request, env, config);
-  if (url.pathname === '/api/github/callback') return callback(request, env, url);
+  if (url.pathname === GITHUB_CALLBACK_PATH) return callback(request, env, url);
   return notFound();
 }

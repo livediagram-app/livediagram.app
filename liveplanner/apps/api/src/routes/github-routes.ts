@@ -17,7 +17,14 @@ import type {
 import type { ItemPerson } from '@liveplanner/items';
 import { getProject } from '../db';
 import { installationRepositories } from '../github/github-api';
-import { githubConfig, REPOSITORIES_MAX, type GithubConfig } from '../github/github-config';
+import {
+  CONNECT_STATE_TTL_MS,
+  GITHUB_CALLBACK_PATH,
+  githubConfig,
+  REPOSITORIES_MAX,
+  type GithubConfig,
+} from '../github/github-config';
+import { appBaseUrl } from '../email/client';
 import { NO_LINKS, rewriteLinks } from '../github/github-links';
 import { startConnect, withRoom } from '../plan-room/github/github-connect';
 import { dropStates } from '../plan-room/github/github-room';
@@ -65,9 +72,21 @@ async function view(ctx: PlanRouteContext, g: Gated, status = 200): Promise<Resp
 }
 
 async function connect(ctx: PlanRouteContext, g: Gated): Promise<Response> {
-  const url = await startConnect(ctx.env.PLAN_DB, g.config, g.projectId, g.by, Date.now());
+  const { url, cookie } = await startConnect(
+    ctx.env.PLAN_DB,
+    g.config,
+    g.projectId,
+    g.by,
+    Date.now(),
+  );
   const body: GithubConnectStartResponse = { url };
-  return json(body, { status: 201, headers: { 'Cache-Control': 'no-store' } });
+  // The binder stays in this browser, sent back only to the callback, for as long as the state lives.
+  const secure = appBaseUrl(ctx.env).startsWith('https:') ? ' Secure;' : '';
+  const setCookie = `${cookie.name}=${cookie.value}; HttpOnly;${secure} SameSite=Lax; Path=${GITHUB_CALLBACK_PATH}; Max-Age=${CONNECT_STATE_TTL_MS / 1000}`;
+  return json(body, {
+    status: 201,
+    headers: { 'Cache-Control': 'no-store', 'Set-Cookie': setCookie },
+  });
 }
 
 // The request's ids: distinct positive safe integers, at most REPOSITORIES_MAX, or null.

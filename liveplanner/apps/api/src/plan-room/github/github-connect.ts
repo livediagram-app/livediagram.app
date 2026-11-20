@@ -31,18 +31,33 @@ import {
 
 const STATE_BYTES = 32;
 
-/** A new state for `planId`: the address's `{plan id}.{secret}`, and the secret's hash kept with `person`. */
+// The state travels through GitHub in an address anyone can be sent, so on its own it says only which plan asked.
+// The binder is a second secret that never leaves the browser that started the connect (an HttpOnly cookie the api
+// sets, read back by the callback): whoever finishes on GitHub must be in that browser, or the plan would take the
+// installation of anyone the link was sent to.
+const stateHash = (secret: string, binder: string) => sha256Hex(`${secret}.${binder}`);
+
+/** The name of the cookie that carries a state's binder: one per state, so two connects at once keep their own. */
+export const connectCookieName = async (secret: string): Promise<string> =>
+  `lp_github_connect_${(await sha256Hex(secret)).slice(0, 16)}`;
+
+/** A new state for `planId`: the address's `{plan id}.{secret}`, the binder for the starter's browser (and the
+ *  cookie it goes in), and the hash of both kept with `person`. */
 export async function startConnect(
   db: D1Database,
   config: GithubConfig,
   planId: string,
   person: ItemPerson,
   now: number,
-): Promise<string> {
+): Promise<{ url: string; cookie: { name: string; value: string } }> {
   const secret = base64url(crypto.getRandomValues(new Uint8Array(STATE_BYTES)));
-  await addConnectState(db, await sha256Hex(secret), JSON.stringify(person), now);
+  const binder = base64url(crypto.getRandomValues(new Uint8Array(STATE_BYTES)));
+  await addConnectState(db, await stateHash(secret, binder), JSON.stringify(person), now);
   const state = encodeURIComponent(`${planId}.${secret}`);
-  return `${GITHUB_WEB}/apps/${encodeURIComponent(config.slug)}/installations/new?state=${state}`;
+  return {
+    url: `${GITHUB_WEB}/apps/${encodeURIComponent(config.slug)}/installations/new?state=${state}`,
+    cookie: { name: await connectCookieName(secret), value: binder },
+  };
 }
 
 /** The repositories among `ids` that another plan's count leaves room for (PLANS_PER_REPOSITORY_MAX). */
@@ -60,7 +75,13 @@ export async function withRoom(
   return new Set(counts.filter(([, n]) => n < PLANS_PER_REPOSITORY_MAX).map(([id]) => id));
 }
 
-export type ConnectCallback = { secret: string; code: string; installationId: number };
+export type ConnectCallback = {
+  secret: string;
+  // The starter's browser's half of the state (above).
+  binder: string;
+  code: string;
+  installationId: number;
+};
 
 const failed = (why: string): 'failed' => {
   console.info('[github] connect', { outcome: 'failed', why });
@@ -99,7 +120,7 @@ export async function finishConnect(
   call: ConnectCallback,
   now: number,
 ): Promise<'connected' | 'failed'> {
-  const claimed = await claimConnectState(db, await sha256Hex(call.secret), now);
+  const claimed = await claimConnectState(db, await stateHash(call.secret, call.binder), now);
   const person = claimed ? personOf(claimed) : null;
   if (!person) return failed('state');
   const repos = await reachable(config, call.code, call.installationId);

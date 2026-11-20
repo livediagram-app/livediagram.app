@@ -150,8 +150,10 @@ Answered in `index.ts` before identity, as `/api/hooks` is: `segments[1] === 'gi
 - `GET /api/github/callback?state&code&installation_id&setup_action`: off, 404. Not GET, 405. `state` must be
   `{plan id}.{43 base64url characters}` (a plan id is 1 to 200 of `A-Za-z0-9_-`), else 400
   `github_state_invalid`. `setup_action=request` (an organisation owner must approve) redirects to
-  `#github=requested` without asking the room. Otherwise the room is asked
-  `github(planId, { kind: 'callback', secret, code, installationId })`, and the answer is a 302 to
+  `#github=requested` without asking the room. Otherwise the binder is read from the request's cookie
+  `lp_github_connect_{first 16 hex of SHA-256(secret)}` (missing, or not 43 base64url characters: `#github=failed`,
+  the room not asked), the room is asked
+  `github(planId, { kind: 'callback', secret, binder, code, installationId })`, the cookie is cleared (`Max-Age=0`), and the answer is a 302 to
   `{appBaseUrl}/project/{plan id}#github=connected` or `#github=failed`, with `Cache-Control: no-store` and
   `Referrer-Policy: no-referrer` (the code is in the address).
 
@@ -200,7 +202,8 @@ plan_id, repo_id)`, `github_connect_states (hash PK, person, at)`, `github_deliv
     chosen: `not_connected`. A seen id: `replayed`. `installation_repositories`: the removed repositories dropped
     and their keys deleted. `installation` deleted: the connection dropped and its keys deleted. Otherwise
     `accepted` (part 3 acts here).
-  - `callback` (`github-connect.ts` `finishConnect`): the state's hash claimed (none or expired: `failed`); the code
+  - `callback` (`github-connect.ts` `finishConnect`): the hash of the state's secret and the binder claimed (none or
+    expired, so also a wrong binder, which spends nothing: `failed`); the code
     exchanged; the person's repositories in the installation listed (null: `failed`); the token revoked; the
     installation read as the App (null or suspended: `failed`); the connection saved with up to
     `INSTALLATION_REPOSITORIES_LISTED` repositories, all chosen when there are at most `REPOSITORIES_MAX` and each
@@ -216,8 +219,10 @@ Every route: off, 404 (falls through). The gate: `requireOwner`; the plan (404);
 else 403 `github_needs_editor`. Bodies are read by `readBody`.
 
 - `GET /api/projects/:id/github`: `{ connection: GithubConnectionView | null }`.
-- `POST /api/projects/:id/github/connect`: a new state (`{plan id}.{32 random bytes, base64url}`), its SHA-256 hash
-  kept with the caller's person; 201 `{ url }`, `https://github.com/apps/{slug}/installations/new?state=…`.
+- `POST /api/projects/:id/github/connect`: a new state (`{plan id}.{32 random bytes, base64url}`) and a binder (32
+  more random bytes, base64url); the SHA-256 hash of `{secret}.{binder}` kept with the caller's person; the binder
+  set as the cookie `lp_github_connect_{first 16 hex of SHA-256(secret)}` (`HttpOnly; Secure; SameSite=Lax;
+Path=/api/github/callback; Max-Age=600`; `Secure` only when the app's address is https); 201 `{ url }`, `https://github.com/apps/{slug}/installations/new?state=…`.
 - `PUT /api/projects/:id/github/repositories` `{ ids: number[] }`: no connection, 409 `github_not_connected`; not an
   array of safe integers, more than `REPOSITORIES_MAX`, or an id the plan does not list: 400 `github_invalid`; the
   installation's repositories listed as the App (null: 502 `github_unavailable`); an id it no longer sees, 409
@@ -231,7 +236,9 @@ else 403 `github_needs_editor`. Bodies are read by `readBody`.
   read. A network refused too often is turned away before its body is read; GitHub's webhook ranges never are. A delivery names plans only through the index, and each plan checks the installation and repository
   against its own connection, so a forged or stale index entry acts on nothing.
 - The callback carries no identity: the state is the proof that an Editor of the plan started it within 10 minutes,
-  is spent before any call to GitHub (a replayed code finds none), and is kept only as a hash.
+  and the binder cookie that it is finished in the browser that started it (the state alone travels in a link anyone
+  can be sent). Both are spent together before any call to GitHub (a replayed code finds none), and kept only as
+  one hash.
 - The person's GitHub token lives for one request, in memory, and is revoked at its end. No installation token is
   stored either; the App's private key and the secrets are read from env only. Nothing logs a token, a code, a state,
   a signature or a body.

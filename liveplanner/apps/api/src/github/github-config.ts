@@ -21,6 +21,8 @@ export const REFUSED_NETWORKS_KEPT = 1000;
 export const INSTALLATION_PLANS_MAX = 100;
 /** How long a connect's state lives: long enough to install the App on GitHub. */
 export const CONNECT_STATE_TTL_MS = 10 * 60 * 1000;
+/** Where GitHub sends the person back, and the only path the connect's cookie is sent to. */
+export const GITHUB_CALLBACK_PATH = '/api/github/callback';
 /** The live states a plan keeps; the oldest goes past it. */
 export const CONNECT_STATES_MAX = 20;
 /** How long a plan remembers a delivery id: GitHub redelivers deliveries up to 3 days old. */
