@@ -1,143 +1,44 @@
-import { Label } from '@liveworkspace/help-site/art/primitives';
+import { useId } from 'react';
 import { Callout, Stage, Window } from '@liveworkspace/help-site/art/parts';
-import { MiniArticle, MiniSlide } from '@liveworkspace/help-site/art/work';
+import { CLUSTER_W, topRowStripX } from '../illustrations/editor-chrome';
+import { EditorView } from '../illustrations/canvas-basics';
 
-const CHROME = 'fill-white stroke-slate-200';
+// The editor drawn into the window's body: 470 wide at this scale fills the 372 inside the frame.
+const K = 372 / 470;
+const EW = 470;
+const EH = Math.round(178 / K);
+const OX = 14;
+const OY = 32;
+const at = (x: number, y: number) => [OX + x * K, OY + y * K] as const;
 
-// The bottom-right cluster's buttons, left to right (Panel Layout): Undo, Redo, the page navigator, Contents, Slides
-// and the zoom, each with its centre and width.
-const CLUSTER = [
-  { label: '↶', x: 206, w: 18 },
-  { label: '↷', x: 226, w: 18 },
-  { label: '2 / 3', x: 254, w: 34 },
-  { label: 'Contents', x: 296, w: 44 },
-  { label: 'Slides', x: 336, w: 32 },
-];
-
-// User Interface: the editor laid out, with numbered callouts on its parts (Panel Layout): 1 the menu button and
-// the tab's name, 2 the palette strip, 3 the bottom-right cluster (undo and redo, the page navigator, Contents and
-// Slides) and 4 the tab bar with the quick controls at its end, round an article page and a slide.
+// User Interface: the editor laid out (Panel Layout), with numbered callouts on its parts: 1 the logo and menu cards,
+// 2 the palette strip, 3 the bottom-right cluster (Undo | Redo and the zoom) and 4 the bottom bar with its tabs and
+// the quick controls at its end, round two slides.
 export function UserInterfaceArt() {
+  const clip = `ui-art-${useId().replace(/:/g, '')}`;
+  const [c1x, c1y] = at(8, 6);
+  const [c2x, c2y] = at(topRowStripX(EW) + 4, 6);
+  const [c3x, c3y] = at(EW - 8 - CLUSTER_W - 6, EH - 26 - 20);
+  const [c4x, c4y] = at(8, EH - 26);
   return (
     <Stage>
-      <Window x={14} y={10} w={372} h={200} title="Launch brief · livedocuments">
-        {/* 1: the menu button and the tab's name. */}
-        <rect x={24} y={42} width={80} height={22} rx={7} className={CHROME} strokeWidth={1.2} />
-        <path
-          d="M31 49 h10 M31 53 h10 M31 57 h10"
-          className="stroke-slate-500"
-          strokeWidth={1.4}
-          strokeLinecap="round"
-        />
-        <line x1={46} y1={47} x2={46} y2={59} className="stroke-slate-200" strokeWidth={1} />
-        <Label x={75} y={53.5} anchor="middle" size={7.5} weight={600} tone="strong">
-          Launch brief
-        </Label>
-
-        {/* 2: the palette strip, Write first. */}
-        <rect x={122} y={42} width={156} height={22} rx={7} className={CHROME} strokeWidth={1.2} />
-        <path
-          d="M131 47 v11 l2.9 -2.6 1.9 3.9 1.9 -0.9 -1.8 -3.7 3.7 -0.3 Z"
-          className="fill-slate-500"
-        />
-        <line x1={146} y1={47} x2={146} y2={59} className="stroke-slate-200" strokeWidth={1} />
-        {(
-          [
-            ['Write', 164],
-            ['Shapes', 197],
-            ['Media', 230],
-            ['Data', 258],
-          ] as const
-        ).map(([t, x], i) => (
-          <Label
-            key={t}
-            x={x}
-            y={53.5}
-            anchor="middle"
-            size={8}
-            weight={i === 0 ? 700 : 500}
-            tone={i === 0 ? 'accent' : 'body'}
-          >
-            {t}
-          </Label>
-        ))}
-
-        {/* The pages: an article page and a slide. */}
-        <MiniArticle x={60} y={76} w={70} h={92} />
-        <MiniSlide x={146} y={78} w={116} h={66} />
-
-        {/* 3: the bottom-right cluster. */}
-        {CLUSTER.map((b) => (
-          <g key={b.label}>
-            <rect
-              x={b.x - b.w / 2}
-              y={150}
-              width={b.w}
-              height={18}
-              rx={5}
-              className={CHROME}
-              strokeWidth={1.1}
-            />
-            <Label
-              x={b.x}
-              y={159.5}
-              anchor="middle"
-              size={b.label.length > 2 ? 7 : 11}
-              weight={600}
-              tone="body"
-            >
-              {b.label}
-            </Label>
+      <defs>
+        <clipPath id={clip}>
+          <rect x={14} y={10} width={372} height={200} rx={12} />
+        </clipPath>
+      </defs>
+      <Window x={14} y={10} w={372} h={200} title="Launch Plan · livedocuments">
+        <g clipPath={`url(#${clip})`}>
+          <g transform={`translate(${OX} ${OY}) scale(${K})`}>
+            <rect width={EW} height={EH} className="fill-slate-50" />
+            <EditorView w={EW} h={EH} />
           </g>
-        ))}
-        <rect x={355} y={150} width={24} height={18} rx={5} className={CHROME} strokeWidth={1.1} />
-        <Label x={367} y={159.5} anchor="middle" size={6.5} weight={700} tone="strong">
-          100%
-        </Label>
-
-        {/* 4: the tab bar, with the quick controls at its end. */}
-        <rect x={24} y={178} width={352} height={24} rx={7} className={CHROME} strokeWidth={1.2} />
-        <rect
-          x={29}
-          y={182}
-          width={62}
-          height={16}
-          rx={4}
-          className="fill-white stroke-brand-400"
-          strokeWidth={1.2}
-        />
-        <Label x={60} y={190.5} anchor="middle" size={7.5} weight={700} tone="accent">
-          Brief
-        </Label>
-        <rect x={95} y={182} width={62} height={16} rx={4} className="fill-slate-100" />
-        <Label x={126} y={190.5} anchor="middle" size={7.5} weight={500} tone="body">
-          Pitch deck
-        </Label>
-        <Label x={168} y={190.5} anchor="middle" size={11} weight={600} tone="accent">
-          +
-        </Label>
-        {/* Search, Settings and appearance. */}
-        <circle
-          cx={326}
-          cy={189}
-          r={3.6}
-          className="fill-none stroke-slate-500"
-          strokeWidth={1.3}
-        />
-        <path
-          d="M328.6 191.6 l2.6 2.6"
-          className="stroke-slate-500"
-          strokeWidth={1.3}
-          strokeLinecap="round"
-        />
-        <circle cx={346} cy={190} r={4} className="fill-none stroke-slate-500" strokeWidth={1.3} />
-        <circle cx={346} cy={190} r={1.4} className="fill-slate-500" />
-        <path d="M367 186 a4.5 4.5 0 1 0 3 7 a3.6 3.6 0 0 1 -3 -7 Z" className="fill-slate-500" />
+        </g>
       </Window>
-      <Callout cx={24} cy={40} n={1} />
-      <Callout cx={122} cy={40} n={2} />
-      <Callout cx={184} cy={159} n={3} />
-      <Callout cx={24} cy={176} n={4} />
+      <Callout cx={c1x} cy={c1y} n={1} />
+      <Callout cx={c2x} cy={c2y} n={2} />
+      <Callout cx={c3x} cy={c3y} n={3} />
+      <Callout cx={c4x} cy={c4y} n={4} />
     </Stage>
   );
 }

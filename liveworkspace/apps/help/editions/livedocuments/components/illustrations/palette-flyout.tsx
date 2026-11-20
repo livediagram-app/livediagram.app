@@ -195,3 +195,51 @@ export function FlyoutCard({
     </g>
   );
 }
+
+/** A category's flyout in its compact form, for scenes whose body is laid out under a 22-unit title bar: the category's
+ *  glyph and its name (or `title`, for a row's side panel), a hairline, then the body. */
+export function CategoryPanel({
+  x,
+  y,
+  w,
+  h,
+  item,
+  title,
+  children,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  item: StripItem;
+  title?: string;
+  children?: ReactNode;
+}) {
+  return (
+    <g>
+      <Lift x={x} y={y} w={w} h={h} r={7} />
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={7}
+        className="fill-white stroke-slate-200"
+        strokeWidth={0.75}
+      />
+      <StripGlyph item={item} x={x + 15} y={y + 11.5} size={9} className="stroke-brand-700" />
+      <Label x={x + 26} y={y + 12} size={10} weight={650} tone="strong">
+        {title ?? STRIP_NAMES[item]}
+      </Label>
+      <line
+        x1={x}
+        y1={y + 22}
+        x2={x + w}
+        y2={y + 22}
+        className="stroke-slate-100"
+        strokeWidth={0.75}
+      />
+      {children}
+    </g>
+  );
+}

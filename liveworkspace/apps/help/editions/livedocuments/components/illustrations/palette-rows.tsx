@@ -5,8 +5,9 @@
 // (apps/editor/components/palette/palette-tile-defs.tsx), so the picture reads the
 // way the editor does. Composed from the shared primitives.
 
-import { Scene, Panel, Label } from '@liveworkspace/help-site/art/primitives';
+import { Scene, Label } from '@liveworkspace/help-site/art/primitives';
 import { STRIP_W, Strip, type StripItem } from './editor-chrome';
+import { CategoryPanel } from './palette-flyout';
 
 type Row = { caption: string; blurb: string; key?: string };
 
@@ -79,7 +80,7 @@ export function PaletteCategoryPanel({
 }) {
   const rows = CATEGORY_ROWS[category]!;
   return (
-    <Panel x={x} y={y} w={w} h={paletteRowsHeight(category)} title={category.toUpperCase()}>
+    <CategoryPanel x={x} y={y} w={w} h={paletteRowsHeight(category)} item={category.toLowerCase() as StripItem}>
       {rows.map((row, i) => {
         const ry = y + HEAD_H + i * ROW_H;
         const on = row.caption === active;
@@ -93,7 +94,7 @@ export function PaletteCategoryPanel({
                 height={ROW_H - 3}
                 rx={7}
                 className="fill-brand-50 stroke-brand-300"
-                strokeWidth={1.2}
+                strokeWidth={0.75}
               />
             )}
             <rect
@@ -129,7 +130,7 @@ export function PaletteCategoryPanel({
           </g>
         );
       })}
-    </Panel>
+    </CategoryPanel>
   );
 }
 

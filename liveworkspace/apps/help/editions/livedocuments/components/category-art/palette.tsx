@@ -1,17 +1,9 @@
 import type { ReactNode } from 'react';
-import { Arrow, Cursor, Label, SelectionBox } from '@liveworkspace/help-site/art/primitives';
+import { Arrow, Cursor, SelectionBox } from '@liveworkspace/help-site/art/primitives';
 import { Card, Stage } from '@liveworkspace/help-site/art/parts';
-
-// The strip on a slide, as Palette Tools lists it: Write first, then Shapes, Media, Data, Concepts and Components
-// (Icons follows, past the stage's edge). Each name's centre along the strip.
-const CATEGORIES = [
-  { name: 'Write', x: 96 },
-  { name: 'Shapes', x: 134 },
-  { name: 'Media', x: 174 },
-  { name: 'Data', x: 208 },
-  { name: 'Concepts', x: 250 },
-  { name: 'Components', x: 314 },
-];
+import { STRIP_W, Strip } from '../illustrations/editor-chrome';
+import { PageTag } from '../illustrations/doc-page';
+import { CategoryPanel } from '../illustrations/palette-flyout';
 
 const S = 'fill-none stroke-slate-500';
 
@@ -181,42 +173,10 @@ const TILES: { name: string; glyph: (cx: number, cy: number) => ReactNode }[] = 
 export function PaletteArt() {
   return (
     <Stage>
-      <Card x={36} y={14} w={328} h={30} r={10}>
-        {/* The tool picker, holding Select. */}
-        <path
-          d="M50 22 v13 l3.4 -3.1 2.2 4.6 2.2 -1 -2.1 -4.4 4.4 -0.3 Z"
-          className="fill-slate-500"
-        />
-        <path
-          d="M62 28 l2.5 2.5 2.5 -2.5"
-          className="fill-none stroke-slate-400"
-          strokeWidth={1.2}
-        />
-        <line x1={74} y1={21} x2={74} y2={37} className="stroke-slate-200" strokeWidth={1.2} />
-        {CATEGORIES.map((c) => {
-          const on = c.name === 'Components';
-          return (
-            <Label
-              key={c.name}
-              x={c.x}
-              y={29.5}
-              anchor="middle"
-              size={9.5}
-              weight={on ? 700 : 500}
-              tone={on ? 'accent' : 'body'}
-            >
-              {c.name}
-            </Label>
-          );
-        })}
-        <rect x={290} y={38} width={48} height={2.5} rx={1.2} className="fill-brand-500" />
-      </Card>
+      <Strip x={(400 - STRIP_W) / 2} y={14} open="components" />
 
       {/* The Components panel. */}
-      <Card x={40} y={52} w={170} h={132} r={10}>
-        <Label x={52} y={64} size={9} weight={700} tone="muted">
-          COMPONENTS
-        </Label>
+      <CategoryPanel x={40} y={52} w={170} h={132} item="components">
         {TILES.map((t, i) => {
           const tx = 50 + (i % 3) * 52;
           const ty = 74 + Math.floor(i / 3) * 34;
@@ -230,13 +190,13 @@ export function PaletteArt() {
                 height={30}
                 rx={6}
                 className={on ? 'fill-brand-50 stroke-brand-400' : 'fill-slate-50 stroke-slate-200'}
-                strokeWidth={on ? 1.6 : 1}
+                strokeWidth={on ? 1.25 : 0.75}
               />
               {t.glyph(tx + 23, ty + 15)}
             </g>
           );
         })}
-      </Card>
+      </CategoryPanel>
 
       {/* The slide it lands on. */}
       <Card x={232} y={66} w={150} h={86} r={4}>
@@ -256,9 +216,7 @@ export function PaletteArt() {
         <rect x={260} y={115} width={44} height={5} rx={2.5} className="fill-amber-500" />
         <rect x={260} y={126} width={60} height={4} rx={2} className="fill-amber-200" />
       </Card>
-      <Label x={232} y={60} size={8.5} weight={600} tone="muted">
-        Slide (16:9) · Slide
-      </Label>
+      <PageTag x={232} bottom={63} name="Results" />
       <Arrow from={[178, 152]} to={[240, 126]} kind="curved" dashed tone="muted" width={2} />
       <SelectionBox x={244} y={102} w={92} h={42} />
       <Cursor x={318} y={132} colour="brand" />

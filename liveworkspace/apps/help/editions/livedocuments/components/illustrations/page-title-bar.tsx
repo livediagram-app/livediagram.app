@@ -6,7 +6,7 @@
 // bar does, named beside its icon while the page has room, tinted while its popover is open.
 
 import type { ReactElement } from 'react';
-import { Label } from '@liveworkspace/help-site/art/primitives';
+import { Label, Lift } from '@liveworkspace/help-site/art/primitives';
 
 type GlyphProps = { cx: number; cy: number; on?: boolean };
 
@@ -221,14 +221,7 @@ export function TitleBarCard({
   const scale = cell >= 22 ? 1 : 0.85;
   return (
     <g>
-      <rect
-        x={left}
-        y={top + 1.5}
-        width={width}
-        height={h}
-        rx={h * 0.3}
-        className="fill-slate-200"
-      />
+      <Lift x={left} y={top} w={width} h={h} r={h * 0.3} />
       <rect
         x={left}
         y={top}
@@ -236,7 +229,7 @@ export function TitleBarCard({
         height={h}
         rx={h * 0.3}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       {dividers.map((x) => (
         <line
@@ -246,7 +239,7 @@ export function TitleBarCard({
           x2={x}
           y2={cy + cell * 0.3}
           className="stroke-slate-200"
-          strokeWidth={1}
+          strokeWidth={0.75}
         />
       ))}
       {items.map(({ item, x, w, cx }, i) =>
@@ -298,14 +291,7 @@ export function PageLabel({
   const h = size * 2;
   return (
     <g>
-      <rect
-        x={x}
-        y={y - h / 2 + 1.5}
-        width={width}
-        height={h}
-        rx={h * 0.3}
-        className="fill-slate-200"
-      />
+      <Lift x={x} y={y - h / 2} w={width} h={h} r={h * 0.3} />
       <rect
         x={x}
         y={y - h / 2}
@@ -313,7 +299,7 @@ export function PageLabel({
         height={h}
         rx={h * 0.3}
         className="fill-white stroke-slate-200"
-        strokeWidth={1}
+        strokeWidth={0.75}
       />
       <Label x={x + pad} y={y} size={size} weight={500} tone="muted">
         {name ? (
