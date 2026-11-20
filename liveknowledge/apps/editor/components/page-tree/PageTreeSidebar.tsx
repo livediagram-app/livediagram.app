@@ -59,7 +59,7 @@ export type PageTreeSidebarProps = PageTreeProps & {
   onRenameKnowledgebase?: ((name: string) => void) | undefined;
   collapsed: boolean;
   onSetCollapsed: (collapsed: boolean) => void;
-  // Where it starts, in screen px from the canvas's top: below the menu box's row.
+  // Where it starts, in screen px from the canvas's top: the menu box's row open, the top row as a rail.
   top: number;
   // Joined to the menu box above it: it rises to the canvas's top, its first `top` px the menu box's row.
   joined: boolean;
@@ -88,13 +88,13 @@ export function PageTreeSidebar({
         e.stopPropagation();
       }}
       style={{ ...uiScaleStyle(scale), left: 0, top: rise ? 0 : px(top), width }}
-      className={`${SURFACE} ${rise ? '' : 'rounded-tr-xl border-t'}`}
+      className={SURFACE}
     >
       {children}
     </aside>
   );
   if (collapsed) {
-    // The rail stands under the menu box, which keeps its own card while nothing is joined to it.
+    // The rail stands under the top row, which the menu button leads while nothing is joined to it.
     return shell(
       PAGE_TREE_RAIL_WIDTH,
       false,
@@ -196,6 +196,7 @@ export function PageTreeSidebar({
       <PageTree {...tree} className="flex-1 px-1.5 pb-2" />
       {tree.canEdit ? (
         <div className="border-t border-slate-200 p-3 dark:border-slate-800">
+          {/* Describe to Set Up, while the knowledgebase is empty (describe-to-set-up.md "The control"). */}
           <NewPageButton tabs={tree.tabs} onAdd={() => tree.actions.onAdd()} />
         </div>
       ) : null}

@@ -3,12 +3,17 @@
 // The editor's bottom bar (docs/specs/007-editor/editor-app.md "Named on a wide desktop";
 // docs/specs/013-workspace/blueprints/workbench-embeds.md WB34, WB15): Tools and Settings, named unless Button
 // Labels is off; no pages, which are the page tree's; in a workbench, its Open link and no Appearance control.
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, screen } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { renderInEditor } from '@/components/ask/test-chrome';
 import { afterEach, describe, expect, it } from 'vitest';
 import { DockNamesProvider } from '@liveworkspace/workbench/hooks/ui/useDockNames';
 import { BottomBar } from './BottomBar';
 
 afterEach(cleanup);
+
+// The bar reads the editor's store for its view tabs (KnowledgeViewTabs).
+const render = (ui: ReactElement) => renderInEditor(ui);
 
 const toolsText = () => screen.getByRole('button', { name: 'Tools' }).textContent;
 const appearance = () => screen.queryAllByRole('button', { name: /appearance|theme|dark|light/i });
@@ -48,7 +53,7 @@ describe('BottomBar', () => {
         workbenchLink={(labelled) => <a href="/document/d">{labelled ? 'Open' : ''}</a>}
       />,
     );
-    const link = screen.getByRole('link');
+    const link = screen.getByRole('link', { name: 'Open' });
     expect(link.textContent).toBe('Open');
     const tools = screen.getByRole('button', { name: 'Tools' });
     expect(tools.compareDocumentPosition(link) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -57,7 +62,7 @@ describe('BottomBar', () => {
 
   it('keeps the Appearance control in the app', () => {
     render(<BottomBar />);
-    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Open' })).toBeNull();
     expect(appearance().length).toBeGreaterThan(0);
   });
 });

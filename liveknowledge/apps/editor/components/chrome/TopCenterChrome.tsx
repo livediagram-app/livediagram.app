@@ -63,7 +63,8 @@ export function TopCenterChrome({
   const tray = stripShown ? strip : null;
   // A board, view or Sheet covering the canvas: the draw hint moves to the bottom.
   return (
-    <TopCenterStack below={stripShown ? (trayShown ? 'tray' : 'toolbar') : undefined}>
+    // Always under the top row (docs/specs/030-knowledgebase/page-surface.md "The footer"), which every role has.
+    <TopCenterStack below={stripShown && trayShown ? 'tray' : 'toolbar'}>
       {/* Offline (docs/specs/007-editor/load-recovery.md "Offline"): first, since it says whether
           anything else on screen is being saved. */}
       <OfflineBanner readOnly={readOnly === true} />

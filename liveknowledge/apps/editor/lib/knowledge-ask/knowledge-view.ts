@@ -7,10 +7,31 @@ export type KnowledgeView = 'pages' | 'ask' | 'ai';
 
 export const KNOWLEDGE_VIEW_PARAM = 'view';
 
-export const KNOWLEDGE_VIEWS: readonly { view: KnowledgeView; label: string; about: string }[] = [
-  { view: 'pages', label: 'Pages', about: 'Read and write the pages of this knowledgebase.' },
-  { view: 'ask', label: 'Ask', about: 'Ask a question and get an answer from its pages.' },
-  { view: 'ai', label: 'AI Knowledge', about: 'What agents know, read and could not find.' },
+export const KNOWLEDGE_VIEWS: readonly {
+  view: KnowledgeView;
+  label: string;
+  // The name a phone's footer tab shows, where three full names do not fit.
+  short: string;
+  about: string;
+}[] = [
+  {
+    view: 'pages',
+    label: 'Pages',
+    short: 'Pages',
+    about: 'Read and write the pages of this knowledgebase.',
+  },
+  {
+    view: 'ask',
+    label: 'Ask',
+    short: 'Ask',
+    about: 'Ask a question and get an answer from its pages.',
+  },
+  {
+    view: 'ai',
+    label: 'AI Knowledge',
+    short: 'AI',
+    about: 'What agents know, read and could not find.',
+  },
 ];
 
 /** The view an address names; anything it does not know is Pages. */

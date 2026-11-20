@@ -6,26 +6,17 @@ import {
   setDrawingZoneEditing,
   useDrawingZoneEditing,
 } from '@/lib/page-surface/drawing-zone-store';
-import { FORMATTING_BAR_HEIGHT, PageFormattingBar } from './PageFormattingBar';
-import { PAGE_TOP_ROOM } from '@/lib/page-surface/page-lock';
+import { PageFormattingBar } from './PageFormattingBar';
 
-// docs/specs/030-knowledgebase/page-surface.md "The formatting bar": one slim bar pinned over the top of the
-// writing's column, formatting only, then Undo and Redo.
+// docs/specs/030-knowledgebase/page-surface.md "The formatting bar": the left of the top row while a page is being
+// written, formatting only, then Undo and Redo.
 afterEach(() => {
   cleanup();
   setDrawingZoneEditing(false);
 });
 
 const bar = (over: Partial<Parameters<typeof PageFormattingBar>[0]> = {}) => (
-  <PageFormattingBar
-    left={264}
-    right={280}
-    canUndo
-    canRedo={false}
-    onUndo={vi.fn()}
-    onRedo={vi.fn()}
-    {...over}
-  />
+  <PageFormattingBar canUndo canRedo={false} onUndo={vi.fn()} onRedo={vi.fn()} {...over} />
 );
 
 describe('PageFormattingBar', () => {
@@ -48,14 +39,6 @@ describe('PageFormattingBar', () => {
     expect(redo.disabled).toBe(true);
     fireEvent.click(redo);
     expect(onRedo).not.toHaveBeenCalled();
-  });
-
-  it('stands between the side chrome, and is shorter than the room the page keeps above itself', () => {
-    const { container } = render(bar());
-    const shell = container.querySelector<HTMLElement>('[data-page-formatting-bar]')!;
-    expect(shell.style.left).toBe('264px');
-    expect(shell.style.right).toBe('280px');
-    expect(FORMATTING_BAR_HEIGHT).toBeLessThan(PAGE_TOP_ROOM);
   });
 
   it('takes a pointer cursor and a focus ring on every button', () => {

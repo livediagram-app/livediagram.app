@@ -47,7 +47,7 @@ tool, the zoom chords, Fit).
   column is the page less its side margins (`820 - 2 * 48 = 724` px: an article's margins now default to Narrow,
   `resolveArticleStyle`), centred in the room the side chrome leaves. Zoom is `min(1, (room - 2 * side room) /
 column)`, never above 1 and never under `PAGE_MIN_SCALE`; the side room is 48 px, 20 px on a phone. The page's top
-  stands `PAGE_TOP_ROOM` (56 px) under the top of what scrolls: the formatting bar's room.
+  stands `PAGE_TOP_ROOM` (24 px) under the top of what scrolls, which itself starts under the top row.
 - The offset is solved for the canvas world's transform, `scale(z) translate(o)` about the surface's centre, so a
   canvas point `p` stands at `z * (p + o) + (size / 2) * (1 - z)`.
 - `usePageSurface` (called by `Canvas`) sets the lock in a layout effect and again from a `ResizeObserver` on the
@@ -123,13 +123,63 @@ browser's.
 | The minimap                        | already unreachable: it draws only on a tab without pages                               |
 | The off-screen content hint        | `Canvas` always answers false                                                           |
 
+## The footer and the top row (built)
+
+| Piece                                  | File                                                       |
+| -------------------------------------- | ---------------------------------------------------------- |
+| the three view tabs                    | `components/chrome/KnowledgeViewTabs.tsx`                  |
+| the footer                             | `components/chrome/BottomBar.tsx`, `FooterMore.tsx`        |
+| the row's shell                        | `components/chrome/KnowledgeTopRow.tsx`                    |
+| which row holds Share and the account  | `lib/page-surface/top-row-slot.ts`                         |
+| Share, Make a Copy, the account button | `components/chrome/TopRowActions.tsx` (`EditorViewHeader`) |
+| whether the page's row is drawn        | `components/chrome/useTopRowShown.ts`                      |
+| the fixed tab's shape                  | `packages/workbench` `tab-shape.ts` (`fixedTabShapeClass`) |
+
+- **The tabs** are a `nav` named "Knowledgebase Views" at the footer's left, drawn with the shared tab shape (the
+  open tab a card joined to the bar's foot, the others quiet with the inset wash on hover): each a `HoverCard`
+  (name and one line) around a link to the view's address with its icon, `aria-current="page"` on the showing one,
+  the tab's own focus ring (`data-tab-key`). A plain left press moves in place (`showKnowledgeView`, a history
+  entry) and sends `UI·Opened·PagesView`, `AskView` or `AiKnowledgeView`; a press with a modifier is the link's.
+  No button, no drag, no menu. Not offered (`useKnowledgeViewsOffered`), the `nav` is not drawn.
+- **The footer** (`BottomBar`) is a child of the editor's column under the canvas, 48 px and the bottom safe inset:
+  the page's scroll container ends above it. Tabs, a spacer, then `ChromeControls`. On a phone (`phone`, the
+  editor's `isMobileViewport`) the tabs share the row at 44 px with their short names (`KNOWLEDGE_VIEWS[].short`;
+  the link keeps its full name as `aria-label`), `ChromeControls parts="bell"` follows, and `FooterMore` holds
+  `ChromeControls parts="rest"`: a button with `aria-expanded` and a `group` named More that opens above it, kept
+  mounted while closed (`hidden`), closed by Escape (the focus back on the button) or a press outside.
+- **The top row** is `KnowledgeTopRow`: `--knowledge-top-row` tall (`globals.css`: 3rem, 3.5rem under the `phone`
+  query), white (`slate-900` dark) with a hairline under it, `leading`, its children, `trailing`, then the slot
+  (`data-top-row-actions`, also `data-corner-actions` so the shared account control is redrawn as a button by
+  `corner-actions.css`). It offers its slot to `top-row-slot` with a rank: `page` (the canvas chrome's row) or
+  `view` (Ask's and AI Knowledge's header), and `view` outranks `page`.
+- **Share and the account button** are drawn once, by `EditorViewHeader`, as `TopRowActions`: a portal into
+  `useTopRowSlot()`. So the account's menu and the Share legend are one instance whichever view shows, and nothing
+  is drawn while no row is (zen, an embed).
+- **On Pages** `CanvasChrome` draws the row (`useTopRowShown`: the app's chrome, not an embed; not in zen or the
+  welcome flow) absolutely along the canvas's top, from the page tree's right edge to the window's, at `--z-panel`.
+  Its children are `PageFormattingBar` for an Editor on a desktop; its `trailing` is the Page Info button where the
+  rail is not docked (`usePageRailChrome().rowButton`), whose card opens under it; its `leading`, where the menu
+  box is not joined to an open page tree (a phone, the tree's rail), is the menu button inline and a phone's Pages
+  button. `[data-canvas-root]:has(> [data-knowledge-top-row]) > [data-page-scroller]` starts the scroll container
+  under the row, the docked rail and the tree's rail start at the row's foot, and the top corner stacks and the
+  top-centre stack start at 68 px.
+- **On Ask and AI Knowledge** `KnowledgeViewHeader` is the same row: the view's name (`h1`), its one line from
+  `lg` up, its buttons, a divider, the slot. The frame ends at the footer's top (measured, `[data-editor-tabbar]`),
+  and the footer is the one column child it leaves live.
+- **A phone while writing:** the page toolbar's own bar is fixed along the top (`usePageToolbarPlacement`) and sets
+  `data-article-toolbar-top` on the root; `globals.css` hides the page row's children under that attribute, so the
+  bar has the row to itself and the menu, Pages, Page Info, Share and account buttons return when the caret leaves.
+
+Tests: `KnowledgeViewTabs.test.tsx` (the links, `aria-current`, the press, the history entry, every role, each
+case they are not offered in, the footer's order, a phone's More), `KnowledgeTopRow.test.tsx` (the row's order,
+the slot's rank, nothing with no row, Make a Copy), `KnowledgeViewHost.test.tsx` (the frame, the live footer).
+
 ## The formatting bar (built)
 
-`components/page-surface/PageFormattingBar.tsx`, mounted by `CanvasChrome` for an Editor on a desktop.
+`components/page-surface/PageFormattingBar.tsx`, the left of the page's top row for an Editor on a desktop.
 
-- **One slim bar**, 44 px tall (`FORMATTING_BAR_HEIGHT`), over the top of what scrolls, centred between the page
-  tree and the docked rail and never wider than the page (820 px). The page keeps `PAGE_TOP_ROOM` (56 px) clear
-  above itself, so the bar never covers the Title; a caret the browser scrolls into view stops 72 px under the top
+- **In the top row**, not over the writing: the scroll container starts under the row, the page keeps
+  `PAGE_TOP_ROOM` (24 px) above itself, and a caret the browser scrolls into view stops 24 px under the top
   (`scrollMargin` on the writing's view, `article-view-mount.ts`).
 - **Its controls are the page toolbar's own.** The bar holds the slot the fork's strip held
   (`lib/article/article-dock.ts`), and `PageToolbar` renders into it: block style, Bold, Italic, Underline, Colour,
@@ -143,10 +193,11 @@ browser's.
 - **Undo and Redo** left the bottom-right cluster for an Editor on a desktop; a phone and a Participant keep them
   there.
 - **A phone** has no bar here. Its writing bar is the page toolbar's own, fixed along the top of the screen while
-  the caret is in the writing (`usePageToolbarPlacement`), as before. Not checked on a phone: with the strip gone
-  the menu button and the Pages button stand at the top left, where that bar also stands while writing.
-- **Renders:** the bar's props are the side chrome's widths and the history's two flags, none of which a keystroke
-  changes; the page toolbar inside it renders on a selection change, as it did in the strip.
+  the caret is in the writing (`usePageToolbarPlacement`); the top row's own buttons step aside for it ("The footer
+  and the top row").
+- **Narrow:** where the row has less room than the controls need (about 1,024 px with the tree open) the slot
+  scrolls sideways; there is no mark that more controls follow.
+- **Renders:** the bar's props are the history's two flags, which a keystroke does not change; the page toolbar inside it renders on a selection change, as it did in the strip.
 
 ## What a page no longer has (built)
 
@@ -194,7 +245,7 @@ extent, the rail's inset, and everything a browser would show.
 
 ## Not built
 
-Two parts of the spec are not started. Each is written so it can be picked up cold.
+One part of the spec is not started. It is written so it can be picked up cold.
 
 ### Knowledgebase Style (spec "Knowledgebase Style")
 
@@ -224,25 +275,6 @@ ArticleTextSize }`, `parseKnowledgeStyle(v)` keeping what is valid (a look of `A
 5. **Exports:** the PDF, Word and Markdown exporters read `flow.style`; hand them
    `knowledgeArticleStyle(knowledgeStyle)`.
 6. **Agents:** `write_article`'s `look` and `accent` should be refused by name (`parsePagesRequest`).
-
-### The footer, Share and the account button (spec "The footer")
-
-Nothing is built. Today the views switch (Pages | Ask | AI Knowledge), Share and the account button are the
-floating corner card (`KNOWLEDGE_SWITCH_ROW` in `app/document/[id]/EditorView.tsx`), and the footer is
-`components/chrome/BottomBar.tsx` with Get Started, Tools, Settings, notifications and the appearance.
-
-1. Three fixed tabs at the footer's left, with the look of the other editors' tab pills
-   (`livedocuments/apps/editor/components/chrome/TabBar.tsx`, `TabPill`): links (`?view=`) with `aria-current`, an
-   icon each, a hover card of a title and one line, no add, close, drag or menu. The footer's other items stay at
-   its right; on a phone the tabs are the row (icons with short labels, 44 px) and the rest go behind one More
-   button.
-2. The footer is a bar of the content area's column, under the canvas's `main`, so the page's scroll container ends
-   above it; it must not be drawn over the writing.
-3. Share and the account button at the right end of the formatting bar's row (`PageFormattingBar`, which then spans
-   the content area: formatting at the left while writing, Share and account at the right always), and the corner
-   card removed. `blueprints/ask-ui.md` describes the switch and must follow.
-4. With the corner card gone, check nothing overlaps the column at any width: the Page Info button below 1,280 px
-   stands at the top right, where Share will stand.
 
 ### Smaller gaps
 

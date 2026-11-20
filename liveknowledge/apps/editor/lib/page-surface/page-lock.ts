@@ -7,8 +7,8 @@ import type { View } from '@liveworkspace/workbench/lib/viewport-store';
 /** Screen px of room either side of the writing's column: on a desktop, and on a phone. */
 export const PAGE_SIDE_ROOM = 48;
 export const PAGE_SIDE_ROOM_PHONE = 20;
-/** Screen px between the top of the scrolled surface and the page's own top: the formatting bar's room. */
-export const PAGE_TOP_ROOM = 56;
+/** Screen px between the top of what scrolls (under the top row) and the page's own top. */
+export const PAGE_TOP_ROOM = 24;
 /** Screen px left under the page's foot, so its last line never sits on the window's edge. */
 export const PAGE_FOOT_ROOM = 96;
 /** The least the page is ever scaled to: a window narrower than this allows is narrower than any phone. */

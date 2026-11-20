@@ -107,6 +107,25 @@
   right: 280px;
 }
 
+/* The top row of the content area (components/chrome/KnowledgeTopRow.tsx, page-surface.md "The footer"): 48 px, and
+   56 px on a phone for its 44 px targets. The page scrolls under nothing: its scroll container starts below the row. */
+:root {
+  --knowledge-top-row: 3rem;
+}
+@media (max-width: 639px), (pointer: coarse) and (max-height: 499px) {
+  :root {
+    --knowledge-top-row: 3.5rem;
+  }
+}
+[data-canvas-root]:has(> [data-knowledge-top-row]) > [data-page-scroller] {
+  top: var(--knowledge-top-row);
+}
+/* A phone's writing bar takes the top row while the caret is in the writing (page-toolbar-placement.ts): the row's
+   own controls step aside for it, and come back with the caret gone. */
+[data-article-toolbar-top] [data-knowledge-top-row='page'] > * {
+  visibility: hidden;
+}
+
 @layer base {
   [data-page-clip] {
     pointer-events: none;

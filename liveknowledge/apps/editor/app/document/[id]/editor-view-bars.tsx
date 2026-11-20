@@ -4,14 +4,13 @@
 // SplitViewFrame by EditorView, which lays them across both panes side by side
 // (docs/specs/007-editor/split-view.md); each renders nothing where its bar is hidden.
 
-import { CUT_FROM_FORK } from '@/lib/not-in-liveknowledge';
 import type { VisibilityActions } from '@liveworkspace/workbench/components/chrome/useVisibilityActions';
 import { memo } from 'react';
 import type { Tab } from '@liveknowledge/document';
 import { withStableEventProps } from '@liveworkspace/workbench/components/primitives/withStableEventProps';
 import { track } from '@/lib/telemetry';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
-import { EditorCornerActions } from '@liveworkspace/workbench/components/chrome/EditorCornerActions';
+import { TopRowActions } from '@/components/chrome/TopRowActions';
 import { ApprovalBadge } from '@liveworkspace/explorer/approvals';
 import { WorkbenchOpenLink } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
@@ -19,7 +18,6 @@ import { BottomBar } from '@/components/chrome/BottomBar';
 import { LandscapeBarFold } from '@/components/chrome/LandscapeBars';
 import { offersHistory, openHistoryFromFooter } from '@/components/versions/history-tools-item';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
-import { KnowledgeCornerSwitch } from '@/components/ask/KnowledgeViewHost';
 import { useEditorChrome, useEditorChromeStore } from './EditorContext';
 import { sameTabExcept } from './editor-chrome-equal';
 
@@ -27,9 +25,9 @@ import { sameTabExcept } from './editor-chrome-equal';
 const workbenchDocumentHref = (documentId: string, shareCode: string | null) =>
   appHrefOfPlace({ kind: 'document', documentId, tabId: null, shareCode });
 
-// The site header. Zen / focus mode (docs/specs/007-editor/zen-mode.md) hides it entirely so the
-// canvas gets the full height; embeds (docs/specs/013-workspace/embeds.md) never show it. Side by
-// side (docs/specs/007-editor/split-view.md) lays it across both panes.
+// What the site header held: Share and the account button, drawn into the top row's slot. Zen / focus mode
+// (docs/specs/007-editor/zen-mode.md) hides them with the row; embeds (docs/specs/013-workspace/embeds.md) never
+// show them.
 //
 // Each bar reads the chrome store one slice at a time and is memoised on its props, so a typing commit (a new
 // document, the same header and tabs) renders neither (docs/specs/007-editor/blueprints/typing.md "Performance
@@ -39,7 +37,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   onTakeOffline?: (() => void) | undefined;
   visibilityActions?: VisibilityActions | undefined;
   headerCommunity: boolean;
-  isMobileViewport: boolean;
   landscapeShown: boolean;
 }) {
   const chrome = useEditorChromeStore();
@@ -52,21 +49,17 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
   const communityVisitor = useEditorChrome((s) => s.sessionCommunity !== null);
   const copying = useEditorChrome((s) => s.copying);
   const teamDocument = useEditorChrome((s) => !!s.documentTeamId);
-  const slideCount = useEditorChrome((s) => s.slideDeck.runnable.length);
-  const startingDeck = useEditorChrome((s) => s.slideDeck.startingDeck);
-  const { isMobileViewport } = view;
   if (hidden) return null;
-  // Experiment: no header bar. The name and its visibility badge are gone; Copy, Present, Share and the account float in a
-  // card at the top right.
+  // Share (or a visitor's Make a Copy) and the account button, at the right end of the top row whichever view shows
+  // (docs/specs/030-knowledgebase/page-surface.md "The footer"). The name and its visibility badge ride the Share
+  // button's colour.
   return (
     <AreaErrorBoundary area="Header" fallback="panel">
-      <EditorCornerActions
+      <TopRowActions
         approval={<ApprovalBadge corner />}
-        // Pages | Ask | AI Knowledge (docs/specs/030-knowledgebase/search-and-ask.md "The three views").
-        leadAction={<KnowledgeCornerSwitch />}
         showShare={canShareDocument && hydrated && !anyWelcomeOpen}
         shareable={documentShareable}
-        // The Share button's colour reads the document's visibility, as the header's badge did.
+        // The Share button's colour reads the knowledgebase's visibility.
         visibility={{
           team: teamDocument,
           offline: view.isOffline,
@@ -82,20 +75,6 @@ export const EditorViewHeader = memo(function EditorViewHeader(view: {
         onTakeOffline={view.onTakeOffline}
         visibilityActions={view.visibilityActions}
         copying={copying}
-        copyDescription="Duplicate this knowledgebase into your own files."
-        // docs/specs/012-collaboration/presentation-mode.md "The header's Present button".
-        present={
-          CUT_FROM_FORK && hydrated && !anyWelcomeOpen && !isMobileViewport && slideCount > 0
-            ? {
-                slideCount,
-                starting: startingDeck,
-                onPresent: () => {
-                  track('UI', 'Opened', 'HeaderPresent');
-                  void chrome.get().slideDeck.start();
-                },
-              }
-            : undefined
-        }
         onOpenAccount={() => chrome.get().openSettingsOn('account')}
         onOpenShare={() => {
           chrome.get().setShareDialogOpen(true);
@@ -115,10 +94,14 @@ export function sameTabsForBar(a: readonly Tab[], b: readonly Tab[]): boolean {
   return a.every((x, i) => sameTabExcept(x, b[i]!, TAB_CONTENT));
 }
 
-// The bottom bar, the editor's footer: Tools, Settings and the appearance. The pages are the page tree, down the
-// editor's left (components/page-tree). Hidden through the welcome flow, in zen mode and in embeds. Side by side
+// The bottom bar, the editor's footer: the three views as tabs at its left, then Tools, Settings and the
+// appearance. The pages are the page tree, down the editor's left (components/page-tree). Hidden through the welcome flow, in zen mode and in embeds. Side by side
 // (docs/specs/007-editor/split-view.md) lays it across both panes, like the header.
-function EditorViewFooterBar(view: { isOffline: boolean; landscapeShown: boolean }) {
+function EditorViewFooterBar(view: {
+  isOffline: boolean;
+  landscapeShown: boolean;
+  phone: boolean;
+}) {
   const chrome = useEditorChromeStore();
   const hidden = useEditorChrome((s) => s.anyWelcomeOpen || s.zenMode || s.embedMode);
   const tabCount = useEditorChrome((s) => s.tabs.length);
@@ -157,6 +140,7 @@ function EditorViewFooterBar(view: { isOffline: boolean; landscapeShown: boolean
     <LandscapeBarFold shown={view.landscapeShown}>
       <AreaErrorBoundary area="TabBar" fallback="panel">
         <BottomBar
+          phone={view.phone}
           workbenchLink={
             inWorkbench && documentId
               ? (labelled) => (

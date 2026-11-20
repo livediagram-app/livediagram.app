@@ -17,9 +17,9 @@ const hit = vi.hoisted(() => (id: string) => {
   chromeRenders[id] = (chromeRenders[id] ?? 0) + 1;
 });
 
-// The header is the top-right corner card (experiment: no header bar).
-vi.mock('@liveworkspace/workbench/components/chrome/EditorCornerActions', () => ({
-  EditorCornerActions: () => {
+// What the header held is Share and the account button, at the right end of the top row.
+vi.mock('@/components/chrome/TopRowActions', () => ({
+  TopRowActions: () => {
     renders.header++;
     return <h1>Corner</h1>;
   },
@@ -271,13 +271,8 @@ function Page({ value, children }: { value: EditorContextValue; children?: React
   return (
     <EditorContext.Provider value={value}>
       <EditorChromeContext.Provider value={chrome}>
-        <EditorViewHeader
-          isOffline={false}
-          headerCommunity={false}
-          isMobileViewport={false}
-          landscapeShown
-        />
-        <EditorViewFooter isOffline={false} landscapeShown />
+        <EditorViewHeader isOffline={false} headerCommunity={false} landscapeShown />
+        <EditorViewFooter isOffline={false} landscapeShown phone={false} />
         {TREE}
         {HOSTS}
         <DocumentReader />

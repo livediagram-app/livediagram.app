@@ -140,11 +140,11 @@ Ask through an anonymous share link is off: it would spend the team's key for st
 ## The three views
 
 - A knowledgebase has three views: **Pages** (the editor), **Ask** and **AI Knowledge**
-  ([AI Knowledge](ai-knowledge.md)). A segmented switch, **Pages | Ask | AI Knowledge**, sits in the top row's card
-  beside Share on a desktop; on a phone it has a row of its own above the top row.
+  ([AI Knowledge](ai-knowledge.md)). They are three tabs at the left of the footer, **Pages | Ask | AI Knowledge**
+  ([The page surface](page-surface.md) "The footer"), on a phone too.
 - The view is in the address (`?view=ask`, `?view=ai`; none is Pages), not the hash, which is the open page's. A
-  reload keeps it, each change is a history entry, so Back returns to the view before, and each segment is a link.
-- Ask and AI Knowledge cover the canvas, the page tree and the bottom bar; the top row's card stays over their top
-  right corner. The editor under them takes no key, press or focus.
+  reload keeps it, each change is a history entry, so Back returns to the view before, and each tab is a link.
+- Ask and AI Knowledge cover the canvas and the page tree, down to the footer; their header is the top row every view
+  shares, with Share and the account button at its right end. The editor under them takes no key, press or focus.
 - Not offered in an embed, in zen mode, in a workbench, behind the welcome flow, to a Community visitor or through a
   link confined to one page.

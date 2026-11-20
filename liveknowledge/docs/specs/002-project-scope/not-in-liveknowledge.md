@@ -54,6 +54,11 @@ reads `CUT_FROM_FORK` (`apps/editor/lib/not-in-liveknowledge.ts`), so the deleti
   tool (`CanvasTool`, `canvasCursorClass`, the hand's part of `useCanvasPanAndMarquee`), `usePageSnap.ts`, the phone
   framing in `usePagesMode` (`readPage`, `panFrom`, `computeReadingFrame` beyond the page's top) and
   `useTouchPagePan`'s pan half. Deleted with this change: `lib/continuous-page-view.ts`.
+- **Editor, the corner card and the fork's top bar** ([The page surface](../030-knowledgebase/page-surface.md) "The
+  footer"; Share and the account button are in the top row, the views are the footer's tabs): liveknowledge no
+  longer draws `packages/workbench`'s `EditorCornerActions` (the platform's, for the other editors; only its
+  `CORNER_BTN`, `CORNER_TONE` and `HeaderShareIcon` are read). Deleted with this change:
+  `components/ask/KnowledgeViewSwitch.tsx`, the phone's switch row and the floating Page Info and Pages buttons.
 - **Editor, the paper:** `components/canvas/CanvasPages.tsx` and `CanvasPageSheet.tsx` draw only an article kept in
   a paper size (an imported livedocuments tab); a knowledgebase page draws `PageSurfaceSheet`. With them, the sheet's
   shadow and letterbox, `PageMotionLayer.tsx`, `page-title-bar-room.ts` and the canvas pattern code behind

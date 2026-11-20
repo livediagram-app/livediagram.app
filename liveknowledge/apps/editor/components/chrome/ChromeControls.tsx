@@ -28,7 +28,11 @@ export function ChromeControls({
   labelled = false,
   github = true,
   appearance = true,
+  parts = 'all',
 }: {
+  // A phone's footer keeps the notification list in its row and puts the rest behind More
+  // (docs/specs/030-knowledgebase/page-surface.md "The footer"): 'bell' draws the list alone, 'rest' all but it.
+  parts?: 'all' | 'bell' | 'rest';
   onOpenSearch?: () => void;
   // Version History (docs/specs/006-document/version-history.md "In the editor"): the editor passes it on a
   // document stored on the server; the Explorer's bar never does.
@@ -61,6 +65,7 @@ export function ChromeControls({
         onSelect: () => onOpenSearch(),
       }
     : null;
+  if (parts === 'bell') return <ToastBell className={CHROME_BTN} />;
   return (
     <>
       {/* The Get Started button, first in the cluster and left of Tools: the one way into a tour,
@@ -111,7 +116,7 @@ export function ChromeControls({
       {/* The bell and the light / dark switch sit as a pair, 4px apart rather than the bar's 12px (the owner,
           2026-11-20). */}
       <span className="inline-flex shrink-0 items-center">
-        <ToastBell className={CHROME_BTN} />
+        {parts === 'all' ? <ToastBell className={CHROME_BTN} /> : null}
         {appearance ? <AppearanceToggle /> : null}
       </span>
     </>

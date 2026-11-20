@@ -1,7 +1,7 @@
 'use client';
 
 // The page tree on a phone (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "On a phone the tree is a sheet
-// opened from the top bar"): a Pages button, and the same tree in the shared bottom sheet, its rows 44px tall.
+// opened from the top bar"): a Pages button in the top row, and the same tree in the shared bottom sheet, its rows 44px tall.
 // Choosing a page closes the sheet.
 import { useMemo, useState } from 'react';
 import { HoverCard } from '@liveknowledge/ui';
@@ -39,7 +39,7 @@ export function PageTreeSheet({ name, ...tree }: PageTreeProps & { name: string 
           aria-expanded={open}
           data-page-tree-button=""
           onClick={() => setOpen(true)}
-          className="pointer-events-auto flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 shadow-sm motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="pointer-events-auto flex h-11 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-sm font-medium text-slate-700 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-100 focus-visible:outline-2 focus-visible:outline-brand-600 dark:text-slate-200 dark:hover:bg-slate-800"
         >
           <PagesIcon />
           <span>Pages</span>

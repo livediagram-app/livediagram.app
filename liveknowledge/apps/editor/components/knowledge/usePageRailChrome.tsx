@@ -1,14 +1,12 @@
 'use client';
 
 // The right rail in the canvas chrome (docs/specs/030-knowledgebase/verification.md "Page Health"): docked on a
-// window at least 1,280 px wide, where the right corner stacks and the bottom-right cluster stand clear of it; a
-// Page Info button below that, and on a phone. Hidden with the rest of the chrome (zen, the welcome flow, an embed).
+// window at least 1,280 px wide, under the top row, where the right corner stacks and the bottom-right cluster stand
+// clear of it; a Page Info button in the top row below that, and on a phone. Hidden with the rest of the chrome (zen, the welcome flow, an embed).
 // The knowledgebase's search dialog is hosted here as well, so it is mounted once with the canvas chrome.
 import { useContext, useSyncExternalStore, type ReactNode } from 'react';
 import { useMediaQuery } from '@liveknowledge/ui';
-import { useUiScale } from '@liveworkspace/workbench/components/providers/ui-scale';
 import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
-import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { KnowledgeSearchHost } from './KnowledgeSearchHost';
 import { PAGE_RAIL_WIDTH, PageRailButton, PageRailDocked } from './PageRail';
 
@@ -33,6 +31,8 @@ export type PageRailChrome = {
   // The screen px the docked rail covers at the canvas's right; 0 when it is not docked.
   width: number;
   el: ReactNode;
+  // The Page Info button, for the top row, where the rail is not docked.
+  rowButton: ReactNode;
 };
 
 export function usePageRailChrome({
@@ -48,7 +48,6 @@ export function usePageRailChrome({
   // keeps its full width between the two.
   treeWidth?: number;
 }): PageRailChrome {
-  const toolbarScale = useUiScale('toolbar');
   const wide = useMediaQuery(`(min-width: ${pageRailDockWidth(treeWidth)}px)`);
   // Rendered on its own (a test, a workbench preview) the chrome has no editor store, and so no rail.
   const store = useContext(EditorChromeContext);
@@ -58,28 +57,20 @@ export function usePageRailChrome({
     () => false,
   );
   const shown = store !== null && !chromeHidden && !zenMode && !embed;
-  const top = toolbarTopClearancePx(toolbarScale);
   // The search dialog's host rides here too: Cmd or Ctrl K works whether the chrome shows or not (zen), never in
   // an embed or outside the editor.
   const search = store !== null && !embed ? <KnowledgeSearchHost /> : null;
-  if (!shown) return { width: 0, el: search };
+  if (!shown) return { width: 0, el: search, rowButton: null };
   if (wide && !isMobile)
     return {
       width: PAGE_RAIL_WIDTH,
       el: (
         <>
           {search}
-          <PageRailDocked top={top} />
+          <PageRailDocked />
         </>
       ),
+      rowButton: null,
     };
-  return {
-    width: 0,
-    el: (
-      <>
-        {search}
-        <PageRailButton top={top} sheet={isMobile} />
-      </>
-    ),
-  };
+  return { width: 0, el: search, rowButton: <PageRailButton sheet={isMobile} /> };
 }

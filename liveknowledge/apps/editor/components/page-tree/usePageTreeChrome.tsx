@@ -11,6 +11,7 @@ import { EditorChromeContext } from '@/app/document/[id]/EditorContext';
 import { toolbarTopClearancePx } from '@/lib/canvas-chrome';
 import { readTreeCollapsed, writeTreeCollapsed } from '@/lib/page-tree-open';
 import { track } from '@/lib/telemetry';
+import { TOP_ROW_HEIGHT_PX } from '@/lib/page-surface/top-row-slot';
 import { PageTreeSheet } from './PageTreeSheet';
 import { PageTreeSidebar } from './PageTreeSidebar';
 import { PAGE_TREE_RAIL_WIDTH, PAGE_TREE_WIDTH } from './page-tree-view';
@@ -27,16 +28,8 @@ function PageTreeSidebarHost(props: {
   return <PageTreeSidebar {...usePageTreeModel()} {...props} />;
 }
 
-function PageTreeSheetHost({ floating, top }: { floating: boolean; top: number }) {
-  const model = usePageTreeModel();
-  // A reader's phone has no strip: the button stands under the menu box.
-  return floating ? (
-    <div className="pointer-events-none absolute left-3 z-[var(--z-panel)]" style={{ top }}>
-      <PageTreeSheet {...model} />
-    </div>
-  ) : (
-    <PageTreeSheet {...model} />
-  );
+function PageTreeSheetHost() {
+  return <PageTreeSheet {...usePageTreeModel()} />;
 }
 
 export type PageTreeChrome = {
@@ -47,8 +40,8 @@ export type PageTreeChrome = {
   // The sidebar's width on screen now, at the panels' UI scale: the rail's when collapsed.
   width: number;
   sidebarEl: ReactNode;
-  // A phone's Pages button: in the strip's row, or `floating` at the top left where there is no strip.
-  phoneButton: ((floating: boolean) => ReactNode) | null;
+  // A phone's Pages button, for the top row.
+  phoneButton: ReactNode;
 };
 
 export function usePageTreeChrome({
@@ -77,7 +70,8 @@ export function usePageTreeChrome({
   }, []);
   const shown = store !== null && !chromeHidden && !zenMode && !embed;
   const docked = shown && !isMobile;
-  const top = toolbarTopClearancePx(toolbarScale);
+  // Open, it rises to the canvas's top with the menu box as its first row; its rail stands under the top row.
+  const top = collapsed ? TOP_ROW_HEIGHT_PX : toolbarTopClearancePx(toolbarScale);
   return {
     docked,
     menuJoined: docked && !collapsed,
@@ -90,7 +84,6 @@ export function usePageTreeChrome({
         joined={!collapsed}
       />
     ) : null,
-    phoneButton:
-      shown && isMobile ? (floating) => <PageTreeSheetHost floating={floating} top={top} /> : null,
+    phoneButton: shown && isMobile ? <PageTreeSheetHost /> : null,
   };
 }

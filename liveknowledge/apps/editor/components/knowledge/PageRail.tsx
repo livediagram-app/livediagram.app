@@ -16,6 +16,7 @@ import {
 } from '@/lib/knowledge/page-headings';
 import { pageViewportOf } from '@/lib/page-surface/page-viewport-store';
 import { track } from '@/lib/telemetry';
+import { TOP_ROW_HEIGHT_VAR } from '@/components/chrome/KnowledgeTopRow';
 import { CloseIcon, PageInfoIcon } from './knowledge-icons';
 import { OnThisPage } from './OnThisPage';
 import { PageHealthCard } from './PageHealthCard';
@@ -122,24 +123,24 @@ export function PageRailBody() {
   );
 }
 
-/** Docked down the canvas's right, from `top` px (the toolbar's row) to its foot. */
-export function PageRailDocked({ top }: { top: number }) {
+/** Docked down the canvas's right, from under the top row to its foot. */
+export function PageRailDocked() {
   return (
     <aside
       aria-label="Page Info"
       {...{ [PAGE_RAIL_ATTR]: 'docked' }}
       onPointerDown={(e) => e.stopPropagation()}
       onContextMenu={(e) => e.stopPropagation()}
-      style={{ top, width: PAGE_RAIL_WIDTH }}
-      className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] cursor-default overflow-y-auto rounded-tl-xl border-l border-t border-slate-200 bg-slate-50 px-5 pb-24 pt-5 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
+      style={{ top: TOP_ROW_HEIGHT_VAR, width: PAGE_RAIL_WIDTH }}
+      className="pointer-events-auto absolute bottom-0 right-0 z-[var(--z-panel)] cursor-default overflow-y-auto border-l border-slate-200 bg-slate-50 px-5 pb-24 pt-5 text-slate-900 motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:translate-x-3 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-100"
     >
       <PageRailBody />
     </aside>
   );
 }
 
-/** Below 1,280 px: a Page Info button under the toolbar's row, opening the rail's sections. */
-export function PageRailButton({ top, sheet }: { top: number; sheet: boolean }) {
+/** Below 1,280 px: a Page Info button in the top row, opening the rail's sections under it. */
+export function PageRailButton({ sheet }: { sheet: boolean }) {
   const [open, setOpen] = useState(false);
   const button = useRef<HTMLButtonElement>(null);
   const close = useCallback(() => {
@@ -155,11 +156,7 @@ export function PageRailButton({ top, sheet }: { top: number; sheet: boolean }) 
     return () => window.removeEventListener('keydown', onKey);
   }, [open, sheet, close]);
   return (
-    <div
-      className="pointer-events-none absolute right-3 z-[var(--z-panel)] flex flex-col items-end gap-2"
-      style={{ top }}
-      onPointerDown={(e) => e.stopPropagation()}
-    >
+    <div className="relative flex shrink-0 items-center" onPointerDown={(e) => e.stopPropagation()}>
       <HoverCard title="Page Info" description="On This Page and this page's health.">
         <button
           ref={button}
@@ -172,7 +169,7 @@ export function PageRailButton({ top, sheet }: { top: number; sheet: boolean }) 
             if (!open) track('UI', 'Opened', 'PageInfo');
             setOpen((was) => !was);
           }}
-          className="pointer-events-auto flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-50 focus-visible:outline-2 focus-visible:outline-brand-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
+          className="flex h-9 w-9 shrink-0 cursor-pointer items-center justify-center rounded-lg text-slate-600 motion-safe:transition-colors motion-safe:duration-micro hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-brand-600 aria-expanded:bg-slate-100 aria-expanded:text-slate-900 phone:h-11 phone:w-11 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100 dark:aria-expanded:bg-slate-800 dark:aria-expanded:text-slate-100"
         >
           <PageInfoIcon />
         </button>
@@ -194,7 +191,7 @@ export function PageRailButton({ top, sheet }: { top: number; sheet: boolean }) 
           aria-label="Page Info"
           {...{ [PAGE_RAIL_ATTR]: 'card' }}
           style={{ width: PAGE_RAIL_WIDTH }}
-          className="pointer-events-auto max-h-[70vh] overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-lg motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900"
+          className="absolute right-0 top-full z-[var(--z-toolbar)] mt-2 max-h-[70vh] overflow-y-auto rounded-xl border border-slate-200 bg-slate-50 p-4 shadow-lg motion-safe:transition-[opacity,translate] motion-safe:duration-200 motion-safe:ease-out motion-safe:starting:-translate-y-1 motion-safe:starting:opacity-0 dark:border-slate-800 dark:bg-slate-900"
         >
           <div className="mb-2 flex justify-end">
             <button

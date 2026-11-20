@@ -1,18 +1,12 @@
 'use client';
 
-// The formatting bar (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"): one slim bar pinned to
-// the top of the writing's column, formatting only. Its controls are the page toolbar's own (PageToolbar renders
-// them into this bar's slot, lib/article/article-dock.ts), then Undo and Redo. It stands over the top of what
-// scrolls, in the room the page keeps clear above itself (PAGE_TOP_ROOM), so it never covers the Title or a caret.
-// A phone has no bar here: its writing bar is the page toolbar's own, along the top of the screen.
+// A page's formatting controls (docs/specs/030-knowledgebase/page-surface.md "The formatting bar"), the left of the
+// top row while a page is being written (components/chrome/KnowledgeTopRow.tsx): formatting only. The controls are
+// the page toolbar's own (PageToolbar renders them into this slot, lib/article/article-dock.ts), then Undo and Redo.
+// A phone has none here: its writing bar is the page toolbar's own, along the top of the screen.
 import { useCallback, type ReactNode } from 'react';
 import { HoverCard, RedoIcon, UndoIcon } from '@liveknowledge/ui';
 import { setArticleDock } from '@/lib/article/article-dock';
-
-/** Screen px the bar is tall; PAGE_TOP_ROOM (lib/page-surface/page-lock.ts) keeps 12 px more under it. */
-export const FORMATTING_BAR_HEIGHT = 44;
-/** The bar is never wider than the page it stands over. */
-export const FORMATTING_BAR_MAX_WIDTH = 820;
 
 const isMac = () => typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);
 
@@ -45,17 +39,11 @@ function HistoryButton({
 }
 
 export function PageFormattingBar({
-  left,
-  right,
   canUndo,
   canRedo,
   onUndo,
   onRedo,
 }: {
-  // Screen px of chrome down the surface's left and right (the page tree, the docked rail): the bar is centred in
-  // the room between them, as the writing's column is.
-  left: number;
-  right: number;
   canUndo: boolean;
   canRedo: boolean;
   onUndo: (() => void) | undefined;
@@ -66,40 +54,32 @@ export function PageFormattingBar({
   return (
     <div
       data-page-formatting-bar=""
-      className="pointer-events-none absolute top-0 z-[var(--z-panel)] flex justify-center"
-      style={{ left, right }}
+      data-region="palette"
+      className="flex min-w-0 flex-1 items-center gap-0.5"
     >
+      {/* The page toolbar's controls (block style to Comment), which scroll sideways where the row is narrow. */}
       <div
-        data-region="palette"
-        onPointerDown={(e) => e.stopPropagation()}
-        onContextMenu={(e) => e.stopPropagation()}
-        className="pointer-events-auto flex w-full items-center gap-0.5 border-b border-slate-200 bg-white/95 px-3 backdrop-blur-sm dark:border-slate-800 dark:bg-slate-900/95"
-        style={{ height: FORMATTING_BAR_HEIGHT, maxWidth: FORMATTING_BAR_MAX_WIDTH }}
+        ref={slot}
+        data-article-dock=""
+        className="flex min-w-0 flex-initial items-center overflow-x-auto [scrollbar-width:none]"
+      />
+      <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
+      <HistoryButton
+        label="Undo"
+        description={`Take back the last change (${mod}Z).`}
+        disabled={!canUndo}
+        onPress={onUndo}
       >
-        {/* The page toolbar's controls (block style to Comment), which scroll sideways where the bar is narrow. */}
-        <div
-          ref={slot}
-          data-article-dock=""
-          className="flex min-w-0 flex-1 items-center overflow-x-auto [scrollbar-width:none]"
-        />
-        <span aria-hidden className="mx-1 h-5 w-px shrink-0 bg-slate-200 dark:bg-slate-700" />
-        <HistoryButton
-          label="Undo"
-          description={`Take back the last change (${mod}Z).`}
-          disabled={!canUndo}
-          onPress={onUndo}
-        >
-          <UndoIcon />
-        </HistoryButton>
-        <HistoryButton
-          label="Redo"
-          description={`Do again what was taken back (${mod}${isMac() ? '⇧Z' : 'Shift+Z'}).`}
-          disabled={!canRedo}
-          onPress={onRedo}
-        >
-          <RedoIcon />
-        </HistoryButton>
-      </div>
+        <UndoIcon />
+      </HistoryButton>
+      <HistoryButton
+        label="Redo"
+        description={`Do again what was taken back (${mod}${isMac() ? '⇧Z' : 'Shift+Z'}).`}
+        disabled={!canRedo}
+        onPress={onRedo}
+      >
+        <RedoIcon />
+      </HistoryButton>
     </div>
   );
 }

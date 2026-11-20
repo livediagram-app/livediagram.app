@@ -29,7 +29,7 @@ replaces what the fork still shows around the writing.
   and only where the page keeps its full width beside it (1,364 px with the page tree open), a Page Info button
   below that; the page's scrollbar stands between the writing and the docked rail, never under it.
   **Below it,** Linked From.
-- **The formatting bar** is a slim bar pinned to the top of the writing column while writing: block style, bold,
+- **The formatting bar** is the left of the top row ("The footer") while writing: block style, bold,
   italic, underline, colour, link, lists, alignment, more formatting, insert, comment. It holds formatting only.
   Selection mode, the Library and every canvas tool leave the bar; pictures, charts, drawings and embeds are added
   from **Insert** and the slash menu, and a drawing zone shows its own drawing tools while it is being edited.
@@ -46,12 +46,17 @@ Owner, 2026-11-20: "Pages, Ask and AI Knowledge should be represented like tabs 
 - The footer is a bar across the bottom of the content area: the tabs at its left, then Get Started, Tools,
   Settings, notifications and the appearance at its right. It never floats over the writing; the reading column
   scrolls above it.
-- **Share** and the account button stand at the right end of the formatting bar's row, always; the floating corner
-  card is gone.
-- On a phone the three tabs are the footer's row, icons with short labels, 44 px targets; the footer's other items
-  go behind one **More** button where they do not fit.
-
-**Not built yet**: the views switch is still the corner card ([blueprint](blueprints/page-surface.md) "Not built").
+- **The top row.** The content area starts with one row, the same height in the three views (48 px; 56 px on a
+  phone): a hairline under it, nothing floating. On Pages its left holds the formatting controls while a page is
+  being written; on Ask and AI Knowledge it holds the view's name and its own buttons. **Share** and the account
+  button stand at its right end, always; the floating corner card is gone. The page scrolls under the row, never
+  behind it, and the right rail starts below it. Below 1,280 px the **Page Info** button is in the row, left of
+  Share, so nothing stands over the reading column at any width.
+- On a phone the three tabs are the footer's row, icons with short labels (Pages, Ask, AI), 44 px targets; the
+  notification list stays beside them and the footer's other items go behind one **More** button. The top row
+  there leads with the menu button and **Pages** (the tree's sheet); while the caret is in the writing, the phone's
+  writing bar takes the row and the row's own buttons step aside until the caret leaves.
+- With the page tree collapsed to its rail, the menu button leads the top row, which then runs the window's width.
 
 ## What a page no longer has
 

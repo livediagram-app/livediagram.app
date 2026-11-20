@@ -43,9 +43,9 @@ describe('TopCenterChrome', () => {
     expect(stack(container)).toContain('top-[4.25rem]');
   });
 
-  it('starts at the top for a Viewer, who has no strip', () => {
+  it('starts under the top row for a Viewer too, who has the row and no strip', () => {
     const { container } = render(<TopCenterChrome {...idle} readOnly />);
     expect(stack(container)).not.toContain('top-[6.75rem]');
-    expect(stack(container)).not.toContain('top-[4.25rem]');
+    expect(stack(container)).toContain('top-[4.25rem]');
   });
 });

@@ -17,6 +17,8 @@ const IdentityPrompt = dynamic(
 
 import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { PageFormattingBar } from '@/components/page-surface/PageFormattingBar';
+import { KnowledgeTopRow } from '@/components/chrome/KnowledgeTopRow';
+import { useTopRowShown } from '@/components/chrome/useTopRowShown';
 import { useDrawingZoneEditing } from '@/lib/page-surface/drawing-zone-store';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
@@ -61,11 +63,9 @@ export type { CanvasChromeProps } from './CanvasChrome.types';
 // banner) renders underneath the strip where it can't be reached
 // (toolbarTopClearancePx, lib/canvas-chrome.ts).
 
-// Screen px the menu box takes at the top left while no sidebar stands under it: the formatting bar starts clear.
-const MENU_BOX_ROOM = 72;
-
 const DOCK_CORNER_CLASS: Record<PanelCorner, string> = {
-  'top-left': 'left-4 top-4 flex-col items-start',
+  // Under the top row, as the top right is.
+  'top-left': 'left-4 top-[4.25rem] flex-col items-start',
   // Experiment (no header bar): below the Share and account card at the top right.
   'top-right': 'right-4 top-[4.25rem] flex-col items-end',
   'bottom-left': 'left-4 bottom-4 flex-col-reverse items-start',
@@ -164,11 +164,9 @@ function CanvasChromeView(props: CanvasChromeProps) {
   const formattingBarShown = !readOnly && !drawingZone;
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
-  // The Explorer menu button: top-left on desktop; on a phone, its own card at
-  // the left of the strip's row, the strip beside it (no room for a corner card
-  // above a strip that needs the whole top row). A read-only visitor has no
-  // strip, so it keeps the corner there.
-  const menuInStrip = isMobile && paletteShown;
+  // The top row of the content area (docs/specs/030-knowledgebase/page-surface.md "The footer"): there for every
+  // role, with the chrome.
+  const topRowShown = useTopRowShown(!readOnly) && !chromeHidden;
   // Rename <Kind> from the search opens the Explorer panel from its menu button, on the open item's name
   // field (liveworkspace/docs/specs/004-index/one-explorer.md "Rename from the search").
   const explorerButtonRef = useRef<HTMLButtonElement>(null);
@@ -202,10 +200,11 @@ function CanvasChromeView(props: CanvasChromeProps) {
   // bottom-right cluster are drawn at it, so the clearances around them follow.
   const toolbarScale = useUiScale('toolbar');
   const panelScale = useUiScale('panels');
-  // Heading Pages mode's Contents sidebar while it is docked beneath it (docs/specs/007-editor/pages-mode.md "Joined
-  // to the menu box"); never from the strip's row, where a phone (which has no sidebar) puts it.
-  // The page tree stands where that sidebar stood, at its own width (usePageTreeChrome); its rail joins nothing.
+  // Heading the page tree's sidebar while it is docked beneath it (docs/specs/007-editor/pages-mode.md "Joined to
+  // the menu box"). Where nothing is joined to it (a phone, which has no sidebar, and the tree's rail) the menu
+  // button leads the top row instead, so no card floats over the writing.
   const { docked: contentsDocked, menuJoined } = pageTree;
+  const menuInStrip = topRowShown && !menuJoined;
   const menuJoin = menuJoined && !menuInStrip ? { joinedWidth: pageTree.width * panelScale } : {};
   // A workspace frame puts its Back in the menu button's place (WB59), held sideways too: it is the frame's way out.
   const { workbenchBack } = props;
@@ -345,17 +344,35 @@ function CanvasChromeView(props: CanvasChromeProps) {
       {pageTree.sidebarEl}
       {/* On This Page and Page Health: docked down the right, or a Page Info button below 1,280 px. */}
       {pageRail.el}
-      {/* A reader's phone has no strip for the Pages button to ride in: it stands under the menu box. */}
-      {isMobile && !menuInStrip ? pageTree.phoneButton?.(true) : null}
-      {formattingBarShown && !chromeHidden && !isMobile ? (
-        <PageFormattingBar
-          left={contentsDocked ? pageTreeClearancePx(pageTree.width, panelScale) : MENU_BOX_ROOM}
-          right={pageRail.width}
-          canUndo={canUndo === true}
-          canRedo={canRedo === true}
-          onUndo={onUndo}
-          onRedo={onRedo}
-        />
+      {topRowShown ? (
+        <KnowledgeTopRow
+          rank="page"
+          // Beside the page tree, across the rest of the canvas: over the docked rail too, which starts under it.
+          className="absolute right-0 top-0 z-[var(--z-panel)]"
+          style={{
+            // From the sidebar's own edge, so the row's hairline meets it.
+            left: contentsDocked && menuJoined ? pageTree.width * panelScale : 0,
+          }}
+          leading={
+            menuInStrip ? (
+              <>
+                {explorerMenuButton}
+                {/* The page tree on a phone: a sheet opened from the top row. */}
+                {pageTree.phoneButton}
+              </>
+            ) : undefined
+          }
+          trailing={pageRail.rowButton}
+        >
+          {formattingBarShown && !isMobile ? (
+            <PageFormattingBar
+              canUndo={canUndo === true}
+              canRedo={canRedo === true}
+              onUndo={onUndo}
+              onRedo={onRedo}
+            />
+          ) : null}
+        </KnowledgeTopRow>
       ) : null}
       {paletteShown ? (
         <ToolbarPalette
@@ -369,15 +386,6 @@ function CanvasChromeView(props: CanvasChromeProps) {
           {...pickPaletteAddHandlers(props)}
           pendingDraw={pendingDraw}
           themeTint={paletteTint}
-          leading={
-            menuInStrip ? (
-              <>
-                {explorerMenuButton}
-                {/* The page tree on a phone: a sheet opened from the top bar. */}
-                {pageTree.phoneButton?.(false)}
-              </>
-            ) : undefined
-          }
           {...(menuJoin.joinedWidth === undefined ? {} : { besideWidth: menuJoin.joinedWidth })}
           tabPages={props.pagesMode?.pages}
         />

@@ -5,6 +5,8 @@ import { TAB_BAR_CLASS } from '@liveworkspace/workbench/components/chrome/tab-sh
 import { safeInlinePadding, safeInset } from '@liveknowledge/ui';
 import { MenuErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ChromeControls } from '@/components/chrome/ChromeControls';
+import { FooterMore } from '@/components/chrome/FooterMore';
+import { KnowledgeViewTabs } from '@/components/chrome/KnowledgeViewTabs';
 // Lazy: the canvas menu (and the icon module it drags in) only loads on the first right-click.
 const PortalMenu = dynamic(() => import('./TabPortalMenu').then((m) => m.PortalMenu), {
   ssr: false,
@@ -61,11 +63,15 @@ type BottomBarProps = {
   // A workbench frame (docs/specs/013-workspace/blueprints/workbench-embeds.md, WB34): its Open in liveknowledge link
   // at the bar's right end, and no Appearance control (the workbench sets the scheme).
   workbenchLink?: ((labelled: boolean) => ReactNode) | undefined;
+  // A phone: the three tabs are the row, and the bar's other items stand behind one More button.
+  phone?: boolean;
 };
 
-// The editor's bottom bar: Tools, Settings and the appearance at its right. The pages it once listed as tabs are
-// the page tree, down the editor's left (docs/specs/030-knowledgebase/knowledgebases-and-pages.md "The page tree");
-// the bar keeps what else stood in it, where it stood. It also draws the canvas right-click menu.
+// The editor's bottom bar (docs/specs/030-knowledgebase/page-surface.md "The footer"): the knowledgebase's three
+// views as tabs at its left (Pages | Ask | AI Knowledge, KnowledgeViewTabs), then Get Started, Tools, Settings, the
+// notification list and the appearance at its right. A bar of the editor's column, under everything that scrolls:
+// it never floats over the writing. The pages themselves are the page tree, down the editor's left. It also draws
+// the canvas right-click menu.
 export function BottomBar({
   onOpenSettings,
   onOpenSearch,
@@ -75,6 +81,7 @@ export function BottomBar({
   canvasActions,
   pageMenu,
   workbenchLink,
+  phone = false,
 }: BottomBarProps) {
   // Settings > Appearance > Button Labels: the footer's names beside its icons (a phone never shows them).
   const labelled = useButtonLabelsSetting();
@@ -95,23 +102,42 @@ export function BottomBar({
           paddingBottom: safeInset('bottom'),
           ...safeInlinePadding('0.75rem'),
         }}
-        className={TAB_BAR_CLASS}
+        className={`${TAB_BAR_CLASS} phone:gap-1`}
       >
-        {/* The room the tab strip took: the cluster stays at the bar's right end. */}
-        <div aria-hidden className="min-w-0 flex-1" />
-        {/* Shared right-hand cluster (search / History / settings / dark-mode), reused by the Explorer's bottom bar
-            (docs/specs/007-editor/editor-app.md). Labelled here on desktop; icon-only on a phone. */}
-        <ChromeControls
-          onOpenSearch={onOpenSearch}
-          onOpenHistory={onOpenHistory}
-          onOpenSettings={onOpenSettings}
-          settingsLabel="Application settings"
-          settingsDescription="Your editor preferences. They follow your account, not this knowledgebase."
-          // Icons only with Button Labels off; each keeps its hover card, titled with its name.
-          labelled={labelled}
-          github={false}
-          appearance={!workbenchLink}
-        />
+        {/* The three views, standing on the bar's foot as the other editors' tabs do. */}
+        <KnowledgeViewTabs />
+        <div aria-hidden className="min-w-0 flex-1 phone:hidden" />
+        {/* Shared right-hand cluster (Get Started, Tools, Settings, the notification list, the appearance), reused by
+            the Explorer's bottom bar (docs/specs/007-editor/editor-app.md). Labelled here on desktop. On a phone the
+            list stays in the row and the rest stand behind More. */}
+        {phone ? (
+          <>
+            <ChromeControls parts="bell" />
+            <FooterMore>
+              <ChromeControls
+                parts="rest"
+                onOpenSearch={onOpenSearch}
+                onOpenHistory={onOpenHistory}
+                onOpenSettings={onOpenSettings}
+                settingsLabel="Application settings"
+                github={false}
+                appearance={!workbenchLink}
+              />
+            </FooterMore>
+          </>
+        ) : (
+          <ChromeControls
+            onOpenSearch={onOpenSearch}
+            onOpenHistory={onOpenHistory}
+            onOpenSettings={onOpenSettings}
+            settingsLabel="Application settings"
+            settingsDescription="Your editor preferences. They follow your account, not this knowledgebase."
+            // Icons only with Button Labels off; each keeps its hover card, titled with its name.
+            labelled={labelled}
+            github={false}
+            appearance={!workbenchLink}
+          />
+        )}
         {workbenchLink?.(labelled)}
       </div>
       {canvasMenu && pageMenu && onCloseCanvasMenu && canvasActions ? (
