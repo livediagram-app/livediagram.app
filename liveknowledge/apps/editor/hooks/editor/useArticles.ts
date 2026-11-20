@@ -109,6 +109,9 @@ const PLACE_INTENT = {
   // The Callout is a Card preset (docs/specs/009-elements/card.md).
   callout: { type: 'shape', kind: 'card', variant: 'callout' },
   sticky: { type: 'sticky' },
+  // Another app's item, live (docs/specs/030-knowledgebase/links-and-embeds.md "Embeds from other apps"): the
+  // platform's own live embed (liveworkspace/docs/specs/004-index/live-embeds.md), whose picker opens as it lands.
+  embed: { type: 'video', provider: 'live' },
 } as const;
 
 // Telemetry (docs/specs/007-editor/article-pages.md "Telemetry"): what was inserted, which look.
@@ -120,6 +123,7 @@ const INSERT_EVENT = {
   line: 'ArticleChart',
   callout: 'ArticleCallout',
   sticky: 'ArticleSticky',
+  embed: 'ArticleEmbed',
   drawing: 'ArticleDrawing',
 } as const;
 const LOOK_EVENT = {
@@ -133,7 +137,7 @@ const LOOK_EVENT = {
 export type ArticleStyleChange = { look: ArticleLookId } | { patch: Partial<ArticleStyle> };
 
 export type ArticleInsert =
-  'image' | 'table' | 'chart' | 'pie' | 'line' | 'callout' | 'sticky' | 'drawing';
+  'image' | 'table' | 'chart' | 'pie' | 'line' | 'callout' | 'sticky' | 'embed' | 'drawing';
 export type ZoneAction =
   | { wrap: ArticleZoneWrap }
   | { align: ArticleZoneAlign }

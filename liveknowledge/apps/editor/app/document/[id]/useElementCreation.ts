@@ -379,7 +379,7 @@ export function useElementCreation(opts: {
   // an article page's Insert (docs/specs/007-editor/article-pages.md "The page toolbar") places
   // a table, a chart or an image at the caret, and the writing takes it into a zone.
   const placeIntentAt = (
-    intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'image' | 'sticky' }>,
+    intent: Extract<PendingDraw, { type: 'shape' | 'table' | 'image' | 'sticky' | 'video' }>,
     x: number,
     y: number,
   ) => {

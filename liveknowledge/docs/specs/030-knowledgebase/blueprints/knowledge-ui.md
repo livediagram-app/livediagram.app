@@ -279,6 +279,41 @@ none.
 
 Not known: how the dialog sits over the canvas chrome, and the result rows' look, in a browser.
 
+## Embeds from other apps (built as the platform's live embed)
+
+Derived from [Links and embeds](../links-and-embeds.md) "Embeds from other apps". **Not built as the spec draws
+it.** The article engine's zones hold canvas elements, and the platform already has the element this asks for: the
+live embed ([live-embeds.md](../../../../../liveworkspace/docs/specs/004-index/live-embeds.md); the Embed element
+with `embedProvider: 'live'`, `LiveEmbedView` and `LiveEmbedPicker` in `packages/workbench`). A second card with its
+own picture loop would have been a copy of it. What was done, exactly:
+
+- The slash menu gains **Embed** (`article-slash-items.ts`, found by its name and by each app's), an Editor's as
+  every slash entry is.
+- `ArticleInsert` gains `'embed'`, placed as `{ type: 'video', provider: 'live' }` (`PLACE_INTENT` in
+  `hooks/editor/useArticles.ts`); `placeIntentAt` (`useElementCreation.ts`) takes a `video` intent. The element
+  lands at the caret and the writing takes it into an object zone, as it takes a chart or a sticky.
+- Its face is the platform's: the item's snapshot picture (the platform's preview, `/api/previews/items/<id>`), its
+  app's mark, its name, **Open** in a new tab, and, on screen, the item's own read-only frame over the picture. A
+  reader who cannot open it sees "You don't have access to <name>." and "Ask its owner to share it with you.", with
+  the platform's request for access.
+- Choosing the item is the platform's picker (a file of any app, or a pasted share link), opened by a double press
+  on the empty embed.
+
+Where it differs from the spec, none of it built:
+
+| Spec                                                           | Built                                                                       |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Embed takes a pasted link to an item                           | Embed places an empty embed; its picker takes a chosen file or a share link |
+| the app's logo mark and wordmark                               | the mark alone (the platform's face)                                        |
+| a "Live" dot                                                   | none: the item's own frame is what is live                                  |
+| the picture re-read when the page opens and every five minutes | the picture is the snapshot kept on the element; the live frame replaces it |
+| "You Don't Have Access to This"                                | the platform's words above                                                  |
+| a tab of an item                                               | the platform's picker chooses an item                                       |
+
+No test draws the embed in the writing: `embed-insert.test.ts` holds the slash entry, and the element, its face and
+its picker are the platform's own tested code. That a `video` element is taken into a zone like the other inserts
+has not been seen in a browser.
+
 ## Not built
 
 The Ask tab, the AI Knowledge tab, Settings > AI and Home (another change's), over the client above.

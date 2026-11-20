@@ -9,7 +9,7 @@ export type SlashAction =
   | { kind: 'block'; block: 'divider' | 'pageBreak' | 'table' | 'toc' | 'footnote' }
   | {
       kind: 'insert';
-      what: 'image' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky';
+      what: 'image' | 'chart' | 'pie' | 'line' | 'drawing' | 'callout' | 'sticky' | 'embed';
     }
   // Page links (docs/specs/030-knowledgebase/links-and-embeds.md): the slash menu's Link to Page opens the page
   // picker, whose own entries are a page to link to and Create Page.
@@ -213,6 +213,15 @@ const SLASH_ITEMS: readonly SlashItem[] = [
     keywords: 'post-it note',
     hint: 'A sticky note',
     action: { kind: 'insert', what: 'sticky' },
+  },
+  {
+    id: 'embed',
+    label: 'Embed',
+    group: 'Insert',
+    keywords:
+      'livediagram liveplanner livedocuments livedesign livehuddle diagram plan board design file live',
+    hint: "Another app's file, live",
+    action: { kind: 'insert', what: 'embed' },
   },
 ];
 
