@@ -135,20 +135,22 @@ export function PageHealthCard({
                 : shortDate(trust.reviewAt, now)}
           </span>
         </Row>
-        <Row label="Review Period">
-          <span data-review-period="">{reviewPeriodLabel(reviewEvery)}</span>
+        {/* The period and its link, each whole: at the card's width "Every 180 Days, Change" does not fit one
+            line beside the label, and a truncated value would cut the link off. The link takes a line of its own
+            for an Editor, whatever the period, so the row is one height. */}
+        <Row label="Review Period" wrap={!!onChangeReviewPeriod}>
+          <span data-review-period="" className="block whitespace-nowrap">
+            {reviewPeriodLabel(reviewEvery)}
+          </span>
           {onChangeReviewPeriod ? (
-            <>
-              {', '}
-              <button
-                type="button"
-                onClick={onChangeReviewPeriod}
-                aria-label="Change the Review Period"
-                className="cursor-pointer rounded-sm font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300 dark:hover:text-brand-200"
-              >
-                Change
-              </button>
-            </>
+            <button
+              type="button"
+              onClick={onChangeReviewPeriod}
+              aria-label="Change the Review Period"
+              className="ml-auto block cursor-pointer rounded-sm font-medium text-brand-700 underline underline-offset-2 hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 dark:text-brand-300 dark:hover:text-brand-200"
+            >
+              Change
+            </button>
           ) : null}
         </Row>
         <Row label="Reads by People This Week">

@@ -3,8 +3,7 @@
 Status: **the states, Verify, the meta row, the tree's tick, Page Health and the Review Period are built, not yet
 verified in a browser** ([Build plan](../005-project-roadmap/build-plan.md) step 7;
 [blueprint](blueprints/knowledge-ui.md)). Not built: "Edited <when> by <name>" (no route says when a page's writing
-was last edited, or by whom), and the knowledgebase menu's row for Knowledgebase Settings (see "The Review Period,
-as built"). The Review Due email is built and tested over
+was last edited, or by whom). The Review Due email is built and tested over
 a fake sender, not yet sent from a deployed Worker. Verify needs an account, and a knowledgebase kept Offline has
 none.
 
@@ -55,9 +54,8 @@ own.
 
 ### The Review Period, as built
 
-- **Ways in.** The knowledgebase menu is not built, so the dialog opens from Page Health's link ("Every 90 Days,
-  Change") and from the command palette's **Knowledgebase Settings**. The menu's row is one line when the menu
-  exists (`useKnowledgebaseSettings()`).
+- **Ways in.** Page Health's **Change** link, the command palette's **Knowledgebase Settings**, and the
+  knowledgebase menu's **Knowledgebase Settings** row (the menu takes it from `useKnowledgebaseSettings()`).
 - **The dialog** is titled **Knowledgebase Settings**, centred, of one height, with one section, **Reviews**. The
   five choices are bordered single-choice rows, the chosen one ticked. A shorter period is counted first; when it
   would make more pages due than are due now, a strip under the rows says "12 pages will be due for review with
@@ -68,7 +66,9 @@ own.
   not the knowledgebase's settings, and does not reach it.
 - **A refusal** puts the period back and says why in a toast, in words.
 - **Page Health** has two rows for it: **Review Due** (the date; "Once Verified" for a page never verified; "No
-  Review Period" under Never) and **Review Period** ("Every 90 Days", with ", Change" for an Editor).
+  Review Period" under Never) and **Review Period** ("Every 90 Days", with **Change** on a line under it for an
+  Editor: at the card's width "Every 180 Days, Change" does not fit one line beside its label, and a clipped value
+  would cut the link off).
 - **The api:** `PUT knowledge-settings` (Editor, in person or a token granted `write`), `GET knowledge-settings`,
   and `GET knowledge-settings/preview?reviewEvery=` for the count. `PUT pages/<tab>/knowledge` refuses a
   `reviewEvery` and says where the setting lives.

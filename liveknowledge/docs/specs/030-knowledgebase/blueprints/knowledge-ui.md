@@ -87,8 +87,10 @@ Derived from [Verification](../verification.md). Modules: `apps/editor/lib/knowl
   asks share one request. A failed read leaves the fields showing from the tab and the reads as a dash.
 - **Page Health has no control for the review.** Its rows are Owner, Last Verified, **Review Due** (the date under
   the knowledgebase's period, "Once Verified" for a page never verified, "No Review Period" under Never), **Review
-  Period** ("Every 90 Days", and for an Editor ", Change": a link button named "Change the Review Period" that
-  opens Knowledgebase Settings), and the two reads. Six rows whatever the period, each of a fixed least height, so
+  Period** ("Every 90 Days", and for an Editor **Change** on a line of its own under it: a link button named
+  "Change the Review Period" that opens Knowledgebase Settings; the row wraps like Last Verified, because the
+  period and the link do not fit one line beside the label at the card's width and a truncated value would clip
+  the link, which the e2e spec caught), and the two reads. Six rows whatever the period, each of a fixed least height, so
   nothing in the card moves when the period changes.
 - **Last Verified** shows the date and who verified, each whole: the value is two blocks (`data-verified-date`,
   `data-verified-by`) in a row that wraps (`Row`'s `wrap`), so at the card's width the name takes a line of its own
@@ -170,8 +172,8 @@ Derived from [Verification](../verification.md) "The Review Period". Modules: `a
   the period it replaced. Home's kept summary of the knowledgebase is marked stale (`markSummaryStale`), so its
   next visit reads the counts and Yours to Review again, past both kept copies.
 - **Ways in.** Page Health's link, the command palette's **Knowledgebase Settings** (listed from the offer the host
-  publishes), and `useKnowledgebaseSettings()`: `{ label, onSelect } | null`, ready for the knowledgebase menu's
-  row, which is not built here (the menu was not in the tree when this was).
+  publishes), and `useKnowledgebaseSettings()`: `{ label, onSelect } | null`, which the knowledgebase menu
+  (`components/knowledge-menu/useKnowledgebaseMenu.ts`) takes its **Knowledgebase Settings** row from.
 - **Who.** `settingsOfferedOf`: `can.editPages` on the whole knowledgebase, not an embed, a workbench or a
   Community visit. A Participant and a Viewer are offered nothing and the host draws nothing for them; the api
   refuses them too. A knowledgebase kept Offline is its one person's to set.

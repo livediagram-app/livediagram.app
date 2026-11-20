@@ -122,8 +122,16 @@ describe('Page Health', () => {
     // The Review Period is the knowledgebase's: the card says it and links to the setting.
     expect(screen.queryByLabelText('Review Interval')).toBeNull();
     expect(screen.getAllByRole('combobox')).toHaveLength(1);
+    // The period and the link are each whole, the link on a line of its own: nothing is cut off at the card's
+    // width, whatever the period.
     const period = screen.getByText('Every 90 Days').closest('dd')!;
-    expect(period.textContent).toBe('Every 90 Days, Change');
+    expect(period.textContent).toBe('Every 90 DaysChange');
+    expect(period.className).not.toMatch(/\btruncate\b/);
+    expect(period.className).toContain('break-words');
+    expect(screen.getByText('Every 90 Days').className).toContain('block');
+    expect(screen.getByRole('button', { name: 'Change the Review Period' }).className).toContain(
+      'block',
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Change the Review Period' }));
     expect(p.onChangeReviewPeriod).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: 'Verify Again' }));
