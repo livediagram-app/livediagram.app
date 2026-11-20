@@ -43,7 +43,7 @@ export function BoardFragment({
   title = 'Sprint 12',
   types = [
     { name: 'User Story', icon: 'story', hue: 'violet' },
-    { name: 'Task', icon: 'task', hue: 'teal' },
+    { name: 'Task', icon: 'task', hue: 'gray' },
   ],
   columns,
   header = true,

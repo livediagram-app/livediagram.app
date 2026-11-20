@@ -20,8 +20,8 @@ export function Arrow2({ from, to }: { from: [number, number]; to: [number, numb
   );
 }
 
-// The card types the scenes show: the five built-in ones (Project, Task, Note, Idea, Action) and the Project
-// Planner preset's User Story, Initiative and Bug, each with its hue, icon, name and id prefix.
+// The card types the scenes show: the five built-in ones (Project black, Task gray, Note blue, Idea yellow, Action
+// red) and the Project Planner preset's User Story, Initiative and Bug, each with its hue, icon, name and id prefix.
 export type CardType =
   'project' | 'task' | 'note' | 'idea' | 'action' | 'story' | 'initiative' | 'bug';
 
@@ -30,7 +30,7 @@ export const TYPE: Record<
   { hue: TypeHue; icon: GlyphName; name: string; prefix: string }
 > = {
   project: { hue: 'slate', icon: 'board', name: 'Project', prefix: 'P' },
-  task: { hue: 'teal', icon: 'task', name: 'Task', prefix: 'T' },
+  task: { hue: 'gray', icon: 'task', name: 'Task', prefix: 'T' },
   note: { hue: 'indigo', icon: 'form', name: 'Note', prefix: 'N' },
   idea: { hue: 'amber', icon: 'initiative', name: 'Idea', prefix: 'I' },
   action: { hue: 'rose', icon: 'action', name: 'Action', prefix: 'A' },
@@ -45,17 +45,7 @@ export const STRIPE: Record<CardType, string> = Object.fromEntries(
 ) as Record<CardType, string>;
 
 /** A card's id badge: the type's prefix and number, white on the type's solid hue. */
-export function IdBadge({
-  x,
-  y,
-  type,
-  num,
-}: {
-  x: number;
-  y: number;
-  type: CardType;
-  num: number;
-}) {
+function IdBadge({ x, y, type, num }: { x: number; y: number; type: CardType; num: number }) {
   const id = `${TYPE[type].prefix}-${num}`;
   const w = textW(id, 8.5) + 7;
   return (
@@ -69,7 +59,7 @@ export function IdBadge({
 }
 
 /** A card type's chip: its icon and name on the type's tint. Returns its width through `typeChipW`. */
-export function TypeChip({ x, y, type }: { x: number; y: number; type: CardType }) {
+function TypeChip({ x, y, type }: { x: number; y: number; type: CardType }) {
   const t = TYPE[type];
   const hue = HUE[t.hue];
   return (
@@ -83,7 +73,7 @@ export function TypeChip({ x, y, type }: { x: number; y: number; type: CardType 
   );
 }
 
-export function typeChipW(type: CardType): number {
+function typeChipW(type: CardType): number {
   return textW(TYPE[type].name, 8.5) + 15;
 }
 
@@ -285,26 +275,6 @@ export function Priority({
         }
       >
         {level}
-      </Label>
-    </g>
-  );
-}
-
-/** A small widget pill in a board's header. */
-export function Widget({ x, y, w, label }: { x: number; y: number; w: number; label: string }) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={15}
-        rx={4}
-        className="fill-white stroke-slate-200"
-        strokeWidth={HAIR}
-      />
-      <Label x={x + w / 2} y={y + 8} size={9} anchor="middle" tone="body">
-        {label}
       </Label>
     </g>
   );

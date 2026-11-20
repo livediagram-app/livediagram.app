@@ -100,7 +100,7 @@ function Callout({ x, y, label, top }: { x: number; y: number; label: string; to
 /** The top of a plan: on a Board tab the board's header row carries the logo, the menu, the board's name, its card
  *  types and widgets, then Share and the account; a Sheet, Dashboard or Form keeps them as floating cards. */
 export function TitleBarParts() {
-  const types: HeaderType[] = [{ name: 'Task', icon: 'task', hue: 'teal' }];
+  const types: HeaderType[] = [{ name: 'Task', icon: 'task', hue: 'gray' }];
   const wx = headerWidgetsX(6, 'Sprint 12', types);
   const typesX = 6 + 106 + textW('Sprint 12', 10) + 12;
   return (

@@ -105,7 +105,7 @@ export function SideBySideOpen() {
         y={6}
         w={256}
         h={176}
-        types={[{ name: 'Task', icon: 'task', hue: 'teal' }]}
+        types={[{ name: 'Task', icon: 'task', hue: 'gray' }]}
         columns={[
           { name: 'To Do', cards: [{ type: 'story', num: 6, title: 'Sync icon' }] },
           { name: 'Doing', cards: [{ type: 'task', num: 14, title: 'Currency' }] },

@@ -137,7 +137,7 @@ export function VoteStepper({
 
 /** A dot vote on a retro board: every card carries its vote stepper, and the corner cluster's Session strip lights
  *  the Vote button with your dots left. With `clock`, the Timer beside it shows the countdown too. */
-export function BoardVote({ clock }: { clock?: string }) {
+function BoardVote({ clock }: { clock?: string }) {
   const frag = { x: 6, y: 6, w: 408, columns: 2 };
   const counts: [number, number, number | string, boolean][] = [
     [0, 0, 4, true],

@@ -86,9 +86,9 @@ export function Wordmark({ x, y, size = 10 }: { x: number; y: number; size?: num
   );
 }
 
-export const TOP_H = 25;
+const TOP_H = 25;
 /** The logo card's width. */
-export const LOGO_W = 88;
+const LOGO_W = 88;
 
 /** The floating cards a Sheet, Dashboard or Form tab keeps: the logo card, then the menu card with the tab's name
  *  (when `tab` is given) at (x, y); returns nothing on the right. Use AccountCard for the top-right card. */
@@ -184,7 +184,8 @@ export const HEADER_H = 26;
 
 /** A card type button in the board header: its icon in a tinted square, then its name. */
 export type HeaderType = { name: string; icon: GlyphName; hue: TypeHue };
-export type TypeHue = 'slate' | 'teal' | 'rose' | 'violet' | 'indigo' | 'amber' | 'emerald';
+export type TypeHue =
+  'slate' | 'gray' | 'teal' | 'rose' | 'violet' | 'indigo' | 'amber' | 'emerald';
 
 /** The tint, ink and solid fill of a card type's hue, dark-safe (help-art.css retargets only the pale steps). */
 export const HUE: Record<TypeHue, { tint: string; ink: string; stroke: string; solid: string }> = {
@@ -193,6 +194,12 @@ export const HUE: Record<TypeHue, { tint: string; ink: string; stroke: string; s
     ink: 'fill-slate-700',
     stroke: 'stroke-slate-600',
     solid: 'fill-slate-600 dark:fill-(--help-art-slate-600)',
+  },
+  gray: {
+    tint: 'fill-slate-400/20',
+    ink: 'fill-slate-600',
+    stroke: 'stroke-slate-500',
+    solid: 'fill-slate-400 dark:fill-(--help-art-slate-500)',
   },
   teal: {
     tint: 'fill-teal-500/15',
@@ -233,7 +240,7 @@ export const HUE: Record<TypeHue, { tint: string; ink: string; stroke: string; s
 };
 
 /** A small hairline box in the header (a widget, the filter box, the + and pencil buttons). */
-export function HeaderBox({
+function HeaderBox({
   x,
   y,
   w,
@@ -264,7 +271,7 @@ export function HeaderBox({
 }
 
 /** The completion widget: a ring, the percent and "done · n/m". completionW(...) wide. */
-export function completionW(pct: number, of: string): number {
+function completionW(pct: number, of: string): number {
   return 17 + textW(`${pct}%`, 12) + 3 + textW(`done · ${of}`) + 6;
 }
 
@@ -307,23 +314,6 @@ export function CompletionWidget({
       <Label x={x + 17 + textW(`${pct}%`, 12) + 3} y={y + 8} size={9} tone="body">
         {`done · ${of}`}
       </Label>
-    </HeaderBox>
-  );
-}
-
-/** The filter box: a search glyph, "Filter cards" and, when it is wide enough, "+ Add Filter". */
-export function FilterBox({ x, y, w = 96 }: { x: number; y: number; w?: number }) {
-  return (
-    <HeaderBox x={x} y={y} w={w}>
-      <Glyph name="search" x={x + 7} y={y + 7.5} s={0.7} />
-      <Label x={x + 13} y={y + 8} size={9} tone="muted">
-        Filter cards
-      </Label>
-      {w >= 120 && (
-        <Label x={x + w - 4} y={y + 8} size={9} tone="body" anchor="end">
-          + Add Filter
-        </Label>
-      )}
     </HeaderBox>
   );
 }

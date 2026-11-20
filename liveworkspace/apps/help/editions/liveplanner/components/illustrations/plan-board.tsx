@@ -27,7 +27,7 @@ export function PlanBoardScene() {
   const xs = [bx + 6, bx + 6 + colW + 6, bx + 6 + 2 * (colW + 6)];
   const cw = colW - 12;
   const types: HeaderType[] = [
-    { name: 'Task', icon: 'task', hue: 'teal' },
+    { name: 'Task', icon: 'task', hue: 'gray' },
     { name: 'Action', icon: 'action', hue: 'rose' },
   ];
   const wx = headerWidgetsX(bx, 'Kanban', types);
