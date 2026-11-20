@@ -1,203 +1,194 @@
-// Palette-category illustrations (liveworkspace/docs/specs/017-help/help-centre.md): the mode picker (Select, Hand,
-// Eraser, Format Painter, Laser, Spotlight) and the palette
-// settings (Auto-Attach Arrows, Alignment Guides, Panel Opacity). Composed only from the shared primitives so the house style
-// holds.
+// The canvas tools in use on livedesign's pages (liveworkspace/docs/specs/017-help/help-centre.md): the palette
+// strip at the top with its select-mode pill showing the current tool (Select, Hand, Eraser, Format, Laser), then
+// what that tool does to a page; plus Panel Opacity and Auto-Attach Arrows. The strip is the chrome kit's.
 
-import { Scene, Shape, Arrow, SelectionBox, Panel } from '@liveworkspace/help-site/art/primitives';
+import { Arrow, Scene, SelectionBox, Shape } from '@liveworkspace/help-site/art/primitives';
 import { PickerTrigger } from './selection-modes';
+import { DesignPage, PagesRail } from './editor-chrome';
+import { ModeScreen, phoneThumb } from './design-content';
+import { GrabHand } from './canvas';
 
-// --- Mode scenes ------------------------------------------------------------
-
-/** Select mode: the picker set to Select and a shape selected with handles. */
+/** Select: the pill on Select, and the screen's button selected with its handles. */
 export function SelectMode() {
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={240}>
       <PickerTrigger tool="select" />
-      <Shape x={140} y={132} w={120} h={56} kind="rect" label="Step one" labelTone="strong" />
-      <SelectionBox x={140} y={132} w={120} h={56} />
+      <ModeScreen x={162} y={64} />
+      <SelectionBox x={167} y={206} w={86} h={15} />
     </Scene>
   );
 }
 
-/** Hand mode: the picker set to Hand and a grabbing-hand cursor panning the
- *  canvas (a faint drag trail behind it). */
+/** Hand: the pill on Hand, and the grabbing hand dragging the canvas along. */
 export function HandMode() {
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={240}>
       <PickerTrigger tool="hand" />
-      <Shape x={84} y={108} w={72} h={42} label="A" />
-      <Shape x={252} y={150} w={72} h={42} accent label="B" />
-      <Arrow from={[156, 129]} to={[252, 171]} kind="elbow" tone="muted" />
-      {/* Drag trail */}
+      <ModeScreen x={110} y={64} variant="home" cta="Shop Now" />
       <path
-        d="M120 188 q40 -16 88 -8"
+        d="M232 170 q40 -14 76 -4"
         className="stroke-slate-300"
-        strokeWidth={2}
+        strokeWidth={1}
         fill="none"
-        strokeDasharray="5 5"
+        strokeDasharray="3 3"
         strokeLinecap="round"
       />
-      {/* Grabbing-hand cursor */}
-      <g transform="translate(196 150)">
-        <path
-          d="M0 6 v-8 a3 3 0 0 1 6 0 v6 m0 -2 a3 3 0 0 1 6 0 v3 m0 -1 a3 3 0 0 1 6 0 v5 a10 10 0 0 1 -10 10 h-2 a10 10 0 0 1 -9 -7 l-3 -7 a3 3 0 0 1 5 -3 l1 2"
-          className="fill-white stroke-slate-500"
-          strokeWidth={2}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </g>
+      <GrabHand x={316} y={150} />
     </Scene>
   );
 }
 
-/** Eraser mode: the picker set to Eraser and a drag across shapes, the ones
- *  already swept fading away. */
+/** Eraser: the pill on Eraser, and a sweep across a page's pencil marks, the crossed strokes going. */
 export function EraserMode() {
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={240}>
       <PickerTrigger tool="eraser" />
-      {/* Erased (fading) */}
-      <Shape x={70} y={118} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      <Shape x={150} y={150} w={62} h={38} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
-      {/* Still present */}
-      <Shape x={244} y={132} w={62} h={38} kind="circle" label="C" />
-      <Shape x={320} y={172} w={62} h={38} accent label="D" />
-      {/* Eraser drag path */}
+      <DesignPage x={110} y={64} w={200} h={150} size="A4 · Landscape" bare>
+        <path
+          d="M130 110 q30 -30 60 0 t60 0"
+          className="stroke-slate-700"
+          strokeWidth={2}
+          fill="none"
+          strokeLinecap="round"
+        />
+        <path
+          d="M140 160 q20 -18 40 0"
+          className="stroke-slate-300"
+          strokeWidth={2}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray="3 3"
+        />
+        <path
+          d="M200 170 l30 -20"
+          className="stroke-slate-300"
+          strokeWidth={2}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray="3 3"
+        />
+      </DesignPage>
       <path
-        d="M96 132 L184 168 L276 150"
+        d="M130 172 L250 156"
         className="stroke-rose-400"
-        strokeWidth={2.5}
+        strokeWidth={1.5}
         fill="none"
-        strokeDasharray="6 5"
+        strokeDasharray="4 3"
         strokeLinecap="round"
       />
-      {/* Eraser cursor */}
-      <g transform="translate(276 150)">
-        <rect
-          x={-9}
-          y={-5}
-          width={18}
-          height={11}
-          rx={2}
-          transform="rotate(-30)"
-          className="fill-white stroke-slate-500"
-          strokeWidth={1.8}
-        />
-        <rect
-          x={-9}
-          y={1}
-          width={18}
-          height={5}
-          rx={1}
-          transform="rotate(-30)"
-          className="fill-rose-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
+      <circle
+        cx={256}
+        cy={156}
+        r={11}
+        className="fill-rose-400/20 stroke-rose-500"
+        strokeWidth={1}
+      />
     </Scene>
   );
 }
 
-/** Format Painter mode: the picker set to Format, copying one shape's style
- *  onto another via a brush cursor. */
+/** The format painter's brush. */
+export function Brush({ x, y }: { x: number; y: number }) {
+  return (
+    <g transform={`translate(${x} ${y})`}>
+      <rect x={-6} y={-8} width={12} height={6} rx={1} className="fill-brand-500" />
+      <path
+        d="M0 -2 v4 M-1.5 2 h3 v6 h-3 Z"
+        className="fill-slate-500 stroke-slate-600"
+        strokeWidth={1}
+      />
+    </g>
+  );
+}
+
+/** Format: the pill on Format, copying the solid button's look onto the next screen's. */
 export function FormatPainterMode() {
   return (
-    <Scene w={420} h={220}>
+    <Scene w={420} h={240}>
       <PickerTrigger tool="format" />
-      <Shape x={48} y={120} w={88} h={52} accent label="Source" />
-      <Arrow from={[140, 146]} to={[252, 146]} kind="curved" tone="muted" dashed />
-      <Shape x={262} y={120} w={88} h={52} accent label="Painted" />
-      {/* Brush cursor */}
-      <g transform="translate(196 166)">
-        <rect x={-9} y={-9} width={18} height={11} rx={2} className="fill-brand-500" />
-        <path d="M0 2 v8" className="stroke-slate-500" strokeWidth={2} />
-        <path
-          d="M-4 10 h8 v6 h-8 Z"
-          className="fill-brand-300 stroke-slate-500"
-          strokeWidth={1.5}
-        />
-      </g>
+      <ModeScreen x={90} y={64} variant="home" cta="Shop Now" />
+      <ModeScreen x={236} y={64} variant="product" cta="Add to Cart" />
+      <Arrow from={[180, 214]} to={[240, 214]} kind="curved" tone="muted" dashed width={1} />
+      <Brush x={300} y={228} />
     </Scene>
   );
 }
 
-/** Laser mode: the picker set to Laser and a fading laser trail across the
- *  canvas, brightening towards the cursor. */
+/** Laser: the pill on Laser, and a glowing trail fading behind the pointer as it sweeps to the button. */
 export function LaserMode() {
   return (
-    <Scene w={420} h={230}>
+    <Scene w={420} h={240}>
       <PickerTrigger tool="laser" />
-      <Shape x={84} y={120} w={76} h={44} label="A" />
-      <Shape x={264} y={150} w={76} h={44} accent label="B" />
-      {/* Fading laser trail, from under A to just short of B: faint tail to bright head,
-          clear of both labels. */}
+      <ModeScreen x={162} y={64} />
       <path
-        d="M100 186 q50 24 104 4"
+        d="M120 140 q30 70 90 72"
         className="stroke-rose-200"
-        strokeWidth={5}
+        strokeWidth={4}
         fill="none"
         strokeLinecap="round"
       />
       <path
-        d="M196 192 q26 -8 52 -20"
+        d="M208 212 q40 2 60 -14"
         className="stroke-rose-400"
-        strokeWidth={3.5}
+        strokeWidth={3}
         fill="none"
         strokeLinecap="round"
       />
-      {/* Bright head dot, pointing at B */}
-      <circle cx={250} cy={171} r={5} className="fill-rose-500" />
-      <circle cx={250} cy={171} r={9} className="fill-rose-400/30" />
+      <circle cx={268} cy={198} r={7} className="fill-rose-400/30" />
+      <circle cx={268} cy={198} r={3.5} className="fill-rose-500" />
     </Scene>
   );
 }
 
-/** Panel opacity: a corner panel rendered translucent so the canvas content
- *  behind it stays visible. Pairs with the settings popover illustration to
- *  show what the slider does. */
+/** Panel opacity: the Pages rail turned translucent, so the page under it shows through. */
 export function PanelOpacity() {
   return (
     <Scene w={400} h={240}>
-      {/* Canvas content the panel floats over. */}
-      <Shape x={54} y={104} w={86} h={52} accent label="A" />
-      <Shape x={54} y={170} w={86} h={52} kind="circle" label="B" />
-      {/* C sits wholly under the panel, in the space below its tiles. */}
-      <Shape x={226} y={140} w={96} h={46} label="C" />
-      {/* The panel at ~60% opacity: the shape behind it stays
-          visible through it. */}
+      <DesignPage x={90} y={40} w={150} h={180} size="A4 · Portrait" bare>
+        <rect x={104} y={56} width={122} height={60} rx={3} className="fill-brand-100" />
+        {[0, 1, 2, 3].map((i) => (
+          <rect
+            key={i}
+            x={104}
+            y={128 + i * 12}
+            width={i === 3 ? 70 : 122}
+            height={5}
+            rx={2.5}
+            className="fill-slate-200"
+          />
+        ))}
+      </DesignPage>
+      {/* The rail at 60%: the page panned under it still shows through. */}
       <g opacity={0.6}>
-        <Panel x={196} y={42} w={156} h={150} title="FORMAT">
-          <rect x={210} y={78} width={128} height={10} rx={5} className="fill-slate-200" />
-          <rect x={210} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-          <rect x={252} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-          <rect x={294} y={100} width={36} height={32} rx={6} className="fill-slate-100" />
-        </Panel>
+        <PagesRail
+          h={240}
+          pages={[
+            { name: 'Home', thumb: phoneThumb('home') },
+            { name: 'Product', thumb: phoneThumb('product') },
+          ]}
+          foot={false}
+        />
       </g>
     </Scene>
   );
 }
 
-/** Auto-attach arrows: the target is dragged from the right of the source to
- *  its left. Kept where they were, the ends would run the line through the
- *  source, so both move to the sides that now face each other. */
+/** Auto-attach arrows: the target moved from the right of the source to its left, both ends move to the sides that
+ *  now face each other. */
 export function AutoAttachArrows() {
   return (
     <Scene w={420} h={220}>
       <Shape x={166} y={86} w={88} h={48} label="Source" />
-      {/* Old position (ghost) and the arrow as it was */}
       <Shape x={320} y={86} w={88} h={48} dashed fill="fill-slate-50" stroke="stroke-slate-300" />
       <Arrow from={[254, 110]} to={[320, 110]} tone="muted" dashed />
-      {/* Moved shape; both ends now on the facing sides */}
       <Shape x={12} y={86} w={88} h={48} accent label="Target" />
       <Arrow from={[166, 110]} to={[100, 110]} tone="accent" />
-      {/* Move trail, over the top */}
       <path
         d="M364 80 Q210 -10 56 80"
         className="stroke-slate-300"
-        strokeWidth={2}
+        strokeWidth={1}
         fill="none"
-        strokeDasharray="5 5"
+        strokeDasharray="4 4"
         strokeLinecap="round"
       />
     </Scene>

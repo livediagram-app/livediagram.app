@@ -32,7 +32,7 @@ export function HistoryScene() {
         height={274}
         rx={12}
         className="fill-white stroke-slate-200"
-        strokeWidth={2}
+        strokeWidth={0.75}
       />
       <Label x={32} y={28} size={13} weight={700} tone="strong">
         Brand Refresh
@@ -47,7 +47,7 @@ export function HistoryScene() {
         height={66}
         rx={9}
         className="fill-slate-50 stroke-slate-200"
-        strokeWidth={1.5}
+        strokeWidth={0.75}
       />
       <Label x={44} y={72} size={11} weight={700} tone="strong">
         Changed 12 mins ago
@@ -72,7 +72,7 @@ export function HistoryScene() {
       <Label x={32} y={138} size={10} weight={700} tone="muted">
         Today
       </Label>
-      <line x1={46} y1={146} x2={46} y2={240} className="stroke-slate-200" strokeWidth={2} />
+      <line x1={46} y1={146} x2={46} y2={240} className="stroke-slate-200" strokeWidth={0.75} />
       {ENTRIES.map((e) => (
         <g key={e.what}>
           <circle cx={46} cy={e.y + 8} r={7} className="fill-emerald-400" />

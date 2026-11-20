@@ -10,6 +10,13 @@ static export.
   should need: `Scene`, `Shape`, `Arrow`, `SelectionBox`, `Cursor`, `Avatar`,
   `Panel`, `Dialog`, `Button`, `Tabs`, `Menu`, `Tile`, `Label`, `TextBar`. Read
   the props in the file; they are fully typed.
+- **`editor-chrome.tsx`**: livedesign's real editor chrome at about half size (a 1280 x 800 window is 640 x 400
+  units): the Pages rail, the palette strip (select mode, Shapes, Write, Concepts, Components, Icons, Media, Data,
+  then Library and Search), the account card, the corner controls, the bottom bar, and `DesignPage` for a page on
+  the canvas with its size chip. `EditorFrame` composes the whole window. Any scene that shows the editor builds
+  from these; chrome hairlines are 0.75 wide. Glyphs are in `editor-glyphs.tsx`.
+- **`design-content.tsx`**: the work a page holds (a phone screen, a web page, a logo mark, a photo). Scenes show
+  livedesign's own work, never a flowchart or a board.
 - **`<area>.tsx`**: one file per help area, exporting named **scene**
   components (PascalCase) composed from the primitives. `canvas.tsx` is the
   worked exemplar; mirror its structure and density.

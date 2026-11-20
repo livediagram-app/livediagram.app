@@ -8,8 +8,9 @@
 // the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Panel, Label } from '@liveworkspace/help-site/art/primitives';
-import { MenuCard, Strip } from './toolbar-layout';
+import { Scene, Shape, Arrow, Panel } from '@liveworkspace/help-site/art/primitives';
+import { EditorFrame } from './editor-chrome';
+import { APP_PAGES, AppScreens } from './user-interface';
 
 // The Font tiles and the Text, Colours and Canvas panels are drawn once for every product, in
 // packages/help-site (art/illustrations/look-and-feel.tsx and look-and-feel-canvas.tsx).
@@ -22,73 +23,17 @@ export { LookAndFeelCanvas } from '@liveworkspace/help-site/art/illustrations/lo
 
 // --- The canvas and its palette ----------------------------------------------------------------
 
-/** The canvas with the menu button and tab name top-left, the palette strip across the top
- *  (the canvas-tool and category dropdowns, the tiles, More and Search) and the bottom-right
- *  cluster (Undo and Redo, the Theme & Canvas paintbrush, then the zoom controls). */
+/** The canvas with the Pages rail, the palette strip across the top (the select mode, the categories, the Library
+ *  and Search) and the corner controls (Undo and Redo, the Theme palette, then the zoom card). */
 export function CanvasPaletteOverview() {
-  const ink = { className: 'stroke-slate-500', strokeWidth: 1.4, fill: 'none' } as const;
   return (
-    <Scene w={420} h={240}>
-      <MenuCard x={8} y={14} />
-      <Strip x={78} y={14} />
-      <Shape x={60} y={72} w={76} h={42} label="Start" />
-      <Shape x={176} y={66} w={60} h={54} kind="diamond" />
-      <Shape x={168} y={146} w={76} h={36} accent label="Done" />
-      <Arrow from={[136, 93]} to={[176, 93]} />
-      <Arrow from={[206, 120]} to={[206, 146]} />
-      {/* Bottom-right cluster: Undo and Redo, the paintbrush, then the zoom controls. */}
-      <g transform="translate(33 0)">
-        <rect
-          x={150}
-          y={198}
-          width={60}
-          height={30}
-          rx={7}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <line x1={180} y1={204} x2={180} y2={222} className="stroke-slate-200" strokeWidth={1.2} />
-        <path d="M170 209 h-8 l3 -3 M162 209 l3 3 M162 209 h5 a4.5 4.5 0 0 1 0 9 h-2" {...ink} />
-        <path d="M190 209 h8 l-3 -3 M198 209 l-3 3 M198 209 h-5 a4.5 4.5 0 0 0 0 9 h2" {...ink} />
-      </g>
-      <rect
-        x={251}
-        y={198}
-        width={33}
-        height={30}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <path
-        d="M260 220 c3 0 4 -2 4 -4 l7 -9 a2 2 0 0 1 3 2 l-8 8 c0 2 -2 3 -6 3 Z"
-        className="fill-brand-400 stroke-slate-500"
-        strokeWidth={1.2}
-        strokeLinejoin="round"
-      />
-      <rect
-        x={292}
-        y={198}
-        width={114}
-        height={30}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={310} y={214} anchor="middle" size={14} weight={700} tone="muted">
-        −
-      </Label>
-      <Label x={349} y={214} anchor="middle" size={11} weight={600} tone="body">
-        100%
-      </Label>
-      <Label x={388} y={214} anchor="middle" size={14} weight={700} tone="muted">
-        +
-      </Label>
+    <Scene w={640} h={400}>
+      <EditorFrame w={640} h={400} pages={APP_PAGES} level="60%" tabs={['App Screens', 'Brand']}>
+        <AppScreens x={168} y={84} />
+      </EditorFrame>
     </Scene>
   );
 }
-
-// --- Selecting many ----------------------------------------------------------------------------
 
 /** A multi-selection with its floating toolbar: More, Filter Selection, Duplicate, Save to Library,
  *  Export, Lock and Delete, over the union of the selected elements. */
@@ -174,7 +119,7 @@ export function MultiSelectionBar() {
           x2={bx + 72}
           y2={by + 28}
           className="stroke-slate-200"
-          strokeWidth={1.5}
+          strokeWidth={0.75}
         />
       </Panel>
     </Scene>
