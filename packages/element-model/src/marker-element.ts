@@ -16,6 +16,7 @@ import type { BoxedElement } from './element';
 import {
   markerArrowHead,
   markerColouring,
+  markerStrokeList,
   markerStrokes,
   trimOutline,
   type MarkerLayers,
@@ -163,7 +164,15 @@ export function markerArrow(
     endHead: boolean;
     oneLayer: boolean;
   },
-): { line: MarkerLayers; heads: string; drawnHeads: boolean; headFill: boolean } | null {
+): {
+  line: MarkerLayers;
+  /** The line's last stroke is in the second layer, so a marker at its end hangs there (an elbow's layers alternate
+   *  at each bend: the first layer can end at a corner). */
+  endsOver: boolean;
+  heads: string;
+  drawnHeads: boolean;
+  headFill: boolean;
+} | null {
   const tangents = pathEndTangents(pathD);
   if (!tangents) return null;
   const seed = sketchSeed(id);
@@ -179,9 +188,12 @@ export function markerArrow(
         o.endHead ? length * 0.9 : 0,
       )
     : outlineOfPath(pathD);
-  const [a, b] = markerStrokes(outline, seed, { pinEnds: true });
-  const line: MarkerLayers = o.oneLayer ? [[a, b].filter(Boolean).join(' '), ''] : [a, b];
-  if (!drawnHeads) return { line, heads: '', drawnHeads, headFill: false };
+  // An arrow's outline is open: no overlaps. Its strokes alternate between the layers, or run in order as one.
+  const { strokes } = markerStrokeList(outline, seed, { pinEnds: true });
+  const layer = (n: 0 | 1) => strokes.filter((_, i) => i % 2 === n).join(' ');
+  const line: MarkerLayers = o.oneLayer ? [strokes.join(' '), ''] : [layer(0), layer(1)];
+  const endsOver = !o.oneLayer && strokes.length > 1 && strokes.length % 2 === 0;
+  if (!drawnHeads) return { line, endsOver, heads: '', drawnHeads, headFill: false };
   // The tip sits a tenth of the head's length past the path's end, as the markers' does (refX 9 of 10).
   const head = (at: { x: number; y: number }, dir: { x: number; y: number }, s: number) =>
     markerArrowHead(
@@ -197,5 +209,5 @@ export function markerArrow(
   ]
     .filter(Boolean)
     .join(' ');
-  return { line, heads, drawnHeads, headFill: o.headShape === 'triangle' };
+  return { line, endsOver, heads, drawnHeads, headFill: o.headShape === 'triangle' };
 }

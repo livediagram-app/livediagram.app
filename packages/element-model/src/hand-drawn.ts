@@ -42,6 +42,8 @@ export type HandDrawnArrow = {
   /** The line, and a second layer of it (Marker's strokes that cross the first; empty under Sketch). */
   line: string;
   lineOver: string;
+  /** The line ends in `lineOver`, so a marker at its end hangs on that layer (Marker's layers alternate by stroke). */
+  endsOver: boolean;
   /** The redrawn heads, empty when the caller keeps its markers (`sketchedHeads` false). */
   heads: string;
   sketchedHeads: boolean;
@@ -78,6 +80,7 @@ export function handDrawnArrow(
     return {
       line: m.line[0],
       lineOver: m.line[1],
+      endsOver: m.endsOver,
       heads: m.heads,
       sketchedHeads: m.drawnHeads,
       headFill: m.headFill,
@@ -87,5 +90,5 @@ export function handDrawnArrow(
   if (finish !== 'sketch') return null;
   const s = sketchArrow(id, pathD, { ...ends, strokePx: o.strokePx, passes: o.flowing ? 1 : 2 });
   if (!s) return null;
-  return { ...s, lineOver: '', headFill: false, inkOpacity: 1 };
+  return { ...s, lineOver: '', endsOver: false, headFill: false, inkOpacity: 1 };
 }

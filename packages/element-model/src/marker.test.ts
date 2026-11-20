@@ -7,6 +7,7 @@ import {
   markerStrokes,
   trimOutline,
 } from './marker';
+import { markerArrow } from './marker-element';
 import {
   outlineOfBox,
   outlineOfEllipse,
@@ -175,5 +176,45 @@ describe('markerColouring', () => {
     const { streaks } = markerColouring(u, 3);
     for (const p of points(`${streaks[0]} ${streaks[1]}`))
       expect(p.y > 100 || p.x <= 80 || p.x >= 160).toBe(true);
+  });
+});
+
+// docs/specs/008-canvas/finish.md "Marker": an ER relationship's heads stay markers on the line, so they must sit at
+// the line's true ends. The layers alternate stroke by stroke, so on an elbow the first layer ends at the bend.
+describe('markerArrow ends', () => {
+  const end = (d: string) => {
+    const nums = d
+      .trim()
+      .split(/[\s,]+/)
+      .filter((t) => /^-?[\d.]+$/.test(t));
+    return { x: Number(nums.at(-2)), y: Number(nums.at(-1)) };
+  };
+  const er = {
+    strokePx: 2,
+    headSize: 'medium',
+    headShape: 'zero-or-many',
+    startHead: true,
+    endHead: true,
+  } as const;
+
+  it('says which layer holds the line’s end, and that layer ends at the arrow’s end', () => {
+    const elbow = markerArrow('a', 'M 150 220 L 150 100 L 870 100', { ...er, oneLayer: false })!;
+    expect(elbow.endsOver).toBe(true);
+    expect(end(elbow.line[1])).toEqual({ x: 870, y: 100 });
+    const twoBends = markerArrow('a', 'M 0 0 L 0 100 L 200 100 L 200 300', {
+      ...er,
+      oneLayer: false,
+    })!;
+    expect(twoBends.endsOver).toBe(false);
+    expect(end(twoBends.line[0])).toEqual({ x: 200, y: 300 });
+    const straight = markerArrow('a', 'M 0 0 L 300 0', { ...er, oneLayer: false })!;
+    expect(straight.endsOver).toBe(false);
+  });
+
+  it('draws a flowing arrow’s one layer in order, from its start to its end', () => {
+    const one = markerArrow('a', 'M 150 220 L 150 100 L 870 100', { ...er, oneLayer: true })!;
+    expect(one.endsOver).toBe(false);
+    expect(one.line[0].startsWith('M 150 220')).toBe(true);
+    expect(end(one.line[0])).toEqual({ x: 870, y: 100 });
   });
 });
