@@ -204,7 +204,8 @@ environment with `wrangler secret put` and survive every deploy; each service's 
 forwards each service's paths, so `http://localhost:3000` works as liveworkspace.app does
 ([README](../../../README.md#local-development)). The site takes 3000, the first port of liveworkspace's block (the
 root AGENTS.md); the Workers keep their own ports (8787 and up, 3010 and 3011). Each app has a block of its own:
-livediagram 3100, liveplanner 3200, livedocuments 3300, livedesign 3400 and livehuddle 3500.
+livediagram 3100, liveplanner 3200, livedocuments 3300, livedesign 3400, livehuddle 3500 and liveknowledge 3600 (its
+api on 9287 and its MCP on 9288, outside the block as every product's Workers are).
 
 ## Shared code
 

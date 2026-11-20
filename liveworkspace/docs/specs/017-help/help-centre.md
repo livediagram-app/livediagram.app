@@ -399,6 +399,22 @@ One rule for every public page, shared with the marketing sites' SEO rules; an a
   characters, and name no workshop, retro, poll, quiz, deck, diagram or drawing tool. Diagram vocabulary stays only
   where it names a real canvas thing (a diagram key, a Mermaid diagram, a swimlane, a draw.io import).
 
+### liveknowledge
+
+liveknowledge is not a help scope yet: it has no `AppId`, no edition, no articles and no build of its own. Until it
+does:
+
+- **Its editor, CLI and MCP** read an interim slice (`packages/help-registry/src/slice/liveknowledge.ts`):
+  livedocuments' articles and categories, at the same paths and in the same order, with the product's name swapped in
+  the titles, descriptions, keywords and category names. It was forked from livedocuments with the same features, so
+  the list is true of it today.
+- **`liveknowledge.app/help`** is answered from All Apps: its router names an app the Worker does not know, and the
+  Worker falls back to All Apps for it, so every path the slice links exists. Those pages name livedocuments, and All
+  Apps' switch does not list liveknowledge.
+- **Becoming a scope** is the usual list (`APP_ORDER` and `SCOPE_WORDS` with **Knowledgebase**, its catalogue, reading
+  order and slice, its edition under `liveworkspace/apps/help/editions/`, its bindings and scope module, the Worker's
+  `HELP_SCOPES`, and its name in each shared article's `apps` and notes), a seventh build.
+
 ## Retired and renamed articles
 
 A removed or renamed article keeps its old address landing on the nearest live article through `HELP_REDIRECTS`

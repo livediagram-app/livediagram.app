@@ -8,15 +8,25 @@ side imports, so a change here is a change there.
 
 | Term   | Meaning                                                                                      |
 | ------ | -------------------------------------------------------------------------------------------- |
-| item   | One Canvas, Plan, Document or Design. Its id is a UUID the index gives it when it is made.   |
-| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, or `livehuddle` (below).        |
-| kind   | `canvas`, `plan`, `document`, `design` or `space`: one per app, the word people see.         |
+| item   | One Canvas, Plan, Document, Design, Space or Knowledgebase. Its id is a UUID the index gives |
+|        | it when it is made.                                                                          |
+| app    | `livediagram`, `liveplanner`, `livedocuments`, `livedesign`, `livehuddle` or `liveknowledge` |
+|        | (below).                                                                                     |
+| kind   | `canvas`, `plan`, `document`, `design`, `space` or `knowledgebase`: one per app, the word    |
+|        | people see.                                                                                  |
 | person | Who is asking: an account (`user_…`) or a guest (`guest_…`). The same id in every app.       |
 | index  | The service at `liveworkspace.app/api/index` and its database. The only record of everything |
 |        | about an item except its content.                                                            |
 | grant  | A short-lived token, signed by the index, saying a person (or a link visitor) may open an    |
 |        | item at a level.                                                                             |
 | level  | `view` < `participate` < `edit`, as every app uses.                                          |
+
+liveknowledge (its kind `knowledgebase`, a person's "Knowledgebase") is an app since its registration
+([liveknowledge's platform registration](../../../../liveknowledge/docs/specs/016-platform/platform-registration.md)): every link level
+(Editor, Participant, Viewer), Editor the default. The `items` table takes `liveknowledge` and `knowledgebase` since
+its second rebuild (`0026_items_liveknowledge.sql`, rehearsed like the first:
+[blueprints/items.md](blueprints/items.md#rebuilding-items)), and nothing pushes one until `INDEX_KEY_LIVEKNOWLEDGE` is
+set.
 
 livehuddle (its kind `space`, a person's "Space") was registered before its launch
 ([Registered before launch](../002-architecture/integrating-an-app.md#registered-before-launch)) and is listed since

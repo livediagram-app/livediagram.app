@@ -22,7 +22,7 @@ which is gone ([Coming from livediagram's mirror](#coming-from-livediagrams-mirr
   account access token; a guest token is refused (`401 sign_in_required`), and so is an API token, since a token
   that could mint Google access would outlive the person's attention to it.
 - **Their own work, in every app.** Everything the person owns outside a team, in livediagram, liveplanner,
-  livedocuments, livedesign and livehuddle: the index's personal items and the person's whole folder tree, which
+  livedocuments, livedesign, livehuddle and liveknowledge: the index's personal items and the person's whole folder tree, which
   already holds items from any app. Team items, items shared with them (at any level: Editor, Participant or Viewer),
   and anything only in a browser (Offline, Offline Mode) are not mirrored.
 - **A held app is mirrored too.** An app registered before its launch
@@ -73,6 +73,7 @@ The origins are `https://www.liveworkspace.app`, `https://liveworkspace.app` (fo
 | livedocuments | `.livedocuments` | `application/vnd.livedocuments+json` | `livedocuments.document` (`document-envelope.ts`) |
 | livedesign    | `.livedesign`    | `application/vnd.livedesign+json`    | `livedesign.design` (`design-envelope.ts`)        |
 | livehuddle    | `.livehuddle`    | `application/vnd.livehuddle+json`    | `livehuddle.document` (`document-envelope.ts`)    |
+| liveknowledge | `.liveknowledge` | `application/vnd.liveknowledge+json` | `liveknowledge.document` (`document-envelope.ts`) |
 
 - **Name:** the item's name plus its extension. A name Drive would alter is stored as Drive holds it, and the next
   inbound rename is compared against that stored form.
