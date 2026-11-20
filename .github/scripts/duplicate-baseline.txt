@@ -173,7 +173,6 @@ livedocuments/apps/editor/components/tour/pyramid-tour-steps.ts	liveknowledge/ap
 livedocuments/apps/editor/components/tour/slide-tour-steps.ts	liveknowledge/apps/editor/components/tour/slide-tour-steps.ts
 livedocuments/apps/editor/components/tour/timeline-tour-steps.ts	liveknowledge/apps/editor/components/tour/timeline-tour-steps.ts
 livedocuments/apps/editor/components/versions/VersionHistoryHost.tsx	liveknowledge/apps/editor/components/versions/VersionHistoryHost.tsx
-livedocuments/apps/editor/e2e/quick-style-bar.ts	liveknowledge/apps/editor/e2e/quick-style-bar.ts
 livedocuments/apps/editor/e2e/signed-in/session.ts	liveknowledge/apps/editor/e2e/signed-in/session.ts
 livedocuments/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts	liveknowledge/apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts
 livedocuments/apps/editor/hooks/canvas/useCanvasTool.ts	liveknowledge/apps/editor/hooks/canvas/useCanvasTool.ts
