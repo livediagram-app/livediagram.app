@@ -105,9 +105,9 @@ describe('the status page’s services', () => {
     );
   });
 
-  it('keeps one round small: 31 requests, under a Worker’s 50 subrequests with room to spare', () => {
-    expect(probedServices(groups)).toHaveLength(27);
+  it('keeps one round small: 31 probes, under a Worker’s 50 subrequests with room to spare', () => {
+    expect(probedServices(groups)).toHaveLength(31);
     expect(probedServices(groups).length).toBeLessThan(40);
-    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(37);
+    expect(allServices(groups).filter((s) => s.check.mode !== 'skipped')).toHaveLength(43);
   });
 });

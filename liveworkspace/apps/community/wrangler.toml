@@ -20,6 +20,7 @@ workers_dev = false
 #   COMMUNITY_KEY_LIVEDOCUMENTS shared with livedocuments' api Worker as COMMUNITY_KEY
 #   COMMUNITY_KEY_LIVEDESIGN    shared with livedesign's api Worker as COMMUNITY_KEY
 #   COMMUNITY_KEY_LIVEHUDDLE    shared with livehuddle's api Worker as COMMUNITY_KEY
+#   COMMUNITY_KEY_LIVEKNOWLEDGE    shared with liveknowledge's api Worker as COMMUNITY_KEY
 # Each also opens that app's sweep door, so the sweep needs no other secret.
 [vars]
 ENVIRONMENT = "production"
@@ -30,10 +31,11 @@ APP_ORIGIN_LIVEPLANNER = "https://www.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://www.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://www.livedesign.app"
 APP_ORIGIN_LIVEHUDDLE = "https://www.livehuddle.app"
+APP_ORIGIN_LIVEKNOWLEDGE = "https://www.liveknowledge.app"
 # The Forum's account check (liveworkspace/docs/specs/007-community/community.md "Forum routes"): access tokens are
 # checked offline against `${ACCOUNTS_URL}/api/auth`'s keys, addressed to any app API, as the index and Drive check them.
 ACCOUNTS_URL = "https://www.liveworkspace.app"
-INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api"
+INDEX_AUDIENCES = "https://livediagram.app/api,https://liveplanner.app/api,https://livedocuments.app/api,https://livedesign.app/api,https://livehuddle.app/api,https://liveknowledge.app/api"
 
 # Every five minutes: the sweep checks each app's posts checked longest ago against the index, through the app, and the
 # Forum's posts waiting for the check are asked again.
@@ -79,8 +81,9 @@ APP_ORIGIN_LIVEPLANNER = "https://staging.liveplanner.app"
 APP_ORIGIN_LIVEDOCUMENTS = "https://staging.livedocuments.app"
 APP_ORIGIN_LIVEDESIGN = "https://staging.livedesign.app"
 APP_ORIGIN_LIVEHUDDLE = "https://staging.livehuddle.app"
+APP_ORIGIN_LIVEKNOWLEDGE = "https://staging.liveknowledge.app"
 ACCOUNTS_URL = "https://staging.liveworkspace.app"
-INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api"
+INDEX_AUDIENCES = "https://staging.livediagram.app/api,https://staging.liveplanner.app/api,https://staging.livedocuments.app/api,https://staging.livedesign.app/api,https://staging.livehuddle.app/api,https://staging.liveknowledge.app/api"
 
 [env.staging.triggers]
 crons = ["*/5 * * * *"]

@@ -93,6 +93,7 @@ describe('compareApps', () => {
       'livedocuments.app',
       'livedesign.app',
       'livehuddle.app',
+      'liveknowledge.app',
     ]);
     expect(today.total.key).toBe(TOTAL);
   });

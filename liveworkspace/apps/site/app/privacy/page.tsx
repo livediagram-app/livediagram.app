@@ -13,12 +13,12 @@ import { CONTACT_URL, LEGAL_UPDATED } from '@/lib/legal';
 export const metadata: Metadata = {
   title: 'Privacy Policy · liveworkspace',
   description:
-    'What liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign and livehuddle) do, and do not do, with your data.',
+    'What liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge) do, and do not do, with your data.',
   alternates: { canonical: '/privacy' },
   openGraph: {
     title: 'Privacy Policy · liveworkspace',
     description:
-      'What liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign and livehuddle) do, and do not do, with your data.',
+      'What liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge) do, and do not do, with your data.',
     url: '/privacy',
     siteName: 'liveworkspace',
     type: 'website',
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     card: 'summary',
     title: 'Privacy Policy · liveworkspace',
     description:
-      'What liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign and livehuddle) do, and do not do, with your data.',
+      'What liveworkspace and its apps (livediagram, liveplanner, livedocuments, livedesign, livehuddle and liveknowledge) do, and do not do, with your data.',
   },
 };
 
@@ -158,13 +158,13 @@ const SECTIONS: LegalSection[] = [
         </li>
         <li>
           <strong>Walkthroughs you record.</strong> Calls are never recorded. A walkthrough is
-          different: in livediagram, livedocuments, livedesign and liveplanner you can choose to
-          record one, a narrated tour of a document. Only after you press Start Recording does the
-          app record your voice, and your camera if you leave it on, with where you move around the
-          document and point. The recording is stored in Cloudflare object storage with the
-          document, for the people who can open it. Elements you hide from it are left out of what
-          is stored. Deleting the walkthrough, purging its document from the Trash or deleting your
-          account deletes it.
+          different: in livediagram, livedocuments, livedesign, liveplanner and liveknowledge you
+          can choose to record one, a narrated tour of a document. Only after you press Start
+          Recording does the app record your voice, and your camera if you leave it on, with where
+          you move around the document and point. The recording is stored in Cloudflare object
+          storage with the document, for the people who can open it. Elements you hide from it are
+          left out of what is stored. Deleting the walkthrough, purging its document from the Trash
+          or deleting your account deletes it.
         </li>
         <li>
           <strong>A guest id.</strong> If you use an app without an account, liveworkspace.app gives
@@ -260,8 +260,8 @@ const SECTIONS: LegalSection[] = [
     title: 'Image search',
     body: (
       <p>
-        In livediagram, livedocuments, livedesign and livehuddle, and in liveplanner Forms, the
-        image picker&rsquo;s Search tab sends your search words from your browser to{' '}
+        In livediagram, livedocuments, livedesign, livehuddle and liveknowledge, and in liveplanner
+        Forms, the image picker&rsquo;s Search tab sends your search words from your browser to{' '}
         <strong>Openverse</strong>, run by the WordPress Foundation, which sees them and your IP
         address under its own privacy policy; our servers never see the search. A picture you pick
         is downloaded from its original host and stored like any image you upload.
@@ -632,6 +632,18 @@ const SECTIONS: LegalSection[] = [
         livedesign&rsquo;s logos and wireframes are stored as described under{' '}
         <a href="#what-the-apps-store">What the apps store</a>, and photos you edit are images you
         upload, handled the same way. It handles your data in no way of its own.
+      </p>
+    ),
+  },
+  {
+    app: 'liveknowledge.app',
+    id: 'liveknowledge-everything-above',
+    title: 'Nothing beyond the above',
+    body: (
+      <p>
+        liveknowledge&rsquo;s knowledgebases and their pages are stored as described under{' '}
+        <a href="#what-the-apps-store">What the apps store</a>. It handles your data in no way of
+        its own.
       </p>
     ),
   },

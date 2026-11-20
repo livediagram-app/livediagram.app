@@ -15,6 +15,7 @@ export const APP_APPEARANCE_KEYS: Record<AppName, string> = {
   livedocuments: 'livedocuments:v2:ui-mode',
   livedesign: 'livedesign:v2:ui-mode',
   livehuddle: 'livehuddle:v2:ui-mode',
+  liveknowledge: 'liveknowledge:v2:ui-mode',
 };
 
 // liveworkspace.app's own: the key the site has always read, so no one's pick resets.

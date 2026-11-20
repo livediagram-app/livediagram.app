@@ -62,6 +62,7 @@ describe('StatusBoard', () => {
       'livedocuments',
       'livedesign',
       'livehuddle',
+      'liveknowledge',
     ]);
     for (const id of ids) expect(host!.querySelector(`#${id}-title`)?.textContent).toContain(id);
   });
@@ -110,6 +111,7 @@ describe('StatusBoard', () => {
       'livedocumentsAll up',
       'livedesign2 down',
       'livehuddleAll up',
+      'liveknowledgeAll up',
     ]);
   });
 
@@ -387,7 +389,7 @@ describe('the page holding still', () => {
     }
     // Each card's Uptime chip keeps its room too: arriving later, it wrapped a phone's card header onto a new line.
     const chips = [...host!.querySelectorAll('[data-uptime-pending]')];
-    expect(chips).toHaveLength(6);
+    expect(chips).toHaveLength(7);
     for (const chip of chips) {
       expect(chip.getAttribute('aria-hidden')).toBe('true');
       expect(chip.className).toContain('invisible');
@@ -424,7 +426,7 @@ describe('the page holding still', () => {
       'The first answers are on their way.',
     );
     const holds = [...host!.querySelectorAll('nav[aria-label="Groups"] a [data-hold]')];
-    expect(holds).toHaveLength(6);
+    expect(holds).toHaveLength(7);
     for (const hold of holds) expect(hold.getAttribute('data-hold')).toBe('Checking');
     // A browser line whose answer is shorter than the label it showed while checking keeps the label's room.
     const accounts = row('liveworkspace:accounts')!;
