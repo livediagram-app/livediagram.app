@@ -134,7 +134,7 @@ export function OptionsEditor({
                   e.stopPropagation();
                   move(i, e.key === 'ArrowUp' ? -1 : 1, true);
                 }}
-                className={`absolute -left-5 top-0 flex h-full w-5 cursor-grab touch-none items-center justify-center rounded text-slate-400 transition hover:text-slate-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] group-hover/opt:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-500 dark:hover:text-slate-300 ${drag.from === null ? 'opacity-0' : 'cursor-grabbing opacity-100'}`}
+                className={`absolute -left-5 top-0 flex h-full w-5 cursor-grab touch-none items-center justify-center rounded text-slate-400 transition hover:text-slate-600 focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--form-accent)] group-hover/opt:opacity-100 [@media(hover:none)]:opacity-100 dark:text-slate-400 dark:hover:text-slate-200 ${drag.from === null ? 'opacity-0' : 'cursor-grabbing opacity-100'}`}
               >
                 <GripIcon />
               </button>
