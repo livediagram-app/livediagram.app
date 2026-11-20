@@ -4,7 +4,7 @@ Status: **the view is built, not yet verified in a browser** ([Build plan](../00
 step 10). What is not built is under "Not built"; the [AI Knowledge UI blueprint](blueprints/ai-knowledge-ui.md) has
 the detail.
 
-The wiki's third tab, beside Pages and Ask: what agents know, where they learned it and what they could not find.
+The knowledgebase's third tab, beside Pages and Ask: what agents know, where they learned it and what they could not find.
 Most of it needs no model: it is bookkeeping the room already has.
 
 ## Connected agents
@@ -29,7 +29,7 @@ to an agent. No reader's identity is kept beyond the agent's name.
 
 ## Questions nobody could answer
 
-- A question is logged (`questions`) when Ask says the wiki does not cover it, when a search by an agent returns
+- A question is logged (`questions`) when Ask says the knowledgebase does not cover it, when a search by an agent returns
   nothing, or when an agent calls `report_gap`. Like questions are grouped (same words after stemming); the row shows
   the question and how many times it was asked, by people and by each named agent ("Asked 4 times by people and
   the Coding Agent"). The count is of asks, not of distinct people: no asker's identity is kept.
@@ -39,7 +39,7 @@ to an agent. No reader's identity is kept beyond the agent's name.
 
 ## Pages that disagree
 
-- When a page is verified or its writing is saved (at most once per page per 10 minutes), and the wiki has a key, the
+- When a page is verified or its writing is saved (at most once per page per 10 minutes), and the knowledgebase has a key, the
   room looks up passages on other pages that match its passages and asks the model whether any pair states opposite
   facts. A found pair is a **conflict**: the question it answers, both passages, and each page's verified state.
 - Resolving: **<Page> Is Right, Fix the Other** opens the other page with the passage selected and a margin note
@@ -63,14 +63,14 @@ step in the acceptor's name and does not verify the page.
 
 ## Always in Context
 
-Pages every agent is handed before it starts: `Tab.wiki.context: true`, set from the row menu ("Always in Context")
+Pages every agent is handed before it starts: `Tab.knowledge.context: true`, set from the row menu ("Always in Context")
 or here. The list shows each page's size in tokens (characters / 4, rounded up to 10) against a budget of 8,000
 (`CONTEXT_BUDGET_TOKENS`); a page that would pass the budget cannot be added, and says so.
 
 ## Knowledge Health
 
 Counts of Verified, Review Due and Never Verified pages as one stacked bar with a legend, and **Remind the Owners**
-(one email each, at most once a week per wiki).
+(one email each, at most once a week per knowledgebase).
 
 **Remind the Owners** sends each owner one email, **Pages to Review**, listing their pages that are Review Due or
 Never Verified (each named with its state and linked; the first 100, the rest counted). It is a

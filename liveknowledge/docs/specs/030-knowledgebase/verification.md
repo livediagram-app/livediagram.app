@@ -6,21 +6,21 @@ Status: **the states, Verify, the meta row, the tree's tick and Page Health are 
 a fake sender, not yet sent from a deployed Worker. Verify needs an account, and a knowledgebase kept Offline has
 none.
 
-A wiki is only useful, to a person or to an agent, while it is right. Each page says who vouches for it and when they
+A knowledgebase is only useful, to a person or to an agent, while it is right. Each page says who vouches for it and when they
 last did.
 
 ## The fields
 
-On the page (`Tab.wiki`): `owner` (a person with access to the wiki), `verifiedAt`, `verifiedBy`, `reviewEvery`
+On the page (`Tab.knowledge`): `owner` (a person with access to the knowledgebase), `verifiedAt`, `verifiedBy`, `reviewEvery`
 (30, 90, 180 or 365 days; 90 by default; "Never" for pages that do not age).
 
 ## States
 
-| State              | When                                                              | Shows as                                  |
-| ------------------ | ----------------------------------------------------------------- | ----------------------------------------- |
-| **Verified**       | `verifiedAt` is set and the review is not yet due                 | a green tick, "Verified by <name>"        |
-| **Review Due**     | `verifiedAt + reviewEvery` has passed                             | an amber "Review Due" pill                |
-| **Never Verified** | no `verifiedAt`                                                   | nothing on the page; grey in the counts   |
+| State              | When                                              | Shows as                                |
+| ------------------ | ------------------------------------------------- | --------------------------------------- |
+| **Verified**       | `verifiedAt` is set and the review is not yet due | a green tick, "Verified by <name>"      |
+| **Review Due**     | `verifiedAt + reviewEvery` has passed             | an amber "Review Due" pill              |
+| **Never Verified** | no `verifiedAt`                                   | nothing on the page; grey in the counts |
 
 - States are worked out when read, from the fields and the clock; nothing is written when a review comes due.
 - The tick or pill sits in the page's meta row under the title, in the page tree row and on every page link's hover
@@ -37,7 +37,7 @@ On the page (`Tab.wiki`): `owner` (a person with access to the wiki), `verifiedA
 
 ## Reminders
 
-- The [Wiki Home](wiki-home.md) lists **Yours to Review**: pages you own that are due, oldest first, each with
+- The [Knowledgebase Home](knowledgebase-home.md) lists **Yours to Review**: pages you own that are due, oldest first, each with
   **Still Right** (verifies it) and a link to the page.
 - An owner gets one email when pages of theirs come due: **Pages Due for Review**. It lists every page of theirs
   that is due (the first 100 by name, the rest counted, so the email is never clipped), each a link to its page,
