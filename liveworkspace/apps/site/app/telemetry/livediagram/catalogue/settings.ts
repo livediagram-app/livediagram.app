@@ -378,5 +378,5 @@ export const SETTINGS_CHANGED: MetricStack = {
     'Settings changed, by Settings category. The theme counts the header toggle as well as the dialog.',
   members: SETTINGS_STACKS.map(categoryChart),
   rising: 'neutral',
-  seeAlso: { section: 'settings', label: 'See Each Setting in Features › Settings' },
+  seeAlso: { tab: 'settings', label: 'See Each Setting on the Settings Tab' },
 };

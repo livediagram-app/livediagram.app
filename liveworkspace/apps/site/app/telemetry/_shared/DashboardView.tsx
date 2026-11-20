@@ -3,7 +3,7 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveworkspace/telemetry';
 import { useTelemetryApp } from './app';
 import { MetricGroups } from './MetricCards';
-import type { SectionKey } from './view-keys';
+import type { DetailKey } from './view-keys';
 import { windowLabel } from './windows';
 
 // The Dashboard view (docs/specs/017-telemetry/telemetry.md, default tab): the key metrics, most
@@ -16,7 +16,7 @@ import { windowLabel } from './windows';
 // work together, how machines connect, then health. Until October 2026 this charted every event
 // (63 stacks, ten of them tours); everything else now sits in the Detail tab that goes deeper,
 // and every emitted event still lands in some chart there (metric-emitters.test). A stack that
-// goes deeper than it can links to its section.
+// goes deeper than it can links to its tab.
 //
 // Deliberately a FIXED list, not "top by volume": a first-time visitor
 // (`Participant·Created`) is low volume but high signal, so it must always be
@@ -26,11 +26,11 @@ import { windowLabel } from './windows';
 export function DashboardView({
   summary,
   active,
-  onOpenSection,
+  onOpenTab,
 }: {
   summary: TelemetrySummary;
   active: TelemetryWindowKey;
-  onOpenSection: (section: SectionKey) => void;
+  onOpenTab: (tab: DetailKey) => void;
 }) {
   const { dashboard } = useTelemetryApp();
   return (
@@ -40,12 +40,7 @@ export function DashboardView({
         Each card&rsquo;s line is the last 30 days; the selected window is highlighted. Every other
         event is on the Detail tabs.
       </p>
-      <MetricGroups
-        groups={dashboard}
-        summary={summary}
-        active={active}
-        onOpenSection={onOpenSection}
-      />
+      <MetricGroups groups={dashboard} summary={summary} active={active} onOpenTab={onOpenTab} />
     </div>
   );
 }

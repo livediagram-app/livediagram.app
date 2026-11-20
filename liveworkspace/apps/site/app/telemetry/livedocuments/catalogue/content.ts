@@ -502,7 +502,7 @@ export const ELEMENTS_ADDED: MetricStack = {
     ICONS_ADDED,
     OTHER_ELEMENTS_ADDED,
   ],
-  seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
+  seeAlso: { tab: 'palette', label: 'See Each Element on the Palette Tab' },
 };
 
 // ---- Every other event, so nothing lands only in Search (docs/specs/017-telemetry/telemetry.md) ----------
@@ -629,7 +629,7 @@ export const ELEMENT_EDITING: MetricStack = {
     LINKS_ADDED,
     LINKS_REMOVED,
   ],
-  seeAlso: { section: 'editing', label: 'See Each Formatting Control in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Formatting Control on the Editing Tab' },
 };
 
 // Tables: the row and column edits inside a table element. They are sent as
@@ -715,5 +715,5 @@ export const EXPORT_AND_IMPORT: MetricStack = {
   blurb:
     'Diagrams leaving livedocuments as files and text, and tabs coming in from Markdown documents and JSON exports.',
   members: [EXPORTS, EXPORT_OPTIONS, TAB_IMPORTS],
-  seeAlso: { section: 'editing', label: 'See Each Export Format in Features › Editing' },
+  seeAlso: { tab: 'editing', label: 'See Each Export Format on the Editing Tab' },
 };

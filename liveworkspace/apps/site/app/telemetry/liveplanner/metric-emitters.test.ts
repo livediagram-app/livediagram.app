@@ -36,7 +36,7 @@ const TIMINGS = [
 const PAGES = APP.pages;
 const CONNECTIONS_GROUPS = APP.connections.groups;
 const FACILITATION_GROUPS = APP.teamwork.groups;
-const TOURS_GROUPS = APP.tours;
+const TOURS_GROUPS = APP.tours.groups;
 
 // Every card and every hard-coded ranking type on the dashboard must be an
 // event something in the repo can actually send. Two ways that went wrong:
@@ -116,6 +116,8 @@ const ALL: MetricGroup[] = [
   ...HELP,
   ...TOURS_GROUPS,
   ...FACILITATION_GROUPS,
+  ...APP.community.groups,
+  ...(APP.explorer?.groups ?? []),
   ...CONNECTIONS_GROUPS,
   ...TIMINGS,
 ];

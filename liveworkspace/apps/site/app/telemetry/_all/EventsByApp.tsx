@@ -23,6 +23,7 @@ import { SeriesChart } from './SeriesChart';
 import { Swatch } from '../_shared/chart-hover/Swatch';
 import { emphasisProps, useEmphasisStore } from '../_shared/chart-hover/emphasis';
 import { CARD, TABLE_CELL, TABLE_HEAD, TOTAL_ROW } from './styles';
+import { AppBrand, appName } from '../AppBrand';
 
 // The neutral Total line: dashed, in slate, so it reads as the sum and not as one more app.
 const TOTAL_SERIES: Pick<StackSeries, 'className' | 'dashed' | 'total'> = {
@@ -62,7 +63,8 @@ export function EventsByApp({
     return [
       ...TELEMETRY_APPS.map((app) => ({
         key: app as string,
-        label: app,
+        // A tooltip row is plain text: the name as the logo spells it.
+        label: appName(app),
         app,
         color: 'var(--color-brand-500)',
         values: daily.byApp?.[app] ?? daily.days.map(() => 0),
@@ -98,17 +100,25 @@ export function EventsByApp({
                 key={s.key}
                 type="button"
                 aria-pressed={!hidden.has(s.key)}
+                aria-label={s.label}
                 onClick={() => toggle(s.key)}
                 {...emphasisProps(emphasis, s.key)}
                 className={
                   'relative flex min-h-8 cursor-pointer items-center gap-1.5 rounded-full border px-2.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 ' +
                   (hidden.has(s.key)
-                    ? 'border-slate-200 text-slate-400 line-through dark:border-slate-700 dark:text-slate-500'
+                    ? 'border-slate-200 text-slate-400 opacity-50 dark:border-slate-700 dark:text-slate-500'
                     : 'border-slate-200 text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:text-slate-200 dark:hover:border-slate-600')
                 }
               >
-                <Swatch series={s} />
-                {s.label}
+                {/* An app's entry is its logo, whose prism wears the line's colour; the Total keeps its stroke. */}
+                {s.app ? (
+                  <AppBrand app={s.app} size="xs" />
+                ) : (
+                  <>
+                    <Swatch series={s} />
+                    {s.label}
+                  </>
+                )}
               </button>
             ))}
           </div>
@@ -161,11 +171,10 @@ export function EventsByApp({
                     type="button"
                     data-app={r.key}
                     onClick={() => onPickApp(r.key as TelemetryApp)}
-                    aria-label={`Open ${r.key}'s dashboard`}
-                    className="relative flex cursor-pointer items-center gap-2 rounded font-medium text-brand-700 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500 dark:text-brand-300"
+                    aria-label={`Open ${appName(r.key)}'s dashboard`}
+                    className="relative flex cursor-pointer items-center rounded hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
                   >
-                    <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-brand-500" />
-                    {r.key}
+                    <AppBrand app={r.key} />
                   </button>
                 }
               />
@@ -176,7 +185,9 @@ export function EventsByApp({
                 against={against}
                 name={
                   <Tooltip label="The Explorer and Settings on liveworkspace.app, for no one app">
-                    <span className="text-slate-600 dark:text-slate-300">liveworkspace.app</span>
+                    <span className="inline-flex">
+                      <AppBrand app="liveworkspace.app" />
+                    </span>
                   </Tooltip>
                 }
               />
@@ -204,8 +215,9 @@ function EventsRow({
 }) {
   return (
     <tr className={total ? TOTAL_ROW : undefined}>
-      <th scope="row" className={`${TABLE_CELL} text-left font-normal`}>
-        {name}
+      <th scope="row" className={`${TABLE_CELL} font-normal`}>
+        {/* A flex line starts at the left whatever the cell's alignment, so every name lines up under App. */}
+        <span className="flex">{name}</span>
       </th>
       <td className={TABLE_CELL}>{row.events.toLocaleString('en-GB')}</td>
       <td className={TABLE_CELL}>{formatShare(row.share)}</td>

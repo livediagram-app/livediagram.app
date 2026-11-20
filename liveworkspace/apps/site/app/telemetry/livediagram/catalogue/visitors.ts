@@ -468,7 +468,7 @@ export const ONBOARDING_TOURS: MetricStack = {
     ELEMENT_TOURS_STARTED,
     SHOW_ME_TOURS_STARTED,
   ],
-  seeAlso: { section: 'tours', label: 'See Each Tour in Pages & Help' },
+  seeAlso: { tab: 'tours', label: 'See Each Tour on the Tours & Prompts Tab' },
 };
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md): offered, then reloaded.
@@ -572,7 +572,7 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
   blurb:
     'Every page viewed across the site, by full load or in-app navigation, split by the app that serves it.',
   members: [MARKETING_PAGES, LIVE_PAGES, HELP_PAGES, DASHBOARD_PAGES, COMMUNITY_PAGES],
-  seeAlso: { section: 'pages', label: 'See Every Page in Pages & Help' },
+  seeAlso: { tab: 'pages', label: 'See Every Page on the Pages Tab' },
 };
 
 // The landing funnel (docs/specs/019-marketing/landing-funnel.md): arrivals at /new from a public page's call
@@ -599,5 +599,5 @@ export const CALLS_TO_ACTION: MetricStack = {
     'How the public pages turn visitors into documents: arrivals from a call to action, and the documents they created.',
   members: [CTA_ARRIVALS, CTA_DOCUMENTS],
   headline: CTA_DOCUMENTS,
-  seeAlso: { section: 'pages', label: 'See the Landing Funnel in Pages & Help' },
+  seeAlso: { tab: 'pages', label: 'See the Landing Funnel on the Pages Tab' },
 };

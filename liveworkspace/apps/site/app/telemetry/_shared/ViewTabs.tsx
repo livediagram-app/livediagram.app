@@ -9,16 +9,13 @@ import { Glyph } from '@livediagram/ui';
 // together in a bar titled "Detail".
 // Both halves are one tablist, so keyboard and screen-reader users still get a
 // single set of tabs: a tablist owns only tabs, so nothing between it and them
-// carries a role, and the chevrons below stay out of the accessibility tree. Always one row: the Detail bar takes the rest of the
-// width and becomes a carousel when its tabs outgrow it (a second row read as
-// a separate control).
+// carries a role, and the chevrons below stay out of the accessibility tree.
 //
-// The Detail bar is a single-line carousel. Its tabs are wider than the column
-// on a phone (and even on some laptops), and both wrapping to two rows and a
-// bare scrollbar read as messy, so the row stays on ONE line inside a
-// hidden-overflow scroller, with left/right chevrons that appear only when
-// there's more to reach. Picking a tab also scrolls it into view, so the
-// active one is never clipped at an edge.
+// From `sm` up the Detail bar WRAPS: there is a tab for each area (a dozen or more), and one hidden
+// behind a chevron is one nobody finds. On a phone the same tabs would stack five rows deep above
+// the numbers, so there the bar stays one line inside a hidden-overflow scroller, with left/right
+// chevrons that appear only when there's more to reach. Picking a tab also scrolls it into view, so
+// the active one is never clipped at an edge.
 
 type TabOption<K extends string> = { key: K; label: string; icon: ReactNode };
 
@@ -106,7 +103,7 @@ export function ViewTabs<K extends string>({
     'flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1.5 shadow-sm dark:border-slate-700 dark:bg-slate-900';
 
   return (
-    <div role="tablist" aria-label="Telemetry views" className="mt-8 flex items-center gap-3">
+    <div role="tablist" aria-label="Telemetry views" className="mt-8 flex items-start gap-3">
       {leadViews.length > 0 ? (
         <div className={`${bar} shrink-0`}>
           {leadViews.map((v) => (
@@ -132,7 +129,7 @@ export function ViewTabs<K extends string>({
       <div className={`${bar} min-w-0 flex-1`}>
         <span
           aria-hidden
-          className="hidden shrink-0 pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:inline"
+          className="hidden h-8 shrink-0 items-center self-start pl-2 pr-1 text-[11px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400 sm:flex"
         >
           Detail
         </span>
@@ -154,7 +151,7 @@ export function ViewTabs<K extends string>({
         <div
           ref={scrollerRef}
           onScroll={measure}
-          className="flex min-w-0 gap-1 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="flex min-w-0 gap-1 overflow-x-auto scroll-smooth sm:flex-wrap sm:overflow-x-visible [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
           {detail.map((v) => (
             <button

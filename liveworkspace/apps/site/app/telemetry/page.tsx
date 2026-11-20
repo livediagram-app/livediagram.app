@@ -3,7 +3,6 @@
 import { useEffect, useState, useSyncExternalStore } from 'react';
 import dynamic from 'next/dynamic';
 import { EmptyState } from '@liveworkspace/ui';
-import { Brand } from '@liveworkspace/brand';
 import {
   ALL_TELEMETRY_APPS,
   type TelemetryAppFilter,
@@ -12,10 +11,9 @@ import {
   type TelemetryWindowKey,
 } from '@liveworkspace/telemetry';
 import { Footer } from '@/components/Footer';
-import { AppLogo, brandAppOf } from '@/components/landing/AppLogo';
-import { listedApps } from '@/lib/apps';
 import { Header } from '@/components/Header';
 import { AllApps } from './AllApps';
+import { AppBrand } from './AppBrand';
 import { DashboardSkeleton } from './DashboardSkeleton';
 import {
   APP_CHOICES,
@@ -128,21 +126,7 @@ export default function TelemetryDashboard() {
                     : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300 dark:hover:border-slate-600')
                 }
               >
-                {(() => {
-                  // Each app's chip shows its logo as its own site's header does: the prism and the
-                  // wordmark with "live" in the app's accent. The chip's own `data-app` scopes the
-                  // accent to it, whichever app is picked around it.
-                  const brand = brandAppOf(choice.key);
-                  if (brand)
-                    return (
-                      <span data-app={choice.key} className="flex">
-                        <Brand app={brand} size="sm" />
-                      </span>
-                    );
-                  // An app whose UI package isn't in this repo yet: the shared prism in its accent.
-                  const listed = listedApps().find((a) => a.id === choice.key);
-                  return listed ? <AppLogo app={listed} size="sm" /> : choice.label;
-                })()}
+                {choice.key === ALL_TELEMETRY_APPS ? choice.label : <AppBrand app={choice.key} />}
               </button>
             ))}
           </div>

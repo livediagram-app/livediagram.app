@@ -32,7 +32,7 @@ export function ProjectKits({
     <section aria-labelledby="project-kits">
       <h2
         id="project-kits"
-        className="mt-12 text-lg font-semibold text-slate-900 dark:text-slate-100"
+        className="mt-8 text-lg font-semibold text-slate-900 dark:text-slate-100"
       >
         Project Kits
       </h2>
